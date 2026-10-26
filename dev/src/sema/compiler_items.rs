@@ -78,6 +78,11 @@ impl Catalog {
         Ok(())
     }
     pub(crate) fn reserve(report: &Report) -> Result<Option<Box<Self>>, Error> {
+        if report.package.staged_consumer().is_some() {
+            return Err(Error::unlocated(
+                "private consumer facts require their owned staged constructor",
+            ));
+        }
         if report.package.source_client().is_some() {
             return binding_views::client_catalog(report)
                 .map(Some)
@@ -152,6 +157,12 @@ impl Catalog {
             attributes: LangItem::ALL.map(|role| reserved.role_attributes(role)),
             runtime_checks: runtime_checks::RuntimeCheckSession::new(&report.package),
         })))
+    }
+    pub(in crate::sema) fn reserve_staged(
+        report: &Report,
+        work: &mut crate::resolve::crates::ReservationWork,
+    ) -> Result<Box<Self>, Error> {
+        binding_views::staged_catalog(report, work)
     }
     /// Closure formation requires the actual completed source role family.
     /// This declaration gate confers neither an implementation nor call permission.

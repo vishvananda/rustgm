@@ -3,6 +3,8 @@
 pub enum WarningCode {
     UnusedMustUse,
     UnusedAttributes,
+    UnusedVisibilities,
+    UnstableSyntaxPreExpansion,
     DuplicateMacroAttributes,
     MalformedDiagnosticAttributes,
     MalformedDiagnosticFormatLiterals,
@@ -14,6 +16,8 @@ impl WarningCode {
         match self {
             Self::UnusedMustUse => "unused_must_use",
             Self::UnusedAttributes => "unused_attributes",
+            Self::UnusedVisibilities => "unused_visibilities",
+            Self::UnstableSyntaxPreExpansion => "unstable_syntax_pre_expansion",
             Self::DuplicateMacroAttributes => "duplicate_macro_attributes",
             Self::MalformedDiagnosticAttributes => "malformed_diagnostic_attributes",
             Self::MalformedDiagnosticFormatLiterals => "malformed_diagnostic_format_literals",

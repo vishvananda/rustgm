@@ -49,6 +49,12 @@ pub struct Warning {
 /// A frontend diagnostic. It is one pointer, so the results that carry it
 /// return in registers; diagnostics are rare and their data lives on the heap.
 pub struct Error(Box<ErrorData>);
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum RetentionNote {
+    Complete,
+    Budget,
+    UnavailableOrigin,
+}
 #[derive(Debug)]
 pub enum DiagnosticFile {
     Source(FileId),
@@ -74,7 +80,7 @@ pub struct ErrorData {
     retained_warnings: Vec<Warning>,
     warning_bytes: usize,
     warning_work: usize,
-    warning_limit_note: bool,
+    warning_limit_note: RetentionNote,
 }
 impl Error {
     #[must_use]
@@ -91,7 +97,7 @@ impl Error {
             retained_warnings: Vec::new(),
             warning_bytes: 0,
             warning_work: 0,
-            warning_limit_note: false,
+            warning_limit_note: RetentionNote::Complete,
         })
     }
     pub(crate) fn imported(
@@ -108,7 +114,7 @@ impl Error {
             retained_warnings: Vec::new(),
             warning_bytes: 0,
             warning_work: 0,
-            warning_limit_note: false,
+            warning_limit_note: RetentionNote::Complete,
         })
     }
     pub(crate) fn unlocated(message: impl Into<String>) -> Self {
@@ -121,7 +127,7 @@ impl Error {
             retained_warnings: Vec::new(),
             warning_bytes: 0,
             warning_work: 0,
-            warning_limit_note: false,
+            warning_limit_note: RetentionNote::Complete,
         })
     }
 }
@@ -162,11 +168,16 @@ impl std::fmt::Display for Error {
             )?,
             DiagnosticFile::Unlocated => write!(output, "input: {}", self.message)?,
         }
-        if self.warning_limit_note {
-            write!(
+        match self.warning_limit_note {
+            RetentionNote::Complete => {}
+            RetentionNote::Budget => write!(
                 output,
                 "\n  note: retained warning work or storage budget exceeded; further warnings unavailable"
-            )?;
+            )?,
+            RetentionNote::UnavailableOrigin => write!(
+                output,
+                "\n  note: retained warning source could not be authenticated; further warnings unavailable"
+            )?,
         }
         for trace in &self.expansions {
             write!(
