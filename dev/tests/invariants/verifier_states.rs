@@ -1,4 +1,4 @@
-//! Verifier success stays behind an explicit execution fence; ordinary analysis stays available.
+//! Only a completed immutable forest admits member execution; ordinary analysis stays available.
 use super::*;
 use crate::sema::{specialization, traits::implementations::Implementations};
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
@@ -10,14 +10,7 @@ fn frozen(lane: &str, name: &str) -> TestResult<String> {
 fn verified(name: &str, source: &str, expected_vertices: usize, depth: u32) -> TestResult {
     let report = crate::test_source::resolve(source, true)?;
     let mut checker = Checker::new(&report)?;
-    let error = checker
-        .run()
-        .err()
-        .ok_or("verifier escaped its execution fence")?;
-    assert_eq!(
-        error.message, "specialization graph execution is not implemented",
-        "{name}: {error}"
-    );
+    checker.run()?;
     let registry = checker
         .facts
         .generics
@@ -53,7 +46,7 @@ fn verified(name: &str, source: &str, expected_vertices: usize, depth: u32) -> T
     assert!(after.work < 100_000);
     assert!(after.bytes < 4 * 1024 * 1024);
     eprintln!(
-        "verified forest vertices={} edges={} depth={} capacity={} work={} logical_bytes={} Graph={} Registry={}",
+        "verified forest {name} vertices={} edges={} depth={} capacity={} work={} logical_bytes={} Graph={} Registry={}",
         after.vertices,
         after.edges,
         after.depth,

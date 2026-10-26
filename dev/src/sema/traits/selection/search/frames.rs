@@ -219,9 +219,20 @@ impl Search<'_> {
                 } else {
                     Chosen::Negative(node)
                 };
-                if frame.selected.replace(chosen).is_some() {
-                    return Ok(Action::Complete(Decision::Deferred));
-                }
+                frame.selected = Some(if let Some(previous) = frame.selected {
+                    let Some(preferred) = self.preferred_candidate(
+                        facts,
+                        previous,
+                        chosen,
+                        frame.canonical.is_some(),
+                    )?
+                    else {
+                        return Ok(Action::Complete(Decision::Deferred));
+                    };
+                    preferred
+                } else {
+                    chosen
+                });
             }
         }
         Ok(Action::Continue)
@@ -316,5 +327,44 @@ impl Search<'_> {
         } else {
             Decision::Proven(node)
         }))
+    }
+}
+
+impl Search<'_> {
+    /// Each alternative already owns its complete isolated proof. A sealed
+    /// graph may order those answers only for a fully resolved requesting goal;
+    /// inference alternatives and every non-graph ambiguity keep deferring.
+    fn preferred_candidate(
+        &self,
+        facts: &Declarations,
+        previous: Chosen,
+        next: Chosen,
+        known: bool,
+    ) -> Result<Option<Chosen>, String> {
+        let (Chosen::Positive(a), Chosen::Positive(b)) = (previous, next) else {
+            return Ok(None);
+        };
+        if !known {
+            return Ok(None);
+        }
+        let owner = |index: usize| -> Result<Option<DefId>, &'static str> {
+            Ok(
+                match self
+                    .query
+                    .nodes
+                    .get(index)
+                    .ok_or("candidate proof disappeared")?
+                    .source
+                {
+                    Some(Source::Implementation { owner, .. }) => Some(owner),
+                    _ => None,
+                },
+            )
+        };
+        let (Some(a), Some(b)) = (owner(a)?, owner(b)?) else {
+            return Ok(None);
+        };
+        Ok(crate::sema::specialization::prefer(facts, a, b)?
+            .map(|winner| if winner == a { previous } else { next }))
     }
 }

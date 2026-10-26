@@ -116,7 +116,13 @@ fn options() -> Result<Options, String> {
                     .add(&setting)
                     .map_err(|e| format!("--cfg: {}: {}", e.offset, e.message))?;
             }
-            "--edition=2024" => {}
+            "--edition=2021" | "--edition=2024" => {
+                options.config.set_edition(if arg == "--edition=2021" {
+                    rustgm::support::edition::Edition::Rust2021
+                } else {
+                    rustgm::support::edition::Edition::Rust2024
+                });
+            }
             "--ub-checks=yes" | "--ub-checks=no" => {
                 options.config.set_runtime_checks(
                     rustgm::support::runtime_checks::RuntimeCheckConfig::with_ub_checks(

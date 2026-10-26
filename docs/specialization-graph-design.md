@@ -1,8 +1,8 @@
 # Specialization graph proposal and verifier checkpoint
 
 The initial concrete proposal below records the reviewed design from
-qualified64c9f507. The later verifier-checkpoint and correction sections describe
-the current unqualified production implementation; the full dispatch draft stays
+qualified64c9f507. The later verifier, correction and member-execution sections describe
+the qualified local function-method slice; the older full dispatch draft stays
 preserved on pa31-specialization-graph-v1. New observations40237725892 supersede
 only incorrect predictions, preserving their source bytes and raw results.
 Unmeasured sizes remain explicit; logical budgets use actual types/capacities.
@@ -460,3 +460,208 @@ The compiled CLI hash is 3ae4b3c6127a962328454d5e0c13b140e7fe3b79e58936aa35725ba
 no executable was hydrated locally. The explicit execution fence remains in
 place until selected methods, actual defining-header conditions, dispatch and
 both RPIT continuations are complete and independently qualified.
+
+### Execution successor source draft
+
+The separate execution successor preserves the qualified verifier and its
+terminal execution fence. Its new consumer code is uncompiled and unqualified.
+`SelectedMethod` authenticates the actual requested trait member and complete
+selected implementation arguments, walks only sealed immediate-parent edges,
+and returns the actual defining member, implementation and translated arguments.
+The defining-header producer remains shared with verifier admission. A child
+which supplies the requested method collects no unused ancestor conditions.
+
+Concrete dispatch retains the actual defining callable arguments and uses the
+unchanged checked original/instance Contract path. It does not append the defining
+impl's lifetime bounds as new caller requirements. Outer projection normalization
+has a counted canonical condition continuation. Search normalization descends the
+same producer's clauses on its existing iterative stack, then retains a composite
+of the selected trait proof, actual defining-header children and schema outlives
+debts. Family formation and inherited-result children share one binder-opening
+kernel; its ordinary mode uses the original uncharged operations. No blanket
+ancestor predicates are added to Trial. Projection region debts still reach the
+existing body/scope proof joins.
+
+New persistent storage is limited to one optional pointer on the cold outer
+projection Query and one on the already-boxed search Normalization. New body-proof
+owners, suspension shells and condition collection growth use the existing shared
+graph budget. No source, item, scope, definition, Frame, Node, body, Store or ordinary
+Requirements field is added. Layouts and actual changed-path charges remain
+unmeasured. Complete source-incarnation/mapped-body authority, failure and replay
+controls, quantified proof joins, both normalization consumers and actual native
+selection must qualify before removing the fence. Existing marker/defaultness
+publication guards and every imported/Provided execution boundary remain closed.
+
+The [six new independent sources](../pa31/tests/spec/specialization-graph/execution/contract.json)
+resolve a phase distinction which the original draft did not model correctly.
+All 26 commands, four actual native executions and twelve wrong positive
+metadata/build predictions are retained. Scalar dispatch accepts an inherited
+static-parent method with a nonstatic child. A final inherited RPIT method is
+accepted across specialization of a different scalar member, but the combined
+RPIT/static-parent/nonstatic-child source is rejected for a real lifetime debt.
+An actual default RPIT method is rejected even if the impl writes a concrete
+return type; the conformance check must bind the actual trait result declaration.
+
+Pinned [instance resolution](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_ty_utils/src/instance.rs#L17-L30)
+normalizes instance inputs erasing regions, chooses the actual leaf definition,
+translates its arguments under the post-analysis environment and erases the
+result's regions. By contrast, [associated projection](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_trait_selection/src/traits/project.rs#L1958-L1976)
+translates under the projection's actual parameter environment and retains the
+associated item's own obligations. In RustGM, concrete demand already passes the
+exact selected Instance, Template and original Contract through
+`from_checked_caller`; no specialization-wide lifetime exemption or extra body
+field is introduced. Source-incarnation and original/instance proof remain
+mandatory. The new candidate tests and all candidate native executions are pending.
+
+The first consumer checkpoint keeps public execution fenced and selects six
+private groups. Each uses real sealed Checker facts after asserting the terminal
+fence; no test-only production permission or fabricated implementation is added.
+The body/instance group uses the unchanged pipeline and lowering proof and drops
+the resulting program. That is consumer proof, not native execution or publication.
+
+- `sema::declarations::member_execution_tests::sealed_method_dispatch_selects_nearest_defining_owner_and_complete_arguments`
+- `sema::declarations::member_execution_tests::inherited_scalar_dispatch_preserves_nonstatic_caller_and_actual_definition_context`
+- `sema::declarations::member_execution_tests::default_rpit_rejection_binds_trait_declaration_and_keeps_final_inheritance`
+- `sema::declarations::member_execution_tests::checked_defining_bodies_and_instances_keep_original_contracts_while_public_execution_stays_fenced`
+- `sema::declarations::member_execution_tests::selected_member_rejects_wrong_trait_arguments_arena_and_graph_owner_and_keeps_failed_work`
+- `sema::declarations::member_execution_tests::rpit_evidence::both_rpit_consumers_keep_final_inherited_identity_and_real_parent_lifetime_debt`
+
+Both strict compiler modes and the independent architecture audit precede any
+build/test execution. No prior oracle, full private inventory or native matrix
+is repeated in this checkpoint. Actual cold layouts and changed-path costs will
+be retained from the selected controls; they are not yet measured.
+
+
+The member-consumer checkpoint `4b195c57` is qualified by hosted run
+40267493521: all six nonignored groups passed, with strict production and private
+Clippy, metadata, formatting, architecture and the private build. Both receipts
+match all 2,719 frozen compiler inputs and all 31 declared fixture/data hashes.
+The helper completed in 150.41 seconds; no candidate native execution occurred.
+The terminal execution fence remains present in that qualified source.
+
+Actual cold sizes are Query 912, boxed Search Normalization 520, Frame 1,312,
+Node 160, SelectedMethod 32 and ProjectionRequirements 144 bytes. The inherited
+RPIT controls retain clause capacity 4, region capacity 0 and Search capacities
+(4, 0, 1). Chain and reverse-chain dispatch consume 42 and 45 charged work
+steps respectively, each with 264 logical retained bytes; failed work advances
+10,000,464 to 10,000,465 on the same budget owner (13,896 logical bytes).
+These are type sizes, capacities and logical budget charges, not allocator counts
+or peak-memory measurements. The CLI SHA is
+`5d608942f7b52bec94e455d5c5d6023bf0c244de6edea4129acf941a736609a9`.
+The primary receipt SHA is
+`2797bb924f3b3d54fa275accdb422a9004b7822a4c7376ebeef7b497f1c33ef5`;
+the independent audit receipt SHA is
+`ab752f2c3e9466bf37087ffa755d1554143f0d6f60ed4e51ed09d6a25feb2b80`.
+
+
+The separate execution candidate replaces the terminal unsupported diagnostic with
+a current sealed-registry check at declaration completion. That check pays for
+validating the retained forest against its actual registry. Member consumers still
+require their own selected declaration and complete defining arguments, and use
+the unchanged original/instance proof. Default implementations, associated
+values/types, imported specialization and public defaultness transport remain
+closed by their independent guards. A sealed forest does not grant those features.
+
+Before candidate execution, the bounded native plan declares seven exact providers
+in both editions: both corrected chains, actual unsafe marker selection, generic
+private parent substitution, selected clone/drop and lazy panic, inherited scalar
+static-parent/nonstatic-child, and final RPIT inherited across scalar specialization.
+All fourteen must compile with nonempty LowIR and empty compiler diagnostics,
+then pass the locked backend and execute with status zero and empty streams.
+The three actual default-RPIT declarations must reject in both editions; the
+combined inherited RPIT/static opponent must reject with real lifetime evidence.
+These eight negative observations require exit one, empty stdout and the declared
+diagnostic category. No old independent oracle is rerun. The exact println-based
+own-child observer is retained separately; no printing support is claimed.
+
+The execution gate also reruns the six affected consumer groups and the existing
+verifier finality/authority group, after both strict modes and architecture pass.
+The old verifier helper now expects genuine successful declaration completion;
+its Min, effective-finality, invalid-overlap and post-seal insertion opponents
+remain unchanged. Candidate native results and this readiness change are pending.
+
+
+The first executable candidate (run 40268541874, source `2f676ece`) passes all
+seven affected private groups, both strict compiler modes, formatting and global
+architecture. Five edition-2024 programs actually passed the locked backend and
+native execution: both chains, marker selection, scalar static-parent inheritance
+and final inherited RPIT. Three default-RPIT negatives matched their declared
+error. The combined RPIT/static input correctly rejected with `required lifetime
+does not outlive its target`; the runner had incorrectly classified its category
+by the substring RPIT. That failed runner and its exact raw output remain retained.
+No blanket success is claimed: all eleven 2021 attempts stopped at unsupported
+CLI options, and two original required 2024 sources exposed ordinary library
+prerequisites. Explicit bootstrap Clone implementation rejects at byte 159;
+`std::mem::size_of` is unresolved at byte 253. B owns their genuine source-backed
+follow-up; their sources and independent expected outcomes remain unchanged.
+
+A separate PA34 option candidate selects the already-existing typed edition
+without changing cfg/runtime state or artifact-profile permissions. Its actual
+argument controls include last option, retained cfg, unknown 2020, and genuine
+SourceCore admission followed by the existing Rust2024 export denial. The first
+profile test omitted no_core and correctly failed earlier admission; its retained
+source/prediction are replaced only by the exact previously qualified minimal
+provider bytes for the intended later boundary. Candidate option qualification
+remains pending. No prior successful native case is repeated.
+
+The separately authored own-child reduced observer passes two metadata and two
+native predictions in independent run 40268587039 (six commands, no disagreements).
+It replaces only printing with a real check/failure observer. The original println
+input stays intact and printing remains a distinct requirement. Two additional
+source selection reductions pass four metadata/four native predictions in run
+40270500409 (twelve commands, no disagreements). The generic/private input carries
+actual P/Q/X values through a private generic call, and the local Clone trait input
+uses actual user methods plus real Drop/HITS and lazy failure behavior. These
+are additional selection evidence, not parity for standard Clone or size_of.
+Their candidate native results are still pending; no fake library factory is added.
+
+
+## Qualified local member execution and explicit remaining scope
+
+Run 40271012369 qualifies compiler `f0b79b56` with the existing 2021/2024 typed
+edition contexts: both affected frontend groups pass, as do strict production,
+private and frontend Clippy, metadata, formatting and the independent architecture
+audit. The helper took 137.64 seconds (mandatory CLI build separately bounded at
+100 seconds); the eleven missing/additional native programs and four negative
+CLI observations completed in 0.833 seconds. All 2,719 compiler fingerprints and
+40 frozen fixture/data hashes match the exact source snapshot. Harness/upstream
+and audit-cache checks also pass. No previous successful native case was repeated.
+The resulting CLI SHA is
+`c355fb70517929fbaa9761101d514c234a9529fca51c81bd5a79172bf883f70c`.
+The primary receipt SHA is
+`5a75952b4eb4315be8b646b22b5bc7fbb396a5c9e8faaccbeb675187beaacc88`,
+the audit receipt is
+`11dd7c8b0eecbc1eaeefd59e13809545fa86d38d0c97a85a28d8bda7ba56040b`,
+and the selected native receipt is
+`e688bcdb1a73a00e543269cc9131ed7cde754f8a98f784d2a103226f28f12869`.
+
+Together with the five retained 2024 native passes from 40268541874, sixteen
+programs execute successfully: both editions of the two chains, marker selection,
+scalar static-parent inheritance, final inherited RPIT, the reduced own-child
+observer and the two isolated selection inputs. The four negative sources reject
+in both editions; the earlier combined-RPIT 2024 result is retained with the
+explicit manual category correction described above. All seven earlier private
+consumer/verifier groups remain supported by their exact unchanged graph,
+dispatch, projection, inference, body and lowering source. Later changes add only
+the typed Config setter, its CLI caller and the affected frontend tests.
+
+The selected bodies retain actual defining impl/member/arguments and use the
+normal original/instance contract path. Both RPIT consumers retain genuine
+projection lifetime debt. No artificial scalar caller lifetime bound is added.
+The two actual unsupported standard-library inputs remain required and open:
+bootstrap Clone implementation and ordinary std::mem::size_of are not repaired
+by the local user-trait/value reductions. Printing is also a separate requirement.
+Full default-impl semantics, associated value/type specialization, imported
+marker/defaultness/graph transport and public Provided execution remain closed.
+This checkpoint does not activate an assignment or establish an upstream artifact.
+
+After the paid readiness check, the actual retained forest costs are 444 work
+steps/13,736 logical bytes for each three-vertex chain, 299/7,432 for the marker,
+and 157/5,136 for Full structural-static. Chain dispatch costs 45/48 steps and
+264 logical bytes, and exhausted work advances 10,000,467 to 10,000,468 on the
+same owner (13,896 logical bytes). Hot enclosing sizes remain Syntax 312,
+Unit 688, Report 3,040, Node 36, Item 64, Scope 32, Definition 36 and NodeFacts 80;
+Graph is 56, Registry 240 and existing cold Contracts 448. Query 912, boxed
+Normalization 520, Frame 1,312 and Node 160 are the actual selected result-path
+sizes reported earlier. Capacities and logical charges are not allocator counts
+or peak-memory observations. The edition setter introduces no field.
