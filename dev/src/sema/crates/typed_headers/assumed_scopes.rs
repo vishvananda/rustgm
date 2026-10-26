@@ -81,6 +81,23 @@ enum ScopeInputs {
     Declaration(Arc<[Input]>),
 }
 impl ScopeInputs {
+    fn prepare(
+        port: &mut ports::Inputs<'_, '_>,
+        applications: &mut impl Cache,
+        scope: s::ParameterScope,
+        shape: (crate::support::crates::generics::Range, Option<usize>),
+        store: &mut crate::types::Store,
+        work: &mut ReservationWork,
+    ) -> Result<Self, Error> {
+        if shape.1.is_some() {
+            let prepared = translation::trait_inputs(port, applications, scope.owner, store, work)?;
+            Self::trait_inputs(prepared, work)
+        } else {
+            let (inputs, _) =
+                translation::inputs(port, applications, scope.owner, shape.0, None, store, work)?;
+            Ok(Self::Declaration(inputs))
+        }
+    }
     fn trait_inputs(
         prepared: predicate_remap::Prepared,
         work: &mut ReservationWork,
@@ -176,27 +193,14 @@ impl Scope {
             &mut parameters,
             &mut declared,
         )?;
-        let inputs = if canonical.is_some() {
-            let prepared = translation::trait_inputs(
-                port,
-                applications,
-                scope_row.owner,
-                &mut facts.types,
-                work,
-            )?;
-            ScopeInputs::trait_inputs(prepared, work)?
-        } else {
-            let (inputs, _) = translation::inputs(
-                port,
-                applications,
-                scope_row.owner,
-                range,
-                None,
-                &mut facts.types,
-                work,
-            )?;
-            ScopeInputs::Declaration(inputs)
-        };
+        let inputs = ScopeInputs::prepare(
+            port,
+            applications,
+            scope_row,
+            (range, canonical),
+            &mut facts.types,
+            work,
+        )?;
         originals::require_leaf_inputs(rows, scope_row, inputs.all(), applications, work)?;
         ports::implementation_application(
             port,

@@ -877,13 +877,7 @@ impl Checker<'_> {
         }
         Ok(false)
     }
-    fn definition(&mut self, id: DefId, finish: bool) -> Result<(), Error> {
-        if self.activate_iteration_definition(id)? {
-            return Ok(());
-        }
-        if self.states[id.0 as usize] == State::Complete {
-            return Ok(());
-        }
+    fn activate_comparison_owner(&mut self, id: DefId) -> Result<bool, Error> {
         if let Some(declaration) = self
             .report
             .resolution
@@ -901,6 +895,18 @@ impl Checker<'_> {
             if let Some(contracts) = &mut self.facts.generics.traits {
                 contracts.complete_results();
             }
+            return Ok(true);
+        }
+        Ok(false)
+    }
+    fn definition(&mut self, id: DefId, finish: bool) -> Result<(), Error> {
+        if self.activate_iteration_definition(id)? {
+            return Ok(());
+        }
+        if self.states[id.0 as usize] == State::Complete {
+            return Ok(());
+        }
+        if self.activate_comparison_owner(id)? {
             return Ok(());
         }
         if let Some(selected) = self.selected.as_deref_mut()

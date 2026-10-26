@@ -24,10 +24,7 @@ impl HeaderDraft {
             reason = "the genuine private consumer awaits demanded original/instance execution and encoded Provided admission"
         )
     )]
-    pub(super) fn analyze(
-        mut self: Box<Self>,
-        work: &mut ReservationWork,
-    ) -> Result<Box<Self>, Error> {
+    pub(super) fn analyze(mut self, work: &mut ReservationWork) -> Result<Box<Self>, Error> {
         self.session.authority.synchronize(work)?;
         self.session.authority.require(work)?;
         work.charge(1)?;
@@ -36,7 +33,7 @@ impl HeaderDraft {
             session,
             selected,
             completion,
-        } = *self;
+        } = self;
         let ProofSession { authority } = *session;
         let ConsumerAuthority {
             facts,
