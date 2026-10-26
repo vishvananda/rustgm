@@ -85,12 +85,17 @@ binary gives the after values:
 
 | Actual owner | Before | After |
 | --- | ---: | ---: |
-| AST Kind / Node |28 /36 |28 /36 |
+| AST Kind / Node / Syntax |28 /36 /312 |28 /36 /312 |
 | typed Kind / Store |24 /472 |24 /472 |
 | inference Constructor / Context |16 /400 |16 /400 |
 | Unit / Package / Report |688 /256 /3040 |688 /256 /3040 |
 | Body |448 |448 |
 | cold Reservations |872 |888 |
+
+One no-build existing ordinary/restriction group additionally passed in0.01s,
+observing Syntax312/Configured392 and retaining the0/8/64/128 no-clause
+work/zero-permission-query controls. Its exact qualified binary and all frozen
+fixture hashes are unchanged; raw evidence is `native/ordinary{{.stdout,.stderr}}`.
 
 The sixth diagnostic slot reused existing padding, so the actual cold growth is
 16 bytes. There are no new hot fields, canonical default entries, per-node/body
