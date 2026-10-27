@@ -1,0 +1,146 @@
+{
+  "state": "source-only hypotheses frozen before independent generation; no candidate qualification",
+  "editions": [
+    2021,
+    2024
+  ],
+  "metadata": [
+    {
+      "file": "primitive-const.rs",
+      "status": 0,
+      "predicted_error_codes": []
+    },
+    {
+      "file": "missing-shift-impl.rs",
+      "status": 1,
+      "predicted_error_codes": [
+        "E0369"
+      ]
+    },
+    {
+      "file": "missing-or-impl.rs",
+      "status": 1,
+      "predicted_error_codes": [
+        "E0369"
+      ]
+    },
+    {
+      "file": "explicit-nonconst.rs",
+      "status": 1,
+      "predicted_error_codes": [
+        "E0277"
+      ]
+    },
+    {
+      "file": "nonconst-overload.rs",
+      "status": 1,
+      "predicted_error_codes": [
+        "E0277"
+      ]
+    },
+    {
+      "file": "wrong-output.rs",
+      "status": 1,
+      "predicted_error_codes": [
+        "E0308"
+      ]
+    },
+    {
+      "file": "const-overflow.rs",
+      "status": 1,
+      "predicted_error_codes": [
+        "E0080"
+      ]
+    },
+    {
+      "file": "const-negative.rs",
+      "status": 1,
+      "predicted_error_codes": [
+        "E0080"
+      ]
+    },
+    {
+      "file": "runtime-overloads.rs",
+      "status": 0,
+      "predicted_error_codes": []
+    },
+    {
+      "file": "primitive-custom-body.rs",
+      "status": 0,
+      "predicted_error_codes": []
+    },
+    {
+      "file": "wrong-rhs.rs",
+      "status": 1,
+      "predicted_error_codes": [
+        "E0277"
+      ]
+    },
+    {
+      "file": "missing-shift-trait.rs",
+      "status": 1,
+      "predicted_error_codes": [
+        "E0369"
+      ]
+    }
+  ],
+  "native": [
+    {
+      "file": "runtime-overloads.rs",
+      "kind": "no_core object plus C observer",
+      "observer": "pa31/tests/spec/source-shift-or/observer.c",
+      "stdout": "7 12 13\n",
+      "overflow_checks": false
+    },
+    {
+      "file": "rhs-inference.rs",
+      "kind": "std independent inference observer",
+      "stdout": "4 7\n"
+    },
+    {
+      "file": "checked-runtime.rs",
+      "kind": "std independent checked-shift observer; candidate source panic is a separate owning prerequisite",
+      "stdout": "true\n",
+      "overflow_checks": true
+    },
+    {
+      "file": "primitive-custom-body.rs",
+      "kind": "no_core primitive syntax vs actual custom source method execution",
+      "observer": "pa31/tests/spec/source-shift-or/custom-observer.c",
+      "stdout": "7 99 42\n",
+      "overflow_checks": false
+    }
+  ],
+  "source_sha256": {
+    "missing-shift-impl.rs": "f20c50b0d7f32edb19c8c20570dcb478562e3d93a8981df45a00427f279983ab",
+    "missing-or-impl.rs": "2ceb66787fcea6cfd1714497b02af96a2a05f93cc061306d844a1689319321c1",
+    "observer.c": "535dffe19feb9373e472a242fa0ad80bf07b635ff19dc567aeaf701dea443d49",
+    "rhs-inference.rs": "46c5c1034a5060e7827ab4be92e62cc16bd96f4acd50218186f38d5f1acc9015",
+    "missing-shift-trait.rs": "ceb44a66084ad91c74338593774bfac2d6ef04c49003557ffdb60fb67603ccc0",
+    "primitive-custom-body.rs": "40e434c52985cf821ed4e57af8dc8040ebe1345c491a44562c8a36e6d7add8f7",
+    "primitive-const.rs": "6f8c59ff36e8a53aa5b44f7b801a9b81dcff0e9194ad098a335cb0cc2d65bbae",
+    "runtime-overloads.rs": "a8d0080b8fa0e40967e0160377c3a11f829d24f178d00bf278405e0b2cfb818b",
+    "wrong-output.rs": "066ec674b9cab7a018764c8bc739ba3e107adb728b1f80291df6cf1b46e60edb",
+    "checked-runtime.rs": "8aee93520fbbd0348c85a877bb29bf2c2a746e448e3c9e7574fbbff0b5b21535",
+    "nonconst-overload.rs": "0c1eb7cf7e9dac856f781818ffb1ee615b15e33c77bc110cd8ebebb8b8566312",
+    "wrong-rhs.rs": "db6d6ecdecff514493dd5fc069168432c6f4bf4937811868ce04353d206720c3",
+    "explicit-nonconst.rs": "07fcb139a289707c8eccd1100356b336a82443527530b39eb948319d38a3c110",
+    "custom-observer.c": "4b5fd8b7c6dbd9e024f6c84c0604d526b7dfa4de73430220f715a8a5137cda03",
+    "const-negative.rs": "1eb0ba224ee7d67d462c8e1e139d3c55fb0ba2016c8408d40c297b107301067b",
+    "const-overflow.rs": "a2c55f74ba85df477e790d736c800c2af292c1b3338f6eb8d67d51f85583bbf8"
+  },
+  "primary": {
+    "path": "library/core/src/ops/bit.rs",
+    "sha256": "4f0dab1c9c85c900d231e29d3f0c5e55c7b1fe87a762e48c4988d64bd1955d57",
+    "typed_binary_seam": "compiler/rustc_hir_typeck/src/op.rs99-193,1310-1350",
+    "consumer": "library/core/src/fmt/mod.rs815-821"
+  },
+  "notes": [
+    "The original trait blocks retain all pinned attributes and methods; authored impl reducers are separate from original source.",
+    "Primitive const syntax and actual nonconst explicit/overloaded calls are distinct.",
+    "Both source traits and actual impl proof are required even when scalar IR is emitted.",
+    "All raw mismatches including guessed error codes/warnings must be retained; no source weakening.",
+    "No observation/build launched until qualified645 root integration.",
+    "Custom primitive bodies deliberately return99/42; builtin syntax predicts7 while actual explicit calls predict99/42. Both retain real source traits/impls; no execution observation yet."
+  ]
+}
