@@ -198,9 +198,10 @@ belong to their later owning assignments.
 
 ## Validation
 
-The suite declares 449 fixtures: 280 accepted and 169 rejected. Of the accepted
-programs, 277 execute through both pinned rustc and the qualified CPPGM backend;
-three intentionally diverge and must only undergo code generation. Growing-instance
+The suite declares 498 fixtures: 312 accepted and 186 rejected. The manifest
+selects 305 accepted programs for execution through both pinned rustc and the
+qualified CPPGM backend; three intentionally diverge and must only undergo code
+generation. Four accepted pattern-inspection cases do not execute. Growing-instance
 rejections use rustc object generation: metadata-only success cannot qualify them.
 No compilation-only result counts as a runtime comparison. Native panic cases
 retain the established qualified abort contract.

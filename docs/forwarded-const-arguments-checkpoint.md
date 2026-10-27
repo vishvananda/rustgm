@@ -39,9 +39,24 @@ the captured literal is parsed once, and syntax-node counts are 21/70/238/910.
 The new classifier uses bounded AST access and adds no cache or owner. These
 structural observations do not claim a wall-time performance result.
 
-All nineteen PA18 references remain pending root-owned scoped generation.
-Positive manifest native outcomes are declared expectations; this checkpoint
-does not claim native execution or a new original-core compilation result.
+The integrator authenticated all source fingerprints and retained worker raw
+evidence before the normal merge. Its production gate passed39 frontend/CLI
+controls, full PA5/7/8 text, strict Clippy, formatting and architecture in93.63s
+(`obj/qualification/fast/1793096173262412371/receipt.json`). A separately frozen
+native plan then checked all19 outcomes and executed all11 positive programs
+with both pinned Rust and the locked CPPGM backend:22 executions and74 command
+observations passed in50.48s. The scoped course writer generated exactly the19
+new reference triplets and its provenance batch. Full PA18 text then passed
+498/498 in3.04s; harness/upstream checks passed in13.77s. These observations are
+under `obj/parallel/forwarded-const-integration-v1/`.
+
+Immutable CLI `fac1e54d` also clears the original swap_prefix parser rejection.
+The unchanged-core probe verifies all722 source pins, opens371 files and stops
+after7.71s on a captured cfg string in sync/atomic.rs311 (LIB-044). There is no
+complete core semantic/export result or crate artifact. The manifest's305 native
+execution selections describe the full release inventory; this checkpoint ran
+the11 new positive programs, not that entire native inventory.
+
 Opaque expression paths, gated const blocks and broader expression promotion
 remain separate grammar/representation work. Ordinary raw-path resolution is
 unchanged. The PA31 reducer proves expansion/parser acceptance, not the full

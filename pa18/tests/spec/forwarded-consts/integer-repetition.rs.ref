@@ -1,0 +1,72 @@
+function @rg.17() -> void {
+  block ^b0:
+    %t0 = call i64 @rg.15.i3()
+    %t1 = binary add i64 0, %t0
+    %t2 = cmp ult i64 %t1, 0
+    branch %t2, ^b1, ^b2
+  block ^b2:
+    %t3 = call i64 @rg.15.i4()
+    %t4 = binary add i64 %t1, %t3
+    %t5 = cmp ult i64 %t4, %t1
+    branch %t5, ^b1, ^b3
+  block ^b3:
+    %t6 = call i64 @rg.15.i5()
+    %t7 = binary add i64 %t4, %t6
+    %t8 = cmp ult i64 %t7, %t4
+    branch %t8, ^b1, ^b4
+  block ^b4:
+    %t9 = cmp eq i64 %t7, 7
+    %t10 = convert trunc i1 i64 %t9
+    call void @rg.13(%t10)
+    return void
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @rg.15.i3() -> i64 {
+  block ^b0:
+    return i64 4
+}
+function @rg.15.i4() -> i64 {
+  block ^b0:
+    return i64 2
+}
+function @rg.15.i5() -> i64 {
+  block ^b0:
+    return i64 1
+}
+function @rg.13(%p0 : i1) -> void {
+  slot $s0 : i1
+  block ^b0:
+    store i1 %p0, $s0
+    %t0 = load i1 $s0
+    %t1 = unary not i1 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    jump ^b3
+  block ^b1:
+    %t2 = call u8 @rg.14(0)
+    jump ^b3
+  block ^b3:
+    return void
+}
+declare function @abort() -> void [return=noreturn]
+function @rg.14(%p0 : u8) -> u8 {
+  slot $s0 : u8
+  block ^b0:
+    store u8 %p0, $s0
+    %t0 = load u8 $s0
+    %t1 = cmp eq u8 %t0, 0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    %t2 = binary udiv u8 1, %t0
+    return u8 %t2
+  block ^b1:
+    call void @abort()
+    unreachable
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.17()
+    return i64 0
+}

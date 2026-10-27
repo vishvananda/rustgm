@@ -1,0 +1,2 @@
+ERROR: file 0: 103: expected path segment
+  in macro pick at file 0: 97; defined at file 0: 36

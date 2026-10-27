@@ -15,9 +15,9 @@ for scheduling and imported-demand policy. Historical checkpoint documents retai
 their evidence, not authority to replace this queue with old remaining tasks.
 
 The current original-core observer passes typed concat, numeric metavariable
-expressions and the corrected generic attribute payer. It now reaches a forwarded
-literal const argument in ptr/mod.rs1491 (LIB-043). All722 pinned inputs verify;
-371 files are opened in7.48s and no artifact exists.
+expressions, the corrected generic attribute payer and typed forwarded const
+arguments. It now reaches a captured cfg string in sync/atomic.rs311 (LIB-044).
+All722 pinned inputs verify;371 files are opened in7.71s and no artifact exists.
 The live tracker owns current lane priorities and this result; the checkpoint
 paragraphs below retain earlier consumer context. Actual DispatchFromDyn is the
 next shared prerequisite for the unchanged Formatter receiver, ahead of shift/BitOr.
