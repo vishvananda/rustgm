@@ -6,7 +6,8 @@ The wrapper uses core::ptr::metadata's original body. Language hooks and ordinar
 source declarations provide sizing, copying, dropping and coercion prerequisites;
 no library algorithm is implemented by a bootstrap factory.
 
-The candidate is UNQUALIFIED until its focused compiler controls pass. Actual
+Six private source/CTFE/LowIR controls now pass through retained five and one
+affected successor. Production/CLI and candidate native execution remain pending. Actual
 completed Call/body/Instance proof supplies P::Metadata=M. Extraction consumes
 that solved result and the actual pointer ABI layout; it reads the evaluated
 pointer once even for unit and never reads its pointee. No additional tail walk,
@@ -40,6 +41,6 @@ The actual dynamic candidate opponent currently stops at its genuine
 `dispatch_from_dyn` language declaration, before runtime extraction. Its exact
 source binding diagnostic/span is retained. DispatchFromDyn role/receiver support
 and standalone symbolic vtable storage remain required; the later dynamic kernel
-fence has not been reached or qualified by that source. Five other focused
-controls already pass on unchanged production, including real argument-fault
+fence has not been reached or qualified by that source. The five retained focused
+controls pass on unchanged production, including real argument-fault
 location, foreign/unit/string/slice/tail const evaluation and real LowIR calls.

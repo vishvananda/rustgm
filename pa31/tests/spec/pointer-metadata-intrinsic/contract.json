@@ -1,5 +1,5 @@
 {
-  "state": "unqualified source implementation, independent exact sources observed",
+  "state": "six private source/CTFE/LowIR controls qualified; production CLI and candidate native pending",
   "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
   "source_intrinsic": "ptr_metadata",
   "declaration": "safe const Rust P:Pointee<Metadata=M>+PointeeSized,M; one *const P; exact M result",
@@ -110,5 +110,12 @@
     "observer_sha256": "5743df4ecd0c7319f1483eb3cf59a12ac75d20d671431f92c5c0ef9b7045fc10",
     "stdout": "7 6 3 3 7 91 1\n",
     "binding_sha256": "2f73e4667e471fac2ff3e7149f2934714837e8b791c94faaab1f5596650999d4"
+  },
+  "candidate_evidence": {
+    "source": "9728bad8b",
+    "retained_five_receipt_sha256": "8bc7d5dd95a5f6ad5ad357b899b65f866c3ab021a60acd5dd4683cfd1ddd24b1",
+    "affected_one_receipt_sha256": "aad8d02d7776c37da160ba96c2a88978d0e456a6945123abc45d69b25aeef2d0",
+    "handoff_sha256": "c41d24335a5211c2eacb93155cf77058b0e5b2574868f6bddc9d63b7e64b78a6",
+    "dynamic_current_boundary": "file 0: 2787: unsupported source language item (dispatch_from_dyn); standalone extraction remains required"
   }
 }
