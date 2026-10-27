@@ -14,6 +14,43 @@ impl Builder<'_> {
         node: NodeId,
         value: Option<NodeId>,
     ) -> Result<ValueId, Error> {
+        if let Kind::LibraryValue { kind, .. } = self.kind(node) {
+            use crate::support::library_types::LibraryValue;
+            match kind {
+                LibraryValue::FormatOutput { .. } | LibraryValue::FormatSuperLet { .. } => {
+                    self.report
+                        .formatting_value(crate::resolve::unit::NodeKey {
+                            node,
+                            ..self.source
+                        })?;
+                    return self
+                        .value(value.ok_or_else(|| {
+                            self.error(node, "formatting lost its actual child")
+                        })?);
+                }
+                LibraryValue::FormatConstructor { .. } => {
+                    self.report
+                        .formatting_value(crate::resolve::unit::NodeKey {
+                            node,
+                            ..self.source
+                        })?;
+                    let Some(Type::FunctionItem { item, .. }) =
+                        self.facts.types.kind(self.ty(node)?)
+                    else {
+                        return Err(self.error(node, "formatting lost its actual function item"));
+                    };
+                    return self.evaluate(
+                        node,
+                        self.ty(node)?,
+                        Rvalue::Function(crate::resolve::model::DefId(item.0)),
+                    );
+                }
+                LibraryValue::FormatInput { .. } => {
+                    return Err(self.error(node, "uninstalled formatting input draft"));
+                }
+                LibraryValue::EnvironmentOption | LibraryValue::FormatLiteral { .. } => {}
+            }
+        }
         if matches!(
             self.kind(node),
             Kind::LibraryValue {

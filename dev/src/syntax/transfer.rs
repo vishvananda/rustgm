@@ -345,7 +345,13 @@ impl Bases {
                 self.optional(output);
                 self.optional(name);
             }
-            Kind::LibraryValue { value, .. } => self.optional(value),
+            Kind::LibraryValue { kind, value } => {
+                self.optional(value);
+                if let crate::support::library_types::LibraryValue::FormatOutput { sites } = kind {
+                    sites.start += self.edges;
+                    sites.end += self.edges;
+                }
+            }
             Kind::Name(name, _) => *name = span(*name)?,
             Kind::GenericMethodCall {
                 receiver,

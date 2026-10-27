@@ -324,9 +324,19 @@ impl<S: Sources> Engine<'_, S> {
             self.definitions[definition].body,
             Body::Builtin(Builtin::Asm)
         );
+        let formatting_inputs = matches!(self.definitions[definition].body,
+            Body::Builtin(role) if role.formatting())
+            && matches!(unit.configured.ast.node(root).kind,
+                crate::syntax::ast::Kind::Expansion { children, tail: None }
+                if children.end.saturating_sub(children.start) > 1);
         let (generated, include) = if assembly {
             let generated = self.finish_assembly(definition, file, visit.node, root, context)?;
             (generated, visit.include)
+        } else if formatting_inputs {
+            (
+                self.finish_format_inputs(index, definition, root, context)?,
+                visit.include,
+            )
         } else if matches!(
             self.definitions[definition].body,
             Body::Builtin(builtin::Builtin::Include)
@@ -355,7 +365,7 @@ impl<S: Sources> Engine<'_, S> {
             )
         };
         self.invocations[context.0 as usize - 1].generated = generated;
-        if !assembly {
+        if !assembly && !formatting_inputs {
             self.loader.package.units[file.0 as usize].retire_arguments(root);
         }
         self.calls[index].eager = None;

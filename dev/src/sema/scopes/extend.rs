@@ -98,6 +98,29 @@ impl Walker<'_> {
             return Ok(());
         }
         match self.kind(node) {
+            Syntax::LibraryValue {
+                kind: crate::support::library_types::LibraryValue::FormatOutput { .. },
+                ..
+            } => {
+                self.extend_format_output(node, lifetime)?;
+            }
+            Syntax::LibraryValue {
+                kind: crate::support::library_types::LibraryValue::FormatSuperLet { .. },
+                value: Some(value),
+            } => {
+                self.report.formatting_value(super::NodeKey {
+                    node,
+                    ..self.source
+                })?;
+                let Syntax::Let {
+                    value: Some(value), ..
+                } = self.kind(value)
+                else {
+                    return Err(self.error(node, "formatting lost its actual binding initializer"));
+                };
+                self.push(Work::ExtendPlace(node, lifetime))?;
+                self.push(Work::ExtendExpression(value, lifetime))?;
+            }
             Syntax::Unary {
                 op: Unary::Borrow | Unary::BorrowMut | Unary::RawConst | Unary::RawMut,
                 operand,

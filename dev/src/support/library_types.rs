@@ -6,6 +6,49 @@ pub enum LibraryValue {
     FormatLiteral {
         constructor: crate::support::names::NameId,
     },
+    /// The ordered special sites belong to this exact formatting invocation.
+    FormatOutput {
+        sites: FormatSites,
+    },
+    FormatConstructor {
+        slot: u32,
+        constructor: FormatConstructor,
+        name: crate::support::names::NameId,
+    },
+    FormatSuperLet {
+        slot: u32,
+    },
+    /// Installation replaces this draft-only occurrence with its parsed input.
+    FormatInput {
+        slot: u32,
+    },
+}
+/// Coordinates in the producing syntax's shared edge arena; not a permission.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct FormatSites {
+    pub start: u32,
+    pub end: u32,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FormatConstructor {
+    Arguments,
+    Debug,
+}
+impl FormatConstructor {
+    #[must_use]
+    pub const fn name(self) -> &'static str {
+        match self {
+            Self::Arguments => "new",
+            Self::Debug => "new_debug",
+        }
+    }
+    #[must_use]
+    pub const fn owner(self) -> crate::support::bindings::LangItem {
+        match self {
+            Self::Arguments => crate::support::bindings::LangItem::FormatArguments,
+            Self::Debug => crate::support::bindings::LangItem::FormatArgument,
+        }
+    }
 }
 impl LibraryValue {
     #[must_use]
@@ -13,6 +56,10 @@ impl LibraryValue {
         match self {
             Self::EnvironmentOption => "option-environment",
             Self::FormatLiteral { .. } => "format-literal",
+            Self::FormatOutput { .. } => "format-output",
+            Self::FormatConstructor { .. } => "format-constructor",
+            Self::FormatSuperLet { .. } => "format-super-let",
+            Self::FormatInput { .. } => "format-input-draft",
         }
     }
 }

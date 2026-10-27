@@ -1,0 +1,68 @@
+{
+  "tool": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+  "env": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "options": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Coverflow-checks=yes",
+    "--cap-lints=allow"
+  ],
+  "editions": [
+    2021,
+    2024
+  ],
+  "cases": [
+    {
+      "path": "pa31/tests/spec/source-format-macros/arguments/constructor-return.rs",
+      "sha256": "6ee22653eade15a70f93ad64d5e95edc2c814b4dcf2421926ab79dbf7e2a0118",
+      "metadata": 1,
+      "options": [],
+      "expected_diagnostic": "E0515"
+    },
+    {
+      "path": "pa31/tests/spec/source-format-macros/arguments/constructor-block.rs",
+      "sha256": "19cb6eebb3163327d76932cf52230b6bba06254c3ebdd4264f8941e52c829313",
+      "metadata": 1,
+      "options": [],
+      "expected_diagnostic": "E0597"
+    },
+    {
+      "path": "pa31/tests/spec/source-format-macros/arguments/constructor-unsafe.rs",
+      "sha256": "cc916a36aa8fc96d5ba1d02e28b05e1fc9500c9d2f134f0bd478b5c9e51ac926",
+      "metadata": 1,
+      "options": [],
+      "expected_diagnostic": "E0133"
+    },
+    {
+      "path": "pa31/tests/spec/source-format-macros/arguments/constructor-explicit.rs",
+      "sha256": "cbd6ad6387d5d362e76d448263a919f8effd6c33381b3b4b6909552ce63f491f",
+      "metadata": 0,
+      "options": [],
+      "expected_diagnostic": ""
+    },
+    {
+      "path": "pa31/tests/spec/source-format-macros/arguments/constructor-const.rs",
+      "sha256": "8aed51170b8ab6f09d07edc1e996f4647aa42c7695c8bcd1604b7dc796016b97",
+      "metadata": 1,
+      "options": [],
+      "expected_diagnostic": "E0015"
+    },
+    {
+      "path": "pa31/tests/spec/source-format-macros/arguments/constructor-binder.rs",
+      "sha256": "0294f437cf792e5db913ec14b6903e096dd3170595e124c9aeb0546bc1dafae2",
+      "metadata": 1,
+      "options": [],
+      "expected_diagnostic": "lifetime may not live long enough"
+    }
+  ],
+  "scope": "New exact real-provider temporary/lifetime/binder/unsafe/const controls; no old std observation repeated",
+  "unchanged_prefix": {
+    "path": "pa31/tests/spec/source-format-macros/arguments/constructor-real.rs",
+    "sha256": "528e5f71f3358a4b9864e12f2d83045172f5314a8c01ff646b11e7c207a38417",
+    "bytes": 18816
+  },
+  "tool_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+}

@@ -27,6 +27,27 @@ pub(super) struct Storage {
     slots: Slices<Slot>,
 }
 impl Context {
+    /// Inspect one nominal argument slot without opening its binder or copying it.
+    pub(crate) fn has_single_lifetime_argument(
+        &mut self,
+        store: &Store,
+        constructor: Constructor,
+    ) -> Result<bool, Error> {
+        self.account_work(1)?;
+        match constructor {
+            Constructor::Adt(_, arguments) => {
+                let mut arguments = store.arguments(arguments).ok_or(Error::InvalidIdentity)?;
+                Ok(
+                    arguments.len() == 1
+                        && matches!(arguments.next(), Some(Canonical::Lifetime(_))),
+                )
+            }
+            Constructor::AdtArgs(_, arguments) => {
+                Ok(matches!(self.slots(arguments)?, [Slot::Lifetime(_)]))
+            }
+            _ => Ok(false),
+        }
+    }
     pub(super) fn argument_regions(
         &mut self,
         id: ArgumentsId,

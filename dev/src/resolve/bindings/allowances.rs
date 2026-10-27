@@ -9,6 +9,7 @@ pub enum KnownFeature {
     CoreIntrinsics,
     CfgUbChecks,
     CfgTargetHasAtomic,
+    CfgSanitize,
 }
 impl KnownFeature {
     #[must_use]
@@ -19,6 +20,7 @@ impl KnownFeature {
             Self::CoreIntrinsics => "core_intrinsics",
             Self::CfgUbChecks => "cfg_ub_checks",
             Self::CfgTargetHasAtomic => "cfg_target_has_atomic",
+            Self::CfgSanitize => "cfg_sanitize",
         }))
     }
     pub(super) const fn mask(self) -> u8 {

@@ -94,6 +94,7 @@ fn feature(gate: CfgGate) -> KnownFeature {
     match gate {
         CfgGate::UbChecks => KnownFeature::CfgUbChecks,
         CfgGate::TargetHasAtomic => KnownFeature::CfgTargetHasAtomic,
+        CfgGate::Sanitize => KnownFeature::CfgSanitize,
     }
 }
 fn missing(site: Location, gate: CfgGate) -> Error {
@@ -103,6 +104,9 @@ fn missing(site: Location, gate: CfgGate) -> Error {
         match gate {
             CfgGate::UbChecks => {
                 "cfg(ub_checks) requires cfg_ub_checks or its actual macro allowance"
+            }
+            CfgGate::Sanitize => {
+                "cfg(sanitize) requires cfg_sanitize or its actual macro allowance"
             }
             CfgGate::TargetHasAtomic => {
                 "cfg(target_has_atomic_load_store) requires cfg_target_has_atomic or its actual macro allowance"

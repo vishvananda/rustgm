@@ -1,0 +1,31 @@
+{
+  "scope": "Actual root alias owns no scope: unstable parent inherited; stable parent requires real child annotation",
+  "primary": "compiler/rustc_passes/src/stability.rs158-185",
+  "tool": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+  "tool_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "env": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "options": [
+    "--crate-type=lib",
+    "--cap-lints=allow"
+  ],
+  "editions": [
+    2021,
+    2024
+  ],
+  "cases": [
+    {
+      "path": "pa31/tests/spec/source-format-macros/arguments/stability-alias/unstable.rs",
+      "sha256": "770c58998d30de5024016b1623c78bb1764ae530a51de49ea9fb8b3eef9fde7b",
+      "metadata": 0,
+      "options": []
+    },
+    {
+      "path": "pa31/tests/spec/source-format-macros/arguments/stability-alias/stable.rs",
+      "sha256": "1cde03e4354b3aba985442c732048f00507ce9cac1966d01bf5eda3ac61a46fc",
+      "metadata": 1,
+      "options": []
+    }
+  ]
+}

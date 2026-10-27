@@ -158,3 +158,81 @@ Use through identical candidates, visibility, conditions and polling. Its
 consumer uses the actual formatting result key/caller scope, never an invented
 prefix syntax node. B's ImplementationValidated dependency is a separate enum
 variant which integration must preserve alongside Inherent.
+
+
+## Source argument construction checkpoint
+
+The default-Debug nonempty tier now executes the real pinned
+`Arguments::new`, `Argument::new_debug` and `argument_new!` bodies. It encodes
+`{:?}` and positional Debug placeholders, escaped braces and UTF-8 literal
+pieces, evaluates original parsed operands once in source order, and borrows
+those values through the actual source constructors. Display/numeric formats,
+named/captured formatting arguments and format options remain required later
+work. The independently qualified constructor provider explicitly reduces its
+Write/Debug dependency declarations; it does not replace the retained complete
+`Write::write_fmt -> SpecWriteFmt -> fmt::write` source graph.
+
+The generated wrapper is an authenticated expansion sequence with two super-let
+bindings. The same scope owner supplies their actual default-statement or outer
+let endpoints. An ordinary generated block incorrectly ended those locals at
+its closing brace; that failed loan observation is retained. The narrow unsafe
+block encloses only the actual unsafe `Arguments::new` call. Adopted user inputs
+remain outside it and keep their original nodes, spans and contexts. No generic
+storage cleanup, borrow check or source-body requirement is suppressed.
+
+Function-item formation checks the actual public Rust ABI, arity and returned
+one-lifetime nominal. It does not export the function's bound output region into
+the caller. The actual parent Call opens that binder and retains ordinary input,
+result, trait, const, instance, ownership and body checks. The failed predecessor
+that equated the unopened result is retained.
+
+Two prerequisites use their existing owners. Genuine crate-root
+`extern crate self as NAME` declarations populate the same extern prelude;
+lexical bindings, privacy and disabled-prelude rules retain authority. Such an
+alias borrows its lexical stability frame and cannot overwrite that frame as an
+owned declaration scope. `cfg(sanitize = ...)` uses the existing cfg-use and
+feature owner (Feature47 and the sixth known allowance bit). It evaluates the
+configured predicate data, with actual feature/provenance validation; this
+provides no sanitizer instrumentation option or permission.
+
+The frozen [constructor provider](../pa31/tests/spec/source-format-macros/arguments/constructor-real-contract.json)
+and [statement observer](../pa31/tests/spec/source-format-macros/arguments/constructor-statement-contract.json)
+preserve the original constructor bodies. Independent Rust and locked CPPGM
+native execution both produce:
+
+- Stored arguments: `e1;e2;t1;r7,9;d9;d7;7 9`.
+- Statement arguments: `e1;e2;t1;d9;d7;r7,9;7 9`.
+
+These traces observe single evaluation, template bytes, real argument storage
+and reverse destruction at distinct endpoints. Escaping return/block borrows,
+borrowed input returned as static, raw unsafe input and const misuse have actual
+opposing controls. The original const case first reaches API-policy denial; a
+separate explicit unstable const-policy/no-Drop case checks semantic non-const
+call eligibility. Earlier invalid FnPtr Copy/Clone setup, missing dyn metadata,
+source-assembly, lookup, feature, lifetime and loan failures remain evidence.
+Existing authenticated FnDef/FnPtr marker proof supplies Copy/Clone marker
+requirements; explicit Clone method dispatch and the full FnPtr family are
+separate obligations.
+
+Actual `LibraryValue` width is 8 -> 12 bytes; Syntax Kind28, Node36, Body456,
+Rvalue20, Resolution2056 and Package256 retain their measured containing widths
+at this checkpoint. The existing cold formatting plan1064, path query1032,
+CallTypes704 and body work40 remain unchanged. No second scope/permission/proof
+owner or retained call/body field was added. Current producer N8/32/128 work is
+1471/4925/18777 and retained charge is 28092/106148/417524 bytes; exact root
+authentication costs22 work and no new allocation at every width. The prior
+1459/4913/18765 work observations precede the added cfg allowance classification
+and remain historical. No wall-time speedup or no-op code-erasure claim follows.
+
+The real CLI semantic view and eight ordinary alias naming outcomes also pass
+on identical production/private source. The full generic-body loan inspector
+still rejects the retained original `Clone::clone_from` at its existing
+parameterized ownership/destruction guard. This is separate from the proved
+selected constructor/callee/drop instances. Unused generic-body inspection is
+not reported as a whole-provider borrow proof; the native receipt has an
+immutable scope clarification preserving that failed inspection.
+
+Full Alignment formatting, complete Formatter/Arguments helper closure,
+PanicInfo/handler execution and a false assertion reaching actual Abort remain
+pending. The constructor checkpoint does not prove whole original core or an
+artifact publication profile.

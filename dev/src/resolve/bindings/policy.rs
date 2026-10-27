@@ -61,6 +61,7 @@ pub(in crate::resolve) enum Feature {
     CpuAmx = 44,
     CpuX87 = 45,
     CpuXop = 46,
+    CfgSanitize = 47,
 }
 
 impl Feature {
@@ -110,6 +111,7 @@ impl Request {
             "allow_internal_unsafe" => Self::Capability(Feature::InternalUnsafeLint),
             "cfg_ub_checks" => Self::Capability(Feature::CfgUbChecks),
             "cfg_target_has_atomic" => Self::Capability(Feature::CfgTargetHasAtomic),
+            "cfg_sanitize" => Self::Capability(Feature::CfgSanitize),
             "f16" => Self::Capability(Feature::F16),
             "f128" => Self::Capability(Feature::F128),
             "impl_restriction" => Self::Capability(Feature::ImplRestriction),
@@ -253,6 +255,7 @@ pub(in crate::resolve) fn prepare_with_admission(
                 || features.has(Feature::ReprSimd)
                 || features.has(Feature::SimdFfi)
                 || features.has(Feature::CfgTargetHasAtomic)
+                || features.has(Feature::CfgSanitize)
                 || features.has(Feature::ImplRestriction)
                 || features.has(Feature::MinSpecialization)
                 || features.has(Feature::Specialization)

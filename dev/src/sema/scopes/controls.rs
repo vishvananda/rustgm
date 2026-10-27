@@ -36,7 +36,7 @@ impl Walker<'_> {
                 .ok_or_else(|| self.error(node, "missing temporary block delimiter"))?;
         }
         let edition = crate::resolve::unit::editions::introducer(self.source.file, span, |file| {
-            self.package.units.get(file.0 as usize)
+            self.report.package.units.get(file.0 as usize)
         })
         .map_err(|error| self.error(node, error.message))?;
         Ok(edition == crate::support::edition::Edition::Rust2024)

@@ -1,0 +1,197 @@
+{
+  "status": "frozen hypotheses before observation",
+  "scope": "std-backed semantic observations only; no reduced no_core provider or RustGM support claim",
+  "source_head": "d45dc83cefbaba11d5100181e415ee695b0cd959",
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "version": "rustc 1.98.0 (88d9e12ae 2026-08-18)\nbinary: rustc\ncommit-hash: 88d9e12ae178fab0fb5cc050a94da85685d449ea\ncommit-date: 2026-08-18\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.0\nLLVM version: 22.1.8\n"
+  },
+  "options": [
+    "--target=x86_64-unknown-linux-gnu",
+    "--crate-type=bin",
+    "-Cpanic=abort",
+    "-Coverflow-checks=yes",
+    "--cap-lints=allow"
+  ],
+  "cases": [
+    {
+      "name": "evaluation-order",
+      "path": "pa31/tests/spec/source-format-macros/arguments/evaluation-order.rs",
+      "sha256": "dd7e3d1006e8db242b5bc7be872dc8c4cf57f6547bee3e876bf9d52cb85ddac2",
+      "editions": {
+        "2021": {
+          "metadata_status": 0,
+          "native_stdout": "2 1 2|12\n",
+          "codes": []
+        },
+        "2024": {
+          "metadata_status": 0,
+          "native_stdout": "2 1 2|12\n",
+          "codes": []
+        }
+      }
+    },
+    {
+      "name": "statement-temporary",
+      "path": "pa31/tests/spec/source-format-macros/arguments/statement-temporary.rs",
+      "sha256": "2845a5e08acf59af8c71d96c38632b1b1707a45f05b61de1a15173d184cebae2",
+      "editions": {
+        "2021": {
+          "metadata_status": 0,
+          "native_stdout": "fmt:x;drop:x;after\n",
+          "codes": []
+        },
+        "2024": {
+          "metadata_status": 0,
+          "native_stdout": "fmt:x;drop:x;after\n",
+          "codes": []
+        }
+      }
+    },
+    {
+      "name": "stored-temporary",
+      "path": "pa31/tests/spec/source-format-macros/arguments/stored-temporary.rs",
+      "sha256": "13f8cf2eef8330eb6dc0c7c6046788367db95112a56c3177287a90715a242c72",
+      "editions": {
+        "2021": {
+          "metadata_status": 0,
+          "native_stdout": "fmt:x;between;drop:x;after\n",
+          "codes": []
+        },
+        "2024": {
+          "metadata_status": 0,
+          "native_stdout": "fmt:x;between;drop:x;after\n",
+          "codes": []
+        }
+      }
+    },
+    {
+      "name": "escape-return",
+      "path": "pa31/tests/spec/source-format-macros/arguments/escape-return.rs",
+      "sha256": "dec1ea6822f9218fc904275e6d7ead1fbab71e96bdaa6838e902cb450028c401",
+      "editions": {
+        "2021": {
+          "metadata_status": 1,
+          "native_stdout": null,
+          "codes": [
+            "E0515"
+          ]
+        },
+        "2024": {
+          "metadata_status": 1,
+          "native_stdout": null,
+          "codes": [
+            "E0515"
+          ]
+        }
+      }
+    },
+    {
+      "name": "escape-block",
+      "path": "pa31/tests/spec/source-format-macros/arguments/escape-block.rs",
+      "sha256": "0850cd7e517f2e077ca05d60e0372429f48b0658348250ef32f98c6be2d923e8",
+      "editions": {
+        "2021": {
+          "metadata_status": 1,
+          "native_stdout": null,
+          "codes": []
+        },
+        "2024": {
+          "metadata_status": 1,
+          "native_stdout": null,
+          "codes": []
+        }
+      }
+    },
+    {
+      "name": "block-tail-temporary",
+      "path": "pa31/tests/spec/source-format-macros/arguments/block-tail-temporary.rs",
+      "sha256": "2cb8e315eed6cbac64fa60f483fa76e2278c7df8f7ed191961c481cf994f6b02",
+      "editions": {
+        "2021": {
+          "metadata_status": 0,
+          "native_stdout": "\"owned\"\n",
+          "codes": []
+        },
+        "2024": {
+          "metadata_status": 1,
+          "native_stdout": null,
+          "codes": []
+        }
+      }
+    },
+    {
+      "name": "raw-input-unsafe",
+      "path": "pa31/tests/spec/source-format-macros/arguments/raw-input-unsafe.rs",
+      "sha256": "a12475765bc58d32c9c47d522c7ccf226eaadda61b29e05430053883158e3f2d",
+      "editions": {
+        "2021": {
+          "metadata_status": 1,
+          "native_stdout": null,
+          "codes": [
+            "E0133"
+          ]
+        },
+        "2024": {
+          "metadata_status": 1,
+          "native_stdout": null,
+          "codes": [
+            "E0133"
+          ]
+        }
+      }
+    },
+    {
+      "name": "raw-input-explicit",
+      "path": "pa31/tests/spec/source-format-macros/arguments/raw-input-explicit.rs",
+      "sha256": "805cb6f664884bc4ed8beca3267088c2b1fd9a24a3622b553f23f779b7928c36",
+      "editions": {
+        "2021": {
+          "metadata_status": 0,
+          "native_stdout": "7\n",
+          "codes": []
+        },
+        "2024": {
+          "metadata_status": 0,
+          "native_stdout": "7\n",
+          "codes": []
+        }
+      }
+    },
+    {
+      "name": "const-placeholder",
+      "path": "pa31/tests/spec/source-format-macros/arguments/const-placeholder.rs",
+      "sha256": "bc1330eee8694d895363f11fa9eef9f287d18899316e8d368f446cb86a7c0087",
+      "editions": {
+        "2021": {
+          "metadata_status": 1,
+          "native_stdout": null,
+          "codes": [
+            "E0015"
+          ]
+        },
+        "2024": {
+          "metadata_status": 1,
+          "native_stdout": null,
+          "codes": [
+            "E0015"
+          ]
+        }
+      }
+    }
+  ],
+  "limits": {
+    "whole_seconds": 150,
+    "command_seconds": 15
+  },
+  "primary": [
+    "compiler/rustc_ast_lowering/src/format.rs:450-526",
+    "compiler/rustc_hir_analysis/src/check/region.rs:472-507"
+  ],
+  "notes": [
+    "Predicted 2021 acceptance versus 2024 E0716 for an unextended super-let containing a nested block-tail borrow. Preserve any disagreement.",
+    "No earlier literal-only observations are repeated.",
+    "Native checks require successful metadata first; every command and diagnostic is retained."
+  ]
+}

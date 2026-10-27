@@ -141,7 +141,8 @@ fn declaration_scope(
         return None;
     };
     let item = package.unit(key.file).configured.ast.items[index as usize];
-    if definition.kind == DefKind::Constructor
+    // External aliases borrow their lexical scope; they do not own it.
+    if matches!(definition.kind, DefKind::Constructor | DefKind::ExternCrate)
         || (definition.kind == DefKind::SelfType && !matches!(item.kind, ItemKind::Impl { .. }))
     {
         return None;

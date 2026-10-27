@@ -108,6 +108,12 @@ impl Report {
     }
     /// Classification and provenance only; ordinary constructor proof is separate.
     pub(crate) fn formatting_value(&self, key: NodeKey) -> Result<Builtin, Error> {
+        self.formatting_source(key).map(|(role, _)| role)
+    }
+    pub(crate) fn formatting_root(&self, key: NodeKey) -> Result<NodeKey, Error> {
+        self.formatting_source(key).map(|(_, root)| root)
+    }
+    fn formatting_source(&self, key: NodeKey) -> Result<(Builtin, NodeKey), Error> {
         let unit = self
             .package
             .units
@@ -123,8 +129,13 @@ impl Report {
         if !matches!(
             actual.kind,
             Kind::LibraryValue {
-                kind: crate::support::library_types::LibraryValue::FormatLiteral { .. },
+                kind: crate::support::library_types::LibraryValue::FormatLiteral { .. }
+                    | crate::support::library_types::LibraryValue::FormatOutput { .. }
+                    | crate::support::library_types::LibraryValue::FormatSuperLet { .. },
                 value: Some(_)
+            } | Kind::LibraryValue {
+                kind: crate::support::library_types::LibraryValue::FormatConstructor { .. },
+                value: None
             }
         ) || unit.configured.active.get(key.node.get() as usize) != Some(&true)
         {
@@ -173,9 +184,35 @@ impl Report {
             } if children.start == children.end => value,
             _ => return Err(failure("formatting call has no canonical result")),
         };
-        if selected != key.node {
+        if matches!(
+            unit.configured
+                .ast
+                .nodes
+                .get(selected.get() as usize)
+                .map(|node| node.kind),
+            Some(Kind::LibraryValue {
+                kind: crate::support::library_types::LibraryValue::FormatOutput { .. },
+                ..
+            })
+        ) {
+            self.check_format_site(key, selected, invocation.generated)?;
+        } else if selected != key.node
+            || !matches!(
+                actual.kind,
+                Kind::LibraryValue {
+                    kind: crate::support::library_types::LibraryValue::FormatLiteral { .. },
+                    value: Some(_)
+                }
+            )
+        {
             return Err(failure("formatting value is not its actual call result"));
         }
-        Ok(role)
+        Ok((
+            role,
+            NodeKey {
+                node: selected,
+                ..key
+            },
+        ))
     }
 }

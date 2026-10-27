@@ -1,0 +1,62 @@
+{
+  "state": "verified byte-anchor dynamic metadata successor frozen before observation",
+  "scope": "Exact pinned Arguments/Argument storage and selected new/new_debug/argument_new bodies; authored reduced dependencies and user Debug implementation. Not full Formatter/Alignment/PanicInfo or crate parity. Full original Write/SpecWriteFmt/fmt::write graph remains required.",
+  "path": "pa31/tests/spec/source-format-macros/arguments/constructor-real.rs",
+  "sha256": "528e5f71f3358a4b9864e12f2d83045172f5314a8c01ff646b11e7c207a38417",
+  "expected_metadata": {
+    "2021": 0,
+    "2024": 0
+  },
+  "expected_native_stdout": "e1;e2;t1;r7,9;d9;d7;7 9\n",
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "options": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Coverflow-checks=yes",
+    "--cap-lints=allow"
+  ],
+  "consumer": {
+    "path": "pa31/tests/spec/source-format-macros/arguments/constructor-consumer.c",
+    "sha256": "24e375b1df6c1a0501e778e884daf9c8a9978fca5f9407e607add75c88fb19e1"
+  },
+  "host": {
+    "path": "/usr/bin/x86_64-linux-gnu-gcc-15",
+    "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88",
+    "version": "x86_64-linux-gnu-gcc-15 (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+  },
+  "c_options": [
+    "-std=c11",
+    "-Wall",
+    "-Wextra",
+    "-Werror"
+  ],
+  "env": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "predecessor": {
+    "contract": "pa31/tests/spec/source-format-macros/arguments/constructor-dyn-contract.json",
+    "sha256": "18a72c6bcfb83363f5518fe57dc1a4323a98a8cb3f2518f627e399360769401c",
+    "observation": "obj/parallel/pa31/format-arguments-v1/provider-dyn-oracle/observation.json",
+    "observation_sha256": "58e54a95d6c97e308d8c4ac83de357ccfc7032becc14a5222f21fc50f291d6f7",
+    "classification": "Wrong line-range source assembly; both editions parse-reject. No language/runtime claim."
+  },
+  "authored_setup_edits": [
+    "Add extern_types request for actual VTable owner",
+    "Append exact pinned DynMetadata/Foreign VTable declaration pair; no fields invented"
+  ],
+  "unchanged_pinned_chunks_from_predecessor": true,
+  "primary_marker_rule": "compiler/rustc_trait_selection/src/traits/select/candidate_assembly.rs1154 and select/mod.rs2220; callable signature types need not Clone/Copy",
+  "added_original": {
+    "path": "library/core/src/ptr/metadata.rs",
+    "file_sha256": "90be519b27b46064f0bec607170ffce37aa9afb160a1edfab9c51641c8af15e2",
+    "byte_start": 6287,
+    "byte_end": 6691,
+    "first": 158,
+    "last": 170,
+    "sha256": "4b802bd0482e21d8a7ffa2182167a027ad5938f97eaca1e22e55d41152465794"
+  }
+}

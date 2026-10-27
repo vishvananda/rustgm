@@ -1,0 +1,53 @@
+{
+  "state": "builtin callable marker correction frozen before observation",
+  "scope": "Exact pinned Arguments/Argument storage and selected new/new_debug/argument_new bodies; authored reduced dependencies and user Debug implementation. Not full Formatter/Alignment/PanicInfo or crate parity. Full original Write/SpecWriteFmt/fmt::write graph remains required.",
+  "path": "pa31/tests/spec/source-format-macros/arguments/constructor-builtin.rs",
+  "sha256": "09bd0dd68c4b84ec354f7d9d51f46c1a96d5746ae3e3870c18c9834242bf61d6",
+  "expected_metadata": {
+    "2021": 0,
+    "2024": 0
+  },
+  "expected_native_stdout": "e1;e2;t1;r7,9;d9;d7;7 9\n",
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "options": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Coverflow-checks=yes",
+    "--cap-lints=allow"
+  ],
+  "consumer": {
+    "path": "pa31/tests/spec/source-format-macros/arguments/constructor-consumer.c",
+    "sha256": "24e375b1df6c1a0501e778e884daf9c8a9978fca5f9407e607add75c88fb19e1"
+  },
+  "host": {
+    "path": "/usr/bin/x86_64-linux-gnu-gcc-15",
+    "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88",
+    "version": "x86_64-linux-gnu-gcc-15 (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+  },
+  "c_options": [
+    "-std=c11",
+    "-Wall",
+    "-Wextra",
+    "-Werror"
+  ],
+  "env": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "predecessor": {
+    "contract": "pa31/tests/spec/source-format-macros/arguments/constructor-complete-contract.json",
+    "sha256": "e9e8cbef4b211c97f18b746770acb7ea83a6ada049e0da9fc4f3c0a2e43ddb00",
+    "observation": "obj/parallel/pa31/format-arguments-v1/provider-complete-observation.json",
+    "observation_sha256": "f60bb76130b4eb7c09b286417f2f46144ed85d77856bb395624a9922754d75c8",
+    "classification": "Both metadata attempts reject real invalid authored fn-pointer Copy impl E0206; explicit Clone also conflicts with builtin marker. Observer introduced unrelated array Copy. No native commands ran."
+  },
+  "authored_setup_edits": [
+    "Remove invalid fn-pointer Clone/Copy impls; rustc and RustGM already provide actual FnDef/FnPtr marker proofs",
+    "Borrow/destructure array only in observer; unchanged actual constructor algorithms/representations"
+  ],
+  "unchanged_pinned_chunks_from_predecessor": true,
+  "primary_marker_rule": "compiler/rustc_trait_selection/src/traits/select/candidate_assembly.rs1154 and select/mod.rs2220; callable signature types need not Clone/Copy"
+}

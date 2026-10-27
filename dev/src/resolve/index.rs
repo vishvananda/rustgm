@@ -637,8 +637,7 @@ impl Resolver<'_> {
                 self.facts.foreign_owners.insert(definition, owner);
             }
             if external.is_some() {
-                self.expose_external(c, definition)
-                    .map_err(|e| self.error(c, node, e))?;
+                self.expose_external(c, node, definition)?;
             }
             if matches!(kind, DefKind::Struct | DefKind::Enum) {
                 self.facts.scopes[body.0 as usize].nominal_self = Some(definition);

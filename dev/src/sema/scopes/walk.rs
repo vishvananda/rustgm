@@ -133,6 +133,12 @@ impl Walker<'_> {
     }
     fn operands(&mut self, node: NodeId, kind: Syntax, context: Context) -> Result<(), Error> {
         match kind {
+            Syntax::LibraryValue {
+                kind: crate::support::library_types::LibraryValue::FormatSuperLet { .. },
+                value: Some(value),
+            } => {
+                self.format_binding(node, value, context)?;
+            }
             Syntax::TryBlock { body: value, .. }
             | Syntax::Group(value)
             | Syntax::Attributed { value, .. }

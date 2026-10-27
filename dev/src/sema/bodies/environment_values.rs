@@ -14,6 +14,16 @@ impl Checker<'_> {
         match kind {
             LibraryValue::EnvironmentOption => self.environment_option(node, value),
             LibraryValue::FormatLiteral { .. } => self.formatting_literal(node, value),
+            LibraryValue::FormatConstructor { .. } => self.formatting_function(node),
+            LibraryValue::FormatOutput { .. } | LibraryValue::FormatSuperLet { .. } => {
+                self.report.formatting_value(self.key(node))?;
+                self.term(
+                    value.ok_or_else(|| self.error(node, "formatting lost its actual child"))?,
+                )
+            }
+            LibraryValue::FormatInput { .. } => {
+                Err(self.error(node, "uninstalled formatting input draft"))
+            }
         }
     }
     fn environment_option(&mut self, node: NodeId, value: Option<NodeId>) -> Result<TermId, Error> {
