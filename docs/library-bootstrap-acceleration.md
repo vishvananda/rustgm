@@ -13,13 +13,25 @@ checkpoint documents accumulate faster than executable consumers. This is now
 the main scheduling problem. More workers or fewer semantic tests alone will
 not solve the joins between those components.
 
-The combined compiler `3cc4e779` executes the qualified direct Thin, PhantomData,
-final-method and full-attribute Location consumers, and authenticates const-closure
-grammar/feature authority. Original core now passes those closures and stops at
-the scoped builtin Iter declaration in `iter/sources/generator.rs:23`. It takes
-3.158 seconds, verifies all 722 source inputs and opens 164 files. This is loading/
-expansion progress; no core artifact exists. Broader alias/Pointee semantics and
-actual library body/metadata joins remain required.
+The combined compiler `4585cb94` qualifies actual Try/FromResidual source
+execution and direct runtime/const caller tracking. The two Try native consumers
+match pinned Rust (`7 23 31 17 23 43 19` and `21`); caller LowIR is identical to
+its native `341 5 343 53 1` checkpoint. The latest actual original-core observer
+remains CLI `3cc4e779`: 3.158 seconds, all 722 pins verified, 164 files opened,
+stopped at the scoped builtin Iter declaration in `iter/sources/generator.rs:23`.
+These newer semantic joins do not change that loading frontier; no core artifact
+exists. Broader alias/Pointee semantics and actual library body/metadata joins
+remain required.
+
+The current joined private check takes 145.74 seconds for fourteen exact controls;
+production/CLI five take 173.01 seconds. The new PA21 reference is generated and
+reviewed, and all 758 text cases pass in 4.43 seconds. Integration exposed an
+actual callable classification error across Try and caller tracking, reinforcing
+the need for combined consumer controls. The latest full CI on public488 passed
+every stage. C now owns LIB-038 admission/lookup, followed by actual ptr_metadata
+for B's Arguments source, while A completes imported-body proof and B the real
+Debug/PanicInfo/handler chain. Reuse the one immutable combined CLI and frozen
+source/native observations rather than compiling a fresh helper for each join.
 
 The largest bottleneck is the implementation joins. The integrator has now
 merged qualified actual imported names/receiver shapes and Pointee consumers

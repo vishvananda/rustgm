@@ -1,10 +1,10 @@
 # PA21 fixture ownership
 
-The manifest registers 745 cases: 744 retain committed stdout, stderr and status
-sidecars; the new ordinary result-supertrait regression awaits selected generation.
-There are 299 semantic inspections and 446 LowIR checks; 260 accepted
-LowIR programs declare native execution (256 pass, four destructor panics).
-All source outcomes are independently checked with pinned rustc object generation.
+The manifest registers 758 cases with committed stdout, stderr and status
+sidecars, including the independently checked ordinary result-supertrait regression.
+There are 308 semantic inspections and 450 LowIR checks; 264 accepted
+LowIR programs declare native execution (260 pass, four destructor panics).
+Source outcomes use the pinned rustc mode declared by each independent case.
 Fixtures preserve the source controls in the named `maintainer_origin` field.
 
 The seven families are:
@@ -51,5 +51,6 @@ The `contracts/polymorphic-outputs/accepted/semantics/result-supertrait-equality
 regression requires an associated output's genuine equality to reach its inherited
 supertrait argument. Both pinned editions accept the exact new source. The prior
 qualified compiler rejects its ordinary call, independently of source Try hooks.
-The case declares semantic success; selected official reference generation remains
-pending the shared solver correction. This adds no native execution claim.
+The case declares semantic success. Its selected official reference is generated
+and reviewed; all 758 text cases pass with the integrated solver correction.
+The pinned two-edition metadata observations add no native execution claim.

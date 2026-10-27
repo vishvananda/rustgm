@@ -1,9 +1,9 @@
 # RustGM Programming Assignment 21: Advanced generic relationships
 
 Status: **implemented-draft**. Prerequisite: PA20. The public suite contains
-744 cases: 298 generic-semantic inspections and 446 LowIR checks. The bounded
+758 cases: 308 generic-semantic inspections and 450 LowIR checks. The bounded
 source profile is Rust 1.98.0, edition 2024, Linux x86-64, panic abort, overflow checks enabled and
-debug assertions disabled. The manifest declares 260 native executions, including
+debug assertions disabled. The manifest declares 264 native executions, including
 four expected destructor panics. See [the validation review](../docs/pa21-validation.md).
 
 ## Required implementation
