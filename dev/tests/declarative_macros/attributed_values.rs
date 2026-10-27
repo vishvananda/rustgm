@@ -174,15 +174,13 @@ fn actual_attribute_lookup_kind_owner_and_unavailable_execution_remain_distinct(
 fn independent_positive_frontiers_keep_stability_legacy_kind_and_tool_registration_explicit()
 -> TestResult {
     for edition in [Edition::Rust2021, Edition::Rust2024] {
-        for name in [
-            "original-autodiff_forward",
-            "original-autodiff_reverse",
-            "legacy-attribute-claim",
-        ] {
+        for name in ["original-autodiff_forward", "original-autodiff_reverse"] {
             let report = checked(name, edition)?;
             crate::provider_traits::require_macro_policies(&report)?;
             rustgm::pipeline::analyze_source(&report)?;
         }
+        // This genuine legacy declaration has no staged API policy to query.
+        lower("legacy-attribute-claim", edition)?;
         for (name, message) in [
             (
                 "registered-user-tool",

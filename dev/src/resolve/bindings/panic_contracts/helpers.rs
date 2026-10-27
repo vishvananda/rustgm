@@ -83,10 +83,7 @@ impl crate::resolve::expansion::Report {
             crate::expand::marks::ExpansionId,
         ) -> Result<(), crate::resolve::package::Error>,
     ) -> Result<(), crate::resolve::package::Error> {
-        use crate::resolve::{
-            model::{DefKind, Namespace},
-            package::Error,
-        };
+        use crate::resolve::package::Error;
         let actual = self
             .resolution
             .definitions
@@ -109,28 +106,7 @@ impl crate::resolve::expansion::Report {
         let Some(role) = summary.builtin else {
             return Ok(());
         };
-        let scope = self
-            .resolution
-            .scopes
-            .get(actual.scope.0 as usize)
-            .ok_or_else(|| error("helper diagnostic macro scope disappeared"))?;
-        if actual.kind != DefKind::Macro
-            || actual.namespace != Namespace::Macro
-            || self
-                .package
-                .modules
-                .get(scope.module.0 as usize)
-                .is_none_or(|module| module.file != key.file)
-            || role.kind() != crate::expand::builtin::BuiltinKind::Bang
-                && self
-                    .resolution
-                    .item_definitions
-                    .get(&(scope.module, key.node, Namespace::Macro))
-                    != Some(&definition)
-            || self.resolution.node_scopes.get(&(scope.module, key.node)) != Some(&actual.scope)
-        {
-            return Err(error("helper diagnostic macro identity changed"));
-        }
+        validate_identity(self, definition, key, actual)?;
         let data = header
             .into_data()
             .ok_or_else(|| error("builtin helper declaration data is missing"))?;
@@ -158,6 +134,54 @@ impl crate::resolve::expansion::Report {
         }
         Ok(())
     }
+}
+
+fn validate_identity(
+    report: &crate::resolve::expansion::Report,
+    definition: crate::resolve::model::DefId,
+    key: crate::resolve::unit::NodeKey,
+    actual: &crate::resolve::model::Definition,
+) -> Result<(), crate::resolve::package::Error> {
+    use crate::{
+        resolve::{
+            model::{DefKind, Namespace},
+            package::Error,
+        },
+        syntax::{ast::Kind, item::ItemKind},
+    };
+    let error = |message| Error::at(key.file, 0, message);
+    let unit = report.package.unit(key.file);
+    let Kind::Item(index) = unit.configured.ast.node(key.node).kind else {
+        return Err(error("helper diagnostic macro item changed"));
+    };
+    let scoped = match unit.configured.ast.items[index as usize].kind {
+        ItemKind::MacroRules { .. } => false,
+        ItemKind::DeclarativeMacro { .. } => true,
+        _ => return Err(error("helper diagnostic macro item kind changed")),
+    };
+    let scope = report
+        .resolution
+        .scopes
+        .get(actual.scope.0 as usize)
+        .ok_or_else(|| error("helper diagnostic macro scope disappeared"))?;
+    if actual.kind != DefKind::Macro
+        || actual.namespace != Namespace::Macro
+        || report
+            .package
+            .modules
+            .get(scope.module.0 as usize)
+            .is_none_or(|module| module.file != key.file)
+        || scoped
+            && report
+                .resolution
+                .item_definitions
+                .get(&(scope.module, key.node, Namespace::Macro))
+                != Some(&definition)
+        || report.resolution.node_scopes.get(&(scope.module, key.node)) != Some(&actual.scope)
+    {
+        return Err(error("helper diagnostic macro identity changed"));
+    }
+    Ok(())
 }
 
 #[cfg(test)]
