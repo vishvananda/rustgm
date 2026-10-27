@@ -6,6 +6,8 @@ use crate::{
     sema::compiler_items::try_protocol,
     syntax::ast::{Kind as Syntax, NodeId},
 };
+#[path = "residual_evidence.rs"]
+mod evidence;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 fn fixture(name: &str) -> Result<String> {
     Ok(crate::test_source::fixture(&format!(
@@ -14,7 +16,15 @@ fn fixture(name: &str) -> Result<String> {
 }
 fn analyze(source: &str) -> Result<(Report, Analysis)> {
     let report = crate::test_source::source_provider(source, "try_protocol")?;
-    let analysis = pipeline::analyze_source(&report)?;
+    let analysis = match pipeline::analyze_source(&report) {
+        Ok(analysis) => analysis,
+        Err(error) => {
+            if let Err(detail) = evidence::details(&report) {
+                eprintln!("residual evidence: {detail}");
+            }
+            return Err(error.into());
+        }
+    };
     Ok((report, analysis))
 }
 fn root(report: &Report, facts: &Declarations, name: &str) -> Result<DefId> {
