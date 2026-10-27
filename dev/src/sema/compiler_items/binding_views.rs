@@ -373,8 +373,10 @@ fn role_kind(role: LangItem) -> DefKind {
         LangItem::ControlFlowContinue
         | LangItem::ControlFlowBreak
         | LangItem::ResultOk
-        | LangItem::ResultErr => DefKind::Variant,
-        LangItem::Ordering => DefKind::Enum,
+        | LangItem::ResultErr
+        | LangItem::OptionSome
+        | LangItem::OptionNone => DefKind::Variant,
+        LangItem::Ordering | LangItem::Option => DefKind::Enum,
         LangItem::FormatArguments
         | LangItem::FormatArgument
         | LangItem::DynMetadata

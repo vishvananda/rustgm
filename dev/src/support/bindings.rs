@@ -73,9 +73,12 @@ pub enum LangItem {
     BitOr,
     ResultOk,
     ResultErr,
+    Option,
+    OptionSome,
+    OptionNone,
 }
 impl LangItem {
-    pub const ALL: [Self; 57] = [
+    pub const ALL: [Self; 60] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -133,6 +136,9 @@ impl LangItem {
         Self::BitOr,
         Self::ResultOk,
         Self::ResultErr,
+        Self::Option,
+        Self::OptionSome,
+        Self::OptionNone,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -194,6 +200,9 @@ impl LangItem {
             Self::BitOr => 54,
             Self::ResultOk => 55,
             Self::ResultErr => 56,
+            Self::Option => 57,
+            Self::OptionSome => 58,
+            Self::OptionNone => 59,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -256,6 +265,9 @@ impl LangItem {
             "bitor" => Some(Self::BitOr),
             "Ok" => Some(Self::ResultOk),
             "Err" => Some(Self::ResultErr),
+            "Option" => Some(Self::Option),
+            "Some" => Some(Self::OptionSome),
+            "None" => Some(Self::OptionNone),
             _ => None,
         }
     }

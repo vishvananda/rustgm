@@ -26,7 +26,9 @@ pub(super) fn validate(
         LangItem::ControlFlowContinue
         | LangItem::ControlFlowBreak
         | LangItem::ResultOk
-        | LangItem::ResultErr => Owner::Variant,
+        | LangItem::ResultErr
+        | LangItem::OptionSome
+        | LangItem::OptionNone => Owner::Variant,
         _ => return Ok(()),
     };
     let ast = &package.unit(declaration.origin.file).configured.ast;
@@ -53,31 +55,36 @@ pub(super) fn validate(
 }
 
 /// These claims identify variants of the genuine diagnostic enum, not spelling.
-pub(super) fn result_variants(
+pub(super) fn enum_variants(
     package: &Package,
     facts: &crate::resolve::model::Resolution,
     reserved: &mut super::Reservations,
 ) -> Result<(), Error> {
-    for role in [LangItem::ResultOk, LangItem::ResultErr] {
+    use super::annotations::DiagnosticItem;
+    for (role, diagnostic) in [
+        (LangItem::ResultOk, DiagnosticItem::Result),
+        (LangItem::ResultErr, DiagnosticItem::Result),
+        (LangItem::OptionSome, DiagnosticItem::Option),
+        (LangItem::OptionNone, DiagnosticItem::Option),
+    ] {
         reserved.steps = reserved.steps.saturating_add(1);
         let Some(variant) = reserved.language(role) else {
             continue;
         };
-        let owner = reserved.diagnostics[super::annotations::DiagnosticItem::Result.index()]
-            .ok_or_else(|| {
-                error(
-                    package,
-                    variant.origin,
-                    "source Result variant requires its actual diagnostic enum owner",
-                )
-            })?;
+        let owner = reserved.diagnostics[diagnostic.index()].ok_or_else(|| {
+            error(
+                package,
+                variant.origin,
+                "source variant requires its actual diagnostic enum owner",
+            )
+        })?;
         let actual = &facts.definitions[variant.definition.0 as usize];
         let parent = &facts.definitions[owner.definition.0 as usize];
         if parent.members != Some(actual.scope) {
             return Err(error(
                 package,
                 variant.origin,
-                "source Result variant belongs to another actual enum",
+                "source variant belongs to another actual diagnostic enum",
             ));
         }
     }
