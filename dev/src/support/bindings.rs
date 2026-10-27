@@ -68,9 +68,10 @@ pub enum LangItem {
     Send,
     Sync,
     Unpin,
+    DispatchFromDyn,
 }
 impl LangItem {
-    pub const ALL: [Self; 52] = [
+    pub const ALL: [Self; 53] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -123,6 +124,7 @@ impl LangItem {
         Self::Send,
         Self::Sync,
         Self::Unpin,
+        Self::DispatchFromDyn,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -179,6 +181,7 @@ impl LangItem {
             Self::Send => 49,
             Self::Sync => 50,
             Self::Unpin => 51,
+            Self::DispatchFromDyn => 52,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -236,6 +239,7 @@ impl LangItem {
             "neg" => Some(Self::Neg),
             "sync" => Some(Self::Sync),
             "unpin" => Some(Self::Unpin),
+            "dispatch_from_dyn" => Some(Self::DispatchFromDyn),
             _ => None,
         }
     }

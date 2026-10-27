@@ -49,6 +49,18 @@ pub(super) fn validate(
         },
         Constness::Ordinary,
     )?;
+    validate_target(report, facts, catalog, declaration, role)?;
+    validate_members(report, facts, declaration, role)
+}
+
+fn validate_target(
+    report: &Report,
+    facts: &Declarations,
+    catalog: &Catalog,
+    declaration: Declaration,
+    role: LangItem,
+) -> Result<(), Error> {
+    let error = |message| Declarations::error(report, declaration.origin, message);
     let parameters = facts
         .generics
         .parameters
@@ -70,8 +82,27 @@ pub(super) fn validate(
             "source unsizing target changed its parameter contract",
         ));
     }
+    let expected = if role == LangItem::DispatchFromDyn {
+        LangItem::Sized
+    } else {
+        LangItem::PointeeSized
+    };
+    let Some(Kind::Parameter(id)) = facts.types.kind(target) else {
+        return Err(error("source unsizing target is not its actual type parameter"));
+    };
+    if facts.types.parameter(id)
+        != Some(crate::types::parameters::Parameter {
+            owner: crate::types::ItemId(declaration.definition.0),
+            index: 0,
+            kind: crate::types::parameters::ParameterKind::Type {
+                sized: role == LangItem::DispatchFromDyn,
+            },
+        })
+    {
+        return Err(error("source unsizing target changed its declaration or sizing identity"));
+    }
     let pointee = catalog
-        .language(LangItem::PointeeSized)
+        .language(expected)
         .ok_or_else(|| error("source unsizing role requires actual PointeeSized"))?;
     let mut found = false;
     for clause in facts
@@ -84,6 +115,12 @@ pub(super) fn validate(
             ));
         };
         if predicate.ty != target {
+            continue;
+        }
+        if expected == LangItem::Sized && predicate.bound == crate::types::parameters::predicates::Bound::Sized {
+            if std::mem::replace(&mut found, true) {
+                return Err(error("source DispatchFromDyn target repeats its Sized requirement"));
+            }
             continue;
         }
         let Some((application, Constness::Ordinary)) = predicate.bound.trait_parts() else {
@@ -110,7 +147,7 @@ pub(super) fn validate(
     if !found {
         return Err(error("source unsizing target requires actual PointeeSized"));
     }
-    validate_members(report, facts, declaration, role)
+    Ok(())
 }
 
 fn validate_members(
@@ -145,7 +182,7 @@ pub(crate) fn kind(
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(None);
     };
-    for role in [LangItem::Unsize, LangItem::CoerceUnsized] {
+    for role in [LangItem::Unsize, LangItem::CoerceUnsized, LangItem::DispatchFromDyn] {
         if catalog
             .language(role)
             .is_some_and(|d| d.definition == definition)
