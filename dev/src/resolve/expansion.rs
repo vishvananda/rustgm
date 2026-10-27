@@ -322,6 +322,9 @@ fn finish_analysis<S: Sources>(mut engine: Engine<'_, S>) -> Result<Report, Erro
             super::try_blocks::validate(&report).map_err(|error| report.diagnostic(error))
         })
         .and_then(|()| {
+            super::const_closures::validate(&report).map_err(|error| report.diagnostic(error))
+        })
+        .and_then(|()| {
             super::impl_restrictions::validate(&report).map_err(|error| report.diagnostic(error))
         })
         .and_then(|()| {

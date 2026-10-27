@@ -9,25 +9,57 @@ pub(crate) struct Prefix {
     pub(crate) expressions: u32,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum ExpressionKind {
+    TryBlock,
+    ConstClosure,
+}
+impl ExpressionKind {
+    pub(crate) fn keyword(self) -> &'static str {
+        match self {
+            Self::TryBlock => "try",
+            Self::ConstClosure => "const",
+        }
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct Expression {
     pub(crate) node: NodeId,
     pub(crate) body: NodeId,
     pub(crate) keyword: Span,
-    pub(crate) block: Span,
+    pub(crate) construct: Span,
     pub(super) context: Option<(std::num::NonZeroU32, std::num::NonZeroU32)>,
 }
 impl Expression {
+    pub(crate) fn kind<L>(self, ast: &Syntax<L>) -> Result<ExpressionKind, LexError> {
+        match ast
+            .nodes
+            .get(self.node.get() as usize)
+            .map(|node| node.kind)
+        {
+            Some(NodeKind::TryBlock { .. }) => Ok(ExpressionKind::TryBlock),
+            Some(NodeKind::ConstClosure { .. }) => Ok(ExpressionKind::ConstClosure),
+            _ => Err(error(
+                self.keyword.start,
+                "expression-gate node kind changed",
+            )),
+        }
+    }
     pub(crate) fn context_key(self) -> Option<(std::num::NonZeroU32, std::num::NonZeroU32)> {
         self.context
     }
     pub(crate) fn validate<L>(self, ast: &Syntax<L>, ordinal: u32) -> Result<NodeId, LexError> {
-        let invalid = || error(self.keyword.start, "try-block expression site changed");
+        let invalid = || error(self.keyword.start, "expression-gate source site changed");
         let node = ast
             .nodes
             .get(self.node.get() as usize)
             .ok_or_else(invalid)?;
-        let NodeKind::TryBlock { body, gate } = node.kind else {
-            return Err(invalid());
+        let (body, gate) = match node.kind {
+            NodeKind::TryBlock { body, gate }
+            | NodeKind::ConstClosure {
+                closure: body,
+                gate,
+            } => (body, gate),
+            _ => return Err(invalid()),
         };
         let block = ast.nodes.get(body.get() as usize).ok_or_else(invalid)?;
         let plain = if let NodeKind::Attributed { value, .. } = block.kind {
@@ -35,18 +67,30 @@ impl Expression {
         } else {
             block
         };
-        if gate != ordinal
-            || body != self.body
-            || block.span != self.block
-            || !matches!(
+        let kind = self.kind(ast)?;
+        let valid_construct = match kind {
+            ExpressionKind::TryBlock => matches!(
                 plain.kind,
                 NodeKind::Block {
                     flavor: crate::syntax::ast::BlockFlavor::Plain,
                     ..
                 }
-            )
+            ),
+            ExpressionKind::ConstClosure => matches!(
+                block.kind,
+                NodeKind::Closure {
+                    asynchronous: false,
+                    ..
+                }
+            ),
+        };
+        if gate != ordinal
+            || body != self.body
+            || block.span != self.construct
+            || !valid_construct
             || node.span.start != self.keyword.start
-            || self.keyword.end.checked_sub(self.keyword.start) != Some(3)
+            || self.keyword.end.checked_sub(self.keyword.start)
+                != Some(u32::try_from(kind.keyword().len()).map_err(|_| invalid())?)
             || self.keyword.end > block.span.start
             || node.span.end != block.span.end
         {
@@ -148,13 +192,16 @@ impl<L> Syntax<L> {
         keyword: Span,
     ) -> Result<(), LexError> {
         let ordinal = self.next_expression_gate()?;
-        let Some(NodeKind::TryBlock { body, .. }) =
-            self.nodes.get(node.get() as usize).map(|node| node.kind)
-        else {
-            return Err(error(
-                keyword.start,
-                "expression-gate requires actual try node",
-            ));
+        let body = match self.nodes.get(node.get() as usize).map(|node| node.kind) {
+            Some(
+                NodeKind::TryBlock { body, .. } | NodeKind::ConstClosure { closure: body, .. },
+            ) => body,
+            _ => {
+                return Err(error(
+                    keyword.start,
+                    "expression-gate requires actual gated node",
+                ));
+            }
         };
         let block = self
             .nodes
@@ -165,7 +212,7 @@ impl<L> Syntax<L> {
             node,
             body,
             keyword,
-            block,
+            construct: block,
             context: None,
         };
         entry.validate(self, ordinal)?;

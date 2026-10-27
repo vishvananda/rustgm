@@ -8,6 +8,7 @@ mod bodies;
 pub(crate) mod body_origin;
 mod builtins;
 mod collision_retention;
+mod const_closures;
 mod container_scopes;
 mod contextual_lookup;
 pub mod crates;
@@ -54,6 +55,7 @@ pub fn analyze(package: &mut package::Package) -> Result<model::Resolution, pack
     default_items::validate_plain(package)?;
     alias_gates::validate_plain(package)?;
     try_blocks::validate_plain(package)?;
+    const_closures::validate_plain(package)?;
     Ok(state.facts)
 }
 pub mod render;

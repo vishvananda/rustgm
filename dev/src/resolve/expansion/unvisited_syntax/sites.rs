@@ -64,6 +64,15 @@ pub(super) fn prepare(
                 *expression,
             )
             .map_err(error)?;
+            // Unlike try blocks, const closures retain a hard parser-collected
+            // gate after cfg removal. Their validator owns that error.
+            if expression
+                .kind(&unit.configured.ast)
+                .map_err(|found| error(Error::at(file, found.offset, found.message)))?
+                == crate::syntax::gate_sites::ExpressionKind::ConstClosure
+            {
+                return Ok(None);
+            }
         }
     }
     if unit.configured.active[site.node().get() as usize] {

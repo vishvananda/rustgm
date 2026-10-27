@@ -7,6 +7,30 @@ use super::{
 use super::fragment::FragmentKind as F;
 
 impl Parser<'_, '_> {
+    pub(super) fn const_expression(&mut self) -> Result<NodeId, LexError> {
+        let token = self.required()?;
+        if !self.cursor.at_word(Word::Move)?
+            && !self.cursor.at(P::Or)?
+            && !self.cursor.at(P::OrOr)?
+        {
+            let block = self.block(BlockFlavor::Const)?;
+            self.ast.nodes[block.get() as usize].span.start = token.start;
+            return Ok(block);
+        }
+        let start = self.cursor.peek(0)?.map_or(token.end, |next| next.start);
+        let moving = self.eat_word(Word::Move)?;
+        let closure = self.closure(moving, false, start)?;
+        let gate = self.ast.next_expression_gate()?;
+        let node = self.node(token.start, Kind::ConstClosure { closure, gate })?;
+        self.ast.record_expression_gate(
+            node,
+            Span {
+                start: token.start,
+                end: token.end,
+            },
+        )?;
+        Ok(node)
+    }
     pub(super) fn try_block(&mut self) -> Result<NodeId, LexError> {
         let token = self.required()?;
         let body = self.block(BlockFlavor::Plain)?;

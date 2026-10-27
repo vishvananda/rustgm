@@ -1551,6 +1551,9 @@ impl Checker<'_> {
                 node,
                 "source Try control-flow semantics are not implemented",
             )),
+            Kind::ConstClosure { .. } => {
+                Err(self.error(node, "const closure callable semantics are not implemented"))
+            }
             Kind::Block {
                 flavor: BlockFlavor::Plain | BlockFlavor::Unsafe | BlockFlavor::Const,
                 statements,

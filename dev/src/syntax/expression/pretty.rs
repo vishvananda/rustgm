@@ -332,6 +332,7 @@ impl<'a> Writer<'a> {
             | Kind::CrateRoot(_)
             | Kind::Group(_)
             | Kind::TryBlock { .. }
+            | Kind::ConstClosure { .. }
             | Kind::Tuple(_)
             | Kind::Array(_)
             | Kind::Repeat { .. }

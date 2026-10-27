@@ -273,6 +273,10 @@ pub enum Kind {
         body: NodeId,
         gate: u32,
     },
+    ConstClosure {
+        closure: NodeId,
+        gate: u32,
+    },
     EmptyStatement,
     Statement(NodeId),
     Let {

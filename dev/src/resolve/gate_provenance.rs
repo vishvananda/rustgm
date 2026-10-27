@@ -146,7 +146,7 @@ fn parsed_expression(
         Error::at(
             file,
             expression.keyword.start,
-            "try-block source site changed",
+            "expression-gate source site changed",
         )
     };
     let unit = package.units.get(file.0 as usize).ok_or_else(invalid)?;
@@ -162,7 +162,12 @@ fn parsed_expression(
             .source
             .text()
             .get(expression.keyword.start as usize..expression.keyword.end as usize)
-            != Some("try")
+            != Some(
+                expression
+                    .kind(&unit.configured.ast)
+                    .map_err(|error| Error::at(file, error.offset, error.message))?
+                    .keyword(),
+            )
     {
         return Err(invalid());
     }
@@ -177,13 +182,13 @@ pub(super) fn checked_expression(
     parsed_expression(package, file, ordinal, expression)?;
     let actual = (
         context(package, file, expression.keyword)?.key(),
-        context(package, file, expression.block)?.key(),
+        context(package, file, expression.construct)?.key(),
     );
     if expression.context_key() != Some(actual) {
         return Err(Error::at(
             file,
             expression.keyword.start,
-            "try-block endpoint contexts changed or were never sealed",
+            "expression-gate endpoint contexts changed or were never sealed",
         ));
     }
     Ok(())
@@ -203,7 +208,7 @@ fn bind_expressions(package: &mut Package, file: FileId) -> Result<(), Error> {
         parsed_expression(package, file, ordinal, expression)?;
         let actual = (
             context(package, file, expression.keyword)?.key(),
-            context(package, file, expression.block)?.key(),
+            context(package, file, expression.construct)?.key(),
         );
         package.units[file.0 as usize]
             .configured

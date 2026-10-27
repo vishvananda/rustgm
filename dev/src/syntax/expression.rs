@@ -456,14 +456,10 @@ impl<'source> Parser<'source, '_> {
                 }
                 Word::Async => self.async_expression(),
                 Word::Try => self.try_block(),
-                Word::Unsafe | Word::Const => {
+                Word::Const => self.const_expression(),
+                Word::Unsafe => {
                     self.cursor.take()?;
-                    let flavor = if word == Word::Unsafe {
-                        BlockFlavor::Unsafe
-                    } else {
-                        BlockFlavor::Const
-                    };
-                    let block = self.block(flavor)?;
+                    let block = self.block(BlockFlavor::Unsafe)?;
                     self.ast.nodes[block.get() as usize].span.start = token.start;
                     Ok(block)
                 }
