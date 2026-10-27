@@ -14,6 +14,20 @@ pub(crate) struct Decisions {
     pub proof: Obligations,
 }
 
+/// Identity only for a positively empty set of reads; decisions still use the
+/// completed declaration path below. Pending is never converted to absence.
+pub(crate) fn reserved_copy_declaration(
+    facts: &mut Declarations,
+) -> Result<Option<crate::resolve::model::DefId>, &'static str> {
+    facts.body_work.canonical_steps += 1;
+    facts
+        .source_bindings
+        .as_deref()
+        .ok_or("source Copy has no source policy")?
+        .role(LangItem::Copy)
+        .map(|role| role.map(|role| role.definition))
+}
+
 /// Resolve actual declaration data only; every Copy decision still needs its
 /// own caller-scoped selection and complete lifetime proof below.
 pub(crate) fn copy_declaration(

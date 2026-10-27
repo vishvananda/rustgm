@@ -130,12 +130,7 @@ fn prepare_using(
     let (declaration, goals) = if let Some(service) = &mut preparation {
         let types = read_types(facts, body)?;
         let declaration = if types.is_empty() {
-            facts
-                .source_bindings
-                .as_deref()
-                .ok_or("source Copy has no source policy")?
-                .role(crate::support::bindings::LangItem::Copy)?
-                .map(|role| role.definition)
+            crate::sema::compiler_items::reserved_copy_declaration(facts)?
         } else {
             service
                 .copy_declarations(facts)
