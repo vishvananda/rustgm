@@ -13,25 +13,26 @@ checkpoint documents accumulate faster than executable consumers. This is now
 the main scheduling problem. More workers or fewer semantic tests alone will
 not solve the joins between those components.
 
-The combined compiler `4585cb94` qualifies actual Try/FromResidual source
-execution and direct runtime/const caller tracking. The two Try native consumers
-match pinned Rust (`7 23 31 17 23 43 19` and `21`); caller LowIR is identical to
-its native `341 5 343 53 1` checkpoint. The latest actual original-core observer
-remains CLI `3cc4e779`: 3.158 seconds, all 722 pins verified, 164 files opened,
-stopped at the scoped builtin Iter declaration in `iter/sources/generator.rs:23`.
-These newer semantic joins do not change that loading frontier; no core artifact
-exists. Broader alias/Pointee semantics and actual library body/metadata joins
-remain required.
+The combined compiler `b4f107b1` qualifies source Try/FromResidual execution,
+direct runtime/const caller tracking and source-form-independent builtin kinds.
+Its Try LowIR is identical to the two verified native consumers; caller LowIR
+remains identical to its native341 5 343 53 1 checkpoint. The actual unchanged
+core observer now advances164→206 opened files in2.376 seconds, all722 pins
+verified, stopping at `${concat(...)}` in `fmt/num.rs:149`. No artifact exists.
 
-The current joined private check takes 145.74 seconds for fourteen exact controls;
-production/CLI five take 173.01 seconds. The new PA21 reference is generated and
-reviewed, and all 758 text cases pass in 4.43 seconds. Integration exposed an
-actual callable classification error across Try and caller tracking, reinforcing
-the need for combined consumer controls. The latest full CI on public488 passed
-every stage. C now owns LIB-038 admission/lookup, followed by actual ptr_metadata
-for B's Arguments source, while A completes imported-body proof and B the real
-Debug/PanicInfo/handler chain. Reuse the one immutable combined CLI and frozen
-source/native observations rather than compiling a fresh helper for each join.
+The current joined checks pass32 private controls in103.43s and26production/CLI
+controls in158.93s. These include all16private/5linking regressions revealed by
+full CI on8d3: actual ownership fixes, measured stale widths and earlier source
+authentication diagnostics. Keep the existing full smoke selection when joining
+shared caller/body paths. All758 PA21 text cases pass in4.17s; native LowIR
+comparisons and harness/upstream reuse the same CLI. Full qualification runs
+separately after publication.
+
+Next: integrate B's qualified Debug expansion prerequisite without claiming
+formatter/handler execution, then close LIB-039 concatenation. C implements
+actual ptr_metadata for Arguments while A completes imported-body proof and B
+the real PanicInfo/handler chain. Reuse immutable inputs and one combined CLI
+per coherent integration, preserving every unresolved artifact/proof requirement.
 
 The largest bottleneck is the implementation joins. The integrator has now
 merged qualified actual imported names/receiver shapes and Pointee consumers

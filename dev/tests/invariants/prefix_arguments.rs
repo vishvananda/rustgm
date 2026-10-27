@@ -200,8 +200,8 @@ fn prefix_storage_preserves_compact_public_records() {
         size_of::<crate::sema::model::NodeFacts>()
     );
     assert_eq!(size_of::<super::super::Work>(), 40);
-    // Formatting adds one demand-only plan pointer inside the existing boxed calls.
-    assert_eq!(size_of::<super::super::calls::CallTypes>(), 680);
+    // Formatting and Try plans stay inside the existing boxed call inputs.
+    assert_eq!(size_of::<super::super::calls::CallTypes>(), 704);
     assert_eq!(size_of::<Inputs>(), 8);
     assert_eq!(size_of::<TypeId>(), 4);
     assert_eq!(size_of::<Kind>(), 24);

@@ -89,7 +89,9 @@ pub(super) fn reject_replaced_producer_units() -> Result {
         .err()
         .ok_or("replaced nonroot source admitted")?;
     assert!(
-        error.message.contains("replaced source incarnation"),
+        error
+            .message
+            .contains("source header completion incarnation changed"),
         "{error}"
     );
     let (_, foreign, _, _) = actual()?;

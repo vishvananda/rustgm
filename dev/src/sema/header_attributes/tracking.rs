@@ -87,15 +87,27 @@ impl Declarations {
         if self.constructor_tracking_absent(definition)? {
             return Ok(false);
         }
+        let origin = self
+            .declaration_header(definition)?
+            .map(|header| header.declaration);
         if matches!(
-            self.declaration_header(definition)?
-                .map(|header| header.declaration),
+            origin,
             Some(crate::resolve::body_origin::DeclarationOrigin::Imported(_))
         ) {
             super::super::imported::caller_tracking_absent(self, definition)?;
             return Ok(false);
         }
         if self.source_bindings.is_none() {
+            return Ok(false);
+        }
+        if matches!(
+            origin,
+            Some(crate::resolve::body_origin::DeclarationOrigin::Source(_))
+        ) && self
+            .source_bindings
+            .as_deref()
+            .is_some_and(crate::sema::compiler_items::Catalog::local_caller_tracking_closed)
+        {
             return Ok(false);
         }
         let Some(headers) = self

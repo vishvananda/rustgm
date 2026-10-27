@@ -274,6 +274,9 @@ impl Checker<'_> {
                 "caller sites changed append-only body order",
             ));
         }
+        if sites.is_empty() {
+            return Ok(());
+        }
         let growth = retained::Growth::vector::<Site>(
             contexts.sites.len(),
             contexts.sites.capacity(),
