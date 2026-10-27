@@ -161,7 +161,7 @@ impl Storage {
     }
     pub(super) fn default_seed(&mut self, context: &mut Context) -> Result<bool, Error> {
         context.step()?;
-        if self.has_pending_resolution() {
+        if self.has_pending_resolution() || self.equations.has_ready() {
             return Ok(false);
         }
         while let Some(id) = self.numeric_ready.pop_front() {
@@ -225,6 +225,14 @@ impl Context {
     pub(in crate::types::infer) fn default_numeric_frontier(
         &mut self,
     ) -> Result<Option<bool>, Error> {
+        if self
+            .dependencies
+            .as_ref()
+            .is_some_and(|s| s.equations.has_ready())
+        {
+            self.step()?;
+            return Ok(Some(false));
+        }
         if self
             .dependencies
             .as_ref()

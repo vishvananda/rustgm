@@ -124,6 +124,7 @@ fn hidden_first_diamonds_upgrade_once_and_shared_blockers_remain_unresolved() ->
 }
 #[test]
 fn ordinary_watches_and_failed_numeric_growth_keep_existing_authority() -> TestResult {
+    ready_equations_precede_numeric_fallback()?;
     let mut context = Context::default();
     let store = crate::types::Store::default();
     assert!(context.dependencies.is_none());
@@ -175,6 +176,44 @@ fn final_publication_rejects_only_live_numeric_frontiers() -> TestResult {
         } else {
             assert!(result.is_ok(), "{mode}: {:?}", result.err());
         }
+    }
+    Ok(())
+}
+
+fn ready_equations_precede_numeric_fallback() -> TestResult {
+    use crate::types::infer::deferred::{Outcome, Relation};
+    for watched in [false, true] {
+        let mut context = Context::default();
+        let mut store = crate::types::Store::default();
+        let subject = context.known(&store, TypeId::primitive(Primitive::Usize))?;
+        let projected = projection(&mut context, &mut store, subject)?;
+        let expected = context.known(&store, TypeId::primitive(Primitive::I32))?;
+        let Outcome::Pending(equation) =
+            context.equate_deferred(&store, projected, expected, Relation::Equality)?
+        else {
+            return Err("actual projection equation did not suspend".into());
+        };
+        let numeric = context.variable(Domain::Integer)?;
+        if watched {
+            context.watch_inputs(&[numeric], &[], true, Fallback::Predicate)?;
+        }
+        context.apply_normalization(&mut store, projected, TypeId::primitive(Primitive::I32))?;
+        drain(&mut context, &store)?;
+        assert!(!context.default_numbers()?);
+        assert_eq!(context.unresolved_domain(numeric)?, Some(Domain::Integer));
+        assert_eq!(context.ready_equation()?, Some(equation));
+        assert!(matches!(
+            context.resume_equation(&store, equation)?,
+            Outcome::Complete
+        ));
+        assert!(context.ready_equation()?.is_none());
+        assert!(!context.has_deferred_equations());
+        assert!(context.default_numbers()?);
+        drain(&mut context, &store)?;
+        assert_eq!(
+            context.resolved(&mut store, numeric)?,
+            TypeId::primitive(Primitive::I32)
+        );
     }
     Ok(())
 }
