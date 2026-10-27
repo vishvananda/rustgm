@@ -853,6 +853,13 @@ repetition work; feature checks grant syntax authority only. The independently
 qualified [protocol sources](pa31/tests/spec/metavariable-concat/README.md)
 separate definition admission, actual invocation and generated-name resolution.
 
+The pinned concat parser requires the actual crate feature even for generated
+macro definitions with an internal feature allowance. Preserve that distinction
+from invocation-time allowance consumers. Literal symbols may still be typed
+DeferredLiteral payloads: validate suffix/radix through the shared literal
+producer without evaluating arbitrary-width integer spelling. The original
+source and typed fragment identity remain authoritative.
+
 Keep actual expansion ancestry separate from a token's syntax context and its
 physical source/edition provenance. A captured name does not determine the
 contexts of the surrounding generated macro body. Mark each definition token
@@ -947,6 +954,12 @@ nested callable binders through normalized and original predicates. Never flatte
 these clauses for a consumer that only handles ordinary predicates. Local
 shorthand projections may infer bound lifetime arguments in their own body;
 signatures need explicit arguments when those quantified locals occur.
+
+Parse a higher-ranked trait binder before its const modifiers into the existing
+Bound fields. Optional relaxation cannot combine with that binder. Preserve the
+actual binder scope and feature checks; consuming an anonymous impl Trait bound
+must not erase either. Invalid modifier order and modified lifetime bounds fail
+through the ordinary parser rather than being reinterpreted downstream.
 
 ## Semantic identity and demand
 

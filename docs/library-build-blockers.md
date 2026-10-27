@@ -18,7 +18,7 @@ whole-crate attempt. Never patch upstream source to move a blocker.
 
 | Milestone | Current result | Next acceptance evidence |
 | --- | --- | --- |
-| Original core loading and expansion | CLI `b4f107b1` passes the genuine scoped Iter declaration and opens 206 original files, then stops at `fmt/num.rs:149`, byte6248, on `${concat($fmt_fn, _small)}`: `expected macro token`. All 722 pinned inputs verify;2.376 seconds; no artifact. | Implement LIB-039 typed metavariable concatenation and its independent feature/hygiene rules; finish imported bodies and actual assertion/formatting. |
+| Original core loading and expansion | Qualified CLI `d1e2137d` passes higher-ranked conditional bounds and opens263 original files, then stops at `tuple.rs:31`, byte1199, on `${ignore($T)}`: `unsupported metavariable expression`. All722 pins verify;3.00s; no artifact. | Implement LIB-041 ignore/index/count and the complete typed metavariable-expression protocol; finish imported bodies and actual assertion/formatting. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
@@ -49,11 +49,31 @@ diagnostics. The fixes preserve positive canonical imported/source ownership,
 existing client storage budgets and both invalid-source opponents. All758 PA21
 text cases, harness/layout/upstream and fresh native LowIR equality pass.
 
-The new original-core observer advances164→206 opened files. Its next LIB-039
-failure is template parsing in `fmt/num.rs:149`; six reduced metadata/candidate
-observations establish positive concatenation and the missing-feature rejection.
-Original pins remain unchanged. Full qualification runs again after publication;
-no original library artifact or extra PA release is implied.
+The latest integrated compiler `4ec518b8f` combines typed concat, actual
+pointer-metadata execution, const-panic declaration policy and the private
+provided-method execution path. Its 36 private and44 frontend controls pass in
+165.50s;26 production/CLI controls pass in28.63s. Formatting, architecture and
+both strict Clippy modes pass. The imported caller-policy join authenticates the
+collector's actual no-tracking guarantee and charges its existing imported header
+owner, including failed queries. Local source budgets are not borrowed.
+
+Original core advanced206→226 with concat, then226→263 with the corrected
+higher-ranked const-bound parser. Latest CLI `d1e2137d` fails at tuple.rs31's
+`${ignore($T)}` in3.00s; all722 inputs remain unchanged. LIB-041 owns the actual
+ignore/index/count template family and its independent feature authority. The
+bound grammar preserves existing Binder/Constness fields and relaxed-binder
+rejection locations; all33 focused tests,231 PA5 text cases and758 PA21 text
+cases pass in118.93s with both strict modes and architecture checks. Nine frozen
+sources retain36 matching independent/baseline observations across both editions.
+
+The pointer-metadata native consumer matches pinned Rust's `7 6 3 3 7 91 1`
+through the locked CPPGM backend in2.68s. The integrated private provided consumer's
+source, C observer and LowIR are byte-identical to its independently verified
+native7 graph. Const-panic markers do not implement the panic runtime; public
+Provided metadata transport remains open. Full CI40460106211 on the published
+d1bc checkpoint is fully green, including release/course, native, debug and
+independent Rust qualification. No extra PA release or whole library artifact is
+implied by either checkpoint.
 
 ## Current execution queue
 
@@ -544,7 +564,9 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-036 | Source execution and native consumers qualified; transport open | Source try blocks and shared question-mark execution | PA4 grammar + PA26 Try/FromResidual + PA31 actual source roles / owning syntax and full source-backed providers | C checkpoint integrated | Combined CLI4585cb94 uses genuine source methods, associated Output/Residual/TryType and actual ControlFlow variants, nearest lexical exits and ordinary original/instance/region/move/drop proofs. Two locked-backend native observations match pinned Rust in4.935s. Shared result consequences use one equality index/Normalizer with canonical Store growth prepaid. Fourteen combined private controls and all758 PA21 text cases pass; the new ordinary PA21 reference is published. Imported protocol/plan transport, typed heterogeneous try and broader const execution remain required. |
 | LIB-037 | Grammar/feature authority qualified; const execution open | Const closure grammar, feature authority and real const-callable/CTFE semantics | PA4 grammar + PA24 closure machinery + PA25 const callable/CTFE + PA31 original source binding / pa4 closure cases, pa25 const-closures and pa31 source-const-closures | Integrator grammar integrated; semantics PA25 | CLI3cc4e779 passes unchanged try_trait const closures and opens164 original files. Six grammar controls and six combined visibility/gate controls pass; three new PA4 references are generated/reviewed, all200 text and independent syntax checks pass (10 documented syntax-only differences). The actual const keyword owns the gate, including cfg-removed hard errors; expr_2021 retains its pinned const-token exclusion. Common records remain unchanged; sparse32-byte rows have measured78/318/1278 work at8/32/128. Original wrong independent predictions are preserved. Actual const creation contexts, call traits, runtime/CTFE, ownership and instance acceptance remain required. |
 | LIB-038 | Declaration/lookup qualified; generator execution and transport open | Authenticated builtin kind across scoped and legacy source forms | PA7/8 + PA31 role/kind authority; PA42/43 generators / pa31 scoped-builtin-declarations | C integrated | CLIb4f107b1 passes unchanged Iter and advances164→206 opened files. Actual source form retains visibility, matcher, hygiene and header; the checked registry supplies invocation kind. Wrong-kind textual candidates use the existing scope/cache and paid work. Full combined32private/26production controls pass, including existing scoped format/concat and legacy attribute opponents. Fourteen independent metadata statuses match; eight wrong warning/category predictions are retained. Actual widths stay unchanged; Iter invocation and wider macro transport remain explicitly unsupported. |
-| LIB-039 | P0; current unchanged-core template blocker | Typed `${concat(...)}` metavariable operation, generated identifier hygiene and independent feature authority | PA7 template grammar + PA8 transcription + PA31 pinned internal feature / pa31 metavariable-concat | Integrator after queued prerequisite integration | CLIb4f107b1 stops at fmt/num.rs149/byte6248, expected macro token,206 opened/all722 pinned. New positive macro both invokes and resolves its generated name; both pinned editions accept it, reject the feature-only opponent with E0658. Current candidate rejects both at template parsing. Six observations/0 infrastructure failures retained. macro_metavar_expr_concat is independent of macro_metavar_expr; complete token grammar/cfg handling must be preserved. No native or artifact claim. |
+| LIB-039 | Local grammar, transcription and lookup qualified; original boundary passed | Typed `${concat(...)}` with actual binding path, synthetic definition hygiene and independent crate feature | PA7/8/31 / pa31 metavariable-concat | Integrator integrated | CLI884e0004 passes original fmt/num149 and reaches226 original files. Six private groups pass alongside74 related controls; original20 protocols, five typed-literal protocols and three allowance sources retain all independent predictions/observations. Widths stay40/32/20/32/72/64; emitted work is bounded. Other metavariable operations remain required and unimplemented; no artifact/native claim from concat. |
+| LIB-040 | Grammar and focused semantics qualified; original boundary passed | Higher-ranked conditional trait-bound order in actual impl Trait parameter | PA5 grammar + PA21 binder/const semantics + PA31 feature authority / pa31 higher-ranked-const-bounds | Integrator integrated | CLI d1e2137d passes slice/cmp218 and opens263 original files. Existing Bound retains both actual binder scope and Constness without new fields or reparsing. Eighteen pinned metadata and18 immutable baseline observations match. All33 focused controls and231/758 owning text cases pass; genuine missing-feature and invalid-order opponents remain rejected. No whole core artifact. |
+| LIB-041 | P0; current unchanged-core template blocker | Typed ignore/index/count/len metavariable expressions with real repetition depth and feature authority | PA7 template/binding grammar + PA8 transcription/hygiene + PA31 macro_metavar_expr / pa31 focused protocol to be added | Integrator | CLI d1e2137d stops at tuple.rs31byte1199 on `${ignore($T)}`, unsupported metavariable expression;263 opened/all722 pinned. Actual tuple templates also use index/count. Consume the same binding tree/current repetition frames, preserve emitted numeric tokens and spans, validate arity/variables/depth and independent feature rules. No skipped templates, new proof owner or extra whole-tree replay. |
 
 The combined functional recovery is recorded in
 [the alias/allowance checkpoint](library-alias-allowances-checkpoint.md):

@@ -85,8 +85,8 @@ impl Request {
             "marker_trait_attr" => Self::Capability(Feature::MarkerTraitAttr),
             "try_blocks" => Self::Capability(Feature::TryBlocks),
             "const_closures" => Self::Capability(Feature::ConstClosures),
-            "coverage_attribute" => Self::Capability(Feature::CoverageAttribute),
             "macro_metavar_expr_concat" => Self::Capability(Feature::MetavariableConcat),
+            "coverage_attribute" => Self::Capability(Feature::CoverageAttribute),
             "pattern_type_macro" => Self::Library(Feature::PatternTypeMacro),
             "pattern_types" => Self::Capability(Feature::PatternTypes),
             // Requests do not authorize the unsupported live const-drop operation.

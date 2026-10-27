@@ -387,6 +387,11 @@ impl Parser<'_, '_> {
                 continue;
             }
             let optional = self.eat(P::Question)?;
+            let quantified = self.cursor.at_word(Word::For)?;
+            let binders = self.binders()?;
+            if quantified && (optional || self.cursor.at(P::Question)?) {
+                return Err(self.error("higher-ranked bounds cannot relax trait requirements")?);
+            }
             let constness = if self.eat(P::OpenBracket)? {
                 if !self.eat_word(Word::Const)? {
                     return Err(self.error("conditional trait bound requires const")?);
@@ -401,17 +406,19 @@ impl Parser<'_, '_> {
             if optional && constness != crate::support::constness::Constness::Ordinary {
                 return Err(self.error("const trait bounds cannot be relaxed")?);
             }
-            let quantified = self.cursor.at_word(Word::For)?;
-            let binders = self.binders()?;
-            if quantified && (optional || self.cursor.at(P::Question)?) {
-                return Err(self.error("higher-ranked bounds cannot relax trait requirements")?);
-            }
-            if quantified
+            if (quantified
+                || optional
+                || constness != crate::support::constness::Constness::Ordinary)
                 && self.cursor.peek(0)?.is_some_and(|token| {
                     matches!(token.kind, TokenKind::Lifetime | TokenKind::RawLifetime)
                 })
             {
-                return Err(self.error("higher-ranked bound requires a trait")?);
+                let message = if quantified {
+                    "higher-ranked bound requires a trait"
+                } else {
+                    "trait bound modifiers require a trait"
+                };
+                return Err(self.error(message)?);
             }
             let value = if self
                 .cursor
