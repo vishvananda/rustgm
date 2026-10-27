@@ -172,10 +172,10 @@ fn completed_contracts_match_independent_object_compatibility()
             &format!("{source}fn check(_: &dyn {object}){{}}"),
             accepted,
         )?;
-        let (report, facts) = semantic::analyze(source).map_err(|e| format!("{name}: {e}"))?;
+        let (report, mut facts) = semantic::analyze(source).map_err(|e| format!("{name}: {e}"))?;
         let root = definition(&report, "T")?;
         let mut queries = Queries::default();
-        let result = queries.demand(&report, &facts, root);
+        let result = queries.demand(&report, &mut facts, root);
         match result {
             Ok(_) => assert!(accepted, "{name}: unexpected compatibility"),
             Err(error @ Error::Incompatible { .. }) => assert!(!accepted, "{name}: {error}"),
@@ -192,11 +192,11 @@ fn shared_supertraits_keep_direct_edges_and_reuse_completed_queries() -> Result<
         for i in 2..count {
             write!(source, "trait T{i}:T{}+T{}{{}}", i - 1, i - 2).map_err(|e| e.to_string())?;
         }
-        let (report, facts) = semantic::analyze(&source)?;
+        let (report, mut facts) = semantic::analyze(&source)?;
         let mut queries = Queries::default();
         let root = definition(&report, &format!("T{}", count - 1))?;
         queries
-            .demand(&report, &facts, root)
+            .demand(&report, &mut facts, root)
             .map_err(|e| e.to_string())?;
         assert!(
             queries.steps <= 30 * count,
@@ -210,7 +210,7 @@ fn shared_supertraits_keep_direct_edges_and_reuse_completed_queries() -> Result<
         for i in 0..count {
             let id = definition(&report, &format!("T{i}"))?;
             let contract = queries
-                .demand(&report, &facts, id)
+                .demand(&report, &mut facts, id)
                 .map_err(|e| e.to_string())?;
             edges += contract.supertraits.len();
             methods += contract.methods.len();

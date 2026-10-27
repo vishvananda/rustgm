@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "state": "NEW frozen selected-impl premise opposites before independent observation",
+  "editions": [
+    2021,
+    2024
+  ],
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "metadata": [
+    {
+      "file": "unproved-written-premise.rs",
+      "status": 1,
+      "source_sha256": "fb8abb593e8748319509d2c0cfd4268677af787a44339862ad640f8d48d19b8e",
+      "warning_codes": []
+    },
+    {
+      "file": "inherited-written-premise.rs",
+      "status": 0,
+      "source_sha256": "ebc4c69503731e161acf6922dd31c5d5ae3051d70151c5ad0ae090f4e362dd48",
+      "warning_codes": [
+        "unused_features",
+        "unused_features",
+        "unused_features"
+      ]
+    }
+  ]
+}

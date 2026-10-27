@@ -303,14 +303,22 @@ impl Generics {
         {
             return Ok(());
         }
-        let environment = self.elaborated_environment(store, owner)?;
-        match self.environments.entry(owner) {
-            Entry::Occupied(_) => Err("generic body environment already completed"),
-            Entry::Vacant(entry) => {
-                entry.insert(Arc::new(environment));
-                Ok(())
-            }
+        if self.environments.contains_key(&owner) {
+            return Err("generic body environment already completed");
         }
+        let shared = self.parameters.get(&owner).is_none_or(Vec::is_empty)
+            && self.predicates.get(&owner).is_none_or(Vec::is_empty);
+        if shared
+            && let Some(parent) = self.parents.get(&owner)
+            && let Some(environment) = self.environments.get(parent)
+            && environment.reusable_declaration_prefix(self.projection_promises.as_ref())
+        {
+            self.environments.insert(owner, Arc::clone(environment));
+            return Ok(());
+        }
+        let environment = self.elaborated_environment(store, owner)?;
+        self.environments.insert(owner, Arc::new(environment));
+        Ok(())
     }
     pub(crate) fn elaborated_environment(
         &mut self,

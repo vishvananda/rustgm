@@ -41,16 +41,42 @@ impl Environment {
         types: &mut Store,
         fold: &mut Bound,
     ) -> Result<bool, &'static str> {
+        self.identity_region_opening_observed::<false>(types, fold, &|_, _| Ok(()))
+    }
+    pub(crate) fn identity_region_opening_charged(
+        self: &Arc<Self>,
+        types: &mut Store,
+        fold: &mut Bound,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<bool, &'static str> {
+        self.identity_region_opening_observed::<true>(types, fold, charge)
+    }
+    fn identity_region_opening_observed<const CHARGED: bool>(
+        self: &Arc<Self>,
+        types: &mut Store,
+        fold: &mut Bound,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<bool, &'static str> {
         fold.account_region_summary_work(1)?;
         let Some(traits) = &self.traits else {
             return Ok(false);
         };
         if traits.opening.get().is_none() {
-            let mut observer = Bound::observe_budgeted_regions(1_000_000, usize::MAX)?;
-            let result = self.inspect_opening(types, &mut observer);
+            let mut observer = if CHARGED {
+                Bound::observe_regions_charged(charge)?
+            } else {
+                Bound::observe_budgeted_regions(1_000_000, usize::MAX)?
+            };
+            let result = self.inspect_opening_observed::<CHARGED>(types, &mut observer, charge);
             // Transfer attempted work before propagating a failed inspection.
             fold.account_region_summary_work(observer.steps)?;
             let (free, outer, captured) = result?;
+            if CHARGED {
+                charge(
+                    1,
+                    size_of::<Summary>() + 2 * size_of::<usize>() + Identity::allocation_bytes(),
+                )?;
+            }
             let summary = Arc::new(Summary {
                 owner: Arc::downgrade(self),
                 arena: types.arena_identity(),
@@ -69,17 +95,18 @@ impl Environment {
         }
         for &region in &summary.free {
             fold.account_region_summary_work(1)?;
-            if fold.region(region, 0)? != region {
+            if fold.region_observed::<CHARGED>(region, 0, charge)? != region {
                 return Err("identity opening changed an existing caller lifetime");
             }
         }
         Ok(true)
     }
 
-    fn inspect_opening(
+    fn inspect_opening_observed<const CHARGED: bool>(
         &self,
         types: &mut Store,
         observer: &mut Bound,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<(Vec<RegionId>, Vec<RegionId>, bool), &'static str> {
         // The remaining components (parameters, const identities and projection
         // promises) contain no region-bearing payload. Inspect their presence,
@@ -92,7 +119,7 @@ impl Environment {
                 .chain(assumptions.sized.iter())
             {
                 observer.account_region_summary_work(1)?;
-                observer.apply(types, ty)?;
+                observer.apply_inside_observed::<CHARGED>(types, ty, 0, charge)?;
             }
         }
         if let Some(mapped) = self
@@ -104,30 +131,45 @@ impl Environment {
                 .index
                 .opening()
                 .ok_or("missing trait view observation")?
-                .replay(types, observer)?;
+                .replay_observed::<CHARGED>(types, observer, charge)?;
         } else {
             for clause in self.trait_clauses()? {
                 observer.account_region_summary_work(1)?;
-                observer.clause(types, clause)?;
+                if CHARGED {
+                    observer.clause_charged(types, clause, charge)?;
+                } else {
+                    observer.clause(types, clause)?;
+                }
             }
         }
         for clause in self.projection_clauses() {
             observer.account_region_summary_work(1)?;
-            observer.clause(types, clause)?;
+            if CHARGED {
+                observer.clause_charged(types, clause, charge)?;
+            } else {
+                observer.clause(types, clause)?;
+            }
         }
         if let Some(builtins) = &self.builtins {
             for clause in builtins.clauses() {
                 observer.account_region_summary_work(1)?;
-                observer.clause(types, clause)?;
+                if CHARGED {
+                    observer.clause_charged(types, clause, charge)?;
+                } else {
+                    observer.clause(types, clause)?;
+                }
             }
         }
         if let Some(regions) = &self.regions {
-            regions.observe_regions(observer)?;
+            regions.observe_regions_observed::<CHARGED>(observer, charge)?;
         }
         let count = observer.observed_regions().count();
         let sort_work = usize::try_from(usize::BITS - count.leading_zeros())
             .map_err(|_| "opening summary work count overflow")?;
         observer.account_region_summary_work(count.saturating_mul(sort_work + 2))?;
+        if CHARGED {
+            charge(count, count.saturating_mul(2 * size_of::<RegionId>()))?;
+        }
         let mut free = Vec::new();
         free.try_reserve_exact(count)
             .map_err(|_| "opening summary allocation failed")?;
@@ -177,6 +219,22 @@ impl Environment {
         types: &mut Store,
         fold: &mut Bound,
     ) -> Result<Option<Arc<Self>>, &'static str> {
+        self.mapped_trait_opening_observed::<false>(types, fold, &|_, _| Ok(()))
+    }
+    pub(crate) fn mapped_trait_opening_charged(
+        self: &Arc<Self>,
+        types: &mut Store,
+        fold: &mut Bound,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Option<Arc<Self>>, &'static str> {
+        self.mapped_trait_opening_observed::<true>(types, fold, charge)
+    }
+    fn mapped_trait_opening_observed<const CHARGED: bool>(
+        self: &Arc<Self>,
+        types: &mut Store,
+        fold: &mut Bound,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Option<Arc<Self>>, &'static str> {
         use crate::types::parameters::premise_index::{ClauseIndex, Opening};
         fold.account_region_summary_work(1)?;
         let Some(traits) = &self.traits else {
@@ -196,10 +254,14 @@ impl Environment {
         }
         for &region in &summary.free {
             fold.account_region_summary_work(1)?;
-            fold.region(region, 0)?;
+            fold.region_observed::<CHARGED>(region, 0, charge)?;
         }
         let mut work = 0;
-        let result = traits.index_counted(types, &mut work);
+        let result = if CHARGED {
+            traits.index_charged(types, charge)
+        } else {
+            traits.index_counted(types, &mut work)
+        };
         fold.account_region_summary_work(work)?;
         let index = result?;
         let count = fold
@@ -208,6 +270,21 @@ impl Environment {
         let sort_work = usize::try_from(usize::BITS - count.leading_zeros())
             .map_err(|_| "trait opening work count overflow")?;
         fold.account_region_summary_work(count.saturating_mul(sort_work + 3).saturating_add(7))?;
+        if CHARGED {
+            charge(
+                count,
+                count.saturating_mul(size_of::<(RegionId, RegionId)>()),
+            )?;
+            charge(
+                1,
+                Opening::construction_bytes(count)
+                    + ClauseIndex::opening_allocation_bytes()
+                    + size_of::<TraitAssumptions>()
+                    + size_of::<super::premises::Mapped>()
+                    + size_of::<Self>()
+                    + 6 * size_of::<usize>(),
+            )?;
+        }
         let mut regions = Vec::new();
         regions
             .try_reserve_exact(count)
@@ -237,5 +314,28 @@ impl Environment {
             .and_then(|traits| traits.opening.get())
             .filter(|summary| summary.current(self, types))
             .map_or_else(Allocation::default, |summary| summary.allocation())
+    }
+}
+
+impl Environment {
+    /// Preserve immutable canonical partitions when opening one proof request.
+    /// Only the genuinely non-shareable regional partitions are copied.
+    pub(crate) fn opened_regions_charged(
+        self: &Arc<Self>,
+        types: &mut Store,
+        fold: &mut Bound,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Arc<Self>, &'static str> {
+        if !self.requires_region_mapping()
+            || self.identity_region_opening_charged(types, fold, charge)?
+        {
+            return Ok(Arc::clone(self));
+        }
+        if let Some(mapped) = self.mapped_trait_opening_charged(types, fold, charge)? {
+            return Ok(mapped);
+        }
+        charge(1, size_of::<Self>() + 2 * size_of::<usize>())?;
+        self.substitute_declared_regions_charged(types, fold, charge)
+            .map(Arc::new)
     }
 }

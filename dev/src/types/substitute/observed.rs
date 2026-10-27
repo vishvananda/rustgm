@@ -35,10 +35,11 @@ impl Bound {
         Ok(fold)
     }
 
-    pub(super) fn prepare_observation(
+    pub(super) fn prepare_observation_observed<const CHARGED: bool>(
         &mut self,
         region: RegionId,
         depth: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<(), &'static str> {
         let Action::Regions(mapping) = &self.action else {
             return Ok(());
@@ -60,6 +61,14 @@ impl Bound {
         self.region_budget()?
             .ok_or("missing observation budget")?
             .check_bytes(self.region_retained_bytes()?.saturating_add(planned))?;
+        if CHARGED {
+            let growth = crate::support::retained::Growth::map::<RegionId, RegionId>(
+                mapping.replacements.len(),
+                mapping.replacements.capacity(),
+                1,
+            );
+            charge(growth.work, growth.bytes)?;
+        }
         let Action::Regions(mapping) = &mut self.action else {
             return Err("observation owner changed");
         };

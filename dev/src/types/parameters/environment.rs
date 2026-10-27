@@ -10,7 +10,9 @@ mod instantiation;
 mod opening_summary;
 mod permissions;
 mod premises;
+mod query_parameters;
 pub(crate) use permissions::Query as BuiltinQuery;
+use query_parameters::Parameters;
 #[cfg(test)]
 #[path = "../../../tests/invariants/builtin_permissions.rs"]
 mod builtin_tests;
@@ -43,7 +45,7 @@ pub struct Abilities {
 /// same environment for their entire lifetime, including cached failures.
 #[derive(Clone)]
 pub struct Environment {
-    parameters: Arc<HashMap<ParameterId, Abilities>>,
+    parameters: Arc<Parameters>,
     assumptions: Option<Arc<Assumptions>>,
     builtins: Option<Arc<permissions::Index>>,
     regions: Option<Arc<crate::types::relations::RegionEqualities>>,
@@ -70,6 +72,22 @@ impl Environment {
         self.projection_promises = promises;
         self
     }
+    /// Only an immutable declaration prefix with the same frozen projection
+    /// promises can be reused by a child which adds no scope rows.
+    pub(crate) fn reusable_declaration_prefix(
+        &self,
+        promises: Option<&Arc<HashMap<crate::types::ItemId, crate::types::projection::Builtins>>>,
+    ) -> bool {
+        !self.parameters.extended()
+            && !self.has_trait_opening()
+            && self.body_aliases().is_none()
+            && match (self.projection_promises.as_ref(), promises) {
+                (None, None) => true,
+                (Some(a), Some(b)) => Arc::ptr_eq(a, b),
+                _ => false,
+            }
+    }
+
     /// Declaration metadata supplies no evidence for forming an application.
     pub(crate) fn projection_promises(
         &self,
@@ -233,7 +251,7 @@ impl Environment {
             }
         }
         Ok(Self {
-            parameters: Arc::new(parameters),
+            parameters: Arc::new(Parameters::declared(parameters)),
             assumptions: None,
             builtins: None,
             regions: None,
@@ -253,6 +271,9 @@ impl Environment {
         types: &Store,
         parameters: &[ParameterId],
     ) -> Result<Self, &'static str> {
+        if self.parameters.extended() {
+            return Err("rigid query parameter scope is immutable");
+        }
         if self.has_trait_opening() {
             return Err("opened caller requires materialization before adding parameters");
         }
@@ -302,6 +323,9 @@ impl Environment {
         types: &Store,
         clauses: impl ExactSizeIterator<Item = Clause>,
     ) -> Result<Self, &'static str> {
+        if self.parameters.extended() {
+            return Err("rigid query parameter scope is immutable");
+        }
         if self.has_trait_opening() {
             return Err("opened caller requires materialization before adding clauses");
         }
@@ -350,7 +374,7 @@ impl Environment {
         if uses
             .parameters
             .iter()
-            .any(|id| !self.parameters.contains_key(id))
+            .any(|id| !self.parameters.contains_key(*id))
         {
             return Err("bound parameter is outside its environment");
         }
@@ -413,7 +437,7 @@ impl Environment {
         }
         if let Some(Kind::Parameter(id)) = types.kind(predicate.ty) {
             let parameter = Arc::make_mut(&mut self.parameters)
-                .get_mut(&id)
+                .get_mut(id)
                 .ok_or("bound parameter is outside its environment")?;
             parameter.copy |= properties.copy;
             parameter.clone_ |= properties.clone_;
@@ -553,7 +577,7 @@ impl Environment {
     /// `None` means the parameter is outside this scope, not an unbounded type.
     #[must_use]
     pub fn abilities(&self, parameter: ParameterId) -> Option<Abilities> {
-        self.parameters.get(&parameter).copied()
+        self.parameters.get(parameter).copied()
     }
 }
 

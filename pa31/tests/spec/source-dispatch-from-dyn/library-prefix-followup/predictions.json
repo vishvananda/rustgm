@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "state": "Frozen predictions before independent observation; metadata is not native execution",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    2021,
+    2024
+  ],
+  "metadata": [
+    {
+      "file": "actual-reference-call.rs",
+      "status": 0,
+      "source_sha256": "7cd31207a28bba8e9a66f4110c25a7b2cf8eee2494f83631c7ab5f9a1b9f3dc7",
+      "warning_codes": []
+    },
+    {
+      "file": "raw-without-unsize-premise.rs",
+      "status": 0,
+      "source_sha256": "dae6f09539f29d99aa262b9d47bf2c98f2946f21f17898f1e3e173204d99aead",
+      "warning_codes": []
+    },
+    {
+      "file": "reference-lifetime-mismatch.rs",
+      "status": 1,
+      "source_sha256": "fa5ca8c58e1c71e95eff9fcee65c55d9f71211e601a370fe4b5a4a9f2848fcb5",
+      "warning_codes": []
+    },
+    {
+      "file": "raw-mutability-mismatch.rs",
+      "status": 1,
+      "source_sha256": "6c95e7602ad9cf1eb25bb1b86295a42f01a517aba3ccb14633f86b77ae5888bb",
+      "warning_codes": []
+    },
+    {
+      "file": "nominal-one-field.rs",
+      "status": 0,
+      "source_sha256": "f0ddb420a0498c45081c6f860e18a69369802fc5c993a144d67b46505a6eba71",
+      "warning_codes": []
+    },
+    {
+      "file": "nominal-two-fields.rs",
+      "status": 1,
+      "source_sha256": "a860032ae6cffcf06c71d09e0a18dcb75ad323808ffbd94b075db147f7c93439",
+      "warning_codes": []
+    },
+    {
+      "file": "nominal-c-layout.rs",
+      "status": 1,
+      "source_sha256": "4f8ff78a003f2baeae8e7c7ffb7d4fd638d16f3c3b4f8d64ef23e25a86741b94",
+      "warning_codes": []
+    },
+    {
+      "file": "missing-receiver-impl.rs",
+      "status": 1,
+      "source_sha256": "77bdb33c99d572ba40b52a848774918cc4515a017e236efb928ce63703b4bee2",
+      "warning_codes": []
+    }
+  ],
+  "native_pending": "actual-reference-call.rs must produce byte 7 through real source receiver and selected original/instance body; no full Formatter attributes/provider claim",
+  "required_original": "B retained formatter-source.rs c6ea3c7c keeps full Error/Options/Write/Formatter attributes and fields; composition remains required",
+  "original_predictions_sha256": "5bfc07ae07d5d66a1037ea8663703d39380c5461245df5d8c3fcf01694496974",
+  "scope": "NEW prefix-corrected inputs; original E0635-masked predictions/raw preserved unchanged. Same bodies; actual pinned #[unstable] declarations register these library features."
+}

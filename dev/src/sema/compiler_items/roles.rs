@@ -126,6 +126,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         LangItem::Freeze,
         LangItem::Unsize,
         LangItem::CoerceUnsized,
+        LangItem::DispatchFromDyn,
         LangItem::Send,
         LangItem::Sync,
         LangItem::Unpin,
@@ -151,7 +152,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
             LangItem::Freeze | LangItem::Send | LangItem::Sync | LangItem::Unpin => {
                 freezing::validate(report, facts, declaration, role)?;
             }
-            LangItem::Unsize | LangItem::CoerceUnsized => {
+            LangItem::Unsize | LangItem::CoerceUnsized | LangItem::DispatchFromDyn => {
                 unsizing::validate(report, facts, catalog, declaration, role, self_type)?;
             }
             LangItem::Drop | LangItem::Destruct => {
@@ -308,6 +309,7 @@ fn header<'a>(
             | LangItem::Fn
             | LangItem::Unsize
             | LangItem::CoerceUnsized
+            | LangItem::DispatchFromDyn
     ));
     header
         .profile(

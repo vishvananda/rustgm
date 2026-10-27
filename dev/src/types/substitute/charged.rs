@@ -75,9 +75,18 @@ impl Bound {
         charge(1, 0)?;
         if !matches!(
             self.action,
-            Action::Remove | Action::Shift(_) | Action::Lower(_) | Action::Shape { .. }
+            Action::Remove
+                | Action::Shift(_)
+                | Action::Lower(_)
+                | Action::Shape { .. }
+                | Action::Regions(_)
         ) {
             return Err("charged declaration fold requires an actual parameter/capture mapping");
+        }
+        if let Action::Regions(mapping) = &self.action
+            && !mapping.permits_charged_observation()
+        {
+            return Err("charged region fold requires an actual observation or query opening");
         }
         let key = (ty, self.cache_depth(depth));
         if let Some(result) = self.result(store, key)? {
@@ -116,7 +125,9 @@ impl Bound {
         charge(1, 0)?;
         self.region_work(1)?;
         Ok(match argument {
-            Argument::Lifetime(region) => Argument::Lifetime(self.region(region, depth)?),
+            Argument::Lifetime(region) => {
+                Argument::Lifetime(self.region_observed::<CHARGED>(region, depth, charge)?)
+            }
             Argument::Type(ty) => {
                 Argument::Type(self.apply_inside_observed::<true>(store, ty, depth, charge)?)
             }

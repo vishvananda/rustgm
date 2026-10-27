@@ -138,7 +138,7 @@ fn final_dynamic_calls_are_static_while_ordinary_methods_retain_slots() -> Resul
             .trait_owner(method)
             .ok_or("actual trait owner")?;
         let mut queries = crate::sema::dyn_compat::Queries::default();
-        let contract = queries.demand(&report, &analysis.facts, owner)?;
+        let contract = queries.demand(&report, &mut analysis.facts, owner)?;
         assert_eq!(contract.methods.contains(&method), name == "dyn-ordinary");
         let mut dynamic_instances = 0;
         let mut virtual_instances = 0;
