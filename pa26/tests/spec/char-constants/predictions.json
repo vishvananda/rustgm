@@ -1,0 +1,227 @@
+{
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "status": "declared before independent observations and implementation",
+  "cases": [
+    {
+      "name": "char-required-original",
+      "path": "pa26/tests/spec/primitive-constants/char-required.rs",
+      "sha256": "5ca261b7ead6180554e917836eeb0207ddd3ea6634e69d5a8505f73c3daee44b",
+      "accepted": true,
+      "native": true,
+      "profile": "ordinary"
+    },
+    {
+      "name": "min",
+      "path": "pa26/tests/spec/char-constants/min.rs",
+      "sha256": "c138bdec2ac372209c09cdb9fcc13f6b72e9e772b16d673befb4f33de0573d81",
+      "accepted": true,
+      "native": true,
+      "profile": "ordinary"
+    },
+    {
+      "name": "max",
+      "path": "pa26/tests/spec/char-constants/max.rs",
+      "sha256": "5f5b349fe44ac1bb9645cde3bf39364f7c2fe0ffb6e20e2704b510ff41a72b16",
+      "accepted": true,
+      "native": true,
+      "profile": "ordinary"
+    },
+    {
+      "name": "alias",
+      "path": "pa26/tests/spec/char-constants/alias.rs",
+      "sha256": "df0c3d02cf56466ec6a4d16acf47408d6626bc6bb264597ff776f7c7ec1e552a",
+      "accepted": true,
+      "native": true,
+      "profile": "ordinary"
+    },
+    {
+      "name": "qualified",
+      "path": "pa26/tests/spec/char-constants/qualified.rs",
+      "sha256": "54c3e9d57df12e88796b251f4b8b81be16c740b722c2b4ef26128561650bec12",
+      "accepted": true,
+      "native": true,
+      "profile": "ordinary"
+    },
+    {
+      "name": "lexical-shadow",
+      "path": "pa26/tests/spec/char-constants/lexical-shadow.rs",
+      "sha256": "14f82718fe740c5c2218f765af6423b19e3074d9bbaebe591a9739b84313b680",
+      "accepted": true,
+      "native": true,
+      "profile": "ordinary"
+    },
+    {
+      "name": "alias-shadow",
+      "path": "pa26/tests/spec/char-constants/alias-shadow.rs",
+      "sha256": "c463aad2a20d14ea8640f4c7f4c1842daa1027ce7adb315ac841c56da3de353b",
+      "accepted": true,
+      "native": true,
+      "profile": "ordinary"
+    },
+    {
+      "name": "core-shadow",
+      "path": "pa26/tests/spec/char-constants/core-shadow.rs",
+      "sha256": "801dc7d3b5410868919790e4fe650546e4cd084d3c9d1773ccd770c8c11eab4f",
+      "accepted": true,
+      "native": true,
+      "profile": "ordinary"
+    },
+    {
+      "name": "ctfe",
+      "path": "pa26/tests/spec/char-constants/ctfe.rs",
+      "sha256": "f3ce2901577cd98bbd725e4044e2868cd9f4b1e917868ec05377345b11620fb6",
+      "accepted": true,
+      "native": true,
+      "profile": "ordinary"
+    },
+    {
+      "name": "patterns",
+      "path": "pa26/tests/spec/char-constants/patterns.rs",
+      "sha256": "b1ff2d86e10315b8841a955759cfce510389aa031fadfd2cd232475c8cd6bf24",
+      "accepted": true,
+      "native": true,
+      "profile": "ordinary"
+    },
+    {
+      "name": "borrow-temporary",
+      "path": "pa26/tests/spec/char-constants/borrow-temporary.rs",
+      "sha256": "c9cd5ed1f90ce6fb926f080a145ff5fdf286bfcdf19f9d324a5b98a97e160058",
+      "accepted": true,
+      "native": true,
+      "profile": "ordinary"
+    },
+    {
+      "name": "generic-char-value",
+      "path": "pa26/tests/spec/char-constants/generic-char-value.rs",
+      "sha256": "e19c5547db92c6d89032dd4332f857f8f2bf64418095d4bb2a557a0d97a392a3",
+      "accepted": true,
+      "native": true,
+      "profile": "ordinary"
+    },
+    {
+      "name": "generic-integer-cast",
+      "path": "pa26/tests/spec/char-constants/generic-integer-cast.rs",
+      "sha256": "ae22bfcf8bf1223d5a2cc883f7f6a4268ad6f252ff06cd050a16bfce91deb1ad",
+      "accepted": true,
+      "native": true,
+      "profile": "ordinary"
+    },
+    {
+      "name": "self-priority",
+      "path": "pa26/tests/spec/char-constants/self-priority.rs",
+      "sha256": "5d6cbaec38b02ae5ec55e7bcf314799844b6403895c7eaa57f5f62f3580734e6",
+      "accepted": true,
+      "native": true,
+      "profile": "ordinary"
+    },
+    {
+      "name": "integer-control",
+      "path": "pa26/tests/spec/char-constants/integer-control.rs",
+      "sha256": "79b7d2da1fcb2f8eca0f305d349bb48cefce8dbff0de814658b34795ef48e736",
+      "accepted": true,
+      "native": true,
+      "profile": "ordinary"
+    },
+    {
+      "name": "wrong-result",
+      "path": "pa26/tests/spec/char-constants/wrong-result.rs",
+      "sha256": "23e229e5a12f073b22e632dd4b33d89cef4f78edfb7f52be14050b71827d796c",
+      "accepted": false,
+      "native": false,
+      "profile": "ordinary"
+    },
+    {
+      "name": "member-arguments",
+      "path": "pa26/tests/spec/char-constants/member-arguments.rs",
+      "sha256": "5c4369b284ac22057291beb3ee07e6d51c83129f4149b6a40da402cb0d7a32a1",
+      "accepted": false,
+      "native": false,
+      "profile": "ordinary"
+    },
+    {
+      "name": "primitive-arguments",
+      "path": "pa26/tests/spec/char-constants/primitive-arguments.rs",
+      "sha256": "17c955628a0b3a51baf488801c3f8e7bcdd3ae24b5dd78a1a3253825ff02465f",
+      "accepted": false,
+      "native": false,
+      "profile": "ordinary"
+    },
+    {
+      "name": "not-callable",
+      "path": "pa26/tests/spec/char-constants/not-callable.rs",
+      "sha256": "aef530e00a0a0a437a2e9033c744a403dbdbdf395083f3ae993df005e438b1a3",
+      "accepted": false,
+      "native": false,
+      "profile": "ordinary"
+    },
+    {
+      "name": "assign-constant",
+      "path": "pa26/tests/spec/char-constants/assign-constant.rs",
+      "sha256": "774f8eb051c78f79cc299565b8ac40d17202005dca14edfa8d9578b6586792f0",
+      "accepted": false,
+      "native": false,
+      "profile": "ordinary"
+    },
+    {
+      "name": "generic-wrong-value",
+      "path": "pa26/tests/spec/char-constants/generic-wrong-value.rs",
+      "sha256": "f0c1f639d6b9d963260f450dea2c5d3d8d0a382c2daa71d649793e93f39e95ef",
+      "accepted": false,
+      "native": false,
+      "profile": "ordinary"
+    },
+    {
+      "name": "unbounded-generic",
+      "path": "pa26/tests/spec/char-constants/unbounded-generic.rs",
+      "sha256": "854fcc0447c207b1b720629e6d069ccbe98d65c3c2a4a698a4001969642ad4fa",
+      "accepted": false,
+      "native": false,
+      "profile": "ordinary"
+    },
+    {
+      "name": "invalid-char-value",
+      "path": "pa26/tests/spec/char-constants/invalid-char-value.rs",
+      "sha256": "f697706e5600a24e7b1592e818fa476c41e39241656064afa0a9e27d53c8badd",
+      "accepted": false,
+      "native": false,
+      "profile": "ordinary"
+    },
+    {
+      "name": "source-absent-max",
+      "path": "pa26/tests/spec/char-constants/source-absent-max.rs",
+      "sha256": "225c2300a51585a9a925d4a38703551754ce53ab8e324e599b430a2a3084298c",
+      "accepted": false,
+      "native": false,
+      "profile": "source-core"
+    },
+    {
+      "name": "source-absent-min",
+      "path": "pa26/tests/spec/char-constants/source-absent-min.rs",
+      "sha256": "d41b2ca57d29bf13527c108ee5886d0d8047b1480e954c059fdc6cd873a08104",
+      "accepted": false,
+      "native": false,
+      "profile": "source-core"
+    },
+    {
+      "name": "source-actual",
+      "path": "pa26/tests/spec/char-constants/source-actual.rs",
+      "sha256": "855f1d9301a5a7ada9985f90327e4fb5065c91e0c6293d0f6afac8e9c4f9fcc8",
+      "accepted": true,
+      "native": false,
+      "profile": "source-core"
+    },
+    {
+      "name": "source-owned-value",
+      "path": "pa26/tests/spec/char-constants/source-owned-value.rs",
+      "sha256": "6353a6481967167907d3023a59f442d69459232de5531eb0b1d977bf193f6e7f",
+      "accepted": true,
+      "native": false,
+      "profile": "source-core"
+    }
+  ],
+  "source_rule": "Genuine SourceCore profile must never receive bootstrap primitive constant fallback; actual source declarations/initializers own values.",
+  "scope": "Only char MIN/MAX plus unchanged integer MAX. Float constants and reference-RHS Add/Sub remain required.",
+  "native": "Only accepted ordinary inputs execute; clean exit0/empty stdout/stderr. Char scalar is four bytes; casts retain their actual target widths."
+}
