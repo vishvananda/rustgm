@@ -7,6 +7,8 @@ mod reserved_owners;
 pub(in crate::sema) use provenance::SourceOwner;
 pub(in crate::sema) use reserved_owners::ImportedOwner;
 #[cfg(test)]
+pub(in crate::sema) use reserved_owners::imported_layouts;
+#[cfg(test)]
 #[path = "../../tests/invariants/owner_slots.rs"]
 mod tests;
 use crate::support::hash::HashMap;

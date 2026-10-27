@@ -11,6 +11,92 @@ use crate::{
     support::constness::Constness,
 };
 
+/// Only actual selected copying declarations enter their existing ledger.
+pub(in crate::sema) fn selected_copying(
+    report: &Report,
+    facts: &mut Declarations,
+) -> Result<(), Error> {
+    if report.package.staged_consumer().is_none() {
+        return Err(Error::unlocated(
+            "selected Copy preparation requires its actual private consumer",
+        ));
+    }
+    let mut steps = 0usize;
+    let checked = (|| {
+        let catalog = catalog(report, facts)?;
+        let mut complete = 0u64;
+        for role in [LangItem::Clone, LangItem::Copy] {
+            steps += 1;
+            let Some(declaration) = catalog.role(role)? else {
+                continue;
+            };
+            let header = Trait::current(report, facts, declaration, &mut steps)?;
+            header.profile(
+                &facts.types,
+                Flags {
+                    unsafe_: false,
+                    constant: role == LangItem::Clone && header.flags.constant,
+                    auto_: false,
+                },
+                0,
+            )?;
+            steps = steps.saturating_add(header.inputs.len());
+            copying::require_header_super(
+                facts,
+                catalog,
+                &header,
+                if role == LangItem::Clone {
+                    LangItem::Sized
+                } else {
+                    LangItem::Clone
+                },
+                Constness::Ordinary,
+            )?;
+            if role == LangItem::Clone {
+                clone_member(facts, catalog, &header, &mut steps)?;
+                complete |= super::bit(LangItem::CloneFn);
+            } else if !header.members.is_empty() {
+                return Err("source copying marker must not declare members");
+            }
+            complete |= super::bit(role);
+        }
+        if catalog.role(LangItem::CloneFn)?.is_some()
+            && complete & super::bit(LangItem::CloneFn) == 0
+        {
+            return Err("source language member has no validated actual trait owner");
+        }
+        Ok(complete)
+    })();
+    let fresh = facts
+        .source_bindings
+        .as_deref()
+        .is_some_and(|catalog| catalog.traits.is_none());
+    crates::charge_source_headers(
+        facts,
+        steps,
+        if checked.as_ref().is_ok_and(|roles| *roles != 0) && fresh {
+            size_of::<Validated>()
+        } else {
+            0
+        },
+    )?;
+    let complete = checked.map_err(Error::unlocated)?;
+    let catalog = facts
+        .source_bindings
+        .as_deref_mut()
+        .ok_or_else(|| Error::unlocated("selected Copy catalog disappeared"))?;
+    if let Some(prior) = catalog.traits.as_deref_mut() {
+        prior.roles |= complete;
+    } else if complete != 0 {
+        catalog.traits = Some(Box::new(Validated {
+            roles: complete,
+            methods: [None; 3],
+            pointee: None,
+        }));
+    }
+    Ok(())
+}
+
 pub(in crate::sema::compiler_items) fn sizing(
     report: &Report,
     facts: &mut Declarations,

@@ -16,6 +16,9 @@ use crate::{
 #[path = "demanded_ports.rs"]
 mod reserved;
 pub(super) use reserved::{Maps, Reserved};
+#[path = "recorded_type_ports.rs"]
+mod recorded;
+pub(super) use recorded::Recorded;
 #[path = "memo_cells.rs"]
 mod memo;
 use memo::{CellState, Storage};
@@ -124,6 +127,12 @@ pub(super) trait Port<'rows, B: Budget>: sealed::Sealed {
         row: s::FunctionApplicationRef,
         budget: &mut B,
     ) -> Result<Dependency, Error>;
+    fn require_context(&self, _: &Store, _: &mut B) -> Result<(), Error> {
+        Ok(())
+    }
+    fn resume_body(&self) -> Option<ImportedBodyId> {
+        None
+    }
     fn availability(&self) -> Availability;
     fn root(&self) -> ImportedDeclarationId;
 }
@@ -248,7 +257,7 @@ impl<M: Storage> Worklist<M> {
                 "recipe availability changed without explicit memo invalidation",
             ));
         }
-        Ok(())
+        port.require_context(store, budget)
     }
     pub(super) fn demand<'rows, B: Budget, P: Port<'rows, B>>(
         &mut self,
@@ -267,9 +276,19 @@ impl<M: Storage> Worklist<M> {
             CellState::Pending => {}
         }
         if let Some(dependency) = self.blocked {
-            return Ok(Demand::Blocked(dependency));
+            if let Dependency::OwnedBodyDomain(body) = dependency
+                && port.resume_body() == Some(body)
+                && self.stack.first().copied() == Some(root.0 as usize)
+            {
+                // Only the actual selected domain can continue this retained frontier.
+                // The next finish retries the blocked node, whose children are ready.
+                self.blocked = None;
+            } else {
+                return Ok(Demand::Blocked(dependency));
+            }
+        } else {
+            self.stack.push(root.0 as usize);
         }
-        self.stack.push(root.0 as usize);
         while let Some(&index) = self.stack.last() {
             budget.charge(1)?;
             let row = *port

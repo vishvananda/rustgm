@@ -1,0 +1,156 @@
+{
+  "state": "independent library-metadata observations; candidate implementation pending",
+  "profile": "rustc 1.98.0; bootstrap; metadata lib; abort; x86_64-unknown-linux-gnu; editions2021/2024",
+  "cases": [
+    {
+      "name": "direct-cooked",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/direct-cooked.rs",
+      "sha256": "9bdc3b3f3eb826c7712f5ff444a42c7b0993425c1545fb32ad3e784735f2fc67",
+      "rustc_status": 0,
+      "candidate_status": null
+    },
+    {
+      "name": "literal-integer",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/literal-integer.rs",
+      "sha256": "227e8d75b050aa89de865a179064904ee07d6007a85a7eaa69ea8276411a00e2",
+      "rustc_status": 0,
+      "candidate_status": null
+    },
+    {
+      "name": "literal-spelling",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/literal-spelling.rs",
+      "sha256": "01d3c66f7a5a5f0badb1c766fce90b45752773946236beaa49b5be6688d5e97f",
+      "rustc_status": 0,
+      "candidate_status": null
+    },
+    {
+      "name": "repetition",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/repetition.rs",
+      "sha256": "50c8f3c5934b50580b1108fcab4aec1c41a03e9a402e9acdafbb36cafb7a25bd",
+      "rustc_status": 0,
+      "candidate_status": null
+    },
+    {
+      "name": "literal-forwarding",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/literal-forwarding.rs",
+      "sha256": "3dcc9e23fbde8ed2666bffbb3bce9834862a34c11ba5a210c910bab7dd05c970",
+      "rustc_status": 0,
+      "candidate_status": null
+    },
+    {
+      "name": "direct-raw-string",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/direct-raw-string.rs",
+      "sha256": "6935a294e4757f6e06f40bad3810d6b4052c5a614f8789bf581520c357048541",
+      "rustc_status": 1,
+      "candidate_status": null
+    },
+    {
+      "name": "captured-raw-string",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/captured-raw-string.rs",
+      "sha256": "0d54ca87db7d4645758fb7e62618ec095d3d6f4a6f86630654b274b7792970a6",
+      "rustc_status": 1,
+      "candidate_status": null
+    },
+    {
+      "name": "raw-identifier",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/raw-identifier.rs",
+      "sha256": "4f271950ee36b987ca8c66365631141f724c38bc1b70a11e7f7efc64673c861b",
+      "rustc_status": 1,
+      "candidate_status": null
+    },
+    {
+      "name": "suffixed-integer",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/suffixed-integer.rs",
+      "sha256": "ec404d452015b6dba2b96bf1f1fecf44b94c7d7924cb0dbc0bc24f4a03c840b7",
+      "rustc_status": 1,
+      "candidate_status": null
+    },
+    {
+      "name": "tt-integer",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/tt-integer.rs",
+      "sha256": "de154681f3ab88fac2044c559bcb6e5c78d9e007fb68f5838515c6903d62f116",
+      "rustc_status": 1,
+      "candidate_status": null
+    },
+    {
+      "name": "expression-fragment",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/expression-fragment.rs",
+      "sha256": "a7095bc6c2227e8d9f308d4cedd54ef8875ff52106a56a18494a5221f1642002",
+      "rustc_status": 1,
+      "candidate_status": null
+    },
+    {
+      "name": "one-operand",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/one-operand.rs",
+      "sha256": "1c33379c9130e6e97c6b4bf3e18c0822676c8b646464e76c4214817d240c784d",
+      "rustc_status": 1,
+      "candidate_status": null
+    },
+    {
+      "name": "trailing-comma",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/trailing-comma.rs",
+      "sha256": "8c080d51cb8600ec36afc2e7c0283c3f156b23099bd917c7f88bdbd941c24d77",
+      "rustc_status": 1,
+      "candidate_status": null
+    },
+    {
+      "name": "unknown-variable",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/unknown-variable.rs",
+      "sha256": "c84d59867db9b2026b5955b1d2d27db2cffa858dda604e8c3720cdff0327520c",
+      "rustc_status": 1,
+      "candidate_status": null
+    },
+    {
+      "name": "still-repeating",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/still-repeating.rs",
+      "sha256": "97b7af38fe28969134a905c55c097d627b6bf0826cf075c3d1989d2e8e447b0a",
+      "rustc_status": 1,
+      "candidate_status": null
+    },
+    {
+      "name": "escaped-string",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/escaped-string.rs",
+      "sha256": "53fc5a4b9c53643a0d63a561aaf972d848fb2c26332fbb502aef765fc00fe225",
+      "rustc_status": 1,
+      "candidate_status": null
+    },
+    {
+      "name": "unused-missing-feature",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/unused-missing-feature.rs",
+      "sha256": "e38056c0a9f6f0c5e11c96b08611f25f93ee4473d4c685cf681a693c0c7f9f0f",
+      "rustc_status": 1,
+      "candidate_status": null
+    },
+    {
+      "name": "disabled-missing-feature",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/disabled-missing-feature.rs",
+      "sha256": "ac5c164edb59871822670d04aae3263c7e49928594a35f383fc816246526ebae",
+      "rustc_status": 0,
+      "candidate_status": null
+    },
+    {
+      "name": "local-definition-hygiene",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/local-definition-hygiene.rs",
+      "sha256": "773e68dc3ca4f007af6cb5eecdd9a0b60baee462ecba59a203dbc1f1a2e730da",
+      "rustc_status": 1,
+      "candidate_status": null
+    },
+    {
+      "name": "matching-definition-hygiene",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/matching-definition-hygiene.rs",
+      "sha256": "75e6a69b9ac26029c83ccf9b627c7482e1b2fdbd95688ee527badb2a1156a5df",
+      "rustc_status": 0,
+      "candidate_status": null
+    }
+  ],
+  "observed": {
+    "state": "observed",
+    "observations": 40,
+    "disagreements": [],
+    "infrastructure_failures": 0,
+    "seconds": 1.3699782909825444,
+    "binding_sha256": "84b71877ff89ded219af25fcd6823cd4194814a40d9705c04f7666a243ca0f40",
+    "results_sha256": "40c3d4c74d81b8e18b6ea1cf159e6bd2cbf5c21e21b4c650c610e11e7c53356c"
+  },
+  "scope": "No native execution or target-library artifact. Original predictions were frozen before observation. All40 metadata statuses match; no infrastructure failures."
+}

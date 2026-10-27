@@ -3,6 +3,15 @@ use super::{
     Body, Engine, Environment, Error, ExpansionId, FileId, Input, NodeId, Source, Sources, Stream,
     Transparency, WithEditions, editions, transcribe,
 };
+use crate::{
+    expand::{
+        marks::{Marks, SyntaxContextId},
+        stream::Location,
+    },
+    lex::token::LexError,
+    resolve::unit::{Unit, contexts},
+    syntax::token_tree::error,
+};
 
 pub(super) struct Transcribed {
     pub stream: Stream,
@@ -71,8 +80,15 @@ impl<S: Sources> Engine<'_, S> {
                 &inputs,
             )
             .map_err(|e| Error::at(file, e.offset, e.message))?;
-        let transcription = transcribe::transcribe(&compiled.definition, &matched, source, input)
-            .map_err(|e| Error::at(file, original.start, e.message))?;
+        let transcription = transcribe::transcribe_with_inputs(
+            &compiled.definition,
+            &matched,
+            source,
+            input,
+            &mut package.names,
+            &inputs,
+        )
+        .map_err(|e| Error::at(file, original.start, e.message))?;
         let environment = Environment {
             definition: Source {
                 file: node.file,
@@ -82,31 +98,24 @@ impl<S: Sources> Engine<'_, S> {
             context: entry.context,
             introduction: context,
             crate_id: 0,
+            edition: entry.edition,
         };
         let mut stream = Stream::transcribe_with(
             &transcription,
             &matched,
             input,
             &environment,
+            &package.names,
             |location, origin| {
-                let raw =
-                    crate::resolve::unit::contexts::at(units, location.file, location.span.start)
-                        .map_err(|_| {
-                        crate::syntax::token_tree::error(
-                            location.span.start,
-                            "invalid retained token context",
-                        )
-                    })?;
-                if origin == transcribe::Origin::Invocation {
-                    return Ok(Some(raw));
-                }
-                package
-                    .marks
-                    .apply(raw, context, mode, call_site)
-                    .map(Some)
-                    .map_err(|message| {
-                        crate::syntax::token_tree::error(location.span.start, message)
-                    })
+                marked_context(
+                    units,
+                    &mut package.marks,
+                    context,
+                    mode,
+                    call_site,
+                    location,
+                    origin,
+                )
             },
         )
         .map_err(|e| Error::at(file, original.start, e.message))?;
@@ -119,4 +128,25 @@ impl<S: Sources> Engine<'_, S> {
             parser_calls: matched.captures.parser_calls,
         })
     }
+}
+
+/// Captures keep their actual raw context; definition tokens acquire this mark.
+fn marked_context(
+    units: &[Unit],
+    marks: &mut Marks,
+    expansion: ExpansionId,
+    mode: Transparency,
+    call_site: SyntaxContextId,
+    location: Location,
+    origin: transcribe::Origin,
+) -> Result<Option<SyntaxContextId>, LexError> {
+    let raw = contexts::at(units, location.file, location.span.start)
+        .map_err(|_| error(location.span.start, "invalid retained token context"))?;
+    if origin == transcribe::Origin::Invocation {
+        return Ok(Some(raw));
+    }
+    marks
+        .apply(raw, expansion, mode, call_site)
+        .map(Some)
+        .map_err(|message| error(location.span.start, message))
 }

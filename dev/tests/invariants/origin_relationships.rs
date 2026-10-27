@@ -31,7 +31,10 @@ fn replace_environment(
         .and_then(|linkage| linkage.originals.as_mut())
         .and_then(|headers| headers.entries.get_mut(&definition))
         .ok_or("actual retained imported header")?;
-    Ok(std::mem::replace(&mut header.environment, environment))
+    header
+        .environment
+        .replace(environment)
+        .ok_or_else(|| "actual defining environment was pending".into())
 }
 fn actual_origins(
     report: &crate::resolve::expansion::Report,
@@ -41,7 +44,7 @@ fn actual_origins(
     linkage
         .originals
         .as_deref()
-        .and_then(|headers| headers.source.as_deref())
+        .and_then(|headers| headers.source.as_ref())
         .ok_or("actual canonical graph")?;
     let catalog = linkage.origin_catalog().ok_or("actual catalog")?;
     let descriptor = report

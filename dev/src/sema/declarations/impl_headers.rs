@@ -44,11 +44,16 @@ impl Checker<'_> {
             .ok_or_else(|| Error::unlocated("missing reserved implementation inventory"))?
             .register_collection_heads(self.report)
             .map_err(Error::unlocated)?;
+        if self.selected.is_some() {
+            // The same selected registration path checks each newly appended
+            // coherence pair before executable conformance can complete.
+            return Ok(());
+        }
         self.prepare_imported_candidates()
     }
 
     fn implementation_candidates(
-        &self,
+        &mut self,
         imported_work: &mut usize,
     ) -> Result<Vec<crate::sema::traits::implementations::PendingHeader>, Error> {
         use crate::sema::{associated::OwnerKind, traits::implementations::PendingHeader};
@@ -116,6 +121,9 @@ impl Checker<'_> {
             });
         }
         self.library_implementation_headers(&mut headers)?;
+        if let Some(selected) = self.selected.as_deref_mut() {
+            selected.implementation_candidates(self.report, &self.facts, &mut headers)?;
+        }
         Ok(headers)
     }
 

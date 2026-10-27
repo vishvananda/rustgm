@@ -261,6 +261,11 @@ pub(super) fn caller_tracking_absent(
             .ok_or("legacy caller policy lacks its canonical function")?;
         return Ok(());
     }
+    if let Some(linkage) = facts.crates.as_deref()
+        && linkage.selected_caller_tracking_absent(facts, definition)?
+    {
+        return Ok(());
+    }
     let headers = facts
         .must_use_contracts
         .as_deref()

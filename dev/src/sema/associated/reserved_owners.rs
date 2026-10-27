@@ -1,12 +1,19 @@
 //! Install complete authenticated owner rows without inventing source declarations.
 use super::{Inventory, Member, Owner, OwnerId, OwnerKind, Schema};
 use crate::{resolve::model::DefId, sema::crates::ImportedOwners, support::hash::HashSet};
-use std::rc::Rc;
 
 pub(in crate::sema) struct ImportedOwner {
     pub owner: Owner,
     pub schema: Schema,
     pub members: Vec<DefId>,
+}
+#[cfg(test)]
+pub(in crate::sema) fn imported_layouts() -> (usize, usize, usize) {
+    (
+        size_of::<super::language::Declarations>(),
+        size_of::<Inventory>(),
+        size_of::<Option<ImportedOwners>>(),
+    )
 }
 impl Inventory {
     pub(in crate::sema) fn imported_allocation_bound(
@@ -52,7 +59,7 @@ impl Inventory {
     pub(in crate::sema) fn install_imported(
         &mut self,
         store: &crate::types::Store,
-        graph: Rc<ImportedOwners>,
+        graph: ImportedOwners,
         rows: Vec<ImportedOwner>,
         steps: &mut usize,
     ) -> Result<(), &'static str> {
@@ -68,16 +75,90 @@ impl Inventory {
                 "imported owner inventory is incomplete or would coexist with bootstrap declarations",
             );
         }
+        self.append_rows(store, graph, rows, steps)
+    }
+    pub(in crate::sema) fn imported_owner(&self) -> Option<&ImportedOwners> {
+        self.language.as_ref()?.imported.as_ref()
+    }
+    pub(in crate::sema) fn selected_allocation_bound(
+        &self,
+        members: usize,
+    ) -> crate::support::retained::Growth {
+        use crate::support::retained::Growth;
+        let declarations = members.saturating_add(2);
+        let mut growth = Growth::vector::<Owner>(self.owners.len(), self.owners.capacity(), 1);
+        growth.include(Growth::vector::<Vec<DefId>>(
+            self.owner_members.len(),
+            self.owner_members.capacity(),
+            1,
+        ));
+        growth.include(Growth::vector::<Member>(
+            self.members.len(),
+            self.members.capacity(),
+            members,
+        ));
+        growth.include(Growth::map::<DefId, OwnerId>(
+            self.declarations.len(),
+            self.declarations.capacity(),
+            declarations,
+        ));
+        growth.include(Growth::map::<OwnerId, Schema>(
+            self.schemas.len(),
+            self.schemas.capacity(),
+            1,
+        ));
+        growth.include(Growth::map::<DefId, ()>(0, 0, declarations));
+        if self.language.is_none() {
+            growth.bytes = growth
+                .bytes
+                .saturating_add(size_of::<super::language::Declarations>());
+        }
+        growth
+    }
+    pub(in crate::sema) fn append_selected(
+        &mut self,
+        store: &crate::types::Store,
+        mapping: ImportedOwners,
+        row: ImportedOwner,
+        steps: &mut usize,
+    ) -> Result<OwnerId, &'static str> {
+        *steps = steps.saturating_add(1);
+        mapping.require_store(store)?;
+        if !matches!(mapping, ImportedOwners::Provided(_))
+            || self
+                .language
+                .as_ref()
+                .is_some_and(|language| match language.imported.as_ref() {
+                    Some(actual) => !actual.same_owner(&mapping),
+                    None => !language.accepts_imported(),
+                })
+        {
+            return Err("selected imported append changed its actual mapping or bootstrap owner");
+        }
+        let id = OwnerId(
+            u32::try_from(self.owners.len())
+                .map_err(|_| "imported owner identity space exhausted")?,
+        );
+        self.append_rows(store, mapping, [row], steps)?;
+        Ok(id)
+    }
+    fn append_rows<R: AsRef<[ImportedOwner]> + IntoIterator<Item = ImportedOwner>>(
+        &mut self,
+        store: &crate::types::Store,
+        graph: ImportedOwners,
+        rows: R,
+        steps: &mut usize,
+    ) -> Result<(), &'static str> {
         let end = self
             .owners
             .len()
-            .checked_add(rows.len())
+            .checked_add(rows.as_ref().len())
             .ok_or("imported owner identity count overflow")?;
         u32::try_from(end).map_err(|_| "imported owner identity space exhausted")?;
         let mut owner_index = u32::try_from(self.owners.len())
             .map_err(|_| "imported owner identity space exhausted")?;
         let mut identities = HashSet::default();
-        for row in &rows {
+        for row in rows.as_ref() {
             graph.associated_row(store, row.owner, &row.schema, &row.members, steps)?;
             let definitions = std::iter::once(row.owner.self_definition)
                 .chain(match row.owner.kind {

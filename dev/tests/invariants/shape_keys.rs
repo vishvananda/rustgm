@@ -22,6 +22,63 @@ fn predicate(
 }
 
 #[test]
+fn charged_shapes_prepay_failures_and_share_actual_cold_and_warm_graphs() -> TestResult {
+    use std::cell::Cell;
+    let byte = TypeId::primitive(Primitive::U8);
+    for width in [1, 8, 32] {
+        let mut store = Store::default();
+        let mut subject = byte;
+        for _ in 0..width {
+            subject = store.intern(Kind::Reference {
+                mutable: false,
+                region: RegionId(3),
+                referent: subject,
+            })?;
+        }
+        let root = predicate(
+            &mut store,
+            subject,
+            ItemId(1),
+            &[Argument::Lifetime(RegionId(3))],
+        )?;
+        let nodes = store.len();
+        let refused = Cell::new(0_usize);
+        assert!(
+            store
+                .shape_key_charged(root, &|_, bytes| {
+                    refused.set(refused.get().saturating_add(bytes));
+                    if refused.get() > 64 {
+                        Err("selected shape byte budget")
+                    } else {
+                        Ok(())
+                    }
+                })
+                .is_err()
+        );
+        assert!(refused.get() > 64);
+        assert_eq!(store.shape_key_steps(), 0);
+        assert_eq!(store.len(), nodes);
+        let paid = Cell::new((0_usize, 0_usize));
+        let (key, work, retained) = store.shape_key_charged(root, &|steps, bytes| {
+            let old = paid.get();
+            paid.set((old.0.saturating_add(steps), old.1.saturating_add(bytes)));
+            Ok(())
+        })?;
+        assert!(work <= 64 * width + 64);
+        assert!(retained > 0 && retained <= paid.get().1);
+        for _ in 0..1000 {
+            assert_eq!(store.shape_key_charged(root, &|_, _| Ok(()))?, (key, 0, 0));
+        }
+        assert_eq!(store.shape_key(root)?, (key, 0));
+        eprintln!(
+            "charged shape width={width} work={work} retained={retained} prepaid={:?}",
+            paid.get()
+        );
+    }
+    Ok(())
+}
+
+#[test]
 fn unrelated_queries_share_structural_work_and_retain_complete_inputs() -> TestResult {
     let byte = TypeId::primitive(Primitive::U8);
     for width in [64, 128, 256, 512] {

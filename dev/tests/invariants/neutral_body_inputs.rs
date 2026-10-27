@@ -69,7 +69,8 @@ fn positive(session: &Session, owner: DeclarationRef) -> Result {
     assert!(input.assumptions.is_empty() && input.type_assumptions.is_empty());
     assert!(expected.header.regions.total > 0);
     let declaration = inherited::environment(session)?.scopes[scope]
-        .as_deref()
+        .get()
+        .map(Box::as_ref)
         .ok_or("actual scope")?;
     assert!(
         declaration
@@ -159,12 +160,13 @@ fn opponents() -> Result {
             )?,
             4 => session = wrong_body(session, owner, &mut work)?,
             _ => {
-                session
+                let table = session
                     .recipes
                     .as_mut()
                     .and_then(|state| state.callables.as_mut())
-                    .ok_or("actual prepared scopes")?
-                    .scopes[owner.0 as usize] = None;
+                    .ok_or("actual prepared scopes")?;
+                std::rc::Rc::get_mut(&mut table.scopes).ok_or("exclusive actual scope index")?
+                    [owner.0 as usize] = None;
             }
         }
         let before = work.steps;

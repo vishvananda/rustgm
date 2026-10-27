@@ -100,6 +100,8 @@ fn shared_trait_input_producer_seals_actual_fresh_catalog_and_canonical_prefix()
     let rows = view.rows()?;
     assert_eq!(rows.roles.len(), 9);
     let (mut state, mut owner, index) = prepare_scope(view, &mut facts, &mut work)?;
+    let view = reservation.recipe_view(&report, &mut work)?;
+    application_writers(&view, &facts, &owner, &mut work)?;
     foreign_warm_inputs(
         &report,
         &reservation,
@@ -109,13 +111,16 @@ fn shared_trait_input_producer_seals_actual_fresh_catalog_and_canonical_prefix()
         index,
         &mut work,
     )?;
-    let scope = owner.scopes[index]
+    let scope = Rc::get_mut(&mut owner.scopes).ok_or("exclusive actual scope table")?[index]
         .take()
         .ok_or("actual prepared trait inputs")?;
     assert_eq!(scope.parameters.len(), 2, "genuine Self/V remain complete");
-    let ScopeInputs::Trait(prepared) = scope.inputs else {
+    let ScopeInputs::Trait { prepared, .. } = scope.inputs else {
         return Err("actual trait inputs lost their canonical seal".into());
     };
+    let prepared = prepared
+        .into_inner()
+        .ok_or("actual untransferred trait producer")?;
     let all = Arc::clone(prepared.all());
     let subjects = prepared.subjects().to_vec();
     let holder = rows
@@ -184,7 +189,8 @@ fn actual_const_leaf_inputs() -> Result {
         .ok_or("actual const trait default member")?;
     let (_, owner, index) = prepare_owner_scope(view, &mut facts, header.scope, &mut work)?;
     let scope = owner.scopes[index]
-        .as_deref()
+        .get()
+        .map(Box::as_ref)
         .ok_or("actual const leaf scope")?;
     let mut inputs = scope.inputs.all().to_vec();
     let input = inputs
@@ -220,6 +226,70 @@ fn actual_const_leaf_inputs() -> Result {
     Ok(())
 }
 
+fn application_writers(
+    view: &RecipeView<'_>,
+    facts: &Declarations,
+    owner: &Owner,
+    work: &mut ReservationWork,
+) -> Result {
+    let reader = owner.application_reader(view, &facts.types, work)?;
+    let mut canonical = None;
+    let mut opponent = None;
+    for index in 0..view.rows()?.trait_applications.len() {
+        let Some(value) = owner.applications.entry(index)? else {
+            continue;
+        };
+        if let Some((_, first)) = canonical {
+            if value != first {
+                opponent = Some(value);
+                break;
+            }
+        } else {
+            canonical = Some((index, value));
+        }
+    }
+    let canonical = canonical.ok_or("actual ready source application")?;
+    let opponent = opponent.ok_or("actual distinct source application")?;
+    let before = owner.applications.retained_bytes();
+    let mut writer = owner
+        .applications
+        .writer(&reader, view, &facts.types, work)?;
+    assert_eq!(writer.entry(canonical.0)?, Some(canonical.1));
+    work.charge(2)?;
+    writer.publish(canonical.0, canonical.1)?;
+    assert!(writer.publish(canonical.0, opponent).is_err());
+    assert_eq!(writer.entry(canonical.0)?, Some(canonical.1));
+    assert_eq!(owner.applications.retained_bytes(), before);
+    let mut other_work = ReservationWork::default();
+    let other = ApplicationMemo::new(view.rows()?.trait_applications.len(), &mut other_work)?;
+    let other_reader = other.reader(view, &facts.types, &mut other_work)?;
+    let steps = work.steps;
+    assert!(
+        owner
+            .applications
+            .writer(&other_reader, view, &facts.types, work)
+            .is_err()
+    );
+    let mut foreign_store = crate::types::Store::default();
+    let _foreign_arena = foreign_store.arena_identity();
+    assert!(
+        owner
+            .applications
+            .writer(&reader, view, &foreign_store, work)
+            .is_err()
+    );
+    assert!(work.steps > steps);
+    assert_eq!(owner.applications.retained_bytes(), before);
+    assert!(owner.bodies.iter().all(Option::is_none));
+    assert!(facts.generics.traits.is_none());
+    eprintln!(
+        "application-writer layout={} owner-bytes={before} foreign-attempts={}",
+        size_of::<translation::applications::Writer<'_>>(),
+        work.steps - steps
+    );
+    Ok(())
+}
+
 fn foreign_warm_inputs(
     report: &Report,
     reservation: &ConsumerReservation,
@@ -236,16 +306,21 @@ fn foreign_warm_inputs(
         &mut other_facts,
         &mut scratch,
     )?;
-    let other_inputs = other.scopes[other_index]
+    let other_inputs = Rc::get_mut(&mut other.scopes).ok_or("exclusive foreign scope table")?
+        [other_index]
         .take()
         .ok_or("actual foreign scope")?
         .inputs;
     let original = std::mem::replace(
-        &mut owner.scopes[index].as_mut().ok_or("actual scope")?.inputs,
+        &mut Rc::get_mut(&mut owner.scopes).ok_or("exclusive actual scope table")?[index]
+            .get_mut()
+            .ok_or("actual scope")?
+            .inputs,
         other_inputs,
     );
     let declared_parent = owner.scopes[index]
-        .as_deref()
+        .get()
+        .map(Box::as_ref)
         .ok_or("actual scope")?
         .raw
         .parent;
@@ -256,7 +331,8 @@ fn foreign_warm_inputs(
                 .iter()
                 .position(|scope| {
                     scope
-                        .as_deref()
+                        .get()
+                        .map(Box::as_ref)
                         .is_some_and(|scope| scope.raw.owner == declaration)
                 })
                 .ok_or("actual parent scope")
@@ -275,7 +351,10 @@ fn foreign_warm_inputs(
             .is_err()
     );
     assert!(work.steps > before);
-    owner.scopes[index].as_mut().ok_or("actual scope")?.inputs = original;
+    Rc::get_mut(&mut owner.scopes).ok_or("exclusive actual scope table")?[index]
+        .get_mut()
+        .ok_or("actual scope")?
+        .inputs = original;
     owner.scope(rows, &mut port, facts, index, parent, work)?;
     Ok(())
 }

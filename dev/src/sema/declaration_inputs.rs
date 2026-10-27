@@ -55,16 +55,19 @@ pub(crate) fn own_view<'a>(
 ) -> Result<Inputs<'a>, &'static str> {
     Ok(Inputs::new(
         generics.predicates.get(&owner).map_or(&[], Vec::as_slice),
-        imported(linkage, owner, false)?,
+        imported(generics, linkage, owner, false)?,
     ))
 }
 
-fn imported(
-    linkage: Option<&super::crates::Linkage>,
+fn imported<'a>(
+    generics: &Generics,
+    linkage: Option<&'a super::crates::Linkage>,
     owner: DefId,
     declared: bool,
-) -> Result<&[Input], &'static str> {
-    linkage.map_or(Ok(&[]), |linkage| linkage.original_inputs(owner, declared))
+) -> Result<&'a [Input], &'static str> {
+    linkage.map_or(Ok(&[]), |linkage| {
+        linkage.original_inputs(generics, owner, declared)
+    })
 }
 pub(crate) fn all<'a>(
     generics: &'a Generics,
@@ -74,7 +77,7 @@ pub(crate) fn all<'a>(
     Ok(generics
         .predicates_in_scope(owner)
         .map(Input::from)
-        .chain(imported(linkage, owner, false)?.iter().copied()))
+        .chain(imported(generics, linkage, owner, false)?.iter().copied()))
 }
 pub(crate) fn declared<'a>(
     generics: &'a Generics,
@@ -84,7 +87,7 @@ pub(crate) fn declared<'a>(
     Ok(generics
         .declared_predicates_in_scope(owner)
         .map(Input::from)
-        .chain(imported(linkage, owner, true)?.iter().copied()))
+        .chain(imported(generics, linkage, owner, true)?.iter().copied()))
 }
 pub(crate) fn own<'a>(
     generics: &'a Generics,

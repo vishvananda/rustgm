@@ -271,7 +271,8 @@ pub struct BodyRegion {
 /// the body's lifetime graph can establish identity of inferred arguments.
 #[derive(Clone)]
 pub struct SourceCopyRequirements {
-    /// None is a source policy with no Copy declaration, not bootstrap mode.
+    /// Unpaid identity only; None is genuine catalog absence, not pending
+    /// validation or bootstrap mode. Decisions require completed role/proof data.
     pub(crate) declaration: Option<crate::resolve::model::DefId>,
     pub(crate) goals: Vec<crate::types::parameters::predicates::Predicate>,
 }
@@ -737,6 +738,51 @@ impl Declarations {
                 .collect(),
             functions: Vec::new(),
         }
+    }
+    /// Complete current-consumer source facts, retaining its already reserved
+    /// imported catalog/semantic arena and all unrequested imported declarations.
+    pub(in crate::sema) fn complete_staged_sources(
+        &mut self,
+        report: &Report,
+        work: &mut crate::resolve::crates::ReservationWork,
+    ) -> Result<(), Error> {
+        report
+            .package
+            .staged_consumer()
+            .ok_or_else(|| {
+                Error::unlocated("selected source completion lacks its actual consumer policy")
+            })?
+            .require_package(&report.package)
+            .map_err(Error::unlocated)?;
+        if self.foreign.is_some()
+            || self.must_use_contracts.is_some()
+            || self.mutable_statics.is_some()
+            || !self.functions.is_empty()
+        {
+            return Err(Error::unlocated(
+                "selected current source facts were already completed",
+            ));
+        }
+        work.charge(
+            report
+                .resolution
+                .references
+                .len()
+                .saturating_add(report.resolution.definitions.len())
+                .saturating_add(report.resolution.pattern_aliases.len()),
+        )?;
+        // Static membership is the only collection grown by import_resolution.
+        // This one initialization bound is over the actual current definition
+        // inventory, never the Store or a repeated imported lookup.
+        work.reserve(
+            crate::support::retained::new_map::<DefId, ()>(report.resolution.definitions.len())
+                .saturating_add(
+                    size_of::<crate::support::hash::HashSet<DefId>>() + 2 * size_of::<usize>(),
+                ),
+        )?;
+        self.safety_policies = super::safety::Policies::analyze(report)?;
+        self.import_resolution(report)?;
+        self.collect_declaration_attributes(report)
     }
     fn prepare_resolution(&mut self, report: &Report) -> Result<(), Error> {
         self.import_resolution(report)?;

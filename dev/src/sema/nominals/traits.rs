@@ -24,6 +24,16 @@ use crate::{
 use opening::Opening;
 use std::sync::Arc;
 
+enum CopyFailure {
+    Ordinary(&'static str),
+    Prepared(crate::sema::dispatch::Failure),
+}
+impl From<&'static str> for CopyFailure {
+    fn from(message: &'static str) -> Self {
+        Self::Ordinary(message)
+    }
+}
+
 pub(crate) struct State {
     reusable: [Option<Box<selection::Reuse>>; 2],
     normalized: crate::support::hash::HashMap<crate::types::TypeId, crate::types::TypeId>,
@@ -106,6 +116,32 @@ impl State {
         facts: &mut Declarations,
         predicate: Predicate,
     ) -> Result<bool, &'static str> {
+        self.copy_decision_using(facts, predicate, None)
+            .map_err(|error| match error {
+                CopyFailure::Ordinary(message) => message,
+                CopyFailure::Prepared(_) => {
+                    "source Copy preparation requires its actual selected service"
+                }
+            })
+    }
+    pub(crate) fn prove_prepared(
+        &mut self,
+        facts: &mut Declarations,
+        predicate: Predicate,
+        preparation: &mut dyn crate::sema::dispatch::Preparation,
+    ) -> Result<bool, crate::sema::dispatch::Failure> {
+        self.copy_decision_using(facts, predicate, Some(preparation))
+            .map_err(|error| match error {
+                CopyFailure::Ordinary(message) => message.into(),
+                CopyFailure::Prepared(error) => error,
+            })
+    }
+    fn copy_decision_using(
+        &mut self,
+        facts: &mut Declarations,
+        predicate: Predicate,
+        preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
+    ) -> Result<bool, CopyFailure> {
         #[cfg(test)]
         let original = predicate;
         let fold = self
@@ -143,15 +179,26 @@ impl State {
                 self.context.steps
             ))
         });
-        let selected = select_requirement(
-            facts,
-            &mut self.context,
-            predicate,
-            caller,
-            self.availability,
-            false,
-            None,
-        )?;
+        let selected = if let Some(preparation) = preparation {
+            let mut substitution = Instantiation::new(&mut self.context, &facts.types, &[])
+                .map_err(|_| "invalid declaration trait instantiation")?;
+            let goal = self
+                .context
+                .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
+                .map_err(|_| "invalid declaration trait goal")?;
+            selection::select_prepared(facts, &mut self.context, &goal, &caller, preparation)
+                .map_err(CopyFailure::Prepared)?
+        } else {
+            select_requirement(
+                facts,
+                &mut self.context,
+                predicate,
+                caller,
+                self.availability,
+                false,
+                None,
+            )?
+        };
         #[cfg(test)]
         selection::copy_trace::record(|| {
             format!(
@@ -162,10 +209,13 @@ impl State {
             )
         });
         match selected {
-            selection::Selection::Deferred => Err("source Copy selection is still pending"),
+            selection::Selection::Deferred => Err(CopyFailure::Ordinary(
+                "source Copy selection is still pending",
+            )),
             selected => self
                 .accept_selection(selected)
-                .map(|source| source.is_some()),
+                .map(|source| source.is_some())
+                .map_err(CopyFailure::Ordinary),
         }
     }
 

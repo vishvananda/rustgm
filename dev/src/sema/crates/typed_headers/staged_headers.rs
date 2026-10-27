@@ -1,14 +1,15 @@
 //! Stage real source headers without installing roles, declarations or originals.
 mod commit_ports;
-mod contract_ports;
+pub(super) mod contract_ports;
 mod definition_cells;
 pub(super) mod environments;
 mod formal_headers;
+pub(in crate::sema::crates::typed_headers) use formal_headers::Callable;
 mod impl_headers;
 mod owner_packets;
 pub(super) mod rebuilt_environments;
-mod scheme_ports;
-mod template_ports;
+pub(super) mod scheme_ports;
+pub(super) mod template_ports;
 use super::{Declarations, Error, Header, Headers, error, mapped_source, predicate_remap};
 use crate::{
     resolve::model::DefId,

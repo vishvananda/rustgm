@@ -43,6 +43,7 @@ pub(in crate::resolve) enum Feature {
     MarkerTraitAttr = 26,
     TryBlocks = 27,
     ConstClosures = 28,
+    MetavariableConcat = 29,
     CoverageAttribute = 30,
 }
 
@@ -85,10 +86,11 @@ impl Request {
             "try_blocks" => Self::Capability(Feature::TryBlocks),
             "const_closures" => Self::Capability(Feature::ConstClosures),
             "coverage_attribute" => Self::Capability(Feature::CoverageAttribute),
+            "macro_metavar_expr_concat" => Self::Capability(Feature::MetavariableConcat),
             "pattern_type_macro" => Self::Library(Feature::PatternTypeMacro),
             "pattern_types" => Self::Capability(Feature::PatternTypes),
             // Requests do not authorize the unsupported live const-drop operation.
-            "const_destruct" | "asm_experimental_arch" => Self::NoCapability,
+            "const_destruct" | "asm_experimental_arch" | "macro_metavar_expr" => Self::NoCapability,
             _ => return None,
         })
     }
@@ -215,6 +217,7 @@ pub(in crate::resolve) fn prepare_with_admission(
                 || features.has(Feature::MarkerTraitAttr)
                 || features.has(Feature::TryBlocks)
                 || features.has(Feature::ConstClosures)
+                || features.has(Feature::MetavariableConcat)
             {
                 Some(Box::new(Source::LocalMacros(super::LocalMacros::new(
                     unit, features,

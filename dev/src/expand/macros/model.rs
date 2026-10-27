@@ -49,6 +49,8 @@ pub enum Kind {
         delimiter: Delimiter,
         children: List,
     },
+    /// Template operands share the ordinary node and edge arenas.
+    Concat(List),
     Capture(VariableId),
     Substitute {
         name: NameId,

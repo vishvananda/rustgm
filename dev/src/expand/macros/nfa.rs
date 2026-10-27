@@ -155,7 +155,7 @@ impl Program {
                     next: first,
                 })
             }
-            Kind::Substitute { .. } => {
+            Kind::Substitute { .. } | Kind::Concat(_) => {
                 Err(error(node.span.start, "substitution in a macro matcher"))
             }
         }

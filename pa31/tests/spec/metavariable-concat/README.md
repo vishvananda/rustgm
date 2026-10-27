@@ -13,3 +13,14 @@ at template parsing with `expected macro token`. Predictions, input hashes and
 six raw observations are retained in the contract and integration evidence.
 No runtime or original-library artifact is claimed. The complete template must
 remain valid before later cfg processing; skipping unknown tokens is not a fix.
+
+`protocol/contract.json` freezes twenty additional sources and forty independent
+library-metadata observations across editions 2021/2024. Every predicted status
+matches; no candidate support or native execution is claimed. Accepted controls
+cover cooked string pieces, original integer spelling, repetition, forwarded
+literal fragments, and matching definition-site local names. Opponents cover raw
+identifiers/strings, suffixed and token-tree integers, expression fragments,
+arity/separators, unknown or still-repeating variables, escaped literal symbols,
+and caller-site local-name access. An unused enabled definition still requires
+the feature; a cfg-removed declaration does not. Source bytes and the predeclared
+expectations remain bound by hashes.

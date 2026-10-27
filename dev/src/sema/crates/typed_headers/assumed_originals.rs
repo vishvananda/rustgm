@@ -12,11 +12,7 @@ use crate::{
     sema::function_context::assumption_environment as defining,
     support::constness::Constness,
     support::crates::{generics as g, owner_catalog::BodyRef},
-    types::parameters::{
-        ParameterId,
-        clauses::Clause,
-        predicates::{Bound, Predicate},
-    },
+    types::parameters::{ParameterId, clauses::Clause, predicates::Bound},
 };
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Origin {
@@ -81,7 +77,7 @@ pub(super) fn require_leaf_inputs(
     rows: s::ValidatedView<'_>,
     scope: s::ParameterScope,
     inputs: &[Input],
-    applications: &[Option<Predicate>],
+    applications: &impl super::translation::applications::Cache,
     work: &mut ReservationWork,
 ) -> Result<(), Error> {
     let (range, _) = input_range(rows, scope)?;
@@ -108,9 +104,7 @@ pub(super) fn require_leaf_inputs(
             ));
         }
         let mut expected = applications
-            .get(application.0 as usize)
-            .copied()
-            .flatten()
+            .entry(application.0 as usize)?
             .ok_or_else(|| error("private leaf environment lost its translated application"))?;
         let Bound::Trait(actual) = expected.bound else {
             return Err(error(
@@ -314,7 +308,8 @@ pub(super) fn finish(
     let scope = owner
         .scopes
         .get(expected.scope.0)
-        .and_then(Option::as_deref)
+        .and_then(std::cell::OnceCell::get)
+        .map(Box::as_ref)
         .ok_or_else(|| error("private original lost its actual prepared scope"))?;
     let (body, actual) = body_origin(rows, expected, work)?;
     if actual != Some(origin)
@@ -400,7 +395,7 @@ pub(super) fn finish(
     })
 }
 impl Prepared {
-    fn defining(
+    pub(in crate::sema::crates::typed_headers) fn defining(
         &mut self,
         view: RecipeView<'_>,
         state: &mut State,
@@ -456,9 +451,9 @@ impl Prepared {
             self,
             &BodyDemand { expected, origin },
             work,
-        )?;
+        );
         self.environments = Some(environments);
-        Ok(status)
+        status
     }
 }
 impl Session {
@@ -490,14 +485,14 @@ impl Session {
             .callables
             .take()
             .ok_or_else(|| error("private defining demand lost its actual template owner"))?;
-        let status = prepared.defining(view, state, &mut session.facts, owner, work)?;
+        let status = prepared.defining(view, state, &mut session.facts, owner, work);
         state.callables = Some(prepared);
-        Ok((session, status))
+        Ok((session, status?))
     }
 }
 
 impl Owner {
-    fn original_parameter(
+    pub(super) fn original_parameter(
         &self,
         rows: s::ValidatedView<'_>,
         prepared: &Prepared,
@@ -514,14 +509,16 @@ impl Owner {
         let declaring = self
             .scopes
             .get(index)
-            .and_then(Option::as_deref)
+            .and_then(std::cell::OnceCell::get)
+            .map(Box::as_ref)
             .filter(|actual| actual.raw == raw)
             .ok_or_else(|| error("private original lost its actual declaring scope"))?;
         let inherited = if let Some(parent) = raw.parent {
             let (index, parent_raw) = prepared.scope(rows, parent)?;
             self.scopes
                 .get(index)
-                .and_then(Option::as_deref)
+                .and_then(std::cell::OnceCell::get)
+                .map(Box::as_ref)
                 .filter(|actual| actual.raw == parent_raw)
                 .ok_or_else(|| error("private original lost its actual parent scope"))?
                 .parameters

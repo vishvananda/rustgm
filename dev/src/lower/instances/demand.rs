@@ -14,14 +14,19 @@ use crate::{
     types::{ItemId, Kind, instance::Instance},
 };
 mod paid_owners;
+#[path = "demand/append.rs"]
+mod selected_originals;
+use selected_originals::Proofs;
+pub(super) use selected_originals::materialize as materialize_selected;
 
+#[derive(Clone, Copy)]
 enum Work {
     Adapter(body::invocation_entries::Entry, body::ir::ProofSite),
     Enter(Instance, body::ir::ProofSite),
     Leave(BodyKey),
 }
 #[derive(Default)]
-struct Ordinary {
+pub(super) struct Ordinary {
     functions: HashMap<ItemId, usize>,
     closures: HashMap<crate::types::closure::ClosureId, usize>,
 }
@@ -95,6 +100,9 @@ impl Ordinary {
                         }
                         crate::support::bindings::SourceIntrinsic::Transmute => {
                             "source transmute requires its proved direct runtime operation"
+                        }
+                        crate::support::bindings::SourceIntrinsic::PtrMetadata => {
+                            "source ptr_metadata requires its proved direct pointer operation"
                         }
                         crate::support::bindings::SourceIntrinsic::CallerLocation => {
                             "source caller_location requires its proved direct caller operation"
@@ -233,7 +241,7 @@ pub(super) fn prepare<C: Collect>(
     report: &Report,
     facts: &mut Declarations,
     roots: crate::lower::roots::Selected<'_>,
-    mut originals: Originals<'_, '_, C>,
+    mut originals: Originals<'_, '_, '_, C>,
     inputs: Vec<Contract>,
     concrete: HashMap<BodyKey, Body>,
     constants: Option<crate::pipeline::execution::Context>,
@@ -265,56 +273,113 @@ pub(super) fn prepare<C: Collect>(
     {
         return Ok(program);
     }
-    materialize(report, facts, roots, templates, program, &ordinary)
+    materialize(
+        report,
+        facts,
+        roots,
+        Proofs::Borrowed(templates),
+        program,
+        &ordinary,
+        None,
+    )
 }
 
 fn materialize(
     report: &Report,
     facts: &mut Declarations,
     roots: crate::lower::roots::Selected<'_>,
-    templates: &Checked<'_>,
+    mut templates: Proofs<'_, '_>,
     mut program: proof::Builder,
     ordinary: &Ordinary,
+    mut preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
 ) -> Result<proof::Builder, Error> {
-    let (mut work, mut dependencies) = initial_work(report, facts, roots, &mut program, ordinary)?;
-    let mut instances = HashMap::default();
-    let mut visited = HashSet::default();
-    let mut budget = Budget::default();
-    let mut cleanup = body::instantiate::Cleanup::new(facts);
-    while let Some(action) = work.pop() {
+    let (work, dependencies) = initial_work(report, facts, roots, &mut program, ordinary)?;
+    let mut traversal = Traversal {
+        program,
+        ordinary,
+        work,
+        dependencies,
+        instances: HashMap::default(),
+        visited: HashSet::default(),
+        budget: Budget::default(),
+        cleanup: body::instantiate::Cleanup::new(facts),
+    };
+    while let Some(action) = traversal.work.pop() {
+        if let Work::Enter(instance, _) = &action
+            && let Some(service) = preparation.as_deref_mut()
+        {
+            templates.demand(report, facts, &mut traversal.program, *instance, service)?;
+        }
+        templates.with_checked(report, |templates| {
+            traversal.step(report, facts, templates, action)
+        })?;
+    }
+    Ok(traversal.program)
+}
+
+/// One ordinary DFS owns the same program, work stack and instance accounting.
+struct Traversal<'a> {
+    program: proof::Builder,
+    ordinary: &'a Ordinary,
+    work: Vec<Work>,
+    dependencies: Dependencies,
+    instances: HashMap<Instance, usize>,
+    visited: HashSet<usize>,
+    budget: Budget,
+    cleanup: body::instantiate::Cleanup,
+}
+impl Traversal<'_> {
+    fn adapter(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        templates: &Checked<'_>,
+        entry: body::invocation_entries::Entry,
+        source: body::ir::ProofSite,
+    ) -> Result<(), Error> {
+        let original = self
+            .ordinary
+            .adapter_source(&facts.types, templates, &self.instances, entry)
+            .map_err(|e| diagnostic(report, Some(source), e.into()))?;
+        let Some(original) = original else {
+            self.work.push(Work::Adapter(entry, source));
+            self.work.push(Work::Enter(entry.instance(), source));
+            return Ok(());
+        };
+        if let Some((index, family)) = self.budget.adapter(
+            report,
+            facts,
+            templates,
+            &mut self.program,
+            original,
+            (entry, source),
+        )? {
+            self.work.push(Work::Leave(family));
+            self.dependencies.schedule(
+                report,
+                facts,
+                &mut self.program,
+                DependencyRoot::Body(index),
+                &mut self.work,
+            )?;
+        }
+        Ok(())
+    }
+    fn step(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        templates: &Checked<'_>,
+        action: Work,
+    ) -> Result<(), Error> {
         let (instance, source) = match action {
             Work::Adapter(entry, source) => {
-                let original = ordinary
-                    .adapter_source(&facts.types, templates, &instances, entry)
-                    .map_err(|e| diagnostic(report, Some(source), e.into()))?;
-                let Some(original) = original else {
-                    work.push(Work::Adapter(entry, source));
-                    work.push(Work::Enter(entry.instance(), source));
-                    continue;
-                };
-                if let Some((index, family)) = budget.adapter(
-                    report,
-                    facts,
-                    templates,
-                    &mut program,
-                    original,
-                    (entry, source),
-                )? {
-                    work.push(Work::Leave(family));
-                    dependencies.schedule(
-                        report,
-                        facts,
-                        &mut program,
-                        DependencyRoot::Body(index),
-                        &mut work,
-                    )?;
-                }
-                continue;
+                return self.adapter(report, facts, templates, entry, source);
             }
             Work::Enter(instance, source) => (instance, source),
             Work::Leave(item) => {
-                budget.leave(report, item)?;
-                continue;
+                self.budget.leave(report, item)?;
+                return Ok(());
             }
         };
         let error = |e: &str| diagnostic(report, Some(source), e.into());
@@ -323,23 +388,28 @@ fn materialize(
             .as_deref()
             .and_then(|registry| registry.get(instance))
         {
-            if instances.contains_key(&instance) {
-                continue;
+            if self.instances.contains_key(&instance) {
+                return Ok(());
             }
             let (index, family) =
-                budget.factory(report, facts, templates, &mut program, selected)?;
-            instances.insert(instance, index);
-            work.push(Work::Leave(family));
+                self.budget
+                    .factory(report, facts, templates, &mut self.program, selected)?;
+            self.instances.insert(instance, index);
+            self.work.push(Work::Leave(family));
             index
         } else {
-            let Some(selected) = ordinary.select(facts, templates, instance).map_err(error)? else {
-                continue;
+            let Some(selected) = self
+                .ordinary
+                .select(facts, templates, instance)
+                .map_err(error)?
+            else {
+                return Ok(());
             };
             if let Some((template, input)) = selected.template {
-                if instances.contains_key(&instance) {
-                    continue;
+                if self.instances.contains_key(&instance) {
+                    return Ok(());
                 }
-                budget
+                self.budget
                     .enter(selected.family, &template.body, input)
                     .map_err(error)?;
                 let request = Specialization {
@@ -352,29 +422,29 @@ fn materialize(
                     report,
                     facts,
                     templates,
-                    &mut program,
-                    &mut cleanup,
+                    &mut self.program,
+                    &mut self.cleanup,
                     request,
                 )?;
-                instances.insert(instance, index);
-                work.push(Work::Leave(selected.family));
+                self.instances.insert(instance, index);
+                self.work.push(Work::Leave(selected.family));
                 index
             } else {
-                let Some(index) = selected.concrete(&mut visited).map_err(error)? else {
-                    continue;
+                let Some(index) = selected.concrete(&mut self.visited).map_err(error)? else {
+                    return Ok(());
                 };
                 index
             }
         };
-        dependencies.schedule(
+        self.dependencies.schedule(
             report,
             facts,
-            &mut program,
+            &mut self.program,
             DependencyRoot::Body(index),
-            &mut work,
+            &mut self.work,
         )?;
+        Ok(())
     }
-    Ok(program)
 }
 
 #[derive(Clone, Copy)]
@@ -547,10 +617,10 @@ impl Dependencies {
     }
 }
 
-fn prepare_ordinary<C: Collect>(
+pub(super) fn prepare_ordinary<C: Collect>(
     report: &Report,
     facts: &mut Declarations,
-    originals: &mut Originals<'_, '_, C>,
+    originals: &mut Originals<'_, '_, '_, C>,
     inputs: Vec<Contract>,
     concrete: HashMap<BodyKey, Body>,
     constants: Option<crate::pipeline::execution::Context>,
@@ -572,8 +642,7 @@ fn prepare_ordinary<C: Collect>(
                 "missing ordinary dispatch contract".into(),
             )
         })?;
-        body::dispatch::resolve(facts, body, input)
-            .map_err(|e| diagnostic(report, Some(body.source.into()), e))?;
+        resolve_ordinary(report, facts, body, input, &mut originals.preparation)?;
     }
     body::promote::analyze(report, facts, &mut program)?;
     let pending = paid_owners::prepare(facts, templates, &program, &mut inputs)
@@ -647,4 +716,27 @@ fn prepare_ordinary<C: Collect>(
         }
     }
     Ok((program, ordinary))
+}
+
+fn resolve_ordinary(
+    report: &Report,
+    facts: &mut Declarations,
+    body: &mut Body,
+    input: &mut Contract,
+    preparation: &mut Option<&mut dyn crate::sema::dispatch::Preparation>,
+) -> Result<(), Error> {
+    if let Some(service) = preparation {
+        body::dispatch::resolve_prepared(facts, body, input, &mut **service).map_err(
+            |failure| match failure {
+                crate::sema::dispatch::Failure::Invalid(message) => {
+                    diagnostic(report, Some(body.source.into()), message)
+                }
+                crate::sema::dispatch::Failure::Preparation(error) => error,
+            },
+        )?;
+    } else {
+        body::dispatch::resolve(facts, body, input)
+            .map_err(|e| diagnostic(report, Some(body.source.into()), e))?;
+    }
+    Ok(())
 }

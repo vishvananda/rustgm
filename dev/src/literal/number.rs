@@ -3,7 +3,24 @@ use super::value::{Float, FloatType, Integer, IntegerType, Value};
 use crate::lex::token::Kind;
 use std::borrow::Cow;
 
-pub(super) fn decode(spelling: &str, kind: Kind) -> Result<Value<'_>, &'static str> {
+/// Macro literal fragments keep arbitrary integer spelling without a value-width limit.
+pub(super) fn unsuffixed_integer(spelling: &str) -> Result<&str, &'static str> {
+    let (radix, start, end) = digits(spelling)?;
+    if end != spelling.len() {
+        return Err("concat integer literal must not be suffixed");
+    }
+    if !spelling.as_bytes()[start..end]
+        .iter()
+        .copied()
+        .filter(|b| *b != b'_')
+        .all(|byte| char::from(byte).is_digit(radix))
+    {
+        return Err("concat integer digit is outside its literal radix");
+    }
+    Ok(spelling)
+}
+
+fn digits(spelling: &str) -> Result<(u32, usize, usize), &'static str> {
     let (radix, start) = if spelling.starts_with("0x") {
         (16, 2)
     } else if spelling.starts_with("0o") {
@@ -23,6 +40,12 @@ pub(super) fn decode(spelling: &str, kind: Kind) -> Result<Value<'_>, &'static s
     if !bytes[start..end].iter().any(u8::is_ascii_hexdigit) {
         return Err("numeric literal has no digits");
     }
+    Ok((radix, start, end))
+}
+
+pub(super) fn decode(spelling: &str, kind: Kind) -> Result<Value<'_>, &'static str> {
+    let (radix, start, mut end) = digits(spelling)?;
+    let bytes = spelling.as_bytes();
     if kind == Kind::Float {
         if bytes.get(end) == Some(&b'.') {
             end += 1;

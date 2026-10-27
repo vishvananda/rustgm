@@ -7,6 +7,11 @@ FormattingOptions, Error and Ordering declaration fragments for the source panic
 prerequisite family. Their original enabled derive lists and attributes remain
 unchanged. The contract separates this source freeze from the still-required
 complete independent protocol, candidate consumers and runtime qualification.
+`spec/metavariable-concat/` retains LIB-039's original invoked-name reducer and
+feature opponent plus twenty protocol sources. Forty new pinned library-metadata
+observations cover operand categories, repetition, forwarding, definition-site
+hygiene and unused/disabled feature authority. Their predictions all match;
+candidate implementation and native qualification remain pending.
 
 `spec/foreign-types/` freezes 17 new no_core provider inputs for genuine extern
 type identity, pointer metadata, direct/tail sizing, privacy/forms and exact

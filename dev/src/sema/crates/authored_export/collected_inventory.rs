@@ -2,7 +2,7 @@
 use super::{CollectedRows, g, s};
 use crate::{
     resolve::{
-        bindings::consumer_policy::{HeaderDataIdentity, ProviderAdmission},
+        bindings::consumer_policy::{HeaderDataIdentity, HeaderDataOwner, ProviderAdmission},
         crates::ReservationWork,
         expansion::Report,
         package::Error,
@@ -194,6 +194,34 @@ impl CollectedArtifact {
     }
 }
 impl CollectedReceipt {
+    pub(crate) fn retain_data(
+        &self,
+        report: &Report,
+        work: &mut ReservationWork,
+    ) -> Result<HeaderDataOwner, Error> {
+        self.columns(report, work)?;
+        let policy = report
+            .package
+            .staged_consumer()
+            .ok_or_else(|| Error::unlocated("source completion lost its actual consumer"))?;
+        self.data.retain(policy, work)
+    }
+    pub(crate) fn retained_columns<'a>(
+        &'a self,
+        inventory: &Arc<Dependencies>,
+        owner: &'a HeaderDataOwner,
+        index: u32,
+        work: &mut ReservationWork,
+    ) -> Result<&'a s::HeaderAttributeColumns, Error> {
+        work.charge(2)?;
+        if index != 0 || !Arc::ptr_eq(inventory, &self.inventory) {
+            return Err(Error::unlocated(
+                "retained source completion changed its actual inventory",
+            ));
+        }
+        self.data.require_owner(owner, work)?;
+        Ok(owner.columns())
+    }
     pub(crate) fn columns<'a>(
         &self,
         report: &'a Report,

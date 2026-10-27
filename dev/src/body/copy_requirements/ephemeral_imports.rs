@@ -1,7 +1,7 @@
 //! One immutable owner keeps raw substitution inputs separate from local proof inputs.
 use super::{Body, Contract, Declarations};
 use crate::{
-    body::transported_originals::{ImportedOriginals, Original},
+    body::transported_originals::ImportedOriginals,
     types::{Store, arena::Identity},
 };
 use std::rc::Rc;
@@ -25,8 +25,8 @@ impl ImportedInputs {
             facts.body_work.canonical_steps = facts
                 .body_work
                 .canonical_steps
-                .saturating_add(1 + row.contract.proofs.len());
-            reserved = reserved.saturating_add(row.contract.retained_bytes());
+                .saturating_add(1 + row.contract().proofs.len());
+            reserved = reserved.saturating_add(row.contract().retained_bytes());
         }
         if originals.len() > crate::support::crates::MAX_COMPONENTS
             || base.saturating_add(reserved) > 64 * 1024 * 1024
@@ -38,7 +38,9 @@ impl ImportedInputs {
         let mut bytes = size_of::<Self>()
             .saturating_add(Identity::allocation_bytes())
             .saturating_add(crate::support::retained::vector(&contracts));
-        for Original { template, contract } in originals.iter() {
+        for original in originals.iter() {
+            let template = original.template();
+            let contract = original.contract();
             let prepared = produce(facts, &template.body, contract)?;
             if template.body.instance.is_some()
                 || prepared.key != contract.key
