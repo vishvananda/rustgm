@@ -23,5 +23,27 @@
     "full field WF and Clone/Copy/conformance proof",
     "PanicInfo constructor and actual validated handler",
     "runtime false assertion reaches Abort; CTFE executes actual ConstPanicFmt redirect"
-  ]
+  ],
+  "source_comparison_preparation": {
+    "state": "frozen before first candidate qualification",
+    "fixture": "pa31/tests/spec/source-location/partial-eq-original-declaration.rs",
+    "sha256": "a0c2ae122cda29cf83786c97a9a7ed2f23dc414974c06b504ed98b59b391e979",
+    "primary": {
+      "path": "library/core/src/cmp.rs",
+      "sha256": "0a9b8c3a2f7b80447703e5cdc224d059465a90fb9203e0ab4b0182af17494cac",
+      "first_line": 240,
+      "last_line": 266
+    },
+    "positive": [
+      "unchanged PartialEq::ne default body retains genuine self.eq(other) and source Not proof",
+      "unrelated actual UserEq::eq implementation passes ordinary call/body checks without a canonical comparison role"
+    ],
+    "negative": [
+      "PartialEq diagnostic lacks its actual language owner",
+      "wrong actual declaration kind/member owner",
+      "ordinary method call missing its actual trait implementation",
+      "ordinary method call has only a different receiver implementation"
+    ],
+    "scope": "skip bootstrap-only name preparation/reservation and unused mask in source provider/client modes; no nonprimitive binary operation permission or factory source fallback"
+  }
 }

@@ -65,7 +65,9 @@ impl Resolver<'_> {
         if let Some(scope) = self.facts.node_scopes.get(&(c.module, node)) {
             c.scope = *scope;
         }
-        if let Kind::Binary { op, .. } = self.kind(c, node) {
+        if !self.package.uses_source_bindings()
+            && let Kind::Binary { op, .. } = self.kind(c, node)
+        {
             let kind = match op {
                 crate::lex::token::Punctuation::EqualEqual
                 | crate::lex::token::Punctuation::BangEqual => {
