@@ -103,9 +103,9 @@ impl crate::resolve::expansion::Report {
         if summary.node != key {
             return Err(error("helper diagnostic header belongs to another macro"));
         }
-        let Some(role) = summary.builtin else {
+        if summary.builtin.is_none() {
             return Ok(());
-        };
+        }
         validate_identity(self, definition, key, actual)?;
         let data = header
             .into_data()
