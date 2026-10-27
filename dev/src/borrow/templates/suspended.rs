@@ -77,7 +77,7 @@ impl Retained {
     pub(crate) fn append<S: std::hash::BuildHasher, F>(
         mut self,
         original: crate::body::transported_originals::Original,
-        prepared: super::Contract,
+        prepared: &super::Contract,
         checks: &mut Append<'_, '_, S, F>,
     ) -> Result<Self, Error>
     where
@@ -116,7 +116,7 @@ impl Retained {
             checks.environment.types,
             checks.variances,
             checks.queries,
-            &prepared,
+            prepared,
             &template.body,
         )
         .map_err(|failure| Error {

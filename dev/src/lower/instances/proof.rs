@@ -63,7 +63,7 @@ impl Builder {
         facts: &mut Declarations,
         retained: templates::Retained,
         original: crate::body::transported_originals::Original,
-        prepared: Contract,
+        prepared: &Contract,
     ) -> Result<templates::Retained, crate::resolve::package::Error> {
         let custom = facts
             .destructors

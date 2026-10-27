@@ -212,6 +212,7 @@ fn parameter_order(
     parameters: &[crate::types::parameters::ParameterId],
     steps: &mut usize,
 ) -> Result<(), &'static str> {
+    use crate::types::{Kind, arguments::Argument};
     if view.numbered() {
         if parameters.len() != view.inputs().parameters.len() {
             return Err("selected original changed its complete raw formal domain");
@@ -223,7 +224,6 @@ fn parameter_order(
         }
         return Ok(());
     }
-    use crate::types::{Kind, arguments::Argument};
     let mut actual = parameters.iter();
     for parameter in facts
         .generics

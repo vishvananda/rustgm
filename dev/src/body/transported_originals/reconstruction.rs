@@ -14,7 +14,7 @@ pub(crate) fn demand(
 ) -> Result<Original, Error> {
     let mut work = ImportedOriginals::default();
     let mut allocation = 0;
-    service.with_original(facts, definition, &mut |_, view| {
+    let preflight = service.with_original(facts, definition, &mut |_, view| {
         let (bytes, visits) =
             decoded_bodies::allocation(view.rows(), &mut work, 1, std::iter::once(view.raw()))
                 .map_err(Error::unlocated)?;
@@ -25,8 +25,9 @@ pub(crate) fn demand(
         }
         allocation = bytes;
         Ok(())
-    })?;
-    service.prepay(facts, work.steps, allocation)?;
+    });
+    let charged = service.prepay(facts, work.steps, allocation);
+    preflight.and(charged)?;
     let before = work.steps;
     let mut decoded = None;
     let result = service.with_original(facts, definition, &mut |facts, view| {

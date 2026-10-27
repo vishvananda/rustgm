@@ -496,35 +496,7 @@ fn inspect_staged<S, R>(
     ) -> R,
     preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
 ) -> Result<R, Error> {
-    require_source_session(report, facts)?;
-    let mut templates = prepared.templates.finish(report, facts)?;
-    templates
-        .attach(prepared.imported.take())
-        .map_err(|e| diagnostic(report, None, e.into()))?;
-    let mut inputs = if let Some(collector) = prepared.contracts {
-        collector.finish(facts)
-    } else {
-        body::regions::collect(facts)
-    }
-    .map_err(|e| diagnostic(report, None, e.into()))?
-    .bodies;
-    let mut contexts = if let Some(originals) = prepared.original_contexts.take() {
-        originals
-            .apply(&templates, &mut inputs)
-            .map_err(|e| diagnostic(report, None, e.into()))?
-    } else {
-        borrow::templates::Contexts::default()
-    };
-    body::templates::constructors(report, facts, &mut templates, &mut inputs)?;
-    body::provided::append(report, facts, &mut templates, &mut inputs)?;
-    body::iterator_factories::append(report, facts, &mut templates, &mut inputs)?;
-    body::promote::analyze_templates_reusing(
-        report,
-        facts,
-        &mut templates,
-        &mut prepared.promotions,
-    )?;
-    prepare_original_contracts(report, facts, &templates, &mut contexts, &mut inputs)?;
+    let (templates, contexts, inputs) = prepare_template_inputs(report, facts, &mut prepared)?;
     let templates = std::rc::Rc::new(templates);
     if let Some(context) = &prepared.constants {
         context
@@ -597,7 +569,6 @@ fn inspect_staged<S, R>(
         let service = originals.preparation.take().ok_or_else(|| {
             diagnostic(report, None, "selected original service disappeared".into())
         })?;
-        drop(originals);
         let retained = checked
             .retain(std::rc::Rc::clone(&templates))
             .map_err(|e| diagnostic(report, e.node, e.message))?;
@@ -620,6 +591,50 @@ fn inspect_staged<S, R>(
         .assemble()
         .map_err(|e| diagnostic(report, e.node, e.message))?;
     Ok(inspect(facts, assembled, roots, stage))
+}
+
+fn prepare_template_inputs(
+    report: &Report,
+    facts: &mut Declarations,
+    prepared: &mut crate::pipeline::Prepared,
+) -> Result<
+    (
+        body::templates::Templates,
+        borrow::templates::Contexts,
+        Vec<body::regions::Contract>,
+    ),
+    Error,
+> {
+    require_source_session(report, facts)?;
+    let mut templates = std::mem::take(&mut prepared.templates).finish(report, facts)?;
+    templates
+        .attach(prepared.imported.take())
+        .map_err(|e| diagnostic(report, None, e.into()))?;
+    let mut inputs = if let Some(collector) = prepared.contracts.take() {
+        collector.finish(facts)
+    } else {
+        body::regions::collect(facts)
+    }
+    .map_err(|e| diagnostic(report, None, e.into()))?
+    .bodies;
+    let mut contexts = if let Some(originals) = prepared.original_contexts.take() {
+        originals
+            .apply(&templates, &mut inputs)
+            .map_err(|e| diagnostic(report, None, e.into()))?
+    } else {
+        borrow::templates::Contexts::default()
+    };
+    body::templates::constructors(report, facts, &mut templates, &mut inputs)?;
+    body::provided::append(report, facts, &mut templates, &mut inputs)?;
+    body::iterator_factories::append(report, facts, &mut templates, &mut inputs)?;
+    body::promote::analyze_templates_reusing(
+        report,
+        facts,
+        &mut templates,
+        &mut prepared.promotions,
+    )?;
+    prepare_original_contracts(report, facts, &templates, &mut contexts, &mut inputs)?;
+    Ok((templates, contexts, inputs))
 }
 
 fn publish_closure_conditions(

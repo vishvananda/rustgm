@@ -79,11 +79,10 @@ impl Templates {
             .append_selected(row)
     }
     pub(crate) fn iter(&self) -> impl Iterator<Item = &Template> {
-        self.bodies.iter().chain(
-            self.imported
-                .iter()
-                .flat_map(|i| i.iter().map(|row| row.template())),
-        )
+        self.bodies.iter().chain(self.imported.iter().flat_map(|i| {
+            i.iter()
+                .map(crate::body::transported_originals::Original::template)
+        }))
     }
     pub(crate) fn len(&self) -> usize {
         self.bodies.len() + self.imported.as_ref().map_or(0, |i| i.len())
@@ -103,18 +102,17 @@ impl Templates {
             self.imported
                 .as_ref()?
                 .at(index - self.bodies.len())
-                .map(|row| row.template())
+                .map(crate::body::transported_originals::Original::template)
         }
     }
     pub(crate) fn inputs<'a>(
         &'a self,
         sources: &'a [crate::body::regions::Contract],
     ) -> impl Iterator<Item = &'a crate::body::regions::Contract> {
-        sources.iter().chain(
-            self.imported
-                .iter()
-                .flat_map(|i| i.iter().map(|row| row.contract())),
-        )
+        sources.iter().chain(self.imported.iter().flat_map(|i| {
+            i.iter()
+                .map(crate::body::transported_originals::Original::contract)
+        }))
     }
 }
 

@@ -7,7 +7,7 @@ use crate::{
 
 pub(super) enum Proofs<'a, 'templates> {
     Borrowed(&'a Checked<'templates>),
-    Retained(Option<Retained>),
+    Retained(&'a mut Option<Retained>),
 }
 impl Proofs<'_, '_> {
     pub(super) fn with_checked<R>(
@@ -89,7 +89,7 @@ impl Proofs<'_, '_> {
             .map_err(|e| diagnostic(report, e.node, e.message))?;
         service.prepay(facts, bound.work, bound.bytes)?;
         *owner =
-            Some(program.append_selected_template(report, facts, retained, original, prepared)?);
+            Some(program.append_selected_template(report, facts, retained, original, &prepared)?);
         Ok(())
     }
 }
@@ -103,11 +103,12 @@ pub(in crate::lower::instances) fn materialize(
     ordinary: &super::Ordinary,
     service: &mut dyn Preparation,
 ) -> Result<proof::Builder, Error> {
+    let mut templates = Some(templates);
     super::materialize(
         report,
         facts,
         roots,
-        Proofs::Retained(Some(templates)),
+        Proofs::Retained(&mut templates),
         program,
         ordinary,
         Some(service),

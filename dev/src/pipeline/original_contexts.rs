@@ -80,11 +80,10 @@ impl Original {
         let raw = original.contract();
         preparation.prepay(facts, 1, raw.retained_bytes())?;
         let mut prepared = raw.clone();
-        crate::body::copy_requirements::prepare_selected(
+        crate::body::copy_requirements::prepare_original_selected(
             facts,
             body,
             &mut prepared,
-            None,
             preparation,
         )
         .map_err(|failure| match failure {
