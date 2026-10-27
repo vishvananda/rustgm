@@ -524,3 +524,37 @@ handler linkage, const-panic execution and a false assertion reaching real Abort
 are still required. The private local-root continuation must retain real
 callee/drop/indirect original proofs and keep unrelated bodies explicitly Pending;
 its success cannot become a whole-source or metadata-publication claim.
+
+### Explicit local runtime roots
+
+Checkpoint `4ef803892` adds a private executable analysis with private fields and
+an actual Report borrow. It runs the same complete declaration/WF preparation,
+validates explicit local function/body identities, and uses the existing
+SourceBody request, Checker, worklist and resumable body scratch. Initializers
+and constant dependencies remain checked. The ordinary public all-body entry is
+unchanged. Template and concrete CFG construction share an ephemeral selection
+against the existing completed-body set; no second scheduler, dependency graph,
+SelectedConsumer or body-proof owner is introduced. The result cannot convert
+into public whole-source Analysis or artifact publication. Missing demanded
+callee, indirect-call and Drop originals fail the existing proof/lowering path.
+
+Standard fastcheck `1793086050691166732` passes both strict modes, formatting,
+global architecture, build, six exact private controls and ten lexer controls
+in249.94s. It covers private Pending-unused-body/publication rejection, missing
+call/cleanup proofs, initializers and invalid roots, actual selected generic and
+source Abort calls, the old staged collector failure, full-attribute Location
+lowering and the existing declaration storage control. With8/32/128 Pending
+functions, only two actual CFG functions are built and three functions are
+lowered including the entry adapter. Body448/Value24/Rvalue20/Code304,
+Work80/Checker10240/Pending64/Requirement24 stay unchanged. The stack-only
+incremental dispatch context grows32→40 for its construction selection; no
+persistent body/code/machine field or ordinary allocation is added.
+
+The preceding architecture failures retain their phase-direction and filename
+ownership diagnostics. The private compile failure retains the old32-byte stack
+assertion and old helper argument; it ran no tests. The successful raw streams,
+all2888 verified source fingerprints and selected inventory are bound in
+`local-roots-qualified-v1/handoff.json` under the existing retained evidence root.
+This is selected source/CFG qualification, not a false-assert native or CTFE
+panic result. Real PanicInfo/handler linkage and the exact source panic pipeline
+remain the next executable consumer.
