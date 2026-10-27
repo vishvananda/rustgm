@@ -1,0 +1,22 @@
+{
+  "obj/parallel/pa31/source-add-sub-v1/frozen-conditional/conditional-nonconst.rs": {
+    "path": "pa31/tests/spec/source-add-sub/conditional-nonconst.rs",
+    "sha256": "2106b304d53e4484d0eaffe431a6477c12940ce97a3efb64d0a1fe019591ef0b"
+  },
+  "obj/parallel/pa31/source-add-sub-v1/frozen-conditional/predictions.json": {
+    "path": "pa31/tests/spec/source-add-sub/frozen-conditional-predictions.json",
+    "sha256": "7ea165977c9c89b5b6fc9eb303390cbcb2bb7749d8eccb3724bb8bab72b40133"
+  },
+  "obj/parallel/pa31/source-add-sub-v1/frozen-conditional/conditional-const.rs": {
+    "path": "pa31/tests/spec/source-add-sub/conditional-const.rs",
+    "sha256": "a6c86573fa210c613c90d151ccc5ab6e56e0972bb52c2f0f9abd10ab03e0864e"
+  },
+  "obj/parallel/pa31/source-add-sub-v1/frozen-conditional-followup/conditional-unstable.rs": {
+    "path": "pa31/tests/spec/source-add-sub/conditional-unstable.rs",
+    "sha256": "364882284986e8940095d92a7f88004da2647a4617119592778d57c7eafa6a83"
+  },
+  "obj/parallel/pa31/source-add-sub-v1/frozen-conditional-followup/predictions.json": {
+    "path": "pa31/tests/spec/source-add-sub/frozen-conditional-followup-predictions.json",
+    "sha256": "8cb8d8d21df58f180fae1dd71a65264a5a556acd8f122fd1f24c9d8a57a43852"
+  }
+}
