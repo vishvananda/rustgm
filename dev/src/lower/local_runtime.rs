@@ -53,6 +53,19 @@ impl LocalAnalysis<'_> {
                 "local runtime entry lacks its actual completed body",
             ));
         }
-        super::instances::build_local_prepared(self.report, &mut self.facts, entry, self.prepared)
+        let program = super::instances::build_local_prepared(
+            self.report,
+            &mut self.facts,
+            entry,
+            self.prepared,
+        )?;
+        #[cfg(test)]
+        eprintln!(
+            "local-runtime actual CFG functions={} typed bodies={} canonical steps={}",
+            self.facts.body_work.cfg_functions.get(),
+            self.facts.typed_function_bodies.len(),
+            self.facts.body_work.canonical_steps
+        );
+        Ok(program)
     }
 }
