@@ -23,6 +23,9 @@ pub(super) fn walk(
                 .map_err(|_| Error::unlocated("try-block file identity overflow"))?,
         );
         for (ordinal, entry) in entries.expressions().iter().copied().enumerate() {
+            entries
+                .charge(1, 0)
+                .map_err(|message| Error::at(file, entry.keyword.start, message))?;
             if entry
                 .kind(&unit.configured.ast)
                 .map_err(|error| Error::at(file, error.offset, error.message))?

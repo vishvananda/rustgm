@@ -53,13 +53,13 @@ impl Expression {
             .nodes
             .get(self.node.get() as usize)
             .ok_or_else(invalid)?;
-        let (body, gate) = match node.kind {
-            NodeKind::TryBlock { body, gate }
-            | NodeKind::ConstClosure {
-                closure: body,
-                gate,
-            } => (body, gate),
-            _ => return Err(invalid()),
+        let (NodeKind::TryBlock { body, gate }
+        | NodeKind::ConstClosure {
+            closure: body,
+            gate,
+        }) = node.kind
+        else {
+            return Err(invalid());
         };
         let block = ast.nodes.get(body.get() as usize).ok_or_else(invalid)?;
         let plain = if let NodeKind::Attributed { value, .. } = block.kind {
@@ -192,16 +192,13 @@ impl<L> Syntax<L> {
         keyword: Span,
     ) -> Result<(), LexError> {
         let ordinal = self.next_expression_gate()?;
-        let body = match self.nodes.get(node.get() as usize).map(|node| node.kind) {
-            Some(
-                NodeKind::TryBlock { body, .. } | NodeKind::ConstClosure { closure: body, .. },
-            ) => body,
-            _ => {
-                return Err(error(
-                    keyword.start,
-                    "expression-gate requires actual gated node",
-                ));
-            }
+        let Some(NodeKind::TryBlock { body, .. } | NodeKind::ConstClosure { closure: body, .. }) =
+            self.nodes.get(node.get() as usize).map(|node| node.kind)
+        else {
+            return Err(error(
+                keyword.start,
+                "expression-gate requires actual gated node",
+            ));
         };
         let block = self
             .nodes

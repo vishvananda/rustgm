@@ -140,11 +140,11 @@ impl Parser<'_, '_> {
             | Word::Extern
             | Word::Pub => true,
             Word::Unsafe | Word::Async | Word::Const | Word::Safe => {
-                !(word == Word::Const && self.const_closure_after()?)
-                    && !self
+                !(word == Word::Const && self.const_closure_after()?
+                    || self
                         .cursor
                         .peek(1)?
-                        .is_some_and(|next| next.kind == TokenKind::Punctuation(P::OpenBrace))
+                        .is_some_and(|next| next.kind == TokenKind::Punctuation(P::OpenBrace)))
                     && (word == Word::Const
                         || matches!(
                             self.cursor.peek_word(1)?,
