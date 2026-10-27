@@ -314,6 +314,68 @@ impl RecordedDomain {
             None => Err(error("recorded region is outside its actual domain")),
         }
     }
+    pub(in crate::sema::crates::typed_headers) fn normalization_interval(
+        &self,
+        view: &RecipeView<'_>,
+        index: usize,
+        input: &s::NormalizationInput,
+        work: &mut ReservationWork,
+    ) -> Result<std::ops::Range<u32>, Error> {
+        work.charge(4)?;
+        let rows = view.rows()?;
+        let original = &rows.originals[self.seal.raw.0 as usize];
+        let actual = rows.body_inputs[self.seal.raw.0 as usize]
+            .normalizations
+            .get(index)
+            .ok_or_else(|| error("selected normalization lost its actual body ordinal"))?;
+        if view.root() != self.seal.root || !std::ptr::eq(actual, input) {
+            return Err(error(
+                "selected normalization changed its actual body input row",
+            ));
+        }
+        let range = match input.owned.as_slice() {
+            [] => return Ok(0..0),
+            [range] => range,
+            _ => {
+                return Err(error(
+                    "selected normalization requires its flat single owned interval",
+                ));
+            }
+        };
+        let variables = range.slice(&original.variables).map_err(error)?;
+        work.charge(variables.len().saturating_add(1))?;
+        let ordinal =
+            u32::try_from(index).map_err(|_| error("selected normalization ordinal overflow"))?;
+        let mut start = None;
+        let mut end = 0;
+        for (offset, variable) in variables.iter().enumerate() {
+            if variable.allocation != s::RegionAllocation::Normalization(ordinal) {
+                return Err(error(
+                    "selected normalization borrowed a foreign allocation owner",
+                ));
+            }
+            let slot = range.start as usize + offset;
+            let id = self
+                .log
+                .by_slot
+                .get(slot)
+                .copied()
+                .flatten()
+                .ok_or_else(|| {
+                    error("selected normalization lost its actual recorded allocation")
+                })?;
+            if start.is_some() && id.0 != end {
+                return Err(error(
+                    "selected normalization recorded allocations are discontinuous",
+                ));
+            }
+            start.get_or_insert(id.0);
+            end =
+                id.0.checked_add(1)
+                    .ok_or_else(|| error("selected normalization interval overflow"))?;
+        }
+        Ok(start.ok_or_else(|| error("selected normalization has an empty owned interval"))?..end)
+    }
     pub(in crate::sema::crates::typed_headers) fn region(
         &self,
         view: &RecipeView<'_>,

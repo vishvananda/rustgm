@@ -79,6 +79,32 @@ impl Original<'_> {
         result.check_locals(steps)?;
         Ok(result)
     }
+    pub(crate) fn normalization_interval(
+        &self,
+        index: usize,
+        input: &s::NormalizationInput,
+        steps: &mut usize,
+    ) -> Result<std::ops::Range<u32>, &'static str> {
+        let Mapping::Selected {
+            body, view, store, ..
+        } = &self.mapping
+        else {
+            return if input.owned.is_empty() {
+                Ok(0..0)
+            } else {
+                Err("source normalization allocations require fresh wider owner mapping")
+            };
+        };
+        let mut work = crate::resolve::crates::ReservationWork::default();
+        let result = body.normalization_interval(view, store, index, input, &mut work);
+        *steps = steps.saturating_add(work.steps);
+        if *steps > crate::support::crates::MAX_COMPONENTS {
+            return Err("selected normalization mapping exceeded its actual work budget");
+        }
+        result.map_err(
+            |_| "selected normalization changed its actual flat recorded allocation domain",
+        )
+    }
     pub(super) fn descriptor(
         &self,
     ) -> Result<crate::support::crates::SourceDescriptor<'_>, &'static str> {

@@ -174,7 +174,8 @@ pub(super) fn build(
     let proofs = record
         .normalizations
         .iter()
-        .map(|record| normalization(view, record, &mut work.steps))
+        .enumerate()
+        .map(|(index, record)| normalization(view, index, record, &mut work.steps))
         .collect::<Result<_, _>>()?;
     let environment = match record.builtins.as_ref().map(|b| b.environment) {
         None | Some(s::EnvironmentOrigin::Absent) => None,
@@ -334,13 +335,13 @@ fn pair(
 }
 fn normalization(
     view: &SourceOriginal<'_>,
+    index: usize,
     record: &s::NormalizationInput,
     steps: &mut usize,
 ) -> Result<Proof, &'static str> {
-    if !record.owned.is_empty() {
-        return Err("source normalization allocations require fresh wider owner mapping");
-    }
-    let mut proof = crate::types::lifetime_proof::Obligations::new(0);
+    let regions = view.normalization_interval(index, record, steps)?;
+    let mut proof = crate::types::lifetime_proof::Obligations::new(regions.start);
+    proof.regions = regions;
     proof.equalities = record
         .equalities
         .iter()
@@ -423,8 +424,13 @@ pub(super) fn validate(
     }
     drop(obligations);
     validate_builtins(&expected, contract, steps)?;
-    for (record, actual) in record.normalizations.iter().zip(&contract.proofs) {
-        validate_normalization(view, record, actual, steps)?;
+    for (index, (record, actual)) in record
+        .normalizations
+        .iter()
+        .zip(&contract.proofs)
+        .enumerate()
+    {
+        validate_normalization(view, index, record, actual, steps)?;
     }
     Ok(())
 }
@@ -528,13 +534,14 @@ fn same_kind(actual: Kind, expected: Kind) -> bool {
 }
 fn validate_normalization(
     view: &SourceOriginal<'_>,
+    index: usize,
     record: &s::NormalizationInput,
     actual: &Proof,
     steps: &mut usize,
 ) -> Result<(), &'static str> {
-    if !record.owned.is_empty()
-        || actual.proof.has_quantified()
-        || actual.proof.regions != (0..0)
+    let regions = view.normalization_interval(index, record, steps)?;
+    if actual.proof.has_quantified()
+        || actual.proof.regions != regions
         || actual.source != view.input_site(record.site, steps)?
         || actual.sources.len() != record.sources.len()
         || actual.proof.equalities.len() != record.equalities.len()

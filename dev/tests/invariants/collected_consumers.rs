@@ -151,13 +151,15 @@ fn lower_named_caller(stage: HeaderDraft, work: &mut ReservationWork) -> Result 
             size_of::<crate::sema::dispatch::Dispatcher>(),
             size_of::<crate::sema::dispatch::Failure>()
         );
-        crate::lower::instances::build_selected_prepared(
+        let program = crate::lower::instances::build_selected_prepared(
             report,
             facts,
             entry,
             crate::pipeline::Prepared::default(),
             preparation,
-        )
+        )?;
+        actual_normalization_owner(report, facts, preparation)?;
+        Ok(program)
     })?;
     assert!(
         program
@@ -166,6 +168,64 @@ fn lower_named_caller(stage: HeaderDraft, work: &mut ReservationWork) -> Result 
             .any(|symbol| symbol.entry && symbol.body.is_some())
     );
     Ok(())
+}
+
+fn actual_normalization_owner(
+    report: &crate::resolve::expansion::Report,
+    facts: &mut crate::sema::model::Declarations,
+    preparation: &mut dyn crate::sema::dispatch::Preparation,
+) -> std::result::Result<(), crate::resolve::package::Error> {
+    use crate::resolve::package::Error;
+    let imported = report.resolution.crates.as_deref().ok_or_else(|| {
+        Error::unlocated("normalization opponent requires its actual imported catalog")
+    })?;
+    let mut owner = None;
+    for candidate in imported.generic_definitions() {
+        let candidate = candidate.map_err(Error::unlocated)?;
+        if report
+            .resolution
+            .definitions
+            .get(candidate.0 as usize)
+            .is_some_and(|actual| {
+                actual.kind == crate::resolve::model::DefKind::Function
+                    && report.package.names.get(actual.name) == "borrow"
+            })
+        {
+            assert!(owner.replace(candidate).is_none());
+        }
+    }
+    let owner = owner.ok_or_else(|| Error::unlocated("actual imported borrow declaration"))?;
+    let mut steps = 0;
+    let result = preparation.with_original(facts, owner, &mut |_, view| {
+        let mut intervals = 0;
+        for (index, record) in view.inputs().normalizations.iter().enumerate() {
+            if record.owned.is_empty() {
+                continue;
+            }
+            let range = view
+                .normalization_interval(index, record, &mut steps)
+                .map_err(Error::unlocated)?;
+            assert!(range.start > 0 && range.end > range.start);
+            let before = steps;
+            let copied = record.clone();
+            assert!(
+                view.normalization_interval(index, &copied, &mut steps)
+                    .is_err()
+            );
+            assert!(steps > before);
+            assert!(
+                view.normalization_interval(index + 1, record, &mut steps)
+                    .is_err()
+            );
+            intervals += 1;
+        }
+        assert!(
+            intervals > 0,
+            "the genuine borrow body must exercise owned normalization"
+        );
+        Ok(())
+    });
+    result.and(preparation.prepay(facts, steps, 0))
 }
 
 fn repeated_owner(

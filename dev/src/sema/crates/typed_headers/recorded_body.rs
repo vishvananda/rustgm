@@ -235,6 +235,17 @@ impl OriginalBody<'_> {
         self.owner
             .original_parameter(view.rows()?, self.prepared, leaf, reference, work)
     }
+    pub(in crate::sema::crates::typed_headers) fn normalization_interval(
+        &self,
+        view: &RecipeView<'_>,
+        store: &Store,
+        index: usize,
+        input: &s::NormalizationInput,
+        work: &mut ReservationWork,
+    ) -> Result<std::ops::Range<u32>, Error> {
+        self.record(view, store, work)?
+            .normalization_interval(view, index, input, work)
+    }
     pub(in crate::sema::crates::typed_headers) fn region_recorded(
         &self,
         view: &RecipeView<'_>,
