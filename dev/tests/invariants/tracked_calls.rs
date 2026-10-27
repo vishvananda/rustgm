@@ -168,7 +168,7 @@ fn intrinsic_const_policy_and_track_caller_opponents_remain_actual_source_checks
         let error = outcome
             .err()
             .ok_or_else(|| format!("{label} was accepted"))?;
-        assert!(error.to_string().contains(expected), "{label}: {error}");
+        assert!(error.contains(expected), "{label}: {error}");
     }
     Ok(())
 }
