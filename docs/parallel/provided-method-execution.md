@@ -72,7 +72,10 @@ Keep the four public Provided guards closed while this data codec is qualified.
 A's installed owner, demanded original/instance and runtime checks must consume
 the reloaded records before the explicit public constructor/driver gate opens.
 Other untransported semantic policies, including UB binding, stay Unknown or
-unsupported when needed; this profile must not imply their absence.
+unsupported when needed; this profile must not imply their absence. Explicit
+`final` trait methods are a separate policy: `NoDefaultModifier` says nothing
+about a final modifier. Preserve their selected-header transport fence until the
+genuine final-method producer and complete imported policy are transported.
 
 ## Required implementation path
 

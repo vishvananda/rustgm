@@ -53,7 +53,7 @@ pub(super) struct Demands<'a> {
 pub(super) fn build<C: Collect>(
     report: &Report,
     facts: &mut Declarations,
-    originals: &mut Originals<'_, '_, C>,
+    originals: &mut Originals<'_, '_, '_, C>,
     mut program: Program,
     inputs: HashMap<BodyKey, Contract>,
     mut pending: HashMap<BodyKey, Pending>,

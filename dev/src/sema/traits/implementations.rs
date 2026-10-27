@@ -19,6 +19,7 @@ use crate::{
     types::{ItemId, Kind, Store, parameters::predicates::Predicate, shape_key::ShapeKey},
 };
 pub(in crate::sema) use member_contracts::ConstantRequest;
+pub(in crate::sema) type OverlapPair = ((Predicate, DefId), (Predicate, DefId));
 #[cfg(test)]
 #[path = "../../../tests/invariants/polarity_registry.rs"]
 mod tests;
@@ -69,6 +70,15 @@ pub(in crate::sema) struct Implementations {
     graph: Option<Box<crate::sema::specialization::Graph>>,
 }
 impl Implementations {
+    pub(in crate::sema) fn pending_owners(&self) -> impl Iterator<Item = DefId> + '_ {
+        self.pending.iter().flat_map(|pending| pending.owners())
+    }
+
+    /// Cost only: reserve constructs the same pending inventory in both paths.
+    pub(in crate::sema) fn reservation_allocation_bound(count: usize) -> usize {
+        pending::Pending::allocation_bound(count)
+    }
+
     /// Any explicit impl replaces the structural default for the entire nominal
     /// family, even when the requested application does not match its bounds.
     pub fn auto_override(
@@ -324,6 +334,70 @@ impl Implementations {
         value: Implementation,
         status: Status,
     ) -> Result<(), &'static str> {
+        self.prepare_with_observer::<false>(store, item, value, status, &|_, _| Ok(()))
+            .map(|_| ())
+    }
+
+    fn insertion_growth(
+        &self,
+        item: Identity,
+        head: Option<Head>,
+        shape: Option<ShapeKey>,
+        pairs: usize,
+    ) -> crate::support::retained::Growth {
+        use crate::support::retained::Growth;
+        let mut growth = Growth::vector::<Entry>(self.entries.len(), self.entries.capacity(), 1);
+        growth.include(Growth::map::<DefId, usize>(
+            self.owners.len(),
+            self.owners.capacity(),
+            1,
+        ));
+        growth.include(bucket_growth(&self.traits, &item));
+        growth.include(bucket_growth(&self.heads, &(item, head)));
+        growth.include(if let Some(shape) = shape {
+            bucket_growth(&self.closed, &(item, shape))
+        } else {
+            bucket_growth(&self.open, &(item, head))
+        });
+        growth.include(Growth::vector::<(usize, usize)>(
+            self.pairs.len(),
+            self.pairs.capacity(),
+            pairs,
+        ));
+        growth
+    }
+
+    fn insertion_allocation(
+        &self,
+        item: Identity,
+        head: Option<Head>,
+        shape: Option<ShapeKey>,
+    ) -> usize {
+        use crate::support::retained::{map, vector};
+        vector(&self.entries)
+            .saturating_add(vector(&self.pairs))
+            .saturating_add(map(&self.owners))
+            .saturating_add(map(&self.traits))
+            .saturating_add(map(&self.heads))
+            .saturating_add(map(&self.closed))
+            .saturating_add(map(&self.open))
+            .saturating_add(self.traits.get(&item).map_or(0, vector))
+            .saturating_add(self.heads.get(&(item, head)).map_or(0, vector))
+            .saturating_add(if let Some(shape) = shape {
+                self.closed.get(&(item, shape)).map_or(0, vector)
+            } else {
+                self.open.get(&(item, head)).map_or(0, vector)
+            })
+    }
+
+    fn prepare_with_observer<const CHARGED: bool>(
+        &mut self,
+        store: &mut Store,
+        item: Identity,
+        value: Implementation,
+        status: Status,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<usize, &'static str> {
         if self.headers != Headers::Open
             && (!value.constants.is_empty()
                 || !self
@@ -351,11 +425,7 @@ impl Implementations {
         if let Some(pending) = &self.pending {
             pending.validate(value.owner, item, head)?;
         }
-        let shape = if value.predicate.contains_parameters(store)? {
-            None
-        } else {
-            Some(candidate_shape(store, value.predicate)?.0)
-        };
+        let (shape, shape_bytes) = registration_shape::<CHARGED>(store, value.predicate, charge)?;
         let (first, second, third) = if let Some(shape) = shape {
             (
                 self.closed
@@ -384,6 +454,16 @@ impl Implementations {
         if self.pairs.len().saturating_add(count) > 1_000_000 {
             return Err("trait implementation overlap pair budget exceeded");
         }
+        let previous = if CHARGED {
+            let growth = self.insertion_growth(item, head, shape, count);
+            charge(
+                growth.work.saturating_add(count).saturating_add(1),
+                growth.bytes,
+            )?;
+            self.insertion_allocation(item, head, shape)
+        } else {
+            0
+        };
         self.pairs.extend(
             first
                 .iter()
@@ -407,7 +487,14 @@ impl Implementations {
             status,
             checked_constants: HashMap::default(),
         });
-        Ok(())
+        Ok(if CHARGED {
+            shape_bytes.saturating_add(
+                self.insertion_allocation(item, head, shape)
+                    .saturating_sub(previous),
+            )
+        } else {
+            0
+        })
     }
     pub fn headers(&self) -> impl Iterator<Item = &Implementation> {
         self.entries.iter().map(|entry| &entry.value)
@@ -429,6 +516,23 @@ impl Implementations {
                 (a.predicate, a.owner, b.predicate, b.owner)
             })
             .collect()
+    }
+    /// Borrow one genuinely appended pair without draining unrelated work.
+    pub(in crate::sema) fn imported_overlap_pair(
+        &self,
+        owner: DefId,
+        index: usize,
+    ) -> Result<OverlapPair, &'static str> {
+        let &(first, second) = self
+            .pairs
+            .get(index)
+            .ok_or("selected coherence pair is outside its actual registry")?;
+        let left = &self.entries[first].value;
+        let right = &self.entries[second].value;
+        if right.owner != owner || right.source.is_some() {
+            return Err("selected coherence pair changed its actual appended owner");
+        }
+        Ok(((left.predicate, left.owner), (right.predicate, right.owner)))
     }
     pub fn validated(&self) -> impl Iterator<Item = &Implementation> {
         self.entries
@@ -540,4 +644,48 @@ fn candidate_shape(
         predicate.bound = crate::types::parameters::predicates::Bound::Trait(application);
     }
     store.shape_key(predicate)
+}
+
+fn bucket_growth<K: Eq + std::hash::Hash>(
+    map: &HashMap<K, Vec<usize>>,
+    key: &K,
+) -> crate::support::retained::Growth {
+    use crate::support::retained::Growth;
+    let bucket = map.get(key);
+    let mut growth =
+        Growth::map::<K, Vec<usize>>(map.len(), map.capacity(), usize::from(bucket.is_none()));
+    growth.include(Growth::vector::<usize>(
+        bucket.map_or(0, Vec::len),
+        bucket.map_or(0, Vec::capacity),
+        1,
+    ));
+    growth
+}
+
+fn registration_shape<const CHARGED: bool>(
+    store: &mut Store,
+    mut predicate: Predicate,
+    charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+) -> Result<(Option<ShapeKey>, usize), &'static str> {
+    if CHARGED {
+        let arguments = predicate
+            .bound
+            .trait_parts()
+            .and_then(|(id, _)| store.trait_application(id))
+            .and_then(|application| store.arguments(application.arguments))
+            .map_or(0, |arguments| arguments.len());
+        charge(arguments.saturating_add(1), 0)?;
+    }
+    if predicate.contains_parameters(store)? {
+        return Ok((None, 0));
+    }
+    if CHARGED {
+        if let Some((application, _)) = predicate.bound.trait_parts() {
+            predicate.bound = crate::types::parameters::predicates::Bound::Trait(application);
+        }
+        let (key, _, bytes) = store.shape_key_charged(predicate, charge)?;
+        Ok((Some(key), bytes))
+    } else {
+        Ok((Some(candidate_shape(store, predicate)?.0), 0))
+    }
 }

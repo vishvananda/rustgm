@@ -10,6 +10,7 @@ mod objects;
 mod reservations;
 mod tables;
 pub(crate) use super::traits::obligations::Obligations;
+pub(crate) use super::traits::selection::Dependency as PreparationDependency;
 use super::{
     model::Declarations,
     traits::{assumptions::Assumptions, selection},
@@ -26,6 +27,57 @@ pub(crate) use dependencies::Dependencies;
 pub(crate) use objects::object_method;
 use std::sync::Arc;
 pub(crate) use tables::table_method;
+
+/// A borrowed selected producer supplies data for a suspended query, never proof.
+pub(crate) trait Preparation {
+    fn with_original(
+        &mut self,
+        facts: &mut Declarations,
+        definition: DefId,
+        consume: &mut dyn FnMut(
+            &Declarations,
+            &crate::sema::crates::SourceOriginal<'_>,
+        ) -> Result<(), crate::resolve::package::Error>,
+    ) -> Result<(), crate::resolve::package::Error>;
+    fn copy_declarations(
+        &mut self,
+        facts: &mut Declarations,
+    ) -> Result<(), crate::resolve::package::Error>;
+    fn prepay(
+        &mut self,
+        facts: &mut Declarations,
+        work: usize,
+        bytes: usize,
+    ) -> Result<(), crate::resolve::package::Error>;
+    fn prepare(
+        &mut self,
+        facts: &mut Declarations,
+        dependency: PreparationDependency,
+    ) -> Result<(), crate::resolve::package::Error>;
+}
+
+pub(crate) enum Failure {
+    Invalid(String),
+    Preparation(crate::resolve::package::Error),
+}
+impl From<String> for Failure {
+    fn from(message: String) -> Self {
+        Self::Invalid(message)
+    }
+}
+impl From<&str> for Failure {
+    fn from(message: &str) -> Self {
+        Self::Invalid(message.into())
+    }
+}
+impl Failure {
+    pub(crate) fn message(self) -> String {
+        match self {
+            Self::Invalid(message) => message,
+            Self::Preparation(error) => error.to_string(),
+        }
+    }
+}
 
 struct Caller {
     shared_environment: Option<Arc<Environment>>,
@@ -162,6 +214,25 @@ impl Dispatcher {
         facts: &mut Declarations,
         ty: TypeId,
     ) -> Result<TypeId, String> {
+        self.select_using(facts, ty, None).map_err(Failure::message)
+    }
+    pub(crate) fn select_prepared(
+        &mut self,
+        facts: &mut Declarations,
+        ty: TypeId,
+        preparation: &mut dyn Preparation,
+    ) -> Result<TypeId, Failure> {
+        self.select_using(facts, ty, Some(preparation))
+    }
+    fn select_using(
+        &mut self,
+        facts: &mut Declarations,
+        ty: TypeId,
+        mut preparation: Option<&mut dyn Preparation>,
+    ) -> Result<TypeId, Failure> {
+        if let Some(actual) = &mut preparation {
+            actual.prepay(facts, 1, 0).map_err(Failure::Preparation)?;
+        }
         if let Some(&selected) = self.selected.get(&ty) {
             return Ok(selected);
         }
@@ -188,7 +259,7 @@ impl Dispatcher {
             predicate.ty = facts.types.storage_head(predicate.ty)?;
         }
         let (owner, implementation, evidence) =
-            match self.method_implementation(facts, predicate)? {
+            match self.method_implementation_using(facts, predicate, preparation)? {
                 objects::Method::Implementation {
                     owner,
                     arguments,
@@ -358,6 +429,20 @@ impl Dispatcher {
         facts: &mut Declarations,
         predicate: crate::types::parameters::predicates::Predicate,
     ) -> Result<(DefId, crate::types::GenericArgs, Obligations), String> {
+        self.implementation_using(facts, predicate, None)
+            .map_err(Failure::message)
+    }
+    fn implementation_using(
+        &mut self,
+        facts: &mut Declarations,
+        predicate: crate::types::parameters::predicates::Predicate,
+        preparation: Option<&mut dyn Preparation>,
+    ) -> Result<(DefId, crate::types::GenericArgs, Obligations), Failure> {
+        let availability = if preparation.is_some() {
+            super::traits::implementations::Availability::Executable
+        } else {
+            self.availability
+        };
         let before = self.normalize.steps;
         let predicate = self.normalize.predicate(&mut facts.types, predicate)?;
         self.context
@@ -380,7 +465,7 @@ impl Dispatcher {
         if closed
             && let Some(target) = facts
                 .dispatch_dependencies
-                .selection(self.availability, predicate)
+                .selection(availability, predicate)
         {
             facts.dispatch_dependencies.work.shared_selections += 1;
             return Ok((target.owner, target.arguments, Obligations::new(first)));
@@ -397,8 +482,14 @@ impl Dispatcher {
             // No inference term or private identity from a discharged closed
             // query survives into this dispatcher's other selections.
             let mut context = Context::default();
-            let (target, proof, provisional) =
-                implementation::select(facts, &mut context, predicate, caller, self.availability)?;
+            let (target, proof, provisional) = implementation::select_using(
+                facts,
+                &mut context,
+                predicate,
+                caller,
+                availability,
+                preparation,
+            )?;
             self.provisional_size |= provisional;
             let certified = implementation::certify(facts, &mut context, target, &proof)?;
             self.context
@@ -418,19 +509,20 @@ impl Dispatcher {
                 } else {
                     facts
                         .dispatch_dependencies
-                        .certify(self.availability, predicate, target);
+                        .certify(availability, predicate, target);
                 }
                 (target, Obligations::new(first))
             } else {
                 (target, proof)
             }
         } else {
-            let (target, proof, provisional) = implementation::select(
+            let (target, proof, provisional) = implementation::select_using(
                 facts,
                 &mut self.context,
                 predicate,
                 caller,
-                self.availability,
+                availability,
+                preparation,
             )?;
             self.provisional_size |= provisional;
             (target, proof)

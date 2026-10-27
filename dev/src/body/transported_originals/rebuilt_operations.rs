@@ -17,7 +17,7 @@ pub(super) fn build(
     work: &mut ImportedOriginals,
 ) -> Result<Body, &'static str> {
     let record = view.raw();
-    if !record.variables.is_empty()
+    if (!record.variables.is_empty() && !view.numbered())
         || !record.projections.is_empty()
         || !record.calls.is_empty()
         || !record.arguments.is_empty()

@@ -122,6 +122,18 @@ pub(super) struct Contracts {
 }
 
 impl Contracts {
+    /// Cost only: caller supplies an actual empty-result declaration header.
+    pub(in crate::sema) fn declaration_growth(&self) -> crate::support::retained::Growth {
+        use crate::support::retained::Growth;
+        let mut growth =
+            Growth::map::<ItemId, Header>(self.headers.len(), self.headers.capacity(), 1);
+        growth.include(Growth::vector::<ItemId>(
+            self.order.len(),
+            self.order.capacity(),
+            1,
+        ));
+        growth
+    }
     pub(in crate::sema) fn header_table_allocation(&self) -> crate::support::retained::Allocation {
         let mut result = crate::support::retained::Allocation::default();
         result.map(&self.headers);

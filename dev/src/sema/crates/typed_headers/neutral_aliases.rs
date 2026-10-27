@@ -1,5 +1,5 @@
 //! A recorded body's neutral finish binds its immutable result Arc, never proof.
-use super::{DomainStage, Owner, Ready, RecipeView, ReservationWork, Store, error};
+use super::{Owner, Ready, RecipeView, ReservationWork, Store, error};
 use crate::{
     resolve::{
         body_origin::{ImportedBodyId, ImportedDeclarationId},
@@ -36,14 +36,7 @@ impl Owner {
         request: &Request<'_, '_>,
         work: &mut ReservationWork,
     ) -> Result<&'a Arc<super::RecordedDomain>, Error> {
-        let stage = DomainStage::new(request.view, request.store, request.expected, work)?;
-        let record = self
-            .entries
-            .get(request.expected.pair.function_row as usize)
-            .and_then(Option::as_ref)
-            .ok_or_else(|| error("neutral body lost its actual immutable recording"))?;
-        record.require(&stage, request.store, work)?;
-        Ok(record)
+        self.selected_record(request.view, request.store, request.expected, work)
     }
     pub(in super::super) fn finish_neutral(
         &self,

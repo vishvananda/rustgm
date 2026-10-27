@@ -17,6 +17,17 @@ use crate::{
 pub fn select(report: &mut Report, facts: &Declarations) -> Result<DefId, Error> {
     let error = |message| Error::at(FileId(0), 0, message);
     let name = report.package.names.intern("main").map_err(error)?;
+    select_named(report, facts, name)
+}
+
+/// The private continuation reserves the actual name before borrowing its Report.
+/// This shares every binding and signature check with ordinary entry selection.
+pub(in crate::sema) fn select_named(
+    report: &Report,
+    facts: &Declarations,
+    name: crate::support::names::NameId,
+) -> Result<DefId, Error> {
+    let error = |message| Error::at(FileId(0), 0, message);
     let root = *report
         .resolution
         .module_scopes

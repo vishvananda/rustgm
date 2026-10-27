@@ -155,6 +155,24 @@ fn executable_candidates_distinguish_header_validation_and_completed_absence()
             Candidates::Ready(Vec::new()),
         );
     }
+    let mut store = Store::default();
+    let mut registry = Implementations::default();
+    let first = implementation(&mut store, 40, 4, TypeId::primitive(Primitive::U8))?;
+    let mut second = implementation(&mut store, 41, 4, TypeId::primitive(Primitive::U8))?;
+    second.source = None;
+    let predicate = first.predicate;
+    registry.prepare(&mut store, ItemId(4), first)?;
+    registry.prepare(&mut store, ItemId(4), second)?;
+    assert_eq!(
+        registry.imported_overlap_pair(DefId(41), 0)?,
+        ((predicate, DefId(40)), (predicate, DefId(41)))
+    );
+    assert!(registry.imported_overlap_pair(DefId(40), 0).is_err());
+    assert!(registry.imported_overlap_pair(DefId(41), 1).is_err());
+    let source = implementation(&mut store, 42, 4, TypeId::primitive(Primitive::U8))?;
+    registry.prepare(&mut store, ItemId(4), source)?;
+    assert!(registry.imported_overlap_pair(DefId(42), 1).is_err());
+    assert_eq!(registry.take_overlap_pairs().len(), 3);
     Ok(())
 }
 

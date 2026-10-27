@@ -95,54 +95,63 @@ impl Graph {
         universals: u32,
     ) -> Result<bool, &'static str> {
         let descriptor = self.descriptor(catalog)?;
-        let declaration = catalog.declaration(definition)?;
-        catalog.validate_declaration(declaration, definition, DefKind::Function)?;
-        let (owner, ordinal, _) = catalog.declaration_coordinate(declaration)?;
-        if owner != descriptor.identity() {
-            return Ok(false);
-        }
-        if catalog.definition_at(owner, ordinal)? != definition {
-            return Err("source function header belongs to another actual artifact");
-        }
-        let rows = descriptor.rows();
-        let Some(s::HeaderRef::Function(index)) = rows.header(ordinal)? else {
-            return Err("source function lacks its actual completed header row");
-        };
-        let header = &rows.functions[index as usize];
-        if header.declaration != ordinal || header.regions.total != universals {
-            return Err("source function changed its actual declaration or original universals");
-        }
-        match (header.body, body) {
-            (s::FunctionBody::Absent, None) => {
-                let parent = header
-                    .parent
-                    .ok_or("required source method lacks its actual trait owner")?;
-                let raw = rows
-                    .declarations
-                    .get(ordinal.0 as usize)
-                    .ok_or("required source declaration is outside its table")?;
-                if raw.definition.parent != Some(parent)
-                    || rows
-                        .declarations
-                        .get(parent.0 as usize)
-                        .is_none_or(|row| row.definition.kind != s::DefinitionKind::Trait)
-                    || !matches!(rows.header(parent)?, Some(s::HeaderRef::Trait(_)))
-                {
-                    return Err("body absence is not an actual required trait method");
-                }
-                let actual = catalog.definition_at(owner, parent)?;
-                let parent = catalog.declaration(actual)?;
-                catalog.validate_declaration(parent, actual, DefKind::Trait)?;
-            }
-            (s::FunctionBody::Original(reference), Some(body)) => {
-                let id = catalog.body_at(owner, reference)?;
-                if catalog.origin(id)? != body {
-                    return Err("provided source function changed its exact original body");
-                }
-                catalog.validate_function_origin(definition, body)?;
-            }
-            _ => return Err("source function omitted or invented an actual provided body"),
-        }
-        Ok(true)
+        require_function(catalog, descriptor, definition, body, universals)
     }
+}
+pub(in crate::sema::crates::typed_headers) fn require_function(
+    catalog: &Catalog,
+    descriptor: SourceDescriptor<'_>,
+    definition: DefId,
+    body: Option<BodyOrigin>,
+    universals: u32,
+) -> Result<bool, &'static str> {
+    let declaration = catalog.declaration(definition)?;
+    catalog.validate_declaration(declaration, definition, DefKind::Function)?;
+    let (owner, ordinal, _) = catalog.declaration_coordinate(declaration)?;
+    if owner != descriptor.identity() {
+        return Ok(false);
+    }
+    if catalog.definition_at(owner, ordinal)? != definition {
+        return Err("source function header belongs to another actual artifact");
+    }
+    let rows = descriptor.rows();
+    let Some(s::HeaderRef::Function(index)) = rows.header(ordinal)? else {
+        return Err("source function lacks its actual completed header row");
+    };
+    let header = &rows.functions[index as usize];
+    if header.declaration != ordinal || header.regions.total != universals {
+        return Err("source function changed its actual declaration or original universals");
+    }
+    match (header.body, body) {
+        (s::FunctionBody::Absent, None) => {
+            let parent = header
+                .parent
+                .ok_or("required source method lacks its actual trait owner")?;
+            let raw = rows
+                .declarations
+                .get(ordinal.0 as usize)
+                .ok_or("required source declaration is outside its table")?;
+            if raw.definition.parent != Some(parent)
+                || rows
+                    .declarations
+                    .get(parent.0 as usize)
+                    .is_none_or(|row| row.definition.kind != s::DefinitionKind::Trait)
+                || !matches!(rows.header(parent)?, Some(s::HeaderRef::Trait(_)))
+            {
+                return Err("body absence is not an actual required trait method");
+            }
+            let actual = catalog.definition_at(owner, parent)?;
+            let parent = catalog.declaration(actual)?;
+            catalog.validate_declaration(parent, actual, DefKind::Trait)?;
+        }
+        (s::FunctionBody::Original(reference), Some(body)) => {
+            let id = catalog.body_at(owner, reference)?;
+            if catalog.origin(id)? != body {
+                return Err("provided source function changed its exact original body");
+            }
+            catalog.validate_function_origin(definition, body)?;
+        }
+        _ => return Err("source function omitted or invented an actual provided body"),
+    }
+    Ok(true)
 }

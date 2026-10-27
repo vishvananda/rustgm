@@ -162,7 +162,6 @@ impl Proof {
             .normalize_term(facts, ty, count, owner)
     }
 
-    #[cfg(test)]
     pub(in crate::sema) fn formation_steps(&self) -> usize {
         self.checked.steps()
             + self.shapes.as_ref().map_or(0, |shapes| shapes.steps())

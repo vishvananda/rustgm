@@ -63,7 +63,7 @@ impl Stage {
         let mut work = budget.work;
         let installed = facts.associated.install_imported(
             &facts.types,
-            Rc::clone(&self.graph),
+            crate::sema::crates::ImportedOwners::Ordinary(Rc::clone(&self.graph)),
             owners,
             &mut work,
         );
@@ -104,7 +104,7 @@ impl Stage {
         facts.generics.traits = Some(Box::new(contracts));
         facts.generics.trait_self_bounds.extend(self_bounds);
         facts.lifetimes.callables = callables;
-        budget.source = Some(self.graph);
+        budget.source = Some(crate::sema::crates::ImportedOwners::Ordinary(self.graph));
         let after = table_allocation(facts, budget);
         budget.observed.include(retained::Allocation {
             bytes: after.bytes.saturating_sub(before.bytes),

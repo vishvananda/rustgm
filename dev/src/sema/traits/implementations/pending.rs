@@ -32,6 +32,19 @@ pub(super) struct Pending {
     heads: HashMap<(Identity, Option<Head>), HashSet<DefId>>,
 }
 impl Pending {
+    pub(super) fn owners(&self) -> impl ExactSizeIterator<Item = DefId> + '_ {
+        self.owners.keys().copied()
+    }
+
+    pub(super) fn allocation_bound(count: usize) -> usize {
+        use crate::support::retained::new_map;
+        size_of::<Self>()
+            .saturating_add(new_map::<DefId, (Identity, Option<Head>)>(count))
+            .saturating_add(new_map::<Identity, HashSet<DefId>>(count))
+            .saturating_add(new_map::<(Identity, Option<Head>), HashSet<DefId>>(count))
+            .saturating_add(new_map::<DefId, ()>(count.saturating_mul(2)))
+    }
+
     pub(super) fn new(headers: Vec<Header>) -> Result<Self, &'static str> {
         let mut pending = Self::default();
         for Header { owner, item, head } in headers {

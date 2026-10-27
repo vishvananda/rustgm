@@ -68,20 +68,28 @@ impl<T: Copy + Eq + Hash> Slices<T> {
     /// One selected nonempty list, including the lazily installed empty entry.
     /// The charged producer establishes a real miss before requesting growth.
     pub(crate) fn interning_growth(&self, values: usize) -> crate::support::retained::Growth {
+        self.interning_batch_growth(values, usize::from(values != 0))
+    }
+    /// Cost only for a selected group of nonempty lists sharing this table.
+    pub(crate) fn interning_batch_growth(
+        &self,
+        values: usize,
+        lists: usize,
+    ) -> crate::support::retained::Growth {
         use crate::support::retained::Growth;
-        if values == 0 {
+        if lists == 0 {
             return Growth::default();
         }
         let mut growth = Growth::vector::<T>(self.values.len(), self.values.capacity(), values);
         growth.include(Growth::vector::<Entry>(
             self.entries.len(),
             self.entries.capacity(),
-            1 + usize::from(self.entries.is_empty()),
+            lists.saturating_add(usize::from(self.entries.is_empty())),
         ));
         growth.include(Growth::map::<u64, u32>(
             self.index.len(),
             self.index.capacity(),
-            1,
+            lists,
         ));
         growth
     }

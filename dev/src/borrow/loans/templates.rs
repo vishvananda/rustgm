@@ -225,7 +225,7 @@ fn no_cleanup(requirements: &crate::body::drops::Requirements) -> bool {
         && requirements.sites.is_empty()
 }
 
-fn validate(template: &crate::body::templates::Template) -> Result<(), &'static str> {
+pub(crate) fn validate(template: &crate::body::templates::Template) -> Result<(), &'static str> {
     let body = &template.body;
     if template.destruction.locals.len() != body.locals.len()
         || template.destruction.values.len() != body.values.len()

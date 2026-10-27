@@ -1,6 +1,8 @@
 //! Canonical imported headers retain actual catalog ownership and declared inputs.
 mod applications;
 mod consumer_sessions;
+pub(in crate::sema) use consumer_sessions::SelectedConsumer;
+mod context_queries;
 mod ingest;
 pub(super) mod mapped_source;
 pub(in crate::sema) mod predicate_remap;
@@ -12,7 +14,7 @@ mod signature_shapes;
 mod staged_headers;
 mod staged_ingest;
 #[path = "typed_headers/dormant_session.rs"]
-mod unpaid_provided;
+pub(super) mod unpaid_provided;
 use super::{Declarations, Error};
 use crate::{
     resolve::{
@@ -43,7 +45,7 @@ pub(super) struct Header {
     pub body: Option<BodyOrigin>,
     pub signature: TypeId,
     pub callable: TypeId,
-    pub environment: Arc<Environment>,
+    pub environment: Option<Arc<Environment>>,
     pub inputs: Arc<[Input]>,
     pub declared: usize,
     pub universals: u32,
@@ -54,7 +56,7 @@ pub(in crate::sema) struct Headers {
     entries: HashMap<DefId, Header>,
     graphs: HashMap<CrateIdentity, Vec<TypeId>>,
     applications: HashMap<CrateIdentity, Vec<applications::Application>>,
-    source: Option<std::rc::Rc<mapped_source::Graph>>,
+    source: Option<super::ImportedOwners>,
     bytes: usize,
     work: usize,
     base: usize,
@@ -101,18 +103,9 @@ impl Headers {
         Ok(())
     }
     fn symbol(&mut self, identity: &crate::support::crates::ExternalDef) -> Result<String, Error> {
-        let mut length = 4_usize;
-        for name in std::iter::once(identity.owner().name())
-            .chain(std::iter::once(identity.owner().disambiguator()))
-            .chain(identity.path().iter().map(String::as_str))
-        {
-            self.charge(name.len().saturating_add(1))?;
-            length = length.saturating_add(2 * name.len() + 22);
-        }
-        let growth = 4 * length.saturating_add(size_of::<(DefId, String)>());
-        self.reserve(growth)?;
-        Ok(identity.rust_symbol())
+        symbol(identity, self)
     }
+
     pub(super) fn get(&self, definition: DefId) -> Option<&Header> {
         self.entries.get(&definition)
     }
@@ -123,6 +116,24 @@ impl Headers {
             .ok_or("missing imported original type graph")
     }
 }
+
+fn symbol(
+    identity: &crate::support::crates::ExternalDef,
+    budget: &mut impl recipe_cursor::Budget,
+) -> Result<String, Error> {
+    let mut length = 4_usize;
+    for name in std::iter::once(identity.owner().name())
+        .chain(std::iter::once(identity.owner().disambiguator()))
+        .chain(identity.path().iter().map(String::as_str))
+    {
+        budget.charge(name.len().saturating_add(1))?;
+        length = length.saturating_add(2 * name.len() + 22);
+    }
+    let growth = 4 * length.saturating_add(size_of::<(DefId, String)>());
+    budget.reserve(growth)?;
+    Ok(identity.rust_symbol())
+}
+
 impl super::Linkage {
     /// The legacy producer installs only rows whose ABI has no caller policy.
     /// Its canonical header and original graph positively identify that profile.
@@ -158,7 +169,7 @@ impl super::Linkage {
         if let Some(graph) = self
             .originals
             .as_deref()
-            .and_then(|headers| headers.source.as_deref())
+            .and_then(|headers| headers.source.as_ref())
         {
             graph.require_store(store)?;
         }
@@ -180,18 +191,18 @@ impl super::Linkage {
             .ok_or("source method lacks its authenticated canonical headers")?;
         let graph = headers
             .source
-            .as_deref()
+            .as_ref()
             .ok_or("source method lacks its authenticated canonical owner graph")?;
         let catalog = self
             .origin_catalog()
             .ok_or("source method lacks its actual catalog")?;
-        graph.require_method_regions(catalog, definition, scheme, steps)?;
+        graph.require_method_regions(catalog, &facts.types, definition, scheme, steps)?;
         // Ordinary Graph headers retain their established eager relationship.
         // A private demanded declaration must use its own checked scope owner.
         let header = headers
             .get(definition)
             .ok_or("source method lost its actual completed original header")?;
-        graph.require_method_environment(catalog, facts, definition, header, steps)
+        graph.require_method_declaration(catalog, facts, definition, header, steps)
     }
 
     pub(crate) fn original_work(&self) -> Option<(usize, usize, usize, usize)> {
@@ -229,7 +240,7 @@ impl super::Linkage {
         let source = self
             .originals
             .as_deref()
-            .and_then(|h| h.source.as_deref())
+            .and_then(|h| h.source.as_ref())
             .map(|source| source.function(catalog, definition, header.body, header.universals))
             .transpose()?
             .unwrap_or(false);
@@ -267,7 +278,12 @@ impl super::Linkage {
             body: header.body,
             signature: header.signature,
             universals: header.universals,
-            environment: Some(&header.environment),
+            environment: Some(
+                header
+                    .environment
+                    .as_ref()
+                    .ok_or("imported original requires its actual pending defining environment")?,
+            ),
         }))
     }
     pub(crate) fn original_application(
@@ -287,18 +303,19 @@ impl super::Linkage {
     }
     pub(crate) fn original_inputs(
         &self,
+        generics: &crate::sema::generics::Generics,
         definition: DefId,
         declared: bool,
     ) -> Result<&[Input], &'static str> {
         let Some(header) = self.originals.as_deref().and_then(|h| h.get(definition)) else {
-            let Some(source) = self.originals.as_deref().and_then(|h| h.source.as_deref()) else {
+            let Some(source) = self.originals.as_deref().and_then(|h| h.source.as_ref()) else {
                 return Ok(&[]);
             };
             let catalog = self
                 .origin_catalog()
                 .ok_or("source declaration inputs lack their actual catalog")?;
             return Ok(source
-                .declaration_inputs(catalog, definition, declared)?
+                .declaration_inputs(catalog, generics, definition, declared)?
                 .unwrap_or(&[]));
         };
         self.original_declaration_header(definition)?
@@ -322,7 +339,7 @@ pub(crate) fn is_source_original(
     let Some(graph) = linkage
         .originals
         .as_deref()
-        .and_then(|headers| headers.source.as_deref())
+        .and_then(|headers| headers.source.as_ref())
     else {
         return Ok(false);
     };
@@ -344,7 +361,7 @@ pub(crate) fn source_original<'a>(
     let Some(headers) = linkage.originals.as_deref() else {
         return Ok(None);
     };
-    let Some(graph) = headers.source.as_deref() else {
+    let Some(graph) = headers.source.as_ref() else {
         return Ok(None);
     };
     *steps = steps.saturating_add(1);
@@ -367,7 +384,7 @@ pub(in crate::sema) fn source_trait_header<'a>(
     let graph = linkage
         .originals
         .as_deref()
-        .and_then(|h| h.source.as_deref())
+        .and_then(|h| h.source.as_ref())
         .ok_or("imported trait requires its actual canonical source graph")?;
     let catalog = linkage
         .origin_catalog()
@@ -409,7 +426,7 @@ pub(in crate::sema) fn source_readiness(
         let Some(headers) = linkage.originals.as_deref() else {
             return Ok(None);
         };
-        let Some(graph) = headers.source.as_deref() else {
+        let Some(graph) = headers.source.as_ref() else {
             return Ok(None);
         };
         steps += 1;

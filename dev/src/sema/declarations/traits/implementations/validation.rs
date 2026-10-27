@@ -68,6 +68,12 @@ impl Checker<'_> {
         let mut constants = self.constant_members.take_members(self.report, &self.facts);
         for (owner, source, predicate) in headers {
             let Some(source) = source else {
+                if let Some(selected) = self.selected.as_deref_mut() {
+                    // Private imported conformance is driven by the actual
+                    // selected dependency, never by this unrelated eager walk.
+                    selected.require_imported_implementation(self.report, &self.facts, owner)?;
+                    continue;
+                }
                 self.validate_imported_trait_implementation(owner, predicate)?;
                 continue;
             };
@@ -85,6 +91,10 @@ impl Checker<'_> {
         }
         self.finish_constant_contracts()?;
         self.finish_iteration_contracts()?;
+        if let Some(selected) = self.selected.as_deref_mut() {
+            selected.require_imported_pending(self.report, &self.facts)?;
+            return Ok(());
+        }
         self.facts
             .generics
             .implementations
@@ -391,9 +401,29 @@ pub(in crate::sema::declarations) fn impl_contract_obligations(
             .ok_or_else(|| "missing trait contracts".to_owned())?
             .requirements(&mut facts.types, predicate)?
     };
+    validate_impl_requirements(facts, predicate, proof, &requirements)?;
+    Ok(requirements)
+}
+
+pub(in crate::sema) fn validate_impl_requirements(
+    facts: &mut crate::sema::model::Declarations,
+    predicate: Predicate,
+    proof: &mut crate::sema::nominals::Proof,
+    requirements: &crate::sema::traits::Requirements,
+) -> Result<(), String> {
+    validate_impl_requirements_prepared(facts, predicate, proof, requirements, None)
+        .map_err(crate::sema::dispatch::Failure::message)
+}
+pub(in crate::sema) fn validate_impl_requirements_prepared(
+    facts: &mut crate::sema::model::Declarations,
+    predicate: Predicate,
+    proof: &mut crate::sema::nominals::Proof,
+    requirements: &crate::sema::traits::Requirements,
+    mut preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
+) -> Result<(), crate::sema::dispatch::Failure> {
     for ty in std::iter::once(predicate.ty).chain(requirements.types.iter().copied()) {
         if !proof.check(facts, ty)?.well_formed {
-            return Err("trait implementation header must be well-formed".to_owned());
+            return Err("trait implementation header must be well-formed".into());
         }
     }
     for &requirement in requirements.required.iter().chain(&requirements.implied) {
@@ -407,11 +437,13 @@ pub(in crate::sema::declarations) fn impl_contract_obligations(
             }
             Clause::ForAll(_) => requirement,
         };
-        if !proof.prove_clause(facts, requirement)? {
-            return Err(
-                "trait implementation does not satisfy the trait's requirements".to_owned(),
-            );
+        let proven = match &mut preparation {
+            Some(service) => proof.prove_clause_prepared(facts, requirement, &mut **service)?,
+            None => proof.prove_clause(facts, requirement)?,
+        };
+        if !proven {
+            return Err("trait implementation does not satisfy the trait's requirements".into());
         }
     }
-    Ok(requirements)
+    Ok(())
 }

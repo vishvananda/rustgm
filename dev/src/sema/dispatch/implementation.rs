@@ -18,14 +18,16 @@ pub(super) struct Target {
     pub arguments: GenericArgs,
 }
 
-pub(super) fn select(
+pub(super) fn select_using(
     facts: &mut Declarations,
     context: &mut Context,
     predicate: Predicate,
     caller: selection::Caller<'_>,
     availability: Availability,
-) -> Result<(Target, Obligations, bool), String> {
-    let evidence = select_source(facts, context, predicate, caller, availability)?;
+    preparation: Option<&mut dyn super::Preparation>,
+) -> Result<(Target, Obligations, bool), super::Failure> {
+    let evidence =
+        select_source_using(facts, context, predicate, caller, availability, preparation)?;
     let selection::Source::Implementation { owner, arguments } = evidence.source else {
         return Err("concrete dispatch cannot use a symbolic assumption".into());
     };
@@ -36,13 +38,14 @@ pub(super) fn select(
     ))
 }
 
-pub(super) fn select_source(
+pub(super) fn select_source_using(
     facts: &mut Declarations,
     context: &mut Context,
     predicate: Predicate,
     caller: selection::Caller<'_>,
     availability: Availability,
-) -> Result<selection::Evidence, String> {
+    preparation: Option<&mut dyn super::Preparation>,
+) -> Result<selection::Evidence, super::Failure> {
     let before = context.region_equalities.len();
     let mut substitution =
         Instantiation::new(context, &facts.types, &[]).map_err(|e| e.to_string())?;
@@ -50,7 +53,11 @@ pub(super) fn select_source(
         .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
         .map_err(|e| e.to_string())?;
     facts.dispatch_dependencies.work.selections += 1;
-    let selected = selection::select_available(facts, context, &goal, caller, availability)?;
+    let selected = if let Some(preparation) = preparation {
+        selection::select_prepared(facts, context, &goal, &caller, preparation)?
+    } else {
+        selection::select_available(facts, context, &goal, caller, availability)?
+    };
     let selection::Selection::Proven(mut evidence) = selected else {
         return Err("trait callable requires an unambiguous concrete implementation".into());
     };

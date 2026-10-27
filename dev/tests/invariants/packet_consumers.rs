@@ -21,7 +21,7 @@ fn prepared_imported_contracts_preserve_raw_requests_and_reject_foreign_owner_ar
         .ok_or("actual imported originals")?;
     let raw = originals.iter().next().ok_or("actual original")?;
     let raw_count = raw
-        .contract
+        .contract()
         .builtins
         .as_ref()
         .ok_or("mandatory raw requests")?
@@ -48,7 +48,7 @@ fn prepared_imported_contracts_preserve_raw_requests_and_reject_foreign_owner_ar
             ))
     );
     assert_eq!(
-        raw.contract
+        raw.contract()
             .builtins
             .as_ref()
             .ok_or("raw")?
@@ -82,7 +82,7 @@ fn prepared_imported_contracts_preserve_raw_requests_and_reject_foreign_owner_ar
     assert!(rejected.is_err());
     assert_eq!(produced, 0, "budget rejected after cloning contracts");
     assert_eq!(
-        raw.contract
+        raw.contract()
             .builtins
             .as_ref()
             .ok_or("raw")?
