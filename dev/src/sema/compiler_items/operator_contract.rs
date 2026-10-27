@@ -334,7 +334,7 @@ fn method_signature(
         );
     };
     let inputs = [header.self_type, rhs.unwrap_or(header.self_type)];
-    if facts.types.list(parameters) != Some(&inputs[..1 + usize::from(rhs.is_some())]) {
+    if facts.types.list(parameters) != Some(&inputs[..=usize::from(rhs.is_some())]) {
         return Err("source unary method requires its exact by-value Self receiver".into());
     }
     output_projection(facts, header, output, rhs, result)?;

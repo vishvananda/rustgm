@@ -39,9 +39,7 @@ fn unary(
     })
 }
 #[cfg(test)]
-use crate::{
-    resolve::model::DefKind, support::bindings::LangItem, syntax::item::ItemKind, types::Kind,
-};
+use crate::{resolve::model::DefKind, syntax::item::ItemKind, types::Kind};
 
 #[cfg(test)]
 #[path = "../../../tests/invariants/not_contracts.rs"]

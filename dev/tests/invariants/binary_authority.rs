@@ -1,5 +1,6 @@
 //! Genuine source binary declarations, inference, effects and scalar execution stay joined.
 use super::*;
+use crate::lowir::program::{Literal, Operand, Terminator};
 use crate::{
     pipeline::{self, Analysis},
     resolve::{
@@ -7,10 +8,7 @@ use crate::{
         model::{DefId, DefKind},
         unit::NodeKey,
     },
-    sema::{
-        declarations,
-        model::{Declarations, Operation},
-    },
+    sema::{declarations, model::Operation},
     support::language_hooks::Hook,
     syntax::ast::{Kind as Syntax, NodeId},
     types::{Kind, Primitive, TypeId},
@@ -151,19 +149,33 @@ fn actual_const_effects_and_negative_overflow_faults_remain_required() -> TestRe
         input("const-followup/primitive-const-impl")? + "\npub fn const_value()->usize{ENCODED}";
     let (report, analysis) = analyze(&source)?;
     let program = lower(&report, analysis, &["const_value"])?;
-    use crate::lowir::program::{Literal, Operand, Terminator};
     let body = program
         .symbols
         .iter()
         .find_map(|s| s.body.as_ref())
         .ok_or("actual const body")?;
     assert!(body.blocks.iter().any(|b|matches!(b.terminator,Terminator::Return(Some(v)) if matches!(v.operand,Operand::Literal(id) if matches!(body.literals.get(id.0 as usize),Some(Literal::Integer(7)))))));
-    for name in [
-        "primitive-const",
-        "explicit-nonconst",
-        "nonconst-overload",
-        "const-followup/const-negative-impl",
-        "const-followup/const-overflow-impl",
+    for (name, expected) in [
+        (
+            "primitive-const",
+            "trait obligation requires an unambiguous matching assumption or implementation",
+        ),
+        (
+            "explicit-nonconst",
+            "trait obligation requires an unambiguous matching assumption or implementation",
+        ),
+        (
+            "nonconst-overload",
+            "trait obligation requires an unambiguous matching assumption or implementation",
+        ),
+        (
+            "const-followup/const-negative-impl",
+            "constant shift amount is out of range",
+        ),
+        (
+            "const-followup/const-overflow-impl",
+            "constant shift amount is out of range",
+        ),
     ] {
         let report = crate::test_source::source_provider(&input(name)?, "source_const_op")?;
         let error = pipeline::analyze_source(&report)
@@ -171,8 +183,8 @@ fn actual_const_effects_and_negative_overflow_faults_remain_required() -> TestRe
             .ok_or_else(|| format!("{name} invalid const accepted"))?;
         eprintln!("source-const opponent {name}: {error}");
         assert!(
-            !error.message.contains("not implemented"),
-            "{name}: {error}"
+            error.message.contains(expected),
+            "{name}: expected {expected}; actual {error}"
         );
     }
     Ok(())
