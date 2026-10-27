@@ -18,7 +18,7 @@ whole-crate attempt. Never patch upstream source to move a blocker.
 
 | Milestone | Current result | Next acceptance evidence |
 | --- | --- | --- |
-| Original core loading and expansion | Qualified CLI `7ecaec04` passes tuple metavariable expressions and opens371 original pinned inputs, then rejects the macro-contract work budget during generated num/mod.rs attribute traversal. All722 pins verify;6.50s; no artifact. | Diagnose LIB-042 actual paid work and bounded input policy; finish imported bodies, real assertion/formatting and full checking/export. |
+| Original core loading and expansion | Qualified CLI `f9a61273` clears the attribute-payer rejection and reaches `ptr/mod.rs:1491`, byte67934: `expected path segment` while swap_prefix forwards a literal into a const-generic argument. All722 pins verify;371 opened;7.48s; no artifact. | Fix LIB-043 typed forwarded const arguments; finish actual assertion/formatting, full checking/export and original artifacts. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
@@ -84,16 +84,29 @@ d1bc checkpoint is fully green, including release/course, native, debug and
 independent Rust qualification. No extra PA release or whole library artifact is
 implied by either checkpoint.
 
-The latest [metavariable checkpoint](metavariable-expressions-checkpoint.md)
+The earlier [metavariable checkpoint](metavariable-expressions-checkpoint.md)
 implements LIB-041's complete local typed expression family. All69 combined
 controls and all PA7/PA8 text cases pass; the executable companion matches
 pinned Rust's `3 3 2 33` through the locked backend. CLI7ecaec04 advances
-263→371 opened files. LIB-042 is now the original-core blocker: an immutable
+263→371 opened files. LIB-042 was the next original-core blocker: an immutable
 probe shows1,000,001 work steps,2,085,659 attempted bytes and53,959 witness
 bytes at decorated_calls::macro_attribute. The limit is unchanged. Ordinary
 nested development-build wall time is6–19% slower in the retained initial
 sample despite improved bounded-work growth; no wall-speedup claim. Source
 macro metadata publication still rejects, and no PA or target library is complete.
+
+The [combined public-consumer checkpoint](public-library-consumers-checkpoint.md)
+now integrates encoded Provided execution, real source discriminants and LIB-042.
+Root production/CLI qualification takes187.84s and then129.62s after the payer
+correction;22 selected controls and all183 PA7/95 PA8 text cases pass. Actual
+native outputs are7 and-1 300 0 1 7, with current CLI artifact/LowIR equality to
+those exact native inputs. Both original work/storage caps remain unchanged;
+generic attribute classification uses the existing general policy owner. Current
+CLIf9a61273 clears that rejection and reaches LIB-043's forwarded literal const
+argument in unchanged ptr/mod.rs. This is expansion progress with the same371
+opened files, not a completed semantic check or artifact. All722 pins verify.
+Worker private gates are authenticated retained component evidence; no new
+combined private execution is claimed.
 
 ## Current execution queue
 
@@ -103,10 +116,10 @@ concrete; a private Ready state is not an executable result.
 
 | Owner | Issues and owning assignments | Next observable exit |
 | --- | --- | --- |
-| A | LIB-007/030, PA29/31 | Worker-qualified public encoded/reloaded Holder carry+borrow and real ordinary override pass all six groups; native7 matches. Authenticate/integrate the final handoff, retaining generic/full-publication closure. |
+| A | LIB-043, PA18/31; PA29 closure remains | Public encoded/reloaded Holder native7 is integrated. Reduce and fix forwarded literal const-generic parsing from actual unchanged swap_prefix, preserving typed opaque syntax; keep broader metadata closure required. |
 | B | LIB-029/021/034, PA25–28/31 | Assert expansion and selected local-root proof are integrated. Complete genuine Arguments/PanicInfo/handler and false assertion through Abort; preserve actual Formatter fields and all demanded helper proofs. |
-| C | PA27/28/31 discriminants and receiver bindings | Qualify discriminant integration with current local-root/macro checks, then implement actual DispatchFromDyn needed by unchanged Formatter before shift/BitOr. No source-only oracle is an execution claim. |
-| Integrator | LIB-008/041/042, PA7/8/31/32 | Typed expressions now pass native and advance core263→371. Diagnose real macro-contract work, integrate qualified consumers, publish checkpoints and progress unchanged core through checking/export. |
+| C | PA27/28/31 receiver bindings | Source discriminant integration and native-1 300 0 1 7 pass. Implement genuine DispatchFromDyn with real impl/receiver proof for unchanged Formatter, ahead of Shl/BitOr; preserve actual source/arena/epoch boundaries. |
+| Integrator | LIB-008/043, PA18/31/32 | Integrate qualified source consumers, preserve sub-five-minute production checks and independent native evidence, and progress unchanged core through parsing/checking/export. Latest actual blocker is forwarded const arguments, not the corrected budget. |
 | Integrator, queued independent preparation | LIB-009/010/011, PA30/33/34/36 | Selected alloc/std dependency/build/runtime inventory and small real ABI/build consumers; do not wait until core works to discover graph prerequisites. |
 
 Track assignment closure separately: implemented behavior, owning text fixtures,
@@ -553,7 +566,7 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-005 | P1; independently qualified reduced program | Anonymous constant-expression `const_eval_select` ownership and cache validation | PA25 execution + PA28 intrinsic semantics + PA31 source identity / PA31 | B, coordinated with C | The original reproduction now produces native `7 1` in the qualified B checkpoint and integrated full functional gate. Actual caller/operand/instance and cached Code/body controls pass; the old stale diagnostic assertion failure remains preserved. Wider generic/imported anonymous profiles remain explicitly unsupported and required. |
 | LIB-006 | P1; core-to-consumer prerequisite | Complete substituted signatures, operation types and required inputs for real exported generic originals | PA29 / PA29 data invariants; PA31 source-provider fixtures | A | Complete operation-derived input/signature validation passes the combined checkpoint, including all 11 private controls and actual complete-source A/B output equality. Executable artifact/import proof is still required. |
 | LIB-007 | P1; core-to-consumer prerequisite | Deterministic generic/source metadata, authenticated remapping and fresh imported body proof | PA29 + PA31 source-role admission / PA29 ordinary multi-crate tests and PA31 source-provider tests | A + integrator | API and CLI tag10 artifact→fresh consumer→native result 7 and stronger full-instance Scope/foreign-owner guards pass A15 and the combined `fa0f4e08` functional gate. Private callable-template, zero-domain Declaration and actual [empty Contract](private-empty-contracts-checkpoint.md) preparation now pass focused controls with bounded warm work. The [shared signature memo](private-signature-mapping-checkpoint.md) and real named-formal certificate now pass combined qualification; checked trait/impl headers and defining/body proof remain required. Exact old first-encoded v0/v1 bytes and fresh plain consumers pass. Inherited/nonrole, default/nonzero environments, original/instance proof and public Provided execution remain required, alongside const/auto roles and nonempty lifetime/body environments. Ordinary Functions origins and v0/v1 bytes must not change. |
-| LIB-008 | P1; next whole-crate acceptance gate | Close remaining active core source requirements and emit a real core artifact | PA32, with each failure assigned back to its language owner / original core and reduced owning-PA cases | Integrator | No artifact. CLI7ecaec04 opens371 pinned files and stops at LIB-042, all722 hashes verified. Complete expansion, semantic/body checking and artifact publication remain required. |
+| LIB-008 | P1; next whole-crate acceptance gate | Close remaining active core source requirements and emit a real core artifact | PA32, with each failure assigned back to its language owner / original core and reduced owning-PA cases | Integrator | No artifact. CLIf9a61273 clears LIB-042 and reaches LIB-043 in ptr/mod.rs;371 pinned files opened/all722 unchanged. Complete expansion, semantic/body checking and publication remain required. |
 | LIB-009 | P1; original package graphs now planned | Source dependency identity, edition/build configuration and reproducible orchestration | PA34 / original graph observations and build-unit/host-graph controls | Integrator | Authenticated original core/alloc/std plans contain1/5/19 units using30registry and19local packages. Explicit target abort preserves unwind host profiles and per-package rustflags. The std graph requires13target compilations and3host compile/run pairs. Original libc/std now pass their actual host pairs with27/8predeclared directive lines; manifest lints/caps and both6compile/5run host DAGs are qualified. The remaining compiler-builtins host pair, target execution, input/configuration closure including compiler-builtins shared configure.rs, selected output kinds and build-script target consumption remain required. |
 | LIB-010 | P2; not yet reached as a whole crate | Original alloc, allocator/runtime contracts and collection consumers | PA33; PA27/PA28 operation prerequisites / PA33 plus reduced owning-PA cases | Unassigned until core advances | Blocked on LIB-007/008/009; split observed alloc failures into concrete issues when reached. |
 | LIB-011 | P2; not yet reached as a whole crate | Original std, platform linkage and abort-profile consumers | PA36; PA30/PA34 platform/build prerequisites / PA36 plus reduced owning-PA cases | Unassigned until prerequisites advance | Blocked on the original core/alloc graph; no unsupported percentage-complete estimate. |
@@ -587,7 +600,8 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-039 | Local grammar, transcription and lookup qualified; original boundary passed | Typed `${concat(...)}` with actual binding path, synthetic definition hygiene and independent crate feature | PA7/8/31 / pa31 metavariable-concat | Integrator integrated | CLI884e0004 passes original fmt/num149 and reaches226 original files. Six private groups pass alongside74 related controls; original20 protocols, five typed-literal protocols and three allowance sources retain all independent predictions/observations. Widths stay40/32/20/32/72/64; emitted work is bounded. Other metavariable operations remain required and unimplemented; no artifact/native claim from concat. |
 | LIB-040 | Grammar and focused semantics qualified; original boundary passed | Higher-ranked conditional trait-bound order in actual impl Trait parameter | PA5 grammar + PA21 binder/const semantics + PA31 feature authority / pa31 higher-ranked-const-bounds | Integrator integrated | CLI d1e2137d passes slice/cmp218 and opens263 original files. Existing Bound retains both actual binder scope and Constness without new fields or reparsing. Eighteen pinned metadata and18 immutable baseline observations match. All33 focused controls and231/758 owning text cases pass; genuine missing-feature and invalid-order opponents remain rejected. No whole core artifact. |
 | LIB-041 | Local expression/native protocol qualified; core boundary advanced | Typed ignore/index/count/len/escaped-dollar with real repetition depth and feature authority | PA7 grammar + PA8 transcription/hygiene + PA31 macro_metavar_expr / pa31 metavariable-expressions | Integrator | All69 combined controls, full PA7/PA8 text and genuine native3 3 2 33 pass. CLI7ecaec04 advances263→371. Original feature/Copy hypotheses remain retained; source macro transport and measured ordinary macro overhead remain followups. See the [checkpoint](metavariable-expressions-checkpoint.md). |
-| LIB-042 | P0; current unchanged-core work-budget blocker | Account for actual whole-crate macro attribute work and choose an input-appropriate bounded policy after ruling out repeated traversal | PA31 source contracts + PA8 shared expansion, PA32 whole-core acceptance / focused owning-PA scaling and budget opponents required | Integrator | CLI7ecaec04 rejects at steps1,000,001 with attempted bytes2,085,659 and witness bytes53,959 during decorated_calls::macro_attribute in generated integer syntax. All722 pins unchanged; no budget increase or completion claim. Retain the actual debugger stack/counters and add a reducer before fixing. |
+| LIB-042 | Payer correction integrated; original core advances | Account general attribute traversal through its actual policy owner, separate from real panic permissions | PA31 source contracts + PA8 shared expansion, PA32 whole-core acceptance / actual generated-owner/prefix and exhausted-payer controls | A + integrator | All7 worker controls and root22 production/CLI plus fullPA7/8 pass. Generic classification uses existing10M policy; permission1M and both64MiB caps unchanged. Actual native input bytes remain equal; CLIf9a61273 reaches LIB-043. Stacked derive-prefix replay remains separate debt. |
+| LIB-043 | P0; current unchanged-core parser blocker | Forward typed literal fragments into const-generic arguments without reparsing rendered source | PA18 const arguments + PA7/8 shared opaque grammar, PA31 source reducer / earliest PA18 ordinary fixtures and PA31 unchanged swap_prefix reducer required | A | CLIf9a61273 fails expected path segment at ptr/mod.rs1491byte67934 in swap_prefix!(4 2 1), whose $n:literal emits swap_chunk::<$n>. Independent integer/bool/char/signed and context/opposing reductions are being frozen before implementation; no skipped call or new proof owner. |
 
 The combined functional recovery is recorded in
 [the alias/allowance checkpoint](library-alias-allowances-checkpoint.md):

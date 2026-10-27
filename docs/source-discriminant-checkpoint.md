@@ -1,5 +1,9 @@
 # Source logical discriminants
 
+The [combined public-consumer checkpoint](public-library-consumers-checkpoint.md)
+records integration, actual CLI/native evidence and the later unchanged-core
+boundary. The component evidence below retains its own qualification scope.
+
 Compiler source `cde2c34f3` connects actual source DiscriminantKind and its owned
 discriminant_type member to both existing associated-result normalizers, body
 projection, reached const evaluation and direct runtime lowering. The result is

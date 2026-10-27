@@ -1,5 +1,9 @@
 # Encoded provided-method execution checkpoint
 
+The [combined public-consumer checkpoint](public-library-consumers-checkpoint.md)
+records integration, actual CLI/native evidence and the later unchanged-core
+boundary. The component evidence below retains its own qualification scope.
+
 The complete source semantic provider plus `Holder<V>` now crosses a public
 artifact boundary. Its genuine provided `carry<U>` and `borrow` bodies are
 encoded, decoded, resolved through the consumer's `base` dependency alias, and

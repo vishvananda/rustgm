@@ -1,5 +1,9 @@
 # Source attribute classification work
 
+The [combined public-consumer checkpoint](public-library-consumers-checkpoint.md)
+records integration, actual CLI/native evidence and the later unchanged-core
+boundary. The component evidence below retains its own qualification scope.
+
 LIB-042 exposed a resource-policy mismatch while expanding the unchanged core
 integer methods. Immutable compiler `7ecaec04` opened 371 pinned source files,
 then rejected work step 1,000,001 in `decorated_calls::macro_attribute`. Attempted
