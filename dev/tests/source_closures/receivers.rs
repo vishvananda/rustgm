@@ -115,6 +115,19 @@ fn adjusted_receiver_paths_preserve_the_original_source_place()
                     .ok_or("missing method")?
                     .receiver
             }
+            AccessKind::Index => {
+                let rustgm::syntax::ast::Kind::Index { value, .. } = report
+                    .package
+                    .unit(site.file)
+                    .configured
+                    .ast
+                    .node(site.node)
+                    .kind
+                else {
+                    return Err("missing index".into());
+                };
+                value
+            }
             AccessKind::Invocation => {
                 let rustgm::syntax::ast::Kind::Call { callee, .. } = report
                     .package

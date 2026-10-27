@@ -169,3 +169,6 @@ mod mutable_collections;
 
 #[path = "language_operators/integer_ranges.rs"]
 mod integer_ranges;
+
+#[path = "language_operators/index_captures.rs"]
+mod index_captures;

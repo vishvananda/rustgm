@@ -140,7 +140,9 @@ impl Builder<'_> {
                 if matches!(self.fact(node)?.operation, Some(Operation::Call { .. })) {
                     self.scratch.work.push(Work::LanguageReceiver(node));
                 }
-                self.scratch.work.push(Work::Place(value));
+                let receiver =
+                    self.receiver_place_work(value, node, crate::sema::closures::AccessKind::Index);
+                self.scratch.work.push(receiver);
             }
             Kind::Path { .. } | Kind::Name(..)
                 if crate::sema::primitive_constants::selected(

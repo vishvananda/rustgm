@@ -4516,3 +4516,11 @@ that have actually completed. Symbolic normal forms can remain opaque, and
 lifetime obligations remain pending at this inspection boundary. Full LowIR
 emission proves the later region, ownership, destruction and layout requirements.
 The PA20 handout fixes row spellings, ordering and count meanings.
+
+Closure indexing captures consume the actual selected Index/IndexMut receiver
+borrow, separately from the result leaf's Copy capability. Keep the index and
+selected method call at invocation time. Reuse the existing sparse adjusted
+access owner for the actual reference prefix and subtract it exactly once during
+place construction. Built-in sequence captures retain whole-container precision
+and existing leaf-use rules; ordinary move, loan and lifetime proof remains
+required. See the [selected index capture checkpoint](docs/pa26-selected-index-captures.md).

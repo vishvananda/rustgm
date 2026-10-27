@@ -88,19 +88,50 @@ impl Collector<'_> {
         value: NodeId,
         index: NodeId,
     ) -> Result<(), Error> {
-        let term = checker.term(value)?;
-        if !matches!(
-            checker.head(work.node, term)?,
-            Some(Constructor::Array(_) | Constructor::ArrayTerm(_) | Constructor::ArrayInfer(_))
-        ) {
-            return Err(checker.error(
-                work.node,
-                "adjusted or overloaded capture indexing is not implemented",
-            ));
-        }
-        // The leaf's read/borrow determines the required mode, but arrays are
-        // captured as a whole. The index expression has its own ordinary uses.
-        self.projected(checker, work.node, value, work.usage)?;
+        let dereferences = checker
+            .facts
+            .autoderefs
+            .get(&checker.key(work.node))
+            .copied()
+            .unwrap_or(0);
+        let usage = if let Some((0, Some(borrow))) = self.methods.get(&work.node).copied() {
+            match checker.head(work.node, borrow)? {
+                Some(Constructor::Reference { mutable: true, .. }) => Use::Mutable,
+                Some(Constructor::Reference { mutable: false, .. }) => Use::Shared,
+                _ => return Err(checker.error(work.node, "missing selected index receiver borrow")),
+            }
+        } else {
+            let mut term = checker.term(value)?;
+            for _ in 0..dereferences {
+                term = checker.child(work.node, term, 0)?;
+            }
+            if !matches!(
+                checker.head(work.node, term)?,
+                Some(
+                    Constructor::Array(_)
+                        | Constructor::ArrayTerm(_)
+                        | Constructor::ArrayInfer(_)
+                        | Constructor::Slice
+                )
+            ) {
+                return Err(
+                    checker.error(work.node, "missing typed capture index receiver selection")
+                );
+            }
+            if matches!(work.usage, Use::Value) {
+                Use::ValueOf(checker.term(work.node)?)
+            } else {
+                work.usage
+            }
+        };
+        // Capture the selected receiver, never a method's invocation-time result.
+        // The index remains its own ordinary use and is evaluated by the body CFG.
+        self.pending.push(Work {
+            node: value,
+            usage,
+            dereferences,
+            receiver: Some((work.node, AccessKind::Index)),
+        });
         self.push(index, Use::Value);
         Ok(())
     }
