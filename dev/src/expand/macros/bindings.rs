@@ -1,4 +1,5 @@
 //! Replay only the winning trace into flat repetition instances and sparse bindings.
+mod cardinalities;
 use super::{
     capture::CaptureId,
     matcher::{Event, Matched, NO_TRACE},
@@ -7,6 +8,7 @@ use super::{
 };
 use crate::support::hash::HashMap;
 use crate::{lex::token::LexError, syntax::token_tree::error};
+pub(super) use cardinalities::{Cardinalities, Count, PathIndex, Template};
 use std::ops::Range;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -121,19 +123,25 @@ impl Bindings {
         variable: VariableId,
         indices: &[usize],
     ) -> Result<Binding<'_>, LexError> {
+        self.at_indices(definition, rule, variable, indices.iter().copied())
+    }
+
+    pub(super) fn at_indices(
+        &self,
+        definition: &Definition,
+        rule: &Rule,
+        variable: VariableId,
+        mut indices: impl Iterator<Item = usize>,
+    ) -> Result<Binding<'_>, LexError> {
         let repeats = definition.list(rule.variables[variable.0 as usize].repetitions);
         let mut iteration = IterationId(0);
-        for (depth, repeat) in repeats.iter().enumerate() {
-            let group = self
-                .repetitions
-                .get(&(iteration, *repeat))
-                .ok_or_else(|| error(0, "missing repetition capture"))?;
-            let values = &self.iterations[self.groups[*group].clone()];
-            let Some(index) = indices.get(depth) else {
+        for repeat in repeats {
+            let values = self.sequence(iteration, *repeat)?;
+            let Some(index) = indices.next() else {
                 return Ok(Binding::Sequence(values));
             };
             iteration = *values
-                .get(*index)
+                .get(index)
                 .ok_or_else(|| error(0, "incompatible macro repetition counts"))?;
         }
         self.values
@@ -141,5 +149,12 @@ impl Bindings {
             .copied()
             .map(Binding::Capture)
             .ok_or_else(|| error(0, "missing metavariable capture"))
+    }
+    fn sequence(&self, parent: IterationId, repeat: NodeId) -> Result<&[IterationId], LexError> {
+        self.repetitions
+            .get(&(parent, repeat))
+            .and_then(|group| self.groups.get(*group))
+            .and_then(|range| self.iterations.get(range.clone()))
+            .ok_or_else(|| error(0, "missing repetition capture"))
     }
 }

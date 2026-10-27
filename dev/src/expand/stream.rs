@@ -113,30 +113,22 @@ impl Stream {
                     output.copy_token(token, origin, environment, &mut contexts)?;
                 }
                 Piece::Identifier { name, span } => {
-                    let anchor = Location {
-                        file: environment.definition.file,
-                        span,
-                    };
-                    let context = contexts(anchor, PieceOrigin::Definition)?.ok_or_else(|| {
-                        error(span.start, "concat identifier lost its definition context")
-                    })?;
                     let spelling = names.get(name);
-                    let generated = output.synthetic_image(
-                        spelling,
-                        anchor,
-                        context,
-                        environment.introduction,
-                        environment.edition,
+                    let kind = if spelling == "_" {
+                        Kind::Punctuation(crate::lex::token::Punctuation::Underscore)
+                    } else {
+                        Kind::Identifier
+                    };
+                    output.generated_token(kind, spelling, span, environment, &mut contexts)?;
+                }
+                Piece::Integer { value, span } => {
+                    output.generated_token(
+                        Kind::Integer,
+                        &value.to_string(),
+                        span,
+                        environment,
+                        &mut contexts,
                     )?;
-                    output.tokens.push(Token {
-                        kind: if spelling == "_" {
-                            Kind::Punctuation(crate::lex::token::Punctuation::Underscore)
-                        } else {
-                            Kind::Identifier
-                        },
-                        start: generated.start,
-                        end: generated.end,
-                    });
                 }
                 Piece::Opaque(capture) => {
                     let value = matched
@@ -205,6 +197,34 @@ impl Stream {
         Ok(output)
     }
     /// One demanded lexical token keeps its capture/definition provenance.
+    fn generated_token(
+        &mut self,
+        kind: Kind,
+        spelling: &str,
+        span: Span,
+        environment: &Environment<'_>,
+        contexts: &mut impl FnMut(Location, PieceOrigin) -> Result<Option<SyntaxContextId>, LexError>,
+    ) -> Result<(), LexError> {
+        let anchor = Location {
+            file: environment.definition.file,
+            span,
+        };
+        let context = contexts(anchor, PieceOrigin::Definition)?
+            .ok_or_else(|| error(span.start, "generated token lost its definition context"))?;
+        let generated = self.synthetic_image(
+            spelling,
+            anchor,
+            context,
+            environment.introduction,
+            environment.edition,
+        )?;
+        self.tokens.push(Token {
+            kind,
+            start: generated.start,
+            end: generated.end,
+        });
+        Ok(())
+    }
     fn copy_token(
         &mut self,
         token: Token,

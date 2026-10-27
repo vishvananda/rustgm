@@ -1,0 +1,82 @@
+{
+  "state": "additional hypotheses frozen before observation; original94 retained",
+  "profile": "Rust1.98.0 metadata2021/2024,x86_64 Linux panicabort",
+  "cases": [
+    {
+      "name": "escaped-dollar",
+      "path": "pa31/tests/spec/metavariable-expressions/escaped-dollar.rs",
+      "sha256": "ec5e745fd7c1bcb4bda4a2bcbfee354067b46085cb96cadfcd7ef09ebaa3465e",
+      "rustc_status": 0,
+      "candidate_expected_status": 0,
+      "baseline": true
+    },
+    {
+      "name": "escaped-expression",
+      "path": "pa31/tests/spec/metavariable-expressions/escaped-expression.rs",
+      "sha256": "61b09dee3f260eff714bc6555ce68feb3dbdc35af7eb97a50cc6562681c1755c",
+      "rustc_status": 0,
+      "candidate_expected_status": 0,
+      "baseline": false
+    },
+    {
+      "name": "escaped-dollar-missing-feature",
+      "path": "pa31/tests/spec/metavariable-expressions/escaped-dollar-missing-feature.rs",
+      "sha256": "9946bcee9d733229d1792dffd369c70d3cbab9072895409e1205667ce912a3d3",
+      "rustc_status": 1,
+      "candidate_expected_status": 1,
+      "baseline": false
+    },
+    {
+      "name": "escaped-dollar-allowance",
+      "path": "pa31/tests/spec/metavariable-expressions/escaped-dollar-allowance.rs",
+      "sha256": "998aa03bc43ebbcb18f5847943452dd1c13f4435eb2ab2525ac2b1eba609fc95",
+      "rustc_status": 1,
+      "candidate_expected_status": 1,
+      "baseline": false
+    },
+    {
+      "name": "escaped-dollar-disabled",
+      "path": "pa31/tests/spec/metavariable-expressions/escaped-dollar-disabled.rs",
+      "sha256": "cfa62ddce13d1eb63931b6634c19e3679ed3d93516bfb5cad357537ca837b8fc",
+      "rustc_status": 0,
+      "candidate_expected_status": 0,
+      "baseline": false
+    },
+    {
+      "name": "escaped-dollar-matcher",
+      "path": "pa31/tests/spec/metavariable-expressions/escaped-dollar-matcher.rs",
+      "sha256": "87f255d0f3ded54aa14d01ed045b972614896008221c8fa0a523e454c316f577",
+      "rustc_status": 1,
+      "candidate_expected_status": 1,
+      "baseline": false
+    },
+    {
+      "name": "concat-unknown-unused",
+      "path": "pa31/tests/spec/metavariable-expressions/concat-unknown-unused.rs",
+      "sha256": "5d946ffd70e0e38665ba28704596c228bb4273892ea2aac2b41a7aec9c35fa6a",
+      "rustc_status": 0,
+      "candidate_expected_status": 0,
+      "baseline": true
+    },
+    {
+      "name": "execute-counts",
+      "path": "pa31/tests/spec/metavariable-expressions/execute-counts.rs",
+      "sha256": "876028fcea6c9c7d3c71215c9a6fecd99e4ac305ff99270553a21eb665eb7287",
+      "rustc_status": 0,
+      "candidate_expected_status": 0,
+      "baseline": false
+    }
+  ],
+  "observed": {
+    "state": "observed",
+    "observations": 20,
+    "disagreements": [
+      "execute-counts-2021-rustc",
+      "execute-counts-2024-rustc"
+    ],
+    "infrastructure_failures": 0,
+    "seconds": 11.570613687857985,
+    "binding_sha256": "f1611bbc5af21648d938fc853ddb1c420d7436f8b0fcc47b0108853a69f95c46",
+    "results_sha256": "15d547d83240ac117e117bbc7ec975c8b59042d131eed3d38515dfab30b3eb15"
+  }
+}

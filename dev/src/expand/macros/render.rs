@@ -70,6 +70,9 @@ pub fn write_report(source: &str, report: &Report, output: &mut impl Write) -> i
                     quoted::bytes(output, report.names.get(*name).as_bytes(), false)?;
                     writeln!(output)?;
                 }
+                Piece::Integer { value, .. } => {
+                    writeln!(output, "token definition integer \"{value}\"")?
+                }
                 Piece::Crate(_) => writeln!(output, "crate definition {}", invocation.definition)?,
                 Piece::Doc { inner, body, .. } => {
                     write!(output, "doc definition inner={inner} ")?;

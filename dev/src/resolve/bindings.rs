@@ -196,6 +196,12 @@ impl super::package::Package {
             "metavariable-concat client identity changed",
         )
     }
+    pub(crate) fn requested_metavariable_expressions(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::MetavariableExpressions,
+            "metavariable-expression client identity changed",
+        )
+    }
     pub(crate) fn requested_coverage_attribute(&self) -> Result<bool, &'static str> {
         self.requested_expression_feature(
             policy::Feature::CoverageAttribute,

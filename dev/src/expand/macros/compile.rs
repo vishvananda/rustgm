@@ -217,11 +217,26 @@ impl<'a> Compiler<'a> {
         {
             return match delimiter {
                 Delimiter::Parenthesis => self.repetition(dollar, index + 1, end, mode),
-                Delimiter::Brace if mode == Mode::Template => self.concat(dollar, index + 1),
+                Delimiter::Brace if mode == Mode::Template => self.expression(dollar, index + 1),
                 _ => Err(error(dollar.start, "invalid macro dollar delimiter")),
             };
         }
         let identifier = self.token(index + 1)?;
+        if identifier.kind == TokenKind::Punctuation(P::Dollar) {
+            if mode == Mode::Matcher {
+                return Err(error(identifier.start, "escaped dollar in a macro matcher"));
+            }
+            return Ok((
+                self.node(
+                    Span {
+                        start: identifier.start,
+                        end: identifier.end,
+                    },
+                    Kind::EscapedDollar(identifier),
+                )?,
+                index + 2,
+            ));
+        }
         let name = self.name(index + 1)?;
         if self.names.get(name) == "crate" {
             return Ok((

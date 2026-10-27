@@ -27,11 +27,11 @@ impl Writer<'_> {
                     let variable = self.variables.get(&name).ok_or_else(|| {
                         error(node.span.start, "concat references an unknown metavariable")
                     })?;
-                    let Binding::Capture(capture) = self.bindings.at_path(
+                    let Binding::Capture(capture) = self.bindings.at_indices(
                         self.definition,
                         self.rule,
                         *variable,
-                        &self.indices,
+                        self.indices.iter().map(|frame| frame.index as usize),
                     )?
                     else {
                         return Err(error(

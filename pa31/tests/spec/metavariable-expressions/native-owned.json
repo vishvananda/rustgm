@@ -1,0 +1,14 @@
+{
+  "state": "corrected source provider frozen before observation; original missing-copy hypotheses retained",
+  "profile": "Rust1.98.0 metadata2021/2024,x86_64 Linux panicabort",
+  "cases": [
+    {
+      "name": "execute-counts-owned",
+      "path": "pa31/tests/spec/metavariable-expressions/execute-counts-owned.rs",
+      "sha256": "a3493f5702441d91db578686f1de24de7008e9a9a20d5a2025f23993157a3388",
+      "rustc_status": 0,
+      "candidate_expected_status": 0,
+      "baseline": false
+    }
+  ]
+}

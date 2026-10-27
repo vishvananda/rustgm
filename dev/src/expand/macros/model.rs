@@ -37,6 +37,29 @@ pub struct Atom {
     /// Identifier equality uses canonical names; other tokens compare their source spelling.
     pub name: Option<NameId>,
 }
+/// Target-sized depth without raising every macro node's alignment.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct RepetitionDepth([u8; 8]);
+impl RepetitionDepth {
+    #[must_use]
+    pub const fn new(value: u64) -> Self {
+        Self(value.to_le_bytes())
+    }
+    #[must_use]
+    pub const fn get(self) -> u64 {
+        u64::from_le_bytes(self.0)
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Expression {
+    Count {
+        name: NameId,
+        depth: RepetitionDepth,
+    },
+    Ignore(NameId),
+    Index(RepetitionDepth),
+    Length(RepetitionDepth),
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
     Atom(Atom),
@@ -51,6 +74,8 @@ pub enum Kind {
     },
     /// Template operands share the ordinary node and edge arenas.
     Concat(List),
+    Expression(Expression),
+    EscapedDollar(Token),
     Capture(VariableId),
     Substitute {
         name: NameId,

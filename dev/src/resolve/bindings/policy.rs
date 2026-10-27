@@ -45,6 +45,7 @@ pub(in crate::resolve) enum Feature {
     ConstClosures = 28,
     MetavariableConcat = 29,
     CoverageAttribute = 30,
+    MetavariableExpressions = 31,
 }
 
 /// Recognizing a gate request is not evidence that its active constructs work.
@@ -86,11 +87,12 @@ impl Request {
             "try_blocks" => Self::Capability(Feature::TryBlocks),
             "const_closures" => Self::Capability(Feature::ConstClosures),
             "macro_metavar_expr_concat" => Self::Capability(Feature::MetavariableConcat),
+            "macro_metavar_expr" => Self::Capability(Feature::MetavariableExpressions),
             "coverage_attribute" => Self::Capability(Feature::CoverageAttribute),
             "pattern_type_macro" => Self::Library(Feature::PatternTypeMacro),
             "pattern_types" => Self::Capability(Feature::PatternTypes),
             // Requests do not authorize the unsupported live const-drop operation.
-            "const_destruct" | "asm_experimental_arch" | "macro_metavar_expr" => Self::NoCapability,
+            "const_destruct" | "asm_experimental_arch" => Self::NoCapability,
             _ => return None,
         })
     }
@@ -218,6 +220,7 @@ pub(in crate::resolve) fn prepare_with_admission(
                 || features.has(Feature::TryBlocks)
                 || features.has(Feature::ConstClosures)
                 || features.has(Feature::MetavariableConcat)
+                || features.has(Feature::MetavariableExpressions)
             {
                 Some(Box::new(Source::LocalMacros(super::LocalMacros::new(
                     unit, features,
