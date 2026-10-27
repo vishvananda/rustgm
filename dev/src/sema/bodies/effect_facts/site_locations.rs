@@ -140,7 +140,7 @@ impl Checker<'_> {
                 }
                 continue;
             }
-            if matches!(self.kind(node), Syntax::For { .. }) || self.erased_source_not(node)? {
+            if matches!(self.kind(node), Syntax::For { .. }) || self.erased_source_unary(node)? {
                 continue;
             }
             let callable = if let Some(call) = self.facts.methods.calls.get(&self.key(node)) {

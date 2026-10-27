@@ -1,0 +1,90 @@
+{
+  "scope": "Four NEW authored no_core metadata reducers; not replacement core traits or native/value-bit proof. Actual discriminant and const effect requirements for original Ordering -1.",
+  "plan_sha256": "2992f7978c25f759d050de192b6ffe03c1088a9bc9dfa2ec40dd6aaf300678eb",
+  "observed_sha256": "3efa23e766213e5465ea3210d6061411a3538e38c1e46390ac3da1e4866a2c62",
+  "rows": [
+    {
+      "file": "neg-missing-const.rs",
+      "sha256": "75560fd048d122a93345911999705115331ed8462b1e612048c974ae2f304055",
+      "expected_status": 1,
+      "expected_primary_code": "E0600",
+      "actual_status": 1,
+      "actual_error_codes": [
+        "E0600"
+      ]
+    },
+    {
+      "file": "neg-missing-discriminant.rs",
+      "sha256": "ef7b9a79698ede6b6f6fb5d737649bcdf091d849206aae1f9da0746fc0d97bac",
+      "expected_status": 1,
+      "expected_primary_code": "E0600",
+      "actual_status": 1,
+      "actual_error_codes": [
+        "E0600",
+        "E0081"
+      ]
+    },
+    {
+      "file": "neg-const-real-discriminant.rs",
+      "sha256": "a31f6e98d46cacfd1675573b25ac04eb4a65513410253ff6a5e0e8b2444f2dbb",
+      "expected_status": 0,
+      "expected_primary_code": null,
+      "actual_status": 0,
+      "actual_error_codes": []
+    },
+    {
+      "file": "neg-ordinary-impl-const-discriminant.rs",
+      "sha256": "e3dc699b193ac06678589558a0084de832527738faa13c0b7b8932e83fe1d4dc",
+      "expected_status": 1,
+      "expected_primary_code": "E0277",
+      "actual_status": 1,
+      "actual_error_codes": [
+        "E0277",
+        "E0081"
+      ]
+    }
+  ],
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir_typeck/src/expr.rs": "eeabc2d6357ce271405d4dab00b3580be2257298515015ad69cce1863ee77aab",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir_typeck/src/op.rs": "ff5dbdf06b039b5534affbe5f7ef575e3e83ca63658357bc335926f8a97a29cd",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_ast_lowering/src/expr.rs": "5a346a88df995b066dd638ec109f53eeb27cfd46b6db9d252155657c28b7b1c5"
+  },
+  "profile": "Same pinned no_core Not observer opt0 defaults; no custom cfg/overflow/debug override.",
+  "tool_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "edition": 2024,
+  "notes": "All primary outcomes agree; two additional cascading E0081 diagnostics retained. No older Not/Shl/BitOr observations rerun.",
+  "qualification": {
+    "source": "2b094e7310ad0976ff5f2c87d289303dcdc820ba",
+    "receipt": "obj/qualification/fast/1793099488469987255/receipt.json",
+    "sha256": "213dabeebc75b63832c92881cde46b08d16e0dac8c6482216782151a02bece24",
+    "scope": "six exact private groups, lexer ten; both strict modes and global formatting/audit. Native pending; no unchanged full Neg source claim."
+  },
+  "native": {
+    "source": "pa31/tests/spec/source-location/neg-native.rs",
+    "sha256": "1a3b897d7d0ea5f724142a2c653040d8f7316dd189f3b6c3fb1ab23a3fc8af4a",
+    "plan": "obj/parallel/pa31/source-location-claims-v1/panic-handler-v1/neg-native-v2/plan.json",
+    "plan_sha256": "d30750d03870edc605c5688a822c17c706edb39078bf9bdb42aee00c005c61f5",
+    "independent_receipt": "obj/parallel/pa31/source-location-claims-v1/panic-handler-v1/neg-native-v2/oracle-receipt.json",
+    "independent_sha256": "827a1fba69f7a1c6af3967b4328b97365599b16966dfe950079b241db6e9a7e4",
+    "expected_stdout": "-1 -7\n",
+    "actual_independent_status": 0,
+    "candidate": "PASS adapted native stdout -1 -7 newline, exit0, empty stderr; real declaration/const/instance/enum_cast proof precedes scalar export. Not runtime-variable overflow/full original Neg attributes/C enum ABI.",
+    "retained_failed_cast_observation": "../neg-native-v1/oracle-receipt.json requires real panic_const_add_overflow",
+    "retained_candidate_enum_return_failure": {
+      "receipt": "obj/qualification/fast/1793101364649066052/receipt.json",
+      "actual": "C aggregate ABI profile requires a nonempty aligned repr(C) struct",
+      "scope": "both strict modes/build/lexer10 passed; exact new producer failed. C enum ABI remains unsupported."
+    },
+    "common_declarations_sha256": "c61340867474775b7c943d71398902179c5ba0a49b88dde5170d856a557a1348",
+    "adapted_evidence": "Identical literal source trait/impl/enum/const prefix; only C ABI export signature and enum cast differ. Not exact-sourcecrate parity or completed enum C ABI.",
+    "candidate_receipt": "obj/parallel/pa31/source-location-claims-v1/panic-handler-v1/neg-native-v2/candidate-receipt.json",
+    "candidate_receipt_sha256": "b213aecb3cf25c4d5e1a34095d2c1d7b77ef7587911ee7cfa7d0633ee53cebb8",
+    "candidate_plan_sha256": "65934cb72e11c0dc1871021f5c8b802fc98912cf88c758dce5d08222b588de57",
+    "candidate_lowir_sha256": "149004c000aca89c133d09178df221abda3dba3a05a3fc993fccde4413597efd",
+    "producer_receipt": "obj/qualification/fast/1793101534048705593/receipt.json",
+    "producer_receipt_sha256": "9093e1f8af1acb02b604ff577be9f63c5cff200d9a8dbac56caa77496ffe6f68",
+    "fixture_replay_plan": "obj/parallel/pa31/source-location-claims-v1/panic-handler-v1/neg-native-v2/fixture-runtime-plan.json",
+    "fixture_replay_stdout_sha256": "2efcb54ef953ccb9d3c5d2d98a04deef3b966fcd2a7b2c4853ba0614287a9866",
+    "fixture_replay_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

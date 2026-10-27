@@ -376,3 +376,26 @@ profile preserves source language/header identities and once-parsed opaque
 field types; it does not provide fieldwise/generic/enum derives, marker overlap,
 Debug/formatting, caller tracking, PanicInfo or executable Assert. Assignment
 status stays planned.
+
+## Maintainer source Neg checkpoint
+
+Actual local source Neg declarations now share the transient source Not contract.
+The real trait, owned method, Self/Output, selected implementation and const
+effect obligations complete before primitive scalar erasure. Contextual numeric
+inference connects the operand before the existing pending signature
+normalizer demands Output; nonprimitive overloads keep ordinary selected calls.
+The same path checks negative enum discriminants and the minimum signed literal.
+No bootstrap operation, persistent body/IR field or foreign profile is added.
+
+The four independently observed no_core cases and exact qualification are in
+[`neg-contract.json`](../pa31/tests/spec/source-location/neg-contract.json) and
+its four PA31 source-location `neg-*.rs` fixtures.
+Missing Neg and a nonconst impl in a const discriminant remain rejected. Existing
+source Not positive, forged-owner, effect and closed-wire controls still pass.
+SourceUnary remains 12 bytes, Body 448 and Rvalue 20. The adapted native enum/const consumer prints `-1 -7` through the locked
+backend, matching independent Rust execution. Both adapters retain identical
+source declarations; Rust returns the repr(isize) enum and the candidate uses
+the supported typed enum-to-isize cast. The contract records both hashes and
+the retained panic-hook/C-enum-ABI setup failures. Full original Neg declaration
+attributes, runtime overflow and C enum ABI remain required. This checkpoint
+does not complete formatting or panic execution.
