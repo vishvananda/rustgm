@@ -28,7 +28,7 @@
       "id": "operator-kernel",
       "owner": "pa26",
       "title": "Canonical operator and indexing kernels",
-      "implementation": "implemented",
+      "implementation": "partial",
       "publication": "unpublished",
       "depends_on": [],
       "scope": "Qualified canonical operators/comparisons/indexing/assignment and nominal constructor protocols; actual source dispatch and remaining library/coercion forms continue separately.",
@@ -47,7 +47,8 @@
         "docs/pa26-nominal-checkpoint.md",
         "docs/pa26-reference-comparisons.md",
         "docs/pa26-sequence-ordering.md",
-        "docs/source-shift-or-checkpoint.md"
+        "docs/source-shift-or-checkpoint.md",
+        "docs/operator-kernel-blockers.md"
       ]
     },
     {

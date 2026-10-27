@@ -258,7 +258,7 @@
       "contract": "Canonical operators/indexing/assignment and ordinary method proof",
       "implementation": "partial",
       "implemented": "Bounded canonical Neg/Not/binary/Index/IndexMut/ten assignment families, receiver/evaluation/loan rules",
-      "remaining": "Unrestricted method lookup is not complete: parent reports 6/19 ordinary multi-segment primitive fallback cases pending; qualified bare-name correction 2d11 is not integrated. Core operator/assignment implementations remain qualified finite components; do not declare all method lookup green.",
+      "remaining": "Canonical implicit assignment-hook demand and overloaded mutable capture indexing are confirmed Rust-positive failures (LIB-049/LIB-048). Remaining primitive method/reference/source forms stay in hook-closure; no whole method-lookup completion is claimed.",
       "source": [
         "dev/src/sema/primitive_methods.rs",
         "dev/src/sema/bodies/language_hooks.rs"
@@ -270,7 +270,8 @@
       ],
       "evidence": [
         "docs/pa26-assignment-checkpoint.md",
-        "docs/pa26-index-mut-checkpoint.md"
+        "docs/pa26-index-mut-checkpoint.md",
+        "docs/operator-kernel-blockers.md"
       ],
       "publication": "unpublished assignment contract; no active manifest/oracle claim",
       "units": [

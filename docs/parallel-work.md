@@ -14,22 +14,20 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The current original-core CLIe192630b passes the observed LIB-046 lint storage
-failure with exact complete witness arrays. All722 pinned inputs verify;372 files
-open in8.25s, with no artifact. Limits remain10M work/64MiB. The next rejection
-is genuine formatting-argument construction, already assigned to B.
-The live tracker owns current priorities; checkpoint paragraphs below retain
-earlier context. Typed assembly proof, inert diagnostic data and source Shl/BitOr
-are combined; two operator native consumers now match safe-input outputs.
+The current qualified original-core CLIaa6dbb86 retains the source formatting
+constructor frontier. All722 pinned inputs verify;372 files open in11.50s and
+stderr matches the earlier observation. No artifact exists. The combined source
+raw-pointer constructor/metadata and warning changes pass private18, CLI35 and
+the valid native observer. See [raw composition](pa28-raw-pointer-composition.md).
 
 - A: bounded read-only reviews and the finite unsafe-places release checklist.
   No compiler edits or heavy jobs.
 - B: genuine Formatter/Arguments/helper source closure, then PanicInfo/handler and
   false assertion through Abort. Original Neg attributes and inert diagnostic
   names are integrated. Do not replace upstream helpers with library factories.
-- C: actual aggregate_raw_ptr composition and genuine slice/raw-reference
-  consumers through existing pointer/validity owners; ASM operand proof is
-  integrated, with native emission and metadata still required.
+- C: the raw-pointer composition checkpoint is integrated. Complete the actual
+  selected Index/IndexMut capture join (LIB-048), with original source, native
+  order and loan opponents; broader raw backing/validity stays required.
 - Integrator: directly owns `rustgm-pa25-work`, the qualified typed assembly
   join, publication and the qualified LIB-046 repair; integrate demanded SIMD/target/backend
   work and advance unchanged core. Preserve PA25 const-callable/CTFE and PA29

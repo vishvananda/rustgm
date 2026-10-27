@@ -1,5 +1,22 @@
 # Actual source raw pointer composition
 
+Integrator checkpoint87bdd866 combines this implementation with the required
+unsafe-policy warning repair. Private18 passes in153.59s and production/CLI35
+passes in133.42s, both strict/architecture checks included. Fresh integration
+LowIR is byte-identical to the authenticated worker's native input. The pinned
+CPPGM object/link/native companion again prints exactly `3 12 7 34\n`, status0
+and empty stderr; all24 upstream and126 Reference pins verify.
+
+Original core remains at actual formatting construction:372 opened files, all722
+pins unchanged,11.50s, with stderr identical to the prior observation. This is
+one observation under concurrent load, not a paired performance comparison.
+An initial missing source-directory setup failure is retained; only the core
+probe was repeated with its earlier bound absolute input root. Successful native
+steps were reused. Integrated CLI SHA-256:
+`aa6dbb86a7fcf05bd77826c370800fa80649699778772bd1c64b99aa7f0d195f`.
+Root receipt `obj/parallel/raw-composition-integration-v1/observed/receipt.json`,
+SHA-256 `1e8ac9bdb6b5369bf53d5366597ae8da88ee75d1a8426eb2c2e59775560cd27f`.
+
 PA28 supplies the operation and validity semantics; PA31 supplies the actual
 source binding. This checkpoint does not activate either assignment or qualify
 original core/alloc/std. Preserve NOTICE and the pinned Rust source attribution.
