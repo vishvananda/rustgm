@@ -113,33 +113,7 @@ impl ProofSession {
 }
 impl ConsumerAuthority {
     fn synchronize(&mut self, work: &mut ReservationWork) -> Result<(), Error> {
-        let Some(headers) = self
-            .facts
-            .crates
-            .as_deref_mut()
-            .and_then(|linkage| linkage.originals.as_deref_mut())
-        else {
-            return Ok(());
-        };
-        if !matches!(
-            headers.source,
-            Some(crate::sema::crates::ImportedOwners::Provided(_))
-        ) {
-            return Err(Error::unlocated(
-                "private consumer cannot synchronize an ordinary import budget",
-            ));
-        }
-        work.steps = work.steps.max(headers.work);
-        work.charge(1)?;
-        headers.work = work.steps;
-        work.reserve(
-            headers
-                .base
-                .saturating_add(headers.bytes)
-                .saturating_sub(work.retained),
-        )?;
-        headers.bytes = work.retained.saturating_sub(headers.base);
-        Ok(())
+        synchronize_headers(&mut self.facts, work)
     }
     fn require(&self, work: &mut ReservationWork) -> Result<(), Error> {
         let ConsumerAuthority {
@@ -352,4 +326,33 @@ impl HeaderDraft {
         self.session.authority.synchronize(work)?;
         Ok((self, result))
     }
+}
+
+fn synchronize_headers(facts: &mut Declarations, work: &mut ReservationWork) -> Result<(), Error> {
+    let Some(headers) = facts
+        .crates
+        .as_deref_mut()
+        .and_then(|linkage| linkage.originals.as_deref_mut())
+    else {
+        return Ok(());
+    };
+    if !matches!(
+        headers.source,
+        Some(crate::sema::crates::ImportedOwners::Provided(_))
+    ) {
+        return Err(Error::unlocated(
+            "private consumer cannot synchronize an ordinary import budget",
+        ));
+    }
+    work.steps = work.steps.max(headers.work);
+    work.charge(1)?;
+    headers.work = work.steps;
+    work.reserve(
+        headers
+            .base
+            .saturating_add(headers.bytes)
+            .saturating_sub(work.retained),
+    )?;
+    headers.bytes = work.retained.saturating_sub(headers.base);
+    Ok(())
 }

@@ -230,7 +230,7 @@ pub(super) fn prepare<C: Collect>(
     report: &Report,
     facts: &mut Declarations,
     roots: crate::lower::roots::Selected<'_>,
-    mut originals: Originals<'_, '_, C>,
+    mut originals: Originals<'_, '_, '_, C>,
     inputs: Vec<Contract>,
     concrete: HashMap<BodyKey, Body>,
     constants: Option<crate::pipeline::execution::Context>,
@@ -547,7 +547,7 @@ impl Dependencies {
 fn prepare_ordinary<C: Collect>(
     report: &Report,
     facts: &mut Declarations,
-    originals: &mut Originals<'_, '_, C>,
+    originals: &mut Originals<'_, '_, '_, C>,
     inputs: Vec<Contract>,
     concrete: HashMap<BodyKey, Body>,
     constants: Option<crate::pipeline::execution::Context>,

@@ -47,10 +47,10 @@ pub(super) fn ignore(
 }
 
 /// Stack-only borrowed state; the legacy stage is () and its collector has no state.
-pub(super) struct Context<'a, 'checked, C> {
+pub(super) struct Context<'a, 'checked, 'service, C> {
     pub checked: &'a Checked<'checked>,
     pub collector: &'a mut C,
-    pub preparation: Option<&'a mut dyn crate::sema::dispatch::Preparation>,
+    pub preparation: Option<&'service mut dyn crate::sema::dispatch::Preparation>,
 }
 
 #[cfg(test)]

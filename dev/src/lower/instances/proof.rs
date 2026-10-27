@@ -61,7 +61,7 @@ impl Builder {
         &mut self,
         report: &crate::resolve::expansion::Report,
         facts: &mut Declarations,
-        originals: &mut super::staged_originals::Context<'_, '_, C>,
+        originals: &mut super::staged_originals::Context<'_, '_, '_, C>,
         staged: Staged,
         input: &Contract,
     ) -> Result<usize, crate::resolve::package::Error> {
@@ -108,7 +108,7 @@ impl Builder {
         &mut self,
         report: &crate::resolve::expansion::Report,
         facts: &mut Declarations,
-        originals: &mut super::staged_originals::Context<'_, '_, C>,
+        originals: &mut super::staged_originals::Context<'_, '_, '_, C>,
         body: Body,
         input: &Contract,
     ) -> Result<usize, crate::resolve::package::Error> {

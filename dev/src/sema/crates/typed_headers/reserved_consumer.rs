@@ -21,10 +21,13 @@ struct RuntimePreparation<'a, 'work> {
     selected: &'a mut SelectedConsumer<'work>,
 }
 impl crate::sema::dispatch::Preparation for RuntimePreparation<'_, '_> {
-    fn prepay(&mut self, facts: &Declarations, work: usize, bytes: usize) -> Result<(), Error> {
+    fn prepay(&mut self, facts: &mut Declarations, work: usize, bytes: usize) -> Result<(), Error> {
         self.selected.require(self.report, facts)?;
+        super::synchronize_headers(facts, self.selected.work)?;
         self.selected.work.charge(work)?;
-        self.selected.work.reserve(bytes)
+        let result = self.selected.work.reserve(bytes);
+        let synchronized = super::synchronize_headers(facts, self.selected.work);
+        result.and(synchronized)
     }
     fn prepare(
         &mut self,
@@ -32,27 +35,33 @@ impl crate::sema::dispatch::Preparation for RuntimePreparation<'_, '_> {
         dependency: crate::sema::dispatch::PreparationDependency,
     ) -> Result<(), Error> {
         use crate::sema::dispatch::PreparationDependency;
-        match dependency {
-            PreparationDependency::Header(owner) => {
-                if !self.selected.definition(self.report, facts, owner)? {
-                    return Err(Error::unlocated(
-                        "selected header is not an actual imported owner",
-                    ));
-                }
-                self.selected
-                    .register_implementation(self.report, facts, owner)
-            }
-            PreparationDependency::ImplementationValidated(owner) => {
-                self.selected
-                    .require_imported_implementation(self.report, facts, owner)?;
-                Err(Error::unlocated(
-                    "selected implementation requires its actual member conformance",
-                ))
-            }
+        let result = match dependency {
+            PreparationDependency::Header(owner) => self
+                .selected
+                .definition(self.report, facts, owner)
+                .and_then(|imported| {
+                    if !imported {
+                        return Err(Error::unlocated(
+                            "selected header is not an actual imported owner",
+                        ));
+                    }
+                    self.selected
+                        .register_implementation(self.report, facts, owner)
+                }),
+            PreparationDependency::ImplementationValidated(owner) => self
+                .selected
+                .require_imported_implementation(self.report, facts, owner)
+                .and_then(|()| {
+                    Err(Error::unlocated(
+                        "selected implementation requires its actual member conformance",
+                    ))
+                }),
             _ => Err(Error::unlocated(
                 "selected dispatch requires its actual remaining declaration producer",
             )),
-        }
+        };
+        let synchronized = super::synchronize_headers(facts, self.selected.work);
+        result.and(synchronized)
     }
 }
 impl HeaderDraft {
@@ -63,14 +72,13 @@ impl HeaderDraft {
             reason = "the genuine private consumer awaits demanded original/instance execution and encoded Provided admission"
         )
     )]
-    pub(super) fn analyze_with<S, R>(
+    pub(super) fn execute<R>(
         mut self,
         work: &mut ReservationWork,
-        select: impl FnOnce(&mut Report, &mut Declarations) -> Result<S, Error>,
         execute: impl FnOnce(
             &Report,
             &mut Declarations,
-            S,
+            DefId,
             &mut dyn crate::sema::dispatch::Preparation,
         ) -> Result<R, Error>,
     ) -> Result<(Box<Self>, R), Error> {
@@ -100,6 +108,11 @@ impl HeaderDraft {
             arena,
             work,
         });
+        let entry_name = report
+            .package
+            .names
+            .intern("main")
+            .map_err(Error::unlocated)?;
         let (mut facts, service) =
             crate::sema::declarations::analyze_reserved(&report, facts, service)?;
         let SelectedConsumer {
@@ -109,7 +122,7 @@ impl HeaderDraft {
             arena,
             work,
         } = *service;
-        let selection = select(&mut report, &mut facts)?;
+        let selection = crate::sema::entry::select_named(&report, &facts, entry_name)?;
         let mut service = SelectedConsumer {
             reservation,
             completion,

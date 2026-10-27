@@ -32,7 +32,7 @@ pub(crate) use tables::table_method;
 pub(crate) trait Preparation {
     fn prepay(
         &mut self,
-        facts: &Declarations,
+        facts: &mut Declarations,
         work: usize,
         bytes: usize,
     ) -> Result<(), crate::resolve::package::Error>;

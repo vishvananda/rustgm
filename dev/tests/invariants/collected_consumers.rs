@@ -137,32 +137,28 @@ fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_prep
 }
 
 fn lower_named_caller(stage: HeaderDraft, work: &mut ReservationWork) -> Result {
-    let (_, program) = stage.analyze_with(
-        work,
-        |report, facts| crate::sema::entry::select(report, facts),
-        |report, facts, entry, preparation| {
-            assert!(!facts.functions.is_empty());
-            assert!(
-                facts
-                    .functions
-                    .iter()
-                    .filter(|function| function.body.is_some())
-                    .all(|function| facts.typed_function_bodies.contains(&function.definition))
-            );
-            eprintln!(
-                "selected-dispatch dispatcher={} preparation-error={}",
-                size_of::<crate::sema::dispatch::Dispatcher>(),
-                size_of::<crate::sema::dispatch::Failure>()
-            );
-            crate::lower::instances::build_selected_prepared(
-                report,
-                facts,
-                entry,
-                crate::pipeline::Prepared::default(),
-                preparation,
-            )
-        },
-    )?;
+    let (_, program) = stage.execute(work, |report, facts, entry, preparation| {
+        assert!(!facts.functions.is_empty());
+        assert!(
+            facts
+                .functions
+                .iter()
+                .filter(|function| function.body.is_some())
+                .all(|function| facts.typed_function_bodies.contains(&function.definition))
+        );
+        eprintln!(
+            "selected-dispatch dispatcher={} preparation-error={}",
+            size_of::<crate::sema::dispatch::Dispatcher>(),
+            size_of::<crate::sema::dispatch::Failure>()
+        );
+        crate::lower::instances::build_selected_prepared(
+            report,
+            facts,
+            entry,
+            crate::pipeline::Prepared::default(),
+            preparation,
+        )
+    })?;
     assert!(
         program
             .symbols
