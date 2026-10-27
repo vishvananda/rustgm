@@ -62,10 +62,11 @@ pub(super) fn authenticate(
             .header_role(role)?
             .ok_or("source receiver compatibility is missing its actual role")?;
         let mut steps = 0;
-        Trait::current(report, facts, actual.into(), &mut steps)?;
-        source_header(report, facts, actual.definition)?;
+        let current = Trait::current(report, facts, actual.into(), &mut steps);
         header_attributes::charge_source_contract_query(facts, steps)
             .map_err(|_| Error::Invalid("source receiver authentication work exhausted"))?;
+        current?;
+        source_header(report, facts, actual.definition)?;
     }
     if facts.associated.callable(principal).is_none() {
         source_header(report, facts, principal)?;

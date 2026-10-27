@@ -201,7 +201,16 @@ fn cached_source_receivers_reject_foreign_facts_changed_headers_and_missing_comp
         return Err("actual trait syntax".into());
     };
     *unsafe_ = true;
-    assert!(queries.demand(&report, &mut facts, root).is_err());
+    for _ in 0..2 {
+        let before = crate::sema::header_attributes::source_contract_storage(&facts)
+            .ok_or("actual source payer")?
+            .0;
+        assert!(queries.demand(&report, &mut facts, root).is_err());
+        let after = crate::sema::header_attributes::source_contract_storage(&facts)
+            .ok_or("actual source payer after failed authentication")?
+            .0;
+        assert!(after > before, "failed header work must remain cumulative");
+    }
     Ok(())
 }
 
