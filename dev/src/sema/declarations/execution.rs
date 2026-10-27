@@ -45,6 +45,7 @@ pub(crate) fn analyze_local_roots(
     let result = (|| {
         checker.run()?;
         crate::sema::compiler_items::pointee::authenticate(report, &checker.facts)?;
+        crate::sema::compiler_items::authenticate_discriminant(report, &checker.facts)?;
         let mut steps = 0;
         let limit = checker.work_limit();
         for &definition in roots {
@@ -66,6 +67,7 @@ pub(crate) fn analyze_local_roots(
             }
         }
         crate::sema::compiler_items::pointee::authenticate(report, &checker.facts)?;
+        crate::sema::compiler_items::authenticate_discriminant(report, &checker.facts)?;
         Ok(())
     })();
     result.map_err(|error| {

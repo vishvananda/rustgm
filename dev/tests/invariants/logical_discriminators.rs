@@ -363,6 +363,7 @@ fn real_const_and_lowered_calls_preserve_logical_tags_and_argument_effects() -> 
         prepared,
     )?;
     assert!(program.symbols.iter().filter(|s| s.body.is_some()).count() >= 5);
+    selected_local_calls()?;
     let fault = provider("consumers/reference-fault")?;
     let error = pipeline::analyze_source(&fault)
         .err()
@@ -374,6 +375,38 @@ fn real_const_and_lowered_calls_preserve_logical_tags_and_argument_effects() -> 
         "{error}"
     );
 
+    Ok(())
+}
+
+fn selected_local_calls() -> TestResult {
+    let mut input = source("consumers/actual-calls")?;
+    input.push_str(
+        "\nfn main(){let _=signed();let _=payload();let _=none();let _=some();let _=effects();}",
+    );
+    let report = crate::test_source::source_provider(&input, "selected_discriminants")?;
+    let mut roots = Vec::new();
+    for name in ["main", "signed", "payload", "none", "some", "effects"] {
+        let (index, _) = report
+            .resolution
+            .definitions
+            .iter()
+            .enumerate()
+            .find(|(_, row)| {
+                row.kind == DefKind::Function && report.package.names.get(row.name) == name
+            })
+            .ok_or("selected source discriminant function")?;
+        roots.push(crate::resolve::model::DefId(u32::try_from(index)?));
+    }
+    let entry = roots[0];
+    let selected = crate::lower::local_runtime::analyze(&report, &roots)?;
+    let program = selected.build(entry)?;
+    assert!(program.symbols.iter().filter(|s| s.body.is_some()).count() >= roots.len());
+    assert!(
+        crate::lower::local_runtime::analyze(&report, &[entry])?
+            .build(entry)
+            .is_err(),
+        "a genuine unselected source callee gained executable proof"
+    );
     Ok(())
 }
 #[test]
