@@ -223,19 +223,7 @@ impl<'a> Compiler<'a> {
         }
         let identifier = self.token(index + 1)?;
         if identifier.kind == TokenKind::Punctuation(P::Dollar) {
-            if mode == Mode::Matcher {
-                return Err(error(identifier.start, "escaped dollar in a macro matcher"));
-            }
-            return Ok((
-                self.node(
-                    Span {
-                        start: identifier.start,
-                        end: identifier.end,
-                    },
-                    Kind::EscapedDollar(identifier),
-                )?,
-                index + 2,
-            ));
+            return Ok((self.escaped_dollar(identifier, mode)?, index + 2));
         }
         let name = self.name(index + 1)?;
         if self.names.get(name) == "crate" {

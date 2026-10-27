@@ -1,11 +1,24 @@
 //! Concatenation consumes the retained template forest, never rendered syntax.
 use super::super::model::RepetitionDepth;
 use super::{
-    Atom, Compiler, Delimiter, Kind, LexError, List, NodeId, P, Span, Token, TokenKind, TreeKind,
-    error,
+    Atom, Compiler, Delimiter, Kind, LexError, List, Mode, NodeId, P, Span, Token, TokenKind,
+    TreeKind, error,
 };
 
 impl Compiler<'_> {
+    pub(super) fn escaped_dollar(&mut self, token: Token, mode: Mode) -> Result<NodeId, LexError> {
+        if mode == Mode::Matcher {
+            return Err(error(token.start, "escaped dollar in a macro matcher"));
+        }
+        self.node(
+            Span {
+                start: token.start,
+                end: token.end,
+            },
+            Kind::EscapedDollar(token),
+        )
+    }
+
     pub(super) fn expression(
         &mut self,
         dollar: Token,
