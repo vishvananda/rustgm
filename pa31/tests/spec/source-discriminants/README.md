@@ -15,6 +15,8 @@ exact projected result. Enum output uses declared representation independently
 of physical tag/niche optimization; concrete nonenums use u8. Unknown parameter
 and associated projections retain their real projection and caller obligations.
 
-Candidate implementation and all new observations are pending. Existing pointer
-metadata handoff6a129c6b6, all earlier source fixtures and raw outcomes stay
-immutable. No old oracle/native matrix is repeated.
+The [compiler checkpoint](../../../../docs/source-discriminant-checkpoint.md)
+qualifies the six focused semantic groups, including both normalizers, mandatory
+CTFE and Lower. The complete original-bound provider and combined candidate
+native execution remain explicit follow-ups. Earlier pointer inputs and every
+frozen prediction/raw disagreement remain immutable; no old matrix is repeated.

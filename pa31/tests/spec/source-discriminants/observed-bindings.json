@@ -613,6 +613,185 @@
         }
       ],
       "infrastructure_failures": 0
+    },
+    {
+      "evidence": "obj/parallel/pa31/source-discriminants-v1/observed-opening-v1",
+      "binding_sha256": "cfce1c1e4451a190685ca70bf0116e2d4be8c76e8770ca615bad29de2cec1995",
+      "results_sha256": "9ccadc011f64d253c6236a1ebf21037f0ee7bc54f4cfa9ff96c20ddfbf58e292",
+      "observed": [
+        {
+          "case": "opened-scope-2021",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_assignments",
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "fd10933a6f426a004369d61c4e6401620dd22f8ff251424201501748b0274c2f",
+          "matched_prediction": false
+        },
+        {
+          "case": "opened-scope-2024",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_assignments",
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "fd10933a6f426a004369d61c4e6401620dd22f8ff251424201501748b0274c2f",
+          "matched_prediction": false
+        }
+      ]
+    },
+    {
+      "evidence": "obj/parallel/pa31/source-discriminants-v1/observed-native-v1",
+      "binding_sha256": "134593ef5f2c5eb1f6d9add226adeb7e5e2a00fec9d2d9987c4cc43a0e46def9",
+      "results_sha256": "2cc29f545ee28b7a8531a1690c2f24938208ab446bfde82c2fd84fa3422255b2",
+      "observed": [
+        {
+          "edition": "2021",
+          "phase": "object",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_assignments",
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "85742a9089213f6b6f766bab3679a3616d2deae7151a32944a949ed46edc1433",
+          "matched_prediction": true
+        },
+        {
+          "edition": "2021",
+          "phase": "link",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "edition": "2021",
+          "phase": "execute",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "8cae08b905311c831e02a8de03bc0d4352df18eeb7787a54c334720c889d7403",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "edition": "2024",
+          "phase": "object",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_assignments",
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "85742a9089213f6b6f766bab3679a3616d2deae7151a32944a949ed46edc1433",
+          "matched_prediction": true
+        },
+        {
+          "edition": "2024",
+          "phase": "link",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "edition": "2024",
+          "phase": "execute",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "8cae08b905311c831e02a8de03bc0d4352df18eeb7787a54c334720c889d7403",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        }
+      ]
+    },
+    {
+      "evidence": "obj/parallel/pa31/source-discriminants-v1/observed-combined-v1",
+      "binding_sha256": "14e40da750f78904c0d198a3c4b7728304652f5142446700ebb7fe2a7d67d66b",
+      "results_sha256": "722604764bc052f6c678282219730e0b717d112bb6ca7d8354b2baef435bc712",
+      "observed": [
+        {
+          "edition": "2021",
+          "phase": "object",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_assignments",
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e8009ac25fe47bbbf8bfca1a70afd458de557ebbe8943beb3dd830ce6cb6eddd",
+          "matched_prediction": true
+        },
+        {
+          "edition": "2021",
+          "phase": "link",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "edition": "2021",
+          "phase": "execute",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "8cae08b905311c831e02a8de03bc0d4352df18eeb7787a54c334720c889d7403",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "edition": "2024",
+          "phase": "object",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_assignments",
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e8009ac25fe47bbbf8bfca1a70afd458de557ebbe8943beb3dd830ce6cb6eddd",
+          "matched_prediction": true
+        },
+        {
+          "edition": "2024",
+          "phase": "link",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "edition": "2024",
+          "phase": "execute",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "8cae08b905311c831e02a8de03bc0d4352df18eeb7787a54c334720c889d7403",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        }
+      ]
     }
   ]
 }
