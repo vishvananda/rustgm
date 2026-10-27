@@ -164,7 +164,7 @@ fn actual_header_role_gate_and_signature_opponents_stay_closed() -> TestResult {
     Ok(())
 }
 #[test]
-fn pointer_contract_storage_keeps_hot_body_and_declaration_widths() -> TestResult {
+fn pointer_contract_storage_keeps_hot_body_and_declaration_widths() {
     assert_eq!(size_of::<crate::types::Kind>(), 24);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<crate::resolve::model::Definition>(), 36);
@@ -180,7 +180,6 @@ fn pointer_contract_storage_keeps_hot_body_and_declaration_widths() -> TestResul
         size_of::<crate::sema::model::Operation>(),
         size_of::<crate::body::ir::Body>()
     );
-    Ok(())
 }
 
 #[test]
