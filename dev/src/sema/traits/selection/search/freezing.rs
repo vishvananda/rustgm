@@ -11,48 +11,69 @@ use crate::{
     },
 };
 
-pub(super) fn bound(facts: &mut Declarations) -> Result<Bound, String> {
+pub(super) fn bound(facts: &mut Declarations, marker: AutoTrait) -> Result<Bound, String> {
     let declaration = facts
         .source_bindings
         .as_deref()
         .ok_or("source Freeze requires actual source bindings")?
-        .validated_language(LangItem::Freeze)?
+        .validated_language(role(marker).ok_or("source auto trait marker is not represented")?)?
         .ok_or("source Freeze declaration is absent")?;
-    Ok(Bound::Trait(facts.types.intern_trait_application(
-        Application {
-            item: ItemId(declaration.definition.0),
-            arguments: GenericArgs::EMPTY,
-        },
-    )?))
+    let payments =
+        crate::sema::header_attributes::source_payments(facts.must_use_contracts.as_deref())
+            .map_err(|e| e.to_string())?;
+    Ok(Bound::Trait(
+        facts.types.intern_trait_application_observed::<true>(
+            Application {
+                item: ItemId(declaration.definition.0),
+                arguments: GenericArgs::EMPTY,
+            },
+            &|steps, bytes| payments.charge(steps, bytes),
+        )?,
+    ))
 }
 impl Search<'_> {
-    pub(super) fn source_freeze_goal(facts: &Declarations, goal: &Goal) -> Result<bool, String> {
+    pub(super) fn source_auto_kind(
+        facts: &Declarations,
+        goal: &Goal,
+    ) -> Result<Option<AutoTrait>, String> {
         let Some(catalog) = facts.source_bindings.as_deref() else {
-            return Ok(false);
+            return Ok(None);
         };
         let Some((item, arguments)) = goal.trait_arguments() else {
-            return Ok(false);
+            return Ok(None);
         };
-        let Some(declaration) = catalog.language(LangItem::Freeze) else {
-            return Ok(false);
-        };
-        if DefId(item.0) != declaration.definition {
-            return Ok(false);
+        for marker in [
+            AutoTrait::Freeze,
+            AutoTrait::Send,
+            AutoTrait::Sync,
+            AutoTrait::Unpin,
+        ] {
+            let role = role(marker).ok_or("source auto trait marker is not represented")?;
+            if catalog
+                .language(role)
+                .is_none_or(|d| d.definition != DefId(item.0))
+            {
+                continue;
+            }
+            catalog.validated_language(role)?;
+            if !arguments.is_empty() || goal.constness() != Some(Constness::Ordinary) {
+                return Err("source auto trait requires an ordinary complete application".into());
+            }
+            return Ok(Some(marker));
         }
-        catalog.validated_language(LangItem::Freeze)?;
-        if !arguments.is_empty() || goal.constness() != Some(Constness::Ordinary) {
-            return Err("source Freeze requires an ordinary empty-argument application".into());
-        }
-        Ok(true)
+        Ok(None)
     }
-    pub(super) fn source_freeze_result(
+    pub(super) fn source_auto_goal(facts: &Declarations, goal: &Goal) -> Result<bool, String> {
+        Ok(Self::source_auto_kind(facts, goal)?.is_some())
+    }
+    pub(super) fn source_auto_result(
         &mut self,
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Option<Action>, String> {
-        if !Self::source_freeze_goal(facts, &frame.goal)? {
+        let Some(marker) = Self::source_auto_kind(facts, &frame.goal)? else {
             return Ok(None);
-        }
+        };
         if frame.deferred || frame.partial.is_some() || frame.selected.is_some() {
             return Ok(None);
         }
@@ -112,7 +133,7 @@ impl Search<'_> {
             frame,
             Obligation {
                 ty: goal.ty,
-                marker: AutoTrait::Freeze,
+                marker,
             },
         )? {
             std::ops::ControlFlow::Break(action) => return Ok(Some(action)),
@@ -146,4 +167,23 @@ impl Search<'_> {
         );
         Ok(Some(Action::Complete(Decision::Proven(node))))
     }
+}
+
+pub(super) const fn role(marker: AutoTrait) -> Option<LangItem> {
+    match marker {
+        AutoTrait::Freeze => Some(LangItem::Freeze),
+        AutoTrait::Send => Some(LangItem::Send),
+        AutoTrait::Sync => Some(LangItem::Sync),
+        AutoTrait::Unpin => Some(LangItem::Unpin),
+        _ => None,
+    }
+}
+pub(super) fn has_source(facts: &Declarations, marker: AutoTrait) -> bool {
+    role(marker).is_some_and(|role| {
+        facts
+            .source_bindings
+            .as_deref()
+            .and_then(|c| c.language(role))
+            .is_some()
+    })
 }

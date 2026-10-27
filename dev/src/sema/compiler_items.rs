@@ -30,7 +30,7 @@ pub(in crate::sema) mod pointee;
 mod ptr_metadata;
 mod tag_intrinsic;
 pub(crate) use tag_intrinsic::DiscriminantSelection;
-#[path = "compiler_items/enum_tags.rs"]
+#[path = "compiler_items/logical_tags.rs"]
 pub(in crate::sema) mod discriminant;
 mod runtime_checks;
 pub(crate) use ptr_metadata::PtrMetadataSelection;

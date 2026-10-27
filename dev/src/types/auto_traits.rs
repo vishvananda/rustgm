@@ -20,6 +20,8 @@ pub enum Step {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Rule {
     Structural,
+    /// Source auto traits use their own declared impls for pointer/reference exceptions.
+    SourceStructural,
     Assumed,
     /// An explicit implementation must be selected before fields are inspected.
     External,
@@ -85,14 +87,20 @@ impl Query {
         while self.cursor < self.nodes.len() {
             self.charge(1)?;
             let obligation = self.nodes[self.cursor].obligation;
-            match rule(types, obligation)? {
+            let selected = rule(types, obligation)?;
+            match selected {
                 Rule::Assumed => {}
                 Rule::External => {
                     self.waiting = Some(obligation);
                     return Ok(Step::Proof(obligation));
                 }
-                Rule::Structural => {
-                    if let Some(step) = self.expand(types, definitions, obligation)? {
+                Rule::Structural | Rule::SourceStructural => {
+                    if let Some(step) = self.expand(
+                        types,
+                        definitions,
+                        obligation,
+                        matches!(selected, Rule::SourceStructural),
+                    )? {
                         return Ok(step);
                     }
                 }

@@ -17,17 +17,23 @@ impl Checker<'_> {
         steps: &mut usize,
         limit: usize,
     ) -> Result<(), Error> {
-        for role in [crate::support::bindings::LangItem::MetadataType,
-            crate::support::bindings::LangItem::DiscriminantType] {
-        let member = self.facts.source_bindings.as_deref().and_then(|catalog| catalog.language(role));
-        if let Some(member) = member {
-            self.work
-                .push(crate::sema::declarations::Work::SourceResultContracts(
-                    member.definition,
-                    Phase::Begin,
-                ));
-            self.drain(steps, limit)?;
-        }
+        for role in [
+            crate::support::bindings::LangItem::MetadataType,
+            crate::support::bindings::LangItem::DiscriminantType,
+        ] {
+            let member = self
+                .facts
+                .source_bindings
+                .as_deref()
+                .and_then(|catalog| catalog.language(role));
+            if let Some(member) = member {
+                self.work
+                    .push(crate::sema::declarations::Work::SourceResultContracts(
+                        member.definition,
+                        Phase::Begin,
+                    ));
+                self.drain(steps, limit)?;
+            }
         }
         Ok(())
     }
@@ -37,7 +43,10 @@ impl Checker<'_> {
         phase: Phase,
     ) -> Result<(), Error> {
         use crate::{
-            sema::{compiler_items::{pointee, discriminant}, header_attributes},
+            sema::{
+                compiler_items::{discriminant, pointee},
+                header_attributes,
+            },
             support::bindings::LangItem,
         };
         let catalog = self
@@ -45,19 +54,25 @@ impl Checker<'_> {
             .source_bindings
             .as_deref()
             .ok_or_else(|| Error::unlocated("source Metadata work lost its catalog"))?;
-        let discriminant = catalog.language(LangItem::DiscriminantType)
+        let discriminant = catalog
+            .language(LangItem::DiscriminantType)
             .is_some_and(|member| member.definition == id);
         let (parent_role, member_role) = if discriminant {
             (LangItem::DiscriminantKind, LangItem::DiscriminantType)
-        } else { (LangItem::PointeeTrait, LangItem::MetadataType) };
+        } else {
+            (LangItem::PointeeTrait, LangItem::MetadataType)
+        };
         let member = catalog
             .language(member_role)
             .filter(|member| member.definition == id)
             .ok_or_else(|| {
                 Error::unlocated("source Metadata work has a different actual member")
             })?;
-        if if discriminant { discriminant::prepared_member(self.report, &self.facts, id)? }
-            else { pointee::prepared_member(self.report, &self.facts, id)? } {
+        if if discriminant {
+            discriminant::prepared_member(self.report, &self.facts, id)?
+        } else {
+            pointee::prepared_member(self.report, &self.facts, id)?
+        } {
             return Ok(());
         }
         match phase {
@@ -65,7 +80,11 @@ impl Checker<'_> {
                 let trait_ = catalog.language(parent_role).ok_or_else(|| {
                     self.error(member.origin, "source Metadata requires actual Pointee")
                 })?;
-                let nominal = if discriminant { None } else { catalog.language(LangItem::DynMetadata) };
+                let nominal = if discriminant {
+                    None
+                } else {
+                    catalog.language(LangItem::DynMetadata)
+                };
                 header_attributes::charge_source_retention(&self.facts, 3, 0)?;
                 let owner = self.source_metadata_owner(member, trait_)?;
                 self.prepay_source_result(id, member.origin)?;
@@ -110,8 +129,13 @@ impl Checker<'_> {
                 crate::sema::traits::results::prepare_source_outlives(&mut self.facts, id)
                     .map_err(|message| self.error(member.origin, message))
             }
-            Phase::Seal => if discriminant { discriminant::prepare(self.report, &mut self.facts) }
-                else { pointee::prepare(self.report, &mut self.facts) },
+            Phase::Seal => {
+                if discriminant {
+                    discriminant::prepare(self.report, &mut self.facts)
+                } else {
+                    pointee::prepare(self.report, &mut self.facts)
+                }
+            }
         }
     }
 

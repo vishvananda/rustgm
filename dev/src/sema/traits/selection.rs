@@ -85,8 +85,10 @@ impl Dependency {
                 .as_ref()
                 .is_some_and(|registry| registry.is_validated(owner)),
             Self::Fields(item) => facts.aggregates.get(item).is_some(),
-            Self::SourceResultContracts(id) => crate::sema::compiler_items::pointee::ready(facts, id)
-                || crate::sema::compiler_items::discriminant::ready(facts, id),
+            Self::SourceResultContracts(id) => {
+                crate::sema::compiler_items::pointee::ready(facts, id)
+                    || crate::sema::compiler_items::discriminant::ready(facts, id)
+            }
             Self::Opaque(id) => facts
                 .opaques
                 .declarations

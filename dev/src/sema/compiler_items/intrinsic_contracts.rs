@@ -252,7 +252,9 @@ impl Catalog {
                 SourceIntrinsic::ConstEvalSelect => {
                     "source callback selection requires its own descriptor"
                 }
-                SourceIntrinsic::DiscriminantValue => "source discriminant requires its actual reached reference-call descriptor",
+                SourceIntrinsic::DiscriminantValue => {
+                    "source discriminant requires its actual reached reference-call descriptor"
+                }
                 SourceIntrinsic::PtrMetadata => {
                     "source ptr_metadata requires its actual pointer-call descriptor"
                 }
@@ -280,7 +282,9 @@ impl Catalog {
                 SourceIntrinsic::ConstEvalSelect => {
                     "source callback selection requires its own descriptor"
                 }
-                SourceIntrinsic::DiscriminantValue => "source discriminant requires its actual reached reference-call descriptor",
+                SourceIntrinsic::DiscriminantValue => {
+                    "source discriminant requires its actual reached reference-call descriptor"
+                }
                 SourceIntrinsic::PtrMetadata => {
                     "source ptr_metadata requires its actual pointer-call descriptor"
                 }

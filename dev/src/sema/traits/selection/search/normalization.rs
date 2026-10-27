@@ -1,8 +1,8 @@
 //! Normalization requests descend on the existing proof stack and retain their evidence.
 mod ancestor_results;
 mod metadata_results;
-mod written_results;
 mod tag_results;
+mod written_results;
 use super::{Action, Decision, Declarations, Frame, Goal, Search, Source, inference};
 use crate::sema::{projections::Definition, traits::equalities};
 use crate::types::{
@@ -170,7 +170,9 @@ impl Search<'_> {
         if normalization.inherited.is_some() {
             return match normalization.inherited.as_deref() {
                 Some(ResultContinuation::Metadata(_)) => self.advance_metadata_result(facts, frame),
-                Some(ResultContinuation::Discriminant(_)) => self.advance_discriminant_result(facts, frame),
+                Some(ResultContinuation::Discriminant(_)) => {
+                    self.advance_discriminant_result(facts, frame)
+                }
                 _ => self.advance_inherited_result(facts, frame),
             };
         }
@@ -262,8 +264,12 @@ impl Search<'_> {
             .ok_or("missing parent normalization")?;
         if equality.inherited.is_some() {
             return match equality.inherited.as_deref() {
-                Some(ResultContinuation::Metadata(_)) => Self::accept_metadata_result(equality, decision),
-                Some(ResultContinuation::Discriminant(_)) => Err("discriminant data requested an unplanned child proof".into()),
+                Some(ResultContinuation::Metadata(_)) => {
+                    Self::accept_metadata_result(equality, decision)
+                }
+                Some(ResultContinuation::Discriminant(_)) => {
+                    Err("discriminant data requested an unplanned child proof".into())
+                }
                 _ => Self::accept_inherited_result(equality, decision),
             };
         }
@@ -302,7 +308,9 @@ impl Search<'_> {
         else {
             return Ok(());
         };
-        let Some(completed) = self.stage_discriminant_result(facts, &mut frame.inputs.context, equality, completed)? else {
+        let Some(completed) =
+            self.stage_discriminant_result(facts, &mut frame.inputs.context, equality, completed)?
+        else {
             return Ok(());
         };
         let Some(completed) = self.stage_inherited_result(facts, equality, completed)? else {
@@ -438,7 +446,9 @@ impl Search<'_> {
             }
             Source::Equality => return Err("equality evidence cannot prove a trait premise".into()),
             Source::Builtin => return Err("builtin evidence cannot prove a trait premise".into()),
-            Source::Discriminant(_) => return Err("source discriminant bypassed its checked result plan".into()),
+            Source::Discriminant(_) => {
+                return Err("source discriminant bypassed its checked result plan".into());
+            }
             Source::Pointee(_) => {
                 return Err("source Metadata bypassed its checked result plan".into());
             }
@@ -447,10 +457,14 @@ impl Search<'_> {
     }
     /// Written result equalities keep their original proved parent and scope.
     fn resolve_premise_result(
-        &mut self, facts: &mut Declarations, context: &mut super::Context,
-        equality: &Normalization, completed: Completion,
+        &mut self,
+        facts: &mut Declarations,
+        context: &mut super::Context,
+        equality: &Normalization,
+        completed: Completion,
     ) -> Result<(Option<Resolution>, usize), String> {
-        let (resolution, completed) = self.resolve_result_equality(facts, context, equality, completed)?;
+        let (resolution, completed) =
+            self.resolve_result_equality(facts, context, equality, completed)?;
         let resolution = match resolution {
             written_results::ResultEquality::Type(ty) => Some(Resolution::Type(ty)),
             written_results::ResultEquality::Absent => Some(Resolution::Opaque),
@@ -458,7 +472,6 @@ impl Search<'_> {
         };
         Ok((resolution, completed.node))
     }
-
 }
 
 impl super::Query {

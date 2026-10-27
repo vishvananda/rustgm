@@ -529,9 +529,13 @@ impl Opened {
             return Ok(None);
         };
         let mut matching = false;
-        for role in [crate::support::bindings::LangItem::MetadataType,
-            crate::support::bindings::LangItem::DiscriminantType] {
-            matching |= catalog.role(role)?.is_some_and(|m| m.definition.0 == self.application.item.0);
+        for role in [
+            crate::support::bindings::LangItem::MetadataType,
+            crate::support::bindings::LangItem::DiscriminantType,
+        ] {
+            matching |= catalog
+                .role(role)?
+                .is_some_and(|m| m.definition.0 == self.application.item.0);
         }
         if !matching || !self.application.arguments.is_empty() {
             return Ok(None);

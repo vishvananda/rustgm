@@ -142,7 +142,9 @@ impl Checker<'_> {
                         &self.facts,
                         member.definition,
                     )? && !crate::sema::compiler_items::discriminant::prepared_member(
-                        self.report, &self.facts, member.definition,
+                        self.report,
+                        &self.facts,
+                        member.definition,
                     )? {
                         self.declare_associated_type(member.definition, key, owner, definition)?;
                     }

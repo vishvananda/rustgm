@@ -1,8 +1,14 @@
 //! One explicit equality lookup preserves the same proved parent and opened goal.
-use super::{Completion, Declarations, Normalization, Opened, Search, Source, equalities, inference};
+use super::{
+    Completion, Declarations, Normalization, Opened, Search, Source, equalities, inference,
+};
 use crate::types::{TypeId, infer::projections::Application};
 #[derive(Clone, Copy)]
-pub(super) enum ResultEquality { Type(TypeId), Absent, Ambiguous }
+pub(super) enum ResultEquality {
+    Type(TypeId),
+    Absent,
+    Ambiguous,
+}
 impl Search<'_> {
     pub(super) fn resolve_result_equality(
         &mut self,
@@ -18,7 +24,14 @@ impl Search<'_> {
         } = completed;
 
         let Some(application) = opened.application.associated() else {
-            return Ok((ResultEquality::Absent, Completion { opened, node, equations_start }));
+            return Ok((
+                ResultEquality::Absent,
+                Completion {
+                    opened,
+                    node,
+                    equations_start,
+                },
+            ));
         };
         let application = Application {
             item: application.item,
@@ -72,9 +85,16 @@ impl Search<'_> {
             }
             equalities::Selection::Ambiguous => ResultEquality::Ambiguous,
         };
-        Ok((resolution, Completion {
-            opened: Opened { application: opened.application, goal: application.predicate },
-            node, equations_start,
-        }))
+        Ok((
+            resolution,
+            Completion {
+                opened: Opened {
+                    application: opened.application,
+                    goal: application.predicate,
+                },
+                node,
+                equations_start,
+            },
+        ))
     }
 }

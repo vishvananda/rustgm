@@ -8,6 +8,7 @@ impl Query {
         types: &mut Store,
         definitions: &mut Definitions,
         obligation: Obligation,
+        source: bool,
     ) -> Result<Option<Step>, &'static str> {
         let Obligation { ty, marker } = obligation;
         match types.kind(ty).ok_or("invalid auto-trait subject")? {
@@ -50,6 +51,18 @@ impl Query {
                 for variant in definitions.raw_shape(types, ty)?.variants() {
                     self.fields(types, variant.fields, marker)?;
                 }
+            }
+            Kind::Reference { referent, .. } if source => {
+                self.dependency(Obligation {
+                    ty: referent,
+                    marker,
+                })?;
+            }
+            Kind::Pointer { pointee, .. } if source => {
+                self.dependency(Obligation {
+                    ty: pointee,
+                    marker,
+                })?;
             }
             Kind::Reference {
                 referent, mutable, ..

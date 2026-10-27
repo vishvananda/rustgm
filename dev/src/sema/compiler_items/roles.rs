@@ -114,6 +114,9 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         LangItem::Freeze,
         LangItem::Unsize,
         LangItem::CoerceUnsized,
+        LangItem::Send,
+        LangItem::Sync,
+        LangItem::Unpin,
     ] {
         let Some(declaration) = catalog.language(role) else {
             continue;
@@ -132,6 +135,15 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
             )?,
             LangItem::TrivialClone => copying::validate_trivial(facts, catalog, &header)
                 .map_err(|message| Declarations::error(report, declaration.origin, message))?,
+            LangItem::Send | LangItem::Sync | LangItem::Unpin => {
+                if !header.members.is_empty() || header.written.supertraits != 0 {
+                    return Err(Declarations::error(
+                        report,
+                        declaration.origin,
+                        "source auto marker requires its actual empty declaration",
+                    ));
+                }
+            }
             LangItem::Tuple => validate_marker(report, facts, declaration)?,
             LangItem::Freeze => freezing::validate(report, facts, declaration)?,
             LangItem::Unsize | LangItem::CoerceUnsized => {
@@ -187,18 +199,26 @@ fn require_distinct_pointee(
     let mut expected = 0;
     if prior.pointee.is_some() {
         expected |= role_bit(LangItem::PointeeTrait) | role_bit(LangItem::MetadataType);
-        if catalog.language(LangItem::DynMetadata).is_some() { expected |= role_bit(LangItem::DynMetadata); }
+        if catalog.language(LangItem::DynMetadata).is_some() {
+            expected |= role_bit(LangItem::DynMetadata);
+        }
     }
     if prior.discriminant.is_some() {
         expected |= role_bit(LangItem::DiscriminantKind) | role_bit(LangItem::DiscriminantType);
     }
-    if expected == 0 || prior.roles != expected || prior.roles & roles != 0
+    if expected == 0
+        || prior.roles != expected
+        || prior.roles & roles != 0
         || prior.methods != [None; 3]
     {
         return Err(Error::unlocated("source roles were validated twice"));
     }
-    if prior.pointee.is_some() { super::pointee::authenticate(report, facts)?; }
-    if prior.discriminant.is_some() { super::discriminant::authenticate(report, facts)?; }
+    if prior.pointee.is_some() {
+        super::pointee::authenticate(report, facts)?;
+    }
+    if prior.discriminant.is_some() {
+        super::discriminant::authenticate(report, facts)?;
+    }
     Ok(())
 }
 
@@ -288,9 +308,15 @@ fn header<'a>(
         .profile(
             &facts.types,
             super::headers::Flags {
-                unsafe_: matches!(role, LangItem::Freeze | LangItem::TrivialClone),
+                unsafe_: matches!(
+                    role,
+                    LangItem::Freeze | LangItem::TrivialClone | LangItem::Send | LangItem::Sync
+                ),
                 constant,
-                auto_: role == LangItem::Freeze,
+                auto_: matches!(
+                    role,
+                    LangItem::Freeze | LangItem::Send | LangItem::Sync | LangItem::Unpin
+                ),
             },
             expected,
         )
@@ -392,7 +418,7 @@ pub(super) fn complete_nominal(
             roles: 0,
             methods: [None; 3],
             pointee: None,
-        discriminant: None,
+            discriminant: None,
         })
     });
     let bit = role_bit(role);

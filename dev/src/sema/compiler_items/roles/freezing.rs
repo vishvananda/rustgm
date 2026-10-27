@@ -40,9 +40,31 @@ pub(crate) fn predicate(
     else {
         return Ok(false);
     };
-    let Some(declaration) = catalog.language(crate::support::bindings::LangItem::Freeze) else {
+    let application_item = facts
+        .types
+        .trait_application(application)
+        .ok_or("invalid source auto-trait application")?
+        .item;
+    let mut selected = None;
+    for role in [
+        crate::support::bindings::LangItem::Freeze,
+        crate::support::bindings::LangItem::Send,
+        crate::support::bindings::LangItem::Sync,
+        crate::support::bindings::LangItem::Unpin,
+    ] {
+        if catalog
+            .language(role)
+            .is_some_and(|d| d.definition.0 == application_item.0)
+        {
+            selected = Some(role);
+        }
+    }
+    let Some(role) = selected else {
         return Ok(false);
     };
+    let declaration = catalog
+        .language(role)
+        .ok_or("source auto trait disappeared")?;
     let application = facts
         .types
         .trait_application(application)
@@ -50,7 +72,7 @@ pub(crate) fn predicate(
     if application.item.0 != declaration.definition.0 {
         return Ok(false);
     }
-    catalog.validated_language(crate::support::bindings::LangItem::Freeze)?;
+    catalog.validated_language(role)?;
     Ok(facts
         .types
         .arguments(application.arguments)

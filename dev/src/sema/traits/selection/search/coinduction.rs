@@ -74,7 +74,7 @@ impl super::Query {
             ) || frame
                 .autos
                 .as_deref()
-                .is_some_and(super::auto_obligations::Pending::source_freeze))
+                .is_some_and(super::auto_obligations::Pending::source_marker))
         {
             self.auto_provisional
                 .entry(frame.auto_segment)
@@ -95,7 +95,7 @@ impl super::Query {
             ) || frame
                 .autos
                 .as_deref()
-                .is_some_and(super::auto_obligations::Pending::source_freeze))
+                .is_some_and(super::auto_obligations::Pending::source_marker))
                 && !frame.forming()
                 && !frame
                     .autos

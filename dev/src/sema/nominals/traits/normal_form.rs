@@ -1,9 +1,9 @@
 //! Canonical projections retain opened lifetimes and selection across header dependencies.
 mod application_anchors;
 mod data_result;
-mod tag_result;
 mod opening;
 mod origin_results;
+mod tag_result;
 use super::{
     Assumptions, Availability, Declarations, Environment, Instantiation, Obligations, Predicate,
     Projected, State, selection,
@@ -172,7 +172,9 @@ impl Query {
         if self.inherited.is_some() {
             return match self.inherited.as_deref() {
                 Some(origin_results::Continuation::Metadata(_)) => self.advance_metadata(facts),
-                Some(origin_results::Continuation::Discriminant(_)) => self.advance_discriminant(facts),
+                Some(origin_results::Continuation::Discriminant(_)) => {
+                    self.advance_discriminant(facts)
+                }
                 _ => self.advance_inherited(facts),
             };
         }
@@ -212,9 +214,13 @@ impl Query {
                 return self.finish(facts, Some(Resolution::Opaque));
             }
             self.source.clone_from(&selected);
-            if selected.is_some() && self.alias.associated().is_some_and(|a| {
-                crate::sema::compiler_items::discriminant::is_result(facts, a.item)
-            }) { return self.begin_discriminant(facts); }
+            if selected.is_some()
+                && self.alias.associated().is_some_and(|a| {
+                    crate::sema::compiler_items::discriminant::is_result(facts, a.item)
+                })
+            {
+                return self.begin_discriminant(facts);
+            }
             if let Some(selection::Source::Pointee(selected)) = selected.as_ref() {
                 self.prepare_metadata(facts, selected)?;
                 return self.advance_metadata(facts);

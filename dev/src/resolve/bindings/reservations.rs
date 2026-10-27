@@ -41,13 +41,17 @@ pub struct Reservations {
     intrinsics: HashMap<DefId, IntrinsicDeclaration>,
     denied_implementations: HashSet<DefId>,
     pub(super) header_attributes: [HeaderAttributes; LangItem::ALL.len()],
-    pub(super) diagnostics: [Option<Declaration>; 7],
+    pub(super) diagnostics: [Option<Declaration>; 9],
     pub steps: usize,
 }
 impl Reservations {
     #[must_use]
     pub fn language(&self, kind: LangItem) -> Option<Declaration> {
-        self.languages[kind.index()]
+        if kind == LangItem::Send {
+            self.diagnostics[super::annotations::DiagnosticItem::Send.index()]
+        } else {
+            self.languages[kind.index()]
+        }
     }
     /// Reserved identity classifies argument syntax, never implementation evidence.
     #[must_use]
@@ -164,7 +168,7 @@ fn reserve_all(
         intrinsics: HashMap::default(),
         denied_implementations: HashSet::default(),
         header_attributes: [HeaderAttributes::EMPTY; LangItem::ALL.len()],
-        diagnostics: [None; 7],
+        diagnostics: [None; 9],
         steps: 0,
     };
     let parents = parents(package, facts);

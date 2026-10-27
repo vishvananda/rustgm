@@ -348,7 +348,9 @@ impl Checker<'_> {
                     continue;
                 }
                 Some(Source::Discriminant(selected)) => {
-                    selected.current(self.facts).map_err(|error| self.error(node, error.to_string()))?;
+                    selected
+                        .current(self.facts)
+                        .map_err(|error| self.error(node, error.to_string()))?;
                     continue;
                 }
                 Some(Source::Equality) => {

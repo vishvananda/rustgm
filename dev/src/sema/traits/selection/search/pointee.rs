@@ -1,6 +1,10 @@
 //! The actual source Pointee trait is universal; metadata equality is separate.
 use super::{Action, Decision, Declarations, Frame, Node, Search, Source, inference};
-use crate::{sema::compiler_items::{pointee, discriminant}, support::bindings::LangItem, types::infer};
+use crate::{
+    sema::compiler_items::{discriminant, pointee},
+    support::bindings::LangItem,
+    types::infer,
+};
 
 impl Search<'_> {
     pub(super) fn source_pointee_result(
@@ -14,10 +18,16 @@ impl Search<'_> {
         let Some(catalog) = facts.source_bindings.as_deref() else {
             return Ok(None);
         };
-        let discriminant = catalog.role(LangItem::DiscriminantKind)?
+        let discriminant = catalog
+            .role(LangItem::DiscriminantKind)?
             .is_some_and(|role| role.definition.0 == item.0);
-        if !discriminant && catalog.role(LangItem::PointeeTrait)?
-            .is_none_or(|role| role.definition.0 != item.0) { return Ok(None); }
+        if !discriminant
+            && catalog
+                .role(LangItem::PointeeTrait)?
+                .is_none_or(|role| role.definition.0 != item.0)
+        {
+            return Ok(None);
+        }
         // A genuine caller premise retains its abstract associated result.
         // Universal source fallback must not replace it with an automatic equality.
         if frame.selected.is_some() {
@@ -37,13 +47,21 @@ impl Search<'_> {
         let source = if discriminant {
             match discriminant::select(facts, goal).map_err(|error| error.to_string())? {
                 discriminant::Readiness::Unrelated => return Ok(None),
-                discriminant::Readiness::Pending(member) => return Ok(Some(Action::Wait(super::Dependency::SourceResultContracts(member)))),
+                discriminant::Readiness::Pending(member) => {
+                    return Ok(Some(Action::Wait(
+                        super::Dependency::SourceResultContracts(member),
+                    )));
+                }
                 discriminant::Readiness::Ready(selected) => Source::Discriminant(selected),
             }
         } else {
             match pointee::select(facts, goal).map_err(|error| error.to_string())? {
                 pointee::Readiness::Unrelated => return Ok(None),
-                pointee::Readiness::Pending(member) => return Ok(Some(Action::Wait(super::Dependency::SourceResultContracts(member)))),
+                pointee::Readiness::Pending(member) => {
+                    return Ok(Some(Action::Wait(
+                        super::Dependency::SourceResultContracts(member),
+                    )));
+                }
                 pointee::Readiness::Ready(selected) => Source::Pointee(selected),
             }
         };

@@ -23,6 +23,8 @@ pub(super) enum DiagnosticItem {
     FormatArgsMacro,
     NonNull,
     Debug,
+    Send,
+    Sync,
 }
 impl DiagnosticItem {
     pub(super) const fn index(self) -> usize {
@@ -59,6 +61,8 @@ pub(super) fn parse(
         b"format_args_macro" => Ok(DiagnosticItem::FormatArgsMacro),
         b"NonNull" => Ok(DiagnosticItem::NonNull),
         b"Debug" => Ok(DiagnosticItem::Debug),
+        b"Send" => Ok(DiagnosticItem::Send),
+        b"Sync" => Ok(DiagnosticItem::Sync),
         _ => Err(error("unsupported source diagnostic identity")),
     }
 }
@@ -80,11 +84,13 @@ pub(super) fn validate(
         let expected = match item {
             DiagnosticItem::Clone => Some(LangItem::Clone),
             DiagnosticItem::Copy => Some(LangItem::Copy),
+            DiagnosticItem::Sync => Some(LangItem::Sync),
             DiagnosticItem::Identity
             | DiagnosticItem::CfgSelect
             | DiagnosticItem::FormatArgsMacro
             | DiagnosticItem::NonNull
-            | DiagnosticItem::Debug => None,
+            | DiagnosticItem::Debug
+            | DiagnosticItem::Send => None,
         };
         if let Some(expected) = expected {
             if !claims
@@ -114,6 +120,8 @@ pub(super) fn validate(
                     "format_args diagnostic identity requires its actual builtin role"
                 }));
             }
+        } else if matches!(item, DiagnosticItem::Send) {
+            validate_send(package, declaration)?;
         } else if matches!(item, DiagnosticItem::Debug) {
             let unit = package.unit(declaration.origin.file);
             if declaration.parent.is_some()
@@ -157,6 +165,23 @@ pub(super) fn validate(
         }
         *slot = Some(declaration);
         reserved.steps = reserved.steps.saturating_add(1);
+    }
+    Ok(())
+}
+
+/// Send is a diagnostic-owned declaration, never a decoded `lang` attribute.
+fn validate_send(package: &Package, declaration: Declaration) -> Result<(), Error> {
+    let unit = package.unit(declaration.origin.file);
+    if declaration.parent.is_some()
+        || !matches!(unit.configured.ast.node(declaration.origin.node).kind,
+            Kind::Item(index) if matches!(unit.configured.ast.items[index as usize].kind,
+                ItemKind::Trait { auto_: true, unsafe_: true, constant: false, .. }))
+    {
+        return Err(super::reservations::error(
+            package,
+            declaration.origin,
+            "Send diagnostic identity requires its actual unsafe module auto trait",
+        ));
     }
     Ok(())
 }

@@ -12,10 +12,17 @@ use crate::{
 };
 
 impl Lower<'_, '_, '_> {
-    pub(super) fn niche_test(&mut self, base: Address, offset: u64, predicate: Predicate) -> Result<Value, &'static str> {
+    pub(super) fn niche_test(
+        &mut self,
+        base: Address,
+        offset: u64,
+        predicate: Predicate,
+    ) -> Result<Value, &'static str> {
         let address = self.offset(base, offset)?;
         let input = self.builder.load(Type::Ptr, address.operand)?;
-        let null = self.builder.literal(Type::Ptr, crate::lowir::program::Literal::Null)?;
+        let null = self
+            .builder
+            .literal(Type::Ptr, crate::lowir::program::Literal::Null)?;
         self.builder.compare(predicate, input, null)
     }
 
@@ -48,7 +55,9 @@ impl Lower<'_, '_, '_> {
                 Predicate::Ne
             };
             let base = self.place(place)?.ok_or("nullable test has no storage")?;
-            return self.niche_test(base, niche.offset, predicate).map(Selected::Runtime);
+            return self
+                .niche_test(base, niche.offset, predicate)
+                .map(Selected::Runtime);
         }
         let Shape::Aggregate { tag: Some(tag), .. } = layout.shape else {
             return Err("constructor decision has no physical tag");
