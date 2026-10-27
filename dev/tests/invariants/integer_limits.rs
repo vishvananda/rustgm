@@ -61,13 +61,15 @@ fn publication_rejects_noninteger_and_conflicting_identity() -> Result {
         key,
         record.prefix,
         TypeId::primitive(Primitive::U32),
+        Member::Max,
     )?;
     assert!(
         uses.publish(
             &mut facts.types,
             key,
             record.prefix,
-            TypeId::primitive(Primitive::F32)
+            TypeId::primitive(Primitive::F32),
+            Member::Max
         )
         .is_err()
     );
@@ -76,13 +78,20 @@ fn publication_rejects_noninteger_and_conflicting_identity() -> Result {
             &mut facts.types,
             key,
             record.prefix,
-            TypeId::primitive(Primitive::U16)
+            TypeId::primitive(Primitive::U16),
+            Member::Max
         )
         .is_err()
     );
     assert!(
-        uses.publish(&mut facts.types, key, record.prefix, TypeId::UNIT)
-            .is_err()
+        uses.publish(
+            &mut facts.types,
+            key,
+            record.prefix,
+            TypeId::UNIT,
+            Member::Max
+        )
+        .is_err()
     );
     let after = facts.types.intern_constant(Constant {
         ty: TypeId::primitive(Primitive::U8),
@@ -95,7 +104,7 @@ fn publication_rejects_noninteger_and_conflicting_identity() -> Result {
             .get(&key)
             .is_some_and(|saved| *saved == record)
     );
-    assert_eq!(std::mem::size_of::<Descriptor>(), 1);
+    assert_eq!(std::mem::size_of::<Descriptor>(), 2);
     assert_eq!(std::mem::size_of::<Selected>(), 16);
     assert_eq!(std::mem::size_of::<Option<Box<Uses>>>(), 8);
     assert_eq!(std::mem::size_of::<crate::sema::model::NodeFacts>(), 80);
@@ -150,6 +159,159 @@ fn repeated_uses_are_linear_and_do_not_build_callables() -> Result {
                 .max()
                 .map_or(0, |id| id + 1),
             facts.definitions.len()
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn char_members_retain_exact_typed_values_and_existing_scalar_validity() -> Result {
+    let mut facts = analyze("fn main(){let _=char::MIN;let _=char::MAX;}")?;
+    let uses = facts.primitive_constants.as_deref().ok_or("char uses")?;
+    assert_eq!(uses.selected.len(), 2);
+    let records: Vec<_> = uses
+        .selected
+        .iter()
+        .map(|(&key, &record)| (key, record))
+        .collect();
+    for (key, record) in records {
+        let constant = facts.types.constant(record.value).ok_or("char constant")?;
+        assert_eq!(constant.ty, TypeId::primitive(Primitive::Char));
+        assert_eq!(
+            constant.bits,
+            if record.descriptor.member == Member::Min {
+                0
+            } else {
+                0x10_FFFF
+            }
+        );
+        assert_eq!(selected(&facts, key)?, Some(record.value));
+        let opposite = if record.descriptor.member == Member::Min {
+            Member::Max
+        } else {
+            Member::Min
+        };
+        let uses = facts
+            .primitive_constants
+            .as_deref_mut()
+            .ok_or("char uses")?;
+        assert!(
+            uses.publish(&mut facts.types, key, record.prefix, constant.ty, opposite)
+                .is_err()
+        );
+        assert!(uses.selected.get(&key).copied() == Some(record));
+    }
+    for bits in [0xD800, 0xDFFF, 0x11_0000, u128::MAX] {
+        assert!(
+            facts
+                .types
+                .intern_constant(Constant {
+                    ty: TypeId::primitive(Primitive::Char),
+                    bits
+                })
+                .is_err()
+        );
+    }
+    assert!(
+        Descriptor {
+            primitive: Primitive::U32,
+            member: Member::Min
+        }
+        .value()
+        .is_err()
+    );
+    let char_ty = TypeId::primitive(Primitive::Char);
+    let array = facts.types.intern(Kind::Array {
+        element: char_ty,
+        length: 3,
+    })?;
+    for (ty, size) in [(char_ty, 4), (array, 12)] {
+        facts.layouts.demand(&facts.types, &facts.aggregates, ty)?;
+        let layout = facts.layouts.get(ty).ok_or("char layout")?;
+        assert_eq!((layout.size, layout.align), (size, 4));
+    }
+    println!(
+        "char-layout Descriptor={} Selected={} Uses={} NodeFacts={} Body={} Char=4/4 Array3=12/4",
+        size_of::<Descriptor>(),
+        size_of::<Selected>(),
+        size_of::<Uses>(),
+        size_of::<crate::sema::model::NodeFacts>(),
+        size_of::<crate::body::ir::Body>()
+    );
+    Ok(())
+}
+
+#[test]
+fn actual_source_char_constants_never_use_bootstrap_values() -> Result {
+    use crate::resolve::model::DefKind;
+    for name in ["source-absent-max-v2", "source-absent-min-v2"] {
+        let source =
+            crate::test_source::fixture(&format!("pa31/tests/spec/char-constants/{name}.rs"))?;
+        let report = crate::test_source::source_provider(&source, "char_constant_owner")?;
+        assert!(crate::pipeline::analyze_source(&report).is_err(), "{name}");
+    }
+    for (name, high, low) in [
+        ("source-actual-v2", '\u{10FFFF}', '\0'),
+        ("source-owned-value-v2", 'z', 'a'),
+    ] {
+        let source =
+            crate::test_source::fixture(&format!("pa31/tests/spec/char-constants/{name}.rs"))?;
+        let report = crate::test_source::source_provider(&source, "char_constant_owner")?;
+        let facts = crate::pipeline::analyze_source(&report)?.facts;
+        assert!(facts.primitive_constants.is_none(), "{name}");
+        assert!(facts.source_bindings.is_some());
+        let reader = crate::sema::values::Reader::new(&facts);
+        for (label, expected) in [("VALUE", high), ("LOW", low)] {
+            let id = report
+                .resolution
+                .definitions
+                .iter()
+                .enumerate()
+                .find_map(|(i, d)| {
+                    (d.kind == DefKind::Const && report.package.names.get(d.name) == label)
+                        .then_some(i)
+                })
+                .ok_or("source char definition")?;
+            let value = reader
+                .definition(crate::resolve::model::DefId(u32::try_from(id)?))
+                .ok_or("source char value")?;
+            assert!(
+                matches!(reader.view(value)?,crate::sema::values::View::Scalar(crate::sema::model::Scalar::Character(actual)) if actual==expected),
+                "{name}: {label}"
+            );
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn char_constants_share_canonical_values_and_bound_sparse_use_work() -> Result {
+    for width in [1, 8, 32] {
+        let mut source = String::from("fn main(){");
+        for _ in 0..width {
+            source.push_str("let _=char::MIN;let _=char::MAX;");
+        }
+        source.push('}');
+        let facts = analyze(&source)?;
+        let uses = facts.primitive_constants.as_deref().ok_or("char uses")?;
+        assert_eq!(uses.selected.len(), 2 * width);
+        assert!(facts.primitive_methods.is_none());
+        let mut values = uses
+            .selected
+            .values()
+            .map(|record| record.value.0)
+            .collect::<Vec<_>>();
+        values.sort_unstable();
+        values.dedup();
+        assert_eq!(values.len(), 2);
+        assert!(facts.body_work.inference_steps <= 200 * width + 100);
+        println!(
+            "char-uses pairs={width} selections={} canonical-values={} capacity={} capacity-payload-bytes={} inference={}",
+            uses.selected.len(),
+            values.len(),
+            uses.selected.capacity(),
+            uses.selected.capacity() * size_of::<(NodeKey, Selected)>(),
+            facts.body_work.inference_steps
         );
     }
     Ok(())

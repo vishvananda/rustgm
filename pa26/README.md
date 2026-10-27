@@ -317,8 +317,9 @@ value-use owner keeps them separate from callable factories and source
 initializers; `Self::MAX` preserves inherent-versus-trait precedence.
 `tests/primitive-constant-outcomes.json` declares source and native controls;
 `docs/pa26-integer-max.md` records the implementation, layout and evidence.
-Float/char MAX, other primitive constants and legacy numeric modules remain
-required work. PA26 remains planned.
+Float MAX, other primitive constants and legacy numeric modules remain
+required work. The [char value checkpoint](../docs/pa26-char-constants.md) separately
+qualifies char MIN/MAX while preserving actual SourceCore ownership. PA26 remains planned.
 
 ## Maintainer user-defined iteration checkpoint
 

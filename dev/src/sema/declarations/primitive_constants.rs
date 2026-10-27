@@ -1,12 +1,13 @@
 //! Associated primitive values reuse the ordinary typed-prefix scheduler.
 use super::{Checker, DefId, DefKind, Error, NodeId, NodeKey, Type, Work, regions};
-use crate::{resolve::model::Namespace, types::Primitive};
+use crate::{resolve::model::Namespace, sema::primitive_constants::Member, types::Primitive};
 
 #[derive(Clone, Copy)]
 struct Path {
     prefix: NodeKey,
     suffix: NodeKey,
     owner: Option<DefId>,
+    member: Member,
 }
 impl Checker<'_> {
     fn primitive_constant_path(&self, key: NodeKey) -> Option<Path> {
@@ -39,9 +40,11 @@ impl Checker<'_> {
                 }
                 (path.prefix, *suffix, *name, Some(path.owner))
             };
-        if self.report.package.names.get(name) != "MAX" {
-            return None;
-        }
+        let member = match self.report.package.names.get(name) {
+            "MAX" => Member::Max,
+            "MIN" => Member::Min,
+            _ => return None,
+        };
         Some(Path {
             prefix: NodeKey {
                 node: prefix,
@@ -52,6 +55,7 @@ impl Checker<'_> {
                 ..key
             },
             owner,
+            member,
         })
     }
     pub(super) fn schedule_primitive_constant(
@@ -101,7 +105,11 @@ impl Checker<'_> {
         };
         let ty = self.facts.node(path.prefix).and_then(|f| f.ty);
         let Some(ty) = ty.filter(|ty| matches!(self.facts.types.kind(*ty),Some(Type::Primitive(p)) if p.integer().is_some() || matches!(p,Primitive::F32 | Primitive::F64 | Primitive::Char))) else {return Ok(false);};
-        if !matches!(self.facts.types.kind(ty),Some(Type::Primitive(p)) if p.integer().is_some()) {
+        if path.member == Member::Min && ty != crate::types::TypeId::primitive(Primitive::Char) {
+            return Ok(false);
+        }
+        if !matches!(self.facts.types.kind(ty),Some(Type::Primitive(p)) if p.integer().is_some() || p == Primitive::Char)
+        {
             return Err(self.error(key, "this primitive MAX constant is not implemented"));
         }
         self.method_path_segments(key, path.prefix, path.suffix)?;
@@ -124,7 +132,7 @@ impl Checker<'_> {
         self.facts
             .primitive_constants
             .get_or_insert_with(Box::default)
-            .publish(&mut self.facts.types, key, path.prefix, ty)
+            .publish(&mut self.facts.types, key, path.prefix, ty, path.member)
             .map_err(|e| self.error(key, e))?;
         Ok(true)
     }

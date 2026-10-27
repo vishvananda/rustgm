@@ -1,9 +1,10 @@
 # PA26 integer primitive MAX checkpoint
 
 This bounded checkpoint implements the twelve integer primitives' inherent `MAX`
-values on the Linux x86-64 target. It does not activate PA26. Float and char MAX,
-other primitive constants and legacy numeric-module constants remain required
+values on the Linux x86-64 target. It does not activate PA26. Float MAX and other primitive constants and legacy numeric-module constants remain required
 library work, alongside the remaining structural comparisons and language hooks.
+The later [char checkpoint](pa26-char-constants.md) qualifies MIN/MAX; historical
+float/char boundary observations below remain retained.
 
 ## Typed value ownership
 

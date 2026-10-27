@@ -175,3 +175,6 @@ mod index_captures;
 
 #[path = "language_operators/compound_calls.rs"]
 mod compound_calls;
+
+#[path = "language_operators/char_values.rs"]
+mod char_values;
