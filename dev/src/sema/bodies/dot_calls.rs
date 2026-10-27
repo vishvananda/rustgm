@@ -117,7 +117,7 @@ impl Checker<'_> {
     }
 
     /// This slice supports safe-reference source methods, not the still-required
-    /// dangerous_implicit_autorefs lint on a synthesized raw-pointer borrow.
+    /// `dangerous_implicit_autorefs` lint on a synthesized raw-pointer borrow.
     fn check_raw_implicit_receiver(
         &mut self,
         call: NodeId,

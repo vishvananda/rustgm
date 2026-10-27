@@ -171,14 +171,7 @@ fn source_abort_signature_is_safe_nonconst_and_supplies_no_layout_or_const_permi
 
 #[test]
 fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles() -> Result {
-    eprintln!(
-        "source roles={} Reservations={} Catalog={} Body={} Rvalue={}",
-        LangItem::ALL.len(),
-        size_of::<crate::resolve::bindings::Reservations>(),
-        size_of::<Catalog>(),
-        size_of::<crate::body::ir::Body>(),
-        size_of::<crate::body::ir::Rvalue>()
-    );
+    observe_role_layouts();
     for (index, kind) in Intrinsic::BOOTSTRAP.into_iter().enumerate() {
         assert_eq!(kind.index(), index);
         assert_eq!(Intrinsic::ALL[index], kind);
@@ -273,4 +266,15 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
         Catalog::binding_layouts()
     );
     Ok(())
+}
+
+fn observe_role_layouts() {
+    eprintln!(
+        "source roles={} Reservations={} Catalog={} Body={} Rvalue={}",
+        LangItem::ALL.len(),
+        size_of::<crate::resolve::bindings::Reservations>(),
+        size_of::<Catalog>(),
+        size_of::<crate::body::ir::Body>(),
+        size_of::<crate::body::ir::Rvalue>()
+    );
 }
