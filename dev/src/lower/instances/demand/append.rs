@@ -53,19 +53,50 @@ impl Proofs<'_, '_> {
             return Ok(());
         }
         service.prepay(facts, 2, 0)?;
-        let Some(catalog) = facts
+        let actual = report
+            .resolution
+            .definitions
+            .get(item.0 as usize)
+            .filter(|definition| definition.kind == crate::resolve::model::DefKind::Function)
+            .ok_or_else(|| {
+                diagnostic(
+                    report,
+                    None,
+                    "selected body demand requires its actual callable declaration".into(),
+                )
+            })?;
+        let catalog = facts
             .crates
             .as_deref()
             .and_then(crate::sema::crates::Linkage::origin_catalog)
-        else {
-            return Ok(());
-        };
+            .ok_or_else(|| {
+                diagnostic(
+                    report,
+                    None,
+                    "selected body demand lost its actual imported catalog".into(),
+                )
+            })?;
         let Some(imported) = catalog
             .declaration_if_imported(crate::resolve::model::DefId(item.0))
             .map_err(|e| diagnostic(report, None, e.into()))?
         else {
+            if actual.node.is_none() {
+                return Err(diagnostic(
+                    report,
+                    None,
+                    "source-free executable declaration lacks its actual imported catalog identity"
+                        .into(),
+                ));
+            }
             return Ok(());
         };
+        if actual.node.is_some() {
+            return Err(diagnostic(
+                report,
+                None,
+                "imported executable declaration changed its actual source-free origin".into(),
+            ));
+        }
         catalog
             .validate_declaration(
                 imported,
