@@ -6,6 +6,28 @@ use crate::{
     syntax::{ast::Kind, item::ItemKind},
 };
 
+/// The stable attribute owns a defining declaration, distinct from weak imports.
+pub(super) fn validate_handler(
+    package: &Package,
+    declaration: Declaration,
+    foreign: bool,
+) -> Result<(), Error> {
+    validate(package, declaration, LangItem::PanicImpl)?;
+    let ast = &package.unit(declaration.origin.file).configured.ast;
+    if foreign
+        || !matches!(ast.node(declaration.origin.node).kind,
+            Kind::Item(index) if matches!(ast.items[index as usize].kind,
+                ItemKind::Function { body: Some(_), .. }))
+    {
+        return Err(error(
+            package,
+            declaration.origin,
+            "panic_handler requires its actual defining function body",
+        ));
+    }
+    Ok(())
+}
+
 pub(super) fn validate(
     package: &Package,
     declaration: Declaration,

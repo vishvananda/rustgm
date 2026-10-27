@@ -164,6 +164,14 @@ fn consume_other(
     consumer: Option<Consumer>,
 ) -> Result<bool, Error> {
     match consumer {
+        Some(Consumer::ConstPanicPolicy) => {
+            crate::sema::header_attributes::consume_const_panic(
+                report,
+                facts,
+                declaration,
+                attribute,
+            )?;
+        }
         Some(
             consumer @ (Consumer::CallerTracking
             | Consumer::IntrinsicConstPolicy

@@ -99,12 +99,4 @@ impl Inventory {
     pub(crate) fn checks_const_body(&self, definition: DefId) -> bool {
         self.const_safe(definition)
     }
-    /// Local API naming is allowed. Stable and implicitly const-stable-indirect
-    /// bodies must recursively avoid exposing explicitly unstable const APIs.
-    pub(crate) fn const_body_call(&self, owner: DefId, target: DefId) -> Result<(), &'static str> {
-        if self.const_safe(owner) && !self.const_safe(target) {
-            return Err("const-stable body calls a function without const-stable API policy");
-        }
-        Ok(())
-    }
 }

@@ -87,6 +87,7 @@ impl Reservations {
 #[derive(Clone, Copy)]
 pub(super) enum Claim {
     Language(LangItem),
+    PanicHandler,
     Intrinsic,
     DenyImplementations,
     BuiltinMacro(crate::expand::builtin::Builtin),
@@ -199,7 +200,14 @@ fn reserve_all(
         };
         for claim in claims {
             reserved.steps += 1;
-            reserve(package, source, &mut reserved, declaration, *claim)?;
+            reserve(
+                package,
+                source,
+                &mut reserved,
+                declaration,
+                *claim,
+                facts.foreign_owners.contains_key(&id),
+            )?;
         }
         super::role_attributes::validate(package, source, &mut reserved, declaration, claims)?;
         super::annotations::validate(package, source, &mut reserved, declaration, claims)?;
@@ -220,6 +228,7 @@ fn reserve(
     reserved: &mut Reservations,
     declaration: Declaration,
     claim: Claim,
+    foreign: bool,
 ) -> Result<(), Error> {
     let error = |message| {
         Error::at(
@@ -264,17 +273,15 @@ fn reserve(
                 .insert(declaration.definition);
         }
         Claim::Language(kind) => {
-            if !source.features.has(Feature::LangItems) {
-                return Err(error("lang requires its explicit source feature"));
-            }
-            super::panic_claims::validate(package, declaration, kind)?;
-            super::pointee_claims::validate(package, declaration, kind)?;
-            super::try_claims::validate(package, declaration, kind)?;
-            if reserved.languages[kind.index()]
+            reserve_language(package, source, reserved, declaration, kind, foreign)?;
+        }
+        Claim::PanicHandler => {
+            super::panic_claims::validate_handler(package, declaration, foreign)?;
+            if reserved.languages[LangItem::PanicImpl.index()]
                 .replace(declaration)
                 .is_some()
             {
-                return Err(error("duplicate source language item"));
+                return Err(error("duplicate source panic handler"));
             }
         }
         Claim::Intrinsic => {
@@ -313,6 +320,41 @@ fn reserve(
                 return Err(error("duplicate intrinsic binding on one declaration"));
             }
         }
+    }
+    Ok(())
+}
+
+fn reserve_language(
+    package: &Package,
+    source: &SourceCore,
+    reserved: &mut Reservations,
+    declaration: Declaration,
+    kind: LangItem,
+    foreign: bool,
+) -> Result<(), Error> {
+    if !source.features.has(Feature::LangItems) {
+        return Err(error(
+            package,
+            declaration.origin,
+            "lang requires its explicit source feature",
+        ));
+    }
+    super::panic_claims::validate(package, declaration, kind)?;
+    super::pointee_claims::validate(package, declaration, kind)?;
+    super::try_claims::validate(package, declaration, kind)?;
+    // Weak foreign declarations never own the defining handler's slot.
+    if kind == LangItem::PanicImpl && foreign {
+        return Ok(());
+    }
+    if reserved.languages[kind.index()]
+        .replace(declaration)
+        .is_some()
+    {
+        return Err(error(
+            package,
+            declaration.origin,
+            "duplicate source language item",
+        ));
     }
     Ok(())
 }
@@ -461,6 +503,12 @@ fn attribute_claim(
     }
     let claim = match name {
         Some("lang") => language_claim(unit, file, attribute, forest)?,
+        Some("panic_handler") => {
+            if attribute.input != Input::Empty || attribute.unsafe_wrapper {
+                return Err(error("panic_handler requires a word attribute"));
+            }
+            Claim::PanicHandler
+        }
         Some("rustc_intrinsic") => {
             if attribute.input != Input::Empty {
                 return Err(error("rustc_intrinsic requires no arguments"));

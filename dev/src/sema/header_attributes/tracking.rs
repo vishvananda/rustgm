@@ -264,10 +264,13 @@ pub(super) fn validate_intrinsic_annotations(
         return Ok(());
     };
     let unit = report.package.unit(declaration.file);
+    let mut panic_words = (false, false);
     for owner in &header.owners {
         super::charge_source_contract_query(facts, owner.effects.len())?;
         for (attribute, forest) in unit.retained_attributes(owner.effects.clone()) {
             match attribute.name(forest, unit.source.text()) {
+                Some("rustc_do_not_const_check") => panic_words.0 = true,
+                Some("rustc_const_stable_indirect") => panic_words.1 = true,
                 Some("rustc_intrinsic_const_stable_indirect")
                     if report.resolution.scopes
                         [report.resolution.definitions[definition.0 as usize].scope.0 as usize]
@@ -297,7 +300,7 @@ pub(super) fn validate_intrinsic_annotations(
             }
         }
     }
-    Ok(())
+    super::internal_constness::validate_words(report, facts, definition, declaration, panic_words)
 }
 impl Declarations {
     pub(crate) fn intrinsic_const_stable_indirect(
