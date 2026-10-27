@@ -360,7 +360,12 @@ fn role_kind(role: LangItem) -> DefKind {
         | LangItem::PanicFmt
         | LangItem::PanicImpl
         | LangItem::PanicDisplay
-        | LangItem::ConstPanicFmt => DefKind::Function,
+        | LangItem::ConstPanicFmt
+        | LangItem::TryFromResidual
+        | LangItem::TryFromOutput
+        | LangItem::TryBranch
+        | LangItem::IntoTryType => DefKind::Function,
+        LangItem::ControlFlowContinue | LangItem::ControlFlowBreak => DefKind::Variant,
         LangItem::FormatArguments
         | LangItem::FormatArgument
         | LangItem::DynMetadata

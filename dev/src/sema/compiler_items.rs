@@ -37,6 +37,7 @@ pub(crate) use roles::callable_role;
 pub(crate) use roles::{destruct_predicate, drop_glue_member, freeze_predicate};
 pub(crate) use roles::{unsizing_predicate, unsizing_role};
 mod sizing;
+pub(in crate::sema) mod try_protocol;
 mod unary_contract;
 use crate::{
     resolve::{

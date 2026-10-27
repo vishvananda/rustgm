@@ -36,6 +36,7 @@ mod patterns;
 pub(crate) mod specialization_authority;
 mod table;
 mod try_blocks;
+pub(crate) use try_blocks::require as require_try_block;
 pub mod unit;
 
 /// Resolve configured modules into stable scope, definition and reference facts.

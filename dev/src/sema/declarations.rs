@@ -24,6 +24,7 @@ mod evaluation;
 mod execution;
 mod foreign;
 mod generics;
+pub(in crate::sema) use generics::prepare_callable_template;
 mod heads;
 mod impl_headers;
 mod implicit_methods;

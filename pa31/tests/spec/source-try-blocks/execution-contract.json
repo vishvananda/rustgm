@@ -1,0 +1,255 @@
+{
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "flags": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": [
+    {
+      "source": "pa31/tests/spec/source-try-blocks/source-protocol.rs",
+      "sha256": "60c1a47abf47045822180c81f2c6dfd23570c41db6a843f52e233454b94b934a",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "native_stdout": "7 23 31 17 23 43 19\n",
+      "initial_hypothesis": {
+        "rustc_status_hypothesis": 0,
+        "rustc_error_codes_hypothesis": [],
+        "rustc_warning_codes_hypothesis": []
+      },
+      "native_observer": "pa31/tests/spec/source-try-blocks/protocol-observer.c",
+      "native_observer_sha256": "3a4802167a4307b443717d6ebc0cab7067dc98f37267c9dcb70dde5839f5f25d"
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/source-without-try-role.rs",
+      "sha256": "9409e2efddd7a3a03634ca8a4d40f3c74dc50744881ceb43a850a503da2480d0",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypothesis": {
+        "rustc_status_hypothesis": 1,
+        "rustc_error_codes_hypothesis": null,
+        "rustc_warning_codes_hypothesis": []
+      }
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/source-unused-type-error.rs",
+      "sha256": "f455c2f07f3952f074604ed0ff9adda7f5add60cabc1c1c2ccf7d71575d2991d",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0271"
+      ],
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypothesis": {
+        "rustc_status_hypothesis": 1,
+        "rustc_error_codes_hypothesis": [
+          "E0308"
+        ],
+        "rustc_warning_codes_hypothesis": []
+      }
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/source-closure-boundary.rs",
+      "sha256": "8a33886b06610ce1b0982c6f0a4f40b3af807b00d5310dbe93ed0229cfa372a9",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0277"
+      ],
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypothesis": {
+        "rustc_status_hypothesis": 1,
+        "rustc_error_codes_hypothesis": [
+          "E0277"
+        ],
+        "rustc_warning_codes_hypothesis": []
+      }
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/source-borrow-escape.rs",
+      "sha256": "fa1df955f58d56d38c93c0a412865208740febfab6d19a30ec5451c1b4bad35b",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0515"
+      ],
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypothesis": {
+        "rustc_status_hypothesis": 1,
+        "rustc_error_codes_hypothesis": [
+          "E0515"
+        ],
+        "rustc_warning_codes_hypothesis": []
+      }
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/source-moved-output.rs",
+      "sha256": "471458692c30da7bef90a11865f4541fc23139fa4ab0ed73ef5b51a594b2eadb",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0382"
+      ],
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypothesis": {
+        "rustc_status_hypothesis": 1,
+        "rustc_error_codes_hypothesis": [
+          "E0382"
+        ],
+        "rustc_warning_codes_hypothesis": []
+      }
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/source-drop-exit.rs",
+      "sha256": "0aa1b4c2abef2e98a7db6a6e6a1deac9dd0b1d2b2eb403a0e080e4c8bddd811a",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "native_stdout": "21\n",
+      "initial_hypothesis": {
+        "rustc_status_hypothesis": 0,
+        "rustc_error_codes_hypothesis": [],
+        "rustc_warning_codes_hypothesis": []
+      },
+      "native_observer": "pa31/tests/spec/source-try-blocks/drop-observer.c",
+      "native_observer_sha256": "66762de5df8969e861f6738db9b6d46a3efcc57465db57691ff051879aa69aef"
+    }
+  ],
+  "state": "14 metadata observations completed; four hypothesis disagreements retained; native predictions unobserved",
+  "compiler_profile": "actual source-core minicore@try_protocol, no std/bootstrap Try factory",
+  "note": "from_residual intentionally returns23 and Weird::from_output43: normal source body calls must execute; no law-based compiler shortcut. Original38 grammar observations stay unchanged. Existing qualified callable declarations are retained for genuine closure-boundary checking.",
+  "initial_contract_sha256": "a5e6e54f74b9fdb4a7f28c709f96ec0c7adf582bb5c3a0a90af5631bd217ce50",
+  "metadata_observed_binding_sha256": "5a227626b06a51063c4cd1af2f92f4146541a688ea7f608454091fe7407a6cf4",
+  "native_profile": {
+    "edition": "2024",
+    "rustc_flags": [
+      "--crate-type=lib",
+      "--target=x86_64-unknown-linux-gnu",
+      "-Cpanic=abort",
+      "-Ccodegen-units=1",
+      "--emit=obj"
+    ],
+    "c_flags": [
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-Werror"
+    ],
+    "status": "pinned native protocol and complete Drop companion observed; candidate combined CLI native pending"
+  },
+  "native_observations_v1": {
+    "binding_sha256": "e8deed06248db7fa38a795ea19f02ca3a6b6a2e45eb28b78a45f0e2f22a49573",
+    "results_sha256": "21fd198423dce29696448de5e2e7fbee365e3b70c15616cb812b2c6372fe9100",
+    "main_protocol": "exact expected native output observed",
+    "original_drop": "object generation rejects missing freeze lang_item; metadata remains accepted; original prediction retained"
+  },
+  "native_companion": {
+    "source": "pa31/tests/spec/source-try-blocks/source-native-complete-drop.rs",
+    "sha256": "76a3e7ad01e41bbc3a1b9f220f9e75fcfc8e3c41aaaaff4b9ae663a9c62aa1cc",
+    "base_source": "pa31/tests/spec/source-try-blocks/source-drop-exit.rs",
+    "base_sha256": "0aa1b4c2abef2e98a7db6a6e6a1deac9dd0b1d2b2eb403a0e080e4c8bddd811a",
+    "adaptation": "original Drop program bodies plus genuine Freeze and exact existing source-freeze/automatic-cleanup Destruct/drop_glue declaration family",
+    "observer": "pa31/tests/spec/source-try-blocks/drop-observer.c",
+    "observer_sha256": "66762de5df8969e861f6738db9b6d46a3efcc57465db57691ff051879aa69aef",
+    "edition": "2024",
+    "expected_status": 0,
+    "native_stdout": "21\n",
+    "status": "observed expected native output21; candidate combined CLI pending",
+    "hooks_source": "pa31/tests/spec/source-freeze/automatic-cleanup.rs",
+    "hooks_source_sha256": "633442327cf88bd6f30745d737706695860e5ea96cdbfd2662a81cdb25e1d110",
+    "observation": {
+      "binding_sha256": "2909cd971f1bc6bf1aaa937ecac2e16d63897763b53c086fe71e54ca15750c9e",
+      "results_sha256": "60189e7951e1fca429e2c81939e53784d513de6358897a55d38b534a2a9cf149",
+      "commands": 3,
+      "status": 0,
+      "stdout": "21\n"
+    }
+  },
+  "native_companion_v1": {
+    "source": "pa31/tests/spec/source-try-blocks/source-native-drop-exit.rs",
+    "sha256": "29dabe8703ef7f0a611000f000f43e524921c9059b9ae70ffae5d8363a12baf1",
+    "base_source": "pa31/tests/spec/source-try-blocks/source-drop-exit.rs",
+    "base_sha256": "0aa1b4c2abef2e98a7db6a6e6a1deac9dd0b1d2b2eb403a0e080e4c8bddd811a",
+    "adaptation": "add actual auto_traits request and genuine freeze source lang declaration; all original program bodies unchanged",
+    "observer": "pa31/tests/spec/source-try-blocks/drop-observer.c",
+    "observer_sha256": "66762de5df8969e861f6738db9b6d46a3efcc57465db57691ff051879aa69aef",
+    "edition": "2024",
+    "expected_status": 0,
+    "native_stdout": "21\n",
+    "status": "observed object rejection: missing drop_glue; original prediction retained",
+    "observation": {
+      "binding_sha256": "ab2151ca928d588259d8dd31772bc6bfab15d51a922e2617a5b82f670db0a72e",
+      "results_sha256": "7e913389fed7db75b061091660593a8a15244f33414ef70503aac496150ec500",
+      "rustc_object_status": 1,
+      "diagnostic": "requires drop_glue lang_item"
+    }
+  },
+  "cli_native_cases": [
+    {
+      "source": "pa31/tests/spec/source-try-blocks/source-execute-protocol.rs",
+      "sha256": "87df89d43cbcd42b9ae553c2aa7ee74288be41680f765f4fcb45b6c40f748420",
+      "base_source": "pa31/tests/spec/source-try-blocks/source-protocol.rs",
+      "base_sha256": "60c1a47abf47045822180c81f2c6dfd23570c41db6a843f52e233454b94b934a",
+      "prefix_bytes": 4134,
+      "observer": "pa31/tests/spec/source-try-blocks/protocol-execution-observer.c",
+      "observer_sha256": "500b254bdf1523260aeefcfb9129395208c83197ef70d2121004a23041db5d25",
+      "expected_status": 0,
+      "stdout": "7 23 31 17 23 43 19\n",
+      "stderr": "",
+      "candidate_args": [
+        "--emit-lowir",
+        "--edition=2024",
+        "--source-core",
+        "minicore@try_protocol",
+        "--crate-name",
+        "minicore",
+        "--crate-disambiguator",
+        "try_protocol"
+      ],
+      "candidate_c_args": [
+        "-DRUSTGM_CANDIDATE"
+      ],
+      "status": "pinned Rust object/link/native passed; integrated candidate native pending"
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/source-execute-drop.rs",
+      "sha256": "7f1e052968eb4d0095aaf0570bd0abbb44d5e66dd5bf0e16bf4d8a7deedac94d",
+      "base_source": "pa31/tests/spec/source-try-blocks/source-native-complete-drop.rs",
+      "base_sha256": "76a3e7ad01e41bbc3a1b9f220f9e75fcfc8e3c41aaaaff4b9ae663a9c62aa1cc",
+      "prefix_bytes": 3752,
+      "observer": "pa31/tests/spec/source-try-blocks/drop-execution-observer.c",
+      "observer_sha256": "033672ab1e7230ef82cc53cc1cc3b937cba2f400f5db22a8354531c40e54cb3f",
+      "expected_status": 0,
+      "stdout": "21\n",
+      "stderr": "",
+      "candidate_args": [
+        "--emit-lowir",
+        "--edition=2024",
+        "--source-core",
+        "minicore@try_protocol",
+        "--crate-name",
+        "minicore",
+        "--crate-disambiguator",
+        "try_protocol"
+      ],
+      "candidate_c_args": [
+        "-DRUSTGM_CANDIDATE"
+      ],
+      "status": "pinned Rust object/link/native passed; integrated candidate native pending"
+    }
+  ],
+  "cli_native_observation": {
+    "binding_sha256": "e73a58b7ac81b7c983afd326676737f3ac660e2a7136294021122842cbe1a838",
+    "results_sha256": "a22919848cdb960399b00871d4f045488970129c379e1f2293b5abf1f9377163",
+    "commands": 6,
+    "native_observations": 2,
+    "status": 0
+  }
+}

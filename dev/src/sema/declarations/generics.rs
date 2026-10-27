@@ -9,6 +9,7 @@ mod default_validation;
 mod defaults;
 pub(super) use defaults::{DefaultId, Defaults};
 mod functions;
+pub(in crate::sema) use functions::prepare_callable_template;
 mod validation;
 use super::{
     Checker, DefId, Error, GenericFlavor, ItemId, Kind, NodeKey, State, Type, TypeId, Work, regions,

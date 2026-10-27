@@ -231,3 +231,84 @@ edition-fragment observations. Grammar gates do not grant PA25 execution.
 `spec/scoped-builtin-declarations/` wraps the unchanged original Iter declaration
 for LIB-038. Independent metadata accepts it; current RustGM explicitly rejects
 its scoped declaration kind. No coroutine expansion or native execution is claimed.
+
+The separate executable successor freezes seven genuine no-core protocol sources
+in `source-try-blocks/execution-contract.json`. Fourteen pinned metadata
+observations completed without infrastructure failures. Four initial predictions
+were wrong: removing the Try trait tag alone still accepts when the actual
+methods remain tagged, and the unused wrong-output body reports E0271. Initial
+predictions and all source bytes/raw diagnostics remain retained. At the initial freeze the two native
+outcomes were separate, unobserved predictions; metadata acceptance alone did not
+qualify them.
+
+The executable consumer retains the actual tagged method parents, associated
+Output/Residual declarations and two single-field variants of the same real
+ControlFlow enum. It instantiates ordinary source callables, retains two calls
+for question-mark sites under the existing call-context owner, and uses existing
+lexical frames, CFG branches, moves and drop exits. A homogeneous try block calls
+the actual into_try_type function on residual exit; a function exit calls actual
+from_residual. No residual algebra law or synthetic Option/Result constructor is
+substituted for those bodies. Imported protocol/plan transport and typed
+heterogeneous try syntax remain closed. Compiler and body-proof controls are qualified below; candidate CLI/native
+execution remains a separate pending check. Actual cold capacities and enclosing
+layout observations are recorded below.
+
+The executable compiler/body checkpoint is qualified at `1cae78716`: standard
+focused validation `1793063696757195473` passed all six exact controls in 114.86s,
+including metadata, format, global architecture, strict private Clippy and build.
+The actual full source protocol, optional trait tag, nearest lexical targets,
+loop/drop exits, move and lifetime opponents, changed-image/gate authentication
+and cumulative failure controls pass. The original seven source files remain
+byte-identical to the independent 14-observation contract. Native outcomes remain
+separate, pending predictions; two C observers now freeze the actual exported
+functions and drop-event stream. No native result is inferred from CFG success.
+
+The shared PA21 correction closes a pre-existing ordinary result-supertrait gap:
+one completed result closure builds one exact projection-equality index, then
+uses one existing Normalizer across consequence argument roots. Missing,
+conflicting, cyclic and quantified cases gain no guessed equality. Existing
+ResultBound selection still requires its real parent proof. The real implicit
+`into_try_type` function also demands the same callable template as a written
+function use, through the existing declaration kernel; no ItemUse is invented.
+The ordinary PA21 bridge and missing-equality opponent both pass. Its one new
+active text case still requires official selected generation after integration.
+
+Actual retained Try Plan is 48 bytes. CallContexts is 48 (the earlier observed
+owner was 24); CallTypes=704, Frame=48, State=2776, Operation=16, NodeFacts=80 and
+Catalog=1000. Frame/CallTypes/State before widths were not observed, so no before
+values are inferred. The transient and retained plan Vec fields each occupy 24
+bytes even when empty; the no-Try source leaves the optional retained owner absent.
+At widths 8/32/128, plan capacities are exactly 8/32/128 and plan payloads
+384/1536/6144 bytes, with inference steps 4885/16069/60805. The shared 32-level
+consequence DAG paid work1127/bytes10944, with Normalizer=368; warm reads and
+failed attempts remain charged. No Normalizer fields or ordinary fold mode changed.
+
+The earlier static helper-arity failure and 276.22s build timeout are retained as
+failed observations. The following warm run passed statics/build but only 2/6
+controls, exposing the genuine implicit-template demand gap; that source was
+corrected before the six-control passing run. Imported protocol/plan transport,
+typed heterogeneous try syntax and unrelated const-closure execution stay closed.
+
+Independent native observations now distinguish the language bodies from no-core
+codegen prerequisites. The original protocol source executes exactly
+`7 23 31 17 23 43 19\n`. The original Drop source passes metadata but object
+generation requires Freeze; the first separately frozen Freeze companion then
+requires drop_glue. Both failed codegen predictions and original sources remain
+retained. `source-native-complete-drop.rs` preserves every original Drop program
+body and appends the genuine Freeze and existing source Destruct/drop_glue
+declarations from `source-freeze/automatic-cleanup.rs`; its pinned native output
+is exactly `21\n`. These are new native observations, not repeated metadata
+checks. RustGM native parity remains pending the integrated qualified CLI and
+locked prebuilt backend against the two frozen observers. No original-input or
+original-Drop native success is claimed from these companions.
+
+The final public CLI execution adapters are `source-execute-protocol.rs` and
+`source-execute-drop.rs`. Each retains its complete provider as an exact prefix
+and appends only an exported observer entry plus genuine Rust main. Its paired C
+observer supplies main only for the Rust object link; the candidate LowIR program
+supplies its own actual entry. Both adapters independently execute the expected
+outputs with pinned Rust (six commands, 0.349s, no disagreements). Candidate
+commands use `--emit-lowir --edition=2024 --source-core minicore@try_protocol
+--crate-name minicore --crate-disambiguator try_protocol`; no library/publication
+profile is requested. Actual combined CLI and locked-backend native executions
+remain pending, with the imported protocol and artifact fences retained.

@@ -1,7 +1,8 @@
 # PA21 fixture ownership
 
-The manifest registers 744 cases with committed stdout, stderr and status
-sidecars. There are 298 semantic inspections and 446 LowIR checks; 260 accepted
+The manifest registers 745 cases: 744 retain committed stdout, stderr and status
+sidecars; the new ordinary result-supertrait regression awaits selected generation.
+There are 299 semantic inspections and 446 LowIR checks; 260 accepted
 LowIR programs declare native execution (256 pass, four destructor panics).
 All source outcomes are independently checked with pinned rustc object generation.
 Fixtures preserve the source controls in the named `maintainer_origin` field.
@@ -45,3 +46,10 @@ belong to PA16. No upstream input was modified or imported for this release.
 Maintainer invariants must test proof scope ownership, cache environment identity,
 completed versus pending failures, bounded work and structural sharing separately
 from language outcomes. Never serialize work counters into text oracles.
+
+The `contracts/polymorphic-outputs/accepted/semantics/result-supertrait-equality.rs`
+regression requires an associated output's genuine equality to reach its inherited
+supertrait argument. Both pinned editions accept the exact new source. The prior
+qualified compiler rejects its ordinary call, independently of source Try hooks.
+The case declares semantic success; selected official reference generation remains
+pending the shared solver correction. This adds no native execution claim.

@@ -18,7 +18,7 @@ mod divergence;
 mod dot_calls;
 mod effect_facts;
 pub(super) use effect_facts::CallContexts;
-pub use effect_facts::SourceCallUse;
+pub use effect_facts::{SourceCallUse, TryPlanId};
 mod environment_values;
 mod field_storage;
 mod finalization;
@@ -56,6 +56,7 @@ mod selected_arguments;
 mod slots;
 mod text;
 mod trait_goals;
+mod try_control;
 mod unsizing;
 use super::{
     declarations,
@@ -139,6 +140,7 @@ pub fn analyze_with_hidden(
 }
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum FrameKind {
+    Try,
     Loop,
     While,
     For,
@@ -1255,6 +1257,7 @@ impl Checker<'_> {
         self.state.work.push(Work::Exit(node));
         self.state.children.clear();
         match self.kind(node) {
+            Kind::TryBlock { body, .. } => return self.enter_try_block(node, body, expected),
             Kind::For { iterator, .. } => {
                 self.state.work.push(Work::ForIterator(node));
                 self.state.work.push(Work::Enter(iterator, None));
@@ -1547,10 +1550,11 @@ impl Checker<'_> {
             Kind::Group(value) | Kind::Attributed { value, .. } | Kind::Label { value, .. } => {
                 self.term(value)
             }
-            Kind::TryBlock { .. } | Kind::Unary { op: Unary::Try, .. } => Err(self.error(
-                node,
-                "source Try control-flow semantics are not implemented",
-            )),
+            Kind::TryBlock { body, .. } => self.finish_try_block(node, body),
+            Kind::Unary {
+                op: Unary::Try,
+                operand,
+            } => self.question_mark(node, operand),
             Kind::ConstClosure { .. } => {
                 Err(self.error(node, "const closure callable semantics are not implemented"))
             }
@@ -2355,7 +2359,10 @@ impl Checker<'_> {
                 .iter()
                 .rposition(|f| f.label == Some(label))
         } else {
-            self.state.frames.len().checked_sub(1)
+            self.state
+                .frames
+                .iter()
+                .rposition(|frame| frame.kind != FrameKind::Try)
         }
         .ok_or_else(|| self.error(node, "break or continue is outside a loop"))?;
         let frame = self.state.frames[index];

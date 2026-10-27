@@ -196,6 +196,7 @@ pub(super) fn primary(
     package: &Package,
     key: crate::resolve::unit::NodeKey,
     kind: crate::resolve::model::DefKind,
+    namespace: crate::resolve::model::Namespace,
     claims: Option<&[Claim]>,
 ) -> bool {
     use crate::{
@@ -203,6 +204,18 @@ pub(super) fn primary(
         syntax::{ast::Kind, item::ItemKind},
     };
     let unit = package.unit(key.file);
+    if matches!(unit.configured.ast.node(key.node).kind, Kind::Variant(_)) {
+        return kind == DefKind::Variant
+            && namespace == crate::resolve::model::Namespace::Value
+            && claims.is_some_and(|claims| {
+                claims.iter().any(|claim| {
+                    matches!(
+                        claim,
+                        Claim::Language(LangItem::ControlFlowContinue | LangItem::ControlFlowBreak)
+                    )
+                })
+            });
+    }
     let Kind::Item(index) = unit.configured.ast.node(key.node).kind else {
         return false;
     };

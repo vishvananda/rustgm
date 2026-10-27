@@ -2628,6 +2628,20 @@
       "maintainer_origin": "dev/tests/polymorphic_outputs.rs:ACCEPTED"
     },
     {
+      "path": "tests/spec/contracts/polymorphic-outputs/accepted/semantics/result-supertrait-equality.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.contracts"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/residual_protocol.rs:genuine_protocol_and_optional_try_tag_keep_all_source_call_bodies"
+    },
+    {
       "path": "tests/spec/contracts/polymorphic-outputs/accepted/semantics/universal-call.rs",
       "exit_status": 0,
       "features": [

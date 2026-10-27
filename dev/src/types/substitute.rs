@@ -14,6 +14,7 @@ mod normalize;
 mod observed;
 mod restored;
 mod rewrite;
+pub(crate) use normalize::Failure as NormalizationFailure;
 pub use normalize::{Alias, Normalizer, Request, Resolution, Step};
 mod parameters;
 mod predicates;
