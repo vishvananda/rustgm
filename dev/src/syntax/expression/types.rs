@@ -413,7 +413,12 @@ impl Parser<'_, '_> {
                     matches!(token.kind, TokenKind::Lifetime | TokenKind::RawLifetime)
                 })
             {
-                return Err(self.error("trait bound modifiers require a trait")?);
+                let message = if quantified {
+                    "higher-ranked bound requires a trait"
+                } else {
+                    "trait bound modifiers require a trait"
+                };
+                return Err(self.error(message)?);
             }
             let value = if self
                 .cursor
