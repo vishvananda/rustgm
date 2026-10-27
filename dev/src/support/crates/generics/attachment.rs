@@ -89,6 +89,25 @@ impl Payload {
         )?;
         Ok(Self::from(staged))
     }
+    pub(crate) fn from_source_provided_contracts(
+        owner: &CrateIdentity,
+        rows: source::SourceRows,
+        attributes: source::HeaderAttributeColumns,
+        contracts: source::ProvidedContractRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        let overhead = size_of::<Self>().saturating_sub(size_of::<source::ValidatedRows>());
+        source::ValidatedRows::stage_provided_contracts(
+            owner,
+            rows,
+            attributes,
+            contracts,
+            base.saturating_add(overhead),
+            work,
+        )
+        .map(Self::from)
+    }
     pub(crate) fn from_source_provided_observed(
         owner: &CrateIdentity,
         rows: source::SourceRows,

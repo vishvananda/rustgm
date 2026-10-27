@@ -27,7 +27,7 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
         Profile::Source2024Functions
         | Profile::Source2024FunctionContracts
         | Profile::Source2024ModuleContracts => TAG,
-        Profile::Source2024Provided => PROVIDED_TAG,
+        Profile::Source2024Provided | Profile::Source2024ProvidedContracts => PROVIDED_TAG,
         Profile::Source2024 => return Err("unpublished source facade has no wire profile"),
     };
     if descriptor.edition() != Edition::Rust2024 || descriptor.identity() != interface.identity() {
@@ -44,7 +44,9 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     out.u8(tag)?;
     out.u16(match descriptor.profile() {
         Profile::Source2024ModuleContracts => MODULE_CONTRACT_VERSION,
-        Profile::Source2024FunctionContracts => CONTRACT_VERSION,
+        Profile::Source2024FunctionContracts | Profile::Source2024ProvidedContracts => {
+            CONTRACT_VERSION
+        }
         _ => ROW_VERSION,
     })?;
     out.u8(DEFINING_RUST2024)?;
@@ -53,7 +55,9 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     for dependency in interface.dependencies() {
         out.identity(dependency)?;
     }
-    if tag == PROVIDED_TAG {
+    if descriptor.profile() == Profile::Source2024ProvidedContracts {
+        ordinary_columns::encode_provided_contracts(&mut out, descriptor.rows())?;
+    } else if tag == PROVIDED_TAG {
         ordinary_columns::encode_provided(&mut out, descriptor.rows())?;
     } else if descriptor.profile() == Profile::Source2024ModuleContracts {
         ordinary_columns::encode_module_contracts(&mut out, descriptor.rows())?;
@@ -72,7 +76,7 @@ pub(super) fn decode_provided(input: &mut Reader<'_>) -> Result<Interface, &'sta
 }
 fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &'static str> {
     let version = input.u16()?;
-    if (provided && version != ROW_VERSION
+    if (provided && !matches!(version, ROW_VERSION | CONTRACT_VERSION)
         || !provided
             && !matches!(
                 version,
@@ -89,16 +93,25 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
     if base > MAX_BYTES {
         return Err("source envelope base exceeds retained storage budget");
     }
-    let (rows, attributes, modules) = if provided {
-        (ordinary_columns::decode_provided(input, base)?, None, None)
+    let (rows, attributes, modules, contracts) = if provided && version == CONTRACT_VERSION {
+        let (rows, attributes, contracts) =
+            ordinary_columns::decode_provided_contracts(input, base)?;
+        (rows, Some(attributes), None, Some(contracts))
+    } else if provided {
+        (
+            ordinary_columns::decode_provided(input, base)?,
+            None,
+            None,
+            None,
+        )
     } else if version == MODULE_CONTRACT_VERSION {
         let (rows, attributes, modules) = ordinary_columns::decode_module_contracts(input, base)?;
-        (rows, Some(attributes), Some(modules))
+        (rows, Some(attributes), Some(modules), None)
     } else if version == CONTRACT_VERSION {
         let (rows, attributes) = ordinary_columns::decode_contracts(input, base)?;
-        (rows, Some(attributes), None)
+        (rows, Some(attributes), None, None)
     } else {
-        (ordinary_columns::decode(input, base)?, None, None)
+        (ordinary_columns::decode(input, base)?, None, None, None)
     };
     if !input.done() {
         return Err("trailing source metadata bytes");
@@ -107,7 +120,16 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
         steps: input.used_atoms(),
         ..Work::default()
     };
-    let payload = if provided {
+    let payload = if let Some(contracts) = contracts {
+        Payload::from_source_provided_contracts(
+            interface.identity(),
+            rows,
+            attributes.ok_or("provided advisory completion is missing")?,
+            contracts,
+            base,
+            &mut work,
+        )?
+    } else if provided {
         Payload::from_source_provided(interface.identity(), rows, base, &mut work)?
     } else if let Some(modules) = modules {
         Payload::from_source_module_contracts(
