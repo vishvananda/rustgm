@@ -41,10 +41,17 @@ execution companion, and accepts both editions. The companion independently
 prints `7 6 3 3 7 91 1` plus LF. Earlier wrong setup/status/warning hypotheses and
 raw results are preserved rather than relabeled Rust-invalid.
 
-Root will qualify production/CLI once in the combined source, then provide one
-immutable binary for the frozen four-command candidate native companion. The
-public executable LowIR route uses genuine Rust main and C observation; it does
-not publish a closed Pointee artifact. Plan SHA is
+Root subsequently qualified combined production/CLI and executed the unchanged
+four-command native companion through CLI SHA
+`884e00044fe7f6408201cfa92e32dd5dc4483d55ab6985ed3fcb624547c53207`.
+The locked CPPGM backend/C observer prints exactly `7 6 3 3 7 91 1` plus LF;
+the native batch passes in2.68s. Root evidence is
+`obj/parallel/concat-implementation-v1/pointer-native-v1/`, binding SHA
+`a7812b557f06b68d1c2163efa04282cd0e95c8164e674f41991d237c730932aa`,
+results SHA
+`78c9a26ed19bf226b5719e759dd537e392021f88e75f270a0a99cf8df6a9e089`.
+The public executable LowIR route uses genuine Rust main and C observation;
+it does not publish a closed Pointee artifact. The unchanged plan SHA is
 `791d0e78e8bb955644b92b3200ab3d5c4791e6c3cf84d18a42444817119626d6`.
 
 Evidence lives in `obj/parallel/pa31/pointer-metadata-intrinsic-v1/`:
