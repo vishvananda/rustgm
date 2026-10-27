@@ -139,7 +139,7 @@ impl Lower<'_, '_, '_> {
             return Ok(None);
         }
         let result = value.ty;
-        let caller = self.caller_pointer(id)?;
+        let location = self.caller_pointer(id)?;
         if !matches!(self.value(callee)?, Selected::Item(actual) if actual == instance) {
             return Err("tracked direct call changed its selected instance");
         }
@@ -149,7 +149,7 @@ impl Lower<'_, '_, '_> {
             Operand::Symbol(symbol),
             super::argument_sources::Arguments::Values(arguments),
             result,
-            Some(caller),
+            Some(location),
         )
         .map(Some)
     }

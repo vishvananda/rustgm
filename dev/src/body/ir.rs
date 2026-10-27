@@ -521,7 +521,7 @@ impl Body {
     /// Owned payload only: shared static metadata and canonical arena values
     /// remain charged to their original owners, never to each cloned body.
     pub(crate) fn allocation_bytes(&self) -> usize {
-        use crate::support::retained::{map, sum, vector};
+        use crate::support::retained::{sum, vector};
         sum([
             self.closure_calls
                 .as_ref()

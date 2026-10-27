@@ -838,6 +838,9 @@ impl<'a> Builder<'a> {
             return Err(self.error(root, "unbalanced reference adjustment continuations"));
         }
         self.settle();
+        self.body
+            .seal_caller_sites(self.facts)
+            .map_err(|error| self.error(root, error))?;
         let scope_work = self.scope_plan.work;
         let (source_scopes, scratch) = self.scope_plan.finish();
         let scope_work = scope_work.saturating_add(source_scopes.len());
@@ -872,9 +875,6 @@ impl<'a> Builder<'a> {
                 );
             }
         }
-        self.body
-            .seal_caller_sites(self.facts)
-            .map_err(|error| self.error(root, error))?;
         Ok(self.body)
     }
     #[expect(
