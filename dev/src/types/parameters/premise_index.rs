@@ -122,6 +122,14 @@ impl ClauseIndex {
         }))
     }
 
+    #[cfg(test)]
+    pub(crate) fn canonical(&self) -> &Self {
+        self.view
+            .as_ref()
+            .filter(|view| view.opening.is_some())
+            .map_or(self, |view| &view.base)
+    }
+
     pub(crate) fn opening(&self) -> Option<&Arc<Opening>> {
         self.view.as_ref().and_then(|view| view.opening.as_ref())
     }

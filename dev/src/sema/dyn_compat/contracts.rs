@@ -91,7 +91,7 @@ pub(super) fn collect(
         {
             Some(DefKind::Const) => return Err(reject(member, Rule::Constant)),
             Some(DefKind::TypeAlias) => {
-                if sized(facts, member, header.self_type)? {
+                if sized(facts, member, self_type)? {
                     continue;
                 }
                 if facts

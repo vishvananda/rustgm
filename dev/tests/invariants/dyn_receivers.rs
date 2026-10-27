@@ -147,7 +147,7 @@ fn real_source_call_passes_body_and_original_instance_lowering() -> Result {
         })
         .ok_or("real observer")?
         .definition;
-    let program = crate::lower::analyze(
+    let program = crate::lower::instances::build_roots_prepared(
         &report,
         &mut facts,
         crate::lower::Roots {

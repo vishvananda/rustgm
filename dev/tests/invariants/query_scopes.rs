@@ -1,7 +1,7 @@
 //! A private U scope shares declared rows and never turns missing membership into ability.
 use super::*;
 use crate::types::{
-    ItemId, Kind, TypeId,
+    ItemId, Kind,
     parameters::{Parameter, ParameterKind},
 };
 use std::cell::Cell;
