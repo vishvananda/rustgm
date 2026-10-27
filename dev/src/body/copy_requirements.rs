@@ -94,12 +94,31 @@ pub(in crate::body) fn prepare_scoped(
     contract: &mut Contract,
     scope: Option<&materialized::InstanceScope>,
 ) -> Result<(), String> {
+    prepare_using(facts, body, contract, scope, None)
+        .map_err(crate::sema::dispatch::Failure::message)
+}
+pub(in crate::body) fn prepare_selected(
+    facts: &mut Declarations,
+    body: &Body,
+    contract: &mut Contract,
+    scope: Option<&materialized::InstanceScope>,
+    preparation: &mut dyn crate::sema::dispatch::Preparation,
+) -> Result<(), crate::sema::dispatch::Failure> {
+    prepare_using(facts, body, contract, scope, Some(preparation))
+}
+fn prepare_using(
+    facts: &mut Declarations,
+    body: &Body,
+    contract: &mut Contract,
+    scope: Option<&materialized::InstanceScope>,
+    mut preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
+) -> Result<(), crate::sema::dispatch::Failure> {
     if scope.is_some() && facts.source_bindings.is_none() {
         return Err("instance Copy scope lost its current source catalog".into());
     }
     super::defining_cleanups::begin(facts, body, contract)?;
     let Some(catalog) = facts.source_bindings.as_deref() else {
-        return super::defining_cleanups::prepare(facts, body, contract);
+        return super::defining_cleanups::prepare(facts, body, contract).map_err(Into::into);
     };
     catalog.require_source_destructors_prepared()?;
     if contract.key != body.key()
@@ -108,8 +127,26 @@ pub(in crate::body) fn prepare_scoped(
     {
         return Err("source Copy contract belongs to another body".into());
     }
-    let declaration = crate::sema::compiler_items::copy_declaration(facts)?;
-    let goals = read_requirements(facts, body, declaration)?;
+    let (declaration, goals) = if let Some(service) = &mut preparation {
+        let types = read_types(facts, body)?;
+        let declaration = if types.is_empty() {
+            facts
+                .source_bindings
+                .as_deref()
+                .ok_or("source Copy has no source policy")?
+                .role(crate::support::bindings::LangItem::Copy)?
+                .map(|role| role.definition)
+        } else {
+            service
+                .copy_declarations(facts)
+                .map_err(crate::sema::dispatch::Failure::Preparation)?;
+            crate::sema::compiler_items::copy_declaration(facts)?
+        };
+        (declaration, read_goals(facts, types, declaration)?)
+    } else {
+        let declaration = crate::sema::compiler_items::copy_declaration(facts)?;
+        (declaration, read_requirements(facts, body, declaration)?)
+    };
     let requirements = Arc::new(SourceCopyRequirements { declaration, goals });
     let environment = contract
         .builtins
@@ -127,13 +164,24 @@ pub(in crate::body) fn prepare_scoped(
             carrier::check(facts, body, contract, environment.as_ref())?;
         }
         let first = super::dispatch::copy_frontier(facts, contract)?;
-        let selected = crate::sema::compiler_items::copy_decisions(
-            facts,
-            environment.clone(),
-            contract.universals,
-            first,
-            &requirements.goals,
-        )?;
+        let selected = if let Some(service) = &mut preparation {
+            crate::sema::compiler_items::copy_decisions_prepared(
+                facts,
+                environment.clone(),
+                contract.universals,
+                first,
+                &requirements.goals,
+                &mut **service,
+            )?
+        } else {
+            crate::sema::compiler_items::copy_decisions(
+                facts,
+                environment.clone(),
+                contract.universals,
+                first,
+                &requirements.goals,
+            )?
+        };
         contract
             .proofs
             .push(Proof::new(body.source, selected.proof));
@@ -164,7 +212,7 @@ pub(in crate::body) fn prepare_scoped(
         )));
     }
     super::defining_cleanups::prepare(facts, body, contract)?;
-    debt_transfer::prepare(facts, body, contract, scope).map_err(String::from)
+    debt_transfer::prepare(facts, body, contract, scope).map_err(Into::into)
 }
 
 fn read_requirements(
@@ -172,6 +220,10 @@ fn read_requirements(
     body: &Body,
     declaration: Option<crate::resolve::model::DefId>,
 ) -> Result<Vec<Predicate>, String> {
+    let types = read_types(facts, body)?;
+    read_goals(facts, types, declaration)
+}
+fn read_types(facts: &mut Declarations, body: &Body) -> Result<Vec<TypeId>, String> {
     facts.body_work.canonical_steps = facts
         .body_work
         .canonical_steps
@@ -204,6 +256,13 @@ fn read_requirements(
     }
     let mut types: Vec<_> = types.into_iter().collect();
     types.sort_unstable_by_key(|ty| ty.0);
+    Ok(types)
+}
+fn read_goals(
+    facts: &mut Declarations,
+    types: Vec<TypeId>,
+    declaration: Option<crate::resolve::model::DefId>,
+) -> Result<Vec<Predicate>, String> {
     Ok(if let Some(declaration) = declaration {
         let application = facts.types.intern_trait_application(Application {
             item: ItemId(declaration.0),

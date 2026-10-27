@@ -5,6 +5,8 @@ mod known_premises;
 mod memo;
 mod range_inputs;
 mod readiness;
+mod resumed_queries;
+pub(in crate::sema) use resumed_queries::select_prepared;
 mod refutation;
 pub(in crate::sema) use range_inputs::range_element;
 pub(in crate::sema) use refutation::Refutation;

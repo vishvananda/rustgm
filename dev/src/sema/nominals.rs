@@ -309,6 +309,21 @@ impl Proof {
         }
         self.shape_inside(facts, ty, count)
     }
+    pub(in crate::sema) fn prove_clause_prepared(
+        &mut self,
+        facts: &mut Declarations,
+        requirement: Clause,
+        preparation: &mut dyn crate::sema::dispatch::Preparation,
+    ) -> Result<bool, crate::sema::dispatch::Failure> {
+        if let Clause::Predicate(predicate) = requirement
+            && predicate.bound.trait_parts().is_some()
+        {
+            return self
+                .trait_state(facts)?
+                .prove_prepared(facts, predicate, preparation);
+        }
+        self.prove_clause(facts, requirement).map_err(Into::into)
+    }
     pub fn prove_clause(
         &mut self,
         facts: &mut Declarations,

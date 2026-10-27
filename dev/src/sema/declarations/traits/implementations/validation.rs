@@ -411,9 +411,19 @@ pub(in crate::sema) fn validate_impl_requirements(
     proof: &mut crate::sema::nominals::Proof,
     requirements: &crate::sema::traits::Requirements,
 ) -> Result<(), String> {
+    validate_impl_requirements_prepared(facts, predicate, proof, requirements, None)
+        .map_err(crate::sema::dispatch::Failure::message)
+}
+pub(in crate::sema) fn validate_impl_requirements_prepared(
+    facts: &mut crate::sema::model::Declarations,
+    predicate: Predicate,
+    proof: &mut crate::sema::nominals::Proof,
+    requirements: &crate::sema::traits::Requirements,
+    mut preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
+) -> Result<(), crate::sema::dispatch::Failure> {
     for ty in std::iter::once(predicate.ty).chain(requirements.types.iter().copied()) {
         if !proof.check(facts, ty)?.well_formed {
-            return Err("trait implementation header must be well-formed".to_owned());
+            return Err("trait implementation header must be well-formed".into());
         }
     }
     for &requirement in requirements.required.iter().chain(&requirements.implied) {
@@ -427,10 +437,12 @@ pub(in crate::sema) fn validate_impl_requirements(
             }
             Clause::ForAll(_) => requirement,
         };
-        if !proof.prove_clause(facts, requirement)? {
-            return Err(
-                "trait implementation does not satisfy the trait's requirements".to_owned(),
-            );
+        let proven = match &mut preparation {
+            Some(service) => proof.prove_clause_prepared(facts, requirement, &mut **service)?,
+            None => proof.prove_clause(facts, requirement)?,
+        };
+        if !proven {
+            return Err("trait implementation does not satisfy the trait's requirements".into());
         }
     }
     Ok(())

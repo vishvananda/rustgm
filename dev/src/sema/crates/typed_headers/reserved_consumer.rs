@@ -24,6 +24,35 @@ struct RuntimePreparation<'a, 'work> {
     selected: &'a mut SelectedConsumer<'work>,
 }
 impl crate::sema::dispatch::Preparation for RuntimePreparation<'_, '_> {
+    fn copy_declarations(&mut self, facts: &mut Declarations) -> Result<(), Error> {
+        use crate::support::bindings::LangItem;
+        self.selected.require(self.report, facts)?;
+        let result = (|| {
+            for kind in [LangItem::Clone, LangItem::Copy, LangItem::CloneFn] {
+                self.selected.work.charge(1)?;
+                let role = facts
+                    .source_bindings
+                    .as_deref()
+                    .ok_or_else(|| {
+                        Error::unlocated("selected Copy preparation lost its actual role catalog")
+                    })?
+                    .role(kind)
+                    .map_err(Error::unlocated)?;
+                if let Some(role) = role
+                    && !self
+                        .selected
+                        .definition(self.report, facts, role.definition)?
+                {
+                    return Err(Error::unlocated(
+                        "selected Copy declaration is not actually imported",
+                    ));
+                }
+            }
+            crate::sema::compiler_items::selected_copying(self.report, facts)
+        })();
+        let synchronized = super::synchronize_headers(facts, self.selected.work);
+        result.and(synchronized)
+    }
     fn prepay(&mut self, facts: &mut Declarations, work: usize, bytes: usize) -> Result<(), Error> {
         self.selected.require(self.report, facts)?;
         super::synchronize_headers(facts, self.selected.work)?;

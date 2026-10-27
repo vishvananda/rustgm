@@ -63,8 +63,7 @@ fn resolve_using(
             || matches!(value.kind, Rvalue::Function(id) if facts.associated.trait_owner(id).is_some())
     });
     if !dispatch {
-        return finish(facts, body, contract, scope.as_deref())
-            .map_err(crate::sema::dispatch::Failure::Invalid);
+        return finish_using(facts, body, contract, scope.as_deref(), preparation);
     }
     let (mut caller, mut dispatcher) = callers::prepare(facts, body, contract)?;
     let mut replacements = HashMap::default();
@@ -128,8 +127,7 @@ fn resolve_using(
         contract
             .proofs
             .push(crate::body::regions::Proof::new(body.source, proof));
-        return finish(facts, body, contract, scope.as_deref())
-            .map_err(crate::sema::dispatch::Failure::Invalid);
+        return finish_using(facts, body, contract, scope.as_deref(), preparation);
     }
     let mut obligations = proof
         .regions
@@ -155,17 +153,24 @@ fn resolve_using(
         kind: Kind::TypeOutlives { ty, shorter },
     }));
     contract.obligations = obligations;
-    finish(facts, body, contract, scope.as_deref()).map_err(crate::sema::dispatch::Failure::Invalid)
+    finish_using(facts, body, contract, scope.as_deref(), preparation)
 }
 
-fn finish(
+fn finish_using(
     facts: &mut Declarations,
     body: &mut Body,
     contract: &mut Contract,
     scope: Option<&super::copy_requirements::materialized::InstanceScope>,
-) -> Result<(), String> {
-    super::invocation_entries::select(facts, body, contract).map_err(String::from)?;
-    super::copy_requirements::prepare_scoped(facts, body, contract, scope)
+    preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
+) -> Result<(), crate::sema::dispatch::Failure> {
+    super::invocation_entries::select(facts, body, contract)?;
+    match preparation {
+        Some(service) => {
+            super::copy_requirements::prepare_selected(facts, body, contract, scope, service)
+        }
+        None => super::copy_requirements::prepare_scoped(facts, body, contract, scope)
+            .map_err(Into::into),
+    }
 }
 pub(super) fn copy_frontier(
     facts: &Declarations,

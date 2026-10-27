@@ -50,7 +50,7 @@ mod structural_owners;
 mod trait_paths;
 mod trait_regions;
 mod traits;
-pub(in crate::sema) use traits::validate_impl_requirements;
+pub(in crate::sema) use traits::validate_impl_requirements_prepared;
 mod unreduced;
 mod validation;
 use super::{

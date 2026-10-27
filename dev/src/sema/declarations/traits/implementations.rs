@@ -28,7 +28,7 @@ pub(in crate::sema::declarations) use scalar_readiness::{
     Pending as EarlyImplementations, Phase as ImplementationPhase,
 };
 pub(in crate::sema::declarations) use validation::impl_contract_obligations;
-pub(in crate::sema) use validation::validate_impl_requirements;
+pub(in crate::sema) use validation::validate_impl_requirements_prepared;
 
 impl Checker<'_> {
     pub(in crate::sema::declarations) fn const_impl_member(&self, definition: DefId) -> bool {

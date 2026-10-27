@@ -43,6 +43,40 @@ pub(crate) fn copy_decisions(
     first: u32,
     goals: &[Predicate],
 ) -> Result<Decisions, &'static str> {
+    decisions(
+        facts,
+        environment,
+        universals,
+        first,
+        goals,
+        |state, facts, goal| state.copy_decision(facts, goal),
+    )
+}
+pub(crate) fn copy_decisions_prepared(
+    facts: &mut Declarations,
+    environment: Option<Arc<Environment>>,
+    universals: u32,
+    first: u32,
+    goals: &[Predicate],
+    preparation: &mut dyn crate::sema::dispatch::Preparation,
+) -> Result<Decisions, crate::sema::dispatch::Failure> {
+    decisions(
+        facts,
+        environment,
+        universals,
+        first,
+        goals,
+        |state, facts, goal| state.prove_prepared(facts, goal, preparation),
+    )
+}
+fn decisions<E: From<&'static str>>(
+    facts: &mut Declarations,
+    environment: Option<Arc<Environment>>,
+    universals: u32,
+    first: u32,
+    goals: &[Predicate],
+    mut select: impl FnMut(&mut State, &mut Declarations, Predicate) -> Result<bool, E>,
+) -> Result<Decisions, E> {
     let declaration = copy_declaration(facts)?.ok_or("source Copy language item is missing")?;
     let mut state = State::body(facts, environment, universals, first)?;
     facts.body_work.canonical_steps += state.selection_steps();
@@ -52,10 +86,10 @@ pub(crate) fn copy_decisions(
             if facts.types.trait_application(id).is_some_and(|a| a.item.0 == declaration.0
                 && facts.types.arguments(a.arguments).is_some_and(|args| args.len() == 0)))
         {
-            return Err("source Copy requirement has a different declaration or arguments");
+            return Err("source Copy requirement has a different declaration or arguments".into());
         }
         let before = state.selection_steps();
-        let selected = state.copy_decision(facts, goal);
+        let selected = select(&mut state, facts, goal);
         facts.body_work.canonical_steps += state.selection_steps().saturating_sub(before);
         decisions.push((goal.ty, selected?));
     }

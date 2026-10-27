@@ -306,4 +306,4 @@ impl Checker<'_> {
     }
 }
 
-pub(in crate::sema) use implementations::validate_impl_requirements;
+pub(in crate::sema) use implementations::validate_impl_requirements_prepared;

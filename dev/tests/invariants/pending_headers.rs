@@ -158,7 +158,8 @@ fn executable_candidates_distinguish_header_validation_and_completed_absence()
     let mut store = Store::default();
     let mut registry = Implementations::default();
     let first = implementation(&mut store, 40, 4, TypeId::primitive(Primitive::U8))?;
-    let second = implementation(&mut store, 41, 4, TypeId::primitive(Primitive::U8))?;
+    let mut second = implementation(&mut store, 41, 4, TypeId::primitive(Primitive::U8))?;
+    second.source = None;
     let predicate = first.predicate;
     registry.prepare(&mut store, ItemId(4), first)?;
     registry.prepare(&mut store, ItemId(4), second)?;
@@ -168,7 +169,10 @@ fn executable_candidates_distinguish_header_validation_and_completed_absence()
     );
     assert!(registry.imported_overlap_pair(DefId(40), 0).is_err());
     assert!(registry.imported_overlap_pair(DefId(41), 1).is_err());
-    assert_eq!(registry.take_overlap_pairs().len(), 1);
+    let source = implementation(&mut store, 42, 4, TypeId::primitive(Primitive::U8))?;
+    registry.prepare(&mut store, ItemId(4), source)?;
+    assert!(registry.imported_overlap_pair(DefId(42), 1).is_err());
+    assert_eq!(registry.take_overlap_pairs().len(), 3);
     Ok(())
 }
 

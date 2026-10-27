@@ -122,8 +122,8 @@ impl SelectedConsumer<'_> {
         if registry.is_validated(owner) {
             return Ok(());
         }
-        let methods = self.default_members(report, facts, owner)?;
-        self.requirements(facts, predicate, environment)?;
+        let methods = self.members(report, facts, owner, predicate)?;
+        self.requirements(report, facts, predicate, environment)?;
         facts
             .generics
             .implementations
@@ -135,87 +135,164 @@ impl SelectedConsumer<'_> {
             .map_err(Error::unlocated)
     }
 
-    fn default_members(
+    fn members(
         &mut self,
         report: &Report,
         facts: &mut Declarations,
         owner: DefId,
+        predicate: Predicate,
     ) -> Result<Vec<(DefId, Option<DefId>)>, Error> {
-        let links = {
-            let catalog = self.reservation.catalog();
-            let id = catalog.declaration(owner).map_err(Error::unlocated)?;
-            let (_, row, _) = catalog
-                .declaration_coordinate(id)
+        let links = self.member_links(report, owner)?;
+        let definitions = crate::sema::traits::conformance::Definitions::new(facts, predicate, &[])
+            .map_err(Error::unlocated)?;
+        for &(expected, actual) in &links {
+            let Some(actual) = actual else {
+                continue;
+            };
+            self.definition(report, facts, expected)?;
+            self.definition(report, facts, actual)?;
+            if crate::sema::declarations::is_final_trait_method(report, facts, expected)? {
+                return Err(Error::unlocated("cannot override final trait method"));
+            }
+            if facts.methods.receivers.contains_key(&expected)
+                != facts.methods.receivers.contains_key(&actual)
+            {
+                return Err(Error::unlocated(
+                    "implementation method receiver presence disagrees with trait",
+                ));
+            }
+            let expected = crate::sema::traits::conformance::Method::imported(facts, expected)
                 .map_err(Error::unlocated)?;
-            let view = self.reservation.recipe_view(report, self.work)?;
-            let rows = view.rows()?;
-            let Some(s::HeaderRef::Implementation(index)) =
-                rows.header(row).map_err(Error::unlocated)?
+            let actual = crate::sema::traits::conformance::Method::imported(facts, actual)
+                .map_err(Error::unlocated)?;
+            crate::sema::traits::conformance::check_methods(
+                facts,
+                owner,
+                predicate,
+                expected,
+                actual,
+                &definitions,
+            )
+            .map_err(Error::unlocated)?;
+        }
+        Ok(links)
+    }
+
+    fn member_links(
+        &mut self,
+        report: &Report,
+        owner: DefId,
+    ) -> Result<Vec<(DefId, Option<DefId>)>, Error> {
+        let catalog = self.reservation.catalog();
+        let id = catalog.declaration(owner).map_err(Error::unlocated)?;
+        let (_, row, _) = catalog
+            .declaration_coordinate(id)
+            .map_err(Error::unlocated)?;
+        let view = self.reservation.recipe_view(report, self.work)?;
+        let rows = view.rows()?;
+        let Some(s::HeaderRef::Implementation(index)) =
+            rows.header(row).map_err(Error::unlocated)?
+        else {
+            return Err(Error::unlocated(
+                "selected members lost their actual impl row",
+            ));
+        };
+        let raw = rows.implementations[index as usize];
+        let application = raw
+            .trait_application
+            .and_then(|id| rows.trait_applications.get(id.0 as usize))
+            .ok_or_else(|| {
+                Error::unlocated("selected conformance lost its actual trait application")
+            })?;
+        if application.declaration.artifact != rows.policy.provider {
+            return Err(Error::unlocated(
+                "selected conformance requires its actual dependency trait producer",
+            ));
+        }
+        let Some(s::HeaderRef::Trait(trait_index)) = rows
+            .header(application.declaration.declaration)
+            .map_err(Error::unlocated)?
+        else {
+            return Err(Error::unlocated(
+                "selected conformance lost its actual trait row",
+            ));
+        };
+        let trait_ = rows.traits[trait_index as usize];
+        let declared = trait_
+            .members
+            .slice(&rows.members)
+            .map_err(Error::unlocated)?;
+        self.work.charge(declared.len().saturating_add(1))?;
+        if raw.unsafe_ != (trait_.flags.bits() & s::TraitFlags::UNSAFE != 0)
+            || declared.iter().any(|member| {
+                rows.declarations[member.0 as usize].definition.kind != s::DefinitionKind::Function
+            })
+        {
+            return Err(Error::unlocated(
+                "selected impl safety/member kinds disagree with its actual trait",
+            ));
+        }
+        let links = raw
+            .members
+            .slice(&rows.member_links)
+            .map_err(Error::unlocated)?;
+        if links.len() != declared.len() {
+            return Err(Error::unlocated(
+                "selected impl omitted an actual trait member link",
+            ));
+        }
+        self.work.charge(links.len().saturating_add(1))?;
+        self.work.reserve(
+            links
+                .len()
+                .saturating_mul(size_of::<(DefId, Option<DefId>)>()),
+        )?;
+        let mut result = Vec::with_capacity(links.len());
+        for link in links {
+            let member = link.trait_member.ok_or_else(|| {
+                Error::unlocated("selected trait member lost its actual declaration link")
+            })?;
+            if rows.declarations[member.declaration.0 as usize]
+                .definition
+                .parent
+                != Some(trait_.declaration)
+            {
+                return Err(Error::unlocated(
+                    "selected member link changed its actual trait owner",
+                ));
+            }
+            if member.artifact != rows.policy.provider {
+                return Err(Error::unlocated(
+                    "selected member requires its actual dependency producer",
+                ));
+            }
+            let Some(s::HeaderRef::Function(index)) =
+                rows.header(member.declaration).map_err(Error::unlocated)?
             else {
                 return Err(Error::unlocated(
-                    "selected members lost their actual impl row",
+                    "selected trait member lost its actual function row",
                 ));
             };
-            let raw = rows.implementations[index as usize];
-            let links = raw
-                .members
-                .slice(&rows.member_links)
-                .map_err(Error::unlocated)?;
-            self.work.charge(links.len().saturating_add(1))?;
-            self.work.reserve(
-                links
-                    .len()
-                    .saturating_mul(size_of::<(DefId, Option<DefId>)>()),
-            )?;
-            let mut result = Vec::with_capacity(links.len());
-            for link in links {
-                let member = link.trait_member.ok_or_else(|| {
-                    Error::unlocated("selected trait member lost its actual declaration link")
-                })?;
-                if member.artifact != rows.policy.provider {
-                    return Err(Error::unlocated(
-                        "selected member requires its actual dependency producer",
-                    ));
-                }
-                result.push((
-                    view.definition(member.declaration, self.work)?,
-                    link.implementation
-                        .map(|actual| view.definition(actual, self.work))
-                        .transpose()?,
-                ));
-            }
-            result
-        };
-        for &(expected, actual) in &links {
-            self.definition(report, facts, expected)?;
-            let method = crate::sema::traits::conformance::Method::imported(facts, expected)
-                .map_err(Error::unlocated)?;
-            if method.definition != expected {
-                return Err(Error::unlocated(
-                    "selected member changed its canonical declaration",
-                ));
-            }
-            if let Some(actual) = actual {
-                self.definition(report, facts, actual)?;
-                return Err(Error::unlocated(
-                    "selected override requires its actual member conformance producer",
-                ));
-            }
-            if facts
-                .declaration_header(expected)
-                .map_err(Error::unlocated)?
-                .is_none_or(|header| header.body.is_none())
+            if link.implementation.is_none()
+                && rows.functions[index as usize].body == s::FunctionBody::Absent
             {
                 return Err(Error::unlocated(
                     "implementation is missing a required trait method",
                 ));
             }
+            result.push((
+                view.definition(member.declaration, self.work)?,
+                link.implementation
+                    .map(|actual| view.definition(actual, self.work))
+                    .transpose()?,
+            ));
         }
-        Ok(links)
+        Ok(result)
     }
 
     fn requirements(
         &mut self,
+        report: &Report,
         facts: &mut Declarations,
         predicate: Predicate,
         environment: Arc<crate::types::parameters::environment::Environment>,
@@ -270,7 +347,8 @@ impl SelectedConsumer<'_> {
             if !matches!(facts.types.kind(requirement.ty), Some(Kind::Primitive(_)))
                 || (requirement.bound != crate::types::parameters::predicates::Bound::Sized
                     && !crate::sema::compiler_items::sizing_predicate(facts, requirement)
-                        .map_err(Error::unlocated)?)
+                        .map_err(Error::unlocated)?
+                    && !selected_clone_requirement(facts, requirement).map_err(Error::unlocated)?)
             {
                 return Err(Error::unlocated(
                     "selected conformance requires its actual non-sizing requirement producer",
@@ -281,14 +359,23 @@ impl SelectedConsumer<'_> {
             size_of::<Proof>().saturating_add(size_of::<crate::types::parameters::shape::Shapes>()),
         )?;
         let mut proof = Proof::for_declaration(Some(environment), 0, 1);
-        let result = crate::sema::declarations::validate_impl_requirements(
+        let result = crate::sema::declarations::validate_impl_requirements_prepared(
             facts,
             predicate,
             &mut proof,
             &requirements,
+            Some(&mut super::RuntimePreparation {
+                report,
+                selected: self,
+            }),
         );
         let attempted = self.work.charge(proof.formation_steps());
-        result.map_err(Error::unlocated).and(attempted)?;
+        result
+            .map_err(|failure| match failure {
+                crate::sema::dispatch::Failure::Invalid(message) => Error::unlocated(message),
+                crate::sema::dispatch::Failure::Preparation(error) => error,
+            })
+            .and(attempted)?;
         let evidence = proof.take_trait_proof();
         if !requirements.regions.is_empty()
             || evidence.as_ref().is_some_and(|proof| !proof.is_empty())
@@ -299,4 +386,32 @@ impl SelectedConsumer<'_> {
         }
         Ok(())
     }
+}
+
+fn selected_clone_requirement(
+    facts: &Declarations,
+    predicate: Predicate,
+) -> Result<bool, &'static str> {
+    let Some((application, effect)) = predicate.bound.trait_parts() else {
+        return Ok(false);
+    };
+    if effect != crate::support::constness::Constness::Ordinary {
+        return Ok(false);
+    }
+    let application = facts
+        .types
+        .trait_application(application)
+        .ok_or("selected Clone requirement lost its actual application")?;
+    let role = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("selected Clone requirement lost its actual catalog")?
+        .validated_role(crate::support::bindings::LangItem::Clone)?;
+    Ok(
+        role.is_some_and(|role| application.item.0 == role.definition.0)
+            && facts
+                .types
+                .arguments(application.arguments)
+                .is_some_and(|arguments| arguments.len() == 0),
+    )
 }

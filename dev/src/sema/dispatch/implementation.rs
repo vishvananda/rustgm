@@ -54,7 +54,7 @@ pub(super) fn select_source_using(
         .map_err(|e| e.to_string())?;
     facts.dispatch_dependencies.work.selections += 1;
     let selected = if let Some(preparation) = preparation {
-        prepared_selection(facts, context, &goal, &caller, preparation)?
+        selection::select_prepared(facts, context, &goal, &caller, preparation)?
     } else {
         selection::select_available(facts, context, &goal, caller, availability)?
     };
@@ -66,64 +66,6 @@ pub(super) fn select_source_using(
         .equalities
         .extend(context.region_equalities.drain(before..));
     Ok(evidence)
-}
-
-fn prepared_selection(
-    facts: &mut Declarations,
-    context: &mut Context,
-    goal: &crate::types::infer::predicates::Predicate,
-    caller: &selection::Caller<'_>,
-    preparation: &mut dyn super::Preparation,
-) -> Result<selection::Selection, super::Failure> {
-    use selection::{OwnedCaller, Progress};
-    preparation
-        .prepay(
-            facts,
-            1,
-            size_of::<super::super::traits::assumptions::Assumptions>()
-                .saturating_add(2 * size_of::<usize>()),
-        )
-        .map_err(super::Failure::Preparation)?;
-    let caller = OwnedCaller {
-        assumptions: std::sync::Arc::new(caller.assumptions.clone()),
-        environment: caller.environment.cloned(),
-        first_region: caller.first_region,
-        retain_sized: caller.retain_sized,
-    };
-    let mut work = 0;
-    let progress = selection::begin_executable_counted(facts, context, goal, caller, &mut work);
-    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
-    preparation
-        .prepay(facts, work, 0)
-        .map_err(super::Failure::Preparation)?;
-    let mut progress = progress?;
-    loop {
-        let (dependency, query) = match progress {
-            Progress::Ready(result) => return Ok(result),
-            Progress::Inferred { .. } => {
-                return Err("concrete dispatch cannot publish partial selection inputs".into());
-            }
-            Progress::Pending(dependency, query) => (dependency, query),
-        };
-        let first = query.allocation_end();
-        preparation
-            .prepay(facts, 1, 0)
-            .map_err(super::Failure::Preparation)?;
-        preparation
-            .prepare(facts, dependency)
-            .map_err(super::Failure::Preparation)?;
-        if !dependency.ready(facts) {
-            return Err("selected dispatch dependency remains pending".into());
-        }
-        let before = work;
-        let next = query.resume_counted(facts, context, goal, first, &mut work);
-        let attempted = work.saturating_sub(before);
-        facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(attempted);
-        preparation
-            .prepay(facts, attempted, 0)
-            .map_err(super::Failure::Preparation)?;
-        progress = next?;
-    }
 }
 
 /// Return a reusable target only when its complete arguments can escape the
