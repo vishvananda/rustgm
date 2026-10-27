@@ -81,7 +81,7 @@ fn real_frames_cannot_borrow_unavailable_role_headers() -> TestResult {
             matches!(definition.body, Body::Builtin(role) if !role.executable()).then_some(index)
         })
         .collect();
-    assert_eq!(unavailable.len(), 27);
+    assert_eq!(unavailable.len(), 26);
     for index in unavailable {
         report.invocations[0].definition = index;
         for forged in [false, true] {

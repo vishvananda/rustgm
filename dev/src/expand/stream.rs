@@ -301,6 +301,15 @@ impl Stream {
         &mut self,
         input: &Input,
         source: Source<'_>,
+        provenance: impl FnMut(Token) -> Result<(SyntaxContextId, bool), LexError>,
+    ) -> Result<(), LexError> {
+        self.forward_tokens(&input.tokens, source, provenance)
+    }
+    /// Forward a borrowed demanded token range with the same source checks.
+    pub(crate) fn forward_tokens(
+        &mut self,
+        tokens: &[Token],
+        source: Source<'_>,
         mut provenance: impl FnMut(Token) -> Result<(SyntaxContextId, bool), LexError>,
     ) -> Result<(), LexError> {
         let environment = Environment {
@@ -310,7 +319,7 @@ impl Stream {
             introduction: ExpansionId(0),
             crate_id: 0,
         };
-        for &token in &input.tokens {
+        for &token in tokens {
             let (context, joint) = provenance(token)?;
             self.copy_token(token, PieceOrigin::Invocation, &environment, &mut |_, _| {
                 Ok(Some(context))

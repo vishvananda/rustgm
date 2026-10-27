@@ -1,4 +1,5 @@
 //! Assert condition parsing and transfer; source authority is owned by the resolver.
+mod emitted_control;
 use super::choice::{Charge, Counted, syntax_payload};
 use crate::{
     expand::{
@@ -16,6 +17,7 @@ use crate::{
         transfer,
     },
 };
+pub(crate) use emitted_control::{Request, build};
 use std::ops::Range;
 
 /// Non-clonable temporary ownership, never retained permission or a published AST.
@@ -26,13 +28,6 @@ pub(crate) struct Prepared<'source> {
     condition: Span,
     message: Range<usize>,
 }
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "private Assert result awaits its checked source-runtime consumer"
-    )
-)]
 pub(crate) struct Condition {
     pub ast: Ast<'static>,
     pub stream: Stream,
@@ -41,13 +36,6 @@ pub(crate) struct Condition {
 }
 
 /// Parse the actual condition once; only the later panic macro interprets a message.
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "private Assert parser awaits its checked source-runtime consumer"
-    )
-)]
 pub(crate) fn prepare<'source>(
     source: Source<'source>,
     input: &'source Input,
@@ -115,13 +103,6 @@ pub(crate) fn prepare<'source>(
 }
 impl Prepared<'_> {
     /// Custom messages never demand the default expression spelling path.
-    #[cfg_attr(
-        not(test),
-        expect(
-            dead_code,
-            reason = "default Assert messages await the actual source-runtime consumer"
-        )
-    )]
     pub(crate) fn default_message(
         &self,
         inputs: &dyn Inputs,
@@ -155,13 +136,6 @@ impl Prepared<'_> {
     }
 
     /// Consume once into a caller-owned draft; errors publish no package state.
-    #[cfg_attr(
-        not(test),
-        expect(
-            dead_code,
-            reason = "private Assert transfer awaits its checked source-runtime consumer"
-        )
-    )]
     pub(crate) fn consume(
         self,
         prefix: &str,

@@ -5,7 +5,10 @@ use super::{
 };
 use crate::{
     expand::{
-        builtin::delegation::{self, Handler, Site},
+        builtin::{
+            assertion,
+            delegation::{self, Handler, Site},
+        },
         stream::Source,
     },
     resolve::{
@@ -23,6 +26,7 @@ struct Call {
     handler: Handler,
     definition_context: SyntaxContextId,
     grammar: MacroContext,
+    edition: Edition,
 }
 
 impl<S: Sources> Engine<'_, S> {
@@ -197,9 +201,10 @@ impl<S: Sources> Engine<'_, S> {
             original,
         )?;
         let handler = match (builtin, edition) {
-            (Builtin::CorePanic | Builtin::StdPanic, Edition::Rust2021 | Edition::Rust2024) => {
-                Handler::Panic2021
-            }
+            (
+                Builtin::Assert | Builtin::CorePanic | Builtin::StdPanic,
+                Edition::Rust2021 | Edition::Rust2024,
+            ) => Handler::Panic2021,
             (Builtin::Unreachable, Edition::Rust2021 | Edition::Rust2024) => {
                 Handler::Unreachable2021
             }
@@ -214,15 +219,14 @@ impl<S: Sources> Engine<'_, S> {
             context,
             handler,
             definition_context: entry.context,
+            edition: entry.edition,
             grammar,
         })
     }
 
-    fn panic_output(&mut self, call: &Call, input: &Input) -> Result<delegation::Delegated, Error> {
-        let Location {
-            file,
-            span: original,
-        } = call.original;
+    fn panic_storage(&self, call: &Call, input: &Input) -> Result<usize, Error> {
+        let file = call.original.file;
+        let original = call.original.span;
         let error = |message| Error::at(file, original.start, message);
         let source = self
             .loader
@@ -249,6 +253,20 @@ impl<S: Sources> Engine<'_, S> {
         ));
         let reserved = storage.saturating_mul(4);
         source.macros.charge(0, reserved).map_err(error)?;
+        Ok(reserved)
+    }
+    fn panic_output(
+        &mut self,
+        call: &Call,
+        input: &Input,
+        builtin: Builtin,
+    ) -> Result<(delegation::Delegated, usize), Error> {
+        let Location {
+            file,
+            span: original,
+        } = call.original;
+        let error = |message| Error::at(file, original.start, message);
+        let reserved = self.panic_storage(call, input)?;
         let call_site = self.loader.package.syntax_context(file, original.start)?;
         let marks = &mut self.loader.package.marks;
         let call_context = marks
@@ -281,27 +299,32 @@ impl<S: Sources> Engine<'_, S> {
             path_context,
             grammar: call.grammar,
         };
-        let generated = delegation::build(
-            &site,
-            call.handler,
-            input,
-            &self.captures,
-            self.config,
-            |token| {
-                let raw = self
-                    .loader
-                    .package
-                    .syntax_context(file, token.start)
-                    .map_err(|_| {
-                        crate::syntax::token_tree::error(
-                            token.start,
-                            "invalid forwarded panic context",
-                        )
-                    })?;
-                Ok((raw, self.token_joint(file, token)?))
-            },
-        )
-        .map_err(|failure| Error::at(file, failure.offset, failure.message))?;
+        let mut provenance = |token| {
+            let raw = self
+                .loader
+                .package
+                .syntax_context(file, token.start)
+                .map_err(|_| {
+                    crate::syntax::token_tree::error(token.start, "invalid forwarded panic context")
+                })?;
+            Ok((raw, self.token_joint(file, token)?))
+        };
+        let (generated, parser_calls) = if builtin == Builtin::Assert {
+            self.assert_output(call, input, site, &mut provenance)?
+        } else {
+            (
+                delegation::build(
+                    &site,
+                    call.handler,
+                    input,
+                    &self.captures,
+                    self.config,
+                    &mut provenance,
+                )
+                .map_err(|failure| Error::at(file, failure.offset, failure.message))?,
+                0,
+            )
+        };
         let actual = generated.payload_bytes();
         if actual > reserved {
             self.loader
@@ -312,7 +335,52 @@ impl<S: Sources> Engine<'_, S> {
                 .charge(0, actual - reserved)
                 .map_err(error)?;
         }
-        Ok(generated)
+        Ok((generated, parser_calls))
+    }
+
+    fn assert_output(
+        &self,
+        call: &Call,
+        input: &Input,
+        site: Site<'_>,
+        provenance: impl FnMut(
+            crate::lex::token::Token,
+        ) -> Result<(SyntaxContextId, bool), crate::lex::token::LexError>,
+    ) -> Result<(delegation::Delegated, usize), Error> {
+        let file = call.original.file;
+        let original = call.original.span;
+        let error = |message| Error::at(file, original.start, message);
+        let units = &self.loader.package.units;
+        let view = self
+            .captures
+            .view(|id| units.get(id.0 as usize).map(|unit| unit.source.text()));
+        let inputs = crate::syntax::edition_context::WithEditions::new(&view, |token| {
+            editions::token(file, token, |id| units.get(id.0 as usize))
+        });
+        let source = self
+            .loader
+            .package
+            .source_core()
+            .ok_or_else(|| error("missing actual Assert source provider"))?;
+        let charge = |steps, bytes| {
+            source
+                .macros
+                .charge(steps, bytes)
+                .map_err(|message| crate::syntax::token_tree::error(original.start, message))
+        };
+        assertion::build(
+            &assertion::Request {
+                site,
+                edition: call.edition,
+                input,
+                registry: &self.captures,
+                inputs: &inputs,
+                config: self.config,
+                charge: &charge,
+            },
+            provenance,
+        )
+        .map_err(|failure| Error::at(file, failure.offset, failure.message))
     }
 
     pub(super) fn invoke_panic(
@@ -325,7 +393,7 @@ impl<S: Sources> Engine<'_, S> {
         builtin: Builtin,
     ) -> Result<ExpansionId, Error> {
         let call = self.prepare_panic(visit, grammar, definition, context, builtin)?;
-        let generated = self.panic_output(&call, input)?;
+        let (generated, parser_calls) = self.panic_output(&call, input, builtin)?;
         let Location {
             file,
             span: original,
@@ -352,7 +420,7 @@ impl<S: Sources> Engine<'_, S> {
             definition,
             rule: None,
             generated: span,
-            parser_calls: 0,
+            parser_calls,
             parent: visit.introduction,
         });
         Ok(context)
