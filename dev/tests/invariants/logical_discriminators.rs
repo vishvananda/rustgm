@@ -264,9 +264,11 @@ fn real_const_and_lowered_calls_preserve_logical_tags_and_argument_effects() -> 
         prepared,
     )?;
     assert!(program.symbols.iter().filter(|s| s.body.is_some()).count() >= 5);
-    let fault=provider("consumers/reference-fault")?;
-    let error=pipeline::analyze_source(&fault).err().ok_or("erased nonenum result skipped its invalid reference argument")?;
-    assert!(error.to_string().contains("null"),"{error}");
+    let fault = provider("consumers/reference-fault")?;
+    let error = pipeline::analyze_source(&fault)
+        .err()
+        .ok_or("erased nonenum result skipped its invalid reference argument")?;
+    assert!(error.to_string().contains("null"), "{error}");
 
     Ok(())
 }
