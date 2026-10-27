@@ -178,3 +178,6 @@ mod compound_calls;
 
 #[path = "language_operators/char_values.rs"]
 mod char_values;
+
+#[path = "language_operators/rhs_values.rs"]
+mod value_operands;

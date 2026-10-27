@@ -177,8 +177,11 @@ value-returning binary methods from mutable assignment methods; canonical Output
 normalization retains ordinary selection and formation evidence. Overflow checks
 remain the existing arithmetic contract. Twenty-four declared controls and thirteen
 native programs are recorded in `tests/primitive-add-outcomes.json` and
-`docs/pa26-primitive-add.md`. Shared-reference RHS and other primitive value methods
-remain explicit boundaries. This checkpoint does not activate PA26.
+`docs/pa26-primitive-add.md`. The later [shared RHS Add/Sub checkpoint](../docs/pa26-shared-value-operands.md)
+closes the two retained owned-left/shared-RHS inputs through the same exact
+selected instance and checked factory. It preserves ordinary borrow and arithmetic
+proof; genuine source Add/Sub language bindings and shared-left forms remain
+required. This checkpoint does not activate PA26.
 
 The later owned binary-family checkpoint extends that same descriptor and checked
 factory to subtraction, multiplication, division, remainder, bitwise operations

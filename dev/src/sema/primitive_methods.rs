@@ -264,8 +264,7 @@ impl Descriptor {
                     && matches!(facts.types.kind(receiver),Some(Kind::Reference{referent,mutable:false,region}) if referent==left && region==RegionId::bound(0,0)?)
             }
             Form::ValueBinary => {
-                matches!(self.operation,Operation::Arithmetic(hook) if value_binary(hook))
-                    && scalar.rhs == Rhs::Owned
+                matches!(self.operation,Operation::Arithmetic(hook) if value_rhs(hook, scalar.rhs))
                     && bound_regions == 0
                     && receiver == left
                     && result == left
@@ -289,8 +288,7 @@ impl Descriptor {
             .ok_or("primitive result requires a declared projection")?
             .trait_item;
         if self.form() != Form::ValueBinary
-            || !matches!(self.operation,Operation::Arithmetic(hook) if value_binary(hook))
-            || scalar.rhs != Rhs::Owned
+            || !matches!(self.operation,Operation::Arithmetic(hook) if value_rhs(hook, scalar.rhs))
             || family != crate::types::GenericArgs::EMPTY
             || facts.associated.member_owner(DefId(item.0)) != Some(DefId(owner.0))
             || !facts
@@ -365,6 +363,9 @@ fn value_binary(hook: Hook) -> bool {
             | Hook::Shr
     )
 }
+fn value_rhs(hook: Hook, rhs: Rhs) -> bool {
+    value_binary(hook) && (rhs == Rhs::Owned || matches!(hook, Hook::Add | Hook::Sub))
+}
 pub(in crate::sema) fn supported(hook: Hook) -> bool {
     hook.assignment() || value_binary(hook)
 }
@@ -409,6 +410,13 @@ pub(in crate::sema) fn candidate(
         Some(Constructor::Primitive(primitive)) => (Some(primitive), Rhs::Owned),
         Some(Constructor::Reference { mutable: false, .. }) => {
             let referent = context.child(&facts.types, *right, 0)?;
+            if let Some(left) = left
+                && matches!(hook, Hook::Add | Hook::Sub)
+            {
+                // Literal numeric domains may narrow in this isolated candidate;
+                // unconstrained/nominal RHS still belongs to ordinary impl search.
+                domains::infer_numeric(facts, context, referent, left, false)?;
+            }
             match context.head(&facts.types, referent)? {
                 Some(Constructor::Primitive(primitive)) => (Some(primitive), Rhs::SharedReference),
                 None => (None, Rhs::SharedReference),
@@ -428,7 +436,7 @@ pub(in crate::sema) fn candidate(
     } else {
         Form::ValueBinary
     };
-    if form == Form::ValueBinary && rhs != Rhs::Owned {
+    if form == Form::ValueBinary && !value_rhs(hook, rhs) {
         return Ok(Candidate::Unrelated);
     }
     let op = operator(hook).map_err(|_| infer::Error::InvalidIdentity)?;

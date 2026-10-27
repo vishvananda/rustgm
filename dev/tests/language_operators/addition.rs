@@ -16,6 +16,7 @@ const ACCEPTED: &[&str] = &[
     "overflow",
     "formation-reference",
     "sub-boundary",
+    "reference-boundary",
 ];
 const REJECTED: &[&str] = &[
     "mixed-width",
@@ -28,7 +29,6 @@ const REJECTED: &[&str] = &[
     "projection-not-injective",
     "projected-static-escape",
 ];
-const BOUNDARIES: &[&str] = &["reference-boundary"];
 fn fixture(name: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .join(format!("../pa26/tests/spec/primitive-add/{name}.rs"))
@@ -40,7 +40,6 @@ fn primitive_add_matches_declared_outcomes() -> Result<(), Box<dyn std::error::E
         .iter()
         .map(|n| (*n, true, true))
         .chain(REJECTED.iter().map(|n| (*n, false, false)))
-        .chain(BOUNDARIES.iter().map(|n| (*n, true, false)))
     {
         let source = std::fs::read_to_string(fixture(name))?;
         rustc::qualify(

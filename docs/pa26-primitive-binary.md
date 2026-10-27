@@ -41,3 +41,9 @@ is included. PA26 still requires primitive reference/unary forms, comparison/Der
 iteration, question-mark, further derives and formatting. The next lane assessment
 returns to PA30 aggregate callable ABI, variadic interfaces and metadata/release
 wiring rather than extending isolated primitive cases indefinitely.
+
+The later [shared RHS checkpoint](pa26-shared-value-operands.md) closes the
+unchanged owned-left/shared-RHS Add/Sub boundaries after independent source and
+native qualification. The earlier observations above remain historical evidence;
+the outcome files retain their superseded boundary fields. Genuine source-language
+Add/Sub ownership and shared-left forwarding remain separately required.
