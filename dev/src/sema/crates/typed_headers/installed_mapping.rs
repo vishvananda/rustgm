@@ -43,6 +43,47 @@ pub(in crate::sema) struct ProvidedOwners {
     applications: super::super::predicate_remap::translation::applications::Reader,
 }
 impl ProvidedOwners {
+    pub(in crate::sema::crates::typed_headers) fn implementation_environment(
+        &self,
+        authority: &Authority<'_>,
+        state: &State,
+        facts: &crate::sema::model::Declarations,
+        definition: crate::resolve::model::DefId,
+        work: &mut ReservationWork,
+    ) -> Result<
+        (
+            Arc<crate::types::parameters::environment::Environment>,
+            usize,
+        ),
+        Error,
+    > {
+        self.require_source(authority, state, &facts.types, work)?;
+        let id = self.catalog.declaration(definition).map_err(error)?;
+        self.catalog
+            .validate_declaration(id, definition, DefKind::SelfType)
+            .map_err(error)?;
+        let (provider, row, _) = self.catalog.declaration_coordinate(id).map_err(error)?;
+        if provider != self.descriptor().map_err(error)?.identity()
+            || !matches!(
+                self.view().rows()?.header(row).map_err(error)?,
+                Some(s::HeaderRef::Implementation(_))
+            )
+        {
+            return Err(error(
+                "selected impl environment changed its actual declaration",
+            ));
+        }
+        let (all, _) =
+            self.scopes
+                .inputs(&self.view(), &self.catalog, &facts.generics, row, work)?;
+        let environment = facts
+            .generics
+            .environments
+            .get(&definition)
+            .ok_or_else(|| error("selected impl environment omitted its actual installed Arc"))?;
+        work.charge(1)?;
+        Ok((Arc::clone(environment), all.len()))
+    }
     pub(super) fn new(
         authority: &Authority<'_>,
         state: &State,

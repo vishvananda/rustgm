@@ -516,6 +516,23 @@ impl Implementations {
             })
             .collect()
     }
+    /// Borrow one genuinely appended pair without draining unrelated work.
+    pub(in crate::sema) fn imported_overlap_pair(
+        &self,
+        owner: DefId,
+        index: usize,
+    ) -> Result<((Predicate, DefId), (Predicate, DefId)), &'static str> {
+        let &(first, second) = self
+            .pairs
+            .get(index)
+            .ok_or("selected coherence pair is outside its actual registry")?;
+        let left = &self.entries[first].value;
+        let right = &self.entries[second].value;
+        if right.owner != owner || right.source.is_some() {
+            return Err("selected coherence pair changed its actual appended owner");
+        }
+        Ok(((left.predicate, left.owner), (right.predicate, right.owner)))
+    }
     pub fn validated(&self) -> impl Iterator<Item = &Implementation> {
         self.entries
             .iter()

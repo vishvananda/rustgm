@@ -44,6 +44,11 @@ impl Checker<'_> {
             .ok_or_else(|| Error::unlocated("missing reserved implementation inventory"))?
             .register_collection_heads(self.report)
             .map_err(Error::unlocated)?;
+        if self.selected.is_some() {
+            // The same selected registration path checks each newly appended
+            // coherence pair before executable conformance can complete.
+            return Ok(());
+        }
         self.prepare_imported_candidates()
     }
 

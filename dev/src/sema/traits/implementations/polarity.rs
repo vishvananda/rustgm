@@ -67,10 +67,13 @@ impl Implementations {
         owner: Owner,
         value: Implementation,
         charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
-    ) -> Result<usize, &'static str> {
+    ) -> Result<(usize, std::ops::Range<usize>), &'static str> {
         charge(1, 0)?;
         let status = Self::imported_status(store, associated, owner, &value)?;
-        self.prepare_with_observer::<true>(store, identity, value, status, charge)
+        let first = self.pairs.len();
+        let retained =
+            self.prepare_with_observer::<true>(store, identity, value, status, charge)?;
+        Ok((retained, first..self.pairs.len()))
     }
 
     fn imported_status(

@@ -21,6 +21,31 @@ pub(in crate::sema::crates::typed_headers) struct SelectedHeaders {
     owners: Option<Box<owner_stages::OwnerTransaction>>,
 }
 impl SelectedHeaders {
+    pub(in crate::sema::crates::typed_headers) fn implementation_environment(
+        &self,
+        facts: &Declarations,
+        authority: &SchemaAuthority<'_>,
+        definition: crate::resolve::model::DefId,
+        work: &mut ReservationWork,
+    ) -> Result<
+        (
+            std::sync::Arc<crate::types::parameters::environment::Environment>,
+            usize,
+        ),
+        Error,
+    > {
+        let state = self.recipes.as_deref().ok_or_else(|| {
+            super::super::error("selected impl environment requires its actual recipe owner")
+        })?;
+        let Some(crate::sema::crates::ImportedOwners::Provided(mapping)) =
+            facts.associated.imported_owner()
+        else {
+            return Err(super::super::error(
+                "selected impl environment requires its actual mapping",
+            ));
+        };
+        mapping.implementation_environment(authority, state, facts, definition, work)
+    }
     pub(in crate::sema::crates::typed_headers) fn method_declaration(
         &mut self,
         facts: &mut Declarations,

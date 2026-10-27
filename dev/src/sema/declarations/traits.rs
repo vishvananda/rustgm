@@ -305,3 +305,5 @@ impl Checker<'_> {
         Ok(())
     }
 }
+
+pub(in crate::sema) use implementations::validate_impl_requirements;

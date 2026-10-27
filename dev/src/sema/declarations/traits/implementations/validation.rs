@@ -401,6 +401,16 @@ pub(in crate::sema::declarations) fn impl_contract_obligations(
             .ok_or_else(|| "missing trait contracts".to_owned())?
             .requirements(&mut facts.types, predicate)?
     };
+    validate_impl_requirements(facts, predicate, proof, &requirements)?;
+    Ok(requirements)
+}
+
+pub(in crate::sema) fn validate_impl_requirements(
+    facts: &mut crate::sema::model::Declarations,
+    predicate: Predicate,
+    proof: &mut crate::sema::nominals::Proof,
+    requirements: &crate::sema::traits::Requirements,
+) -> Result<(), String> {
     for ty in std::iter::once(predicate.ty).chain(requirements.types.iter().copied()) {
         if !proof.check(facts, ty)?.well_formed {
             return Err("trait implementation header must be well-formed".to_owned());
@@ -423,5 +433,5 @@ pub(in crate::sema::declarations) fn impl_contract_obligations(
             );
         }
     }
-    Ok(requirements)
+    Ok(())
 }

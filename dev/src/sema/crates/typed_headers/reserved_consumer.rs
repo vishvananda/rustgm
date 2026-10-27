@@ -9,6 +9,9 @@ use crate::{
     support::crates::generics::source as s,
 };
 
+#[path = "selected_conformance.rs"]
+mod conformance;
+
 pub(in crate::sema) struct SelectedConsumer<'a> {
     reservation: ConsumerReservation,
     completion: Box<CollectedReceipt>,
@@ -50,12 +53,7 @@ impl crate::sema::dispatch::Preparation for RuntimePreparation<'_, '_> {
                 }),
             PreparationDependency::ImplementationValidated(owner) => self
                 .selected
-                .require_imported_implementation(self.report, facts, owner)
-                .and_then(|()| {
-                    Err(Error::unlocated(
-                        "selected implementation requires its actual member conformance",
-                    ))
-                }),
+                .validate_implementation(self.report, facts, owner),
             _ => Err(Error::unlocated(
                 "selected dispatch requires its actual remaining declaration producer",
             )),
@@ -210,7 +208,7 @@ impl SelectedConsumer<'_> {
             return Ok(());
         }
         let before = self.work.retained;
-        let retained = {
+        let (retained, pairs) = {
             let work = std::cell::RefCell::new(&mut *self.work);
             registry
                 .prepare_imported_charged(
@@ -238,7 +236,7 @@ impl SelectedConsumer<'_> {
                 .map_err(Error::unlocated)?
         };
         self.work.retained = before.saturating_add(retained);
-        Ok(())
+        self.validate_appended_pairs(report, facts, definition, pairs)
     }
 
     pub(in crate::sema) fn require_imported_implementation(
