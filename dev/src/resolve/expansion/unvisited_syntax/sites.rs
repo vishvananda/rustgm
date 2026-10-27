@@ -69,7 +69,7 @@ pub(super) fn prepare(
             if expression
                 .kind(&unit.configured.ast)
                 .map_err(|found| error(Error::at(file, found.offset, found.message)))?
-                == crate::syntax::gate_sites::ExpressionKind::ConstClosure
+                != crate::syntax::gate_sites::ExpressionKind::TryBlock
             {
                 return Ok(None);
             }

@@ -34,7 +34,7 @@ const CASES: &[(&str, bool, bool, bool)] = &[
     ("wrong-output", false, false, false),
     ("const-call", false, false, false),
     ("projected-static-escape", false, false, false),
-    ("reference-boundary", true, false, false),
+    ("reference-boundary", true, true, false),
     ("float-bitand", false, false, false),
     ("float-bitor", false, false, false),
     ("float-bitxor", false, false, false),

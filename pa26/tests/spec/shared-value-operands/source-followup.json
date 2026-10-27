@@ -1,0 +1,30 @@
+{
+  "status": "declared before followup observation and candidate test execution",
+  "cases": [
+    {
+      "name": "source-ordinary-owned",
+      "path": "pa31/tests/spec/shared-value-operands/source-ordinary-owned.rs",
+      "sha256": "073a1ba236f502393b156f93d1851b24f65bc6619dade9d11ca9a434b7d40026",
+      "accepted": true,
+      "native": false,
+      "panic": false,
+      "profile": "source-core"
+    },
+    {
+      "name": "source-ordinary-absent",
+      "path": "pa31/tests/spec/shared-value-operands/source-ordinary-absent.rs",
+      "sha256": "2ce1bf6ab44056dbd5b5ea64c5fddfe68918a68fc23a16847306cdaa47e5ccf7",
+      "accepted": false,
+      "native": false,
+      "panic": false,
+      "profile": "source-core"
+    }
+  ],
+  "actual_language_roles": "Original source-owned/source-absent inputs retain actual add/sub lang claims; candidate rejects unsupported source lang add before selection. They remain required capabilities, not ordinary ownership qualification. No source-role permission added.",
+  "ordinary_source_scope": "Separate ordinary source traits/impls with real bodies exercise ownership and canonical-ID fences without asserting unimplemented actual language roles.",
+  "native_input": "pa31/tests/spec/shared-value-operands/source-ordinary-owned.rs",
+  "native_stdout": "19 23\n",
+  "native_stderr": "",
+  "native_exit_status": 0,
+  "consumer_sha256": "cef014579af44daa7326d849bddebf69174e65e0f0c22bc1554fc327f063cc2b"
+}

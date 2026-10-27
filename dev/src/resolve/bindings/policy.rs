@@ -62,6 +62,8 @@ pub(in crate::resolve) enum Feature {
     CpuX87 = 45,
     CpuXop = 46,
     CfgSanitize = 47,
+    BuiltinSyntax = 48,
+    OffsetOfEnum = 49,
 }
 
 impl Feature {
@@ -112,6 +114,8 @@ impl Request {
             "cfg_ub_checks" => Self::Capability(Feature::CfgUbChecks),
             "cfg_target_has_atomic" => Self::Capability(Feature::CfgTargetHasAtomic),
             "cfg_sanitize" => Self::Capability(Feature::CfgSanitize),
+            "builtin_syntax" => Self::Capability(Feature::BuiltinSyntax),
+            "offset_of_enum" => Self::Capability(Feature::OffsetOfEnum),
             "f16" => Self::Capability(Feature::F16),
             "f128" => Self::Capability(Feature::F128),
             "impl_restriction" => Self::Capability(Feature::ImplRestriction),
@@ -256,6 +260,8 @@ pub(in crate::resolve) fn prepare_with_admission(
                 || features.has(Feature::SimdFfi)
                 || features.has(Feature::CfgTargetHasAtomic)
                 || features.has(Feature::CfgSanitize)
+                || features.has(Feature::BuiltinSyntax)
+                || features.has(Feature::OffsetOfEnum)
                 || features.has(Feature::ImplRestriction)
                 || features.has(Feature::MinSpecialization)
                 || features.has(Feature::Specialization)

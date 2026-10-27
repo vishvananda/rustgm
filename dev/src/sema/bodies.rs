@@ -1327,7 +1327,11 @@ impl Checker<'_> {
             Kind::Struct { path, fields, base } => {
                 return self.enter_struct(node, path, fields, base, expected);
             }
-            Kind::Path { .. } | Kind::Name(..) | Kind::Qualified { .. } | Kind::Item(_) => {}
+            Kind::OffsetOf { .. }
+            | Kind::Path { .. }
+            | Kind::Name(..)
+            | Kind::Qualified { .. }
+            | Kind::Item(_) => {}
             Kind::Let {
                 pattern,
                 ty,
@@ -1565,6 +1569,9 @@ impl Checker<'_> {
                 self.term(value)
             }
             Kind::TryBlock { body, .. } => self.finish_try_block(node, body),
+            Kind::OffsetOf { .. } => {
+                Err(self.error(node, "typed offset_of field selection is not implemented"))
+            }
             Kind::Unary {
                 op: Unary::Try,
                 operand,

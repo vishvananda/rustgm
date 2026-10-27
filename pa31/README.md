@@ -46,6 +46,16 @@ complete public effective visibility and foreign policy transport remain require
 Actual declaration/const/origin sizes and native scope are recorded in the
 [source assertion milestone](../docs/source-assert-implementation.md#source-location-derive-consumer).
 
+The [offset_of source contracts](tests/spec/source-offset-of/README.md) retain the
+exact pinned mem macro and independently observed generic enum/niche behavior.
+Builtin syntax uses its real name-token authority, including hard gates after cfg
+removal. Enum offsets separately require the actual crate feature. Preserve typed
+container/field captures, privacy and substituted member identity; defer generic
+inline constants until concrete layout is available. Distinct fields of the same
+callable instance require distinct reached-call operands, so the size/alignment
+result cache cannot store field offsets. DST/static-alignment, original runtime
+consumers and intrinsic/source transport remain part of the complete requirement.
+
 Define explicit source-sysroot selection and crate identity. Replace bootstrap
 library factories with real declarations without duplicate identities or a
 synthetic fallback. Ordinary Option/Result/Iterator methods belong to upstream

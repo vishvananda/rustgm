@@ -121,6 +121,12 @@ pub enum TypeConstraint {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
+    OffsetOf {
+        container: NodeId,
+        fields: NodeId,
+        expression: NodeId,
+        gate: u32,
+    },
     InlineAssembly(List),
     AssemblyTemplate {
         value: NodeId,

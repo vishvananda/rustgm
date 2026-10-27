@@ -390,3 +390,11 @@ unconstrained generic acceptance and wrong-target/duplicate controls. The
 complete upstream Layout attrs/fields remain source data for the formatter/UB
 helper composition. Identity recognition grants no completed layout, allocator,
 body or old-profile transport permission.
+
+`spec/source-offset-of/` retains 57 independently qualified full requirement
+fixtures plus nine separately frozen parser setup controls. The exact original
+mem macro, generic tagged/niche offsets, same-instance field results, source
+feature/capture opponents and DST cases stay required. Syntax controls isolate
+root API-inventory setup; their expansion-only observations do not grant layout,
+constant execution or std macro availability. See the directory contract and
+README for retained prediction disagreements and upstream runtime-intrinsic ICEs.

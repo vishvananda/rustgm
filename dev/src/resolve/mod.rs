@@ -37,6 +37,7 @@ pub(crate) mod specialization_authority;
 mod table;
 mod try_blocks;
 pub(crate) use try_blocks::require as require_try_block;
+mod compiler_syntax;
 pub mod unit;
 
 /// Resolve configured modules into stable scope, definition and reference facts.
@@ -57,6 +58,7 @@ pub fn analyze(package: &mut package::Package) -> Result<model::Resolution, pack
     alias_gates::validate_plain(package)?;
     try_blocks::validate_plain(package)?;
     gated_closures::validate_plain(package)?;
+    compiler_syntax::validate_plain(package)?;
     Ok(state.facts)
 }
 pub mod render;

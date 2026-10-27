@@ -1,0 +1,16 @@
+{
+  "status": "declared after pinned metadata and before candidate implementation/test execution",
+  "corrected_reified_prediction": "Rust rejects the early-RHS item to higher-ranked fn-pointer coercion E0308; original expected acceptance and raw disagreement retained. Static concrete reification remains positive.",
+  "required_pending": [
+    "receiver-reference.rs: Rust-positive shared-left profile; no new candidate permission claimed"
+  ],
+  "source_native": {
+    "input": "pa31/tests/spec/shared-value-operands/source-owned.rs",
+    "consumer": "pa31/tests/spec/shared-value-operands/consumer.c",
+    "consumer_sha256": "cef014579af44daa7326d849bddebf69174e65e0f0c22bc1554fc327f063cc2b",
+    "stdout": "19 23\n",
+    "stderr": "",
+    "exit_status": 0,
+    "purpose": "Actual source-owned impl bodies return deliberately distinct values; no bootstrap arithmetic substitute."
+  }
+}

@@ -9,6 +9,7 @@ pub mod expression;
 pub mod gate_sites;
 pub mod interpolation;
 pub mod item;
+pub(crate) mod offset_fields;
 pub mod token_tree;
 pub mod transfer;
 mod walk;

@@ -1,0 +1,144 @@
+{
+  "state": "frozen before first candidate/oracle observation",
+  "profile": {
+    "rustc": "1.98.0",
+    "editions": [
+      2021,
+      2024
+    ],
+    "observation": "-Zunpretty=expanded; separate parser/expansion qualification"
+  },
+  "cases": [
+    {
+      "path": "syntax-only/bare-numeric-chain.rs",
+      "sha256": "7467553e93c3e9113414d79279cb271061e8407bb4da77eebda3c4a093f8cfca",
+      "from": "const-api-followup/bare-numeric-chain.rs",
+      "from_sha256": "97700e6ea61182dd61ceb3d6a9b3f77b8d2647dc46ba78d879bb06b7cd53ca45",
+      "adaptation": "remove only root core_intrinsics API request to isolate parser/expansion stage from absent source library inventory; original retained unchanged",
+      "rustc_expanded_status": 0,
+      "rustgm_expanded_status": 0,
+      "scope": "parser/expansion only; no metadata, semantics or execution acceptance inferred",
+      "rustc_expanded_actual_by_edition": {
+        "2021": 0,
+        "2024": 0
+      }
+    },
+    {
+      "path": "syntax-only/captured-numeric-chain.rs",
+      "sha256": "d53bea40151333e48ca2d399f9af23674e3fe6732cf7e4e89f7eb797c2c0fdda",
+      "from": "const-api-followup/captured-numeric-chain.rs",
+      "from_sha256": "6776b0c1a012fca32534aae3c59c0a645631ce088ca1929c5fc38016502e6f55",
+      "adaptation": "remove only root core_intrinsics API request to isolate parser/expansion stage from absent source library inventory; original retained unchanged",
+      "rustc_expanded_status": 0,
+      "rustgm_expanded_status": 0,
+      "scope": "parser/expansion only; no metadata, semantics or execution acceptance inferred",
+      "rustc_expanded_actual_by_edition": {
+        "2021": 0,
+        "2024": 0
+      }
+    },
+    {
+      "path": "syntax-only/captured-base-zero.rs",
+      "sha256": "3c87ff504f37d8f5bbb18b88491125488e77e065b7d9e9534cdacbb9d977b4cd",
+      "from": "const-api-followup/captured-base-zero.rs",
+      "from_sha256": "95fa4cbce04ac7687c21a721feead82059635842d337bf348af741b947fbaff5",
+      "adaptation": "remove only root core_intrinsics API request to isolate parser/expansion stage from absent source library inventory; original retained unchanged",
+      "rustc_expanded_status": 0,
+      "rustgm_expanded_status": 0,
+      "scope": "parser/expansion only; no metadata, semantics or execution acceptance inferred",
+      "rustc_expanded_actual_by_edition": {
+        "2021": 0,
+        "2024": 0
+      }
+    },
+    {
+      "path": "syntax-only/captured-literal-zero.rs",
+      "sha256": "ab2aea4c10f5599ef90b9aae8df4d4b8c28a1264881316583ff8617ac76d6862",
+      "from": "const-api-followup/captured-literal-zero.rs",
+      "from_sha256": "d42155200de0d1a262b0656b7867464e6850024ac85c4284c9eda68f6286a452",
+      "adaptation": "remove only root core_intrinsics API request to isolate parser/expansion stage from absent source library inventory; original retained unchanged",
+      "rustc_expanded_status": 0,
+      "rustgm_expanded_status": 0,
+      "scope": "parser/expansion only; no metadata, semantics or execution acceptance inferred",
+      "rustc_expanded_actual_by_edition": {
+        "2021": 0,
+        "2024": 0
+      }
+    },
+    {
+      "path": "syntax-only/macro-literal-builtin-allowance.rs",
+      "sha256": "bea9b669ce51e5127a103f119bae6fe97ec4e20b98580d23502151f45eca6b7c",
+      "from": "const-api-followup/macro-literal-builtin-allowance.rs",
+      "from_sha256": "08d86ee84f9a8a74187af111a36c62ee70249f6a481aac3ff28ceb9b9aea0eca",
+      "adaptation": "remove only root core_intrinsics API request to isolate parser/expansion stage from absent source library inventory; original retained unchanged",
+      "rustc_expanded_status": 0,
+      "rustgm_expanded_status": 0,
+      "scope": "parser/expansion only; no metadata, semantics or execution acceptance inferred",
+      "rustc_expanded_actual_by_edition": {
+        "2021": 0,
+        "2024": 0
+      }
+    },
+    {
+      "path": "syntax-only/captured-builtin-does-not-inherit.rs",
+      "sha256": "4163f6aa27ef643c7b44a3318206e49401cfb79254a1da2173ad92f57002481d",
+      "from": "const-api-followup/captured-builtin-does-not-inherit.rs",
+      "from_sha256": "52159d8bb198675ef0b334b4131fae8829f6033377b8025f106d557d37f31787",
+      "adaptation": "remove only root core_intrinsics API request to isolate parser/expansion stage from absent source library inventory; original retained unchanged",
+      "rustc_expanded_status": 1,
+      "rustgm_expanded_status": 1,
+      "scope": "parser/expansion only; no metadata, semantics or execution acceptance inferred",
+      "rustc_expanded_actual_by_edition": {
+        "2021": 1,
+        "2024": 1
+      }
+    },
+    {
+      "path": "syntax-only/captured-grouped-name.rs",
+      "sha256": "91965c750021a2db51ab1d02912a8f0f2c2997b2c7f842a79ec9ceb8bf5fbb4d",
+      "from": "const-api-followup/captured-grouped-name.rs",
+      "from_sha256": "72d94f50be32daaf929e8525fcb3dee3d9b5923c96c5dfe5d51b17554dd911d8",
+      "adaptation": "remove only root core_intrinsics API request to isolate parser/expansion stage from absent source library inventory; original retained unchanged",
+      "rustc_expanded_status": 1,
+      "rustgm_expanded_status": 1,
+      "scope": "parser/expansion only; no metadata, semantics or execution acceptance inferred",
+      "rustc_expanded_actual_by_edition": {
+        "2021": 1,
+        "2024": 1
+      }
+    },
+    {
+      "path": "syntax-only/grouped-field.rs",
+      "sha256": "8119a62e90dd3ced10c4554d8dfb9f2634fb7ac41f1602b5020d8fed90541ca0",
+      "from": "const-api-followup/grouped-field.rs",
+      "from_sha256": "bf83491b5d853229388c5018f5eaa824fb4faa604d52a605574707559d195932",
+      "adaptation": "remove only root core_intrinsics API request to isolate parser/expansion stage from absent source library inventory; original retained unchanged",
+      "rustc_expanded_status": 1,
+      "rustgm_expanded_status": 1,
+      "scope": "parser/expansion only; no metadata, semantics or execution acceptance inferred",
+      "rustc_expanded_actual_by_edition": {
+        "2021": 1,
+        "2024": 1
+      }
+    },
+    {
+      "path": "syntax-only/captured-literal-hex-zero.rs",
+      "sha256": "ee597d364a3661ced009089e6a3f8066e34dc2ca109c8f2d4a0486eb3178a423",
+      "from": "const-api-followup/captured-literal-hex-zero.rs",
+      "from_sha256": "8ca095485321e914447f4b954b2c01eaab83cef20e66deaaf3d53406909c9d0c",
+      "adaptation": "remove only root core_intrinsics API request to isolate parser/expansion stage from absent source library inventory; original retained unchanged",
+      "rustc_expanded_status": 1,
+      "rustgm_expanded_status": 1,
+      "scope": "parser/expansion only; no metadata, semantics or execution acceptance inferred",
+      "rustc_expanded_actual_by_edition": {
+        "2021": 0,
+        "2024": 0
+      }
+    }
+  ],
+  "observation": {
+    "state": "18 independent expansion observations;16match;2actual hexadecimal-literal expansion acceptance disagreements retained",
+    "receipt_sha256": "2840b94f01dc77f998b4d3bd9554d21888b93229e52a44324ce93808f028ae80",
+    "scope": "expanded AST rendering precedes final hex tuple-index rejection; pinned metadata in original packet still rejects hex literal. Candidate rejects it earlier; no valid Rust input is reclassified."
+  }
+}

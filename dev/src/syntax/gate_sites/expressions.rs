@@ -12,12 +12,14 @@ pub(crate) struct Prefix {
 pub(crate) enum ExpressionKind {
     TryBlock,
     ConstClosure,
+    OffsetOf,
 }
 impl ExpressionKind {
     pub(crate) fn keyword(self) -> &'static str {
         match self {
             Self::TryBlock => "try",
             Self::ConstClosure => "const",
+            Self::OffsetOf => "offset_of",
         }
     }
 }
@@ -38,6 +40,7 @@ impl Expression {
         {
             Some(NodeKind::TryBlock { .. }) => Ok(ExpressionKind::TryBlock),
             Some(NodeKind::ConstClosure { .. }) => Ok(ExpressionKind::ConstClosure),
+            Some(NodeKind::OffsetOf { .. }) => Ok(ExpressionKind::OffsetOf),
             _ => Err(error(
                 self.keyword.start,
                 "expression-gate node kind changed",
@@ -53,6 +56,35 @@ impl Expression {
             .nodes
             .get(self.node.get() as usize)
             .ok_or_else(invalid)?;
+        if let NodeKind::OffsetOf {
+            container,
+            fields,
+            expression,
+            gate,
+        } = node.kind
+        {
+            let ty = ast
+                .nodes
+                .get(container.get() as usize)
+                .ok_or_else(invalid)?;
+            let path = ast
+                .nodes
+                .get(expression.get() as usize)
+                .ok_or_else(invalid)?;
+            if gate != ordinal
+                || expression != self.body
+                || path.span != self.construct
+                || node.span.start >= self.keyword.start
+                || self.keyword.end.checked_sub(self.keyword.start) != Some(9)
+                || self.keyword.end > ty.span.start
+                || ty.span.end > path.span.start
+                || path.span.end >= node.span.end
+            {
+                return Err(invalid());
+            }
+            super::super::offset_fields::visit(ast, fields, |_, _| Ok(()))?;
+            return Ok(expression);
+        }
         let (NodeKind::TryBlock { body, gate }
         | NodeKind::ConstClosure {
             closure: body,
@@ -83,6 +115,7 @@ impl Expression {
                     ..
                 }
             ),
+            ExpressionKind::OffsetOf => false,
         };
         if gate != ordinal
             || body != self.body
@@ -192,8 +225,13 @@ impl<L> Syntax<L> {
         keyword: Span,
     ) -> Result<(), LexError> {
         let ordinal = self.next_expression_gate()?;
-        let Some(NodeKind::TryBlock { body, .. } | NodeKind::ConstClosure { closure: body, .. }) =
-            self.nodes.get(node.get() as usize).map(|node| node.kind)
+        let Some(
+            NodeKind::TryBlock { body, .. }
+            | NodeKind::ConstClosure { closure: body, .. }
+            | NodeKind::OffsetOf {
+                expression: body, ..
+            },
+        ) = self.nodes.get(node.get() as usize).map(|node| node.kind)
         else {
             return Err(error(
                 keyword.start,

@@ -13,6 +13,7 @@ use crate::{
 };
 
 pub(crate) mod assembly;
+mod compiler_expr;
 mod control;
 pub mod fragment;
 #[path = "expression/restriction_clause.rs"]
@@ -402,6 +403,15 @@ impl<'source> Parser<'source, '_> {
         let Some((token, word)) = self.cursor.current()? else {
             return Err(error(self.cursor.end(), "expected expression"));
         };
+        if token.kind == TokenKind::Identifier
+            && self.cursor.spelling(token) == "builtin"
+            && self
+                .cursor
+                .peek(1)?
+                .is_some_and(|next| next.kind == TokenKind::Punctuation(P::Pound))
+        {
+            return self.builtin_expression();
+        }
         if literal_candidate(token.kind, word) {
             if self.extended && literal::is_token(self.cursor.source, token) {
                 self.required()?;

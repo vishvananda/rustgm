@@ -43,3 +43,10 @@ Read-only primary-source/API plan,38 bound hashes:
 `obj/parallel/assignment-integration-review-v1/offset-of-v1/PLAN.md` in public
 checkout; index SHA-256
 `ef53b7cc11ba692c3bfceac92a2bb13a505aa8ccc3f027c60e096efd18a1222e`.
+
+The [qualified syntax integration](offset-syntax-checkpoint.md) now advances the
+unchanged original macro: CLI35835492 opens372 files, then rejects the real
+FieldId alternate/zero-padded34-wide LowerHex format. Current-source capture and
+hard-gate controls pass; full field selection and reached CTFE remain required.
+The exact57-source Rust oracle packet and nine syntax setup controls live under
+pa31/tests/spec/source-offset-of, with original disagreements preserved.

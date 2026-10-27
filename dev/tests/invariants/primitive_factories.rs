@@ -721,3 +721,6 @@ mod references;
 
 #[path = "collection_witnesses.rs"]
 mod collections;
+
+#[path = "operand_receipts.rs"]
+mod shared_values;
