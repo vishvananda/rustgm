@@ -24,6 +24,8 @@ pub(super) enum DiagnosticItem {
     NonNull,
     Debug,
     Alignment,
+    Send,
+    Sync,
 }
 impl DiagnosticItem {
     pub(super) const fn index(self) -> usize {
@@ -61,6 +63,8 @@ pub(super) fn parse(
         b"NonNull" => Ok(DiagnosticItem::NonNull),
         b"Debug" => Ok(DiagnosticItem::Debug),
         b"Alignment" => Ok(DiagnosticItem::Alignment),
+        b"Send" => Ok(DiagnosticItem::Send),
+        b"Sync" => Ok(DiagnosticItem::Sync),
         _ => Err(error("unsupported source diagnostic identity")),
     }
 }
@@ -82,12 +86,14 @@ pub(super) fn validate(
         let expected = match item {
             DiagnosticItem::Clone => Some(LangItem::Clone),
             DiagnosticItem::Copy => Some(LangItem::Copy),
+            DiagnosticItem::Sync => Some(LangItem::Sync),
             DiagnosticItem::Identity
             | DiagnosticItem::CfgSelect
             | DiagnosticItem::FormatArgsMacro
             | DiagnosticItem::NonNull
             | DiagnosticItem::Debug
-            | DiagnosticItem::Alignment => None,
+            | DiagnosticItem::Alignment
+            | DiagnosticItem::Send => None,
         };
         if let Some(expected) = expected {
             if !claims
@@ -117,16 +123,11 @@ pub(super) fn validate(
                     "format_args diagnostic identity requires its actual builtin role"
                 }));
             }
-        } else if matches!(item, DiagnosticItem::Debug | DiagnosticItem::Alignment) {
-            let unit = package.unit(declaration.origin.file);
-            let right_kind = matches!(unit.configured.ast.node(declaration.origin.node).kind,
-                Kind::Item(index) if matches!((item, unit.configured.ast.items[index as usize].kind),
-                    (DiagnosticItem::Debug, ItemKind::Trait { .. }) | (DiagnosticItem::Alignment, ItemKind::Enum { .. })));
-            if declaration.parent.is_some() || !right_kind {
-                return Err(error(
-                    "diagnostic identity requires its actual Debug trait or Alignment enum",
-                ));
-            }
+        } else if matches!(
+            item,
+            DiagnosticItem::Debug | DiagnosticItem::Alignment | DiagnosticItem::Send
+        ) {
+            validate_module_item(package, declaration, *item)?;
         } else if matches!(item, DiagnosticItem::NonNull) {
             // A diagnostic identity is not a language role, layout marker or naming requirement.
             let unit = package.unit(declaration.origin.file);
@@ -160,6 +161,31 @@ pub(super) fn validate(
         }
         *slot = Some(declaration);
         reserved.steps = reserved.steps.saturating_add(1);
+    }
+    Ok(())
+}
+
+fn validate_module_item(
+    package: &Package,
+    declaration: Declaration,
+    item: DiagnosticItem,
+) -> Result<(), Error> {
+    let unit = package.unit(declaration.origin.file);
+    let right_kind = matches!(unit.configured.ast.node(declaration.origin.node).kind,
+        Kind::Item(index) if matches!((item,unit.configured.ast.items[index as usize].kind),
+            (DiagnosticItem::Debug,ItemKind::Trait{..})
+                | (DiagnosticItem::Alignment,ItemKind::Enum{..})
+                | (DiagnosticItem::Send,ItemKind::Trait{auto_:true,unsafe_:true,constant:false,..})));
+    if declaration.parent.is_some() || !right_kind {
+        return Err(super::reservations::error(
+            package,
+            declaration.origin,
+            if matches!(item, DiagnosticItem::Send) {
+                "Send diagnostic identity requires its actual unsafe module auto trait"
+            } else {
+                "diagnostic identity requires its actual Debug trait or Alignment enum"
+            },
+        ));
     }
     Ok(())
 }

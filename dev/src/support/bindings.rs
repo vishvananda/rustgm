@@ -64,9 +64,13 @@ pub enum LangItem {
     DiscriminantKind,
     DiscriminantType,
     Neg,
+    /// Internal diagnostic-owned role, with no `lang` spelling or wire tag.
+    Send,
+    Sync,
+    Unpin,
 }
 impl LangItem {
-    pub const ALL: [Self; 49] = [
+    pub const ALL: [Self; 52] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -116,6 +120,9 @@ impl LangItem {
         Self::DiscriminantKind,
         Self::DiscriminantType,
         Self::Neg,
+        Self::Send,
+        Self::Sync,
+        Self::Unpin,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -169,6 +176,9 @@ impl LangItem {
             Self::DiscriminantKind => 46,
             Self::DiscriminantType => 47,
             Self::Neg => 48,
+            Self::Send => 49,
+            Self::Sync => 50,
+            Self::Unpin => 51,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -224,6 +234,8 @@ impl LangItem {
             "discriminant_kind" => Some(Self::DiscriminantKind),
             "discriminant_type" => Some(Self::DiscriminantType),
             "neg" => Some(Self::Neg),
+            "sync" => Some(Self::Sync),
+            "unpin" => Some(Self::Unpin),
             _ => None,
         }
     }
