@@ -31,6 +31,8 @@ impl Checker<'_> {
         node: NodeId,
         owner: DefId,
     ) -> Result<TermId, Error> {
+        let key = self.key(node);
+        crate::sema::declarations::prepare_callable_template(self.report, self.facts, key, owner)?;
         let ty = self
             .facts
             .definitions
