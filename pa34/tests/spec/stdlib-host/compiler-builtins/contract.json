@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "state": "predicted before original compiler-builtins host execution",
+  "source_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "selected_unit": 3,
+  "target": "x86_64-unknown-linux-gnu",
+  "host_panic": "unwind",
+  "target_panic": "abort",
+  "features": [
+    "arch",
+    "compiler-builtins",
+    "default",
+    "unmangled-names"
+  ],
+  "expected_status": 0,
+  "expected_directives": 141,
+  "expected_cfg": [
+    "intrinsics_enabled",
+    "mem_unaligned"
+  ],
+  "expected_environment": {},
+  "expected_generated": {},
+  "expected_queries": 0,
+  "target_compilations": 0,
+  "package": {
+    "name": "compiler_builtins",
+    "version": "0.1.160",
+    "origin": "rust/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/compiler-builtins/compiler-builtins",
+    "inventory_sha256": "8b9227970c3ac9fdde8b76bdc4695416d78f83c301533d5503f7816498cdb615"
+  },
+  "external_source": {
+    "path": "library/compiler-builtins/libm/configure.rs",
+    "sha256": "c70d130aeff3128a53fcf928e4b7ba3a1df18b76b722c64a489ec4b847b8ec03"
+  },
+  "stdout_template_sha256": "3c52f0925a546252dd4a148ec2eadbcca8684c094cb1db0ab809af2dfb7c9beb",
+  "absence_environment": [
+    "LIBM_BUILD_VERBOSE",
+    "ENSURE_NO_PANIC"
+  ],
+  "scope": "original dependency-free host pair only; complete environment/rerun closure and target output consumption not claimed"
+}

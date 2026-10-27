@@ -1374,9 +1374,34 @@
     "Original core semantic checking and artifact",
     "Complete source traits/bodies/macros and metadata transport",
     "Actual compiler-builtins source hooks including selected arch behavior",
-    "Build-script source/configuration closure including compiler-builtins/libm/configure.rs outside its Cargo package root",
+    "Complete build-script environment/rerun/external-tool closure and target consumption; compiler-builtins shared configure.rs is explicitly pinned in the observed pair",
     "Rust 2015 rustc-demangle and Rust 2018 cfg-if target semantics",
     "Target per-package rustflags and selected artifact kinds",
     "Allocator, panic runtime and native std consumer execution"
-  ]
+  ],
+  "original_host_scripts": {
+    "state": "all three selected original host compile/run pairs observed; no target crate compilation",
+    "compiler_builtins": {
+      "contract": "spec/stdlib-host/compiler-builtins/contract.json",
+      "expected_stdout_template": "spec/stdlib-host/compiler-builtins/expected.stdout.template",
+      "directives": 141,
+      "cfg": [
+        "intrinsics_enabled",
+        "mem_unaligned"
+      ],
+      "generated_files": 0,
+      "compiler_queries": 0,
+      "receipt_sha256": "f24b1a1253f40920ab0a6c634567a6b945a705b234d33a89a47dc8569574978d",
+      "seconds": 0.4458547909744084,
+      "shared_configure_sha256": "c70d130aeff3128a53fcf928e4b7ba3a1df18b76b722c64a489ec4b847b8ec03"
+    },
+    "libc": {
+      "directives": 27,
+      "receipt_sha256": "a04d8dba3c966c31e5fe52a018f9d6b98a5f1e3209de4219c0152bdd4418c58f"
+    },
+    "std": {
+      "directives": 8,
+      "receipt_sha256": "7be92eecee223a8af1e7bc834f7db6e1349af3df2bc2c2aba8ceb23dd3139577"
+    }
+  }
 }
