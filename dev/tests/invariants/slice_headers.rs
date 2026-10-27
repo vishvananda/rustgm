@@ -32,6 +32,14 @@ fn definition(report: &Report, name: &str) -> Result<DefId> {
 }
 #[test]
 fn actual_string_slice_bodies_keep_const_runtime_proof_and_no_bootstrap_methods() -> Result {
+    for name in [
+        "module-primitive-fallback",
+        "imported-module-primitive-fallback",
+    ] {
+        let input = test_source::fixture(&format!("pa6/tests/spec/names/{name}.rs"))?;
+        let ordinary = test_source::resolve(&input, true)?;
+        pipeline::analyze_source(&ordinary)?;
+    }
     let input = fixture("actual-methods")?;
     let (
         report,

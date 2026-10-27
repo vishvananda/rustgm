@@ -520,11 +520,25 @@ impl Resolver<'_> {
                 found = None;
             }
         }
-        let found = match found {
+        let mut found = match found {
             Some(found) => found,
             None if self_constructor => self.self_constructor(c, path[0]),
             None => self.lookup_path(c, node, absolute, path.view(), LookupMode::Use(ns), None)?,
         };
+        // A grammar-owned bare type use may fall back from a same-named normal
+        // module to its primitive. Imports and module paths keep the module.
+        if lexical
+            && ns == Namespace::Type
+            && let Lookup::Found(binding) = &mut found
+            && matches!(
+                self.facts.definitions[binding.target.0 as usize].kind,
+                DefKind::Module | DefKind::ExternCrate
+            )
+            && let Some(primitive) = self.facts.primitives.get(&path[0])
+        {
+            binding.target = *primitive;
+            binding.access = Access::Public;
+        }
         let target = self.target(c, node, &found, ns)?;
         if let Lookup::Associated(owner, start) | Lookup::Member(_, owner, start) = found {
             self.associated_path(c, node, start, &path, ns, owner)?;
