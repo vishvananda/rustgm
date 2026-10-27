@@ -30,7 +30,12 @@ impl Query<'_> {
                     {
                         return Err("placed C field exceeds two eightbytes");
                     }
-                    if let Kind::Scalar(class) = node.kind {
+                    if matches!(node.kind, Kind::Vector) {
+                        if key.phase != 0 {
+                            return Err("C SIMD field is not aligned to its vector boundary");
+                        }
+                        self.publish(key, [Class::Sse, Class::SseUp])?;
+                    } else if let Kind::Scalar(class) = node.kind {
                         let mut classes = [Class::None; 2];
                         if node.bytes != 0 {
                             let last = (u64::from(key.phase) + node.bytes - 1) / 8;
@@ -71,6 +76,7 @@ impl Query<'_> {
                                 .ok_or("nested C class exceeds object span")?;
                             *slot = match (*slot, class) {
                                 (Class::Integer, _) | (_, Class::Integer) => Class::Integer,
+                                (Class::Sse, _) | (_, Class::Sse) => Class::Sse,
                                 _ => class,
                             };
                         }
@@ -107,7 +113,7 @@ fn children(node: &Node, phase: u8) -> Result<Vec<Child>, &'static str> {
         Ok(())
     };
     match &node.kind {
-        Kind::Scalar(_) => return Err("scalar C field has no children"),
+        Kind::Scalar(_) | Kind::Vector => return Err("scalar C field has no children"),
         Kind::Struct(fields) => {
             for field in fields {
                 push(field.ty, field.offset)?;

@@ -146,6 +146,27 @@ impl super::package::Package {
             .macro_context()?
             .is_some_and(|context| context.requested(feature)))
     }
+    pub(crate) fn requested_simd_feature(&self, foreign: bool) -> Result<bool, &'static str> {
+        let feature = if foreign {
+            policy::Feature::SimdFfi
+        } else {
+            policy::Feature::ReprSimd
+        };
+        if let Some(source) = self.staged_consumer() {
+            source.require_package(self)?;
+            return Ok(source.features.has(feature));
+        }
+        if let Some(client) = self.source_client() {
+            if client.current().name() != self.crate_name || client.current() == client.provider() {
+                return Err("SIMD client identity changed");
+            }
+            client.validate_inventory()?;
+            return Ok(client.features.has(feature));
+        }
+        Ok(self
+            .macro_context()?
+            .is_some_and(|context| context.requested(feature)))
+    }
     pub(crate) fn requested_pattern_feature(&self, syntax: bool) -> Result<bool, &'static str> {
         let feature = if syntax {
             policy::Feature::PatternTypes

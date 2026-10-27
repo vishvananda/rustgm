@@ -6,6 +6,7 @@ use crate::types::{
 
 mod niches;
 mod physical_ready;
+mod simd;
 use niches::Budget;
 pub use niches::{Niche, NicheId};
 
@@ -736,6 +737,11 @@ pub(crate) fn validate_repr(
         && (variants != 1 || repr.align.is_some() || repr.packed.is_some() || repr.tag.is_some())
     {
         return Err("transparent representation requires one variant and no other modifiers");
+    }
+    if repr.representation == Representation::Simd
+        && (definition.kind != aggregate::Kind::Struct || repr.tag.is_some())
+    {
+        return Err("SIMD representation requires a struct without an integer tag");
     }
     match definition.kind {
         aggregate::Kind::Struct | aggregate::Kind::PhantomData | aggregate::Kind::Union

@@ -14,6 +14,7 @@ use std::sync::Arc;
 pub enum Class {
     Integer,
     Sse,
+    SseUp,
     None,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -145,6 +146,9 @@ impl Plans {
         let definition = definitions
             .get(item)
             .ok_or("missing C aggregate declaration")?;
+        if definition.repr.representation == Representation::Simd {
+            return self.composite(types, definitions, layouts, head, layout);
+        }
         if let Some(passing) = nullable_scalar(layouts, &layout, head)? {
             return Ok(passing);
         }

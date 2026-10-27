@@ -47,6 +47,8 @@ pub(in crate::resolve) enum Feature {
     CoverageAttribute = 30,
     MetavariableExpressions = 31,
     CfgTargetHasAtomic = 32,
+    ReprSimd = 33,
+    SimdFfi = 34,
 }
 
 /// Recognizing a gate request is not evidence that its active constructs work.
@@ -90,6 +92,8 @@ impl Request {
             "const_closures" => Self::Capability(Feature::ConstClosures),
             "macro_metavar_expr_concat" => Self::Capability(Feature::MetavariableConcat),
             "macro_metavar_expr" => Self::Capability(Feature::MetavariableExpressions),
+            "repr_simd" => Self::Capability(Feature::ReprSimd),
+            "simd_ffi" => Self::Capability(Feature::SimdFfi),
             "coverage_attribute" => Self::Capability(Feature::CoverageAttribute),
             "pattern_type_macro" => Self::Library(Feature::PatternTypeMacro),
             "pattern_types" => Self::Capability(Feature::PatternTypes),
@@ -210,6 +214,8 @@ pub(in crate::resolve) fn prepare_with_admission(
         }
         return Ok(Prepared {
             source: if features.has(Feature::InternalMacroAllowance)
+                || features.has(Feature::ReprSimd)
+                || features.has(Feature::SimdFfi)
                 || features.has(Feature::CfgTargetHasAtomic)
                 || features.has(Feature::ImplRestriction)
                 || features.has(Feature::MinSpecialization)

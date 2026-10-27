@@ -1,5 +1,6 @@
 //! Foreign ABI and safety come from the retained declaration's actual block.
 mod linkage_attributes;
+mod simd;
 use super::{Checker, DefId, Error, Item, ItemKind, Kind, NodeKey, Safety, callable_convention};
 use crate::{
     syntax::item::Abi,

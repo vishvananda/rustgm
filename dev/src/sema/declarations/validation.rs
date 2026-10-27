@@ -36,6 +36,7 @@ impl Checker<'_> {
         self.validate_alias_declarations()
     }
     pub(super) fn validate_signatures(&mut self) -> Result<(), Error> {
+        let mut allowances = self.report.macro_allowances();
         for index in 0..self.facts.functions.len() {
             let function = self.facts.functions[index];
             self.validate_trait_method(&function)?;
@@ -69,6 +70,7 @@ impl Checker<'_> {
                         .list(parameters)
                         .ok_or_else(|| self.error(function.node, "invalid parameters"))?[index]
                 };
+                self.validate_foreign_simd_type(function, ty, index, &mut allowances)?;
                 let shape = proof
                     .check(&mut self.facts, ty)
                     .map_err(|e| self.error(function.node, e))?;

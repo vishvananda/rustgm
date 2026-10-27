@@ -26,7 +26,7 @@ impl Query<'_> {
                     let node = self.node(ty)?;
                     self.retain(size_of::<Node>() + size_of::<TypeId>() + 48)?;
                     let children = match &node.kind {
-                        Kind::Scalar(_) => Vec::new(),
+                        Kind::Scalar(_) | Kind::Vector => Vec::new(),
                         Kind::Array { element, .. } => vec![*element],
                         Kind::Struct(fields) => fields.iter().map(|field| field.ty).collect(),
                     };
@@ -53,7 +53,14 @@ impl Query<'_> {
             .types
             .kind(ty)
             .ok_or("missing C aggregate field type")?;
-        let kind = if super::super::scalar(kind)?
+        let kind = if let crate::types::aggregate::SimdShape::Ready { .. } =
+            self.definitions.simd_shape(self.types, ty)?
+        {
+            if layout.size != 16 || layout.align != 16 {
+                return Err("C SIMD boundary supports only aligned 128-bit vectors");
+            }
+            Kind::Vector
+        } else if super::super::scalar(kind)?
             && matches!(layout.shape, Shape::Scalar)
             && layout.size != 0
         {

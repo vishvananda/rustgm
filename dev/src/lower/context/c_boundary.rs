@@ -90,6 +90,7 @@ fn class(value: classification::Class) -> boundary::Class {
     match value {
         classification::Class::Integer => boundary::Class::Integer,
         classification::Class::Sse => boundary::Class::Sse,
+        classification::Class::SseUp => boundary::Class::SseUp,
         classification::Class::None => boundary::Class::None,
     }
 }

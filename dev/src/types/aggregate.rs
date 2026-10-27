@@ -8,9 +8,11 @@ pub(crate) use nullable::NullableEnum;
 mod packing;
 mod phantom;
 mod preparation;
+mod simd;
 use super::{ItemId, ListId, Primitive, Store, TypeId};
 pub use instances::Shape;
 pub use metadata::MetadataPreparation;
+pub(crate) use simd::SimdShape;
 
 /// Completed fields may still await concrete substitution or storage normalization.
 pub enum ShapeReadiness<'a> {
@@ -41,6 +43,7 @@ pub enum Representation {
     Rust,
     C,
     Transparent,
+    Simd,
 }
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Repr {

@@ -359,6 +359,9 @@ impl Layouts {
         {
             return Ok(layout);
         }
+        if shape.definition.repr.representation == Representation::Simd {
+            return self.simd_layout(types, definitions, ty, shape, budget);
+        }
         self.aggregate(types, shape, definitions.packing_checked())
     }
     pub(super) fn niche_mark(&self) -> usize {
