@@ -189,7 +189,7 @@ behavior or reference bytes changed to obtain these status/plan results. This
 is not a new full compiler release/performance run.
 
 The fixture-dependency follow-up passes236 harness tests plus the same complete
-layout/registration/upstream checks in13.75s (actual command time is retained
+layout/registration/upstream checks in13.30s (actual command time is retained
 in `obj/parallel/assignment-reanalysis-v4/receipt.json`). It verifies an explicitly
 owned source-binding prerequisite is admitted and unrelated future features
 still reject. Legacy fixture and oracle bytes remain unchanged.
