@@ -79,7 +79,7 @@ fn actual_extra_names_keep_targets_exact_strings_and_known_role_boundaries() -> 
     );
     assert_eq!(size_of::<super::super::reservations::Reservations>(), 2080);
     assert_eq!(size_of::<super::super::reservations::Claim>(), 2);
-    assert_eq!(size_of::<crate::body::ir::Body>(), 448);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     assert_eq!(size_of::<crate::body::ir::Rvalue>(), 20);
     Ok(())
 }
