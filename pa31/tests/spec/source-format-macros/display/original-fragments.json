@@ -1,0 +1,11 @@
+{
+  "scope": "Retained original declaration data; include_str documentation context is not assembled as a standalone provider",
+  "Display": {
+    "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/fmt/mod.rs",
+    "sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+    "start": 47248,
+    "end": 48722,
+    "fixture": "original-display.rs",
+    "fixture_sha256": "157f0f56f2662056216a0b9d985e46a2f1e067e76e86df71c06a5ce564d2bd1b"
+  }
+}

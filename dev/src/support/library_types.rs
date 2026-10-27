@@ -33,6 +33,7 @@ pub struct FormatSites {
 pub enum FormatConstructor {
     Arguments,
     Debug,
+    Display,
 }
 impl FormatConstructor {
     #[must_use]
@@ -40,13 +41,14 @@ impl FormatConstructor {
         match self {
             Self::Arguments => "new",
             Self::Debug => "new_debug",
+            Self::Display => "new_display",
         }
     }
     #[must_use]
     pub const fn owner(self) -> crate::support::bindings::LangItem {
         match self {
             Self::Arguments => crate::support::bindings::LangItem::FormatArguments,
-            Self::Debug => crate::support::bindings::LangItem::FormatArgument,
+            Self::Debug | Self::Display => crate::support::bindings::LangItem::FormatArgument,
         }
     }
 }

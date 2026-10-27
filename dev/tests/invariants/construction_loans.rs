@@ -87,3 +87,27 @@ fn actual_argument_lifetimes_and_unsafe_const_inputs_keep_ordinary_call_proofs()
     }
     Ok(())
 }
+
+#[test]
+fn mixed_display_and_debug_pairs_use_real_source_constructors_once() -> Result {
+    // Rust accepts the reduced no-Copy provider through ordinary call reborrowing.
+    // Keep that outstanding PA16/PA31 boundary distinct from core's real impls.
+    let reduced =
+        test_source::fixture("pa31/tests/spec/source-format-macros/display/source-mixed.rs")?;
+    let error = prepare(&reduced)
+        .err()
+        .ok_or("revisit the retained shared-reference call-reborrow boundary")?;
+    assert!(error.to_string().contains("uninitialized or moved"));
+    let input =
+        test_source::fixture("pa31/tests/spec/source-format-macros/display/source-shared-refs.rs")?;
+    let program = prepare(&input)?;
+    let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../obj/parallel/pa31/format-display-v1/native");
+    std::fs::create_dir_all(&folder)?;
+    std::fs::write(folder.join("provider.rs"), input)?;
+    crate::lowir::writer::write(
+        &program,
+        &mut std::fs::File::create(folder.join("provider.lowir"))?,
+    )?;
+    Ok(())
+}

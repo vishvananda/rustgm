@@ -130,10 +130,14 @@ impl<S: Sources> Engine<'_, S> {
                 .charge(steps, bytes)
                 .map_err(|message| error(original.start, message))
         };
-        let mut names = [crate::support::names::NameId(0); 2];
-        for (slot, constructor) in [FormatConstructor::Arguments, FormatConstructor::Debug]
-            .into_iter()
-            .enumerate()
+        let mut names = [crate::support::names::NameId(0); 3];
+        for (slot, constructor) in [
+            FormatConstructor::Arguments,
+            FormatConstructor::Debug,
+            FormatConstructor::Display,
+        ]
+        .into_iter()
+        .enumerate()
         {
             names[slot] = package
                 .names
@@ -183,14 +187,23 @@ impl<S: Sources> Engine<'_, S> {
         source
             .macros
             .charge(
-                count.saturating_add(1),
+                count.saturating_add(12),
                 count.saturating_mul(size_of::<(NodeId, NodeId)>()),
             )
             .map_err(|message| Error::at(file, original.start, message))?;
+        let (input_base, sites) = draft_input_sites(draft, count)
+            .map_err(|message| Error::at(file, original.start, message))?;
+        if draft.inputs.len() != count {
+            return Err(Error::at(
+                file,
+                original.start,
+                "formatting input cardinality changed",
+            ));
+        }
         let mut adopted = Vec::with_capacity(count);
         let base = u32::try_from(unit.configured.ast.nodes.len())
             .map_err(|_| Error::at(file, original.start, "formatting node overflow"))?;
-        for &(node, ordinal) in &draft.inputs {
+        for (expected, &(node, ordinal)) in draft.inputs.iter().enumerate() {
             let input = *unit
                 .configured
                 .ast
@@ -199,10 +212,12 @@ impl<S: Sources> Engine<'_, S> {
                 .ok_or_else(|| {
                     Error::at(file, original.start, "formatting input ordinal changed")
                 })?;
-            if unit.configured.active.get(input.get() as usize) != Some(&true)
+            if ordinal != expected
+                || sites.get(ordinal) != Some(&node)
+                || unit.configured.active.get(input.get() as usize) != Some(&true)
                 || !matches!(draft.expansion.syntax.ast.node(node).kind,
                     Kind::LibraryValue {kind:LibraryValue::FormatInput {slot},value:None}
-                    if slot as usize == 3+count+ordinal)
+                    if slot as usize == input_base+ordinal)
             {
                 return Err(Error::at(
                     file,
@@ -219,4 +234,42 @@ impl<S: Sources> Engine<'_, S> {
         }
         Ok(adopted)
     }
+}
+
+// Borrow only the actual draft inventory; no second metadata owner or cache.
+fn draft_input_sites(
+    draft: &builtin::format_arguments::Draft,
+    count: usize,
+) -> Result<(usize, &[NodeId]), &'static str> {
+    let ast = &draft.expansion.syntax.ast;
+    let kind = |node: NodeId| {
+        ast.nodes
+            .get(node.get() as usize)
+            .map(|node| node.kind)
+            .ok_or("formatting draft node changed")
+    };
+    let root = match kind(ast.root)? {
+        Kind::Expansion {
+            children,
+            tail: Some(root),
+        } if children.start == children.end => root,
+        _ => ast.root,
+    };
+    let Kind::LibraryValue {
+        kind: LibraryValue::FormatOutput { sites },
+        value: Some(_),
+    } = kind(root)?
+    else {
+        return Err("formatting draft root changed");
+    };
+    let sites = ast
+        .edges
+        .get(sites.start as usize..sites.end as usize)
+        .ok_or("formatting draft inventory changed")?;
+    let base = sites
+        .len()
+        .checked_sub(count)
+        .filter(|base| *base >= 3 + count && *base <= 3 + count.saturating_mul(2))
+        .ok_or("formatting draft pair cardinality changed")?;
+    Ok((base, &sites[base..]))
 }

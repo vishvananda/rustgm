@@ -173,3 +173,65 @@ fn formatting_site_authentication_is_bounded_across_shared_input_scaling() -> Re
     }
     Ok(())
 }
+
+#[test]
+fn mixed_constructor_inventory_authenticates_pair_members_and_rejects_changed_trait() -> Result {
+    use crate::support::library_types::FormatConstructor;
+    let report = expanded_arguments("{format_args!(\"{1}|{0:?}|{1}|{1:?}|{0:?}\",1u32,2u32)}")?;
+    let root = output_root(&report)?;
+    report.formatting_value(root)?;
+    let Kind::LibraryValue {
+        kind: LibraryValue::FormatOutput { sites },
+        ..
+    } = report
+        .package
+        .unit(root.file)
+        .configured
+        .ast
+        .node(root.node)
+        .kind
+    else {
+        return Err("actual output".into());
+    };
+    let nodes = report
+        .package
+        .unit(root.file)
+        .configured
+        .ast
+        .list(crate::syntax::ast::List {
+            start: sites.start,
+            end: sites.end,
+        })
+        .to_vec();
+    assert_eq!(nodes.len(), 8);
+    for &node in &nodes[..6] {
+        report.formatting_value(NodeKey { node, ..root })?;
+    }
+    let mut changed =
+        expanded_arguments("{format_args!(\"{1}|{0:?}|{1}|{1:?}|{0:?}\",1u32,2u32)}")?;
+    let name = changed.package.names.intern("new_debug")?;
+    let unit = &mut changed.package.units[root.file.0 as usize];
+    let Kind::LibraryValue {
+        kind:
+            LibraryValue::FormatConstructor {
+                constructor,
+                name: actual,
+                ..
+            },
+        ..
+    } = &mut unit.configured.ast.nodes[nodes[3].get() as usize].kind
+    else {
+        return Err("actual ctor".into());
+    };
+    *constructor = FormatConstructor::Debug;
+    *actual = name;
+    assert!(
+        changed
+            .formatting_value(NodeKey {
+                node: nodes[3],
+                ..root
+            })
+            .is_err()
+    );
+    Ok(())
+}
