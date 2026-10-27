@@ -36,11 +36,10 @@ obligations. Same-crate API naming needs no foreign unstable-feature permission.
 
 The source Location checkpoint still closes dependency availability and all
 v0/v1/v2 stability publication. Explicit default-body, allow_const_fn_unstable,
-const_stable_indirect and implied/renamed policies remain unsupported. Complete
-hidden-public nominal effective visibility through public signatures remains
-required PA31 work; this local-use extension does not implement that graph or
-claim a publishable original-core artifact. Existing effective-visibility and
-publication consumers must own its eventual implementation.
+const_stable_indirect and implied/renamed policies remain unsupported. The semantic exposure correction below checks hidden-public nominal types in
+normalized public interfaces. This remains a local policy consumer, not a
+publishable original-core artifact. Foreign availability and broader effective
+visibility of opaque promises and generic defaults remain required PA31 work.
 
 Module instances retain separate effective policies even when they share a
 parsed source file. Outer and loaded inner annotations identify the same actual
@@ -67,7 +66,10 @@ reexport target does not annotate its import; a truly private type in a public
 signature is accepted with capped lints. Eight isolating followups all matched:
 publicly declared types reached through signatures need their own stability,
 and marked import/group/glob cases distinguish import from target ownership.
-The current candidate explicitly defers the five nominal families.
+The original candidate's five nominal limitations remain recorded in that
+historical contract. The semantic exposure correction now accepts the four
+independently valid forms and rejects the independently invalid unannotated
+public type exposed through a signature.
 
 Original owner results SHA-256:
 `1adcbd583fd96369ab4c1ae8443f7ee4efbcc68071757b4ce14a07fc42f9821a`.
@@ -151,3 +153,38 @@ The cold Inventory grows 80→88 bytes and embedded Library 120→128. One optio
 Policy/Level sizes remain 48/24. No-const and ordinary no-library controls pass.
 Both policy axes share the existing parent-first scope walk and bounded work/
 storage charges. No Node, Body, Context, Package or Report field was added.
+
+## Normalized public-interface correction
+
+The regular and const declaration checks still run at the resolver boundary.
+After semantic declarations and alias normalization complete, one temporary
+interface visitor checks actual canonical type and declaration identities. Both
+phases use the same resolved public-binding/module traversal, so public aliases
+retain their real targets. Private nominal declarations do not acquire a missing
+stability error just because a public function names them. Public nominals
+reached through a signature do require their own policy. Unrelated types in a
+private module and types mentioned only in function bodies do not become APIs.
+
+The semantic pass shares one visited set across all interfaces. It follows
+canonical signatures, explicit predicates, complete arguments and public fields;
+it does not reconstruct source paths, expand function bodies, grant a trait
+proof or publish metadata. Existing cold inventory storage is charged once,
+including owned policy strings, before temporary allocation. Work and queue/index
+growth are prepaid; failed attempts leave no retained completion/cache state.
+Ordinary packages without a library inventory return without a walk or allocation.
+
+Source `fa7c1ba982febb2e6e7ebb2469afed330cea1fc7` passed the two new private
+semantic/cost groups and the existing ordinary-allocation and policy-scaling
+controls. Formatting, global architecture and strict private Clippy passed in
+the same 238.75-second bounded run. Production and combined frontend qualification
+remain integration checks. The prior architecture-only filename failure remains
+retained; no independent Rust observations were repeated or fixtures rewritten.
+
+For 8/32/128 public functions sharing one normalized nested signature, the pass
+observed 15/39/135 distinct types and 9/33/129 declarations. Work charges were
+415/1011/3947, with conservative logical storage charges 5204/13764/51332 bytes.
+Changing one unrelated hidden public type to 128 changed none of those work or
+visitation counts; the larger preexisting inventory capacity was still counted.
+These are bounded policy charges, not heap-allocation measurements. Actual records
+remain Task 8 bytes, Inventory 88, Package 256 and Body 448. No persistent field,
+profile, wire, role, callable or const authority changed.
