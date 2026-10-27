@@ -50,7 +50,7 @@ struct AllocationLog {
     ordered: Vec<Allocation>,
     by_slot: Vec<Option<RegionId>>,
 }
-struct RecordedDomain {
+pub(in crate::sema::crates::typed_headers) struct RecordedDomain {
     seal: Seal,
     log: AllocationLog,
     aliases: Option<Vec<RegionId>>,
@@ -285,8 +285,98 @@ impl RecordedDomain {
         }
         Ok(())
     }
-    #[cfg(test)]
-    fn region(
+    pub(in crate::sema::crates::typed_headers) fn recorded_region(
+        &self,
+        view: &RecipeView<'_>,
+        reference: s::RegionRef,
+        work: &mut ReservationWork,
+    ) -> Result<Option<RegionId>, Error> {
+        work.charge(3)?;
+        if view.root() != self.seal.root {
+            return Err(error(
+                "recorded region belongs to another actual catalog root",
+            ));
+        }
+        match view.rows()?.regions.get(reference.0 as usize) {
+            Some(s::Region::Variable { body, slot }) => {
+                if *body != self.seal.raw || view.body(*body, work)? != self.seal.body {
+                    return Err(error("recorded region belongs to another actual body"));
+                }
+                self.log
+                    .by_slot
+                    .get(*slot as usize)
+                    .copied()
+                    .flatten()
+                    .map(Some)
+                    .ok_or_else(|| error("recorded region lost its actual allocated slot"))
+            }
+            Some(_) => Ok(None),
+            None => Err(error("recorded region is outside its actual domain")),
+        }
+    }
+    pub(in crate::sema::crates::typed_headers) fn normalization_interval(
+        &self,
+        view: &RecipeView<'_>,
+        index: usize,
+        input: &s::NormalizationInput,
+        work: &mut ReservationWork,
+    ) -> Result<std::ops::Range<u32>, Error> {
+        work.charge(4)?;
+        let rows = view.rows()?;
+        let original = &rows.originals[self.seal.raw.0 as usize];
+        let actual = rows.body_inputs[self.seal.raw.0 as usize]
+            .normalizations
+            .get(index)
+            .ok_or_else(|| error("selected normalization lost its actual body ordinal"))?;
+        if view.root() != self.seal.root || !std::ptr::eq(actual, input) {
+            return Err(error(
+                "selected normalization changed its actual body input row",
+            ));
+        }
+        let range = match input.owned.as_slice() {
+            [] => return Ok(0..0),
+            [range] => range,
+            _ => {
+                return Err(error(
+                    "selected normalization requires its flat single owned interval",
+                ));
+            }
+        };
+        let variables = range.slice(&original.variables).map_err(error)?;
+        work.charge(variables.len().saturating_add(1))?;
+        let ordinal =
+            u32::try_from(index).map_err(|_| error("selected normalization ordinal overflow"))?;
+        let mut start = None;
+        let mut end = 0;
+        for (offset, variable) in variables.iter().enumerate() {
+            if variable.allocation != s::RegionAllocation::Normalization(ordinal) {
+                return Err(error(
+                    "selected normalization borrowed a foreign allocation owner",
+                ));
+            }
+            let slot = range.start as usize + offset;
+            let id = self
+                .log
+                .by_slot
+                .get(slot)
+                .copied()
+                .flatten()
+                .ok_or_else(|| {
+                    error("selected normalization lost its actual recorded allocation")
+                })?;
+            if start.is_some() && id.0 != end {
+                return Err(error(
+                    "selected normalization recorded allocations are discontinuous",
+                ));
+            }
+            start.get_or_insert(id.0);
+            end =
+                id.0.checked_add(1)
+                    .ok_or_else(|| error("selected normalization interval overflow"))?;
+        }
+        Ok(start.ok_or_else(|| error("selected normalization has an empty owned interval"))?..end)
+    }
+    pub(in crate::sema::crates::typed_headers) fn region(
         &self,
         view: &RecipeView<'_>,
         store: &Store,
@@ -324,6 +414,22 @@ impl Owner {
     }
     pub(super) fn retained_bytes(&self) -> usize {
         self.bytes
+    }
+    pub(super) fn selected_record<'a>(
+        &'a self,
+        view: &RecipeView<'_>,
+        store: &Store,
+        expected: &Ready,
+        work: &mut ReservationWork,
+    ) -> Result<&'a Arc<RecordedDomain>, Error> {
+        let stage = DomainStage::new(view, store, expected, work)?;
+        let record = self
+            .entries
+            .get(expected.pair.function_row as usize)
+            .and_then(Option::as_ref)
+            .ok_or_else(|| error("body lookup requires its actual immutable recording"))?;
+        record.require(&stage, store, work)?;
+        Ok(record)
     }
     fn complete(
         &mut self,

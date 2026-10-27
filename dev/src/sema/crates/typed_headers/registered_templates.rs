@@ -21,6 +21,9 @@ use crate::{
 };
 #[path = "assumed_scopes.rs"]
 mod assumption_environments;
+pub(in crate::sema::crates::typed_headers) use assumption_environments::{
+    OriginalBody, ScopeReader,
+};
 #[path = "formal_ancestry.rs"]
 mod formal_path;
 #[path = "recorded_regions.rs"]
@@ -43,7 +46,7 @@ struct Ready {
 }
 pub(super) struct Prepared {
     templates: Templates,
-    scopes: Vec<Option<usize>>,
+    scopes: std::rc::Rc<Vec<Option<usize>>>,
     ready: Vec<Option<Ready>>,
     occurrences: Vec<Option<u32>>,
     environments: Option<Box<assumption_environments::Owner>>,
@@ -61,6 +64,7 @@ impl Prepared {
         )?;
         work.reserve(
             size_of::<Self>()
+                .saturating_add(size_of::<Vec<Option<usize>>>() + 2 * size_of::<usize>())
                 .saturating_add(
                     rows.declarations
                         .len()
@@ -84,7 +88,7 @@ impl Prepared {
         }
         Ok(Self {
             templates: Templates::default(),
-            scopes,
+            scopes: std::rc::Rc::new(scopes),
             ready: vec![None; rows.functions.len()],
             occurrences: vec![None; rows.types.len()],
             environments: None,
@@ -95,6 +99,8 @@ impl Prepared {
         size_of::<Self>()
             + self.templates.allocation().bytes
             + retained::vector(&self.scopes)
+            + size_of::<Vec<Option<usize>>>()
+            + 2 * size_of::<usize>()
             + retained::vector(&self.ready)
             + retained::vector(&self.occurrences)
             + self
@@ -129,6 +135,17 @@ impl Prepared {
     }
     fn require(
         &self,
+        view: &RecipeView<'_>,
+        store: &Store,
+        owner: DeclarationRef,
+        pair: SignaturePair,
+        work: &mut ReservationWork,
+    ) -> Result<(s::FunctionHeader, ItemId, Option<Ready>), Error> {
+        self.require_in(&self.templates, view, store, owner, pair, work)
+    }
+    fn require_in(
+        &self,
+        templates: &Templates,
         view: &RecipeView<'_>,
         store: &Store,
         owner: DeclarationRef,
@@ -172,8 +189,7 @@ impl Prepared {
                 || ready.item != item
                 || store.kind(pair.original) != Some(ready.original)
                 || store.kind(pair.callable) != Some(ready.callable)
-                || self
-                    .templates
+                || templates
                     .registration(item)
                     .is_none_or(|(template, parameters)| {
                         template.signature != pair.callable
@@ -196,7 +212,8 @@ impl Prepared {
         pair: SignaturePair,
         work: &mut ReservationWork,
     ) -> Result<(), Error> {
-        let (header, item, ready) = self.require(&view, store, owner, pair, work)?;
+        let (header, item, ready) =
+            self.require_in(&self.templates, &view, store, owner, pair, work)?;
         state.require_mapping(&view, store, ready.is_none(), work)?;
         if ready.is_some() {
             return Ok(());
@@ -301,8 +318,141 @@ impl Session {
     }
 }
 
+pub(super) fn registered_pair(
+    state: &State,
+    view: &RecipeView<'_>,
+    facts: &crate::sema::model::Declarations,
+    owner: DeclarationRef,
+    pair: SignaturePair,
+    work: &mut ReservationWork,
+) -> Result<(), Error> {
+    let prepared = state
+        .callables
+        .as_deref()
+        .ok_or_else(|| error("selected method lost its actual callable registration owner"))?;
+    if prepared
+        .require_in(
+            &facts.lifetimes.callables,
+            view,
+            &facts.types,
+            owner,
+            pair,
+            work,
+        )?
+        .2
+        .is_none()
+    {
+        return Err(error(
+            "selected method requires its actual pending callable registration",
+        ));
+    }
+    Ok(())
+}
+
+pub(super) fn scope_reader(
+    state: &State,
+    view: &RecipeView<'_>,
+    store: &Store,
+    work: &mut ReservationWork,
+) -> Result<ScopeReader, Error> {
+    let prepared = state
+        .callables
+        .as_deref()
+        .ok_or_else(|| error("selected scope reader omitted its actual callable owner"))?;
+    application_owner(state)?.scope_reader(prepared, view, store, work)
+}
+pub(super) fn require_scope_reader(
+    state: &State,
+    reader: &ScopeReader,
+    view: &RecipeView<'_>,
+    store: &Store,
+    work: &mut ReservationWork,
+) -> Result<(), Error> {
+    let prepared = state
+        .callables
+        .as_deref()
+        .ok_or_else(|| error("selected scope reader lost its actual callable owner"))?;
+    application_owner(state)?.require_scope_reader(prepared, reader, view, store, work)
+}
+fn application_owner(state: &State) -> Result<&assumption_environments::Owner, Error> {
+    state
+        .callables
+        .as_deref()
+        .and_then(|prepared| prepared.environments.as_deref())
+        .ok_or_else(|| {
+            error("selected applications require their actual declaration environment owner")
+        })
+}
+pub(super) fn application_reader(
+    state: &State,
+    view: &RecipeView<'_>,
+    store: &Store,
+    work: &mut ReservationWork,
+) -> Result<super::super::predicate_remap::translation::applications::Reader, Error> {
+    application_owner(state)?.application_reader(view, store, work)
+}
+pub(super) fn require_application_reader(
+    state: &State,
+    reader: &super::super::predicate_remap::translation::applications::Reader,
+    view: &RecipeView<'_>,
+    store: &Store,
+    work: &mut ReservationWork,
+) -> Result<(), Error> {
+    application_owner(state)?.require_application_reader(reader, view, store, work)
+}
+
 /// The consumer lends its one real table exclusively; buffer handles move and
 /// are restored on every outcome. No second registration or table clone occurs.
+pub(super) use assumption_environments::Declaration;
+pub(super) fn declaration_ready(
+    recipes: Option<&State>,
+    view: &RecipeView<'_>,
+    facts: &super::super::Declarations,
+    owner: DeclarationRef,
+    work: &mut ReservationWork,
+) -> Result<bool, Error> {
+    let Some(state) = recipes else {
+        return Ok(false);
+    };
+    assumption_environments::declaration_ready(view, state, facts, owner, work)
+}
+pub(super) fn declarations<'a>(
+    recipes: &mut Option<Box<State>>,
+    facts: &mut super::super::Declarations,
+    owner: DeclarationRef,
+    work: &mut ReservationWork,
+    mut view: impl FnMut(&mut ReservationWork) -> Result<RecipeView<'a>, Error>,
+) -> Result<Vec<Declaration>, Error> {
+    let first = view(work)?;
+    if recipes.is_none() {
+        *recipes = Some(Box::new(State::new(&first, &mut facts.types, work)?));
+    }
+    let state = recipes
+        .as_mut()
+        .ok_or_else(|| error("declaration lost its persistent recipe state"))?;
+    state.require_mapping(&first, &facts.types, true, work)?;
+    if state.callables.is_none() {
+        state.callables = Some(Box::new(Prepared::new(&first, work)?));
+    }
+    let mut prepared = state
+        .callables
+        .take()
+        .ok_or_else(|| error("declaration lost its callable scope index"))?;
+    let result =
+        assumption_environments::declarations(first, state, facts, &mut prepared, owner, work);
+    state.callables = Some(prepared);
+    result
+}
+pub(super) fn mark_declarations(
+    recipes: &mut Option<Box<State>>,
+    rows: &[Declaration],
+) -> Result<(), Error> {
+    let prepared = recipes
+        .as_mut()
+        .and_then(|state| state.callables.as_mut())
+        .ok_or_else(|| error("installed declaration lost its actual prepared index"))?;
+    assumption_environments::mark_installed(prepared, rows)
+}
 pub(super) fn prepare<'a>(
     recipes: &mut Option<Box<State>>,
     store: &mut Store,
@@ -348,4 +498,40 @@ pub(super) fn prepare<'a>(
     state.callables = Some(prepared);
     result?;
     Ok(Demand::Ready(()))
+}
+
+/// Lend the same installed registration table to the existing defining kernel.
+pub(super) fn defining_body<'a>(
+    recipes: &mut Option<Box<State>>,
+    facts: &mut crate::sema::model::Declarations,
+    owner: DeclarationRef,
+    work: &mut ReservationWork,
+    mut view: impl FnMut(&mut ReservationWork) -> Result<RecipeView<'a>, Error>,
+) -> Result<Demand<()>, Error> {
+    let state = recipes
+        .as_mut()
+        .ok_or_else(|| error("selected defining demand lost its actual recipe state"))?;
+    let mut prepared = state
+        .callables
+        .take()
+        .ok_or_else(|| error("selected defining demand lost its actual callable state"))?;
+    let result = (|| {
+        work.charge(4)?;
+        if !prepared.templates.is_empty() {
+            return Err(error(
+                "selected defining demand retained a second registration table",
+            ));
+        }
+        let first = view(work)?;
+        std::mem::swap(&mut facts.lifetimes.callables, &mut prepared.templates);
+        let status = prepared.defining(first, state, facts, owner, work);
+        std::mem::swap(&mut facts.lifetimes.callables, &mut prepared.templates);
+        let status = status?;
+        if status != Demand::Ready(()) {
+            return Ok(status);
+        }
+        prepared.prepare_original_roots(view(work)?, state, facts, owner, work)
+    })();
+    state.callables = Some(prepared);
+    result
 }

@@ -1,4 +1,5 @@
 //! Compile retained macro trees once, preserving typed tokens and source provenance.
+mod metavariable;
 use super::model::{
     Atom, Definition, Fragment, Kind, List, Node, NodeId, Repetition, Rule, Variable, VariableId,
 };
@@ -211,34 +212,28 @@ impl<'a> Compiler<'a> {
                 index + 1,
             ));
         }
-        if matches!(
-            self.forest.tree(index + 1).map(|t| t.kind),
-            Some(TreeKind::Group {
-                delimiter: Delimiter::Parenthesis,
-                ..
-            })
-        ) {
-            return self.repetition(dollar, index + 1, end, mode);
+        if let Some(TreeKind::Group { delimiter, .. }) =
+            self.forest.tree(index + 1).map(|tree| tree.kind)
+        {
+            return match delimiter {
+                Delimiter::Parenthesis => self.repetition(dollar, index + 1, end, mode),
+                Delimiter::Brace if mode == Mode::Template => self.expression(dollar, index + 1),
+                _ => Err(error(dollar.start, "invalid macro dollar delimiter")),
+            };
         }
         let identifier = self.token(index + 1)?;
+        if identifier.kind == TokenKind::Punctuation(P::Dollar) {
+            return Ok((self.escaped_dollar(identifier, mode)?, index + 2));
+        }
         let name = self.name(index + 1)?;
+        let span = Span {
+            start: dollar.start,
+            end: identifier.end,
+        };
         if self.names.get(name) == "crate" {
-            return Ok((
-                self.node(
-                    Span {
-                        start: dollar.start,
-                        end: identifier.end,
-                    },
-                    Kind::Crate,
-                )?,
-                index + 2,
-            ));
+            return Ok((self.node(span, Kind::Crate)?, index + 2));
         }
         if mode == Mode::Template {
-            let span = Span {
-                start: dollar.start,
-                end: identifier.end,
-            };
             return Ok((
                 self.node(
                     span,

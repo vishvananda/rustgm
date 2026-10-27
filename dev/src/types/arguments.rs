@@ -97,15 +97,43 @@ impl Store {
     /// Cost only for a selected, already probed type-only mixed-list miss. The empty list keeps
     /// its existing allocation-free lifetime representation.
     pub(crate) fn trait_arguments_growth(&self, count: usize) -> crate::support::retained::Growth {
-        if count == 0 {
+        self.mixed_argument_batch_growth(count, usize::from(count != 0))
+    }
+    pub(in crate::types) fn mixed_argument_batch_growth(
+        &self,
+        values: usize,
+        lists: usize,
+    ) -> crate::support::retained::Growth {
+        if lists == 0 {
             return crate::support::retained::Growth::default();
         }
         if let Some(storage) = &self.arguments {
-            return storage.mixed.interning_growth(count);
+            return storage.mixed.interning_batch_growth(values, lists);
         }
-        let mut growth = Slices::<Argument>::default().interning_growth(count);
+        let mut growth = Slices::<Argument>::default().interning_batch_growth(values, lists);
         growth.bytes = growth.bytes.saturating_add(size_of::<Storage>());
         growth
+    }
+    /// Cost only for the same lifetime-only versus mixed allocation choice as
+    /// `intern_arguments`. The caller prepays the immediate input scan.
+    pub(crate) fn argument_interning_growth(
+        &self,
+        arguments: &[Argument],
+    ) -> crate::support::retained::Growth {
+        if arguments
+            .iter()
+            .all(|argument| matches!(argument, Argument::Lifetime(_)))
+        {
+            let mut growth = self.regions.interning_growth(arguments.len());
+            growth.include(crate::support::retained::Growth::vector::<RegionId>(
+                0,
+                0,
+                arguments.len(),
+            ));
+            growth
+        } else {
+            self.trait_arguments_growth(arguments.len())
+        }
     }
     pub(super) fn argument_extent(&self) -> usize {
         self.arguments.as_ref().map_or(0, |storage| {

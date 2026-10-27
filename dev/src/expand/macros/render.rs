@@ -65,6 +65,14 @@ pub fn write_report(source: &str, report: &Report, output: &mut impl Write) -> i
                     writeln!(output)?;
                 }
                 Piece::Opaque(id) => writeln!(output, "opaque {}", id.0)?,
+                Piece::Identifier { name, .. } => {
+                    write!(output, "token definition identifier ")?;
+                    quoted::bytes(output, report.names.get(*name).as_bytes(), false)?;
+                    writeln!(output)?;
+                }
+                Piece::Integer { value, .. } => {
+                    writeln!(output, "token definition integer \"{value}\"")?;
+                }
                 Piece::Crate(_) => writeln!(output, "crate definition {}", invocation.definition)?,
                 Piece::Doc { inner, body, .. } => {
                     write!(output, "doc definition inner={inner} ")?;

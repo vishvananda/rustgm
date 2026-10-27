@@ -5,6 +5,9 @@ use crate::{
     support::crates::Interface,
 };
 
+#[path = "executed_consumers.rs"]
+mod executed;
+
 fn artifact(suffix: &str, work: &mut ReservationWork) -> Result<(CollectedArtifact, Identity)> {
     artifact_with_alias(suffix, None, work)
 }
@@ -45,6 +48,21 @@ fn artifact_with_alias(
     Ok((artifact, arena))
 }
 #[test]
+fn tracked_collected_functions_stop_at_actual_source_publication() -> Result {
+    let mut work = ReservationWork::default();
+    let source = HOLDER.replace("fn carry", "#[track_caller]fn carry");
+    let error = artifact_with_alias(&source, Some("base"), &mut work)
+        .err()
+        .ok_or("tracked source function escaped the closed transport")?;
+    assert!(
+        error
+            .to_string()
+            .contains("caller tracking policy transport"),
+        "{error}"
+    );
+    Ok(())
+}
+#[test]
 fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_preparation() -> Result
 {
     let mut work = ReservationWork::default();
@@ -59,18 +77,7 @@ fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_prep
     let view = authority
         .reservation
         .recipe_view(&authority.report, &mut work)?;
-    let rows = view.rows()?;
-    let holder = rows
-        .traits
-        .iter()
-        .find(|header| {
-            rows.declarations[header.declaration.0 as usize]
-                .name
-                .as_deref()
-                == Some("Holder")
-        })
-        .ok_or("actual retained Holder declaration")?;
-    let holder_declaration = holder.declaration;
+    let holder_declaration = named_trait(&stage, "Holder", &mut work)?;
     let definition = view.definition(holder_declaration, &mut work)?;
     assert!(authority.report.names_resolved);
     assert!(authority.report.resolution.extern_scope.is_some());
@@ -108,15 +115,378 @@ fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_prep
             .is_none()
     );
     assert!(stage.session.authority.facts.generics.traits.is_none());
-    repeated_schema(stage, holder_declaration, &mut work)?;
+    stage = repeated_schema(stage, holder_declaration, &mut work)?;
+    let (returned, status) = stage.trait_declaration(holder_declaration, &mut work)?;
+    stage = returned;
+    assert_eq!(status, Demand::Ready(()));
+    assert!(
+        stage
+            .session
+            .authority
+            .facts
+            .generics
+            .traits
+            .as_deref()
+            .and_then(|contracts| contracts.header(crate::types::ItemId(definition.0)))
+            .is_some()
+    );
+    assert!(
+        stage
+            .session
+            .authority
+            .facts
+            .associated
+            .owner(definition)
+            .is_none()
+    );
+    let before = work.retained;
+    let (returned, status) = stage.trait_declaration(holder_declaration, &mut work)?;
+    stage = returned;
+    assert_eq!(status, Demand::Ready(()));
+    assert_eq!(work.retained, before);
+    let (mut stage, status) = stage.trait_owner(holder_declaration, &mut work)?;
+    assert_eq!(status, Demand::Ready(()));
+    stage = repeated_owner(stage, holder_declaration, definition, &mut work)?;
+    let stage = method_headers(stage, &mut work)?;
+    lower_named_caller(*stage, &mut work)?;
+    owner_failed_precharge()?;
     actual_implicit_prelude_controls()?;
     Ok(())
 }
+
+fn lower_named_caller(stage: HeaderDraft, work: &mut ReservationWork) -> Result {
+    let (_, program) = stage.execute(work, |report, facts, entry, preparation| {
+        assert!(!facts.functions.is_empty());
+        assert!(
+            facts
+                .functions
+                .iter()
+                .filter(|function| function.body.is_some())
+                .all(|function| facts.typed_function_bodies.contains(&function.definition))
+        );
+        eprintln!(
+            "selected-dispatch dispatcher={} preparation-error={}",
+            size_of::<crate::sema::dispatch::Dispatcher>(),
+            size_of::<crate::sema::dispatch::Failure>()
+        );
+        let program = crate::lower::instances::build_selected_prepared(
+            report,
+            facts,
+            entry,
+            crate::pipeline::Prepared::default(),
+            preparation,
+        )?;
+        executed::actual_instances(report, facts, &program)?;
+        actual_normalization_owner(report, facts, preparation)?;
+        Ok(program)
+    })?;
+    assert!(
+        program
+            .symbols
+            .iter()
+            .any(|symbol| symbol.entry && symbol.body.is_some())
+    );
+    Ok(())
+}
+
+fn actual_normalization_owner(
+    report: &crate::resolve::expansion::Report,
+    facts: &mut crate::sema::model::Declarations,
+    preparation: &mut dyn crate::sema::dispatch::Preparation,
+) -> std::result::Result<(), crate::resolve::package::Error> {
+    use crate::resolve::package::Error;
+    let imported = report.resolution.crates.as_deref().ok_or_else(|| {
+        Error::unlocated("normalization opponent requires its actual imported catalog")
+    })?;
+    let mut owner = None;
+    for candidate in imported.generic_definitions() {
+        let candidate = candidate.map_err(Error::unlocated)?;
+        if report
+            .resolution
+            .definitions
+            .get(candidate.0 as usize)
+            .is_some_and(|actual| {
+                actual.kind == crate::resolve::model::DefKind::Function
+                    && report.package.names.get(actual.name) == "borrow"
+            })
+        {
+            assert!(owner.replace(candidate).is_none());
+        }
+    }
+    let owner = owner.ok_or_else(|| Error::unlocated("actual imported borrow declaration"))?;
+    actual_caller_policy(facts, owner)?;
+    let mut steps = 0;
+    let result = preparation.with_original(facts, owner, &mut |_, view| {
+        let mut intervals = 0;
+        for (index, record) in view.inputs().normalizations.iter().enumerate() {
+            if record.owned.is_empty() {
+                continue;
+            }
+            let range = view
+                .normalization_interval(index, record, &mut steps)
+                .map_err(Error::unlocated)?;
+            assert!(range.start > 0 && range.end > range.start);
+            let before = steps;
+            let copied = record.clone();
+            assert!(
+                view.normalization_interval(index, &copied, &mut steps)
+                    .is_err()
+            );
+            assert!(steps > before);
+            assert!(
+                view.normalization_interval(index + 1, record, &mut steps)
+                    .is_err()
+            );
+            intervals += 1;
+        }
+        assert!(
+            intervals > 0,
+            "the genuine borrow body must exercise owned normalization"
+        );
+        Ok(())
+    });
+    result.and(preparation.prepay(facts, steps, 0))
+}
+
+fn actual_caller_policy(
+    facts: &mut crate::sema::model::Declarations,
+    owner: crate::resolve::model::DefId,
+) -> std::result::Result<(), crate::resolve::package::Error> {
+    use crate::resolve::package::Error;
+    assert!(
+        !facts
+            .recorded_caller_tracking(owner)
+            .map_err(Error::unlocated)?
+    );
+    let header = facts
+        .crates
+        .as_deref_mut()
+        .and_then(|linkage| linkage.originals.as_deref_mut())
+        .and_then(|headers| headers.entries.remove(&owner))
+        .ok_or_else(|| Error::unlocated("actual selected caller header"))?;
+    let denied = facts.recorded_caller_tracking(owner).is_err();
+    facts
+        .crates
+        .as_deref_mut()
+        .and_then(|linkage| linkage.originals.as_deref_mut())
+        .ok_or_else(|| Error::unlocated("selected caller header owner disappeared"))?
+        .entries
+        .insert(owner, header);
+    assert!(denied, "missing selected header lent an untracked policy");
+    let original = std::mem::take(&mut facts.types);
+    let denied = facts.recorded_caller_tracking(owner).is_err();
+    facts.types = original;
+    assert!(denied, "foreign type arena lent selected caller policy");
+    let headers = facts
+        .crates
+        .as_deref()
+        .and_then(|linkage| linkage.originals.as_deref())
+        .ok_or_else(|| Error::unlocated("selected caller payer disappeared"))?;
+    let old = headers.work.replace(crate::support::crates::MAX_COMPONENTS);
+    let denied = facts.recorded_caller_tracking(owner).is_err();
+    let attempted = headers.work.replace(old);
+    assert!(
+        denied && attempted > crate::support::crates::MAX_COMPONENTS,
+        "selected caller queries did not charge their actual imported payer"
+    );
+
+    Ok(())
+}
+
+fn repeated_owner(
+    mut stage: Box<HeaderDraft>,
+    owner: DeclarationRef,
+    definition: crate::resolve::model::DefId,
+    work: &mut ReservationWork,
+) -> Result<Box<HeaderDraft>> {
+    let facts = &stage.session.authority.facts;
+    let id = facts
+        .associated
+        .owner(definition)
+        .ok_or("actual selected installed owner")?;
+    let actual = *facts
+        .associated
+        .get(id)
+        .ok_or("actual selected owner cell")?;
+    let members = facts
+        .associated
+        .owner_members(id)
+        .ok_or("actual selected members")?;
+    assert_eq!(members.len(), 2);
+    facts.associated.require_imported(actual)?;
+    assert!(
+        facts
+            .associated
+            .imported_owner()
+            .ok_or("actual mapping")?
+            .require_store(&crate::types::Store::default())
+            .is_err()
+    );
+    let before = work.retained;
+    let count = facts.associated.owners().len();
+    for _ in 0..1000 {
+        let (returned, status) = stage.trait_owner(owner, work)?;
+        stage = returned;
+        assert_eq!(status, Demand::Ready(()));
+    }
+    assert_eq!(work.retained, before);
+    let facts = &stage.session.authority.facts;
+    assert_eq!(facts.associated.owners().len(), count);
+    assert_eq!(facts.associated.owner(definition), Some(id));
+    assert!(facts.functions.is_empty());
+    eprintln!(
+        "selected-owner sum={} language-field={} selected={} inventory={} language={} draft={} warm1000-retained={} work={}",
+        size_of::<crate::sema::crates::ImportedOwners>(),
+        size_of::<Option<crate::sema::crates::ImportedOwners>>(),
+        size_of::<crate::sema::crates::typed_headers::unpaid_provided::ProvidedOwners>(),
+        size_of::<crate::sema::associated::Inventory>(),
+        crate::sema::associated::imported_layouts().0,
+        size_of::<HeaderDraft>(),
+        work.retained.saturating_sub(before),
+        work.steps
+    );
+    Ok(stage)
+}
+
+fn method_headers(
+    mut stage: Box<HeaderDraft>,
+    work: &mut ReservationWork,
+) -> Result<Box<HeaderDraft>> {
+    for name in ["carry", "borrow"] {
+        let owner = named(&stage, name, work)?;
+        let definition = stage
+            .session
+            .authority
+            .reservation
+            .recipe_view(&stage.session.authority.report, work)?
+            .definition(owner, work)?;
+        let (returned, status) = stage.method_declaration(owner, work)?;
+        stage = returned;
+        assert_eq!(status, Demand::Ready(()));
+        declaration_scope(&mut stage, definition)?;
+        let facts = &stage.session.authority.facts;
+        let linkage = facts.crates.as_deref().ok_or("actual method linkage")?;
+        let declaration = linkage
+            .original_declaration_header(definition)?
+            .ok_or("actual selected declaration header")?;
+        assert!(declaration.body.is_some());
+        assert!(
+            linkage.original_header(definition).is_err(),
+            "body Environment remains genuinely pending"
+        );
+        linkage.original_inputs(&facts.generics, definition, false)?;
+        let template = facts
+            .lifetimes
+            .callables
+            .registration(crate::types::ItemId(definition.0))
+            .ok_or("actual registered callable")?;
+        assert_eq!(
+            template.1.len(),
+            if name == "carry" { 3 } else { 2 },
+            "actual Self/V and own U remain complete"
+        );
+        let holder = named_trait(&stage, "Holder", work)?;
+        let holder = stage
+            .session
+            .authority
+            .reservation
+            .recipe_view(&stage.session.authority.report, work)?
+            .definition(holder, work)?;
+        let inputs = linkage.original_inputs(&facts.generics, holder, false)?;
+        let header = facts
+            .generics
+            .traits
+            .as_deref()
+            .and_then(|contracts| contracts.header(crate::types::ItemId(holder.0)))
+            .ok_or("actual Holder input owner")?;
+        let (all, _) = header.inputs.imported_parts(
+            linkage.origin_catalog().ok_or("actual current catalog")?,
+            holder,
+        )?;
+        assert!(std::ptr::eq(all.as_ref(), inputs));
+        let before = work.retained;
+        for _ in 0..1000 {
+            let (returned, status) = stage.method_declaration(owner, work)?;
+            stage = returned;
+            assert_eq!(status, Demand::Ready(()));
+        }
+        assert_eq!(work.retained, before);
+    }
+    eprintln!(
+        "method-header layout={} headers={} pending-env={} selected-owner={}",
+        size_of::<crate::sema::crates::typed_headers::Header>(),
+        size_of::<crate::sema::crates::typed_headers::Headers>(),
+        size_of::<Option<Arc<crate::types::parameters::environment::Environment>>>(),
+        size_of::<crate::sema::crates::typed_headers::unpaid_provided::ProvidedOwners>()
+    );
+    Ok(stage)
+}
+
+fn declaration_scope(stage: &mut HeaderDraft, definition: crate::resolve::model::DefId) -> Result {
+    let check = |facts: &crate::sema::model::Declarations| -> Result {
+        let linkage = facts
+            .crates
+            .as_deref()
+            .ok_or("actual declaration linkage")?;
+        let scheme = facts
+            .lifetimes
+            .functions
+            .get(&definition)
+            .ok_or("actual callable scheme")?;
+        let mut steps = 0;
+        linkage.require_source_declaration(facts, definition, scheme, &mut steps)?;
+        let mut changed = scheme.clone();
+        changed.total += 1;
+        assert!(
+            linkage
+                .require_source_declaration(facts, definition, &changed, &mut steps)
+                .is_err()
+        );
+        Ok(())
+    };
+    let facts = &mut stage.session.authority.facts;
+    check(facts)?;
+    let header = facts
+        .crates
+        .as_deref_mut()
+        .and_then(|link| link.originals.as_deref_mut())
+        .and_then(|headers| headers.entries.get_mut(&definition))
+        .ok_or("actual selected header")?;
+    let original = Arc::clone(&header.inputs);
+    header.inputs = Arc::from(original.as_ref());
+    assert!(
+        check(facts).is_err(),
+        "an equal clone cannot replace the actual scope input Arc"
+    );
+    facts
+        .crates
+        .as_deref_mut()
+        .and_then(|link| link.originals.as_deref_mut())
+        .and_then(|headers| headers.entries.get_mut(&definition))
+        .ok_or("actual selected header")?
+        .inputs = original;
+    check(facts)
+}
+
+fn owner_failed_precharge() -> Result {
+    let mut work = ReservationWork::default();
+    let (stage, _) = start(HOLDER, &mut work)?;
+    let owner = named_trait(&stage, "Holder", &mut work)?;
+    let (stage, status) = stage.trait_declaration(owner, &mut work)?;
+    assert_eq!(status, Demand::Ready(()));
+    work.retained = crate::support::crates::MAX_BYTES;
+    let before = work.steps;
+    assert!(stage.trait_owner(owner, &mut work).is_err());
+    assert!(work.steps > before);
+    assert!(work.peak > crate::support::crates::MAX_BYTES);
+    Ok(())
+}
+
 fn repeated_schema(
     mut stage: Box<HeaderDraft>,
     owner: DeclarationRef,
     work: &mut ReservationWork,
-) -> Result {
+) -> Result<Box<HeaderDraft>> {
     let before = (
         work.retained,
         stage
@@ -154,7 +524,7 @@ fn repeated_schema(
         size_of::<HeaderDraft>(),
         size_of::<SelectedHeaders>()
     );
-    Ok(())
+    Ok(stage)
 }
 fn actual_implicit_prelude_controls() -> Result {
     for (declarations, body, accepted) in [
@@ -241,6 +611,26 @@ fn named(stage: &HeaderDraft, name: &str, work: &mut ReservationWork) -> Result<
         })
         .map(|header| header.declaration)
         .ok_or_else(|| "actual collected function".into())
+}
+
+fn named_trait(
+    stage: &HeaderDraft,
+    name: &str,
+    work: &mut ReservationWork,
+) -> Result<DeclarationRef> {
+    let authority = &stage.session.authority;
+    let view = authority.reservation.recipe_view(&authority.report, work)?;
+    let rows = view.rows()?;
+    rows.traits
+        .iter()
+        .find(|header| {
+            rows.declarations[header.declaration.0 as usize]
+                .name
+                .as_deref()
+                == Some(name)
+        })
+        .map(|header| header.declaration)
+        .ok_or_else(|| "actual collected trait".into())
 }
 
 fn check_member_contracts(

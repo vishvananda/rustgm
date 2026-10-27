@@ -31,7 +31,6 @@ struct Scoped {
     captures: HashMap<u16, Captures>,
 }
 impl Shapes {
-    #[cfg(test)]
     pub(crate) fn steps(&self) -> usize {
         self.steps
             + self

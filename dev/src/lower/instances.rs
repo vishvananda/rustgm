@@ -106,7 +106,6 @@ pub(crate) fn inspect_source_trait_inputs_with_numbering(
             super::transported_source::Source::begin_trait_numbered(
                 report, facts, checked, identity,
             )
-            .map_err(|e| diagnostic(report, None, e.into()))
         },
         |source, facts| source.complete_trait_numbered(report, facts),
     )
@@ -142,6 +141,7 @@ fn collect_source<R>(
                 .map_err(|e| diagnostic(report, e.node, e.message.into()))?;
             complete(source, facts)
         },
+        Construction::Complete,
     )?
 }
 
@@ -169,6 +169,43 @@ pub fn build_prepared(
     prepared: crate::pipeline::Prepared,
 ) -> Result<crate::lowir::program::Program, Error> {
     build_roots_prepared(report, facts, super::Roots::executable(entry), prepared)
+}
+
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "the real selected consumer remains private until encoded Provided admission and complete original/instance execution qualify"
+    )
+)]
+pub(crate) fn build_selected_prepared(
+    report: &Report,
+    facts: &mut Declarations,
+    entry: DefId,
+    prepared: crate::pipeline::Prepared,
+    preparation: &mut dyn crate::sema::dispatch::Preparation,
+) -> Result<crate::lowir::program::Program, Error> {
+    if report.package.staged_consumer().is_none() {
+        return Err(diagnostic(
+            report,
+            None,
+            "selected lowering requires its actual private consumer".into(),
+        ));
+    }
+    inspect_staged(
+        report,
+        facts,
+        prepared,
+        |facts, _| {
+            let exports = super::roots::exports(facts, &[])
+                .map_err(|e| diagnostic(report, None, e.into()))?;
+            Ok((Some(entry), exports, ()))
+        },
+        staged_originals::ignore,
+        |facts, assembled, roots, ()| super::build_assembled(facts, assembled, roots),
+        Construction::Imported(preparation),
+    )?
+    .map_err(|error| diagnostic(report, error.node, error.message.into()))
 }
 /// Check and lower explicit library roots alongside canonical registry exports.
 /// # Errors
@@ -332,6 +369,7 @@ pub fn build_source_library_profile(
             .map_err(|error| facts.retain_error_warnings(error))?;
             Ok((program, interface))
         },
+        Construction::Complete,
     )?
 }
 
@@ -416,6 +454,7 @@ fn inspect_selected<R>(
         |facts, checked| select(facts, checked).map(|(entry, exports)| (entry, exports, ())),
         staged_originals::ignore,
         |facts, assembled, roots, ()| inspect(facts, assembled, roots),
+        Construction::Complete,
     )
 }
 
@@ -434,6 +473,49 @@ fn require_source_session(report: &Report, facts: &Declarations) -> Result<(), E
     crate::sema::compiler_items::authenticate_discriminant(report, facts)
         .map_err(|e| diagnostic(report, None, e.to_string()))?;
     Ok(())
+}
+
+enum Construction<'a> {
+    Complete,
+    Imported(&'a mut dyn crate::sema::dispatch::Preparation),
+    Local,
+}
+impl<'a> Construction<'a> {
+    fn selection(&self) -> body::Selection {
+        if matches!(self, Self::Local) {
+            body::Selection::Typed
+        } else {
+            body::Selection::Complete
+        }
+    }
+    fn preparation(self) -> Option<&'a mut dyn crate::sema::dispatch::Preparation> {
+        match self {
+            Self::Imported(service) => Some(service),
+            Self::Complete | Self::Local => None,
+        }
+    }
+}
+
+pub(crate) fn build_local_prepared(
+    report: &Report,
+    facts: &mut Declarations,
+    entry: DefId,
+    prepared: crate::pipeline::Prepared,
+) -> Result<crate::lowir::program::Program, Error> {
+    inspect_staged(
+        report,
+        facts,
+        prepared,
+        |facts, _| {
+            let exports = super::roots::exports(facts, &[])
+                .map_err(|e| diagnostic(report, None, e.into()))?;
+            Ok((Some(entry), exports, ()))
+        },
+        staged_originals::ignore,
+        |facts, assembled, roots, ()| super::build_assembled(facts, assembled, roots),
+        Construction::Local,
+    )?
+    .map_err(|e| diagnostic(report, e.node, e.message.into()))
 }
 
 fn inspect_staged<S, R>(
@@ -456,36 +538,11 @@ fn inspect_staged<S, R>(
         super::roots::Selected<'_>,
         S,
     ) -> R,
+    construction: Construction<'_>,
 ) -> Result<R, Error> {
-    require_source_session(report, facts)?;
-    let mut templates = prepared.templates.finish(report, facts)?;
-    templates
-        .attach(prepared.imported.take())
-        .map_err(|e| diagnostic(report, None, e.into()))?;
-    let mut inputs = if let Some(collector) = prepared.contracts {
-        collector.finish(facts)
-    } else {
-        body::regions::collect(facts)
-    }
-    .map_err(|e| diagnostic(report, None, e.into()))?
-    .bodies;
-    let mut contexts = if let Some(originals) = prepared.original_contexts.take() {
-        originals
-            .apply(&templates, &mut inputs)
-            .map_err(|e| diagnostic(report, None, e.into()))?
-    } else {
-        borrow::templates::Contexts::default()
-    };
-    body::templates::constructors(report, facts, &mut templates, &mut inputs)?;
-    body::provided::append(report, facts, &mut templates, &mut inputs)?;
-    body::iterator_factories::append(report, facts, &mut templates, &mut inputs)?;
-    body::promote::analyze_templates_reusing(
-        report,
-        facts,
-        &mut templates,
-        &mut prepared.promotions,
-    )?;
-    prepare_original_contracts(report, facts, &templates, &mut contexts, &mut inputs)?;
+    let selection = construction.selection();
+    let (templates, contexts, inputs) =
+        prepare_template_inputs(report, facts, &mut prepared, selection)?;
     let templates = std::rc::Rc::new(templates);
     if let Some(context) = &prepared.constants {
         context
@@ -535,22 +592,98 @@ fn inspect_staged<S, R>(
         stage: &mut stage,
         callback: collect,
     };
-    let program = demand::prepare(
-        report,
-        facts,
-        roots,
-        staged_originals::Context {
-            checked: &checked,
-            collector: &mut collect,
-        },
-        inputs,
-        prepared.concrete,
-        prepared.constants,
-    )?;
+    let mut originals = staged_originals::Context {
+        checked: &checked,
+        selection,
+        collector: &mut collect,
+        preparation: construction.preparation(),
+    };
+    #[cfg(test)]
+    eprintln!(
+        "selected-dispatch context={}",
+        std::mem::size_of_val(&originals)
+    );
+    let program = if originals.preparation.is_some() {
+        let (program, ordinary) = demand::prepare_ordinary(
+            report,
+            facts,
+            &mut originals,
+            inputs,
+            prepared.concrete,
+            prepared.constants,
+            roots.globals,
+        )?;
+        let service = originals.preparation.take().ok_or_else(|| {
+            diagnostic(report, None, "selected original service disappeared".into())
+        })?;
+        let retained = checked
+            .retain(std::rc::Rc::clone(&templates))
+            .map_err(|e| diagnostic(report, e.node, e.message))?;
+        // Proof outputs own every prepared context needed by later instances.
+        drop(contexts);
+        drop(templates);
+        demand::materialize_selected(report, facts, roots, retained, program, &ordinary, service)?
+    } else {
+        demand::prepare(
+            report,
+            facts,
+            roots,
+            originals,
+            inputs,
+            prepared.concrete,
+            prepared.constants,
+        )?
+    };
     let assembled = program
         .assemble()
         .map_err(|e| diagnostic(report, e.node, e.message))?;
     Ok(inspect(facts, assembled, roots, stage))
+}
+
+fn prepare_template_inputs(
+    report: &Report,
+    facts: &mut Declarations,
+    prepared: &mut crate::pipeline::Prepared,
+    selection: body::Selection,
+) -> Result<
+    (
+        body::templates::Templates,
+        borrow::templates::Contexts,
+        Vec<body::regions::Contract>,
+    ),
+    Error,
+> {
+    require_source_session(report, facts)?;
+    let mut templates =
+        std::mem::take(&mut prepared.templates).finish_selected(report, facts, selection)?;
+    templates
+        .attach(prepared.imported.take())
+        .map_err(|e| diagnostic(report, None, e.into()))?;
+    let mut inputs = if let Some(collector) = prepared.contracts.take() {
+        collector.finish(facts)
+    } else {
+        body::regions::collect(facts)
+    }
+    .map_err(|e| diagnostic(report, None, e.into()))?
+    .bodies;
+    let mut contexts = if let Some(originals) = prepared.original_contexts.take() {
+        originals
+            .apply(&templates, &mut inputs)
+            .map_err(|e| diagnostic(report, None, e.into()))?
+    } else {
+        borrow::templates::Contexts::default()
+    };
+    body::templates::constructors(report, facts, &mut templates, &mut inputs)?;
+    body::provided::append(report, facts, &mut templates, &mut inputs)?;
+    body::iterator_factories::append(report, facts, &mut templates, &mut inputs)?;
+    body::promote::analyze_templates_reusing(
+        report,
+        facts,
+        &mut templates,
+        &mut prepared.promotions,
+    )?;
+    prepare_original_contracts(report, facts, &templates, &mut contexts, &mut inputs)?;
+    Ok((templates, contexts, inputs))
 }
 
 fn publish_closure_conditions(

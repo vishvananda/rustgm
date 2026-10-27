@@ -12,16 +12,20 @@ use crate::{
 use std::sync::Arc;
 #[path = "demanded_headers.rs"]
 mod header_demands;
+#[path = "installed_mapping.rs"]
+mod installed_mapping;
 #[path = "schema_transactions.rs"]
 mod owner_stages;
 #[path = "schema_correspondence.rs"]
 mod schema_mapping;
+pub(in crate::sema) use installed_mapping::ProvidedOwners;
 pub(super) use schema_mapping::Authority as SchemaAuthority;
 #[path = "consumer_templates.rs"]
 mod selected;
 #[path = "registered_templates.rs"]
 mod template_demands;
 pub(super) use selected::SelectedHeaders;
+pub(super) use template_demands::OriginalBody;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/held_stores.rs"]
 mod tests;

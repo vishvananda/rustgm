@@ -1,0 +1,89 @@
+{
+  "state": "independent and immutable baseline metadata observations; candidate predictions pending",
+  "owner": "LIB-040 PA5 grammar/PA21 relationships/PA31 const feature",
+  "primary": "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_parse/src/parser/ty.rs#L1237-L1275",
+  "profile": "Rust1.98.0, 2021/2024, metadata lib, x86_64 Linux panic abort",
+  "cases": [
+    {
+      "name": "conditional",
+      "path": "pa31/tests/spec/higher-ranked-const-bounds/conditional.rs",
+      "sha256": "544876814a55480ced29f400e5359517ab3acc5c91f6ee9dde659da29e5cdee4",
+      "rustc_status": 0,
+      "baseline_status": 1,
+      "candidate_expected_status": 0
+    },
+    {
+      "name": "always",
+      "path": "pa31/tests/spec/higher-ranked-const-bounds/always.rs",
+      "sha256": "dfc3a1ac7888fed0fa4c1a3e6494812376296365654e5a9388746baffb53d267",
+      "rustc_status": 0,
+      "baseline_status": 1,
+      "candidate_expected_status": 0
+    },
+    {
+      "name": "impl-trait",
+      "path": "pa31/tests/spec/higher-ranked-const-bounds/impl-trait.rs",
+      "sha256": "8830bc50856250a67cf39fabff7debf4f7f3772f42bd383e20c8c84cb71ebb17",
+      "rustc_status": 0,
+      "baseline_status": 1,
+      "candidate_expected_status": 0
+    },
+    {
+      "name": "ordinary",
+      "path": "pa31/tests/spec/higher-ranked-const-bounds/ordinary.rs",
+      "sha256": "48c270566f5a1d8f8d2b125c15030f4657bea97fef8afb31bc480ce971c1cf1e",
+      "rustc_status": 0,
+      "baseline_status": 0,
+      "candidate_expected_status": 0
+    },
+    {
+      "name": "wrong-conditional-order",
+      "path": "pa31/tests/spec/higher-ranked-const-bounds/wrong-conditional-order.rs",
+      "sha256": "9e760091ce3d79cdd8757b5e2c5037062931375076b51b4c53a37716737eda34",
+      "rustc_status": 1,
+      "baseline_status": 0,
+      "candidate_expected_status": 1
+    },
+    {
+      "name": "wrong-always-order",
+      "path": "pa31/tests/spec/higher-ranked-const-bounds/wrong-always-order.rs",
+      "sha256": "dd7bc4d8526db285b764b6ef628f3fb0300dbce458773a6b03c14683d0bebae6",
+      "rustc_status": 1,
+      "baseline_status": 0,
+      "candidate_expected_status": 1
+    },
+    {
+      "name": "relaxed",
+      "path": "pa31/tests/spec/higher-ranked-const-bounds/relaxed.rs",
+      "sha256": "a6734fefa929f5cfc46fa64a1ac0342f120315f408860e9da9dc67f683ae8a3a",
+      "rustc_status": 1,
+      "baseline_status": 1,
+      "candidate_expected_status": 1
+    },
+    {
+      "name": "lifetime",
+      "path": "pa31/tests/spec/higher-ranked-const-bounds/lifetime.rs",
+      "sha256": "8c3b9a115766522155398f9f641de0137d82053abf948a6088fd032c55fdaf64",
+      "rustc_status": 1,
+      "baseline_status": 1,
+      "candidate_expected_status": 1
+    },
+    {
+      "name": "missing-feature",
+      "path": "pa31/tests/spec/higher-ranked-const-bounds/missing-feature.rs",
+      "sha256": "d3f8bfff0c4601a2ae3099a213b295cbd62ce2b6092491239951c1e8f5594358",
+      "rustc_status": 1,
+      "baseline_status": 1,
+      "candidate_expected_status": 1
+    }
+  ],
+  "observed": {
+    "state": "observed",
+    "observations": 36,
+    "disagreements": [],
+    "infrastructure_failures": 0,
+    "seconds": 20.236300498247147,
+    "binding_sha256": "ae9da5caab503728b124f74d45e3e0b56045a409dbd8182222898e68246cf932",
+    "results_sha256": "cbbb799c8e01082498c2910e476da80c47831f90b4e455b4d14e233bbab6ca70"
+  }
+}

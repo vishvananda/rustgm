@@ -2,6 +2,12 @@
 
 Planned: no graded manifest or generated reference outputs yet.
 
+`spec/metavariable-concat/` retains LIB-039's original invoked-name reducer and
+feature opponent plus twenty protocol sources. Forty new pinned library-metadata
+observations cover operand categories, repetition, forwarding, definition-site
+hygiene and unused/disabled feature authority. Their predictions all match;
+the integrated compiler now passes those syntax and lookup controls.
+See the protocol README for the current qualified scope; no native concat claim.
 `spec/formatter-derives/` freezes the actual Alignment, Sign, DebugAsHex,
 FormattingOptions, Error and Ordering declaration fragments for the source panic
 prerequisite family. Their original enabled derive lists and attributes remain
@@ -355,3 +361,8 @@ identity. Successful objects/executables were removed after hashing; LowIR and
 raw streams remain retained. Original missing-Freeze/drop_glue codegen failures,
 all seven original source bytes and independent observations remain preserved.
 No artifact/foreign protocol transport or const-closure execution is implied.
+
+
+`spec/higher-ranked-const-bounds/contract.json` freezes LIB-040's binder/modifier
+order, impl Trait, reversed-order, lifetime and feature-gate sources. These
+maintainer protocol fixtures do not activate the planned assignment.

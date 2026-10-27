@@ -10,7 +10,7 @@ use super::macros::{
 use super::marks::{ExpansionId, SyntaxContextId};
 use crate::{
     lex::token::{Kind, LexError, Token},
-    support::{edition::Edition, source::FileId},
+    support::{edition::Edition, names::Names, source::FileId},
     syntax::{
         cursor::TokenPosition,
         interpolation::Splice,
@@ -52,6 +52,7 @@ pub struct Environment<'a> {
     pub context: SyntaxContextId,
     pub introduction: ExpansionId,
     pub crate_id: u32,
+    pub edition: Edition,
 }
 pub struct Opaque {
     pub payload: OpaqueSource,
@@ -82,10 +83,16 @@ impl Stream {
         matched: &Matched,
         input: &Input,
         environment: &Environment<'_>,
+        names: &Names,
     ) -> Result<Self, LexError> {
-        Self::transcribe_with(transcription, matched, input, environment, |_, origin| {
-            Ok((origin == PieceOrigin::Definition).then_some(environment.context))
-        })
+        Self::transcribe_with(
+            transcription,
+            matched,
+            input,
+            environment,
+            names,
+            |_, origin| Ok((origin == PieceOrigin::Definition).then_some(environment.context)),
+        )
     }
     /// Crate expansion supplies the actual context of each definition token.
     /// Captures retain their own contexts; opaque slices can contain several.
@@ -96,6 +103,7 @@ impl Stream {
         matched: &Matched,
         input: &Input,
         environment: &Environment<'_>,
+        names: &Names,
         mut contexts: impl FnMut(Location, PieceOrigin) -> Result<Option<SyntaxContextId>, LexError>,
     ) -> Result<Self, LexError> {
         let mut output = Self::default();
@@ -103,6 +111,24 @@ impl Stream {
             match *piece {
                 Piece::Token { token, origin } => {
                     output.copy_token(token, origin, environment, &mut contexts)?;
+                }
+                Piece::Identifier { name, span } => {
+                    let spelling = names.get(name);
+                    let kind = if spelling == "_" {
+                        Kind::Punctuation(crate::lex::token::Punctuation::Underscore)
+                    } else {
+                        Kind::Identifier
+                    };
+                    output.generated_token(kind, spelling, span, environment, &mut contexts)?;
+                }
+                Piece::Integer { value, span } => {
+                    output.generated_token(
+                        Kind::Integer,
+                        &value.to_string(),
+                        span,
+                        environment,
+                        &mut contexts,
+                    )?;
                 }
                 Piece::Opaque(capture) => {
                     let value = matched
@@ -171,6 +197,34 @@ impl Stream {
         Ok(output)
     }
     /// One demanded lexical token keeps its capture/definition provenance.
+    fn generated_token(
+        &mut self,
+        kind: Kind,
+        spelling: &str,
+        span: Span,
+        environment: &Environment<'_>,
+        contexts: &mut impl FnMut(Location, PieceOrigin) -> Result<Option<SyntaxContextId>, LexError>,
+    ) -> Result<(), LexError> {
+        let anchor = Location {
+            file: environment.definition.file,
+            span,
+        };
+        let context = contexts(anchor, PieceOrigin::Definition)?
+            .ok_or_else(|| error(span.start, "generated token lost its definition context"))?;
+        let generated = self.synthetic_image(
+            spelling,
+            anchor,
+            context,
+            environment.introduction,
+            environment.edition,
+        )?;
+        self.tokens.push(Token {
+            kind,
+            start: generated.start,
+            end: generated.end,
+        });
+        Ok(())
+    }
     fn copy_token(
         &mut self,
         token: Token,
@@ -301,6 +355,15 @@ impl Stream {
         &mut self,
         input: &Input,
         source: Source<'_>,
+        provenance: impl FnMut(Token) -> Result<(SyntaxContextId, bool), LexError>,
+    ) -> Result<(), LexError> {
+        self.forward_tokens(&input.tokens, source, provenance)
+    }
+    /// Forward a borrowed demanded token range with the same source checks.
+    pub(crate) fn forward_tokens(
+        &mut self,
+        tokens: &[Token],
+        source: Source<'_>,
         mut provenance: impl FnMut(Token) -> Result<(SyntaxContextId, bool), LexError>,
     ) -> Result<(), LexError> {
         let environment = Environment {
@@ -309,8 +372,9 @@ impl Stream {
             context: SyntaxContextId::ROOT,
             introduction: ExpansionId(0),
             crate_id: 0,
+            edition: Edition::Rust2024,
         };
-        for &token in &input.tokens {
+        for &token in tokens {
             let (context, joint) = provenance(token)?;
             self.copy_token(token, PieceOrigin::Invocation, &environment, &mut |_, _| {
                 Ok(Some(context))

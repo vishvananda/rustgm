@@ -45,12 +45,44 @@ impl Templates {
         self.imported = imported;
         Ok(())
     }
+    pub(crate) fn append_original_bound(&self) -> crate::support::retained::Growth {
+        if let Some(owner) = &self.imported {
+            owner.append_bound()
+        } else {
+            let mut growth =
+                crate::body::transported_originals::ImportedOriginals::default().append_bound();
+            growth.bytes = growth.bytes.saturating_add(
+                size_of::<crate::body::transported_originals::ImportedOriginals>()
+                    + 2 * size_of::<usize>(),
+            );
+            growth
+        }
+    }
+    pub(crate) fn require_unique_originals(&mut self) -> Result<(), &'static str> {
+        if let Some(owner) = &mut self.imported
+            && std::rc::Rc::get_mut(owner).is_none()
+        {
+            return Err("selected original append requires its uniquely owned immutable originals");
+        }
+        Ok(())
+    }
+    pub(crate) fn append_original(
+        &mut self,
+        row: crate::body::transported_originals::Original,
+    ) -> Result<(), &'static str> {
+        self.require_unique_originals()?;
+        let owner = self.imported.get_or_insert_with(|| {
+            std::rc::Rc::new(crate::body::transported_originals::ImportedOriginals::default())
+        });
+        std::rc::Rc::get_mut(owner)
+            .ok_or("selected original append lost its uniquely owned immutable originals")?
+            .append_selected(row)
+    }
     pub(crate) fn iter(&self) -> impl Iterator<Item = &Template> {
-        self.bodies.iter().chain(
-            self.imported
-                .iter()
-                .flat_map(|i| i.iter().map(|row| &row.template)),
-        )
+        self.bodies.iter().chain(self.imported.iter().flat_map(|i| {
+            i.iter()
+                .map(crate::body::transported_originals::Original::template)
+        }))
     }
     pub(crate) fn len(&self) -> usize {
         self.bodies.len() + self.imported.as_ref().map_or(0, |i| i.len())
@@ -70,18 +102,17 @@ impl Templates {
             self.imported
                 .as_ref()?
                 .at(index - self.bodies.len())
-                .map(|row| &row.template)
+                .map(crate::body::transported_originals::Original::template)
         }
     }
     pub(crate) fn inputs<'a>(
         &'a self,
         sources: &'a [crate::body::regions::Contract],
     ) -> impl Iterator<Item = &'a crate::body::regions::Contract> {
-        sources.iter().chain(
-            self.imported
-                .iter()
-                .flat_map(|i| i.iter().map(|row| &row.contract)),
-        )
+        sources.iter().chain(self.imported.iter().flat_map(|i| {
+            i.iter()
+                .map(crate::body::transported_originals::Original::contract)
+        }))
     }
 }
 
@@ -376,7 +407,15 @@ impl Prepared {
     /// Complete the template set in the same declaration order as the ordinary builder.
     /// # Errors
     /// Rejects invalid templates and retained owners outside the requested program.
-    pub fn finish(mut self, report: &Report, facts: &Declarations) -> Result<Templates, Error> {
+    pub fn finish(self, report: &Report, facts: &Declarations) -> Result<Templates, Error> {
+        self.finish_selected(report, facts, crate::body::Selection::Complete)
+    }
+    pub(crate) fn finish_selected(
+        mut self,
+        report: &Report,
+        facts: &Declarations,
+        selection: crate::body::Selection,
+    ) -> Result<Templates, Error> {
         let mut bodies = Vec::new();
         for function in &facts.functions {
             if (function.body.is_some()
@@ -385,6 +424,7 @@ impl Prepared {
                     .demanded_length()
                     .is_some_and(|l| l.definition == function.definition))
                 && owns(facts, function.definition)
+                && selection.includes(facts, function.definition)
             {
                 bodies.push(self.function(report, facts, function)?);
             }
@@ -400,6 +440,7 @@ impl Prepared {
         for closure in facts.closures.all() {
             if let Some(owner) = closure.owner
                 && owns(facts, owner)
+                && selection.includes(facts, owner)
             {
                 bodies.push(self.closure(report, facts, closure, owner)?);
             }

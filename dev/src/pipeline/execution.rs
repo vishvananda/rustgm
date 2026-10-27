@@ -593,14 +593,14 @@ impl Engine {
                         "cached imported Code lost its exact declaration",
                     )
                 })?;
-            if header.body != Some(row.template.body.source)
-                || row.contract.signature != Some(header.signature)
+            if header.body != Some(row.template().body.source)
+                || row.contract().signature != Some(header.signature)
                 || header
                     .environment
-                    .is_none_or(|env| !Arc::ptr_eq(env, &row.template.environment))
+                    .is_none_or(|env| !Arc::ptr_eq(env, &row.template().environment))
             {
                 return Err(report.body_error(
-                    row.template.body.source,
+                    row.template().body.source,
                     "cached imported Code changed its exact original lineage",
                 ));
             }
@@ -623,21 +623,21 @@ impl Engine {
         // All imported originals, including unused rows, prove before this private
         // provider retains the set or any selected imported Code can be published.
         for row in originals.iter() {
-            crate::borrow::storage::validate(&row.template.body)
+            crate::borrow::storage::validate(&row.template().body)
                 .map_err(|e| report.body_error(e.node, e.message))?;
             if !facts.uses_source_copy() {
                 super::original_contexts::Original::validate_parts_charged(
                     facts,
-                    &row.template.body,
-                    &row.contract,
+                    &row.template().body,
+                    row.contract(),
                 )
-                .map_err(|e| report.body_error(row.template.body.source, e))?;
+                .map_err(|e| report.body_error(row.template().body.source, e))?;
             }
             self.prove(
                 report,
                 facts,
-                &row.template,
-                &row.contract,
+                row.template(),
+                row.contract(),
                 ProofPurpose::Original,
             )?;
         }
@@ -681,11 +681,11 @@ impl Engine {
         })?;
         super::original_contexts::Original::validate_parts_charged(
             facts,
-            &row.template.body,
-            &row.contract,
+            &row.template().body,
+            row.contract(),
         )
-        .map_err(|e| report.body_error(row.template.body.source, e))?;
-        self.specialize(report, facts, instance, &row.template, &row.contract)?;
+        .map_err(|e| report.body_error(row.template().body.source, e))?;
+        self.specialize(report, facts, instance, row.template(), row.contract())?;
         Ok(true)
     }
     fn reserve_template(

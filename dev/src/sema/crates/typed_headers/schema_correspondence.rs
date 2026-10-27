@@ -46,12 +46,28 @@ impl<'rows, 'memo, 'work> Borrowed<'rows, 'memo, 'work> {
     ) -> Result<Self, Error> {
         authority.reservation.require(authority.report, work)?;
         authority.completion.columns(authority.report, work)?;
+        Self::retained(
+            authority.reservation.catalog(),
+            view,
+            reader,
+            maps,
+            store,
+            work,
+        )
+    }
+    pub(super) fn retained(
+        catalog: &'rows Catalog,
+        view: &'memo RecipeView<'rows>,
+        reader: &'memo MemoReader,
+        maps: &'memo Maps,
+        store: &'memo Store,
+        work: &'work mut ReservationWork,
+    ) -> Result<Self, Error> {
         reader.require(view, store, work)?;
         maps.require(view, store, work)?;
         // Fixed selected-root/catalog and common owner comparisons. Variable
         // members/bounds are prepaid by their selected producer before entry.
         work.charge(12)?;
-        let catalog = authority.reservation.catalog().as_ref();
         let definition = catalog
             .declaration_identity(view.root(), DefKind::Module)
             .map_err(error)?;

@@ -174,11 +174,12 @@ pub(super) fn build(
     let proofs = record
         .normalizations
         .iter()
-        .map(|record| normalization(view, record, &mut work.steps))
+        .enumerate()
+        .map(|(index, record)| normalization(view, index, record, &mut work.steps))
         .collect::<Result<_, _>>()?;
     let environment = match record.builtins.as_ref().map(|b| b.environment) {
         None | Some(s::EnvironmentOrigin::Absent) => None,
-        Some(origin) if origin == record.environment => Some(Arc::clone(view.environment())),
+        Some(origin) if origin == record.environment => Some(Arc::clone(view.environment()?)),
         _ => return Err("source original builtin environment changed its actual provenance"),
     };
     let source_copy = record
@@ -191,7 +192,7 @@ pub(super) fn build(
         key: body.key(),
         source: body.source,
         signature: Some(view.signature()),
-        universals: 0,
+        universals: view.universals(),
         assumptions,
         parameters,
         type_assumptions,
@@ -213,6 +214,17 @@ fn parameter_order(
     steps: &mut usize,
 ) -> Result<(), &'static str> {
     use crate::types::{Kind, arguments::Argument};
+    if view.numbered() {
+        if parameters.len() != view.inputs().parameters.len() {
+            return Err("selected original changed its complete raw formal domain");
+        }
+        for (&raw, &actual) in view.inputs().parameters.iter().zip(parameters) {
+            if view.parameter(raw, &facts.types, steps)? != actual {
+                return Err("selected original changed its actual full formal order");
+            }
+        }
+        return Ok(());
+    }
     let mut actual = parameters.iter();
     for parameter in facts
         .generics
@@ -323,13 +335,13 @@ fn pair(
 }
 fn normalization(
     view: &SourceOriginal<'_>,
+    index: usize,
     record: &s::NormalizationInput,
     steps: &mut usize,
 ) -> Result<Proof, &'static str> {
-    if !record.owned.is_empty() {
-        return Err("source normalization allocations require fresh wider owner mapping");
-    }
-    let mut proof = crate::types::lifetime_proof::Obligations::new(0);
+    let regions = view.normalization_interval(index, record, steps)?;
+    let mut proof = crate::types::lifetime_proof::Obligations::new(regions.start);
+    proof.regions = regions;
     proof.equalities = record
         .equalities
         .iter()
@@ -368,7 +380,7 @@ pub(super) fn validate(
     if contract.key != body.key()
         || contract.source != view.source()?
         || contract.signature != Some(view.signature())
-        || contract.universals != 0
+        || contract.universals != view.universals()
         || contract.output.is_some()
         || contract.require_result_formation
         || contract.parameters.len() != record.parameters.len()
@@ -412,8 +424,13 @@ pub(super) fn validate(
     }
     drop(obligations);
     validate_builtins(&expected, contract, steps)?;
-    for (record, actual) in record.normalizations.iter().zip(&contract.proofs) {
-        validate_normalization(view, record, actual, steps)?;
+    for (index, (record, actual)) in record
+        .normalizations
+        .iter()
+        .zip(&contract.proofs)
+        .enumerate()
+    {
+        validate_normalization(view, index, record, actual, steps)?;
     }
     Ok(())
 }
@@ -436,7 +453,7 @@ fn validate_builtins(
     match (environment, builtin.environment.as_ref()) {
         (None | Some(s::EnvironmentOrigin::Absent), None) => {}
         (Some(origin), Some(actual))
-            if origin == record.environment && Arc::ptr_eq(actual, view.environment()) => {}
+            if origin == record.environment && Arc::ptr_eq(actual, view.environment()?) => {}
         _ => return Err("source original borrowed a different record environment origin"),
     }
     let mut predicates = expected.predicates(steps);
@@ -517,13 +534,14 @@ fn same_kind(actual: Kind, expected: Kind) -> bool {
 }
 fn validate_normalization(
     view: &SourceOriginal<'_>,
+    index: usize,
     record: &s::NormalizationInput,
     actual: &Proof,
     steps: &mut usize,
 ) -> Result<(), &'static str> {
-    if !record.owned.is_empty()
-        || actual.proof.has_quantified()
-        || actual.proof.regions != (0..0)
+    let regions = view.normalization_interval(index, record, steps)?;
+    if actual.proof.has_quantified()
+        || actual.proof.regions != regions
         || actual.source != view.input_site(record.site, steps)?
         || actual.sources.len() != record.sources.len()
         || actual.proof.equalities.len() != record.equalities.len()

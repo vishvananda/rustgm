@@ -43,7 +43,9 @@ pub(in crate::resolve) enum Feature {
     MarkerTraitAttr = 26,
     TryBlocks = 27,
     ConstClosures = 28,
+    MetavariableConcat = 29,
     CoverageAttribute = 30,
+    MetavariableExpressions = 31,
 }
 
 /// Recognizing a gate request is not evidence that its active constructs work.
@@ -84,6 +86,8 @@ impl Request {
             "marker_trait_attr" => Self::Capability(Feature::MarkerTraitAttr),
             "try_blocks" => Self::Capability(Feature::TryBlocks),
             "const_closures" => Self::Capability(Feature::ConstClosures),
+            "macro_metavar_expr_concat" => Self::Capability(Feature::MetavariableConcat),
+            "macro_metavar_expr" => Self::Capability(Feature::MetavariableExpressions),
             "coverage_attribute" => Self::Capability(Feature::CoverageAttribute),
             "pattern_type_macro" => Self::Library(Feature::PatternTypeMacro),
             "pattern_types" => Self::Capability(Feature::PatternTypes),
@@ -215,6 +219,8 @@ pub(in crate::resolve) fn prepare_with_admission(
                 || features.has(Feature::MarkerTraitAttr)
                 || features.has(Feature::TryBlocks)
                 || features.has(Feature::ConstClosures)
+                || features.has(Feature::MetavariableConcat)
+                || features.has(Feature::MetavariableExpressions)
             {
                 Some(Box::new(Source::LocalMacros(super::LocalMacros::new(
                     unit, features,

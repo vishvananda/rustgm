@@ -72,10 +72,12 @@ impl Source {
         facts: &mut Declarations,
         checked: &Checked<'_>,
         identity: &CrateIdentity,
-    ) -> Result<Self, &'static str> {
-        let mut stage = Stage::begin_with_ordinary_traits(report, facts, identity)?;
+    ) -> Result<Self, crate::resolve::package::Error> {
+        let mut stage = Stage::begin_with_ordinary_traits(report, facts, identity)
+            .map_err(crate::resolve::package::Error::unlocated)?;
         let collector = collector_origin::CollectorOrigin::new(report, facts, &mut stage)?;
         Self::begin_stage(facts, checked, stage, true, Some(collector))
+            .map_err(crate::resolve::package::Error::unlocated)
     }
 
     fn begin_with_numbering(

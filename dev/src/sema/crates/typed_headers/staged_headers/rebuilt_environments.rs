@@ -202,7 +202,7 @@ pub(super) fn complete(
             .as_mut()
             .ok_or_else(|| error("source original environment lost its actual callable"))?
             .header
-            .environment = environment;
+            .environment = Some(environment);
     }
     Ok(())
 }

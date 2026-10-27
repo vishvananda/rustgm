@@ -9,6 +9,43 @@ mod tests;
 pub(crate) struct ShapeKey(Predicate);
 
 impl Store {
+    /// Charge the same persistent shape producer before its owned allocations.
+    pub(crate) fn shape_key_charged(
+        &mut self,
+        predicate: Predicate,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(ShapeKey, usize, usize), &'static str> {
+        // The actual shape action has no nested fold owner. Its allocation
+        // observer uses one four-slot traversal stack, never a type-DAG walk.
+        charge(1, 4 * size_of::<&Bound>())?;
+        let before_bytes = self.shape_registration_bytes();
+        let mut shapes = if let Some(shapes) = self.shapes.take() {
+            shapes
+        } else {
+            charge(1, size_of::<Bound>())?;
+            Box::new(Bound::shape())
+        };
+        let before = shapes.steps;
+        let result = shapes
+            .predicate_charged(self, predicate, charge)
+            .map(ShapeKey);
+        let work = shapes.steps.saturating_sub(before);
+        self.shapes = Some(shapes);
+        let retained = self.shape_registration_bytes().saturating_sub(before_bytes);
+        result.map(|key| (key, work, retained))
+    }
+
+    fn shape_registration_bytes(&self) -> usize {
+        self.node_table_allocation()
+            .bytes
+            .saturating_add(self.children.allocation().bytes)
+            .saturating_add(self.regions.allocation().bytes)
+            .saturating_add(self.trait_input_bytes())
+            .saturating_add(self.shapes.as_ref().map_or(0, |shapes| {
+                size_of::<Bound>().saturating_add(shapes.retained_allocation().0)
+            }))
+    }
+
     /// Share context-free canonical graph transformations across independent queries.
     /// The folder's cumulative work limit also bounds this derived index's storage.
     /// Query owners charge the returned incremental work to their own budget.

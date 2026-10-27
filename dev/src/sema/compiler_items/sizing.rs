@@ -11,7 +11,7 @@ use crate::{
 };
 
 pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
-    if report.package.source_client().is_some() {
+    if report.package.source_client().is_some() || report.package.staged_consumer().is_some() {
         return super::roles::admitted_headers::sizing(report, facts);
     }
     let Some(catalog) = facts.source_bindings.as_deref() else {

@@ -11,8 +11,9 @@ type Collector = fn(
     &borrow::incremental::Proved,
     &body::regions::Contract,
 ) -> std::result::Result<(), Error>;
-const _: [(); 2 * size_of::<usize>()] =
-    [(); size_of::<super::Context<'static, 'static, Collector>>()];
+// Two proof/collector borrows, optional service, and padded stack-only construction selection.
+const _: [(); 5 * size_of::<usize>()] =
+    [(); size_of::<super::Context<'static, 'static, 'static, Collector>>()];
 
 #[derive(Default)]
 struct Counts {
@@ -144,6 +145,7 @@ fn run(source: &str, damage: Damage, counts: &Rc<Counts>) -> Result<(usize, Lowe
             stage.counts.published.set(true);
             Ok::<_, Error>((count, result))
         },
+        Construction::Complete,
     )?;
     Ok(outcome?)
 }

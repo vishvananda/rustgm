@@ -24,68 +24,9 @@ pub(in crate::sema::crates::typed_headers) trait Mapping<'rows>:
         header: s::HeaderRef,
     ) -> Result<MemberRows<'rows>, &'static str>;
     fn require_owner(&self, owner: Owner) -> Result<(), &'static str> {
-        if owner.source.is_some() {
-            return Err("imported owner authentication cannot accept source syntax provenance");
-        }
-        let descriptor = self.descriptor()?;
-        let rows = descriptor.rows();
-        match owner.kind {
-            OwnerKind::Trait {
-                definition,
-                auto_,
-                unsafe_,
-                constant,
-            } => {
-                let id = self.catalog().declaration(definition)?;
-                self.catalog()
-                    .validate_declaration(id, definition, DefKind::Trait)?;
-                let (artifact, row, _) = self.catalog().declaration_coordinate(id)?;
-                if artifact != descriptor.identity() {
-                    return Err("imported trait owner belongs to another actual artifact");
-                }
-                let Some(s::HeaderRef::Trait(index)) = rows.header(row)? else {
-                    return Err("imported trait owner lacks its exact completed header");
-                };
-                let header = &rows.traits[index as usize];
-                let flags = header.flags.bits();
-                if header.declaration != row
-                    || self
-                        .catalog()
-                        .definition_at(artifact, header.self_definition)?
-                        != owner.self_definition
-                    || auto_ != (flags & s::TraitFlags::AUTO != 0)
-                    || unsafe_ != (flags & s::TraitFlags::UNSAFE != 0)
-                    || constant != (flags & s::TraitFlags::CONST != 0)
-                {
-                    return Err("imported trait changed its actual Self/flags/owner mapping");
-                }
-                let id = self.catalog().declaration(owner.self_definition)?;
-                self.catalog().validate_declaration(
-                    id,
-                    owner.self_definition,
-                    DefKind::SelfType,
-                )?;
-            }
-            OwnerKind::ImportedImpl(id) => {
-                let definition = self.catalog().declaration_identity(id, DefKind::SelfType)?;
-                let (artifact, row, _) = self.catalog().declaration_coordinate(id)?;
-                if definition != owner.self_definition || artifact != descriptor.identity() {
-                    return Err("imported impl owner changed its exact Self/catalog mapping");
-                }
-                let Some(s::HeaderRef::Implementation(index)) = rows.header(row)? else {
-                    return Err("imported impl has no actual completed header");
-                };
-                let header = &rows.implementations[index as usize];
-                if header.self_definition != row || header.scope != row {
-                    return Err("imported impl changed its actual declaration/header scope");
-                }
-            }
-            OwnerKind::Impl { .. } => {
-                return Err("imported impl cannot carry source syntax targets");
-            }
-        }
-        Ok(())
+        require_owner(self.catalog(), || self.descriptor(), owner)
     }
+
     fn require_schema(
         &mut self,
         store: &Store,
@@ -164,6 +105,66 @@ pub(in crate::sema::crates::typed_headers) trait Mapping<'rows>:
         }
         Ok(())
     }
+}
+
+pub(in crate::sema::crates::typed_headers) fn require_owner<'a>(
+    catalog: &Catalog,
+    descriptor: impl FnOnce() -> Result<SourceDescriptor<'a>, &'static str>,
+    owner: Owner,
+) -> Result<(), &'static str> {
+    if owner.source.is_some() {
+        return Err("imported owner authentication cannot accept source syntax provenance");
+    }
+    let descriptor = descriptor()?;
+    let rows = descriptor.rows();
+    match owner.kind {
+        OwnerKind::Trait {
+            definition,
+            auto_,
+            unsafe_,
+            constant,
+        } => {
+            let id = catalog.declaration(definition)?;
+            catalog.validate_declaration(id, definition, DefKind::Trait)?;
+            let (artifact, row, _) = catalog.declaration_coordinate(id)?;
+            if artifact != descriptor.identity() {
+                return Err("imported trait owner belongs to another actual artifact");
+            }
+            let Some(s::HeaderRef::Trait(index)) = rows.header(row)? else {
+                return Err("imported trait owner lacks its exact completed header");
+            };
+            let header = &rows.traits[index as usize];
+            let flags = header.flags.bits();
+            if header.declaration != row
+                || catalog.definition_at(artifact, header.self_definition)? != owner.self_definition
+                || auto_ != (flags & s::TraitFlags::AUTO != 0)
+                || unsafe_ != (flags & s::TraitFlags::UNSAFE != 0)
+                || constant != (flags & s::TraitFlags::CONST != 0)
+            {
+                return Err("imported trait changed its actual Self/flags/owner mapping");
+            }
+            let id = catalog.declaration(owner.self_definition)?;
+            catalog.validate_declaration(id, owner.self_definition, DefKind::SelfType)?;
+        }
+        OwnerKind::ImportedImpl(id) => {
+            let definition = catalog.declaration_identity(id, DefKind::SelfType)?;
+            let (artifact, row, _) = catalog.declaration_coordinate(id)?;
+            if definition != owner.self_definition || artifact != descriptor.identity() {
+                return Err("imported impl owner changed its exact Self/catalog mapping");
+            }
+            let Some(s::HeaderRef::Implementation(index)) = rows.header(row)? else {
+                return Err("imported impl has no actual completed header");
+            };
+            let header = &rows.implementations[index as usize];
+            if header.self_definition != row || header.scope != row {
+                return Err("imported impl changed its actual declaration/header scope");
+            }
+        }
+        OwnerKind::Impl { .. } => {
+            return Err("imported impl cannot carry source syntax targets");
+        }
+    }
+    Ok(())
 }
 
 /// Declaration correspondence only. Complete impl links retain separate actual

@@ -99,7 +99,7 @@ fn condition_parse_transfer_is_once_and_retains_real_suffix_and_spans() -> Resul
         }
     }
     opaque::relocated_and_forwarded()?;
-    assert!(!crate::expand::builtin::Builtin::Assert.executable());
+    assert!(crate::expand::builtin::Builtin::Assert.executable());
     Ok(())
 }
 
@@ -176,6 +176,9 @@ fn condition_attempt_and_transfer_budgets_fail_before_publication() -> Result {
     ));
     Ok(())
 }
+
+#[path = "assert_emission.rs"]
+mod emission;
 
 mod consume_test_support {
     use super::*;

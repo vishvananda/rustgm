@@ -35,60 +35,70 @@ impl Graph {
         };
         let raw = &rows.traits[index as usize];
         self.trait_ready(catalog, facts, role.definition, row, steps)?;
-        let owner_id = facts
-            .associated
-            .owner(role.definition)
-            .ok_or("imported trait header lacks its installed actual owner")?;
-        let owner = facts
-            .associated
-            .get(owner_id)
-            .copied()
-            .ok_or("imported trait header has a stale owner identity")?;
-        let schema = facts
-            .associated
-            .schema(role.definition)
-            .ok_or("imported trait header lacks its installed actual schema")?;
-        let members = facts
-            .associated
-            .owner_members(owner_id)
-            .ok_or("imported trait header lacks its complete actual member inventory")?;
-        let catalog = facts
-            .source_bindings
-            .as_deref()
-            .ok_or("imported trait header lacks its actual role catalog")?;
-        let header = Trait {
-            definition: role.definition,
-            parent: role.parent,
-            origin: role.origin,
-            self_definition: owner.self_definition,
-            self_type: schema.self_type,
-            flags: Flags {
-                unsafe_: raw.flags.bits() & s::TraitFlags::UNSAFE != 0,
-                constant: raw.flags.bits() & s::TraitFlags::CONST != 0,
-                auto_: raw.flags.bits() & s::TraitFlags::AUTO != 0,
-            },
-            attributes: catalog.neutral_attributes(role)?,
-            captures: schema.captures,
-            parameters: facts
-                .generics
-                .parameters
-                .get(&role.definition)
-                .ok_or("imported trait header omitted its actual formal contract")?,
-            members,
-            inputs: declaration_inputs::own_view(
-                &facts.generics,
-                facts.crates.as_deref(),
-                role.definition,
-            )?,
-            written: Written {
-                parameters: raw.written_parameters as usize,
-                supertraits: raw.written_supertraits.slice(&rows.clause_indices)?.len(),
-            },
-        };
-        header.validate_self(&facts.types)?;
-        validate_self_binding(facts, &header)?;
-        Ok(header)
+        installed(facts, role, raw, rows)
     }
+}
+
+/// The same installed declaration adapter follows either actual mapping check.
+pub(in crate::sema::crates::typed_headers) fn installed<'a>(
+    facts: &'a Declarations,
+    role: Role,
+    raw: &s::TraitHeader,
+    rows: s::ValidatedView<'_>,
+) -> Result<Trait<'a>, &'static str> {
+    let owner_id = facts
+        .associated
+        .owner(role.definition)
+        .ok_or("imported trait header lacks its installed actual owner")?;
+    let owner = facts
+        .associated
+        .get(owner_id)
+        .copied()
+        .ok_or("imported trait header has a stale owner identity")?;
+    let schema = facts
+        .associated
+        .schema(role.definition)
+        .ok_or("imported trait header lacks its installed actual schema")?;
+    let members = facts
+        .associated
+        .owner_members(owner_id)
+        .ok_or("imported trait header lacks its complete actual member inventory")?;
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("imported trait header lacks its actual role catalog")?;
+    let header = Trait {
+        definition: role.definition,
+        parent: role.parent,
+        origin: role.origin,
+        self_definition: owner.self_definition,
+        self_type: schema.self_type,
+        flags: Flags {
+            unsafe_: raw.flags.bits() & s::TraitFlags::UNSAFE != 0,
+            constant: raw.flags.bits() & s::TraitFlags::CONST != 0,
+            auto_: raw.flags.bits() & s::TraitFlags::AUTO != 0,
+        },
+        attributes: catalog.neutral_attributes(role)?,
+        captures: schema.captures,
+        parameters: facts
+            .generics
+            .parameters
+            .get(&role.definition)
+            .ok_or("imported trait header omitted its actual formal contract")?,
+        members,
+        inputs: declaration_inputs::own_view(
+            &facts.generics,
+            facts.crates.as_deref(),
+            role.definition,
+        )?,
+        written: Written {
+            parameters: raw.written_parameters as usize,
+            supertraits: raw.written_supertraits.slice(&rows.clause_indices)?.len(),
+        },
+    };
+    header.validate_self(&facts.types)?;
+    validate_self_binding(facts, &header)?;
+    Ok(header)
 }
 
 fn validate_self_binding(facts: &Declarations, header: &Trait<'_>) -> Result<(), &'static str> {

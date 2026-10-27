@@ -54,11 +54,17 @@ fn prepared_and_resume_states_require_their_exact_pending_owner() -> Result<(), 
     let instance = crate::types::instance::Instance::new(&checker.facts.types, ty)?;
     assert!(
         checker
-            .execution_body(Requirement::FunctionBody(instance), Phase::Prepared)
+            .execution_body(
+                Request::Constant(Requirement::FunctionBody(instance)),
+                Phase::Prepared
+            )
             .is_err()
     );
     let error = checker
-        .execution_body(Requirement::FunctionBody(instance), Phase::Resume)
+        .execution_body(
+            Request::Constant(Requirement::FunctionBody(instance)),
+            Phase::Resume,
+        )
         .err()
         .ok_or("missing continuation accepted")?;
     assert!(

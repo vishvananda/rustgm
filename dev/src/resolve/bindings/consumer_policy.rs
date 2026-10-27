@@ -62,7 +62,47 @@ struct UnpaidHeaderData {
 pub(crate) struct HeaderDataIdentity {
     owner: Weak<UnpaidHeaderData>,
 }
+/// Strong ownership of the SAME unpaid allocation; this type certifies no completion.
+pub(crate) struct HeaderDataOwner {
+    data: Rc<UnpaidHeaderData>,
+}
+impl HeaderDataOwner {
+    pub(crate) fn identity(&self, work: &mut ReservationWork) -> Result<HeaderDataIdentity, Error> {
+        work.charge(1)?;
+        Ok(HeaderDataIdentity {
+            owner: Rc::downgrade(&self.data),
+        })
+    }
+    pub(crate) fn columns(&self) -> &s::HeaderAttributeColumns {
+        &self.data.columns
+    }
+}
 impl HeaderDataIdentity {
+    pub(crate) fn retain(
+        &self,
+        consumer: &StagedConsumer,
+        work: &mut ReservationWork,
+    ) -> Result<HeaderDataOwner, Error> {
+        self.require(consumer, work)?;
+        work.charge(1)?;
+        Ok(HeaderDataOwner {
+            data: Rc::clone(&consumer.admission.headers),
+        })
+    }
+    pub(crate) fn require_owner(
+        &self,
+        owner: &HeaderDataOwner,
+        work: &mut ReservationWork,
+    ) -> Result<(), Error> {
+        work.charge(2)?;
+        if Weak::ptr_eq(&self.owner, &Rc::downgrade(&owner.data)) {
+            Ok(())
+        } else {
+            Err(Error::unlocated(
+                "retained source columns changed their actual allocation",
+            ))
+        }
+    }
     pub(crate) fn require(
         &self,
         consumer: &StagedConsumer,

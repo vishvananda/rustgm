@@ -28,6 +28,7 @@ pub(in crate::sema::declarations) use scalar_readiness::{
     Pending as EarlyImplementations, Phase as ImplementationPhase,
 };
 pub(in crate::sema::declarations) use validation::impl_contract_obligations;
+pub(in crate::sema) use validation::validate_impl_requirements_prepared;
 
 impl Checker<'_> {
     pub(in crate::sema::declarations) fn const_impl_member(&self, definition: DefId) -> bool {
@@ -71,7 +72,9 @@ impl Checker<'_> {
                 self.drain(steps, limit)?;
             }
         }
-        if let Some(registry) = &mut self.facts.generics.implementations {
+        if let Some(selected) = self.selected.as_deref_mut() {
+            selected.require_imported_pending(self.report, &self.facts)?;
+        } else if let Some(registry) = &mut self.facts.generics.implementations {
             registry
                 .finish_constant_headers()
                 .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;

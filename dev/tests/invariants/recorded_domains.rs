@@ -289,12 +289,13 @@ fn foreign_contexts() -> Result {
                 session.inventory = foreign;
             }
             _ => {
-                session
+                let table = session
                     .recipes
                     .as_mut()
                     .and_then(|state| state.callables.as_mut())
-                    .ok_or("actual table")?
-                    .scopes[owner.0 as usize] = None;
+                    .ok_or("actual table")?;
+                std::rc::Rc::get_mut(&mut table.scopes).ok_or("exclusive actual scope index")?
+                    [owner.0 as usize] = None;
             }
         }
         let before = work.steps;

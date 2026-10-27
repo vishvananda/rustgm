@@ -30,19 +30,40 @@ pub(in crate::body) fn materialized(
     resolve_with_original(facts, body, contract, None, scope)
 }
 
+pub(crate) fn resolve_prepared(
+    facts: &mut Declarations,
+    body: &mut Body,
+    contract: &mut Contract,
+    preparation: &mut dyn crate::sema::dispatch::Preparation,
+) -> Result<(), crate::sema::dispatch::Failure> {
+    resolve_using(facts, body, contract, None, None, Some(preparation))
+}
+
 fn resolve_with_original(
+    facts: &mut Declarations,
+    body: &mut Body,
+    contract: &mut Contract,
+    original: Option<originals::Parameters>,
+    scope: Option<&mut super::copy_requirements::materialized::InstanceScope>,
+) -> Result<(), String> {
+    resolve_using(facts, body, contract, original, scope, None)
+        .map_err(crate::sema::dispatch::Failure::message)
+}
+
+fn resolve_using(
     facts: &mut Declarations,
     body: &mut Body,
     contract: &mut Contract,
     mut original: Option<originals::Parameters>,
     mut scope: Option<&mut super::copy_requirements::materialized::InstanceScope>,
-) -> Result<(), String> {
+    mut preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
+) -> Result<(), crate::sema::dispatch::Failure> {
     let dispatch = body.values.iter().any(|value| {
         matches!(value.kind, Rvalue::AssociatedConstant(_) | Rvalue::SourceAssociated(_))
             || matches!(value.kind, Rvalue::Function(id) if facts.associated.trait_owner(id).is_some())
     });
     if !dispatch {
-        return finish(facts, body, contract, scope.as_deref());
+        return finish_using(facts, body, contract, scope.as_deref(), preparation);
     }
     let (mut caller, mut dispatcher) = callers::prepare(facts, body, contract)?;
     let mut replacements = HashMap::default();
@@ -79,7 +100,11 @@ fn resolve_with_original(
         if let Rvalue::Function(id) = value.kind
             && facts.associated.trait_owner(id).is_some()
         {
-            let selected = dispatcher.select(facts, value.ty)?;
+            let selected = if let Some(service) = &mut preparation {
+                dispatcher.select_prepared(facts, value.ty, &mut **service)?
+            } else {
+                dispatcher.select(facts, value.ty)?
+            };
             if selected != value.ty {
                 replacements.insert(value.ty, selected);
             }
@@ -102,7 +127,7 @@ fn resolve_with_original(
         contract
             .proofs
             .push(crate::body::regions::Proof::new(body.source, proof));
-        return finish(facts, body, contract, scope.as_deref());
+        return finish_using(facts, body, contract, scope.as_deref(), preparation);
     }
     let mut obligations = proof
         .regions
@@ -128,17 +153,24 @@ fn resolve_with_original(
         kind: Kind::TypeOutlives { ty, shorter },
     }));
     contract.obligations = obligations;
-    finish(facts, body, contract, scope.as_deref())
+    finish_using(facts, body, contract, scope.as_deref(), preparation)
 }
 
-fn finish(
+fn finish_using(
     facts: &mut Declarations,
     body: &mut Body,
     contract: &mut Contract,
     scope: Option<&super::copy_requirements::materialized::InstanceScope>,
-) -> Result<(), String> {
-    super::invocation_entries::select(facts, body, contract).map_err(String::from)?;
-    super::copy_requirements::prepare_scoped(facts, body, contract, scope)
+    preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
+) -> Result<(), crate::sema::dispatch::Failure> {
+    super::invocation_entries::select(facts, body, contract)?;
+    match preparation {
+        Some(service) => {
+            super::copy_requirements::prepare_selected(facts, body, contract, scope, service)
+        }
+        None => super::copy_requirements::prepare_scoped(facts, body, contract, scope)
+            .map_err(Into::into),
+    }
 }
 pub(super) fn copy_frontier(
     facts: &Declarations,

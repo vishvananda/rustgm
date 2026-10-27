@@ -47,6 +47,7 @@ impl<S: Sources> Engine<'_, S> {
                 .declaration()
                 .allows(crate::resolve::bindings::KnownFeature::EditionPanic)
         });
+        self.check_template_features(file, &declared.matcher)?;
         let body = if let Some(role) = declared
             .header
             .as_ref()

@@ -104,7 +104,8 @@ impl Owner {
         let scope = self
             .scopes
             .get(demand.expected.scope.0)
-            .and_then(Option::as_deref)
+            .and_then(std::cell::OnceCell::get)
+            .map(Box::as_ref)
             .ok_or_else(|| error("neutral numbered body lost its actual declaration"))?;
         prepared
             .recordings
@@ -144,7 +145,8 @@ impl Owner {
         let declaration = self
             .scopes
             .get(*scope)
-            .and_then(Option::as_deref)
+            .and_then(std::cell::OnceCell::get)
+            .map(Box::as_ref)
             .ok_or_else(|| error("neutral numbered body lost its actual declaration"))?;
         declaration.require(rows, facts)?;
         if *expected != demand.expected

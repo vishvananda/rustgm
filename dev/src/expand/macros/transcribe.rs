@@ -1,16 +1,21 @@
 //! Typed substitution keeps opaque syntax identities and explicit spelling origins.
+mod concatenation;
+mod metavariables;
 use super::{
-    bindings::{Binding, Bindings},
+    bindings::{Binding, Bindings, Cardinalities, Count, PathIndex, Template},
     capture::{CaptureId, Payload},
     input::{Input, delimiters},
     matcher::Matched,
-    model::{Definition, Kind, List, Repetition, Rule, VariableId},
+    model::{Atom, Definition, Fragment, Kind, List, Repetition, Rule, VariableId},
 };
 use crate::support::hash::HashMap;
 use crate::{
     lex::token::{Kind as TokenKind, LexError, Token},
-    support::names::NameId,
-    syntax::token_tree::{Span, error},
+    support::names::{NameId, Names},
+    syntax::{
+        interpolation::{EMPTY_INPUTS, Inputs},
+        token_tree::{Span, error},
+    },
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -28,6 +33,15 @@ pub enum Piece {
     Opaque(CaptureId),
     /// Definition-site crate identity is attached by the expansion session.
     Crate(Span),
+    /// Canonical generated spelling, anchored in the actual definition context.
+    Identifier {
+        name: NameId,
+        span: Span,
+    },
+    Integer {
+        value: u32,
+        span: Span,
+    },
     Doc {
         inner: bool,
         body: Span,
@@ -46,7 +60,10 @@ struct Writer<'a> {
     variables: HashMap<NameId, VariableId>,
     input: &'a Input,
     source: &'a str,
-    indices: Vec<usize>,
+    names: &'a mut Names,
+    inputs: &'a dyn Inputs,
+    indices: Vec<PathIndex>,
+    cardinalities: Option<Box<Cardinalities>>,
     output: Transcription,
 }
 /// # Errors
@@ -56,6 +73,20 @@ pub fn transcribe(
     matched: &Matched,
     source: &str,
     input: &Input,
+    names: &mut Names,
+) -> Result<Transcription, LexError> {
+    transcribe_with_inputs(definition, matched, source, input, names, &EMPTY_INPUTS)
+}
+/// Forwarded literals retain their actual parsed fragment and original source.
+/// # Errors
+/// Rejects invalid captures, concatenation operands and transcription budgets.
+pub fn transcribe_with_inputs(
+    definition: &Definition,
+    matched: &Matched,
+    source: &str,
+    input: &Input,
+    names: &mut Names,
+    inputs: &dyn Inputs,
 ) -> Result<Transcription, LexError> {
     let rule = definition
         .rules
@@ -76,7 +107,10 @@ pub fn transcribe(
         variables,
         input,
         source,
+        names,
+        inputs,
         indices: Vec::new(),
+        cardinalities: None,
         output: Transcription {
             pieces: Vec::new(),
             work: 0,
@@ -87,10 +121,13 @@ pub fn transcribe(
 }
 impl Writer<'_> {
     fn tick(&mut self, offset: u32) -> Result<(), LexError> {
-        if self.output.work >= 1_000_000 {
+        self.charge(offset, 1)
+    }
+    fn charge(&mut self, offset: u32, work: usize) -> Result<(), LexError> {
+        if work > 1_000_000_usize.saturating_sub(self.output.work) {
             return Err(error(offset, "macro transcription work budget exceeded"));
         }
-        self.output.work += 1;
+        self.output.work += work;
         Ok(())
     }
     fn token(&mut self, token: Token, origin: Origin) -> Result<(), LexError> {
@@ -104,6 +141,9 @@ impl Writer<'_> {
             self.tick(node.span.start)?;
             match node.kind {
                 Kind::Crate => self.output.pieces.push(Piece::Crate(node.span)),
+                Kind::Concat(operands) => self.concat(operands, node.span)?,
+                Kind::Expression(expression) => self.metavariable(expression, node.span)?,
+                Kind::EscapedDollar(token) => self.token(token, Origin::Definition)?,
                 Kind::Doc { inner, body } => self.output.pieces.push(Piece::Doc {
                     inner,
                     body,
@@ -139,13 +179,7 @@ impl Writer<'_> {
                     identifier,
                 } => {
                     if let Some(variable) = self.variables.get(&name).copied() {
-                        let Binding::Capture(capture) = self.bindings.at_path(
-                            self.definition,
-                            self.rule,
-                            variable,
-                            &self.indices,
-                        )?
-                        else {
+                        let Binding::Capture(capture) = self.variable(variable)? else {
                             return Err(error(
                                 dollar.start,
                                 "metavariable is still repeating at this depth",
@@ -163,29 +197,62 @@ impl Writer<'_> {
                     separator,
                     operator,
                 } => {
-                    let count = self.count(children, node.span.start)?;
-                    if count == 0 && operator == Repetition::OneOrMore {
-                        return Err(error(
-                            node.span.start,
-                            "macro transcription must repeat at least once",
-                        ));
-                    }
-                    for index in 0..count {
-                        self.tick(node.span.start)?;
-                        if index != 0
-                            && let Some(atom) = separator
-                        {
-                            self.token(atom.token, Origin::Definition)?;
-                        }
-                        self.indices.push(index);
-                        self.sequence(children)?;
-                        self.indices.pop();
-                    }
+                    self.repeat(children, separator, operator, node.span)?;
                 }
                 Kind::Capture(_) => {
                     return Err(error(node.span.start, "capture declaration in template"));
                 }
             }
+        }
+        Ok(())
+    }
+    fn variable(&mut self, variable: VariableId) -> Result<Binding<'_>, LexError> {
+        if let Some(cardinalities) = self.cardinalities.as_mut() {
+            let query = Count {
+                definition: self.definition,
+                rule: self.rule,
+                variable,
+                path: &self.indices,
+                depth: 0,
+            };
+            cardinalities.lookup(&self.bindings, &query, &mut self.output.work)
+        } else {
+            self.bindings.at_indices(
+                self.definition,
+                self.rule,
+                variable,
+                self.indices.iter().map(|frame| frame.index as usize),
+            )
+        }
+    }
+    fn repeat(
+        &mut self,
+        children: List,
+        separator: Option<Atom>,
+        operator: Repetition,
+        span: Span,
+    ) -> Result<(), LexError> {
+        let count = self.count(children, span.start)?;
+        if count == 0 && operator == Repetition::OneOrMore {
+            return Err(error(
+                span.start,
+                "macro transcription must repeat at least once",
+            ));
+        }
+        let length =
+            u32::try_from(count).map_err(|_| error(span.start, "too many macro iterations"))?;
+        for index in 0..length {
+            self.tick(span.start)?;
+            if index != 0
+                && let Some(atom) = separator
+            {
+                self.token(atom.token, Origin::Definition)?;
+            }
+            let key = u32::try_from(self.output.work)
+                .map_err(|_| error(span.start, "macro frame identity overflow"))?;
+            self.indices.push(PathIndex { index, length, key });
+            self.sequence(children)?;
+            self.indices.pop();
         }
         Ok(())
     }
@@ -208,37 +275,15 @@ impl Writer<'_> {
         Ok(())
     }
     fn count(&mut self, list: List, offset: u32) -> Result<usize, LexError> {
-        let mut work = vec![list];
-        let mut count = None;
-        while let Some(list) = work.pop() {
-            for id in self.definition.list(list) {
-                self.tick(offset)?;
-                match self.definition.node(*id).kind {
-                    Kind::Substitute { name, .. } => {
-                        if let Some(variable) = self.variables.get(&name)
-                            && let Binding::Sequence(values) = self.bindings.at_path(
-                                self.definition,
-                                self.rule,
-                                *variable,
-                                &self.indices,
-                            )?
-                        {
-                            if count.is_some_and(|old| old != values.len()) {
-                                return Err(error(
-                                    offset,
-                                    "metavariables repeat different numbers of times",
-                                ));
-                            }
-                            count = Some(values.len());
-                        }
-                    }
-                    Kind::Group { children, .. } | Kind::Repeat { children, .. } => {
-                        work.push(children);
-                    }
-                    Kind::Atom(_) | Kind::Capture(_) | Kind::Crate | Kind::Doc { .. } => {}
-                }
-            }
-        }
-        count.ok_or_else(|| error(offset, "template repetition has no repeating metavariable"))
+        let template = Template {
+            definition: self.definition,
+            rule: self.rule,
+            variables: &self.variables,
+            path: &self.indices,
+        };
+        self.cardinalities
+            .get_or_insert_with(|| Box::new(Cardinalities::default()))
+            .repetition_count(&self.bindings, &template, list, &mut self.output.work)
+            .map_err(|failure| error(offset, failure.message))
     }
 }

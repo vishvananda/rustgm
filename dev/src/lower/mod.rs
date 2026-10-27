@@ -12,6 +12,7 @@ mod function;
 pub mod instances;
 mod intrinsics;
 pub mod linkage;
+pub(crate) mod local_runtime;
 mod remainder;
 mod roots;
 mod runtime_cleanup;

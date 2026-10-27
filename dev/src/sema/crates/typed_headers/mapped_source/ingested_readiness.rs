@@ -320,10 +320,12 @@ impl Graph {
             .environments
             .get(&definition)
             .ok_or("source function readiness omitted its actual declaration environment")?;
+        let defining = header
+            .environment
+            .as_ref()
+            .ok_or("source method requires its actual pending defining environment")?;
         match raw.body {
-            s::FunctionBody::Absent
-                if !std::sync::Arc::ptr_eq(environment, &header.environment) =>
-            {
+            s::FunctionBody::Absent if !std::sync::Arc::ptr_eq(environment, defining) => {
                 return Err("required source method changed its actual declaration environment");
             }
             s::FunctionBody::Original(body) => {
@@ -334,14 +336,14 @@ impl Graph {
                     .ok_or("source function readiness omitted its actual original input owner")?;
                 match input.environment {
                     s::EnvironmentOrigin::Declaration(owner) if owner == raw.declaration => {
-                        if !std::sync::Arc::ptr_eq(environment, &header.environment) {
+                        if !std::sync::Arc::ptr_eq(environment, defining) {
                             return Err(
                                 "source function changed its actual declaration environment",
                             );
                         }
                     }
                     s::EnvironmentOrigin::Contract
-                        if !std::sync::Arc::ptr_eq(environment, &header.environment) => {}
+                        if !std::sync::Arc::ptr_eq(environment, defining) => {}
                     _ => {
                         return Err(
                             "source function changed its actual original environment provenance",

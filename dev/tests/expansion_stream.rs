@@ -26,6 +26,7 @@ fn environment(source: &str) -> Environment<'_> {
         context: SyntaxContextId::ROOT,
         introduction: ExpansionId(9),
         crate_id: 0,
+        edition: rustgm::support::edition::Edition::Rust2024,
     }
 }
 
@@ -68,6 +69,7 @@ fn metadata_and_visibility_splice_typed_facts_into_generated_items() -> Result<(
             &call.matched,
             &call.input,
             &environment(source),
+            &report.names,
         )
         .map_err(|e| format!("{e:?}"))?;
         let splices = stream
@@ -100,6 +102,7 @@ fn matching_transcription_and_parsing_preserve_opaque_precedence() -> Result<(),
         &call.matched,
         &call.input,
         &environment(source),
+        &report.names,
     )
     .map_err(|e| format!("{e:?}"))?;
     let splices = stream
@@ -147,6 +150,7 @@ fn template_doc_tokens_are_created_once_with_definition_context() -> Result<(), 
         &call.matched,
         &call.input,
         &environment(source),
+        &report.names,
     )
     .map_err(|e| format!("{e:?}"))?;
     let splices = stream
@@ -184,6 +188,7 @@ fn crate_markers_have_a_typed_identity_distinct_from_identifier_spelling() -> Re
         &call.matched,
         &call.input,
         &environment(source),
+        &report.names,
     )
     .map_err(|e| format!("{e:?}"))?;
     assert_eq!(
@@ -249,6 +254,7 @@ fn whole_expansions_obey_expression_statement_and_item_contexts() -> Result<(), 
             &call.matched,
             &call.input,
             &environment(source),
+            &report.names,
         )
         .map_err(|e| format!("{e:?}"))?;
         let splices = stream
@@ -275,6 +281,7 @@ fn opaque_statements_preserve_complete_let_statements_and_expression_tails() -> 
             &call.matched,
             &call.input,
             &environment(&source),
+            &report.names,
         )
         .map_err(|e| format!("{e:?}"))?;
         let splices = stream
