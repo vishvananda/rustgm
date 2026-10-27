@@ -1,0 +1,41 @@
+{
+  "stage": "bounded source SIMD layout and Rust/C128 copy checkpoint; unqualified",
+  "selectors": [
+    "abi::layout::simd::tests::actual_declarations_gates_and_captured_attributes_keep_pin_authority",
+    "abi::layout::simd::tests::lane_counts_padding_alignment_and_generic_scalar_storage_are_actual",
+    "abi::layout::simd::tests::foreign_direct_gate_does_not_strengthen_definitions_or_nested_wrappers",
+    "abi::layout::simd::tests::c_vectors_use_sseup_and_large_nested_vectors_cannot_hide_in_memory",
+    "abi::layout::simd::tests::genuine_source_rust_and_c_copy_bodies_lower_with_distinct_signatures",
+    "abi::layout::simd::tests::shared_shape_queries_warm_abi_and_ordinary_paths_keep_bounded_storage"
+  ],
+  "predictions": "All six pass; actual emitted sizes/work/capacities unknown until run. Existing ordinary ABI classes/layouts/metadata remain exact. Actual source native remains separately pending.",
+  "new_features": {
+    "33": "repr_simd",
+    "34": "simd_ffi"
+  },
+  "authority": "repr uses actual whole attribute span, simd_ffi actual direct foreign signature type span; cfg-disabled repr does not demand feature",
+  "representation": "single genuine array field at offset zero; Rust arg and return indirect; aligned C128 SSE/SSEUP; larger C vectors explicitly unsupported before memory fallback",
+  "unchanged": [
+    "TypeKind",
+    "Shape",
+    "Body",
+    "Report",
+    "aggregate Definition fields",
+    "aggregate Definitions fields",
+    "layout caches",
+    "old metadata profiles"
+  ],
+  "required_remaining": [
+    "actual RustGM source native copy roundtrip",
+    "typed target-feature declaration and call-safety rows",
+    "unadjusted and LLVM intrinsic source ABI",
+    "SIMD arithmetic"
+  ],
+  "evidence": {
+    "followup_binding": "6576b513377a1b453a44e25be8ed96dba4e47519afba5de932f75a83b6495d8d",
+    "followup_results": "7b4a196fdb35ab0dad81b18741d176b263b0c8c46bd57c000ca41072e509d2ad",
+    "demand_binding": "a3322f58c05336f45bf9998ed7ff79caf41e079a7cf4e64d25c4988664a09b74",
+    "demand_results": "2bab49272410fab0c791161090a588cc374c2ebd2ec4259fdfb254b0fd740d35"
+  },
+  "retained_disagreements": "Captured meta/hint feature gate positive; generic scalar Lane positive; original unused generic aggregate object was not nonprimitive demanded-layout proof. All original predictions and raw warnings retained."
+}

@@ -296,6 +296,9 @@ fn validate(
     let repr = match definition.repr.representation {
         aggregate::Representation::Rust => RecordRepr::Rust,
         aggregate::Representation::C => RecordRepr::C,
+        aggregate::Representation::Simd => {
+            return Err(error("SIMD record metadata is not implemented"));
+        }
         aggregate::Representation::Transparent => {
             return Err(error("transparent record metadata is not implemented"));
         }

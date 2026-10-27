@@ -1,0 +1,174 @@
+{
+  "state": "NEW hypotheses frozen before any observations; metadata/object/native remain independent Rustc evidence, not candidate support",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "editions": [
+    2021,
+    2024
+  ],
+  "cases": [
+    {
+      "file": "layout-family.rs",
+      "status": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "field-access.rs",
+      "status": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "generic.rs",
+      "status": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "generic-bool.rs",
+      "status": 1,
+      "errors": [
+        "E0077"
+      ],
+      "warnings": []
+    },
+    {
+      "file": "generic-aggregate.rs",
+      "status": 1,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "empty.rs",
+      "status": 1,
+      "errors": [
+        "E0075"
+      ],
+      "warnings": []
+    },
+    {
+      "file": "multiple.rs",
+      "status": 1,
+      "errors": [
+        "E0075"
+      ],
+      "warnings": []
+    },
+    {
+      "file": "nonarray.rs",
+      "status": 1,
+      "errors": [
+        "E0076"
+      ],
+      "warnings": []
+    },
+    {
+      "file": "bool.rs",
+      "status": 1,
+      "errors": [
+        "E0077"
+      ],
+      "warnings": []
+    },
+    {
+      "file": "zero.rs",
+      "status": 1,
+      "errors": [
+        "E0075"
+      ],
+      "warnings": []
+    },
+    {
+      "file": "missing-repr-gate.rs",
+      "status": 1,
+      "errors": [
+        "E0658"
+      ],
+      "warnings": []
+    },
+    {
+      "file": "foreign-missing-ffi.rs",
+      "status": 1,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "foreign-ffi.rs",
+      "status": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "definition-no-ffi.rs",
+      "status": 0,
+      "errors": [],
+      "warnings": [
+        "improper_ctypes_definitions"
+      ]
+    },
+    {
+      "file": "nested-foreign-no-ffi.rs",
+      "status": 0,
+      "errors": [],
+      "warnings": [
+        "improper_ctypes"
+      ]
+    },
+    {
+      "file": "align.rs",
+      "status": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "wide-pointer.rs",
+      "status": 1,
+      "errors": [
+        "E0077"
+      ],
+      "warnings": []
+    },
+    {
+      "file": "native-family.rs",
+      "status": 0,
+      "errors": [],
+      "warnings": [
+        "unused_features"
+      ]
+    }
+  ],
+  "native": {
+    "file": "native-family.rs",
+    "observer": "observer.c",
+    "stdout": "1.25 -2.00 3.50 4.00 5.50 -6.25 7 -8 3.50\n",
+    "status": 0
+  },
+  "layout_bits": 291625737047248912,
+  "aligned_bits": 4112,
+  "sources": {
+    "align.rs": "0096ad1cae9f5003e828092c363fa26411abf01335a42160a53b268ff3514b70",
+    "bool.rs": "07aa3a82325a48a87104683673474a88f73f2b4e7da74163e8553c825106d51f",
+    "definition-no-ffi.rs": "57ed54325b1098139b683abc7b41678d8368d1c3168b2413fbb08b0a94906c44",
+    "empty.rs": "1b2041c545e702118644950970fde5cf2e15b0b6d70cea26c2bc09adfe881d14",
+    "field-access.rs": "4f8bda41e58b10cf598d960f95579e2d98afe170671c2190c052d6c34907232c",
+    "foreign-ffi.rs": "c90bd6a3c307d1fec61a00c9e5609c4f2bdaafd46a00c117b838b4cc7869f921",
+    "foreign-missing-ffi.rs": "36e122304b52d1487ca0765c4f360ef05e4620501889e9719221221f5881dee1",
+    "generic-aggregate.rs": "46d9035579041e5b94725d1b38478ce0f0eb744fa14af207f4a2337b4d1a51e2",
+    "generic-bool.rs": "daac65f837f7584e94c27b7d2501549ba8caff25699d3b4d73762737a4c36427",
+    "generic.rs": "9c20aa23e008639c26b77e60161536fecee69b38001dcf56699f1c55a3d70132",
+    "layout-family.rs": "a1e7c6adeccebefdf5291da32b6982523819141138b7de22ecaea55b8b5a151d",
+    "missing-repr-gate.rs": "a72e54ded833ef0c37a7f61435e846b107bac3fcf406e9d5a50145252fccf778",
+    "multiple.rs": "d7c8941f25095dcd851b3b52290eb4ee1d9f2b29498fb663ac07bf5080be8dcc",
+    "native-family.rs": "75fe40c9f52c8431a5f3f910e0e1dac9e84f285d0d00f75dd36eab115eacbe11",
+    "nested-foreign-no-ffi.rs": "793644ffb233349cbf2e1abfa4e25ca3815dbc4bc08c6ce65354390af7a7fd13",
+    "nonarray.rs": "e4b94a68a0b93ef52c59051c74737aec70d0f11466fe2f613fd46a4400addbb9",
+    "observer.c": "7e9c3f4056b306e38c26bbeabca9456fbc3e176b52e9c0fd00401de775a1a69c",
+    "wide-pointer.rs": "91777f5ceb867a53138fb4c94621183412babd4dcd1386c7894a800af68ad703",
+    "zero.rs": "03cc46008cf8c659f24f5dfcb7f94b2fce0dcd7ec8024e0505a355350e351fe4"
+  },
+  "notes": [
+    "Exact generic bool and custom align hypotheses deliberately subject to pin; do not strengthen based on assumptions",
+    "Definition vs foreign-only simd_ffi and nested-wrapper distinctions follow primary producer, warnings still hypotheses",
+    "No AVX execution or broad native matrix"
+  ]
+}

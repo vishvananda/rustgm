@@ -10,6 +10,7 @@ struct Field {
 }
 enum Kind {
     Scalar(Class),
+    Vector,
     Array {
         element: TypeId,
         stride: u64,

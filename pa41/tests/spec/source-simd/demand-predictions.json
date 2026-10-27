@@ -1,0 +1,24 @@
+{
+  "scope": "NEW demanded monomorphic SIMD lane layout; no repeated metadata",
+  "edition": 2024,
+  "sources": {
+    "generic-scalar-demand.rs": "e8a06b8f56c5b0aec17da99d970f7fb0acbd258960199ecfac889b0d7447f574",
+    "generic-product-demand.rs": "c64b65c602d19c2893482108a3244a9df0bd5382291fb863320a05fef6b78752",
+    "generic-demand-observer.c": "02553e8b93ae1b75cdaf3a932ae16eb5adaed37b92e435673a2c407f1a0f193b"
+  },
+  "objects": [
+    {
+      "file": "generic-scalar-demand.rs",
+      "status": 0,
+      "errors": []
+    },
+    {
+      "file": "generic-product-demand.rs",
+      "status": 1,
+      "errors": []
+    }
+  ],
+  "observer": "generic-demand-observer.c",
+  "stdout": "4 4\n",
+  "warnings": "dead_code may be emitted for unread Lane fields; retain exact streams"
+}

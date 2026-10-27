@@ -10,6 +10,7 @@ pub enum Class {
     Integer,
     Sse,
     None,
+    SseUp,
 }
 impl Class {
     #[must_use]
@@ -17,6 +18,7 @@ impl Class {
         match self {
             Self::Integer => "integer",
             Self::Sse => "sse",
+            Self::SseUp => "sseup",
             Self::None => "none",
         }
     }
@@ -43,8 +45,11 @@ impl Object {
             return Err("invalid LowIR boundary object span");
         }
         match self.classes {
-            Classes::Eightbytes { second, .. }
-                if self.span.bytes <= 16 && second.is_some() == (self.span.bytes > 8) =>
+            Classes::Eightbytes { first, second }
+                if self.span.bytes <= 16
+                    && second.is_some() == (self.span.bytes > 8)
+                    && first != Class::SseUp
+                    && (second != Some(Class::SseUp) || first == Class::Sse) =>
             {
                 Ok(())
             }

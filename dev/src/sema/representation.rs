@@ -30,6 +30,7 @@ pub(super) struct Attributes {
 pub(super) fn analyze(
     report: &Report,
 ) -> Result<crate::support::hash::HashMap<NodeKey, Attributes>, Error> {
+    let mut allowances = report.macro_allowances();
     let mut representations = crate::support::hash::HashMap::default();
     for (file, unit) in report.package.units.iter().enumerate() {
         if unit.include_context.is_some() {
@@ -54,13 +55,18 @@ pub(super) fn analyze(
                 ItemKind::Struct { .. } | ItemKind::Enum { .. } | ItemKind::Union { .. }
             ) {
                 let key = NodeKey { file, node };
-                representations.insert(key, parse(report, key, index)?);
+                representations.insert(key, parse(report, key, index, &mut allowances)?);
             }
         }
     }
     Ok(representations)
 }
-fn parse(report: &Report, key: NodeKey, index: usize) -> Result<Attributes, Error> {
+fn parse(
+    report: &Report,
+    key: NodeKey,
+    index: usize,
+    allowances: &mut crate::resolve::expansion::MacroAllowanceSession<'_>,
+) -> Result<Attributes, Error> {
     let unit = report.package.unit(key.file);
     let owner = &unit.configured.owners[index];
     let mut parser = Parser {
@@ -115,9 +121,22 @@ fn parse(report: &Report, key: NodeKey, index: usize) -> Result<Attributes, Erro
             )
             .map_err(error)?;
         } else {
-            parser
+            let simd = parser
                 .parse(forest, unit.source.text(), range)
                 .map_err(error)?;
+            if simd
+                && !report
+                    .package
+                    .requested_simd_feature(false)
+                    .map_err(error)?
+                && !allowances.allows_at(
+                    key.file,
+                    attribute.span,
+                    &crate::resolve::bindings::FeatureName::new("repr_simd").map_err(error)?,
+                )?
+            {
+                return Err(error("SIMD representation requires repr_simd"));
+            }
         }
     }
     if parser.base == Some(Representation::Transparent) && parser.hints != 1 {
@@ -187,7 +206,8 @@ impl Parser {
         forest: &Forest,
         source: &str,
         range: TreeRange,
-    ) -> Result<(), &'static str> {
+    ) -> Result<bool, &'static str> {
+        let mut simd = false;
         let mut index = range.start;
         while index < range.end {
             let name = forest
@@ -196,9 +216,10 @@ impl Parser {
             index += 1;
             self.hints += 1;
             match name {
-                "Rust" | "C" | "transparent" => {
+                "Rust" | "C" | "transparent" | "simd" => {
                     let base = match name {
                         "C" => Representation::C,
+                        "simd" => Representation::Simd,
                         "transparent" => Representation::Transparent,
                         _ => Representation::Rust,
                     };
@@ -207,6 +228,7 @@ impl Parser {
                     }
                     self.base = Some(base);
                     self.repr.representation = base;
+                    simd |= base == Representation::Simd;
                 }
                 "align" | "packed" => {
                     let value = if index < range.end && forest.children(index).is_some() {
@@ -247,7 +269,7 @@ impl Parser {
         if self.base == Some(Representation::Rust) && self.repr.tag.is_some() {
             return Err("Rust and integer representation hints conflict");
         }
-        Ok(())
+        Ok(simd)
     }
 }
 fn parentheses(forest: &Forest, index: u32) -> Result<TreeRange, &'static str> {

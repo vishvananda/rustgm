@@ -26,7 +26,7 @@ impl Query<'_> {
                     let node = self.node(ty)?;
                     self.retain(size_of::<Node>() + size_of::<TypeId>() + 48)?;
                     let children = match &node.kind {
-                        Kind::Scalar(_) => Vec::new(),
+                        Kind::Scalar(_) | Kind::Vector => Vec::new(),
                         Kind::Array { element, .. } => vec![*element],
                         Kind::Struct(fields) => fields.iter().map(|field| field.ty).collect(),
                     };
@@ -71,14 +71,27 @@ impl Query<'_> {
                 .definitions
                 .get(item)
                 .ok_or("missing nested C aggregate declaration")?;
-            if definition.kind != crate::types::aggregate::Kind::Struct
-                || definition.repr.representation != Representation::C
-                || definition.repr.packed.is_some()
-                || layout.size == 0
-            {
-                return Err("C aggregate ABI profile requires nonempty aligned repr(C) fields");
+            if definition.repr.representation == Representation::Simd {
+                if !matches!(
+                    self.definitions.simd_shape(self.types, ty)?,
+                    crate::types::aggregate::SimdShape::Ready { .. }
+                ) {
+                    return Err("C SIMD boundary requires completed vector fields");
+                }
+                if layout.size != 16 || layout.align != 16 {
+                    return Err("C SIMD boundary supports only aligned 128-bit vectors");
+                }
+                Kind::Vector
+            } else {
+                if definition.kind != crate::types::aggregate::Kind::Struct
+                    || definition.repr.representation != Representation::C
+                    || definition.repr.packed.is_some()
+                    || layout.size == 0
+                {
+                    return Err("C aggregate ABI profile requires nonempty aligned repr(C) fields");
+                }
+                self.fields(layout)?
             }
-            self.fields(layout)?
         } else {
             return Err("C aggregate ABI profile requires scalar, array or repr(C) fields");
         };

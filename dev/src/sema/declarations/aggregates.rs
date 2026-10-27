@@ -197,6 +197,10 @@ impl Checker<'_> {
                 .aggregates
                 .get(item)
                 .ok_or_else(|| Error::at(FileId(0), 0, "missing representation definition"))?;
+            self.facts
+                .aggregates
+                .validate_simd_declaration(&self.facts.types, definition)
+                .map_err(|message| self.nominal_layout_error(item, message))?;
             crate::abi::layout::validate_repr(
                 definition,
                 self.facts.aggregates.variants(definition).len(),
