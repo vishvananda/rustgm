@@ -144,13 +144,7 @@ fn source_byte_claim_stability_and_ordinary_foreign_frontiers_remain_explicit() 
         resolve::expansion::Body::Builtin(rustgm::expand::builtin::Builtin::ConcatBytes)
     )));
     let report = resolve::analyze_expanded(report)?;
-    assert!(
-        report
-            .package
-            .library_policy()
-            .and_then(resolve::stability::Library::inventory)
-            .is_some()
-    );
+    crate::provider_traits::require_macro_policies(&report)?;
     rustgm::pipeline::analyze_source(&report)?;
     for (name, message) in [
         (

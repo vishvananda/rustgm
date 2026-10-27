@@ -78,13 +78,7 @@ fn real_format_headers_keep_stability_and_claim_opponents_explicit() -> TestResu
         "three",
     ] {
         let report = report(&fixture(&format!("declaration-original-{name}"))?)?;
-        assert!(
-            report
-                .package
-                .library_policy()
-                .and_then(rustgm::resolve::stability::Library::inventory)
-                .is_some()
-        );
+        crate::provider_traits::require_macro_policies(&report)?;
         rustgm::pipeline::analyze_source(&report)?;
     }
     for name in [

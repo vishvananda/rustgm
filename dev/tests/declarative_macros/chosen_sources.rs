@@ -181,13 +181,7 @@ fn original_staged_header_is_a_real_builtin_with_its_separate_stability_frontier
     )));
     assert_eq!(report.invocations.len(), 1);
     let report = resolve::analyze_expanded(report)?;
-    assert!(
-        report
-            .package
-            .library_policy()
-            .and_then(resolve::stability::Library::inventory)
-            .is_some()
-    );
+    crate::provider_traits::require_macro_policies(&report)?;
     rustgm::pipeline::analyze_source(&report)?;
     Ok(())
 }

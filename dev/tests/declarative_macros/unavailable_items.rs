@@ -202,13 +202,7 @@ fn original_assert_matches_is_a_real_declaration_with_an_explicit_stability_fron
         ));
         assert!(report.invocations.is_empty());
         let report = resolve::analyze_expanded(report)?;
-        assert!(
-            report
-                .package
-                .library_policy()
-                .and_then(resolve::stability::Library::inventory)
-                .is_some()
-        );
+        crate::provider_traits::require_macro_policies(&report)?;
         rustgm::pipeline::analyze_source(&report)?;
     }
     Ok(())

@@ -79,7 +79,7 @@ fn analyze(path: &Path) -> Result<resolve::expansion::Report> {
 }
 
 #[test]
-fn local_owner_and_import_outcomes_preserve_independent_observations() -> Result {
+fn local_owner_and_import_outcomes_preserve_independent_observations() {
     let mut failures = Vec::new();
     for &(name, accepted) in CASES {
         let checked = analyze(&fixture(name)).and_then(|report| {
@@ -97,7 +97,6 @@ fn local_owner_and_import_outcomes_preserve_independent_observations() -> Result
         }
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));
-    Ok(())
 }
 
 fn expected_diagnostic(name: &str, message: &str) -> bool {
