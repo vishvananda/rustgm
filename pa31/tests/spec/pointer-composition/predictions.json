@@ -1,0 +1,159 @@
+{
+  "status": "declared before independent observation",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "profile": [
+    "--edition=2024",
+    "--target=x86_64-unknown-linux-gnu",
+    "--crate-type=lib",
+    "--emit=metadata",
+    "-Cpanic=abort",
+    "-Copt-level=0",
+    "-Coverflow-checks=on",
+    "-Cdebug-assertions=off"
+  ],
+  "cases": [
+    {
+      "source": "thin-read.rs",
+      "sha256": "45304f0b1f67ac3d39567cf9d25359f13fac5cb4529db5f4f992cc5e02177bcc",
+      "status": 0,
+      "answer": 7
+    },
+    {
+      "source": "slice-metadata.rs",
+      "sha256": "d677bc681415412677786f40bcc224759203e7bc632313680a57ceff662d4ff3",
+      "status": 0,
+      "answer": 3
+    },
+    {
+      "source": "str-metadata.rs",
+      "sha256": "6769a0dcb7ba2d26743230abbefca44d066865c4901bd6d64e6717730c1ed4e1",
+      "status": 0,
+      "answer": 3
+    },
+    {
+      "source": "null-metadata.rs",
+      "sha256": "7c861196a26f8c384d802521c1175c499fe9c9a6887443a5a6594996adae3f3e",
+      "status": 0,
+      "answer": 0
+    },
+    {
+      "source": "numeric-metadata.rs",
+      "sha256": "53192d1e1c000a081b3057e3d71d990cf55c741fccfd2a2f6cfa8d5a94b69c37",
+      "status": 0,
+      "answer": 99
+    },
+    {
+      "source": "bounds-metadata.rs",
+      "sha256": "7b9a2c7254780900c84dd2f53d3f863d69c48f4dc3a386daa2ed0bfdd59f810e",
+      "status": 0,
+      "answer": 99
+    },
+    {
+      "source": "expired-metadata.rs",
+      "sha256": "26dcac25b440f9054103372b4169f3f9d8f02b4193bbc38420b4a82b4e733645",
+      "status": 0,
+      "answer": 3
+    },
+    {
+      "source": "slice-reference.rs",
+      "sha256": "5f8c7a309305df0514835b1f36839c6b16f8a13e7234f90083a4113438b07fc6",
+      "status": 0,
+      "answer": 9
+    },
+    {
+      "source": "mutable-reference.rs",
+      "sha256": "d8a1d60f33de6ebab5d71ad66b514e83783bdee71f1345cba9cc45aa8e99ff6d",
+      "status": 0,
+      "answer": 91
+    },
+    {
+      "source": "foreign-thin.rs",
+      "sha256": "fa82ce3045d6b79ea03855df4d8ab913703cc9369fb168db0731aaf2cb7208e7",
+      "status": 0,
+      "answer": null
+    },
+    {
+      "source": "tail-metadata.rs",
+      "sha256": "3b2aac6d7a44659d61b172be96b366fcd258f7fc5920528d33c890fa27bba550",
+      "status": 0,
+      "answer": 3
+    },
+    {
+      "source": "uninitialized-metadata.rs",
+      "sha256": "300c6335dcfb4312674db38a8bf267152e37641d1a0d37670de70202f002a439",
+      "status": 0,
+      "answer": 1
+    },
+    {
+      "source": "null-reference.rs",
+      "sha256": "dc02be6620156ad9b498016110ca582f3172c475564f34a0b021009459b485e6",
+      "status": 1,
+      "answer": null
+    },
+    {
+      "source": "bounds-reference.rs",
+      "sha256": "1047504718e3e2aa1fe59515643a9321bc761d1ad87be6bdb4a49a84c948d817",
+      "status": 1,
+      "answer": null
+    },
+    {
+      "source": "expired-reference.rs",
+      "sha256": "f9e54277509912d5300f1df45830b53d4ebf85709e8af075c171bc71e376d726",
+      "status": 1,
+      "answer": null
+    },
+    {
+      "source": "uninitialized-reference.rs",
+      "sha256": "ac1b717e5b737ba9258022511d0d03459a6a7449d827e3b2663fd5eb1cd82eb1",
+      "status": 1,
+      "answer": null
+    },
+    {
+      "source": "unaligned-reference.rs",
+      "sha256": "ff3a3c92209eb4f9516400523e142b60908fafaf6605ce127cb0eb8bbe9da402",
+      "status": 1,
+      "answer": null
+    },
+    {
+      "source": "invalid-utf8-reference.rs",
+      "sha256": "8632188b49ebcdb6295131b0831d104e800ceaa507a4350d9f0cfbecbcacb6c0",
+      "status": 1,
+      "answer": null
+    },
+    {
+      "source": "shared-write.rs",
+      "sha256": "ace8acbf226938fef759fde872e05b90dccc5b62acb3cf293f1f2e5cce72cd44",
+      "status": 1,
+      "answer": null
+    },
+    {
+      "source": "wrong-metadata.rs",
+      "sha256": "999e7e527b5008852619db8df51fb2449044695060611add07d5c2a3beeee176",
+      "status": 1,
+      "answer": null
+    },
+    {
+      "source": "wide-data.rs",
+      "sha256": "81dbc873ce67a88755ec333c6c1188d816ce4482335d362af669be3333af80fb",
+      "status": 1,
+      "answer": null
+    },
+    {
+      "source": "erased-unit-fault.rs",
+      "sha256": "24a4d681ced4547453e03f0510983767e7b43e81fa03217353798142981a181e",
+      "status": 1,
+      "answer": null
+    }
+  ],
+  "runtime": {
+    "source": "runtime-order.rs",
+    "sha256": "be0e3a31ae7db4f903a7e5b1b52665c6aa26759b445f21aaff4a8688a1b5a290",
+    "observer": "observer.c",
+    "observer_sha256": "25ac52b74ce39d73df9aacbce74b8690fefaa12fb2b3140f825a942e93e8078b",
+    "status": 0,
+    "stdout": "3 12 7 34\n",
+    "stderr": ""
+  },
+  "boundary": "actual core helpers in oracle; candidate will preserve genuine source chain and UB-check bodies, source identities/ordinary proof; raw construction is not reference/access permission; dynamic metadata and transport remain pending"
+}
