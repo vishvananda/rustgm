@@ -42,6 +42,7 @@ pub struct Reservations {
     denied_implementations: HashSet<DefId>,
     pub(super) header_attributes: [HeaderAttributes; LangItem::ALL.len()],
     pub(super) diagnostics: [Option<Declaration>; 35],
+    pub(super) extra_diagnostics: Option<Box<super::diagnostic_extras::Column>>,
     pub steps: usize,
 }
 impl Reservations {
@@ -107,9 +108,21 @@ pub(in crate::resolve) fn finish(
     facts: &mut Resolution,
 ) -> Result<(), Error> {
     let mut library = None;
-    let claims = claims(package, &mut library)?;
+    let mut extra = super::diagnostic_extras::Draft::default();
+    let claims = claims(package, facts, &mut library, &mut extra)?;
     let mut inventory = crate::resolve::stability::complete(package, facts, library)?;
-    let reserved = reserve_all(package, facts, &claims)?;
+    let mut reserved = reserve_all(package, facts, &claims)?;
+    let column = extra
+        .seal(&mut package.names)
+        .map_err(|message| extra.error(message))?;
+    if let Some(reserved) = &mut reserved {
+        reserved.steps = reserved.steps.saturating_add(extra.steps());
+        reserved.extra_diagnostics = column;
+    } else if column.is_some() {
+        return Err(Error::unlocated(
+            "diagnostic data requires its actual source provider",
+        ));
+    }
     // Both drafts are complete before either owner publishes new state.
     if let (Some(library), Some(inventory)) = (package.library.as_deref_mut(), inventory.as_mut()) {
         library
@@ -170,6 +183,7 @@ fn reserve_all(
         denied_implementations: HashSet::default(),
         header_attributes: [HeaderAttributes::EMPTY; LangItem::ALL.len()],
         diagnostics: [None; 35],
+        extra_diagnostics: None,
         steps: 0,
     };
     let parents = parents(package, facts);
@@ -418,7 +432,9 @@ fn parents(package: &Package, facts: &Resolution) -> HashMap<ScopeId, DefId> {
 
 fn claims(
     package: &Package,
+    facts: &Resolution,
     library: &mut Option<crate::resolve::stability::Draft>,
+    extra: &mut super::diagnostic_extras::Draft,
 ) -> Result<HashMap<NodeKey, Vec<Claim>>, Error> {
     let mut result: HashMap<NodeKey, Vec<Claim>> = HashMap::default();
     for (file, unit) in package.units.iter().enumerate() {
@@ -448,6 +464,7 @@ fn claims(
                     .push(Claim::BuiltinMacro(role));
             }
             let mut transparency = false;
+            let mut diagnostic_seen = false;
             for (index, attribute, forest) in
                 unit.retained_indexed_attributes(owner.attributes.clone())
             {
@@ -475,6 +492,25 @@ fn claims(
                     forest,
                     allowance,
                 )? {
+                    continue;
+                }
+                if attribute.name(forest, unit.source.text()) == Some("rustc_diagnostic_item") {
+                    if diagnostic_seen {
+                        return Err(Error::at(
+                            file,
+                            attribute.span.start,
+                            "multiple diagnostic item attributes",
+                        ));
+                    }
+                    diagnostic_seen = true;
+                    if let Some(known) =
+                        extra.collect(package, facts, NodeKey { file, node }, attribute, forest)?
+                    {
+                        result
+                            .entry(NodeKey { file, node })
+                            .or_default()
+                            .push(Claim::DiagnosticItem(known));
+                    }
                     continue;
                 }
                 if let Some(claim) = attribute_claim(unit, file, attribute, forest)? {
@@ -525,9 +561,6 @@ fn attribute_claim(
                 return Err(error("rustc_deny_explicit_impl requires no arguments"));
             }
             Claim::DenyImplementations
-        }
-        Some("rustc_diagnostic_item") => {
-            Claim::DiagnosticItem(super::annotations::parse(unit, file, attribute, forest)?)
         }
         _ => return Ok(None),
     };

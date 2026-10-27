@@ -1,17 +1,9 @@
 //! Diagnostic identities and lint hints are never semantic proof or body factories.
 use super::{Declaration, Reservations, SourceCore, policy::Feature, reservations::Claim};
 use crate::{
-    resolve::{
-        package::{Error, Package},
-        unit::{FileId, Unit},
-    },
+    resolve::package::{Error, Package},
     support::bindings::LangItem,
-    syntax::{
-        ast::Kind,
-        attribute::{Attribute, Input},
-        item::ItemKind,
-        token_tree::Forest,
-    },
+    syntax::{ast::Kind, item::ItemKind},
 };
 
 #[derive(Clone, Copy)]
@@ -57,67 +49,46 @@ impl DiagnosticItem {
         self as usize
     }
 }
-pub(super) fn parse(
-    unit: &Unit,
-    file: FileId,
-    attribute: Attribute,
-    forest: &Forest,
-) -> Result<DiagnosticItem, Error> {
-    let error = |message| Error::at(file, attribute.span.start, message);
-    let Input::Equals(range) = attribute.input else {
-        return Err(error("diagnostic item requires one string literal"));
-    };
-    if range.end != range.start + 1 {
-        return Err(error("diagnostic item requires one string literal"));
-    }
-    let token = forest
-        .token(range.start)
-        .ok_or_else(|| error("missing diagnostic item literal"))?;
-    let Some(crate::literal::Value::String(bytes)) =
-        crate::literal::interpret(unit.source.text(), token)
-            .map_err(|error| Error::at(file, error.offset, error.message))?
-    else {
-        return Err(error("diagnostic item requires one string literal"));
-    };
-    match bytes.as_ref() {
-        b"Clone" => Ok(DiagnosticItem::Clone),
-        b"Copy" => Ok(DiagnosticItem::Copy),
-        b"convert_identity" => Ok(DiagnosticItem::Identity),
-        b"cfg_select" => Ok(DiagnosticItem::CfgSelect),
-        b"format_args_macro" => Ok(DiagnosticItem::FormatArgsMacro),
-        b"NonNull" => Ok(DiagnosticItem::NonNull),
-        b"Debug" => Ok(DiagnosticItem::Debug),
-        b"Alignment" => Ok(DiagnosticItem::Alignment),
-        b"Send" => Ok(DiagnosticItem::Send),
-        b"Sync" => Ok(DiagnosticItem::Sync),
-        b"assert_macro" => Ok(DiagnosticItem::AssertMacro),
-        b"Formatter" => Ok(DiagnosticItem::Formatter),
-        b"Display" => Ok(DiagnosticItem::Display),
-        b"FmtWrite" => Ok(DiagnosticItem::FmtWrite),
-        b"PartialEq" => Ok(DiagnosticItem::PartialEq),
-        b"cmp_partialeq_eq" => Ok(DiagnosticItem::PartialEqEq),
-        b"cmp_partialeq_ne" => Ok(DiagnosticItem::PartialEqNe),
-        b"Eq" => Ok(DiagnosticItem::Eq),
-        b"assert_receiver_is_total_eq" => Ok(DiagnosticItem::EqTotal),
-        b"Ord" => Ok(DiagnosticItem::Ord),
-        b"ord_cmp_method" => Ok(DiagnosticItem::OrdCmp),
-        b"cmp_ord_max" => Ok(DiagnosticItem::OrdMax),
-        b"cmp_ord_min" => Ok(DiagnosticItem::OrdMin),
-        b"PartialOrd" => Ok(DiagnosticItem::PartialOrd),
-        b"cmp_partialord_cmp" => Ok(DiagnosticItem::PartialOrdCmp),
-        b"cmp_partialord_lt" => Ok(DiagnosticItem::PartialOrdLt),
-        b"cmp_partialord_le" => Ok(DiagnosticItem::PartialOrdLe),
-        b"cmp_partialord_gt" => Ok(DiagnosticItem::PartialOrdGt),
-        b"cmp_partialord_ge" => Ok(DiagnosticItem::PartialOrdGe),
-        b"Default" => Ok(DiagnosticItem::Default),
-        b"default_fn" => Ok(DiagnosticItem::DefaultFn),
-        b"Hash" => Ok(DiagnosticItem::Hash),
-        b"Result" => Ok(DiagnosticItem::Result),
-        b"Option" => Ok(DiagnosticItem::Option),
-        b"neg" => Ok(DiagnosticItem::NegMethod),
+pub(super) fn known(bytes: &[u8]) -> Option<DiagnosticItem> {
+    Some(match bytes {
+        b"Clone" => DiagnosticItem::Clone,
+        b"Copy" => DiagnosticItem::Copy,
+        b"convert_identity" => DiagnosticItem::Identity,
+        b"cfg_select" => DiagnosticItem::CfgSelect,
+        b"format_args_macro" => DiagnosticItem::FormatArgsMacro,
+        b"NonNull" => DiagnosticItem::NonNull,
+        b"Debug" => DiagnosticItem::Debug,
+        b"Alignment" => DiagnosticItem::Alignment,
+        b"Send" => DiagnosticItem::Send,
+        b"Sync" => DiagnosticItem::Sync,
+        b"assert_macro" => DiagnosticItem::AssertMacro,
+        b"Formatter" => DiagnosticItem::Formatter,
+        b"Display" => DiagnosticItem::Display,
+        b"FmtWrite" => DiagnosticItem::FmtWrite,
+        b"PartialEq" => DiagnosticItem::PartialEq,
+        b"cmp_partialeq_eq" => DiagnosticItem::PartialEqEq,
+        b"cmp_partialeq_ne" => DiagnosticItem::PartialEqNe,
+        b"Eq" => DiagnosticItem::Eq,
+        b"assert_receiver_is_total_eq" => DiagnosticItem::EqTotal,
+        b"Ord" => DiagnosticItem::Ord,
+        b"ord_cmp_method" => DiagnosticItem::OrdCmp,
+        b"cmp_ord_max" => DiagnosticItem::OrdMax,
+        b"cmp_ord_min" => DiagnosticItem::OrdMin,
+        b"PartialOrd" => DiagnosticItem::PartialOrd,
+        b"cmp_partialord_cmp" => DiagnosticItem::PartialOrdCmp,
+        b"cmp_partialord_lt" => DiagnosticItem::PartialOrdLt,
+        b"cmp_partialord_le" => DiagnosticItem::PartialOrdLe,
+        b"cmp_partialord_gt" => DiagnosticItem::PartialOrdGt,
+        b"cmp_partialord_ge" => DiagnosticItem::PartialOrdGe,
+        b"Default" => DiagnosticItem::Default,
+        b"default_fn" => DiagnosticItem::DefaultFn,
+        b"Hash" => DiagnosticItem::Hash,
+        b"Result" => DiagnosticItem::Result,
+        b"Option" => DiagnosticItem::Option,
+        b"neg" => DiagnosticItem::NegMethod,
 
-        _ => Err(error("unsupported source diagnostic identity")),
-    }
+        _ => return None,
+    })
 }
 pub(super) fn validate(
     package: &Package,

@@ -5,6 +5,7 @@ mod annotations;
 mod claim_tokens;
 mod client;
 pub(crate) mod consumer_policy;
+mod diagnostic_extras;
 #[path = "bindings/allowance_owner.rs"]
 mod macro_context;
 mod panic_claims;

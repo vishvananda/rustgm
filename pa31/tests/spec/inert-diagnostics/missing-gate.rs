@@ -1,0 +1,1 @@
+#[rustc_diagnostic_item="inert_gate"]fn a(){}
