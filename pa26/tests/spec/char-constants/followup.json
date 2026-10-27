@@ -3,7 +3,7 @@
   "cases": [
     {
       "name": "source-absent-max-v2",
-      "path": "pa26/tests/spec/char-constants/source-absent-max-v2.rs",
+      "path": "pa31/tests/spec/char-constants/source-absent-max-v2.rs",
       "sha256": "4187d8c2565a1b1e8a9905411f891729e0b02dc0d9fd502a5bd65d77ddbd86f8",
       "accepted": false,
       "native": false,
@@ -11,7 +11,7 @@
     },
     {
       "name": "source-absent-min-v2",
-      "path": "pa26/tests/spec/char-constants/source-absent-min-v2.rs",
+      "path": "pa31/tests/spec/char-constants/source-absent-min-v2.rs",
       "sha256": "036c277342c5df3d140ce4abdc55b48d411ff1a99f5a4ddbb5a8e2759897efe9",
       "accepted": false,
       "native": false,
@@ -19,7 +19,7 @@
     },
     {
       "name": "source-actual-v2",
-      "path": "pa26/tests/spec/char-constants/source-actual-v2.rs",
+      "path": "pa31/tests/spec/char-constants/source-actual-v2.rs",
       "sha256": "e28827a876ccabd0061f72d707a6b2307c2f8cbca149d5ecfa694a1d00da7cef",
       "accepted": true,
       "native": false,
@@ -27,7 +27,7 @@
     },
     {
       "name": "source-owned-value-v2",
-      "path": "pa26/tests/spec/char-constants/source-owned-value-v2.rs",
+      "path": "pa31/tests/spec/char-constants/source-owned-value-v2.rs",
       "sha256": "cec427d0116c47616c54e2cfc24ac9a92e91f57c09e37d915eed6477eb69378a",
       "accepted": true,
       "native": false,
@@ -43,5 +43,6 @@
     }
   ],
   "foundation_correction": "Add required stability attributes to all public foundation traits and source-owned controls; pinned char declaration attributes/bodies unchanged.",
-  "width_evidence": "Ordinary char arrays, aliases/copies, reference loads, function arguments/results and casts; existing ABI owner must remain4-byte char and12-byte3-char array."
+  "width_evidence": "Ordinary char arrays, aliases/copies, reference loads, function arguments/results and casts; existing ABI owner must remain4-byte char and12-byte3-char array.",
+  "source_profile_placement": "SourceCore producer/ownership controls reside at PA31; byte-identical relocation preserves earlier predictions and raw diagnostic paths."
 }

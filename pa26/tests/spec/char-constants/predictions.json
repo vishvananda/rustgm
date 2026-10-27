@@ -190,7 +190,7 @@
     },
     {
       "name": "source-absent-max",
-      "path": "pa26/tests/spec/char-constants/source-absent-max.rs",
+      "path": "pa31/tests/spec/char-constants/source-absent-max.rs",
       "sha256": "225c2300a51585a9a925d4a38703551754ce53ab8e324e599b430a2a3084298c",
       "accepted": false,
       "native": false,
@@ -198,7 +198,7 @@
     },
     {
       "name": "source-absent-min",
-      "path": "pa26/tests/spec/char-constants/source-absent-min.rs",
+      "path": "pa31/tests/spec/char-constants/source-absent-min.rs",
       "sha256": "d41b2ca57d29bf13527c108ee5886d0d8047b1480e954c059fdc6cd873a08104",
       "accepted": false,
       "native": false,
@@ -206,7 +206,7 @@
     },
     {
       "name": "source-actual",
-      "path": "pa26/tests/spec/char-constants/source-actual.rs",
+      "path": "pa31/tests/spec/char-constants/source-actual.rs",
       "sha256": "855f1d9301a5a7ada9985f90327e4fb5065c91e0c6293d0f6afac8e9c4f9fcc8",
       "accepted": true,
       "native": false,
@@ -214,7 +214,7 @@
     },
     {
       "name": "source-owned-value",
-      "path": "pa26/tests/spec/char-constants/source-owned-value.rs",
+      "path": "pa31/tests/spec/char-constants/source-owned-value.rs",
       "sha256": "6353a6481967167907d3023a59f442d69459232de5531eb0b1d977bf193f6e7f",
       "accepted": true,
       "native": false,
@@ -223,5 +223,6 @@
   ],
   "source_rule": "Genuine SourceCore profile must never receive bootstrap primitive constant fallback; actual source declarations/initializers own values.",
   "scope": "Only char MIN/MAX plus unchanged integer MAX. Float constants and reference-RHS Add/Sub remain required.",
-  "native": "Only accepted ordinary inputs execute; clean exit0/empty stdout/stderr. Char scalar is four bytes; casts retain their actual target widths."
+  "native": "Only accepted ordinary inputs execute; clean exit0/empty stdout/stderr. Char scalar is four bytes; casts retain their actual target widths.",
+  "source_profile_placement": "SourceCore producer/ownership controls reside at PA31; byte-identical relocation preserves earlier predictions and raw diagnostic paths."
 }
