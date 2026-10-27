@@ -190,5 +190,59 @@
       "rustc_object_status": 1,
       "diagnostic": "requires drop_glue lang_item"
     }
-  }
+  },
+  "cli_native_cases": [
+    {
+      "source": "pa31/tests/spec/source-try-blocks/source-execute-protocol.rs",
+      "sha256": "87df89d43cbcd42b9ae553c2aa7ee74288be41680f765f4fcb45b6c40f748420",
+      "base_source": "pa31/tests/spec/source-try-blocks/source-protocol.rs",
+      "base_sha256": "60c1a47abf47045822180c81f2c6dfd23570c41db6a843f52e233454b94b934a",
+      "prefix_bytes": 4134,
+      "observer": "pa31/tests/spec/source-try-blocks/protocol-execution-observer.c",
+      "observer_sha256": "500b254bdf1523260aeefcfb9129395208c83197ef70d2121004a23041db5d25",
+      "expected_status": 0,
+      "stdout": "7 23 31 17 23 43 19\n",
+      "stderr": "",
+      "candidate_args": [
+        "--emit-lowir",
+        "--edition=2024",
+        "--source-core",
+        "minicore@try_protocol",
+        "--crate-name",
+        "minicore",
+        "--crate-disambiguator",
+        "try_protocol"
+      ],
+      "candidate_c_args": [
+        "-DRUSTGM_CANDIDATE"
+      ],
+      "status": "frozen before paired execution; original providers unchanged"
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/source-execute-drop.rs",
+      "sha256": "7f1e052968eb4d0095aaf0570bd0abbb44d5e66dd5bf0e16bf4d8a7deedac94d",
+      "base_source": "pa31/tests/spec/source-try-blocks/source-native-complete-drop.rs",
+      "base_sha256": "76a3e7ad01e41bbc3a1b9f220f9e75fcfc8e3c41aaaaff4b9ae663a9c62aa1cc",
+      "prefix_bytes": 3752,
+      "observer": "pa31/tests/spec/source-try-blocks/drop-execution-observer.c",
+      "observer_sha256": "033672ab1e7230ef82cc53cc1cc3b937cba2f400f5db22a8354531c40e54cb3f",
+      "expected_status": 0,
+      "stdout": "21\n",
+      "stderr": "",
+      "candidate_args": [
+        "--emit-lowir",
+        "--edition=2024",
+        "--source-core",
+        "minicore@try_protocol",
+        "--crate-name",
+        "minicore",
+        "--crate-disambiguator",
+        "try_protocol"
+      ],
+      "candidate_c_args": [
+        "-DRUSTGM_CANDIDATE"
+      ],
+      "status": "frozen before paired execution; original providers unchanged"
+    }
+  ]
 }
