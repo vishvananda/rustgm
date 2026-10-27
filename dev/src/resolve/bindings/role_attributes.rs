@@ -221,7 +221,12 @@ pub(super) fn primary(
                 claims.iter().any(|claim| {
                     matches!(
                         claim,
-                        Claim::Language(LangItem::ControlFlowContinue | LangItem::ControlFlowBreak)
+                        Claim::Language(
+                            LangItem::ControlFlowContinue
+                                | LangItem::ControlFlowBreak
+                                | LangItem::ResultOk
+                                | LangItem::ResultErr
+                        )
                     )
                 })
             });

@@ -48,6 +48,7 @@ pub(super) enum DiagnosticItem {
     Default,
     DefaultFn,
     Hash,
+    Result,
 }
 impl DiagnosticItem {
     pub(super) const fn index(self) -> usize {
@@ -109,6 +110,7 @@ pub(super) fn parse(
         b"Default" => Ok(DiagnosticItem::Default),
         b"default_fn" => Ok(DiagnosticItem::DefaultFn),
         b"Hash" => Ok(DiagnosticItem::Hash),
+        b"Result" => Ok(DiagnosticItem::Result),
 
         _ => Err(error("unsupported source diagnostic identity")),
     }
@@ -178,6 +180,7 @@ pub(super) fn validate(
                 | DiagnosticItem::Ord
                 | DiagnosticItem::Default
                 | DiagnosticItem::Hash
+                | DiagnosticItem::Result
         ) {
             validate_module_item(package, declaration, *item)?;
         } else if matches!(item, DiagnosticItem::NonNull) {
@@ -228,7 +231,7 @@ fn validate_module_item(
             (DiagnosticItem::Debug | DiagnosticItem::Display | DiagnosticItem::FmtWrite | DiagnosticItem::PartialEq | DiagnosticItem::PartialOrd
                     | DiagnosticItem::Eq | DiagnosticItem::Ord | DiagnosticItem::Default | DiagnosticItem::Hash,ItemKind::Trait{..})
                 | (DiagnosticItem::Formatter,ItemKind::Struct{..})
-                | (DiagnosticItem::Alignment,ItemKind::Enum{..})
+                | (DiagnosticItem::Alignment | DiagnosticItem::Result,ItemKind::Enum{..})
                 | (DiagnosticItem::Send,ItemKind::Trait{auto_:true,unsafe_:true,constant:false,..})));
     if declaration.parent.is_some() || !right_kind {
         return Err(super::reservations::error(
@@ -324,6 +327,7 @@ fn expected_language(item: DiagnosticItem) -> Option<LangItem> {
         | DiagnosticItem::PartialOrdGe
         | DiagnosticItem::Default
         | DiagnosticItem::DefaultFn
-        | DiagnosticItem::Hash => None,
+        | DiagnosticItem::Hash
+        | DiagnosticItem::Result => None,
     }
 }
