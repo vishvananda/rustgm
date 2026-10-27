@@ -5,6 +5,9 @@ use crate::{
     support::crates::Interface,
 };
 
+#[path = "executed_consumers.rs"]
+mod executed;
+
 fn artifact(suffix: &str, work: &mut ReservationWork) -> Result<(CollectedArtifact, Identity)> {
     artifact_with_alias(suffix, None, work)
 }
@@ -158,6 +161,7 @@ fn lower_named_caller(stage: HeaderDraft, work: &mut ReservationWork) -> Result 
             crate::pipeline::Prepared::default(),
             preparation,
         )?;
+        executed::actual_instances(report, facts, &program)?;
         actual_normalization_owner(report, facts, preparation)?;
         Ok(program)
     })?;
