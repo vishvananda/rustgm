@@ -173,13 +173,6 @@ pub fn build_prepared(
     build_roots_prepared(report, facts, super::Roots::executable(entry), prepared)
 }
 
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "the real selected consumer remains private until encoded Provided admission and complete original/instance execution qualify"
-    )
-)]
 pub(crate) fn build_selected_prepared(
     report: &Report,
     facts: &mut Declarations,

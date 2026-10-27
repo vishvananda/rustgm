@@ -6,10 +6,6 @@ use crate::support::crates::{
 };
 
 #[derive(Debug)]
-#[expect(
-    clippy::large_enum_variant,
-    reason = "the existing optional Payload box owns this cold variant; another legacy box would add an allocation to every existing import"
-)]
 enum Data {
     Legacy(Legacy),
     Source(source::ValidatedRows),

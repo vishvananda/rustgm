@@ -48,6 +48,23 @@ impl Headers {
         Ok(())
     }
 }
+fn profile_has_inventory(
+    descriptor: crate::support::crates::SourceDescriptor<'_>,
+) -> Result<bool, Error> {
+    if descriptor.profile().ordinary_functions() {
+        return Ok(true);
+    }
+    match descriptor.profile() {
+        s::Profile::Source2024ModuleContracts => {
+            descriptor.module_contracts().map_err(Error::unlocated)?;
+        }
+        s::Profile::Source2024ProvidedContracts => {
+            descriptor.provided_contracts().map_err(Error::unlocated)?;
+        }
+        _ => return Ok(false),
+    }
+    Ok(true)
+}
 pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     let Some(imported) = &report.resolution.crates else {
         return Ok(());
@@ -75,16 +92,8 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
         let Some(descriptor) = interface.source_descriptor() else {
             continue;
         };
-        if !descriptor.profile().ordinary_functions() {
-            match descriptor.profile() {
-                s::Profile::Source2024ModuleContracts => {
-                    descriptor.module_contracts().map_err(Error::unlocated)?;
-                }
-                s::Profile::Source2024ProvidedContracts => {
-                    descriptor.provided_contracts().map_err(Error::unlocated)?;
-                }
-                _ => continue,
-            }
+        if !profile_has_inventory(descriptor)? {
+            continue;
         }
         let rows = descriptor.rows();
         for declaration in rows

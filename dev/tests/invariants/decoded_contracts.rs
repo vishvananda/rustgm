@@ -75,12 +75,13 @@ fn complete_columns_reject_missing_swapped_sites_namespace_and_failed_storage() 
     assert!(crates::decode(&version).is_err());
     assert!(crates::decode(&bytes[..bytes.len() - 1]).is_err());
     eprintln!(
-        "provided cold ValidatedRows={} data-owner={} data-identity={} completion={} admission={}",
+        "provided cold ValidatedRows={} data-owner={} data-identity={} completion={} admission={} Payload={}",
         size_of::<s::ValidatedRows>(),
         size_of::<crate::resolve::bindings::consumer_policy::HeaderDataOwner>(),
         size_of::<crate::resolve::bindings::consumer_policy::HeaderDataIdentity>(),
         size_of::<crate::sema::crates::authored_export::HeaderCompletion>(),
-        size_of::<crate::resolve::bindings::consumer_policy::ProviderAdmission>()
+        size_of::<crate::resolve::bindings::consumer_policy::ProviderAdmission>(),
+        size_of::<g::Payload>()
     );
     eprintln!(
         "provided enclosing Header/Headers/ProvidedOwners/ProofSession/HeaderDraft/SelectedConsumer={:?}; StagedConsumer/Source={:?}",
