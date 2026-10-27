@@ -204,6 +204,20 @@ fn encoded_calls_reject_real_wrong_type_arity_trait_and_dead_borrow() -> Result 
         let Err(error) = client(crates::decode(&bytes)?, &source, |_, _, _| ()) else {
             return Err("malformed named call accepted".into());
         };
+        let message = error.to_string();
+        for setup in [
+            "header budget",
+            "missing value type",
+            "no such method",
+            "pending",
+            "not implemented",
+            "unsupported",
+        ] {
+            assert!(
+                !message.contains(setup),
+                "wrong call failed at setup instead of its argument/region obligation: {message}"
+            );
+        }
         eprintln!("actual encoded call rejection: {error}");
     }
     Ok(())

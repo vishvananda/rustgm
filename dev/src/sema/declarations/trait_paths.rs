@@ -21,6 +21,58 @@ pub(super) struct Callable {
 }
 
 impl Checker<'_> {
+    /// Imported member lookup needs its real owner before the ordinary path work.
+    pub(super) fn defer_selected_trait_callable(
+        &mut self,
+        key: NodeKey,
+        context: regions::Context,
+    ) -> Result<bool, Error> {
+        if self.selected.is_none() {
+            return Ok(false);
+        }
+        let Some(path) = self.report.resolution.qualified_paths.get(&key) else {
+            return Ok(false);
+        };
+        let Some(trait_path) = path.trait_path else {
+            return Ok(false);
+        };
+        if path.namespace != Namespace::Value || path.suffix.len() != 1 {
+            return Ok(false);
+        }
+        let (_, owner) = self.resolved_trait_path(NodeKey {
+            node: trait_path,
+            ..key
+        })?;
+        if self.defer_selected_callable_header(key, context, owner)? {
+            return Ok(true);
+        }
+        let Some(callable) = self.trait_callable(key)? else {
+            return Ok(false);
+        };
+        self.defer_selected_callable_header(key, context, callable.method)
+    }
+    fn defer_selected_callable_header(
+        &mut self,
+        key: NodeKey,
+        context: regions::Context,
+        definition: DefId,
+    ) -> Result<bool, Error> {
+        if self.states[definition.0 as usize] == super::State::Complete {
+            return Ok(false);
+        }
+        let Some(selected) = self.selected.as_deref() else {
+            return Ok(false);
+        };
+        if !selected.is_imported(definition)? {
+            return Ok(false);
+        }
+        if self.states[definition.0 as usize] == super::State::Active {
+            return Err(self.error(key, "cycle in selected callable declaration dependencies"));
+        }
+        self.work.push(super::Work::ConstantUse(key, context));
+        self.work.push(super::Work::Definition(definition, false));
+        Ok(true)
+    }
     pub(super) fn schedule_trait_callable(
         &mut self,
         key: NodeKey,
