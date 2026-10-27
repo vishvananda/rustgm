@@ -46,5 +46,5 @@ pub(super) fn validate_plain(package: &Package) -> Result<(), Error> {
 }
 
 #[cfg(test)]
-#[path = "../../tests/invariants/const_closure_syntax.rs"]
+#[path = "../../tests/invariants/gated_callable_syntax.rs"]
 mod tests;
