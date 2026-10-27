@@ -121,6 +121,7 @@ impl Checker<'_> {
         &mut self,
         solved: &Solved,
         source_use: Option<SourceCallUse>,
+        allowances: &mut crate::resolve::expansion::MacroAllowanceSession<'_>,
     ) -> Result<(), Error> {
         if self.state.call_types.try_plans.is_empty() {
             return Ok(());
@@ -201,7 +202,7 @@ impl Checker<'_> {
                 source_use,
                 kind,
             };
-            self.check_try_plan(plan)?;
+            self.check_try_plan(plan, allowances)?;
             plans.push(plan);
         }
         self.commit_try_plans(plans)?;
@@ -265,7 +266,11 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    fn check_try_plan(&mut self, plan: Plan) -> Result<(), Error> {
+    fn check_try_plan(
+        &mut self,
+        plan: Plan,
+        allowances: &mut crate::resolve::expansion::MacroAllowanceSession<'_>,
+    ) -> Result<(), Error> {
         let protocol = try_protocol::source(self.report, self.facts, plan.node)?;
         let expected = match plan.kind {
             Kind::Block { .. } => [Some(protocol.from_output), None],
@@ -307,7 +312,7 @@ impl Checker<'_> {
                     "Try plan changed its actual protocol callable",
                 ));
             }
-            self.check_const_library_callable(plan.node.node, call.callable)?;
+            self.check_const_library_callable(plan.node.node, call.callable, allowances)?;
         }
         Ok(())
     }

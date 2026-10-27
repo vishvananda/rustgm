@@ -3,6 +3,7 @@ mod attributes;
 mod constness;
 mod inventory;
 mod owners;
+mod request_order;
 use super::{
     model::DefId,
     package::Error,

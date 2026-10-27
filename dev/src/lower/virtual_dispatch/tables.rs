@@ -91,7 +91,7 @@ impl Context<'_> {
                 Item::Address {
                     target: Target::Function(match method {
                         crate::sema::vtable_plans::Target::Function(instance) => {
-                            self.demand(instance)?
+                            self.demand_reified(instance)?
                         }
                         crate::sema::vtable_plans::Target::Callable(callable) => {
                             self.callable_target(callable)?

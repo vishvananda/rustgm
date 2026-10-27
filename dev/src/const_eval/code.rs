@@ -70,11 +70,13 @@ impl Code {
         .fold(0, usize::saturating_add))
     }
     fn operand_count(body: &Body) -> Result<usize, &'static str> {
-        body.statements.iter().try_fold(usize::from(!body.caller_sites().is_empty()), |count, statement| {
-            Ok(count + usize::from(Self::operand(body, statement)?.is_some()))
-        })
+        body.statements.iter().try_fold(
+            usize::from(!body.caller_sites().is_empty()),
+            |count, statement| Ok(count + usize::from(Self::operand(body, statement)?.is_some())),
+        )
     }
     pub(crate) fn snapshot(body: &Body) -> Result<Self, &'static str> {
+        body.validate_caller_sites()?;
         let mut operands = Vec::with_capacity(Self::operand_count(body)?);
         for statement in &body.statements {
             if let Some(operand) = Self::operand(body, statement)? {
@@ -107,9 +109,17 @@ impl Code {
             operands,
         })
     }
-    pub(crate) fn caller_site(&self, destination: ValueId) -> Result<Option<crate::body::ir::CallerSite>, &'static str> {
-        let Some(PreparedOperand::CallerSites(sites)) = self.operands.last() else { return Ok(None); };
-        let site = sites.binary_search_by_key(&destination.0, |site| site.value.0).ok().map(|index| sites[index]);
+    pub(crate) fn caller_site(
+        &self,
+        destination: ValueId,
+    ) -> Result<Option<crate::body::ir::CallerSite>, &'static str> {
+        let Some(PreparedOperand::CallerSites(sites)) = self.operands.last() else {
+            return Ok(None);
+        };
+        let site = sites
+            .binary_search_by_key(&destination.0, |site| site.value.0)
+            .ok()
+            .map(|index| sites[index]);
         if site.is_some_and(|site| Some(site.owner) != self.source.source()) {
             return Err("prepared caller site belongs to another actual Code owner");
         }

@@ -100,6 +100,20 @@ impl SourceFile {
         }
     }
 
+    /// Cost-only preflight for the existing lazy physical-position index.
+    pub(crate) fn position_preparation(&self) -> crate::support::retained::Growth {
+        if self.positions.get().is_some() {
+            return crate::support::retained::Growth::default();
+        }
+        let bytes = self.physical_len.saturating_add(4);
+        crate::support::retained::Growth {
+            work: bytes,
+            bytes: bytes
+                .saturating_mul(32)
+                .saturating_add(size_of::<Positions>()),
+        }
+    }
+
     /// Locate a normalized offset in the original physical source. Columns count
     /// Unicode scalar values; the UTF-8 BOM does not occupy a source column.
     /// # Errors

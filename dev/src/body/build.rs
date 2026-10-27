@@ -7,6 +7,7 @@ mod constructors;
 pub(super) use constructors::{finish_factory, finish_factory_block};
 pub(in crate::body) use drops::factory_values as factory_owned_values;
 mod adjusted;
+mod caller_sites;
 mod decisions;
 mod drops;
 mod environments;
@@ -589,6 +590,7 @@ impl<'a> Builder<'a> {
     fn evaluate(&mut self, node: NodeId, ty: TypeId, kind: Rvalue) -> Result<ValueId, Error> {
         let value = ValueId(self.index(node, self.body.values.len())?);
         self.body.values.push(Value { ty, kind });
+        self.record_caller_site(node, value)?;
         self.statement(node, Action::Evaluate(value))?;
         self.create_owned(node, value)?;
         Ok(value)
@@ -869,6 +871,9 @@ impl<'a> Builder<'a> {
                 );
             }
         }
+        self.body
+            .seal_caller_sites(self.facts)
+            .map_err(|error| self.error(root, error))?;
         Ok(self.body)
     }
     #[expect(

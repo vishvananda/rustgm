@@ -132,6 +132,7 @@ pub(in crate::sema) fn bind_definition(
             "duplicate source header completion identity",
         ));
     }
+    tracking::validate_intrinsic_annotations(report, facts, definition, declaration)?;
     Ok(())
 }
 pub(in crate::sema) fn finish(report: &Report, facts: &mut Declarations) -> Result<(), Error> {

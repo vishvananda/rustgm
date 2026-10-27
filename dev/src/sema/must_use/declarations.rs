@@ -164,9 +164,17 @@ fn consume_other(
     consumer: Option<Consumer>,
 ) -> Result<bool, Error> {
     match consumer {
-        Some(Consumer::CallerTracking | Consumer::IntrinsicConstPolicy) => {
+        Some(
+            consumer @ (Consumer::CallerTracking
+            | Consumer::IntrinsicConstPolicy
+            | Consumer::IntrinsicNoUnwind),
+        ) => {
             crate::sema::header_attributes::consume_tracking(
-                report, facts, declaration, attribute, consumer == Some(Consumer::CallerTracking),
+                report,
+                facts,
+                declaration,
+                attribute,
+                consumer,
             )?;
         }
         Some(Consumer::DerivedImplementation) => {

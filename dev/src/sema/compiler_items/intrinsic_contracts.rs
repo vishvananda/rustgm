@@ -244,7 +244,9 @@ impl Catalog {
                 SourceIntrinsic::ConstEvalSelect => {
                     "source callback selection requires its own descriptor"
                 }
-                SourceIntrinsic::CallerLocation => "source caller location requires its exact caller descriptor",
+                SourceIntrinsic::CallerLocation => {
+                    "source caller location requires its exact caller descriptor"
+                }
                 SourceIntrinsic::UbChecks => "source UB check requires its own descriptor",
                 SourceIntrinsic::Abort => "source abort requires its own reached-call descriptor",
                 SourceIntrinsic::Transmute => {
@@ -266,7 +268,9 @@ impl Catalog {
                 SourceIntrinsic::ConstEvalSelect => {
                     "source callback selection requires its own descriptor"
                 }
-                SourceIntrinsic::CallerLocation => "source caller location requires its exact caller descriptor",
+                SourceIntrinsic::CallerLocation => {
+                    "source caller location requires its exact caller descriptor"
+                }
                 SourceIntrinsic::UbChecks => "source UB check requires its own descriptor",
                 SourceIntrinsic::Abort => "source abort requires its own reached-call descriptor",
                 SourceIntrinsic::Transmute => {

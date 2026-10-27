@@ -2,6 +2,7 @@
 use super::{Checker, Declarations, Error};
 use crate::{resolve::unit::NodeKey, support::constness::Constness, types::infer::Solved};
 use std::num::NonZeroU32;
+mod caller_sites;
 mod protocol_rows;
 
 /// Current-table location; it grants no call, source or const permission.
@@ -25,6 +26,7 @@ struct Descriptor {
 pub(in crate::sema) struct CallContexts {
     rows: Vec<Descriptor>,
     plans: Vec<crate::sema::try_plans::Plan>,
+    sites: Vec<caller_sites::Site>,
 }
 const MAX_ROWS: usize = 1_000_000;
 const MAX_RETAINED: usize = 16 * 1024 * 1024;
@@ -38,6 +40,13 @@ impl CallContexts {
                     self.plans
                         .capacity()
                         .checked_mul(size_of::<crate::sema::try_plans::Plan>())?,
+                )
+            })
+            .and_then(|bytes| {
+                bytes.checked_add(
+                    self.sites
+                        .capacity()
+                        .checked_mul(size_of::<caller_sites::Site>())?,
                 )
             })
             .and_then(|bytes| bytes.checked_add(size_of::<Self>() + size_of::<Option<Box<Self>>>()))
@@ -145,6 +154,7 @@ impl Checker<'_> {
         &mut self,
         solved: &Solved,
         effect: Constness,
+        allowances: &mut crate::resolve::expansion::MacroAllowanceSession<'_>,
     ) -> Result<(bool, Option<SourceCallUse>), Error> {
         if self.state.file != self.state.body.file {
             return Err(Declarations::error(
@@ -193,7 +203,7 @@ impl Checker<'_> {
             let signature = solved.types.get(term.0 as usize).ok_or_else(|| {
                 Declarations::error(self.report, key, "invalid completed call signature")
             })?;
-            self.check_const_library_call(node, solved)?;
+            self.check_const_library_call(node, solved, allowances)?;
             self.check_transmute_size(node, solved)?;
             if let Some(crate::sema::model::Operation::Call {
                 source_use: Some(source),
@@ -277,36 +287,78 @@ impl Checker<'_> {
             return self.publish_ordinary_calls(solved);
         }
         let effect = self.callee_use_effect()?;
-        let (any, mut source_use) = self.existing_call_context(solved, effect)?;
+        let mut allowances = self.report.macro_allowances();
+        let (any, mut source_use) = self.existing_call_context(solved, effect, &mut allowances)?;
         // Charge all commit ports before retaining a descriptor or changing a node.
         charge(&mut self.state.steps, self.state.calls.len())
             .map_err(|e| self.error(self.state.body.node, e))?;
-        if any && source_use.is_none() {
-            charge(&mut self.state.steps, 1).map_err(|e| self.error(self.state.body.node, e))?;
-            let catalog = self.facts.source_bindings.as_deref_mut().ok_or_else(|| {
-                Declarations::error(
-                    self.report,
-                    self.state.body,
-                    "source call policy disappeared",
-                )
-            })?;
-            if let Some(contexts) = catalog.call_contexts.as_deref_mut() {
-                source_use = Some(
-                    contexts
-                        .append(self.state.body, effect, &mut self.state.steps)
-                        .map_err(|e| Declarations::error(self.report, self.state.body, e))?,
-                );
-            } else {
-                let mut contexts = CallContexts::default();
-                source_use = Some(
-                    contexts
-                        .append(self.state.body, effect, &mut self.state.steps)
-                        .map_err(|e| Declarations::error(self.report, self.state.body, e))?,
-                );
-                catalog.call_contexts = Some(Box::new(contexts));
+        let warm = source_use.is_some();
+        if any && !warm {
+            if self
+                .facts
+                .source_bindings
+                .as_deref()
+                .is_some_and(|catalog| catalog.call_contexts.is_none())
+            {
+                crate::sema::header_attributes::charge_source_retention(
+                    self.facts,
+                    1,
+                    size_of::<CallContexts>() + size_of::<Option<Box<CallContexts>>>(),
+                )?;
+                self.facts
+                    .source_bindings
+                    .as_deref_mut()
+                    .ok_or_else(|| {
+                        Declarations::error(
+                            self.report,
+                            self.state.body,
+                            "source catalog disappeared",
+                        )
+                    })?
+                    .call_contexts = Some(Box::default());
+            }
+            source_use = Some(
+                self.facts
+                    .source_bindings
+                    .as_deref_mut()
+                    .and_then(|catalog| catalog.call_contexts.as_deref_mut())
+                    .ok_or_else(|| {
+                        Declarations::error(
+                            self.report,
+                            self.state.body,
+                            "source call context disappeared",
+                        )
+                    })?
+                    .reserve(&mut self.state.steps, MAX_RETAINED)
+                    .map_err(|error| Declarations::error(self.report, self.state.body, error))?,
+            );
+        }
+        let sites = self.prepare_caller_sites(solved, source_use, warm)?;
+        self.preflight_site_commit(source_use, &sites, warm)?;
+        if any && !warm {
+            let actual = self
+                .facts
+                .source_bindings
+                .as_deref_mut()
+                .and_then(|catalog| catalog.call_contexts.as_deref_mut())
+                .ok_or_else(|| {
+                    Declarations::error(
+                        self.report,
+                        self.state.body,
+                        "source call context disappeared before commit",
+                    )
+                })?
+                .append(self.state.body, effect, &mut self.state.steps)
+                .map_err(|error| Declarations::error(self.report, self.state.body, error))?;
+            if Some(actual) != source_use {
+                return Err(self.error(
+                    self.state.body.node,
+                    "caller preparation changed its reserved context",
+                ));
             }
         }
-        self.publish_try_plans(solved, source_use)?;
+        self.publish_try_plans(solved, source_use, &mut allowances)?;
+        self.commit_caller_sites(&sites, warm);
         for (node, term) in &self.state.calls {
             if matches!(self.kind(*node), crate::syntax::ast::Kind::For { .. })
                 || self.erased_source_not(*node)?
@@ -326,9 +378,10 @@ impl Checker<'_> {
         Ok(())
     }
     fn publish_ordinary_calls(&mut self, solved: &Solved) -> Result<(), Error> {
+        let mut allowances = self.report.macro_allowances();
         for index in 0..self.state.calls.len() {
             let (node, term) = self.state.calls[index];
-            self.check_const_library_call(node, solved)?;
+            self.check_const_library_call(node, solved, &mut allowances)?;
             if matches!(self.kind(node), crate::syntax::ast::Kind::For { .. }) {
                 continue;
             }

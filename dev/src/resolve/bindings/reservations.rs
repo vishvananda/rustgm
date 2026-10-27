@@ -104,9 +104,14 @@ pub(in crate::resolve) fn finish(
 ) -> Result<(), Error> {
     let mut library = None;
     let claims = claims(package, &mut library)?;
-    let inventory = crate::resolve::stability::complete(package, facts, library)?;
+    let mut inventory = crate::resolve::stability::complete(package, facts, library)?;
     let reserved = reserve_all(package, facts, &claims)?;
     // Both drafts are complete before either owner publishes new state.
+    if let (Some(library), Some(inventory)) = (package.library.as_deref_mut(), inventory.as_mut()) {
+        library
+            .prepare_request_order(inventory)
+            .map_err(|error| Error::at(FileId(0), 0, error))?;
+    }
     facts.source_bindings = reserved;
     if let (Some(library), Some(inventory)) = (package.library.as_deref_mut(), inventory) {
         library.publish(inventory);

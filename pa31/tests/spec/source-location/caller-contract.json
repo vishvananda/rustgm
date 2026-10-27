@@ -1,0 +1,24 @@
+{
+  "source": "caller-location.rs",
+  "sha256": "932880e0177a64ee3f51bdfb58c795022a9ef4e7eb64b0b5dbc820e4e7258665",
+  "state": "independent-qualified-candidate-pending",
+  "profile": {
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "ub_checks": false,
+    "bootstrap": true
+  },
+  "independent_receipt_sha256": "4a8c8b1af54ef7285b8bf87392da49054004642d182028c6c64ced987d5411c6",
+  "expected_native_stdout": "341 5 343 53 1\n",
+  "required": [
+    "actual source Location fields and caller method",
+    "direct tracked forwarding and untracked barrier",
+    "const initializer frame location",
+    "NUL backing while str metadata excludes terminator"
+  ],
+  "pending": [
+    "tracked function pointer and dynamic shims",
+    "PanicInfo handler and false Assert"
+  ]
+}

@@ -298,7 +298,11 @@ impl Stage {
         }
         source_header(report, facts, definition, declaration, actual.kind)?;
         if actual.kind == DefKind::Function && facts.checked_caller_tracking(report, definition)? {
-            return Err(Error::at(declaration.file, 0, "source caller tracking policy transport is not implemented"));
+            return Err(Error::at(
+                declaration.file,
+                0,
+                "source caller tracking policy transport is not implemented",
+            ));
         }
         Ok(Some((definition, declaration)))
     }

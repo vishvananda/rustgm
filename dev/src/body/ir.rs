@@ -554,10 +554,13 @@ impl Body {
         size_of::<Self>().saturating_add(self.allocation_bytes())
     }
     pub(crate) fn callable_allocation_bytes(&self) -> usize {
-        self.resolved_callables
-            .as_ref()
-            .map_or(0, |facts| facts.targets.as_ref().map_or(0, crate::support::retained::map)
-                .saturating_add(std::mem::size_of_val(facts.sites.as_slice())))
+        self.resolved_callables.as_ref().map_or(0, |facts| {
+            facts
+                .targets
+                .as_ref()
+                .map_or(0, crate::support::retained::map)
+                .saturating_add(std::mem::size_of_val(facts.sites.as_slice()))
+        })
     }
     /// Read place types from retained CFG facts, including external static storage.
     #[must_use]
