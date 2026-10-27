@@ -76,6 +76,9 @@ fn signature(
     if kind == SourceIntrinsic::Transmute {
         return super::transmute_contract::validate(facts, function);
     }
+    if kind == SourceIntrinsic::CallerLocation {
+        return super::caller_location::validate(facts, function);
+    }
     if kind == SourceIntrinsic::Abort {
         return super::abort_declaration::validate(facts, function);
     }
@@ -218,6 +221,7 @@ impl Catalog {
                 | SourceIntrinsic::UbChecks
                 | SourceIntrinsic::Abort
                 | SourceIntrinsic::Transmute
+                | SourceIntrinsic::CallerLocation
         ) {
             // These contracts have dedicated descriptors, without a layout element.
             return Ok(None);
@@ -240,6 +244,7 @@ impl Catalog {
                 SourceIntrinsic::ConstEvalSelect => {
                     "source callback selection requires its own descriptor"
                 }
+                SourceIntrinsic::CallerLocation => "source caller location requires its exact caller descriptor",
                 SourceIntrinsic::UbChecks => "source UB check requires its own descriptor",
                 SourceIntrinsic::Abort => "source abort requires its own reached-call descriptor",
                 SourceIntrinsic::Transmute => {
@@ -261,6 +266,7 @@ impl Catalog {
                 SourceIntrinsic::ConstEvalSelect => {
                     "source callback selection requires its own descriptor"
                 }
+                SourceIntrinsic::CallerLocation => "source caller location requires its exact caller descriptor",
                 SourceIntrinsic::UbChecks => "source UB check requires its own descriptor",
                 SourceIntrinsic::Abort => "source abort requires its own reached-call descriptor",
                 SourceIntrinsic::Transmute => {

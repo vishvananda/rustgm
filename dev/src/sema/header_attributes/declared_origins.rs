@@ -13,7 +13,12 @@ use crate::{
 };
 use std::cell::Cell;
 
+#[path = "tracking.rs"]
+mod tracking;
+pub(in crate::sema) use tracking::{consume_tracking, inherit_tracking};
+
 struct Header {
+    tracking: tracking::Tracking,
     source: SourceImage,
     owners: Vec<Owner>,
 }
@@ -76,6 +81,7 @@ pub(in crate::sema) fn observe_owner(
         .declarations
         .entry(declaration)
         .or_insert_with(|| Header {
+            tracking: tracking::Tracking::Untracked,
             source: SourceImage::capture(unit, declaration.node),
             owners: Vec::new(),
         });
@@ -111,6 +117,7 @@ pub(in crate::sema) fn bind_definition(
         .declarations
         .entry(declaration)
         .or_insert_with(|| Header {
+            tracking: tracking::Tracking::Untracked,
             source: SourceImage::capture(unit, declaration.node),
             owners: Vec::new(),
         });

@@ -30,11 +30,23 @@ impl<S: Sources> Engine<'_, S> {
         path
     }
 
-    pub(super) fn call_location(&self, mut location: Location) -> Result<Location, Error> {
+    pub(super) fn call_location(&self, location: Location) -> Result<Location, Error> {
+        physical_location(&self.loader.package, &self.invocations, location, &mut 0)
+    }
+}
+
+impl super::Report {
+    /// Follow the same authenticated expansion call sites used by file/line builtins.
+    pub(crate) fn physical_call_location(&self, location: Location, steps: &mut usize) -> Result<Location, Error> {
+        physical_location(&self.package, &self.invocations, location, steps)
+    }
+}
+fn physical_location(package: &super::Package, invocations: &[super::Invocation], mut location: Location, steps: &mut usize)
+    -> Result<Location, Error>
+{
         for _ in 0..4096 {
-            let Some(first) = self
-                .loader
-                .package
+            *steps = steps.saturating_add(1);
+            let Some(first) = package
                 .origin(location.file, location.span.start)
             else {
                 return Ok(location);
@@ -42,7 +54,7 @@ impl<S: Sources> Engine<'_, S> {
             let context = if location.span.end <= first.generated.end {
                 (first.introduction.0 != 0).then_some(first.introduction)
             } else {
-                let origins = &self.loader.package.unit(location.file).origins;
+                let origins = &package.unit(location.file).origins;
                 let start =
                     origins.partition_point(|origin| origin.generated.end <= location.span.start);
                 origins[start..]
@@ -51,8 +63,7 @@ impl<S: Sources> Engine<'_, S> {
                     .find_map(|origin| (origin.introduction.0 != 0).then_some(origin.introduction))
             };
             if let Some(context) = context.filter(|context| context.0 != 0) {
-                let call = self
-                    .invocations
+                let call = invocations
                     .get(context.0 as usize - 1)
                     .ok_or_else(|| {
                         Error::at(
@@ -83,7 +94,6 @@ impl<S: Sources> Engine<'_, S> {
             location.span.start,
             "builtin source provenance exceeds 4096",
         ))
-    }
 }
 
 struct TokenSources<'a> {

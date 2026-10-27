@@ -4,6 +4,7 @@ mod relocations;
 pub use relocations::{ImageFragment, WordTarget};
 pub(crate) use relocations::{MetadataShape, WordAddress, WordShape};
 mod callables;
+mod caller_sites;
 mod computed;
 mod enumerations;
 mod environments;

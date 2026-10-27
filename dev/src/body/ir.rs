@@ -466,23 +466,9 @@ pub struct Body {
     pub statements: Vec<Statement>,
     pub blocks: Vec<Block>,
 }
-#[derive(Clone, Default)]
-pub struct ResolvedCallables {
-    targets: crate::support::hash::HashMap<
-        crate::types::instance::Instance,
-        crate::types::instance::Instance,
-    >,
-}
-impl ResolvedCallables {
-    pub(crate) fn from_targets(
-        targets: crate::support::hash::HashMap<
-            crate::types::instance::Instance,
-            crate::types::instance::Instance,
-        >,
-    ) -> Self {
-        Self { targets }
-    }
-}
+pub use super::callable_inputs::CallableInputs;
+pub type ResolvedCallables = CallableInputs;
+pub(crate) use super::callable_inputs::CallerSite;
 impl Body {
     pub(crate) const fn root_site(&self) -> BodySite {
         self.source.root_body_site()
@@ -560,7 +546,7 @@ impl Body {
                 .as_ref()
                 .map_or(0, super::promote::Facts::allocation_bytes),
             self.resolved_callables.as_ref().map_or(0, |facts| {
-                size_of::<ResolvedCallables>().saturating_add(map(&facts.targets))
+                size_of::<ResolvedCallables>().saturating_add(facts.allocation_bytes())
             }),
         ])
     }
@@ -570,7 +556,8 @@ impl Body {
     pub(crate) fn callable_allocation_bytes(&self) -> usize {
         self.resolved_callables
             .as_ref()
-            .map_or(0, |facts| crate::support::retained::map(&facts.targets))
+            .map_or(0, |facts| facts.targets.as_ref().map_or(0, crate::support::retained::map)
+                .saturating_add(std::mem::size_of_val(facts.sites.as_slice())))
     }
     /// Read place types from retained CFG facts, including external static storage.
     #[must_use]
@@ -595,7 +582,7 @@ impl Body {
         self.resolved_callables
             .as_ref()
             .map_or_else(crate::support::hash::HashMap::default, |resolved| {
-                resolved.targets.clone()
+                resolved.targets.clone().unwrap_or_default()
             })
     }
     #[must_use]
@@ -605,7 +592,8 @@ impl Body {
     ) -> crate::types::instance::Instance {
         self.resolved_callables
             .as_ref()
-            .and_then(|resolved| resolved.targets.get(&original))
+            .and_then(|resolved| resolved.targets.as_ref())
+            .and_then(|targets| targets.get(&original))
             .copied()
             .unwrap_or(original)
     }
