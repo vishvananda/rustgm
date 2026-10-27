@@ -71,10 +71,13 @@ fn direct_source_caller_locations_use_const_frames_and_runtime_hidden_abi() -> T
 
 #[test]
 fn caller_metadata_cannot_replace_targets_or_forge_snapshot_identity() -> TestResult {
-    let report = test_source::resolve("const fn f()->u32{7}const fn g()->u32{f()}", true)?;
+    let source =
+        test_source::fixture("pa31/tests/spec/source-functions-transport/minimal-provider.rs")?
+            + "fn f()->u32{7}fn g()->u32{f()}";
+    let report = test_source::source_provider(&source, "caller_storage")?;
     let facts = sema::declarations::analyze(&report)?;
     let mut facts = sema::bodies::analyze(&report, facts)?;
-    let mut program = body::build(&report, &facts)?;
+    let mut program = body::concrete(&report, &facts)?;
     let actual = program
         .bodies
         .iter_mut()
@@ -111,6 +114,29 @@ fn caller_metadata_cannot_replace_targets_or_forge_snapshot_identity() -> TestRe
         callable,
         location,
     };
+    assert!(
+        sema::values::Reader::new(&facts)
+            .caller_location_value(location)
+            .is_err()
+    );
+    for invalid in 0..3 {
+        let mut changed = site;
+        match invalid {
+            0 => changed.owner.node = report.package.unit(changed.owner.file).configured.ast.root,
+            1 => changed.value = body::ir::ValueId(u32::MAX),
+            _ => changed.callable = TypeId::UNIT,
+        }
+        let mut altered = actual.clone();
+        altered.append_caller_site(changed, &facts)?;
+        assert!(
+            altered.seal_caller_sites(&facts).is_err(),
+            "changed site {invalid}"
+        );
+        assert!(
+            Code::snapshot(&altered).is_err(),
+            "changed snapshot {invalid}"
+        );
+    }
     actual.append_caller_site(site, &facts)?;
     actual.seal_caller_sites(&facts)?;
     assert!(!actual.has_resolved_callables());
@@ -123,6 +149,7 @@ fn caller_metadata_cannot_replace_targets_or_forge_snapshot_identity() -> TestRe
     let snapshot = Code::snapshot(actual)?;
     assert_eq!(snapshot.caller_site(site.value)?, Some(site));
     assert_eq!(snapshot.operands.len(), 1);
+    assert_eq!(snapshot.caller_site_bytes(), 40);
     actual.append_caller_site(site, &facts)?;
     assert!(actual.seal_caller_sites(&facts).is_err());
     assert!(Code::snapshot(actual).is_err());
