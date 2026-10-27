@@ -277,9 +277,32 @@ fn source_operator_work_scales_and_ordinary_path_retains_hot_layouts() -> TestRe
             facts.body_work.canonical_steps
         );
     }
-    let report = crate::test_source::resolve("pub fn ordinary(x:usize)->usize{x<<1|1}", true)?;
-    let facts = declarations::analyze(&report)?;
-    assert!(facts.source_bindings.is_none());
+    for (name, accepted) in [
+        ("shl", true),
+        ("mixed-shl", true),
+        ("bitor", true),
+        ("bool-bitor", true),
+        ("user-trait", true),
+        ("wrong-output", false),
+        ("mixed-arithmetic", false),
+        ("float-shift", false),
+    ] {
+        let source =
+            crate::test_source::fixture(&format!("pa26/tests/spec/primitive-binary/{name}.rs"))?;
+        let report = crate::test_source::resolve(&source, true)?;
+        let result = (|| -> TestResult<_> {
+            let facts = declarations::analyze(&report)?;
+            assert!(facts.source_bindings.is_none());
+            let analysis = pipeline::analyze(&report, facts)?;
+            lower(&report, analysis, &["main"])
+        })();
+        assert_eq!(
+            result.is_ok(),
+            accepted,
+            "ordinary {name}: {:?}",
+            result.err()
+        );
+    }
     println!(
         "SourceBinary={} SourceUnary={} CallContexts={} Operation={} NodeFacts={} Body={} Source={}",
         size_of::<SourceBinary>(),
