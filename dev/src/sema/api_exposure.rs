@@ -78,11 +78,6 @@ fn check_with_limits(
         .library_policy()
         .ok_or_else(|| Error::unlocated("library policy disappeared"))?
         .charge_retained(&mut budget)?;
-    report
-        .package
-        .library_policy()
-        .ok_or_else(|| Error::unlocated("library policy disappeared"))?
-        .charge_retained(&mut budget)?;
     let mut interfaces = Interfaces {
         report,
         facts,
