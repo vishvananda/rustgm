@@ -96,6 +96,9 @@ impl Ordinary {
                         crate::support::bindings::SourceIntrinsic::Transmute => {
                             "source transmute requires its proved direct runtime operation"
                         }
+                        crate::support::bindings::SourceIntrinsic::PtrMetadata => {
+                            "source ptr_metadata requires its proved direct pointer operation"
+                        }
                         crate::support::bindings::SourceIntrinsic::CallerLocation => {
                             "source caller_location requires its proved direct caller operation"
                         }

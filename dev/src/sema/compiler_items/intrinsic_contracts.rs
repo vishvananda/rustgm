@@ -67,6 +67,9 @@ fn signature(
     function: Function,
     kind: SourceIntrinsic,
 ) -> Result<(), &'static str> {
+    if kind == SourceIntrinsic::PtrMetadata {
+        return super::ptr_metadata::validate(facts, function).map(|_| ());
+    }
     if kind == SourceIntrinsic::ConstEvalSelect {
         return super::select_contract::validate(facts, function);
     }
@@ -222,6 +225,7 @@ impl Catalog {
                 | SourceIntrinsic::Abort
                 | SourceIntrinsic::Transmute
                 | SourceIntrinsic::CallerLocation
+                | SourceIntrinsic::PtrMetadata
         ) {
             // These contracts have dedicated descriptors, without a layout element.
             return Ok(None);
@@ -243,6 +247,9 @@ impl Catalog {
                 SourceIntrinsic::NeedsDrop => "selected source needs_drop lacks its type argument",
                 SourceIntrinsic::ConstEvalSelect => {
                     "source callback selection requires its own descriptor"
+                }
+                SourceIntrinsic::PtrMetadata => {
+                    "source ptr_metadata requires its actual pointer-call descriptor"
                 }
                 SourceIntrinsic::CallerLocation => {
                     "source caller location requires its exact caller descriptor"
@@ -267,6 +274,9 @@ impl Catalog {
                 }
                 SourceIntrinsic::ConstEvalSelect => {
                     "source callback selection requires its own descriptor"
+                }
+                SourceIntrinsic::PtrMetadata => {
+                    "source ptr_metadata requires its actual pointer-call descriptor"
                 }
                 SourceIntrinsic::CallerLocation => {
                     "source caller location requires its exact caller descriptor"

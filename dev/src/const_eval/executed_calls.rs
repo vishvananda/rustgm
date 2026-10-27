@@ -131,6 +131,9 @@ impl Machine<'_, '_> {
         if let Some(answer) = self.source_transmute(body, frame, position, target)? {
             return Ok(answer);
         }
+        if let Some(answer) = self.source_ptr_metadata(body, frame, position, target)? {
+            return Ok(answer);
+        }
         if let Some(answer) = self.source_runtime_check(body, frame, position, target)? {
             return Ok(answer);
         }
