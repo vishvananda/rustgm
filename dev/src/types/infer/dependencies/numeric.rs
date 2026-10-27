@@ -222,7 +222,9 @@ impl Context {
     pub(crate) fn watch_normalization(&mut self, input: TermId) -> Result<WatchId, Error> {
         self.watch_inputs(&[input], &[], true, Fallback::Projection(input))
     }
-    pub(in crate::types::infer) fn default_numeric_frontier(&mut self) -> Result<Option<bool>, Error> {
+    pub(in crate::types::infer) fn default_numeric_frontier(
+        &mut self,
+    ) -> Result<Option<bool>, Error> {
         if !self
             .dependencies
             .as_ref()
