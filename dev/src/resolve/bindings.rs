@@ -147,6 +147,26 @@ impl super::package::Package {
             .macro_context()?
             .is_some_and(|context| context.requested(feature)))
     }
+    pub(crate) fn requested_cpu_gate(
+        &self,
+        gate: crate::support::cpu_features::Gate,
+    ) -> Result<bool, &'static str> {
+        let feature = policy::Feature::cpu_gate(gate);
+        if let Some(source) = self.staged_consumer() {
+            source.require_package(self)?;
+            return Ok(source.features.has(feature));
+        }
+        if let Some(client) = self.source_client() {
+            if client.current().name() != self.crate_name || client.current() == client.provider() {
+                return Err("target-feature client identity changed");
+            }
+            client.validate_inventory()?;
+            return Ok(client.features.has(feature));
+        }
+        Ok(self
+            .macro_context()?
+            .is_some_and(|context| context.requested(feature)))
+    }
     pub(crate) fn requested_simd_feature(&self, foreign: bool) -> Result<bool, &'static str> {
         let feature = if foreign {
             policy::Feature::SimdFfi
@@ -318,3 +338,12 @@ impl super::package::Package {
 #[cfg(test)]
 #[path = "../../tests/invariants/provider_reservations.rs"]
 mod tests;
+
+#[cfg(test)]
+pub(crate) const fn cpu_request_layouts() -> (usize, usize, usize) {
+    (
+        size_of::<policy::Features>(),
+        size_of::<policy::MacroFeatures>(),
+        size_of::<SourceCore>(),
+    )
+}

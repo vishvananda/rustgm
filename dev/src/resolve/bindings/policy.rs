@@ -49,8 +49,39 @@ pub(in crate::resolve) enum Feature {
     CfgTargetHasAtomic = 32,
     ReprSimd = 33,
     SimdFfi = 34,
+    CpuApx = 35,
+    CpuAvx10 = 36,
+    CpuClflushopt = 37,
+    CpuErmsb = 38,
+    CpuFma4 = 39,
+    CpuLahfsahf = 40,
+    CpuMovrs = 41,
+    CpuPrfchw = 42,
+    CpuRtm = 43,
+    CpuAmx = 44,
+    CpuX87 = 45,
+    CpuXop = 46,
 }
 
+impl Feature {
+    pub(super) const fn cpu_gate(gate: crate::support::cpu_features::Gate) -> Self {
+        use crate::support::cpu_features::Gate;
+        match gate {
+            Gate::Apx => Self::CpuApx,
+            Gate::Avx10 => Self::CpuAvx10,
+            Gate::Clflushopt => Self::CpuClflushopt,
+            Gate::Ermsb => Self::CpuErmsb,
+            Gate::Fma4 => Self::CpuFma4,
+            Gate::Lahfsahf => Self::CpuLahfsahf,
+            Gate::Movrs => Self::CpuMovrs,
+            Gate::Prfchw => Self::CpuPrfchw,
+            Gate::Rtm => Self::CpuRtm,
+            Gate::Amx => Self::CpuAmx,
+            Gate::X87 => Self::CpuX87,
+            Gate::Xop => Self::CpuXop,
+        }
+    }
+}
 /// Recognizing a gate request is not evidence that its active constructs work.
 enum Request {
     Capability(Feature),
@@ -99,7 +130,9 @@ impl Request {
             "pattern_types" => Self::Capability(Feature::PatternTypes),
             // Requests do not authorize the unsupported live const-drop operation.
             "const_destruct" | "asm_experimental_arch" => Self::NoCapability,
-            _ => return None,
+            _ => Self::Capability(Feature::cpu_gate(
+                crate::support::cpu_features::Gate::named(name)?,
+            )),
         })
     }
 }
@@ -214,6 +247,9 @@ pub(in crate::resolve) fn prepare_with_admission(
         }
         return Ok(Prepared {
             source: if features.has(Feature::InternalMacroAllowance)
+                || crate::support::cpu_features::Gate::ALL
+                    .into_iter()
+                    .any(|gate| features.has(Feature::cpu_gate(gate)))
                 || features.has(Feature::ReprSimd)
                 || features.has(Feature::SimdFfi)
                 || features.has(Feature::CfgTargetHasAtomic)

@@ -156,6 +156,85 @@ impl<'capture> Splice<'capture> {
                 .map_err(|_| invalid()),
         }
     }
+    /// Materialize only a parsed ordinary string root in an attribute forest.
+    /// Its capture and copied source interval remain the provenance authority.
+    pub(crate) fn append_attribute_string(
+        &self,
+        source: &str,
+        builder: &mut ForestBuilder,
+    ) -> Result<bool, LexError> {
+        let Nonterminal::Syntax { kind, parsed } = self.fragment else {
+            return Ok(false);
+        };
+        if !matches!(
+            kind,
+            FragmentKind::Literal | FragmentKind::Expression | FragmentKind::Expression2021
+        ) {
+            return Ok(false);
+        }
+        let node = parsed
+            .ast
+            .nodes
+            .get(parsed.ast.root.get() as usize)
+            .ok_or_else(|| error(self.destination.start, "missing captured attribute literal"))?;
+        let (kind, span) = match node.kind {
+            Kind::DeferredLiteral(token)
+                if matches!(token.kind, TokenKind::String | TokenKind::RawString) =>
+            {
+                (
+                    token.kind,
+                    Span {
+                        start: token.start,
+                        end: token.end,
+                    },
+                )
+            }
+            Kind::Literal(index)
+                if matches!(
+                    parsed.ast.literals.get(index as usize),
+                    Some(StoredValue::String(_))
+                ) =>
+            {
+                let text = self
+                    .original_source
+                    .get(node.span.start as usize..node.span.end as usize)
+                    .ok_or_else(|| {
+                        error(
+                            self.destination.start,
+                            "captured string source span changed",
+                        )
+                    })?;
+                let Some(kind) = ordinary_string_carrier(text) else {
+                    return Ok(false);
+                };
+                (kind, node.span)
+            }
+            _ => return Ok(false),
+        };
+        let text = self
+            .original_source
+            .get(span.start as usize..span.end as usize)
+            .ok_or_else(|| {
+                error(
+                    self.destination.start,
+                    "captured string source span changed",
+                )
+            })?;
+        if ordinary_string_carrier(text) != Some(kind) {
+            return Ok(false);
+        }
+        let span = self.span(span)?;
+        builder.push(
+            source,
+            Token {
+                kind,
+                start: span.start,
+                end: span.end,
+            },
+        )?;
+        Ok(true)
+    }
+
     /// Lower an opaque path to attribute-path tokens from its typed segments.
     /// Punctuation spans cover the existing gap; identifier spans remain exact.
     /// No spelling is lexed and no expression/type grammar is rerun.
@@ -443,3 +522,27 @@ impl<'capture> Splice<'capture> {
 #[cfg(test)]
 #[path = "../../tests/invariants/interpolated_arguments.rs"]
 mod const_arguments;
+
+/// Select the lexical carrier of a typed string's genuine source interval.
+/// This checks delimiters only; it neither parses a value nor admits another root kind.
+fn ordinary_string_carrier(text: &str) -> Option<TokenKind> {
+    let bytes = text.as_bytes();
+    if bytes.first() == Some(&b'"') && bytes.last() == Some(&b'"') {
+        return Some(TokenKind::String);
+    }
+    if bytes.first() != Some(&b'r') {
+        return None;
+    }
+    let hashes = bytes
+        .iter()
+        .skip(1)
+        .take_while(|&&byte| byte == b'#')
+        .count();
+    let prefix = hashes.checked_add(1)?;
+    if bytes.get(prefix) != Some(&b'"') || bytes.len() < 2 * hashes + 3 {
+        return None;
+    }
+    let close = bytes.len() - hashes - 1;
+    (bytes.get(close) == Some(&b'"') && bytes[close + 1..].iter().all(|&byte| byte == b'#'))
+        .then_some(TokenKind::RawString)
+}

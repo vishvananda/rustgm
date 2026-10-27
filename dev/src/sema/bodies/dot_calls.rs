@@ -112,7 +112,8 @@ impl Checker<'_> {
                 unsize: selected.unsize,
             },
         ));
-        self.state.call_types.active.insert(node, signature);
+        let target_function = self.selected_target_function(node, callable)?;
+        self.retain_active_call(node, signature, target_function)?;
         self.schedule_call_arguments(node, signature, site.arguments, 1)
     }
 

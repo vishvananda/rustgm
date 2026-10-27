@@ -311,6 +311,24 @@ pub(in crate::sema) fn charge_source_retention(
         .map_err(Error::unlocated)
 }
 
+/// Retained attribute policy may exist for an ordinary crate. This accounts
+/// against its pre-existing producer without declaring any header complete.
+pub(in crate::sema) fn charge_attribute_retention(
+    facts: &Declarations,
+    steps: usize,
+    bytes: usize,
+) -> Result<(), Error> {
+    let headers = facts
+        .must_use_contracts
+        .as_deref()
+        .and_then(|owner| owner.headers.as_deref())
+        .map(|ledger| &ledger.local)
+        .ok_or_else(|| Error::unlocated("attribute retention lacks its actual producer budget"))?;
+    Payments(headers)
+        .charge(steps, bytes)
+        .map_err(Error::unlocated)
+}
+
 /// A disjoint accounting borrow, not permission to read or publish a header.
 pub(in crate::sema) struct Payments<'a>(&'a Headers);
 pub(in crate::sema) fn source_payments(
@@ -608,4 +626,18 @@ pub(in crate::sema) fn marker_trait(
         }
     }
     Ok(false)
+}
+
+#[cfg(test)]
+pub(in crate::sema) fn attribute_storage(facts: &Declarations) -> Option<[usize; 7]> {
+    let ledger = facts.must_use_contracts.as_deref()?.headers.as_deref()?;
+    Some([
+        size_of::<Ledger>(),
+        size_of::<Headers>(),
+        ledger.local.bytes.get(),
+        ledger.local.steps.get(),
+        usize::from(ledger.local.complete),
+        ledger.local.declarations.capacity(),
+        ledger.local.definitions.capacity(),
+    ])
 }

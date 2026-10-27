@@ -216,6 +216,15 @@ must preserve evaluation order, single evaluation and source-owned formatting
 roles. `allow_internal_unsafe` is lint metadata and never authorizes an unsafe
 operation. See the [formatting contract](docs/pa31-source-format-contracts.md).
 
+Source primitive methods use actual inherent declarations and ordinary body
+proof. A same-named module does not replace a primitive type: after ordinary
+relative reference lookup, a missing primitive-headed member may retain the
+canonical primitive associated prefix. Successful module members, nominal/alias
+shadows, privacy, ambiguity and import rules keep their ordinary authority.
+Do not manufacture a length operation in place of the real str/slice/pointer
+method chain. See the [source method checkpoint](docs/source-assert-implementation.md)
+and [PA6 fallback controls](pa6/tests/spec/primitive-members/README.md).
+
 Source byte concatenation reuses the eager producer's parsed argument arena and
 typed literals. Authenticate the actual source-declared builtin before preparing
 inputs, including opaque captured payloads. Validate operands and compute the
@@ -3940,6 +3949,20 @@ replace assembly with Unit or ordinary stores. PA41 owns broader closure, but
 the selected upstream target's required slice must work by PA32. See the
 [assembly checkpoint](docs/source-inline-assembly-checkpoint.md) for implemented
 scope, every-Body cost and remaining SIMD, transport and emission requirements.
+
+Target-feature policy reuses the two declaration/function owners as typed rows,
+retaining declared safety, exact contributing source attributes/input trees and
+the canonical feature closure. Query authenticated rows without reparsing. A
+safe declaration can be called or coerced to a safe pointer only in a compatible
+actual body context; explicit unsafe declarations keep that requirement. Nested
+functions and constants do not inherit an outer body's features. CPU baseline
+features do not waive language call safety; assembly availability is a separate
+baseline-plus-body consumer. Unstable feature requests require actual crate
+authority, independently of macro allowances. The existing active-call map
+retains selected target identity; its measured extra eight bytes per entry also
+applies to ordinary calls. No new body field or second call-policy index is
+needed. See the [target policy checkpoint](docs/source-target-feature-checkpoint.md)
+for exact scope, source mutation opponents, costs and closed transport boundaries.
 
 Nominal SIMD layout reuses prepared substituted aggregate fields through
 `Definitions::simd_shape`; it returns NotSimd, Pending or an actual lane/count.

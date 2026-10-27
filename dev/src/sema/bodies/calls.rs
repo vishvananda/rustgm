@@ -8,6 +8,11 @@ use crate::{
     types::{GenericArgs, RegionId, infer, substitute::Bound},
 };
 
+#[derive(Clone, Copy)]
+pub(super) struct ActiveCall {
+    pub signature: TermId,
+    pub target_function: Option<DefId>,
+}
 #[derive(Default)]
 pub(super) struct CallTypes {
     pub try_plans: Vec<super::try_control::OpenPlan>,
@@ -22,7 +27,7 @@ pub(super) struct CallTypes {
     pub constants: Vec<super::item_values::Pending>,
     pub generic_constructors: bool,
     pub opened_projection_call: bool,
-    pub active: HashMap<NodeId, TermId>,
+    pub active: HashMap<NodeId, ActiveCall>,
     pub method_owners: HashMap<NodeId, (DefId, TermId)>,
     pub methods: Vec<(NodeId, super::dot_calls::Pending)>,
     pub comparison_borrows: Vec<(NodeId, TermId, TermId)>,

@@ -458,6 +458,7 @@ fn inspect_selected<R>(
 }
 
 fn require_source_session(report: &Report, facts: &Declarations) -> Result<(), Error> {
+    crate::sema::target_features::authenticate(report, facts)?;
     if let Some(catalog) = facts.source_bindings.as_deref() {
         catalog
             .require_provider_report(report)

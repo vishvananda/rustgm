@@ -24,3 +24,5 @@ pub mod source;
 pub mod diagnostics;
 
 pub(crate) mod helper_collisions;
+
+pub(crate) mod cpu_features;

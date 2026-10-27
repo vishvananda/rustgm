@@ -17,6 +17,7 @@ mod discarded_results;
 mod divergence;
 mod dot_calls;
 mod effect_facts;
+mod target_permissions;
 pub(super) use effect_facts::CallContexts;
 pub use effect_facts::{SourceCallUse, TryPlanId};
 mod assembly_values;
@@ -713,7 +714,12 @@ impl Checker<'_> {
             return Err(self.error(body.node, "missing function signature"));
         };
         self.state.safety = safety::Context::default();
-        self.state.safety.function = unsafe_;
+        self.state.safety.function = super::target_features::body_unsafe(
+            self.report,
+            self.facts,
+            function.definition,
+            unsafe_,
+        )?;
         self.state.result = result;
         self.prepare_opaque_results(body.node)?;
         let unit = self.report.package.unit(self.state.file);
@@ -1868,7 +1874,8 @@ impl Checker<'_> {
             self.require_reifiable_head(source, actual_head)?;
             self.closure_pointer_environment(source, actual)?;
             let signature = self.child(source, actual, 0)?;
-            let view = self.callable_conversion(source, signature, expected)?;
+            let contextual = self.target_pointer_signature(source, actual, signature)?;
+            let view = self.callable_conversion(source, contextual, expected)?;
             self.callable_shape(source, view, expected)?;
             let index = self.state.adjustments.len();
             self.record_adjustment(source, expected, AdjustmentKind::FunctionPointer)?;
@@ -2078,12 +2085,13 @@ impl Checker<'_> {
         }
     }
     fn call(&mut self, node: NodeId, _callee: NodeId, _arguments: List) -> Result<TermId, Error> {
-        let term = self
+        let active = self
             .state
             .call_types
             .active
             .remove(&node)
             .ok_or_else(|| self.error(node, "missing call instantiation"))?;
+        let term = active.signature;
         let Some(Constructor::Function {
             parameters,
             unsafe_,
@@ -2093,9 +2101,7 @@ impl Checker<'_> {
         else {
             return Err(self.error(node, "call requires a known function type"));
         };
-        if unsafe_ {
-            self.require_unsafe(node, "call to unsafe function requires an unsafe context")?;
-        }
+        self.target_call_permission(node, active.target_function, unsafe_)?;
         if bound_regions != 0 {
             return Err(self.error(node, "lifetime-polymorphic call retains an unopened binder"));
         }
@@ -2282,7 +2288,8 @@ impl Checker<'_> {
         } else {
             self.invocation_signature(node, callee, arguments)?
         };
-        self.state.call_types.active.insert(node, term);
+        let target_function = self.selected_target_function(node, receiver)?;
+        self.retain_active_call(node, term, target_function)?;
         let Some(Constructor::Function { parameters, .. }) = self.head(node, term)? else {
             return Err(self.error(node, "call requires a known function type"));
         };
@@ -2685,3 +2692,6 @@ impl Checker<'_> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+pub(in crate::sema) use target_permissions::observe_active_calls;
