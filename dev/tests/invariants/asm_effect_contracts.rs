@@ -54,7 +54,7 @@ fn actual_templates_keep_one_parser_and_source_role_without_hot_node_growth() ->
     let mut actual = source("")?;
     // Crate attributes remain at the actual crate root, before source declarations.
     actual = actual.replacen("#![feature(", "#![feature(decl_macro,staged_api,", 1);
-    actual.insert_str(0, "#![stable(feature=\"core\",since=\"1.6.0\")]\n");
+    actual.insert_str(0, "#![unstable(feature=\"asm_fixture\",issue=\"none\")]\n");
     actual.push_str("#[rustc_builtin_macro(concat)]macro_rules!concat{($($t:tt)*)=>{};}");
     actual.push_str(&reducer.lines().skip(2).collect::<Vec<_>>().join("\n"));
     let full = crate::test_source::source_provider(&actual, "actual_stream_asm")?;
@@ -139,7 +139,7 @@ fn scalar_inputs_and_outputs_reach_real_original_proof_then_backend_denial() -> 
     Ok(())
 }
 fn operand_evaluation_order() -> Result {
-    use body::ir::Rvalue;
+    use body::ir::{Action, Rvalue, Terminator};
     let report = expanded(
         "fn first()->usize{7}fn index()->usize{0}fn ordered(){let mut xs=[0usize,0usize];unsafe{actual!(\"mov {b},{a}; add {c},1\",a=in(reg)first(),b=out(reg)xs[index()],c=inout(reg)xs[index()]);}}",
     )?;
@@ -150,11 +150,24 @@ fn operand_evaluation_order() -> Result {
         .iter()
         .find(|b| b.assembly.is_some())
         .ok_or("ordered body")?;
-    let calls: Vec<_> = ordered
-        .values
+    let (actions, terminator) = straight_trace(ordered)?;
+    assert!(matches!(terminator, Terminator::Return(_)));
+    let effect = actions
         .iter()
-        .filter_map(|v| {
-            let Rvalue::Call { callee, .. } = v.kind else {
+        .position(|action| assembly_effect(ordered, *action))
+        .ok_or("ordered assembly effect")?;
+    assert!(actions[effect + 1..].iter().all(|action| {
+        !matches!(*action, Action::Evaluate(id) if matches!(
+            ordered.values[id.0 as usize].kind, Rvalue::Call { .. }
+        ))
+    }));
+    let calls: Vec<_> = actions
+        .iter()
+        .filter_map(|action| {
+            let Action::Evaluate(value) = *action else {
+                return None;
+            };
+            let Rvalue::Call { callee, .. } = ordered.values[value.0 as usize].kind else {
                 return None;
             };
             let Rvalue::Function(definition) = ordered.values[callee.0 as usize].kind else {
@@ -192,25 +205,35 @@ fn output_order_and_divergence() -> Result {
     let mut divergence_seen = false;
     for body in program.bodies.iter().filter(|b| b.assembly.is_some()) {
         let data = body.assembly.as_ref().ok_or("assembly data")?;
+        let (actions, terminator) = straight_trace(body)?;
+        let effect = actions
+            .iter()
+            .position(|action| assembly_effect(body, *action))
+            .ok_or("assembly effect must execute")?;
         if data.operands.len() == 2 {
             overlap_seen = true;
             assert_eq!(data.operands[0].output, data.operands[1].output);
-            let stores: Vec<_> = body
-                .statements
+            assert!(matches!(terminator, Terminator::Return(_)));
+            let stores: Vec<_> = actions
                 .iter()
-                .filter_map(|s| {
-                    let Action::Store { value, .. } = s.action else {
+                .enumerate()
+                .filter_map(|(position, action)| {
+                    let Action::Store { value, .. } = *action else {
                         return None;
                     };
                     let Rvalue::AssemblyOutput { operand, .. } = body.values[value.0 as usize].kind
                     else {
                         return None;
                     };
-                    Some(operand)
+                    Some((position, operand))
                 })
                 .collect();
+            assert!(stores.iter().all(|&(position, _)| position > effect));
             assert_eq!(
-                stores,
+                stores
+                    .iter()
+                    .map(|&(_, operand)| operand)
+                    .collect::<Vec<_>>(),
                 [0, 1],
                 "rightmost overlapping output is stored last"
             );
@@ -220,17 +243,17 @@ fn output_order_and_divergence() -> Result {
                 data.instructions[0].options & crate::syntax::assembly::NORETURN,
                 0
             );
-            assert!(
-                body.blocks
-                    .iter()
-                    .any(|b| matches!(b.terminator, Terminator::Unreachable))
-            );
-            assert!(
-                !body
-                    .blocks
-                    .iter()
-                    .any(|b| matches!(b.terminator, Terminator::Return(_)))
-            );
+            assert!(matches!(terminator, Terminator::Unreachable));
+            let block = body
+                .blocks
+                .iter()
+                .find(|block| {
+                    body.statements(block)
+                        .iter()
+                        .any(|statement| assembly_effect(body, statement.action))
+                })
+                .ok_or("noreturn assembly block")?;
+            assert!(matches!(block.terminator, Terminator::Unreachable));
         }
     }
     assert!(overlap_seen && divergence_seen);
@@ -241,6 +264,36 @@ fn output_order_and_divergence() -> Result {
         |_, _| (),
     )?;
     Ok(())
+}
+fn straight_trace(body: &body::ir::Body) -> Result<(Vec<body::ir::Action>, body::ir::Terminator)> {
+    use body::ir::Terminator;
+    let mut visited = vec![false; body.blocks.len()];
+    let mut current = body::ir::BlockId(0);
+    let mut actions = Vec::new();
+    loop {
+        let seen = visited.get_mut(current.0 as usize).ok_or("trace block")?;
+        if std::mem::replace(seen, true) {
+            return Err("unexpected loop in assembly observer".into());
+        }
+        let block = &body.blocks[current.0 as usize];
+        actions.extend(
+            body.statements(block)
+                .iter()
+                .map(|statement| statement.action),
+        );
+        match block.terminator {
+            Terminator::Jump(next) | Terminator::FalseEdge { real: next, .. } => current = next,
+            Terminator::Branch { .. } => {
+                return Err("unexpected branch in assembly observer".into());
+            }
+            terminal => return Ok((actions, terminal)),
+        }
+    }
+}
+fn assembly_effect(body: &body::ir::Body, action: body::ir::Action) -> bool {
+    matches!(action, body::ir::Action::Evaluate(id) if matches!(
+        body.values[id.0 as usize].kind, body::ir::Rvalue::Assembly { .. }
+    ))
 }
 #[test]
 fn asm_place_unsafe_const_and_type_failures_do_not_become_unit_effects() -> Result {
