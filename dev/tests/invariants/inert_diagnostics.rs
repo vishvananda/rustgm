@@ -124,12 +124,12 @@ fn sparse_scaling_atomic_names_and_exhausted_payments_keep_existing_data() -> Te
         for index in (0..count).rev() {
             reverse += &format!("#[rustc_diagnostic_item=\"extra_{index}\"]fn f{index}(){{}}");
         }
-        let reversed = provider(&reverse)?;
-        let reversed_rows = reversed
+        let opposite = provider(&reverse)?;
+        let opposite_rows = opposite
             .resolution
             .source_bindings
             .as_deref()
-            .ok_or("reversed source")?
+            .ok_or("opposite source")?
             .extra_diagnostics
             .as_deref();
         let mut left: Vec<_> = reserved
@@ -139,10 +139,10 @@ fn sparse_scaling_atomic_names_and_exhausted_payments_keep_existing_data() -> Te
             .flat_map(|c| &c.rows)
             .map(|row| report.package.names.get(row.name))
             .collect();
-        let mut right: Vec<_> = reversed_rows
+        let mut right: Vec<_> = opposite_rows
             .into_iter()
             .flat_map(|c| &c.rows)
-            .map(|row| reversed.package.names.get(row.name))
+            .map(|row| opposite.package.names.get(row.name))
             .collect();
         left.sort_unstable();
         right.sort_unstable();

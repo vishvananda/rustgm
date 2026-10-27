@@ -161,8 +161,8 @@ impl Draft {
             | ItemKind::Module { .. }
             | ItemKind::Impl {
                 trait_path: None, ..
-            } => true,
-            ItemKind::Function { body: Some(_), .. } => true,
+            }
+            | ItemKind::Function { body: Some(_), .. } => true,
             ItemKind::Function { body: None, .. } => !self.is_foreign(facts, owner)?,
             _ => false,
         })
