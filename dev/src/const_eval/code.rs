@@ -127,7 +127,9 @@ impl Code {
     }
     pub(crate) fn caller_site_bytes(&self) -> usize {
         match self.operands.last() {
-            Some(PreparedOperand::CallerSites(sites)) => std::mem::size_of_val(sites.as_ref()),
+            Some(PreparedOperand::CallerSites(sites)) => {
+                std::mem::size_of_val(sites.as_ref()).saturating_add(2 * size_of::<usize>())
+            }
             _ => 0,
         }
     }

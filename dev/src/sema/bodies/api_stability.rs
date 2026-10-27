@@ -132,14 +132,13 @@ impl Checker<'_> {
                     .ok_or_else(|| self.error(node, "intrinsic const API lost its library owner"))?
                     .requested_feature(&feature, &mut self.state.steps)
                     .map_err(|e| self.error(node, e))?;
-                let span = self
-                    .report
-                    .package
-                    .unit(self.state.file)
-                    .configured
-                    .ast
-                    .node(node)
-                    .span;
+                let ast = &self.report.package.unit(self.state.file).configured.ast;
+                let span = match ast.node(node).kind {
+                    Kind::Call { callee, .. } => ast.node(callee).span,
+                    Kind::MethodCall { name, .. } => name,
+                    Kind::GenericMethodCall { method, .. } => ast.node(method).span,
+                    _ => ast.node(node).span,
+                };
                 if !requested && !allowances.allows_at(self.state.file, span, &feature)? {
                     return Err(self.error(node, "source intrinsic const API requires its checked feature or exact token allowance"));
                 }
