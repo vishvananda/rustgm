@@ -31,7 +31,7 @@ pub(crate) struct LocalAnalysis<'a> {
     )
 )]
 pub(crate) fn analyze<'a>(report: &'a Report, roots: &[DefId]) -> Result<LocalAnalysis<'a>, Error> {
-    let (facts, prepared) = crate::pipeline::local_runtime::prepare(report, roots)?;
+    let (facts, prepared) = crate::pipeline::prepare_local_runtime(report, roots)?;
     Ok(LocalAnalysis {
         report,
         facts,

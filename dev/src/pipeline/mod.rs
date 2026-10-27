@@ -1,6 +1,5 @@
 //! Coordinate defining-body proofs without reversing semantic phase dependencies.
 pub(crate) mod execution;
-pub(crate) mod local_runtime;
 mod original_contexts;
 use crate::support::hash::HashMap;
 use crate::{
@@ -84,6 +83,20 @@ pub fn analyze_source(report: &Report) -> Result<Analysis, Error> {
     )?;
     analysis.prepared.constants = Some(context);
     Ok(analysis)
+}
+
+/// Prepare explicit bodies through the ordinary declaration and constant services.
+pub(crate) fn prepare_local_runtime(
+    report: &Report,
+    roots: &[DefId],
+) -> Result<(Declarations, Prepared), Error> {
+    let context = execution::Context::default();
+    let mut facts =
+        crate::sema::declarations::analyze_local_roots(report, roots, context.executor())?;
+    let mut prepared = Prepared::default();
+    complete_constants(report, &context, &mut facts, &mut prepared)?;
+    prepared.constants = Some(context);
+    Ok((facts, prepared))
 }
 
 fn complete_constants(
