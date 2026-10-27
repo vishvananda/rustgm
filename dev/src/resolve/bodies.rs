@@ -12,7 +12,7 @@ use crate::syntax::{
     item::{GenericFlavor, ItemKind},
 };
 #[cfg(test)]
-#[path = "../../tests/invariants/primitive_references.rs"]
+#[path = "../../tests/invariants/fallback_members.rs"]
 mod tests;
 impl Resolver<'_> {
     pub fn bodies(&mut self) -> Result<(), Error> {
