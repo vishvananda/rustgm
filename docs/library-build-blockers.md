@@ -51,7 +51,16 @@ text cases, harness/layout/upstream and fresh native LowIR equality pass.
 
 The latest integrated compiler `4ec518b8f` combines typed concat, actual
 pointer-metadata execution, const-panic declaration policy and the private
-provided-method execution path. Its 36 private and44 frontend controls pass in
+provided-method execution path.
+The normally merged formatter prerequisite at `6d92b2789` now passes all86
+combined controls (42 private plus44 frontend), both strict Clippy modes,
+formatting and architecture in275.65s. The original52 formatter observations and
+all2851 source fingerprints were authenticated before integration. This adds
+real derive/coverage preparation, not formatter-body or panic execution. Actual
+Reservations/Catalog costs remain1240/1080 and the common body/IR widths remain
+unchanged. The next grammar task remains LIB-041; the last core observation is
+explicitly the earlier qualified parser CLI below.
+ Its 36 private and44 frontend controls pass in
 165.50s;26 production/CLI controls pass in28.63s. Formatting, architecture and
 both strict Clippy modes pass. The imported caller-policy join authenticates the
 collector's actual no-tracking guarantee and charges its existing imported header
