@@ -1,0 +1,93 @@
+{
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "state": "source-only original-form freeze; independent composite protocol plan pending",
+  "files": [
+    {
+      "file": "alignment.rs",
+      "sha256": "0ba3528de69a9e41afb6c812ae301d48370523efc1c5f22758181a20fb65a5f5",
+      "primary": "library/core/src/fmt/mod.rs",
+      "primary_sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+      "byte_start": 542,
+      "byte_end": 1150,
+      "first_line": 23,
+      "kind": "exact original declaration fragment; requires real protocol composition before Rust observations"
+    },
+    {
+      "file": "sign.rs",
+      "sha256": "574d57b30ccb3b694a1a24a83a97e50d45ac2da5f51eea9c7febcd56b1d23fb1",
+      "primary": "library/core/src/fmt/mod.rs",
+      "primary_sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+      "byte_start": 8868,
+      "byte_end": 9150,
+      "first_line": 262,
+      "kind": "exact original declaration fragment; requires real protocol composition before Rust observations"
+    },
+    {
+      "file": "debug-as-hex.rs",
+      "sha256": "f375449955617e84a39e30db156011b33001a54589f388435cee3fd06bd1dec1",
+      "primary": "library/core/src/fmt/mod.rs",
+      "primary_sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+      "byte_start": 9152,
+      "byte_end": 9679,
+      "first_line": 272,
+      "kind": "exact original declaration fragment; requires real protocol composition before Rust observations"
+    },
+    {
+      "file": "formatting-options.rs",
+      "sha256": "d4ef49631e15e35cdc53caae4f1c47e0165e3e2814b37d4eae85028517377e01",
+      "primary": "library/core/src/fmt/mod.rs",
+      "primary_sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+      "byte_start": 9681,
+      "byte_end": 11948,
+      "first_line": 283,
+      "kind": "exact original declaration fragment; requires real protocol composition before Rust observations"
+    },
+    {
+      "file": "error.rs",
+      "sha256": "11f9d1c1093648a4a1f80cdc1ad603b95466f0bce2d6433076f8067b3ebc9437",
+      "primary": "library/core/src/fmt/mod.rs",
+      "primary_sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+      "byte_start": 3674,
+      "byte_end": 3814,
+      "first_line": 109,
+      "kind": "exact original declaration fragment; requires real protocol composition before Rust observations"
+    },
+    {
+      "file": "ordering.rs",
+      "sha256": "ce87dd315f131611ce75536f53fb4a5ff0b6d50c0a526471dea7b29e75bb4284",
+      "primary": "library/core/src/cmp.rs",
+      "primary_sha256": "0a9b8c3a2f7b80447703e5cdc224d059465a90fb9203e0ab4b0182af17494cac",
+      "byte_start": 14332,
+      "byte_end": 15125,
+      "first_line": 397,
+      "kind": "exact original declaration fragment; requires real protocol composition before Rust observations"
+    }
+  ],
+  "required_derives": [
+    "Copy",
+    "Clone",
+    "Debug",
+    "PartialEq",
+    "Eq",
+    "Default",
+    "Hash",
+    "Ord",
+    "PartialOrd",
+    "derive_const"
+  ],
+  "approved_language_append": {
+    "42": "eq",
+    "43": "structural_peq",
+    "44": "Ordering",
+    "45": "partial_ord"
+  },
+  "candidate_boundaries": [
+    "fieldless enum Debug required; current struct-only profile is insufficient",
+    "Ordering separate Copy and const Clone lists need same-owner completed Copy receipt",
+    "actual AssertParamIsEq fields must be checked",
+    "real source operator/const/ordinary trait/body proof required",
+    "DiscriminantKind/discriminant_value prerequisite remains C-coordinated",
+    "no artifacts/transport/Provided/native panic completion inferred"
+  ],
+  "independent_execution": "unrun; freeze complete authored no_core protocol, options, predictions and source hashes before launch"
+}
