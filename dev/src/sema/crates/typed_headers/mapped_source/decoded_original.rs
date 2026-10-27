@@ -12,7 +12,7 @@ use crate::{
 };
 use std::sync::Arc;
 
-#[path = "provided_original.rs"]
+#[path = "admitted_original.rs"]
 mod selected;
 use selected::Mapping;
 

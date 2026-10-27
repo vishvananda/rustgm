@@ -14,6 +14,7 @@ use crate::{
     types::{ItemId, Kind, instance::Instance},
 };
 mod paid_owners;
+#[path = "demand/append.rs"]
 mod selected_originals;
 use selected_originals::Proofs;
 pub(super) use selected_originals::materialize as materialize_selected;

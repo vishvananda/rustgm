@@ -368,7 +368,7 @@ impl environments::LeafClauses for ImportedLeaves<'_> {
         }
     }
 }
-#[path = "selected_body_inputs.rs"]
+#[path = "recorded_body.rs"]
 mod selected_body;
 pub(in crate::sema::crates::typed_headers) use selected_body::OriginalBody;
 

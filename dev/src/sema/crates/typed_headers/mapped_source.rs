@@ -2,6 +2,7 @@
 pub(super) mod checked_rows;
 mod dag_recipes;
 mod decoded_original;
+#[path = "mapped_source/request_mapping.rs"]
 mod original_requests;
 pub(crate) use decoded_original::Original as SourceOriginal;
 mod ingested_readiness;

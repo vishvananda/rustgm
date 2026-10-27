@@ -379,7 +379,7 @@ pub(super) fn validate(
     if contract.key != body.key()
         || contract.source != view.source()?
         || contract.signature != Some(view.signature())
-        || contract.universals != 0
+        || contract.universals != view.universals()
         || contract.output.is_some()
         || contract.require_result_formation
         || contract.parameters.len() != record.parameters.len()

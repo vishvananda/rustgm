@@ -36,7 +36,7 @@ impl<'rows> Port<'rows, ReservationWork> for Recorded<'rows, '_, '_> {
             .require_cursor(self.port.recipe_view(), store, self.callables, work)
     }
     fn resume_body(&self) -> Option<ImportedBodyId> {
-        self.body.body().ok()
+        Some(self.body.body())
     }
     fn slot(
         &mut self,

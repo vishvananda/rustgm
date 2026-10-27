@@ -28,7 +28,7 @@ use std::{rc::Rc, sync::Arc};
 
 #[path = "checked_callables.rs"]
 mod callables;
-#[path = "selected_original_maps.rs"]
+#[path = "reconstruction_maps.rs"]
 mod originals;
 
 pub(in crate::sema) struct ProvidedOwners {

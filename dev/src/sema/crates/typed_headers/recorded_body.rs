@@ -12,6 +12,7 @@ pub(in crate::sema::crates::typed_headers) struct OriginalBody<'a> {
     owner: &'a Owner,
     prepared: &'a Prepared,
     expected: Ready,
+    body: crate::resolve::body_origin::ImportedBodyId,
     environment: &'a Arc<Environment>,
     record: &'a numbering_records::RecordedDomain,
 }
@@ -77,13 +78,10 @@ impl OriginalBody<'_> {
         self.record(view, &facts.types, work)?;
         Ok(())
     }
-    pub(in crate::sema::crates::typed_headers) fn body(
+    pub(in crate::sema::crates::typed_headers) const fn body(
         &self,
-    ) -> Result<crate::resolve::body_origin::ImportedBodyId, Error> {
-        self.expected
-            .pair
-            .body
-            .ok_or_else(|| error("selected original lost its actual body identity"))
+    ) -> crate::resolve::body_origin::ImportedBodyId {
+        self.body
     }
     pub(in crate::sema::crates::typed_headers) fn require_cursor(
         &self,
@@ -348,6 +346,10 @@ impl Prepared {
             owner,
             prepared: self,
             expected,
+            body: expected
+                .pair
+                .body
+                .ok_or_else(|| error("selected original lost its actual body identity"))?,
             environment,
             record,
         };

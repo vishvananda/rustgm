@@ -1,6 +1,7 @@
 //! A sealed proof retains the exact immutable templates checked under their assumptions.
 mod context;
 mod owners;
+#[path = "templates/suspended.rs"]
 mod retained;
 pub(crate) use retained::{Append, Retained};
 mod preconditions;
