@@ -82,6 +82,9 @@ impl Resolver<'_> {
         node: NodeId,
         method: Method,
     ) -> Result<(), Error> {
+        if self.package.uses_source_bindings() {
+            return Ok(());
+        }
         if self.facts.builtin_traits.library.is_none() {
             self.prepare_external_traits(c, node)?;
         }

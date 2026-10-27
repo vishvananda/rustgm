@@ -39,6 +39,9 @@ impl Resolver<'_> {
         node: NodeId,
         name: super::NameId,
     ) -> Result<(), Error> {
+        if self.package.uses_source_bindings() {
+            return Ok(());
+        }
         if self.package.names.get(name) == "add" {
             self.prepare_pointer_methods(c, node)?;
         }

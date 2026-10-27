@@ -220,6 +220,7 @@ fn reserve_all(
             reserved.steps += 1;
             reserve(
                 package,
+                facts,
                 source,
                 &mut reserved,
                 declaration,
@@ -243,6 +244,7 @@ fn reserve_all(
 
 fn reserve(
     package: &Package,
+    facts: &Resolution,
     source: &SourceCore,
     reserved: &mut Reservations,
     declaration: Declaration,
@@ -292,7 +294,7 @@ fn reserve(
                 .insert(declaration.definition);
         }
         Claim::Language(kind) => {
-            reserve_language(package, source, reserved, declaration, kind, foreign)?;
+            reserve_language(package, facts, source, reserved, declaration, kind, foreign)?;
         }
         Claim::PanicHandler => {
             super::panic_claims::validate_handler(package, declaration, foreign)?;
@@ -345,6 +347,7 @@ fn reserve(
 
 fn reserve_language(
     package: &Package,
+    facts: &Resolution,
     source: &SourceCore,
     reserved: &mut Reservations,
     declaration: Declaration,
@@ -357,6 +360,31 @@ fn reserve_language(
             declaration.origin,
             "lang requires its explicit source feature",
         ));
+    }
+    if kind == LangItem::SliceLen {
+        let function = &package.unit(declaration.origin.file).configured.ast;
+        let parent = declaration.parent.and_then(|parent| {
+            facts
+                .definitions
+                .get(parent.0 as usize)
+                .and_then(|d| d.node)
+        });
+        let inherent = parent.is_some_and(|parent| {
+            let ast = &package.unit(parent.file).configured.ast;
+            matches!(ast.node(parent.node).kind, Kind::Item(index)
+                if matches!(ast.items[index as usize].kind, ItemKind::Impl { trait_path: None, .. }))
+        });
+        if !inherent
+            || !matches!(function.node(declaration.origin.node).kind,
+            Kind::Item(index) if matches!(function.items[index as usize].kind, ItemKind::Function { .. }))
+        {
+            return Err(error(
+                package,
+                declaration.origin,
+                "slice_len_fn requires an actual inherent method",
+            ));
+        }
+        // GenericRequirement::None imposes no count, receiver or spelling rule.
     }
     super::panic_claims::validate(package, declaration, kind)?;
     super::pointee_claims::validate(package, declaration, kind)?;

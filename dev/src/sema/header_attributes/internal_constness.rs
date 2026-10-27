@@ -1,5 +1,5 @@
 //! Real header words describe API/defining policy, never const-call permission.
-use super::{Declarations, DefId, Error, NodeKey, Report, charge_query, validate_header};
+use super::{Declarations, DefId, Error, NodeKey, Report};
 use crate::syntax::{
     ast::Kind,
     attribute::{Attribute, Input},
@@ -180,36 +180,17 @@ impl Declarations {
             .filter(|definition| definition.kind == crate::resolve::model::DefKind::Function)
             .and_then(|definition| definition.node)
             .ok_or_else(|| Error::unlocated("const panic policy requires a local function"))?;
-        let headers = self
-            .must_use_contracts
-            .as_deref()
-            .and_then(|contracts| contracts.headers.as_deref())
-            .map(|ledger| &ledger.local)
-            .filter(|headers| headers.complete)
-            .ok_or_else(|| {
-                Error::unlocated("const panic policy requires completed source headers")
-            })?;
-        charge_query(headers, 1)?;
-        let header = headers
-            .definitions
-            .get(&definition)
-            .filter(|&&actual| actual == key)
-            .and_then(|_| headers.declarations.get(&key))
-            .ok_or_else(|| {
-                Error::unlocated("const panic policy changed its declaration identity")
-            })?;
-        validate_header(report, self, definition, key, header)?;
-        let unit = report.package.unit(key.file);
         let mut markers = (false, false);
-        for owner in &header.owners {
-            charge_query(headers, owner.effects.len())?;
-            for (attribute, forest) in unit.retained_attributes(owner.effects.clone()) {
-                match attribute.name(forest, unit.source.text()) {
-                    Some("rustc_do_not_const_check") => markers.0 = true,
-                    Some("rustc_const_stable_indirect") => markers.1 = true,
-                    _ => {}
-                }
-            }
+        if !super::implicit_receivers::visit_words(self, report, definition, |name| match name {
+            Some("rustc_do_not_const_check") => markers.0 = true,
+            Some("rustc_const_stable_indirect") => markers.1 = true,
+            _ => {}
+        })? {
+            return Err(Error::at(
+                key.file,
+                0,
+                "const panic policy requires completed source headers",
+            ));
         }
         Ok(markers)
     }

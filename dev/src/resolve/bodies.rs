@@ -11,6 +11,9 @@ use crate::syntax::{
     ast::{Kind, List, NodeId, TypeFlavor},
     item::{GenericFlavor, ItemKind},
 };
+#[cfg(test)]
+#[path = "../../tests/invariants/fallback_members.rs"]
+mod tests;
 impl Resolver<'_> {
     pub fn bodies(&mut self) -> Result<(), Error> {
         for index in 0..self.package.modules.len() {
@@ -65,7 +68,9 @@ impl Resolver<'_> {
         if let Some(scope) = self.facts.node_scopes.get(&(c.module, node)) {
             c.scope = *scope;
         }
-        if let Kind::Binary { op, .. } = self.kind(c, node) {
+        if !self.package.uses_source_bindings()
+            && let Kind::Binary { op, .. } = self.kind(c, node)
+        {
             let kind = match op {
                 crate::lex::token::Punctuation::EqualEqual
                 | crate::lex::token::Punctuation::BangEqual => {
@@ -523,6 +528,7 @@ impl Resolver<'_> {
             None if self_constructor => self.self_constructor(c, path[0]),
             None => self.lookup_path(c, node, absolute, path.view(), LookupMode::Use(ns), None)?,
         };
+        let found = self.primitive_reference(found, absolute, path.view(), ns);
         let target = self.target(c, node, &found, ns)?;
         if let Lookup::Associated(owner, start) | Lookup::Member(_, owner, start) = found {
             self.associated_path(c, node, start, &path, ns, owner)?;
@@ -544,6 +550,45 @@ impl Resolver<'_> {
             return Ok(());
         }
         self.path_arguments(c, node)
+    }
+    /// Ordinary module members win. A failed relative primitive-head reference
+    /// then uses the same canonical associated-prefix route as a bare primitive.
+    /// Import/module grammar and actual lookup errors never enter this adapter.
+    fn primitive_reference(
+        &self,
+        found: Lookup,
+        absolute: bool,
+        path: super::paths::Identified<'_>,
+        namespace: Namespace,
+    ) -> Lookup {
+        if absolute
+            || !matches!(namespace, Namespace::Type | Namespace::Value)
+            || (namespace == Namespace::Value && path.len() == 1)
+        {
+            return found;
+        }
+        let module = matches!(&found, Lookup::Found(binding)
+            if matches!(self.facts.definitions[binding.target.0 as usize].kind,
+                DefKind::Module | DefKind::ExternCrate));
+        if !module && !matches!(found, Lookup::Missing) {
+            return found;
+        }
+        let Some(primitive) = path
+            .first()
+            .and_then(|name| self.facts.primitives.get(name))
+        else {
+            return found;
+        };
+        if path.len() > 1 {
+            Lookup::Associated(*primitive, 1)
+        } else {
+            Lookup::Found(super::model::Binding {
+                target: *primitive,
+                access: Access::Public,
+                origin: super::model::Origin::Direct,
+                ambiguous: false,
+            })
+        }
     }
     /// Demand language metadata that a reference path may name.
     fn prepare_builtin_reference(

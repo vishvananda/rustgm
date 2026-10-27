@@ -18,6 +18,8 @@ mod tracking;
 pub(in crate::sema) use tracking::{consume_tracking, inherit_tracking};
 mod internal_constness;
 pub(in crate::sema) use internal_constness::{consume_const_panic, consume_inherited_overflow};
+mod implicit_receivers;
+pub(in crate::sema) use implicit_receivers::consume_no_implicit_autorefs;
 
 struct Header {
     tracking: tracking::Tracking,

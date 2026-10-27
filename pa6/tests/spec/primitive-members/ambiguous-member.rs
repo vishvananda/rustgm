@@ -1,0 +1,1 @@
+mod first{pub fn build()->u8{8}}mod second{pub fn build()->u8{9}}mod u8{pub use crate::first::*;pub use crate::second::*;}trait Build{fn build()->u8;}impl Build for u8{fn build()->u8{7}}fn main(){let _=u8::build();}

@@ -60,6 +60,9 @@ impl Traits {
 }
 impl Resolver<'_> {
     pub(in crate::resolve) fn reserve_operator_comparisons(&mut self) -> Result<(), Error> {
+        if self.package.uses_source_bindings() {
+            return Ok(());
+        }
         for (kind, method) in [
             (Comparison::PartialEq, Method::Eq),
             (Comparison::PartialOrd, Method::PartialCmp),

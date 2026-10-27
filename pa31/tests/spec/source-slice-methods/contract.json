@@ -1,0 +1,240 @@
+{
+  "state": "frozen independent observations; candidate qualification pending",
+  "scope": "NEW exact method composition and primary role/marker target cases only; no old observations repeated",
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "gcc": {
+    "path": "/usr/bin/x86_64-linux-gnu-gcc-15",
+    "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88"
+  },
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "rustc_options": [
+    "--edition=2024",
+    "--target=x86_64-unknown-linux-gnu",
+    "--crate-type=lib",
+    "-Cpanic=abort",
+    "-Coverflow-checks=yes",
+    "-Copt-level=0"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": [
+    {
+      "name": "actual-methods",
+      "path": "pa31/tests/spec/source-slice-methods/actual-methods.rs",
+      "sha256": "e11f2279d72aeb0ea101c730b54fddf3cc3a39baac2c7e476d17a86cf90ffb10",
+      "expected_status": 0,
+      "note": "metadata plus one object/native consumer6 3 4; reduced support protocol, actual original methods/attrs"
+    },
+    {
+      "name": "generic-tagged-inherent",
+      "path": "pa31/tests/spec/source-slice-methods/generic-tagged-inherent.rs",
+      "sha256": "c140a3e4614ca58f4732f569111fdd4db838c381301b2fa688f4a391292f6d6c",
+      "expected_status": 0,
+      "note": "unconstrained generic-count requirement; both own method and impl generics remain ordinary"
+    },
+    {
+      "name": "tagged-inherent",
+      "path": "pa31/tests/spec/source-slice-methods/tagged-inherent.rs",
+      "sha256": "e498a5b6fe66a35435c72ee2fd9f26eaccbfc5266938f219fe3e9c45a79c8602",
+      "expected_status": 0,
+      "note": "target-only; no hardcoded Length permission"
+    },
+    {
+      "name": "tag-free-function",
+      "path": "pa31/tests/spec/source-slice-methods/tag-free-function.rs",
+      "sha256": "58d27de28a6584d2e980b727e96759d5d04592d0f757065b89bc18bbb04e7a66",
+      "expected_status": 1,
+      "note": "actual wrong target"
+    },
+    {
+      "name": "tag-trait-method",
+      "path": "pa31/tests/spec/source-slice-methods/tag-trait-method.rs",
+      "sha256": "45975a59c9bbcaa7dc566d19d5849d9b072f4acb1068f5b0dd8ac94fc568db87",
+      "expected_status": 1,
+      "note": "actual wrong target"
+    },
+    {
+      "name": "marker-allowed-targets",
+      "path": "pa31/tests/spec/source-slice-methods/marker-allowed-targets.rs",
+      "sha256": "f7043bd04ddae093984585a432d16d4fa3a22c35a5df46735b6404dd54113285",
+      "expected_status": 0,
+      "note": "all five real primary target families"
+    },
+    {
+      "name": "marker-duplicate",
+      "path": "pa31/tests/spec/source-slice-methods/marker-duplicate.rs",
+      "sha256": "a391d0e3c082c56e5bb2db826b6a0564e131a5d97c8364471ecfd96bfda2b6db",
+      "expected_status": 1,
+      "note": "duplicate Error default"
+    },
+    {
+      "name": "marker-arguments",
+      "path": "pa31/tests/spec/source-slice-methods/marker-arguments.rs",
+      "sha256": "16751528795db6dbb61d99d9eff0f5d4f5958b30e94f32a25b44ffd36de37570",
+      "expected_status": 1,
+      "note": "word only"
+    },
+    {
+      "name": "marker-struct",
+      "path": "pa31/tests/spec/source-slice-methods/marker-struct.rs",
+      "sha256": "e32dfcfa552fdede70e1f81e9e09da3b5e82e6ad55e8ed9852b78ba5a337e37a",
+      "expected_status": 1,
+      "note": "target"
+    },
+    {
+      "name": "marker-foreign",
+      "path": "pa31/tests/spec/source-slice-methods/marker-foreign.rs",
+      "sha256": "ee135b644eb51c33e50a0e6168e1b0ee479d62e4fdb93fb2cf1139c28b8a8395",
+      "expected_status": 1,
+      "note": "foreign declaration is not Fn/Inherent/Trait/TraitImpl target"
+    },
+    {
+      "name": "marker-missing-gate",
+      "path": "pa31/tests/spec/source-slice-methods/marker-missing-gate.rs",
+      "sha256": "132206c1282d2d7bdf6f6779d5874e1f4459a2b98f004b0549137696b96796dc",
+      "expected_status": 1,
+      "note": "rustc_attrs actual request"
+    },
+    {
+      "name": "marker-unsafe-wrapper",
+      "path": "pa31/tests/spec/source-slice-methods/marker-unsafe-wrapper.rs",
+      "sha256": "e16605ba417fa87afbc5d29eab932e96df8fe19cf8a3924131968284a3334df6",
+      "expected_status": 1,
+      "note": "unsafe wrapper not permitted"
+    }
+  ],
+  "primary_method_chunks": [
+    {
+      "path": "str/mod.rs",
+      "first": 148,
+      "last": 156,
+      "file_sha256": "ad5d6274b831db659a5ea8a36462e8e7f59d4a89b4c22375c1938da776f3c6ed",
+      "sha256": "eb2a8aa2aca0dd61dd84ae242108824d097493135d1614957a5515a28a72fdf8"
+    },
+    {
+      "path": "str/mod.rs",
+      "first": 508,
+      "last": 516,
+      "file_sha256": "ad5d6274b831db659a5ea8a36462e8e7f59d4a89b4c22375c1938da776f3c6ed",
+      "sha256": "79c5bc27cb592dca95f0d74f4c2bd79108440fb73b4b4bcb8ee07b320ac40a69"
+    },
+    {
+      "path": "slice/mod.rs",
+      "first": 110,
+      "last": 118,
+      "file_sha256": "453bfd6e0fc09e06ac1793ccb03e2e2f04fae149db6a079256097c8fad510669",
+      "sha256": "e675fd09423946ff65dea31a9b1056ff09c7945f46e9a37c53c89835fef0aa99"
+    }
+  ],
+  "support": {
+    "path": "pa31/tests/spec/pointer-metadata-intrinsic/provider.rs",
+    "sha256": "a62b35a68e7a9b539085c9a2ea004c260810afd9b7829e71df6fee20663c6dc0",
+    "scope": "previously independently qualified authored reduced Pointee Metadata:Sized and source trait support; full upstream bounds/DynMetadata graph NOT replaced or qualified"
+  },
+  "native": {
+    "source": "actual-methods",
+    "expected_stdout": "6 3 4\n",
+    "observer_sha256": "5d8e79b2b060c441f1ac4fcf68f4eadc123b19fed6526f10047bef9849272e03",
+    "scope": "new actual source str/as_bytes/slice bodies, real const/native results; no formatter or false-assert closure"
+  },
+  "primary_rules": {
+    "lang_items": "SliceLen InherentMethod/GenericRequirement::None means no generic-count restriction",
+    "marker": "rustc_attrs word, Fn+inherent+required/providedTrait+TraitImpl targets; duplicate Error; no runtime/reference permission"
+  },
+  "foundation_repair": {
+    "previous": "first-actual-methods-ice/failure.json",
+    "exact_reference_coercion": {
+      "path": "ops/unsize.rs",
+      "first_line": 57,
+      "last_line": 58,
+      "file_sha256": "4f0f013efec7392300e9d4415748ffd5e74e990ebb096c1b556922540d9684d6",
+      "sha256": "a2ca1691279e8eda8f841ddeb360b8aa437ec53b2f9dcceff28a339838e64151"
+    },
+    "ordinary_source_support": "real shared-reference/array Clone/Copy impl bodies and already-supported genuine drop_glue family; source library methods unchanged",
+    "unrun_cases_unchanged": true
+  },
+  "observed": "11/12 predictions matched; generic-tagged-inherent requires Clone/Copy foundation. generic-tagged-inherent-complete separately accepts. Actual methods metadata/object/native pass6 3 4; first prerequisite-incomplete actual-methods rustc ICE retained in raw evidence.",
+  "followup": {
+    "path": "pa31/tests/spec/source-slice-methods/generic-tagged-inherent-complete.rs",
+    "sha256": "7d255e1862c19dc75db50a802b769b97526485343145ab68ba04e45255c4b3d4",
+    "expected_status": 0,
+    "observed_status": 0,
+    "note": "same impl and own method generics; real Clone/Copy prerequisite only"
+  },
+  "evidence_root": "obj/parallel/pa31/source-slice-methods-v1/oracle-v1",
+  "candidate": {
+    "compiler_source": "e08a1cd5600de494db6b93f94f9d9fef3171f21d",
+    "private_receipt": "obj/qualification/fast/1793122674257287110/receipt.json",
+    "production_receipt": "obj/qualification/fast/1793122890941560940/receipt.json",
+    "native_receipt": "obj/parallel/pa31/source-slice-methods-v1/native/execution.json",
+    "native_sha256": "21281373408478819b2012ebbf34e24fd55facf88a2698ad89058a6c5d39afac",
+    "stdout": "6 3 4\n",
+    "scope": "actual original len/as_bytes methods over explicitly reduced Pointee foundation; no full Metadata bounds/DynMetadata/Formatter/handler claim",
+    "layouts": {
+      "Reservations": 2104,
+      "Catalog": 1400,
+      "Body": 456,
+      "Rvalue": 20
+    },
+    "source_method_scaling": {
+      "width": [
+        8,
+        32,
+        128
+      ],
+      "inference": [
+        207,
+        783,
+        3087
+      ],
+      "definitions": [
+        45,
+        45,
+        45
+      ]
+    }
+  },
+  "semantic_negatives": [
+    {
+      "path": "pa31/tests/spec/source-slice-methods/missing-str-owner.rs",
+      "sha256": "e2241ae3e647b854c682fb1230b0c68ba2369f68e0f659a1c179e3da182a1802",
+      "expected_status": 1,
+      "observed_status": 1,
+      "mode": "--emit-types --source-core minicore@source_slice_methods",
+      "diagnostic": "receiver has no inherent nominal method",
+      "evidence_root": "obj/parallel/pa31/source-slice-methods-v1/native"
+    },
+    {
+      "path": "pa31/tests/spec/source-slice-methods/missing-slice-owner.rs",
+      "sha256": "1bbd33c44ac40a7cb5367c47c3e15668299f76b242f7decf2dbbc96be456bd28",
+      "expected_status": 1,
+      "observed_status": 1,
+      "mode": "--emit-types --source-core minicore@source_slice_methods",
+      "diagnostic": "receiver has no inherent nominal method",
+      "evidence_root": "obj/parallel/pa31/source-slice-methods-v1/native"
+    },
+    {
+      "path": "pa31/tests/spec/source-slice-methods/wrong-str-owner.rs",
+      "sha256": "fcf54c53e9e3177f8f1aaf992230854229ed94de40753277f4688d1502ae95cb",
+      "expected_status": 1,
+      "observed_status": 1,
+      "mode": "--emit-types --source-core minicore@source_slice_methods",
+      "diagnostic": "receiver has no inherent nominal method",
+      "evidence_root": "obj/parallel/pa31/source-slice-methods-v1/native"
+    },
+    {
+      "path": "pa31/tests/spec/source-slice-methods/missing-pointer-add.rs",
+      "sha256": "9b4cbff4d02739095f1aaf70260d44c6179eb9065af6c98f1f94cf252bdfda75",
+      "expected_status": 1,
+      "observed_status": 1,
+      "mode": "--emit-types --source-core minicore@source_slice_methods",
+      "diagnostic": "receiver has no inherent nominal method",
+      "evidence_root": "obj/parallel/pa31/source-slice-methods-v1/native"
+    }
+  ]
+}

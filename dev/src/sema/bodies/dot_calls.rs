@@ -88,6 +88,9 @@ impl Checker<'_> {
         } else {
             self.receiver_adjustment(node, site.receiver, term, selected)?
         };
+        if borrow.is_some() && self.report.package.uses_source_bindings() {
+            self.check_raw_implicit_receiver(node, site.receiver, selected.method)?;
+        }
         if let Some(borrow) = borrow
             && matches!(
                 self.head(node, borrow)?,
@@ -111,6 +114,48 @@ impl Checker<'_> {
         ));
         self.state.call_types.active.insert(node, signature);
         self.schedule_call_arguments(node, signature, site.arguments, 1)
+    }
+
+    /// This slice supports safe-reference source methods, not the still-required
+    /// `dangerous_implicit_autorefs` lint on a synthesized raw-pointer borrow.
+    fn check_raw_implicit_receiver(
+        &mut self,
+        call: NodeId,
+        mut receiver: NodeId,
+        method: DefId,
+    ) -> Result<(), Error> {
+        use crate::syntax::ast::{Kind, Unary};
+        loop {
+            self.state.steps = self.state.steps.saturating_add(1);
+            if self.state.steps > 1_000_000 {
+                return Err(self.error(call, "raw receiver place work budget exceeded"));
+            }
+            match self.kind(receiver) {
+                Kind::Group(base)
+                | Kind::Attributed { value: base, .. }
+                | Kind::Field { value: base, .. }
+                | Kind::Index { value: base, .. } => receiver = base,
+                Kind::Unary {
+                    op: Unary::Dereference,
+                    operand,
+                } => {
+                    let term = self.term(operand)?;
+                    if matches!(self.head(call, term)?, Some(Constructor::Pointer { .. })) {
+                        if !matches!(
+                            self.facts.no_implicit_autorefs(self.report, method)?,
+                            crate::sema::header_attributes::ContractKnowledge::KnownAbsent
+                        ) {
+                            return Err(self.error(call,
+                                "source marked raw-pointer implicit receiver use is not implemented"));
+                        }
+                        return Ok(());
+                    }
+                    receiver = operand;
+                }
+                // An explicit reference is not an implicit raw-pointer borrow.
+                _ => return Ok(()),
+            }
+        }
     }
 
     /// Bind structural Self to the exact fresh borrow before generic arguments.

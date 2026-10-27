@@ -7,7 +7,11 @@ type validity, macro expansion and executable lowering belong to later stages.
 ## Required implementation
 
 Load configured modules, intern semantic names, collect declarations and resolve
-lexical references. Preserve PA1–PA5 views. `dev/rustgm --emit-names SOURCE`
+lexical references. A relative primitive-headed path first uses an actual module
+member when one exists. When ordinary module lookup is missing, use the canonical
+primitive and retain the remaining associated-member obligation. Nominal/alias
+shadows, imports, explicitly qualified modules, privacy and ambiguity keep their
+own lookup rules. Preserve PA1–PA5 views. `dev/rustgm --emit-names SOURCE`
 produces the view below; stdin uses a virtual source in the current directory.
 `--cfg` keeps PA3's explicit arguments. `--count-names` reports sizes for scaling
 measurements. No compiler-library code reads the environment or filesystem: the
