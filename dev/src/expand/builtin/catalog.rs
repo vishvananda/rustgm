@@ -250,6 +250,7 @@ impl Builtin {
                 | Self::Derive
                 | Self::Copy
                 | Self::Clone
+                | Self::Debug
         )
     }
     #[must_use]

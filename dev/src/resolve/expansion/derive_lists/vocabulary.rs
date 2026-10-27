@@ -34,7 +34,7 @@ pub(super) fn require(
         .macros
         .charge(origins.len().saturating_mul(4), 0)
         .map_err(|_| failure())?;
-    if entry.contexts.len() > 2 || entry.contexts.is_empty() {
+    if entry.contexts.len() > 3 || entry.contexts.is_empty() {
         return Err(failure());
     }
     let mut observed = 0_u8;

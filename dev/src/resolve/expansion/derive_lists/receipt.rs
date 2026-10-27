@@ -138,7 +138,9 @@ impl Report {
                 .definitions
                 .get(member.definition)
                 .ok_or_else(failure)?;
-            let Body::Builtin(role @ (Builtin::Copy | Builtin::Clone)) = definition.body else {
+            let Body::Builtin(role @ (Builtin::Copy | Builtin::Clone | Builtin::Debug)) =
+                definition.body
+            else {
                 return Err(failure());
             };
             let node = definition.node.ok_or_else(failure)?;

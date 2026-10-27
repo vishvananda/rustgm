@@ -47,7 +47,7 @@ role_45	unsafe_eii	Attribute	0
 role_46 Clone Derive 1
 role_47 Copy Derive 1
 role_48	ConstParamTy	Derive	0
-role_49	Debug	Derive	0
+role_49	Debug	Derive	1
 role_50	Default	Derive	0
 role_51	Eq	Derive	0
 role_52	Hash	Derive	0
