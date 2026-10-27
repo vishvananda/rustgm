@@ -303,7 +303,8 @@ impl Context {
             .dependencies
             .as_mut()
             .map_or(0, |s| s.equations.normalized(term));
-        self.account_work(count)
+        self.account_work(count)?;
+        self.wake_resolution(super::dependencies::Dependency::Type(term))
     }
 }
 

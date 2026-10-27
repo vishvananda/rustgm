@@ -84,22 +84,23 @@ fn hidden_first_diamonds_upgrade_once_and_shared_blockers_remain_unresolved() ->
         let watch = &context.dependencies.as_ref().ok_or("owner")?.watches[owner.0 as usize];
         assert_eq!(watch.numeric, 1);
         assert_eq!(watch.blockers, 1);
-        assert!(!context.default_numbers()?);
-        assert_eq!(context.unresolved_domain(numeric)?, Some(Domain::Integer));
-        context.apply_normalization(&mut store, output, TypeId::primitive(Primitive::Usize))?;
-        drain(&mut context, &store)?;
-        assert!(context.default_numbers()?);
-        drain(&mut context, &store)?;
-        assert_eq!(
-            context.resolved(&mut store, numeric)?,
-            TypeId::primitive(Primitive::I32)
-        );
         let seen = &context.dependencies.as_ref().ok_or("owner")?.watches[owner.0 as usize].seen;
         println!(
             "numeric live width={width} seen_entries={} pair_capacity={} pair_bytes={}",
             seen.len(),
             seen.capacity(),
             crate::support::retained::map(seen)
+        );
+        assert!(!context.default_numbers()?);
+        assert_eq!(context.unresolved_domain(numeric)?, Some(Domain::Integer));
+        let known = context.known(&store, TypeId::primitive(Primitive::Usize))?;
+        context.publish_projection(&store, output, known)?;
+        drain(&mut context, &store)?;
+        assert!(context.default_numbers()?);
+        drain(&mut context, &store)?;
+        assert_eq!(
+            context.resolved(&mut store, numeric)?,
+            TypeId::primitive(Primitive::I32)
         );
         context.cancel_watch(producer)?;
         context.cancel_watch(owner)?;

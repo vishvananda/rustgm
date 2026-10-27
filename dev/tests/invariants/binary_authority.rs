@@ -174,38 +174,52 @@ fn actual_const_effects_and_negative_overflow_faults_remain_required() -> TestRe
         .and_then(|s| s.body.as_ref())
         .ok_or("actual const body")?;
     assert!(body.blocks.iter().any(|b|matches!(b.terminator,Terminator::Return(Some(v)) if matches!(v.operand,Operand::Literal(id) if matches!(body.literals.get(id.0 as usize),Some(Literal::Integer(7)))))));
-    for (name, expected) in [
-        (
-            "primitive-const",
-            "trait obligation requires an unambiguous matching assumption or implementation",
-        ),
+    let mut failures = Vec::new();
+    for (name, expression, lhs, rhs) in [
+        ("primitive-const", "3usize<<1|1", "usize", "i32"),
         (
             "explicit-nonconst",
-            "trait obligation requires an unambiguous matching assumption or implementation",
+            "<usize as Shl<i32>>::shl(3usize,1i32)",
+            "usize",
+            "i32",
         ),
-        (
-            "nonconst-overload",
-            "trait obligation requires an unambiguous matching assumption or implementation",
-        ),
-        (
-            "const-followup/const-negative-impl",
-            "constant shift amount is out of range",
-        ),
-        (
-            "const-followup/const-overflow-impl",
-            "constant shift amount is out of range",
-        ),
+        ("nonconst-overload", "Word(7usize)<<1u8", "Word", "u8"),
+    ] {
+        let (report, analysis) = analyze(&input(&format!("effect-pairs/{name}"))?)?;
+        lower(&report, analysis, &["runtime_pair"])?;
+        let source = input(name)?;
+        let report = crate::test_source::source_provider(&source, "source_const_op")?;
+        let error = pipeline::analyze_source(&report)
+            .err()
+            .ok_or("invalid const accepted")?;
+        eprintln!("source-const opponent {name}: {:?}", error);
+        let message = format!(
+            "no implementation for `{lhs} << {rhs}`\nlabel: no implementation for `{lhs} << {rhs}`"
+        );
+        let start = u32::try_from(source.rfind(expression).ok_or("actual const call")?)?;
+        if error.message != message || error.span.start != start {
+            failures.push(format!(
+                "{name}: expected {start}: {message}; actual {error}"
+            ));
+        }
+    }
+    for name in [
+        "const-followup/const-negative-impl",
+        "const-followup/const-overflow-impl",
     ] {
         let report = crate::test_source::source_provider(&input(name)?, "source_const_op")?;
         let error = pipeline::analyze_source(&report)
             .err()
-            .ok_or_else(|| format!("{name} invalid const accepted"))?;
-        eprintln!("source-const opponent {name}: {error}");
-        assert!(
-            error.message.contains(expected),
-            "{name}: expected {expected}; actual {error}"
-        );
+            .ok_or("invalid const accepted")?;
+        eprintln!("source-const shift fault {name}: {error}");
+        if !error
+            .message
+            .contains("constant shift amount is out of range")
+        {
+            failures.push(format!("{name}: did not reach real shift fault: {error}"));
+        }
     }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
 }
 #[test]
@@ -321,16 +335,32 @@ fn source_operator_work_scales_and_ordinary_path_retains_hot_layouts() -> TestRe
 
 #[test]
 fn provisional_results_preserve_known_never_cfg_and_explicit_feature_frontier() -> TestResult {
-    for name in ["block", "binding", "branch"] {
+    let mut failures = Vec::new();
+    for (name, expected, site) in [
+        (
+            "block",
+            "associated type projection requires normalization",
+            "Delayed<<1",
+        ),
+        ("binding", "incompatible types", "{let _value="),
+        (
+            "branch",
+            "associated type projection requires normalization",
+            "Delayed<<1",
+        ),
+    ] {
         let source = input(&format!("delayed-never/{name}"))?;
-        let error = analyze(&source)
+        let report = crate::test_source::source_provider(&source, "source_binary")?;
+        let error = pipeline::analyze_source(&report)
             .err()
-            .ok_or("delayed Never opponent accepted")?
-            .to_string();
-        assert!(
-            error.contains("associated type projection requires normalization"),
-            "{name}: {error}"
-        );
+            .ok_or("delayed Never opponent accepted")?;
+        eprintln!("delayed-Never {name}: {:?}", error);
+        let start = u32::try_from(source.rfind(site).ok_or("actual delayed site")?)?;
+        if error.message != expected || error.span.start != start {
+            failures.push(format!(
+                "{name}: expected {start}: {expected}; actual {error}"
+            ));
+        }
     }
     let (report, analysis) = analyze(&input("delayed-never/known-return")?)?;
     let program = lower(&report, analysis, &["block", "binding", "branch"])?;
@@ -361,6 +391,7 @@ fn provisional_results_preserve_known_never_cfg_and_explicit_feature_frontier() 
             .any(|b| matches!(b.terminator, Terminator::Unreachable))
     );
     assert!(branch.blocks.iter().any(|b|matches!(b.terminator,Terminator::Return(Some(v)) if matches!(v.operand,Operand::Literal(id) if matches!(branch.literals.get(id.0 as usize),Some(Literal::Integer(7)))))));
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
 }
 
@@ -388,8 +419,8 @@ fn nested_fallback_respects_predeclared_order_and_shared_frontiers() -> TestResu
     );
     let source = input("readiness/ordinary-closure")?;
     let report = crate::test_source::resolve(&source, true)?;
-    let facts = declarations::analyze(&report)?;
-    let analysis = pipeline::analyze(&report, facts)?;
+    let analysis = pipeline::analyze_source(&report)?;
+    assert!(analysis.facts.source_bindings.is_none());
     lower(&report, analysis, &["closure", "inline_constant"])?;
     for name in ["ambiguous", "cycle"] {
         let source = input(&format!("readiness/{name}"))?;
