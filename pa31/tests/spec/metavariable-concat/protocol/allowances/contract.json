@@ -1,0 +1,43 @@
+{
+  "state": "independent metadata observations; original two positive predictions disagreed",
+  "profile": "rustc 1.98.0 metadata lib; bootstrap; editions2021/2024; x86_64-unknown-linux-gnu; abort",
+  "cases": [
+    {
+      "name": "definition-braces",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/allowances/definition-braces.rs",
+      "sha256": "9f5d5048544819d3b3eea890b4c26f0d8dbaa4e8a980b50b3b477f2fdfbaaecc",
+      "rustc_status": 0,
+      "rustc_observed_status": 1,
+      "candidate_expected_status": 1
+    },
+    {
+      "name": "captured-braces",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/allowances/captured-braces.rs",
+      "sha256": "a67ef5616aa18d29d1a0e44aaf9afb6bc99640860ecca0fae4c3058eb0e2231a",
+      "rustc_status": 1,
+      "rustc_observed_status": 1,
+      "candidate_expected_status": 1
+    },
+    {
+      "name": "same-definition-attribute",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/allowances/same-definition-attribute.rs",
+      "sha256": "d17d8648ba3729568e142019a16f964e3c9d19e7c63addd176b43880f12b04a2",
+      "rustc_status": 1,
+      "rustc_observed_status": 1,
+      "candidate_expected_status": 1
+    }
+  ],
+  "observed": {
+    "state": "observed",
+    "observations": 6,
+    "disagreements": [
+      "definition-braces-2021",
+      "definition-braces-2024"
+    ],
+    "infrastructure_failures": 0,
+    "seconds": 0.26489777909591794,
+    "binding_sha256": "3b11ca179537ef7254dd13def876ace304b2e3650d0b791c12b3d0d0bc55a9c1",
+    "results_sha256": "b38591c3716f9cc4ec189178b0998bea1a10dd40f23e9aebbd253adcabd3aff5"
+  },
+  "rule": "Pinned parser requires crate feature even for generated definitions introduced by allow_internal_unstable; no token allowance fallback. All raw predictions and sources retained."
+}

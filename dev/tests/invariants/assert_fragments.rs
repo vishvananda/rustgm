@@ -29,7 +29,9 @@ fn capture() -> std::result::Result<(&'static str, Registry, Stream), LexError> 
             context: SyntaxContextId::ROOT,
             introduction: ExpansionId(1),
             crate_id: 0,
+            edition: crate::support::edition::Edition::Rust2024,
         },
+        &report.names,
     )?;
     let mut registry = Registry::default();
     registry.adopt(

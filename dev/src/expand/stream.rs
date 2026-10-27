@@ -10,7 +10,7 @@ use super::macros::{
 use super::marks::{ExpansionId, SyntaxContextId};
 use crate::{
     lex::token::{Kind, LexError, Token},
-    support::{edition::Edition, source::FileId},
+    support::{edition::Edition, names::Names, source::FileId},
     syntax::{
         cursor::TokenPosition,
         interpolation::Splice,
@@ -52,6 +52,7 @@ pub struct Environment<'a> {
     pub context: SyntaxContextId,
     pub introduction: ExpansionId,
     pub crate_id: u32,
+    pub edition: Edition,
 }
 pub struct Opaque {
     pub payload: OpaqueSource,
@@ -82,10 +83,16 @@ impl Stream {
         matched: &Matched,
         input: &Input,
         environment: &Environment<'_>,
+        names: &Names,
     ) -> Result<Self, LexError> {
-        Self::transcribe_with(transcription, matched, input, environment, |_, origin| {
-            Ok((origin == PieceOrigin::Definition).then_some(environment.context))
-        })
+        Self::transcribe_with(
+            transcription,
+            matched,
+            input,
+            environment,
+            names,
+            |_, origin| Ok((origin == PieceOrigin::Definition).then_some(environment.context)),
+        )
     }
     /// Crate expansion supplies the actual context of each definition token.
     /// Captures retain their own contexts; opaque slices can contain several.
@@ -96,6 +103,7 @@ impl Stream {
         matched: &Matched,
         input: &Input,
         environment: &Environment<'_>,
+        names: &Names,
         mut contexts: impl FnMut(Location, PieceOrigin) -> Result<Option<SyntaxContextId>, LexError>,
     ) -> Result<Self, LexError> {
         let mut output = Self::default();
@@ -103,6 +111,32 @@ impl Stream {
             match *piece {
                 Piece::Token { token, origin } => {
                     output.copy_token(token, origin, environment, &mut contexts)?;
+                }
+                Piece::Identifier { name, span } => {
+                    let anchor = Location {
+                        file: environment.definition.file,
+                        span,
+                    };
+                    let context = contexts(anchor, PieceOrigin::Definition)?.ok_or_else(|| {
+                        error(span.start, "concat identifier lost its definition context")
+                    })?;
+                    let spelling = names.get(name);
+                    let generated = output.synthetic_image(
+                        spelling,
+                        anchor,
+                        context,
+                        environment.introduction,
+                        environment.edition,
+                    )?;
+                    output.tokens.push(Token {
+                        kind: if spelling == "_" {
+                            Kind::Punctuation(crate::lex::token::Punctuation::Underscore)
+                        } else {
+                            Kind::Identifier
+                        },
+                        start: generated.start,
+                        end: generated.end,
+                    });
                 }
                 Piece::Opaque(capture) => {
                     let value = matched
@@ -309,6 +343,7 @@ impl Stream {
             context: SyntaxContextId::ROOT,
             introduction: ExpansionId(0),
             crate_id: 0,
+            edition: Edition::Rust2024,
         };
         for &token in &input.tokens {
             let (context, joint) = provenance(token)?;

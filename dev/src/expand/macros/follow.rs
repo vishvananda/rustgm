@@ -112,7 +112,7 @@ impl Check<'_> {
                     ..first
                 }
             }
-            Kind::Substitute { .. } => {
+            Kind::Substitute { .. } | Kind::Concat(_) => {
                 return Err(error(node.span.start, "substitution in a matcher"));
             }
         };

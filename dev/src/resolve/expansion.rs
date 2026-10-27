@@ -47,6 +47,7 @@ pub(crate) mod removed_functions;
 use application_kind::CallGrammar;
 mod format_values;
 mod location;
+mod metavariables;
 mod panic_dispatch;
 mod permission_frames;
 mod permission_session;
@@ -1045,6 +1046,7 @@ impl<'a, S: Sources> Engine<'a, S> {
         .map_err(|e| Error::at(file, e.offset, e.message))?;
         let index = self.definitions.len();
         let name_context = package.item_context(file, span.start)?;
+        self.check_concat(file, &definition)?;
         self.definitions.push(Definition {
             node: Some(NodeKey {
                 file,

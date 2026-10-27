@@ -19,7 +19,7 @@ fn transcribe(rules: &str, source: &str) -> Result<(Vec<String>, usize), String>
     let matched = compiled
         .invoke(rules, source, &input, &mut names)
         .map_err(|e| format!("{e:?}"))?;
-    let output = transcribe::transcribe(&compiled.definition, &matched, source, &input)
+    let output = transcribe::transcribe(&compiled.definition, &matched, source, &input, &mut names)
         .map_err(|e| format!("{e:?}"))?;
     let mut spellings = Vec::new();
     for piece in output.pieces {
@@ -32,6 +32,7 @@ fn transcribe(rules: &str, source: &str) -> Result<(Vec<String>, usize), String>
                 };
                 bytes[token.start as usize..token.end as usize].to_owned()
             }
+            Piece::Identifier { name, .. } => names.get(name).to_owned(),
             Piece::Opaque(id) => format!("opaque{}", id.0),
             Piece::Crate(_) => "$crate".to_owned(),
             Piece::Doc { .. } => "doc-comment".to_owned(),

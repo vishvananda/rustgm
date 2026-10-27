@@ -179,12 +179,17 @@ impl Report {
             .compiled
             .invoke_with_inputs(source, spelling, &input, &mut self.names, scratch, &edition)
             .map_err(|e| original_error(e, prepared.as_ref()))?;
-        let transcription =
-            transcribe::transcribe(&entry.compiled.definition, &matched, spelling, &input)
-                .map_err(|mut e| {
-                    e.offset = span.start;
-                    e
-                })?;
+        let transcription = transcribe::transcribe(
+            &entry.compiled.definition,
+            &matched,
+            spelling,
+            &input,
+            &mut self.names,
+        )
+        .map_err(|mut e| {
+            e.offset = span.start;
+            e
+        })?;
         self.invocations.push(Invocation {
             span,
             definition,

@@ -33,6 +33,7 @@ fn environment<'a>(definition: &'a str, invocation: &'a str) -> Environment<'a> 
         context: SyntaxContextId::ROOT,
         introduction: ExpansionId(2),
         crate_id: 0,
+        edition: rustgm::support::edition::Edition::Rust2024,
     }
 }
 fn next_call(
@@ -74,14 +75,20 @@ fn next_call(
         )
         .map_err(|e| format!("{e:?}"))?;
     assert_eq!(matched.captures.parser_calls, 0);
-    let transcription =
-        transcribe::transcribe(&compiled.definition, &matched, &current.source, &input)
-            .map_err(|e| format!("{e:?}"))?;
+    let transcription = transcribe::transcribe(
+        &compiled.definition,
+        &matched,
+        &current.source,
+        &input,
+        &mut names,
+    )
+    .map_err(|e| format!("{e:?}"))?;
     let mut stream = Stream::transcribe(
         &transcription,
         &matched,
         &input,
         &environment(rules, &current.source),
+        &names,
     )
     .map_err(|e| format!("{e:?}"))?;
     registry
@@ -106,6 +113,7 @@ fn persistent_handles_survive_generated_syntax_and_repeated_forwarding() -> Resu
         &call.matched,
         &call.input,
         &environment(source, source),
+        &report.names,
     )
     .map_err(|e| format!("{e:?}"))?;
     let mut registry = Registry::default();
