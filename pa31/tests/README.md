@@ -231,11 +231,11 @@ in `source-try-blocks/execution-contract.json`. Fourteen pinned metadata
 observations completed without infrastructure failures. Four initial predictions
 were wrong: removing the Try trait tag alone still accepts when the actual
 methods remain tagged, and the unused wrong-output body reports E0271. Initial
-predictions and all source bytes/raw diagnostics remain retained. The two native
-outcomes are separate, unobserved predictions; metadata acceptance is not native
-qualification.
+predictions and all source bytes/raw diagnostics remain retained. At the initial freeze the two native
+outcomes were separate, unobserved predictions; metadata acceptance alone did not
+qualify them.
 
-The executable draft retains the actual tagged method parents, associated
+The executable consumer retains the actual tagged method parents, associated
 Output/Residual declarations and two single-field variants of the same real
 ControlFlow enum. It instantiates ordinary source callables, retains two calls
 for question-mark sites under the existing call-context owner, and uses existing
@@ -243,9 +243,9 @@ lexical frames, CFG branches, moves and drop exits. A homogeneous try block call
 the actual into_try_type function on residual exit; a function exit calls actual
 from_residual. No residual algebra law or synthetic Option/Result constructor is
 substituted for those bodies. Imported protocol/plan transport and typed
-heterogeneous try syntax remain closed. Draft source is unqualified until its
-focused compiler, body-proof and native controls actually run. New cold capacity
-and enclosing-layout costs remain unknown until that gate prints them.
+heterogeneous try syntax remain closed. Compiler and body-proof controls are qualified below; candidate CLI/native
+execution remains a separate pending check. Actual cold capacities and enclosing
+layout observations are recorded below.
 
 The executable compiler/body checkpoint is qualified at `1cae78716`: standard
 focused validation `1793063696757195473` passed all six exact controls in 114.86s,
@@ -295,3 +295,14 @@ is exactly `21\n`. These are new native observations, not repeated metadata
 checks. RustGM native parity remains pending the integrated qualified CLI and
 locked prebuilt backend against the two frozen observers. No original-input or
 original-Drop native success is claimed from these companions.
+
+The final public CLI execution adapters are `source-execute-protocol.rs` and
+`source-execute-drop.rs`. Each retains its complete provider as an exact prefix
+and appends only an exported observer entry plus genuine Rust main. Its paired C
+observer supplies main only for the Rust object link; the candidate LowIR program
+supplies its own actual entry. Both adapters independently execute the expected
+outputs with pinned Rust (six commands, 0.349s, no disagreements). Candidate
+commands use `--emit-lowir --edition=2024 --source-core minicore@try_protocol
+--crate-name minicore --crate-disambiguator try_protocol`; no library/publication
+profile is requested. Actual combined CLI and locked-backend native executions
+remain pending, with the imported protocol and artifact fences retained.

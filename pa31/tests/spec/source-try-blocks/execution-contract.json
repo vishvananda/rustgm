@@ -216,7 +216,7 @@
       "candidate_c_args": [
         "-DRUSTGM_CANDIDATE"
       ],
-      "status": "frozen before paired execution; original providers unchanged"
+      "status": "pinned Rust object/link/native passed; integrated candidate native pending"
     },
     {
       "source": "pa31/tests/spec/source-try-blocks/source-execute-drop.rs",
@@ -242,7 +242,14 @@
       "candidate_c_args": [
         "-DRUSTGM_CANDIDATE"
       ],
-      "status": "frozen before paired execution; original providers unchanged"
+      "status": "pinned Rust object/link/native passed; integrated candidate native pending"
     }
-  ]
+  ],
+  "cli_native_observation": {
+    "binding_sha256": "e73a58b7ac81b7c983afd326676737f3ac660e2a7136294021122842cbe1a838",
+    "results_sha256": "a22919848cdb960399b00871d4f045488970129c379e1f2293b5abf1f9377163",
+    "commands": 6,
+    "native_observations": 2,
+    "status": 0
+  }
 }
