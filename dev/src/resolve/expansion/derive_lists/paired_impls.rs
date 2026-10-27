@@ -8,7 +8,7 @@ use crate::{
     syntax::{ast::Kind, token_tree::error},
 };
 
-type Selected = [Option<(usize, usize)>; 2];
+type Selected = [Option<(usize, usize)>; 3];
 
 impl<S: Sources> Engine<'_, S> {
     pub(in crate::resolve::expansion) fn finish_derive(
@@ -61,19 +61,23 @@ impl<S: Sources> Engine<'_, S> {
         self.resume_derived_owner(index, root, parent)
     }
     fn derive_selection(&self, children: Range<usize>) -> Result<Selected, Error> {
-        let mut selected = [None; 2];
+        let mut selected = [None; 3];
         for child in children {
             let definition = self.calls[child].selected.ok_or_else(|| {
                 self.calls[child].diagnostic("derive member has no actual selected definition")
             })?;
-            let Body::Builtin(role @ (Builtin::Copy | Builtin::Clone)) =
+            let Body::Builtin(role @ (Builtin::Copy | Builtin::Clone | Builtin::Debug)) =
                 self.definitions[definition].body
             else {
                 return Err(self.calls[child]
                     .diagnostic("this source derive has no executable member consumer"));
             };
             self.checked_derive_definition(definition, role)?;
-            let slot = usize::from(role == Builtin::Clone);
+            let slot = match role {
+                Builtin::Copy => 0,
+                Builtin::Clone => 1,
+                _ => 2,
+            };
             if selected[slot].replace((child, definition)).is_some() {
                 return Err(
                     self.calls[child].diagnostic("conflicting derived trait implementations")
@@ -87,9 +91,9 @@ impl<S: Sources> Engine<'_, S> {
         index: usize,
         selected: Selected,
         parent: ExpansionId,
-    ) -> Result<[(SyntaxContextId, ExpansionId); 2], Error> {
+    ) -> Result<[(SyntaxContextId, ExpansionId); 3], Error> {
         let file = self.calls[index].file;
-        let mut contexts = [(SyntaxContextId::ROOT, ExpansionId(0)); 2];
+        let mut contexts = [(SyntaxContextId::ROOT, ExpansionId(0)); 3];
         for (slot, selected) in selected.iter().enumerate() {
             if let Some(&(child, definition)) = selected.as_ref() {
                 let context = self.derive_invocation(child, definition, parent)?;
@@ -116,7 +120,7 @@ impl<S: Sources> Engine<'_, S> {
     fn derive_generated(
         &self,
         index: usize,
-        contexts: [(SyntaxContextId, ExpansionId); 2],
+        contexts: [(SyntaxContextId, ExpansionId); 3],
         selected: Selected,
     ) -> Result<crate::expand::builtin::delegation::Delegated, Error> {
         let entry = self.derive_entry(index)?;
@@ -151,15 +155,20 @@ impl<S: Sources> Engine<'_, S> {
                 original,
                 copy_context: contexts[0],
                 clone_context: contexts[1],
+                debug_context: contexts[2],
                 copy_edition: selected[0].map_or(unit.edition(), |(_, definition)| {
                     self.definitions[definition].edition
                 }),
                 clone_edition: selected[1].map_or(unit.edition(), |(_, definition)| {
                     self.definitions[definition].edition
                 }),
+                debug_edition: selected[2].map_or(unit.edition(), |(_, definition)| {
+                    self.definitions[definition].edition
+                }),
             },
             selected[0].is_some(),
             selected[1].is_some(),
+            selected[2].is_some(),
             self.config,
             &charge,
         )

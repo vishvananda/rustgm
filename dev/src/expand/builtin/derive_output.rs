@@ -1,4 +1,6 @@
 //! Source Copy/paired Clone produce ordinary impls with real field WF assertions.
+mod debug_format;
+mod field_inventory;
 use super::{choice::Charge, delegation::Delegated, derive_types};
 use crate::{
     expand::{
@@ -30,8 +32,10 @@ pub(crate) struct Site<'a> {
     pub original: Span,
     pub copy_context: (SyntaxContextId, ExpansionId),
     pub clone_context: (SyntaxContextId, ExpansionId),
+    pub debug_context: (SyntaxContextId, ExpansionId),
     pub copy_edition: crate::support::edition::Edition,
     pub clone_edition: crate::support::edition::Edition,
+    pub debug_edition: crate::support::edition::Edition,
 }
 struct Field {
     parsed: ParsedSyntax,
@@ -51,15 +55,17 @@ pub(crate) fn build(
     site: &Site<'_>,
     copy: bool,
     clone: bool,
+    debug: bool,
     config: &Config,
     charge: &Charge<'_>,
 ) -> Result<Delegated, LexError> {
-    let ItemKind::Struct { fields, .. } = site.item.kind else {
+    let fields = field_inventory::collect(site, charge)?;
+    if debug && !matches!(site.item.kind, ItemKind::Struct { .. }) {
         return Err(error(
             site.original.start,
-            "this source derive requires the struct profile",
+            "source Debug enum expansion requires a wider profile",
         ));
-    };
+    }
     if clone && !copy || site.item.where_clause.start != site.item.where_clause.end {
         return Err(error(
             site.original.start,
@@ -85,7 +91,7 @@ pub(crate) fn build(
         output.text("{}")?;
         output.header("crate::clone::Clone", false)?;
         output.text("{ #[inline] fn clone(&self) -> Self {")?;
-        for &field in site.ast.list(fields) {
+        for &field in &fields {
             if site.active.get(field.get() as usize) != Some(&true) {
                 continue;
             }
@@ -105,44 +111,65 @@ pub(crate) fn build(
         }
         output.text("*self } }")?;
     }
-    output.validate_origins()?;
-    let splices: Vec<_> = output
-        .fields
-        .iter()
-        .map(|field| Splice {
-            fragment: Nonterminal::Syntax {
-                kind: FragmentKind::Type,
-                parsed: &field.parsed,
-            },
-            original_source: site.source,
-            original: field.original,
-            destination: field.destination,
-        })
-        .collect();
-    let ast = fragment::parse_expansion(
-        &output.stream.source,
-        &output.stream.tokens,
-        MacroContext::Items(ItemContext::Module),
-        &splices,
-    )?;
-    let ast: Ast<'static> = ast.map_literals(|_| {
-        Err(error(
-            site.original.start,
-            "source derive template unexpectedly introduced a literal",
-        ))
-    })?;
-    charge(
-        ast.nodes.len().saturating_add(ast.edges.len()),
-        super::choice::syntax_payload(&ast).saturating_mul(4),
-    )?;
-    let syntax = crate_syntax::configure("", ast, config)?;
-    Ok(Delegated {
-        stream: output.stream,
-        syntax,
-    })
+    if debug {
+        output.context = site.debug_context;
+        output.edition = site.debug_edition;
+        output.debug(&fields)?;
+    }
+    output.finish(config)
 }
 
 impl Output<'_> {
+    fn finish(self, config: &Config) -> Result<Delegated, LexError> {
+        self.validate_origins()?;
+        let splices: Vec<_> = self
+            .fields
+            .iter()
+            .map(|field| Splice {
+                fragment: Nonterminal::Syntax {
+                    kind: FragmentKind::Type,
+                    parsed: &field.parsed,
+                },
+                original_source: self.site.source,
+                original: field.original,
+                destination: field.destination,
+            })
+            .collect();
+        let ast = fragment::parse_expansion(
+            &self.stream.source,
+            &self.stream.tokens,
+            MacroContext::Items(ItemContext::Module),
+            &splices,
+        )?;
+        (self.charge)(
+            ast.nodes.len().saturating_add(ast.edges.len()),
+            super::choice::syntax_payload(&ast).saturating_mul(4),
+        )?;
+        let configured = crate_syntax::configure(&self.stream.source, ast, config)?;
+        // Configuration interprets demanded literals once in their generated image.
+        // Only the new Debug labels are strings; copied field types retain splices.
+        let ast: Ast<'static> = configured.ast.map_literals(|value| {
+            let crate::literal::Value::String(bytes) = value else {
+                return Err(error(
+                    self.site.original.start,
+                    "source derive introduced an unsupported literal",
+                ));
+            };
+            (self.charge)(bytes.len().saturating_add(1), bytes.len().saturating_mul(4))?;
+            Ok(crate::literal::Value::String(bytes.into_owned().into()))
+        })?;
+        let syntax = crate_syntax::ConfiguredSyntax {
+            ast,
+            owners: configured.owners,
+            active: configured.active,
+            effects: configured.effects,
+            cfg_uses: configured.cfg_uses,
+        };
+        Ok(Delegated {
+            stream: self.stream,
+            syntax,
+        })
+    }
     fn validate_origins(&self) -> Result<(), LexError> {
         use crate::expand::stream::OriginKind;
         (self.charge)(self.stream.origins.len(), 0)?;
@@ -177,6 +204,7 @@ impl Output<'_> {
                     let expected = [
                         (self.site.copy_context, self.site.copy_edition),
                         (self.site.clone_context, self.site.clone_edition),
+                        (self.site.debug_context, self.site.debug_edition),
                     ];
                     if origin.original
                         != (Location {

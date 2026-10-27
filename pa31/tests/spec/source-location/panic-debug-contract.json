@@ -1,0 +1,27 @@
+{
+  "state": "source-only-candidate-expansion-contract",
+  "inputs": {
+    "location-copy-clone.rs": "27d396405a174743ebecbaa3b4818642062ed409b23c5db3bf7f449c10e16dfd",
+    "panic-debug-declarations.rs": "c9f8f73ff22f1254b859c69be5490291cd202bb8dfce99eb2595520e7275137a"
+  },
+  "construction": "append the declaration fragment to the unchanged qualified Location provider",
+  "predictions": {
+    "candidate_expansion": "accept; exact PanicInfo four-field helper and ArgumentType formatter type retained",
+    "failed_member": "reject without consuming its actual list",
+    "duplicate_marker_one_trait": "reject",
+    "independent_markers_on_distinct_traits": "accept"
+  },
+  "stage": "actual source expansion only; formatter/Arguments names deliberately unresolved until full source runtime consumer",
+  "primary_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "primary_paths": [
+    "library/core/src/panic/panic_info.rs:11-20",
+    "library/core/src/fmt/rt.rs:13-24",
+    "compiler/rustc_builtin_macros/src/deriving/debug.rs"
+  ],
+  "required": [
+    "actual fmt::Formatter and Arguments declarations and helper bodies",
+    "full field WF and Clone/Copy/conformance proof",
+    "PanicInfo constructor and actual validated handler",
+    "runtime false assertion reaches Abort; CTFE executes actual ConstPanicFmt redirect"
+  ]
+}
