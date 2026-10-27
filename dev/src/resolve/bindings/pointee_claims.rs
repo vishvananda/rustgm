@@ -32,7 +32,9 @@ pub(super) fn validate(
     };
     let actual = unit.configured.ast.items[index as usize].kind;
     let valid = match role {
-        LangItem::PointeeTrait | LangItem::DiscriminantKind => matches!(actual, ItemKind::Trait { .. }),
+        LangItem::PointeeTrait | LangItem::DiscriminantKind => {
+            matches!(actual, ItemKind::Trait { .. })
+        }
         LangItem::MetadataType | LangItem::DiscriminantType => {
             declaration.parent.is_some() && matches!(actual, ItemKind::TypeAlias { .. })
         }
