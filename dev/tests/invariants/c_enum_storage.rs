@@ -40,6 +40,15 @@ fn active_union_tags_keep_exact_fields_without_reading_payloads() -> Result<(), 
             );
             let root = address.location().ok_or("union root")?;
             let backing = machine.convert_byte_root(root)?;
+            if ids.len() == 1 {
+                for offset in [16, u64::MAX] {
+                    assert!(
+                        machine
+                            .decode_byte_variant(Source::Backing(backing), offset, *ty)
+                            .is_err()
+                    );
+                }
+            }
             let (_, offsets) =
                 Reader::new(machine.evaluator.facts()).enum_variant_fields(*ty, ids[0])?;
             let start = usize::try_from(offsets[0]).map_err(|_| "payload offset")?;
