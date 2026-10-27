@@ -1,0 +1,38 @@
+{
+  "status": "declared before changed hypotheses; original three disagreements retained",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "profile": [
+    "--edition=2024",
+    "--target=x86_64-unknown-linux-gnu",
+    "--crate-type=lib",
+    "--emit=metadata",
+    "-Cpanic=abort",
+    "-Copt-level=0",
+    "-Coverflow-checks=on",
+    "-Cdebug-assertions=off"
+  ],
+  "cases": [
+    {
+      "source": "foreign-output.rs",
+      "sha256": "8f8c98c54ff3a2f0adbcc5bb9c1bec5d6715eeccd0a6d482038c7acd7b1697cb",
+      "status": 0
+    },
+    {
+      "source": "foreign-data-intrinsic.rs",
+      "sha256": "9f8834cf832fe99449bbe41713a27161c72794777c9d3a45626be8ae05426884",
+      "status": 0
+    },
+    {
+      "source": "uninitialized-read.rs",
+      "sha256": "bcf78d37ae02683a27bd5c7fb40adb536b22361da4428de6de3f13427d43e886",
+      "status": 1
+    },
+    {
+      "source": "utf8-byte-observation.rs",
+      "sha256": "8395a92f57e115519dab2e16203389d99bfae2a4f99e4ecf4f585f92aa30cc5e",
+      "status": 0
+    }
+  ],
+  "boundary": "actual core helpers in oracle; candidate will preserve genuine source chain and UB-check bodies, source identities/ordinary proof; raw construction is not reference/access permission; dynamic metadata and transport remain pending"
+}
