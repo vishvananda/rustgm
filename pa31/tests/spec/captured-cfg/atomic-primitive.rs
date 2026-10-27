@@ -1,4 +1,5 @@
-#![feature(decl_macro,rustc_attrs,cfg_target_has_atomic)]
+#![feature(decl_macro,rustc_attrs,cfg_target_has_atomic,staged_api)]
+#![stable(feature = "core", since = "1.6.0")]
 unsafe trait AtomicPrimitive{type Storage;}
 mod private{pub struct Align1<T>(T);pub struct Align2<T>(T);pub struct Align4<T>(T);pub struct Align8<T>(T);pub struct Align16<T>(T);}
 macro impl_atomic_primitive(
