@@ -22,10 +22,18 @@ The registry supplies the derive invocation kind independently of its
 `macro_rules!` source form. This declaration does not enable From execution;
 the private consumer control rejects that use before expansion work.
 
-This does not implement assertion expansion, tracing, attribute rewriting,
-derive output, allocator glue, contracts, EII, assembly, proc-macro hosting or
-foreign macro transport. Each execution family remains required at its owning
-assignment. Ordinary supported derives keep their current real consumer.
+The declaration producer grants no execution permission. Assertion expansion
+and the registered derive families now have separate source-owned consumers;
+tracing, attribute rewriting, allocator glue, contracts, EII, assembly,
+procedural-macro hosting and foreign macro transport remain separate work.
+Ordinary supported derives keep their current real consumer.
+
+`unavailable-bang.rs` preserves the historical Assert alias and original
+candidate rejection prediction. Assert now reaches its actual missing-condition
+diagnostic. The new `unavailable-asm-alias.rs` preserves genuinely unavailable
+Bang coverage: pinned Rust accepts the complete source in editions 2021/2024,
+while the candidate rejects before invoking assembly or publishing expansion
+work. Its source and outcomes were declared before the four observations.
 
 Nonempty `attributes(...)` lists now have a separately authored typed declaration
 producer and exact checked-header API. It retains canonical identifiers/spans on

@@ -78,3 +78,16 @@ maintainer roots, active fixture placement and the 24 upstream/126 Reference
 pins in 13.12 seconds. Successful native object/executable scratch is removed;
 source, raw outputs, bindings and hashes remain. The superseded interim CLI is
 retired after current output equality; current baselines remain pinned.
+
+Scheduled full CI40478713932 on the earlier bc8a51300 checkpoint exposed nine
+stale private assertions: old cold sizes/role counts and old Default/Assert
+availability. The corrected nine controls pass with strict private Clippy,
+formatting and architecture in269.71 seconds, receipt
+`obj/qualification/fast/1793094402659633566/receipt.json`. All production compiler
+source fingerprints remain identical to the current qualified CLI; only private
+tests and their authored fixture/documentation change. The original Assert
+fixture and prediction remain; a new assembly alias preserves genuine unavailable
+Bang coverage. Four frozen observations match: pinned Rust accepts both editions,
+and the immutable candidate rejects before assembly execution. Final harness and
+upstream verification passes again in13.59 seconds. Full CI on the corrected
+published head is separate qualification; no unrun release success is claimed.

@@ -130,7 +130,7 @@ fn actual_source_not_uses_ordinary_impl_proof_and_erases_only_primitive_dispatch
             .count()
             >= 3
     );
-    assert_eq!(size_of::<crate::sema::compiler_items::Catalog>(), 1000);
+    assert_eq!(size_of::<crate::sema::compiler_items::Catalog>(), 1208);
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2056);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     assert_eq!(size_of::<SourceNot>(), 12);
@@ -241,7 +241,7 @@ fn primitive_source_not_preserves_const_effects_and_real_constant_evaluation() -
     let report = crate::test_source::source_provider(&accepted, "source_unary")?;
     let checked = pipeline::analyze_source(&report)?;
     true_constant(&report, checked)?;
-    assert!(!crate::expand::builtin::Builtin::Assert.executable());
+    assert!(crate::expand::builtin::Builtin::Assert.executable());
     Ok(())
 }
 

@@ -46,7 +46,7 @@ fn actual_panic_claims_retain_kind_owner_and_uncompleted_role_status() -> Result
                 [actual.origin.node.get() as usize]
         );
     }
-    assert!(!crate::expand::builtin::Builtin::Assert.executable());
+    assert!(crate::expand::builtin::Builtin::Assert.executable());
     for (role, spelling) in ROLES {
         let wrong = if role == LangItem::Not {
             format!("#[lang=\"{spelling}\"]fn wrong(){{}}")
@@ -187,7 +187,7 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
     assert!(report.resolution.intrinsics.get(Intrinsic::Abort).is_none());
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2056);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
-    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 1240);
+    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 1424);
     assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 176);
     assert_eq!(size_of::<Declaration>(), 20);
     assert_eq!(size_of::<Option<Declaration>>(), 20);

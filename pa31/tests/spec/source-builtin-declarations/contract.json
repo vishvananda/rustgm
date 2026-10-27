@@ -460,6 +460,15 @@
       "independent_rustc_status": null,
       "note": "Frozen candidate authority opponent; no runtime claim.",
       "ordinary": false
+    },
+    {
+      "name": "unavailable-asm-alias",
+      "path": "unavailable-asm-alias.rs",
+      "sha256": "7f798a91ba0d0b24eb5b8652cfa31964b80c6822a7fd8aae3a014b88ab179366",
+      "candidate_status": 1,
+      "independent_rustc_status": 0,
+      "note": "New predicted metadata acceptance in2021/2024; candidate must reject genuinely unimplemented Asm before execution. Original unavailable-bang source/predictions remain.",
+      "ordinary": false
     }
   ],
   "role_catalog": "roles.tsv"

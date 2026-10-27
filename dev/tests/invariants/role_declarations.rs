@@ -155,7 +155,7 @@ fn pinned_roles_keep_exact_kind_owner_and_closed_execution_availability() -> Tes
 fn unavailable_alias_and_kind_opponents_stop_before_execution_work() -> TestResult {
     for (name, message) in [
         (
-            "unavailable-bang.rs",
+            "unavailable-asm-alias.rs",
             "builtin bang macro execution is not implemented",
         ),
         (

@@ -89,7 +89,7 @@ fn parsed_expression_messages_follow_the_actual_ast_and_forwarded_condition() ->
             .default_message(&EMPTY_INPUTS, &|_, _| Ok(()))
             .is_err()
     );
-    assert!(!crate::expand::builtin::Builtin::Assert.executable());
+    assert!(crate::expand::builtin::Builtin::Assert.executable());
     Ok(())
 }
 #[test]

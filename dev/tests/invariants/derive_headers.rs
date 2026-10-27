@@ -82,11 +82,11 @@ fn actual_helper_declarations_keep_aliases_raw_names_nfc_order_and_checked_empty
             .is_err()
     );
     let defaults = provider("default-helper")?;
-    assert!(!Builtin::Default.executable());
+    assert!(Builtin::Default.executable());
     assert!(
         crate::test_source::source_provider(
             &(source("default-helper")? + "#[derive(Default)]pub struct S;"),
-            "still_unavailable"
+            "requires_actual_default_trait"
         )
         .is_err()
     );
