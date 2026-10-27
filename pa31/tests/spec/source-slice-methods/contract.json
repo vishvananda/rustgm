@@ -166,5 +166,75 @@
     "observed_status": 0,
     "note": "same impl and own method generics; real Clone/Copy prerequisite only"
   },
-  "evidence_root": "obj/parallel/pa31/source-slice-methods-v1/oracle-v1"
+  "evidence_root": "obj/parallel/pa31/source-slice-methods-v1/oracle-v1",
+  "candidate": {
+    "compiler_source": "e08a1cd5600de494db6b93f94f9d9fef3171f21d",
+    "private_receipt": "obj/qualification/fast/1793122674257287110/receipt.json",
+    "production_receipt": "obj/qualification/fast/1793122890941560940/receipt.json",
+    "native_receipt": "obj/parallel/pa31/source-slice-methods-v1/native/execution.json",
+    "native_sha256": "21281373408478819b2012ebbf34e24fd55facf88a2698ad89058a6c5d39afac",
+    "stdout": "6 3 4\n",
+    "scope": "actual original len/as_bytes methods over explicitly reduced Pointee foundation; no full Metadata bounds/DynMetadata/Formatter/handler claim",
+    "layouts": {
+      "Reservations": 2104,
+      "Catalog": 1400,
+      "Body": 456,
+      "Rvalue": 20
+    },
+    "source_method_scaling": {
+      "width": [
+        8,
+        32,
+        128
+      ],
+      "inference": [
+        207,
+        783,
+        3087
+      ],
+      "definitions": [
+        45,
+        45,
+        45
+      ]
+    }
+  },
+  "semantic_negatives": [
+    {
+      "path": "pa31/tests/spec/source-slice-methods/missing-str-owner.rs",
+      "sha256": "e2241ae3e647b854c682fb1230b0c68ba2369f68e0f659a1c179e3da182a1802",
+      "expected_status": 1,
+      "observed_status": 1,
+      "mode": "--emit-types --source-core minicore@source_slice_methods",
+      "diagnostic": "receiver has no inherent nominal method",
+      "evidence_root": "obj/parallel/pa31/source-slice-methods-v1/native"
+    },
+    {
+      "path": "pa31/tests/spec/source-slice-methods/missing-slice-owner.rs",
+      "sha256": "1bbd33c44ac40a7cb5367c47c3e15668299f76b242f7decf2dbbc96be456bd28",
+      "expected_status": 1,
+      "observed_status": 1,
+      "mode": "--emit-types --source-core minicore@source_slice_methods",
+      "diagnostic": "receiver has no inherent nominal method",
+      "evidence_root": "obj/parallel/pa31/source-slice-methods-v1/native"
+    },
+    {
+      "path": "pa31/tests/spec/source-slice-methods/wrong-str-owner.rs",
+      "sha256": "fcf54c53e9e3177f8f1aaf992230854229ed94de40753277f4688d1502ae95cb",
+      "expected_status": 1,
+      "observed_status": 1,
+      "mode": "--emit-types --source-core minicore@source_slice_methods",
+      "diagnostic": "receiver has no inherent nominal method",
+      "evidence_root": "obj/parallel/pa31/source-slice-methods-v1/native"
+    },
+    {
+      "path": "pa31/tests/spec/source-slice-methods/missing-pointer-add.rs",
+      "sha256": "9b4cbff4d02739095f1aaf70260d44c6179eb9065af6c98f1f94cf252bdfda75",
+      "expected_status": 1,
+      "observed_status": 1,
+      "mode": "--emit-types --source-core minicore@source_slice_methods",
+      "diagnostic": "receiver has no inherent nominal method",
+      "evidence_root": "obj/parallel/pa31/source-slice-methods-v1/native"
+    }
+  ]
 }

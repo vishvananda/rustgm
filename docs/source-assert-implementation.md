@@ -558,3 +558,39 @@ all2888 verified source fingerprints and selected inventory are bound in
 This is selected source/CFG qualification, not a false-assert native or CTFE
 panic result. Real PanicInfo/handler linkage and the exact source panic pipeline
 remain the next executable consumer.
+
+
+### Actual source string length prerequisite
+
+Compiler source e08a1cd56 executes the unchanged pinned str::len → as_bytes →
+slice::len → ptr::metadata bodies over the explicitly reduced Pointee provider.
+The independent and locked CPPGM native observers both produce `6 3 4\n`.
+Private6 pass177.22s at fast/1793122674257287110 and source-identical production/
+CLI lexer10 pass140.80s at fast/1793122890941560940. Native receipt is
+`obj/parallel/pa31/source-slice-methods-v1/native/execution.json`; its2.83s run
+also retains actual missing/wrong string/slice/pointer method denials and cost
+observations. No role/name-based Length operation is synthesized.
+
+SliceLen is declaration-only ordinal60. Its target is an actual inherent method;
+GenericRequirement::None constrains neither own nor implementation generics.
+The retained no-implicit-autoref word validates source gate, target, arguments,
+duplicates and current header identity. Marked or Unknown implicit raw-pointer
+receiver borrowing remains explicitly unsupported; safe and explicit references
+still undergo their ordinary method/body/ownership checks. Full lint and foreign
+policy transport remain required. Existing header words share one authenticated
+retained traversal; no Body/Code/CallContexts field or second index is added.
+
+Measured Reservations2104/Catalog1400 are +24 each versus2080/1376. Body456,
+Rvalue20, Resolution2056 and Package256 remain unchanged. Source method widths
+8/32/128 retain45 definitions and inference207/783/3087. These are bounded
+inference observations, not total-work or speed claims. The current body work
+budget charges each demanded source receiver-place step. Ordinary/bootstrap
+calls keep their previous route.
+
+The original delayed rustc ICE and incomplete generic Copy setup remain retained,
+as do the interrupted selector run, two static-feedback failures and the5/6
+predecessor that exposed a genuine module/primitive type collision. PA6 now owns
+two metadata-positive bare-type fallback inputs; no text reference was hand-edited.
+The complete upstream Metadata bounds/DynMetadata, broader failed multi-segment
+primitive fallback, genuine Formatter helper closure and actual PanicInfo/handler
+false-assertion exit remain pending.

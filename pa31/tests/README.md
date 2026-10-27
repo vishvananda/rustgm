@@ -374,4 +374,4 @@ No artifact/foreign protocol transport or const-closure execution is implied.
 order, impl Trait, reversed-order, lifetime and feature-gate sources. These
 maintainer protocol fixtures do not activate the planned assignment.
 
-`spec/source-slice-methods/` freezes the genuine string/slice len/as_bytes body chain, inherent role target and no-implicit-autoref marker contracts. The independent safe-reference consumer executes `6 3 4`; setup ICE and generic Copy-prerequisite disagreement remain retained. Candidate source/const/native proof is pending.
+`spec/source-slice-methods/` freezes the genuine string/slice len/as_bytes body chain, inherent role target and no-implicit-autoref marker contracts. The independent safe-reference consumer executes `6 3 4`; setup ICE and generic Copy-prerequisite disagreement remain retained. Candidate source/const/body proof and locked-backend native execution now pass on e08a1cd56; source CLI missing/wrong-owner opponents retain real method-lookup denial. The full upstream Metadata/DynMetadata and panic/Formatter path remain required.

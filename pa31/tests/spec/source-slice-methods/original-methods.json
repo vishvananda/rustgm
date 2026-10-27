@@ -1,0 +1,36 @@
+{
+  "rust_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "fixture_sha256": "e11f2279d72aeb0ea101c730b54fddf3cc3a39baac2c7e476d17a86cf90ffb10",
+  "chunks": [
+    {
+      "path": "library/core/src/str/mod.rs",
+      "lines": [
+        148,
+        156
+      ],
+      "upstream_sha256": "ad5d6274b831db659a5ea8a36462e8e7f59d4a89b4c22375c1938da776f3c6ed",
+      "chunk_sha256": "eb2a8aa2aca0dd61dd84ae242108824d097493135d1614957a5515a28a72fdf8",
+      "bytes": 301
+    },
+    {
+      "path": "library/core/src/str/mod.rs",
+      "lines": [
+        508,
+        516
+      ],
+      "upstream_sha256": "ad5d6274b831db659a5ea8a36462e8e7f59d4a89b4c22375c1938da776f3c6ed",
+      "chunk_sha256": "79c5bc27cb592dca95f0d74f4c2bd79108440fb73b4b4bcb8ee07b320ac40a69",
+      "bytes": 363
+    },
+    {
+      "path": "library/core/src/slice/mod.rs",
+      "lines": [
+        110,
+        118
+      ],
+      "upstream_sha256": "453bfd6e0fc09e06ac1793ccb03e2e2f04fae149db6a079256097c8fad510669",
+      "chunk_sha256": "e675fd09423946ff65dea31a9b1056ff09c7945f46e9a37c53c89835fef0aa99",
+      "bytes": 289
+    }
+  ]
+}
