@@ -99,17 +99,24 @@ fn erased_unit_preserves_real_const_argument_faults() -> TestResult {
     let error = pipeline::analyze_source(&report)
         .err()
         .ok_or("unit metadata erased a real argument read")?;
-    assert!(
-        error.to_string().contains("null") || error.to_string().contains("address"),
-        "{error}"
+    assert_eq!(
+        error.message,
+        "constant pointer has no allocation provenance"
     );
+    let offset = source("unit-argument-fault")?
+        .find("metadata(unsafe")
+        .ok_or("actual faulting pointer argument call")?;
+    assert_eq!(error.span.start, u32::try_from(offset)?);
     Ok(())
 }
 #[test]
 fn actual_header_role_gate_and_signature_opponents_stay_closed() -> TestResult {
     for (name, message) in [
         ("mutable-intrinsic-input", "*const P"),
-        ("unrequested-intrinsics", "intrinsics"),
+        (
+            "unrequested-intrinsics",
+            "intrinsic binding requires explicit source features",
+        ),
     ] {
         let result = report(name).and_then(|report| {
             pipeline::analyze_source(&report)
