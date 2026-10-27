@@ -1,0 +1,10 @@
+{
+  "kind": "Authored runtime-context companions for exact existing nonconst trait/impl prefixes; original failing const sources unchanged",
+  "expected": "all three source-analysis +original/instance LowIR succeed, matched against exact const goal diagnostic/location; no new native/oracle claim",
+  "sources": {
+    "explicit-nonconst.rs": "6e7308336550e27d62e426b3bf57f4058193b80520c81267ce68443262999d1e",
+    "nonconst-overload.rs": "274a144b90423ae135660915a4f8d91e11bdd3447fe0170824874a2f6da566d2",
+    "primitive-const.rs": "62210dd9faa46bea55a9246badc0973f84687271b9dc184b96c6146f08ccee37"
+  },
+  "prefix_rule": "exact original prefix before named constant, only separately authored runtime root appended"
+}

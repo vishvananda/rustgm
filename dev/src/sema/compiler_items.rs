@@ -52,8 +52,11 @@ pub(in crate::sema) use roles::admitted_headers::selected_copying;
 pub(crate) use roles::callable_role;
 pub(crate) use roles::{destruct_predicate, drop_glue_member, freeze_predicate};
 pub(crate) use roles::{unsizing_predicate, unsizing_role};
+mod binary_contract;
+mod operator_contract;
 mod sizing;
 pub(in crate::sema) mod try_protocol;
+pub(in crate::sema) use binary_contract::source_binary;
 mod unary_contract;
 use crate::{
     resolve::{

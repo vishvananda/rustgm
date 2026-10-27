@@ -1,7 +1,11 @@
 //! Resume input queries only when one of their unresolved leaves changes.
+mod numeric;
+#[cfg(test)]
+#[path = "../../../tests/invariants/numeric_frontiers.rs"]
+mod numeric_tests;
 mod walk;
 use super::{Context, Error, Store, TermId, constants::ConstTermId};
-use crate::support::hash::{HashMap, HashSet};
+use crate::support::hash::HashMap;
 use std::collections::VecDeque;
 
 /// Identifies one readiness query in its original inference context.
@@ -22,9 +26,44 @@ enum State {
     Resolved,
     Cancelled,
 }
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Visit {
+    HiddenDone,
+    HiddenNumeric,
+    HiddenOther,
+    Done,
+    Numeric,
+    Other,
+    Normalization,
+}
+impl Visit {
+    fn hidden(self) -> bool {
+        matches!(
+            self,
+            Self::HiddenDone | Self::HiddenNumeric | Self::HiddenOther
+        )
+    }
+}
+#[derive(Clone, Copy)]
+enum Fallback {
+    Disabled,
+    Predicate,
+    Projection(TermId),
+}
+impl Fallback {
+    fn enabled(self) -> bool {
+        !matches!(self, Self::Disabled)
+    }
+}
 struct Watch {
     remaining: usize,
-    seen: HashSet<Dependency>,
+    seen: HashMap<Dependency, Visit>,
+    fallback: Fallback,
+    numeric: usize,
+    blockers: usize,
+    walking: usize,
+    numeric_queued: bool,
+    numeric_open: bool,
     changes: bool,
     state: State,
 }
@@ -35,11 +74,16 @@ pub(super) struct Storage {
     pub(super) equations: super::deferred::Storage,
     watches: Vec<Watch>,
     waiting: HashMap<Dependency, Vec<WatchId>>,
-    work: VecDeque<(WatchId, Dependency)>,
+    work: VecDeque<(WatchId, Dependency, bool)>,
+    numeric_ready: VecDeque<WatchId>,
+    fallback_watches: usize,
     ready: VecDeque<WatchId>,
     changed: VecDeque<WatchId>,
 }
 impl Storage {
+    pub(super) fn numeric_frontier_pending(&self) -> bool {
+        self.fallback_watches != 0
+    }
     fn has_pending_resolution(&self) -> bool {
         !self.ready.is_empty() || !self.work.is_empty() || !self.changed.is_empty()
     }
@@ -51,40 +95,121 @@ impl Storage {
         total.include(self.equations.allocation());
         total.vector(&self.watches);
         for watch in &self.watches {
-            total.set(&watch.seen);
+            total.map(&watch.seen);
         }
         total.map(&self.waiting);
         for waiting in self.waiting.values() {
             total.vector(waiting);
         }
         total.deque(&self.work);
+        total.deque(&self.numeric_ready);
         total.deque(&self.ready);
         total.deque(&self.changed);
         total
     }
 
-    fn notify(&mut self, id: WatchId) {
+    fn notify(&mut self, context: &mut Context, id: WatchId) -> Result<(), Error> {
         let watch = &mut self.watches[id.0 as usize];
         if matches!(watch.state, State::Initial | State::Observing) {
+            Self::prepay(
+                context,
+                crate::support::retained::Growth::vector::<WatchId>(
+                    self.changed.len(),
+                    self.changed.capacity(),
+                    1,
+                ),
+            )?;
             watch.state = State::Queued;
             self.changed.push_back(id);
         }
+        Ok(())
     }
-    fn enqueue(&mut self, id: WatchId, dependency: Dependency) -> Result<(), Error> {
+    fn enqueue(
+        &mut self,
+        context: &mut Context,
+        id: WatchId,
+        dependency: Dependency,
+        visible: bool,
+    ) -> Result<(), Error> {
+        Self::prepay(
+            context,
+            crate::support::retained::Growth::vector::<(WatchId, Dependency, bool)>(
+                self.work.len(),
+                self.work.capacity(),
+                1,
+            ),
+        )?;
         let watch = &mut self.watches[id.0 as usize];
         watch.remaining = watch.remaining.checked_add(1).ok_or(Error::Overflow)?;
-        self.work.push_back((id, dependency));
+        watch.walking = watch.walking.checked_add(1).ok_or(Error::Overflow)?;
+        self.work.push_back((id, dependency, visible));
         Ok(())
     }
 
-    fn complete(&mut self, id: WatchId) -> Result<(), Error> {
+    fn register(
+        &mut self,
+        context: &mut Context,
+        types: &[TermId],
+        constants: &[ConstTermId],
+        changes: bool,
+        fallback: Fallback,
+    ) -> Result<WatchId, Error> {
+        Self::prepay(
+            context,
+            crate::support::retained::Growth::vector::<Watch>(
+                self.watches.len(),
+                self.watches.capacity(),
+                1,
+            ),
+        )?;
+        let id = WatchId(u32::try_from(self.watches.len()).map_err(|_| Error::Overflow)?);
+        self.watches.push(Watch {
+            remaining: 0,
+            seen: HashMap::default(),
+            fallback,
+            numeric: 0,
+            blockers: 0,
+            walking: 0,
+            numeric_queued: false,
+            numeric_open: false,
+            changes,
+            state: State::Initial,
+        });
+        self.fallback_watches += usize::from(fallback.enabled());
+        for dependency in types
+            .iter()
+            .copied()
+            .map(Dependency::Type)
+            .chain(constants.iter().copied().map(Dependency::Const))
+        {
+            self.enqueue(context, id, dependency, fallback.enabled())?;
+        }
+        if types.is_empty() && constants.is_empty() {
+            self.disable_fallback(id);
+            self.watches[id.0 as usize].state = State::Resolved;
+            self.ready.push_back(id);
+        }
+        Ok(id)
+    }
+
+    fn complete(&mut self, context: &mut Context, id: WatchId) -> Result<(), Error> {
         let watch = &mut self.watches[id.0 as usize];
         watch.remaining = watch
             .remaining
             .checked_sub(1)
             .ok_or(Error::InvalidIdentity)?;
         if watch.remaining == 0 {
-            watch.seen = HashSet::default();
+            Self::prepay(
+                context,
+                crate::support::retained::Growth::vector::<WatchId>(
+                    self.ready.len(),
+                    self.ready.capacity(),
+                    1,
+                ),
+            )?;
+            self.disable_fallback(id);
+            let watch = &mut self.watches[id.0 as usize];
+            watch.seen = HashMap::default();
             watch.state = State::Resolved;
             self.ready.push_back(id);
         }
@@ -105,7 +230,7 @@ impl Context {
         types: &[TermId],
         constants: &[ConstTermId],
     ) -> Result<WatchId, Error> {
-        self.watch_inputs(types, constants, false)
+        self.watch_inputs(types, constants, false, Fallback::Disabled)
     }
 
     /// Observe initial partial inputs and later changes to only their dependency leaves.
@@ -118,7 +243,7 @@ impl Context {
         types: &[TermId],
         constants: &[ConstTermId],
     ) -> Result<WatchId, Error> {
-        self.watch_inputs(types, constants, true)
+        self.watch_inputs(types, constants, true, Fallback::Disabled)
     }
 
     /// Observe every type/const input of a complete predicate, including equality results.
@@ -138,7 +263,7 @@ impl Context {
                 super::arguments::Argument::Lifetime(_) => {}
             }
         }
-        self.watch_changes(&types, &constants)
+        self.watch_inputs(&types, &constants, true, Fallback::Predicate)
     }
 
     fn watch_inputs(
@@ -146,6 +271,7 @@ impl Context {
         types: &[TermId],
         constants: &[ConstTermId],
         changes: bool,
+        fallback: Fallback,
     ) -> Result<WatchId, Error> {
         self.account_work(
             types
@@ -159,27 +285,10 @@ impl Context {
         for &term in constants {
             self.constants().ty(term)?;
         }
-        let storage = self.dependencies.get_or_insert_with(Default::default);
-        let id = WatchId(u32::try_from(storage.watches.len()).map_err(|_| Error::Overflow)?);
-        storage.watches.push(Watch {
-            remaining: 0,
-            seen: HashSet::default(),
-            changes,
-            state: State::Initial,
-        });
-        for dependency in types
-            .iter()
-            .copied()
-            .map(Dependency::Type)
-            .chain(constants.iter().copied().map(Dependency::Const))
-        {
-            storage.enqueue(id, dependency)?;
-        }
-        if types.is_empty() && constants.is_empty() {
-            storage.watches[id.0 as usize].state = State::Resolved;
-            storage.ready.push_back(id);
-        }
-        Ok(id)
+        let mut storage = self.dependencies.take().unwrap_or_default();
+        let result = storage.register(self, types, constants, changes, fallback);
+        self.dependencies = Some(storage);
+        result
     }
 
     /// Stop a query after its owner consumes the result; queued events become inert.
@@ -187,13 +296,12 @@ impl Context {
     /// Rejects an invalid watch identity and exhausted work.
     pub fn cancel_watch(&mut self, id: WatchId) -> Result<(), Error> {
         self.step()?;
-        let watch = self
-            .dependencies
-            .as_mut()
-            .and_then(|s| s.watches.get_mut(id.0 as usize))
-            .ok_or(Error::InvalidIdentity)?;
-        watch.state = State::Cancelled;
-        watch.seen = HashSet::default();
+        let Some(mut storage) = self.dependencies.take() else {
+            return Err(Error::InvalidIdentity);
+        };
+        let result = storage.cancel(self, id);
+        self.dependencies = Some(storage);
+        result?;
         Ok(())
     }
 
@@ -204,14 +312,20 @@ impl Context {
     /// Rejects invalid tickets and exhausted inference work.
     pub fn retry_watch(&mut self, id: WatchId) -> Result<(), Error> {
         self.step()?;
-        let storage = self.dependencies.as_mut().ok_or(Error::InvalidIdentity)?;
-        let watch = storage
-            .watches
-            .get(id.0 as usize)
-            .ok_or(Error::InvalidIdentity)?;
-        if watch.remaining != 0 {
-            storage.notify(id);
-        }
+        let Some(mut storage) = self.dependencies.take() else {
+            return Err(Error::InvalidIdentity);
+        };
+        let result = if let Some(watch) = storage.watches.get(id.0 as usize) {
+            if watch.remaining != 0 {
+                storage.notify(self, id)
+            } else {
+                Ok(())
+            }
+        } else {
+            Err(Error::InvalidIdentity)
+        };
+        self.dependencies = Some(storage);
+        result?;
         Ok(())
     }
 
@@ -280,24 +394,11 @@ impl Context {
     }
 
     pub(super) fn wake_resolution(&mut self, dependency: Dependency) -> Result<(), Error> {
-        let Some(storage) = &mut self.dependencies else {
+        let Some(mut storage) = self.dependencies.take() else {
             return Ok(());
         };
-        let Some(watches) = storage.waiting.remove(&dependency) else {
-            return Ok(());
-        };
-        let count = watches.len();
-        for id in watches {
-            let watch = &mut storage.watches[id.0 as usize];
-            if watch.state == State::Cancelled {
-                continue;
-            }
-            watch.seen.remove(&dependency);
-            if watch.changes {
-                storage.notify(id);
-            }
-            storage.work.push_back((id, dependency));
-        }
-        self.account_work(count)
+        let result = storage.wake(self, dependency);
+        self.dependencies = Some(storage);
+        result
     }
 }

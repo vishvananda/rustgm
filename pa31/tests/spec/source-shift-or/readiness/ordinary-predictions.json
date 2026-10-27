@@ -1,0 +1,19 @@
+{
+  "state": "NEW ordinary std closure/inline completion control; separate from retained no_core closure ICE",
+  "kind": "metadata only",
+  "editions": [
+    2021,
+    2024
+  ],
+  "cases": [
+    {
+      "file": "ordinary-closure.rs",
+      "status": 0,
+      "error_codes": [],
+      "warning_codes": []
+    }
+  ],
+  "sources": {
+    "ordinary-closure.rs": "5c78f2886b9d54ad4a0227ce5bd45b3c597e0ebb248833971824ed3d46a82f7f"
+  }
+}

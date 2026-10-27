@@ -1,6 +1,6 @@
 //! Discover dependency leaves, including const slots that are not type edges.
-use super::{Dependency, State, Storage, WatchId};
-use crate::types::infer::{Constructor, Context, Error, Store, Value, arguments::Slot};
+use super::{Dependency, State, Storage, Visit, WatchId};
+use crate::types::infer::{Constructor, Context, Domain, Error, Store, Value, arguments::Slot};
 
 impl Storage {
     pub(super) fn poll(
@@ -18,7 +18,7 @@ impl Storage {
                 watch.state = State::Observing;
                 return Ok(Some(id));
             }
-            let Some((id, dependency)) = self.work.pop_front() else {
+            let Some((id, dependency, visible)) = self.work.pop_front() else {
                 break;
             };
             context.step()?;
@@ -29,19 +29,31 @@ impl Storage {
                 Dependency::Type(term) => Dependency::Type(context.root(term)?),
                 Dependency::Const(term) => Dependency::Const(context.constants().root(term)?),
             };
-            if !self.watches[id.0 as usize].seen.insert(dependency) {
-                self.complete(id)?;
-                continue;
-            }
-            if self.visit(context, store, id, dependency)? {
-                self.complete(id)?;
+            self.watches[id.0 as usize].walking -= 1;
+            let previous = self.watches[id.0 as usize].seen.get(&dependency).copied();
+            if previous.is_some_and(|visit| !visible || !visit.hidden()) {
+                self.complete(context, id)?;
             } else {
-                self.waiting.entry(dependency).or_default().push(id);
-                let watch = &self.watches[id.0 as usize];
-                if watch.changes && watch.state == State::Initial {
-                    self.notify(id);
+                Self::prepay(
+                    context,
+                    crate::support::retained::Growth::map::<Dependency, Visit>(
+                        self.watches[id.0 as usize].seen.len(),
+                        self.watches[id.0 as usize].seen.capacity(),
+                        usize::from(previous.is_none()),
+                    ),
+                )?;
+                let done = self.visit(context, store, id, dependency, visible)?;
+                if done || previous.is_some() {
+                    self.complete(context, id)?;
+                } else {
+                    self.wait(context, dependency, id)?;
+                    let watch = &self.watches[id.0 as usize];
+                    if watch.changes && watch.state == State::Initial {
+                        self.notify(context, id)?;
+                    }
                 }
             }
+            self.refresh_numeric(context, id)?;
         }
         // Keep canonical readiness in its original completion order. Deliver
         // partial notifications only after all pending dependency updates.
@@ -63,34 +75,89 @@ impl Storage {
         store: &Store,
         id: WatchId,
         dependency: Dependency,
+        visible: bool,
     ) -> Result<bool, Error> {
-        let term = match dependency {
-            Dependency::Const(term) => return Ok(context.constants().value(term)?.is_some()),
-            Dependency::Type(term) => context.terms[term.0 as usize],
+        let visible = visible && self.watches[id.0 as usize].fallback.enabled();
+        let visit = self.classify(context, store, id, dependency, visible)?;
+        self.record(id, dependency, visit);
+        if matches!(
+            visit,
+            Visit::Numeric | Visit::HiddenNumeric | Visit::Other | Visit::HiddenOther
+        ) {
+            return Ok(false);
+        }
+        if visit == Visit::Normalization {
+            self.wait(context, dependency, id)?;
+        }
+        let Dependency::Type(root) = dependency else {
+            return Ok(true);
         };
+        let term = context.terms[root.0 as usize];
         let kind = match term.value {
-            Value::Variable(_) => return Ok(false),
+            Value::Construct(kind) => kind,
             Value::Known(ty) => {
                 store.kind(ty).ok_or(Error::InvalidIdentity)?;
                 return Ok(true);
             }
-            Value::Construct(kind) => kind,
+            Value::Variable(_) => return Err(Error::InvalidIdentity),
         };
+        let children_visible = visible && visit != Visit::Normalization;
         context.account_work((term.end - term.start) as usize)?;
-        for &child in &context.edges[term.start as usize..term.end as usize] {
-            self.enqueue(id, Dependency::Type(child))?;
+        for index in term.start..term.end {
+            let child = context.edges[index as usize];
+            self.enqueue(context, id, Dependency::Type(child), children_visible)?;
         }
         if let Constructor::ArrayInfer(length) = kind {
-            self.enqueue(id, Dependency::Const(length))?;
+            self.enqueue(context, id, Dependency::Const(length), children_visible)?;
         }
         if let Some((arguments, _)) = kind.application() {
             context.account_work(context.slots(arguments)?.len())?;
-            for slot in context.slots(arguments)? {
-                if let Slot::Const(term) = *slot {
-                    self.enqueue(id, Dependency::Const(term))?;
+            for index in 0..context.slots(arguments)?.len() {
+                if let Slot::Const(term) = context.slots(arguments)?[index] {
+                    self.enqueue(context, id, Dependency::Const(term), children_visible)?;
                 }
             }
         }
         Ok(true)
+    }
+    fn classify(
+        &self,
+        context: &mut Context,
+        store: &Store,
+        id: WatchId,
+        dependency: Dependency,
+        visible: bool,
+    ) -> Result<Visit, Error> {
+        let domain = match dependency {
+            Dependency::Const(term) => {
+                if context.constants().value(term)?.is_none() {
+                    Some(Domain::Any)
+                } else {
+                    None
+                }
+            }
+            Dependency::Type(term) => {
+                if let Value::Variable(domain) = context.terms[term.0 as usize].value {
+                    Some(domain)
+                } else {
+                    let own = match self.watches[id.0 as usize].fallback {
+                        super::Fallback::Projection(root) => context.root(root)? == term,
+                        _ => false,
+                    };
+                    if visible && !own && context.needs_normalization(store, term)? {
+                        return Ok(Visit::Normalization);
+                    }
+                    None
+                }
+            }
+        };
+        Ok(match (domain, visible) {
+            (Some(Domain::Integer | Domain::Float), true) => Visit::Numeric,
+            (Some(Domain::Integer | Domain::Float), false) => Visit::HiddenNumeric,
+            (Some(Domain::Any), true) => Visit::Other,
+            (Some(Domain::Any), false) => Visit::HiddenOther,
+            (None, true) => Visit::Done,
+            (None, false) => Visit::HiddenDone,
+        })
     }
 }

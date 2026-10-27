@@ -1,25 +1,29 @@
-# Source shift and bitwise-or execution requirements
+# Source shift and bitwise-or requirements and retained hypotheses
 
-These six inputs retain the frozen source bytes from worker checkpoint
-`4572314fc5573ff614bb9dfee8c0a20ef2a5b214`. Their sizing/Clone/Copy foundation
-and Shl/BitOr trait blocks come from the pinned Rust sources; primitive impl
-reducers are authored. Preserve the Rust attribution and repository NOTICE.
-The original trait source is `library/core/src/ops/bit.rs` at revision
+All source/observer bytes and original predictions from immutable worker checkpoint
+`4572314fc5573ff614bb9dfee8c0a20ef2a5b214` are retained here. The complete no_core
+sizing/Clone/Copy foundation and actual Shl/BitOr declaration blocks come from the
+pinned Rust sources; primitive implementations are explicitly authored reductions.
+Preserve NOTICE and attribution to core/src/ops/bit.rs at revision
 `88d9e12ae178fab0fb5cc050a94da85685d449ea`.
 
-`fence-contract.json` lists every input, its source hash, actual independent
-Rust outcome and temporary candidate diagnostic. The two valid Rust programs
-remain required positive implementation cases. Their current unsupported result
-does not count as implementing operators or passing the final PA31 contract.
+Original and followup observation summaries retain every mistaken prediction:
+const-trait ordinary impls masked the first overflow hypotheses with E0277; genuine
+const-impl successors expose the actual E0080 shift faults. The observed runtime
+custom-impl comparison is7 for scalar syntax and99/42 for explicit method calls.
+The separate source overload consumer is7/12/13; actual shift RHS inference is i32.
+No old observations are rerun by the compiler implementation checkpoint.
 
-The source compiler must resolve the genuine trait, Self/Rhs/Output, method,
-implementation and const effects before scalar emission. Ordinary overloads and
-explicit calls retain real source method behavior. Until that hook exists, the
-candidate rejects reached source shifts and bitwise-or instead of borrowing
-primitive execution from the older bootstrap path. Missing source traits also
-reject. Assignment operators have distinct trait identities and remain separate
-required work. Earlier ordinary/bootstrap operator behavior is preserved.
+The integrator's immutable `fence-contract.json` records the preceding temporary
+source fence and its six exact inputs. Those unsupported outcomes are historical,
+not final language expectations. The bounded source operator/compiler controls now have retained focused evidence
+as recorded in [the checkpoint](../../../../docs/source-shift-or-checkpoint.md).
+Fresh combined integration and candidate native execution remain pending.
 
-The integrator authenticated twelve retained metadata observations across
-editions 2021/2024 and their twenty-four raw streams. This checkpoint runs no new
-native comparison and generates no text references. PA31 remains planned.
+Full actual Self/Rhs/Output, owned method, selected impl and const effects must
+precede scalar emission. Explicit and nonprimitive calls retain ordinary source
+method/body permission. Assignment operators have distinct roles and remain
+separate work. The eventual actual consumer is Arguments::from_str in fmt/mod.rs
+815–821; standalone expression reducers do not claim that full library graph.
+No artifact/profile/wire permission, assignment activation or text-reference
+regeneration is implied.

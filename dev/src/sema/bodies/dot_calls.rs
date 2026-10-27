@@ -249,7 +249,7 @@ impl Checker<'_> {
         Ok((dereferences, borrow, actual))
     }
 
-    pub(super) fn publish_methods(&mut self, solved: &Solved) {
+    pub(super) fn publish_methods(&mut self, solved: &Solved) -> Result<(), Error> {
         for index in 0..self.state.call_types.comparison_borrows.len() {
             let (node, actual, expected) = self.state.call_types.comparison_borrows[index];
             let key = self.key(node);
@@ -272,7 +272,9 @@ impl Checker<'_> {
             let key = self.key(*node);
             let actual = solved.types[pending.actual.0 as usize];
             let expected = solved.types[pending.expected.0 as usize];
-            if self.source_scalar_unary_type(*node, actual) {
+            if self.source_scalar_unary_type(*node, actual)
+                || self.source_scalar_binary_solved(*node, actual, solved)?
+            {
                 // Its actual source clauses were checked by the ordinary solver;
                 // emitting the primitive operation must not call its own body.
                 self.state.checks.push(*node);
@@ -301,6 +303,7 @@ impl Checker<'_> {
                 reference: None,
             });
         }
+        Ok(())
     }
 }
 

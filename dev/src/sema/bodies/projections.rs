@@ -272,7 +272,7 @@ impl Checker<'_> {
             let watch = self
                 .state
                 .infer
-                .watch_changes(&[input], &[])
+                .watch_normalization(input)
                 .map_err(|e| self.error(node, e))?;
             self.state.projections.insert(
                 watch,

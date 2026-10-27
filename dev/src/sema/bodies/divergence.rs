@@ -6,7 +6,10 @@ impl Checker<'_> {
         node: NodeId,
         local_exit: bool,
     ) -> Result<(), Error> {
-        let never = self.head(node, self.term(node)?)? == Some(Constructor::Never);
+        // An unresolved associated result is not yet definitely Never. This
+        // provisional observation grants no normal-completion/type permission:
+        // the existing projection/effect/type worklist must still finish.
+        let never = self.contextual_head(node, self.term(node)?)? == Some(Constructor::Never);
         let transferred = if never || local_exit {
             never
         } else {

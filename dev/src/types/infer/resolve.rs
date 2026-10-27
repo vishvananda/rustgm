@@ -65,6 +65,9 @@ impl Context {
     /// # Errors
     /// Rejects exhausted inference work.
     pub fn default_numbers(&mut self) -> Result<bool, Error> {
+        if let Some(changed) = self.default_numeric_frontier()? {
+            return Ok(changed);
+        }
         self.account_work(self.terms.len())?;
         let mut changed = false;
         let mut wake = Vec::new();

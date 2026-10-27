@@ -1,0 +1,576 @@
+{
+  "state": "actual first frozen observation; original predictions and sources remain unchanged",
+  "prediction_sha256": "7031b830c9a3e4c66b1ea79bb3539c0d047eedfbd774d458a6b9d501fe191cdc",
+  "binding_sha256": "da9cb4ab411d3415a4ddea4df57f9f85aaa1f76ccb4fad0f5eb5b3db06934cb8",
+  "results_sha256": "092b980767e859a222ddfb487e600b04f411c8f034fda1afc23fc7b266917488",
+  "commands": 40,
+  "metadata_observations": 24,
+  "native_observations": 6,
+  "infrastructure_failures": 0,
+  "status_disagreements": 6,
+  "prediction_disagreements": 16,
+  "semantic_correction": "With the retained pub const traits and const_trait_impl feature, scalar const syntax also requires real const impls. The ordinary-impl const-positive prediction was false. Original overflow/negative probes hit that missing const-impl debt, so they do not yet observe const shift evaluation. Custom native was not executed because its const ENCODED initializer rejects.",
+  "outcomes": [
+    {
+      "case": "primitive-const.rs",
+      "edition": 2021,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0277",
+        "E0277"
+      ],
+      "warnings": [],
+      "matches_status": false,
+      "matches": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "3de69686a508ae7fbb52534370232b6ed53aefdf5c16f9451d761a37cf9805c8"
+    },
+    {
+      "case": "primitive-const.rs",
+      "edition": 2024,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0277",
+        "E0277"
+      ],
+      "warnings": [],
+      "matches_status": false,
+      "matches": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "3de69686a508ae7fbb52534370232b6ed53aefdf5c16f9451d761a37cf9805c8"
+    },
+    {
+      "case": "missing-shift-impl.rs",
+      "edition": 2021,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0369"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "a847623ecf511de9ad51ce4df1dd0ca024cdf2d06898f56963355e155b92e219"
+    },
+    {
+      "case": "missing-shift-impl.rs",
+      "edition": 2024,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0369"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "a847623ecf511de9ad51ce4df1dd0ca024cdf2d06898f56963355e155b92e219"
+    },
+    {
+      "case": "missing-or-impl.rs",
+      "edition": 2021,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0369"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "61a874c222c1868d8e95606dc1dd437c42882eb62c7e60fa8bb3fc7077200e8d"
+    },
+    {
+      "case": "missing-or-impl.rs",
+      "edition": 2024,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0369"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "61a874c222c1868d8e95606dc1dd437c42882eb62c7e60fa8bb3fc7077200e8d"
+    },
+    {
+      "case": "explicit-nonconst.rs",
+      "edition": 2021,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0277"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "0a36bc97f9dd8e00750cc5ecb53e6b83fd868a2cf19afb52c6d439a676674f4e"
+    },
+    {
+      "case": "explicit-nonconst.rs",
+      "edition": 2024,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0277"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "0a36bc97f9dd8e00750cc5ecb53e6b83fd868a2cf19afb52c6d439a676674f4e"
+    },
+    {
+      "case": "nonconst-overload.rs",
+      "edition": 2021,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0277"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "95e755e539e7e3f78315b2715e9245afaeb58ec7178a3e31e9e45d3e43adb32c"
+    },
+    {
+      "case": "nonconst-overload.rs",
+      "edition": 2024,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0277"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "95e755e539e7e3f78315b2715e9245afaeb58ec7178a3e31e9e45d3e43adb32c"
+    },
+    {
+      "case": "wrong-output.rs",
+      "edition": 2021,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0308"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "bbffff4f36e8de4003f2e4bbc5d6ce45a98f769f35380835a3a1bc802dbc3667"
+    },
+    {
+      "case": "wrong-output.rs",
+      "edition": 2024,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0308"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "bbffff4f36e8de4003f2e4bbc5d6ce45a98f769f35380835a3a1bc802dbc3667"
+    },
+    {
+      "case": "const-overflow.rs",
+      "edition": 2021,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0277"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "217b7175b52680ae72a56347eafc9d5e7627a1bd87c6242762b6d85c5074acc4"
+    },
+    {
+      "case": "const-overflow.rs",
+      "edition": 2024,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0277"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "217b7175b52680ae72a56347eafc9d5e7627a1bd87c6242762b6d85c5074acc4"
+    },
+    {
+      "case": "const-negative.rs",
+      "edition": 2021,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0277"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "080c3c14231b517602c6323870bc322480262504cac307341fde33ee29685e83"
+    },
+    {
+      "case": "const-negative.rs",
+      "edition": 2024,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0277"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "080c3c14231b517602c6323870bc322480262504cac307341fde33ee29685e83"
+    },
+    {
+      "case": "runtime-overloads.rs",
+      "edition": 2021,
+      "phase": "metadata",
+      "status": 0,
+      "errors": [],
+      "warnings": [
+        "unused_features"
+      ],
+      "matches_status": true,
+      "matches": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "edcd01722f95f5094f69f02c28015c35523b5e755267196c66bbe0a59da2b5a6"
+    },
+    {
+      "case": "runtime-overloads.rs",
+      "edition": 2024,
+      "phase": "metadata",
+      "status": 0,
+      "errors": [],
+      "warnings": [
+        "unused_features"
+      ],
+      "matches_status": true,
+      "matches": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "edcd01722f95f5094f69f02c28015c35523b5e755267196c66bbe0a59da2b5a6"
+    },
+    {
+      "case": "primitive-custom-body.rs",
+      "edition": 2021,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0277",
+        "E0277"
+      ],
+      "warnings": [],
+      "matches_status": false,
+      "matches": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4ede43a51ed89d6cf6a98f7863826e98cff1ea7940103c29a2760d165d0165fb"
+    },
+    {
+      "case": "primitive-custom-body.rs",
+      "edition": 2024,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0277",
+        "E0277"
+      ],
+      "warnings": [],
+      "matches_status": false,
+      "matches": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4ede43a51ed89d6cf6a98f7863826e98cff1ea7940103c29a2760d165d0165fb"
+    },
+    {
+      "case": "wrong-rhs.rs",
+      "edition": 2021,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0277",
+        "E0277",
+        "E0277"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "6da255edd66197a22f08b9ee51f3debd05fec89e978df3725f5f6b1afc1827d5"
+    },
+    {
+      "case": "wrong-rhs.rs",
+      "edition": 2024,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0277",
+        "E0277",
+        "E0277"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "6da255edd66197a22f08b9ee51f3debd05fec89e978df3725f5f6b1afc1827d5"
+    },
+    {
+      "case": "missing-shift-trait.rs",
+      "edition": 2021,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0369"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "fc2f6f309639b146340b2634c0bd55f2b67512974ff5e4b8e1b01f1f90de6ca4"
+    },
+    {
+      "case": "missing-shift-trait.rs",
+      "edition": 2024,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0369"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "fc2f6f309639b146340b2634c0bd55f2b67512974ff5e4b8e1b01f1f90de6ca4"
+    },
+    {
+      "case": "runtime-overloads.rs",
+      "edition": 2021,
+      "phase": "object",
+      "status": 0,
+      "errors": [],
+      "warnings": [
+        "unused_features"
+      ],
+      "matches_status": true,
+      "matches": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "edcd01722f95f5094f69f02c28015c35523b5e755267196c66bbe0a59da2b5a6"
+    },
+    {
+      "case": "runtime-overloads.rs",
+      "edition": 2021,
+      "phase": "link",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "runtime-overloads.rs",
+      "edition": 2021,
+      "phase": "execute",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "72e2cbc257ec0063be141f665b752b8328f01a13f2860635ab4644c83158948f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "runtime-overloads.rs",
+      "edition": 2024,
+      "phase": "object",
+      "status": 0,
+      "errors": [],
+      "warnings": [
+        "unused_features"
+      ],
+      "matches_status": true,
+      "matches": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "edcd01722f95f5094f69f02c28015c35523b5e755267196c66bbe0a59da2b5a6"
+    },
+    {
+      "case": "runtime-overloads.rs",
+      "edition": 2024,
+      "phase": "link",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "runtime-overloads.rs",
+      "edition": 2024,
+      "phase": "execute",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "72e2cbc257ec0063be141f665b752b8328f01a13f2860635ab4644c83158948f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "rhs-inference.rs",
+      "edition": 2021,
+      "phase": "link",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "rhs-inference.rs",
+      "edition": 2021,
+      "phase": "execute",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "6f4a6f4375b02be1270609b2e558413b67c3cd69bf6549943ec1300177a9465f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "rhs-inference.rs",
+      "edition": 2024,
+      "phase": "link",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "rhs-inference.rs",
+      "edition": 2024,
+      "phase": "execute",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "6f4a6f4375b02be1270609b2e558413b67c3cd69bf6549943ec1300177a9465f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "checked-runtime.rs",
+      "edition": 2021,
+      "phase": "link",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "checked-runtime.rs",
+      "edition": 2021,
+      "phase": "execute",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "a17fcf0a2f50e2d495e4f90ce263410edc183add6c62699a2facbccf60410f74",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "checked-runtime.rs",
+      "edition": 2024,
+      "phase": "link",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "checked-runtime.rs",
+      "edition": 2024,
+      "phase": "execute",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "a17fcf0a2f50e2d495e4f90ce263410edc183add6c62699a2facbccf60410f74",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "primitive-custom-body.rs",
+      "edition": 2021,
+      "phase": "object",
+      "status": 1,
+      "errors": [
+        "E0277",
+        "E0277"
+      ],
+      "warnings": [],
+      "matches_status": false,
+      "matches": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4ede43a51ed89d6cf6a98f7863826e98cff1ea7940103c29a2760d165d0165fb"
+    },
+    {
+      "case": "primitive-custom-body.rs",
+      "edition": 2024,
+      "phase": "object",
+      "status": 1,
+      "errors": [
+        "E0277",
+        "E0277"
+      ],
+      "warnings": [],
+      "matches_status": false,
+      "matches": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4ede43a51ed89d6cf6a98f7863826e98cff1ea7940103c29a2760d165d0165fb"
+    }
+  ],
+  "skipped": [
+    {
+      "case": "primitive-custom-body.rs",
+      "edition": 2021,
+      "phase": "execute",
+      "reason": "actual object/link rejection retained; no native success inferred"
+    },
+    {
+      "case": "primitive-custom-body.rs",
+      "edition": 2024,
+      "phase": "execute",
+      "reason": "actual object/link rejection retained; no native success inferred"
+    }
+  ],
+  "primary_seam": "compiler/rustc_hir_typeck/src/op.rs overloaded_binop_ret_ty calls write_method_call_and_enforce_effects before builtin type hints; trait/method effects remain real."
+}

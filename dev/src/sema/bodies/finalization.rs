@@ -162,7 +162,7 @@ impl Checker<'_> {
         let constant_dependencies = self.dependency_frontier();
         self.publish_constant_uses(arguments)?;
         let constant_dependencies = self.dependency_append(&constant_dependencies)?;
-        self.publish_methods(&solved);
+        self.publish_methods(&solved)?;
         self.publish_for_plans(&solved)?;
         self.publish_invocations(&solved);
         let body_key = self.key(body);

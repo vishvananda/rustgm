@@ -7,19 +7,26 @@ fn reached_source_shift_and_or_require_genuine_execution_hooks() -> TestResult {
         "missing-shift-impl.rs",
         "missing-or-impl.rs",
         "wrong-output.rs",
+    ] {
+        let source =
+            crate::test_source::fixture(&format!("pa31/tests/spec/source-shift-or/{name}"))?;
+        let report = crate::test_source::source_provider(&source, "source_binary_authority")?;
+        let error = crate::pipeline::analyze_source(&report)
+            .err()
+            .ok_or("unproved source binary accepted")?;
+        assert!(
+            !error.message.contains("not implemented"),
+            "{name}: {error}"
+        );
+    }
+    for name in [
         "runtime-overloads.rs",
         "const-followup/primitive-const-impl.rs",
     ] {
         let source =
             crate::test_source::fixture(&format!("pa31/tests/spec/source-shift-or/{name}"))?;
-        let report = crate::test_source::source_provider(&source, "source_binary_fence")?;
-        let error = crate::pipeline::analyze_source(&report)
-            .err()
-            .ok_or("source role granted primitive execution without a hook")?;
-        assert_eq!(
-            error.message, "source binary language execution is not implemented",
-            "{name}: {error}"
-        );
+        let report = crate::test_source::source_provider(&source, "source_binary_implemented")?;
+        crate::pipeline::analyze_source(&report)?;
     }
     Ok(())
 }

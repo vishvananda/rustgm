@@ -1,5 +1,7 @@
 //! Operators select explicit library identities through ordinary trait obligations.
 mod mutation;
+#[path = "language_hooks/binary_operator.rs"]
+mod source_binary;
 #[path = "language_hooks/unary_operator.rs"]
 mod source_unary;
 use super::{Checker, Constructor, Error, NodeId, TermId, Type};
@@ -114,25 +116,6 @@ impl Checker<'_> {
         kind: Hook,
         operand: NodeId,
     ) -> Result<bool, Error> {
-        let source_role = match kind {
-            Hook::Shl => Some(crate::support::bindings::LangItem::Shl),
-            Hook::BitOr => Some(crate::support::bindings::LangItem::BitOr),
-            _ => None,
-        };
-        if let Some(role) = source_role
-            && let Some(catalog) = self.facts.source_bindings.as_deref()
-        {
-            catalog
-                .require_provider_report(self.report)
-                .map_err(|message| self.error(node, message))?;
-            if catalog.language(role).is_none() {
-                return Err(self.error(
-                    node,
-                    "source binary operator requires its actual language declaration",
-                ));
-            }
-            return Err(self.error(node, "source binary language execution is not implemented"));
-        }
         if self
             .report
             .resolution
