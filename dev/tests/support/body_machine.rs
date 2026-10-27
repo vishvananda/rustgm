@@ -156,6 +156,9 @@ impl Machine<'_> {
     ) -> Result<Data, String> {
         let value = &frame.body.values[value.0 as usize];
         let data = match value.kind {
+            Rvalue::Assembly { .. } | Rvalue::AssemblyOutput { .. } => {
+                return Err("inline assembly is outside the PA10 scalar executor".into());
+            }
             Rvalue::Borrow { .. }
             | Rvalue::Address(_)
             | Rvalue::Unsize { .. }

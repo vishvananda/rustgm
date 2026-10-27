@@ -55,6 +55,16 @@ Evidence is under the root-owned `rustgm-pa25-work` checkout:
   and upstream checksum verification pass. The guarded record is
   `obj/parallel/lib045-root-implementation-v1/harness/receipt.json`.
 
+Push CI40532433959 passes. Full CI40532474766 finds an unhandled exhaustive match
+in the PA10 scalar test executor before running release/native qualification.
+The followup explicitly rejects both assembly value forms in that executor;
+production behavior is unchanged. All nine affected typed-body controls,
+production/CLI strict Clippy, formatting and global audit pass in46.55s:
+`obj/qualification/fast/1793115536499896113/receipt.json`, SHA-256
+`9a59277a6ac65a8e7125ffd6ca39ace62a88615e3c6124f7c48eda40f2a085f7`.
+The earlier failed full run remains a failure; subsequent full qualification is
+required for this cut.
+
 Two native operator consumers now execute exact proved source/LowIR through the
 locked CPPGM object backend and their independently observed C callers. They
 match pinned Rust's `7 12 13` and `7 99 42`, each with status0 and empty stderr.
