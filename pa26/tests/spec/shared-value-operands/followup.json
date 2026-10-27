@@ -1,0 +1,24 @@
+{
+  "status": "declared before followup observations and candidate test execution",
+  "cases": [
+    {
+      "name": "wrapper-reified",
+      "path": "pa26/tests/spec/shared-value-operands/wrapper-reified.rs",
+      "sha256": "cdf85a4086e7d6fbaa010bfd4d3897dc38d3b94625b5643c094281c73db86eec",
+      "accepted": true,
+      "native": true,
+      "panic": false,
+      "profile": "ordinary"
+    },
+    {
+      "name": "implicit-dot",
+      "path": "pa26/tests/spec/shared-value-operands/implicit-dot.rs",
+      "sha256": "a32714b561f0fccc9aa12abfb43fc9c385cb1641fe869126925a61f64b654a5d",
+      "accepted": false,
+      "native": false,
+      "panic": false,
+      "profile": "ordinary"
+    }
+  ],
+  "purpose": "Ordinary source wrapper legitimately supplies higher-ranked input lifetime; unimported dot use retains lexical visibility rule. Original direct-item reification disagreement remains."
+}
