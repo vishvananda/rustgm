@@ -52,6 +52,27 @@ impl Proofs<'_, '_> {
         {
             return Ok(());
         }
+        service.prepay(facts, 2, 0)?;
+        let Some(catalog) = facts
+            .crates
+            .as_deref()
+            .and_then(crate::sema::crates::Linkage::origin_catalog)
+        else {
+            return Ok(());
+        };
+        let Some(imported) = catalog
+            .declaration_if_imported(crate::resolve::model::DefId(item.0))
+            .map_err(|e| diagnostic(report, None, e.into()))?
+        else {
+            return Ok(());
+        };
+        catalog
+            .validate_declaration(
+                imported,
+                crate::resolve::model::DefId(item.0),
+                crate::resolve::model::DefKind::Function,
+            )
+            .map_err(|e| diagnostic(report, None, e.into()))?;
         let mut steps = 0;
         let source = crate::sema::crates::is_source_original(
             facts,
