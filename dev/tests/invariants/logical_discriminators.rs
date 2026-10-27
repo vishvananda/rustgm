@@ -96,7 +96,9 @@ fn actual_headers_and_source_incarnations_authenticate_one_cold_owner() -> TestR
 #[test]
 fn canonical_query_search_and_body_normalize_actual_declared_repr() -> TestResult {
     let report = provider("consumers/actual-calls")?;
-    let mut analysis = pipeline::analyze_source(&report)?;
+    // This group owns actual checked-body/normalizer facts; the next group owns reached CTFE.
+    let mut analysis = pipeline::analyze(&report, declarations::analyze(&report)?)?;
+    observe_call_signatures(&report, &analysis.facts)?;
     let enum_id = report
         .resolution
         .definitions
@@ -179,6 +181,63 @@ fn canonical_query_search_and_body_normalize_actual_declared_repr() -> TestResul
 
     Ok(())
 }
+fn observe_call_signatures(report: &Report, facts: &Declarations) -> TestResult {
+    let ast = &report.package.units[0].configured.ast;
+    for (index, node) in facts.nodes[0].iter().enumerate() {
+        let Some(crate::sema::model::Operation::Call { signature, .. }) = node.operation else {
+            continue;
+        };
+        let id = crate::syntax::ast::NodeId::checked(u32::try_from(index)?).ok_or("actual node")?;
+        let crate::syntax::ast::Kind::Call { callee, .. } = ast.node(id).kind else {
+            continue;
+        };
+        let Some(Kind::FunctionItem {
+            item,
+            signature: public,
+            arguments,
+        }) = facts
+            .node(crate::resolve::unit::NodeKey {
+                file: crate::resolve::unit::FileId(0),
+                node: callee,
+            })
+            .and_then(|n| n.ty)
+            .and_then(|ty| facts.types.kind(ty))
+        else {
+            continue;
+        };
+        if facts
+            .source_bindings
+            .as_deref()
+            .ok_or("source catalog")?
+            .intrinsic_kind(crate::resolve::model::DefId(item.0))?
+            != Some(crate::support::bindings::SourceIntrinsic::DiscriminantValue)
+        {
+            continue;
+        }
+        eprintln!(
+            "actual-discriminant-call node={id:?} offset={} item={item:?} args={arguments:?} public={public:?}:{:?} opened={signature:?}:{:?}",
+            ast.node(id).span.start,
+            facts.types.kind(public),
+            facts.types.kind(signature)
+        );
+        for (label, ty) in [("public", public), ("opened", signature)] {
+            if let Some(Kind::Function { parameters, .. }) = facts.types.kind(ty) {
+                for input in facts
+                    .types
+                    .list(parameters)
+                    .ok_or("actual signature inputs")?
+                {
+                    eprintln!(
+                        "actual-discriminant-input {label} {input:?} {:?}",
+                        facts.types.kind(*input)
+                    );
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
 fn search_argument(report: &Report, facts: &mut Declarations, root: TypeId) -> TestResult {
     let sink = report
         .resolution
