@@ -16,8 +16,9 @@ their evidence, not authority to replace this queue with old remaining tasks.
 
 The current original-core observer passes typed concat, numeric metavariable
 expressions, the corrected generic attribute payer and typed forwarded const
-arguments. It now reaches a captured cfg string in sync/atomic.rs311 (LIB-044).
-All722 pinned inputs verify;371 files are opened in7.71s and no artifact exists.
+arguments and captured cfg strings with actual atomic target facts. It now
+reaches genuine inline assembly in stdarch x86/sse.rs2071 (LIB-045).
+All722 pinned inputs verify;371 files are opened in7.09s and no artifact exists.
 The live tracker owns current lane priorities and this result; the checkpoint
 paragraphs below retain earlier consumer context. Actual DispatchFromDyn is the
 next shared prerequisite for the unchanged Formatter receiver, ahead of shift/BitOr.

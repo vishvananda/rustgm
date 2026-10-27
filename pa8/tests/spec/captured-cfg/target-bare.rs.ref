@@ -1,0 +1,110 @@
+expanded-crate 1
+macro 0 name=1 module=0 context=0 introduction=0 source=builtin builtin=cfg
+invocation 0 context=1 parent=0 macro=0 source=0:5 original=55:89 generated=113:117 rule=builtin parser-calls=0
+file 0
+configured 13 true
+attribute-effect 13 0 0 root keep
+active [0,1,2,3,5,6,7,8,9,10,11,12,13]
+node 0 45 47 type Tuple []
+node 1 48 49 literal 0
+value 0 integer 48 49 infer 1
+node 2 44 50 type Array [0,1]
+node 3 52 54 tuple []
+node 4 55 58 name "cfg"
+node 5 113 117 literal 1
+value 1 boolean 113 117 true
+node 6 93 98 name "usize"
+node 7 55 98 cast 5 6
+node 8 51 99 repeat 3 7
+node 9 35 100 item 0
+item 0 "_" private [] [] const 2 8
+node 10 109 111 block Plain [] -
+node 11 100 111 item 1
+item 1 "main" private [] [] function false false false false - [] - 10
+node 12 0 111 crate [9,11]
+node 13 0 111 attributed 0 1 12
+node 14 113 117 literal 1
+value 1 boolean 113 117 true
+attribute-capture 0 inner 0 34 "#![feature(cfg_target_has_atomic)]"
+capture 0 59 89 2 "(target_has_atomic_load_store)"
+root 13
+eof 117
+origin 113:117 source=0:55:89 context=1
+end-file 0
+name 0 "crate"
+name 1 "cfg"
+name 2 "usize"
+name 3 "line"
+name 4 "column"
+name 5 "file"
+name 6 "module_path"
+name 7 "stringify"
+name 8 "concat"
+name 9 "compile_error"
+name 10 "env"
+name 11 "include_str"
+name 12 "include_bytes"
+name 13 "include"
+name 14 "_"
+name 15 "main"
+name 16 "bool"
+name 17 "char"
+name 18 "str"
+name 19 "i8"
+name 20 "i16"
+name 21 "i32"
+name 22 "i64"
+name 23 "i128"
+name 24 "isize"
+name 25 "u8"
+name 26 "u16"
+name 27 "u32"
+name 28 "u64"
+name 29 "u128"
+name 30 "f32"
+name 31 "f64"
+name 32 "f16"
+name 33 "f128"
+module 0 name=0 file=0 scope=0 parent=root
+scope 0 module=0 barrier=true parent=root
+scope 1 module=0 barrier=true parent=0
+scope 2 module=0 barrier=true parent=0
+scope 3 module=0 barrier=false parent=2
+def 0 type module name=0 scope=0 access=public members=0
+def 1 macro builtin-macro name=1 scope=0 access=public
+def 2 macro builtin-macro name=3 scope=0 access=public
+def 3 macro builtin-macro name=4 scope=0 access=public
+def 4 macro builtin-macro name=5 scope=0 access=public
+def 5 macro builtin-macro name=6 scope=0 access=public
+def 6 macro builtin-macro name=7 scope=0 access=public
+def 7 macro builtin-macro name=8 scope=0 access=public
+def 8 macro builtin-macro name=9 scope=0 access=public
+def 9 macro builtin-macro name=10 scope=0 access=public
+def 10 macro builtin-macro name=11 scope=0 access=public
+def 11 macro builtin-macro name=12 scope=0 access=public
+def 12 macro builtin-macro name=13 scope=0 access=public
+def 13 value const name=14 scope=0 access=module:0 source=0:9
+def 14 value function name=15 scope=0 access=module:0 source=0:11
+def 15 type primitive name=16 scope=0 access=public
+def 16 type primitive name=17 scope=0 access=public
+def 17 type primitive name=18 scope=0 access=public
+def 18 type primitive name=19 scope=0 access=public
+def 19 type primitive name=20 scope=0 access=public
+def 20 type primitive name=21 scope=0 access=public
+def 21 type primitive name=22 scope=0 access=public
+def 22 type primitive name=23 scope=0 access=public
+def 23 type primitive name=24 scope=0 access=public
+def 24 type primitive name=25 scope=0 access=public
+def 25 type primitive name=26 scope=0 access=public
+def 26 type primitive name=27 scope=0 access=public
+def 27 type primitive name=28 scope=0 access=public
+def 28 type primitive name=29 scope=0 access=public
+def 29 type primitive name=2 scope=0 access=public
+def 30 type primitive name=30 scope=0 access=public
+def 31 type primitive name=31 scope=0 access=public
+def 32 type primitive name=32 scope=0 access=public
+def 33 type primitive name=33 scope=0 access=public
+binding scope=0 value name=15 def=14 Direct ambiguous=false access=module:0
+ref 0:6 scope=1 type def=29
+eof files=1 modules=1 definitions=34 references=1
+end-expanded-crate files 1 modules 1 macros 1 invocations 1 captures 0 definitions 34 references 1

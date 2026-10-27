@@ -89,3 +89,8 @@ Required language, edition and target features must work when those sources
 need them, regardless of their broader assignment number. Optional PA45,
 reproducible self-hosting, remains outside this bootstrap goal. No incomplete
 stage may be activated.
+
+The current core source path requires PA41 inline assembly already at PA32:
+stdarch's x86 SSE implementation invokes the genuine source-declared asm builtin.
+Prioritize that required target slice alongside PA25–PA31 prerequisites, with
+explicit backend capability checks; broader PA41 closure remains required.

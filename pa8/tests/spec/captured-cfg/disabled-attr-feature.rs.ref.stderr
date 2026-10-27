@@ -1,0 +1,1 @@
+ERROR: file 0: 11: cfg(target_has_atomic_load_store) requires cfg_target_has_atomic or its actual macro allowance

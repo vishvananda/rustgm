@@ -1,0 +1,2 @@
+ERROR: file 0: 86: expected captured string literal
+  in macro pick at file 0: 80; defined at file 0: 0

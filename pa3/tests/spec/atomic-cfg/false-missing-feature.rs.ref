@@ -1,0 +1,17 @@
+token 0 0 punctuation 0 1 "#"
+group 1 0 bracket 1 42 7
+token 2 1 identifier 2 5 "cfg"
+group 3 1 paren 5 41 7
+token 4 2 identifier 6 34 "target_has_atomic_load_store"
+token 5 2 punctuation 34 35 "="
+token 6 2 string 35 40 "\"128\""
+token 7 0 identifier 42 44 "fn"
+token 8 0 identifier 45 53 "selected"
+group 9 0 paren 53 55 10
+group 10 0 brace 55 57 11
+token 11 0 identifier 57 59 "fn"
+token 12 0 identifier 60 64 "main"
+group 13 0 paren 64 66 14
+group 14 0 brace 66 68 15
+attribute 0 root outer 0 42 safe cfg=false cfg group 3
+eof 69

@@ -1,0 +1,2 @@
+ERROR: file 0: 83: suffix on non-numeric literal
+  in macro pick at file 0: 83; defined at file 0: 0
