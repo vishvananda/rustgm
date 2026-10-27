@@ -83,7 +83,8 @@ fn validate_target(
         ));
     }
     let expected = if role == LangItem::DispatchFromDyn {
-        LangItem::Sized
+        // The genuine Sized formal carries the implicit MetaSized source clause.
+        LangItem::MetaSized
     } else {
         LangItem::PointeeSized
     };
@@ -121,14 +122,11 @@ fn validate_target(
         if predicate.ty != target {
             continue;
         }
-        if expected == LangItem::Sized
+        if role == LangItem::DispatchFromDyn
             && predicate.bound == crate::types::parameters::predicates::Bound::Sized
         {
-            if std::mem::replace(&mut found, true) {
-                return Err(error(
-                    "source DispatchFromDyn target repeats its Sized requirement",
-                ));
-            }
+            // Sized is already authenticated on the actual formal. Its builtin
+            // marker is distinct from the retained source MetaSized clause.
             continue;
         }
         let Some((application, Constness::Ordinary)) = predicate.bound.trait_parts() else {
@@ -152,8 +150,12 @@ fn validate_target(
             ));
         }
     }
-    if !found && expected != LangItem::Sized {
-        return Err(error("source unsizing target requires actual PointeeSized"));
+    if !found {
+        return Err(error(if role == LangItem::DispatchFromDyn {
+            "source DispatchFromDyn target requires actual MetaSized"
+        } else {
+            "source unsizing target requires actual PointeeSized"
+        }));
     }
     Ok(())
 }
