@@ -1,8 +1,9 @@
 //! Assembly operands share ordinary inference, place checks and the current unsafe context.
 use super::{Checker, Error, Kind, NodeId, TermId, Type, TypeId};
 use crate::{
+    sema::target_features::FeatureSet,
     syntax::assembly::{self, Direction, Register},
-    types::Primitive,
+    types::{Primitive, aggregate::SimdShape},
 };
 impl Checker<'_> {
     pub(super) fn enter_assembly(
@@ -66,6 +67,7 @@ impl Checker<'_> {
         let count = unit.configured.ast.list(args).len();
         self.report
             .prepare_assembly(self.key(node), count, count.saturating_mul(256))?;
+        let available = self.assembly_features(node)?;
         let mut explicit: Vec<(u8, bool, bool, bool, bool)> = Vec::with_capacity(count);
         let mut classes = Vec::with_capacity(count);
         let unit = self.report.package.unit(self.state.file);
@@ -99,6 +101,14 @@ impl Checker<'_> {
             let class = unit
                 .assembly_register(register)
                 .map_err(|e| self.error(arg, e.message))?;
+            if matches!(class, Register::Xmm | Register::Explicit { xmm: true, .. })
+                && !available.supports_xmm()
+            {
+                return Err(self.error(
+                    arg,
+                    "assembly register class requires the sse target feature",
+                ));
+            }
             if let Register::Explicit { base, xmm, .. } = class {
                 let late = matches!(direction, Direction::LateOut | Direction::InLateOut);
                 let reads = input.is_some();
@@ -130,6 +140,14 @@ impl Checker<'_> {
             classes.push(class);
         }
         self.assembly_modifiers(args, &classes)
+    }
+    pub(super) fn assembly_features(&mut self, node: NodeId) -> Result<FeatureSet, Error> {
+        let key = self.key(node);
+        let baseline = FeatureSet::target_baseline(
+            |growth| self.report.prepare_assembly(key, growth.work, growth.bytes),
+            |message| self.error(node, message),
+        )?;
+        Ok(baseline.union(self.target_body_features(node)?))
     }
     fn assembly_modifiers(
         &self,
@@ -173,7 +191,7 @@ impl Checker<'_> {
     }
     fn assembly_type(&self, node: NodeId, class: Register) -> Result<(), Error> {
         let ty = self.ty(node)?;
-        let (bytes, float) = match self.facts.types.kind(ty) {
+        let (bytes, float, vector) = match self.facts.types.kind(ty) {
             Some(Type::Primitive(p)) => {
                 let bytes = match p {
                     Primitive::U8 | Primitive::I8 => 1,
@@ -191,13 +209,17 @@ impl Checker<'_> {
                         ));
                     }
                 };
-                (bytes, p.is_float())
+                (bytes, p.is_float(), false)
             }
-            Some(Type::Function { .. }) => (8, false),
+            Some(Type::Function { .. }) => (8, false, false),
             Some(Type::Pointer { pointee, .. })
                 if self.facts.types.is_sized(pointee) == Some(true) =>
             {
-                (8, false)
+                (8, false, false)
+            }
+            Some(Type::Adt(..)) => {
+                self.assembly_simd_type(node, ty)?;
+                (16, false, true)
             }
             _ => return Err(self.error(
                 node,
@@ -212,9 +234,11 @@ impl Checker<'_> {
             }
             | Register::Byte => !float && bytes == 1,
             Register::General | Register::Abcd | Register::Explicit { xmm: false, .. } => {
-                bytes >= 2
+                bytes >= 2 && !vector
             }
-            Register::Xmm | Register::Explicit { xmm: true, .. } => matches!(bytes, 4 | 8),
+            Register::Xmm | Register::Explicit { xmm: true, .. } => {
+                matches!(bytes, 4 | 8) || vector
+            }
         };
         if valid {
             Ok(())
@@ -222,6 +246,38 @@ impl Checker<'_> {
             Err(self.error(
                 node,
                 "assembly operand type is incompatible with register class",
+            ))
+        }
+    }
+    fn assembly_simd_type(&self, node: NodeId, ty: TypeId) -> Result<(), Error> {
+        let shape = self
+            .facts
+            .aggregates
+            .simd_shape(&self.facts.types, ty)
+            .map_err(|message| self.error(node, message))?;
+        let SimdShape::Ready { lane, count } = shape else {
+            return Err(self.error(
+                node,
+                "assembly SIMD operand requires its completed genuine representation",
+            ));
+        };
+        let bits = match self.facts.types.kind(lane) {
+            Some(Type::Primitive(p)) => match p {
+                Primitive::F32 => Some(32),
+                Primitive::F64 => Some(64),
+                _ => p
+                    .integer()
+                    .map(|(_, bits)| bits)
+                    .filter(|bits| matches!(bits, 8 | 16 | 32 | 64)),
+            },
+            _ => None,
+        };
+        if bits.and_then(|bits| count.checked_mul(u64::from(bits))) == Some(128) {
+            Ok(())
+        } else {
+            Err(self.error(
+                node,
+                "assembly xmm vector requires exactly 128 bits of supported numeric lanes",
             ))
         }
     }

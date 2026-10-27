@@ -103,6 +103,20 @@ static FEATURES: &[Specification] = &[
     Specification::new("xsaves", None, &[73]),
 ];
 impl FeatureSet {
+    /// Build only a transient view; cfg remains the sole target baseline owner.
+    pub(crate) fn target_baseline<E>(
+        mut pay: impl FnMut(Growth) -> Result<(), E>,
+        error: impl Fn(&'static str) -> E,
+    ) -> Result<Self, E> {
+        let mut result = Self::default();
+        for name in crate::resolve::package::Package::target_features() {
+            result.insert(name, &mut pay, |_| Ok(false), &error)?;
+        }
+        Ok(result)
+    }
+    pub(crate) fn supports_xmm(self) -> bool {
+        named("sse").is_some_and(|feature| self.0 & (1_u128 << feature.0) != 0)
+    }
     #[cfg(test)]
     pub(super) const fn uses_upper_word(self) -> bool {
         self.0 >> 64 != 0

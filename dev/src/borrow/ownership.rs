@@ -166,11 +166,20 @@ pub(crate) fn analyze_body_ordered<S: BuildHasher>(
     body: &Body,
     order: Option<&super::order::Order>,
 ) -> Result<BodyFacts, Error> {
-    if body.assembly.is_some() {
-        crate::body::assembly::validate(body).map_err(|message| Error {
+    if let Some(assembly) = &body.assembly {
+        let error = |message| Error {
             node: body.source.into(),
             message,
-        })?;
+        };
+        crate::body::assembly::validate(body).map_err(error)?;
+        for ty in assembly.operands.iter().filter_map(|operand| operand.ty) {
+            if !copies
+                .demand(types, definitions, derives, ty)
+                .map_err(error)?
+            {
+                return Err(error("assembly register operands must implement Copy"));
+            }
+        }
     }
     let mut facts = prepare(types, definitions, derives, copies, body, false)?;
     state::verify::<()>(body, &mut facts, types, None, order)?;

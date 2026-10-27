@@ -200,6 +200,10 @@ impl std::fmt::Display for Error {
 }
 impl std::error::Error for Error {}
 impl Package {
+    /// Borrow the compiler-controlled CPU baseline from the configuration owner.
+    pub(crate) fn target_features() -> impl Iterator<Item = &'static str> {
+        crate::expand::config::target_features()
+    }
     pub(crate) fn requested_wide_float(&self, half: bool) -> bool {
         self.macro_features.wide_float(half)
     }

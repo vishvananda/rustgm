@@ -1,6 +1,8 @@
 //! Source-owned asm retains typed effects while actual emission stays capability-checked.
 use crate::{body, syntax::ast::Kind};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
+#[path = "asm_vector_inputs.rs"]
+mod vectors;
 const DECL: &str = "#[rustc_builtin_macro(asm)]macro_rules!actual{($($t:tt)*)=>{9u8};}";
 fn source(program: &str) -> Result<String> {
     let mut prefix = crate::test_source::fixture(

@@ -3950,6 +3950,16 @@ the selected upstream target's required slice must work by PA32. See the
 [assembly checkpoint](docs/source-inline-assembly-checkpoint.md) for implemented
 scope, every-Body cost and remaining SIMD, transport and emission requirements.
 
+The required x86-64 XMM consumer transiently joins the fixed configuration baseline
+with authenticated actual body features. Consume genuine SIMD array fields;
+exact supported lane bits, register availability and Copy are independent checks.
+Input, output-only and tied Copy requirements use the existing deduplicated
+source collector and the actual caller's completed ownership/region view.
+Do not add another policy cache or body field. Baseline availability does not
+weaken language call safety or grant body transport/backend capability. The
+[vector join checkpoint](docs/source-asm-vector-join.md) records the actual source,
+ordinary proof opponents, charged-work observations and remaining boundaries.
+
 Target-feature policy reuses the two declaration/function owners as typed rows,
 retaining declared safety, exact contributing source attributes/input trees and
 the canonical feature closure. Query authenticated rows without reparsing. A
