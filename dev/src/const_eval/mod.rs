@@ -15,6 +15,7 @@ mod entry_policy;
 mod function_calls;
 mod operator_calls;
 mod place_cache;
+mod ptr_values;
 mod raw_reads;
 mod reached_drop;
 mod reached_layout;
