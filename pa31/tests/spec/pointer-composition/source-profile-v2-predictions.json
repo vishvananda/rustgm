@@ -1,0 +1,28 @@
+{
+  "status": "corrected source provider; original invalid tuple-Copy setup retained",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "profile": [
+    "--edition=2024",
+    "--target=x86_64-unknown-linux-gnu",
+    "--crate-type=lib",
+    "--emit=metadata",
+    "-Cpanic=abort",
+    "-Copt-level=0",
+    "-Coverflow-checks=on",
+    "-Cdebug-assertions=off"
+  ],
+  "cases": [
+    {
+      "source": "source-profile-valid.rs",
+      "sha256": "ba29678048800c667fa55768f329a5e92b26ccf8af27318e645dade0b54174d2",
+      "status": 0
+    },
+    {
+      "source": "source-profile-invalid-signature.rs",
+      "sha256": "07c7c8d9c13267af0338ba981bd404ab1b98548b5a5b969b45c68968568b42ce",
+      "status": 1
+    }
+  ],
+  "boundary": "actual core helpers in oracle; candidate will preserve genuine source chain and UB-check bodies, source identities/ordinary proof; raw construction is not reference/access permission; dynamic metadata and transport remain pending"
+}

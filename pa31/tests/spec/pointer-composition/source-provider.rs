@@ -184,4 +184,3 @@ pub const fn slice_from_raw_parts_mut<T>(data: *mut T, len: usize) -> *mut [T] {
 }
 
 #[lang="sync"]pub unsafe auto trait Sync{}
-impl Clone for (){fn clone(&self)->Self{}}impl Copy for (){}
