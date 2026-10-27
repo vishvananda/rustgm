@@ -1,0 +1,78 @@
+{
+  "state": "frozen before new independent observation",
+  "scope": "Authored declaration-target/None generic rule only; NOT complete original Layout/body/allocator proof. Full upstream Layout retained separately in formatter assembly-v5/layout_source.rs",
+  "tool": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+  "tool_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "options": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--cap-lints=allow"
+  ],
+  "env": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "editions": [
+    2021,
+    2024
+  ],
+  "cases": [
+    {
+      "name": "struct",
+      "path": "pa31/tests/spec/alloc-layout-identity/struct.rs",
+      "sha256": "ee6c501d41881380eef68b342c0bc21142073a9ffa51709e0914b8f07ecfdb9e",
+      "metadata": 0
+    },
+    {
+      "name": "generic",
+      "path": "pa31/tests/spec/alloc-layout-identity/generic.rs",
+      "sha256": "946353fc29e582583f0466321dd38826547448c9abb1e4f18535ff6af1c7eeae",
+      "metadata": 0
+    },
+    {
+      "name": "enum",
+      "path": "pa31/tests/spec/alloc-layout-identity/enum.rs",
+      "sha256": "9044ab50211b7cc240f710aafa6e7a2c6317cd1cc8df9848c66d34d5ebeff4c9",
+      "metadata": 1
+    },
+    {
+      "name": "trait",
+      "path": "pa31/tests/spec/alloc-layout-identity/trait.rs",
+      "sha256": "19c8eaa16df28da01203317d64dcc6f351b3718fcfe4a37462cc9dfc5e94b159",
+      "metadata": 1
+    },
+    {
+      "name": "function",
+      "path": "pa31/tests/spec/alloc-layout-identity/function.rs",
+      "sha256": "b51b956cfe5d635138798a974820c802b3bcfa8b515c0c160753eecf50f0be5f",
+      "metadata": 1
+    },
+    {
+      "name": "alias",
+      "path": "pa31/tests/spec/alloc-layout-identity/alias.rs",
+      "sha256": "5fab4b4f63f541533824e40be2161beb3959ed18d70b282bd32b01a41f709bec",
+      "metadata": 1
+    },
+    {
+      "name": "duplicate",
+      "path": "pa31/tests/spec/alloc-layout-identity/duplicate.rs",
+      "sha256": "50d25ea8e69f3f0c4531313e3c14c242f40fe6a3063dfb8e638785f877e9cd22",
+      "metadata": 1
+    },
+    {
+      "name": "ordinary",
+      "path": "pa31/tests/spec/alloc-layout-identity/ordinary.rs",
+      "sha256": "72d1cf3c11619cbaf46236e0980f7269ce540f2825d0328113d3b4294df72987",
+      "metadata": 0
+    }
+  ],
+  "before_binary": {
+    "path": "/home/vishvananda/rustgm-pa26-work/obj/rust/dev-fast/deps/rustgm-bf276c380d3725dd",
+    "sha256": "0dc6822839be1086a4d1c82d0eef0e1a2c8ec45db125a829538f0eeac7e8e0f5"
+  },
+  "before_receipt": {
+    "path": "obj/qualification/fast/1793140162078991306/receipt.json",
+    "sha256": "65d0c8987e729432f8d46b89c82e98eed2dbaa6e35542a641641c56e61f42c57"
+  },
+  "primary_rule": "compiler/rustc_hir/src/lang_items.rs326 Target::Struct GenericRequirement::None (unconstrained)"
+}

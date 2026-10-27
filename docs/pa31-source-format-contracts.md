@@ -308,3 +308,42 @@ observation takes9.85s without a rebuild. Root receipt:
 CLI9d7e2adc retains the original offset_of parser frontier:371 opened files,
 all722 unchanged,6.98s, no artifact. The native mixed source trace and original
 no-Copy call-reborrow requirement retain their distinct evidence and status.
+
+
+## Layout declaration dependency
+
+The genuine slice/UB helper composition reaches the complete original
+`SizedTypeProperties`, including its `ALIGNMENT` and `LAYOUT` defaults. Its actual
+`Layout` declaration requires the `alloc_layout` language identity. Append slot61
+through the same source reservation/catalog owners. The pinned rule is a Struct
+target with unconstrained generics; neither field names nor a zero-generic rule
+are invented. Actual module, declaration and source origin remain authenticated.
+The neutral role stays semantically Pending: no completed role bit, layout,
+allocation, constructor, body or old-wire transport permission follows.
+
+The [target packet](../pa31/tests/spec/alloc-layout-identity/contract.json) has16
+matched pinned-Rust metadata observations across2021/2024, including generic
+struct acceptance and wrong kind/duplicate rejection. The actual CLI matches all16
+outcomes. The full original Layout attrs/fields are retained separately; these
+authored target fixtures do not claim its derives/helper bodies are complete.
+New private target/opponent controls, existing panic/constructor controls and
+old-profile role denials pass. Three stale Reservations/Catalog guards and four
+inherited Report guards plus Engine were corrected from actual measurements and
+individually qualified. Failed predicted-size and selector observations remain.
+
+Actual cold Reservations2104→2120 and Catalog1400→1416 grow16 bytes each;
+Bindings1224→1240 and Imported1048→1064 also grow16. ImportedRole16,
+Declaration/OptionDeclaration20, SourceCore176, Resolution2032, Package256,
+Body456 and Rvalue20 retain their measured widths. Current Report3016 and
+Engine4064 are the inherited cold-namespace result, not a new AllocLayout change.
+Ordinary source bindings remain absent. Existing sizeof-based payment includes
+the actual cold growth; no retained owner/cache or hot field was added.
+Production qualification is retained across only seven cfg(test) size-constant
+corrections, with exact reconstructed predecessor hashes and exclusion paths;
+current private checks and raw CLI/layout streams bind the final source.
+
+The helper composition remains source-only work under its existing byte map.
+Actual `Arguments::as_str`/`fmt::write` still require source comparison, BitAnd/Shr,
+pointer read/offset and the genuine UB/panic helper graph. LIB052 additionally
+retains core's `{:#034x}` LowerHex/options constructor frontier. None is replaced
+by a compiler formatting algorithm or counted complete by this identity step.

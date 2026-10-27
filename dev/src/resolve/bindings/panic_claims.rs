@@ -131,3 +131,7 @@ pub(super) fn validate(
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/claimed_layout.rs"]
+mod tests;

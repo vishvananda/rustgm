@@ -383,3 +383,10 @@ constructor/native observations use genuine pinned shared-reference Copy/Clone
 impls; the original Rust-positive no-Copy source remains a known call-reborrow
 frontier (PA16 semantics/PA31 source profile), not a language rejection. Full
 Formatter/write/PanicInfo/handler execution remains required.
+
+
+`spec/alloc-layout-identity/` freezes genuine language-item Struct targets,
+unconstrained generic acceptance and wrong-target/duplicate controls. The
+complete upstream Layout attrs/fields remain source data for the formatter/UB
+helper composition. Identity recognition grants no completed layout, allocator,
+body or old-profile transport permission.

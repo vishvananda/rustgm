@@ -1,0 +1,10 @@
+{
+  "scope": "Complete original Layout declaration attributes and fields retained as source data; whole Layout/derive/body/allocation execution remains pending in formatter helper composition",
+  "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/alloc/layout.rs",
+  "source_sha256": "19119ede8a60d1a989f907118f9e7f36e24434b8e931875f66a379b856784124",
+  "start": 1330,
+  "end": 1991,
+  "fixture_sha256": "ff0935d1265f3b85ea7f69f12c54950fd17057f0e470c0b46c0d7d59cd90e203",
+  "target_rule": "rustc_hir/src/lang_items.rs326 Struct, GenericRequirement::None (unconstrained)",
+  "identity_only": 61
+}

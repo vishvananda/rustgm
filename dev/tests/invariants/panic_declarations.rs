@@ -188,7 +188,7 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
     assert!(report.resolution.intrinsics.get(Intrinsic::Abort).is_none());
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
-    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 2104);
+    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 2120);
     assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 176);
     assert_eq!(size_of::<Declaration>(), 20);
     assert_eq!(size_of::<Option<Declaration>>(), 20);
@@ -216,6 +216,7 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
         LangItem::OptionSome,
         LangItem::OptionNone,
         LangItem::SliceLen,
+        LangItem::AllocLayout,
     ]) {
         let mut changed = rows.clone();
         changed

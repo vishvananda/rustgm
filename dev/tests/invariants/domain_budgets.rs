@@ -42,7 +42,7 @@ fn complete_module_costs_prepay_sort_forest_transactions_and_enclosing_layouts()
     assert_eq!(size_of::<s::SourceRows>(), 616);
     assert_eq!(size_of::<s::Columns>(), 592);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
-    assert_eq!(size_of::<crate::resolve::expansion::Report>(), 3040);
+    assert_eq!(size_of::<crate::resolve::expansion::Report>(), 3016);
     assert_eq!(size_of::<s::TraitFlags>(), 2);
     println!(
         "v2 layouts ValidatedRows={} Payload={} Interface={} Columns={} SourceRows={} ModuleColumns={} ModuleRows={} Binding={} Domain={} ForestFrame={} Attributes={}",
