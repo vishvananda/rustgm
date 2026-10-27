@@ -131,41 +131,57 @@ fn impl_shapes_preserve_written_bounds_regions_and_actual_changed_fields() -> Re
 
 #[test]
 fn real_source_call_passes_body_and_original_instance_lowering() -> Result {
-    let report = provider(&source("call-prefix-followup/actual-reference-call")?)?;
-    let crate::pipeline::Analysis {
-        mut facts,
-        prepared,
-    } = crate::pipeline::analyze_source(&report)?;
-    let entry = facts
-        .functions
-        .iter()
-        .find(|function| {
-            report
-                .package
-                .names
-                .get(report.resolution.definitions[function.definition.0 as usize].name)
-                == "observe"
-        })
-        .ok_or("real observer")?
-        .definition;
-    let program = crate::lower::instances::build_roots_prepared(
-        &report,
-        &mut facts,
-        crate::lower::Roots {
-            entry: None,
-            exports: &[entry],
-        },
-        prepared,
-    )?;
-    assert!(!program.symbols.is_empty());
-    assert!(
-        program
-            .symbols
+    for (name, native) in [
+        ("call-prefix-followup/actual-reference-call", false),
+        ("native-followup/actual-reference-call", true),
+    ] {
+        let input = source(name)?;
+        let report = provider(&input)?;
+        let crate::pipeline::Analysis {
+            mut facts,
+            prepared,
+        } = crate::pipeline::analyze_source(&report)?;
+        let entry = facts
+            .functions
             .iter()
-            .filter(|symbol| symbol.body.is_some())
-            .count()
-            >= 3
-    );
+            .find(|function| {
+                report
+                    .package
+                    .names
+                    .get(report.resolution.definitions[function.definition.0 as usize].name)
+                    == "observe"
+            })
+            .ok_or("real observer")?
+            .definition;
+        let program = crate::lower::instances::build_roots_prepared(
+            &report,
+            &mut facts,
+            crate::lower::Roots {
+                entry: None,
+                exports: &[entry],
+            },
+            prepared,
+        )?;
+        assert!(!program.symbols.is_empty());
+        assert!(
+            program
+                .symbols
+                .iter()
+                .filter(|symbol| symbol.body.is_some())
+                .count()
+                >= 3
+        );
+        if native {
+            let output = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../obj/parallel/source-dispatch-integration-v1/consumer");
+            std::fs::create_dir_all(&output)?;
+            std::fs::write(output.join("provider.rs"), input)?;
+            crate::lowir::writer::write(
+                &program,
+                &mut std::fs::File::create(output.join("provider.lowir"))?,
+            )?;
+        }
+    }
     Ok(())
 }
 

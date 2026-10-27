@@ -84,9 +84,23 @@ fn actual_headers_and_source_incarnations_authenticate_one_cold_owner() -> TestR
     let offset = full
         .find("#[lang=\"dispatch_from_dyn\"]")
         .ok_or("actual dynamic prerequisite")?;
-    let error = crate::test_source::source_provider(&full, "full_discriminants")
+    let recognized = crate::test_source::source_provider(&full, "full_discriminants")?;
+    assert!(
+        recognized
+            .resolution
+            .source_bindings
+            .as_deref()
+            .and_then(|reserved| reserved.language(LangItem::DispatchFromDyn))
+            .is_some()
+    );
+    let unknown = full.replacen(
+        "#[lang=\"dispatch_from_dyn\"]",
+        "#[lang=\"__rustgm_forged_receiver\"]",
+        1,
+    );
+    let error = crate::test_source::source_provider(&unknown, "unknown_discriminant_role")
         .err()
-        .ok_or("unsupported dynamic receiver role was fabricated")?;
+        .ok_or("unknown receiver language identity was fabricated")?;
     assert_eq!(
         error,
         format!("file 0: {offset}: unsupported source language item")

@@ -7,8 +7,9 @@ call reducer is not a claim that all original formatting declarations execute.
 
 The [focused compiler checkpoint](../../../../docs/source-dispatch-from-dyn-checkpoint.md)
 passes six source controls and ten lexer controls, including actual body-to-LowIR
-reference-call lowering. Native execution and the full original Formatter remain
-pending. It checks actual role/member ownership,
+reference-call lowering. The exact-source `native-followup` now returns `7`
+under both pinned rustc and the locked LowIR backend; the full original Formatter
+remains pending. It checks actual role/member ownership,
 written impl requirements and receiver compatibility through ordinary selection.
 Compatibility is modulo regions, as in the pinned compiler; it does not grant a
 method body, instance, vtable layout or artifact transport permission. The existing

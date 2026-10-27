@@ -20,34 +20,21 @@ arguments and captured cfg strings with actual atomic target facts. It now
 reaches genuine inline assembly in stdarch x86/sse.rs2071 (LIB-045).
 All722 pinned inputs verify;371 files are opened in7.09s and no artifact exists.
 The live tracker owns current lane priorities and this result; the checkpoint
-paragraphs below retain earlier consumer context. Actual DispatchFromDyn is the
-next shared prerequisite for the unchanged Formatter receiver, ahead of shift/BitOr.
+paragraphs below retain earlier consumer context. Genuine DispatchFromDyn now
+has combined proof/scaling checks and an exact-source native observer returning7.
 
-- A: complete actual imported Provided execution. Names and receiver shapes now
-  pass combined checks. Join selected checked headers, defining environments,
-  original/instance proof and an explicit codec using the same imported owner.
-  Next exit is the [encoded/native7 consumer](parallel/provided-method-execution.md).
-  Complete source checking and structural/coherence inventory remain mandatory;
-  unrelated imported elaboration and bodies may remain Pending until needed.
-- B: Pattern/NonNull, PhantomData and actual full-attribute Location Copy/Clone
-  derives are integrated, with native `31 7`. Direct source track_caller is
-  native-qualified. Complete actual Debug/Arguments/PanicInfo and a false assertion
-  reaching the real handler/Abort. Formatting follows through
-  source constructors and selected methods. Reuse the same Pointee metadata
-  classifier and source-owned obligations rather than new library algorithms.
-- C: genuine source Try execution and builtin declaration-kind lookup are
-  integrated. Join source ptr_metadata to the same Pointee classifier for B's
-  actual Arguments::from_str. Thin/Length come first, with genuine dynamic
-  metadata/storage debt retained. The disjoint Provided codec stays queued.
-- Integrator: direct Thin now reaches actual native execution. Continue consumer
-  joins, original core checking/export and publication. Prioritize supported declarations
-  and uses over unrelated alias breadth; preserve explicit unsupported forms.
-  Const-closure grammar/feature authority and builtin declaration kinds are
-  integrated. Debug is now integrated with 37 private/26 production controls;
-  implement LIB-039 concatenation at the new frontier.
-  Preserve PA25's full const-callable/CTFE requirement.
-  Prepare the selected alloc/std dependency/runtime graph and PA34 orchestration
-  before core completion. Do not change CPPGM or pinned upstream sources.
+- A: LIB-045, typed inline assembly at the original SSE consumer. Preserve actual
+  operand/place/effect checking and explicit backend capability boundaries. SIMD,
+  target features and real assembly emission remain required.
+- B: complete original Neg attributes and actual source diagnostic ownership,
+  then the genuine Formatter/Arguments/PanicInfo/handler closure and false
+  assertion reaching Abort. Do not replace upstream helpers with library factories.
+- C: genuine source Shl/BitOr for FormattingOptions/Arguments, retaining actual
+  trait/member/Rhs/Output/impl/const proof and ordinary overload calls. Dispatch
+  receiver compatibility grants no body, vtable or artifact execution permission.
+- Integrator: authenticate and qualify combined source consumers, publish to main,
+  advance the unchanged-core observer and prepare alloc/std build/runtime inputs.
+  Preserve PA25's full const-callable/CTFE requirement and PA29 transport scope.
 
 Keep one executable exit per lane. Shared-interface preparation is work within
 that task, not an endlessly expanding replacement milestone. At consumer exits,

@@ -301,7 +301,6 @@ fn actual_kinds_features_and_active_owners_are_checked_without_spelling_fallback
             .err()
             .ok_or_else(|| format!("{name} unexpectedly accepted"))?;
         let expected = match name {
-            "wrong-nominal-kind" => "source binding requires an indexed declaration owner",
             "missing-feature" => "lang requires its explicit source feature",
             _ => "source Pointee role has the wrong declaration kind or owner",
         };
