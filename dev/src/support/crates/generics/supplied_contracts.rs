@@ -69,7 +69,18 @@ impl ProvidedContractRows {
         if base.saturating_add(bytes).saturating_add(scratch) > MAX_BYTES {
             return Err("provided namespace/modifiers exceed combined storage budget");
         }
-        self.namespace.validate_rows(rows, work)?;
+        #[cfg(test)]
+        let before = work.steps;
+        let namespace = self.namespace.validate_rows(rows, work)?;
+        #[cfg(test)]
+        eprintln!(
+            "provided namespace steps={} observations={namespace:?}",
+            work.steps.saturating_sub(before)
+        );
+        work.charge(1)?;
+        if namespace.peak_bytes > bytes.saturating_add(scratch) {
+            return Err("provided namespace exceeded its actual prepaid storage envelope");
+        }
         self.modifiers.validate(rows, headers, attributes, work)?;
         Ok((
             ProvidedContractColumns { rows: self },

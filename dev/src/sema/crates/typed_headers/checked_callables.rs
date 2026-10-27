@@ -15,6 +15,14 @@ use crate::{
 use std::sync::Arc;
 
 impl ProvidedOwners {
+    pub(in crate::sema::crates::typed_headers) fn require_budget_owner(
+        &self,
+        catalog: &Catalog,
+        store: &Store,
+        steps: &mut usize,
+    ) -> Result<(), &'static str> {
+        self.checked_call(catalog, store, steps, |_, _, _| Ok(()))
+    }
     /// The receipt-backed source collector rejected tracking on every actual
     /// function before publishing these complete, immutable header columns.
     pub(in crate::sema::crates::typed_headers) fn caller_tracking_absent(

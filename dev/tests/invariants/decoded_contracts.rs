@@ -37,6 +37,7 @@ fn check(
 #[test]
 fn complete_columns_reject_missing_swapped_sites_namespace_and_failed_storage() -> Result {
     let (_, artifact) = provider("")?;
+    ordering_accounting(&artifact)?;
     let opponents: [Mutation; 6] = [
         |_, _, c| {
             c.modifiers.functions.pop();
@@ -89,5 +90,57 @@ fn complete_columns_reject_missing_swapped_sites_namespace_and_failed_storage() 
         crate::sema::crates::provided_layouts(),
         crate::resolve::bindings::consumer_policy::layouts()
     );
+    Ok(())
+}
+
+fn ordering_accounting(artifact: &crates::Interface) -> Result {
+    let mut canonical_work = g::Work::default();
+    let canonical = check(
+        artifact,
+        |_, _, _| {},
+        artifact.base_retained_bytes(),
+        &mut canonical_work,
+    )?;
+    let mut reordered_work = g::Work::default();
+    let reordered = check(
+        artifact,
+        |_, _, columns| columns.namespace.bindings.reverse(),
+        artifact.base_retained_bytes(),
+        &mut reordered_work,
+    )?;
+    assert_eq!(canonical, reordered);
+    assert_ne!(canonical_work.steps, reordered_work.steps);
+    for (payload, work) in [(&canonical, &canonical_work), (&reordered, &reordered_work)] {
+        assert!(work.steps > 0 && work.steps <= crates::MAX_COMPONENTS);
+        assert_eq!(payload.budget().0, work.steps);
+        assert!(payload.retained_bytes() > 0);
+        assert!(payload.retained_bytes() <= payload.peak_bytes());
+        assert!(
+            payload
+                .peak_bytes()
+                .saturating_add(artifact.base_retained_bytes())
+                <= crates::MAX_BYTES
+        );
+    }
+    eprintln!(
+        "namespace canonical/reordered actual work={}/{} retained={}/{} peak={}/{}",
+        canonical_work.steps,
+        reordered_work.steps,
+        canonical.retained_bytes(),
+        reordered.retained_bytes(),
+        canonical.peak_bytes(),
+        reordered.peak_bytes()
+    );
+    let base = || {
+        crates::Interface::new(
+            artifact.identity().clone(),
+            artifact.dependencies().to_vec(),
+            Vec::new(),
+        )
+    };
+    let canonical = base()?.with_generic_payload(canonical)?;
+    let reordered = base()?.with_generic_payload(reordered)?;
+    assert_eq!(canonical, reordered);
+    assert_eq!(crates::encode(&canonical)?, crates::encode(&reordered)?);
     Ok(())
 }
