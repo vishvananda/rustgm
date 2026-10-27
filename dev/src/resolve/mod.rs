@@ -8,11 +8,11 @@ mod bodies;
 pub(crate) mod body_origin;
 mod builtins;
 mod collision_retention;
-mod gated_closures;
 mod container_scopes;
 mod contextual_lookup;
 pub mod crates;
 pub mod expansion;
+mod gated_closures;
 mod hygiene;
 mod identifiers;
 #[path = "module_domains.rs"]
