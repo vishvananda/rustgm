@@ -59,7 +59,7 @@ impl Checker<'_> {
     fn retain_try(&mut self, plan: OpenPlan) -> Result<usize, Error> {
         let plans = &self.state.call_types.try_plans;
         let growing = plans.len() == plans.capacity();
-        let capacity = plans.len().checked_mul(2).unwrap_or(usize::MAX).max(4);
+        let capacity = plans.len().saturating_mul(2).max(4);
         let bytes = if growing {
             capacity
                 .checked_add(plans.capacity())

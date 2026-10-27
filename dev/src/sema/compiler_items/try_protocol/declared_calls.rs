@@ -165,7 +165,7 @@ impl Query<'_> {
                 self.error("source Try requires its completed actual associated projection")
             })
     }
-    pub(super) fn from_output(
+    pub(super) fn output_signature(
         &self,
         method: &Method,
         output: DefId,

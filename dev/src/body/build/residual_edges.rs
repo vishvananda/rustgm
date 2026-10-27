@@ -76,7 +76,10 @@ impl Builder<'_> {
             } else {
                 self.unit(body)?
             };
-            let value = self.implicit_call(node, from_output, output)?;
+            // Preserve the real block's retained tail coercion before its call,
+            // while keeping the call inside the block's storage/drop extent.
+            self.save(body, output)?;
+            let value = self.implicit_call(node, from_output, self.value(body)?)?;
             if let Some(merge) = control.merge {
                 self.store(node, Place::Local(merge), value)?;
             }

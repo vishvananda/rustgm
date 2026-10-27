@@ -271,5 +271,27 @@ fn retained_rows_fail_before_growth_and_preserve_prior_current_context() -> Resu
             contexts.plans.capacity()
         )
     );
+    let before = crate::sema::header_attributes::source_contract_storage(&analysis.facts)
+        .ok_or("actual ledger")?
+        .0;
+    assert!(
+        crate::sema::header_attributes::charge_source_retention(
+            &analysis.facts,
+            crate::support::crates::MAX_COMPONENTS,
+            0
+        )
+        .is_err()
+    );
+    let failed = crate::sema::header_attributes::source_contract_storage(&analysis.facts)
+        .ok_or("actual failed ledger")?
+        .0;
+    assert!(failed > before);
+    for _ in 0..2 {
+        assert!(try_protocol::source(&report, &analysis.facts, site).is_err());
+    }
+    let retried = crate::sema::header_attributes::source_contract_storage(&analysis.facts)
+        .ok_or("actual retry ledger")?
+        .0;
+    assert!(retried > failed);
     Ok(())
 }

@@ -30,12 +30,12 @@ impl Query<'_> {
         Declarations::error(self.report, self.site, message)
     }
     fn claimed(&self, role: LangItem) -> Result<Declaration, Error> {
-        header_attributes::charge_source_contract_query(self.facts, 1)?;
         let catalog = self
             .facts
             .source_bindings
             .as_deref()
             .ok_or_else(|| self.error("source Try requires its actual provider catalog"))?;
+        header_attributes::charge_source_contract_query(self.facts, 1)?;
         catalog
             .require_provider_report(self.report)
             .map_err(|e| self.error(e))?;
@@ -96,7 +96,7 @@ pub(in crate::sema) fn source(
         return Err(query.error("source Try branch requires its actual by-value Self input"));
     }
     let variants = query.variants(branch.result, residual, output, self_type)?;
-    query.from_output(&from_output, output, self_type)?;
+    query.output_signature(&from_output, output, self_type)?;
     let from_residual = query.method(LangItem::TryFromResidual)?;
     query.residual_method(&from_residual)?;
     let into_try_type = query.method(LangItem::IntoTryType)?;
