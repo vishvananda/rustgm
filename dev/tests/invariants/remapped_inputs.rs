@@ -100,6 +100,8 @@ fn shared_trait_input_producer_seals_actual_fresh_catalog_and_canonical_prefix()
     let rows = view.rows()?;
     assert_eq!(rows.roles.len(), 9);
     let (mut state, mut owner, index) = prepare_scope(view, &mut facts, &mut work)?;
+    let view = reservation.recipe_view(&report, &mut work)?;
+    application_writers(&view, &facts, &owner, &mut work)?;
     foreign_warm_inputs(
         &report,
         &reservation,
@@ -220,6 +222,70 @@ fn actual_const_leaf_inputs() -> Result {
     assert!(
         owner.bodies.iter().all(Option::is_none),
         "scope construction cannot imply body completion"
+    );
+    Ok(())
+}
+
+fn application_writers(
+    view: &RecipeView<'_>,
+    facts: &Declarations,
+    owner: &Owner,
+    work: &mut ReservationWork,
+) -> Result {
+    let reader = owner.application_reader(view, &facts.types, work)?;
+    let mut canonical = None;
+    let mut opponent = None;
+    for index in 0..view.rows()?.trait_applications.len() {
+        let Some(value) = owner.applications.entry(index)? else {
+            continue;
+        };
+        if let Some((_, first)) = canonical {
+            if value != first {
+                opponent = Some(value);
+                break;
+            }
+        } else {
+            canonical = Some((index, value));
+        }
+    }
+    let canonical = canonical.ok_or("actual ready source application")?;
+    let opponent = opponent.ok_or("actual distinct source application")?;
+    let before = owner.applications.retained_bytes();
+    let mut writer = owner
+        .applications
+        .writer(&reader, view, &facts.types, work)?;
+    assert_eq!(writer.entry(canonical.0)?, Some(canonical.1));
+    work.charge(2)?;
+    writer.publish(canonical.0, canonical.1)?;
+    assert!(writer.publish(canonical.0, opponent).is_err());
+    assert_eq!(writer.entry(canonical.0)?, Some(canonical.1));
+    assert_eq!(owner.applications.retained_bytes(), before);
+    let mut other_work = ReservationWork::default();
+    let other = ApplicationMemo::new(view.rows()?.trait_applications.len(), &mut other_work)?;
+    let other_reader = other.reader(view, &facts.types, &mut other_work)?;
+    let steps = work.steps;
+    assert!(
+        owner
+            .applications
+            .writer(&other_reader, view, &facts.types, work)
+            .is_err()
+    );
+    let mut foreign_store = crate::types::Store::default();
+    foreign_store.arena_identity();
+    assert!(
+        owner
+            .applications
+            .writer(&reader, view, &foreign_store, work)
+            .is_err()
+    );
+    assert!(work.steps > steps);
+    assert_eq!(owner.applications.retained_bytes(), before);
+    assert!(owner.bodies.iter().all(Option::is_none));
+    assert!(facts.generics.traits.is_none());
+    eprintln!(
+        "application-writer layout={} owner-bytes={before} foreign-attempts={}",
+        size_of::<translation::applications::Writer<'_>>(),
+        work.steps - steps
     );
     Ok(())
 }

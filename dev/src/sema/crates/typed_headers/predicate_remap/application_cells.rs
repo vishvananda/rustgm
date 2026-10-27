@@ -44,6 +44,11 @@ impl Cache for Shared {
             .ok_or_else(|| error("source clause has an unknown trait application"))
     }
     fn publish(&mut self, index: usize, value: Predicate) -> Result<(), Error> {
+        self.publish_value(index, value)
+    }
+}
+impl Shared {
+    fn publish_value(&self, index: usize, value: Predicate) -> Result<(), Error> {
         let cell = self
             .cells
             .get(index)
@@ -56,8 +61,17 @@ impl Cache for Shared {
         cell.set(Some(value));
         Ok(())
     }
-}
-impl Shared {
+    pub(in crate::sema::crates::typed_headers) fn writer<'a>(
+        &'a self,
+        reader: &Reader,
+        view: &RecipeView<'_>,
+        store: &Store,
+        work: &mut impl Budget,
+    ) -> Result<Writer<'a>, Error> {
+        self.require_reader(reader, view, store, work)?;
+        Ok(Writer { owner: self })
+    }
+
     #[cfg(test)]
     pub(in crate::sema::crates::typed_headers) fn observations(&self) -> (usize, usize, usize) {
         (
@@ -122,6 +136,19 @@ impl Shared {
             ));
         }
         reader.require(view, store, work)
+    }
+}
+/// A scoped writer borrows the existing owner; readers cannot construct one.
+pub(in crate::sema::crates::typed_headers) struct Writer<'a> {
+    owner: &'a Shared,
+}
+impl sealed::Sealed for Writer<'_> {}
+impl Cache for Writer<'_> {
+    fn entry(&self, index: usize) -> Result<Option<Predicate>, Error> {
+        self.owner.entry(index)
+    }
+    fn publish(&mut self, index: usize, value: Predicate) -> Result<(), Error> {
+        self.owner.publish_value(index, value)
     }
 }
 pub(in crate::sema::crates::typed_headers) struct Reader {

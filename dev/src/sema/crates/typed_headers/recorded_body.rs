@@ -286,6 +286,31 @@ impl Prepared {
                 return Ok(Demand::Blocked(dependency));
             }
         }
+        body.require(port.port.recipe_view(), facts, work)?;
+        let Some(crate::sema::crates::ImportedOwners::Provided(mapping)) =
+            facts.associated.imported_owner()
+        else {
+            return Err(error(
+                "selected body requests lost their actual mapped owner",
+            ));
+        };
+        let mut applications = mapping.application_writer(
+            &body.owner.applications,
+            port.port.recipe_view(),
+            &facts.types,
+            work,
+        )?;
+        let mut inputs = super::ports::Adapter {
+            port,
+            cursor: &mut state.cursor,
+        };
+        super::body_requests::prepare(
+            raw.body,
+            &mut inputs,
+            &mut applications,
+            &mut facts.types,
+            work,
+        )?;
         work.charge(1)?;
         let environment = Arc::clone(body.environment());
         let header = facts

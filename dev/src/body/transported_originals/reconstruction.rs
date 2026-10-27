@@ -14,7 +14,16 @@ pub(crate) fn demand(
 ) -> Result<Original, Error> {
     let mut work = ImportedOriginals::default();
     let mut allocation = 0;
+    let mut reads = false;
     let preflight = service.with_original(facts, definition, &mut |_, view| {
+        work.charge(view.raw().values.len().saturating_add(1))
+            .map_err(Error::unlocated)?;
+        reads = view.raw().values.iter().any(|value| {
+            matches!(
+                value.kind,
+                crate::support::crates::generics::source::ValueKind::Read(_)
+            )
+        });
         let (bytes, visits) =
             decoded_bodies::allocation(view.rows(), &mut work, 1, std::iter::once(view.raw()))
                 .map_err(Error::unlocated)?;
@@ -28,6 +37,9 @@ pub(crate) fn demand(
     });
     let charged = service.prepay(facts, work.steps, allocation);
     preflight.and(charged)?;
+    if reads {
+        service.copy_declarations(facts)?;
+    }
     let before = work.steps;
     let mut decoded = None;
     let result = service.with_original(facts, definition, &mut |facts, view| {

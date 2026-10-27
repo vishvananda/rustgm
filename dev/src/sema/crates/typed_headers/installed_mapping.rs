@@ -45,6 +45,16 @@ pub(in crate::sema) struct ProvidedOwners {
     applications: super::super::predicate_remap::translation::applications::Reader,
 }
 impl ProvidedOwners {
+    pub(super) fn application_writer<'a>(
+        &self,
+        shared: &'a super::super::predicate_remap::translation::applications::Shared,
+        view: &RecipeView<'_>,
+        store: &Store,
+        work: &mut ReservationWork,
+    ) -> Result<super::super::predicate_remap::translation::applications::Writer<'a>, Error> {
+        self.require_current(store, work).map_err(error)?;
+        shared.writer(&self.applications, view, store, work)
+    }
     pub(super) fn implementation_environment(
         &self,
         authority: &Authority<'_>,

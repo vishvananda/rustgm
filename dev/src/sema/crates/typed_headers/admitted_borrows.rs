@@ -60,6 +60,13 @@ impl SelectedHeaders {
         )
         .map_err(error);
         work.charge(steps.saturating_sub(work.steps))?;
+        #[cfg(test)]
+        eprintln!(
+            "source-original lookup={} body-view={} prepared={}",
+            size_of::<SourceOriginal<'_>>(),
+            size_of_val(&body),
+            size_of_val(prepared)
+        );
         consume(facts, &result?)?;
         Ok(Demand::Ready(()))
     }

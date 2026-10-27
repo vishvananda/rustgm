@@ -22,6 +22,21 @@ impl Checked<'_> {
                 message: "retained proofs require their actual checked template allocation".into(),
             });
         }
+        #[cfg(test)]
+        eprintln!(
+            "original-proof storage checked={} state={} retained={} index={}/{} regions={}/{} loans={}/{} contracts={}/{}",
+            size_of::<Checked<'_>>(),
+            size_of::<State>(),
+            size_of::<Retained>(),
+            self.state.index.len(),
+            self.state.index.capacity(),
+            self.state.regions.bodies.len(),
+            self.state.regions.bodies.capacity(),
+            self.state.loans.len(),
+            self.state.loans.capacity(),
+            self.state.contracts.len(),
+            self.state.contracts.capacity()
+        );
         Ok(Retained {
             templates: actual,
             state: Some(self.state),
