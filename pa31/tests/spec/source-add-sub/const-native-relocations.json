@@ -1,0 +1,14 @@
+{
+  "obj/parallel/pa31/source-add-sub-v1/frozen-const-native/macro-const-observed.rs": {
+    "path": "pa31/tests/spec/source-add-sub/macro-const-observed.rs",
+    "sha256": "cb2a3cb232ecc27888906eeaf767410c886462493b95b82b042be0c3efb8d614"
+  },
+  "obj/parallel/pa31/source-add-sub-v1/frozen-const-native/consumer.c": {
+    "path": "pa31/tests/spec/source-add-sub/macro-const-observed.c",
+    "sha256": "5a99f990c214c18ffcbba2bf2ca91317b9b20c6a2903110733f6aed5bb363f1f"
+  },
+  "obj/parallel/pa31/source-add-sub-v1/frozen-const-native/predictions.json": {
+    "path": "pa31/tests/spec/source-add-sub/const-native-predictions.json",
+    "sha256": "eb94c77b5ae01b6b49b5007dc471e91511b1938b9a4b5106ea8d78dee050d527"
+  }
+}
