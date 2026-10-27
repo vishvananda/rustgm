@@ -14,6 +14,7 @@ fn fixture(name: &str) -> Result<PathBuf, Box<dyn std::error::Error>> {
     Ok(root()?.join(format!("pa26/tests/spec/index-mut/{name}.rs")))
 }
 const ACCEPTED: &[&str] = &[
+    "captured",
     "trait-method-boundary",
     "compound-library-boundary",
     "mutable-method",
@@ -48,7 +49,6 @@ const REJECTED: &[&str] = &[
     "index-read-conflict",
     "index-borrow-conflict",
     "escape",
-    "captured",
     "immutable",
     "shared-base",
     "shared-deref",
@@ -89,7 +89,7 @@ fn mutable_index_outcomes_match_independently_qualified_contracts()
             .arg(folder.join(format!("{name}.o")))
             .output()?;
         std::fs::write(folder.join(format!("{name}.stderr")), &independent.stderr)?;
-        let rustc_accepted = accepted || name == "captured";
+        let rustc_accepted = accepted;
         assert_eq!(
             independent.status.code(),
             Some(i32::from(!rustc_accepted)),

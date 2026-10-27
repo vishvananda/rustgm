@@ -368,7 +368,7 @@
     },
     {
       "path": "tests/spec/index-mut/captured.rs",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa26.mutable-indexing"
       ],
@@ -378,8 +378,8 @@
         "emit": "obj"
       },
       "native": {
-        "kind": "codegen",
-        "reason": "Capturing closures remain an explicit unfinished PA24 prerequisite; mutation in an isolated closure with an explicit mutable parameter is qualified separately."
+        "kind": "execute",
+        "outcome": "pass"
       }
     },
     {

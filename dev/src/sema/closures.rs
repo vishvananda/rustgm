@@ -52,6 +52,7 @@ pub enum AccessKind {
     Method,
     Invocation,
     Reference,
+    Index,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct AdjustedAccess {

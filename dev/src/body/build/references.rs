@@ -138,6 +138,15 @@ impl Builder<'_> {
             ..self.source
         };
         let count = self.facts.autoderefs.get(&key).copied().unwrap_or(0);
+        let count = if matches!(self.kind(node), super::Kind::Index { .. }) {
+            self.remaining_receiver_dereferences(
+                node,
+                crate::sema::closures::AccessKind::Index,
+                count,
+            )?
+        } else {
+            count
+        };
         for _ in 0..count {
             base = self.dereference_place(node, base)?;
         }

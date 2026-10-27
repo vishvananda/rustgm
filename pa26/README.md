@@ -411,3 +411,9 @@ setup/lint receipts and independent checked/unchecked observations. Unchecked
 driver contexts, varying foreign policy and broader closure grammar remain
 required. The complete fmt::write input extends pending real name composition;
 it does not establish Formatter or panic execution.
+
+The [selected index capture join](../docs/pa26-selected-index-captures.md) admits
+the original captured IndexMut program through actual receiver selection and
+ordinary closure/place proof. Adjusted array/slice and overloaded receivers share
+the existing sparse capture-prefix owner. Remaining operator-kernel gaps and
+assignment publication stay separate requirements.

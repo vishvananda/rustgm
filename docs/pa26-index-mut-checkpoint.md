@@ -41,9 +41,10 @@ The 44 declared Rust 1.98.0 object-qualified cases are in
 sixteen language rejections and three explicitly valid Rust boundaries.
 The later assignment checkpoint admits the unchanged custom compound case,
 bringing this draft to twenty-six accepted cases and two boundaries.
-Capturing closures remain
-an unfinished PA24 prerequisite, so their mutation is retained as a boundary;
-a noncapturing closure taking an explicit mutable parameter executes correctly.
+The later [selected capture join](pa26-selected-index-captures.md) admits the
+unchanged captured mutation source through actual IndexMut receiver selection
+and native execution. The original unfinished-boundary observation remains
+historical evidence; explicit mutable-parameter closures remain supported.
 Custom compound assignment is supplied by the later checkpoint in
 `docs/pa26-assignment-checkpoint.md`; primitive compound assignment through a
 mutable index was already implemented here. Neither boundary was described as
