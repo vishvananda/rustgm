@@ -63,9 +63,10 @@ pub enum LangItem {
     PartialOrd,
     DiscriminantKind,
     DiscriminantType,
+    Neg,
 }
 impl LangItem {
-    pub const ALL: [Self; 48] = [
+    pub const ALL: [Self; 49] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -114,6 +115,7 @@ impl LangItem {
         Self::PartialOrd,
         Self::DiscriminantKind,
         Self::DiscriminantType,
+        Self::Neg,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -166,6 +168,7 @@ impl LangItem {
             Self::PartialOrd => 45,
             Self::DiscriminantKind => 46,
             Self::DiscriminantType => 47,
+            Self::Neg => 48,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -220,6 +223,7 @@ impl LangItem {
             "partial_ord" => Some(Self::PartialOrd),
             "discriminant_kind" => Some(Self::DiscriminantKind),
             "discriminant_type" => Some(Self::DiscriminantType),
+            "neg" => Some(Self::Neg),
             _ => None,
         }
     }
