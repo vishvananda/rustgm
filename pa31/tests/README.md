@@ -391,3 +391,9 @@ feature/capture opponents and DST cases stay required. Syntax controls isolate
 root API-inventory setup; their expansion-only observations do not grant layout,
 constant execution or std macro availability. See the directory contract and
 README for retained prediction disagreements and upstream runtime-intrinsic ICEs.
+
+`spec/alloc-layout-identity/` freezes genuine language-item Struct targets,
+unconstrained generic acceptance and wrong-target/duplicate controls. The
+complete upstream Layout attrs/fields remain source data for the formatter/UB
+helper composition. Identity recognition grants no completed layout, allocator,
+body or old-profile transport permission.
