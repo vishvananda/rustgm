@@ -44,7 +44,7 @@ impl ProvidedOwners {
                 .ok_or("selected caller policy declaration disappeared")?;
             let contract = self
                 .data
-                .columns()
+                .columns()?
                 .functions
                 .get(index as usize)
                 .ok_or("selected caller policy lacks its completed source header")?;
@@ -52,6 +52,23 @@ impl ProvidedOwners {
                 return Err("selected caller policy changed its immutable header owner/site");
             }
             catalog.declaration_site(id, contract.declaration_site)?;
+            if descriptor.profile() == s::Profile::Source2024ProvidedContracts {
+                work.charge(4)
+                    .map_err(|_| "selected encoded caller policy work budget exceeded")?;
+                let columns = descriptor.provided_contracts()?;
+                let policy = columns
+                    .rows()
+                    .modifiers
+                    .functions
+                    .get(index as usize)
+                    .ok_or("selected encoded caller policy omitted its complete function row")?;
+                if policy.declaration != row || policy.site != contract.declaration_site {
+                    return Err("selected encoded caller policy changed its actual function site");
+                }
+                match policy.policy {
+                    s::HeaderModifierPolicy::NoWrittenDefaultOrFinalOrCallerTracking => {}
+                }
+            }
             Ok(())
         })
     }
