@@ -1,6 +1,7 @@
 //! Inert strings do not become source identities, callable proof or wire roles.
 use super::*;
 use crate::{resolve::model::DefKind, test_source};
+use std::fmt::Write as _;
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 fn fixture(name: &str) -> TestResult<String> {
     Ok(test_source::fixture(&format!(
@@ -92,7 +93,10 @@ fn sparse_scaling_atomic_names_and_exhausted_payments_keep_existing_data() -> Te
     for count in [0, 8, 32, 128] {
         let mut input = base.to_owned();
         for index in 0..count {
-            input += &format!("#[rustc_diagnostic_item=\"extra_{index}\"]fn f{index}(){{}}");
+            write!(
+                input,
+                "#[rustc_diagnostic_item=\"extra_{index}\"]fn f{index}(){{}}"
+            )?;
         }
         let report = provider(&input)?;
         let reserved = report
@@ -122,7 +126,10 @@ fn sparse_scaling_atomic_names_and_exhausted_payments_keep_existing_data() -> Te
         assert!(reserved.steps < count.saturating_mul(300).saturating_add(2048));
         let mut reverse = base.to_owned();
         for index in (0..count).rev() {
-            reverse += &format!("#[rustc_diagnostic_item=\"extra_{index}\"]fn f{index}(){{}}");
+            write!(
+                reverse,
+                "#[rustc_diagnostic_item=\"extra_{index}\"]fn f{index}(){{}}"
+            )?;
         }
         let opposite = provider(&reverse)?;
         let opposite_rows = opposite
