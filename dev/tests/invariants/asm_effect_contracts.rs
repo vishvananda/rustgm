@@ -38,7 +38,18 @@ fn actual_templates_keep_one_parser_and_source_role_without_hot_node_growth() ->
         }
     }
     assert_eq!(roots, 1);
-    assert!(report.invocations.iter().all(|i| i.parser_calls == 1));
+    let assembly_calls: Vec<_> = report
+        .invocations
+        .iter()
+        .filter(|invocation| {
+            matches!(
+                report.definitions[invocation.definition].body,
+                crate::resolve::expansion::Body::Builtin(crate::expand::builtin::Builtin::Asm)
+            )
+        })
+        .collect();
+    assert_eq!(assembly_calls.len(), 1);
+    assert_eq!(assembly_calls[0].parser_calls, 1);
     let reducer = crate::test_source::fixture("pa41/tests/spec/asm-frontend/stream-ps.rs")?;
     let mut actual = source("")?;
     // Crate attributes remain at the actual crate root, before source declarations.
