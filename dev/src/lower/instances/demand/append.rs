@@ -52,66 +52,8 @@ impl Proofs<'_, '_> {
         {
             return Ok(());
         }
-        service.prepay(facts, 2, 0)?;
-        let actual = report
-            .resolution
-            .definitions
-            .get(item.0 as usize)
-            .filter(|definition| definition.kind == crate::resolve::model::DefKind::Function)
-            .ok_or_else(|| {
-                diagnostic(
-                    report,
-                    None,
-                    "selected body demand requires its actual callable declaration".into(),
-                )
-            })?;
-        let catalog = facts
-            .crates
-            .as_deref()
-            .and_then(crate::sema::crates::Linkage::origin_catalog)
-            .ok_or_else(|| {
-                diagnostic(
-                    report,
-                    None,
-                    "selected body demand lost its actual imported catalog".into(),
-                )
-            })?;
-        let Some(imported) = catalog
-            .declaration_if_imported(crate::resolve::model::DefId(item.0))
-            .map_err(|e| diagnostic(report, None, e.into()))?
-        else {
-            if actual.node.is_none() {
-                return Err(diagnostic(
-                    report,
-                    None,
-                    "source-free executable declaration lacks its actual imported catalog identity"
-                        .into(),
-                ));
-            }
-            return Ok(());
-        };
-        if actual.node.is_some() {
-            return Err(diagnostic(
-                report,
-                None,
-                "imported executable declaration changed its actual source-free origin".into(),
-            ));
-        }
-        catalog
-            .validate_declaration(
-                imported,
-                crate::resolve::model::DefId(item.0),
-                crate::resolve::model::DefKind::Function,
-            )
-            .map_err(|e| diagnostic(report, None, e.into()))?;
-        let mut steps = 0;
-        let source = crate::sema::crates::is_source_original(
-            facts,
-            crate::resolve::model::DefId(item.0),
-            &mut steps,
-        );
-        facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(steps);
-        if !source.map_err(|e| diagnostic(report, None, e.into()))? {
+        if !imported_source_function(report, facts, crate::resolve::model::DefId(item.0), service)?
+        {
             return Ok(());
         }
         let original = crate::body::transported_originals::demand_selected(
@@ -144,6 +86,71 @@ impl Proofs<'_, '_> {
             Some(program.append_selected_template(report, facts, retained, original, &prepared)?);
         Ok(())
     }
+}
+
+/// Classify actual ownership only; imported body/header readiness is still owed.
+fn imported_source_function(
+    report: &Report,
+    facts: &mut Declarations,
+    definition: crate::resolve::model::DefId,
+    service: &mut dyn Preparation,
+) -> Result<bool, Error> {
+    service.prepay(facts, 2, 0)?;
+    let actual = report
+        .resolution
+        .definitions
+        .get(definition.0 as usize)
+        .filter(|definition| definition.kind == crate::resolve::model::DefKind::Function)
+        .ok_or_else(|| {
+            diagnostic(
+                report,
+                None,
+                "selected body demand requires its actual callable declaration".into(),
+            )
+        })?;
+    let catalog = facts
+        .crates
+        .as_deref()
+        .and_then(crate::sema::crates::Linkage::origin_catalog)
+        .ok_or_else(|| {
+            diagnostic(
+                report,
+                None,
+                "selected body demand lost its actual imported catalog".into(),
+            )
+        })?;
+    let Some(imported) = catalog
+        .declaration_if_imported(definition)
+        .map_err(|e| diagnostic(report, None, e.into()))?
+    else {
+        if actual.node.is_none() {
+            return Err(diagnostic(
+                report,
+                None,
+                "source-free executable declaration lacks its actual imported catalog identity"
+                    .into(),
+            ));
+        }
+        return Ok(());
+    };
+    if actual.node.is_some() {
+        return Err(diagnostic(
+            report,
+            None,
+            "imported executable declaration changed its actual source-free origin".into(),
+        ));
+    }
+    catalog
+        .validate_declaration(
+            imported,
+            definition,
+            crate::resolve::model::DefKind::Function,
+        )
+        .map_err(|e| diagnostic(report, None, e.into()))?;
+    let mut steps = 0;
+    let source = crate::sema::crates::is_source_original(facts, definition, &mut steps);
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(steps);
+    source.map_err(|e| diagnostic(report, None, e.into()))
 }
 
 pub(in crate::lower::instances) fn materialize(
