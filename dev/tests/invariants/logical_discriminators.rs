@@ -367,7 +367,12 @@ fn real_const_and_lowered_calls_preserve_logical_tags_and_argument_effects() -> 
     let error = pipeline::analyze_source(&fault)
         .err()
         .ok_or("erased nonenum result skipped its invalid reference argument")?;
-    assert!(error.to_string().contains("null"), "{error}");
+    assert!(
+        error
+            .to_string()
+            .contains("constant pointer has no allocation provenance"),
+        "{error}"
+    );
 
     Ok(())
 }
