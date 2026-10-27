@@ -19,6 +19,7 @@ mod selected_originals;
 use selected_originals::Proofs;
 pub(super) use selected_originals::materialize as materialize_selected;
 
+#[derive(Clone, Copy)]
 enum Work {
     Adapter(body::invocation_entries::Entry, body::ir::ProofSite),
     Enter(Instance, body::ir::ProofSite),
@@ -356,7 +357,7 @@ impl Traversal<'_> {
                 &mut self.work,
             )?;
         }
-        return Ok(());
+        Ok(())
     }
     fn step(
         &mut self,
