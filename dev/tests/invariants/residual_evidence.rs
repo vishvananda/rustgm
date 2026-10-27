@@ -23,9 +23,7 @@ pub(super) fn details(report: &Report) -> Result {
             goal.builtin_bound()
         );
         if let Ok(canonical) = canonical {
-            let mut text = Vec::new();
-            crate::sema::type_view::ty(&checker.facts.types, canonical.ty, &mut text)?;
-            eprintln!("  subject {}", String::from_utf8(text)?);
+            eprintln!("  subject {:?}", checker.facts.types.kind(canonical.ty));
             if let Some((application, _)) = canonical.bound.trait_parts() {
                 let application = checker
                     .facts
@@ -46,7 +44,7 @@ pub(super) fn details(report: &Report) -> Result {
             }
         }
     }
-    if let Some(environment) = &checker.state.trait_environment {
+    if let Some(environment) = checker.facts.generics.body_environment(definition) {
         for clause in environment.trait_clauses()? {
             eprintln!("residual environment {clause:?}");
         }
