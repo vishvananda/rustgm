@@ -14,17 +14,17 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The combined qualified original-core CLI836e21f3 passes source formatting
-construction and reaches actual offset_of syntax in the original mem macro.
-All722 pinned inputs verify;371 files open in7.28s, with no artifact. Combined
+The qualified Display/Debug CLI9d7e2adc retains actual offset_of syntax in
+the original mem macro. All722 pinned inputs verify;371 files open in6.98s,
+with no artifact. Combined
 private24, production13, native32 and final PA6/PA9 checks pass. Root owns the
 [typed offset/layout integration](pa31-offset-of-plan.md); no zero-offset shim
 or per-Instance field-result cache is permitted.
 
 - A: bounded read-only source/handoff reviews and component release census.
   No compiler edits or heavy jobs.
-- B: Debug construction is integrated. Complete genuine mixed Display/Debug,
-  then source slice/str/pointer/Formatter/write and PanicInfo/handler closure.
+- B: Debug and mixed Display/Debug construction are integrated. Complete genuine
+  source slice/str/pointer/Formatter/write and PanicInfo/handler closure.
   Preserve the original no-Copy call-reborrow requirement separately.
 - C: raw composition, selected indexing captures and char MIN/MAX are integrated.
   Complete owned-left/shared-RHS Add/Sub, then genuine source Add/Sub language

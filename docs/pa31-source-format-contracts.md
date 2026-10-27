@@ -297,3 +297,14 @@ producer work is1619/5409/20605 and charged bytes28372/107100/421164. Root
 validation remains22 work with no new allocation. Pair preparation is O(inputs
 plus literal bytes plus emitted pairs); all two-slot/table/vector storage is
 prepaid. These measurements make no wall-time or no-op-erasure claim.
+
+Root integrated Display/Debug through exact compiler-byte reuse from e0859bc81.
+All compiler/CLI/runner files match; the four reviewed differences are unrelated
+provider layout/predicate tests and assignment-state documents. The actual copied
+CLI passes both source semantic views, full PA6245/245 and PA9203/203. Combined
+observation takes9.85s without a rebuild. Root receipt:
+`obj/parallel/display-integration-v1/observed/receipt.json`, SHA-256
+`9460d1355bd97c2a961af8b661e30046a5d1ab5c8283e0098fe62a922aa1db01`.
+CLI9d7e2adc retains the original offset_of parser frontier:371 opened files,
+all722 unchanged,6.98s, no artifact. The native mixed source trace and original
+no-Copy call-reborrow requirement retain their distinct evidence and status.

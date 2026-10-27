@@ -27,7 +27,7 @@ whole-crate attempt. Never patch upstream source to move a blocker.
 
 | Milestone | Current result | Next acceptance evidence |
 | --- | --- | --- |
-| Original core loading and expansion | Combined qualified CLI `836e21f3` passes the construction guard and reaches actual offset_of builtin syntax in mem/mod.rs1619, invoked by generic Option<B>/Some.0 in filter_map.rs101. All722 pins unchanged;371 files open in7.28s; no artifact. | Implement typed/gated source offset syntax and concrete tagged/niche layout evaluation; continue actual Display/Formatter, generic body/transport and artifact closure. |
+| Original core loading and expansion | Qualified Display/Debug CLI `9d7e2adc` retains actual offset_of builtin syntax in mem/mod.rs1619, invoked by generic Option<B>/Some.0 in filter_map.rs101. All722 unchanged;371 files open in6.98s; no artifact. | Implement typed/gated offset syntax and actual tagged/niche layout; join real slice/str/pointer/Formatter/write and preserve generic body/transport/artifact closure. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
