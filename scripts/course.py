@@ -12,6 +12,7 @@ import subprocess
 import sys
 import time
 import reference_batches
+from course_suites import check_publishers, discovery, run_released, shared_outputs, suite_paths
 from storage import cleanup_roots
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -43,9 +44,9 @@ def library_arguments(case, mode):
     return ["--crate-type=lib", "--crate-name", name, "--crate-disambiguator", disambiguator]
 
 
-def load_cases(root, stage):
+def load_cases(root, stage, *, unit=None):
     assignment = root / stage
-    manifest_path = assignment / "tests/manifest.json"
+    manifest_path = suite_paths(root, stage, unit).manifest
     if not manifest_path.is_file():
         raise ValueError(f"{stage}: planned assignment; no accepted test contract yet")
     manifest = json.loads(manifest_path.read_text())
@@ -101,10 +102,14 @@ def load_cases(root, stage):
                 or len(args) % 2 or any(args[i] not in ("--cfg", "--crate-name") for i in range(0, len(args), 2))):
             raise ValueError(f"{stage}: case args must be --cfg/value or --crate-name/value pairs")
         library_arguments(case, case.get("mode", manifest["mode"]))
-    discovered = {p.relative_to(assignment).as_posix() for p in (assignment / "tests").rglob("*.rs")}
+    discovered = discovery(root, stage, manifest, unit)
     declared_rs = {p for p in set(paths) | auxiliary if p.endswith(".rs")}
     if discovered != declared_rs:
         raise ValueError(f"{stage}: undiscovered or missing fixtures: {sorted(discovered ^ declared_rs)}")
+    if unit is not None:
+        from assignment_metadata import validate_unit_cases
+        validate_unit_cases(root, stage, unit, manifest, cases)
+        check_publishers(root)
     return manifest, cases
 
 
@@ -156,10 +161,24 @@ def compare(fixture, actual):
     return errors
 
 
-def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10, evidence_root=None, case_paths=None):
-    manifest, cases = load_cases(root, stage)
+def preflight_oracles(root, stage, cases):
+    tests = (root / stage / "tests").resolve()
+    for case in cases:
+        fixture = root / stage / case["path"]
+        for suffix in SIDECARS:
+            target = Path(str(fixture) + suffix)
+            if target.is_symlink() or not target.resolve().is_relative_to(tests):
+                raise ValueError(f"oracle write would follow a symlink or escape tests: {target}")
+
+
+def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10, evidence_root=None, case_paths=None,
+              unit=None):
+    paths = suite_paths(root, stage, unit)
+    manifest, cases = load_cases(root, stage, unit=unit)
     all_cases = cases
     cases = reference_batches.select(cases, case_paths, stage)
+    if bless:
+        preflight_oracles(root, stage, cases)
     artifact_root = Path(evidence_root) if evidence_root is not None else Path("obj/tests")
     if not artifact_root.is_absolute():
         artifact_root = root.resolve() / artifact_root
@@ -179,7 +198,7 @@ def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10, evidence_roo
 
     with ThreadPoolExecutor(max_workers=jobs) as pool:
         results = list(pool.map(worker, cases))
-    artifacts = artifact_root / stage / str(time.time_ns())
+    artifacts = artifact_root / paths.evidence / str(time.time_ns())
     artifacts.mkdir(parents=True)
     for case, _, actual, _ in results:
         if actual is not None:
@@ -187,14 +206,17 @@ def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10, evidence_roo
             destination.parent.mkdir(parents=True, exist_ok=True)
             for suffix, value in zip((".stdout", ".stderr", ".exit_status"), actual):
                 Path(str(destination) + suffix).write_bytes(value)
-    (artifacts / "results.json").write_text(json.dumps({"stage": stage, "cwd": str(root.resolve()), "command": [*app, manifest["mode"], "--edition=2024"],
+    (artifacts / "results.json").write_text(json.dumps({"stage": stage, **paths.identity, "cwd": str(root.resolve()), "command": [*app, manifest["mode"], "--edition=2024"],
         "bless": bless, "cases": [{"path": case["path"], "mode": case.get("mode", manifest["mode"]), "args": case.get("args", []), "environment": case.get("environment", {}), "passed": not errors, "errors": errors}
                                    for case, _, _, errors in results]}, indent=2) + "\n")
     # Check every independent expected outcome before changing any reference.
     if bless and not any(errors for _, _, _, errors in results):
+        if unit is not None:
+            shared_outputs(root, stage, results)
         source_hashes = {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
                          for p in sorted((root / "dev").rglob("*.rs"))}
-        batch = reference_batches.prepare(root, stage, manifest, all_cases, source_hashes, results) if case_paths is not None else None
+        batch = reference_batches.prepare(root, stage, manifest, all_cases, source_hashes, results,
+                                          unit=unit) if case_paths is not None else None
         for _, fixture, actual, _ in results:
             for suffix, value in zip(SIDECARS, actual):
                 Path(str(fixture) + suffix).write_bytes(value)
@@ -203,20 +225,24 @@ def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10, evidence_roo
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(data)
         else:
-            receipt = {"schema": 1, "mode": manifest["mode"], "compiler_source_sha256": source_hashes,
-                       "manifest_sha256": hashlib.sha256((root / stage / "tests/manifest.json").read_bytes()).hexdigest(),
+            receipt = {"schema": 1, **paths.identity, "mode": manifest["mode"], "compiler_source_sha256": source_hashes,
+                       "manifest_sha256": hashlib.sha256(paths.manifest.read_bytes()).hexdigest(),
                        "case_contracts": {case["path"]: reference_batches.case_digest(case, manifest["mode"]) for case in cases},
                        "fixtures": {case["path"]: hashlib.sha256(fixture.read_bytes()).hexdigest()
                                     for case, fixture, _, _ in results}}
             previous_batches = {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
-                                for p in sorted((root / stage / "reference-batches").glob("*.json"))}
+                                for p in sorted(paths.batches.glob("*.json"))}
             if previous_batches:
                 receipt["supersedes_reference_batches"] = previous_batches
             auxiliary = sorted({p for case in cases for p in case.get("auxiliary", [])})
             if auxiliary:
                 receipt["auxiliary"] = {p: hashlib.sha256((root / stage / p).read_bytes()).hexdigest()
                                         for p in auxiliary}
-            (root / stage / "reference.json").write_text(json.dumps(receipt, indent=2) + "\n")
+            if unit is not None:
+                receipt["outputs"] = {case["path"]: {suffix: reference_batches.digest(value)
+                    for suffix, value in zip(SIDECARS, actual)} for case, _, actual, _ in results}
+            paths.reference.parent.mkdir(parents=True, exist_ok=True)
+            paths.reference.write_text(json.dumps(receipt, indent=2) + "\n")
     passed = 0
     for case, _, _, errors in results:
         if not errors:
@@ -231,7 +257,9 @@ def run_stage(root, stage, app, *, bless=False, jobs=4, timeout=10, evidence_roo
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("stage")
+    parser.add_argument("stage", nargs="?")
+    parser.add_argument("--released-units", action="store_true", help="run all declared component releases")
+    parser.add_argument("--unit", help="exact declared work unit owned by this assignment")
     parser.add_argument("--app", default=str(ROOT / "dev/rustgm"))
     parser.add_argument("--bless", action="store_true")
     parser.add_argument("--case", dest="case_paths", action="append", help="select one exact manifest path; repeat for a scoped batch")
@@ -242,10 +270,19 @@ def main():
     args = parser.parse_args()
     if args.jobs < 1 or args.timeout <= 0:
         parser.error("jobs and timeout must be positive")
+    if args.released_units and (args.stage or args.unit or args.bless or args.case_paths):
+        parser.error("released-unit scheduling cannot select a stage, draft unit, cases or blessing")
+    if not args.released_units and args.stage is None:
+        parser.error("a stage or --released-units is required")
     try:
+        if args.released_units:
+            run_released(ROOT, lambda stage, unit: run_stage(ROOT, stage, [str(Path(args.app).resolve())],
+                         jobs=args.jobs, timeout=args.timeout, evidence_root=args.evidence_root, unit=unit))
+            return 0
         return 0 if run_stage(ROOT, args.stage, [str(Path(args.app).resolve())],
                              bless=args.bless, jobs=args.jobs, timeout=args.timeout,
-                             evidence_root=args.evidence_root, case_paths=args.case_paths) else 1
+                             evidence_root=args.evidence_root, case_paths=args.case_paths,
+                             unit=args.unit) else 1
     except (ValueError, OSError, KeyError) as error:
         print(f"harness error: {error}", file=sys.stderr)
         return 2

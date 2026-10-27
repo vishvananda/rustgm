@@ -25,13 +25,41 @@
       ]
     },
     {
-      "id": "unsafe-places",
-      "owner": "pa27",
-      "title": "Unsafe permission and native places",
+      "id": "operator-kernel",
+      "owner": "pa26",
+      "title": "Canonical operator and indexing kernels",
       "implementation": "implemented",
       "publication": "unpublished",
       "depends_on": [],
-      "scope": "Lexical permissions, raw/static places, unions and packed native access; excludes symbolic CTFE and full interior-mutation validity.",
+      "scope": "Qualified canonical operators/comparisons/indexing/assignment and nominal constructor protocols; actual source dispatch and remaining library/coercion forms continue separately.",
+      "requirements": [
+        "26.1",
+        "26.2",
+        "26.3",
+        "26.4"
+      ],
+      "exit": "Publish existing finite kernel text/native cases without treating unsupported source comparisons as expected Rust rejections.",
+      "implementation_evidence": [
+        "docs/pa26-assignment-checkpoint.md",
+        "docs/pa26-comparison-performance.md",
+        "docs/pa26-environment-checkpoint.md",
+        "docs/pa26-index-mut-checkpoint.md",
+        "docs/pa26-nominal-checkpoint.md",
+        "docs/pa26-reference-comparisons.md",
+        "docs/pa26-sequence-ordering.md",
+        "docs/source-shift-or-checkpoint.md"
+      ]
+    },
+    {
+      "id": "unsafe-places",
+      "owner": "pa27",
+      "title": "Unsafe permission and native places",
+      "implementation": "partial",
+      "publication": "unpublished",
+      "depends_on": [
+        "operator-kernel"
+      ],
+      "scope": "Lexical permissions and required unsafe-policy warning diagnostics, raw/static places, unions and packed native access; excludes symbolic CTFE and full interior-mutation validity.",
       "requirements": [
         "27.1",
         "27.2",
@@ -147,32 +175,6 @@
       "implementation_evidence": [
         "docs/pa28-atomic-extrema.md",
         "pa28/tests/atomic-cas-outcomes.json"
-      ]
-    },
-    {
-      "id": "operator-kernel",
-      "owner": "pa26",
-      "title": "Canonical operator and indexing kernels",
-      "implementation": "implemented",
-      "publication": "unpublished",
-      "depends_on": [],
-      "scope": "Qualified canonical operators/comparisons/indexing/assignment and nominal constructor protocols; actual source dispatch and remaining library/coercion forms continue separately.",
-      "requirements": [
-        "26.1",
-        "26.2",
-        "26.3",
-        "26.4"
-      ],
-      "exit": "Publish existing finite kernel text/native cases without treating unsupported source comparisons as expected Rust rejections.",
-      "implementation_evidence": [
-        "docs/pa26-assignment-checkpoint.md",
-        "docs/pa26-comparison-performance.md",
-        "docs/pa26-environment-checkpoint.md",
-        "docs/pa26-index-mut-checkpoint.md",
-        "docs/pa26-nominal-checkpoint.md",
-        "docs/pa26-reference-comparisons.md",
-        "docs/pa26-sequence-ordering.md",
-        "docs/source-shift-or-checkpoint.md"
       ]
     },
     {

@@ -502,9 +502,9 @@
       "pa": 27,
       "id": "27.1",
       "contract": "Lexical unsafe, scoped unsafe-op/static-mut lint policies",
-      "implementation": "implemented_component",
+      "implementation": "partial",
       "implemented": "Nested item reset, closure inheritance, calls/reified unsafe permission, deny/forbid rules and allocation-free no-policy path",
-      "remaining": "Additional validity lints and memory permissions are separate rows",
+      "remaining": "Required unsafe_op_in_unsafe_fn and static_mut_refs warning emission is missing (LIB-047); additional validity lints and memory permissions remain in their separate rows",
       "source": [
         "dev/src/sema/bodies/safety.rs",
         "dev/src/resolve/lint_policy"
@@ -515,7 +515,8 @@
         "dev/tests/unsafe_policy_modules.rs"
       ],
       "evidence": [
-        "pa27/README.md"
+        "pa27/README.md",
+        "docs/unsafe-policy-warning-gap.md"
       ],
       "publication": "unpublished assignment contract; no active manifest/oracle claim",
       "units": [

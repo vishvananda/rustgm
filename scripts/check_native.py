@@ -13,6 +13,7 @@ import sys
 
 from backend import digest, emit_object, load_tools, verify_object
 from course import ROOT, case_environment, library_arguments, load_cases, run_case
+from course_suites import run_released, suite_paths
 from check_syntax import rustc_arguments
 
 
@@ -126,18 +127,19 @@ def accepted_frontend(actual, expected_stderr=b"", declared_codes=()):
             raise ValueError("successful frontend warning code was not reviewed")
 
 
-def check(app, jobs, stage="pa11"):
+def check(app, jobs, stage="pa11", *, unit=None):
+    paths = suite_paths(ROOT, stage, unit)
+    manifest, cases = load_cases(ROOT, stage, unit=unit)
+    cases = native_cases(manifest, cases)
     version = subprocess.check_output(["rustc", "--version"], text=True)
     if not version.startswith("rustc 1.98.0 "):
         raise ValueError(f"expected pinned rustc 1.98.0: {version.strip()}")
     candidate_hash = digest(app)
-    manifest, cases = load_cases(ROOT, stage)
-    cases = native_cases(manifest, cases)
     required = {"lowir", "lowir2native"} if any(c["rustc"]["kind"] == "program" for c in cases) else set()
     if any(c.get("native", {}).get("kind") == "object" for c in cases):
         required.add("cppgm++")
     tools = load_tools(tuple(sorted(required)))  # Hash each required immutable tool once.
-    directory = ROOT / "obj/native" / stage
+    directory = ROOT / "obj/native" / paths.evidence
     directory.mkdir(parents=True, exist_ok=True)
 
     def worker(case):
@@ -221,7 +223,7 @@ def check(app, jobs, stage="pa11"):
     if digest(app) != candidate_hash:
         raise ValueError("candidate bytes changed during the independent run")
     (directory / "evidence.json").write_text(json.dumps({"rustc": version.strip(), "candidate_sha256": candidate_hash,
-        "manifest_sha256": digest(ROOT / stage / "tests/manifest.json"),
+        **paths.identity, "manifest_sha256": digest(paths.manifest),
         "backend": json.loads((ROOT / "backend.lock.json").read_text()), "cases": results}, indent=2) + "\n")
     failures = [item for item in results if not item["passed"]]
     for item in failures:
@@ -240,13 +242,20 @@ def check(app, jobs, stage="pa11"):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("stage", nargs="?", default="pa11")
+    parser.add_argument("stage", nargs="?")
+    parser.add_argument("--released-units", action="store_true")
+    parser.add_argument("--unit", help="exact declared component owned by this assignment")
     parser.add_argument("--app", type=Path, default=ROOT / "dev/rustgm")
     parser.add_argument("--jobs", type=int, choices=range(1, 9),
                         default=int(os.environ.get("RUSTGM_TEST_JOBS", "4")))
     args = parser.parse_args()
+    if args.released_units and (args.stage or args.unit):
+        parser.error("released-unit scheduling cannot select a stage or draft unit")
     try:
-        check(args.app.resolve(), args.jobs, args.stage)
+        if args.released_units:
+            run_released(ROOT, lambda stage, unit: check(args.app.resolve(), args.jobs, stage, unit=unit))
+        else:
+            check(args.app.resolve(), args.jobs, args.stage or "pa11", unit=args.unit)
         return 0
     except (ValueError, OSError, subprocess.SubprocessError) as error:
         print(f"native check failed: {error}", file=sys.stderr)

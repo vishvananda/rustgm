@@ -81,14 +81,15 @@ class AssignmentPlan(unittest.TestCase):
             self.write(root, stages, plan, rows)
             with self.assertRaisesRegex(ValueError, "whole PA completion has unpublished work"):
                 validate(root)
-            plan["units"][0].update(publication="released", manifest="docs/cases.json",
+            plan["units"][0].update(publication="released", manifest="pa25/tests/units/const-machine.json",
                                      release_evidence="docs/release.md")
             (root / "docs/release.md").write_text("qualified source, native and release evidence")
-            (root / "docs/cases.json").write_text('{"cases": []}')
+            (root / "pa25/tests/units").mkdir(parents=True)
+            (root / "pa25/tests/units/const-machine.json").write_text('{"cases": []}')
             self.write(root, stages, plan, rows)
             with self.assertRaisesRegex(ValueError, "empty manifest"):
                 validate(root)
-            (root / "docs/cases.json").write_text('{"cases": [{"path": "positive.rs"}]}')
+            (root / "pa25/tests/units/const-machine.json").write_text('{"cases": [{"path": "positive.rs"}]}')
             self.assertEqual(len(validate(root)[0]), 1)
 
     def test_requirement_owned_elsewhere_still_blocks_whole_pa_completion(self):
@@ -99,11 +100,12 @@ class AssignmentPlan(unittest.TestCase):
             plan["units"][0]["owner"] = "pa27"
             plan["units"].append({**plan["units"][0], "id": "inspection", "owner": "pa25",
                                    "requirements": [], "implementation": "implemented",
-                                   "publication": "released", "manifest": "docs/cases.json",
+                                   "publication": "released", "manifest": "pa25/tests/units/inspection.json",
                                    "implementation_evidence": ["docs/proof.md"],
                                    "release_evidence": "docs/proof.md"})
             (root / "docs/proof.md").write_text("complete inspection qualification")
-            (root / "docs/cases.json").write_text('{"cases": [{"path": "inspection.rs"}]}')
+            (root / "pa25/tests/units").mkdir(parents=True)
+            (root / "pa25/tests/units/inspection.json").write_text('{"cases": [{"path": "inspection.rs"}]}')
             self.write(root, stages, plan, rows)
             with self.assertRaisesRegex(ValueError, "whole PA completion has unpublished work"):
                 validate(root)
@@ -114,6 +116,22 @@ class AssignmentPlan(unittest.TestCase):
             plan["units"][0]["implementation"] = "implemented"
             self.write(root, stages, plan, rows)
             with self.assertRaisesRegex(ValueError, "implemented component needs evidence"):
+                validate(root)
+
+    def test_release_cannot_skip_its_declared_component_prerequisite(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, stages, plan, rows = self.fixture(directory)
+            prerequisite = {**plan["units"][0], "id": "declarations", "requirements": []}
+            plan["units"].insert(0, prerequisite)
+            plan["units"][1].update(implementation="implemented", publication="released",
+                implementation_evidence=["docs/proof.md"], release_evidence="docs/proof.md",
+                manifest="pa25/tests/units/const-machine.json", depends_on=["declarations"])
+            rows[0]["implementation"] = "implemented_component"
+            (root / "docs/proof.md").write_text("component release evidence")
+            (root / "pa25/tests/units").mkdir(parents=True)
+            (root / "pa25/tests/units/const-machine.json").write_text('{"cases": [{"path": "source.rs"}]}')
+            self.write(root, stages, plan, rows)
+            with self.assertRaisesRegex(ValueError, "unreleased prerequisite"):
                 validate(root)
 
     def test_fixture_admits_owned_unit_dependencies_without_future_feature_exemption(self):

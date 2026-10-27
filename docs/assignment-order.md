@@ -82,6 +82,13 @@ The harness rejects missing/future/cyclic dependencies, orphan requirements,
 partial requirements mapped only to completed units, empty component publication
 and whole-PA completion over unpublished work.
 
+The publication inventory independently exposed missing unsafe-policy warnings:
+Warn currently permits both operations without emitting diagnostics. The
+[reproduction](unsafe-policy-warning-gap.md) changes unsafe-places and27.1 to
+partial. Its real canonical ManuallyDrop fixture also requires operator-kernel;
+that existing acyclic prerequisite now precedes it. No fixture or obligation is
+removed to preserve an earlier implementation label.
+
 ## Adopted work order
 
 The table is topological. Independent units can proceed in parallel; the
@@ -93,13 +100,13 @@ scope, predecessor IDs and executable exit are in assignment-plan.json.
 | Order | Owner | Work unit | Implementation | Publication |
 | --- | --- | --- | --- | --- |
 | 1 | PA29 | Crate identities and declaration metadata (`declarations`) | implemented | unpublished |
-| 2 | PA27 | Unsafe permission and native places (`unsafe-places`) | implemented | unpublished |
-| 3 | PA30 | Local C ABI and linkage (`c-abi`) | implemented | unpublished |
-| 4 | PA31 | Local compiler declarations and attribute authority (`source-declarations`) | partial | unpublished |
-| 5 | PA25 | Typed constant machine and inspection (`const-machine`) | implemented | unpublished |
-| 6 | PA28 | Runtime memory and scalar volatile kernels (`runtime-memory`) | implemented | unpublished |
-| 7 | PA28 | Core AtomicU32 protocol (`atomic-u32`) | implemented | unpublished |
-| 8 | PA26 | Canonical operator and indexing kernels (`operator-kernel`) | implemented | unpublished |
+| 2 | PA26 | Canonical operator and indexing kernels (`operator-kernel`) | implemented | unpublished |
+| 3 | PA27 | Unsafe permission and native places (`unsafe-places`) | partial | unpublished |
+| 4 | PA30 | Local C ABI and linkage (`c-abi`) | implemented | unpublished |
+| 5 | PA31 | Local compiler declarations and attribute authority (`source-declarations`) | partial | unpublished |
+| 6 | PA25 | Typed constant machine and inspection (`const-machine`) | implemented | unpublished |
+| 7 | PA28 | Runtime memory and scalar volatile kernels (`runtime-memory`) | implemented | unpublished |
+| 8 | PA28 | Core AtomicU32 protocol (`atomic-u32`) | implemented | unpublished |
 | 9 | PA26 | Core iteration and residual protocols (`iteration-kernel`) | implemented | unpublished |
 | 10 | PA27 | Interior mutation and wide-value validity (`raw-validity`) | partial | unpublished |
 | 11 | PA25 | Symbolic constant storage and provenance (`const-memory`) | partial | unpublished |
@@ -147,15 +154,17 @@ and fixture validation, never semantic feature or execution permission.
    Compact the same owner into exact witnesses plus one flat tree buffer; retain
    every attribute/input witness, prepay allocations and reject shifted ranges.
    Do not raise quotas or drop semantic/diagnostic policy.
-2. B: finish ordinary PA6/19 primitive module/member fallback, integrate the
-   already qualified bare-type and genuine str/slice chain, then resume actual
+2. B: ordinary PA6/19 fallback and the genuine str/slice chain are integrated.
+   Continue actual
    Formatter/Arguments→panic/Abort. Freeze each ordinary/source outcome before
    observing it. This is hook/format closure, not another synthetic API factory.
-3. C's typed target-feature handoff is qualified in isolation and awaits root
-   integration. Join it with the shared SIMD query in the real assembly consumer,
+3. C's typed target-feature handoff is integrated. Join it with the shared
+   SIMD query in the real assembly consumer,
    then qualify backend capabilities and original `_mm_stream_ps` semantics.
    No AVX/runtime/export permission follows from the attribute alone.
-4. Publish **unsafe-places**, then **c-abi** as the first finite components:
+4. Publish **operator-kernel** before its real ManuallyDrop-dependent
+   **unsafe-places** consumer, then **c-abi**. Close the verified unsafe-policy
+   warning gap (LIB-047) before declaring unsafe-places implemented. For each:
    reconcile existing source/native/scaling evidence, inventory every fixture
    and unsupported residual, declare a nonempty component manifest, generate
    reviewed text oracles only after independent outcomes, and run missing release

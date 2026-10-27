@@ -36,9 +36,15 @@ are combined; two operator native consumers now match safe-input outputs.
 
 There are three coding lanes: root, B and C. A supplies bounded read-only review;
 do not create another worktree or enable a fourth heavy job. Root's output cap
-is16GiB, B's16GiB and C's12GiB. The shared three-job controller,150GiB reserve,
+is16GiB, B's16GiB and C's16GiB. The shared three-job controller,150GiB reserve,
 per-process CPU/RAM/task limits and two Cargo/test threads remain unchanged.
 Existing historical ownership tables do not override this current assignment.
+
+C's cap increased12→16GiB at its idle handoff boundary after measured cache
+pressure forced a full cache retirement and a cold five-minute check timeout.
+Keep both production/private dev-fast caches warm under this absolute cap;
+continue scoped cleanup of retired artifacts. The configured worker ceiling,
+three jobs,150GiB free reserve and CPU/RAM/task/thread limits stay unchanged.
 
 Keep one executable exit per lane. Shared-interface preparation is work within
 that task, not an endlessly expanding replacement milestone. At consumer exits,
@@ -79,7 +85,7 @@ See [combined evidence](source-lookup-target-integration.md). No new worktree is
 Track implementation and publication independently. Publish finite unsafe/place,
 C ABI, declaration-interface and const-machine components using existing bound
 evidence plus missing release gates. Keep every residual requirement and whole-PA
-release gate. Preserve the three-job controller,150GiB reserve, root16/B16/C12
+release gate. Preserve the three-job controller,150GiB reserve, root16/B16/C16
 GiB caps, two Cargo/test threads and five-minute development budget.
 
 ## Assignment ownership

@@ -3,6 +3,7 @@ import hashlib
 import json
 from pathlib import Path
 import time
+from course_suites import check_identity, suite_paths
 
 SUFFIXES = (".ref", ".ref.stderr", ".ref.exit_status")
 
@@ -34,9 +35,10 @@ def select(cases, paths, stage):
     return [case for case in cases if case["path"] in selected]
 
 
-def prepare(root, stage, manifest, all_cases, source_hashes, results):
+def prepare(root, stage, manifest, all_cases, source_hashes, results, *, unit=None):
     folder = root / stage
-    base = folder / "reference.json"
+    paths = suite_paths(root, stage, unit)
+    base = paths.reference
     if not base.is_file():
         raise ValueError(f"{stage}: partial generation requires a full reference receipt")
     # Parse before any sidecar write; malformed base provenance must not authorize a batch.
@@ -54,19 +56,20 @@ def prepare(root, stage, manifest, all_cases, source_hashes, results):
                           for path in case.get("auxiliary", [])},
             "outputs": {suffix: digest(value) for suffix, value in zip(SUFFIXES, actual)},
         }
-    validate(root, stage, manifest, all_cases, pending=selected)
+    validate(root, stage, manifest, all_cases, pending=selected, unit=unit)
     batch = {"schema": 1, "kind": "partial-reference", "stage": stage,
+             **paths.identity,
              "mode": manifest["mode"], "base_reference_sha256": digest(base.read_bytes()),
-             "manifest_sha256": digest((folder / "tests/manifest.json").read_bytes()),
+             "manifest_sha256": digest(paths.manifest.read_bytes()),
              "compiler_source_sha256": source_hashes,
              "selected_paths": list(selected), "cases": selected}
     data = (json.dumps(batch, indent=2) + "\n").encode()
-    path = folder / "reference-batches" / f"{time.time_ns()}-{digest(data)[:12]}.json"
+    path = paths.batches / f"{time.time_ns()}-{digest(data)[:12]}.json"
     return path, data
 
 
-def _batches(folder, stage, manifest, receipt, base_bytes):
-    paths = {path.name: path for path in (folder / "reference-batches").glob("*.json")}
+def _batches(suite, folder, stage, manifest, receipt, base_bytes):
+    paths = {path.name: path for path in suite.batches.glob("*.json")}
     superseded = receipt.get("supersedes_reference_batches", {})
     if not isinstance(superseded, dict):
         raise ValueError(f"invalid superseded reference receipts: {folder}")
@@ -78,6 +81,7 @@ def _batches(folder, stage, manifest, receipt, base_bytes):
         if name in superseded:
             continue
         batch = json.loads(path.read_text())
+        check_identity(suite, batch)
         if batch.get("base_reference_sha256") != digest(base_bytes):
             raise ValueError(f"unexplained reference receipt base: {path}")
         if (batch.get("schema") != 1 or batch.get("kind") != "partial-reference"
@@ -96,13 +100,20 @@ def _batches(folder, stage, manifest, receipt, base_bytes):
     return active
 
 
-def validate(root, stage, manifest, cases, *, pending=None):
+def validate(root, stage, manifest, cases, *, pending=None, unit=None):
     folder = root / stage
-    base_bytes = (folder / "reference.json").read_bytes()
+    paths = suite_paths(root, stage, unit)
+    base_bytes = paths.reference.read_bytes()
     receipt = json.loads(base_bytes)
+    check_identity(paths, receipt)
+    if unit is not None and (receipt.get("schema") != 1
+            or receipt.get("mode") != manifest["mode"]
+            or not isinstance(receipt.get("outputs"), dict)
+            or not isinstance(receipt.get("compiler_source_sha256"), dict)):
+        raise ValueError("invalid full unit reference receipt")
     recorded = dict(receipt["fixtures"])
     auxiliary = dict(receipt.get("auxiliary", {}))
-    current_manifest = digest((folder / "tests/manifest.json").read_bytes())
+    current_manifest = digest(paths.manifest.read_bytes())
     contracts = receipt.get("case_contracts")
     if contracts is None:
         if receipt.get("manifest_sha256") != current_manifest:
@@ -114,7 +125,7 @@ def validate(root, stage, manifest, cases, *, pending=None):
         contracts = dict(contracts)
     latest = {}
     manifest_proved = receipt.get("manifest_sha256") == current_manifest
-    for batch in _batches(folder, stage, manifest, receipt, base_bytes):
+    for batch in _batches(paths, folder, stage, manifest, receipt, base_bytes):
         latest.update(batch["cases"])
         manifest_proved |= batch.get("manifest_sha256") == current_manifest
     if pending is not None:
@@ -142,4 +153,11 @@ def validate(root, stage, manifest, cases, *, pending=None):
             auxiliary.update(entry["auxiliary"])
         if recorded.get(path) != digest((folder / path).read_bytes()):
             raise ValueError(f"fixture changed since reference generation: {path}")
+        if unit is not None and path not in latest:
+            outputs = receipt["outputs"].get(path, {})
+            if set(outputs) != set(SUFFIXES):
+                raise ValueError(f"incomplete full unit output hashes: {path}")
+            for suffix, expected in outputs.items():
+                if digest(Path(str(folder / path) + suffix).read_bytes()) != expected:
+                    raise ValueError(f"oracle changed since unit generation: {path}{suffix}")
     return recorded, auxiliary

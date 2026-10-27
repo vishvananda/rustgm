@@ -34,6 +34,7 @@ tidy-archive:
 test:
 	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --release --locked --no-fail-fast
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
+	$(GUARDED) $(PYTHON) scripts/course.py --released-units --app "$(RUSTGM_TEST_APP)"
 test-debug:
 	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --locked --no-fail-fast
 test-debug-invariants:
@@ -42,7 +43,8 @@ test-maintainer: test-backend
 	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --release --locked --no-fail-fast -- --include-ignored
 test-report: all
 	@status=0; for stage in $(ACTIVE_PAS); do $(PYTHON) scripts/course.py $$stage --app "$(RUSTGM_TEST_APP)" || status=1; done; exit $$status
-	@echo 'PA25-PA44: planned, not included in acceptance totals'
+	$(GUARDED) $(PYTHON) scripts/course.py --released-units --app "$(RUSTGM_TEST_APP)"
+	@echo 'Whole PA25-PA44: planned; released components are reported separately'
 test-pa%: all
 	$(PYTHON) scripts/course.py pa$* --app "$(RUSTGM_TEST_APP)"
 ref-test: all
@@ -72,6 +74,7 @@ test-backend:
 	$(PYTHON) scripts/backend.py --test
 test-maintainer-native: test-backend
 	$(GUARDED) $(CARGO) test --manifest-path dev/Cargo.toml --release --locked --no-fail-fast -- --ignored
+	$(GUARDED) $(PYTHON) scripts/check_native.py --released-units --app "$(RUSTGM_TEST_APP)"
 test-native: test-maintainer-native
 	$(GUARDED) $(PYTHON) scripts/check_native.py pa11 --app "$(RUSTGM_TEST_APP)"
 	$(GUARDED) $(PYTHON) scripts/check_native.py pa12 --app "$(RUSTGM_TEST_APP)"
@@ -94,6 +97,7 @@ test-upstream:
 	$(PYTHON) scripts/upstream.py --verify
 test-rustc: all test-layouts
 	$(PYTHON) scripts/check_rustc.py
+	$(GUARDED) $(PYTHON) scripts/check_syntax.py --released-units --app "$(RUSTGM_TEST_APP)"
 	$(PYTHON) scripts/check_literals.py --app "$(RUSTGM_TEST_APP)"
 	$(PYTHON) scripts/check_syntax.py pa3 --app "$(RUSTGM_TEST_APP)"
 	$(PYTHON) scripts/check_syntax.py pa4 --app "$(RUSTGM_TEST_APP)"

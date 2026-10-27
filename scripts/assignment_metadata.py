@@ -8,6 +8,54 @@ from course import ROOT, load_cases
 from check_native import classification
 from check_layouts import classification as layout_classification
 from assignment_plan import checked_path, fixture_owners, validate as validate_plan
+from course_suites import check_publishers
+
+
+def validate_cases(stage, manifest, cases, units, rows, foundational):
+    for case in cases:
+        owners = fixture_owners(stage, case, units, rows)
+        if owners is not None:
+            owners |= foundational
+        mode = case.get("mode", manifest["mode"])
+        try:
+            if mode == "--emit-lowir":
+                classification(case)
+            elif mode == "--emit-layouts":
+                layout_classification(case)
+        except (ValueError, KeyError) as error:
+            raise ValueError(f"{stage['path']}/{case['path']}: {error}") from error
+        for feature in case.get("features", []):
+            owner = re.match(r"pa(\d+)\.", feature)
+            future = owner and (f"pa{owner[1]}" not in owners if owners is not None
+                                else int(owner[1]) > stage["number"])
+            if future:
+                raise ValueError(f"fixture uses a future-stage feature: {stage['path']}/{case['path']}: {feature}")
+
+
+def validate_unit_cases(root, owner, selected, manifest, cases):
+    stages = json.loads((root / "assignments.json").read_text())["stages"]
+    ordered, rows = validate_plan(root, stages)
+    stage = next(stage for stage in stages if stage["path"] == owner)
+    for case in cases:
+        if selected not in case.get("work_units", []):
+            raise ValueError(f"unit fixture must declare its owning work unit: {case['path']}")
+    foundational = {stage["path"] for stage in stages
+                    if stage["number"] <= 24 and stage["status"] != "planned"}
+    validate_cases(stage, manifest, cases, {unit["id"]: unit for unit in ordered}, rows, foundational)
+
+
+def collect_units(root=ROOT, *, unit=None):
+    if not (root / "assignment-plan.json").exists():
+        if unit is not None:
+            raise ValueError(f"unknown assignment unit: {unit}")
+        return []
+    units, _ = validate_plan(root)
+    check_publishers(root)
+    selected = [entry for entry in units if entry["id"] == unit] if unit is not None else [
+        entry for entry in units if entry["publication"] == "released"]
+    if unit is not None and not selected:
+        raise ValueError(f"unknown assignment unit: {unit}")
+    return [(entry, *load_cases(root, entry["owner"], unit=entry["id"])) for entry in selected]
 
 
 def collect(root=ROOT):
@@ -44,32 +92,23 @@ def collect(root=ROOT):
         if (manifest["mode"] != stage["mode"]
                 or manifest.get("additional_modes", []) != stage.get("additional_modes", [])):
             raise ValueError(f"assignment modes disagree with manifest: {folder}")
-        for case in cases:
-            owners = fixture_owners(stage, case, units, rows)
-            if owners is not None:
-                owners |= foundational
-            mode = case.get("mode", manifest["mode"])
-            try:
-                if mode == "--emit-lowir":
-                    classification(case)
-                elif mode == "--emit-layouts":
-                    layout_classification(case)
-            except (ValueError, KeyError) as error:
-                raise ValueError(f"{stage['path']}/{case['path']}: {error}") from error
-            for feature in case.get("features", []):
-                owner = re.match(r"pa(\d+)\.", feature)
-                future = owner and (f"pa{owner[1]}" not in owners if owners is not None
-                                    else int(owner[1]) > stage["number"])
-                if future:
-                    raise ValueError(f"fixture uses a future-stage feature: {folder / case['path']}: {feature}")
+        validate_cases(stage, manifest, cases, units, rows, foundational)
         loaded.append((stage, manifest, cases))
+    collect_units(root)
     return stages, loaded
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--unit", help="also validate one declared unpublished component")
+    args = parser.parse_args()
     try:
         stages, loaded = collect()
+        components = collect_units(unit=args.unit)
         print(f"Assignment metadata: {len(stages)} stages; {sum(len(cases) for _, _, cases in loaded)} active cases; references not required")
+        if components:
+            print(f"Component metadata: {len(components)} units; {sum(len(cases) for _, _, cases in components)} cases")
         return 0
     except (ValueError, OSError, KeyError) as error:
         print(error, file=sys.stderr)

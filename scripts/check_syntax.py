@@ -10,6 +10,7 @@ import subprocess
 import sys
 
 from course import ROOT, load_cases, run_case, case_environment
+from course_suites import run_released, suite_paths
 
 
 def check_classification(case):
@@ -55,18 +56,19 @@ def check_configured_owners(metadata, output):
             raise ValueError(f"configured owner facts disagree: {actual}, wanted {metadata['configured']}")
 
 
-def check(stage, app, jobs=None):
+def check(stage, app, jobs=None, *, unit=None):
     jobs = int(os.environ.get("RUSTGM_TEST_JOBS", "4")) if jobs is None else jobs
     if not 1 <= jobs <= 8:
         raise ValueError("independent check jobs must be between 1 and 8")
-    version = subprocess.check_output(["rustc", "--version"], text=True)
-    if not version.startswith("rustc 1.98.0 "):
-        raise ValueError(f"expected rustc 1.98.0, got {version.strip()}")
-    manifest, cases = load_cases(ROOT, stage)
+    paths = suite_paths(ROOT, stage, unit)
+    manifest, cases = load_cases(ROOT, stage, unit=unit)
     # Reject malformed metadata before compiling any earlier case in the batch.
     for case in cases:
         check_classification(case)
-    directory = ROOT / "obj/rustc-syntax" / stage
+    version = subprocess.check_output(["rustc", "--version"], text=True)
+    if not version.startswith("rustc 1.98.0 "):
+        raise ValueError(f"expected rustc 1.98.0, got {version.strip()}")
+    directory = ROOT / "obj/rustc-syntax" / paths.evidence
     directory.mkdir(parents=True, exist_ok=True)
 
     def worker(case):
@@ -141,12 +143,21 @@ def check(stage, app, jobs=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("stage")
+    parser.add_argument("stage", nargs="?")
+    parser.add_argument("--released-units", action="store_true")
+    parser.add_argument("--unit", help="exact declared component owned by this assignment")
     parser.add_argument("--app", type=Path, default=ROOT / "dev/rustgm")
     parser.add_argument("--jobs", type=int, choices=range(1, 9))
     args = parser.parse_args()
+    if args.released_units and (args.stage or args.unit):
+        parser.error("released-unit scheduling cannot select a stage or draft unit")
+    if not args.released_units and args.stage is None:
+        parser.error("a stage or --released-units is required")
     try:
-        check(args.stage, args.app.resolve(), args.jobs)
+        if args.released_units:
+            run_released(ROOT, lambda stage, unit: check(stage, args.app.resolve(), args.jobs, unit=unit))
+        else:
+            check(args.stage, args.app.resolve(), args.jobs, unit=args.unit)
     except (ValueError, OSError, subprocess.SubprocessError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)

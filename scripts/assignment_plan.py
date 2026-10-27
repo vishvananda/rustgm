@@ -4,6 +4,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from course_suites import unit_manifest
 
 ROOT = Path(__file__).resolve().parents[1]
 STATES = {"implemented", "partial", "missing"}
@@ -49,6 +50,10 @@ def validate(root=ROOT, stages=None):
                 raise ValueError(f"missing, cyclic or later dependency: {key}: {dependency}")
         if unit["publication"] not in {"unpublished", "released"}:
             raise ValueError(f"unknown publication state: {key}")
+        if "manifest" in unit:
+            if unit["manifest"] != unit_manifest(unit["owner"], key):
+                raise ValueError(f"noncanonical unit manifest: {key}")
+            checked_path(root, unit["manifest"])
         if unit["publication"] == "released":
             if unit["implementation"] != "implemented":
                 raise ValueError(f"released work unit is incomplete: {key}")
@@ -56,6 +61,8 @@ def validate(root=ROOT, stages=None):
             manifest = json.loads(checked_path(root, unit["manifest"]).read_text())
             if not manifest.get("cases"):
                 raise ValueError(f"released work unit has empty manifest: {key}")
+            if any(units[dependency]["publication"] != "released" for dependency in unit["depends_on"]):
+                raise ValueError(f"released work unit has an unreleased prerequisite: {key}")
         for requirement in unique(unit["requirements"], key):
             if requirement not in rows:
                 raise ValueError(f"unknown requirement: {key}: {requirement}")

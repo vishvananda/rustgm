@@ -23,6 +23,39 @@ reordered prerequisites declare `work_units` from their actual owning units;
 only those units' transitive dependency owners and the active PA1–PA24 foundation
 are admitted. Legacy cases retain numeric placement checks.
 
+Finite components use the same runner while the parent PA remains planned.
+Declare a canonical `paN/tests/units/UNIT.json` manifest in that work unit's
+`manifest` field. Its nonempty `discovery` list claims complete directories or
+explicit `.rs` inputs under that PA's tests; every discovered source must be a
+primary or auxiliary. Each primary declares its owning `work_units`. Duplicate
+primary publishers, overlapping discovery and unrelated future features reject.
+The selected contract then runs explicitly:
+
+```sh
+python3 scripts/course.py paN --unit UNIT --app /immutable/qualified/rustgm
+python3 scripts/assignment_metadata.py --unit UNIT
+python3 scripts/check_layout.py --unit UNIT
+python3 scripts/check_syntax.py paN --unit UNIT --app /immutable/qualified/rustgm
+python3 scripts/check_native.py paN --unit UNIT --app /immutable/qualified/rustgm
+```
+
+Use the resource/storage wrappers for execution, as for other validation.
+Generation uses the existing `--bless` and optional exact `--case` selectors
+after independent outcome review. Sidecars stay beside their source inputs;
+unit receipts and scoped batches live under `paN/units/UNIT/`. Full and partial
+unit receipts bind their actual stage/unit/manifest identity and every output
+channel. A unit cannot change an active parent's case contract or output bytes:
+generate changed shared references through the parent first, then adopt those
+same bytes in unit provenance. Oracle symlinks reject before execution/writing.
+
+`make test`/`test-report`, `test-maintainer-native` and `test-rustc` also schedule
+released units through the same text/native/independent runners. The
+`--released-units` selector enumerates only declared releases; when none exist
+it reports a skipped scheduler. An explicit planned PA, missing unit contract or
+empty component still fails. Publication retains the owning scope, independent
+and native evidence, release gates and every residual parent requirement; the
+tooling alone does not release a component.
+
 ## Development checkpoints
 
 Maintainer integration roots under `dev/tests/` are registered as modules in
