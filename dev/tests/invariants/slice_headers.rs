@@ -157,7 +157,7 @@ fn inherent_tag_is_unconstrained_and_named_methods_require_actual_owners() -> Re
         let (report, analysis) = checked(&input)?;
         assert!(report.resolution.library_types.slice_length().is_none());
         assert!(analysis.facts.methods.demanded_length().is_none());
-        let steps = analysis.facts.inference_steps;
+        let steps = analysis.facts.body_work.inference_steps;
         if let Some((old_width, old_steps)) = previous {
             assert!(steps <= old_steps * (width / old_width) + 128);
         }
@@ -186,8 +186,10 @@ fn retained_marker_checks_forms_incarnation_and_raw_implicit_receiver_boundary()
         "marker-missing-gate",
         "marker-unsafe-wrapper",
     ] {
-        let result = test_source::source_provider(&fixture(name)?, "marker_opponent")
-            .and_then(|report| crate::sema::declarations::analyze(&report));
+        let result =
+            test_source::source_provider(&fixture(name)?, "marker_opponent").and_then(|report| {
+                crate::sema::declarations::analyze(&report).map_err(|error| error.to_string())
+            });
         assert!(result.is_err(), "{name}");
     }
     let declaration =
