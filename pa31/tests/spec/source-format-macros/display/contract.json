@@ -1,0 +1,50 @@
+{
+  "scope": "NEW std-backed real Display/Debug effects and pair-identity semantics, not RustGM SourceCore crate execution",
+  "primary": "compiler/rustc_ast_lowering/src/format.rs363-367,440-477; library/core/src/fmt/rt.rs89-94",
+  "tool": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+  "tool_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "options": [
+    "--edition=2024",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Coverflow-checks=yes"
+  ],
+  "editions": [
+    2021,
+    2024
+  ],
+  "cases": [
+    {
+      "name": "display-repeated",
+      "path": "pa31/tests/spec/source-format-macros/display/display-repeated.rs",
+      "sha256": "b14fcda562f0e297f6441187fdb982af611110d0d537ce3d3dd912999cff3ab3",
+      "metadata": 0,
+      "stdout": "M1|M1|144\n",
+      "code": null
+    },
+    {
+      "name": "mixed-order",
+      "path": "pa31/tests/spec/source-format-macros/display/mixed-order.rs",
+      "sha256": "62f9d7e6d60021df79dc52a3ae4833135026640f71a6a72408e3b564f3379d02",
+      "metadata": 0,
+      "stdout": "M2|D1|M2|D2|D1|1243433\n",
+      "code": null
+    },
+    {
+      "name": "missing-display",
+      "path": "pa31/tests/spec/source-format-macros/display/missing-display.rs",
+      "sha256": "2f1a7909545cc9c688b0875081535b65e5a540555e885a69092e26d52435cd65",
+      "metadata": 1,
+      "stdout": "",
+      "code": "E0277"
+    },
+    {
+      "name": "missing-debug",
+      "path": "pa31/tests/spec/source-format-macros/display/missing-debug.rs",
+      "sha256": "453d31c31b622f1e4ef170831d9027ab4454597bd1e8c333ef281b4ae223375f",
+      "metadata": 1,
+      "stdout": "",
+      "code": "E0277"
+    }
+  ]
+}

@@ -76,9 +76,17 @@ impl Report {
                     },
                 value: None,
             } => {
+                source
+                    .macros
+                    .charge(constructor.name().len().saturating_mul(2), 0)
+                    .map_err(error)?;
                 if at(sites, slot as usize)? != key.node
                     || name.0 as usize >= self.package.names.len()
                     || self.package.names.get(name) != constructor.name()
+                    || unit
+                        .spelling(unit.configured.ast.node(key.node).span)
+                        .map_err(|failure| error(failure.message))?
+                        != constructor.name()
                 {
                     return Err(error("formatting changed its canonical constructor site"));
                 }
@@ -123,14 +131,6 @@ fn shape(
         start: sites.start,
         end: sites.end,
     };
-    let count = sites
-        .end
-        .checked_sub(sites.start)
-        .and_then(|n| n.checked_sub(3))
-        .filter(|n| n % 2 == 0)
-        .map(|n| n as usize / 2)
-        .filter(|n| *n > 0)
-        .ok_or_else(|| error("formatting changed its actual site inventory"))?;
     let Kind::Expansion {
         children: statements,
         tail: Some(tail),
@@ -175,9 +175,20 @@ fn shape(
     let Kind::Array(arguments) = kind(array)? else {
         return Err(error("formatting changed its actual argument array"));
     };
-    if values.end.checked_sub(values.start) != u32::try_from(count).ok()
-        || arguments.end.checked_sub(arguments.start) != u32::try_from(count).ok()
-    {
+    let inputs = values
+        .end
+        .checked_sub(values.start)
+        .filter(|count| *count > 0);
+    let count = arguments
+        .end
+        .checked_sub(arguments.start)
+        .filter(|count| *count > 0);
+    if inputs.zip(count).is_none_or(|(inputs, count)| {
+        count < inputs
+            || count > inputs.saturating_mul(2)
+            || sites.end.checked_sub(sites.start)
+                != inputs.checked_add(count).and_then(|n| n.checked_add(3))
+    }) {
         return Err(error("formatting changed its actual argument cardinality"));
     }
     Ok(OutputShape {
@@ -185,7 +196,7 @@ fn shape(
         statements,
         tail,
         arguments,
-        count,
+        count: count.ok_or_else(|| error("formatting lost its constructor count"))? as usize,
     })
 }
 
@@ -216,7 +227,9 @@ impl OutputShape {
                 }
                 call
             }
-            (slot, FormatConstructor::Debug) if slot >= 3 && (slot as usize) < 3 + self.count => {
+            (slot, FormatConstructor::Debug | FormatConstructor::Display)
+                if slot >= 3 && (slot as usize) < 3 + self.count =>
+            {
                 at(self.arguments, slot as usize - 3)?
             }
             _ => {

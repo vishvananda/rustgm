@@ -236,3 +236,64 @@ Full Alignment formatting, complete Formatter/Arguments helper closure,
 PanicInfo/handler execution and a false assertion reaching actual Abort remain
 pending. The constructor checkpoint does not prove whole original core or an
 artifact publication profile.
+
+
+## Default Display/Debug pairs
+
+The next constructor tier accepts default Display (`{}`, `{0}`, `{:}`) beside
+Debug (`{:?}`, `{0:?}`). The once-decoded template retains first use of the
+actual `(input, formatting trait)` pair. Repeating one pair reuses its argument
+slot; using one input through both traits creates two slots. Original eager
+inputs are still adopted and evaluated once in input order. A direct two-slot
+transient table per input supplies this identity without another retained map.
+Other formatting traits/options and named/captured arguments remain required.
+
+The generated calls select the real `Argument::new_display` or `new_debug`
+through the existing actual FormatArgument owner, signature, generic, trait,
+body, ownership and instance proofs. The original `argument_new!` and
+`Arguments::new` bodies are unchanged. Every special use authenticates its real
+root/site/member and immutable generated constructor spelling. The inner unsafe
+scope still encloses only `Arguments::new`; user input expressions retain their
+own safety context. No Body, Rvalue, Code, callable or permission field changes.
+
+The [frozen mixed provider](../pa31/tests/spec/source-format-macros/display/source-shared-refs-contract.json)
+adds core's verbatim shared-reference Copy/const Clone impls to the earlier
+reduced dependency foundation. Pinned Rust (2021/2024) and the locked CPPGM
+backend produce the exact same trace:
+
+```
+e1;e2;t1;p0M9;p1D7;p2D9;d9;d7;3
+```
+
+The observer checks encoded template bytes, three real first-use pair slots,
+the actual distinct Display/Debug method pointers, single input evaluation and
+reverse destruction. It does not fabricate a Formatter or invoke either
+formatter method. Independent std-backed tests also check actual formatting
+output/order and missing Display/Debug obligations. This is constructor evidence,
+not full Formatter, original core, PanicInfo, handler or false-assert execution.
+
+The [earlier mixed source](../pa31/tests/spec/source-format-macros/display/source-contract.json)
+without those shared-reference impls remains independently Rust-positive.
+Candidate gate1793139599944943129 passed five of six controls, failing its reused
+shared-reference read during ownership. Ordinary call reborrowing remains a
+required PA16/PA31 issue; the real core impl successor neither closes nor
+relabels that positive. The preceding gate1793139181896431855 passed four of six
+and exposed the corrected input-adoption assumption that input and constructor
+counts were equal. Both failures and raw observations remain retained.
+
+Private gate1793140162078991306 passes all six exact controls; separate
+production/CLI gate1793140305019800762 passes strict production and ten lexer
+controls on the identical 2,991-source map. Actual CLI semantic inspection of
+both mixed providers passes; selected borrow/native proof is separate from the
+still-unsupported whole generic-body loan inspector. Upstream verification
+passes without original-source changes.
+
+Measured transient pair row width is16 bytes; constructor name arrays are8 to12,
+Template48 and Output416 (Output's predecessor was not measured). LibraryValue12,
+Syntax Kind28/Node36, plan1064, path query1032 and CallTypes704 retain measured
+widths. Current integrated Resolution2032 is inherited from root's cold namespace
+change; the earlier2056 observation remains scoped to its checkpoint. N8/32/128
+producer work is1619/5409/20605 and charged bytes28372/107100/421164. Root
+validation remains22 work with no new allocation. Pair preparation is O(inputs
+plus literal bytes plus emitted pairs); all two-slot/table/vector storage is
+prepaid. These measurements make no wall-time or no-op-erasure claim.
