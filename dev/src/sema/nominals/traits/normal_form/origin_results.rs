@@ -32,6 +32,17 @@ impl Continuation {
     }
 }
 impl Query {
+    pub(super) fn advance_retained(
+        self,
+        facts: &mut Declarations,
+    ) -> Result<Progress, &'static str> {
+        match self.inherited.as_deref() {
+            Some(Continuation::Metadata(_)) => self.advance_metadata(facts),
+            Some(Continuation::Discriminant(_)) => self.advance_discriminant(facts),
+            Some(Continuation::Inherited(_)) => self.advance_inherited(facts),
+            None => Err("missing retained projection continuation"),
+        }
+    }
     pub(super) fn prepare_inherited(
         &mut self,
         facts: &mut Declarations,

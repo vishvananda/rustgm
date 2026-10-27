@@ -239,65 +239,7 @@ impl Catalog {
         if signature != original {
             return Err("selected source intrinsic signature differs from its validated contract");
         }
-        let mut arguments = facts
-            .types
-            .arguments(arguments)
-            .ok_or("invalid source intrinsic arguments")?;
-        let Some(Argument::Type(element)) = arguments.next() else {
-            return Err(match entry.kind {
-                SourceIntrinsic::Layout(_) => {
-                    "selected source layout intrinsic lacks its type argument"
-                }
-                SourceIntrinsic::NeedsDrop => "selected source needs_drop lacks its type argument",
-                SourceIntrinsic::ConstEvalSelect => {
-                    "source callback selection requires its own descriptor"
-                }
-                SourceIntrinsic::DiscriminantValue => {
-                    "source discriminant requires its actual reached reference-call descriptor"
-                }
-                SourceIntrinsic::PtrMetadata => {
-                    "source ptr_metadata requires its actual pointer-call descriptor"
-                }
-                SourceIntrinsic::CallerLocation => {
-                    "source caller location requires its exact caller descriptor"
-                }
-                SourceIntrinsic::UbChecks => "source UB check requires its own descriptor",
-                SourceIntrinsic::Abort => "source abort requires its own reached-call descriptor",
-                SourceIntrinsic::Transmute => {
-                    "source transmute requires its own checked call descriptor"
-                }
-            });
-        };
-        if arguments.next().is_some()
-            || facts.types.contains_parameters(element) != Some(false)
-            || facts.types.contains_projections(element) != Some(false)
-        {
-            return Err(match entry.kind {
-                SourceIntrinsic::Layout(_) => {
-                    "source layout intrinsic requires a complete closed type argument"
-                }
-                SourceIntrinsic::NeedsDrop => {
-                    "source needs_drop requires a complete closed type argument"
-                }
-                SourceIntrinsic::ConstEvalSelect => {
-                    "source callback selection requires its own descriptor"
-                }
-                SourceIntrinsic::DiscriminantValue => {
-                    "source discriminant requires its actual reached reference-call descriptor"
-                }
-                SourceIntrinsic::PtrMetadata => {
-                    "source ptr_metadata requires its actual pointer-call descriptor"
-                }
-                SourceIntrinsic::CallerLocation => {
-                    "source caller location requires its exact caller descriptor"
-                }
-                SourceIntrinsic::UbChecks => "source UB check requires its own descriptor",
-                SourceIntrinsic::Abort => "source abort requires its own reached-call descriptor",
-                SourceIntrinsic::Transmute => {
-                    "source transmute requires its own checked call descriptor"
-                }
-            });
-        }
+        let element = layout_element(&facts.types, arguments, entry.kind)?;
         let function = facts
             .function_indices
             .get(&definition)
@@ -313,6 +255,72 @@ impl Catalog {
             fallback: function.body.is_some(),
         }))
     }
+}
+
+fn layout_element(
+    types: &crate::types::Store,
+    arguments: crate::types::GenericArgs,
+    kind: SourceIntrinsic,
+) -> Result<TypeId, &'static str> {
+    let mut arguments = types
+        .arguments(arguments)
+        .ok_or("invalid source intrinsic arguments")?;
+    let Some(Argument::Type(element)) = arguments.next() else {
+        return Err(match kind {
+            SourceIntrinsic::Layout(_) => {
+                "selected source layout intrinsic lacks its type argument"
+            }
+            SourceIntrinsic::NeedsDrop => "selected source needs_drop lacks its type argument",
+            SourceIntrinsic::ConstEvalSelect => {
+                "source callback selection requires its own descriptor"
+            }
+            SourceIntrinsic::DiscriminantValue => {
+                "source discriminant requires its actual reached reference-call descriptor"
+            }
+            SourceIntrinsic::PtrMetadata => {
+                "source ptr_metadata requires its actual pointer-call descriptor"
+            }
+            SourceIntrinsic::CallerLocation => {
+                "source caller location requires its exact caller descriptor"
+            }
+            SourceIntrinsic::UbChecks => "source UB check requires its own descriptor",
+            SourceIntrinsic::Abort => "source abort requires its own reached-call descriptor",
+            SourceIntrinsic::Transmute => {
+                "source transmute requires its own checked call descriptor"
+            }
+        });
+    };
+    if arguments.next().is_some()
+        || types.contains_parameters(element) != Some(false)
+        || types.contains_projections(element) != Some(false)
+    {
+        return Err(match kind {
+            SourceIntrinsic::Layout(_) => {
+                "source layout intrinsic requires a complete closed type argument"
+            }
+            SourceIntrinsic::NeedsDrop => {
+                "source needs_drop requires a complete closed type argument"
+            }
+            SourceIntrinsic::ConstEvalSelect => {
+                "source callback selection requires its own descriptor"
+            }
+            SourceIntrinsic::DiscriminantValue => {
+                "source discriminant requires its actual reached reference-call descriptor"
+            }
+            SourceIntrinsic::PtrMetadata => {
+                "source ptr_metadata requires its actual pointer-call descriptor"
+            }
+            SourceIntrinsic::CallerLocation => {
+                "source caller location requires its exact caller descriptor"
+            }
+            SourceIntrinsic::UbChecks => "source UB check requires its own descriptor",
+            SourceIntrinsic::Abort => "source abort requires its own reached-call descriptor",
+            SourceIntrinsic::Transmute => {
+                "source transmute requires its own checked call descriptor"
+            }
+        });
+    }
+    Ok(element)
 }
 
 #[cfg(test)]

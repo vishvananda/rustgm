@@ -170,13 +170,7 @@ impl Query {
         mut reuse: Option<&mut selection::Reuse>,
     ) -> Result<Progress, &'static str> {
         if self.inherited.is_some() {
-            return match self.inherited.as_deref() {
-                Some(origin_results::Continuation::Metadata(_)) => self.advance_metadata(facts),
-                Some(origin_results::Continuation::Discriminant(_)) => {
-                    self.advance_discriminant(facts)
-                }
-                _ => self.advance_inherited(facts),
-            };
+            return self.advance_retained(facts);
         }
         loop {
             let selected = match self.select(facts, reuse.as_deref_mut())? {

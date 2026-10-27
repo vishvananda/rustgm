@@ -280,3 +280,7 @@ pub(in crate::sema) fn require_transport(
         "source discriminant protocol transport is not implemented",
     ))
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/logical_discriminators.rs"]
+mod tests;
