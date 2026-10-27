@@ -1,0 +1,18 @@
+{
+  "state": "new binder/explicit equality reduction frozen before observation; complete original actual-calls prefix preserved",
+  "editions": [
+    2021,
+    2024
+  ],
+  "metadata": [
+    {
+      "file": "opened-scope.rs",
+      "status": 0,
+      "error_codes": []
+    }
+  ],
+  "native": [],
+  "source_sha256": {
+    "opened-scope.rs": "4e3a15c55f3e79ac5c277566942414dc558e68717807efe12ac3f636e8ad8ff0"
+  }
+}
