@@ -1,7 +1,7 @@
 # Source shift and bitwise-or consumer checkpoint
 
 Compiler source `9cfeed668` joins the genuine source `Shl` and `BitOr` declarations
-(LangItem53/54) to ordinary method inference and execution. The private shared
+(LangItems 53/54) to ordinary method inference and execution. The private shared
 operator kernel retains the existing Not/Neg APIs and authenticates the actual
 trait, owned Output/method, Self/Rhs, signature, source image and provider. Both
 operands constrain the ordinary function instance before associated Output
@@ -23,24 +23,24 @@ block publication. The ordinary no-owner path allocates no scheduler storage.
 
 The qualified source ledger is in the worker's
 `obj/parallel/pa31/source-shift-or-implementation-v1/qualified-v1/handoff.json`.
-It binds2,938 compiler/config fingerprints and the exact raw receipts:
+It binds 2,938 compiler/config fingerprints and the exact raw receipts:
 
-- `1793109858309977145`:15 of16 private groups pass on the source before the final
+- `1793109858309977145`: 15 of 16 private groups pass on the source before the final
   quiescence guard. This includes `len << 1 | 1`, actual Rhs inference, custom
   and explicit original/instance LowIR, exact const-effect diagnostics, genuine
   range faults, ordinary operators, source-authority opponents and scaling.
 - `1793110481970537462`: the corrected Never control passes. Its previous
-  assertion wrongly expected a direct literal return; the real CFG stores7 in
+  assertion wrongly expected a direct literal return; the real CFG stores 7 in
   the merge slot, jumps to the return block, loads that slot and returns it.
   The known divergent edges remain Unreachable. Function-source hashes retain
-  the other15 successes without repeating them.
+  the other 15 successes without repeating them.
 - `1793110869625726578`: the final guard's affected private group and strict
   private lint pass. Both watched and no-watch numeric contexts wait for a real
   ready equation and resume fallback after `ready_equation/resume_equation`.
 - `1793111065495521999`: final same-source production/CLI strict lint,
-  format/global audit, build and lexer10 pass in93.35s including admission.
+  format/global audit, build and lexer 10 pass in 93.35 s including admission.
 
-The original immutable457 observations and all mistaken predictions remain.
+The original immutable 457 observations and all mistaken predictions remain.
 The newly observed ordered/shared cases accept in both pinned editions; actual
 ambiguity and recursive projection reject. A no_core closure probe ICE is
 retained as infrastructure, with no acceptance claim; the separate ordinary
@@ -56,17 +56,17 @@ Arguments/FormattingOptions source graph.
 
 ## Observed costs
 
-Actual widths are SourceBinary16, SourceUnary12, CallContexts72, Operation16,
-NodeFacts80, Body448 and selection Source16. The cold Watch is80 and Storage368.
-A visited-map pair is12 versus the unchanged old key's8; this cost applies to
-ordinary watches too. A queued work entry is16. The live diamond table retains
-three entries at capacity7, or84 logical payload bytes. Private allocator bucket
+Actual widths are SourceBinary 16, SourceUnary 12, CallContexts 72, Operation 16,
+NodeFacts 80, Body 448 and selection Source 16. The cold Watch is 80 and Storage 368.
+A visited-map pair is 12 versus the unchanged old key's 8; this cost applies to
+ordinary watches too. A queued work entry is 16. The live diamond table retains
+three entries at capacity 7, or 84 logical payload bytes. Private allocator bucket
 counts and predecessor Watch/Storage widths were not observed.
 
-For widths1/8/32/128 the shared-DAG controls consume86/112/208/592 work steps and
-retain1,416/1,664/2,624/6,464 logical bytes. Ordinary notification registration for
-16/128/1,024/4,096 goals costs292/2,404/19,216/76,824 steps; total delivery costs
-404/3,300/26,384/105,496. Header queries for2/16/64/256 operators cost24/192/768/3,072.
+For widths 1/8/32/128 the shared-DAG controls consume 86/112/208/592 work steps and
+retain 1,416/1,664/2,624/6,464 logical bytes. Ordinary notification registration for
+16/128/1,024/4,096 goals costs 292/2,404/19,216/76,824 steps; total delivery costs
+404/3,300/26,384/105,496. Header queries for 2/16/64/256 operators cost 24/192/768/3,072.
 These are actual existing counters and capacity accounting, not allocation-count
 or allocator telemetry. Transient vector peak bytes were not observed. Growth
 copy/rehash work and failed attempts use the same cumulative inference payer;
