@@ -61,9 +61,12 @@ pub enum LangItem {
     StructuralPartialEq,
     Ordering,
     PartialOrd,
+    DiscriminantKind,
+    DiscriminantType,
+    Neg,
 }
 impl LangItem {
-    pub const ALL: [Self; 46] = [
+    pub const ALL: [Self; 49] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -110,6 +113,9 @@ impl LangItem {
         Self::StructuralPartialEq,
         Self::Ordering,
         Self::PartialOrd,
+        Self::DiscriminantKind,
+        Self::DiscriminantType,
+        Self::Neg,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -160,6 +166,9 @@ impl LangItem {
             Self::StructuralPartialEq => 43,
             Self::Ordering => 44,
             Self::PartialOrd => 45,
+            Self::DiscriminantKind => 46,
+            Self::DiscriminantType => 47,
+            Self::Neg => 48,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -212,6 +221,9 @@ impl LangItem {
             "structural_peq" => Some(Self::StructuralPartialEq),
             "Ordering" => Some(Self::Ordering),
             "partial_ord" => Some(Self::PartialOrd),
+            "discriminant_kind" => Some(Self::DiscriminantKind),
+            "discriminant_type" => Some(Self::DiscriminantType),
+            "neg" => Some(Self::Neg),
             _ => None,
         }
     }
