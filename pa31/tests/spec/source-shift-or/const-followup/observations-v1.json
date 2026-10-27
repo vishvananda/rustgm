@@ -1,0 +1,182 @@
+{
+  "state": "actual NEW followup outcomes; originals and first disagreements retained",
+  "prediction_sha256": "e5ae708686fa9c95bc69c7d36fefa1853bc2816054691542710805407d4f4318",
+  "binding_sha256": "d8ed4772ab07539b19c679a397f2b830409d31f4ab49d1d6a7455550980b9f10",
+  "results_sha256": "7ffaf94703f0540b2dd83f8e6c388d098787b0131cc6d7e30db8f3ff2fe0e45b",
+  "commands": 12,
+  "metadata_observations": 6,
+  "native_observations": 2,
+  "infrastructure_failures": 0,
+  "status_disagreements": 0,
+  "prediction_disagreements": 4,
+  "observed_contract": [
+    "Genuine const impls accept primitive scalar constant syntax in both editions.",
+    "Original ordinary-impl primitive const source rejects E0277; no const permission is manufactured from scalar representation.",
+    "Real const impls expose E0080 for out-of-width and negative shift constants.",
+    "Builtin primitive syntax emits7 while actual explicit custom methods execute to99/42, both editions.",
+    "Actual runtime source struct/generic methods print7/12/13; shift RHS default observer prints4/7; checked runtime shift observes panic.",
+    "Method/header/overload/Output/const effect proofs stay real even when primitive syntax emits scalar IR."
+  ],
+  "outcomes": [
+    {
+      "case": "primitive-const-impl.rs",
+      "edition": 2021,
+      "phase": "metadata",
+      "status": 0,
+      "errors": [],
+      "warnings": [
+        "unused_features"
+      ],
+      "matches_status": true,
+      "matches": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "ed0b7609347bbce7fb2a017c998bb1cad3a1691f581d69d903a61a5a74adaaf8"
+    },
+    {
+      "case": "primitive-const-impl.rs",
+      "edition": 2024,
+      "phase": "metadata",
+      "status": 0,
+      "errors": [],
+      "warnings": [
+        "unused_features"
+      ],
+      "matches_status": true,
+      "matches": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "ed0b7609347bbce7fb2a017c998bb1cad3a1691f581d69d903a61a5a74adaaf8"
+    },
+    {
+      "case": "const-overflow-impl.rs",
+      "edition": 2021,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0080"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "29aa102e53b112b0e2a4f7f85ed0118885f85f9b9ed3b71b8f991dc86f1b5fc4"
+    },
+    {
+      "case": "const-overflow-impl.rs",
+      "edition": 2024,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0080"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "29aa102e53b112b0e2a4f7f85ed0118885f85f9b9ed3b71b8f991dc86f1b5fc4"
+    },
+    {
+      "case": "const-negative-impl.rs",
+      "edition": 2021,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0080"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "b95f0adf21e5b016fae0448297e181b31175a991b7671cef744a298d5d0a843b"
+    },
+    {
+      "case": "const-negative-impl.rs",
+      "edition": 2024,
+      "phase": "metadata",
+      "status": 1,
+      "errors": [
+        "E0080"
+      ],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "b95f0adf21e5b016fae0448297e181b31175a991b7671cef744a298d5d0a843b"
+    },
+    {
+      "case": "custom-runtime-only.rs",
+      "edition": 2021,
+      "phase": "object",
+      "status": 0,
+      "errors": [],
+      "warnings": [
+        "unused_features"
+      ],
+      "matches_status": true,
+      "matches": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "c775a4967e8bc6e6a96a54f5bb026c66cdb158821e1f29493bb0ccdf4feee8e3"
+    },
+    {
+      "case": "custom-runtime-only.rs",
+      "edition": 2021,
+      "phase": "link",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "custom-runtime-only.rs",
+      "edition": 2021,
+      "phase": "execute",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "f8f533f11447115abca4354bf3be21090c0178602a14cd609b35cc4695a7a35e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "custom-runtime-only.rs",
+      "edition": 2024,
+      "phase": "object",
+      "status": 0,
+      "errors": [],
+      "warnings": [
+        "unused_features"
+      ],
+      "matches_status": true,
+      "matches": false,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "c775a4967e8bc6e6a96a54f5bb026c66cdb158821e1f29493bb0ccdf4feee8e3"
+    },
+    {
+      "case": "custom-runtime-only.rs",
+      "edition": 2024,
+      "phase": "link",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "custom-runtime-only.rs",
+      "edition": 2024,
+      "phase": "execute",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "matches_status": true,
+      "matches": true,
+      "stdout_sha256": "f8f533f11447115abca4354bf3be21090c0178602a14cd609b35cc4695a7a35e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}
