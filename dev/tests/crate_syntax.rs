@@ -391,3 +391,50 @@ fn configuration_matches_a_preorder_walk_without_walking_enabled_syntax() -> Res
     }
     Ok(())
 }
+
+#[test]
+fn higher_ranked_const_bounds_retain_binders_before_typed_modifiers() -> Result<(), String> {
+    use rustgm::support::constness::Constness;
+    let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../pa31/tests/spec/higher-ranked-const-bounds");
+    for (name, expected) in [
+        ("conditional", Constness::Conditional),
+        ("always", Constness::Const),
+        ("impl-trait", Constness::Conditional),
+        ("ordinary", Constness::Ordinary),
+    ] {
+        let source = std::fs::read_to_string(folder.join(format!("{name}.rs")))
+            .map_err(|error| error.to_string())?;
+        let ast = parse_crate(&source).map_err(|error| format!("{name}: {error:?}"))?;
+        let mut found = 0;
+        for node in &ast.nodes {
+            if let Kind::Bound {
+                constness,
+                quantified: true,
+                binders,
+                ..
+            } = node.kind
+            {
+                assert_eq!(constness, expected, "{name}");
+                assert_eq!(ast.list(binders).len(), 1, "{name}");
+                found += 1;
+            }
+        }
+        assert_eq!(found, 1, "{name}");
+        assert!(ast.lookahead_high_water <= 3);
+    }
+    for name in [
+        "wrong-conditional-order",
+        "wrong-always-order",
+        "relaxed",
+        "lifetime",
+    ] {
+        let source = std::fs::read_to_string(folder.join(format!("{name}.rs")))
+            .map_err(|error| error.to_string())?;
+        assert!(parse_crate(&source).is_err(), "{name}");
+    }
+    // The real core callback shape uses the same binder/modifier producer.
+    parse_crate("const fn callback<'l,'r,A,B,C>(value: impl for<'a> [const] FnOnce(&'a usize,&'a usize)->ControlFlow<B,C> + [const] Destruct){}")
+        .map_err(|error| format!("original core callback: {error:?}"))?;
+    Ok(())
+}

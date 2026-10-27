@@ -267,3 +267,34 @@ fn a_callable_bound_result_is_not_a_stable_function_result_position() -> Result 
     assert!(work.nodes > 0);
     Ok(())
 }
+
+#[test]
+fn higher_ranked_const_bounds_keep_semantic_and_crate_feature_obligations() -> Result {
+    use crate::support::edition::Edition;
+    for edition in [Edition::Rust2021, Edition::Rust2024] {
+        for name in ["conditional", "always", "impl-trait", "ordinary"] {
+            let source = crate::test_source::fixture(&format!(
+                "pa31/tests/spec/higher-ranked-const-bounds/{name}.rs"
+            ))?;
+            let report = crate::test_source::source_provider_config(
+                &source,
+                "bound_protocol",
+                &Config::in_edition(edition),
+            )
+            .map_err(|error| format!("{name}: {error}"))?;
+            crate::pipeline::analyze_source(&report).map_err(|error| format!("{name}: {error}"))?;
+        }
+        let source = crate::test_source::fixture(
+            "pa31/tests/spec/higher-ranked-const-bounds/missing-feature.rs",
+        )?;
+        let error = crate::test_source::source_provider_config(
+            &source,
+            "bound_protocol",
+            &Config::in_edition(edition),
+        )
+        .err()
+        .ok_or("higher-ranked const bound lost its crate feature requirement")?;
+        assert!(error.to_string().contains("const_trait_impl"), "{error}");
+    }
+    Ok(())
+}
