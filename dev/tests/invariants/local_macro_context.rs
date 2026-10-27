@@ -110,6 +110,15 @@ fn local_owner_keeps_ordinary_prelude_and_no_source_roles_or_features() -> TestR
     assert!(!report.package.permits_source_rust_call());
     assert_eq!(size_of::<Option<Box<Source>>>(), size_of::<usize>());
     assert_eq!(size_of::<Package>(), 256);
+    assert_eq!(size_of::<policy::Features>(), 8);
+    assert_eq!(size_of::<policy::MacroFeatures>(), 1);
+    eprintln!(
+        "cfg cold layouts Features={} CfgGate={} CfgUse={} ConfiguredUse={}",
+        size_of::<policy::Features>(),
+        size_of::<crate::expand::config::CfgGate>(),
+        size_of::<crate::expand::config::CfgUse>(),
+        size_of::<crate::expand::configured::ConfiguredUse>()
+    );
     assert!(size_of::<LocalMacros>() <= size_of::<SourceCore>());
     eprintln!(
         "local macro layouts Source={} Local={} Contracts={} Core={} Client={} Package={} Report={} Definition={} Session={} Context={}",

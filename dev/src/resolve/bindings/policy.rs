@@ -11,7 +11,7 @@ use crate::{
 };
 
 #[derive(Default)]
-pub(in crate::resolve) struct Features(u32);
+pub(in crate::resolve) struct Features(u64);
 #[derive(Clone, Copy)]
 pub(in crate::resolve) enum Feature {
     NoCore,
@@ -46,6 +46,7 @@ pub(in crate::resolve) enum Feature {
     MetavariableConcat = 29,
     CoverageAttribute = 30,
     MetavariableExpressions = 31,
+    CfgTargetHasAtomic = 32,
 }
 
 /// Recognizing a gate request is not evidence that its active constructs work.
@@ -75,6 +76,7 @@ impl Request {
             "allow_internal_unstable" => Self::Capability(Feature::InternalMacroAllowance),
             "allow_internal_unsafe" => Self::Capability(Feature::InternalUnsafeLint),
             "cfg_ub_checks" => Self::Capability(Feature::CfgUbChecks),
+            "cfg_target_has_atomic" => Self::Capability(Feature::CfgTargetHasAtomic),
             "f16" => Self::Capability(Feature::F16),
             "f128" => Self::Capability(Feature::F128),
             "impl_restriction" => Self::Capability(Feature::ImplRestriction),
@@ -99,10 +101,10 @@ impl Request {
 }
 impl Features {
     pub(in crate::resolve) fn has(&self, feature: Feature) -> bool {
-        self.0 & (1_u32 << feature as u8) != 0
+        self.0 & (1_u64 << feature as u8) != 0
     }
     fn insert(&mut self, feature: Feature) {
-        self.0 |= 1_u32 << feature as u8;
+        self.0 |= 1_u64 << feature as u8;
     }
     pub(super) fn macros(&self) -> MacroFeatures {
         MacroFeatures(
@@ -208,6 +210,7 @@ pub(in crate::resolve) fn prepare_with_admission(
         }
         return Ok(Prepared {
             source: if features.has(Feature::InternalMacroAllowance)
+                || features.has(Feature::CfgTargetHasAtomic)
                 || features.has(Feature::ImplRestriction)
                 || features.has(Feature::MinSpecialization)
                 || features.has(Feature::Specialization)

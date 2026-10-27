@@ -26,6 +26,9 @@ pub(crate) struct CheckedConfiguredUse<'report> {
     enabled: bool,
 }
 impl CheckedConfiguredUse<'_> {
+    pub(crate) fn gate(&self) -> crate::expand::config::CfgGate {
+        self.used.predicate.gate
+    }
     pub(crate) fn location(&self) -> crate::expand::stream::Location {
         crate::expand::stream::Location {
             file: self.file,
@@ -331,7 +334,10 @@ fn predicate_leaves(
         if matches!(
             tree.kind,
             TreeKind::Token(crate::lex::token::Kind::Identifier)
-        ) && forest.name(unit.source.text(), index) == Some("ub_checks")
+        ) && forest
+            .name(unit.source.text(), index)
+            .and_then(crate::expand::config::CfgGate::named)
+            .is_some()
         {
             leaves.insert((tree.span.start, tree.span.end), index);
         }

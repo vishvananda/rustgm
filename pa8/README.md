@@ -63,6 +63,13 @@ no invented source definition node or matcher rule. `parser-calls` counts ordina
 fragment-parser callbacks from matching, the single argument-list parse for
 an eager builtin, and a demanded uncached include-source parse. A forwarded opaque fragment does not need another callback.
 
+Cfg name/value predicates consume captured string literal roots directly,
+including literal-root expression and metadata forwarding. They do not promote
+arbitrary opaque expressions. Demanded `target_has_atomic_load_store` uses retain
+their actual `cfg_target_has_atomic` feature or macro-allowance authority even
+when false. Earlier disabled owners and unselected nested `cfg_attr` attributes
+retain the ordinary ordering rules.
+
 Per-file syntax IDs index retained arenas. The PA5 `active` record identifies the
 configured tree; inactive original nodes may remain as provenance. An
 `include-template` unit retains unexpanded source facts for reuse and provenance.

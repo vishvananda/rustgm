@@ -158,6 +158,7 @@ pub(super) fn collect(
         KnownFeature::PanicInternals,
         KnownFeature::CoreIntrinsics,
         KnownFeature::CfgUbChecks,
+        KnownFeature::CfgTargetHasAtomic,
     ] {
         work.charge(feature.name().spelling().len(), 0)
             .map_err(error)?;
