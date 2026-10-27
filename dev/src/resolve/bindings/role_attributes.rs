@@ -226,6 +226,8 @@ pub(super) fn primary(
                                 | LangItem::ControlFlowBreak
                                 | LangItem::ResultOk
                                 | LangItem::ResultErr
+                                | LangItem::OptionSome
+                                | LangItem::OptionNone
                         )
                     )
                 })

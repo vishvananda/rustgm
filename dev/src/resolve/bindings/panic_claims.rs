@@ -33,7 +33,7 @@ pub(super) fn validate(
     declaration: Declaration,
     role: LangItem,
 ) -> Result<(), Error> {
-    if role == LangItem::Ordering {
+    if matches!(role, LangItem::Ordering | LangItem::Option) {
         let ast = &package.unit(declaration.origin.file).configured.ast;
         if declaration.parent.is_some()
             || !matches!(ast.node(declaration.origin.node).kind,
@@ -42,7 +42,11 @@ pub(super) fn validate(
             return Err(error(
                 package,
                 declaration.origin,
-                "source Ordering identity requires its actual module enum",
+                if role == LangItem::Ordering {
+                    "source Ordering identity requires its actual module enum"
+                } else {
+                    "source Option identity requires its actual module enum"
+                },
             ));
         }
         return Ok(());
