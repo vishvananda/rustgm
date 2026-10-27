@@ -128,3 +128,34 @@ impl ImportedOwners {
         }
     }
 }
+
+impl super::super::Linkage {
+    pub(crate) fn selected_caller_tracking_absent(
+        &self,
+        facts: &Declarations,
+        definition: DefId,
+        steps: &mut usize,
+    ) -> Result<bool, &'static str> {
+        let Some(headers) = self.originals.as_deref() else {
+            return Ok(false);
+        };
+        let Some(ImportedOwners::Provided(owner)) = headers.source.as_ref() else {
+            return Ok(false);
+        };
+        *steps = steps.saturating_add(3);
+        let actual = self
+            .checked_original_header(definition)?
+            .ok_or("selected caller policy lacks its installed canonical header")?;
+        let semantic = facts
+            .declaration_header(definition)?
+            .ok_or("selected caller policy lacks its actual semantic function")?;
+        if actual.declaration != semantic.declaration {
+            return Err("selected caller policy changed its canonical declaration");
+        }
+        let catalog = self
+            .origin_catalog()
+            .ok_or("selected caller policy lost its catalog")?;
+        owner.caller_tracking_absent(catalog, facts, definition, steps)?;
+        Ok(true)
+    }
+}

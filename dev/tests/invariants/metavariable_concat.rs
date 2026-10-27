@@ -21,6 +21,10 @@ fn report(source: &str, edition: Edition) -> Result<Report> {
         &Config::in_edition(edition),
     )?)
 }
+fn check(source: &str, edition: Edition) -> Result {
+    crate::pipeline::analyze_source(&report(source, edition)?)?;
+    Ok(())
+}
 
 #[test]
 fn real_identifiers_literals_repetitions_and_forwarded_literals_reach_body_checking() -> Result {
@@ -68,11 +72,10 @@ fn invalid_operand_categories_arity_and_binding_depth_remain_rejected() -> Resul
                 .ok_or_else(|| format!("{name}: invalid concat accepted"))?;
             assert!(error.to_string().contains("concat"), "{name}: {error}");
         }
-        let report = report(&fixture("protocol/local-definition-hygiene")?, edition)?;
-        assert!(
-            crate::pipeline::analyze_source(&report).is_err(),
-            "concat leaked a local to the caller"
-        );
+        let error = check(&fixture("protocol/local-definition-hygiene")?, edition)
+            .err()
+            .ok_or("concat leaked a local to the caller")?;
+        assert!(error.to_string().contains("unresolved value"), "{error}");
     }
     Ok(())
 }
