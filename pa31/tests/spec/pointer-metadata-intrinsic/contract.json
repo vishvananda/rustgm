@@ -6,20 +6,22 @@
   "producer": "actual source intrinsic DefId/formals/signature/current header and existing completed Pointee roles",
   "consumer": "actual completed direct Call/body/Instance proof retains P::Metadata=M; solved M plus actual pointer ABI layout; pointer read once, pointee memory untouched",
   "source_inputs": {
-    "pa31/tests/spec/pointer-metadata-intrinsic/dynamic-result.rs": "15956b6342de0da4f0067e2164f3135a0600da2619f1cc5cd3c070dfaff6a3f8",
-    "pa31/tests/spec/pointer-metadata-intrinsic/foreign-thin.rs": "feffbc54e843a928dc4126fb648086a63e35feffd6bc5cd74a45c88aed1e4b4b",
-    "pa31/tests/spec/pointer-metadata-intrinsic/mutable-intrinsic-input.rs": "f216464edf5b88e0ead2b159b8772b0808fbeea3e4625b5246e882dacd7ac5fb",
+    "pa31/tests/spec/pointer-metadata-intrinsic/combined-observer.c": "5743df4ecd0c7319f1483eb3cf59a12ac75d20d671431f92c5c0ef9b7045fc10",
+    "pa31/tests/spec/pointer-metadata-intrinsic/dynamic-result.rs": "6a19b2f5f9fe7cb2d61721f7d6978f4ee2bbfa0dd4b237bb5733352371be027f",
+    "pa31/tests/spec/pointer-metadata-intrinsic/execute-combined.rs": "6e77158760bfbd568f86a8c16c8e1f1de3f55fde83ac42de9d54e67d2f879848",
+    "pa31/tests/spec/pointer-metadata-intrinsic/foreign-thin.rs": "3ae2ddc904edf8f1e315e7edf26ee2e3226f6c963b1881fea47f4649700e9ebc",
+    "pa31/tests/spec/pointer-metadata-intrinsic/mutable-intrinsic-input.rs": "47788f7dff3581f4d0baa1e08fc569637c6599294b47f3ef952e36434aadfa70",
     "pa31/tests/spec/pointer-metadata-intrinsic/observe-once.c": "405cc4ad3350b19340e26bd674733fddba9c867796420d41901e98fbb5d9c3a9",
     "pa31/tests/spec/pointer-metadata-intrinsic/observe.c": "ace9b4b42931b34fd5b0fa2341fc6c7aea0ea96cb5448502ad179e55e556f662",
-    "pa31/tests/spec/pointer-metadata-intrinsic/ordinary-name.rs": "88054fadfb69891d6cd8685b501f9d699b2859d3bf3b583a6a382709c0f9d79d",
-    "pa31/tests/spec/pointer-metadata-intrinsic/provider.rs": "8148cd7b07d821d63897cd4ad33878d9915c6914dcb8a7f403cc2e0486124558",
-    "pa31/tests/spec/pointer-metadata-intrinsic/slice-length.rs": "64c816caf0bcfaeeae868c585677332faf6d0f7ca79cff9db77194ece519602e",
-    "pa31/tests/spec/pointer-metadata-intrinsic/string-length.rs": "7231d5e33e38d3c33eaa772de728ab916e083945a8f0873dde040f4a3f266231",
-    "pa31/tests/spec/pointer-metadata-intrinsic/tail-without-dereference.rs": "dc68df215df49c3831a7429d8dd4ca0031aca10b9c42208502919f448709625e",
-    "pa31/tests/spec/pointer-metadata-intrinsic/thin-unit.rs": "bb73369fad396c173ed9373a4c6dbd785dfbd25ce682d51675b9275818f3a541",
-    "pa31/tests/spec/pointer-metadata-intrinsic/unit-argument-fault.rs": "1d53c0e096068cdce03b3c21236126d84729825ff906e7e9e156e3e6f3bc3416",
-    "pa31/tests/spec/pointer-metadata-intrinsic/unit-argument-once.rs": "51c91aa1d850d871fc0d55066f7a00c89dbf4e7bbad872ebc96f7a93839c3e50",
-    "pa31/tests/spec/pointer-metadata-intrinsic/unrequested-intrinsics.rs": "859813973f4f6478b950acfe3ff872317c470c25d24eb217006dbf1490fa5b8f"
+    "pa31/tests/spec/pointer-metadata-intrinsic/ordinary-name.rs": "187e6b5c5c20d01fca006437442cd3d3f9b27538df45632e6e8cef980c0f44d3",
+    "pa31/tests/spec/pointer-metadata-intrinsic/provider.rs": "a62b35a68e7a9b539085c9a2ea004c260810afd9b7829e71df6fee20663c6dc0",
+    "pa31/tests/spec/pointer-metadata-intrinsic/slice-length.rs": "65ecfa9d6f1f6a9ddc6915ec6f92abab3941e242ba1ca2b4a6abbefde28beb4f",
+    "pa31/tests/spec/pointer-metadata-intrinsic/string-length.rs": "1d5a882139acc0789a4320fe50293f69bece4088fc35afedd262c7a4e364b34b",
+    "pa31/tests/spec/pointer-metadata-intrinsic/tail-without-dereference.rs": "e44fad9c7b999286ee1eceaa8d95a25983cd71d86b139388d1bdc84c8f49be90",
+    "pa31/tests/spec/pointer-metadata-intrinsic/thin-unit.rs": "300b5d714c5b2d8c99773d7c1020416bb4f45fa20c736349075cee62ba8d9d01",
+    "pa31/tests/spec/pointer-metadata-intrinsic/unit-argument-fault.rs": "b05ebf8e5db373429a8629774e3418399c3fc68ab6392e0a894e79b6d7bf0852",
+    "pa31/tests/spec/pointer-metadata-intrinsic/unit-argument-once.rs": "746947ffaaf959ea7e9aa3afff9726c7d9ce7cf99ba044f054abd8277f913697",
+    "pa31/tests/spec/pointer-metadata-intrinsic/unrequested-intrinsics.rs": "ee7433ab890fa87c6ae380d0f98d55835a8637b6baf5766434b9f704d81d2f53"
   },
   "independent_evidence": [
     {
@@ -66,6 +68,15 @@
       "commands": 12,
       "infra": 0,
       "disagreements": 6
+    },
+    {
+      "directory": "profile-observed-v1",
+      "complete_sha256": "ca5788ec25e7e6a8bedcccd39de2a57faa10781f01b85547183c56a00eb0cb2f",
+      "binding_sha256": "2f73e4667e471fac2ff3e7149f2934714837e8b791c94faaab1f5596650999d4",
+      "results_sha256": "60c2c4115a2d649731dcbc3d335ce6837c96b6a729a2c7c4219bf115ddc8c2be",
+      "commands": 7,
+      "infra": 0,
+      "disagreements": 1
     }
   ],
   "native_observations": {
@@ -89,5 +100,14 @@
     "actual candidate linked native outputs using one integrator CLI",
     "dynamic standalone value extraction remains required; no fake fields/vtable words",
     "foreign/imported intrinsic transport and indirect invocation remain closed"
-  ]
+  ],
+  "supported_profile_correction": "Initial Rust-positive Destruct without its upstream deny-explicit-impl/dyn-incompatible attrs remains archived with actual candidate rejection. Current provider uses genuine pinned attrs; changed shared prefix +one explicitly authored CLI companion independently requalified, no old full matrix repeated.",
+  "native_execution_companion": {
+    "source": "pa31/tests/spec/pointer-metadata-intrinsic/execute-combined.rs",
+    "sha256": "6e77158760bfbd568f86a8c16c8e1f1de3f55fde83ac42de9d54e67d2f879848",
+    "observer": "pa31/tests/spec/pointer-metadata-intrinsic/combined-observer.c",
+    "observer_sha256": "5743df4ecd0c7319f1483eb3cf59a12ac75d20d671431f92c5c0ef9b7045fc10",
+    "stdout": "7 6 3 3 7 91 1\n",
+    "binding_sha256": "2f73e4667e471fac2ff3e7149f2934714837e8b791c94faaab1f5596650999d4"
+  }
 }

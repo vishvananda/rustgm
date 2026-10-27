@@ -13,7 +13,10 @@ impl<T:PointeeSized>LegacyReceiver for &mut T{}
 #[lang="freeze"]pub unsafe auto trait Freeze{}
 #[unstable(feature="const_destruct",issue="133214")]
 #[rustc_const_unstable(feature="const_destruct",issue="133214")]
-#[lang="destruct"]pub const trait Destruct:PointeeSized{}
+#[lang="destruct"]
+#[rustc_deny_explicit_impl]
+#[rustc_dyn_incompatible_trait]
+pub const trait Destruct:PointeeSized{}
 #[unstable(feature="unsize",issue="18598")]
 #[lang="unsize"]#[rustc_deny_explicit_impl]#[rustc_dyn_incompatible_trait]
 pub trait Unsize<T:PointeeSized>:PointeeSized{}

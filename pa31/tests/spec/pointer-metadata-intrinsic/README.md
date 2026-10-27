@@ -26,3 +26,12 @@ intentionally mismatched data address. Foreign thin metadata grants no value
 layout/MetaSized fact. The untagged same-spelling function retains its own body.
 Original failed source bytes/raw streams and warning differences stay in obj;
 no old Try, builtin declaration or Pointee observations were repeated.
+
+The first actual candidate run exposed its supported Destruct source profile:
+the initial Rust-positive reduced marker lacked the pinned implementation-denial
+and dyn-incompatibility attrs. Those original bytes and actual rejection remain
+profile history. The successor supplies the real source attrs. Only the changed
+shared provider and one new complete CLI companion were independently checked:
+metadata accepts both editions and native prints `7 6 3 3 7 91 1` plus LF. The
+companion includes a genuine Rust main and conditional C observer linkage, so
+candidate execution uses public LowIR without opening the artifact profile.
