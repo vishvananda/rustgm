@@ -142,7 +142,7 @@
       "-Wextra",
       "-Werror"
     ],
-    "status": "frozen; independent and candidate native executions pending"
+    "status": "pinned native protocol and complete Drop companion observed; candidate combined CLI native pending"
   },
   "native_observations_v1": {
     "binding_sha256": "e8deed06248db7fa38a795ea19f02ca3a6b6a2e45eb28b78a45f0e2f22a49573",
@@ -161,9 +161,16 @@
     "edition": "2024",
     "expected_status": 0,
     "native_stdout": "21\n",
-    "status": "frozen; unobserved",
+    "status": "observed expected native output21; candidate combined CLI pending",
     "hooks_source": "pa31/tests/spec/source-freeze/automatic-cleanup.rs",
-    "hooks_source_sha256": "633442327cf88bd6f30745d737706695860e5ea96cdbfd2662a81cdb25e1d110"
+    "hooks_source_sha256": "633442327cf88bd6f30745d737706695860e5ea96cdbfd2662a81cdb25e1d110",
+    "observation": {
+      "binding_sha256": "2909cd971f1bc6bf1aaa937ecac2e16d63897763b53c086fe71e54ca15750c9e",
+      "results_sha256": "60189e7951e1fca429e2c81939e53784d513de6358897a55d38b534a2a9cf149",
+      "commands": 3,
+      "status": 0,
+      "stdout": "21\n"
+    }
   },
   "native_companion_v1": {
     "source": "pa31/tests/spec/source-try-blocks/source-native-drop-exit.rs",
@@ -176,7 +183,7 @@
     "edition": "2024",
     "expected_status": 0,
     "native_stdout": "21\n",
-    "status": "frozen; unobserved",
+    "status": "observed object rejection: missing drop_glue; original prediction retained",
     "observation": {
       "binding_sha256": "ab2151ca928d588259d8dd31772bc6bfab15d51a922e2617a5b82f670db0a72e",
       "results_sha256": "7e913389fed7db75b061091660593a8a15244f33414ef70503aac496150ec500",

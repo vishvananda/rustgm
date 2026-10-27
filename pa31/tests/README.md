@@ -282,3 +282,16 @@ failed observations. The following warm run passed statics/build but only 2/6
 controls, exposing the genuine implicit-template demand gap; that source was
 corrected before the six-control passing run. Imported protocol/plan transport,
 typed heterogeneous try syntax and unrelated const-closure execution stay closed.
+
+Independent native observations now distinguish the language bodies from no-core
+codegen prerequisites. The original protocol source executes exactly
+`7 23 31 17 23 43 19\n`. The original Drop source passes metadata but object
+generation requires Freeze; the first separately frozen Freeze companion then
+requires drop_glue. Both failed codegen predictions and original sources remain
+retained. `source-native-complete-drop.rs` preserves every original Drop program
+body and appends the genuine Freeze and existing source Destruct/drop_glue
+declarations from `source-freeze/automatic-cleanup.rs`; its pinned native output
+is exactly `21\n`. These are new native observations, not repeated metadata
+checks. RustGM native parity remains pending the integrated qualified CLI and
+locked prebuilt backend against the two frozen observers. No original-input or
+original-Drop native success is claimed from these companions.
