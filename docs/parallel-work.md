@@ -39,8 +39,9 @@ owns this result; older checkpoints retain their narrower evidence.
   joins, original core checking/export and publication. Prioritize supported declarations
   and uses over unrelated alias breadth; preserve explicit unsupported forms.
   Const-closure grammar/feature authority and builtin declaration kinds are
-  integrated. Take the qualified Debug prerequisite and LIB-039 concatenation
-  at the new frontier; preserve PA25's full const-callable/CTFE requirement.
+  integrated. Debug is now integrated with 37 private/26 production controls;
+  implement LIB-039 concatenation at the new frontier.
+  Preserve PA25's full const-callable/CTFE requirement.
   Prepare the selected alloc/std dependency/runtime graph and PA34 orchestration
   before core completion. Do not change CPPGM or pinned upstream sources.
 

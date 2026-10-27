@@ -161,22 +161,28 @@ pub(super) fn validate(
     if let Some(role) = role {
         reserved.header_attributes[role.index()] = flags;
     }
-    if claims
+    let trivial_reads = claims
         .iter()
-        .any(|claim| matches!(claim, Claim::TrivialFieldReads))
-    {
-        if !source.features.has(Feature::RustcAttributes) || role != Some(LangItem::Clone) {
+        .filter(|claim| matches!(claim, Claim::TrivialFieldReads))
+        .count();
+    if trivial_reads != 0 {
+        let unit = package.unit(declaration.origin.file);
+        if !source.features.has(Feature::RustcAttributes)
+            || !matches!(unit.configured.ast.node(declaration.origin.node).kind,
+                crate::syntax::ast::Kind::Item(index) if matches!(unit.configured.ast.items[index as usize].kind, crate::syntax::item::ItemKind::Trait { .. }))
+        {
             return Err(error(
-                "trivial-field-read diagnostics require the actual source Clone trait",
+                "trivial-field-read diagnostics require an actual source trait",
             ));
         }
-        if reserved
-            .trivial_field_reads
-            .replace(declaration.definition)
-            .is_some()
-        {
-            return Err(error("duplicate trivial-field-read diagnostic owner"));
+        if trivial_reads != 1 {
+            return Err(error(
+                "duplicate trivial-field-read diagnostic on one trait",
+            ));
         }
+        // The existing header owns the original attribute and its source image.
+        // A lint hint neither reserves a unique global trait nor grants a proof.
+        reserved.steps = reserved.steps.saturating_add(1);
     }
     if role == Some(LangItem::Unsize) && !flags.contains(HeaderAttribute::DynIncompatible) {
         return Err(error(

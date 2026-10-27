@@ -81,7 +81,7 @@ fn real_frames_cannot_borrow_unavailable_role_headers() -> TestResult {
             matches!(definition.body, Body::Builtin(role) if !role.executable()).then_some(index)
         })
         .collect();
-    assert_eq!(unavailable.len(), 35);
+    assert_eq!(unavailable.len(), 34);
     for index in unavailable {
         report.invocations[0].definition = index;
         for forged in [false, true] {
@@ -206,7 +206,6 @@ fn unknown_claims_forms_and_provider_opponents_do_not_change_ordinary_derives() 
     for name in [
         "unknown-role.rs",
         "wrong-owner.rs",
-        "wrong-derive-form.rs",
         "missing-gate.rs",
         "malformed-claim.rs",
         "duplicate-claim.rs",
@@ -229,6 +228,33 @@ fn unknown_claims_forms_and_provider_opponents_do_not_change_ordinary_derives() 
     crate::pipeline::analyze_source(&report)?;
     real_frames_cannot_borrow_unavailable_role_headers()?;
     Ok(())
+}
+
+#[test]
+fn registered_derive_keeps_legacy_source_form_without_execution_permission() -> TestResult {
+    let source = fixture("wrong-derive-form.rs")?;
+    with_engine(&source, true, |engine| {
+        engine.run()?;
+        let definition = engine
+            .definitions
+            .iter()
+            .position(|definition| matches!(definition.body, Body::Builtin(Builtin::From)))
+            .ok_or("registered From declaration missing")?;
+        let error = engine
+            .require_invocable(
+                definition,
+                crate::expand::builtin::BuiltinKind::Derive,
+                FileId(0),
+                0,
+            )
+            .err()
+            .ok_or("unavailable From executed")?;
+        assert!(error.message.contains(Builtin::From.unavailable_message()));
+        assert!(engine.invocations.is_empty());
+        assert_eq!(engine.captures.len(), 0);
+        assert_eq!(engine.loader.package.marks.context_count(), 1);
+        Ok(())
+    })
 }
 
 #[test]

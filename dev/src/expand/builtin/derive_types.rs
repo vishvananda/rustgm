@@ -61,6 +61,14 @@ fn node(
                 *output = node(source, *output, target, charge, depth + 1)?;
             }
         }
+        Kind::FunctionType(index) => *index = callable(source, *index, target, charge, depth + 1)?,
+        Kind::FieldDefinition {
+            visibility: crate::syntax::item::Visibility::Private,
+            ty,
+            ..
+        } => {
+            *ty = node(source, *ty, target, charge, depth + 1)?;
+        }
         Kind::Group(value) => *value = node(source, *value, target, charge, depth + 1)?,
         Kind::Qualified {
             ty,
@@ -87,6 +95,37 @@ fn node(
     .ok_or_else(|| error(actual.span.start, "derived field node overflow"))?;
     target.nodes.push(actual);
     Ok(copied)
+}
+
+fn callable(
+    source: &Syntax<StoredValue>,
+    index: u32,
+    target: &mut Syntax<StoredValue>,
+    charge: &Charge<'_>,
+    depth: usize,
+) -> Result<u32, LexError> {
+    charge(1, 4 * size_of::<crate::syntax::item::FunctionType>())?;
+    let mut function = *source
+        .function_types
+        .get(index as usize)
+        .ok_or_else(|| error(0, "derived callable field lost its parsed signature"))?;
+    if function.abi != crate::syntax::item::Abi::Rust
+        || function.binders.start != function.binders.end
+    {
+        return Err(error(
+            0,
+            "derived callable ABI or explicit binders require a wider field profile",
+        ));
+    }
+    function.binders = list(source, function.binders, target, charge, depth + 1)?;
+    function.parameters = list(source, function.parameters, target, charge, depth + 1)?;
+    if let Some(result) = &mut function.result {
+        *result = node(source, *result, target, charge, depth + 1)?;
+    }
+    let result = u32::try_from(target.function_types.len())
+        .map_err(|_| error(0, "derived callable field arena overflow"))?;
+    target.function_types.push(function);
+    Ok(result)
 }
 
 fn list(
