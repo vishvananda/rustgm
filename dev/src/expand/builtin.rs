@@ -5,6 +5,8 @@ pub(crate) mod choice;
 pub(crate) mod delegation;
 pub(crate) mod derive_output;
 mod derive_types;
+#[path = "builtin/placeholder_values.rs"]
+pub(crate) mod format_arguments;
 pub(crate) mod format_literal;
 mod library;
 use super::{

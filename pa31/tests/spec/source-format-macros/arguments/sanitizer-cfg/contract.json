@@ -1,0 +1,64 @@
+{
+  "scope": "cfg_sanitize source feature gates and explicit predicate data only; no instrumentation option or execution grant",
+  "primary": "compiler/rustc_feature/src/builtin_attrs.rs26 plus existing cfg parser",
+  "tool": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+  "tool_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "env": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "options": [
+    "--crate-type=lib",
+    "--cap-lints=allow"
+  ],
+  "editions": [
+    2021,
+    2024
+  ],
+  "cases": [
+    {
+      "path": "pa31/tests/spec/source-format-macros/arguments/sanitizer-cfg/off.rs",
+      "sha256": "b2dea178ea2fb6cf4d3d8ea1543d7477450824d9a2b495730f556ec082852508",
+      "metadata": 0,
+      "options": []
+    },
+    {
+      "path": "pa31/tests/spec/source-format-macros/arguments/sanitizer-cfg/cfi.rs",
+      "sha256": "ea71bd8cbc43572f6245d1e98ae605618a878ad309b372dd1bc7baf9c4b2e5e1",
+      "metadata": 0,
+      "options": [
+        "--cfg",
+        "sanitize=\"cfi\""
+      ]
+    },
+    {
+      "path": "pa31/tests/spec/source-format-macros/arguments/sanitizer-cfg/kcfi.rs",
+      "sha256": "ea71bd8cbc43572f6245d1e98ae605618a878ad309b372dd1bc7baf9c4b2e5e1",
+      "metadata": 0,
+      "options": [
+        "--cfg",
+        "sanitize=\"kcfi\""
+      ]
+    },
+    {
+      "path": "pa31/tests/spec/source-format-macros/arguments/sanitizer-cfg/unknown.rs",
+      "sha256": "b2dea178ea2fb6cf4d3d8ea1543d7477450824d9a2b495730f556ec082852508",
+      "metadata": 0,
+      "options": [
+        "--cfg",
+        "sanitize=\"other\""
+      ]
+    },
+    {
+      "path": "pa31/tests/spec/source-format-macros/arguments/sanitizer-cfg/missing.rs",
+      "sha256": "6ee1f45a3431b13373b9b59b9a74d7469db172a4a1ca149bc9a14998208aef98",
+      "metadata": 1,
+      "options": []
+    },
+    {
+      "path": "pa31/tests/spec/source-format-macros/arguments/sanitizer-cfg/malformed.rs",
+      "sha256": "8ce9cad562a3b2bea666a6ac924423a82bdca1829e27cd01e24e94a5240c8a65",
+      "metadata": 1,
+      "options": []
+    }
+  ]
+}

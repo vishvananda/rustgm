@@ -1,0 +1,56 @@
+{
+  "scope": "Ordinary root extern-crate-self alias/prelude, lexical/privacy/module ownership; no SourceCore execution",
+  "primary": "compiler/rustc_resolve/src/build_reduced_graph.rs990-1084",
+  "tool": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+  "tool_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "options": [
+    "--crate-type=lib",
+    "--cap-lints=allow"
+  ],
+  "editions": [
+    2021,
+    2024
+  ],
+  "cases": [
+    {
+      "path": "pa6/tests/spec/self-aliases/nested.rs",
+      "sha256": "7f0ac352e5ec622eb13cd4feb26ad6c9bbf0ba65ad3d091e3856ce1b0fc1260f",
+      "metadata": 0
+    },
+    {
+      "path": "pa6/tests/spec/self-aliases/macro.rs",
+      "sha256": "bc095d873c8d55eca01cd07b86fb5b15d8427a2f0df097ead9137d2474823de4",
+      "metadata": 0
+    },
+    {
+      "path": "pa6/tests/spec/self-aliases/inner-shadow.rs",
+      "sha256": "41fa3df35d752905b3b52043f062c02a3cadb192439188fc3e7d8b5b617f0556",
+      "metadata": 0
+    },
+    {
+      "path": "pa6/tests/spec/self-aliases/root-shadow.rs",
+      "sha256": "39d63de29a35ab72a19f9eefc8c0ae9eabc52d8de3d6544647f0dfe72a402b4d",
+      "metadata": 1
+    },
+    {
+      "path": "pa6/tests/spec/self-aliases/nonroot.rs",
+      "sha256": "dc24c6227e7697f27418bf1aafc742871cbcb9fbcdb64807706bf9437e46af75",
+      "metadata": 1
+    },
+    {
+      "path": "pa6/tests/spec/self-aliases/no-prelude.rs",
+      "sha256": "8af841e8d63fbb0321f88d1605c72d7d0ce0cc22bffd00f9d57f9e995bda78dc",
+      "metadata": 1
+    },
+    {
+      "path": "pa6/tests/spec/self-aliases/no-prelude-explicit.rs",
+      "sha256": "ee83b68479c189ed14f2ef3b663a9df24063ae6f6fa45e3e7cf77b29cb182fc2",
+      "metadata": 0
+    },
+    {
+      "path": "pa6/tests/spec/self-aliases/private.rs",
+      "sha256": "0238fb4f6e192967ba0ee2654833768dd3521c800ab55c610c5dcf4fcb38b888",
+      "metadata": 1
+    }
+  ]
+}

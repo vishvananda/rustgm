@@ -55,7 +55,11 @@ impl Queries<'_> {
         let child = |node| NodeKey { node, ..key };
         Ok(match Declarations::kind(self.report, key) {
             Kind::LibraryValue {
-                kind: crate::support::library_types::LibraryValue::FormatLiteral { .. },
+                kind:
+                    crate::support::library_types::LibraryValue::FormatLiteral { .. }
+                    | crate::support::library_types::LibraryValue::FormatOutput { .. }
+                    | crate::support::library_types::LibraryValue::FormatSuperLet { .. }
+                    | crate::support::library_types::LibraryValue::FormatConstructor { .. },
                 ..
             } => None,
             Kind::LibraryValue { value, .. } => {

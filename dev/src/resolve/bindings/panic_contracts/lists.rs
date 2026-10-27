@@ -159,6 +159,7 @@ pub(super) fn collect(
         KnownFeature::CoreIntrinsics,
         KnownFeature::CfgUbChecks,
         KnownFeature::CfgTargetHasAtomic,
+        KnownFeature::CfgSanitize,
     ] {
         work.charge(feature.name().spelling().len(), 0)
             .map_err(error)?;

@@ -28,9 +28,9 @@ impl Resolver<'_> {
         node: NodeId,
         kind: crate::support::library_types::LibraryValue,
     ) -> Result<ScopeId, Error> {
-        if matches!(
+        if !matches!(
             kind,
-            crate::support::library_types::LibraryValue::FormatLiteral { .. }
+            crate::support::library_types::LibraryValue::EnvironmentOption
         ) {
             self.facts
                 .node_scopes
@@ -40,13 +40,7 @@ impl Resolver<'_> {
         if self.facts.builtin_traits.library.is_none() {
             self.prepare_external_traits(c, node)?;
         }
-        match kind {
-            crate::support::library_types::LibraryValue::FormatLiteral { .. } => {
-                return Err(self.error(c, node, "formatting cannot use a bootstrap library value"));
-            }
-            crate::support::library_types::LibraryValue::EnvironmentOption => self
-                .prepare_library_type(c, node, crate::support::library_types::LibraryType::Option),
-        }?;
+        self.prepare_library_type(c, node, crate::support::library_types::LibraryType::Option)?;
         self.facts
             .builtin_traits
             .library
@@ -65,14 +59,14 @@ impl Resolver<'_> {
             return Ok(None);
         };
         let name = self.package.name(c.file, span)?;
-        if self.package.uses_source_bindings() && self.package.names.get(name) == "self" {
+        if self.package.names.get(name) == "self" {
             return self
                 .facts
                 .module_scopes
                 .first()
                 .copied()
                 .map(Some)
-                .ok_or_else(|| self.error(c, node, "missing self-core root"));
+                .ok_or_else(|| self.error(c, node, "missing self-crate root"));
         }
         if self.facts.crates.is_some()
             && let Some(binding) = self
@@ -114,26 +108,33 @@ impl Resolver<'_> {
     pub(super) fn expose_external(
         &mut self,
         c: Context,
+        node: NodeId,
         target: DefId,
-    ) -> Result<(), &'static str> {
+    ) -> Result<(), Error> {
         if c.scope != ScopeId(0) {
             return Ok(());
         }
-        let Some(external) = self.facts.extern_scope else {
-            return Ok(());
+        let external = if let Some(scope) = self.facts.extern_scope {
+            scope
+        } else {
+            let scope = self.new_scope(None, ModuleId(0), true)?;
+            self.facts.extern_scope = Some(scope);
+            scope
         };
-        let name = self.facts.definitions[target.0 as usize].name;
-        self.facts.bindings.insert(
-            external,
-            name,
-            Namespace::Type,
-            Binding {
-                target,
-                access: Access::Public,
-                origin: super::model::Origin::Direct,
-                ambiguous: false,
-            },
-        )?;
+        let (_, name, namespace, context) =
+            self.binding_key(&self.facts.definitions[target.0 as usize])?;
+        self.facts
+            .bindings
+            .insert_key(
+                (external, name, namespace, context),
+                Binding {
+                    target,
+                    access: Access::Public,
+                    origin: super::model::Origin::Direct,
+                    ambiguous: false,
+                },
+            )
+            .map_err(|error| self.error(c, node, error))?;
         Ok(())
     }
 
@@ -371,6 +372,14 @@ impl Resolver<'_> {
             return None;
         }
         let external = self.facts.extern_scope?;
+        if namespace == Namespace::Type {
+            let binding = self.facts.bindings.get(external, name, namespace);
+            if let Some(binding) = binding
+                && self.self_alias(name, binding)
+            {
+                return Some((external, *binding));
+            }
+        }
         if self.package.uses_source_bindings() {
             if namespace != Namespace::Type {
                 return None;
@@ -417,7 +426,58 @@ impl Resolver<'_> {
             .get(scope, name, Namespace::Type)
             .map(|binding| (scope, *binding))
     }
+
+    /// The extern prelude may retain an actual root self-alias without any
+    /// bootstrap library or imported crate. Its current declaration still owns
+    /// the root members; neither an arbitrary module nor missing metadata does.
+    fn self_alias(&self, name: NameId, binding: &Binding) -> bool {
+        let Some(definition) = self.facts.definitions.get(binding.target.0 as usize) else {
+            return false;
+        };
+        let Some(key) = definition.node else {
+            return false;
+        };
+        let root = &self.package.modules[0];
+        if definition.name != name
+            || definition.kind != DefKind::ExternCrate
+            || definition.namespace != Namespace::Type
+            || definition.scope != ScopeId(0)
+            || definition.members != self.facts.module_scopes.first().copied()
+            || key.file != root.file
+            || binding.access != Access::Public
+            || binding.origin != Origin::Direct
+            || binding.ambiguous
+        {
+            return false;
+        }
+        let unit = self.package.unit(key.file);
+        let Some(crate::syntax::ast::Node {
+            kind: crate::syntax::ast::Kind::Item(index),
+            ..
+        }) = unit.configured.ast.nodes.get(key.node.get() as usize)
+        else {
+            return false;
+        };
+        let Some(item) = unit.configured.ast.items.get(*index as usize) else {
+            return false;
+        };
+        matches!(item.kind, ItemKind::ExternCrate { rename: Some(_) })
+            && item
+                .name
+                .is_some_and(|span| matches!(unit.spelling(span), Ok("self")))
+            && unit.configured.active.get(key.node.get() as usize) == Some(&true)
+            && self.binding_key(definition).is_ok_and(|key| {
+                self.facts
+                    .bindings
+                    .get_key(key)
+                    .is_some_and(|current| current.target == binding.target && !current.ambiguous)
+            })
+    }
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/extern_aliases.rs"]
+mod alias_tests;
 
 /// Spellings that can select demand-created language metadata in
 /// `prepare_builtin_path` and its trait, library and intrinsic helpers. A path

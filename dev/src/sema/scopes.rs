@@ -4,6 +4,7 @@ mod controls;
 #[path = "../../tests/invariants/scope_delimiters.rs"]
 mod edition_tests;
 mod extend;
+mod formatting;
 mod walk;
 use crate::support::hash::HashMap;
 use crate::{
@@ -267,7 +268,7 @@ struct Walker<'a> {
     source: NodeKey,
     /// The owner file's configured syntax, resolved once per body.
     unit: &'a crate::resolve::unit::Unit,
-    package: &'a crate::resolve::package::Package,
+    report: &'a Report,
     facts: Facts,
 }
 fn analyze(
@@ -298,7 +299,7 @@ fn analyze_at(
         types,
         source,
         unit: report.package.unit(source.file),
-        package: &report.package,
+        report,
         facts: Facts::with_scratch(root.node, scratch),
     };
     let context = Context {
@@ -334,14 +335,7 @@ fn analyze_at(
     while let Some(work) = walker.facts.scratch.pending.pop() {
         walker.visit(work).map_err(|e| report.diagnostic(e))?;
     }
-    for (node, lifetime) in &walker.facts.scratch.extensions {
-        let entry = walker.facts.scratch.index.get(*node)[0];
-        let Some(info) = walker.facts.scratch.nodes.get_mut(entry as usize) else {
-            return Err(walker.error(*node, "extended expression lacks scope facts"));
-        };
-        info.temporary = *lifetime;
-        info.extended = true;
-    }
+    walker.finish_extensions()?;
     Ok(walker.facts)
 }
 impl Walker<'_> {

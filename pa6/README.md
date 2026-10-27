@@ -155,7 +155,11 @@ external metadata is deliberately small: `core`/`std` provide `ops::Drop`,
 ordinary programs do not allocate this metadata. Their definition identities
 survive aliases, reexports and globs. Prelude lookup respects `no_std` and
 `no_implicit_prelude`, explicit external declarations and lexical shadowing.
-User declarations with the same spelling remain distinct. These name facts
+Explicit crate-root `extern crate self as NAME` declarations make that actual
+crate available through the extern prelude, including in nested modules and
+macros. Inner declarations remain local; lexical shadowing, privacy and
+`no_implicit_prelude` keep their ordinary effects. No library definitions are
+synthesized for a self alias. User declarations with the same spelling remain distinct. These name facts
 do not prove a bound or implement a trait; later semantic assignments own that
 behavior. Other external paths still report unavailable metadata.
 

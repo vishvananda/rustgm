@@ -1,5 +1,8 @@
 //! Formatting selects an actual inherent constructor through ordinary call checking.
 #[cfg(test)]
+#[path = "../../../tests/invariants/construction_loans.rs"]
+mod runtime_tests;
+#[cfg(test)]
 #[path = "../../../tests/invariants/formatting_calls.rs"]
 mod tests;
 use super::{Checker, Constructor, DefId, Error, NodeId, Requirement, TermId, Type, TypeId};
@@ -29,13 +32,18 @@ impl Checker<'_> {
         &mut self,
         node: NodeId,
     ) -> Result<Option<Requirement>, Error> {
-        let Kind::LibraryValue {
-            kind: LibraryValue::FormatLiteral { constructor },
-            value: Some(_),
-        } = self.kind(node)
-        else {
-            return Ok(None);
+        let constructor = match self.kind(node) {
+            Kind::LibraryValue {
+                kind: LibraryValue::FormatLiteral { constructor },
+                value: Some(_),
+            } => constructor,
+            Kind::LibraryValue {
+                kind: LibraryValue::FormatConstructor { name, .. },
+                value: None,
+            } => name,
+            _ => return Ok(None),
         };
+        self.report.formatting_value(self.key(node))?;
         if self.state.call_types.formatting.is_none() {
             self.report.prepare_formatting_value(
                 self.key(node),
@@ -65,8 +73,9 @@ impl Checker<'_> {
         Ok(dependency)
     }
     fn formatting_owner(&self, node: NodeId, constructor: NameId) -> Result<ItemId, Error> {
+        let (role, name) = self.formatting_selector(node)?;
         if constructor.0 as usize >= self.report.package.names.len()
-            || self.report.package.names.get(constructor) != "from_str"
+            || self.report.package.names.get(constructor) != name
         {
             return Err(self.error(
                 node,
@@ -77,7 +86,7 @@ impl Checker<'_> {
             .facts
             .source_bindings
             .as_deref()
-            .and_then(|catalog| catalog.language(LangItem::FormatArguments))
+            .and_then(|catalog| catalog.language(role))
             .ok_or_else(|| {
                 self.error(
                     node,
@@ -95,7 +104,7 @@ impl Checker<'_> {
         let declaration = crate::sema::compiler_items::formatting::declaration(
             self.report,
             self.facts,
-            LangItem::FormatArguments,
+            self.formatting_selector(node)?.0,
         )
         .map_err(|message| self.error(node, message))?
         .ok_or_else(|| self.error(node, "missing actual formatting nominal"))?;
@@ -200,27 +209,7 @@ impl Checker<'_> {
         value: Option<NodeId>,
     ) -> Result<TermId, Error> {
         let value = value.ok_or_else(|| self.error(node, "missing actual formatting literal"))?;
-        let pending = self.state.call_types.formatting.take().ok_or_else(|| {
-            self.error(node, "formatting has no checked constructor continuation")
-        })?;
-        if pending.node != node {
-            return Err(self.error(node, "formatting constructor belongs to another value"));
-        }
-        let method = pending
-            .selected
-            .ok_or_else(|| self.error(node, "unselected formatting constructor"))?;
-        let owner =
-            self.facts.associated.member_owner(method).ok_or_else(|| {
-                self.error(node, "formatting constructor has no actual impl owner")
-            })?;
-        self.state
-            .call_types
-            .method_owners
-            .insert(node, (owner, pending.subject));
-        self.complete_method_arguments(node, method)?;
-        let ty = self.facts.definitions[method.0 as usize]
-            .ok_or_else(|| self.error(node, "missing actual formatting callable"))?;
-        let callable = self.generic_function(node, method, ty)?;
+        let (pending, method, callable) = self.take_formatting_callable(node)?;
         let signature = self.child(node, callable, 0)?;
         let signature = self.call_signature(node, signature)?;
         if !matches!(
@@ -244,5 +233,90 @@ impl Checker<'_> {
         let target_function = self.selected_target_function(node, callable)?;
         self.retain_active_call(node, signature, target_function)?;
         self.call(node, node, crate::syntax::ast::List { start: 0, end: 0 })
+    }
+    fn formatting_selector(&self, node: NodeId) -> Result<(LangItem, &'static str), Error> {
+        match self.kind(node) {
+            Kind::LibraryValue {
+                kind: LibraryValue::FormatLiteral { .. },
+                ..
+            } => Ok((LangItem::FormatArguments, "from_str")),
+            Kind::LibraryValue {
+                kind: LibraryValue::FormatConstructor { constructor, .. },
+                ..
+            } => Ok((constructor.owner(), constructor.name())),
+            _ => Err(self.error(node, "missing actual formatting constructor selector")),
+        }
+    }
+    fn take_formatting_callable(
+        &mut self,
+        node: NodeId,
+    ) -> Result<(Box<Pending>, DefId, TermId), Error> {
+        let pending = self.state.call_types.formatting.take().ok_or_else(|| {
+            self.error(node, "formatting has no checked constructor continuation")
+        })?;
+        if pending.node != node {
+            return Err(self.error(node, "formatting constructor belongs to another value"));
+        }
+        let method = pending
+            .selected
+            .ok_or_else(|| self.error(node, "unselected formatting constructor"))?;
+        let owner =
+            self.facts.associated.member_owner(method).ok_or_else(|| {
+                self.error(node, "formatting constructor has no actual impl owner")
+            })?;
+        self.state
+            .call_types
+            .method_owners
+            .insert(node, (owner, pending.subject));
+        self.complete_method_arguments(node, method)?;
+        let ty = self.facts.definitions[method.0 as usize]
+            .ok_or_else(|| self.error(node, "missing actual formatting callable"))?;
+        let callable = self.generic_function(node, method, ty)?;
+        Ok((pending, method, callable))
+    }
+    pub(super) fn formatting_function(&mut self, node: NodeId) -> Result<TermId, Error> {
+        self.report.formatting_value(self.key(node))?;
+        let (pending, method, callable) = self.take_formatting_callable(node)?;
+        let count = match self.formatting_selector(node)?.0 {
+            LangItem::FormatArguments => 2,
+            LangItem::FormatArgument => 1,
+            _ => return Err(self.error(node, "invalid formatting callable owner")),
+        };
+        let signature = self.child(node, callable, 0)?;
+        if !matches!(self.head(node,signature)?,Some(Constructor::Function {parameters,convention:crate::types::callable::Convention::RUST,..}) if parameters==count)
+        {
+            return Err(self.error(
+                node,
+                "formatting constructor changed its actual Rust signature",
+            ));
+        }
+        let result = self.child(node, signature, count as usize)?;
+        let head = self.head(node, result)?;
+        if !matches!(head, Some(Constructor::Adt(owner, _) | Constructor::AdtArgs(owner, _)) if owner == pending.owner)
+            || !self
+                .state
+                .infer
+                .has_single_lifetime_argument(
+                    &self.facts.types,
+                    head.ok_or_else(|| self.error(node, "formatting result has no nominal shape"))?,
+                )
+                .map_err(|error| self.error(node, error))?
+        {
+            return Err(self.error(
+                node,
+                "formatting callable must return its actual one-lifetime nominal",
+            ));
+        }
+        // This is a function value, whose output regions remain under its own
+        // binder. The actual parent Call opens and relates the result once.
+        self.retain_language_method(node, method, callable, pending.subject);
+        let key = self.key(node);
+        self.facts
+            .node_mut(key)
+            .ok_or_else(|| {
+                super::Declarations::error(self.report, key, "missing formatting callable fact")
+            })?
+            .reference = Some(crate::resolve::model::Target::Definition(method));
+        Ok(callable)
     }
 }

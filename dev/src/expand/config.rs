@@ -15,12 +15,14 @@ mod predicates;
 pub enum CfgGate {
     UbChecks,
     TargetHasAtomic,
+    Sanitize,
 }
 impl CfgGate {
     pub(crate) fn named(name: &str) -> Option<Self> {
         match name {
             "ub_checks" => Some(Self::UbChecks),
             "target_has_atomic_load_store" => Some(Self::TargetHasAtomic),
+            "sanitize" => Some(Self::Sanitize),
             _ => None,
         }
     }

@@ -1,0 +1,176 @@
+{
+  "state": "frozen pre-observation constructor protocol",
+  "scope": "Exact pinned Arguments/Argument storage and selected new/new_debug/argument_new bodies; authored reduced dependencies and user Debug implementation. Not full Formatter/Alignment/PanicInfo or crate parity. Full original Write/SpecWriteFmt/fmt::write graph remains required.",
+  "path": "pa31/tests/spec/source-format-macros/arguments/constructor-provider.rs",
+  "sha256": "61a2fe38b05cd8cfa5953c942d75989e170f332b607ef470b01294c22a7ce8f7",
+  "chunks": [
+    {
+      "start": 0,
+      "end": 88,
+      "sha256": "751004bbfece5e022add69802ce3041a1d1ad83bc4e8e9a6ba03a683cd018a34",
+      "kind": "authored protocol dependency or observer; not full upstream module"
+    },
+    {
+      "start": 88,
+      "end": 9769,
+      "sha256": "eea45cf40b510bb42b134486a0da0a780aeba06f3ab4dcf0e640c000a6216740",
+      "kind": "qualified reduced foundation, unchanged prefix",
+      "path": "pa31/tests/spec/source-location/location-copy-clone.rs",
+      "file_sha256": "27d396405a174743ebecbaa3b4818642062ed409b23c5db3bf7f449c10e16dfd",
+      "end_byte": 9681
+    },
+    {
+      "start": 9769,
+      "end": 10309,
+      "sha256": "7be23cac81fedafba4288368fb0241101f233b14b4174f8f2f3a6d854f685ab4",
+      "kind": "authored protocol dependency or observer; not full upstream module"
+    },
+    {
+      "start": 10309,
+      "end": 10793,
+      "sha256": "a89ad7a575f37533a02e9278b932caa4b3d48d217b5c9bac96dd9f5eecbfb5d5",
+      "kind": "exact pinned source",
+      "path": "ops/unsize.rs",
+      "file_sha256": "4f0f013efec7392300e9d4415748ffd5e74e990ebb096c1b556922540d9684d6",
+      "first": 120,
+      "last": 131
+    },
+    {
+      "start": 10793,
+      "end": 11317,
+      "sha256": "c84271a91fafda240f4ac8d3cf5e3f591f83b60a4ebe3cceffcc72d8dc724356",
+      "kind": "authored protocol dependency or observer; not full upstream module"
+    },
+    {
+      "start": 11317,
+      "end": 11539,
+      "sha256": "60b3516d4aa97385d6948f7e792ecd510246e3a2efacae2850a3363854e3f023",
+      "kind": "exact pinned source",
+      "path": "fmt/mod.rs",
+      "file_sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+      "first": 558,
+      "last": 565
+    },
+    {
+      "start": 11539,
+      "end": 11836,
+      "sha256": "6ce1c33e9c5ea5af6717ee4b584f19a9d2337d511369f07a33821cb7139a181b",
+      "kind": "authored protocol dependency or observer; not full upstream module"
+    },
+    {
+      "start": 11836,
+      "end": 12027,
+      "sha256": "5303f9165d40e0d6e28ba9598b559eca5c9d7a030add7b196622faebef43db3c",
+      "kind": "exact pinned source",
+      "path": "fmt/mod.rs",
+      "file_sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+      "first": 713,
+      "last": 719
+    },
+    {
+      "start": 12027,
+      "end": 12690,
+      "sha256": "d964bceb82bd5d8990a11752976318337cc7fd4699e92f5f962f406d8623d431",
+      "kind": "exact pinned source",
+      "path": "fmt/mod.rs",
+      "file_sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+      "first": 721,
+      "last": 736
+    },
+    {
+      "start": 12690,
+      "end": 12719,
+      "sha256": "f23c900604851efb4e592b88c14ddcd523dd343e1eeae04029a9f60acc16c852",
+      "kind": "authored protocol dependency or observer; not full upstream module"
+    },
+    {
+      "start": 12719,
+      "end": 13946,
+      "sha256": "9759d13246b5704441e04e369fba1e4a5997fdc246754c480fc1ae3efa8e3cf9",
+      "kind": "exact pinned source",
+      "path": "fmt/rt.rs",
+      "file_sha256": "7a7dd4b1640a734fcb82f178ab69868b8f2f624a8c1f5a6fcf85002f4e2e4423",
+      "first": 12,
+      "last": 40
+    },
+    {
+      "start": 13946,
+      "end": 16456,
+      "sha256": "187cebc6a86c85410fadf864248fb979eb47b8beb2bffc339302e75fbd4e629c",
+      "kind": "exact pinned source",
+      "path": "fmt/rt.rs",
+      "file_sha256": "7a7dd4b1640a734fcb82f178ab69868b8f2f624a8c1f5a6fcf85002f4e2e4423",
+      "first": 42,
+      "last": 85
+    },
+    {
+      "start": 16456,
+      "end": 16476,
+      "sha256": "e5f5562ef9a04d0faae74914ceb98ca591a91a940b367a86b8e937af654ff199",
+      "kind": "authored protocol dependency or observer; not full upstream module"
+    },
+    {
+      "start": 16476,
+      "end": 16605,
+      "sha256": "3c3b9d648e46df4ff6fafcae5c7a580da5071c7e87b391a467aa666fac1e4aeb",
+      "kind": "exact pinned source",
+      "path": "fmt/rt.rs",
+      "file_sha256": "7a7dd4b1640a734fcb82f178ab69868b8f2f624a8c1f5a6fcf85002f4e2e4423",
+      "first": 92,
+      "last": 95
+    },
+    {
+      "start": 16605,
+      "end": 17210,
+      "sha256": "282c681514e40c99a609ff3b58d5d065f355b395be187d1c1d77587ce483fc15",
+      "kind": "authored protocol dependency or observer; not full upstream module"
+    },
+    {
+      "start": 17210,
+      "end": 17616,
+      "sha256": "652ce93cc18ce9fb0af8a1ed422d3992c67f4b5c2021911c4ffdb62b69ec22f9",
+      "kind": "exact pinned source",
+      "path": "macros/mod.rs",
+      "file_sha256": "9784131e43d255fed7a07ae18cbc72748eedbebe65dfcefeee999989289df30c",
+      "first": 990,
+      "last": 999
+    },
+    {
+      "start": 17616,
+      "end": 18449,
+      "sha256": "198eb08b2c841771118c062216e7347d833c6be404fa5885a619effc3299cc2a",
+      "kind": "authored protocol dependency or observer; not full upstream module"
+    }
+  ],
+  "expected_metadata": {
+    "2021": 0,
+    "2024": 0
+  },
+  "expected_native_stdout": "e1;e2;t1;r7,9;d9;d7;7 9\n",
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "options": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Coverflow-checks=yes",
+    "--cap-lints=allow"
+  ],
+  "consumer": {
+    "path": "pa31/tests/spec/source-format-macros/arguments/constructor-consumer.c",
+    "sha256": "24e375b1df6c1a0501e778e884daf9c8a9978fca5f9407e607add75c88fb19e1"
+  },
+  "host": {
+    "path": "/usr/bin/x86_64-linux-gnu-gcc-15",
+    "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88",
+    "version": "x86_64-linux-gnu-gcc-15 (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+  },
+  "c_options": [
+    "-std=c11",
+    "-Wall",
+    "-Wextra",
+    "-Werror"
+  ]
+}

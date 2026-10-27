@@ -2,14 +2,14 @@
 use super::*;
 use std::fmt::Write;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
-fn usage(width: usize, calls: usize, atomic: bool) -> Result<usize> {
-    let (feature, predicate) = if atomic {
-        (
+fn usage(width: usize, calls: usize, gate: CfgGate) -> Result<usize> {
+    let (feature, predicate) = match gate {
+        CfgGate::TargetHasAtomic => (
             "cfg_target_has_atomic",
             "target_has_atomic_load_store=\"8\"",
-        )
-    } else {
-        ("cfg_ub_checks", "ub_checks")
+        ),
+        CfgGate::UbChecks => ("cfg_ub_checks", "ub_checks"),
+        CfgGate::Sanitize => ("cfg_sanitize", "sanitize=\"cfi\""),
     };
     let list = std::iter::once(feature.to_owned())
         .chain((1..width).map(|i| format!("fixture_feature_{i}")))
@@ -48,14 +48,18 @@ fn usage(width: usize, calls: usize, atomic: bool) -> Result<usize> {
 }
 #[test]
 fn cfg_expansion_repeated_queries_do_not_repeat_growing_allowance_header_walks() -> Result {
-    for atomic in [false, true] {
-        let base = usage(8, 1, atomic)?;
-        let repeated = usage(8, 32, atomic)?
+    for gate in [
+        CfgGate::UbChecks,
+        CfgGate::TargetHasAtomic,
+        CfgGate::Sanitize,
+    ] {
+        let base = usage(8, 1, gate)?;
+        let repeated = usage(8, 32, gate)?
             .checked_sub(base)
             .ok_or("work ordering")?;
         for width in [32, 128] {
-            let cold = usage(width, 1, atomic)?;
-            let growth = usage(width, 32, atomic)?
+            let cold = usage(width, 1, gate)?;
+            let growth = usage(width, 32, gate)?
                 .checked_sub(cold)
                 .ok_or("work ordering")?;
             assert!(
@@ -138,5 +142,62 @@ fn demanded_false_self_predicates_survive_disabled_owners_and_fresh_prefix_cloni
         .ok_or("retained use")?;
     unit.configured.effects.clear();
     assert!(validate_attributes(&report).is_err());
+    Ok(())
+}
+
+#[test]
+fn sanitize_cfg_uses_actual_set_and_same_feature_and_macro_authority() -> Result {
+    use crate::{
+        expand::config::{Config, predicate},
+        syntax::token_tree::Forest,
+    };
+    for (name, value) in [
+        ("off", None),
+        ("cfi", Some("cfi")),
+        ("kcfi", Some("kcfi")),
+        ("unknown", Some("other")),
+    ] {
+        let mut config = Config::default();
+        if let Some(value) = value {
+            config
+                .add(&format!("sanitize=\"{value}\""))
+                .map_err(|e| e.message)?;
+        }
+        let query = "any(sanitize=\"cfi\",sanitize=\"kcfi\")";
+        let forest = Forest::parse(query).map_err(|e| e.message)?;
+        assert_eq!(
+            predicate(&forest, query, forest.roots(), &config).map_err(|e| e.message)?,
+            matches!(value, Some("cfi" | "kcfi"))
+        );
+        let input = crate::test_source::fixture(&format!(
+            "pa31/tests/spec/source-format-macros/arguments/sanitizer-cfg/{name}.rs"
+        ))?;
+        crate::test_source::source_provider_config(
+            &format!("#![feature(no_core)]#![no_core]{input}"),
+            "sanitize_set",
+            &config,
+        )?;
+    }
+    for name in ["missing", "malformed"] {
+        let input = crate::test_source::fixture(&format!(
+            "pa31/tests/spec/source-format-macros/arguments/sanitizer-cfg/{name}.rs"
+        ))?;
+        let error = crate::test_source::source_provider(
+            &format!("#![feature(no_core)]#![no_core]{input}"),
+            "sanitize_invalid",
+        )
+        .err()
+        .ok_or("invalid sanitize predicate accepted")?;
+        assert!(
+            error.contains(if name == "missing" {
+                "requires cfg_sanitize"
+            } else {
+                "string"
+            }),
+            "{name}: {error}"
+        );
+    }
+    assert_eq!(size_of::<CfgGate>(), 1);
+    assert_eq!(size_of::<KnownFeature>(), 1);
     Ok(())
 }

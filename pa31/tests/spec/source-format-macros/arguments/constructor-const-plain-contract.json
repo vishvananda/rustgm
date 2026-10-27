@@ -1,0 +1,33 @@
+{
+  "tool": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+  "env": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "options": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Coverflow-checks=yes",
+    "--cap-lints=allow"
+  ],
+  "editions": [
+    2021,
+    2024
+  ],
+  "cases": [
+    {
+      "path": "pa31/tests/spec/source-format-macros/arguments/constructor-const-plain.rs",
+      "sha256": "51e0ce9e5a0d541a5929aaae7e82c10ceb3347f807c0cd95f9cafa049b87775e",
+      "metadata": 1,
+      "options": [],
+      "expected_diagnostic": "E0015"
+    }
+  ],
+  "scope": "Actual nonconst Arguments::new denial with independently checked no-Drop user argument and distinct unstable const API policy",
+  "unchanged_prefix": {
+    "path": "pa31/tests/spec/source-format-macros/arguments/constructor-real.rs",
+    "sha256": "528e5f71f3358a4b9864e12f2d83045172f5314a8c01ff646b11e7c207a38417",
+    "bytes": 18816
+  },
+  "tool_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+}

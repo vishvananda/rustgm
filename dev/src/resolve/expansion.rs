@@ -46,6 +46,8 @@ mod diagnostics;
 mod eager;
 pub(crate) mod removed_functions;
 use application_kind::CallGrammar;
+mod format_inputs;
+mod format_sites;
 mod format_values;
 mod location;
 mod metavariables;

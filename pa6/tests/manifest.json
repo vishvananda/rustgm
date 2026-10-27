@@ -2712,6 +2712,94 @@
         "kind": "program",
         "status": 1
       }
+    },
+    {
+      "path": "tests/spec/self-aliases/nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/self-aliases/macro.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/self-aliases/inner-shadow.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/self-aliases/root-shadow.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/self-aliases/nonroot.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/self-aliases/no-prelude.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "path": "tests/spec/self-aliases/no-prelude-explicit.rs",
+      "exit_status": 0,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "path": "tests/spec/self-aliases/private.rs",
+      "exit_status": 1,
+      "features": [
+        "pa6.names"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
     }
   ]
 }
