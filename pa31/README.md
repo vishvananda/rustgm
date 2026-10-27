@@ -1,10 +1,18 @@
 # RustGM Programming Assignment 31: Compiler/library bindings
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
-Prerequisite: PA30. The source profile is Rust 1.98.0, initially edition 2024
+Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The source profile is Rust 1.98.0, initially edition 2024
 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
 See the [library bootstrap plan](../docs/library-bootstrap-roadmap.md) for
 implementation priority, source pins and the migration of unreleased numbers.
+
+## Dependency boundary
+
+The `source-declarations` unit establishes local identity, signatures and
+attribute/feature authority before PA25/26/28 consumers. It excludes runtime
+intrinsic, formatting and panic execution. The separate `source-runtime` unit
+consumes those actual producers. Moving all of PA31 earlier would recreate the
+old cycle; both units and the complete contract below remain required.
 
 ## Required implementation
 

@@ -1,3 +1,9 @@
+> Current assignment dependency and publication order is the
+> [2026-10-27 adopted review](assignment-order.md) and
+> [machine-checked unit graph](../assignment-plan.json). They supersede numeric
+> work/release prerequisites below; PA ownership, full requirements and this
+> document's source pins and acceptance ladder are retained.
+
 # Upstream library bootstrap and real-crate implementation order
 
 This is the implementation plan adopted on 2026-10-22. It preserves PA1–PA30's

@@ -1,6 +1,6 @@
 # RustGM Programming Assignment 23: Trait objects
 
-Status: **implemented-draft**. The maintainer reference and manifest-listed text
+Status: **implemented**. The maintainer reference and manifest-listed text
 suite implement the contract below. Prerequisite: PA22. The source profile is
 Rust 1.98.0, edition 2024, Linux x86-64.
 

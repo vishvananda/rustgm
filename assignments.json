@@ -326,7 +326,7 @@
       "path": "pa21",
       "title": "Advanced generic relationships",
       "mode": "--emit-generic-semantics",
-      "status": "implemented-draft",
+      "status": "implemented",
       "scope": "Variance, higher-ranked bounds, GATs, opaque types and generic drop checking",
       "test_families": [
         "binders",
@@ -339,6 +339,9 @@
       ],
       "additional_modes": [
         "--emit-lowir"
+      ],
+      "release_evidence": [
+        "docs/pa21-validation.md"
       ]
     },
     {
@@ -346,7 +349,7 @@
       "path": "pa22",
       "title": "Unsized types",
       "mode": "--emit-lowir",
-      "status": "implemented-draft",
+      "status": "implemented",
       "scope": "Slices str metadata, fat pointers, unsizing and coercion sites",
       "test_families": [
         "sizedness",
@@ -357,6 +360,9 @@
         "casts",
         "constants",
         "integration"
+      ],
+      "release_evidence": [
+        "docs/pa22-release.md"
       ]
     },
     {
@@ -364,7 +370,7 @@
       "path": "pa23",
       "title": "Trait objects",
       "mode": "--emit-lowir",
-      "status": "implemented-draft",
+      "status": "implemented",
       "scope": "Dyn compatibility, object lifetimes, marker obligations, vtables, dispatch, upcasting and dynamic storage tails",
       "test_families": [
         "annotations",
@@ -376,6 +382,9 @@
         "lifetimes",
         "upcasts",
         "storage"
+      ],
+      "release_evidence": [
+        "docs/pa23-release.md"
       ]
     },
     {
@@ -383,13 +392,17 @@
       "path": "pa24",
       "title": "Closures",
       "mode": "--emit-lowir",
-      "status": "implemented-draft",
+      "status": "implemented",
       "scope": "Capture analysis, environment layout, move capture and call-trait shims",
       "test_families": [
         "capture precision",
         "Fn/FnMut/FnOnce",
         "moved captures",
         "closure coercions"
+      ],
+      "release_evidence": [
+        "docs/pa24-release-review.md",
+        "docs/pa24-final-performance.md"
       ]
     },
     {

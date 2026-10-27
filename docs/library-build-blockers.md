@@ -1,5 +1,14 @@
 # Library build blocker tracker
 
+The [adopted assignment-order review](assignment-order.md) and
+[machine-checked unit graph](../assignment-plan.json) now determine incomplete
+assignment work and publication order. Existing PA IDs remain ownership labels.
+PA21–PA24 have explicit implemented/release-evidence status; PA25–PA30 retain
+all46 reviewed requirement families and remain incomplete as whole assignments.
+Current LIB-046 storage, primitive lookup/Formatter and target-feature/assembly
+lanes are named in the review's next-work queue. No original library artifact
+is established by this reorganization.
+
 Updated 2026-10-27. This is the work queue for compiling the original pinned
 `core`, `alloc` and `std`, not a count of completed internal checkpoints.
 PA1–PA24 remain implemented drafts; PA25–PA44 remain planned. No additional

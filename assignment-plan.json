@@ -1,0 +1,709 @@
+{
+  "schema": 1,
+  "adopted": "2026-10-27",
+  "policy": "Stable PA identifiers name ownership; this ordered dependency graph determines implementation and component-release order. Component implementation is separate from publication and whole-PA completion.",
+  "units": [
+    {
+      "id": "declarations",
+      "owner": "pa29",
+      "title": "Crate identities and declaration metadata",
+      "implementation": "implemented",
+      "publication": "unpublished",
+      "depends_on": [],
+      "scope": "Finite identity, namespace and signature-only schemas; excludes completed values and executable bodies.",
+      "requirements": [
+        "29.1",
+        "29.2",
+        "29.4"
+      ],
+      "exit": "Publish nonempty header round-trip text cases, identity/collision negatives and original schema compatibility.",
+      "implementation_evidence": [
+        "docs/pa29-aggregate-metadata.md",
+        "docs/pa29-public-names.md",
+        "docs/pa29-transitive-metadata.md",
+        "docs/source-core-cli-contracts.md"
+      ]
+    },
+    {
+      "id": "unsafe-places",
+      "owner": "pa27",
+      "title": "Unsafe permission and native places",
+      "implementation": "implemented",
+      "publication": "unpublished",
+      "depends_on": [],
+      "scope": "Lexical permissions, raw/static places, unions and packed native access; excludes symbolic CTFE and full interior-mutation validity.",
+      "requirements": [
+        "27.1",
+        "27.2",
+        "27.3"
+      ],
+      "exit": "Publish the finite native place/lint contract and independently checked positive/negative/native fixtures.",
+      "implementation_evidence": [
+        "docs/pa27-packed-raw-target-review.md",
+        "pa27/README.md"
+      ]
+    },
+    {
+      "id": "c-abi",
+      "owner": "pa30",
+      "title": "Local C ABI and linkage",
+      "implementation": "implemented",
+      "publication": "unpublished",
+      "depends_on": [
+        "unsafe-places"
+      ],
+      "scope": "Qualified fixed/scalar and aligned nonempty repr(C) ABI, callbacks, linkage/storage and variadic callers on pinned x86-64; excludes broader representations and metadata.",
+      "requirements": [
+        "30.1",
+        "30.2",
+        "30.3",
+        "30.4",
+        "30.7"
+      ],
+      "exit": "Publish exact C object/native and text matrices; retained unsupported representations remain in ffi-closure.",
+      "implementation_evidence": [
+        "docs/pa30-aggregate-abi.md",
+        "docs/pa30-callable-checkpoint.md",
+        "docs/pa30-composite-abi.md",
+        "docs/pa30-import-checkpoint.md",
+        "docs/pa30-linkage-checkpoint.md",
+        "docs/pa30-object-bridge.md",
+        "docs/pa30-static-checkpoint.md",
+        "docs/pa30-variadic-calls.md"
+      ]
+    },
+    {
+      "id": "source-declarations",
+      "owner": "pa31",
+      "title": "Local compiler declarations and attribute authority",
+      "implementation": "partial",
+      "publication": "unpublished",
+      "depends_on": [],
+      "scope": "Local source lang/diagnostic/builtin identities, declaration signatures, feature/cfg origins and bounded attribute/lint ownership; excludes executing their bodies.",
+      "requirements": [],
+      "exit": "Close LIB-046 storage growth; independently check genuine declarations and wrong/missing/duplicate owners."
+    },
+    {
+      "id": "const-machine",
+      "owner": "pa25",
+      "title": "Typed constant machine and inspection",
+      "implementation": "implemented",
+      "publication": "unpublished",
+      "depends_on": [],
+      "scope": "Ordinary const eligibility, bounded typed CFG execution and deterministic inspection for implemented closed values/queries. Open queries, symbolic memory and const closures have separate units.",
+      "requirements": [
+        "25.1",
+        "25.2",
+        "25.3",
+        "25.4",
+        "25.10"
+      ],
+      "exit": "Publish ordinary const source/inspection cases, reached faults, recursion/work/storage limits and native constants.",
+      "implementation_evidence": [
+        "docs/pa25-anonymous-specialization.md",
+        "docs/pa25-constants-view.md",
+        "docs/pa25-initializer-validation.md",
+        "docs/pa25-pattern-readiness.md",
+        "docs/pa25-rigid-patterns.md",
+        "docs/pa25-selected-initializers.md",
+        "docs/pa25-source-computation.md"
+      ]
+    },
+    {
+      "id": "runtime-memory",
+      "owner": "pa28",
+      "title": "Runtime memory and scalar volatile kernels",
+      "implementation": "implemented",
+      "publication": "unpublished",
+      "depends_on": [
+        "unsafe-places"
+      ],
+      "scope": "Qualified canonical native transfers and scalar/thin volatile profile, independently of const permission or actual source-library dispatch.",
+      "requirements": [
+        "28.1",
+        "28.2"
+      ],
+      "exit": "Publish effect/alignment/overlap/volatile and actual native controls against locked backend.",
+      "implementation_evidence": [
+        "docs/pa28-counted-memory.md",
+        "docs/pa28-owned-memory-review.md",
+        "pa28/README.md"
+      ]
+    },
+    {
+      "id": "atomic-u32",
+      "owner": "pa28",
+      "title": "Core AtomicU32 protocol",
+      "implementation": "implemented",
+      "publication": "unpublished",
+      "depends_on": [
+        "unsafe-places"
+      ],
+      "scope": "Qualified U32 load/store/exchange/CAS/order protocol; excludes other widths, full accessors/fences and general concurrency claims.",
+      "requirements": [
+        "28.3"
+      ],
+      "exit": "Publish finite ordering/CAS/native matrix and invalid-order negatives.",
+      "implementation_evidence": [
+        "docs/pa28-atomic-extrema.md",
+        "pa28/tests/atomic-cas-outcomes.json"
+      ]
+    },
+    {
+      "id": "operator-kernel",
+      "owner": "pa26",
+      "title": "Canonical operator and indexing kernels",
+      "implementation": "implemented",
+      "publication": "unpublished",
+      "depends_on": [],
+      "scope": "Qualified canonical operators/comparisons/indexing/assignment and nominal constructor protocols; actual source dispatch and remaining library/coercion forms continue separately.",
+      "requirements": [
+        "26.1",
+        "26.2",
+        "26.3",
+        "26.4"
+      ],
+      "exit": "Publish existing finite kernel text/native cases without treating unsupported source comparisons as expected Rust rejections.",
+      "implementation_evidence": [
+        "docs/pa26-assignment-checkpoint.md",
+        "docs/pa26-comparison-performance.md",
+        "docs/pa26-environment-checkpoint.md",
+        "docs/pa26-index-mut-checkpoint.md",
+        "docs/pa26-nominal-checkpoint.md",
+        "docs/pa26-reference-comparisons.md",
+        "docs/pa26-sequence-ordering.md",
+        "docs/source-shift-or-checkpoint.md"
+      ]
+    },
+    {
+      "id": "iteration-kernel",
+      "owner": "pa26",
+      "title": "Core iteration and residual protocols",
+      "implementation": "implemented",
+      "publication": "unpublished",
+      "depends_on": [
+        "operator-kernel",
+        "source-declarations"
+      ],
+      "scope": "Qualified user/slice/range iteration and local Try/FromResidual control flow. Full iterator/library and imported source closure remain required.",
+      "requirements": [
+        "26.5",
+        "26.6",
+        "26.7"
+      ],
+      "exit": "Publish actual local protocol source/native and control/drop cases; preserve every remaining iterator and imported-family requirement.",
+      "implementation_evidence": [
+        "docs/library-build-blockers.md",
+        "docs/pa26-integer-ranges.md",
+        "docs/pa26-iteration-checkpoint.md",
+        "docs/pa26-mutable-iteration.md",
+        "spec.md"
+      ]
+    },
+    {
+      "id": "raw-validity",
+      "owner": "pa27",
+      "title": "Interior mutation and wide-value validity",
+      "implementation": "partial",
+      "publication": "unpublished",
+      "depends_on": [
+        "unsafe-places",
+        "runtime-memory"
+      ],
+      "scope": "UnsafeCell/shared-derived permissions, validity lints, raw slices/ranges and reconstructed wide values.",
+      "requirements": [
+        "27.6",
+        "27.7"
+      ],
+      "exit": "Close retained valid unsupported cases with ordinary proof, memory and native opponents."
+    },
+    {
+      "id": "const-memory",
+      "owner": "pa25",
+      "title": "Symbolic constant storage and provenance",
+      "implementation": "partial",
+      "publication": "unpublished",
+      "depends_on": [
+        "const-machine",
+        "unsafe-places",
+        "runtime-memory"
+      ],
+      "scope": "Complete static/promoted allocation graphs, raw/reference permissions and byte/sequence/DST transport; reuses memory kernels without granting volatile/atomic const eligibility.",
+      "requirements": [
+        "25.7",
+        "25.8",
+        "27.4",
+        "27.5",
+        "28.1",
+        "28.5"
+      ],
+      "exit": "Close complete numeric/ZST/union/enum/closure/static/reference graph families and escape/validity controls."
+    },
+    {
+      "id": "const-callables",
+      "owner": "pa25",
+      "title": "Advanced const queries and callables",
+      "implementation": "partial",
+      "publication": "unpublished",
+      "depends_on": [
+        "const-machine",
+        "const-memory",
+        "source-declarations"
+      ],
+      "scope": "Open/generic/associated queries, anonymous instances, source callbacks, const destruction contracts and real const closures.",
+      "requirements": [
+        "25.3",
+        "25.4",
+        "25.5",
+        "25.6",
+        "25.9",
+        "28.6"
+      ],
+      "exit": "Implement actual const-closure creation/invocation/storage and retained conditional/open callback and cleanup cases."
+    },
+    {
+      "id": "hook-closure",
+      "owner": "pa26",
+      "title": "Source operators, iteration and library hook closure",
+      "implementation": "partial",
+      "publication": "unpublished",
+      "depends_on": [
+        "operator-kernel",
+        "iteration-kernel",
+        "source-declarations"
+      ],
+      "scope": "Genuine source owners/bodies, Deref and remaining operator/coercion/iterator/Try/library methods; ordinary lookup regressions remain earlier PA6/19 work.",
+      "requirements": [
+        "26.3",
+        "26.6",
+        "26.7",
+        "26.10",
+        "26.1"
+      ],
+      "exit": "Execute required upstream operator/iterator/Try implementations with wrong-owner and ordinary-user controls."
+    },
+    {
+      "id": "format-derive",
+      "owner": "pa26",
+      "title": "Built-in derives, formatting and panic consumers",
+      "implementation": "partial",
+      "publication": "unpublished",
+      "depends_on": [
+        "source-declarations",
+        "operator-kernel",
+        "iteration-kernel",
+        "const-machine",
+        "hook-closure"
+      ],
+      "scope": "Actual derive bodies, nonempty format arguments, evaluation/temporary order, Formatter/Arguments helpers and assertion-to-abort path.",
+      "requirements": [
+        "26.8",
+        "26.9"
+      ],
+      "exit": "Execute genuine Formatter/helper/panic bodies; no generated library substitutes or erased operands."
+    },
+    {
+      "id": "intrinsic-closure",
+      "owner": "pa28",
+      "title": "Source intrinsic and atomic family closure",
+      "implementation": "partial",
+      "publication": "unpublished",
+      "depends_on": [
+        "runtime-memory",
+        "atomic-u32",
+        "source-declarations",
+        "const-machine"
+      ],
+      "scope": "Full selected-source intrinsic signatures/effects/const eligibility, numeric/volatile/atomic width/type/fence/accessor families.",
+      "requirements": [
+        "28.4",
+        "28.6"
+      ],
+      "exit": "Close every retained positive, qualify native capabilities and distinguish const eligibility from runtime operations."
+    },
+    {
+      "id": "simd-abi",
+      "owner": "pa41",
+      "title": "Nominal SIMD copy layout and C128 ABI",
+      "implementation": "implemented",
+      "publication": "unpublished",
+      "depends_on": [
+        "c-abi"
+      ],
+      "scope": "Qualified one-array scalar/wrapper lane profile, Rust-indirect and C128 SSE/SSEUP copy ABI; excludes vector operations, wider C ABI and representation transport.",
+      "requirements": [],
+      "exit": "Publish source layout/text and the exact-source native C copy observers; keep broader lanes/widths in target-closure.",
+      "implementation_evidence": [
+        "docs/source-simd-layout-checkpoint.md"
+      ]
+    },
+    {
+      "id": "target-features",
+      "owner": "pa41",
+      "title": "Typed target features and call permissions",
+      "implementation": "partial",
+      "publication": "unpublished",
+      "depends_on": [
+        "source-declarations"
+      ],
+      "scope": "Authenticate per-site feature inputs, declared versus adjusted safety and actual caller-body features. Qualified isolated handoff awaits integration.",
+      "requirements": [],
+      "exit": "Integrate a96b9b005, preserve absence/input/header opponents and measure enclosing row/map costs."
+    },
+    {
+      "id": "assembly",
+      "owner": "pa41",
+      "title": "Required core assembly path",
+      "implementation": "partial",
+      "publication": "unpublished",
+      "depends_on": [
+        "unsafe-places",
+        "runtime-memory",
+        "source-declarations",
+        "const-machine",
+        "simd-abi",
+        "target-features"
+      ],
+      "scope": "Genuine source asm, typed SIMD operands/const/symbol facts, effects, body transport and selected-target backend emission.",
+      "requirements": [],
+      "exit": "Original _mm_stream_ps must retain MOVNTPS non-temporal semantics and all128 bits in real native execution; no ordinary-store replacement."
+    },
+    {
+      "id": "ffi-closure",
+      "owner": "pa30",
+      "title": "Foreign representation and callable closure",
+      "implementation": "partial",
+      "publication": "unpublished",
+      "depends_on": [
+        "c-abi",
+        "raw-validity",
+        "source-declarations",
+        "simd-abi"
+      ],
+      "scope": "Remaining valid representations, opaque foreign identity/sizedness, ABI/variadic/storage and selected-target cases, including retained unsupported positives.",
+      "requirements": [
+        "30.6"
+      ],
+      "exit": "Close all remaining declared PA30 representations and preserve explicit backend capability limits."
+    },
+    {
+      "id": "value-metadata",
+      "owner": "pa29",
+      "title": "Completed constant and foreign value metadata",
+      "implementation": "partial",
+      "publication": "unpublished",
+      "depends_on": [
+        "declarations",
+        "c-abi",
+        "const-memory"
+      ],
+      "scope": "Completed value/storage/reference graphs and C callable/storage/variadic schema extensions; not a prerequisite for local C ABI.",
+      "requirements": [
+        "29.2",
+        "30.5"
+      ],
+      "exit": "Publish deterministic complete graph round trips, remapping, malformed-schema and old-byte compatibility controls."
+    },
+    {
+      "id": "provided-profile",
+      "owner": "pa29",
+      "title": "Provided-body public artifact profile",
+      "implementation": "implemented",
+      "publication": "unpublished",
+      "depends_on": [
+        "declarations",
+        "source-declarations"
+      ],
+      "scope": "Qualified tag11/v1 carry/borrow artifact with fresh named original/instance proof and native7; excludes universal source-body contracts.",
+      "requirements": [
+        "29.5"
+      ],
+      "exit": "Publish the existing finite artifact/text/native graph and wrong-owner/remap controls.",
+      "implementation_evidence": [
+        "docs/encoded-provided-methods-checkpoint.md",
+        "docs/public-library-consumers-checkpoint.md"
+      ]
+    },
+    {
+      "id": "generic-transport",
+      "owner": "pa29",
+      "title": "Generic and source body transport closure",
+      "implementation": "partial",
+      "publication": "unpublished",
+      "depends_on": [
+        "declarations",
+        "source-declarations",
+        "const-machine",
+        "value-metadata",
+        "provided-profile"
+      ],
+      "scope": "Complete ordinary/const/default/region/policy/alias/object/foreign/target body and proof-contract graph; full source structure retained, selected proofs paid on demand.",
+      "requirements": [
+        "29.3",
+        "29.4",
+        "29.6",
+        "26.7",
+        "26.10",
+        "28.5",
+        "30.6"
+      ],
+      "exit": "Qualify real separately compiled providers and fresh named generic consumers with complete original/instance, body/region/policy proofs and exact artifact round trips. Whole core is the downstream integration gate."
+    },
+    {
+      "id": "build-editions",
+      "owner": "pa34",
+      "title": "Edition and crate build pipeline",
+      "implementation": "partial",
+      "publication": "unpublished",
+      "depends_on": [
+        "declarations"
+      ],
+      "scope": "Original host graph/build scripts, generated source/cfg/env provenance and all editions needed by selected target dependencies. Full remaining edition coverage stays edition-closure.",
+      "requirements": [],
+      "exit": "Use RustGM for every selected target Rust crate; retain independent Cargo/host observations and reproducible complete inputs."
+    },
+    {
+      "id": "source-runtime",
+      "owner": "pa31",
+      "title": "Compiler runtime and source callable integration",
+      "implementation": "partial",
+      "publication": "unpublished",
+      "depends_on": [
+        "source-declarations",
+        "const-machine",
+        "runtime-memory",
+        "operator-kernel",
+        "iteration-kernel",
+        "hook-closure"
+      ],
+      "scope": "Actual source intrinsic/callable identities, runtime/const selectors and panic-abort boundary, beyond registration alone.",
+      "requirements": [
+        "25.9",
+        "26.8",
+        "26.9",
+        "28.6"
+      ],
+      "exit": "Execute genuine source callbacks, library helpers and panic handler through Abort; imported consumers use authenticated transport."
+    },
+    {
+      "id": "core-artifact",
+      "owner": "pa32",
+      "title": "Original core artifact and independent consumers",
+      "implementation": "missing",
+      "publication": "unpublished",
+      "depends_on": [
+        "source-declarations",
+        "source-runtime",
+        "generic-transport",
+        "build-editions",
+        "assembly"
+      ],
+      "scope": "Entire original pinned core on honest x86-64/abort cfg, every active required feature and exported demanded bodies. Unrelated broader closure is not an artificial prerequisite.",
+      "requirements": [],
+      "exit": "Build the whole original crate, then execute separate generic/native consumers and record artifact/source/config hashes."
+    },
+    {
+      "id": "core-crates",
+      "owner": "pa35",
+      "title": "Original core-only crate graph",
+      "implementation": "missing",
+      "publication": "unpublished",
+      "depends_on": [
+        "core-artifact",
+        "build-editions"
+      ],
+      "scope": "Original itoa and no-default-features serde_core plus complete selected dependencies; alloc is not required for this unit.",
+      "requirements": [],
+      "exit": "Execute independently specified formatting/visitor consumers against the original complete graph."
+    },
+    {
+      "id": "alloc-artifact",
+      "owner": "pa33",
+      "title": "Original alloc and allocator/runtime consumers",
+      "implementation": "missing",
+      "publication": "unpublished",
+      "depends_on": [
+        "core-artifact",
+        "build-editions"
+      ],
+      "scope": "Original alloc, real allocation/reallocation/deallocation/OOM contracts and complete target dependencies.",
+      "requirements": [],
+      "exit": "Build original alloc and execute collections/allocation/destruction consumers."
+    },
+    {
+      "id": "alloc-crates",
+      "owner": "pa35",
+      "title": "Original alloc-only serde_json graph",
+      "implementation": "missing",
+      "publication": "unpublished",
+      "depends_on": [
+        "core-crates",
+        "alloc-artifact"
+      ],
+      "scope": "Pinned serde_json with alloc and its entire selected dependency graph.",
+      "requirements": [],
+      "exit": "Execute JSON parsing/serialization, numeric/string/error/depth and round-trip controls."
+    },
+    {
+      "id": "std-artifact",
+      "owner": "pa36",
+      "title": "Original std and platform consumers",
+      "implementation": "missing",
+      "publication": "unpublished",
+      "depends_on": [
+        "alloc-artifact",
+        "build-editions"
+      ],
+      "scope": "Original std and selected dependencies, platform/TLS/thread/I/O/runtime contracts, abort profile; every actually active feature must work here.",
+      "requirements": [],
+      "exit": "Build original std and execute std-facing and default-feature serde_json consumers."
+    },
+    {
+      "id": "proc-host",
+      "owner": "pa37",
+      "title": "Procedural macro host",
+      "implementation": "missing",
+      "publication": "unpublished",
+      "depends_on": [
+        "std-artifact",
+        "build-editions"
+      ],
+      "scope": "Original host macro crates and token/span/isolation protocol.",
+      "requirements": [],
+      "exit": "Build/run genuine host macros and qualify expansion failures and source identities."
+    },
+    {
+      "id": "proc-derive",
+      "owner": "pa38",
+      "title": "Original derives and attribute macros",
+      "implementation": "missing",
+      "publication": "unpublished",
+      "depends_on": [
+        "proc-host",
+        "std-artifact"
+      ],
+      "scope": "Original serde_derive and its complete graph, with actual target applications.",
+      "requirements": [],
+      "exit": "Execute Serialize/Deserialize derive applications and native round trips."
+    },
+    {
+      "id": "unwind",
+      "owner": "pa39",
+      "title": "Unwinding and C-unwind",
+      "implementation": "missing",
+      "publication": "unpublished",
+      "depends_on": [
+        "std-artifact",
+        "c-abi"
+      ],
+      "scope": "Full unwind cleanup, double panic, personalities and C-unwind interoperability; separate from earlier required abort runtime.",
+      "requirements": [],
+      "exit": "Qualify real runtime/backend unwind semantics and cleanup consumers."
+    },
+    {
+      "id": "edition-closure",
+      "owner": "pa40",
+      "title": "Remaining edition and attribute closure",
+      "implementation": "missing",
+      "publication": "unpublished",
+      "depends_on": [
+        "build-editions",
+        "source-declarations"
+      ],
+      "scope": "Full remaining2015/2018/2021/2024 and attribute cases; required earlier library behavior cannot wait for this unit.",
+      "requirements": [],
+      "exit": "Close full pinned edition/attribute census with mixed-origin controls."
+    },
+    {
+      "id": "target-closure",
+      "owner": "pa41",
+      "title": "Remaining target and assembly closure",
+      "implementation": "partial",
+      "publication": "unpublished",
+      "depends_on": [
+        "assembly",
+        "ffi-closure",
+        "intrinsic-closure"
+      ],
+      "scope": "All remaining PA41 forms: broader lanes/widths/registers/labels/symbols/clobbers/global/naked assembly and target/unwind contracts.",
+      "requirements": [],
+      "exit": "Close full selected-target census and explicit unsupported-capability policy; no waiver of an active required library path."
+    },
+    {
+      "id": "async",
+      "owner": "pa42",
+      "title": "Async lowering",
+      "implementation": "missing",
+      "publication": "unpublished",
+      "depends_on": [
+        "operator-kernel",
+        "source-runtime"
+      ],
+      "scope": "Future state machines, suspension/resume and async blocks/functions.",
+      "requirements": [],
+      "exit": "Execute actual future/state-machine source and native controls."
+    },
+    {
+      "id": "async-ownership",
+      "owner": "pa43",
+      "title": "Async ownership and pinning",
+      "implementation": "missing",
+      "publication": "unpublished",
+      "depends_on": [
+        "async",
+        "raw-validity"
+      ],
+      "scope": "Suspension loans, cancellation, Pin and advanced async forms.",
+      "requirements": [],
+      "exit": "Qualify ownership/destruction across suspension and cancellation."
+    },
+    {
+      "id": "frontend-acceptance",
+      "owner": "pa44",
+      "title": "Complete frontend acceptance",
+      "implementation": "missing",
+      "publication": "unpublished",
+      "depends_on": [
+        "declarations",
+        "unsafe-places",
+        "c-abi",
+        "source-declarations",
+        "const-machine",
+        "runtime-memory",
+        "atomic-u32",
+        "operator-kernel",
+        "iteration-kernel",
+        "raw-validity",
+        "const-memory",
+        "const-callables",
+        "hook-closure",
+        "format-derive",
+        "intrinsic-closure",
+        "simd-abi",
+        "target-features",
+        "assembly",
+        "ffi-closure",
+        "value-metadata",
+        "provided-profile",
+        "generic-transport",
+        "build-editions",
+        "source-runtime",
+        "core-artifact",
+        "core-crates",
+        "alloc-artifact",
+        "alloc-crates",
+        "std-artifact",
+        "proc-host",
+        "proc-derive",
+        "unwind",
+        "edition-closure",
+        "target-closure",
+        "async",
+        "async-ownership"
+      ],
+      "scope": "All retained assignment requirements, whole-library/crate graphs, debug locations, deterministic outputs and scaling.",
+      "requirements": [],
+      "exit": "Full assignment closure, independent/source/native/debug/architecture/Clippy and performance release qualification."
+    }
+  ]
+}

@@ -1,0 +1,1142 @@
+{
+  "baseline_public_commit": "f3f10417b96b396c374189ec1fbd38d6a742acab",
+  "states": {
+    "implemented_component": "Implementation-complete for this explicitly named component/profile; NOT whole assignment or publication",
+    "partial": "Some required behavior implemented, actual implementation gaps remain",
+    "missing": "Explicitly missing execution/semantic producer"
+  },
+  "rows": [
+    {
+      "pa": 25,
+      "id": "25.1",
+      "contract": "Iterative typed CFG interpreter",
+      "implementation": "implemented_component",
+      "implemented": "Explicit execution/continuation frames, calls, local mutation, branches/loops, recursion and finite work/storage",
+      "remaining": "General value-domain and source-call closure are separate rows",
+      "source": [
+        "dev/src/const_eval/mod.rs",
+        "dev/src/const_eval/returns.rs",
+        "dev/src/const_eval/values.rs"
+      ],
+      "tests": [
+        "dev/tests/const_functions.rs",
+        "dev/tests/constant_queries.rs"
+      ],
+      "evidence": [
+        "docs/pa25-constants-view.md",
+        "docs/pa25-anonymous-specialization.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "const-machine"
+      ]
+    },
+    {
+      "pa": 25,
+      "id": "25.2",
+      "contract": "Const eligibility, ordinary const fn and unused-body checks",
+      "implementation": "implemented_component",
+      "implemented": "Ordinary declaration/whole-CFG eligibility, runtime-only rejection and actual reached execution remain distinct",
+      "remaining": "Does not include const closures or every conditional source-intrinsic payment",
+      "source": [
+        "dev/src/body/constants.rs",
+        "dev/src/const_eval/entry_policy.rs"
+      ],
+      "tests": [
+        "dev/tests/const_functions.rs",
+        "dev/tests/initializer_validation.rs"
+      ],
+      "evidence": [
+        "docs/pa25-initializer-validation.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "const-machine"
+      ]
+    },
+    {
+      "pa": 25,
+      "id": "25.3",
+      "contract": "Named/generic/associated initializer demand and readiness",
+      "implementation": "partial",
+      "implemented": "Selected initializer bodies, canonical context keys and typed suspend/resume; ordinary generic/associated examples",
+      "remaining": "All open source contracts, conditional/lifetime-bearing callback and destruction contexts are not closed",
+      "source": [
+        "dev/src/sema/constants",
+        "dev/src/body/instantiate/initializers.rs",
+        "dev/src/const_eval/readiness.rs"
+      ],
+      "tests": [
+        "dev/tests/initializer_selection.rs",
+        "dev/tests/selected_initializers.rs",
+        "pa25/tests/open-type-initializer-outcomes.json"
+      ],
+      "evidence": [
+        "docs/pa25-selected-initializers.md",
+        "docs/pa25-source-computation.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "const-machine",
+        "const-callables"
+      ]
+    },
+    {
+      "pa": 25,
+      "id": "25.4",
+      "contract": "Array lengths, discriminants, constant patterns and const arguments",
+      "implementation": "partial",
+      "implemented": "Typed queries and implemented pattern/enum readiness continuations, retained full arguments",
+      "remaining": "Remaining source open/conditional interfaces and complete constant eligibility must be reconciled against required positives",
+      "source": [
+        "dev/src/sema/constants/discriminants.rs",
+        "dev/src/sema/constants/pending_patterns.rs"
+      ],
+      "tests": [
+        "dev/tests/discriminant_readiness.rs",
+        "dev/tests/required_values.rs",
+        "pa25/tests/enum-dependency-outcomes.json"
+      ],
+      "evidence": [
+        "docs/pa25-pattern-readiness.md",
+        "docs/pa25-rigid-patterns.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "const-machine",
+        "const-callables"
+      ]
+    },
+    {
+      "pa": 25,
+      "id": "25.5",
+      "contract": "Inline/anonymous and generic closure-owned const bodies",
+      "implementation": "partial",
+      "implemented": "Complete anonymous instance identity, selected scalar/owned/captured-context specialization and child proofs",
+      "remaining": "Specialized conditional reference/output interfaces and general captured closure execution remain",
+      "source": [
+        "dev/src/sema/inline_constants",
+        "dev/src/const_eval/memory.rs"
+      ],
+      "tests": [
+        "pa25/tests/inline-outcomes.json",
+        "dev/tests/invariants/anonymous_contexts.rs"
+      ],
+      "evidence": [
+        "docs/pa25-anonymous-specialization.md",
+        "docs/pa25-nested-output.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "const-callables"
+      ]
+    },
+    {
+      "pa": 25,
+      "id": "25.6",
+      "contract": "Const closures",
+      "implementation": "missing",
+      "implemented": "Syntax/feature authority retained",
+      "remaining": "Actual creation-context, const invocation, captured storage and instance/ownership semantics explicitly rejected",
+      "source": [
+        "dev/src/sema/bodies.rs",
+        "dev/src/sema/traits/callables/eligibility.rs"
+      ],
+      "tests": [
+        "dev/tests/invariants/gated_callable_syntax.rs"
+      ],
+      "evidence": [
+        "pa25/README.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "const-callables"
+      ]
+    },
+    {
+      "pa": 25,
+      "id": "25.7",
+      "contract": "Statics, promotions and symbolic allocation graph",
+      "implementation": "partial",
+      "implemented": "Static address identities, literal backing, selected mutable local writes, escape and promotion checks",
+      "remaining": "Mutable/foreign/cyclic static references, complete shared-derived/interior-mutability and numeric/ZST profiles",
+      "source": [
+        "dev/src/const_eval/static_reads.rs",
+        "dev/src/const_eval/raw_reads.rs",
+        "dev/src/const_eval/memory/reinterpretation.rs"
+      ],
+      "tests": [
+        "dev/tests/static_addresses.rs",
+        "dev/tests/constant_storage.rs",
+        "pa25/tests/literal-backing-outcomes.json"
+      ],
+      "evidence": [
+        "docs/pa25-sequences.md",
+        "docs/pa27-pa28-remaining.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "const-memory"
+      ]
+    },
+    {
+      "pa": 25,
+      "id": "25.8",
+      "contract": "Array/slice/rest/DST constant operations",
+      "implementation": "partial",
+      "implemented": "Compressed array execution, exact rest snapshots and qualified DST field metadata",
+      "remaining": "Whole raw/unsized values, broader reconstruction and unsupported backing children remain",
+      "source": [
+        "dev/src/const_eval/memory/sequences.rs",
+        "dev/src/const_eval/memory/tails.rs"
+      ],
+      "tests": [
+        "dev/tests/sequence_constants.rs",
+        "dev/tests/rest_views.rs",
+        "dev/tests/dst_tail_metadata.rs"
+      ],
+      "evidence": [
+        "docs/pa25-rest-views.md",
+        "docs/pa25-dst-tail-metadata.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "const-memory"
+      ]
+    },
+    {
+      "pa": 25,
+      "id": "25.9",
+      "contract": "Actual source const calls, selectors and cleanup",
+      "implementation": "partial",
+      "implemented": "Reached source-layout/needs_drop/selector/caller paths supported for qualified actual contexts",
+      "remaining": "Const drop glue, nonempty/open conditional callback payments, richer default/const/source contexts remain",
+      "source": [
+        "dev/src/const_eval/entry_policy.rs",
+        "dev/src/const_eval/selector_sites.rs",
+        "dev/src/const_eval/use_calls.rs"
+      ],
+      "tests": [
+        "dev/tests/invariants/selector_guards.rs",
+        "dev/tests/constant_destruction.rs"
+      ],
+      "evidence": [
+        "docs/pa31-const-select-ctfe-progress.md",
+        "docs/pa28-source-needs-drop.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "const-callables",
+        "source-runtime"
+      ]
+    },
+    {
+      "pa": 25,
+      "id": "25.10",
+      "contract": "Deterministic constants inspection/count view",
+      "implementation": "implemented_component",
+      "implemented": "Entry-free checked graph, stable display identity/order, counts and explicit errors; qualified inspection controls",
+      "remaining": "Released complete manifest, references and assignment publication still absent",
+      "source": [
+        "dev/src/lower/constant_view"
+      ],
+      "tests": [
+        "dev/tests/evaluated_inspection.rs",
+        "pa25/tests/inspection-outcomes.json"
+      ],
+      "evidence": [
+        "docs/pa25-constants-view.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "const-machine"
+      ]
+    },
+    {
+      "pa": 26,
+      "id": "26.1",
+      "contract": "Canonical operators/indexing/assignment and ordinary method proof",
+      "implementation": "partial",
+      "implemented": "Bounded canonical Neg/Not/binary/Index/IndexMut/ten assignment families, receiver/evaluation/loan rules",
+      "remaining": "Unrestricted method lookup is not complete: parent reports 6/19 ordinary multi-segment primitive fallback cases pending; qualified bare-name correction 2d11 is not integrated. Core operator/assignment implementations remain qualified finite components; do not declare all method lookup green.",
+      "source": [
+        "dev/src/sema/primitive_methods.rs",
+        "dev/src/sema/bodies/language_hooks.rs"
+      ],
+      "tests": [
+        "dev/tests/language_operators.rs",
+        "pa26/tests/assignment-outcomes.json",
+        "pa26/tests/index-mut-outcomes.json"
+      ],
+      "evidence": [
+        "docs/pa26-assignment-checkpoint.md",
+        "docs/pa26-index-mut-checkpoint.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "operator-kernel",
+        "hook-closure"
+      ]
+    },
+    {
+      "pa": 26,
+      "id": "26.2",
+      "contract": "Canonical comparison/Ord/sequence protocols",
+      "implementation": "implemented_component",
+      "implemented": "Qualified scalar/ref/array/slice comparisons, relation defaults and Ord helpers",
+      "remaining": "Tuple/str and broader source/reference inference profiles stay in next row",
+      "source": [
+        "dev/src/sema/primitive_methods/sequences.rs",
+        "dev/src/sema/associated/comparisons.rs"
+      ],
+      "tests": [
+        "pa26/tests/sequence-ordering-outcomes.json",
+        "pa26/tests/reference-comparison-outcomes.json"
+      ],
+      "evidence": [
+        "docs/pa26-sequence-ordering.md",
+        "docs/pa26-reference-comparisons.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "operator-kernel"
+      ]
+    },
+    {
+      "pa": 26,
+      "id": "26.3",
+      "contract": "Remaining operator/coercion library surface",
+      "implementation": "partial",
+      "implemented": "Existing complete trait selection and applicable source-owned Not/Neg/Shl/BitOr components",
+      "remaining": "Deref, remaining unary/reference methods, tuple/str comparisons, general range indexing, unsuffixed assignment inference and additional constants",
+      "source": [
+        "dev/src/sema/compiler_items",
+        "dev/src/sema/primitive_methods"
+      ],
+      "tests": [
+        "pa26/tests/primitive-binary-outcomes.json",
+        "pa26/tests/primitive-constant-outcomes.json",
+        "pa31/tests/spec/source-location/neg-contract.json"
+      ],
+      "evidence": [
+        "docs/source-shift-or-checkpoint.md",
+        "docs/pa26-comparison-performance.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "operator-kernel",
+        "hook-closure"
+      ]
+    },
+    {
+      "pa": 26,
+      "id": "26.4",
+      "contract": "Nominals/option_env/constructor-promotion boundary",
+      "implementation": "implemented_component",
+      "implemented": "Canonical Option/Result/ManuallyDrop and option_env typed lowering; constructors distinct from const factories",
+      "remaining": "Source-owned complete library implementation and other methods are separate",
+      "source": [
+        "dev/src/sema/declarations/library_types.rs",
+        "dev/src/expand/builtin"
+      ],
+      "tests": [
+        "pa26/tests/library-type-outcomes.json",
+        "pa26/tests/environment-outcomes.json"
+      ],
+      "evidence": [
+        "docs/pa26-nominal-checkpoint.md",
+        "docs/pa26-environment-checkpoint.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "operator-kernel"
+      ]
+    },
+    {
+      "pa": 26,
+      "id": "26.5",
+      "contract": "for/Iterator/IntoIterator and slice Iter/IterMut",
+      "implementation": "implemented_component",
+      "implemented": "Checked user iteration, mutable-reference blankets, shared/mutable slice iterators, explicit lifetimes and cleanup",
+      "remaining": "General collection/range/helper closure follows next row",
+      "source": [
+        "dev/src/sema/declarations/iteration.rs",
+        "dev/src/sema/iteration"
+      ],
+      "tests": [
+        "pa26/tests/iteration-outcomes.json",
+        "pa26/tests/mutable-iteration-outcomes.json",
+        "pa26/tests/iterator-clone-outcomes.json"
+      ],
+      "evidence": [
+        "docs/pa26-iteration-checkpoint.md",
+        "docs/pa26-mutable-iteration.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "iteration-kernel"
+      ]
+    },
+    {
+      "pa": 26,
+      "id": "26.6",
+      "contract": "Remaining iteration/library methods",
+      "implementation": "partial",
+      "implemented": "Half-open integer ranges and explicit selected clone families",
+      "remaining": "Owned arrays/collections, other ranges/helpers and all required Clone/iteration forms remain",
+      "source": [
+        "dev/src/sema/declarations/iteration/range_contracts.rs"
+      ],
+      "tests": [
+        "pa26/tests/integer-range-outcomes.json",
+        "pa26/tests/shared-iteration-outcomes.json"
+      ],
+      "evidence": [
+        "docs/pa26-integer-ranges.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "iteration-kernel",
+        "hook-closure"
+      ]
+    },
+    {
+      "pa": 26,
+      "id": "26.7",
+      "contract": "Try/FromResidual/question-mark control flow",
+      "implementation": "partial",
+      "implemented": "Genuine local source protocol, checked implicit calls, lexical exits and drop/borrow proof; native observers qualified",
+      "remaining": "Imported protocol transport, heterogeneous inference and broader adapters/const contexts remain",
+      "source": [
+        "dev/src/sema/compiler_items/try_protocol.rs",
+        "dev/src/body/build/residual_edges.rs"
+      ],
+      "tests": [
+        "dev/tests/invariants/residual_protocol.rs",
+        "pa31/tests/spec/source-try-blocks/contract.json"
+      ],
+      "evidence": [
+        "spec.md",
+        "docs/library-build-blockers.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "iteration-kernel",
+        "hook-closure",
+        "generic-transport"
+      ]
+    },
+    {
+      "pa": 26,
+      "id": "26.8",
+      "contract": "Built-in derives",
+      "implementation": "partial",
+      "implemented": "Qualified source Copy/Clone Location and bounded Debug/other source prerequisite kernels",
+      "remaining": "Full fieldwise/generic/enum families, marker overlap and imported derive execution not all closed",
+      "source": [
+        "dev/src/resolve/expansion/derive_lists"
+      ],
+      "tests": [
+        "dev/tests/invariants/derived_locations.rs",
+        "dev/tests/invariants/derive_headers.rs"
+      ],
+      "evidence": [
+        "docs/source-assert-implementation.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "format-derive",
+        "source-runtime"
+      ]
+    },
+    {
+      "pa": 26,
+      "id": "26.9",
+      "contract": "Formatting and assertion/panic hooks",
+      "implementation": "partial",
+      "implemented": "Actual source declarations, literal formatting constructor and Assert AST; caller-location and abort components",
+      "remaining": "Nonempty placeholders/arguments, full Formatter/Arguments/PanicInfo/handler execution and const panic remain",
+      "source": [
+        "dev/src/expand/builtin/format_literal.rs",
+        "dev/src/sema/bodies/formatting_values.rs"
+      ],
+      "tests": [
+        "dev/tests/invariants/formatter_calls.rs",
+        "dev/tests/invariants/formatting_calls.rs"
+      ],
+      "evidence": [
+        "docs/pa31-source-format-contracts.md",
+        "docs/source-assert-implementation.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "format-derive",
+        "source-runtime"
+      ]
+    },
+    {
+      "pa": 26,
+      "id": "26.10",
+      "contract": "Actual source binding versus canonical bootstrap compatibility",
+      "implementation": "partial",
+      "implemented": "Explicit source catalog/claims and qualified real local role consumers",
+      "remaining": "Every required role/member/source body, advisory policy and imported contract must be genuine; canonical factories are not source implementation",
+      "source": [
+        "dev/src/support/bindings.rs",
+        "dev/src/sema/compiler_items.rs"
+      ],
+      "tests": [
+        "pa31/tests/spec/source-header-transport/semantic-provider-qualified.rs"
+      ],
+      "evidence": [
+        "docs/source-storage-contracts-checkpoint.md",
+        "docs/encoded-provided-methods-checkpoint.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "hook-closure",
+        "generic-transport"
+      ]
+    },
+    {
+      "pa": 27,
+      "id": "27.1",
+      "contract": "Lexical unsafe, scoped unsafe-op/static-mut lint policies",
+      "implementation": "implemented_component",
+      "implemented": "Nested item reset, closure inheritance, calls/reified unsafe permission, deny/forbid rules and allocation-free no-policy path",
+      "remaining": "Additional validity lints and memory permissions are separate rows",
+      "source": [
+        "dev/src/sema/bodies/safety.rs",
+        "dev/src/resolve/lint_policy"
+      ],
+      "tests": [
+        "dev/tests/unsafe_contexts.rs",
+        "dev/tests/unsafe_policies.rs",
+        "dev/tests/unsafe_policy_modules.rs"
+      ],
+      "evidence": [
+        "pa27/README.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "unsafe-places"
+      ]
+    },
+    {
+      "pa": 27,
+      "id": "27.2",
+      "contract": "Runtime raw places and mutable statics",
+      "implementation": "implemented_component",
+      "implemented": "Raw/reference capabilities, const-pointer writes, direct raw cancellation, actual static cleanup and permission",
+      "remaining": "Not all symbolic raw reference/reinterpretation profiles are complete",
+      "source": [
+        "dev/src/body/build/addresses.rs",
+        "dev/src/sema/bodies/addresses.rs"
+      ],
+      "tests": [
+        "dev/tests/unsafe_statics.rs",
+        "dev/tests/unsafe_precision.rs"
+      ],
+      "evidence": [
+        "pa27/README.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "unsafe-places"
+      ]
+    },
+    {
+      "pa": 27,
+      "id": "27.3",
+      "contract": "Runtime unions and packed access",
+      "implementation": "implemented_component",
+      "implemented": "Exact overlapping union places/layout, allowed-field identity, explicit destructor and packed raw/reference distinctions",
+      "remaining": "General constant union storage is separate",
+      "source": [
+        "dev/src/borrow/loans.rs",
+        "dev/src/abi/layout.rs"
+      ],
+      "tests": [
+        "dev/tests/unsafe_unions.rs",
+        "dev/tests/reference_alignment.rs",
+        "dev/tests/direct_union_borrows.rs"
+      ],
+      "evidence": [
+        "docs/pa27-packed-raw-target-review.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "unsafe-places"
+      ]
+    },
+    {
+      "pa": 27,
+      "id": "27.4",
+      "contract": "CTFE raw access, references and symbolic permissions",
+      "implementation": "partial",
+      "implemented": "Qualified exact typed symbolic reads/stores/ref reconstruction with bounds/init/alignment/lifetime",
+      "remaining": "Numeric/null/ZST, unused-reference validity timing, mutable/foreign/cyclic statics and nested lifetime compatibility remain",
+      "source": [
+        "dev/src/const_eval/raw_reads.rs",
+        "dev/src/const_eval/memory/reinterpretation.rs"
+      ],
+      "tests": [
+        "dev/tests/reference_reconstruction.rs",
+        "dev/tests/provenance_reads.rs",
+        "dev/tests/provenance_writes.rs"
+      ],
+      "evidence": [
+        "docs/pa27-pa28-remaining.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "const-memory"
+      ]
+    },
+    {
+      "pa": 27,
+      "id": "27.5",
+      "contract": "Byte-backed unions/enums/closures/opaque/string storage",
+      "implementation": "partial",
+      "implemented": "Qualified scalar, payload/direct-tag/tagless/niche Option, prepared opaque/capture and string-word storage; active-only typed tag reads",
+      "remaining": "Other niches/NonZero/NonNull, unprepared heads and unsupported capture children/raw/object reconstruction remain",
+      "source": [
+        "dev/src/const_eval/memory/bytes",
+        "dev/src/const_eval/memory/active_tags.rs"
+      ],
+      "tests": [
+        "dev/tests/c_enum_bytes.rs",
+        "dev/tests/option_storage.rs",
+        "dev/tests/captured_values.rs",
+        "dev/tests/hidden_values.rs"
+      ],
+      "evidence": [
+        "docs/pa27-pa28-remaining.md",
+        "docs/pa27-option-niche-design.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "const-memory"
+      ]
+    },
+    {
+      "pa": 27,
+      "id": "27.6",
+      "contract": "Interior mutation and runtime validity lints",
+      "implementation": "partial",
+      "implemented": "Incoming shared-derived write restriction preserved",
+      "remaining": "Actual UnsafeCell boundary and invalid_reference_casting/invalid_null_arguments obligations not replaced by CTFE rejection",
+      "source": [
+        "dev/src/const_eval/raw_reads.rs"
+      ],
+      "tests": [
+        "pa27/tests/raw-store-contract.json",
+        "pa28/tests/counted-memory-contract.json"
+      ],
+      "evidence": [
+        "docs/pa27-pa28-remaining.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "raw-validity"
+      ]
+    },
+    {
+      "pa": 27,
+      "id": "27.7",
+      "contract": "Raw slices/ranges and reconstructed wide values",
+      "implementation": "partial",
+      "implemented": "Selected element bounds separate from metadata, qualified rest snapshots and DST forwarding",
+      "remaining": "Whole raw/unsized ranges and full object-reference/cyclic reconstruction remain",
+      "source": [
+        "dev/src/const_eval/memory/raw_slices.rs",
+        "dev/src/const_eval/memory/ranges.rs"
+      ],
+      "tests": [
+        "dev/tests/raw_slice_indexing.rs",
+        "pa27/tests/raw-slice-outcomes.json"
+      ],
+      "evidence": [
+        "docs/pa27-raw-slice-review.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "raw-validity"
+      ]
+    },
+    {
+      "pa": 28,
+      "id": "28.1",
+      "contract": "Typed intrinsic safety/const/runtime descriptor and native memory transfers",
+      "implementation": "implemented_component",
+      "implemented": "Qualified canonical Sized read/write/unaligned/copy/copy_nonoverlap/write_bytes/pointer-add, owned moves and ordinary checks",
+      "remaining": "Actual source intrinsic declarations and remaining byte/provenance profiles separate",
+      "source": [
+        "dev/src/support/intrinsics.rs",
+        "dev/src/lower/intrinsics",
+        "dev/src/const_eval/counted.rs"
+      ],
+      "tests": [
+        "dev/tests/owned_transfers.rs",
+        "dev/tests/unaligned_transfers.rs",
+        "dev/tests/counted_transfers.rs",
+        "dev/tests/byte_fills.rs"
+      ],
+      "evidence": [
+        "docs/pa28-owned-memory-review.md",
+        "docs/pa28-counted-memory.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "runtime-memory",
+        "const-memory"
+      ]
+    },
+    {
+      "pa": 28,
+      "id": "28.2",
+      "contract": "Scalar/thin-value volatile operations",
+      "implementation": "implemented_component",
+      "implemented": "Qualified scalar8..128/floats/thin values and runtime-only permission, ignored-read effects and reification",
+      "remaining": "Aggregate/ZST/wide-pointer volatility still unsupported; normal copies cannot substitute",
+      "source": [
+        "dev/src/lower/intrinsics.rs",
+        "dev/src/lower/intrinsics/memory.rs"
+      ],
+      "tests": [
+        "dev/tests/volatile_intrinsics.rs",
+        "dev/tests/intrinsic_backend.rs"
+      ],
+      "evidence": [
+        "pa28/README.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "runtime-memory"
+      ]
+    },
+    {
+      "pa": 28,
+      "id": "28.3",
+      "contract": "Core AtomicU32 operation protocol",
+      "implementation": "implemented_component",
+      "implemented": "new/load/store/swap/add/sub/CAS/weak/bitwise/minmax with ordering rules and selected retry evidence",
+      "remaining": "This is not the full U32 accessor/update API or a concurrency proof",
+      "source": [
+        "dev/src/sema/declarations/intrinsics/atomic.rs",
+        "dev/src/lower/intrinsics/atomic"
+      ],
+      "tests": [
+        "dev/tests/cas_intrinsics.rs",
+        "dev/tests/bitwise_atomics.rs",
+        "dev/tests/extremum_atomics.rs"
+      ],
+      "evidence": [
+        "docs/pa28-atomic-extrema.md",
+        "pa28/tests/atomic-cas-outcomes.json"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "atomic-u32"
+      ]
+    },
+    {
+      "pa": 28,
+      "id": "28.4",
+      "contract": "Full atomics/volatile/numeric intrinsic families",
+      "implementation": "partial",
+      "implemented": "Existing backend capability matrices and supported operation descriptors",
+      "remaining": "Other widths/types, fences/accessors/update/control APIs, aggregate/ZST/wide volatility, numeric/bit/u128 intrinsic surface and broader concurrency remain",
+      "source": [
+        "dev/src/support/intrinsics.rs",
+        "dev/src/support/bindings.rs"
+      ],
+      "tests": [
+        "pa28/tests/backend/atomics/README.md",
+        "pa28/tests/manifest.draft.json"
+      ],
+      "evidence": [
+        "docs/pa27-pa28-remaining.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "intrinsic-closure"
+      ]
+    },
+    {
+      "pa": 28,
+      "id": "28.5",
+      "contract": "CTFE byte transport and symbolic fragments",
+      "implementation": "partial",
+      "implemented": "Qualified copies/fill retain invalid bits, init masks, pointer/function/slice/vtable/string words without numeric provenance",
+      "remaining": "Every backing/whole range/validity profile and image export not complete",
+      "source": [
+        "dev/src/const_eval/memory/bytes/transport.rs",
+        "dev/src/const_eval/memory/bytes/relocations.rs"
+      ],
+      "tests": [
+        "dev/tests/relocation_transport.rs",
+        "dev/tests/byte_transfers.rs"
+      ],
+      "evidence": [
+        "docs/pa28-relocation-design.md",
+        "docs/pa28-byte-fill.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "const-memory",
+        "generic-transport"
+      ]
+    },
+    {
+      "pa": 28,
+      "id": "28.6",
+      "contract": "Actual source transmute/layout/needs_drop and related calls",
+      "implementation": "partial",
+      "implemented": "Real local source transmute and other selected authenticated intrinsic kernels, actual runtime/CTFE native controls",
+      "remaining": "Open callbacks/cleanup, source-used remaining intrinsic families and imported operation-policy transport remain",
+      "source": [
+        "dev/src/sema/compiler_items/intrinsic_contracts.rs",
+        "dev/src/const_eval/transmute_calls.rs"
+      ],
+      "tests": [
+        "pa28/tests/spec",
+        "dev/tests/invariants/selector_guards.rs"
+      ],
+      "evidence": [
+        "docs/source-transmute-runtime-checkpoint.md",
+        "docs/pa28-source-needs-drop.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "const-callables",
+        "intrinsic-closure",
+        "source-runtime"
+      ]
+    },
+    {
+      "pa": 29,
+      "id": "29.1",
+      "contract": "Crate identity/dependency aliases/reservation/symbols",
+      "implementation": "implemented_component",
+      "implemented": "Explicit complete identities, direct/transitive aliases, shared decoder limits and ordinary named resolver path",
+      "remaining": "Does not imply every payload/profile type is supported",
+      "source": [
+        "dev/src/resolve/crates",
+        "dev/src/support/crates",
+        "dev/bin/crates.rs"
+      ],
+      "tests": [
+        "dev/tests/crate_linking.rs",
+        "pa29/tests/transitive-metadata-outcomes.json"
+      ],
+      "evidence": [
+        "docs/pa29-transitive-metadata.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "declarations"
+      ]
+    },
+    {
+      "pa": 29,
+      "id": "29.2",
+      "contract": "Closed interface/value/namespace codecs0\u20138",
+      "implementation": "implemented_component",
+      "implemented": "Qualified closed records/arrays/static graphs/reexports, exact symbols/visibility/versioned canonical bytes incl C signatures",
+      "remaining": "General exposed generic/source/attribute/type contracts remain next rows",
+      "source": [
+        "dev/src/support/crates",
+        "dev/src/sema/crates/type_transport.rs"
+      ],
+      "tests": [
+        "dev/tests/metadata_codec.rs",
+        "pa29/tests/public-name-outcomes.json",
+        "pa29/tests/array-metadata-outcomes.json"
+      ],
+      "evidence": [
+        "docs/pa29-public-names.md",
+        "docs/pa29-aggregate-metadata.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "declarations",
+        "value-metadata"
+      ]
+    },
+    {
+      "pa": 29,
+      "id": "29.3",
+      "contract": "Ordinary generic executable body/const transport9",
+      "implementation": "partial",
+      "implemented": "Checked scalar id/Copy family and versioned direct-call family; fresh original/instance proof",
+      "remaining": "Complete original generic-contract inventory, richer operation/types/environment/closure/dyn contracts not all complete",
+      "source": [
+        "dev/src/body/transported_originals",
+        "dev/src/sema/crates/typed_headers.rs"
+      ],
+      "tests": [
+        "pa29/tests/generic-contract-outcomes.json",
+        "pa29/tests/generic-id-outcomes.json"
+      ],
+      "evidence": [
+        "docs/pa29-executable-generics.md",
+        "docs/pa29-direct-call-transport.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "generic-transport"
+      ]
+    },
+    {
+      "pa": 29,
+      "id": "29.4",
+      "contract": "Source Functions/attributes/namespace profiles10",
+      "implementation": "partial",
+      "implemented": "Actual header contracts and explicit source profile routes retain old Unknown and exact bytes",
+      "remaining": "Foreign roles/graph/modifier/wider API contracts and full source republication remain",
+      "source": [
+        "dev/src/sema/header_attributes/metadata_contracts.rs",
+        "dev/src/lower/transported_source/publication.rs"
+      ],
+      "tests": [
+        "dev/tests/invariants/publication_attributes.rs",
+        "pa31/tests/spec/source-header-transport"
+      ],
+      "evidence": [
+        "docs/source-core-cli-contracts.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "declarations",
+        "generic-transport"
+      ]
+    },
+    {
+      "pa": 29,
+      "id": "29.5",
+      "contract": "Provided source artifact\u2192fresh named body/instance/native consumer11v1",
+      "implementation": "implemented_component",
+      "implemented": "Complete finite provider family retained, actual carry/borrow encoded/reloaded and native7, sourcechecked before export; unrequested imports Pending",
+      "remaining": "Full source policy/default/const/domain/quantified/environment/execution is not this complete finite contract",
+      "source": [
+        "dev/src/lower/instances.rs",
+        "dev/src/resolve/bindings/consumer_policy.rs"
+      ],
+      "tests": [
+        "pa31/tests/spec/source-header-transport/semantic-provider-qualified.rs",
+        "dev/tests/invariants/invocation_entries"
+      ],
+      "evidence": [
+        "docs/encoded-provided-methods-checkpoint.md",
+        "docs/public-library-consumers-checkpoint.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "provided-profile"
+      ]
+    },
+    {
+      "pa": 29,
+      "id": "29.6",
+      "contract": "Full generic/source metadata closure and allocation/proof replay",
+      "implementation": "partial",
+      "implemented": "No proof IDs on wire; real original/instance kernels and selected demand ownership",
+      "remaining": "Richer const/default bodies; final/default/tracking/UB/advisory policy; trait aliases, objects/foreign/target features; full original family/republication/graphs remain",
+      "source": [
+        "dev/src/support/crates/generics/source_validation",
+        "dev/src/lower/transported_source",
+        "dev/src/sema/crates/export.rs"
+      ],
+      "tests": [
+        "pa29/tests/generic-contract-outcomes.json"
+      ],
+      "evidence": [
+        "docs/encoded-provided-methods-checkpoint.md",
+        "docs/library-build-blockers.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "generic-transport"
+      ]
+    },
+    {
+      "pa": 30,
+      "id": "30.1",
+      "contract": "Fixed C callable ABI/safety/coercion and scalar import/export",
+      "implementation": "implemented_component",
+      "implemented": "Rust/C distinction, omitted extern=C, fixed scalar/thin pointers and actual foreign registry/callbacks",
+      "remaining": "Other conventions and unsupported value representations remain explicit",
+      "source": [
+        "dev/src/sema/declarations/foreign.rs",
+        "dev/src/sema/foreign.rs",
+        "dev/src/abi"
+      ],
+      "tests": [
+        "dev/tests/foreign_conventions.rs",
+        "dev/tests/foreign_declarations.rs"
+      ],
+      "evidence": [
+        "docs/pa30-callable-checkpoint.md",
+        "docs/pa30-import-checkpoint.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "c-abi"
+      ]
+    },
+    {
+      "pa": 30,
+      "id": "30.2",
+      "contract": "Exact linkage and foreign/global storage",
+      "implementation": "implemented_component",
+      "implemented": "Real link_name/no_mangle/export_name, unified collision registry, globals and initializer roots",
+      "remaining": "Broader value/layout/export forms not silently admitted",
+      "source": [
+        "dev/src/sema/declarations/foreign/linkage_attributes.rs",
+        "dev/src/lower/linkage.rs"
+      ],
+      "tests": [
+        "dev/tests/foreign_linkage.rs",
+        "dev/tests/external_storage.rs"
+      ],
+      "evidence": [
+        "docs/pa30-linkage-checkpoint.md",
+        "docs/pa30-static-checkpoint.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "c-abi"
+      ]
+    },
+    {
+      "pa": 30,
+      "id": "30.3",
+      "contract": "Aligned repr(C) aggregate/nested-array call ABI",
+      "implementation": "implemented_component",
+      "implemented": "Qualified SysV INTEGER/SSE/MEMORY classes, rollback, callbacks, values and Drop for supported graph",
+      "remaining": "Top-level arrays, packed/union/enum/Rust-layout/empty/other scalar/ABI forms not all accepted",
+      "source": [
+        "dev/src/abi/classification",
+        "dev/src/lower/function"
+      ],
+      "tests": [
+        "dev/tests/aggregate_calling.rs",
+        "pa30/tests/composite-outcomes.json"
+      ],
+      "evidence": [
+        "docs/pa30-composite-abi.md",
+        "docs/pa30-aggregate-abi.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "c-abi"
+      ]
+    },
+    {
+      "pa": 30,
+      "id": "30.4",
+      "contract": "C variadic calls and scalar/record tails",
+      "implementation": "implemented_component",
+      "implemented": "Direct/indirect signatures, explicit promotion checks, register/stack tails and actual source/native matrix",
+      "remaining": "Does not supply general C variadic definitions or every platform ABI",
+      "source": [
+        "dev/src/sema/bodies/variadics.rs",
+        "dev/src/abi/classification"
+      ],
+      "tests": [
+        "dev/tests/variadic_calls.rs",
+        "pa30/tests/variadic-tail-outcomes.json"
+      ],
+      "evidence": [
+        "docs/pa30-variadic-calls.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "c-abi"
+      ]
+    },
+    {
+      "pa": 30,
+      "id": "30.5",
+      "contract": "Foreign signature/storage/array/variadic metadata",
+      "implementation": "implemented_component",
+      "implemented": "Qualified profiles4/5/7/8 extend identity graphs without old-byte changes",
+      "remaining": "Depends on interface codec, not prerequisite for local C ABI; wider source transport remains",
+      "source": [
+        "dev/src/support/crates",
+        "dev/src/sema/crates/typed_headers.rs"
+      ],
+      "tests": [
+        "pa30/tests/foreign-metadata-outcomes.json",
+        "pa30/tests/storage-metadata-outcomes.json",
+        "pa30/tests/variadic-metadata-outcomes.json"
+      ],
+      "evidence": [
+        "docs/pa30-foreign-metadata.md",
+        "docs/pa30-storage-metadata.md",
+        "docs/pa30-variadic-metadata.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "value-metadata"
+      ]
+    },
+    {
+      "pa": 30,
+      "id": "30.6",
+      "contract": "Opaque external types and full repr/ABI closure",
+      "implementation": "partial",
+      "implemented": "Actual Foreign declaration identity and unknown-sized thin-pointer distinctions",
+      "remaining": "Unsupported transported Foreign/full-value profiles, remaining representations, enum C ABI and target contracts remain real debt",
+      "source": [
+        "dev/src/types/mod.rs",
+        "dev/src/abi/classification/composites/shapes.rs"
+      ],
+      "tests": [
+        "pa30/tests/aggregate-outcomes.json",
+        "pa31/tests/spec/foreign-types"
+      ],
+      "evidence": [
+        "docs/foreign-type-source-design.md",
+        "docs/pa30-composite-abi.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "ffi-closure",
+        "generic-transport"
+      ]
+    },
+    {
+      "pa": 30,
+      "id": "30.7",
+      "contract": "Pinned optional object bridge and C native qualification",
+      "implementation": "implemented_component",
+      "implemented": "Explicit object-only backend route, pinned tool/source/hash isolation, real C object/link/run controls",
+      "remaining": "Configured native profile and complete release manifest/reference gate required before lesson activation",
+      "source": [
+        "scripts/backend.py",
+        "backend.lock.json"
+      ],
+      "tests": [
+        "dev/tests/harness/host_objects.rs",
+        "dev/tests/foreign_conventions.rs"
+      ],
+      "evidence": [
+        "docs/pa30-object-bridge.md"
+      ],
+      "publication": "unpublished assignment contract; no active manifest/oracle claim",
+      "units": [
+        "c-abi"
+      ]
+    }
+  ],
+  "late_review_updates": [
+    {
+      "authority": "Parent message 2026-10-27; independently qualified source not inspected here",
+      "finding": "B reports 6/19 ordinary multi-segment primitive fallback pending; bare-name fix 2d11 qualified but not integrated",
+      "effect": "26.1 and unrestricted H-operations lesson remain partial; finite operator/assignment kernels are separately implemented."
+    }
+  ],
+  "review_note": "Read-only requirement assessment at public f3; implementation labels are finite component claims, not new executions. Later SIMD qualification and source/target handoffs are separately scoped in the adopted plan. Original handouts and all retained valid unsupported cases remain required."
+}

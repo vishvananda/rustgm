@@ -7,13 +7,21 @@ import sys
 from course import ROOT, load_cases
 from check_native import classification
 from check_layouts import classification as layout_classification
+from assignment_plan import checked_path, validate as validate_plan
 
 
 def collect(root=ROOT):
     stages = json.loads((root / "assignments.json").read_text())["stages"]
     for stage in stages:
-        if stage["status"] not in ("planned", "implemented-draft"):
+        if stage["status"] not in ("planned", "implemented-draft", "implemented"):
             raise ValueError(f"unknown assignment status: {stage['path']}: {stage['status']}")
+        if stage["status"] == "implemented":
+            if not stage.get("release_evidence"):
+                raise ValueError(f"implemented assignment needs release evidence: {stage['path']}")
+            for path in stage["release_evidence"]:
+                checked_path(root, path)
+    if (root / "assignment-plan.json").exists():
+        validate_plan(root, stages)
     active = [stage["path"] for stage in stages if stage["status"] != "planned"]
     configured = re.search(r"^ACTIVE_PAS\s*:=\s*(.*)$", (root / "Makefile").read_text(), re.M)
     if configured is None or configured[1].split() != active:

@@ -65,6 +65,24 @@ from actual usage plus build headroom and admit work only when the unchanged
 150 GiB reserve permits. Keep all successful disposable outputs scoped and
 clean them between native targets; retain failure diagnostics and input hashes.
 
+## Adopted assignment order (2026-10-27)
+
+Use [assignment-order.md](assignment-order.md) and the validated
+[unit graph](../assignment-plan.json) instead of a cumulative PA-number queue.
+The historical ownership table below identifies existing worktrees, not a
+requirement to finish all earlier-numbered features before a coherent consumer.
+Root owns LIB-046 storage and integration; B closes the independently reproduced
+ordinary PA6/19 primitive-member fallback before the genuine formatting/panic
+consumer; C's isolated typed target-feature checkpoint awaits root integration
+and the real SIMD/assembly/backend join. A completed the read-only46-family
+requirement audit and is idle. No additional worker/worktree is needed.
+
+Track implementation and publication independently. Publish finite unsafe/place,
+C ABI, declaration-interface and const-machine components using existing bound
+evidence plus missing release gates. Keep every residual requirement and whole-PA
+release gate. Preserve the three-job controller,150GiB reserve, root16/B16/C12
+GiB caps, two Cargo/test threads and five-minute development budget.
+
 ## Assignment ownership
 
 | Lane | First assignment | Next assignment after integration | Contract |

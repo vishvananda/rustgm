@@ -6,6 +6,13 @@ It adapts the principles of cppgm-extended's `spec.md`, pinned in
 [shared/CPPGM-NOTICE](shared/CPPGM-NOTICE). The C++ implementation is a guide to
 efficient representations and algorithms, not an implementation of Rust rules.
 
+Assignment IDs identify ownership, not a speculative execution sequence. The
+[adopted dependency plan](docs/assignment-order.md) separates local declarations
+from source execution, runtime kernels from symbolic CTFE, and declaration
+metadata from completed value/body transport. Consume those typed producer
+boundaries; do not introduce a second parser, authority map or fake library
+body to bypass an unavailable predecessor.
+
 ## Scope and pipeline
 
 Target Rust 1.98.0, first edition 2024, on Linux x86-64. Freeze language release,

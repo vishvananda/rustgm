@@ -1,7 +1,7 @@
 # RustGM Programming Assignment 34: Edition and crate build integration
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
-Prerequisite: PA33. The source profile is Rust 1.98.0, initially edition 2024
+Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The source profile is Rust 1.98.0, initially edition 2024
 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
 The selected original std graph also contains Rust 2015 `rustc-demangle` and
 Rust 2018 `cfg-if`. Their required behavior belongs to this acceptance path;

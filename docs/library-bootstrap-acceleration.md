@@ -1,3 +1,7 @@
+> The [2026-10-27 dependency review](assignment-order.md) is the current
+> assignment ordering and component-publication policy. Existing efficiency,
+> source-proof and actual upstream acceptance obligations below remain required.
+
 # Library bootstrap execution plan, 2026-10-26
 
 The objective remains every assignment requirement needed to compile original

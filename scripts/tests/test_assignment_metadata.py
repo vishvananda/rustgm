@@ -39,6 +39,20 @@ class AssignmentMetadata(unittest.TestCase):
             with self.assertRaises(FileNotFoundError):
                 check_layout.check(root)
 
+    def test_implemented_status_requires_existing_release_evidence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, stage, manifest, _ = self.fixture(directory)
+            stage["status"] = "implemented"
+            self.write(root, stage, manifest)
+            with self.assertRaisesRegex(ValueError, "needs release evidence"):
+                collect(root)
+            stage["release_evidence"] = ["release.md"]
+            self.write(root, stage, manifest)
+            with self.assertRaisesRegex(ValueError, "missing or unsafe"):
+                collect(root)
+            (root / "release.md").write_text("complete profile qualification")
+            self.assertEqual(len(collect(root)[1]), 1)
+
     def test_missing_native_outcome_uses_the_actual_native_classifier(self):
         with tempfile.TemporaryDirectory() as directory:
             root, stage, manifest, case = self.fixture(directory)

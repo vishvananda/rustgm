@@ -1,25 +1,28 @@
 # RustGM assignment roadmap
 
-Maintainer reference implementation and course tests grow together. PA1–PA24
-have working draft references and executable text-oracle suites; PA25–PA44 are
-planned. No planned assignment is counted as passing.
+PA1–PA24 have active, independently qualified text-oracle suites. PA21–PA24 are
+**implemented**, with their completed release evidence recorded in
+assignments.json. PA1–PA20 retain implemented-draft while individual release
+records are reconciled. PA25–PA44 remain planned as whole assignments. No
+planned or empty suite counts as passing.
 
-The destination includes compiling original upstream core, alloc and std with
-RustGM. Start real-crate acceptance as soon as core works; add alloc and std
-as their consumers require them. The compiler supplies genuine language/intrinsic hooks;
-ordinary library APIs come from their Rust sources. The
-[library bootstrap plan](docs/library-bootstrap-roadmap.md) defines source pins,
-acceptance gates, implementation priority and the old-to-new number mapping.
-PA1–PA30 retain their current contracts and ownership.
-The [library build blocker tracker](docs/library-build-blockers.md) records the
-current crate boundary, prioritized issues, owning assignments, required tests
-and parallel worker assignments. Use it to choose implementation work and report
-crate progress separately from internal checkpoint counts.
+The [adopted assignment-order review](docs/assignment-order.md) replaces the old
+numeric work/release chain for incomplete assignments. Keep PA numbers and
+fixture paths as ownership IDs; use the machine-checked
+[dependency plan](assignment-plan.json) for actual implementation and component
+publication order. It has37 phase units,10 implemented finite components and
+46 explicitly retained PA25–PA30 requirement families. All component publications
+are still pending. Whole-PA completion requires its entire handout and release
+checks, not only one working subset.
 
-The [2026-10-26 execution plan](docs/library-bootstrap-acceleration.md) prioritizes
-real crate/artifact consumers, separates imported declaration readiness from
-demanded body proof and consolidates validation. All assignment and upstream
-completion requirements below remain unchanged.
+Source-declaration binding precedes source consumers; runtime memory precedes
+symbolic CTFE; declaration metadata precedes body/value transport; required
+build/edition/SIMD/assembly slices precede original core. Core-only real crates
+start before alloc, followed by alloc consumers and std. Broader closure and
+every valid unsupported requirement remain named work. The
+[library bootstrap plan](docs/library-bootstrap-roadmap.md) retains original
+source pins and the full acceptance ladder; the
+[live tracker](docs/library-build-blockers.md) owns concrete failures.
 
 | PA | Assignment | Status |
 | --- | --- | --- |
@@ -43,10 +46,10 @@ completion requirements below remain unchanged.
 | [18](pa18/README.md) | Generics | implemented-draft |
 | [19](pa19/README.md) | Traits and methods | implemented-draft |
 | [20](pa20/README.md) | Trait solving | implemented-draft |
-| [21](pa21/README.md) | Advanced generic relationships | implemented-draft |
-| [22](pa22/README.md) | Unsized types | implemented-draft |
-| [23](pa23/README.md) | Trait objects | implemented-draft |
-| [24](pa24/README.md) | Closures | implemented-draft |
+| [21](pa21/README.md) | Advanced generic relationships | implemented |
+| [22](pa22/README.md) | Unsized types | implemented |
+| [23](pa23/README.md) | Trait objects | implemented |
+| [24](pa24/README.md) | Closures | implemented |
 | [25](pa25/README.md) | Constant evaluation | planned |
 | [26](pa26/README.md) | Language and library hooks | planned |
 | [27](pa27/README.md) | Unsafe language | planned |
@@ -68,29 +71,10 @@ completion requirements below remain unchanged.
 | [43](pa43/README.md) | Async ownership | planned |
 | [44](pa44/README.md) | Frontend acceptance | planned |
 
-Implementation priority is the portions of PA25–PA31 needed by actual upstream
-consumers, especially generic cross-crate transport and source-declared compiler
-bindings. Track full PA25–PA30 closure separately and release each assignment
-when its complete contract passes. Develop the Rust 2021/build pipeline alongside
-core; exercise itoa/serde_core as soon as their core-only graph works. Then build
-alloc and serde_json, followed by std and procedural derives. Develop
-independent prerequisites in parallel while keeping cumulative releases honest.
-Full unwinding and async follow the first usable abort-profile crate graph.
-
-PA31–PA36 are required, not optional library extensions. An internal or target
-feature needed by their actual source must work at that milestone. PA40/PA41
-close broader edition/target coverage; they cannot excuse an earlier failed build.
-CPPGM remains the explicit LowIR backend. Qualify required operations before use;
-backend extensions are separate reviewed infrastructure work.
-
-The current goal is to complete every assignment requirement needed to build
-the original upstream core, alloc and std crates and execute their consumers.
-Required language, edition and target features must work when those sources
-need them, regardless of their broader assignment number. Optional PA45,
-reproducible self-hosting, remains outside this bootstrap goal. No incomplete
-stage may be activated.
-
-The current core source path requires PA41 inline assembly already at PA32:
-stdarch's x86 SSE implementation invokes the genuine source-declared asm builtin.
-Prioritize that required target slice alongside PA25–PA31 prerequisites, with
-explicit backend capability checks; broader PA41 closure remains required.
+The goal remains all assignment requirements needed to build original pinned
+core, alloc and std and execute independent real-crate consumers. Actual active
+source determines required language/runtime/target capabilities; a later number
+never excuses a failed library path. Full unwinding and async remain separate
+from the initial abort-profile graph. Optional PA45 reproducible self-hosting
+remains outside this goal. CPPGM is the explicit LowIR backend; backend extensions
+require separate reviewed capability work.

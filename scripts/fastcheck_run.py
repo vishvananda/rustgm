@@ -20,7 +20,8 @@ def fingerprint(root):
               "scripts/rust-module-roles.json", "scripts/maintainer_batch.py",
               "scripts/maintainer_suites.py", "scripts/storage.py", "scripts/resource_runner.py",
               "scripts/resource_policy.py", "scripts/resource_locks.py")]
-    paths += [root / path for path in ("assignments.json", "Makefile", "scripts/assignment_metadata.py",
+    paths += [root / path for path in ("assignments.json", "assignment-plan.json",
+              "docs/assignment-requirements.json", "Makefile", "scripts/assignment_metadata.py", "scripts/assignment_plan.py",
               "scripts/course.py", "scripts/check_native.py", "scripts/check_layouts.py", "scripts/check_syntax.py")]
     paths += sorted(root.glob("pa*/tests/manifest.json"))
     return {str(path.relative_to(root)): hashlib.sha256(path.read_bytes()).hexdigest() for path in paths}

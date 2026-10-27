@@ -1,7 +1,7 @@
 # RustGM Programming Assignment 33: Allocator and alloc bootstrap
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
-Prerequisite: PA32. The source profile is Rust 1.98.0, initially edition 2024
+Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The source profile is Rust 1.98.0, initially edition 2024
 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
 See the [library bootstrap plan](../docs/library-bootstrap-roadmap.md) for
 implementation priority, source pins and the migration of unreleased numbers.

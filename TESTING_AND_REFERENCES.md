@@ -4,6 +4,22 @@ This checkout owns the maintainer solution. `dev/rustgm-ref` invokes the built
 solution, just as reference wrappers do in cppgm-extended's solution checkout.
 Default tests compare candidates with **committed text**, not a live solution.
 
+## Assignment completion and component publication
+
+`implemented-draft` denotes an active draft text suite; `implemented` denotes
+a released documented course profile and requires existing release evidence in
+assignments.json. Neither state means arbitrary Rust compatibility. Planned
+assignments still reject missing/empty-suite success.
+
+[assignment-plan.json](assignment-plan.json) orders finite work units independently
+of stable PA ownership numbers. Its implementation and publication states are
+separate; a completed component cannot mark an unfinished whole PA implemented.
+`make test-harness` and fastcheck metadata validation enforce dependency order,
+retained requirements and publication gates. New component release manifests
+must declare outcomes and every input before reference generation, reuse the
+existing text/native/source validators, and retain all unclosed parent requirements.
+Run `python3 scripts/assignment_plan.py` for the current ordered status.
+
 ## Development checkpoints
 
 Maintainer integration roots under `dev/tests/` are registered as modules in

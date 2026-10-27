@@ -1,7 +1,7 @@
 # RustGM Programming Assignment 30: Foreign interfaces
 
 Status: **planned**. This is a buildout brief, not a released grading contract.
-Prerequisite: PA29. The common source profile is Rust 1.98.0, initially edition
+Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The common source profile is Rust 1.98.0, initially edition
 2024 and Linux x86-64. PA34 adds Rust 2021; PA40 closes the remaining editions.
 
 ## Required implementation
