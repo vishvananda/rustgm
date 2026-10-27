@@ -171,10 +171,11 @@ fn reconstructed_inputs() -> Result {
     };
     assert_eq!(store.list(parameters), Some(&[word][..]));
     println!(
-        "Canonical consequence Store paid={} extent={} Normalizer={}",
+        "Canonical consequence Store paid={} extent={} Normalizer={} Mutable={}",
         paid.get(),
         store.interned_extent(),
-        size_of::<Normalizer>()
+        size_of::<Normalizer>(),
+        crate::types::substitute::observed_mutable_size()
     );
     Ok(())
 }

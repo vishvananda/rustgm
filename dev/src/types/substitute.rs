@@ -553,3 +553,8 @@ fn nested(depth: u16) -> Result<u16, &'static str> {
         .filter(|depth| *depth < 0x8000)
         .ok_or("lifetime binder nesting exceeds 32767")
 }
+
+#[cfg(test)]
+pub(crate) fn observed_mutable_size() -> usize {
+    size_of::<rewrite::Mutable<'static, fn(usize, usize) -> Result<(), &'static str>, true>>()
+}
