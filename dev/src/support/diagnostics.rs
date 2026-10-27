@@ -10,6 +10,8 @@ pub enum WarningCode {
     MalformedDiagnosticAttributes,
     MalformedDiagnosticFormatLiterals,
     MisplacedDiagnosticAttributes,
+    UnsafeOpInUnsafeFn,
+    StaticMutRefs,
 }
 impl WarningCode {
     #[must_use]
@@ -24,6 +26,8 @@ impl WarningCode {
             Self::MalformedDiagnosticAttributes => "malformed_diagnostic_attributes",
             Self::MalformedDiagnosticFormatLiterals => "malformed_diagnostic_format_literals",
             Self::MisplacedDiagnosticAttributes => "misplaced_diagnostic_attributes",
+            Self::UnsafeOpInUnsafeFn => "unsafe_op_in_unsafe_fn",
+            Self::StaticMutRefs => "static_mut_refs",
         }
     }
 }

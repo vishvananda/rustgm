@@ -83,9 +83,9 @@ partial requirements mapped only to completed units, empty component publication
 and whole-PA completion over unpublished work.
 
 The publication inventory independently exposed missing unsafe-policy warnings:
-Warn currently permits both operations without emitting diagnostics. The
-[reproduction](unsafe-policy-warning-gap.md) changes unsafe-places and27.1 to
-partial. Its real canonical ManuallyDrop fixture also requires operator-kernel;
+The [qualified repair](unsafe-policy-warning-gap.md) now emits both required
+warnings through the existing bounded sink, closing LIB-047. Component
+publication remains pending. Its real canonical ManuallyDrop fixture requires operator-kernel;
 that existing acyclic prerequisite now precedes it. No fixture or obligation is
 removed to preserve an earlier implementation label.
 
@@ -101,7 +101,7 @@ scope, predecessor IDs and executable exit are in assignment-plan.json.
 | --- | --- | --- | --- | --- |
 | 1 | PA29 | Crate identities and declaration metadata (`declarations`) | implemented | unpublished |
 | 2 | PA26 | Canonical operator and indexing kernels (`operator-kernel`) | implemented | unpublished |
-| 3 | PA27 | Unsafe permission and native places (`unsafe-places`) | partial | unpublished |
+| 3 | PA27 | Unsafe permission and native places (`unsafe-places`) | implemented | unpublished |
 | 4 | PA30 | Local C ABI and linkage (`c-abi`) | implemented | unpublished |
 | 5 | PA31 | Local compiler declarations and attribute authority (`source-declarations`) | partial | unpublished |
 | 6 | PA25 | Typed constant machine and inspection (`const-machine`) | implemented | unpublished |
@@ -163,8 +163,8 @@ and fixture validation, never semantic feature or execution permission.
    then qualify backend capabilities and original `_mm_stream_ps` semantics.
    No AVX/runtime/export permission follows from the attribute alone.
 4. Publish **operator-kernel** before its real ManuallyDrop-dependent
-   **unsafe-places** consumer, then **c-abi**. Close the verified unsafe-policy
-   warning gap (LIB-047) before declaring unsafe-places implemented. For each:
+   **unsafe-places** consumer, then **c-abi**. The unsafe-policy warning repair
+   (LIB-047) is qualified; its release inventory remains pending. For each:
    reconcile existing source/native/scaling evidence, inventory every fixture
    and unsupported residual, declare a nonempty component manifest, generate
    reviewed text oracles only after independent outcomes, and run missing release

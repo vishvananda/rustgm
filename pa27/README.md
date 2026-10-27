@@ -22,6 +22,11 @@ closure and nested item boundaries independently of unsafe permission. An
 explicit unsafe block satisfies a denied unsafe-operation lint. Descendant
 `allow` or `warn` cannot weaken `forbid`; `deny` retains its prohibition. Keep
 the ordinary no-policy path free of allocated per-node policy tables.
+Emit default and explicit Warn diagnostics through the shared bounded warning
+sink, using original source/expansion identities. Preserve distinct uses and
+warnings before later errors; repeated checking must not duplicate a warning.
+Allow remains silent. The [warning checkpoint](../docs/unsafe-policy-warning-gap.md)
+records focused implementation evidence; component publication remains pending.
 
 Keep raw pointer dereferences distinct from reference dereferences in the typed
 place representation. Raw accesses have no reference lifetime or inherited loan

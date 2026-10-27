@@ -54,7 +54,7 @@
       "id": "unsafe-places",
       "owner": "pa27",
       "title": "Unsafe permission and native places",
-      "implementation": "partial",
+      "implementation": "implemented",
       "publication": "unpublished",
       "depends_on": [
         "operator-kernel"
@@ -68,7 +68,8 @@
       "exit": "Publish the finite native place/lint contract and independently checked positive/negative/native fixtures.",
       "implementation_evidence": [
         "docs/pa27-packed-raw-target-review.md",
-        "pa27/README.md"
+        "pa27/README.md",
+        "docs/unsafe-policy-warning-gap.md"
       ]
     },
     {

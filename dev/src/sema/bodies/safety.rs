@@ -1,6 +1,7 @@
 //! Lexical unsafe permissions survive suspension without granting const permissions.
 use super::{Checker, Error, Kind, NodeId};
 use crate::syntax::ast::BlockFlavor;
+use crate::{sema::safety::Level, support::diagnostics::WarningCode};
 
 /// Copy this context when parking a closure body; item bodies start a fresh one.
 #[derive(Clone, Copy, Default)]
@@ -26,7 +27,7 @@ impl Checker<'_> {
         }
         Err(self.error(node, "union store place work budget exceeded"))
     }
-    pub(super) fn check_union_access(&self, node: NodeId) -> Result<(), Error> {
+    pub(super) fn check_union_access(&mut self, node: NodeId) -> Result<(), Error> {
         if self.state.union_write_places.contains(&node)
             || self.state.raw_address_places.contains(&node)
         {
@@ -36,7 +37,7 @@ impl Checker<'_> {
         }
     }
     pub(super) fn check_union_receiver(
-        &self,
+        &mut self,
         node: NodeId,
         mut place: NodeId,
     ) -> Result<(), Error> {
@@ -140,16 +141,12 @@ impl Checker<'_> {
         Ok(())
     }
     pub(super) fn check_static_reference(
-        &self,
+        &mut self,
         source: NodeId,
         mut place: NodeId,
     ) -> Result<(), Error> {
-        if self.facts.mutable_statics.is_none()
-            || !self
-                .facts
-                .safety_policies
-                .denies_reference(self.key(source))
-        {
+        let level = self.facts.safety_policies.reference(self.key(source));
+        if self.facts.mutable_statics.is_none() || level == Level::Allow {
             return Ok(());
         }
         for _ in 0..1_000_000 {
@@ -166,6 +163,13 @@ impl Checker<'_> {
                         .is_some_and(|target| matches!(target,
                             crate::resolve::model::Target::Definition(id) if self.mutable_static(id)))
                     {
+                        if level == Level::Warn {
+                            return self.safety_warning(
+                                source,
+                                WarningCode::StaticMutRefs,
+                                "creating a reference to a mutable static is discouraged",
+                            );
+                        }
                         return Err(self.error(source, "references to mutable statics are denied in edition 2024"));
                     }
                     return Ok(());
@@ -175,7 +179,11 @@ impl Checker<'_> {
         }
         Err(self.error(source, "static reference place work budget exceeded"))
     }
-    pub(super) fn check_static_access(&self, node: NodeId, id: super::DefId) -> Result<(), Error> {
+    pub(super) fn check_static_access(
+        &mut self,
+        node: NodeId,
+        id: super::DefId,
+    ) -> Result<(), Error> {
         if self
             .facts
             .foreign
@@ -195,23 +203,46 @@ impl Checker<'_> {
         Ok(())
     }
     pub(super) fn require_unsafe(
-        &self,
+        &mut self,
         node: NodeId,
         operation: &'static str,
     ) -> Result<(), Error> {
         if self.state.safety.blocks != 0 {
             Ok(())
         } else if self.state.safety.function {
-            if self.facts.safety_policies.denies_operation(self.key(node)) {
-                Err(self.error(
+            match self.facts.safety_policies.operation(self.key(node)) {
+                Level::Allow => Ok(()),
+                Level::Warn => self.safety_warning(
+                    node,
+                    WarningCode::UnsafeOpInUnsafeFn,
+                    "unsafe operation in unsafe function requires an explicit unsafe block",
+                ),
+                Level::Deny | Level::Forbid => Err(self.error(
                     node,
                     "unsafe operation in unsafe function requires an explicit unsafe block",
-                ))
-            } else {
-                Ok(())
+                )),
             }
         } else {
             Err(self.error(node, operation))
         }
+    }
+    fn safety_warning(
+        &mut self,
+        node: NodeId,
+        code: WarningCode,
+        message: &'static str,
+    ) -> Result<(), Error> {
+        let key = self.key(node);
+        let offset = self
+            .report
+            .package
+            .unit(key.file)
+            .configured
+            .ast
+            .node(node)
+            .span
+            .start;
+        self.facts
+            .must_use_diagnostic(self.report, key, offset, 0, code, message.to_owned())
     }
 }

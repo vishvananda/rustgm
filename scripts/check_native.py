@@ -21,6 +21,7 @@ REVIEWED_WARNING_CODES = (
     "unused_must_use", "unused_attributes", "duplicate_macro_attributes",
     "malformed_diagnostic_attributes", "malformed_diagnostic_format_literals",
     "misplaced_diagnostic_attributes",
+    "unsafe_op_in_unsafe_fn", "static_mut_refs",
 )
 
 

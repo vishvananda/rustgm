@@ -10,7 +10,7 @@ The [adopted assignment-order review](docs/assignment-order.md) replaces the old
 numeric work/release chain for incomplete assignments. Keep PA numbers and
 fixture paths as ownership IDs; use the machine-checked
 [dependency plan](assignment-plan.json) for actual implementation and component
-publication order. It has37 phase units,9 implemented finite components and
+publication order. It has37 phase units,10 implemented finite components and
 46 explicitly retained PA25–PA30 requirement families. All component publications
 are still pending. Whole-PA completion requires its entire handout and release
 checks, not only one working subset.

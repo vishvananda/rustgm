@@ -3,6 +3,33 @@ use crate::native_references as native;
 use crate::semantic;
 use crate::source_cases as source;
 
+const WARNINGS: &[source::WarningCase<'_>] = &[
+    source::WarningCase {
+        name: "raw-fn-body",
+        stderr: "warning[unsafe_op_in_unsafe_fn]: file 0: 29: unsafe operation in unsafe function requires an explicit unsafe block\n",
+        codes: &[(
+            rustgm::support::diagnostics::WarningCode::UnsafeOpInUnsafeFn,
+            1,
+        )],
+    },
+    source::WarningCase {
+        name: "unsafe-fn-caller",
+        stderr: "warning[unsafe_op_in_unsafe_fn]: file 0: 38: unsafe operation in unsafe function requires an explicit unsafe block\n",
+        codes: &[(
+            rustgm::support::diagnostics::WarningCode::UnsafeOpInUnsafeFn,
+            1,
+        )],
+    },
+    source::WarningCase {
+        name: "nested-unsafe-item",
+        stderr: "warning[unsafe_op_in_unsafe_fn]: file 0: 43: unsafe operation in unsafe function requires an explicit unsafe block\n",
+        codes: &[(
+            rustgm::support::diagnostics::WarningCode::UnsafeOpInUnsafeFn,
+            1,
+        )],
+    },
+];
+
 const CASES: &[(&str, bool, &str)] = &[
     ("unsafe-block-value", true, "fn f()->u8{unsafe{7}}"),
     (
@@ -180,7 +207,7 @@ const CASES: &[(&str, bool, &str)] = &[
 
 #[test]
 fn lexical_unsafe_permission_and_raw_access() -> Result<(), Box<dyn std::error::Error>> {
-    source::check("unsafe-contexts", CASES)
+    source::check_with_warnings("unsafe-contexts", CASES, WARNINGS)
 }
 
 #[test]

@@ -163,11 +163,11 @@ impl Policies {
             files[key.file.0 as usize][key.node.get() as usize]
         })
     }
-    pub(super) fn denies_operation(&self, key: NodeKey) -> bool {
-        self.at(key).operation.denies()
+    pub(super) fn operation(&self, key: NodeKey) -> Level {
+        self.at(key).operation
     }
-    pub(super) fn denies_reference(&self, key: NodeKey) -> bool {
-        self.at(key).reference.denies()
+    pub(super) fn reference(&self, key: NodeKey) -> Level {
+        self.at(key).reference
     }
     pub(super) fn denies_atomic_ordering(&self, key: NodeKey) -> bool {
         self.at(key).atomic_ordering.denies()

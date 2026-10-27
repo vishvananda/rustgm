@@ -4,6 +4,9 @@ mod messages;
 pub(super) use declarations::collect;
 pub(in crate::sema) mod discarded_types;
 mod removed_owners;
+#[cfg(test)]
+#[path = "../../tests/invariants/safety_diagnostics.rs"]
+mod safety_tests;
 mod supertraits;
 mod trivial_types;
 use super::{model::Declarations, safety::Level};
@@ -249,6 +252,8 @@ impl Declarations {
             WarningCode::MisplacedDiagnosticAttributes => {
                 self.safety_policies.diagnostic_attributes(key, 2)
             }
+            WarningCode::UnsafeOpInUnsafeFn => self.safety_policies.operation(key),
+            WarningCode::StaticMutRefs => self.safety_policies.reference(key),
         };
         if level == Level::Allow {
             return Ok(());

@@ -502,9 +502,9 @@
       "pa": 27,
       "id": "27.1",
       "contract": "Lexical unsafe, scoped unsafe-op/static-mut lint policies",
-      "implementation": "partial",
-      "implemented": "Nested item reset, closure inheritance, calls/reified unsafe permission, deny/forbid rules and allocation-free no-policy path",
-      "remaining": "Required unsafe_op_in_unsafe_fn and static_mut_refs warning emission is missing (LIB-047); additional validity lints and memory permissions remain in their separate rows",
+      "implementation": "implemented_component",
+      "implemented": "Nested item reset, closure inheritance, calls/reified unsafe permission, lexical allow/warn/deny/forbid, required default/scoped warnings, source-provenance deduplication and error retention, allocation-free no-policy path",
+      "remaining": "Component publication and full inventory qualification remain; additional validity lints and memory permissions remain in their separate rows",
       "source": [
         "dev/src/sema/bodies/safety.rs",
         "dev/src/resolve/lint_policy"
@@ -512,7 +512,8 @@
       "tests": [
         "dev/tests/unsafe_contexts.rs",
         "dev/tests/unsafe_policies.rs",
-        "dev/tests/unsafe_policy_modules.rs"
+        "dev/tests/unsafe_policy_modules.rs",
+        "dev/tests/invariants/safety_diagnostics.rs"
       ],
       "evidence": [
         "pa27/README.md",

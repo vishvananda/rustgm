@@ -3,6 +3,15 @@ use crate::native_references as native;
 use crate::semantic;
 use crate::source_cases as source;
 
+const WARNINGS: &[source::WarningCase<'_>] = &[source::WarningCase {
+    name: "unsafe-function-store",
+    stderr: "warning[unsafe_op_in_unsafe_fn]: file 0: 32: unsafe operation in unsafe function requires an explicit unsafe block\n",
+    codes: &[(
+        rustgm::support::diagnostics::WarningCode::UnsafeOpInUnsafeFn,
+        1,
+    )],
+}];
+
 const CASES: &[(&str, bool, &str)] = &[
     (
         "raw-mut-reference-store",
@@ -150,7 +159,7 @@ const CASES: &[(&str, bool, &str)] = &[
 
 #[test]
 fn static_storage_and_default_reference_lint() -> Result<(), Box<dyn std::error::Error>> {
-    source::check("unsafe-statics", CASES)
+    source::check_with_warnings("unsafe-statics", CASES, WARNINGS)
 }
 
 #[test]

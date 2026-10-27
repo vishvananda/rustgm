@@ -174,6 +174,15 @@ source authentication from exhausted warning budgets. Keep the optional dense
 policy table's aggregate per-node cost explicit. See the
 [unnamed-constant checkpoint](docs/unnamed-free-constants.md).
 
+Unsafe-operation and mutable-static-reference warnings use that same sink and
+the actual retained lexical lint level. Explicit unsafe blocks satisfy the
+operation policy; Allow stays silent and safe contexts still require unsafe
+permission. Deduplicate original node/code identities before physical macro
+projection, preserve warnings before later errors and charge failed attempts.
+Do not allocate policy tables for the default path or add another warning owner.
+`allow_internal_unsafe` applies to the separate unsafe-code lint; it does not
+mask either of these policies. See the [qualified warning repair](docs/unsafe-policy-warning-gap.md).
+
 Local structural inherent ownership consumes the actual crate policy and complete
 member inventory. Head/name/context buckets exclude unrelated work; full Self,
 const arguments, caller conditions and visibility still decide applicability.

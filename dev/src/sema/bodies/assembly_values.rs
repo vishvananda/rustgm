@@ -156,33 +156,36 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         let unit = self.report.package.unit(self.state.file);
         for &template in unit.configured.ast.list(args) {
-            if let Kind::AssemblyTemplate { pieces, .. } = unit.configured.ast.node(template).kind {
-                for &piece in unit.configured.ast.list(pieces) {
-                    if let Kind::AssemblyPlaceholder {
-                        operand, modifier, ..
-                    } = unit.configured.ast.node(piece).kind
-                    {
-                        let class = classes.get(operand as usize).ok_or_else(|| {
-                            self.error(template, "assembly placeholder lost its operand")
-                        })?;
-                        if modifier != 0 {
-                            let valid = match class {
-                                Register::General | Register::Explicit { xmm: false, .. } => {
-                                    b"lxer".contains(&modifier)
-                                }
-                                Register::Abcd => b"lhxer".contains(&modifier),
-                                Register::Byte => false,
-                                Register::Xmm | Register::Explicit { xmm: true, .. } => {
-                                    b"xyz".contains(&modifier)
-                                }
-                            };
-                            if !valid {
-                                return Err(self.error(
-                                    template,
-                                    "assembly register modifier is not supported by its class",
-                                ));
-                            }
+            let Kind::AssemblyTemplate { pieces, .. } = unit.configured.ast.node(template).kind
+            else {
+                continue;
+            };
+            for &piece in unit.configured.ast.list(pieces) {
+                let Kind::AssemblyPlaceholder {
+                    operand, modifier, ..
+                } = unit.configured.ast.node(piece).kind
+                else {
+                    continue;
+                };
+                let class = classes
+                    .get(operand as usize)
+                    .ok_or_else(|| self.error(template, "assembly placeholder lost its operand"))?;
+                if modifier != 0 {
+                    let valid = match class {
+                        Register::General | Register::Explicit { xmm: false, .. } => {
+                            b"lxer".contains(&modifier)
                         }
+                        Register::Abcd => b"lhxer".contains(&modifier),
+                        Register::Byte => false,
+                        Register::Xmm | Register::Explicit { xmm: true, .. } => {
+                            b"xyz".contains(&modifier)
+                        }
+                    };
+                    if !valid {
+                        return Err(self.error(
+                            template,
+                            "assembly register modifier is not supported by its class",
+                        ));
                     }
                 }
             }

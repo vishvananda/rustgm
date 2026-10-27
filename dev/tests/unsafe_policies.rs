@@ -2,6 +2,86 @@
 use crate::semantic;
 use crate::source_cases as source;
 
+#[test]
+fn successful_source_diagnostics_require_exact_named_nonempty_contracts()
+-> Result<(), Box<dyn std::error::Error>> {
+    use rustgm::support::diagnostics::WarningCode;
+    let cases = [
+        ("warned", true, "fn f(){}"),
+        ("silent", true, "fn g(){}"),
+        ("rejected", false, "bad"),
+    ];
+    let text = "warning[unsafe_op_in_unsafe_fn]: file 0: 7: declared warning\n";
+    let valid = source::WarningCase {
+        name: "warned",
+        stderr: text,
+        codes: &[(WarningCode::UnsafeOpInUnsafeFn, 1)],
+    };
+    source::validate_warnings(&cases, std::slice::from_ref(&valid))?;
+    source::verify_stderr(text.as_bytes(), Some(&valid))?;
+    source::verify_stderr(b"", None)?;
+    for actual in [b"".as_slice(), b"warning[static_mut_refs]: file 0: 7: declared warning\n", b"warning[unsafe_op_in_unsafe_fn]: file 0: 7: declared warning\nERROR: file 0: 9: primary\n", b"warning[unsafe_op_in_unsafe_fn]: file 0: 7: declared warning\ntrailing\n"] {
+        assert!(source::verify_stderr(actual, Some(&valid)).is_err());
+    }
+    assert!(source::verify_stderr(text.as_bytes(), None).is_err());
+    for (name, stderr, codes) in [
+        ("missing", text, valid.codes),
+        ("rejected", text, valid.codes),
+        ("warned", "", valid.codes),
+        ("warned", text, &[(WarningCode::UnsafeOpInUnsafeFn, 2)][..]),
+        ("warned", text, &[(WarningCode::StaticMutRefs, 1)][..]),
+        ("warned", text, &[(WarningCode::UnsafeOpInUnsafeFn, 0)][..]),
+        (
+            "warned",
+            text,
+            &[
+                (WarningCode::UnsafeOpInUnsafeFn, 1),
+                (WarningCode::UnsafeOpInUnsafeFn, 1),
+            ][..],
+        ),
+        (
+            "warned",
+            "warning[unsafe_op_in_unsafe_fn]: file 0: 7: warning\nERROR: file 0: 8: bad\n",
+            valid.codes,
+        ),
+        (
+            "warned",
+            "warning[unsafe_op_in_unsafe_fn]: file 0: 7: warning\n  in macro arbitrary unvalidated text\n",
+            valid.codes,
+        ),
+    ] {
+        let wrong = source::WarningCase {
+            name,
+            stderr,
+            codes,
+        };
+        assert!(source::validate_warnings(&cases, &[wrong]).is_err());
+    }
+    let duplicate = source::WarningCase {
+        name: valid.name,
+        stderr: valid.stderr,
+        codes: valid.codes,
+    };
+    assert!(source::validate_warnings(&cases, &[valid, duplicate]).is_err());
+    Ok(())
+}
+
+const WARNINGS: &[source::WarningCase<'_>] = &[
+    source::WarningCase {
+        name: "operation-warn",
+        stderr: "warning[unsafe_op_in_unsafe_fn]: file 0: 60: unsafe operation in unsafe function requires an explicit unsafe block\n",
+        codes: &[(
+            rustgm::support::diagnostics::WarningCode::UnsafeOpInUnsafeFn,
+            1,
+        )],
+    },
+    source::WarningCase {
+        name: "reference-warn",
+        stderr: "warning[static_mut_refs]: file 0: 69: creating a reference to a mutable static is discouraged\n",
+        codes: &[(rustgm::support::diagnostics::WarningCode::StaticMutRefs, 1)],
+    },
+];
+
 const CASES: &[(&str, bool, &str)] = &[
     (
         "statement-operation-allow",
@@ -182,7 +262,7 @@ const CASES: &[(&str, bool, &str)] = &[
 
 #[test]
 fn scoped_unsafe_lints() -> Result<(), Box<dyn std::error::Error>> {
-    source::check("unsafe-policies", CASES)
+    source::check_with_warnings("unsafe-policies", CASES, WARNINGS)
 }
 
 #[test]
