@@ -412,3 +412,33 @@ result now follows the real registry kind; an actual invocation-availability
 query still rejects From before captures/marks/invocations. Both affected
 private groups pass in 108.87s, receipt `1793073832559208213`. The source bytes and
 historical filename are preserved. Full CI is rerun after publication.
+
+### Const-panic header policy
+
+Source `249ab01d2a8752d69275ff73058164ecec3e38f9` validates the original
+`rustc_do_not_const_check` and `rustc_const_stable_indirect` words in the existing
+header-owner walk. Fresh queries authenticate the same completed header image;
+no body/header fields or second policy owner are added. Explicit const-unstable
+APIs marked const-stable-indirect participate in the real recursive API check.
+The marker supplies no const-call eligibility. Malformed words, unsupported
+do-not-check roles and the const-stable/indirect pairing remain rejected.
+
+The stable `panic_handler` claim uses the existing PanicImpl slot without a
+lang_items request. Genuine foreign lang declarations remain separate DefIds and
+do not reserve that defining slot. This qualifies claim ownership only; completed
+handler signature/body validation and exact weak-symbol linkage remain required.
+The Report-aware defining context additionally requires actual local PanicFmt or
+PanicDisplay identity, current signature/body and both markers. It never changes
+the source const declaration or grants CTFE entry. CFG const eligibility retains
+its separate declaration test; the predecessor's accidental promotion of a
+const-trait default body failed on the real Clone::clone_from and is retained.
+
+All six focused controls pass in 96.62 seconds with metadata, formatting, global
+audit, private strict Clippy and build. Receipt
+`obj/qualification/fast/1793074570782818331/receipt.json` has SHA-256
+`c7b1b33bd3f2ac5ad498a2fad1937a4a0db872f90d0cb739a0bc8e97ba0c3b5a`;
+all 2,844 source fingerprints match. Reservations 1136, Package 256, Report 3040,
+CFG Body 448, Value 24, Rvalue 20, Library 128 and Inventory 88 are unchanged.
+Prior lint and runtime failures remain separate evidence. Actual original panic
+body execution, handler binding, ConstPanicFmt/PanicDisplay hooks and false Assert
+runtime/CTFE are pending, as are production/CLI checks for this checkpoint.
