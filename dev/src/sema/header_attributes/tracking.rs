@@ -106,7 +106,7 @@ impl Declarations {
         ) && self
             .source_bindings
             .as_deref()
-                .is_some_and(crate::sema::compiler_items::Catalog::local_caller_tracking_closed)
+            .is_some_and(crate::sema::compiler_items::Catalog::local_caller_tracking_closed)
         {
             return Ok(false);
         }
