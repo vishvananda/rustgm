@@ -1,0 +1,104 @@
+{
+  "state": "pinned independent metadata outcomes; candidate inert column qualification pending",
+  "primary_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "plan_sha256": "4c2c1739c3175d657f825590fb6f4cf9cb2c3b12021af91373e0f493c58bbc8a",
+  "observed_sha256": "100014e39e03800df4740fbb69caf5232dd689a0b74e4d871d67146cf10111f8",
+  "classification_sha256": "b63b17614f11c85eec1d4be3051ef97d1a2a70888d38e23e5cd48cf097a7fe8b",
+  "rows": [
+    {
+      "name": "targets",
+      "sha256": "b0dcee90662f2841d11675cf717ee1926ac42044823ba116a5d165561c608eba",
+      "status": 0,
+      "codes": [],
+      "messages": []
+    },
+    {
+      "name": "exact-strings",
+      "sha256": "d97e174909dc798e95720c8f4d5278e2e7c3b6fd052bede2188c59d6f9d99c96",
+      "status": 0,
+      "codes": [],
+      "messages": []
+    },
+    {
+      "name": "duplicate-items",
+      "sha256": "c71f2a6f46c8450e3671a14da3977bd0a968115cdac7ad5f1bd78eb74db07860",
+      "status": 1,
+      "codes": [],
+      "messages": [
+        "duplicate diagnostic item in crate `inert_duplicate_items`: `inert_duplicate`",
+        "aborting due to 1 previous error"
+      ]
+    },
+    {
+      "name": "duplicate-owner",
+      "sha256": "14ecd6dac302f44f419faaef84aaf548ee12c3def69b5ff4284287cb88052936",
+      "status": 1,
+      "codes": [],
+      "messages": [
+        "multiple `rustc_diagnostic_item` attributes",
+        "aborting due to 1 previous error"
+      ]
+    },
+    {
+      "name": "missing-gate",
+      "sha256": "572164c350bef3a7ccb578e7397187065f6c1e6030536ad8478ee73e7f21ff23",
+      "status": 1,
+      "codes": [
+        "E0658"
+      ],
+      "messages": [
+        "use of an internal attribute",
+        "aborting due to 1 previous error"
+      ]
+    },
+    {
+      "name": "invalid-target",
+      "sha256": "2cc5afc8cacbe400c5fee5c90c6a0a9e99e46f70d24f0a17f83af1a7ccfe003e",
+      "status": 1,
+      "codes": [],
+      "messages": [
+        "`#[rustc_diagnostic_item]` attribute cannot be used on statics",
+        "aborting due to 1 previous error"
+      ]
+    },
+    {
+      "name": "invalid-form",
+      "sha256": "e0fb930bf981690bf38774add1f1f3e191865f22f190bd69b9831032dc77dc66",
+      "status": 1,
+      "codes": [
+        "E0539"
+      ],
+      "messages": [
+        "malformed `rustc_diagnostic_item` attribute input",
+        "aborting due to 1 previous error"
+      ]
+    },
+    {
+      "name": "unknown-lang",
+      "sha256": "196b216b4dd4214ad6d194d4bff142ea17bedc8b57470aa0d8b46fb636e6c1d6",
+      "status": 1,
+      "codes": [
+        "E0522"
+      ],
+      "messages": [
+        "definition of an unknown lang item: `worker_unknown_language`",
+        "aborting due to 1 previous error"
+      ]
+    },
+    {
+      "name": "unknown-builtin",
+      "sha256": "cd4f833b7bfd1ecb31dec2651128daa10f490282902b62c627f7a8bc9d37c600",
+      "status": 1,
+      "codes": [],
+      "messages": [
+        "cannot find a built-in macro with name `worker_unknown_builtin`",
+        "aborting due to 1 previous error; 1 warning emitted"
+      ]
+    }
+  ],
+  "notes": [
+    "Missing-feature status/E0658 prediction matched but primary wording differed; raw runner remains hypothesis-disagreement.",
+    "Literal bytes already exercised decodedNUL/NFC/NFD in first packet; duplicate execution retained and excluded from unique evidence.",
+    "Unknown language and builtin declarations stay rejecting; diagnostics are inert data only."
+  ]
+}

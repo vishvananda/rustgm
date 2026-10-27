@@ -73,29 +73,23 @@ impl Names {
         self.canonical(spelling)
     }
     fn canonical(&mut self, spelling: &str) -> Result<NameId, &'static str> {
-        if self.slots.is_empty() {
-            self.slots.resize(16, Slot::default());
-        }
+        self.intern_exact_paid(spelling, &mut |_| Ok(()))
+    }
+    /// The same interner with explicit cold work/storage payment. No new arena.
+    pub(crate) fn intern_exact_paid(
+        &mut self,
+        spelling: &str,
+        pay: &mut impl FnMut(crate::support::retained::Growth) -> Result<(), &'static str>,
+    ) -> Result<NameId, &'static str> {
+        use crate::support::retained::Growth;
+        pay(Growth {
+            work: spelling.len().saturating_add(1),
+            bytes: 0,
+        })?;
         let hash = self.hash.hash_one(spelling);
-        let tag = hash & TAG_MASK;
-        let mask = self.slots.len() - 1;
-        let mut slot = bucket(hash, self.slots.len());
-        while let Some(id) = self.slots[slot].id() {
-            if self.slots[slot].tag() == tag
-                && let Some(entry) = self.entries.get(id.0 as usize)
-                && self
-                    .bytes
-                    .as_bytes()
-                    .get(entry.start as usize..entry.end as usize)
-                    == Some(spelling.as_bytes())
-            {
-                return Ok(id);
-            }
-            slot = (slot + 1) & mask;
-        }
-        if self.entries.len() >= self.slots.len() / 2 {
-            self.grow();
-            slot = self.vacant(hash);
+        let found = self.find(spelling, hash, pay)?;
+        if let Some(id) = found.1 {
+            return Ok(id);
         }
         let index = u32::try_from(self.entries.len())
             .ok()
@@ -108,26 +102,100 @@ impl Names {
             .checked_add(spelling.len())
             .and_then(|n| u32::try_from(n).ok())
             .ok_or("name arena exceeds 32 bits")?;
+        let capacity = if self.slots.is_empty() {
+            16
+        } else if self.entries.len() >= self.slots.len() / 2 {
+            self.slots
+                .len()
+                .checked_mul(2)
+                .ok_or("name slots exceed address space")?
+        } else {
+            0
+        };
+        let replacement = if capacity == 0 {
+            None
+        } else {
+            Some(self.rehashed(capacity, pay)?)
+        };
+        let slot = match &replacement {
+            Some(slots) => vacant(slots, hash, pay)?,
+            None => found.0,
+        };
+        let mut growth =
+            Growth::vector::<u8>(self.bytes.len(), self.bytes.capacity(), spelling.len());
+        if growth.bytes != 0 {
+            growth.bytes = growth.bytes.saturating_add(self.bytes.capacity());
+        }
+        let mut entries = Growth::vector::<Entry>(self.entries.len(), self.entries.capacity(), 1);
+        if entries.bytes != 0 {
+            entries.bytes = entries
+                .bytes
+                .saturating_add(crate::support::retained::vector(&self.entries));
+        }
+        growth.include(entries);
+        growth.work = growth.work.saturating_add(spelling.len()).saturating_add(1);
+        pay(growth)?;
+        // Every fallible payment and index check precedes append/publication.
         self.bytes.push_str(spelling);
         self.entries.push(Entry { start, end, hash });
+        if let Some(slots) = replacement {
+            self.slots = slots;
+        }
         self.slots[slot] = Slot::new(hash, index);
         Ok(NameId(index))
     }
-    fn grow(&mut self) {
-        self.slots = vec![Slot::default(); self.slots.len() * 2];
-        for index in 0..self.entries.len() {
-            let hash = self.entries[index].hash;
-            let slot = self.vacant(hash);
-            // Every entry was checked before insertion.
-            self.slots[slot] = Slot::new(hash, u32::try_from(index).unwrap_or(u32::MAX - 1));
+    fn find(
+        &self,
+        spelling: &str,
+        hash: u64,
+        pay: &mut impl FnMut(crate::support::retained::Growth) -> Result<(), &'static str>,
+    ) -> Result<(usize, Option<NameId>), &'static str> {
+        use crate::support::retained::Growth;
+        if self.slots.is_empty() {
+            return Ok((0, None));
         }
-    }
-    fn vacant(&self, hash: u64) -> usize {
         let mut slot = bucket(hash, self.slots.len());
-        while self.slots[slot].id().is_some() {
+        loop {
+            pay(Growth { work: 1, bytes: 0 })?;
+            let Some(id) = self.slots[slot].id() else {
+                return Ok((slot, None));
+            };
+            if self.slots[slot].tag() == hash & TAG_MASK {
+                pay(Growth {
+                    work: spelling.len(),
+                    bytes: 0,
+                })?;
+                if let Some(entry) = self.entries.get(id.0 as usize)
+                    && self
+                        .bytes
+                        .as_bytes()
+                        .get(entry.start as usize..entry.end as usize)
+                        == Some(spelling.as_bytes())
+                {
+                    return Ok((slot, Some(id)));
+                }
+            }
             slot = (slot + 1) & (self.slots.len() - 1);
         }
-        slot
+    }
+    fn rehashed(
+        &self,
+        capacity: usize,
+        pay: &mut impl FnMut(crate::support::retained::Growth) -> Result<(), &'static str>,
+    ) -> Result<Vec<Slot>, &'static str> {
+        pay(crate::support::retained::Growth {
+            work: capacity,
+            bytes: capacity
+                .saturating_add(self.slots.capacity())
+                .saturating_mul(size_of::<Slot>()),
+        })?;
+        let mut slots = vec![Slot::default(); capacity];
+        for (index, entry) in self.entries.iter().enumerate() {
+            let slot = vacant(&slots, entry.hash, pay)?;
+            let id = u32::try_from(index).map_err(|_| "too many names")?;
+            slots[slot] = Slot::new(entry.hash, id);
+        }
+        Ok(slots)
     }
     #[must_use]
     pub fn get(&self, id: NameId) -> &str {
@@ -159,3 +227,22 @@ fn bucket(hash: u64, capacity: usize) -> usize {
     }
     usize::try_from(hash >> (64 - bits)).unwrap_or(0)
 }
+
+fn vacant(
+    slots: &[Slot],
+    hash: u64,
+    pay: &mut impl FnMut(crate::support::retained::Growth) -> Result<(), &'static str>,
+) -> Result<usize, &'static str> {
+    let mut slot = bucket(hash, slots.len());
+    loop {
+        pay(crate::support::retained::Growth { work: 1, bytes: 0 })?;
+        if slots[slot].id().is_none() {
+            return Ok(slot);
+        }
+        slot = (slot + 1) & (slots.len() - 1);
+    }
+}
+
+#[cfg(test)]
+#[path = "../../tests/invariants/name_payments.rs"]
+mod payment_tests;

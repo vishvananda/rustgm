@@ -31,7 +31,7 @@ pub struct Work {
     pub operations: usize,
 }
 impl Work {
-    fn charge(&mut self, count: usize) -> Result<(), &'static str> {
+    pub(crate) fn charge(&mut self, count: usize) -> Result<(), &'static str> {
         self.steps = self.steps.saturating_add(count);
         if self.steps > crates::MAX_COMPONENTS {
             return Err("generic metadata work budget exceeded");
