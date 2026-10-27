@@ -860,6 +860,20 @@ DeferredLiteral payloads: validate suffix/radix through the shared literal
 producer without evaluating arbitrary-width integer spelling. The original
 source and typed fragment identity remain authoritative.
 
+Count, ignore, index, length and escaped-dollar templates require the actual
+crate's macro_metavar_expr feature, independently of concatenation. Compile
+their operands once into the existing template grammar and emit typed numeric
+tokens with definition-site origin. Reuse the winning binding trace and active
+repetition frames; counting must retain the pinned first-empty-branch behavior.
+Build a preorder interval index only when a real subtree count needs it, and
+share typed driver sets and active capture cursors across nested substitutions.
+Prepay index growth and failed queries through the existing transcription work
+limit. Do not rescan a whole matched subtree for every count or walk every
+ancestor again for every emitted capture. Preserve ordinary token/IR widths and
+measure wall time separately from bounded-work growth. The
+[expression protocol](pa31/tests/spec/metavariable-expressions/README.md)
+records independent outcomes, native execution and remaining measurement limits.
+
 Keep actual expansion ancestry separate from a token's syntax context and its
 physical source/edition provenance. A captured name does not determine the
 contexts of the surrounding generated macro body. Mark each definition token
