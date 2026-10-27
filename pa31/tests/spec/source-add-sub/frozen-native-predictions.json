@@ -1,0 +1,30 @@
+{
+  "state": "native predictions frozen before observation; full dynamic arithmetic original profiles and missing overflow-panic source roles retained",
+  "inputs": {
+    "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-add-sub-v1/frozen/predictions.json": "625474466f485537938c2a6ba6832c04791115cec10d0ccd6267bcee47c84cb0",
+    "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-add-sub-v1/observed-object/summary.json": "50882a41929d5e9e2d5c8146658f96a0560755ae6d67a98e522976b049e9760e"
+  },
+  "cases": [
+    {
+      "name": "explicit-shared-bodies",
+      "source": "obj/parallel/pa31/source-add-sub-v1/frozen-native/explicit-shared-bodies.rs",
+      "source_sha256": "1cc4017ffe972afba1cd982540927e992061d77806ddbaba8152f347bce77f20",
+      "consumer": "obj/parallel/pa31/source-add-sub-v1/frozen-native/explicit-shared-bodies.c",
+      "consumer_sha256": "d90e35698845155bf59907c898725695b2090ad4bac5e2271698c072630b32d1",
+      "status": 0,
+      "stdout": "19 23 29 31\n",
+      "stderr": ""
+    },
+    {
+      "name": "nominal-generic",
+      "source": "obj/parallel/pa31/source-add-sub-v1/frozen-native/nominal-generic.rs",
+      "source_sha256": "2729795504c72cec204fbe558bb0a77bd02e988a73f2cd5088b5b1e2c8d49b17",
+      "consumer": "obj/parallel/pa31/source-add-sub-v1/frozen-native/nominal-generic.c",
+      "consumer_sha256": "121e302418f4d5c713ccfe734656d5cb53fdabf54fd9c69eda605c66269845fd",
+      "status": 0,
+      "stdout": "41 43\n",
+      "stderr": ""
+    }
+  ],
+  "scope": "genuine exact Add/Sub trait declarations, authored source impl bodies with distinct values, actual reference and nominal/generic calls; no arithmetic or panic stub substitute"
+}
