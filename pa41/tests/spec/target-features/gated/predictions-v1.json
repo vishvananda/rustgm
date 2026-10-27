@@ -1,0 +1,82 @@
+{
+  "scope": "NEW actual gated target-feature requirements and literal-span authority only; no repeated stable27/native",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "cases": [
+    {
+      "source": "amx-enabled.rs",
+      "sha256": "9cd25a71848538de55f124446afc9ed85877f95183070b78f4fc814afe64fe7c",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "amx-missing.rs",
+      "sha256": "a66643aec4d26a70932e89d9f7f7e892f192bff29aeee0df4b609dc0d6ea6ddd",
+      "status": 1,
+      "errors": [
+        "E0658"
+      ],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "avx10-enabled.rs",
+      "sha256": "8b408a09394630fdec740cf6902e6e4822741f185cfa67872a75e922fbe91e0b",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "avx10-missing.rs",
+      "sha256": "746a0f29c972bf3dff6e024f90591260cc07faf9699f79847ddb3499ebe000c0",
+      "status": 1,
+      "errors": [
+        "E0658"
+      ],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "wrong-gate.rs",
+      "sha256": "97cef5c3f21cec9303ad988cbea54d5b11b4dfaa575adc8d666117b90f762219",
+      "status": 1,
+      "errors": [
+        "E0658"
+      ],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "literal-grant.rs",
+      "sha256": "fdc2a79a23537495ff58aab86f2be2e851cd8ba0fcf72c68f3700c5046dbbea0",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "captured-literal.rs",
+      "sha256": "9110815c3b770ff47280e4e4d19c07faf5c0be62cadbd54fed50456cefa78284",
+      "status": 1,
+      "errors": [
+        "E0658"
+      ],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "captured-meta.rs",
+      "sha256": "d54e423def28ac3535645ca54bae5a4b760001e3674ac20d1f0c0002e5241d80",
+      "status": 1,
+      "errors": [
+        "E0658"
+      ],
+      "warnings": [],
+      "flags": []
+    }
+  ]
+}
