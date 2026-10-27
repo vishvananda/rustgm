@@ -192,7 +192,7 @@ fn actual_const_effects_and_negative_overflow_faults_remain_required() -> TestRe
         let error = pipeline::analyze_source(&report)
             .err()
             .ok_or("invalid const accepted")?;
-        eprintln!("source-const opponent {name}: {:?}", error);
+        eprintln!("source-const opponent {name}: {error:?}");
         let message = format!(
             "no implementation for `{lhs} << {rhs}`\nlabel: no implementation for `{lhs} << {rhs}`"
         );
@@ -354,7 +354,7 @@ fn provisional_results_preserve_known_never_cfg_and_explicit_feature_frontier() 
         let error = pipeline::analyze_source(&report)
             .err()
             .ok_or("delayed Never opponent accepted")?;
-        eprintln!("delayed-Never {name}: {:?}", error);
+        eprintln!("delayed-Never {name}: {error:?}");
         let start = u32::try_from(source.rfind(site).ok_or("actual delayed site")?)?;
         if error.message != expected || error.span.start != start {
             failures.push(format!(
