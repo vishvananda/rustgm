@@ -9,7 +9,7 @@ use crate::{
     support::crates::generics::source as s,
 };
 
-#[path = "selected_conformance.rs"]
+#[path = "contract_completion.rs"]
 mod conformance;
 
 pub(in crate::sema) struct SelectedConsumer<'a> {
