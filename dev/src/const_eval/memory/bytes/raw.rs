@@ -3,7 +3,7 @@ use super::{Constant, Failure, Id, Machine, Read, Reader, TypeId};
 use crate::{const_eval::static_reads::ReadPurpose, sema::values::LocationId};
 
 impl Machine<'_, '_> {
-    fn prepare_byte_access(
+    pub(super) fn prepare_byte_access(
         &mut self,
         root: LocationId,
         leaf: TypeId,

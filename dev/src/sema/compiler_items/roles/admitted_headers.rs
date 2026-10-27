@@ -87,6 +87,7 @@ pub(in crate::sema::compiler_items) fn traits(
         roles,
         methods: [None; 3],
         pointee: None,
+        discriminant: None,
     }));
     Ok(())
 }

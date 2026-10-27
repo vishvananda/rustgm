@@ -10,6 +10,7 @@ mod intrinsics;
 mod invocations;
 mod pointers;
 mod ptr_values;
+mod enum_intrinsic;
 mod references;
 mod referents;
 mod reinterpret_calls;
@@ -870,6 +871,7 @@ impl Lower<'_, '_, '_> {
                 if let Some(value) = self.tracked_call(id)? {
                     return Ok(value);
                 }
+                if let Some(value) = self.source_discriminant(id)? { return Ok(value); }
                 if let Some(value) = self.source_ptr_metadata(id)? {
                     return Ok(value);
                 }

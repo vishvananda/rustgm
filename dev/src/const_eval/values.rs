@@ -368,14 +368,10 @@ impl Machine<'_, '_> {
                 let Some(address) = self.place(frame, place)? else {
                     return Ok(None);
                 };
-                let Some(value) = self.read(address)? else {
+                let super::memory::Read::Value(actual) = self.read_active_variant(address)? else {
                     return Ok(None);
                 };
-                let actual = match Reader::new(self.evaluator.facts()).view(value)? {
-                    View::Product { variant, .. } => variant,
-                    _ => None,
-                };
-                Constant::scalar(Scalar::Boolean(actual == Some(variant)))
+                Constant::scalar(Scalar::Boolean(actual == variant))
             }
             Rvalue::Length(place) => {
                 let Some(address) = self.place(frame, place)? else {

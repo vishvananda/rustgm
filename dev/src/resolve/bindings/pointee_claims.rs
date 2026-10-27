@@ -14,6 +14,8 @@ pub(super) fn validate(
     if !matches!(
         role,
         LangItem::PointeeTrait
+            | LangItem::DiscriminantKind
+            | LangItem::DiscriminantType
             | LangItem::MetadataType
             | LangItem::DynMetadata
             | LangItem::PhantomData
@@ -30,8 +32,8 @@ pub(super) fn validate(
     };
     let actual = unit.configured.ast.items[index as usize].kind;
     let valid = match role {
-        LangItem::PointeeTrait => matches!(actual, ItemKind::Trait { .. }),
-        LangItem::MetadataType => {
+        LangItem::PointeeTrait | LangItem::DiscriminantKind => matches!(actual, ItemKind::Trait { .. }),
+        LangItem::MetadataType | LangItem::DiscriminantType => {
             declaration.parent.is_some() && matches!(actual, ItemKind::TypeAlias { .. })
         }
         LangItem::DynMetadata | LangItem::PhantomData => matches!(actual, ItemKind::Struct { .. }),

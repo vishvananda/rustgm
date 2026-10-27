@@ -176,6 +176,7 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
             roles: 0,
             methods: [None; 3],
             pointee: None,
+            discriminant: None,
         })
     });
     ledger.roles |= (crate::sema::compiler_items::role_bit(LangItem::PointeeTrait))

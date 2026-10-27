@@ -8,24 +8,26 @@ use crate::sema::{
 pub(super) enum Continuation {
     Inherited(ProjectionRequirements),
     Metadata(super::data_result::Pending),
+    Discriminant(super::tag_result::Pending),
 }
 impl Continuation {
     pub(super) fn allocation_end(&self, first: u32) -> u32 {
         match self {
             Self::Inherited(value) => value.allocation_end(first),
             Self::Metadata(value) => value.allocation_end(first),
+            Self::Discriminant(_) => first,
         }
     }
     fn inherited(&self) -> Result<&ProjectionRequirements, &'static str> {
         match self {
             Self::Inherited(value) => Ok(value),
-            Self::Metadata(_) => Err("metadata query used inherited proof"),
+            Self::Metadata(_) | Self::Discriminant(_) => Err("metadata query used inherited proof"),
         }
     }
     fn inherited_mut(&mut self) -> Result<&mut ProjectionRequirements, &'static str> {
         match self {
             Self::Inherited(value) => Ok(value),
-            Self::Metadata(_) => Err("metadata query used inherited proof"),
+            Self::Metadata(_) | Self::Discriminant(_) => Err("metadata query used inherited proof"),
         }
     }
 }

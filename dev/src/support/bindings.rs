@@ -61,9 +61,11 @@ pub enum LangItem {
     StructuralPartialEq,
     Ordering,
     PartialOrd,
+    DiscriminantKind,
+    DiscriminantType,
 }
 impl LangItem {
-    pub const ALL: [Self; 46] = [
+    pub const ALL: [Self; 48] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -110,6 +112,8 @@ impl LangItem {
         Self::StructuralPartialEq,
         Self::Ordering,
         Self::PartialOrd,
+        Self::DiscriminantKind,
+        Self::DiscriminantType,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -160,6 +164,8 @@ impl LangItem {
             Self::StructuralPartialEq => 43,
             Self::Ordering => 44,
             Self::PartialOrd => 45,
+            Self::DiscriminantKind => 46,
+            Self::DiscriminantType => 47,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -212,6 +218,8 @@ impl LangItem {
             "structural_peq" => Some(Self::StructuralPartialEq),
             "Ordering" => Some(Self::Ordering),
             "partial_ord" => Some(Self::PartialOrd),
+            "discriminant_kind" => Some(Self::DiscriminantKind),
+            "discriminant_type" => Some(Self::DiscriminantType),
             _ => None,
         }
     }
@@ -246,12 +254,15 @@ pub enum SourceIntrinsic {
     Transmute,
     CallerLocation,
     PtrMetadata,
+    DiscriminantValue,
 }
 impl SourceIntrinsic {
     /// Declaration attribute decoding only; consumers retain the actual `DefId`.
     #[must_use]
     pub fn from_name(name: &str) -> Option<Self> {
-        if name == "ptr_metadata" {
+        if name == "discriminant_value" {
+            Some(Self::DiscriminantValue)
+        } else if name == "ptr_metadata" {
             Some(Self::PtrMetadata)
         } else if name == "caller_location" {
             Some(Self::CallerLocation)

@@ -111,5 +111,8 @@ pub(super) fn require_positive_source(
     if let Some(Source::Pointee(selected)) = source {
         selected.current(facts).map_err(|error| error.to_string())?;
     }
+    if let Some(Source::Discriminant(selected)) = source {
+        selected.current(facts).map_err(|error| error.to_string())?;
+    }
     Ok(())
 }

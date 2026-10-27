@@ -528,11 +528,12 @@ impl Opened {
         let Some(catalog) = facts.source_bindings.as_deref() else {
             return Ok(None);
         };
-        let Some(member) = catalog.role(crate::support::bindings::LangItem::MetadataType)? else {
-            return Ok(None);
-        };
-        if member.definition.0 != self.application.item.0 || !self.application.arguments.is_empty()
-        {
+        let mut matching = false;
+        for role in [crate::support::bindings::LangItem::MetadataType,
+            crate::support::bindings::LangItem::DiscriminantType] {
+            matching |= catalog.role(role)?.is_some_and(|m| m.definition.0 == self.application.item.0);
+        }
+        if !matching || !self.application.arguments.is_empty() {
             return Ok(None);
         }
         let predicate = match self

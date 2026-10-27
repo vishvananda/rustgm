@@ -67,6 +67,9 @@ fn signature(
     function: Function,
     kind: SourceIntrinsic,
 ) -> Result<(), &'static str> {
+    if kind == SourceIntrinsic::DiscriminantValue {
+        return super::tag_intrinsic::validate(facts, function);
+    }
     if kind == SourceIntrinsic::PtrMetadata {
         return super::ptr_metadata::validate(facts, function).map(|_| ());
     }
@@ -226,6 +229,7 @@ impl Catalog {
                 | SourceIntrinsic::Transmute
                 | SourceIntrinsic::CallerLocation
                 | SourceIntrinsic::PtrMetadata
+                | SourceIntrinsic::DiscriminantValue
         ) {
             // These contracts have dedicated descriptors, without a layout element.
             return Ok(None);
@@ -248,6 +252,7 @@ impl Catalog {
                 SourceIntrinsic::ConstEvalSelect => {
                     "source callback selection requires its own descriptor"
                 }
+                SourceIntrinsic::DiscriminantValue => "source discriminant requires its actual reached reference-call descriptor",
                 SourceIntrinsic::PtrMetadata => {
                     "source ptr_metadata requires its actual pointer-call descriptor"
                 }
@@ -275,6 +280,7 @@ impl Catalog {
                 SourceIntrinsic::ConstEvalSelect => {
                     "source callback selection requires its own descriptor"
                 }
+                SourceIntrinsic::DiscriminantValue => "source discriminant requires its actual reached reference-call descriptor",
                 SourceIntrinsic::PtrMetadata => {
                     "source ptr_metadata requires its actual pointer-call descriptor"
                 }

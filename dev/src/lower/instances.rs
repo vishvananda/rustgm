@@ -431,6 +431,8 @@ fn require_source_session(report: &Report, facts: &Declarations) -> Result<(), E
             "source lowering requires its actual prepared catalog".into(),
         ));
     }
+    crate::sema::compiler_items::discriminant::authenticate(report, facts)
+        .map_err(|e| diagnostic(report, None, e.to_string()))?;
     Ok(())
 }
 

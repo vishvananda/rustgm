@@ -347,6 +347,10 @@ impl Checker<'_> {
                         .map_err(|error| self.error(node, error.to_string()))?;
                     continue;
                 }
+                Some(Source::Discriminant(selected)) => {
+                    selected.current(self.facts).map_err(|error| self.error(node, error.to_string()))?;
+                    continue;
+                }
                 Some(Source::Equality) => {
                     return Err(self.error(node, "equality evidence cannot replace a trait goal"));
                 }
