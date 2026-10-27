@@ -1,0 +1,71 @@
+name 0 "crate"
+name 1 "u8"
+name 2 "local"
+name 3 "values"
+name 4 "X"
+name 5 "nested"
+name 6 "bool"
+name 7 "char"
+name 8 "str"
+name 9 "i8"
+name 10 "i16"
+name 11 "i32"
+name 12 "i64"
+name 13 "i128"
+name 14 "isize"
+name 15 "u16"
+name 16 "u32"
+name 17 "u64"
+name 18 "u128"
+name 19 "usize"
+name 20 "f32"
+name 21 "f64"
+name 22 "f16"
+name 23 "f128"
+name 24 "self"
+name 25 "read"
+module 0 name=0 file=0 scope=0 parent=root
+module 1 name=3 file=0 scope=2 parent=0
+module 2 name=5 file=0 scope=4 parent=0
+scope 0 module=0 barrier=true parent=root
+scope 1 module=0 barrier=true parent=root
+scope 2 module=1 barrier=true parent=root
+scope 3 module=1 barrier=true parent=2
+scope 4 module=2 barrier=true parent=root
+scope 5 module=2 barrier=true parent=4
+scope 6 module=2 barrier=false parent=5
+def 0 type primitive name=6 scope=0 access=public
+def 1 type primitive name=7 scope=0 access=public
+def 2 type primitive name=8 scope=0 access=public
+def 3 type primitive name=9 scope=0 access=public
+def 4 type primitive name=10 scope=0 access=public
+def 5 type primitive name=11 scope=0 access=public
+def 6 type primitive name=12 scope=0 access=public
+def 7 type primitive name=13 scope=0 access=public
+def 8 type primitive name=14 scope=0 access=public
+def 9 type primitive name=1 scope=0 access=public
+def 10 type primitive name=15 scope=0 access=public
+def 11 type primitive name=16 scope=0 access=public
+def 12 type primitive name=17 scope=0 access=public
+def 13 type primitive name=18 scope=0 access=public
+def 14 type primitive name=19 scope=0 access=public
+def 15 type primitive name=20 scope=0 access=public
+def 16 type primitive name=21 scope=0 access=public
+def 17 type primitive name=22 scope=0 access=public
+def 18 type primitive name=23 scope=0 access=public
+def 19 type extern-crate name=2 scope=0 access=module:0 source=0:0 members=0
+def 20 type module name=3 scope=0 access=public source=0:4 members=2
+def 21 value const name=4 scope=2 access=public source=0:3
+def 22 type module name=5 scope=0 access=module:0 source=0:17 members=4
+def 23 value function name=25 scope=4 access=public source=0:16
+binding scope=0 type name=2 def=19 Direct ambiguous=false access=module:0
+binding scope=0 type name=3 def=20 Direct ambiguous=false access=public
+binding scope=0 type name=5 def=22 Direct ambiguous=false access=module:0
+binding scope=1 type name=2 def=19 Direct ambiguous=false access=public
+binding scope=2 value name=4 def=21 Direct ambiguous=false access=public
+binding scope=4 value name=25 def=23 Direct ambiguous=false access=public
+binding scope=4 type name=2 def=19 Import(0) ambiguous=false access=module:2
+ref 0:1 scope=3 type def=9
+ref 0:10 scope=5 type def=9
+ref 0:14 scope=6 value def=21
+eof files=1 modules=3 definitions=24 references=3

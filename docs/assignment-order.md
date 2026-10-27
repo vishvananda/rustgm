@@ -89,11 +89,11 @@ publication remains pending. Its real canonical ManuallyDrop fixture requires op
 that existing acyclic prerequisite now precedes it. No fixture or obligation is
 removed to preserve an earlier implementation label.
 
-The [current operator counterexamples](operator-kernel-blockers.md) also make
-operator-kernel partial: canonical assignment demand remains required. The
-overloaded mutable capture indexing join is now source/native qualified; both
-original Rust-positive fixtures remain. Six broader hook/derive obligations
-stay in their declared units.
+The [operator counterexamples](operator-kernel-blockers.md) are now closed by
+qualified selected-index capture and implicit assignment-demand joins. Their
+original Rust-positive fixtures are accepted and execute unchanged. Broader
+hook/derive obligations remain in their declared units; component publication
+and the proposed complete fixture census still require release qualification.
 
 ## Adopted work order
 
@@ -106,7 +106,7 @@ scope, predecessor IDs and executable exit are in assignment-plan.json.
 | Order | Owner | Work unit | Implementation | Publication |
 | --- | --- | --- | --- | --- |
 | 1 | PA29 | Crate identities and declaration metadata (`declarations`) | implemented | unpublished |
-| 2 | PA26 | Canonical operator and indexing kernels (`operator-kernel`) | partial | unpublished |
+| 2 | PA26 | Canonical operator and indexing kernels (`operator-kernel`) | implemented | unpublished |
 | 3 | PA27 | Unsafe permission and native places (`unsafe-places`) | implemented | unpublished |
 | 4 | PA30 | Local C ABI and linkage (`c-abi`) | implemented | unpublished |
 | 5 | PA31 | Local compiler declarations and attribute authority (`source-declarations`) | partial | unpublished |

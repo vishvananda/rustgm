@@ -1,11 +1,9 @@
 # Required operator component joins
 
-Operator-kernel remains unpublished and now has explicit partial implementation
-status. Reconciliation found two direct gaps; captured indexing is now qualified,
-while implicit assignment demand remains. Neither
-Rust-positive input is excluded or relabelled as a language rejection. Whole
-PA26 remains planned; broader constants, reference operations and derives keep
-their already declared hook-closure/format-derive requirements.
+Both direct operator-kernel gaps are now source/native qualified. The finite
+kernel is implemented; publication, complete inventory and release checks remain
+pending. Whole PA26 stays planned, and broader source/reference/derive obligations
+remain in their declared units.
 
 `pa26/tests/spec/index-mut/captured.rs` mutates a canonical IndexMut receiver
 inside an ordinary mutable closure and requires two calls to yield3. Pinned Rust
@@ -20,19 +18,14 @@ Rust-only exception is removed. Loan, mode and evaluation-order checks remain.
 `pa26/tests/spec/primitive-assignment/implicit-forwarding-boundary.rs` declares
 both operands as u32, then uses `x += &y` without importing AddAssign. Its source
 SHA-256 is `28fb4c45a426d3eaed57c14d6b7b4ef56bf024ce1265df53acc09e2e3193d2f2`.
-Current pinned Rust metadata succeeds; qualified combined CLIaa6dbb86 rejects
-`incompatible types` at100. The explicit-import companion already works. This is
-canonical hook demand, separate from unsuffixed inference or unrestricted method
-lookup. The integrator owns the existing resolver/declaration producer join,
-with actual trait/receiver/loan proof and ordinary no-demand controls preserved.
-Seventeen frozen controls now independently match pinned Rust outcomes; three
-valid native controls prove reference-forwarding results and overload order12.
-The current candidate still fails nine required positives, while scalar,
-no-demand, disabled and explicit-import controls pass. Baseline layout measures
-Traits192/Language44/Resolution2056/Body456. Inputs and predictions are committed
-in `pa26/tests/implicit-assignment-demand-predictions.json`; exact39-command
-receipt and baseline streams remain under
-`obj/parallel/implicit-assignment-demand-v1/before/`.
+The original baseline CLIaa6dbb86 rejected it at100 while pinned Rust accepted.
+The [qualified typed-demand repair](implicit-assignment-demand.md) now accepts
+and executes that unchanged positive. Its old candidate rejection and Rust-only
+exception are removed. Exact owner, signature, source authority, scalar latency,
+lexical dot visibility, loans and source order remain checked. Baseline layout
+Traits192/Resolution2056 shrinks to168/2032; Language44/Body456 remain unchanged.
+All17 original/control predictions and visibility3 independently match pinned
+Rust, and the genuine native programs pass. Component publication is still pending.
 
 The current independent and candidate streams are retained in
 `obj/parallel/raw-composition-integration-v1/observed/`; captured evidence is in

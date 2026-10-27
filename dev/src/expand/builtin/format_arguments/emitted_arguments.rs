@@ -18,25 +18,30 @@ pub(super) struct Output<'a> {
     source: String,
     sites: Vec<NodeId>,
     inputs: Vec<(NodeId, usize)>,
-    names: [NameId; 2],
+    names: [NameId; 3],
     charge: &'a Charge<'a>,
 }
 impl<'a> Output<'a> {
     pub(super) fn build(
         template: Template,
         count: usize,
-        names: [NameId; 2],
+        names: [NameId; 3],
         grammar: MacroContext,
         config: &Config,
         charge: &'a Charge<'a>,
     ) -> Result<Draft, LexError> {
-        let site_count = count.saturating_mul(2).saturating_add(3);
+        let constructor_count = template.arguments.len();
+        let site_count = count.saturating_add(constructor_count).saturating_add(3);
         charge(
             site_count.saturating_add(count),
             site_count
                 .saturating_mul(size_of::<NodeId>())
                 .saturating_add(count.saturating_mul(size_of::<(NodeId, usize)>()))
-                .saturating_add(count.saturating_mul(2 * size_of::<NodeId>())),
+                .saturating_add(
+                    count
+                        .saturating_add(constructor_count)
+                        .saturating_mul(size_of::<NodeId>()),
+                ),
         )?;
         let mut output = Self {
             ast: Ast::default(),
@@ -46,7 +51,7 @@ impl<'a> Output<'a> {
             names,
             charge,
         };
-        let first = output.input_tuple(count)?;
+        let first = output.input_tuple(count, constructor_count)?;
         let second = output.argument_array(&template.arguments)?;
         charge(1, size_of::<Value<'_>>())?;
         output
@@ -117,10 +122,10 @@ impl<'a> Output<'a> {
             inputs: output.inputs,
         })
     }
-    fn input_tuple(&mut self, count: usize) -> Result<NodeId, LexError> {
+    fn input_tuple(&mut self, count: usize, constructors: usize) -> Result<NodeId, LexError> {
         let mut values = Vec::with_capacity(count);
         for index in 0..count {
-            let slot = Self::index(3 + count + index)?;
+            let slot = Self::index(3 + constructors + index)?;
             let input = self.node(
                 "input",
                 Kind::LibraryValue {
@@ -142,11 +147,11 @@ impl<'a> Output<'a> {
         let tuple = self.node("tuple", Kind::Tuple(list))?;
         self.binding("__format_values", tuple, 0)
     }
-    fn argument_array(&mut self, order: &[usize]) -> Result<NodeId, LexError> {
+    fn argument_array(&mut self, order: &[super::template::Argument]) -> Result<NodeId, LexError> {
         let mut arguments = Vec::with_capacity(order.len());
         for (ordinal, input) in order.iter().enumerate() {
             let receiver = self.name("__format_values")?;
-            let name = self.text(&input.to_string())?;
+            let name = self.text(&input.input.to_string())?;
             let field = self.node(
                 "field",
                 Kind::Field {
@@ -154,7 +159,7 @@ impl<'a> Output<'a> {
                     name,
                 },
             )?;
-            let callee = self.constructor(3 + ordinal, FormatConstructor::Debug)?;
+            let callee = self.constructor(3 + ordinal, input.constructor)?;
             let arguments_list = self.list(&[field])?;
             arguments.push(self.node(
                 "call",
@@ -260,7 +265,11 @@ impl<'a> Output<'a> {
         slot: usize,
         constructor: FormatConstructor,
     ) -> Result<NodeId, LexError> {
-        let index = usize::from(constructor == FormatConstructor::Debug);
+        let index = match constructor {
+            FormatConstructor::Arguments => 0,
+            FormatConstructor::Debug => 1,
+            FormatConstructor::Display => 2,
+        };
         let node = self.node(
             constructor.name(),
             Kind::LibraryValue {

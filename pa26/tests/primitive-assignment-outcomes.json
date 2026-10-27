@@ -704,7 +704,7 @@
     },
     {
       "path": "tests/spec/primitive-assignment/implicit-forwarding-boundary.rs",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa26.primitive-assignment-traits"
       ],
@@ -714,8 +714,8 @@
         "emit": "obj"
       },
       "native": {
-        "kind": "codegen",
-        "reason": "Implicit canonical language-hook availability is not yet implemented; explicit trait demand supplies the validated identity."
+        "kind": "execute",
+        "outcome": "pass"
       }
     }
   ]

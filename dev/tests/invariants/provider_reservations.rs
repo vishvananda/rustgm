@@ -175,7 +175,7 @@ fn source_configuration_keeps_bootstrap_owner_absent() -> Result {
         size_of::<crate::syntax::expression::Parser<'_, '_>>()
     );
     // A lazy item-scope owner adds eight bytes; per-item and body rows are unchanged.
-    assert_eq!(size_of::<resolve::model::Resolution>(), 2056);
+    assert_eq!(size_of::<resolve::model::Resolution>(), 2032);
     Ok(())
 }
 

@@ -35,10 +35,11 @@ reified method pointers, named/static RHS lifetimes and orphan rules. Explicit
 forwarding succeeds while aliasing the mutable receiver and shared RHS rejects.
 The earlier assignment suite's unchanged generic primitive boundary now accepts.
 
-Implicit canonical hook availability remains unfinished: `x += &y` without any
-written canonical trait demand still follows the earlier scalar boundary. The
-paired explicit `use core::ops::AddAssign` control exercises the implemented
-route. Direct library-trait dot-call lookup is extended by the separate
+[Implicit canonical hook availability](implicit-assignment-demand.md) is now
+qualified: typed shared-reference RHS demand the existing real family without a
+lexical import. The explicit-import control remains valid and unimported dot
+calls remain rejected. Scalar-only uses retain cold semantic headers.
+Direct library-trait dot-call lookup is extended by the separate
 `docs/pa26-dot-methods.md` checkpoint. Other primitive operators,
 comparison/Deref, iteration, question-mark/residual flow, additional derives,
 formatting/runtime hooks and remaining library methods also remain. This is

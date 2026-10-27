@@ -258,7 +258,7 @@
       "contract": "Canonical operators/indexing/assignment and ordinary method proof",
       "implementation": "partial",
       "implemented": "Bounded canonical Neg/Not/binary/Index/IndexMut/ten assignment families, receiver/evaluation/loan rules",
-      "remaining": "Canonical implicit assignment-hook demand remains a confirmed Rust-positive failure (LIB-049). LIB-048 overloaded mutable capture indexing is source/native qualified. Remaining primitive method/reference/source forms stay in hook-closure; no whole method-lookup completion is claimed.",
+      "remaining": "Remaining primitive reference/source method and actual source-operator forms stay in hook-closure; LIB-048 capture indexing and LIB-049 implicit assignment are qualified finite components, not whole method lookup or source-core completion.",
       "source": [
         "dev/src/sema/primitive_methods.rs",
         "dev/src/sema/bodies/language_hooks.rs"
@@ -272,7 +272,8 @@
         "docs/pa26-assignment-checkpoint.md",
         "docs/pa26-index-mut-checkpoint.md",
         "docs/operator-kernel-blockers.md",
-        "docs/pa26-selected-index-captures.md"
+        "docs/pa26-selected-index-captures.md",
+        "docs/implicit-assignment-demand.md"
       ],
       "publication": "unpublished assignment contract; no active manifest/oracle claim",
       "units": [
@@ -798,7 +799,7 @@
       "contract": "Actual source transmute/layout/needs_drop and related calls",
       "implementation": "partial",
       "implemented": "Real local source transmute and other selected authenticated intrinsic kernels, actual runtime/CTFE native controls",
-      "remaining": "Open callbacks/cleanup, source-used remaining intrinsic families and imported operation-policy transport remain",
+      "remaining": "Open callbacks/cleanup, source-used remaining intrinsic families and imported operation-policy transport remain; actual safe const-only offset_of with deferred generic enum/niche field operands is required by LIB-050",
       "source": [
         "dev/src/sema/compiler_items/intrinsic_contracts.rs",
         "dev/src/const_eval/transmute_calls.rs"
@@ -809,7 +810,8 @@
       ],
       "evidence": [
         "docs/source-transmute-runtime-checkpoint.md",
-        "docs/pa28-source-needs-drop.md"
+        "docs/pa28-source-needs-drop.md",
+        "docs/pa31-offset-of-plan.md"
       ],
       "publication": "unpublished assignment contract; no active manifest/oracle claim",
       "units": [

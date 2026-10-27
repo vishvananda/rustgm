@@ -33,6 +33,20 @@ pub(super) fn validate(
     declaration: Declaration,
     role: LangItem,
 ) -> Result<(), Error> {
+    if role == LangItem::AllocLayout {
+        let ast = &package.unit(declaration.origin.file).configured.ast;
+        if !matches!(ast.node(declaration.origin.node).kind,
+            Kind::Item(index) if matches!(ast.items[index as usize].kind, ItemKind::Struct { .. }))
+        {
+            return Err(error(
+                package,
+                declaration.origin,
+                "alloc_layout requires its actual structure declaration",
+            ));
+        }
+        // GenericRequirement::None imposes no generic count or field contract.
+        return Ok(());
+    }
     if matches!(role, LangItem::Ordering | LangItem::Option) {
         let ast = &package.unit(declaration.origin.file).configured.ast;
         if declaration.parent.is_some()
