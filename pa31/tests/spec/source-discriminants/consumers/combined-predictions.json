@@ -1,0 +1,20 @@
+{
+  "state": "public executable companion frozen before independent or candidate execution; preserves complete actual-calls.rs prefix",
+  "source": "pa31/tests/spec/source-discriminants/consumers/execute-combined.rs",
+  "source_sha256": "a7537257165f07941045daca817182f3993bf1a8dd1ff68eb62a04814a774c41",
+  "observer": "pa31/tests/spec/source-discriminants/consumers/combined-observer.c",
+  "observer_sha256": "f65b92aa2dd9aee4cd719ca6fe1f9fbe8062cbecde510453e1f99fb52ad897d5",
+  "editions": [
+    2021,
+    2024
+  ],
+  "stdout": "-1 300 0 1 7\n",
+  "rustc_status": 0,
+  "candidate_status": 0,
+  "expected_rustc_warnings": [
+    "unused_assignments",
+    "unused_features"
+  ],
+  "scope": "Real signed repr, payload tag, pointer niche, nonenum argument effects. Complete original written no_core protocol retained; original full-bound provider remains separately required.",
+  "original_prefix_sha256": "1a0c56b281c110392c0619a162fe07c3384fbd955395f419dec8acd7a1f8adba"
+}
