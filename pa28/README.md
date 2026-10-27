@@ -329,3 +329,9 @@ qualified capture children, preserving pointer restrictions and actual ownership
 Its Non-Copy source uses ManuallyDrop and observes one runtime destructor.
 See `tests/closure-byte-outcomes.json` and `docs/pa27-closure-byte-storage.md`;
 unsupported capture-child families remain required followups.
+
+The actual source `aggregate_raw_ptr` composition checkpoint preserves Thin/unit
+and Length/usize ABI metadata without reading pointee memory. Its source-bound
+controls and raw Slice reference consumer are recorded in
+[the composition checkpoint](../docs/pa28-raw-pointer-composition.md). Full
+original slice/UB/panic helper execution and dynamic metadata remain required.

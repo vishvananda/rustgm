@@ -5,27 +5,27 @@ use crate::{
     sema::values::{Origin, StoredShape},
 };
 impl Machine<'_, '_> {
-    pub(in crate::const_eval) fn checked_string_reference(
+    pub(in crate::const_eval) fn checked_sequence_reference(
         &mut self,
         place: crate::const_eval::memory::Resolved,
         mutable: bool,
     ) -> Result<Option<Constant>, Failure> {
         let access = place
             .raw
-            .ok_or("constant str reference lacks its raw anchor")?;
+            .ok_or("constant sequence reference lacks its raw anchor")?;
         if access.ty != place.ty
             || access.location != place.address.location()
             || place.union.is_some()
         {
-            return Err("constant str reference differs from its raw anchor".into());
+            return Err("constant sequence reference differs from its raw anchor".into());
         }
         self.path(place.address)?;
         let (target, metadata) = self.evaluator.pointer_words(place.address)?;
         let crate::sema::values::WordTarget::Value(pointer) = target else {
-            return Err("constant str reference lacks a data pointer".into());
+            return Err("constant sequence reference lacks a data pointer".into());
         };
         let Some(crate::sema::values::Metadata::Length(length)) = metadata else {
-            return Err("constant str reference lacks length metadata".into());
+            return Err("constant sequence reference lacks length metadata".into());
         };
         let (address, work) = self
             .evaluator

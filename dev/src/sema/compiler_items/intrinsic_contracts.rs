@@ -70,6 +70,9 @@ fn signature(
     if kind == SourceIntrinsic::DiscriminantValue {
         return super::tag_intrinsic::validate(facts, function);
     }
+    if kind == SourceIntrinsic::AggregateRawPtr {
+        return super::compose_pointer::validate(facts, function);
+    }
     if kind == SourceIntrinsic::PtrMetadata {
         return super::ptr_metadata::validate(facts, function).map(|_| ());
     }
@@ -229,6 +232,7 @@ impl Catalog {
                 | SourceIntrinsic::Transmute
                 | SourceIntrinsic::CallerLocation
                 | SourceIntrinsic::PtrMetadata
+                | SourceIntrinsic::AggregateRawPtr
                 | SourceIntrinsic::DiscriminantValue
         ) {
             // These contracts have dedicated descriptors, without a layout element.
@@ -277,6 +281,9 @@ fn layout_element(
             SourceIntrinsic::DiscriminantValue => {
                 "source discriminant requires its actual reached reference-call descriptor"
             }
+            SourceIntrinsic::AggregateRawPtr => {
+                "source aggregate_raw_ptr requires its actual composition-call descriptor"
+            }
             SourceIntrinsic::PtrMetadata => {
                 "source ptr_metadata requires its actual pointer-call descriptor"
             }
@@ -306,6 +313,9 @@ fn layout_element(
             }
             SourceIntrinsic::DiscriminantValue => {
                 "source discriminant requires its actual reached reference-call descriptor"
+            }
+            SourceIntrinsic::AggregateRawPtr => {
+                "source aggregate_raw_ptr requires its actual composition-call descriptor"
             }
             SourceIntrinsic::PtrMetadata => {
                 "source ptr_metadata requires its actual pointer-call descriptor"

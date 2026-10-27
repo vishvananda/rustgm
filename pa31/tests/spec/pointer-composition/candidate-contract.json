@@ -2,7 +2,8 @@
   "status": "declared before candidate execution; complete genuine slice/UB helper closure still being coordinated",
   "files": {
     "source-provider.rs": "8b01cf8c9e3eeeda6ac04c4e16162a815b3d8fcae0ab78a10a630991ae26a2d0",
-    "actual-slice-source.rs": "d7bd0c56400f9c365a7d584a8e40dc70621d90a4f173f4f3bdf612008f992d41"
+    "actual-slice-source.rs": "d7bd0c56400f9c365a7d584a8e40dc70621d90a4f173f4f3bdf612008f992d41",
+    "actual-ub-source.rs": "ab865b1bf920ceaf9f64ab90f2bb41745a99464d61f8a28e40c1f45df223d3ba"
   },
   "source_traits": "BuiltinDeref is ordinary actual source, no lang role; public impl Thin retains implicit Sized",
   "candidate_positive": [
@@ -39,5 +40,6 @@
     "utf8-byte-observation"
   ],
   "transport": "No imported source operation or reification permission",
-  "foundation_revision": "removed invalid explicit tuple Copy impl before first candidate test execution; original failed independent setup retained"
+  "foundation_revision": "removed invalid explicit tuple Copy impl before first candidate test execution; original failed independent setup retained",
+  "full_wrapper_dependency": "B owns genuine fmt::Arguments::from_str / panic_nounwind_fmt / const_eval_select / PanicInfo / Location / handler closure; original slice+UB bodies retained as data, not stubbed"
 }

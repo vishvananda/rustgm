@@ -112,6 +112,41 @@ impl Checker<'_> {
         }
         Ok(())
     }
+    /// Associated results inspect only their own decoded direct bounds.
+    pub(in crate::sema::declarations) fn source_associated_default(
+        &self,
+        key: NodeKey,
+        owner: DefId,
+        relaxed: bool,
+        required: &mut Vec<Bound>,
+        syntax: &mut Vec<Syntax>,
+    ) -> Result<(), Error> {
+        if required.contains(&Bound::Sized) {
+            return Ok(());
+        }
+        let roles = self.source_sizing_roles(key)?;
+        if let Some((meta, pointee)) = roles {
+            if syntax.iter().any(|bound| {
+                matches!(bound.bound,
+                Written::User { definition, .. } if definition == meta || definition == pointee)
+            }) {
+                return Ok(());
+            }
+            if relaxed {
+                syntax.push(Syntax::associated(
+                    key,
+                    owner,
+                    Written::SourceSizing(meta),
+                    None,
+                ));
+                return Ok(());
+            }
+        }
+        if !relaxed {
+            required.push(Bound::Sized);
+        }
+        Ok(())
+    }
     fn source_alias_self(&self, owner: DefId, key: NodeKey) -> Result<Option<DefId>, Error> {
         if !matches!(self.item(key)?.kind, ItemKind::TraitAlias { .. }) {
             return Ok(None);
