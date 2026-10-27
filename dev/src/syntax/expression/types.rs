@@ -179,6 +179,10 @@ impl Parser<'_, '_> {
             } else if self.cursor.at(P::OpenBrace)?
                 || self.cursor.at(P::Minus)?
                 || crate::literal::is_token(self.cursor.source, token)
+                || matches!(token.kind, TokenKind::Interpolated(_))
+                    && self
+                        .splice()?
+                        .is_some_and(|input| input.begins_const_argument())
             {
                 self.expr(131, NORMAL)?
             } else {

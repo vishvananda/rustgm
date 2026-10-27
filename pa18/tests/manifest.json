@@ -7463,6 +7463,297 @@
       },
       "mode": "--emit-patterns",
       "maintainer_origin": "dev/tests/canonical_inhabitation.rs"
+    },
+    {
+      "path": "tests/spec/forwarded-consts/bool-literals.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/forwarded-consts/braced-arithmetic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/forwarded-consts/char-literal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/forwarded-consts/forwarded-twice.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/forwarded-consts/integer-repetition.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/forwarded-consts/literal-in-type-context.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix"
+    },
+    {
+      "path": "tests/spec/forwarded-consts/missing-separator.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix"
+    },
+    {
+      "path": "tests/spec/forwarded-consts/negative-usize.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix"
+    },
+    {
+      "path": "tests/spec/forwarded-consts/opaque-block-expression.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/forwarded-consts/opaque-block-fragment.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/forwarded-consts/opaque-expression-literal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/forwarded-consts/opaque-expression-signed.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/forwarded-consts/opaque-expression-type-context.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix"
+    },
+    {
+      "path": "tests/spec/forwarded-consts/opaque-expression.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix"
+    },
+    {
+      "path": "tests/spec/forwarded-consts/opaque-runtime-expression.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix"
+    },
+    {
+      "path": "tests/spec/forwarded-consts/opaque-unsafe-block.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/forwarded-consts/signed-literal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/forwarded-consts/unbraced-arithmetic.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix"
+    },
+    {
+      "path": "tests/spec/forwarded-consts/wrong-const-type.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.arguments"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix"
     }
   ]
 }
