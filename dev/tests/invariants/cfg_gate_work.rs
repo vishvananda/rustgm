@@ -2,8 +2,16 @@
 use super::*;
 use std::fmt::Write;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
-fn usage(width: usize, calls: usize) -> Result<usize> {
-    let list = std::iter::once("cfg_ub_checks".to_owned())
+fn usage(width: usize, calls: usize, atomic: bool) -> Result<usize> {
+    let (feature, predicate) = if atomic {
+        (
+            "cfg_target_has_atomic",
+            "target_has_atomic_load_store=\"8\"",
+        )
+    } else {
+        ("cfg_ub_checks", "ub_checks")
+    };
+    let list = std::iter::once(feature.to_owned())
         .chain((1..width).map(|i| format!("fixture_feature_{i}")))
         .collect::<Vec<_>>()
         .join(",");
@@ -13,7 +21,7 @@ fn usage(width: usize, calls: usize) -> Result<usize> {
         #[lang="pointee_sized"]trait PointeeSized{{}}
         #[lang="meta_sized"]trait MetaSized:PointeeSized{{}}
         #[lang="sized"]trait Sized:MetaSized{{}}
-        #[allow_internal_unstable({list})]macro_rules!route{{()=>{{cfg!(ub_checks)}}}}
+        #[allow_internal_unstable({list})]macro_rules!route{{()=>{{cfg!({predicate})}}}}
         fn answer(){{"#
     );
     for _ in 0..calls {
@@ -40,15 +48,21 @@ fn usage(width: usize, calls: usize) -> Result<usize> {
 }
 #[test]
 fn cfg_expansion_repeated_queries_do_not_repeat_growing_allowance_header_walks() -> Result {
-    let base = usage(8, 1)?;
-    let repeated = usage(8, 32)?.checked_sub(base).ok_or("work ordering")?;
-    for width in [32, 128] {
-        let cold = usage(width, 1)?;
-        let growth = usage(width, 32)?.checked_sub(cold).ok_or("work ordering")?;
-        assert!(
-            growth <= repeated + 256 * 31,
-            "width{width}: {growth}/{repeated}"
-        );
+    for atomic in [false, true] {
+        let base = usage(8, 1, atomic)?;
+        let repeated = usage(8, 32, atomic)?
+            .checked_sub(base)
+            .ok_or("work ordering")?;
+        for width in [32, 128] {
+            let cold = usage(width, 1, atomic)?;
+            let growth = usage(width, 32, atomic)?
+                .checked_sub(cold)
+                .ok_or("work ordering")?;
+            assert!(
+                growth <= repeated + 256 * 31,
+                "width{width}: {growth}/{repeated}"
+            );
+        }
     }
     Ok(())
 }

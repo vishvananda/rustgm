@@ -14,6 +14,16 @@ mod predicates;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CfgGate {
     UbChecks,
+    TargetHasAtomic,
+}
+impl CfgGate {
+    pub(crate) fn named(name: &str) -> Option<Self> {
+        match name {
+            "ub_checks" => Some(Self::UbChecks),
+            "target_has_atomic_load_store" => Some(Self::TargetHasAtomic),
+            _ => None,
+        }
+    }
 }
 #[derive(Clone, Copy, Debug)]
 pub struct CfgUse {
@@ -88,13 +98,15 @@ impl Config {
             return if name == "ub_checks" {
                 self.runtime_checks.ub_checks()
             } else {
-                name == "unix" || self.flags.contains(name)
+                matches!(name, "unix" | "target_has_atomic_load_store") || self.flags.contains(name)
             };
         };
         TARGET_VALUES.contains(&(name, value))
             || (matches!(
                 name,
-                "target_has_atomic" | "target_has_atomic_primitive_alignment"
+                "target_has_atomic"
+                    | "target_has_atomic_primitive_alignment"
+                    | "target_has_atomic_load_store"
             ) && matches!(value, "8" | "16" | "32" | "64" | "ptr"))
             || self
                 .values

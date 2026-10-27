@@ -1178,6 +1178,406 @@
         "kind": "program",
         "status": 0
       }
+    },
+    {
+      "path": "tests/spec/captured-cfg/literal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": null
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/raw.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": null
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/escaped.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": null
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/expr-literal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": null
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/expr-group.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": null
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/expression.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": null
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/bytes.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": null
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/integer.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": null
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/boolean.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": null
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/suffix.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": null
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/forwarded.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": null
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/metadata.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": null
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/short-circuit-invalid.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": null
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/disabled-inner-invalid.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": null
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/disabled-predicate-invalid.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": null
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/target-widths.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/target-bare.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/target-captured.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/missing-feature.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/false-missing-feature.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/short-circuit-feature.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/disabled-attr-feature.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/disabled-inner-feature.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/removed-first-feature.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/captured-cfg/feature-first-removed.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
     }
   ]
 }

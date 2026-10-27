@@ -56,7 +56,7 @@ impl<S: Sources> Engine<'_, S> {
     }
 
     pub(super) fn check_cfg_uses(&mut self, file: FileId, uses: &[CfgUse]) -> Result<(), Error> {
-        if !self.loader.package.requested_cfg_ub_checks() {
+        {
             let view = super::permission_frames::FrameView {
                 package: &self.loader.package,
                 definitions: &self.definitions,
@@ -69,8 +69,14 @@ impl<S: Sources> Engine<'_, S> {
             };
             for &used in uses {
                 let site = site(file, used);
-                if !query.allows(site, &KnownFeature::CfgUbChecks.name())? {
-                    return Err(missing(site));
+                if !query
+                    .view
+                    .package
+                    .requested_cfg_gate(used.gate)
+                    .map_err(|message| Error::at(file, site.span.start, message))?
+                    && !query.allows(site, &feature(used.gate).name())?
+                {
+                    return Err(missing(site, used.gate));
                 }
             }
         }
@@ -79,18 +85,29 @@ impl<S: Sources> Engine<'_, S> {
 }
 
 fn site(file: FileId, used: CfgUse) -> Location {
-    match used.gate {
-        CfgGate::UbChecks => Location {
-            file,
-            span: used.span,
-        },
+    Location {
+        file,
+        span: used.span,
     }
 }
-fn missing(site: Location) -> Error {
+fn feature(gate: CfgGate) -> KnownFeature {
+    match gate {
+        CfgGate::UbChecks => KnownFeature::CfgUbChecks,
+        CfgGate::TargetHasAtomic => KnownFeature::CfgTargetHasAtomic,
+    }
+}
+fn missing(site: Location, gate: CfgGate) -> Error {
     Error::at(
         site.file,
         site.span.start,
-        "cfg(ub_checks) requires cfg_ub_checks or its actual macro allowance",
+        match gate {
+            CfgGate::UbChecks => {
+                "cfg(ub_checks) requires cfg_ub_checks or its actual macro allowance"
+            }
+            CfgGate::TargetHasAtomic => {
+                "cfg(target_has_atomic_load_store) requires cfg_target_has_atomic or its actual macro allowance"
+            }
+        },
     )
 }
 
@@ -123,10 +140,13 @@ pub(super) fn validate_attributes(report: &Report) -> Result<(), Error> {
                     "cfg use changed its original attribute/capture",
                 ));
             }
-            if !report.package.requested_cfg_ub_checks()
-                && !session.allows(location, &KnownFeature::CfgUbChecks.name())?
+            if !report
+                .package
+                .requested_cfg_gate(used.gate())
+                .map_err(|message| Error::at(file, location.span.start, message))?
+                && !session.allows(location, &feature(used.gate()).name())?
             {
-                return Err(missing(location));
+                return Err(missing(location, used.gate()));
             }
         }
     }

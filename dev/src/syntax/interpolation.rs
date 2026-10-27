@@ -97,7 +97,65 @@ impl Inputs for Slice<'_> {
     }
 }
 pub const EMPTY_INPUTS: Slice<'static> = Slice(&[]);
-impl Splice<'_> {
+impl<'capture> Splice<'capture> {
+    /// Borrow a captured string value, decoding only a genuinely deferred literal.
+    /// # Errors
+    /// Rejects other root forms, literal kinds and invalid capture/storage ranges.
+    pub(crate) fn string_literal(&self) -> Result<Cow<'capture, str>, LexError> {
+        let invalid = || error(self.destination.start, "expected captured string literal");
+        let Nonterminal::Syntax { kind, parsed } = self.fragment else {
+            return Err(invalid());
+        };
+        if !matches!(
+            kind,
+            FragmentKind::Literal | FragmentKind::Expression | FragmentKind::Expression2021
+        ) {
+            return Err(invalid());
+        }
+        let node = parsed
+            .ast
+            .nodes
+            .get(parsed.ast.root.get() as usize)
+            .ok_or_else(invalid)?;
+        self.span(node.span)?;
+        let value = match node.kind {
+            Kind::Literal(index) => {
+                let value = *parsed
+                    .ast
+                    .literals
+                    .get(index as usize)
+                    .ok_or_else(invalid)?;
+                if let StoredValue::String(Bytes::Source { start, end }) = value
+                    && start != end
+                {
+                    self.span(Span { start, end })?;
+                }
+                parsed
+                    .literals
+                    .view(self.original_source, value)
+                    .map_err(|message| error(self.destination.start, message))?
+            }
+            Kind::DeferredLiteral(token) => {
+                self.span(Span {
+                    start: token.start,
+                    end: token.end,
+                })?;
+                crate::literal::interpret(self.original_source, token)?.ok_or_else(invalid)?
+            }
+            _ => return Err(invalid()),
+        };
+        let Value::String(bytes) = value else {
+            return Err(invalid());
+        };
+        match bytes {
+            Cow::Borrowed(bytes) => std::str::from_utf8(bytes)
+                .map(Cow::Borrowed)
+                .map_err(|_| invalid()),
+            Cow::Owned(bytes) => String::from_utf8(bytes)
+                .map(Cow::Owned)
+                .map_err(|_| invalid()),
+        }
+    }
     /// Lower an opaque path to attribute-path tokens from its typed segments.
     /// Punctuation spans cover the existing gap; identifier spans remain exact.
     /// No spelling is lexed and no expression/type grammar is rerun.

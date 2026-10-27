@@ -1009,6 +1009,38 @@
         "status": 0,
         "enabled": true
       }
+    },
+    {
+      "path": "tests/spec/atomic-cfg/missing-feature.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "PA3 computes target facts without PA8 feature authorization; paired actual gate denial retained in PA8"
+    },
+    {
+      "path": "tests/spec/atomic-cfg/false-missing-feature.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "PA3 computes target facts without PA8 feature authorization; paired actual gate denial retained in PA8"
     }
   ]
 }

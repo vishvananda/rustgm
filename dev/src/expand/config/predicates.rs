@@ -8,7 +8,7 @@ use crate::syntax::token_tree::Span;
 
 fn leaf(value: bool, name: &str, token: Token) -> Result<Evaluation, LexError> {
     let mut uses = Vec::new();
-    if name == "ub_checks" {
+    if let Some(gate) = CfgGate::named(name) {
         uses.try_reserve_exact(1)
             .map_err(|_| error(token.start, "cfg use allocation failed"))?;
         uses.push(CfgUse {
@@ -16,7 +16,7 @@ fn leaf(value: bool, name: &str, token: Token) -> Result<Evaluation, LexError> {
                 start: token.start,
                 end: token.end,
             },
-            gate: CfgGate::UbChecks,
+            gate,
         });
     }
     Ok(Evaluation { value, uses })
@@ -100,7 +100,7 @@ pub(super) fn evaluate(
             return Err(error(offset, "expected one cfg string value"));
         }
         return leaf(
-            config.contains(name, Some(&string(forest, source, next + 1)?)),
+            config.contains(name, Some(&string_value(forest, source, next + 1, inputs)?)),
             name,
             token,
         );
@@ -114,6 +114,23 @@ pub(super) fn evaluate(
         depth,
         (name, next, offset),
     )
+}
+
+fn string_value<'a>(
+    forest: &Forest,
+    source: &'a str,
+    index: u32,
+    inputs: &'a dyn crate::syntax::interpolation::Inputs,
+) -> Result<std::borrow::Cow<'a, str>, LexError> {
+    if let Some(token) = forest.token(index)
+        && matches!(token.kind, Kind::Interpolated(_))
+    {
+        return inputs
+            .get(token)?
+            .ok_or_else(|| error(token.start, "missing captured cfg string"))?
+            .string_literal();
+    }
+    string(forest, source, index)
 }
 
 fn operation(
@@ -176,3 +193,7 @@ fn operation(
 #[cfg(test)]
 #[path = "../../../tests/invariants/forwarded_configuration.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/configuration_values.rs"]
+mod values;

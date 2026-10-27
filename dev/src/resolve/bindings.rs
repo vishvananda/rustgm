@@ -55,6 +55,29 @@ pub struct SourceCore {
     pub(in crate::resolve) macros: panic_contracts::Contracts,
 }
 impl super::package::Package {
+    pub(crate) fn requested_cfg_gate(
+        &self,
+        gate: crate::expand::config::CfgGate,
+    ) -> Result<bool, &'static str> {
+        let feature = match gate {
+            crate::expand::config::CfgGate::UbChecks => return Ok(self.requested_cfg_ub_checks()),
+            crate::expand::config::CfgGate::TargetHasAtomic => policy::Feature::CfgTargetHasAtomic,
+        };
+        if let Some(source) = self.staged_consumer() {
+            source.require_package(self)?;
+            return Ok(source.features.has(feature));
+        }
+        if let Some(client) = self.source_client() {
+            if client.current().name() != self.crate_name || client.current() == client.provider() {
+                return Err("cfg feature client identity changed");
+            }
+            client.validate_inventory()?;
+            return Ok(client.features.has(feature));
+        }
+        Ok(self
+            .macro_context()?
+            .is_some_and(|context| context.requested(feature)))
+    }
     pub(crate) fn staged_consumer(&self) -> Option<&std::rc::Rc<consumer_policy::StagedConsumer>> {
         match self.source.as_deref()? {
             Source::Staged(consumer) => Some(consumer),
