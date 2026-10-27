@@ -1019,7 +1019,8 @@
       "rustc": {
         "kind": "program",
         "status": 1,
-        "default_lints": true
+        "default_lints": true,
+        "reason": "PA3 computes configured target facts; PA8 owns feature authorization. Full rustc rejects the missing cfg_target_has_atomic feature request."
       },
       "environment": {
         "RUSTC_BOOTSTRAP": "1"
@@ -1035,7 +1036,8 @@
       "rustc": {
         "kind": "program",
         "status": 1,
-        "default_lints": true
+        "default_lints": true,
+        "reason": "PA3 computes configured target facts; PA8 owns feature authorization. Full rustc rejects the missing cfg_target_has_atomic feature request."
       },
       "environment": {
         "RUSTC_BOOTSTRAP": "1"

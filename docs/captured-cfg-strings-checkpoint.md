@@ -72,3 +72,25 @@ asm invocation in `stdarch/crates/core_arch/src/x86/sse.rs:2071`, LIB-045.
 Only the actual Config source pin changes in the observer manifest; target,
 edition, panic and source profile remain unchanged. No whole-core semantic,
 export, object or consumer success is claimed.
+
+## Independent stage classification
+
+Full CI40507541719 passes release/course, native and debug checks, then exposes
+two missing independent-classification reasons in PA3. That stage deliberately
+computes cfg facts without PA8 feature authorization; complete rustc rejects the
+two missing-feature programs. Their expected statuses already record this
+difference. The repair adds the explicit reason and keeps the source, compiler
+behavior and expected statuses unchanged.
+
+Pinned rustc now passes79 PA3 independent checks with11 declared fragments and
+two documented acceptance differences. The course writer refreshes only the two
+case contracts; all270 existing oracle sidecar hashes remain unchanged. Full
+PA3 text passes90/90 and harness/upstream passes. The immutable CLI is authenticated
+against the combined Neg producer; the only source-fingerprint difference is the
+manifest classification. Evidence remains under
+`obj/parallel/atomic-cfg-independent-repair-v1/`, continuation receipt SHA-256
+`566f9366a062e248962e417083d65aede40769e2a5bcec5e97a679267b893baa`.
+The initial wrapper incorrectly compared the course writer's successful boolean
+return with an exit code; its setup failure is retained. The continuation
+authenticates its completed independent/writer observations and runs only the
+missing full text/harness checks. No failing outcome is reclassified as passing.
