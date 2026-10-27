@@ -1,0 +1,28 @@
+{
+  "state": "changed setup-only hypotheses frozen before execution; earlier failures/raw preserved",
+  "editions": [
+    2021,
+    2024
+  ],
+  "metadata": [
+    {
+      "file": "minimal.rs",
+      "status": 0,
+      "error_codes": []
+    },
+    {
+      "file": "full-bound.rs",
+      "status": 0,
+      "error_codes": []
+    }
+  ],
+  "native": [],
+  "source_sha256": {
+    "minimal.rs": "1ebcdd05cd445f2350717999180c54ed3998fdcc63629614d97a85efd2307dcf",
+    "full-bound.rs": "dc866fe858b6a3f90b6cbf0d7d7bf4832dcb63189b0b091ec24b71e5c0df8698"
+  },
+  "candidate_boundary": {
+    "minimal.rs": "real compiler hook with only written Copy obligation",
+    "full-bound.rs": "full original bound family retained; actual DispatchFromDyn remains unsupported source prerequisite, not a protocol/data success claim"
+  }
+}
