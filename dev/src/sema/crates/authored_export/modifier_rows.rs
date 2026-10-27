@@ -37,7 +37,7 @@ impl Draft {
             .replace(s::HeaderModifierRecord {
                 declaration,
                 site,
-                policy: s::HeaderModifierPolicy::NoWrittenDefaultOrFinal,
+                policy: s::HeaderModifierPolicy::NoWrittenDefaultOrFinalOrCallerTracking,
             })
             .is_some()
         {

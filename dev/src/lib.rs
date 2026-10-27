@@ -25,6 +25,9 @@ pub mod types;
 #[path = "../tests/helpers/domain_cases.rs"]
 mod module_packets;
 #[cfg(test)]
+#[path = "../tests/invariants/provided_clients.rs"]
+mod provided_clients;
+#[cfg(test)]
 #[path = "../tests/helpers/packet_flow.rs"]
 mod source_packets;
 #[cfg(test)]

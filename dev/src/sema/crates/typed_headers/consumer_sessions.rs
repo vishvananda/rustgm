@@ -1,6 +1,6 @@
 //! Actual fresh consumer reservation and selected append remain opaque.
 use super::{recipe_cursor::Demand, unpaid_provided::SelectedHeaders};
-use crate::sema::crates::authored_export::{CollectedArtifact, CollectedReceipt};
+use crate::sema::crates::authored_export::{CollectedArtifact, CollectedReceipt, HeaderCompletion};
 use crate::{
     resolve::{
         crates::{ConsumerInput, ConsumerRequest, ConsumerReservation, ReservationWork},
@@ -27,7 +27,7 @@ pub(crate) struct ProofSession {
 pub(crate) struct HeaderDraft {
     session: Box<ProofSession>,
     selected: SelectedHeaders,
-    completion: Option<Box<CollectedReceipt>>,
+    completion: Option<Box<HeaderCompletion>>,
 }
 type HeaderProgress = (Box<HeaderDraft>, Demand<()>);
 struct ConsumerAuthority {
@@ -56,6 +56,18 @@ impl ProofSession {
         Self::new(input, work)?
             .selected_headers(work)?
             .source_headers(receipt, work)
+    }
+    pub(crate) fn from_encoded(
+        request: ConsumerRequest<'_, impl crate::resolve::load::Sources>,
+        work: &mut ReservationWork,
+    ) -> Result<Box<HeaderDraft>, Error> {
+        let input = request.admit_encoded(work)?;
+        let mut draft = Self::new(input, work)?.selected_headers(work)?;
+        draft.session.authority.require(work)?;
+        work.reserve(size_of::<HeaderCompletion>())?;
+        let completion = HeaderCompletion::encoded(&draft.session.authority.report, work)?;
+        draft.completion = Some(Box::new(completion));
+        Ok(draft)
     }
     pub(crate) fn new(
         input: ConsumerInput,
@@ -160,8 +172,8 @@ impl HeaderDraft {
             ));
         }
         receipt.columns(&self.session.authority.report, work)?;
-        work.reserve(size_of::<CollectedReceipt>())?;
-        self.completion = Some(Box::new(receipt));
+        work.reserve(size_of::<HeaderCompletion>())?;
+        self.completion = Some(Box::new(HeaderCompletion::Collected(receipt)));
         Ok(self)
     }
     #[cfg_attr(

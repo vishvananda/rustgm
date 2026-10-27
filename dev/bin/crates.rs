@@ -25,7 +25,15 @@ impl Options {
                 self.source_profile =
                     Some(rustgm::lower::instances::SourcePublication::ModuleContracts);
             }
-            _ => return Err("--source-profile requires module-contracts-v2".into()),
+            Some("provided-contracts-v1") => {
+                self.source_profile =
+                    Some(rustgm::lower::instances::SourcePublication::ProvidedContracts);
+            }
+            _ => {
+                return Err(
+                    "--source-profile requires module-contracts-v2 or provided-contracts-v1".into(),
+                );
+            }
         }
         Ok(())
     }

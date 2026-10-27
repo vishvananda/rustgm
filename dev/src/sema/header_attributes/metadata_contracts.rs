@@ -18,6 +18,9 @@ use crate::{
     },
 };
 use std::{cell::Cell, rc::Rc, sync::Arc};
+#[path = "provided_policy.rs"]
+mod provided;
+pub(in crate::sema) use provided::plain_function;
 
 struct Header {
     artifact: usize,
@@ -77,6 +80,9 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
                 s::Profile::Source2024ModuleContracts => {
                     descriptor.module_contracts().map_err(Error::unlocated)?;
                 }
+                s::Profile::Source2024ProvidedContracts => {
+                    descriptor.provided_contracts().map_err(Error::unlocated)?;
+                }
                 _ => continue,
             }
         }
@@ -130,7 +136,9 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
             .is_some_and(|descriptor| {
                 matches!(
                     descriptor.profile(),
-                    s::Profile::Source2024FunctionContracts | s::Profile::Source2024ModuleContracts
+                    s::Profile::Source2024FunctionContracts
+                        | s::Profile::Source2024ModuleContracts
+                        | s::Profile::Source2024ProvidedContracts
                 )
             });
         if contracts {

@@ -12,7 +12,7 @@ use crate::{
         model::DefKind,
         package::Error,
     },
-    sema::crates::authored_export::CollectedReceipt,
+    sema::crates::authored_export::HeaderCompletion,
     support::crates::{
         SourceDescriptor,
         generics::{self as g, source as s},
@@ -24,7 +24,7 @@ use crate::{
 pub(in crate::sema::crates::typed_headers) struct Authority<'a> {
     pub(in crate::sema::crates::typed_headers) report: &'a Report,
     pub(in crate::sema::crates::typed_headers) reservation: &'a ConsumerReservation,
-    pub(in crate::sema::crates::typed_headers) completion: &'a CollectedReceipt,
+    pub(in crate::sema::crates::typed_headers) completion: &'a HeaderCompletion,
 }
 pub(super) struct Borrowed<'rows, 'memo, 'work> {
     catalog: &'rows Catalog,
@@ -76,7 +76,10 @@ impl<'rows, 'memo, 'work> Borrowed<'rows, 'memo, 'work> {
         let descriptor = view.rows()?.descriptor();
         if descriptor.identity() != provider
             || descriptor.edition() != edition
-            || descriptor.profile() != s::Profile::Source2024Provided
+            || !matches!(
+                descriptor.profile(),
+                s::Profile::Source2024Provided | s::Profile::Source2024ProvidedContracts
+            )
             || catalog.definition_at(provider, row).map_err(error)? != definition
             || descriptor
                 .rows()

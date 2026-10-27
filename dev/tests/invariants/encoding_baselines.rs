@@ -79,6 +79,9 @@ fn capture(
     // Encoding the actual producer Interface precedes any decode; no roundtrip
     // can substitute for this original byte contract.
     let bytes = codec::encode(interface)?;
+    let expected =
+        crate::module_packets::hex(&format!("pa31/tests/spec/provided-contracts-v1/{name}.hex"))?;
+    assert_eq!(bytes, expected, "old first encoding changed: {name}");
     std::fs::write(folder.join(format!("{name}.rgcrate")), &bytes)?;
     std::fs::write(folder.join(format!("{name}.rs")), source)?;
     let descriptor = interface

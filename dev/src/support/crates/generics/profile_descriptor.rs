@@ -358,7 +358,7 @@ fn complete_extension(
         return Ok((None, None, 0));
     };
     let base = indexed.retained_bytes().saturating_sub(provided_bytes);
-    let (contracts, peak) = contracts.validate(rows, indexed, base, work)?;
+    let (contracts, peak) = contracts.validate(rows, indexed, &attributes, base, work)?;
     Ok((
         Some(Box::new(attributes)),
         Some(Box::new(contracts)),

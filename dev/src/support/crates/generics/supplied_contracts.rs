@@ -7,7 +7,7 @@ use crate::support::{
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum HeaderModifierPolicy {
-    NoWrittenDefaultOrFinal,
+    NoWrittenDefaultOrFinalOrCallerTracking,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct HeaderModifierRecord {
@@ -59,6 +59,7 @@ impl ProvidedContractRows {
         mut self,
         rows: &SourceRows,
         headers: &HeaderIndex<'_>,
+        attributes: &super::super::HeaderAttributeColumns,
         base: usize,
         work: &mut Work,
     ) -> Result<(ProvidedContractColumns, usize), &'static str> {
@@ -69,7 +70,7 @@ impl ProvidedContractRows {
             return Err("provided namespace/modifiers exceed combined storage budget");
         }
         self.namespace.validate_rows(rows, work)?;
-        self.modifiers.validate(rows, headers, work)?;
+        self.modifiers.validate(rows, headers, attributes, work)?;
         Ok((
             ProvidedContractColumns { rows: self },
             bytes.saturating_add(scratch),
@@ -87,25 +88,34 @@ impl HeaderModifierColumns {
         &self,
         rows: &SourceRows,
         headers: &HeaderIndex<'_>,
+        attributes: &super::super::HeaderAttributeColumns,
         work: &mut Work,
     ) -> Result<(), &'static str> {
         check(
             &self.functions,
-            rows.functions.iter().map(|row| row.declaration),
+            rows.functions
+                .iter()
+                .zip(&attributes.functions)
+                .map(|(row, contract)| (row.declaration, Some(contract.declaration_site))),
             rows,
             headers,
             work,
         )?;
         check(
             &self.traits,
-            rows.traits.iter().map(|row| row.declaration),
+            rows.traits
+                .iter()
+                .zip(&attributes.traits)
+                .map(|(row, contract)| (row.declaration, Some(contract.declaration_site))),
             rows,
             headers,
             work,
         )?;
         check(
             &self.implementations,
-            rows.implementations.iter().map(|row| row.self_definition),
+            rows.implementations
+                .iter()
+                .map(|row| (row.self_definition, None)),
             rows,
             headers,
             work,
@@ -114,22 +124,23 @@ impl HeaderModifierColumns {
 }
 fn check(
     records: &[HeaderModifierRecord],
-    expected: impl ExactSizeIterator<Item = DeclarationRef>,
+    expected: impl ExactSizeIterator<Item = (DeclarationRef, Option<u32>)>,
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     work: &mut Work,
 ) -> Result<(), &'static str> {
-    work.charge(expected.len().saturating_add(1))?;
+    work.charge(expected.len().saturating_mul(2).saturating_add(1))?;
     if records.len() != expected.len() {
         return Err("provided written-modifier columns are incomplete");
     }
-    for (record, declaration) in records.iter().zip(expected) {
+    for (record, (declaration, site)) in records.iter().zip(expected) {
         let row = rows
             .declarations
             .get(declaration.0 as usize)
             .ok_or("provided modifier has an unknown declaration")?;
         if record.declaration != declaration
             || record.site >= row.sites
+            || site.is_some_and(|site| record.site != site)
             || headers.header(declaration, work)?.is_none()
         {
             return Err("provided modifier changed its actual header owner/order/site");

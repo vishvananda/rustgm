@@ -128,7 +128,10 @@ pub(super) fn unpaid_input(
     let descriptor = artifact
         .source_descriptor()
         .ok_or_else(|| error("unpaid source descriptor is absent"))?;
-    if descriptor.profile() != s::Profile::Source2024Provided {
+    if !matches!(
+        descriptor.profile(),
+        s::Profile::Source2024Provided | s::Profile::Source2024ProvidedContracts
+    ) {
         return Err(error(
             "unpaid reservations require their actual Provided descriptor",
         ));

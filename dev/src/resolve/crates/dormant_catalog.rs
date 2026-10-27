@@ -98,7 +98,12 @@ impl Inputs {
         let descriptor = artifact
             .source_descriptor()
             .ok_or_else(|| error("unpaid provider lacks its actual source descriptor"))?;
-        if !report.names_resolved || descriptor.profile() != Profile::Source2024Provided {
+        if !report.names_resolved
+            || !matches!(
+                descriptor.profile(),
+                Profile::Source2024Provided | Profile::Source2024ProvidedContracts
+            )
+        {
             return Err(error(
                 "unpaid reservation requires resolved input and exact Provided data",
             ));
@@ -186,7 +191,12 @@ impl Inputs {
             .ok_or_else(|| error("unpaid inputs lost their selected actual artifact"))?;
         let descriptor = artifact
             .source_descriptor()
-            .filter(|descriptor| descriptor.profile() == Profile::Source2024Provided)
+            .filter(|descriptor| {
+                matches!(
+                    descriptor.profile(),
+                    Profile::Source2024Provided | Profile::Source2024ProvidedContracts
+                )
+            })
             .ok_or_else(|| error("unpaid inputs changed their explicit data profile"))?;
         let rows = descriptor.rows();
         work.charge(1)?;

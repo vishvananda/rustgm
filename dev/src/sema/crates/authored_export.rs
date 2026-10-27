@@ -1,5 +1,7 @@
 //! Source headers reserve genuine declarations before any body row is published.
+mod admitted_contracts;
 mod advisory_rows;
+pub(crate) use admitted_contracts::HeaderCompletion;
 mod authored_functions;
 mod authored_traits;
 mod canonical_nodes;

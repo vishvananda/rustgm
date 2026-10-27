@@ -266,7 +266,7 @@ impl CollectedReceipt {
             ));
         }
         self.data.require_owner(owner, work)?;
-        Ok(owner.columns())
+        owner.columns().map_err(Error::unlocated)
     }
     pub(crate) fn columns<'a>(
         &self,
@@ -286,6 +286,6 @@ impl CollectedReceipt {
             ));
         }
         self.data.require(policy, work)?;
-        Ok(policy.unpaid_header_columns())
+        policy.unpaid_header_columns().map_err(Error::unlocated)
     }
 }

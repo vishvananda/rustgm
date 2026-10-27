@@ -25,7 +25,7 @@ pub(super) fn encode(out: &mut Writer, rows: &s::ProvidedContractRows) -> Result
             id(out, row.declaration.0)?;
             id(out, row.site)?;
             out.u8(match row.policy {
-                s::HeaderModifierPolicy::NoWrittenDefaultOrFinal => 0,
+                s::HeaderModifierPolicy::NoWrittenDefaultOrFinalOrCallerTracking => 0,
             })
         })?;
     }
@@ -68,7 +68,7 @@ fn modifiers(read: &mut Input<'_, '_>) -> Result<Vec<s::HeaderModifierRecord>, &
         let declaration = DeclarationRef(read.id()?);
         let site = read.id()?;
         let policy = match read.reader.u8()? {
-            0 => s::HeaderModifierPolicy::NoWrittenDefaultOrFinal,
+            0 => s::HeaderModifierPolicy::NoWrittenDefaultOrFinalOrCallerTracking,
             _ => return Err("unsupported provided written-modifier policy"),
         };
         Ok(s::HeaderModifierRecord {
