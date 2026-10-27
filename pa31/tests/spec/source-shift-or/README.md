@@ -16,8 +16,9 @@ No old observations are rerun by the compiler implementation checkpoint.
 
 The integrator's immutable `fence-contract.json` records the preceding temporary
 source fence and its six exact inputs. Those unsupported outcomes are historical,
-not final language expectations. The new source operator implementation is still
-UNQUALIFIED until its coherent compiler/consumer gate actually passes.
+not final language expectations. The bounded source operator/compiler controls now have retained focused evidence
+as recorded in [the checkpoint](../../../../docs/source-shift-or-checkpoint.md).
+Fresh combined integration and candidate native execution remain pending.
 
 Full actual Self/Rhs/Output, owned method, selected impl and const effects must
 precede scalar emission. Explicit and nonprimitive calls retain ordinary source
