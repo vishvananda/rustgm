@@ -14,9 +14,9 @@ use crate::{
     },
 };
 use std::{path::Path, sync::Arc};
-#[path = "provided_mutations.rs"]
+#[path = "decoded_contracts.rs"]
 mod contracts;
-#[path = "provided_modifiers.rs"]
+#[path = "written_policies.rs"]
 mod modifiers;
 
 const HOLDER: &str = "\npub trait Holder<V>{fn carry<U>(value:U)->U{value}fn borrow(value:&V)->&V{value}}impl Holder<u8> for u8{}";

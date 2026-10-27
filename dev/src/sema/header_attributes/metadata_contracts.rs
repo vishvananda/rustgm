@@ -18,7 +18,7 @@ use crate::{
     },
 };
 use std::{cell::Cell, rc::Rc, sync::Arc};
-#[path = "provided_policy.rs"]
+#[path = "supplied_policy.rs"]
 mod provided;
 pub(in crate::sema) use provided::plain_function;
 

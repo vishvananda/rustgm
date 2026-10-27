@@ -8,6 +8,7 @@ mod invoked_rows;
 mod namespace_rows;
 mod operation_columns;
 mod owner_rows;
+#[path = "ordinary_columns/supplied_extensions.rs"]
 mod provided_extensions;
 mod recipe_columns;
 mod relation_columns;

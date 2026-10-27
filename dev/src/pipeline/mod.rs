@@ -1,6 +1,7 @@
 //! Coordinate defining-body proofs without reversing semantic phase dependencies.
 pub(crate) mod execution;
 mod original_contexts;
+#[path = "artifact_client.rs"]
 mod provided_client;
 use crate::support::hash::HashMap;
 use crate::{
