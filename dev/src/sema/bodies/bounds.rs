@@ -498,7 +498,7 @@ impl Checker<'_> {
             return Ok(true);
         };
         self.facts
-            .function_context(function.definition, self.state.body)
+            .source_function_context(self.report, function.definition, self.state.body)
             .map(|context| !context.checks_const())
             .map_err(|e| self.error(self.state.body.node, e))
     }

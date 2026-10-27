@@ -64,7 +64,11 @@ impl Checker<'_> {
         let Some(owner) = self.state.environment_owner else {
             return Ok(None);
         };
-        if !inventory.checks_const_body(owner) {
+        if !inventory.checks_const_body(owner)
+            && !(inventory.const_declaration(owner).is_some()
+                && self.report.package.source_core().is_some()
+                && self.facts.const_panic_markers(report, owner)?.1)
+        {
             return Ok(None);
         }
         let function = self
@@ -80,6 +84,14 @@ impl Checker<'_> {
             })?;
         // Inline/closure children do not acquire the enclosing function's policy.
         if function.body != Some(self.state.body) {
+            return Ok(None);
+        }
+        if !self
+            .facts
+            .source_function_context(report, owner, self.state.body)
+            .map_err(|error| self.error(node, error))?
+            .checks_const()
+        {
             return Ok(None);
         }
         self.state
@@ -154,12 +166,22 @@ impl Checker<'_> {
             }
             return Ok(());
         }
-        let Some(owner) = owner else {
+        if owner.is_none() {
             return Ok(());
-        };
-        inventory
-            .ok_or_else(|| self.error(node, "const API call lost its actual library inventory"))?
-            .const_body_call(owner, target)
-            .map_err(|e| self.error(node, e))
+        }
+        let inventory = inventory
+            .ok_or_else(|| self.error(node, "const API call lost its actual library inventory"))?;
+        if inventory.checks_const_body(target)
+            || (inventory.const_declaration(target).is_some()
+                && self.report.package.source_core().is_some()
+                && self.facts.const_panic_markers(self.report, target)?.1)
+        {
+            Ok(())
+        } else {
+            Err(self.error(
+                node,
+                "const-stable body calls a function without const-stable API policy",
+            ))
+        }
     }
 }

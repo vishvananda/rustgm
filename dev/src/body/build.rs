@@ -179,7 +179,10 @@ fn function_body(
         source,
         result,
     );
-    body.const_context = facts.is_const_function(function.definition);
+    body.const_context = facts
+        .source_function_context(report, function.definition, source)
+        .map_err(|error| report.body_error(source, error))?
+        .checks_const();
     let scope_plan = scopes::function_with_scratch(
         report,
         facts,
