@@ -227,6 +227,16 @@ impl Machine<'_, '_> {
         offset: u64,
         ty: TypeId,
     ) -> Result<VariantId, Failure> {
+        if let crate::sema::values::StoredShape::Product {
+            variant: Some(variant),
+            union: false,
+            ..
+        } = Reader::new(self.evaluator.facts()).storage_shape(ty)?
+        {
+            self.charge(1)?;
+            Reader::new(self.evaluator.facts()).enum_variant_fields(ty, variant)?;
+            return Ok(variant);
+        }
         self.prepare_byte_enum(ty)?;
         if matches!(
             Reader::new(self.evaluator.facts()).storage_shape(ty)?,

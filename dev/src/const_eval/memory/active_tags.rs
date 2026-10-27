@@ -5,9 +5,32 @@ use crate::{const_eval::static_reads::ReadPurpose, sema::members::VariantId, typ
 impl Machine<'_, '_> {
     pub(in crate::const_eval) fn read_active_variant(
         &mut self,
-        place: Resolved,
+        mut place: Resolved,
     ) -> Result<Read<VariantId>, Failure> {
         self.charge(1)?;
+        if let Some(union) = place.union {
+            let (address, work) = self.evaluator.union_address(
+                place.address,
+                union.owner,
+                union.field,
+                self.limits.steps.saturating_sub(self.work.steps),
+            )?;
+            self.charge(work)?;
+            if !Reader::new(self.evaluator.facts()).same_storage_type(
+                Reader::new(self.evaluator.facts())
+                    .location(
+                        address
+                            .location()
+                            .ok_or("constant union tag lacks provenance")?,
+                    )?
+                    .ty,
+                place.ty,
+            ) {
+                return Err("constant union tag differs from its selected field type".into());
+            }
+            place.address = address;
+            place.union = None;
+        }
         if let Some(selected) = self.byte_place(place)? {
             self.check_byte_access(place, selected, false)?;
             return self.read_byte_variant_access(selected.root, selected.offset, selected.ty);
