@@ -77,7 +77,7 @@ fn caller_metadata_cannot_replace_targets_or_forge_snapshot_identity() -> TestRe
     let report = test_source::source_provider(&source, "caller_storage")?;
     let facts = sema::declarations::analyze(&report)?;
     let mut facts = sema::bodies::analyze(&report, facts)?;
-    let mut program = body::concrete(&report, &facts)?;
+    let mut program = body::build_concrete(&report, &facts)?;
     let actual = program
         .bodies
         .iter_mut()
