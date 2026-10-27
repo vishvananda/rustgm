@@ -17,6 +17,75 @@ pub(in crate::sema::crates::typed_headers) struct OriginalBody<'a> {
     record: &'a numbering_records::RecordedDomain,
 }
 impl OriginalBody<'_> {
+    fn prepare_inputs(
+        &self,
+        view: RecipeView<'_>,
+        state: &mut super::State,
+        facts: &mut Declarations,
+        work: &mut ReservationWork,
+    ) -> Result<Demand<()>, Error> {
+        use crate::sema::crates::typed_headers::recipe_cursor::{Recorded, Reserved};
+        let rows = view.rows()?;
+        let s::FunctionBody::Original(raw) = self.expected.header.body else {
+            return Err(error(
+                "selected original roots require their actual raw original",
+            ));
+        };
+        let raw = &rows.originals[raw.0 as usize];
+        work.charge(
+            raw.locals
+                .len()
+                .saturating_add(raw.values.len())
+                .saturating_add(1),
+        )?;
+        let mut port = Recorded {
+            port: Reserved::new(view, &state.maps, &facts.types, work)?,
+            body: self,
+            callables: &facts.lifetimes.callables,
+        };
+        for root in raw
+            .locals
+            .iter()
+            .map(|local| local.ty)
+            .chain(raw.values.iter().map(|value| value.ty))
+            .chain(std::iter::once(raw.result))
+        {
+            self.require(port.port.recipe_view(), facts, work)?;
+            if let Demand::Blocked(dependency) =
+                state
+                    .cursor
+                    .demand(&mut port, &mut facts.types, root, work)?
+            {
+                return Ok(Demand::Blocked(dependency));
+            }
+        }
+        self.require(port.port.recipe_view(), facts, work)?;
+        let Some(crate::sema::crates::ImportedOwners::Provided(mapping)) =
+            facts.associated.imported_owner()
+        else {
+            return Err(error(
+                "selected body requests lost their actual mapped owner",
+            ));
+        };
+        let mut applications = mapping.application_writer(
+            &self.owner.applications,
+            port.port.recipe_view(),
+            &facts.types,
+            work,
+        )?;
+        let mut inputs = super::ports::Adapter {
+            port,
+            cursor: &mut state.cursor,
+        };
+        super::body_requests::prepare(
+            raw.body,
+            &mut inputs,
+            &mut applications,
+            &mut facts.types,
+            work,
+        )?;
+        Ok(Demand::Ready(()))
+    }
     pub(in crate::sema::crates::typed_headers) fn environment(&self) -> &Arc<Environment> {
         self.environment
     }
@@ -215,7 +284,6 @@ impl Prepared {
         declaration: crate::support::crates::owner_catalog::DeclarationRef,
         work: &mut ReservationWork,
     ) -> Result<Demand<()>, Error> {
-        use crate::sema::crates::typed_headers::recipe_cursor::{Recorded, Reserved};
         let rows = view.rows()?;
         let Some(s::HeaderRef::Function(index)) = rows.header(declaration).map_err(error)? else {
             return Err(error(
@@ -253,64 +321,9 @@ impl Prepared {
             }
             return Ok(Demand::Ready(()));
         }
-        let s::FunctionBody::Original(raw) = expected.header.body else {
-            return Err(error(
-                "selected original roots require their actual raw original",
-            ));
-        };
-        let raw = &rows.originals[raw.0 as usize];
-        work.charge(
-            raw.locals
-                .len()
-                .saturating_add(raw.values.len())
-                .saturating_add(1),
-        )?;
-        let mut port = Recorded {
-            port: Reserved::new(view, &state.maps, &facts.types, work)?,
-            body: &body,
-            callables: &facts.lifetimes.callables,
-        };
-        for root in raw
-            .locals
-            .iter()
-            .map(|local| local.ty)
-            .chain(raw.values.iter().map(|value| value.ty))
-            .chain(std::iter::once(raw.result))
-        {
-            body.require(port.port.recipe_view(), facts, work)?;
-            if let Demand::Blocked(dependency) =
-                state
-                    .cursor
-                    .demand(&mut port, &mut facts.types, root, work)?
-            {
-                return Ok(Demand::Blocked(dependency));
-            }
+        if let Demand::Blocked(dependency) = body.prepare_inputs(view, state, facts, work)? {
+            return Ok(Demand::Blocked(dependency));
         }
-        body.require(port.port.recipe_view(), facts, work)?;
-        let Some(crate::sema::crates::ImportedOwners::Provided(mapping)) =
-            facts.associated.imported_owner()
-        else {
-            return Err(error(
-                "selected body requests lost their actual mapped owner",
-            ));
-        };
-        let mut applications = mapping.application_writer(
-            &body.owner.applications,
-            port.port.recipe_view(),
-            &facts.types,
-            work,
-        )?;
-        let mut inputs = super::ports::Adapter {
-            port,
-            cursor: &mut state.cursor,
-        };
-        super::body_requests::prepare(
-            raw.body,
-            &mut inputs,
-            &mut applications,
-            &mut facts.types,
-            work,
-        )?;
         work.charge(1)?;
         let environment = Arc::clone(body.environment());
         let header = facts

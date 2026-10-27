@@ -271,7 +271,7 @@ fn application_writers(
             .is_err()
     );
     let mut foreign_store = crate::types::Store::default();
-    foreign_store.arena_identity();
+    let _foreign_arena = foreign_store.arena_identity();
     assert!(
         owner
             .applications
