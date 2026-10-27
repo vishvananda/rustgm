@@ -21,6 +21,9 @@ pub(in crate::sema) use universal::{Openings, ScopedEvidence, ScopedSelection};
 #[path = "../../../tests/invariants/declaration_assumptions.rs"]
 mod declaration_tests;
 #[cfg(test)]
+#[path = "../../../tests/invariants/receiver_prefixes.rs"]
+pub(in crate::sema) mod receiver_prefix_tests;
+#[cfg(test)]
 mod tests;
 
 #[derive(Clone, Default)]
@@ -56,9 +59,9 @@ impl Assumptions {
         let Some(index) = &self.index else {
             return Ok(false);
         };
-        let Some(opening) = index.opening() else {
+        if !index.layers().any(|(_, opening)| opening.is_some()) {
             return Err(infer::Error::InvalidIdentity);
-        };
+        }
         let Some((id, _)) = predicate.bound.trait_parts() else {
             return Err(infer::Error::InvalidIdentity);
         };
@@ -71,8 +74,11 @@ impl Assumptions {
                 .kind(predicate.ty)
                 .ok_or(infer::Error::InvalidIdentity)?,
         );
-        for &candidate in self.candidates(item, head) {
-            if opening.predicate(store, context, candidate)? == predicate {
+        for (candidate, opening) in self.candidates(item, head) {
+            let actual = opening.map_or(Ok(candidate), |opening| {
+                opening.predicate(store, context, candidate)
+            })?;
+            if actual == predicate {
                 return Ok(true);
             }
         }
@@ -108,7 +114,7 @@ impl Assumptions {
         if self
             .index
             .as_ref()
-            .is_some_and(|index| index.opening().is_some())
+            .is_some_and(|index| index.layers().any(|(_, opening)| opening.is_some()))
         {
             return Ok(None);
         }
@@ -129,11 +135,16 @@ impl Assumptions {
         {
             return Ok(None);
         }
-        Ok((self.candidates(application.item, head) == [predicate]).then_some(Evidence(predicate)))
+        let mut candidates = self.candidates(application.item, head);
+        Ok(
+            (matches!(candidates.next(), Some((value, None)) if value == predicate)
+                && candidates.next().is_none())
+            .then_some(Evidence(predicate)),
+        )
     }
     pub(super) fn may_have_subject(&self, item: ItemId, subject: Subject) -> bool {
         subject.heads().any(|head| {
-            !self.candidates(item, head).is_empty()
+            self.candidates(item, head).next().is_some()
                 || self
                     .quantified()
                     .is_some_and(|index| index.candidates.contains_key(&(item, head)))
@@ -185,21 +196,60 @@ impl Assumptions {
         Ok(Self { index })
     }
 
-    fn candidates(&self, item: ItemId, head: Head) -> &[Predicate] {
+    fn candidates(
+        &self,
+        item: ItemId,
+        head: Head,
+    ) -> impl Iterator<
+        Item = (
+            Predicate,
+            Option<&Arc<crate::types::parameters::premise_index::Opening>>,
+        ),
+    > {
         self.index
-            .as_ref()
-            .and_then(|index| index.canonical().candidates.get(&(item, head)))
-            .map_or(&[], Vec::as_slice)
+            .iter()
+            .flat_map(|index| index.layers())
+            .flat_map(move |(index, opening)| {
+                index
+                    .candidates
+                    .get(&(item, head))
+                    .into_iter()
+                    .flatten()
+                    .copied()
+                    .map(move |predicate| (predicate, opening))
+            })
     }
     fn quantified(&self) -> Option<&QuantifiedIndex> {
-        self.index
-            .as_ref()
-            .and_then(|index| index.canonical().quantified.as_deref())
+        self.index.as_ref().and_then(|index| {
+            index
+                .layers()
+                .find_map(|(layer, _)| layer.quantified.as_deref())
+        })
     }
     fn contains(&self, predicate: Predicate) -> bool {
-        self.index
-            .as_ref()
-            .is_some_and(|index| index.opening().is_none() && index.seen.contains(&predicate))
+        self.index.as_ref().is_some_and(|index| {
+            index
+                .layers()
+                .any(|(layer, opening)| opening.is_none() && layer.seen.contains(&predicate))
+        })
+    }
+
+    /// A private proof extension shares all existing canonical premise storage.
+    /// Its lifetime is that proof's actual requesting environment, never a cache.
+    pub(in crate::sema) fn extended(
+        &self,
+        store: &Store,
+        clauses: &[Predicate],
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Self, &'static str> {
+        Ok(Self {
+            index: Some(ClauseIndex::extended(
+                self.index.clone(),
+                store,
+                clauses,
+                charge,
+            )?),
+        })
     }
 
     /// Canonical goals keep caller parameters rigid. Any resulting region equations
@@ -236,7 +286,7 @@ impl Assumptions {
         if self
             .index
             .as_ref()
-            .is_some_and(|index| index.opening().is_some())
+            .is_some_and(|index| index.layers().any(|(_, opening)| opening.is_some()))
         {
             return Err(infer::Error::InvalidIdentity);
         }
@@ -254,7 +304,7 @@ impl Assumptions {
                 .kind(predicate.ty)
                 .ok_or(infer::Error::InvalidIdentity)?,
         );
-        if self.candidates(application.item, head).len() == 1 {
+        if self.candidates(application.item, head).count() == 1 {
             return Ok(true);
         }
         let mut substitution = infer::Instantiation::new(context, store, &[])?;
@@ -298,18 +348,11 @@ impl Assumptions {
             store,
             context,
             goal,
-            subject
-                .heads()
-                .flat_map(|head| self.candidates(item, head).iter())
-                .copied(),
-            |store, context, predicate| {
-                let predicate = self
-                    .index
-                    .as_ref()
-                    .and_then(|index| index.opening())
-                    .map_or(Ok(predicate), |opening| {
-                        opening.predicate(store, context, predicate)
-                    })?;
+            subject.heads().flat_map(|head| self.candidates(item, head)),
+            |store, context, (predicate, opening)| {
+                let predicate = opening.map_or(Ok(predicate), |opening| {
+                    opening.predicate(store, context, predicate)
+                })?;
                 Ok((predicate, Evidence(predicate)))
             },
             |_, _, left, right| Ok(alternatives::ordinary_consequence(goal, left.0, right.0)),

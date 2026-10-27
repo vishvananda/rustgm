@@ -168,7 +168,9 @@ impl Bound {
                     constness,
                 )
             }
-            Requirement::Outlives(region) => Requirement::Outlives(self.region(region, depth)?),
+            Requirement::Outlives(region) => {
+                Requirement::Outlives(self.region_observed::<CHARGED>(region, depth, charge)?)
+            }
             Requirement::ProjectionEqual(result) => Requirement::ProjectionEqual(
                 self.apply_inside_observed::<CHARGED>(store, result, depth, charge)?,
             ),

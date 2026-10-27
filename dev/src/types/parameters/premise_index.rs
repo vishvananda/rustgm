@@ -15,7 +15,7 @@ use std::sync::Arc;
 #[derive(Clone)]
 struct View {
     base: Arc<ClauseIndex>,
-    opening: Arc<Opening>,
+    opening: Option<Arc<Opening>>,
 }
 
 #[derive(Clone, Default)]
@@ -39,13 +39,21 @@ pub(crate) struct Retained {
     mapped: Option<Box<HashMap<usize, usize>>>,
 }
 impl ClauseIndex {
+    pub(in crate::types::parameters) const fn opening_allocation_bytes() -> usize {
+        size_of::<Self>() + size_of::<View>() + 2 * size_of::<usize>()
+    }
+
     pub(crate) fn retain_allocation(
         &self,
         observer: &mut Retained,
     ) -> crate::support::retained::Allocation {
         if let Some(view) = &self.view {
             let mut total = view.base.retain_allocation(observer);
-            let mut own = view.opening.allocation();
+            let mut own = view
+                .opening
+                .as_ref()
+                .map_or_else(Default::default, |opening| opening.allocation());
+            own.include(self.payload_allocation());
             own.boxed(self);
             own.boxed(view.as_ref());
             own.add(2 * size_of::<usize>());
@@ -106,21 +114,22 @@ impl ClauseIndex {
         }
         opening.require_base(types, &base, work)?;
         Ok(Arc::new(Self {
-            view: Some(Box::new(View { base, opening })),
+            view: Some(Box::new(View {
+                base,
+                opening: Some(opening),
+            })),
             ..Self::default()
         }))
     }
 
-    pub(crate) fn canonical(&self) -> &Self {
-        self.view.as_ref().map_or(self, |view| &view.base)
-    }
-
     pub(crate) fn opening(&self) -> Option<&Arc<Opening>> {
-        self.view.as_ref().map(|view| &view.opening)
+        self.view.as_ref().and_then(|view| view.opening.as_ref())
     }
 
     pub fn parameter_traits(&self, parameter: ParameterId) -> &[ItemId] {
-        if let Some(view) = &self.view {
+        if let Some(view) = &self.view
+            && view.opening.is_some()
+        {
             return view.base.parameter_traits(parameter);
         }
         self.parameter_traits
@@ -140,12 +149,85 @@ impl ClauseIndex {
                         }
                     }
                 }
+                if let Some(view) = &self.view {
+                    for (&parameter, items) in &mut index {
+                        for &item in view.base.parameter_traits(parameter) {
+                            if !items.contains(&item) {
+                                items.push(item);
+                            }
+                        }
+                    }
+                }
                 index
             })
             .get(&parameter)
-            .map_or(&[], Vec::as_slice)
+            .map_or_else(
+                || {
+                    self.view
+                        .as_ref()
+                        .map_or(&[][..], |view| view.base.parameter_traits(parameter))
+                },
+                Vec::as_slice,
+            )
     }
     pub fn insert_clause(&mut self, store: &Store, clause: Clause) -> Result<(), infer::Error> {
         self.insert_observed::<false, infer::Error>(store, clause, &|_, _| Ok(()))
+    }
+}
+
+impl ClauseIndex {
+    /// Extend a private query without cloning or reindexing the immutable prefix.
+    /// Added clauses are already in the requesting query's lifetime namespace.
+    pub(crate) fn extended(
+        base: Option<Arc<Self>>,
+        types: &Store,
+        clauses: &[Predicate],
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Arc<Self>, &'static str> {
+        charge(1, size_of::<Self>() + 2 * size_of::<usize>())?;
+        let mut result = Self::default();
+        for &clause in clauses {
+            result.insert_clause_charged(types, clause.into(), charge)?;
+        }
+        if let Some(base) = base {
+            charge(1, size_of::<View>())?;
+            result.view = Some(Box::new(View {
+                base,
+                opening: None,
+            }));
+        }
+        Ok(Arc::new(result))
+    }
+
+    /// An opening belongs only to its actual canonical prefix. Identity query
+    /// extensions never apply that opening to their newly introduced premises.
+    pub(crate) fn layers(&self) -> impl Iterator<Item = (&Self, Option<&Arc<Opening>>)> {
+        let mut next = Some(self);
+        std::iter::from_fn(move || {
+            let current = next.take()?;
+            if let Some(view) = &current.view {
+                if let Some(opening) = &view.opening {
+                    return Some((view.base.as_ref(), Some(opening)));
+                }
+                next = Some(view.base.as_ref());
+            }
+            Some((current, None))
+        })
+    }
+
+    fn payload_allocation(&self) -> crate::support::retained::Allocation {
+        let mut own = crate::support::retained::Allocation::default();
+        own.map(&self.candidates);
+        own.set(&self.seen);
+        for values in self.candidates.values() {
+            own.vector(values);
+        }
+        if let Some(index) = self.parameter_traits.get() {
+            own.map(index);
+            for values in index.values() {
+                own.vector(values);
+            }
+        }
+        own
     }
 }

@@ -129,8 +129,7 @@ impl Environment {
             observer.base = true;
             total.boxed(self);
             if !Arc::ptr_eq(&self.parameters, &shared.parameters) {
-                total.boxed(self.parameters.as_ref());
-                total.map(&self.parameters);
+                total.include(self.parameters.allocation());
             }
             if let Some(value) = fresh(self.assumptions.as_ref(), shared.assumptions.as_ref()) {
                 total.boxed(value);

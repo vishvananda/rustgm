@@ -12,11 +12,18 @@ pub(crate) struct RegionEqualities {
 impl RegionEqualities {
     /// Visit both sides of every stored identity; body alias metadata is not a
     /// substitute for the proof equations and is inspected separately.
-    pub(crate) fn observe_regions(&self, fold: &mut substitute::Bound) -> Result<(), &'static str> {
+    pub(crate) fn observe_regions_observed<const CHARGED: bool>(
+        &self,
+        fold: &mut substitute::Bound,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
         for (&left, &right) in &self.representatives {
+            if CHARGED {
+                charge(1, 0)?;
+            }
             fold.account_region_summary_work(1)?;
-            fold.region(left, 0)?;
-            fold.region(right, 0)?;
+            fold.region_observed::<CHARGED>(left, 0, charge)?;
+            fold.region_observed::<CHARGED>(right, 0, charge)?;
         }
         Ok(())
     }

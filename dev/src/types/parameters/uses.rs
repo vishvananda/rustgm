@@ -59,14 +59,6 @@ impl Uses {
     ) -> Result<(), &'static str> {
         self.predicate_observed::<false>(store, predicate, &|_| Ok(()))
     }
-    pub(crate) fn predicate_counted(
-        &mut self,
-        store: &Store,
-        predicate: super::predicates::Predicate,
-        charge: &impl Fn(Growth) -> Result<(), &'static str>,
-    ) -> Result<(), &'static str> {
-        self.predicate_observed::<true>(store, predicate, charge)
-    }
     fn predicate_observed<const CHARGED: bool>(
         &mut self,
         store: &Store,
@@ -176,7 +168,11 @@ impl Uses {
                 let children = store.list(list).ok_or("invalid parameter use list")?;
                 self.capacity(children.len())?;
                 if CHARGED {
-                    charge(Growth::vector::<TypeId>(self.work.len(), self.work.capacity(), children.len()))?;
+                    charge(Growth::vector::<TypeId>(
+                        self.work.len(),
+                        self.work.capacity(),
+                        children.len(),
+                    ))?;
                 }
                 self.work.extend_from_slice(children);
             }
@@ -194,7 +190,10 @@ impl Uses {
             .ok_or("invalid parameter use arguments")?;
         self.capacity(arguments.len())?;
         if CHARGED {
-            charge(Growth { work: arguments.len(), bytes: 0 })?;
+            charge(Growth {
+                work: arguments.len(),
+                bytes: 0,
+            })?;
         }
         self.steps += arguments.len();
         for argument in arguments {
@@ -226,7 +225,11 @@ impl Uses {
         charge: &impl Fn(Growth) -> Result<(), &'static str>,
     ) -> Result<(), &'static str> {
         if CHARGED {
-            charge(Growth::vector::<TypeId>(self.work.len(), self.work.capacity(), 1))?;
+            charge(Growth::vector::<TypeId>(
+                self.work.len(),
+                self.work.capacity(),
+                1,
+            ))?;
         }
         self.work.push(ty);
         Ok(())

@@ -13,7 +13,7 @@ use self_types::Occurrences;
 
 pub(super) fn collect(
     report: &Report,
-    facts: &Declarations,
+    facts: &mut Declarations,
     item: DefId,
     steps: &mut usize,
 ) -> Result<Contract, Error> {
@@ -70,12 +70,18 @@ pub(super) fn collect(
             }
         }
     }
-    let mut uses = Occurrences::new(header.self_type, true);
-    for &member in facts
+    let self_type = header.self_type;
+    let mut uses = Occurrences::new(self_type, true);
+    let count = facts
         .associated
         .owner_members(owner)
         .ok_or("missing dyn trait members")?
-    {
+        .len();
+    for index in 0..count {
+        let member = facts
+            .associated
+            .owner_members(owner)
+            .ok_or("missing dyn trait members")?[index];
         charge(steps, 1)?;
         match report
             .resolution
@@ -104,7 +110,7 @@ pub(super) fn collect(
                 )? {
                     continue;
                 }
-                if method(facts, member, header.self_type, &mut uses, steps)? {
+                if method(facts, member, item, self_type, &mut uses, steps)? {
                     contract.methods.push(member);
                 }
             }
@@ -158,8 +164,9 @@ fn reject(definition: DefId, rule: Rule) -> Error {
 }
 
 fn method(
-    facts: &Declarations,
+    facts: &mut Declarations,
     item: DefId,
+    principal: DefId,
     self_type: TypeId,
     uses: &mut Occurrences,
     steps: &mut usize,
@@ -173,11 +180,8 @@ fn method(
     if references == 0 && receiver == self_type {
         return Ok(false);
     }
-    if references != 1
-        || !matches!(facts.types.kind(receiver), Some(Kind::Reference { referent, .. }) if referent == self_type)
-    {
-        return Err(reject(item, Rule::Receiver));
-    }
+    let legacy = references == 1
+        && matches!(facts.types.kind(receiver), Some(Kind::Reference { referent, .. }) if referent == self_type);
     if facts
         .generics
         .parameters
@@ -216,6 +220,9 @@ fn method(
         }
     }
     requirements(facts, item, self_type, uses, steps)?;
+    if !super::receivers::compatible(facts, item, principal, self_type)?.unwrap_or(legacy) {
+        return Err(reject(item, Rule::Receiver));
+    }
     Ok(true)
 }
 

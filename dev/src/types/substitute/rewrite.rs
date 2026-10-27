@@ -117,7 +117,8 @@ impl<F: Fn(usize, usize) -> Result<(), &'static str>, const CHARGED: bool> Folde
         self.bound.child(self.store, ty, depth)
     }
     fn region(&mut self, region: RegionId, depth: u16) -> Result<RegionId, Self::Error> {
-        self.bound.region(region, depth)
+        self.bound
+            .region_observed::<CHARGED>(region, depth, self.charge)
     }
     fn list(&mut self, list: ListId, depth: u16) -> Result<ListId, Self::Error> {
         self.bound

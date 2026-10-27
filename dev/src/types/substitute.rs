@@ -174,6 +174,24 @@ impl Bound {
         ty: TypeId,
         bound_regions: u32,
     ) -> Result<TypeId, &'static str> {
+        self.signature_observed::<false>(store, ty, bound_regions, &|_, _| Ok(()))
+    }
+    pub(crate) fn signature_charged(
+        &mut self,
+        store: &mut Store,
+        ty: TypeId,
+        bound_regions: u32,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<TypeId, &'static str> {
+        self.signature_observed::<true>(store, ty, bound_regions, charge)
+    }
+    fn signature_observed<const CHARGED: bool>(
+        &mut self,
+        store: &mut Store,
+        ty: TypeId,
+        bound_regions: u32,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<TypeId, &'static str> {
         let Some(Kind::Function {
             parameters,
             result,
@@ -188,6 +206,9 @@ impl Bound {
             .list(parameters)
             .ok_or("missing signature parameters")?
             .len();
+        if CHARGED {
+            charge(count, count.saturating_mul(size_of::<TypeId>()))?;
+        }
         let scratch = self.reserve_region_scratch(bounded::growth::<TypeId>(count))?;
         let result = (|| {
             let mut children = Vec::with_capacity(count);
@@ -195,17 +216,20 @@ impl Bound {
                 let ty = store
                     .list(parameters)
                     .ok_or("missing signature parameter list")?[index];
-                children.push(self.apply(store, ty)?);
+                children.push(self.apply_inside_observed::<CHARGED>(store, ty, 0, charge)?);
             }
-            let result = self.apply(store, result)?;
-            let parameters = store.intern_list(&children)?;
-            store.intern(Kind::Function {
-                bound_regions,
-                parameters,
-                result,
-                unsafe_,
-                convention,
-            })
+            let result = self.apply_inside_observed::<CHARGED>(store, result, 0, charge)?;
+            let parameters = store.intern_list_observed::<CHARGED>(&children, charge)?;
+            store.intern_observed::<CHARGED>(
+                Kind::Function {
+                    bound_regions,
+                    parameters,
+                    result,
+                    unsafe_,
+                    convention,
+                },
+                charge,
+            )
         })();
         self.release_region_scratch(scratch)?;
         result
@@ -404,8 +428,19 @@ impl Bound {
         region: RegionId,
         depth: u16,
     ) -> Result<RegionId, &'static str> {
+        self.region_observed::<false>(region, depth, &|_, _| Ok(()))
+    }
+    pub(crate) fn region_observed<const CHARGED: bool>(
+        &mut self,
+        region: RegionId,
+        depth: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<RegionId, &'static str> {
+        if CHARGED {
+            charge(1, 0)?;
+        }
         self.region_work(1)?;
-        self.prepare_observation(region, depth)?;
+        self.prepare_observation_observed::<CHARGED>(region, depth, charge)?;
         if matches!(self.action, Action::Items(_) | Action::Normalize) {
             return Ok(region);
         }
@@ -420,7 +455,7 @@ impl Bound {
             return mapping.region(region, depth);
         }
         if let Action::Regions(mapping) = &mut self.action {
-            return mapping.region(region, depth, &mut self.steps);
+            return mapping.region_observed::<CHARGED>(region, depth, &mut self.steps, charge);
         }
         if let Action::BodyScope(aliases) = &self.action {
             self.steps = self.steps.saturating_add(1);
@@ -516,7 +551,7 @@ impl Bound {
             self.account_arguments(arguments.len())?;
             self.regions.clear();
             for region in arguments {
-                let region = self.region(*region, depth)?;
+                let region = self.region_observed::<CHARGED>(*region, depth, charge)?;
                 self.regions.push(region);
             }
             return store.intern_regions_observed::<CHARGED>(&self.regions, charge);
@@ -526,7 +561,9 @@ impl Bound {
         self.generic.clear();
         for argument in arguments {
             let argument = match argument {
-                Argument::Lifetime(region) => Argument::Lifetime(self.region(region, depth)?),
+                Argument::Lifetime(region) => {
+                    Argument::Lifetime(self.region_observed::<CHARGED>(region, depth, charge)?)
+                }
                 Argument::Type(ty) => Argument::Type(self.child(store, ty, depth)?),
                 Argument::Const(id) => Argument::Const(self.constant(store, id)?),
             };

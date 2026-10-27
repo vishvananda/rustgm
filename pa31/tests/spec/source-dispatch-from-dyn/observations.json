@@ -1,0 +1,383 @@
+{
+  "state": "Independent metadata observations only; compiler/LowIR/native checkpoint not yet qualified",
+  "batches": [
+    {
+      "folder": "obj/parallel/pa31/source-dispatch-from-dyn-v1/observed-v1",
+      "binding_sha256": "2082f1b439c13781e601d22f42da979c5a2f64cf8e06a2394d1c0241b6c55a20",
+      "results_sha256": "8f72aaff7c1f28e7aebb6585618c09320a677a9c659ea787d04df716d42116d9",
+      "commands": 16,
+      "infrastructure_failures": 0,
+      "prediction_disagreements": [
+        {
+          "case": "actual-reference-call.rs",
+          "edition": 2021,
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--emit=metadata",
+            "--error-format=json",
+            "-Cpanic=abort",
+            "--crate-name=dispatch_probe",
+            "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-dispatch-from-dyn/actual-reference-call.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-dispatch-from-dyn-v1/observed-v1/actual-reference-call-2021.rmeta"
+          ],
+          "status": 1,
+          "expected_status": 0,
+          "error_codes": [
+            "E0635",
+            "E0635",
+            "E0635"
+          ],
+          "warning_codes": [],
+          "infrastructure": false,
+          "matches_status": false,
+          "matches_warnings": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "15956bc1776ce278864a478054bdd0cd4fcd4f4222d3d814c4c4b703a9a77310"
+        },
+        {
+          "case": "actual-reference-call.rs",
+          "edition": 2024,
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--emit=metadata",
+            "--error-format=json",
+            "-Cpanic=abort",
+            "--crate-name=dispatch_probe",
+            "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-dispatch-from-dyn/actual-reference-call.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-dispatch-from-dyn-v1/observed-v1/actual-reference-call-2024.rmeta"
+          ],
+          "status": 1,
+          "expected_status": 0,
+          "error_codes": [
+            "E0635",
+            "E0635",
+            "E0635"
+          ],
+          "warning_codes": [],
+          "infrastructure": false,
+          "matches_status": false,
+          "matches_warnings": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "15956bc1776ce278864a478054bdd0cd4fcd4f4222d3d814c4c4b703a9a77310"
+        },
+        {
+          "case": "raw-without-unsize-premise.rs",
+          "edition": 2021,
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--emit=metadata",
+            "--error-format=json",
+            "-Cpanic=abort",
+            "--crate-name=dispatch_probe",
+            "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-dispatch-from-dyn/raw-without-unsize-premise.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-dispatch-from-dyn-v1/observed-v1/raw-without-unsize-premise-2021.rmeta"
+          ],
+          "status": 1,
+          "expected_status": 0,
+          "error_codes": [
+            "E0635",
+            "E0635",
+            "E0635"
+          ],
+          "warning_codes": [],
+          "infrastructure": false,
+          "matches_status": false,
+          "matches_warnings": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "10cfff731cc6f218067a521ca476de0a679f1b080685042c42e0dd12be5519e2"
+        },
+        {
+          "case": "raw-without-unsize-premise.rs",
+          "edition": 2024,
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--emit=metadata",
+            "--error-format=json",
+            "-Cpanic=abort",
+            "--crate-name=dispatch_probe",
+            "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-dispatch-from-dyn/raw-without-unsize-premise.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-dispatch-from-dyn-v1/observed-v1/raw-without-unsize-premise-2024.rmeta"
+          ],
+          "status": 1,
+          "expected_status": 0,
+          "error_codes": [
+            "E0635",
+            "E0635",
+            "E0635"
+          ],
+          "warning_codes": [],
+          "infrastructure": false,
+          "matches_status": false,
+          "matches_warnings": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "10cfff731cc6f218067a521ca476de0a679f1b080685042c42e0dd12be5519e2"
+        },
+        {
+          "case": "nominal-one-field.rs",
+          "edition": 2021,
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--emit=metadata",
+            "--error-format=json",
+            "-Cpanic=abort",
+            "--crate-name=dispatch_probe",
+            "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-dispatch-from-dyn/nominal-one-field.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-dispatch-from-dyn-v1/observed-v1/nominal-one-field-2021.rmeta"
+          ],
+          "status": 1,
+          "expected_status": 0,
+          "error_codes": [
+            "E0635",
+            "E0635",
+            "E0635"
+          ],
+          "warning_codes": [],
+          "infrastructure": false,
+          "matches_status": false,
+          "matches_warnings": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "429cb248592a65d4cd6ac55127dbee97c0d826c4bb07d631f27ebb054ed1ca92"
+        },
+        {
+          "case": "nominal-one-field.rs",
+          "edition": 2024,
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--emit=metadata",
+            "--error-format=json",
+            "-Cpanic=abort",
+            "--crate-name=dispatch_probe",
+            "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-dispatch-from-dyn/nominal-one-field.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-dispatch-from-dyn-v1/observed-v1/nominal-one-field-2024.rmeta"
+          ],
+          "status": 1,
+          "expected_status": 0,
+          "error_codes": [
+            "E0635",
+            "E0635",
+            "E0635"
+          ],
+          "warning_codes": [],
+          "infrastructure": false,
+          "matches_status": false,
+          "matches_warnings": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "429cb248592a65d4cd6ac55127dbee97c0d826c4bb07d631f27ebb054ed1ca92"
+        }
+      ]
+    },
+    {
+      "folder": "obj/parallel/pa31/source-dispatch-from-dyn-v1/observed-prefix-v1",
+      "binding_sha256": "80e6c4e540e43e450b7993f3c3bd588b7a5004f083f0c13cdfee2704bd3a4775",
+      "results_sha256": "5203c56c735e6af639de9d5f71957d7053e49819d0c739163f3845a480487a6f",
+      "commands": 16,
+      "infrastructure_failures": 0,
+      "prediction_disagreements": [
+        {
+          "case": "actual-reference-call.rs",
+          "edition": 2021,
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--emit=metadata",
+            "--error-format=json",
+            "-Cpanic=abort",
+            "--crate-name=dispatch_probe",
+            "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-dispatch-from-dyn/library-prefix-followup/actual-reference-call.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-dispatch-from-dyn-v1/observed-prefix-v1/actual-reference-call-2021.rmeta"
+          ],
+          "status": 1,
+          "expected_status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "infrastructure": false,
+          "matches_status": false,
+          "matches_warnings": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "28ad21cbace67065cff457c430e070dcb96f52147cdb3827f98ef103b4e34794"
+        },
+        {
+          "case": "actual-reference-call.rs",
+          "edition": 2024,
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--emit=metadata",
+            "--error-format=json",
+            "-Cpanic=abort",
+            "--crate-name=dispatch_probe",
+            "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-dispatch-from-dyn/library-prefix-followup/actual-reference-call.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-dispatch-from-dyn-v1/observed-prefix-v1/actual-reference-call-2024.rmeta"
+          ],
+          "status": 1,
+          "expected_status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "infrastructure": false,
+          "matches_status": false,
+          "matches_warnings": true,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "28ad21cbace67065cff457c430e070dcb96f52147cdb3827f98ef103b4e34794"
+        },
+        {
+          "case": "raw-without-unsize-premise.rs",
+          "edition": 2021,
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--emit=metadata",
+            "--error-format=json",
+            "-Cpanic=abort",
+            "--crate-name=dispatch_probe",
+            "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-dispatch-from-dyn/library-prefix-followup/raw-without-unsize-premise.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-dispatch-from-dyn-v1/observed-prefix-v1/raw-without-unsize-premise-2021.rmeta"
+          ],
+          "status": 0,
+          "expected_status": 0,
+          "error_codes": [],
+          "warning_codes": [
+            "unused_features",
+            "unused_features",
+            "unused_features"
+          ],
+          "infrastructure": false,
+          "matches_status": true,
+          "matches_warnings": false,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "cc0285150c661acf256d5ec8525bdaecfc61fca7f79c3f23b80321381f053b25"
+        },
+        {
+          "case": "raw-without-unsize-premise.rs",
+          "edition": 2024,
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--emit=metadata",
+            "--error-format=json",
+            "-Cpanic=abort",
+            "--crate-name=dispatch_probe",
+            "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-dispatch-from-dyn/library-prefix-followup/raw-without-unsize-premise.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-dispatch-from-dyn-v1/observed-prefix-v1/raw-without-unsize-premise-2024.rmeta"
+          ],
+          "status": 0,
+          "expected_status": 0,
+          "error_codes": [],
+          "warning_codes": [
+            "unused_features",
+            "unused_features",
+            "unused_features"
+          ],
+          "infrastructure": false,
+          "matches_status": true,
+          "matches_warnings": false,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "cc0285150c661acf256d5ec8525bdaecfc61fca7f79c3f23b80321381f053b25"
+        },
+        {
+          "case": "nominal-one-field.rs",
+          "edition": 2021,
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2021",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--emit=metadata",
+            "--error-format=json",
+            "-Cpanic=abort",
+            "--crate-name=dispatch_probe",
+            "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-dispatch-from-dyn/library-prefix-followup/nominal-one-field.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-dispatch-from-dyn-v1/observed-prefix-v1/nominal-one-field-2021.rmeta"
+          ],
+          "status": 0,
+          "expected_status": 0,
+          "error_codes": [],
+          "warning_codes": [
+            "unused_features",
+            "unused_features",
+            "unused_features"
+          ],
+          "infrastructure": false,
+          "matches_status": true,
+          "matches_warnings": false,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1e9ff5aa254c56cebfe02748f7e4ddffb335235e313218a373886bd29ddef968"
+        },
+        {
+          "case": "nominal-one-field.rs",
+          "edition": 2024,
+          "command": [
+            "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+            "--edition=2024",
+            "--target=x86_64-unknown-linux-gnu",
+            "--crate-type=lib",
+            "--emit=metadata",
+            "--error-format=json",
+            "-Cpanic=abort",
+            "--crate-name=dispatch_probe",
+            "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-dispatch-from-dyn/library-prefix-followup/nominal-one-field.rs",
+            "-o",
+            "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-dispatch-from-dyn-v1/observed-prefix-v1/nominal-one-field-2024.rmeta"
+          ],
+          "status": 0,
+          "expected_status": 0,
+          "error_codes": [],
+          "warning_codes": [
+            "unused_features",
+            "unused_features",
+            "unused_features"
+          ],
+          "infrastructure": false,
+          "matches_status": true,
+          "matches_warnings": false,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1e9ff5aa254c56cebfe02748f7e4ddffb335235e313218a373886bd29ddef968"
+        }
+      ]
+    },
+    {
+      "folder": "obj/parallel/pa31/source-dispatch-from-dyn-v1/observed-call-prefix-v1",
+      "binding_sha256": "c6723ab33adc9ffd8b8de6517e747776682b7e8aeec588ff2a7896f0d5d66acd",
+      "results_sha256": "df74780f0308c0038c37dcfdcd77d1874fb7620d8fa910e5a7b063a44dd65dda",
+      "commands": 2,
+      "infrastructure_failures": 0,
+      "prediction_disagreements": []
+    }
+  ]
+}

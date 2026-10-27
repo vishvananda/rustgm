@@ -88,7 +88,9 @@ fn validate_target(
         LangItem::PointeeSized
     };
     let Some(Kind::Parameter(id)) = facts.types.kind(target) else {
-        return Err(error("source unsizing target is not its actual type parameter"));
+        return Err(error(
+            "source unsizing target is not its actual type parameter",
+        ));
     };
     if facts.types.parameter(id)
         != Some(crate::types::parameters::Parameter {
@@ -99,7 +101,9 @@ fn validate_target(
             },
         })
     {
-        return Err(error("source unsizing target changed its declaration or sizing identity"));
+        return Err(error(
+            "source unsizing target changed its declaration or sizing identity",
+        ));
     }
     let pointee = catalog
         .language(expected)
@@ -117,9 +121,13 @@ fn validate_target(
         if predicate.ty != target {
             continue;
         }
-        if expected == LangItem::Sized && predicate.bound == crate::types::parameters::predicates::Bound::Sized {
+        if expected == LangItem::Sized
+            && predicate.bound == crate::types::parameters::predicates::Bound::Sized
+        {
             if std::mem::replace(&mut found, true) {
-                return Err(error("source DispatchFromDyn target repeats its Sized requirement"));
+                return Err(error(
+                    "source DispatchFromDyn target repeats its Sized requirement",
+                ));
             }
             continue;
         }
@@ -144,7 +152,7 @@ fn validate_target(
             ));
         }
     }
-    if !found {
+    if !found && expected != LangItem::Sized {
         return Err(error("source unsizing target requires actual PointeeSized"));
     }
     Ok(())
@@ -182,7 +190,11 @@ pub(crate) fn kind(
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(None);
     };
-    for role in [LangItem::Unsize, LangItem::CoerceUnsized, LangItem::DispatchFromDyn] {
+    for role in [
+        LangItem::Unsize,
+        LangItem::CoerceUnsized,
+        LangItem::DispatchFromDyn,
+    ] {
         if catalog
             .language(role)
             .is_some_and(|d| d.definition == definition)
