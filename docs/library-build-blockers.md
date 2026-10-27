@@ -144,6 +144,13 @@ generation and every old oracle hash remained unchanged afterward. The first
 scoped attempt correctly rejected before writes; no harness rule was weakened.
 The immutable CLI62daa4a5 advances original core to LIB-045.
 
+[Genuine source Neg](source-neg-checkpoint.md) is now integrated separately from
+the unfinished handler. Twenty-one combined controls pass with authenticated
+source-identical static/build evidence. The new producer emits exactly the
+LowIR used by the adapted native observer (`-1 -7`); no new native execution or
+complete C enum ABI is claimed. Full original Neg attributes and the actual
+Formatter/helper name graph remain active prerequisites.
+
 ## Current execution queue
 
 The [execution plan](library-bootstrap-acceleration.md#scheduling-decisions)
