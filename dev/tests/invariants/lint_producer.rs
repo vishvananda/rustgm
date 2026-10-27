@@ -17,7 +17,7 @@ impl Sources for NoFiles {
         Ok(None)
     }
 }
-fn report(source: &str) -> TestResult<expansion::Report> {
+pub(super) fn report(source: &str) -> TestResult<expansion::Report> {
     Ok(expansion::analyze(
         InputFile {
             identity: "policy.rs".into(),
@@ -90,7 +90,7 @@ fn no_attributes_allocate_no_effects_but_nonlint_attributes_have_positive_empty_
         ("Owner.parsed", std::mem::offset_of!(Owner, parsed)),
         ("Parsed.changes", std::mem::offset_of!(Parsed, changes)),
         ("Parsed.witnesses", std::mem::offset_of!(Parsed, witnesses)),
-        ("Witness.trees", std::mem::offset_of!(Witness, trees)),
+        ("Parsed.trees", std::mem::offset_of!(Parsed, trees)),
     ];
     println!("policy-observer-layout={offsets:?}");
     Ok(())
@@ -140,7 +140,7 @@ fn stale_effect_source_image_and_unseen_owner_are_rejected_with_charged_failed_r
         .attributes[capture]
         .forest = forest;
     producer.validate(&report.package).map_err(Error::from)?;
-    let effect = producer.owners[0].parsed.witnesses[0].effect;
+    let effect = producer.owners[0].parsed.witnesses[0].effect as usize;
     let original = report.package.units[key.file.0 as usize].configured.effects[effect].capture;
     report.package.units[key.file.0 as usize].configured.effects[effect].capture = u32::MAX;
     assert!(producer.validate(&report.package).is_err());

@@ -261,6 +261,13 @@ and publication step, including failed attempts, and distinguish work/storage
 exhaustion without changing either limit. Persistent source owner/witness/call
 records keep their own charges. See the
 [frame-storage checkpoint](docs/lint-policy-frame-storage-checkpoint.md).
+Retain attribute witnesses in exact owner-local arrays: checked compact headers
+and one flat typed-tree payload. Count and prepay both arrays before allocating;
+validate each header's exact coverage, order and final extent on reuse. Empty and
+nonlint attributes remain positive source witnesses. Do not allocate a separate
+vector per attribute or discard provenance to meet a storage limit. The
+[compact-witness checkpoint](docs/lint-policy-compact-witnesses.md) records actual
+layout, bounded-work opponents and the unchanged original-core observation.
 See [the classification checkpoint](docs/source-attribute-classification-work.md).
 See [the local allowance handoff](docs/pa31-internal-allowances-handoff.md) for
 qualified component evidence and remaining integration requirements. The

@@ -69,32 +69,53 @@ impl Owner {
             return Err(invalid(self.key, "lint source capture is missing"));
         }
         let mut actual = unit.retained_indexed_attributes(self.effects.clone());
+        let mut cursor = 0_usize;
         for witness in &self.parsed.witnesses {
             let mut charged = work.get();
-            let result = charged.charge(self.key, 1 + witness.trees.len(), 0);
+            let result = charged.charge(self.key, 1 + witness.tree_count as usize, 0);
             work.set(charged);
             result?;
-            let expected = actual.next();
-            if expected.is_none_or(|(index, attribute, forest)| {
-                index != witness.effect
-                    || attribute != witness.attribute
-                    || witness
-                        .trees
-                        .iter()
-                        .any(|(index, tree)| forest.tree(*index) != Some(*tree))
-            }) || unit
-                .configured
-                .effects
-                .get(witness.effect)
-                .is_none_or(|effect| effect.capture != witness.capture)
+            let (index, attribute, forest) = actual
+                .next()
+                .ok_or_else(|| invalid(self.key, "lint source attribute witness changed"))?;
+            let covered = super::attribute_changes::coverage(
+                forest,
+                attribute,
+                unit.source.text(),
+                self.key,
+            )?;
+            let end = cursor
+                .checked_add(witness.tree_count as usize)
+                .ok_or_else(|| invalid(self.key, "lint witness tree extent overflow"))?;
+            let trees = self
+                .parsed
+                .trees
+                .get(cursor..end)
+                .ok_or_else(|| invalid(self.key, "lint witness trees are missing"))?;
+            if index != witness.effect as usize
+                || attribute != witness.attribute
+                || covered.count != witness.tree_count
+                || unit.configured.effects[index].capture != witness.capture
+                || trees
+                    .iter()
+                    .zip(
+                        covered
+                            .ranges
+                            .into_iter()
+                            .flat_map(|range| range.start..range.end),
+                    )
+                    .any(|((index, tree), expected)| {
+                        *index != expected || forest.tree(expected) != Some(*tree)
+                    })
             {
                 return Err(invalid(self.key, "lint source attribute witness changed"));
             }
+            cursor = end;
         }
-        if actual.next().is_some() {
+        if actual.next().is_some() || cursor != self.parsed.trees.len() {
             return Err(invalid(
                 self.key,
-                "lint source gained an unparsed attribute",
+                "lint source gained an unparsed attribute or tree",
             ));
         }
         Ok(())

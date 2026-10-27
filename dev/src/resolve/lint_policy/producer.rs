@@ -1,6 +1,9 @@
 //! One source owner produces lint changes; sparse traversal tails retain real ancestry.
 mod snapshots;
 #[cfg(test)]
+#[path = "../../../tests/invariants/lint_storage.rs"]
+mod storage_tests;
+#[cfg(test)]
 #[path = "../../../tests/invariants/lint_producer.rs"]
 mod tests;
 use super::{Change, Policy, Violation, attribute_changes};
@@ -37,15 +40,16 @@ struct Frame {
     tail: Tail,
 }
 pub(super) struct Witness {
-    pub effect: usize,
+    pub effect: u32,
     pub capture: u32,
     pub attribute: Attribute,
-    pub trees: Vec<(u32, crate::syntax::token_tree::Tree)>,
+    pub tree_count: u32,
 }
 #[derive(Default)]
 pub(super) struct Parsed {
     pub changes: Vec<Change>,
-    pub witnesses: Vec<Witness>,
+    pub witnesses: Box<[Witness]>,
+    pub trees: Box<[(u32, crate::syntax::token_tree::Tree)]>,
     pub attributes: usize,
     pub entries: usize,
 }
@@ -513,7 +517,7 @@ impl Producer {
         snapshots::validate(self, package)
     }
 }
-fn invalid(key: NodeKey, message: &'static str) -> Violation {
+pub(super) fn invalid(key: NodeKey, message: &'static str) -> Violation {
     Violation {
         key,
         offset: 0,

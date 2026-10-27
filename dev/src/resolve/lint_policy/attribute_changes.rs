@@ -17,73 +17,124 @@ pub(super) fn owner(
     effects: std::ops::Range<usize>,
     work: &mut Work,
 ) -> Result<Parsed, Violation> {
+    let (rows, pairs) = counts(unit, key, effects.clone(), work)?;
+    let bytes = rows
+        .saturating_mul(size_of::<Witness>())
+        .saturating_add(pairs.saturating_mul(size_of::<(u32, Tree)>()));
+    work.charge(key, effects.len().saturating_add(pairs), bytes)?;
+    let mut witnesses = Vec::with_capacity(rows);
+    let mut trees = Vec::with_capacity(pairs);
     let mut parsed = Parsed::default();
-    for effect in effects {
-        work.charge(key, 1, 0)?;
-        let Some((attribute, forest)) = unit.retained_attributes(effect..effect + 1).next() else {
-            continue;
-        };
-        let level = match attribute.name(forest, unit.source.text()) {
-            Some("allow") => Some(Level::Allow),
-            Some("warn") => Some(Level::Warn),
-            Some("deny") => Some(Level::Deny),
-            Some("forbid") => Some(Level::Forbid),
-            _ => None,
-        };
-        let trees = witnesses(forest, attribute, level.is_some(), key, work)?;
-        work.charge(key, 1, 4 * size_of::<Witness>())?;
-        parsed.witnesses.push(Witness {
+    for (effect, attribute, forest) in unit.retained_indexed_attributes(effects) {
+        let covered = coverage(forest, attribute, unit.source.text(), key)?;
+        let effect = u32::try_from(effect)
+            .map_err(|_| invalid(key, attribute, "lint effect index exceeds 32 bits"))?;
+        witnesses.push(Witness {
             effect,
-            capture: unit.configured.effects[effect].capture,
+            capture: unit.configured.effects[effect as usize].capture,
             attribute,
-            trees,
+            tree_count: covered.count,
         });
-        let Some(level) = level else { continue };
-        parsed.attributes += 1;
-        work.attributes += 1;
-        let Input::Delimited(group) = attribute.input else {
-            continue;
-        };
-        let Some(range) = forest.children(group) else {
-            continue;
-        };
-        let mut index = range.start;
-        while index < range.end {
-            let start = index;
-            while index < range.end && !forest.punctuation(index, Punctuation::Comma) {
-                work.charge(key, 1, 0)?;
-                index = forest.after(index);
-                parsed.entries += 1;
-                work.entries += 1;
-            }
-            if index == start + 1 {
-                let selected = lints(forest, unit.source.text(), start);
-                parsed.entries += selected.len().saturating_sub(1);
-                work.entries += selected.len().saturating_sub(1);
-                for &lint in selected {
-                    work.charge(key, 1, 4 * size_of::<Change>())?;
-                    parsed.changes.push(Change {
-                        lint,
-                        level,
-                        offset: attribute.span.start,
-                    });
-                }
-            }
-            if index < range.end {
-                index += 1;
+        for range in covered.ranges {
+            for index in range.start..range.end {
+                trees.push((index, forest.nodes()[index as usize]));
             }
         }
+        if let Some(level) = covered.level {
+            changes(
+                &mut parsed,
+                forest,
+                attribute,
+                level,
+                unit.source.text(),
+                key,
+                work,
+            )?;
+        }
     }
+    // The pinned Global allocator reports exact requested capacity. Exact push
+    // counts leave no shrink/copy allocation when these buffers become boxes.
+    if witnesses.len() != rows
+        || witnesses.capacity() != rows
+        || trees.len() != pairs
+        || trees.capacity() != pairs
+    {
+        return Err(super::producer::invalid(
+            key,
+            "lint witness allocation changed its exact extent",
+        ));
+    }
+    parsed.witnesses = witnesses.into_boxed_slice();
+    parsed.trees = trees.into_boxed_slice();
     Ok(parsed)
 }
-fn witnesses(
+fn counts(
+    unit: &Unit,
+    key: NodeKey,
+    effects: std::ops::Range<usize>,
+    work: &mut Work,
+) -> Result<(usize, usize), Violation> {
+    work.charge(key, effects.len().saturating_mul(2), 0)?;
+    if unit
+        .configured
+        .effects
+        .get(effects.clone())
+        .is_none_or(|values| {
+            values
+                .iter()
+                .any(|effect| effect.capture as usize >= unit.configured.ast.attributes.len())
+        })
+    {
+        return Err(super::producer::invalid(
+            key,
+            "lint source effects or captures are missing",
+        ));
+    }
+    let (mut rows, mut pairs) = (0_usize, 0_usize);
+    for (effect, attribute, forest) in unit.retained_indexed_attributes(effects) {
+        u32::try_from(effect)
+            .map_err(|_| invalid(key, attribute, "lint effect index exceeds 32 bits"))?;
+        let covered = coverage(forest, attribute, unit.source.text(), key)?;
+        rows = rows.saturating_add(1);
+        pairs = pairs.saturating_add(covered.count as usize);
+    }
+    Ok((rows, pairs))
+}
+pub(super) struct Coverage {
+    pub ranges: [TreeRange; 2],
+    pub count: u32,
+    level: Option<Level>,
+}
+pub(super) fn coverage(
     forest: &Forest,
     attribute: Attribute,
-    lint: bool,
+    source: &str,
     key: NodeKey,
-    work: &mut Work,
-) -> Result<Vec<(u32, Tree)>, Violation> {
-    let input = if lint {
+) -> Result<Coverage, Violation> {
+    if attribute.path.start > attribute.path.end
+        || attribute.path.end as usize > forest.nodes().len()
+    {
+        return Err(invalid(
+            key,
+            attribute,
+            "lint source path witness has an invalid retained range",
+        ));
+    }
+    let name = if matches!(attribute.input, Input::Doc(_))
+        || attribute.path.end - attribute.path.start == 1
+    {
+        attribute.name(forest, source)
+    } else {
+        None
+    };
+    let level = match name {
+        Some("allow") => Some(Level::Allow),
+        Some("warn") => Some(Level::Warn),
+        Some("deny") => Some(Level::Deny),
+        Some("forbid") => Some(Level::Forbid),
+        _ => None,
+    };
+    let input = if level.is_some() {
         match attribute.input {
             Input::Delimited(group) => TreeRange {
                 start: group,
@@ -95,20 +146,77 @@ fn witnesses(
     } else {
         TreeRange { start: 0, end: 0 }
     };
-    let mut trees = Vec::new();
-    for range in [attribute.path, input] {
+    let ranges = [attribute.path, input];
+    let mut count = 0_u32;
+    for range in ranges {
         if range.start > range.end || range.end as usize > forest.nodes().len() {
-            return Err(Violation {
+            return Err(invalid(
                 key,
-                offset: attribute.span.start,
-                message: "lint source tree witness has an invalid retained range",
-            });
+                attribute,
+                "lint source tree witness has an invalid retained range",
+            ));
         }
-        let count = (range.end - range.start) as usize;
-        work.charge(key, count, 4 * count * size_of::<(u32, Tree)>())?;
-        trees.extend((range.start..range.end).map(|index| (index, forest.nodes()[index as usize])));
+        count = count
+            .checked_add(range.end - range.start)
+            .ok_or_else(|| invalid(key, attribute, "lint witness tree count exceeds 32 bits"))?;
     }
-    Ok(trees)
+    Ok(Coverage {
+        ranges,
+        count,
+        level,
+    })
+}
+fn changes(
+    parsed: &mut Parsed,
+    forest: &Forest,
+    attribute: Attribute,
+    level: Level,
+    source: &str,
+    key: NodeKey,
+    work: &mut Work,
+) -> Result<(), Violation> {
+    parsed.attributes += 1;
+    work.attributes += 1;
+    let Input::Delimited(group) = attribute.input else {
+        return Ok(());
+    };
+    let Some(range) = forest.children(group) else {
+        return Ok(());
+    };
+    let mut index = range.start;
+    while index < range.end {
+        let start = index;
+        while index < range.end && !forest.punctuation(index, Punctuation::Comma) {
+            work.charge(key, 1, 0)?;
+            index = forest.after(index);
+            parsed.entries += 1;
+            work.entries += 1;
+        }
+        if index == start + 1 {
+            let selected = lints(forest, source, start);
+            parsed.entries += selected.len().saturating_sub(1);
+            work.entries += selected.len().saturating_sub(1);
+            for &lint in selected {
+                work.charge(key, 1, 4 * size_of::<Change>())?;
+                parsed.changes.push(Change {
+                    lint,
+                    level,
+                    offset: attribute.span.start,
+                });
+            }
+        }
+        if index < range.end {
+            index += 1;
+        }
+    }
+    Ok(())
+}
+fn invalid(key: NodeKey, attribute: Attribute, message: &'static str) -> Violation {
+    Violation {
+        key,
+        offset: attribute.span.start,
+        message,
+    }
 }
 fn lints(forest: &Forest, source: &str, index: u32) -> &'static [Lint] {
     match forest.name(source, index) {

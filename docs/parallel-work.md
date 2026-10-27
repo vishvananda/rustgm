@@ -14,11 +14,10 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The current original-core CLI9d3ea4f6 passes the old asm/saturating boundaries
-after a real frame-capacity accounting repair. Source lint policy storage still
-exhausts in ops/bit.rs (LIB-046). All722 pinned inputs verify;371 files open in7.87s,
-with no artifact. Limits remain10M work/64MiB; the next observation separates
-remaining attempted cumulative storage from actual retained source records.
+The current original-core CLI6a99faf3 passes the observed LIB-046 lint storage
+failure with exact complete witness arrays. All722 pinned inputs verify;372 files
+open in8.25s, with no artifact. Limits remain10M work/64MiB. The next rejection
+is genuine formatting-argument construction, already assigned to B.
 The live tracker owns current priorities; checkpoint paragraphs below retain
 earlier context. Typed assembly proof, inert diagnostic data and source Shl/BitOr
 are combined; two operator native consumers now match safe-input outputs.
@@ -31,7 +30,7 @@ are combined; two operator native consumers now match safe-input outputs.
   typed target features. Qualify real source/native copy controls and coordinate
   the shared type query with the root-owned assembly consumer.
 - Integrator: directly owns `rustgm-pa25-work`, the qualified typed assembly
-  join, publication and LIB-046 repair; integrate demanded SIMD/target/backend
+  join, publication and the qualified LIB-046 repair; integrate demanded SIMD/target/backend
   work and advance unchanged core. Preserve PA25 const-callable/CTFE and PA29
   transport scope. Prepare alloc/std build/runtime inputs at integration exits.
 
