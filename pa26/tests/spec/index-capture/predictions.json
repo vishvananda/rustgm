@@ -1,0 +1,189 @@
+{
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "debug_assertions": false,
+  "status": "declared before independent observation and implementation",
+  "cases": [
+    {
+      "name": "captured-original",
+      "path": "pa26/tests/spec/index-mut/captured.rs",
+      "sha256": "c9065b4f217c4eeaa8f1e8acb8465d8a58f273258fcf69738132d1a5ce9f5415",
+      "accepted": true,
+      "native": true,
+      "exit_status": 0
+    },
+    {
+      "name": "overloaded-shared",
+      "path": "pa26/tests/spec/index-capture/overloaded-shared.rs",
+      "sha256": "7c133274b677c44b12d860a066a159958ad8ac93b3c1a754c10d18f8e1372d65",
+      "accepted": true,
+      "native": true,
+      "exit_status": 0
+    },
+    {
+      "name": "overloaded-mutable",
+      "path": "pa26/tests/spec/index-capture/overloaded-mutable.rs",
+      "sha256": "c81e07f98e7163a5a436e3a544d109aa7f27e68f9db44aadd2bd708bf2cb50b4",
+      "accepted": true,
+      "native": true,
+      "exit_status": 0
+    },
+    {
+      "name": "ref-shared",
+      "path": "pa26/tests/spec/index-capture/ref-shared.rs",
+      "sha256": "e4ce86f843af546da7874905af3914aff63c0cf917b049f450d5a9268d8f2ecd",
+      "accepted": true,
+      "native": true,
+      "exit_status": 0
+    },
+    {
+      "name": "ref-deep",
+      "path": "pa26/tests/spec/index-capture/ref-deep.rs",
+      "sha256": "6390f2bc0f56934bd1fd7df2daef8a2d80c43e1782a88eb84a1c29f8ce224486",
+      "accepted": true,
+      "native": true,
+      "exit_status": 0
+    },
+    {
+      "name": "ref-mutable",
+      "path": "pa26/tests/spec/index-capture/ref-mutable.rs",
+      "sha256": "96ea38cf05e70b09b7a3454222c567fd733c6b419635d231d9037c9b1cda0df4",
+      "accepted": true,
+      "native": true,
+      "exit_status": 0
+    },
+    {
+      "name": "move-ref-mutable",
+      "path": "pa26/tests/spec/index-capture/move-ref-mutable.rs",
+      "sha256": "5c01a179bec47e964d8bb6bd6332ec5dbf9581de880a17981c7e1ec31e773648",
+      "accepted": true,
+      "native": true,
+      "exit_status": 0
+    },
+    {
+      "name": "nested-mutable",
+      "path": "pa26/tests/spec/index-capture/nested-mutable.rs",
+      "sha256": "17a075d33ab1a7e34a41576728f496d562f6f880d30dad2d8a47df5411c8a01d",
+      "accepted": true,
+      "native": true,
+      "exit_status": 0
+    },
+    {
+      "name": "dynamic-index-captured",
+      "path": "pa26/tests/spec/index-capture/dynamic-index-captured.rs",
+      "sha256": "50b74cd00f1dfbcfb6f0aa963a9221ea58eeb605624f447b5012a3e384e4e8b5",
+      "accepted": true,
+      "native": true,
+      "exit_status": 0
+    },
+    {
+      "name": "parameter-index",
+      "path": "pa26/tests/spec/index-capture/parameter-index.rs",
+      "sha256": "f449a36c9742afb771ba79974ad9ccf15c9a1161e65acebdd8959b480fd0efbe",
+      "accepted": true,
+      "native": true,
+      "exit_status": 0
+    },
+    {
+      "name": "index-order",
+      "path": "pa26/tests/spec/index-capture/index-order.rs",
+      "sha256": "8e366e97d572e2228b879360a24f8ae0c68ad3ab503c40adc9387e1c17f5a21e",
+      "accepted": true,
+      "native": true,
+      "exit_status": 0
+    },
+    {
+      "name": "array-ref-shared",
+      "path": "pa26/tests/spec/index-capture/array-ref-shared.rs",
+      "sha256": "88608cbd131ebfd812550d79a44e8dabfffbf4b19b48625865d0ac4e664e67de",
+      "accepted": true,
+      "native": true,
+      "exit_status": 0
+    },
+    {
+      "name": "array-ref-mutable",
+      "path": "pa26/tests/spec/index-capture/array-ref-mutable.rs",
+      "sha256": "62cf82137df2d4eb1d2f1555398ecbad25a88327c1792d27853bcf42b26eb915",
+      "accepted": true,
+      "native": true,
+      "exit_status": 0
+    },
+    {
+      "name": "slice-ref-shared",
+      "path": "pa26/tests/spec/index-capture/slice-ref-shared.rs",
+      "sha256": "8bd33fea3472e1a21604c4507289ec6e2546679a40b3763ce3a42daec701205d",
+      "accepted": true,
+      "native": true,
+      "exit_status": 0
+    },
+    {
+      "name": "slice-ref-mutable",
+      "path": "pa26/tests/spec/index-capture/slice-ref-mutable.rs",
+      "sha256": "8f82090e554daee839a4d17c550b48aa5dd62dbed3b327ad4b24fb7fff95be4d",
+      "accepted": true,
+      "native": true,
+      "exit_status": 0
+    },
+    {
+      "name": "unique-ref-mutable",
+      "path": "pa26/tests/spec/index-capture/unique-ref-mutable.rs",
+      "sha256": "6c960dd868f3c37a3439b5cb05d3b22a4d2cb97f82bb9b777074b45e6be7c680",
+      "accepted": true,
+      "native": true,
+      "exit_status": 0
+    },
+    {
+      "name": "immutable-base",
+      "path": "pa26/tests/spec/index-capture/immutable-base.rs",
+      "sha256": "cff4329f4ad79fcff230a216748baff32b01243efa064d62c311326bb25f44e2",
+      "accepted": false,
+      "native": false,
+      "exit_status": null
+    },
+    {
+      "name": "shared-base",
+      "path": "pa26/tests/spec/index-capture/shared-base.rs",
+      "sha256": "417e8d3e5fc84d409e6095f47e520b2b3b5c57ddccc248809be283cf1a7d2501",
+      "accepted": false,
+      "native": false,
+      "exit_status": null
+    },
+    {
+      "name": "live-loan",
+      "path": "pa26/tests/spec/index-capture/live-loan.rs",
+      "sha256": "f4904ebfa326436fc996c5cf9fd8f87110d867bb00c12f7ce138595fb1671956",
+      "accepted": false,
+      "native": false,
+      "exit_status": null
+    },
+    {
+      "name": "immutable-closure",
+      "path": "pa26/tests/spec/index-capture/immutable-closure.rs",
+      "sha256": "5060fb4814181ac1de09213b666c874446f0d436c1c8616210b16c8cf8f644c5",
+      "accepted": false,
+      "native": false,
+      "exit_status": null
+    },
+    {
+      "name": "missing-indexmut",
+      "path": "pa26/tests/spec/index-capture/missing-indexmut.rs",
+      "sha256": "bb50741b2d2be068682b94a81adda7690f1004d5c0a4cb0c65aa3d43bccfacc3",
+      "accepted": false,
+      "native": false,
+      "exit_status": null
+    },
+    {
+      "name": "noncopy-output-move",
+      "path": "pa26/tests/spec/index-capture/noncopy-output-move.rs",
+      "sha256": "cdfb4f4827728deb8fdb7007fc9081678b7f21e70d3c1154ea66ae55567d25fc",
+      "accepted": false,
+      "native": false,
+      "exit_status": null
+    }
+  ],
+  "other_operator_kernel_gaps": "All other seven original Rust-positive gaps remain unchanged and required.",
+  "native_profile": "Only accepted sources execute; expected empty stdout/stderr and exit0."
+}
