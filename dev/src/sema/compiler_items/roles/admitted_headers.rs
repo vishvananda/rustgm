@@ -92,6 +92,7 @@ pub(in crate::sema) fn selected_copying(
             roles: complete,
             methods: [None; 3],
             pointee: None,
+            discriminant: None,
         }));
     }
     Ok(())
