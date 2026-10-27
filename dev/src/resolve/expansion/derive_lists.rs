@@ -1,5 +1,6 @@
 //! One cold transaction owns each demanded list until all actual members resolve.
 mod paired_impls;
+mod prior_copy;
 mod receipt;
 #[cfg(test)]
 #[path = "../../../tests/invariants/derived_locations.rs"]
@@ -107,7 +108,14 @@ impl<S: Sources> Engine<'_, S> {
         Ok(())
     }
     pub(super) fn begin_derive(&mut self, index: usize, definition: usize) -> Result<(), Error> {
-        self.checked_derive_definition(definition, Builtin::Derive)?;
+        let Body::Builtin(role @ (Builtin::Derive | Builtin::DeriveConst)) =
+            self.definitions[definition].body
+        else {
+            return Err(
+                self.calls[index].diagnostic("derive list has no actual source attribute role")
+            );
+        };
+        self.checked_derive_definition(definition, role)?;
         if self.calls[index].visit.in_block {
             return Err(
                 self.calls[index].diagnostic("block-owned source derives require a wider profile")

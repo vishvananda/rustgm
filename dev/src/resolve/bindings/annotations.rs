@@ -23,6 +23,7 @@ pub(super) enum DiagnosticItem {
     FormatArgsMacro,
     NonNull,
     Debug,
+    Alignment,
 }
 impl DiagnosticItem {
     pub(super) const fn index(self) -> usize {
@@ -59,6 +60,7 @@ pub(super) fn parse(
         b"format_args_macro" => Ok(DiagnosticItem::FormatArgsMacro),
         b"NonNull" => Ok(DiagnosticItem::NonNull),
         b"Debug" => Ok(DiagnosticItem::Debug),
+        b"Alignment" => Ok(DiagnosticItem::Alignment),
         _ => Err(error("unsupported source diagnostic identity")),
     }
 }
@@ -84,7 +86,8 @@ pub(super) fn validate(
             | DiagnosticItem::CfgSelect
             | DiagnosticItem::FormatArgsMacro
             | DiagnosticItem::NonNull
-            | DiagnosticItem::Debug => None,
+            | DiagnosticItem::Debug
+            | DiagnosticItem::Alignment => None,
         };
         if let Some(expected) = expected {
             if !claims
@@ -114,14 +117,14 @@ pub(super) fn validate(
                     "format_args diagnostic identity requires its actual builtin role"
                 }));
             }
-        } else if matches!(item, DiagnosticItem::Debug) {
+        } else if matches!(item, DiagnosticItem::Debug | DiagnosticItem::Alignment) {
             let unit = package.unit(declaration.origin.file);
-            if declaration.parent.is_some()
-                || !matches!(unit.configured.ast.node(declaration.origin.node).kind,
-                    Kind::Item(index) if matches!(unit.configured.ast.items[index as usize].kind, ItemKind::Trait { .. }))
-            {
+            let right_kind = matches!(unit.configured.ast.node(declaration.origin.node).kind,
+                Kind::Item(index) if matches!((item, unit.configured.ast.items[index as usize].kind),
+                    (DiagnosticItem::Debug, ItemKind::Trait { .. }) | (DiagnosticItem::Alignment, ItemKind::Enum { .. })));
+            if declaration.parent.is_some() || !right_kind {
                 return Err(error(
-                    "Debug diagnostic identity requires its actual module trait",
+                    "diagnostic identity requires its actual Debug trait or Alignment enum",
                 ));
             }
         } else if matches!(item, DiagnosticItem::NonNull) {
