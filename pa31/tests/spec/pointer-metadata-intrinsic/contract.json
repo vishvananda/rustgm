@@ -1,0 +1,93 @@
+{
+  "state": "unqualified source implementation, independent exact sources observed",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source_intrinsic": "ptr_metadata",
+  "declaration": "safe const Rust P:Pointee<Metadata=M>+PointeeSized,M; one *const P; exact M result",
+  "producer": "actual source intrinsic DefId/formals/signature/current header and existing completed Pointee roles",
+  "consumer": "actual completed direct Call/body/Instance proof retains P::Metadata=M; solved M plus actual pointer ABI layout; pointer read once, pointee memory untouched",
+  "source_inputs": {
+    "pa31/tests/spec/pointer-metadata-intrinsic/dynamic-result.rs": "15956b6342de0da4f0067e2164f3135a0600da2619f1cc5cd3c070dfaff6a3f8",
+    "pa31/tests/spec/pointer-metadata-intrinsic/foreign-thin.rs": "feffbc54e843a928dc4126fb648086a63e35feffd6bc5cd74a45c88aed1e4b4b",
+    "pa31/tests/spec/pointer-metadata-intrinsic/mutable-intrinsic-input.rs": "f216464edf5b88e0ead2b159b8772b0808fbeea3e4625b5246e882dacd7ac5fb",
+    "pa31/tests/spec/pointer-metadata-intrinsic/observe-once.c": "405cc4ad3350b19340e26bd674733fddba9c867796420d41901e98fbb5d9c3a9",
+    "pa31/tests/spec/pointer-metadata-intrinsic/observe.c": "ace9b4b42931b34fd5b0fa2341fc6c7aea0ea96cb5448502ad179e55e556f662",
+    "pa31/tests/spec/pointer-metadata-intrinsic/ordinary-name.rs": "88054fadfb69891d6cd8685b501f9d699b2859d3bf3b583a6a382709c0f9d79d",
+    "pa31/tests/spec/pointer-metadata-intrinsic/provider.rs": "8148cd7b07d821d63897cd4ad33878d9915c6914dcb8a7f403cc2e0486124558",
+    "pa31/tests/spec/pointer-metadata-intrinsic/slice-length.rs": "64c816caf0bcfaeeae868c585677332faf6d0f7ca79cff9db77194ece519602e",
+    "pa31/tests/spec/pointer-metadata-intrinsic/string-length.rs": "7231d5e33e38d3c33eaa772de728ab916e083945a8f0873dde040f4a3f266231",
+    "pa31/tests/spec/pointer-metadata-intrinsic/tail-without-dereference.rs": "dc68df215df49c3831a7429d8dd4ca0031aca10b9c42208502919f448709625e",
+    "pa31/tests/spec/pointer-metadata-intrinsic/thin-unit.rs": "bb73369fad396c173ed9373a4c6dbd785dfbd25ce682d51675b9275818f3a541",
+    "pa31/tests/spec/pointer-metadata-intrinsic/unit-argument-fault.rs": "1d53c0e096068cdce03b3c21236126d84729825ff906e7e9e156e3e6f3bc3416",
+    "pa31/tests/spec/pointer-metadata-intrinsic/unit-argument-once.rs": "51c91aa1d850d871fc0d55066f7a00c89dbf4e7bbad872ebc96f7a93839c3e50",
+    "pa31/tests/spec/pointer-metadata-intrinsic/unrequested-intrinsics.rs": "859813973f4f6478b950acfe3ff872317c470c25d24eb217006dbf1490fa5b8f"
+  },
+  "independent_evidence": [
+    {
+      "directory": "observed-v1",
+      "complete_sha256": "f439edb9bd81a13291ee2b7dbc739aa2cb4f31f59d92cdd388efc750bf847af7",
+      "binding_sha256": "7c2a4f0ba0d6637833422c4fb087c99c559d9a886aa17c4abfe8c755c8b88ddb",
+      "results_sha256": "3f8efe6f59c7d46189ac1951a7642c748325383d47a7a48370b61052725d52ef",
+      "commands": 16,
+      "infra": 0,
+      "disagreements": 12
+    },
+    {
+      "directory": "observed-v2",
+      "complete_sha256": "49ab04f71badd124f833a266b5842f86a9695ace2b22c1af22e5355082139afc",
+      "binding_sha256": "422660f412a9b77750bb53c660f2116c0bc5c00e16a9c31d9381fedf7c330879",
+      "results_sha256": "bac4ad85ed576a2faa23877532308aa4bd5eca450eeda8d1bb64df7e7ae679bc",
+      "commands": 16,
+      "infra": 0,
+      "disagreements": 14
+    },
+    {
+      "directory": "observed-v3",
+      "complete_sha256": "6ad50be657b6a2b95a6cc177932811ad74fb5d61582005c8c5d236ac26720c7c",
+      "binding_sha256": "bbf2fa2ebc508ebc74c060c18edbf5a8dc8537fa47114285a0377deb00caa98d",
+      "results_sha256": "a6163ab032f726e54aad4ec282b50460e9888659e70e1ef2e8a12a041ba7da79",
+      "commands": 24,
+      "infra": 0,
+      "disagreements": 12
+    },
+    {
+      "directory": "edge-observed-v1",
+      "complete_sha256": "0611704b76f543587962256ceb47f02bf93d1a78b0f90cb442129b33562f6caa",
+      "binding_sha256": "645fc15d41c9ca50c74e98a4d1f576261deb8d105ea1ded21db4c233f261b187",
+      "results_sha256": "04c73259a2a8198955ca5dfd5cd0a8dc7ceee0edaf507e934fcf9fd3e127109a",
+      "commands": 9,
+      "infra": 0,
+      "disagreements": 3
+    },
+    {
+      "directory": "edge-observed-v2",
+      "complete_sha256": "a98dc8c2136c223a88e6eaf9b5e6b646428f7c93f9c45ebdcc5e63c7ebcb117b",
+      "binding_sha256": "566c5954b42c86d9c0ea749ad0a5b07a549501572e3aa22ea781a6beb754fd7b",
+      "results_sha256": "c748e0797c207075b914858719649d7be78a25409adf03525218b8d1876d8e7f",
+      "commands": 12,
+      "infra": 0,
+      "disagreements": 6
+    }
+  ],
+  "native_observations": {
+    "thin-unit": "7\n",
+    "string-length": "6\n",
+    "slice-length": "3\n",
+    "tail-without-dereference": "3\n",
+    "unit-argument-once": "7 1\n",
+    "foreign-thin": "7\n",
+    "ordinary-name": "91\n"
+  },
+  "negative_observations": {
+    "mutable-intrinsic-input": "E0308 both editions",
+    "unrequested-intrinsics": "E0658 both editions",
+    "unit-argument-fault": "E0080 both editions"
+  },
+  "dynamic": "genuine NonNull<VTable>/PhantomData DynMetadata +actual DispatchFromDyn declaration/reference impl metadata accepts both editions; standalone extraction explicitly unsupported until actual symbolic storage producer",
+  "warning_scope": "Observed unused_features/unused_variables streams and every incorrect earlier setup/prediction retained; no warning parity claim for those existing lint gaps",
+  "pending": [
+    "first compiler/consumer source gate",
+    "actual candidate linked native outputs using one integrator CLI",
+    "dynamic standalone value extraction remains required; no fake fields/vtable words",
+    "foreign/imported intrinsic transport and indirect invocation remain closed"
+  ]
+}
