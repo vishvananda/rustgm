@@ -562,6 +562,29 @@ The defining effect remains distinct from the reached caller's Const payment.
 Keep ordinary calls allocation-free and preserve the common operation and node
 fact layouts. Preflight bounded descriptor storage before publishing any rows.
 
+Source Try blocks and question-mark operations use one authenticated protocol
+plan per actual operation. Select real Try/FromResidual methods, associated
+Output/Residual/TryType and ControlFlow variants from their source declarations;
+implicit calls demand the same ordinary callable templates as written calls.
+Reuse lexical frames for nearest try/function/closure targets and normal cleanup,
+move and region proof. A retained plan ordinal belongs to its actual source body
+and current catalog. Grammar admission never grants imported protocol transport
+or unsupported typed heterogeneous inference.
+
+Caller tracking belongs to the completed source function header and its actual
+Rust ABI. Reuse sparse call-context and callable-input owners for sealed site
+data; the presence of metadata never establishes a completed callable-target
+proof. Canonical nominal constructors are known untracked through the existing
+constructor inventory and actual callable/result owner, not through missing
+function headers. Unknown callable/header policy remains an error. Keep the
+source signature unchanged and distinguish tracked native signatures explicitly.
+Runtime forwarding and CTFE frames consume the same prepared static Location
+values. Store immutable snapshot site data once as a typed footer after legacy
+prepared operands, with indexed queries rather than per-call scans. Count its
+actual alignment, every allocated legacy operand's width and each enclosing
+owner's growth. Function-pointer/dynamic adapters and policy transport require
+their own real consumers before admission.
+
 Derive a function's defining context from its actual completed declaration and
 direct associated owner. Runtime, const function and const-trait default are
 distinct; a default's conditional defining legality never makes its body an
@@ -3010,6 +3033,18 @@ in its requesting proof scope and excludes it when that alternative is discarded
 Captured substitution preserves mixed declaration order, local binders and nested
 callable scopes. Ordinary equality environments keep compact entries and reuse
 their existing substitution storage.
+
+A completed associated-result closure builds one exact equality index for that
+same closure and shares the existing Normalizer across its consequence roots.
+Result-bound selection still requires the actual parent proof; missing,
+conflicting, cyclic or quantified equations grant no guessed replacement.
+Observed normalization prepays canonical Store growth as well as its scratch
+fold: nodes, child/lifetime lists, mixed arguments and trait applications,
+including resume and binder completion. Lookup-only equality probes never insert
+a canonical node. Use the shared interning/folding kernels with a transient
+borrowed payer and retain failed payments cumulatively; add no duplicate DAG
+walk or persistent accounting owner. Ordinary interning keeps its existing
+canonicalization, probe and validation order.
 
 When otherwise matching quantified alternatives differ only in unused or reordered
 local slots, compare their complete clauses modulo local numbering. Preserve all
