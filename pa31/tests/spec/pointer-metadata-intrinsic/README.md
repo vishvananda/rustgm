@@ -35,3 +35,11 @@ shared provider and one new complete CLI companion were independently checked:
 metadata accepts both editions and native prints `7 6 3 3 7 91 1` plus LF. The
 companion includes a genuine Rust main and conditional C observer linkage, so
 candidate execution uses public LowIR without opening the artifact profile.
+
+The actual dynamic candidate opponent currently stops at its genuine
+`dispatch_from_dyn` language declaration, before runtime extraction. Its exact
+source binding diagnostic/span is retained. DispatchFromDyn role/receiver support
+and standalone symbolic vtable storage remain required; the later dynamic kernel
+fence has not been reached or qualified by that source. Five other focused
+controls already pass on unchanged production, including real argument-fault
+location, foreign/unit/string/slice/tail const evaluation and real LowIR calls.

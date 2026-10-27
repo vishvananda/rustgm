@@ -93,13 +93,14 @@
     "unrequested-intrinsics": "E0658 both editions",
     "unit-argument-fault": "E0080 both editions"
   },
-  "dynamic": "genuine NonNull<VTable>/PhantomData DynMetadata +actual DispatchFromDyn declaration/reference impl metadata accepts both editions; standalone extraction explicitly unsupported until actual symbolic storage producer",
+  "dynamic": "genuine NonNull<VTable>/PhantomData DynMetadata +actual DispatchFromDyn declaration/reference impl metadata accepts both editions; current candidate rejects actual unsupported dispatch_from_dyn language role at its exact source attribute, BEFORE standalone extraction. Runtime dynamic branch remains unqualified.",
   "warning_scope": "Observed unused_features/unused_variables streams and every incorrect earlier setup/prediction retained; no warning parity claim for those existing lint gaps",
   "pending": [
     "first compiler/consumer source gate",
     "actual candidate linked native outputs using one integrator CLI",
     "dynamic standalone value extraction remains required; no fake fields/vtable words",
-    "foreign/imported intrinsic transport and indirect invocation remain closed"
+    "foreign/imported intrinsic transport and indirect invocation remain closed",
+    "source DispatchFromDyn role/receiver implementation support required by the unchanged dynamic opponent; not a layout permission"
   ],
   "supported_profile_correction": "Initial Rust-positive Destruct without its upstream deny-explicit-impl/dyn-incompatible attrs remains archived with actual candidate rejection. Current provider uses genuine pinned attrs; changed shared prefix +one explicitly authored CLI companion independently requalified, no old full matrix repeated.",
   "native_execution_companion": {

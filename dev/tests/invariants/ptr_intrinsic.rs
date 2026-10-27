@@ -137,37 +137,18 @@ fn actual_header_role_gate_and_signature_opponents_stay_closed() -> TestResult {
         error.to_string().contains("Pointee") || error.to_string().contains("Metadata"),
         "{error}"
     );
-    let dynamic = report("dynamic-result")?;
-    let pipeline::Analysis {
-        mut facts,
-        prepared,
-    } = pipeline::analyze_source(&dynamic)?;
-    let definition = dynamic
-        .resolution
-        .definitions
-        .iter()
-        .enumerate()
-        .find_map(|(index, item)| {
-            (item.kind == DefKind::Function
-                && dynamic.package.names.get(item.name) == "actual_dynamic")
-                .then_some(DefId(u32::try_from(index).ok()?))
-        })
-        .ok_or("actual dynamic caller")?;
-    let error = crate::lower::instances::build_roots_prepared(
-        &dynamic,
-        &mut facts,
-        crate::lower::Roots {
-            entry: None,
-            exports: &[definition],
-        },
-        prepared,
-    )
-    .err()
-    .ok_or("dynamic Metadata gained a fabricated standalone value")?;
-    assert!(
-        error.message.contains("metadata storage producer"),
-        "{error}"
+    let text = source("dynamic-result")?;
+    let offset = text
+        .find("#[lang=\"dispatch_from_dyn\"]")
+        .ok_or("actual dynamic receiver source role")?;
+    let error = report("dynamic-result")
+        .err()
+        .ok_or("unsupported dynamic receiver source role was silently accepted")?;
+    assert_eq!(
+        error.to_string(),
+        format!("file 0: {offset}: unsupported source language item")
     );
+
     Ok(())
 }
 #[test]
