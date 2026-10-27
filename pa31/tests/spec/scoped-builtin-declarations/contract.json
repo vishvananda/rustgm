@@ -1,5 +1,5 @@
 {
-  "state": "independent metadata accepts the wrapped original declaration; current candidate rejection reproduced; no invocation/coroutine execution claimed",
+  "state": "general source declaration-kind join candidate; independent declaration acceptance does not grant Iter execution",
   "owner": "PA31 original builtin claim authority; PA7/8 scoped macro mechanisms; PA42/43 eventual coroutine invocation",
   "origin": {
     "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
@@ -22,9 +22,187 @@
       "path": "iter-declaration.rs",
       "sha256": "7f22794e7ccf3d3c98746e8525a355d7f7e8a9daf9818a43c4cce4b5f12f27af",
       "rustc_status": 0,
-      "candidate_status": 1,
-      "candidate_diagnostic": "builtin macro binding requires its supported declaration kind",
-      "candidate_expected": "unsupported"
+      "candidate_expected": "declaration accepted; invocation remains unsupported",
+      "prior_candidate_status": 1,
+      "prior_candidate_diagnostic": "builtin macro binding requires its supported declaration kind"
     }
+  ],
+  "new_independent": {
+    "predictions_sha256": "ca94ab3f6bdc373902cf94162f348c2c1818d2597e90de88837760c43fa47d6e",
+    "observed_binding_sha256": "a7e3fe67ecf0e2f1876457f7ccb92c19d1cb65eae7b25e888e4e9c9f27d68e7a",
+    "observed_results_sha256": "eb567a3bd0a9a21903c38ade9a00145194467285822d0527b84c593231961244",
+    "observations": 14,
+    "infrastructure_failures": 0,
+    "status_disagreements": 0,
+    "warning_or_category_disagreements": 8,
+    "kind": "metadata only; no runtime claim"
+  },
+  "new_cases": [
+    {
+      "source": "pa31/tests/spec/scoped-builtin-declarations/legacy-test.rs",
+      "sha256": "a49cc4d30913d1aa417849bb3ae22b25f9a2ea818af50db30b58acafa0a75f07",
+      "status": 0,
+      "warning_codes": [],
+      "category": "accept",
+      "observed": [
+        {
+          "edition": "2021",
+          "status": 0,
+          "warnings": [
+            "unused_features"
+          ],
+          "category_matched": true
+        },
+        {
+          "edition": "2024",
+          "status": 0,
+          "warnings": [
+            "unused_features"
+          ],
+          "category_matched": true
+        }
+      ]
+    },
+    {
+      "source": "pa31/tests/spec/scoped-builtin-declarations/legacy-attribute-shadow.rs",
+      "sha256": "e2fc44279b36b0b438ce040208475d6d2eba89a4e70529ebef5b5101df73fecc",
+      "status": 0,
+      "warning_codes": [],
+      "category": "accept",
+      "observed": [
+        {
+          "edition": "2021",
+          "status": 0,
+          "warnings": [
+            "unused_variables",
+            "unused_features"
+          ],
+          "category_matched": true
+        },
+        {
+          "edition": "2024",
+          "status": 0,
+          "warnings": [
+            "unused_variables",
+            "unused_features"
+          ],
+          "category_matched": true
+        }
+      ]
+    },
+    {
+      "source": "pa31/tests/spec/scoped-builtin-declarations/legacy-bang-shadow.rs",
+      "sha256": "cb95659c61362ed7863c97e2a12b6d3117ce8d6c8313e663ba80623688389307",
+      "status": 0,
+      "warning_codes": [],
+      "category": "accept",
+      "observed": [
+        {
+          "edition": "2021",
+          "status": 0,
+          "warnings": [
+            "unused_features"
+          ],
+          "category_matched": true
+        },
+        {
+          "edition": "2024",
+          "status": 0,
+          "warnings": [
+            "unused_features"
+          ],
+          "category_matched": true
+        }
+      ]
+    },
+    {
+      "source": "pa31/tests/spec/scoped-builtin-declarations/registry-matcher.rs",
+      "sha256": "4989b9923af427b1f5f6b07140585e917ddf11875de959760f2b47bd004e96fe",
+      "status": 0,
+      "warning_codes": [],
+      "category": "accept",
+      "observed": [
+        {
+          "edition": "2021",
+          "status": 0,
+          "warnings": [],
+          "category_matched": true
+        },
+        {
+          "edition": "2024",
+          "status": 0,
+          "warnings": [],
+          "category_matched": true
+        }
+      ]
+    },
+    {
+      "source": "pa31/tests/spec/scoped-builtin-declarations/missing-declaration-feature.rs",
+      "sha256": "2fdf3fae3686bf393d16d5efe317a685b2dc3fc0d7313e8ee7139b32a127bff8",
+      "status": 1,
+      "warning_codes": [],
+      "category": "E0658",
+      "observed": [
+        {
+          "edition": "2021",
+          "status": 1,
+          "warnings": [],
+          "category_matched": true
+        },
+        {
+          "edition": "2024",
+          "status": 1,
+          "warnings": [],
+          "category_matched": true
+        }
+      ]
+    },
+    {
+      "source": "pa31/tests/spec/scoped-builtin-declarations/malformed-source-matcher.rs",
+      "sha256": "5719b74c6b3d41e6ce8db22121a4189424d429b171f62faf93d4b595da30fdca",
+      "status": 1,
+      "warning_codes": [],
+      "category": "invalid fragment specifier",
+      "observed": [
+        {
+          "edition": "2021",
+          "status": 1,
+          "warnings": [],
+          "category_matched": false
+        },
+        {
+          "edition": "2024",
+          "status": 1,
+          "warnings": [],
+          "category_matched": false
+        }
+      ]
+    },
+    {
+      "source": "pa31/tests/spec/scoped-builtin-declarations/unknown-source-role.rs",
+      "sha256": "af6fd811e73a1ed5b320976542fa7193d24be82f3484df226b0a72ca97456fb2",
+      "status": 1,
+      "warning_codes": [],
+      "category": "cannot find a built-in macro",
+      "observed": [
+        {
+          "edition": "2021",
+          "status": 1,
+          "warnings": [],
+          "category_matched": true
+        },
+        {
+          "edition": "2024",
+          "status": 1,
+          "warnings": [],
+          "category_matched": true
+        }
+      ]
+    }
+  ],
+  "remaining": [
+    "Builtin Iter coroutine execution remains unsupported.",
+    "unused_features and unused_variables diagnostic parity remains owned by the existing lint requirements; these observations retain the actual warnings.",
+    "Ordinary source profile and imported builtin declarations keep their existing authority and transport fences."
   ]
 }

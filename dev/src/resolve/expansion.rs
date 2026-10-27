@@ -78,6 +78,13 @@ enum MacroTarget {
     SourceDerive(usize),
 }
 impl MacroTarget {
+    fn local(index: usize, kind: builtin::BuiltinKind) -> Self {
+        match kind {
+            builtin::BuiltinKind::Bang => Self::Declarative(index),
+            builtin::BuiltinKind::Attribute => Self::SourceAttribute(index),
+            builtin::BuiltinKind::Derive => Self::SourceDerive(index),
+        }
+    }
     fn kind(self) -> builtin::BuiltinKind {
         match self {
             Self::Declarative(_) => builtin::BuiltinKind::Bang,
@@ -99,6 +106,14 @@ pub struct Definition {
     pub edition: Edition,
     pub edition_panic: bool,
     pub(super) header: Option<std::rc::Rc<super::bindings::panic_contracts::HeaderData>>,
+}
+impl Definition {
+    fn macro_kind(&self) -> builtin::BuiltinKind {
+        match self.body {
+            Body::Builtin(role) => role.kind(),
+            _ => builtin::BuiltinKind::Bang,
+        }
+    }
 }
 pub struct Invocation {
     pub context: ExpansionId,
@@ -1069,7 +1084,11 @@ impl<'a, S: Sources> Engine<'a, S> {
             visit.node,
             name,
             flags.exported,
-            (index, visit.introduction),
+            (
+                index,
+                visit.introduction,
+                builtin.map_or(builtin::BuiltinKind::Bang, Builtin::kind),
+            ),
         )?;
         self.paths
             .macro_visibility(context, visit.node, item.visibility);
@@ -1091,12 +1110,12 @@ impl<'a, S: Sources> Engine<'a, S> {
         if call.absolute {
             return Err(call.diagnostic("external macro paths require external metadata"));
         }
-        if matches!(call.grammar, CallGrammar::Bang(_)) && call.path.len() == 1 {
+        if call.path.len() == 1 {
             let name = call.path[0];
             match (bindings::Bindings {
                 definitions: &self.definitions,
             })
-            .textual(
+            .textual_kind(
                 &mut self.scopes,
                 &self.paths.state.facts.introductions.ancestry,
                 call.scope,
@@ -1108,6 +1127,14 @@ impl<'a, S: Sources> Engine<'a, S> {
                         .map_err(|e| call.diagnostic(e))?,
                 ),
                 call.visit.introduction,
+                (call.grammar.kind(), &|steps| {
+                    self.loader.package.source_core().map_or(Ok(()), |source| {
+                        source
+                            .macros
+                            .charge(steps, 0)
+                            .map_err(|message| crate::syntax::token_tree::error(0, message))
+                    })
+                }),
             )
             .map_err(|e| self.calls[index].diagnostic(e.message))?
             {

@@ -85,16 +85,6 @@ impl Resolver<'_> {
                 // including a genuine checked-empty list, never a missing row.
                 checked.derive_helpers(role)?;
             }
-            if summary.builtin.is_some_and(|role| {
-                role != crate::expand::builtin::Builtin::CfgSelect
-                    && role.kind() == crate::expand::builtin::BuiltinKind::Bang
-            }) {
-                return Err(self.error(
-                    context,
-                    node,
-                    "scoped builtin role has no implemented source contract",
-                ));
-            }
             (checked.into_data(), Some(summary.edition))
         } else {
             (None, None)
