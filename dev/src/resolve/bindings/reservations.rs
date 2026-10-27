@@ -273,23 +273,7 @@ fn reserve(
                 .insert(declaration.definition);
         }
         Claim::Language(kind) => {
-            if !source.features.has(Feature::LangItems) {
-                return Err(error("lang requires its explicit source feature"));
-            }
-            super::panic_claims::validate(package, declaration, kind)?;
-            super::pointee_claims::validate(package, declaration, kind)?;
-            super::try_claims::validate(package, declaration, kind)?;
-            // A weak foreign declaration names the real handler link, never
-            // the defining handler's language-item slot or body permission.
-            if kind == LangItem::PanicImpl && foreign {
-                return Ok(());
-            }
-            if reserved.languages[kind.index()]
-                .replace(declaration)
-                .is_some()
-            {
-                return Err(error("duplicate source language item"));
-            }
+            reserve_language(package, source, reserved, declaration, kind, foreign)?;
         }
         Claim::PanicHandler => {
             super::panic_claims::validate_handler(package, declaration, foreign)?;
@@ -336,6 +320,41 @@ fn reserve(
                 return Err(error("duplicate intrinsic binding on one declaration"));
             }
         }
+    }
+    Ok(())
+}
+
+fn reserve_language(
+    package: &Package,
+    source: &SourceCore,
+    reserved: &mut Reservations,
+    declaration: Declaration,
+    kind: LangItem,
+    foreign: bool,
+) -> Result<(), Error> {
+    if !source.features.has(Feature::LangItems) {
+        return Err(error(
+            package,
+            declaration.origin,
+            "lang requires its explicit source feature",
+        ));
+    }
+    super::panic_claims::validate(package, declaration, kind)?;
+    super::pointee_claims::validate(package, declaration, kind)?;
+    super::try_claims::validate(package, declaration, kind)?;
+    // Weak foreign declarations never own the defining handler's slot.
+    if kind == LangItem::PanicImpl && foreign {
+        return Ok(());
+    }
+    if reserved.languages[kind.index()]
+        .replace(declaration)
+        .is_some()
+    {
+        return Err(error(
+            package,
+            declaration.origin,
+            "duplicate source language item",
+        ));
     }
     Ok(())
 }
