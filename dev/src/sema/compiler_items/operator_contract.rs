@@ -111,6 +111,7 @@ fn checked(
         },
         usize::from(operator.binary()),
     )?;
+    work.charge(6 * usize::from(operator.binary()))?;
     let rhs = rhs_parameter(facts, &header, operator)?;
     if header.written.parameters != usize::from(operator.binary())
         || header.written.supertraits != 0

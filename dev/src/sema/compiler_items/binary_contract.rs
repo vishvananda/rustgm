@@ -39,3 +39,7 @@ pub(in crate::sema) fn source_binary(
         })?,
     })
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/binary_authority.rs"]
+mod tests;
