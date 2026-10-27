@@ -1,0 +1,228 @@
+{
+  "state": "Actual independent metadata; original hoped-positive predictions retained; no runtime invocation",
+  "commands": 10,
+  "seconds": 0.28398137306794524,
+  "infrastructure": 0,
+  "disagreements": [
+    {
+      "case": "block.rs",
+      "edition": 2021,
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2021",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--emit=metadata",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "--crate-name=delayed_never",
+        "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-shift-or/delayed-never/block.rs",
+        "-o",
+        "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-shift-or-implementation-v1/observed-delayed-never-v1/block-2021.rmeta"
+      ],
+      "status": 1,
+      "error_codes": [
+        "E0308"
+      ],
+      "warning_codes": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "addcd505fd14bb6a263c0253598e1ebb1d1bc035a668afce9ba6ebf40c26b8f7",
+      "infrastructure": false,
+      "matches_prediction": false
+    },
+    {
+      "case": "block.rs",
+      "edition": 2024,
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--emit=metadata",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "--crate-name=delayed_never",
+        "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-shift-or/delayed-never/block.rs",
+        "-o",
+        "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-shift-or-implementation-v1/observed-delayed-never-v1/block-2024.rmeta"
+      ],
+      "status": 1,
+      "error_codes": [
+        "E0308"
+      ],
+      "warning_codes": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "addcd505fd14bb6a263c0253598e1ebb1d1bc035a668afce9ba6ebf40c26b8f7",
+      "infrastructure": false,
+      "matches_prediction": false
+    },
+    {
+      "case": "binding.rs",
+      "edition": 2021,
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2021",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--emit=metadata",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "--crate-name=delayed_never",
+        "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-shift-or/delayed-never/binding.rs",
+        "-o",
+        "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-shift-or-implementation-v1/observed-delayed-never-v1/binding-2021.rmeta"
+      ],
+      "status": 1,
+      "error_codes": [
+        "E0308"
+      ],
+      "warning_codes": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "8e862038e89e9bc553bf6572aeceb87a6ccb479e8ece89905c2c60893491d474",
+      "infrastructure": false,
+      "matches_prediction": false
+    },
+    {
+      "case": "binding.rs",
+      "edition": 2024,
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--emit=metadata",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "--crate-name=delayed_never",
+        "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-shift-or/delayed-never/binding.rs",
+        "-o",
+        "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-shift-or-implementation-v1/observed-delayed-never-v1/binding-2024.rmeta"
+      ],
+      "status": 1,
+      "error_codes": [
+        "E0308"
+      ],
+      "warning_codes": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "8e862038e89e9bc553bf6572aeceb87a6ccb479e8ece89905c2c60893491d474",
+      "infrastructure": false,
+      "matches_prediction": false
+    },
+    {
+      "case": "branch.rs",
+      "edition": 2021,
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2021",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--emit=metadata",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "--crate-name=delayed_never",
+        "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-shift-or/delayed-never/branch.rs",
+        "-o",
+        "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-shift-or-implementation-v1/observed-delayed-never-v1/branch-2021.rmeta"
+      ],
+      "status": 1,
+      "error_codes": [
+        "E0271"
+      ],
+      "warning_codes": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "7d24591f4a328f05ab950060b58b373756300d57360a3b312b6d29ae241fe918",
+      "infrastructure": false,
+      "matches_prediction": false
+    },
+    {
+      "case": "branch.rs",
+      "edition": 2024,
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--emit=metadata",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "--crate-name=delayed_never",
+        "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-shift-or/delayed-never/branch.rs",
+        "-o",
+        "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-shift-or-implementation-v1/observed-delayed-never-v1/branch-2024.rmeta"
+      ],
+      "status": 1,
+      "error_codes": [
+        "E0271"
+      ],
+      "warning_codes": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "7d24591f4a328f05ab950060b58b373756300d57360a3b312b6d29ae241fe918",
+      "infrastructure": false,
+      "matches_prediction": false
+    },
+    {
+      "case": "without-feature.rs",
+      "edition": 2021,
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2021",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--emit=metadata",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "--crate-name=delayed_never",
+        "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-shift-or/delayed-never/without-feature.rs",
+        "-o",
+        "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-shift-or-implementation-v1/observed-delayed-never-v1/without-feature-2021.rmeta"
+      ],
+      "status": 1,
+      "error_codes": [
+        "E0658",
+        "E0308"
+      ],
+      "warning_codes": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "5e7aaef52b3ca260baa736642dab76ce07cfc00f4b9a9afbb07a1937c25a708b",
+      "infrastructure": false,
+      "matches_prediction": false
+    },
+    {
+      "case": "without-feature.rs",
+      "edition": 2024,
+      "command": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "--emit=metadata",
+        "--error-format=json",
+        "-Cpanic=abort",
+        "--crate-name=delayed_never",
+        "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-shift-or/delayed-never/without-feature.rs",
+        "-o",
+        "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa31/source-shift-or-implementation-v1/observed-delayed-never-v1/without-feature-2024.rmeta"
+      ],
+      "status": 1,
+      "error_codes": [
+        "E0658",
+        "E0308"
+      ],
+      "warning_codes": [],
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "5e7aaef52b3ca260baa736642dab76ce07cfc00f4b9a9afbb07a1937c25a708b",
+      "infrastructure": false,
+      "matches_prediction": false
+    }
+  ],
+  "binding_sha256": "fdeef96203b459cd239a34b373b27fa5351610a676594f3c85b2f4244f6172a5",
+  "results_sha256": "e83655d03144f72743e963647dc3343d5c601ec02ace5a7462512e2b87107d1f",
+  "actual_outcomes": {
+    "block": "E0308 both editions",
+    "binding": "E0308 both editions",
+    "branch": "E0271 both editions",
+    "without-feature": "E0658 plus E0308 both editions",
+    "known-return": "ACCEPT both editions; one unused_features warning"
+  },
+  "candidate_scope": "never_type feature admission remains closed; known-return CFG and actual source numeric fallback must pass separately"
+}

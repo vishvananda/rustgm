@@ -116,6 +116,14 @@ fn real_source_operands_rhs_inference_and_output_precede_primitive_erasure() -> 
         }
     }
     assert!(scalar >= 5 && overloaded >= 2 && inferred_i32 >= 1);
+    assert!(facts.associated.operation(header.definition).is_none());
+    assert!(
+        report
+            .resolution
+            .builtin_traits
+            .language(Hook::Shl)
+            .is_none()
+    );
     Ok(())
 }
 #[test]
@@ -141,18 +149,29 @@ fn actual_overloads_and_explicit_custom_bodies_reach_original_instance_lowering(
         }
         assert!(program.symbols.iter().filter(|s| s.body.is_some()).count() >= 4);
     }
+    let source = input("runtime-overloads")?
+        + "\n#[unsafe(no_mangle)]pub extern \"C\" fn let_encoded(len:usize)->usize{let tagged=len<<1|1;tagged}";
+    let (report, analysis) = analyze(&source)?;
+    let program = lower(&report, analysis, &["let_encoded"])?;
+    assert!(
+        program
+            .symbols
+            .iter()
+            .any(|s| s.name == "let_encoded" && s.body.is_some())
+    );
     Ok(())
 }
 #[test]
 fn actual_const_effects_and_negative_overflow_faults_remain_required() -> TestResult {
-    let source =
-        input("const-followup/primitive-const-impl")? + "\npub fn const_value()->usize{ENCODED}";
+    let source = input("const-followup/primitive-const-impl")?
+        + "\n#[unsafe(no_mangle)]pub extern \"C\" fn const_value()->usize{ENCODED}";
     let (report, analysis) = analyze(&source)?;
     let program = lower(&report, analysis, &["const_value"])?;
     let body = program
         .symbols
         .iter()
-        .find_map(|s| s.body.as_ref())
+        .find(|s| s.name == "const_value")
+        .and_then(|s| s.body.as_ref())
         .ok_or("actual const body")?;
     assert!(body.blocks.iter().any(|b|matches!(b.terminator,Terminator::Return(Some(v)) if matches!(v.operand,Operand::Literal(id) if matches!(body.literals.get(id.0 as usize),Some(Literal::Integer(7)))))));
     for (name, expected) in [
@@ -202,6 +221,18 @@ fn source_binary_headers_reject_wrong_formals_members_and_replayed_images() -> T
     ] {
         assert!(analyze(&text).is_err());
     }
+    // The original wrong-rhs also had independently rejected const items.
+    // Use the separately accepted runtime prefix to reach this exact bad call.
+    let wrong = input("const-followup/custom-runtime-only")?
+        + "\npub fn wrong_rhs(n:usize)->usize{n<<true}";
+    let error = analyze(&wrong)
+        .err()
+        .ok_or("boolean shift RHS accepted")?
+        .to_string();
+    assert!(
+        error.contains("trait obligation"),
+        "actual wrong-Rhs cause: {error}"
+    );
     let (mut report, Analysis { mut facts, .. }) = analyze(&original)?;
     let site = report.resolution.definitions
         [named(&report, "encoded", DefKind::Function)?.0 as usize]
@@ -262,5 +293,52 @@ fn source_operator_work_scales_and_ordinary_path_retains_hot_layouts() -> TestRe
     assert_eq!(size_of::<Operation>(), 16);
     assert_eq!(size_of::<crate::sema::model::NodeFacts>(), 80);
     assert_eq!(size_of::<crate::body::ir::Body>(), 448);
+    Ok(())
+}
+
+#[test]
+fn provisional_results_preserve_known_never_cfg_and_explicit_feature_frontier() -> TestResult {
+    for name in ["block", "binding", "branch"] {
+        let source = input(&format!("delayed-never/{name}"))?;
+        let error = analyze(&source)
+            .err()
+            .ok_or("unsupported never_type request accepted")?
+            .to_string();
+        assert!(
+            error.contains(
+                "unsupported active source-core feature or undefined library feature request"
+            ),
+            "{name}: {error}"
+        );
+    }
+    let (report, analysis) = analyze(&input("delayed-never/known-return")?)?;
+    let program = lower(&report, analysis, &["block", "binding", "branch"])?;
+    let bodies=program.symbols.iter().filter(|symbol|matches!(program.signatures.get(symbol.signature.0 as usize),Some(crate::lowir::program::Signature::Scalar(s)) if s.result==crate::lowir::vocabulary::Type::U8)).filter_map(|s|s.body.as_ref()).collect::<Vec<_>>();
+    assert_eq!(bodies.len(), 3);
+    assert_eq!(
+        bodies
+            .iter()
+            .filter(|body| body
+                .blocks
+                .iter()
+                .all(|b| !matches!(b.terminator, Terminator::Return(_))))
+            .count(),
+        2
+    );
+    let branch = bodies
+        .iter()
+        .find(|body| {
+            body.blocks
+                .iter()
+                .any(|b| matches!(b.terminator, Terminator::Return(_)))
+        })
+        .ok_or("actual branch return")?;
+    assert!(
+        branch
+            .blocks
+            .iter()
+            .any(|b| matches!(b.terminator, Terminator::Unreachable))
+    );
+    assert!(branch.blocks.iter().any(|b|matches!(b.terminator,Terminator::Return(Some(v)) if matches!(v.operand,Operand::Literal(id) if matches!(branch.literals.get(id.0 as usize),Some(Literal::Integer(7)))))));
     Ok(())
 }

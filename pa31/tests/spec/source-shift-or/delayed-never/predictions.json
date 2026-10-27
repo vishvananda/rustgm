@@ -1,0 +1,60 @@
+{
+  "state": "NEW hypotheses frozen before observation; no candidate delayed-Never execution claim",
+  "kind": "metadata only; no infinite-loop runtime invocation",
+  "editions": [
+    2021,
+    2024
+  ],
+  "cases": [
+    {
+      "file": "block.rs",
+      "status": 0,
+      "error_codes": [],
+      "warning_codes": [
+        "unused_features"
+      ]
+    },
+    {
+      "file": "binding.rs",
+      "status": 0,
+      "error_codes": [],
+      "warning_codes": [
+        "unused_features"
+      ]
+    },
+    {
+      "file": "branch.rs",
+      "status": 0,
+      "error_codes": [],
+      "warning_codes": [
+        "unused_features"
+      ]
+    },
+    {
+      "file": "without-feature.rs",
+      "status": 1,
+      "error_codes": [
+        "E0658"
+      ],
+      "warning_codes": [
+        "unused_features"
+      ]
+    },
+    {
+      "file": "known-return.rs",
+      "status": 0,
+      "error_codes": [],
+      "warning_codes": [
+        "unused_features"
+      ]
+    }
+  ],
+  "sources": {
+    "binding.rs": "7e1da45e2c42edf2c729c16e600950ce91660f99d69e4491ef95ed9a03b51396",
+    "block.rs": "cd4e77e89153be634200cc909391975ae90fd635509003130831e1b277fc85cb",
+    "branch.rs": "714997f5f383d2322c45bdbd08c74f8de3bbcb1811c5fb37ad0aeae303230e3b",
+    "known-return.rs": "1a95907bb4f65e4f94e868af68ff58305efa8a0bf913da464ad82848f905458d",
+    "without-feature.rs": "49ea9ced0d08efce6749f230bf5a4c332d5978670a112fee713929dfbcd6fbe4"
+  },
+  "candidate_scope": "never_type request currently explicit unsupported frontier; known-return ! requires no such feature. No fabricated alias/feature/library claim."
+}
