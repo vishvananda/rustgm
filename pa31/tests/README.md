@@ -312,3 +312,26 @@ commands use `--emit-lowir --edition=2024 --source-core minicore@try_protocol
 --crate-name minicore --crate-disambiguator try_protocol`; no library/publication
 profile is requested. Actual combined CLI and locked-backend native executions
 remain pending, with the imported protocol and artifact fences retained.
+
+The persistent-accounting successor is qualified at `30ffca330` on the normally
+merged current root source. The shared observed Folder now prepays canonical
+Store nodes, child/lifetime lists, mixed arguments and trait applications before
+growth, including normalization resume and binder completion. Consequence
+lookups use existing canonical identities without insertion. Ordinary public
+interner signatures and canonicalize/probe/validate ordering remain unchanged;
+no Store, Bound or Normalizer fields were added.
+
+The exact six-control gate `1793066606130575832` passed in 171.74s with both
+production and private strict Clippy, metadata, format, global architecture and
+build. Failed Store-growth attempts preserve all prior identities and charge
+cumulative retries; warm hits, shared inputs and real binder reconstruction pass.
+The transient Mutable Folder measures 24 bytes; no predecessor measurement was
+retained, so only its additional borrowed payer reference is reported as a source
+delta. Normalizer remains 368 bytes. The shared 32-level control now pays
+work2064/bytes30336, covering persistent Store growth omitted from the earlier
+1127/10944 accounting. The dedicated Store reconstruction control pays1984 bytes.
+Every reported Try capacity, plan payload, enclosing size and inference-step
+observation above remains unchanged. The first same-source attempt retained
+successful static checks but timed out during build; the following unchanged
+warm run is the actual passing bounded gate. Native execution and source
+observations were not repeated for this accounting correction.
