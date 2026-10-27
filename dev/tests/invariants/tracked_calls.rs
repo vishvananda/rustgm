@@ -131,7 +131,7 @@ fn caller_metadata_cannot_replace_targets_or_forge_snapshot_identity() -> TestRe
     assert_eq!(size_of::<body::ir::Value>(), 24);
     assert_eq!(size_of::<body::ir::ResolvedCallables>(), 56);
     assert_eq!(size_of::<super::super::Header>(), 72);
-    assert_eq!(size_of::<crate::const_eval::code::PreparedOperand>(), 28);
+    assert_eq!(size_of::<crate::const_eval::code::PreparedOperand>(), 32);
     assert_eq!(size_of::<Code>(), 304);
     Ok(())
 }
