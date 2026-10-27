@@ -1,4 +1,5 @@
 //! One cold transaction owns each demanded list until all actual members resolve.
+mod literal_grants;
 mod paired_impls;
 mod prior_copy;
 mod receipt;

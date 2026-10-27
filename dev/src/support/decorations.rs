@@ -27,6 +27,7 @@ pub(crate) enum Consumer {
     IntrinsicConstPolicy,
     IntrinsicNoUnwind,
     ConstPanicPolicy,
+    Coverage,
 }
 impl Consumer {
     pub(crate) fn tool_member(tool: &str, name: &str) -> Option<Self> {
@@ -68,7 +69,8 @@ impl Consumer {
             | "rustc_default_body_unstable"
             | "rustc_allow_const_fn_unstable" => Self::Stability,
             "rustc_const_stable_indirect" | "rustc_do_not_const_check" => Self::ConstPanicPolicy,
-            "repr" | "derive" => Self::Representation,
+            "repr" | "derive" | "derive_const" => Self::Representation,
+            "coverage" => Self::Coverage,
             "no_mangle" | "export_name" | "link_name" => Self::Linkage,
             "target_feature" => Self::TargetFeature,
             "allow" | "warn" | "deny" | "forbid" => Self::SafetyLint,

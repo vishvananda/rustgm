@@ -39,6 +39,7 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
             let (key, supported) = declaration(unit, owner_key);
             crate::sema::header_attributes::observe_owner(report, facts, owner_key, key)?;
             crate::sema::specialization::observe_owner(report, facts, owner_key, key)?;
+            let mut covered = false;
             for effect in owner.attributes.clone() {
                 let Some((attribute, forest)) = unit.retained_attributes(effect..effect + 1).next()
                 else {
@@ -51,6 +52,25 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                 let name = attribute.name(forest, unit.source.text());
                 if name.and_then(Consumer::named) == Some(Consumer::MarkerTrait) {
                     crate::sema::marker_traits::consume(
+                        report,
+                        facts,
+                        key,
+                        attribute,
+                        forest,
+                        &mut allowances,
+                    )?;
+                    continue;
+                }
+                if name.and_then(Consumer::named) == Some(Consumer::Coverage) {
+                    if covered {
+                        return Err(Error::at(
+                            file,
+                            attribute.span.start,
+                            "duplicate coverage attribute",
+                        ));
+                    }
+                    covered = true;
+                    crate::sema::coverage_annotations::consume(
                         report,
                         facts,
                         key,

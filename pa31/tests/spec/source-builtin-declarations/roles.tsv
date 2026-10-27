@@ -35,7 +35,7 @@ role_33	cfg_accessible	Attribute	0
 role_34	cfg_eval	Attribute	0
 role_35	define_opaque	Attribute	0
 role_36 derive Attribute 1
-role_37	derive_const	Attribute	0
+role_37	derive_const	Attribute	1
 role_38	eii	Attribute	0
 role_39	eii_declaration	Attribute	0
 role_40	eii_shared_macro	Attribute	0
@@ -48,12 +48,12 @@ role_46 Clone Derive 1
 role_47 Copy Derive 1
 role_48	ConstParamTy	Derive	0
 role_49	Debug	Derive	1
-role_50	Default	Derive	0
-role_51	Eq	Derive	0
-role_52	Hash	Derive	0
-role_53	Ord	Derive	0
-role_54	PartialEq	Derive	0
-role_55	PartialOrd	Derive	0
+role_50	Default	Derive	1
+role_51	Eq	Derive	1
+role_52	Hash	Derive	1
+role_53	Ord	Derive	1
+role_54	PartialEq	Derive	1
+role_55	PartialOrd	Derive	1
 role_56	CoercePointee	Derive	0
 role_57	From	Derive	0
 role_58	quote	Bang	0

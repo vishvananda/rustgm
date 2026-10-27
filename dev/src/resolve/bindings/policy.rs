@@ -43,6 +43,7 @@ pub(in crate::resolve) enum Feature {
     MarkerTraitAttr = 26,
     TryBlocks = 27,
     ConstClosures = 28,
+    CoverageAttribute = 30,
 }
 
 /// Recognizing a gate request is not evidence that its active constructs work.
@@ -83,6 +84,7 @@ impl Request {
             "marker_trait_attr" => Self::Capability(Feature::MarkerTraitAttr),
             "try_blocks" => Self::Capability(Feature::TryBlocks),
             "const_closures" => Self::Capability(Feature::ConstClosures),
+            "coverage_attribute" => Self::Capability(Feature::CoverageAttribute),
             "pattern_type_macro" => Self::Library(Feature::PatternTypeMacro),
             "pattern_types" => Self::Capability(Feature::PatternTypes),
             // Requests do not authorize the unsupported live const-drop operation.

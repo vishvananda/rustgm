@@ -1,6 +1,6 @@
 {
   "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
-  "state": "source-only original-form freeze; independent composite protocol plan pending",
+  "state": "original-form freeze; 52 separately scoped Rust observations completed; candidate semantic/runtime consumer pending",
   "files": [
     {
       "file": "alignment.rs",
@@ -89,5 +89,17 @@
     "DiscriminantKind/discriminant_value prerequisite remains C-coordinated",
     "no artifacts/transport/Provided/native panic completion inferred"
   ],
-  "independent_execution": "unrun; freeze complete authored no_core protocol, options, predictions and source hashes before launch"
+  "independent_execution": {
+    "plan_sha256": "30c6aabc8cd5dd97b15d48f9d74044dcb4e0ed28e649c0eb508c4a087c5993a8",
+    "receipt_sha256": "faf4a5cf82a116b366f382b138b51b079cde83b97fa3793b4921a330ed2772d1",
+    "tool_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "observations": 52,
+    "scope": "12 original AST expansions; 20 std-backed non-lang original metadata/object; 20 separate authored reducer metadata/object; no native/no no_core proof",
+    "mismatches": "Alignment4 diagnostic-item collision with std; nonconst Clone4 E0277 rather than predicted E0015; all retained"
+  },
+  "source_macros": {
+    "file": "source-macros.rs",
+    "sha256": "0539dce694d4aed62c665856b8ff67b24793081eec4dc8d44e855367fac5ec9e",
+    "scope": "exact pinned declaration intervals composed at authored root; no implementation substitution"
+  }
 }

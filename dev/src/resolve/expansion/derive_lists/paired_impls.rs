@@ -27,6 +27,20 @@ impl<S: Sources> Engine<'_, S> {
         let children = entry.children.clone();
         let parent = self.invocations[entry.invocation].context;
         let (file, effect) = (entry.owner.file, entry.effect);
+        self.loader
+            .package
+            .source_core()
+            .ok_or_else(|| {
+                self.calls[index].diagnostic("derive selection lost its source provider")
+            })?
+            .macros
+            .charge(
+                MEMBERS.len(),
+                size_of::<Selected>()
+                    + 2 * size_of::<[(SyntaxContextId, ExpansionId); MEMBERS.len()]>()
+                    + size_of::<[Option<derive_output::MemberContext>; MEMBERS.len()]>(),
+            )
+            .map_err(|message| self.calls[index].diagnostic(message))?;
         let selected = self.derive_selection(children)?;
         let start = self.invocations.len();
         let contexts = self.derive_contexts(index, selected, parent)?;
