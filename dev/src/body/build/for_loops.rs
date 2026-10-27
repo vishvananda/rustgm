@@ -54,7 +54,7 @@ impl Builder<'_> {
         };
         let plan = self.for_plan(node)?;
         let source = self.value(iterator)?;
-        let iterator = self.iteration_call(node, plan.into_iter, source)?;
+        let iterator = self.implicit_call(node, plan.into_iter, source)?;
         let local = self.local(node, plan.iterator, LocalKind::Binding, None, true)?;
         let extent = self.boundary(node, scopes::Kind::Block)?;
         self.body.locals[local.0 as usize].scope = extent;
@@ -119,7 +119,7 @@ impl Builder<'_> {
                 kind: BorrowKind::Immediate,
             },
         )?;
-        let next = self.iteration_call(node, plan.next, borrow)?;
+        let next = self.implicit_call(node, plan.next, borrow)?;
         let option = self.local(node, plan.option, LocalKind::Binding, None, false)?;
         self.body.locals[option.0 as usize].scope = self.boundary(node, scopes::Kind::Iteration)?;
         self.store(node, Place::Local(option), next)?;
@@ -172,7 +172,7 @@ impl Builder<'_> {
         self.bind_pattern(pattern, Some(place))?;
         Ok(())
     }
-    fn iteration_call(
+    pub(super) fn implicit_call(
         &mut self,
         node: NodeId,
         call: Call,

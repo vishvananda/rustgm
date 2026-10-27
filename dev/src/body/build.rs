@@ -23,6 +23,7 @@ mod operators;
 mod pattern_tests;
 mod patterns;
 mod references;
+mod residual_edges;
 mod retries;
 mod storage;
 pub mod templates;
@@ -249,6 +250,10 @@ struct Reach {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    TryFinish {
+        node: NodeId,
+        body: NodeId,
+    },
     ForInitialize {
         node: NodeId,
         base: usize,
@@ -1036,6 +1041,7 @@ impl<'a> Builder<'a> {
             Work::ForInitialize { node, base } => self.initialize_for(node, base)?,
             Work::ForRepeat { node, header, base } => self.repeat_for(node, header, base)?,
             Work::ForFinish { node, exit, base } => self.finish_for(node, exit, base)?,
+            Work::TryFinish { node, body } => self.finish_try_block(node, body)?,
             Work::Repeat {
                 node,
                 target,
@@ -1149,6 +1155,7 @@ impl<'a> Builder<'a> {
             return Ok(());
         }
         match self.kind(node) {
+            Kind::TryBlock { body, .. } => self.enter_try_block(node, body)?,
             Kind::Match { value, .. } => {
                 self.scratch.work.push(Work::MatchStart(node));
                 self.scratch.work.push(Work::Place(value));
@@ -1623,6 +1630,10 @@ impl<'a> Builder<'a> {
                 }
                 self.unit(node)?
             }
+            Kind::Unary {
+                op: crate::syntax::ast::Unary::Try,
+                operand,
+            } => self.question_mark(node, operand)?,
             Kind::Unary { operand, .. } => self.unary_value(node, operand)?,
             Kind::Binary { left, right, .. } => self.binary(node, left, right)?,
             Kind::Cast { value, .. } => {

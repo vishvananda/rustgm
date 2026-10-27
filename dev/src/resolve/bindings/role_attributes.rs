@@ -203,6 +203,17 @@ pub(super) fn primary(
         syntax::{ast::Kind, item::ItemKind},
     };
     let unit = package.unit(key.file);
+    if matches!(unit.configured.ast.node(key.node).kind, Kind::Variant(_)) {
+        return kind == DefKind::Variant
+            && claims.is_some_and(|claims| {
+                claims.iter().any(|claim| {
+                    matches!(
+                        claim,
+                        Claim::Language(LangItem::ControlFlowContinue | LangItem::ControlFlowBreak)
+                    )
+                })
+            });
+    }
     let Kind::Item(index) = unit.configured.ast.node(key.node).kind else {
         return false;
     };

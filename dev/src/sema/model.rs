@@ -92,6 +92,9 @@ pub enum Operation {
         left: TypeId,
         right: TypeId,
     },
+    Try {
+        plan: super::bodies::TryPlanId,
+    },
     Call {
         signature: TypeId,
         source_use: Option<SourceCallUse>,

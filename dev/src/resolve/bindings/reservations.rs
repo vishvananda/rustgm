@@ -265,6 +265,7 @@ fn reserve(
             }
             super::panic_claims::validate(package, declaration, kind)?;
             super::pointee_claims::validate(package, declaration, kind)?;
+            super::try_claims::validate(package, declaration, kind)?;
             if reserved.languages[kind.index()]
                 .replace(declaration)
                 .is_some()

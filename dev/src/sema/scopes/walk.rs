@@ -118,7 +118,8 @@ impl Walker<'_> {
     }
     fn operands(&mut self, node: NodeId, kind: Syntax, context: Context) -> Result<(), Error> {
         match kind {
-            Syntax::Group(value)
+            Syntax::TryBlock { body: value, .. }
+            | Syntax::Group(value)
             | Syntax::Attributed { value, .. }
             | Syntax::Statement(value)
             | Syntax::Label { value, .. }

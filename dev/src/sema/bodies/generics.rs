@@ -24,6 +24,29 @@ impl Checker<'_> {
             .ok_or_else(|| self.error(node, "generic function arguments were not elaborated"))?
             .arguments
             .clone();
+        self.instantiate_function(node, owner, ty, Some(&supplied))
+    }
+    pub(super) fn implicit_source_function(
+        &mut self,
+        node: NodeId,
+        owner: DefId,
+    ) -> Result<TermId, Error> {
+        let ty = self
+            .facts
+            .definitions
+            .get(owner.0 as usize)
+            .copied()
+            .flatten()
+            .ok_or_else(|| self.error(node, "source protocol lost its actual function item"))?;
+        self.instantiate_function(node, owner, ty, None)
+    }
+    fn instantiate_function(
+        &mut self,
+        node: NodeId,
+        owner: DefId,
+        ty: TypeId,
+        supplied: Option<&[SourceArgument]>,
+    ) -> Result<TermId, Error> {
         let ty = self.function_item(node, owner, ty)?;
         let Some(Type::FunctionItem {
             item,
@@ -52,7 +75,10 @@ impl Checker<'_> {
                 .parameter(id)
                 .ok_or_else(|| self.error(node, "missing callable parameter"))?;
             let supplied = if parameter.owner == item {
-                let argument = supplied.get(own).copied().unwrap_or(SourceArgument::Infer);
+                let argument = supplied
+                    .and_then(|args| args.get(own))
+                    .copied()
+                    .unwrap_or(SourceArgument::Infer);
                 own += 1;
                 argument
             } else {
@@ -62,8 +88,10 @@ impl Checker<'_> {
             arguments.push(argument);
             bindings.push((id, argument));
         }
-        self.bind_method_owner(node, &arguments, &bindings)?;
-        self.bind_trait_arguments(node, &arguments, &bindings)?;
+        if supplied.is_some() {
+            self.bind_method_owner(node, &arguments, &bindings)?;
+            self.bind_trait_arguments(node, &arguments, &bindings)?;
+        }
         let projected_signature = self.facts.types.contains_projections(signature) == Some(true);
         let mut substitution = infer::Instantiation::pooled(
             &mut self.state.infer,

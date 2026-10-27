@@ -2,6 +2,11 @@
 use super::{Checker, Declarations, Error};
 use crate::{resolve::unit::NodeKey, support::constness::Constness, types::infer::Solved};
 use std::num::NonZeroU32;
+mod protocol_rows;
+
+/// Current-table location; it grants no call, source or const permission.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct TryPlanId(NonZeroU32);
 
 /// A current-table location, never eligibility, proof payment or a foreign effect.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -14,19 +19,27 @@ struct Descriptor {
 #[derive(Default)]
 pub(in crate::sema) struct CallContexts {
     rows: Vec<Descriptor>,
+    plans: Vec<crate::sema::try_plans::Plan>,
 }
 const MAX_ROWS: usize = 1_000_000;
 const MAX_RETAINED: usize = 16 * 1024 * 1024;
 const MAX_TRANSIENT: usize = 32 * 1024 * 1024;
 impl CallContexts {
-    fn bytes(capacity: usize) -> Result<usize, &'static str> {
+    fn bytes(&self, capacity: usize) -> Result<usize, &'static str> {
         capacity
             .checked_mul(size_of::<Descriptor>())
+            .and_then(|bytes| {
+                bytes.checked_add(
+                    self.plans
+                        .capacity()
+                        .checked_mul(size_of::<crate::sema::try_plans::Plan>())?,
+                )
+            })
             .and_then(|bytes| bytes.checked_add(size_of::<Self>() + size_of::<Option<Box<Self>>>()))
             .ok_or("source call context storage overflow")
     }
     fn reserve(&mut self, steps: &mut usize, limit: usize) -> Result<SourceCallUse, &'static str> {
-        if Self::bytes(self.rows.capacity())? > limit.min(MAX_RETAINED) {
+        if self.bytes(self.rows.capacity())? > limit.min(MAX_RETAINED) {
             return Err("source call context storage budget exceeded");
         }
         if self.rows.len() >= MAX_ROWS {
@@ -42,7 +55,7 @@ impl CallContexts {
             return Ok(row);
         }
         let capacity = self.rows.len().saturating_mul(2).clamp(4, MAX_ROWS);
-        let retained = Self::bytes(capacity)?;
+        let retained = self.bytes(capacity)?;
         let transient = retained
             .checked_add(self.rows.capacity().saturating_mul(size_of::<Descriptor>()))
             .and_then(|bytes| bytes.checked_add(size_of::<Vec<Descriptor>>()))
@@ -55,8 +68,9 @@ impl CallContexts {
         staged
             .try_reserve_exact(capacity)
             .map_err(|_| "source call context allocation failed")?;
-        if Self::bytes(staged.capacity())? > limit.min(MAX_RETAINED)
-            || Self::bytes(staged.capacity())?
+        if self.bytes(staged.capacity())? > limit.min(MAX_RETAINED)
+            || self
+                .bytes(staged.capacity())?
                 .saturating_add(self.rows.capacity().saturating_mul(size_of::<Descriptor>()))
                 .saturating_add(size_of::<Vec<Descriptor>>())
                 > MAX_TRANSIENT
@@ -156,6 +170,21 @@ impl Checker<'_> {
                 continue;
             }
             any = true;
+            if self.is_try_call(node) {
+                if let Some(source) = self.replayed_try_context(key, operation, effect)? {
+                    if existing.is_some_and(|old| old != source) {
+                        return Err(Declarations::error(
+                            self.report,
+                            key,
+                            "Try calls have different body contexts",
+                        ));
+                    }
+                    existing = Some(source);
+                } else {
+                    unpublished = true;
+                }
+                continue;
+            }
             let signature = solved.types.get(term.0 as usize).ok_or_else(|| {
                 Declarations::error(self.report, key, "invalid completed call signature")
             })?;
@@ -272,9 +301,11 @@ impl Checker<'_> {
                 catalog.call_contexts = Some(Box::new(contexts));
             }
         }
+        self.publish_try_plans(solved, source_use)?;
         for (node, term) in &self.state.calls {
             if matches!(self.kind(*node), crate::syntax::ast::Kind::For { .. })
                 || self.erased_source_not(*node)?
+                || self.is_try_call(*node)
             {
                 continue;
             }
