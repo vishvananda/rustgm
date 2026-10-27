@@ -1,7 +1,7 @@
 //! The actual fresh named executable exposes imported results to a real C observer.
 use super::*;
 
-const CALLER: &str = r##"#![feature(no_core)]
+const CALLER: &str = r#"#![feature(no_core)]
 #![no_core]
 unsafe extern "C" { fn observe(value:u8); }
 #[unsafe(no_mangle)]
@@ -11,7 +11,7 @@ pub extern "C" fn provided_observed()->u8 {
     *borrowed
 }
 fn main(){unsafe{observe(provided_observed());}}
-"##;
+"#;
 const OBSERVER: &str = "#include <stdint.h>\n#include <stdio.h>\nvoid observe(uint8_t value){printf(\"%u\\n\",(unsigned)value);}\n";
 const INDEPENDENT: &str = "#include <stdint.h>\nextern uint8_t provided_observed(void);\nextern void observe(uint8_t);\nint main(void){observe(provided_observed());return 0;}\n";
 
