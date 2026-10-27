@@ -57,6 +57,7 @@ pub mod type_view;
 pub mod unreduced;
 pub(crate) mod vtable_plans;
 
+pub(crate) mod target_features;
 pub mod text;
 
 #[path = "annotated_headers.rs"]

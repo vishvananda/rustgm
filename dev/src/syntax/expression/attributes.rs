@@ -110,6 +110,10 @@ impl Parser<'_, '_> {
                         context.parsed_path(splice.destination)?;
                         continue;
                     }
+                    if splice.append_attribute_string(self.cursor.source, &mut builder)? {
+                        self.required()?;
+                        continue;
+                    }
                     if splice.append_attribute_path(self.cursor.source, &mut builder)? {
                         self.required()?;
                         context.parsed_path(splice.destination)?;

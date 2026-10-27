@@ -64,7 +64,7 @@ impl Stage {
             if function.definition != definition {
                 return Err("source function header index names another declaration");
             }
-            if facts.target_feature_functions.contains(&definition)
+            if facts.target_feature_functions.contains_key(&definition)
                 || facts
                     .foreign
                     .as_deref()

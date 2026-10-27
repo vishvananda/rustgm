@@ -189,7 +189,7 @@ struct Checker<'a> {
     annotation_inputs: annotations::Inputs,
     call_paths: crate::support::hash::HashSet<NodeKey>,
     linkage_sources: crate::support::hash::HashMap<NodeKey, foreign::Attributes>,
-    target_feature_sources: crate::support::hash::HashSet<NodeKey>,
+    target_feature_sources: super::target_features::Sources,
     method_queries:
         crate::support::hash::HashMap<NodeKey, Box<super::methods::selection::PathQuery>>,
     inherent_headers: inherent_headers::Pending,
@@ -319,8 +319,8 @@ impl<'a> Checker<'a> {
     fn from_facts(report: &'a Report, mut facts: Declarations) -> Result<Self, Error> {
         let linkage_sources = foreign::collect(report, &mut facts.foreign)
             .map_err(|error| facts.retain_error_warnings(error))?;
-        let target_feature_sources = call_traits::target_feature_sources(report)
-            .map_err(|error| facts.retain_error_warnings(error))?;
+        let target_feature_sources = super::target_features::collect(report, &mut facts)
+            .map_err(|error| facts.retain_error_warnings(report.diagnostic(error)))?;
         Ok(Self {
             selected: None,
             trait_aliases: aliases::collect(report)?,
@@ -1293,6 +1293,9 @@ impl Checker<'_> {
             ));
         }
         let (unsafe_, convention) = self.foreign_signature(key, owner, item)?;
+        let unsafe_ = unsafe_
+            || self.target_feature_sources.contains_key(&key)
+            || owner.is_some_and(|id| self.facts.target_feature_functions.contains_key(&id));
         let (parameters, variadic) = fixed_parameters(self.report, key, parameters);
         if variadic
             && owner.is_none_or(|id| !self.report.resolution.foreign_owners.contains_key(&id))
@@ -1595,7 +1598,7 @@ impl Checker<'_> {
                         self.facts.constant_functions.insert(id);
                     }
                     self.register_foreign_function(id, key, ty, flags.safety)?;
-                    self.register_function_call_traits(key, id);
+                    self.register_function_call_traits(key, id)?;
                     self.facts
                         .function_indices
                         .insert(id, self.facts.functions.len());

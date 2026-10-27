@@ -69,7 +69,7 @@ pub(crate) fn export_with_originals(
             DefKind::Function => {
                 lifetime_profile(facts, definition)?;
                 if needs_original(facts, definition) {
-                    if facts.target_feature_functions.contains(&definition) {
+                    if facts.target_feature_functions.contains_key(&definition) {
                         return Err(error(
                             "target-feature exports are outside the generic metadata profile",
                         ));
@@ -275,7 +275,7 @@ struct Callable {
     linkage: Kind,
 }
 fn callable(report: &Report, facts: &Declarations, definition: DefId) -> Result<Callable, Error> {
-    if facts.target_feature_functions.contains(&definition) {
+    if facts.target_feature_functions.contains_key(&definition) {
         return Err(error(
             "target-feature exports are outside the scalar metadata profile",
         ));

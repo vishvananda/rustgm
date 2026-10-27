@@ -368,7 +368,7 @@ pub struct Declarations {
     pub(crate) array_lengths: crate::support::hash::HashMap<NodeKey, u64>,
     /// Const permission belongs to a selected declaration, not its callable type.
     pub(crate) constant_functions: crate::support::hash::HashSet<DefId>,
-    pub(super) target_feature_functions: crate::support::hash::HashSet<DefId>,
+    pub(super) target_feature_functions: super::target_features::Functions,
     pub closures: super::closures::Bodies,
     pub opaques: super::opaque::Opaques,
     pub body_work: BodyWork,
@@ -654,7 +654,7 @@ impl Declarations {
             safety_policies: policies,
             mutable_statics: None,
             constant_functions: crate::support::hash::HashSet::default(),
-            target_feature_functions: crate::support::hash::HashSet::default(),
+            target_feature_functions: super::target_features::Functions::default(),
             closures: super::closures::Bodies::default(),
             opaques: super::opaque::Opaques::default(),
             body_work: BodyWork::default(),

@@ -190,12 +190,13 @@ fn reference_frontier(
 
 impl Checker<'_> {
     fn call_parameter(&mut self, call: NodeId, parameter: u32) -> Result<TermId, Error> {
-        let signature = *self
+        let signature = self
             .state
             .call_types
             .active
             .get(&call)
-            .ok_or_else(|| self.error(call, "missing argument call signature"))?;
+            .ok_or_else(|| self.error(call, "missing argument call signature"))?
+            .signature;
         let Some(Constructor::Function { parameters, .. }) = self.head(call, signature)? else {
             return Err(self.error(call, "call argument requires a function signature"));
         };

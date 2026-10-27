@@ -40,6 +40,7 @@ impl Checker<'_> {
         for index in 0..self.facts.functions.len() {
             let function = self.facts.functions[index];
             self.validate_trait_method(&function)?;
+            crate::sema::target_features::validate_method(&self.facts, function.definition)?;
             self.validate_method_receiver(&function)?;
             let environment = self
                 .facts

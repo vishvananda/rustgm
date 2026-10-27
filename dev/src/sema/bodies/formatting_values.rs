@@ -241,7 +241,8 @@ impl Checker<'_> {
         let result = self.child(node, signature, 1)?;
         self.equate(node, result, pending.subject)?;
         self.retain_language_method(node, method, callable, pending.subject);
-        self.state.call_types.active.insert(node, signature);
+        let target_function = self.selected_target_function(node, callable)?;
+        self.retain_active_call(node, signature, target_function)?;
         self.call(node, node, crate::syntax::ast::List { start: 0, end: 0 })
     }
 }
