@@ -20,6 +20,7 @@ pub(super) struct Dependencies {
     steps: usize,
 }
 mod ptr_values;
+mod tag_dependencies;
 enum Work {
     Value(TypeId, Constant),
     Location(LocationId),
@@ -68,6 +69,10 @@ fn source_call(
     };
     match catalog.intrinsic_kind(crate::resolve::model::DefId(item.0))? {
         Some(SourceIntrinsic::ConstEvalSelect) => Ok(Some(SourceIntrinsic::ConstEvalSelect)),
+        Some(SourceIntrinsic::DiscriminantValue) => {
+            tag_dependencies::require(report, facts, body, value, ty)
+                .map(|()| Some(SourceIntrinsic::DiscriminantValue))
+        }
         Some(SourceIntrinsic::PtrMetadata) => ptr_values::require(report, facts, body, value, ty)
             .map(|()| Some(SourceIntrinsic::PtrMetadata)),
         Some(SourceIntrinsic::UbChecks) => {
@@ -170,7 +175,8 @@ impl Discovered {
                 | SourceIntrinsic::Abort
                 | SourceIntrinsic::Transmute
                 | SourceIntrinsic::CallerLocation
-                | SourceIntrinsic::PtrMetadata,
+                | SourceIntrinsic::PtrMetadata
+                | SourceIntrinsic::DiscriminantValue,
             ) => {
                 // Only this authenticated direct Call omits callable-body demand.
                 // Lowering still proves and consumes its reached operation.

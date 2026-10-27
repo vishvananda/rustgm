@@ -1,0 +1,797 @@
+{
+  "state": "authoritative observed outcomes; frozen predictions and all raw disagreements retained separately",
+  "warning_notes": "reference-fault is denied by deref_nullptr, not the original E0080 hypothesis; full-bound standalone setup is Rust-positive after actual dynamic receiver and const-stability prerequisites",
+  "runs": [
+    {
+      "evidence": "obj/parallel/pa31/source-discriminants-v1/observed-v1",
+      "binding_sha256": "4b9fb038fba0cfd919dc057700b199a8a54b292cad4e499a611f8ee58a54d42d",
+      "results_sha256": "b50a14748c08c9a8eddcb5749f93c91f648db5365fdc4b8ec162d4eb2f9b1094",
+      "observed": [
+        {
+          "case": "signed-ordering-2021",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b2e5c50530337c18291ad6c3487d311997c0817786373c4e7cfdb6935fcbd97f",
+          "matched_prediction": false
+        },
+        {
+          "case": "signed-ordering-2024",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b2e5c50530337c18291ad6c3487d311997c0817786373c4e7cfdb6935fcbd97f",
+          "matched_prediction": false
+        },
+        {
+          "case": "declared-repr-2021",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d42668a6d90f63af8d78847d88c1ce1053f485aff3a65eb96ec911e9516b2f92",
+          "matched_prediction": false
+        },
+        {
+          "case": "declared-repr-2024",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d42668a6d90f63af8d78847d88c1ce1053f485aff3a65eb96ec911e9516b2f92",
+          "matched_prediction": false
+        },
+        {
+          "case": "niche-identity-2021",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "59f73e3025775b08f72056cf200c393397d8a9d659e09f34fe0b0366482fe041",
+          "matched_prediction": false
+        },
+        {
+          "case": "niche-identity-2024",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "59f73e3025775b08f72056cf200c393397d8a9d659e09f34fe0b0366482fe041",
+          "matched_prediction": false
+        },
+        {
+          "case": "nonenum-zero-2021",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "fb5c64c19b001d140ee1a3eb26d81ab990be3d04f1616986bd7392fd105d0ef0",
+          "matched_prediction": false
+        },
+        {
+          "case": "nonenum-zero-2024",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "fb5c64c19b001d140ee1a3eb26d81ab990be3d04f1616986bd7392fd105d0ef0",
+          "matched_prediction": false
+        },
+        {
+          "case": "generic-result-2021",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "case": "generic-result-2024",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "case": "unknown-result-2021",
+          "phase": "metadata",
+          "status": 1,
+          "errors": [
+            "E0308"
+          ],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "265ebbfd54265d9ed3ed0758b8c5139d541ff167a932da51fce455a386edf8e9",
+          "matched_prediction": true
+        },
+        {
+          "case": "unknown-result-2024",
+          "phase": "metadata",
+          "status": 1,
+          "errors": [
+            "E0308"
+          ],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "265ebbfd54265d9ed3ed0758b8c5139d541ff167a932da51fce455a386edf8e9",
+          "matched_prediction": true
+        },
+        {
+          "case": "explicit-implementation-2021",
+          "phase": "metadata",
+          "status": 1,
+          "errors": [
+            "E0322"
+          ],
+          "warnings": [
+            "unused_imports"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "0224f03ff55c1b15747978fbd07e9adbacf435c60cddc788c9020b8c12357726",
+          "matched_prediction": false
+        },
+        {
+          "case": "explicit-implementation-2024",
+          "phase": "metadata",
+          "status": 1,
+          "errors": [
+            "E0322"
+          ],
+          "warnings": [
+            "unused_imports"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "0224f03ff55c1b15747978fbd07e9adbacf435c60cddc788c9020b8c12357726",
+          "matched_prediction": false
+        },
+        {
+          "case": "signed-ordering",
+          "phase": "link",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "b2e5c50530337c18291ad6c3487d311997c0817786373c4e7cfdb6935fcbd97f",
+          "matched_prediction": false
+        },
+        {
+          "case": "signed-ordering",
+          "phase": "execute",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "a36bd6f51015355ef3a6b69d9bee3ecae952412e9406d82809662cb4361fd588",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "case": "declared-repr",
+          "phase": "link",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d42668a6d90f63af8d78847d88c1ce1053f485aff3a65eb96ec911e9516b2f92",
+          "matched_prediction": false
+        },
+        {
+          "case": "declared-repr",
+          "phase": "execute",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "13849081ac366699cfabbb7360b6853251b47c7cf564c583e479cecf20ae3bbf",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "case": "niche-identity",
+          "phase": "link",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "59f73e3025775b08f72056cf200c393397d8a9d659e09f34fe0b0366482fe041",
+          "matched_prediction": false
+        },
+        {
+          "case": "niche-identity",
+          "phase": "execute",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "a79122992d53d358e6bbbbb98883d64fa0c15df3bcb08ff7b65a0580870af424",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "case": "nonenum-zero",
+          "phase": "link",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "fb5c64c19b001d140ee1a3eb26d81ab990be3d04f1616986bd7392fd105d0ef0",
+          "matched_prediction": false
+        },
+        {
+          "case": "nonenum-zero",
+          "phase": "execute",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "a17138988e1387532b5cb0bd7a23f18a11d537123873e67154dada3c6359e53e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        }
+      ],
+      "infrastructure_failures": 0
+    },
+    {
+      "evidence": "obj/parallel/pa31/source-discriminants-v1/observed-markers-v1",
+      "binding_sha256": "afce95510dbe26117ea72b485ab518673fd50acd5b193e4a615a86fa28c8039b",
+      "results_sha256": "451d632477cec87cbd7c713d0556ef06d955fe68ea2791d2b92cb70dd1902890",
+      "observed": [
+        {
+          "case": "raw-without-negative-2021",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e5af8c449f22027d9345cc4e7e8d5b8559c6bc0c02e274f6f0f5779c6abec05e",
+          "matched_prediction": false
+        },
+        {
+          "case": "raw-without-negative-2024",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e5af8c449f22027d9345cc4e7e8d5b8559c6bc0c02e274f6f0f5779c6abec05e",
+          "matched_prediction": false
+        },
+        {
+          "case": "raw-source-negative-2021",
+          "phase": "metadata",
+          "status": 1,
+          "errors": [
+            "E0277"
+          ],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "68f062071cecae29279e16d638dcb9eefd85fc71e44080228ca4f29d66ca059c",
+          "matched_prediction": true
+        },
+        {
+          "case": "raw-source-negative-2024",
+          "phase": "metadata",
+          "status": 1,
+          "errors": [
+            "E0277"
+          ],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "68f062071cecae29279e16d638dcb9eefd85fc71e44080228ca4f29d66ca059c",
+          "matched_prediction": true
+        },
+        {
+          "case": "reference-without-impl-2021",
+          "phase": "metadata",
+          "status": 1,
+          "errors": [
+            "E0277"
+          ],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "0e27c8d349e79f70398848bd656780509134fadcf1095db1599b9a410bea7fa2",
+          "matched_prediction": true
+        },
+        {
+          "case": "reference-without-impl-2024",
+          "phase": "metadata",
+          "status": 1,
+          "errors": [
+            "E0277"
+          ],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "0e27c8d349e79f70398848bd656780509134fadcf1095db1599b9a410bea7fa2",
+          "matched_prediction": true
+        },
+        {
+          "case": "reference-source-impl-2021",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "case": "reference-source-impl-2024",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "case": "unpin-without-impl-2021",
+          "phase": "metadata",
+          "status": 1,
+          "errors": [
+            "E0277"
+          ],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "295975f20365899a85995f5d2ed46b618b3a7d10d546194ef179c7cfc417adf3",
+          "matched_prediction": true
+        },
+        {
+          "case": "unpin-without-impl-2024",
+          "phase": "metadata",
+          "status": 1,
+          "errors": [
+            "E0277"
+          ],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "295975f20365899a85995f5d2ed46b618b3a7d10d546194ef179c7cfc417adf3",
+          "matched_prediction": true
+        },
+        {
+          "case": "unpin-source-impl-2021",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "case": "unpin-source-impl-2024",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "case": "fake-lang-send-2021",
+          "phase": "metadata",
+          "status": 1,
+          "errors": [
+            "E0522"
+          ],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1349f4f8cc968ada018e6cad4de86afcefb7e59cb5374581278eea41d02f9431",
+          "matched_prediction": true
+        },
+        {
+          "case": "fake-lang-send-2024",
+          "phase": "metadata",
+          "status": 1,
+          "errors": [
+            "E0522"
+          ],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "1349f4f8cc968ada018e6cad4de86afcefb7e59cb5374581278eea41d02f9431",
+          "matched_prediction": true
+        }
+      ],
+      "infrastructure_failures": 0
+    },
+    {
+      "evidence": "obj/parallel/pa31/source-discriminants-v1/observed-setup-v1",
+      "binding_sha256": "cf2c98f2aa0d9df19dd8dbd1d8db1ef68bee1ae66bfc6ffbfc723c8bf0689799",
+      "results_sha256": "b32dfc115192dca07e00ce099d37229c194fc578c539de689f0d57abe74c84e4",
+      "observed": [
+        {
+          "case": "minimal-2021",
+          "phase": "metadata",
+          "status": 1,
+          "errors": [
+            "E0600",
+            "E0081"
+          ],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8911723a743b9e122188526549b6d0a3cba03fdda971781e30e307dd81cbbdf7",
+          "matched_prediction": false
+        },
+        {
+          "case": "minimal-2024",
+          "phase": "metadata",
+          "status": 1,
+          "errors": [
+            "E0600",
+            "E0081"
+          ],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "8911723a743b9e122188526549b6d0a3cba03fdda971781e30e307dd81cbbdf7",
+          "matched_prediction": false
+        },
+        {
+          "case": "full-bound-2021",
+          "phase": "metadata",
+          "status": 1,
+          "errors": [
+            "E0038"
+          ],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d70876ee9cbe4da205205b22d5607d4726cd8ec0d8f32f6e162389ec14b99051",
+          "matched_prediction": false
+        },
+        {
+          "case": "full-bound-2024",
+          "phase": "metadata",
+          "status": 1,
+          "errors": [
+            "E0038"
+          ],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "d70876ee9cbe4da205205b22d5607d4726cd8ec0d8f32f6e162389ec14b99051",
+          "matched_prediction": false
+        }
+      ],
+      "infrastructure_failures": 0
+    },
+    {
+      "evidence": "obj/parallel/pa31/source-discriminants-v1/observed-setup-followup-v1",
+      "binding_sha256": "7589e6abf8f770f3be8f151e08b64e07a6e562218c5f75828c8f6508619747f7",
+      "results_sha256": "159c7972a9ffa816bd2582c8ed5e05c6fc4fdb46f00b390c1736f9a7bc128b04",
+      "observed": [
+        {
+          "case": "minimal-2021",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3d1170840397adcca687bab7d52c46eeace152386af1630ab2860507310a1bf",
+          "matched_prediction": false
+        },
+        {
+          "case": "minimal-2024",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3d1170840397adcca687bab7d52c46eeace152386af1630ab2860507310a1bf",
+          "matched_prediction": false
+        },
+        {
+          "case": "full-bound-2021",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_features",
+            "unused_features",
+            "unused_features",
+            "unused_features",
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a6fb893d0b30d34765e5aa2eccb7a2f14001abf3da89d1fd87383459ae03a8e6",
+          "matched_prediction": false
+        },
+        {
+          "case": "full-bound-2024",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_features",
+            "unused_features",
+            "unused_features",
+            "unused_features",
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "a6fb893d0b30d34765e5aa2eccb7a2f14001abf3da89d1fd87383459ae03a8e6",
+          "matched_prediction": false
+        }
+      ],
+      "infrastructure_failures": 0
+    },
+    {
+      "evidence": "obj/parallel/pa31/source-discriminants-v1/observed-consumers-v1",
+      "binding_sha256": "e73765204c464999dc44abe68706d4a68a69658dfd1a0e53f5354a2b3478a90a",
+      "results_sha256": "0d10138a265ef599df599ef103e8fda3ba638907b2e2e3282378f1d1cfe5f7b2",
+      "observed": [
+        {
+          "case": "actual-calls-2021",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_assignments",
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "85742a9089213f6b6f766bab3679a3616d2deae7151a32944a949ed46edc1433",
+          "matched_prediction": false
+        },
+        {
+          "case": "actual-calls-2024",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_assignments",
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "85742a9089213f6b6f766bab3679a3616d2deae7151a32944a949ed46edc1433",
+          "matched_prediction": false
+        },
+        {
+          "case": "reference-fault-2021",
+          "phase": "metadata",
+          "status": 1,
+          "errors": [
+            "deref_nullptr"
+          ],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "38cacaaa6d58210ba18457de3a10ee453fc84165dc846b77267a708836c4b2d3",
+          "matched_prediction": false
+        },
+        {
+          "case": "reference-fault-2024",
+          "phase": "metadata",
+          "status": 1,
+          "errors": [
+            "deref_nullptr"
+          ],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "38cacaaa6d58210ba18457de3a10ee453fc84165dc846b77267a708836c4b2d3",
+          "matched_prediction": false
+        }
+      ],
+      "infrastructure_failures": 0
+    },
+    {
+      "evidence": "obj/parallel/pa31/source-discriminants-v1/observed-opening-v1",
+      "binding_sha256": "cfce1c1e4451a190685ca70bf0116e2d4be8c76e8770ca615bad29de2cec1995",
+      "results_sha256": "9ccadc011f64d253c6236a1ebf21037f0ee7bc54f4cfa9ff96c20ddfbf58e292",
+      "observed": [
+        {
+          "case": "opened-scope-2021",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_assignments",
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "fd10933a6f426a004369d61c4e6401620dd22f8ff251424201501748b0274c2f",
+          "matched_prediction": false
+        },
+        {
+          "case": "opened-scope-2024",
+          "phase": "metadata",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_assignments",
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "fd10933a6f426a004369d61c4e6401620dd22f8ff251424201501748b0274c2f",
+          "matched_prediction": false
+        }
+      ]
+    },
+    {
+      "evidence": "obj/parallel/pa31/source-discriminants-v1/observed-native-v1",
+      "binding_sha256": "134593ef5f2c5eb1f6d9add226adeb7e5e2a00fec9d2d9987c4cc43a0e46def9",
+      "results_sha256": "2cc29f545ee28b7a8531a1690c2f24938208ab446bfde82c2fd84fa3422255b2",
+      "observed": [
+        {
+          "edition": "2021",
+          "phase": "object",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_assignments",
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "85742a9089213f6b6f766bab3679a3616d2deae7151a32944a949ed46edc1433",
+          "matched_prediction": true
+        },
+        {
+          "edition": "2021",
+          "phase": "link",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "edition": "2021",
+          "phase": "execute",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "8cae08b905311c831e02a8de03bc0d4352df18eeb7787a54c334720c889d7403",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "edition": "2024",
+          "phase": "object",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_assignments",
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "85742a9089213f6b6f766bab3679a3616d2deae7151a32944a949ed46edc1433",
+          "matched_prediction": true
+        },
+        {
+          "edition": "2024",
+          "phase": "link",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "edition": "2024",
+          "phase": "execute",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "8cae08b905311c831e02a8de03bc0d4352df18eeb7787a54c334720c889d7403",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        }
+      ]
+    },
+    {
+      "evidence": "obj/parallel/pa31/source-discriminants-v1/observed-combined-v1",
+      "binding_sha256": "14e40da750f78904c0d198a3c4b7728304652f5142446700ebb7fe2a7d67d66b",
+      "results_sha256": "722604764bc052f6c678282219730e0b717d112bb6ca7d8354b2baef435bc712",
+      "observed": [
+        {
+          "edition": "2021",
+          "phase": "object",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_assignments",
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e8009ac25fe47bbbf8bfca1a70afd458de557ebbe8943beb3dd830ce6cb6eddd",
+          "matched_prediction": true
+        },
+        {
+          "edition": "2021",
+          "phase": "link",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "edition": "2021",
+          "phase": "execute",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "8cae08b905311c831e02a8de03bc0d4352df18eeb7787a54c334720c889d7403",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "edition": "2024",
+          "phase": "object",
+          "status": 0,
+          "errors": [],
+          "warnings": [
+            "unused_assignments",
+            "unused_features"
+          ],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e8009ac25fe47bbbf8bfca1a70afd458de557ebbe8943beb3dd830ce6cb6eddd",
+          "matched_prediction": true
+        },
+        {
+          "edition": "2024",
+          "phase": "link",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        },
+        {
+          "edition": "2024",
+          "phase": "execute",
+          "status": 0,
+          "errors": [],
+          "warnings": [],
+          "stdout_sha256": "8cae08b905311c831e02a8de03bc0d4352df18eeb7787a54c334720c889d7403",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matched_prediction": true
+        }
+      ]
+    }
+  ]
+}

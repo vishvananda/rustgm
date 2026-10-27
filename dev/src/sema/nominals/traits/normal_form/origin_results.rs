@@ -8,28 +8,41 @@ use crate::sema::{
 pub(super) enum Continuation {
     Inherited(ProjectionRequirements),
     Metadata(super::data_result::Pending),
+    Discriminant(super::tag_result::Pending),
 }
 impl Continuation {
     pub(super) fn allocation_end(&self, first: u32) -> u32 {
         match self {
             Self::Inherited(value) => value.allocation_end(first),
             Self::Metadata(value) => value.allocation_end(first),
+            Self::Discriminant(_) => first,
         }
     }
     fn inherited(&self) -> Result<&ProjectionRequirements, &'static str> {
         match self {
             Self::Inherited(value) => Ok(value),
-            Self::Metadata(_) => Err("metadata query used inherited proof"),
+            Self::Metadata(_) | Self::Discriminant(_) => Err("metadata query used inherited proof"),
         }
     }
     fn inherited_mut(&mut self) -> Result<&mut ProjectionRequirements, &'static str> {
         match self {
             Self::Inherited(value) => Ok(value),
-            Self::Metadata(_) => Err("metadata query used inherited proof"),
+            Self::Metadata(_) | Self::Discriminant(_) => Err("metadata query used inherited proof"),
         }
     }
 }
 impl Query {
+    pub(super) fn advance_retained(
+        self,
+        facts: &mut Declarations,
+    ) -> Result<Progress, &'static str> {
+        match self.inherited.as_deref() {
+            Some(Continuation::Metadata(_)) => self.advance_metadata(facts),
+            Some(Continuation::Discriminant(_)) => self.advance_discriminant(facts),
+            Some(Continuation::Inherited(_)) => self.advance_inherited(facts),
+            None => Err("missing retained projection continuation"),
+        }
+    }
     pub(super) fn prepare_inherited(
         &mut self,
         facts: &mut Declarations,

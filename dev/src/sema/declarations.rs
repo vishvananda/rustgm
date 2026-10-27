@@ -118,7 +118,7 @@ enum Work {
     NominalContract(ItemId, bool),
     Fields(ItemId, bool),
     OpaqueHidden(crate::types::opaque::OpaqueId),
-    PointeeContracts(DefId, traits::MetadataPhase),
+    SourceResultContracts(DefId, traits::MetadataPhase),
     Constructor(DefId),
     SelfConstructor(NodeKey, DefId, regions::Context),
     PrepareConstructor(DefId),
@@ -155,8 +155,8 @@ impl Work {
             }
             Requirement::Fields(item) => Self::Fields(item, false),
             Requirement::Opaque(id) => Self::OpaqueHidden(id),
-            Requirement::PointeeContracts(id) => {
-                Self::PointeeContracts(id, traits::MetadataPhase::Begin)
+            Requirement::SourceResultContracts(id) => {
+                Self::SourceResultContracts(id, traits::MetadataPhase::Begin)
             }
         }
     }
@@ -170,8 +170,8 @@ impl Work {
             }
             super::traits::selection::Dependency::Fields(item) => Self::Fields(item, false),
             super::traits::selection::Dependency::Opaque(id) => Self::OpaqueHidden(id),
-            super::traits::selection::Dependency::PointeeContracts(id) => {
-                Self::PointeeContracts(id, traits::MetadataPhase::Begin)
+            super::traits::selection::Dependency::SourceResultContracts(id) => {
+                Self::SourceResultContracts(id, traits::MetadataPhase::Begin)
             }
         }
     }
@@ -485,6 +485,7 @@ impl Checker<'_> {
         self.complete_nominals(&mut steps, work_limit)?;
         super::compiler_items::phantom::complete(self.report, &mut self.facts)?;
         super::compiler_items::pointee::prepare(self.report, &mut self.facts)?;
+        super::compiler_items::discriminant::prepare(self.report, &mut self.facts)?;
         super::compiler_items::site_records::complete(self.report, &mut self.facts)?;
         super::traits::results::prepare_opaque_outlives(&mut self.facts)
             .map_err(|e| Error::at(FileId(0), 0, e))?;
@@ -614,7 +615,7 @@ impl Checker<'_> {
                 }
                 Work::NominalContract(item, finish) => self.nominal_contract(item, finish)?,
                 Work::Fields(item, finish) => self.nominal_fields(item, finish)?,
-                Work::PointeeContracts(id, phase) => self.pointee_member_work(id, phase)?,
+                Work::SourceResultContracts(id, phase) => self.pointee_member_work(id, phase)?,
                 Work::OpaqueHidden(id) => {
                     let declaration = self
                         .facts

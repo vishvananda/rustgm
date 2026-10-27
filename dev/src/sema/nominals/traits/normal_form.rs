@@ -3,6 +3,7 @@ mod application_anchors;
 mod data_result;
 mod opening;
 mod origin_results;
+mod tag_result;
 use super::{
     Assumptions, Availability, Declarations, Environment, Instantiation, Obligations, Predicate,
     Projected, State, selection,
@@ -169,14 +170,7 @@ impl Query {
         mut reuse: Option<&mut selection::Reuse>,
     ) -> Result<Progress, &'static str> {
         if self.inherited.is_some() {
-            return if matches!(
-                self.inherited.as_deref(),
-                Some(origin_results::Continuation::Metadata(_))
-            ) {
-                self.advance_metadata(facts)
-            } else {
-                self.advance_inherited(facts)
-            };
+            return self.advance_retained(facts);
         }
         loop {
             let selected = match self.select(facts, reuse.as_deref_mut())? {
@@ -214,6 +208,13 @@ impl Query {
                 return self.finish(facts, Some(Resolution::Opaque));
             }
             self.source.clone_from(&selected);
+            if selected.is_some()
+                && self.alias.associated().is_some_and(|a| {
+                    crate::sema::compiler_items::discriminant::is_result(facts, a.item)
+                })
+            {
+                return self.begin_discriminant(facts);
+            }
             if let Some(selection::Source::Pointee(selected)) = selected.as_ref() {
                 self.prepare_metadata(facts, selected)?;
                 return self.advance_metadata(facts);

@@ -101,6 +101,9 @@ impl Ordinary {
                         crate::support::bindings::SourceIntrinsic::Transmute => {
                             "source transmute requires its proved direct runtime operation"
                         }
+                        crate::support::bindings::SourceIntrinsic::DiscriminantValue => {
+                            "source discriminant requires its proved direct reference operation"
+                        }
                         crate::support::bindings::SourceIntrinsic::PtrMetadata => {
                             "source ptr_metadata requires its proved direct pointer operation"
                         }

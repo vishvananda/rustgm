@@ -54,7 +54,7 @@ impl Search<'_> {
                 .as_deref()
                 .and_then(|value| match value {
                     ResultContinuation::Inherited(value) => Some(value),
-                    ResultContinuation::Metadata(_) => None,
+                    ResultContinuation::Metadata(_) | ResultContinuation::Discriminant(_) => None,
                 });
             format!(
                 "specialization-rpit-search capacities={:?}",

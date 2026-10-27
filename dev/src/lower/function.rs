@@ -8,6 +8,7 @@ mod caller_location;
 mod cleanup;
 mod intrinsics;
 mod invocations;
+mod logical_values;
 mod pointers;
 mod ptr_values;
 mod references;
@@ -868,6 +869,9 @@ impl Lower<'_, '_, '_> {
                     return Ok(value);
                 }
                 if let Some(value) = self.tracked_call(id)? {
+                    return Ok(value);
+                }
+                if let Some(value) = self.source_discriminant(id)? {
                     return Ok(value);
                 }
                 if let Some(value) = self.source_ptr_metadata(id)? {

@@ -1,0 +1,25 @@
+{
+  "state": "new standalone declaration setup predictions before execution; originals/pointer/22+14 observations unchanged",
+  "editions": [
+    2021,
+    2024
+  ],
+  "metadata": [
+    {
+      "file": "minimal.rs",
+      "status": 0,
+      "error_codes": []
+    },
+    {
+      "file": "full-bound.rs",
+      "status": 0,
+      "error_codes": []
+    }
+  ],
+  "native": [],
+  "source_sha256": {
+    "minimal.rs": "5e8a460c5db09aa907bece19d4407271401ce8036173dad95f8c93c69a80f334",
+    "full-bound.rs": "74652744ff00e7a24f27f9e57f75459ff47ae03a29ce13d34072d7e8081b33ef"
+  },
+  "distinction": "minimal is a genuinely authored protocol with only Copy written; full-bound preserves all nine original bounds and real Debug/Hash methods, Formatter fields. No full integer Debug/Hash execution claim."
+}

@@ -1,11 +1,13 @@
 //! Normalization requests descend on the existing proof stack and retain their evidence.
 mod ancestor_results;
 mod metadata_results;
+mod tag_results;
+mod written_results;
 use super::{Action, Decision, Declarations, Frame, Goal, Search, Source, inference};
 use crate::sema::{projections::Definition, traits::equalities};
 use crate::types::{
     TypeId,
-    infer::{Instantiation, projections::Application},
+    infer::Instantiation,
     lifetime_proof::ScopeId,
     substitute::{Alias, Normalizer, Resolution, Step},
 };
@@ -29,6 +31,7 @@ pub(super) struct Normalization {
 enum ResultContinuation {
     Inherited(ancestor_results::Inherited),
     Metadata(metadata_results::Pending),
+    Discriminant(tag_results::Pending),
 }
 struct Opened {
     goal: Goal,
@@ -165,13 +168,12 @@ impl Search<'_> {
             return Ok(Action::Complete(decision));
         }
         if normalization.inherited.is_some() {
-            return if matches!(
-                normalization.inherited.as_deref(),
-                Some(ResultContinuation::Metadata(_))
-            ) {
-                self.advance_metadata_result(facts, frame)
-            } else {
-                self.advance_inherited_result(facts, frame)
+            return match normalization.inherited.as_deref() {
+                Some(ResultContinuation::Metadata(_)) => self.advance_metadata_result(facts, frame),
+                Some(ResultContinuation::Discriminant(_)) => {
+                    self.advance_discriminant_result(facts, frame)
+                }
+                _ => self.advance_inherited_result(facts, frame),
             };
         }
         let value = match normalization.step {
@@ -261,13 +263,14 @@ impl Search<'_> {
             .as_mut()
             .ok_or("missing parent normalization")?;
         if equality.inherited.is_some() {
-            return if matches!(
-                equality.inherited.as_deref(),
-                Some(ResultContinuation::Metadata(_))
-            ) {
-                Self::accept_metadata_result(equality, decision)
-            } else {
-                Self::accept_inherited_result(equality, decision)
+            return match equality.inherited.as_deref() {
+                Some(ResultContinuation::Metadata(_)) => {
+                    Self::accept_metadata_result(equality, decision)
+                }
+                Some(ResultContinuation::Discriminant(_)) => {
+                    Err("discriminant data requested an unplanned child proof".into())
+                }
+                _ => Self::accept_inherited_result(equality, decision),
             };
         }
         let Decision::Proven(node) = decision else {
@@ -302,6 +305,11 @@ impl Search<'_> {
         };
         let Some(completed) =
             self.stage_metadata_result(facts, &mut frame.inputs.context, equality, completed)?
+        else {
+            return Ok(());
+        };
+        let Some(completed) =
+            self.stage_discriminant_result(facts, &mut frame.inputs.context, equality, completed)?
         else {
             return Ok(());
         };
@@ -438,6 +446,9 @@ impl Search<'_> {
             }
             Source::Equality => return Err("equality evidence cannot prove a trait premise".into()),
             Source::Builtin => return Err("builtin evidence cannot prove a trait premise".into()),
+            Source::Discriminant(_) => {
+                return Err("source discriminant bypassed its checked result plan".into());
+            }
             Source::Pointee(_) => {
                 return Err("source Metadata bypassed its checked result plan".into());
             }
@@ -452,70 +463,14 @@ impl Search<'_> {
         equality: &Normalization,
         completed: Completion,
     ) -> Result<(Option<Resolution>, usize), String> {
-        let Completion {
-            opened,
-            mut node,
-            equations_start,
-        } = completed;
-
-        let Some(application) = opened.application.associated() else {
-            return Ok((Some(Resolution::Opaque), node));
+        let (resolution, completed) =
+            self.resolve_result_equality(facts, context, equality, completed)?;
+        let resolution = match resolution {
+            written_results::ResultEquality::Type(ty) => Some(Resolution::Type(ty)),
+            written_results::ResultEquality::Absent => Some(Resolution::Opaque),
+            written_results::ResultEquality::Ambiguous => None,
         };
-        let application = Application {
-            item: application.item,
-            predicate: opened.goal,
-            arguments: context
-                .known_arguments(&facts.types, opened.application.arguments())
-                .map_err(inference)?,
-        };
-        let resolution = match equalities::for_projection(
-            facts,
-            context,
-            &application,
-            self.caller.environment.map(AsRef::as_ref),
-            self.query.nodes[node]
-                .end
-                .max(equality.end)
-                .max(self.query.allocations.floor()),
-        )? {
-            equalities::Selection::Proven(evidence) => {
-                let ty = evidence.ty;
-                let mut equations = context.region_equalities.split_off(equations_start);
-                node = self
-                    .query
-                    .equality_use(node, equality.scope, evidence, &mut equations)?;
-                context.region_equalities.extend(equations);
-                Resolution::Type(ty)
-            }
-            equalities::Selection::Absent => {
-                #[cfg(test)]
-                super::copy_trace::record(|| {
-                    let source = self.query.nodes[node].source.as_ref();
-                    format!(
-                        "opaque-associated-equality-absent query={:p} scope={:?} node={node} node_scope={:?} node_goal={:?} application={:?} assumption={} result_bound={} quantified={}",
-                        &self.query,
-                        equality.scope,
-                        self.query.node_scope(node),
-                        self.query.nodes[node].goal,
-                        opened.application.associated(),
-                        matches!(source, Some(Source::Assumption(_))),
-                        matches!(source, Some(Source::ResultBound(_))),
-                        matches!(
-                            source,
-                            Some(
-                                Source::QuantifiedAssumption { .. }
-                                    | Source::QuantifiedResultBound { .. }
-                            )
-                        )
-                    )
-                });
-                Resolution::Opaque
-            }
-            equalities::Selection::Ambiguous => {
-                return Ok((None, node));
-            }
-        };
-        Ok((Some(resolution), node))
+        Ok((resolution, completed.node))
     }
 }
 

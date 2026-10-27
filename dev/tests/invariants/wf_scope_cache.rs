@@ -20,7 +20,7 @@ fn active_completed_and_binder_depth_formation_entries_remain_distinct() -> Resu
         ItemId(tests::definition(&report, "W")?.0),
         arguments,
     ))?;
-    let bound = freezing::bound(&mut facts)?;
+    let bound = freezing::bound(&mut facts, crate::types::auto_traits::AutoTrait::Freeze)?;
     let (mut context, goal) = tests::instantiate(&mut facts, Predicate { ty, bound })?;
     let assumptions = Assumptions::default();
     let mut search = Search::new(tests::caller(&assumptions, None), Availability::Validated);

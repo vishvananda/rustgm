@@ -1,4 +1,5 @@
 //! Mutable execution cells preserve symbolic addresses and freeze only value reads.
+mod active_tags;
 mod bytes;
 mod image_paths;
 mod loads;

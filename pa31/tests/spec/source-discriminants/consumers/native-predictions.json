@@ -1,0 +1,19 @@
+{
+  "state": "separate reduced no_core execution predictions frozen before independent or candidate execution",
+  "source": "pa31/tests/spec/source-discriminants/consumers/actual-calls.rs",
+  "source_sha256": "1a0c56b281c110392c0619a162fe07c3384fbd955395f419dec8acd7a1f8adba",
+  "observer": "pa31/tests/spec/source-discriminants/consumers/native-observer.c",
+  "observer_sha256": "cf64d139b98b92d51777c74d96ff3e6dcb3bfeb170c6874bbb0437f4052a3be5",
+  "editions": [
+    2021,
+    2024
+  ],
+  "stdout": "-1 300 0 1 7\n",
+  "rustc_status": 0,
+  "candidate_status": 0,
+  "expected_rustc_warnings": [
+    "unused_assignments",
+    "unused_features"
+  ],
+  "scope": "Real signed repr, payload tag, pointer niche, nonenum argument effects. Complete original written no_core protocol retained; original full-bound provider remains separately required."
+}

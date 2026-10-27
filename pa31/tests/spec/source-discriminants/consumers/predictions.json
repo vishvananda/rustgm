@@ -1,0 +1,26 @@
+{
+  "state": "exact combined source consumer hypotheses frozen before rustc/candidate execution",
+  "editions": [
+    2021,
+    2024
+  ],
+  "metadata": [
+    {
+      "file": "actual-calls.rs",
+      "status": 0,
+      "error_codes": []
+    },
+    {
+      "file": "reference-fault.rs",
+      "status": 1,
+      "error_codes": [
+        "E0080"
+      ]
+    }
+  ],
+  "native": [],
+  "source_sha256": {
+    "actual-calls.rs": "1a0c56b281c110392c0619a162fe07c3384fbd955395f419dec8acd7a1f8adba",
+    "reference-fault.rs": "82f61b60b474968833e83fdf91dd52cdbc00b4761e15d2131fe32824790158be"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "state": "candidate controls predeclared before compiler execution; source setup independently observed390/32d, standalone discriminator behavior22commands retained",
+  "positive": "actual-calls.rs CTFE HIGH1 TAG300 ZERO0 NONE0; LowIR contains actual signed/payload/niche/effects bodies; native later through combined CLI",
+  "negative": "reference-fault.rs CTFE rejects null reference even for nonenum logical0; full original-bound setup retains explicit unsupported DispatchFromDyn until actual owning prerequisite",
+  "source_sha256": {
+    "actual-calls.rs": "1a0c56b281c110392c0619a162fe07c3384fbd955395f419dec8acd7a1f8adba",
+    "reference-fault.rs": "82f61b60b474968833e83fdf91dd52cdbc00b4761e15d2131fe32824790158be"
+  }
+}

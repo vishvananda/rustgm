@@ -1,0 +1,92 @@
+{
+  "state": "new independent predictions frozen before observation; candidate implementation unstarted",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "editions": [
+    2021,
+    2024
+  ],
+  "metadata": [
+    {
+      "file": "signed-ordering.rs",
+      "status": 0,
+      "error_codes": []
+    },
+    {
+      "file": "declared-repr.rs",
+      "status": 0,
+      "error_codes": []
+    },
+    {
+      "file": "niche-identity.rs",
+      "status": 0,
+      "error_codes": []
+    },
+    {
+      "file": "nonenum-zero.rs",
+      "status": 0,
+      "error_codes": []
+    },
+    {
+      "file": "generic-result.rs",
+      "status": 0,
+      "error_codes": []
+    },
+    {
+      "file": "unknown-result.rs",
+      "status": 1,
+      "error_codes": [
+        "E0308"
+      ]
+    },
+    {
+      "file": "explicit-implementation.rs",
+      "status": 1,
+      "error_codes": [
+        "E0322"
+      ]
+    }
+  ],
+  "native": [
+    {
+      "file": "signed-ordering.rs",
+      "edition": 2024,
+      "status": 0,
+      "stdout": "-1 0 1\n"
+    },
+    {
+      "file": "declared-repr.rs",
+      "edition": 2024,
+      "status": 0,
+      "stdout": "-7 27 300\n"
+    },
+    {
+      "file": "niche-identity.rs",
+      "edition": 2024,
+      "status": 0,
+      "stdout": "0 1\n"
+    },
+    {
+      "file": "nonenum-zero.rs",
+      "edition": 2024,
+      "status": 0,
+      "stdout": "0 0 0\n"
+    }
+  ],
+  "warning_codes": [],
+  "source_sha256": {
+    "signed-ordering.rs": "c1f1f820f9f25a387660f4fdc3d107efa78c69d14e707ed841747159674f3406",
+    "declared-repr.rs": "e1e7da353b67e851f4af98ee8c2438c68a555f68dc961bac84f3b7eb9e1b747c",
+    "niche-identity.rs": "9a2776220dcb54054dd5e0d8870841307a6ec93ef87b41a5cb3bc31d40112114",
+    "nonenum-zero.rs": "92f5e805dc2e3b562db863c3e904f2233b9baffea0d3a98d901b3110bb85dc7f",
+    "generic-result.rs": "83586b92d4996ba05ac73dcb8e74a44f24714d4877ebd2ed29cf85197b04193b",
+    "unknown-result.rs": "e60711d31f2d4a552ec968333f9cc2883c15145e878d76584820ff0ce16b5954",
+    "explicit-implementation.rs": "1a66e2aacc2b83237995f439ddba6dd73d8d1f80db2e2c54643d791fed02726d"
+  },
+  "distinctions": [
+    "declared logical enum discriminator type versus physical optimized tag",
+    "nonenum output u8 and zero value; not proof of result trait bounds",
+    "parameter/alias associated result remains a genuine projection",
+    "signed Ordering values retain sign",
+    "niche representation maps actual variant to logical declared discriminator"
+  ]
+}

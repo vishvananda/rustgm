@@ -3,35 +3,34 @@ use super::{Builder, Error, NodeId, Operation, Rvalue, Type, ValueId};
 use crate::{body::ir::CallerSite, support::bindings::SourceIntrinsic};
 impl Builder<'_> {
     pub(super) fn record_caller_site(&mut self, node: NodeId, value: ValueId) -> Result<(), Error> {
-        let Rvalue::Call {
-            signature, callee, ..
-        } = self.body.values[value.0 as usize].kind
-        else {
+        let Some((callable, signature, definition)) = self.typed_source_call(node, value)? else {
             return Ok(());
         };
-        let callable = self
-            .body
-            .values
-            .get(callee.0 as usize)
-            .ok_or_else(|| self.error(node, "caller site lost actual callee"))?
-            .ty;
-        let Some(Type::FunctionItem { item, .. }) = self.facts.types.kind(callable) else {
-            return Ok(());
-        };
-        let definition = crate::resolve::model::DefId(item.0);
-        if self.facts.source_bindings.is_none() {
-            return Ok(());
-        }
         let tracked = self
             .facts
             .checked_caller_tracking(self.report, definition)?;
-        let intrinsic = self
+        let catalog = self
             .facts
             .source_bindings
             .as_deref()
-            .ok_or_else(|| self.error(node, "caller site lost its catalog"))?
+            .ok_or_else(|| self.error(node, "caller site lost its catalog"))?;
+        let intrinsic = catalog
             .intrinsic_kind(definition)
             .map_err(|error| self.error(node, error))?;
+        if intrinsic == Some(SourceIntrinsic::DiscriminantValue) {
+            catalog
+                .validate_discriminant_opening(
+                    self.report,
+                    self.facts,
+                    self.source,
+                    crate::resolve::unit::NodeKey {
+                        node,
+                        ..self.source
+                    },
+                    (callable, signature),
+                )
+                .map_err(|error| self.error(node, error))?;
+        }
         if !tracked && intrinsic != Some(SourceIntrinsic::CallerLocation) {
             return Ok(());
         }
@@ -94,5 +93,38 @@ impl Builder<'_> {
                 self.facts,
             )
             .map_err(|error| self.error(node, error))
+    }
+    fn typed_source_call(
+        &self,
+        node: NodeId,
+        value: ValueId,
+    ) -> Result<
+        Option<(
+            crate::types::TypeId,
+            crate::types::TypeId,
+            crate::resolve::model::DefId,
+        )>,
+        Error,
+    > {
+        let Rvalue::Call {
+            signature, callee, ..
+        } = self.body.values[value.0 as usize].kind
+        else {
+            return Ok(None);
+        };
+        let callable = self
+            .body
+            .values
+            .get(callee.0 as usize)
+            .ok_or_else(|| self.error(node, "caller site lost actual callee"))?
+            .ty;
+        let Some(Type::FunctionItem { item, .. }) = self.facts.types.kind(callable) else {
+            return Ok(None);
+        };
+        let definition = crate::resolve::model::DefId(item.0);
+        if self.facts.source_bindings.is_none() {
+            return Ok(None);
+        }
+        Ok(Some((callable, signature, definition)))
     }
 }

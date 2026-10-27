@@ -54,7 +54,7 @@ pub(crate) enum Dependency {
     ImplementationValidated(DefId),
     Fields(crate::types::ItemId),
     Opaque(crate::types::opaque::OpaqueId),
-    PointeeContracts(DefId),
+    SourceResultContracts(DefId),
 }
 pub(in crate::sema) enum Failure {
     Pending(Dependency),
@@ -87,7 +87,10 @@ impl Dependency {
                 .as_ref()
                 .is_some_and(|registry| registry.is_validated(owner)),
             Self::Fields(item) => facts.aggregates.get(item).is_some(),
-            Self::PointeeContracts(id) => crate::sema::compiler_items::pointee::ready(facts, id),
+            Self::SourceResultContracts(id) => {
+                crate::sema::compiler_items::pointee::ready(facts, id)
+                    || crate::sema::compiler_items::discriminant::ready(facts, id)
+            }
             Self::Opaque(id) => facts
                 .opaques
                 .declarations
@@ -105,6 +108,7 @@ pub(in crate::sema) enum Source {
     /// Universal source Pointee evidence; the requested member and its result
     /// obligations remain owned by the actual projection query.
     Pointee(crate::sema::compiler_items::pointee::Selection),
+    Discriminant(crate::sema::compiler_items::discriminant::Selection),
     /// A language callable implementation with its selected, scoped Output.
     Callable {
         output: TypeId,

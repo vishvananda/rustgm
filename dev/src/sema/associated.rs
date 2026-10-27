@@ -452,8 +452,19 @@ fn owner_kind(
                     .resolution
                     .source_bindings
                     .as_deref()
-                    .and_then(|r| r.language(crate::support::bindings::LangItem::Freeze))
-                    .is_some_and(|actual| actual.definition == definition)
+                    .is_some_and(|r| {
+                        [
+                            crate::support::bindings::LangItem::Freeze,
+                            crate::support::bindings::LangItem::Send,
+                            crate::support::bindings::LangItem::Sync,
+                            crate::support::bindings::LangItem::Unpin,
+                        ]
+                        .into_iter()
+                        .any(|role| {
+                            r.language(role)
+                                .is_some_and(|actual| actual.definition == definition)
+                        })
+                    })
             {
                 return Err(error("custom source auto traits are not implemented"));
             }

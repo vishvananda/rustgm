@@ -35,6 +35,7 @@ pub(super) struct Validated {
     pub(super) roles: u64,
     pub(super) methods: [Option<DefId>; 3],
     pub(super) pointee: Option<std::rc::Rc<super::pointee::Contracts>>,
+    pub(super) discriminant: Option<std::rc::Rc<super::discriminant::Contracts>>,
 }
 impl Catalog {
     /// The declaration-validation ledger is complete and its retained catalog
@@ -108,6 +109,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         roles: 0,
         methods: [None; 3],
         pointee: None,
+        discriminant: None,
     };
     let mut callables = Vec::new();
     for role in [
@@ -124,6 +126,9 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         LangItem::Freeze,
         LangItem::Unsize,
         LangItem::CoerceUnsized,
+        LangItem::Send,
+        LangItem::Sync,
+        LangItem::Unpin,
     ] {
         let Some(declaration) = catalog.language(role) else {
             continue;
@@ -143,7 +148,9 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
             LangItem::TrivialClone => copying::validate_trivial(facts, catalog, &header)
                 .map_err(|message| Declarations::error(report, declaration.origin, message))?,
             LangItem::Tuple => validate_marker(report, facts, declaration)?,
-            LangItem::Freeze => freezing::validate(report, facts, declaration)?,
+            LangItem::Freeze | LangItem::Send | LangItem::Sync | LangItem::Unpin => {
+                freezing::validate(report, facts, declaration, role)?;
+            }
             LangItem::Unsize | LangItem::CoerceUnsized => {
                 unsizing::validate(report, facts, catalog, declaration, role, self_type)?;
             }
@@ -194,21 +201,30 @@ fn require_distinct_pointee(
     let Some(prior) = catalog.traits.as_deref() else {
         return Ok(());
     };
-    let expected = (role_bit(LangItem::PointeeTrait))
-        | (role_bit(LangItem::MetadataType))
-        | if catalog.language(LangItem::DynMetadata).is_some() {
-            role_bit(LangItem::DynMetadata)
-        } else {
-            0
-        };
-    if prior.roles != expected
+    let mut expected = 0;
+    if prior.pointee.is_some() {
+        expected |= role_bit(LangItem::PointeeTrait) | role_bit(LangItem::MetadataType);
+        if catalog.language(LangItem::DynMetadata).is_some() {
+            expected |= role_bit(LangItem::DynMetadata);
+        }
+    }
+    if prior.discriminant.is_some() {
+        expected |= role_bit(LangItem::DiscriminantKind) | role_bit(LangItem::DiscriminantType);
+    }
+    if expected == 0
+        || prior.roles != expected
         || prior.roles & roles != 0
         || prior.methods != [None; 3]
-        || prior.pointee.is_none()
     {
         return Err(Error::unlocated("source roles were validated twice"));
     }
-    super::pointee::authenticate(report, facts)
+    if prior.pointee.is_some() {
+        super::pointee::authenticate(report, facts)?;
+    }
+    if prior.discriminant.is_some() {
+        super::discriminant::authenticate(report, facts)?;
+    }
+    Ok(())
 }
 
 /// Publish only a fully checked role ledger and its actual callable members.
@@ -297,9 +313,15 @@ fn header<'a>(
         .profile(
             &facts.types,
             super::headers::Flags {
-                unsafe_: matches!(role, LangItem::Freeze | LangItem::TrivialClone),
+                unsafe_: matches!(
+                    role,
+                    LangItem::Freeze | LangItem::TrivialClone | LangItem::Send | LangItem::Sync
+                ),
                 constant,
-                auto_: role == LangItem::Freeze,
+                auto_: matches!(
+                    role,
+                    LangItem::Freeze | LangItem::Send | LangItem::Sync | LangItem::Unpin
+                ),
             },
             expected,
         )
@@ -401,6 +423,7 @@ pub(super) fn complete_nominal(
             roles: 0,
             methods: [None; 3],
             pointee: None,
+            discriminant: None,
         })
     });
     let bit = role_bit(role);

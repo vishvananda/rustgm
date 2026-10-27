@@ -57,7 +57,7 @@ impl Search<'_> {
         // Callable markers share this formation DAG only for exact ordinary
         // source roles. Item arguments keep their retained formation duties;
         // their declaration signature was proved before forming the item.
-        let source_rule = Self::source_freeze_goal(facts, &frame.goal)?
+        let source_rule = Self::source_auto_goal(facts, &frame.goal)?
             || matches!(
                 Self::source_sizing_kind(facts, &frame.goal)?,
                 Some(LangItem::Sized | LangItem::MetaSized | LangItem::PointeeSized)

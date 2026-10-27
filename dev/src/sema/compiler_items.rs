@@ -30,6 +30,11 @@ mod layout;
 mod needs_drop;
 pub(in crate::sema) mod pointee;
 mod ptr_metadata;
+mod tag_intrinsic;
+pub(crate) use tag_intrinsic::DiscriminantSelection;
+#[path = "compiler_items/logical_tags.rs"]
+pub(in crate::sema) mod discriminant;
+pub(crate) use discriminant::authenticate as authenticate_discriminant;
 mod runtime_checks;
 pub(crate) use ptr_metadata::PtrMetadataSelection;
 pub(crate) use runtime_checks::RuntimeCheckSelection;

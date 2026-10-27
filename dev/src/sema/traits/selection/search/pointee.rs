@@ -1,6 +1,10 @@
 //! The actual source Pointee trait is universal; metadata equality is separate.
 use super::{Action, Decision, Declarations, Frame, Node, Search, Source, inference};
-use crate::{sema::compiler_items::pointee, support::bindings::LangItem, types::infer};
+use crate::{
+    sema::compiler_items::{discriminant, pointee},
+    support::bindings::LangItem,
+    types::infer,
+};
 
 impl Search<'_> {
     pub(super) fn source_pointee_result(
@@ -14,9 +18,13 @@ impl Search<'_> {
         let Some(catalog) = facts.source_bindings.as_deref() else {
             return Ok(None);
         };
-        if catalog
-            .role(LangItem::PointeeTrait)?
-            .is_none_or(|role| role.definition.0 != item.0)
+        let discriminant = catalog
+            .role(LangItem::DiscriminantKind)?
+            .is_some_and(|role| role.definition.0 == item.0);
+        if !discriminant
+            && catalog
+                .role(LangItem::PointeeTrait)?
+                .is_none_or(|role| role.definition.0 != item.0)
         {
             return Ok(None);
         }
@@ -36,14 +44,26 @@ impl Search<'_> {
             }
             Err(error) => return Err(inference(error)),
         };
-        let selected = match pointee::select(facts, goal).map_err(|error| error.to_string())? {
-            pointee::Readiness::Unrelated => return Ok(None),
-            pointee::Readiness::Pending(member) => {
-                return Ok(Some(Action::Wait(super::Dependency::PointeeContracts(
-                    member,
-                ))));
+        let source = if discriminant {
+            match discriminant::select(facts, goal).map_err(|error| error.to_string())? {
+                discriminant::Readiness::Unrelated => return Ok(None),
+                discriminant::Readiness::Pending(member) => {
+                    return Ok(Some(Action::Wait(
+                        super::Dependency::SourceResultContracts(member),
+                    )));
+                }
+                discriminant::Readiness::Ready(selected) => Source::Discriminant(selected),
             }
-            pointee::Readiness::Ready(selected) => selected,
+        } else {
+            match pointee::select(facts, goal).map_err(|error| error.to_string())? {
+                pointee::Readiness::Unrelated => return Ok(None),
+                pointee::Readiness::Pending(member) => {
+                    return Ok(Some(Action::Wait(
+                        super::Dependency::SourceResultContracts(member),
+                    )));
+                }
+                pointee::Readiness::Ready(selected) => Source::Pointee(selected),
+            }
         };
         if frame.deferred || frame.partial.is_some() {
             return Ok(Some(Action::Complete(Decision::Deferred)));
@@ -55,7 +75,7 @@ impl Search<'_> {
                 cycle_dependent: false,
                 provisional_size: false,
                 goal,
-                source: Some(Source::Pointee(selected)),
+                source: Some(source),
                 children: Vec::new(),
                 first: frame.first,
                 end,

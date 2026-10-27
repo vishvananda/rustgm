@@ -430,6 +430,8 @@ fn retained_role_site(report: &Report, key: NodeKey) -> bool {
             [
                 LangItem::PointeeTrait,
                 LangItem::MetadataType,
+                LangItem::DiscriminantKind,
+                LangItem::DiscriminantType,
                 LangItem::DynMetadata,
                 LangItem::ControlFlowContinue,
                 LangItem::ControlFlowBreak,
@@ -462,6 +464,8 @@ pub(in crate::sema) fn pointee_source_image(
             [
                 (LangItem::PointeeTrait, DefKind::Trait),
                 (LangItem::MetadataType, DefKind::TypeAlias),
+                (LangItem::DiscriminantKind, DefKind::Trait),
+                (LangItem::DiscriminantType, DefKind::TypeAlias),
                 (LangItem::DynMetadata, DefKind::Struct),
             ]
             .into_iter()

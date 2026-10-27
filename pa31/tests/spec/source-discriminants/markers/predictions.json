@@ -1,0 +1,65 @@
+{
+  "state": "frozen before observation; 6 source auto-trait opposites plus nonexistent lang spelling",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "editions": [
+    2021,
+    2024
+  ],
+  "metadata": [
+    {
+      "file": "raw-without-negative.rs",
+      "status": 0,
+      "error_codes": []
+    },
+    {
+      "file": "raw-source-negative.rs",
+      "status": 1,
+      "error_codes": [
+        "E0277"
+      ]
+    },
+    {
+      "file": "reference-without-impl.rs",
+      "status": 1,
+      "error_codes": [
+        "E0277"
+      ]
+    },
+    {
+      "file": "reference-source-impl.rs",
+      "status": 0,
+      "error_codes": []
+    },
+    {
+      "file": "unpin-without-impl.rs",
+      "status": 1,
+      "error_codes": [
+        "E0277"
+      ]
+    },
+    {
+      "file": "unpin-source-impl.rs",
+      "status": 0,
+      "error_codes": []
+    },
+    {
+      "file": "fake-lang-send.rs",
+      "status": 1,
+      "error_codes": [
+        "E0522"
+      ]
+    }
+  ],
+  "native": [],
+  "source_sha256": {
+    "raw-without-negative.rs": "d34a64bfe6c62c4db9845384655e9ea0e505729ce2fb1437fa27660957a32d10",
+    "raw-source-negative.rs": "f0c08240c8aa8c82ae5e7cf79a5c1d4b152b26eff35a7a46bd08f8f24ce7e30e",
+    "reference-without-impl.rs": "89c801d18252e2c55c45d8f757ea6e35e9857a2dc04a414ca806f942a9437d7e",
+    "reference-source-impl.rs": "01639c4e467d23a1023cdfe77a2d0ba0bc1bcb0e1de902c55c760bdda7893107",
+    "unpin-without-impl.rs": "dfa8e65a0cd1430077a7e0e3d90c6535fadd6356feedd87ab625dadf3805cd83",
+    "unpin-source-impl.rs": "942342d022af517e182c20405924714492601d9cad797a14f28c9fd9b11497cf",
+    "fake-lang-send.rs": "18472ec9f3a2165a3067b6772a0d67732ed4de99f4e470cd285a57f245bd4799"
+  },
+  "primary": "rustc_trait_selection/src/traits/select/mod.rs2166\u20132265; core marker90\u201398/650\u2013653/1003\u20131015",
+  "distinction": "source auto pointers/references recurse in SAME trait; actual source impls and negative impls determine exceptions; bootstrap std shortcuts are not source permission"
+}

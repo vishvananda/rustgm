@@ -12,6 +12,20 @@ use crate::{
 };
 
 impl Lower<'_, '_, '_> {
+    pub(super) fn niche_test(
+        &mut self,
+        base: Address,
+        offset: u64,
+        predicate: Predicate,
+    ) -> Result<Value, &'static str> {
+        let address = self.offset(base, offset)?;
+        let input = self.builder.load(Type::Ptr, address.operand)?;
+        let null = self
+            .builder
+            .literal(Type::Ptr, crate::lowir::program::Literal::Null)?;
+        self.builder.compare(predicate, input, null)
+    }
+
     pub(super) fn is_variant(
         &mut self,
         place: Place,
@@ -41,14 +55,8 @@ impl Lower<'_, '_, '_> {
                 Predicate::Ne
             };
             let base = self.place(place)?.ok_or("nullable test has no storage")?;
-            let address = self.offset(base, niche.offset)?;
-            let input = self.builder.load(Type::Ptr, address.operand)?;
-            let null = self
-                .builder
-                .literal(Type::Ptr, crate::lowir::program::Literal::Null)?;
             return self
-                .builder
-                .compare(predicate, input, null)
+                .niche_test(base, niche.offset, predicate)
                 .map(Selected::Runtime);
         }
         let Shape::Aggregate { tag: Some(tag), .. } = layout.shape else {

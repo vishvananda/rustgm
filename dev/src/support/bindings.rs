@@ -270,12 +270,15 @@ pub enum SourceIntrinsic {
     Transmute,
     CallerLocation,
     PtrMetadata,
+    DiscriminantValue,
 }
 impl SourceIntrinsic {
     /// Declaration attribute decoding only; consumers retain the actual `DefId`.
     #[must_use]
     pub fn from_name(name: &str) -> Option<Self> {
-        if name == "ptr_metadata" {
+        if name == "discriminant_value" {
+            Some(Self::DiscriminantValue)
+        } else if name == "ptr_metadata" {
             Some(Self::PtrMetadata)
         } else if name == "caller_location" {
             Some(Self::CallerLocation)

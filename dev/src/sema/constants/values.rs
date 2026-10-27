@@ -13,6 +13,7 @@ mod footprints;
 mod niches;
 mod physical_types;
 mod ptr_values;
+mod variant_queries;
 pub(crate) use footprints::{ProjectionStorage, StorageLayout, StoredShape};
 pub mod execution;
 mod memory;

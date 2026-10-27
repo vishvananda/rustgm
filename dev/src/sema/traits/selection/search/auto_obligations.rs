@@ -56,9 +56,7 @@ impl Search<'_> {
                 Step::Fields(item) => {
                     return Ok(ControlFlow::Break(Action::Wait(Dependency::Fields(item))));
                 }
-                Step::Proof(obligation)
-                    if root.marker == crate::types::auto_traits::AutoTrait::Freeze =>
-                {
+                Step::Proof(obligation) if super::freezing::has_source(facts, root.marker) => {
                     if obligation == root {
                         // An abstract source application requires its actual
                         // caller premise; physical shape supplies no permission.
@@ -152,8 +150,8 @@ impl Search<'_> {
         let first = pending.end.max(self.query.allocations.floor());
         let mut substitution =
             Instantiation::new(&mut frame.inputs.context, &facts.types, &[]).map_err(inference)?;
-        let bound = if needed.proof.marker == crate::types::auto_traits::AutoTrait::Freeze {
-            super::freezing::bound(facts)?
+        let bound = if super::freezing::has_source(facts, pending.root.marker) {
+            super::freezing::bound(facts, needed.proof.marker)?
         } else {
             Bound::Auto(needed.proof.marker)
         };
@@ -206,8 +204,14 @@ impl Search<'_> {
 }
 
 impl Pending {
-    pub(super) fn source_freeze(&self) -> bool {
-        self.root.marker == crate::types::auto_traits::AutoTrait::Freeze
+    pub(super) fn source_marker(&self) -> bool {
+        matches!(
+            self.root.marker,
+            crate::types::auto_traits::AutoTrait::Freeze
+                | crate::types::auto_traits::AutoTrait::Send
+                | crate::types::auto_traits::AutoTrait::Sync
+                | crate::types::auto_traits::AutoTrait::Unpin
+        )
     }
     pub(super) fn revealing(&self) -> bool {
         self.needed.as_ref().is_some_and(|leaf| leaf.reveal)
@@ -252,15 +256,16 @@ impl Pending {
     ) -> Result<(Step, usize), String> {
         let before = self.query.steps;
         let permissions_before = self.permissions.as_ref().map_or(0, |q| q.steps());
+        let source = super::freezing::has_source(facts, self.root.marker);
         let step = self.query.advance(
             &mut facts.types,
             &mut facts.aggregates,
             |types, obligation| {
-                if obligation.marker == crate::types::auto_traits::AutoTrait::Freeze {
+                if source {
                     // Every immediate child returns through actual source
                     // selection before structural propagation can use it.
                     return Ok(if obligation == self.root {
-                        Rule::Structural
+                        Rule::SourceStructural
                     } else {
                         Rule::External
                     });

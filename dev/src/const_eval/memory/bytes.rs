@@ -13,6 +13,7 @@ mod relocations;
 mod slice_words;
 mod sources;
 mod subobjects;
+mod tag_reads;
 #[cfg(test)]
 #[path = "../../../tests/invariants/byte_storage.rs"]
 mod tests;

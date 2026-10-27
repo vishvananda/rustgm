@@ -48,6 +48,9 @@ impl Stage {
             ) {
                 return Err("source Pointee contract transport is not implemented");
             }
+            if role == LangItem::Send {
+                return Err("source Send diagnostic contract transport is not implemented");
+            }
             let address = self.address(declaration.definition)?;
             self.reserve(4 * size_of::<s::RoleBinding>())?;
             self.rows.roles.push(s::RoleBinding {

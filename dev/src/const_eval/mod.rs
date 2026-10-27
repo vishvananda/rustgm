@@ -25,6 +25,7 @@ mod returns;
 mod runtime_checks;
 mod selector_sites;
 mod static_reads;
+mod tag_calls;
 mod transfers;
 mod transmute_calls;
 mod values;

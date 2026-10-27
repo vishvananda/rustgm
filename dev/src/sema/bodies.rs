@@ -114,6 +114,8 @@ pub fn analyze_with_hidden(
 ) -> Result<Declarations, Error> {
     super::compiler_items::pointee::authenticate(report, &facts)
         .map_err(|error| facts.retain_error_warnings(report.diagnostic(error)))?;
+    super::compiler_items::discriminant::authenticate(report, &facts)
+        .map_err(|error| facts.retain_error_warnings(report.diagnostic(error)))?;
     let mut checker = Checker::new(report, &mut facts);
     checker.functions(&mut close).map_err(|error| {
         checker
@@ -135,6 +137,8 @@ pub fn analyze_with_hidden(
             .retain_error_warnings(report.diagnostic(error))
     })?;
     super::compiler_items::pointee::authenticate(report, &facts)
+        .map_err(|error| facts.retain_error_warnings(report.diagnostic(error)))?;
+    super::compiler_items::discriminant::authenticate(report, &facts)
         .map_err(|error| facts.retain_error_warnings(report.diagnostic(error)))?;
     Ok(facts)
 }

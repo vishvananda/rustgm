@@ -347,6 +347,12 @@ impl Checker<'_> {
                         .map_err(|error| self.error(node, error.to_string()))?;
                     continue;
                 }
+                Some(Source::Discriminant(selected)) => {
+                    selected
+                        .current(self.facts)
+                        .map_err(|error| self.error(node, error.to_string()))?;
+                    continue;
+                }
                 Some(Source::Equality) => {
                     return Err(self.error(node, "equality evidence cannot replace a trait goal"));
                 }
@@ -354,34 +360,40 @@ impl Checker<'_> {
                     continue;
                 }
                 Some(Source::Builtin) => {
-                    if crate::sema::compiler_items::sizing_predicate(self.facts, *predicate)
-                        .map_err(|e| self.error(node, e))?
-                        || crate::sema::compiler_items::freeze_predicate(self.facts, *predicate)
-                            .map_err(|e| self.error(node, e))?
-                        || crate::sema::compiler_items::destruct_predicate(self.facts, *predicate)
-                            .map_err(|e| self.error(node, e))?
-                        || crate::sema::compiler_items::tuple_predicate(self.facts, *predicate)
-                            .map_err(|e| self.error(node, e))?
-                        || crate::sema::compiler_items::unsizing_predicate(self.facts, *predicate)
-                            .map_err(|e| self.error(node, e))?
-                    {
+                    let Some(actual) = self.builtin_call_evidence(node, *predicate)? else {
                         continue;
-                    }
-                    let Some(marker) =
-                        crate::sema::cloning::marker_predicate(self.facts, *predicate)
-                    else {
-                        return Err(
-                            self.error(node, "builtin evidence cannot replace a trait goal")
-                        );
                     };
-                    self.prove_bound(node, marker.ty, Bound::Sized)?;
-                    marker
+                    actual
                 }
                 None => *predicate,
             };
             self.prove_bound(node, predicate.ty, predicate.bound)?;
         }
         Ok(())
+    }
+    fn builtin_call_evidence(
+        &mut self,
+        node: NodeId,
+        predicate: crate::types::parameters::predicates::Predicate,
+    ) -> Result<Option<crate::types::parameters::predicates::Predicate>, Error> {
+        if crate::sema::compiler_items::sizing_predicate(self.facts, predicate)
+            .map_err(|e| self.error(node, e))?
+            || crate::sema::compiler_items::freeze_predicate(self.facts, predicate)
+                .map_err(|e| self.error(node, e))?
+            || crate::sema::compiler_items::destruct_predicate(self.facts, predicate)
+                .map_err(|e| self.error(node, e))?
+            || crate::sema::compiler_items::tuple_predicate(self.facts, predicate)
+                .map_err(|e| self.error(node, e))?
+            || crate::sema::compiler_items::unsizing_predicate(self.facts, predicate)
+                .map_err(|e| self.error(node, e))?
+        {
+            return Ok(None);
+        }
+        let Some(marker) = crate::sema::cloning::marker_predicate(self.facts, predicate) else {
+            return Err(self.error(node, "builtin evidence cannot replace a trait goal"));
+        };
+        self.prove_bound(node, marker.ty, Bound::Sized)?;
+        Ok(Some(marker))
     }
     fn validate_inferred_arguments(
         &mut self,

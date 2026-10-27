@@ -118,6 +118,28 @@ pub(super) fn checked_call_arguments(
     target: Instance,
     contract: (crate::resolve::model::DefId, crate::types::TypeId),
 ) -> Result<crate::body::ir::ValueList, &'static str> {
+    checked_call_arguments_with_signature(
+        facts,
+        body,
+        frame,
+        position,
+        target,
+        contract,
+        |actual, public| actual == public,
+    )
+}
+
+/// A source-specific descriptor may consume an already checked late-bound opening.
+/// Existing callers retain their exact signature equality above.
+pub(super) fn checked_call_arguments_with_signature(
+    facts: &Declarations,
+    body: &Code,
+    frame: &Frame,
+    position: u32,
+    target: Instance,
+    contract: (crate::resolve::model::DefId, crate::types::TypeId),
+    matches_signature: impl FnOnce(crate::types::TypeId, crate::types::TypeId) -> bool,
+) -> Result<crate::body::ir::ValueList, &'static str> {
     let block = body
         .blocks
         .get(frame.block.0 as usize)
@@ -151,7 +173,7 @@ pub(super) fn checked_call_arguments(
     };
     if !body.const_context
         || !facts.is_const_function(contract.0)
-        || signature != selected_signature
+        || !matches_signature(signature, selected_signature)
         || value.ty != contract.1
         || body
             .values

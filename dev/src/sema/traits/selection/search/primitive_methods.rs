@@ -23,7 +23,7 @@ impl Search<'_> {
         if let Some(action) = self.source_destruct_result(facts, frame)? {
             return Ok(action);
         }
-        if let Some(action) = self.source_freeze_result(facts, frame)? {
+        if let Some(action) = self.source_auto_result(facts, frame)? {
             return Ok(action);
         }
         if let Some(action) = self.source_callable_marker_result(facts, frame)? {

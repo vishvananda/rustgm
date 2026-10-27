@@ -339,7 +339,7 @@ impl Search<'_> {
             self.charge(&mut trial.inputs.context)?;
             match result {
                 Ok(()) => {
-                    if Self::source_freeze_goal(facts, &frame.goal)? {
+                    if Self::source_auto_goal(facts, &frame.goal)? {
                         frame.explicit_auto = true;
                     }
                     frame.trial = Some(trial);
@@ -551,7 +551,7 @@ impl Search<'_> {
                 if matches!(
                     goal.bound,
                     crate::types::parameters::predicates::Bound::Auto(_)
-                ) || Self::source_freeze_goal(facts, &frame.goal)?
+                ) || Self::source_auto_goal(facts, &frame.goal)?
                 {
                     return self.auto_cycle(facts, frame, goal);
                 }
