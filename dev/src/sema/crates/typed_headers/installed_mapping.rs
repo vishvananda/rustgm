@@ -43,7 +43,7 @@ pub(in crate::sema) struct ProvidedOwners {
     applications: super::super::predicate_remap::translation::applications::Reader,
 }
 impl ProvidedOwners {
-    pub(in crate::sema::crates::typed_headers) fn implementation_environment(
+    pub(super) fn implementation_environment(
         &self,
         authority: &Authority<'_>,
         state: &State,

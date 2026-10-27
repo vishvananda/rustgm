@@ -19,6 +19,7 @@ use crate::{
     types::{ItemId, Kind, Store, parameters::predicates::Predicate, shape_key::ShapeKey},
 };
 pub(in crate::sema) use member_contracts::ConstantRequest;
+pub(in crate::sema) type OverlapPair = ((Predicate, DefId), (Predicate, DefId));
 #[cfg(test)]
 #[path = "../../../tests/invariants/polarity_registry.rs"]
 mod tests;
@@ -521,7 +522,7 @@ impl Implementations {
         &self,
         owner: DefId,
         index: usize,
-    ) -> Result<((Predicate, DefId), (Predicate, DefId)), &'static str> {
+    ) -> Result<OverlapPair, &'static str> {
         let &(first, second) = self
             .pairs
             .get(index)

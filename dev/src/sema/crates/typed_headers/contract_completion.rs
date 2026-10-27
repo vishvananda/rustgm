@@ -287,8 +287,8 @@ impl SelectedConsumer<'_> {
             &mut proof,
             &requirements,
         );
-        self.work.charge(proof.formation_steps())?;
-        result.map_err(Error::unlocated)?;
+        let attempted = self.work.charge(proof.formation_steps());
+        result.map_err(Error::unlocated).and(attempted)?;
         let evidence = proof.take_trait_proof();
         if !requirements.regions.is_empty()
             || evidence.as_ref().is_some_and(|proof| !proof.is_empty())
