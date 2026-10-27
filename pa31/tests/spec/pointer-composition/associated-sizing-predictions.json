@@ -1,0 +1,93 @@
+{
+  "status": "associated result actual-role/default opponents committed before compiler sizing edit",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "profile": [
+    "--edition=2024",
+    "--target=x86_64-unknown-linux-gnu",
+    "--crate-type=lib",
+    "--emit=metadata",
+    "-Cpanic=abort",
+    "-Copt-level=0",
+    "-Coverflow-checks=on",
+    "-Cdebug-assertions=off"
+  ],
+  "cases": [
+    {
+      "source": "associated-sizing/pointee-parameter.rs",
+      "sha256": "02998f86b28613c6f1258188f000782bb21cf075b514d7e0fe86bf5eef68b2d4",
+      "status": 0
+    },
+    {
+      "source": "associated-sizing/meta-parameter.rs",
+      "sha256": "2070d814c0d47aa7731014af7ac9fc69a0f3493e99fdbe4bfee38e120406c00c",
+      "status": 0
+    },
+    {
+      "source": "associated-sizing/pointee-foreign.rs",
+      "sha256": "bc48270f23d309bdb644a9b0dda0f01a5e30be43d38f827f4a1be3e4d4ec0c5d",
+      "status": 0
+    },
+    {
+      "source": "associated-sizing/default-sized.rs",
+      "sha256": "6ad59305753c5f6a9241b7b402f0f32d5e35a60137dc544857002359e932da94",
+      "status": 0
+    },
+    {
+      "source": "associated-sizing/default-unsized.rs",
+      "sha256": "3ab22d4ef259393e938b6e7036c9664b1080d11d68f2620a895052fe02de1849",
+      "status": 1
+    },
+    {
+      "source": "associated-sizing/explicit-sized-foreign.rs",
+      "sha256": "8aa646023eed89f4178623387393b928732052fa96c492140243824c66384689",
+      "status": 1
+    },
+    {
+      "source": "associated-sizing/explicit-sized-value.rs",
+      "sha256": "f71a9386569cbc5057b1c81c3df2712ad79c016358257c86a2f36f3e13fa3a18",
+      "status": 0
+    },
+    {
+      "source": "associated-sizing/relaxed-meta.rs",
+      "sha256": "4469191a17d2e5e5585dadd59f13ed07d60ae547483233effa0f91c23549add9",
+      "status": 0
+    },
+    {
+      "source": "associated-sizing/relaxed-pointee.rs",
+      "sha256": "b2c8e2b8f26e0f42c4a20437ef3469b9964df771d917e9b1df20644c12a4ffd5",
+      "status": 1
+    },
+    {
+      "source": "associated-sizing/relaxed-foreign.rs",
+      "sha256": "03bc06641d207c83c247fe66258b012dc7406f87b1bd7297ac5e03e5611cf79a",
+      "status": 1
+    },
+    {
+      "source": "associated-sizing/relaxed-explicit-pointee.rs",
+      "sha256": "a4e4d554b4bfc7f178af3f8bc123c0adebd146061cd604dab7c1aa5e282e3df3",
+      "status": 0
+    },
+    {
+      "source": "associated-sizing/alias-pointee.rs",
+      "sha256": "3c4e5a26991eab76aca4600740a98bdc98971a75adcebbec7ff05b0c18937b69",
+      "status": 1
+    },
+    {
+      "source": "associated-sizing/alias-meta.rs",
+      "sha256": "6d03cfc801361d42943ce9dd01c4e8c4f25675834a874b30c3f4762c343feef2",
+      "status": 1
+    },
+    {
+      "source": "associated-sizing/shadow-pointee.rs",
+      "sha256": "9722a6334ed64ad8c35e6e0a2517ee14ed9699eba8ff319192c50af29af44557",
+      "status": 1
+    },
+    {
+      "source": "associated-sizing/where-pointee.rs",
+      "sha256": "b1511c9c55aa67a06402d19f582979791506abdf6b8c1db842c4239c36ca283c",
+      "status": 1
+    }
+  ],
+  "boundary": "actual core helpers in oracle; candidate will preserve genuine source chain and UB-check bodies, source identities/ordinary proof; raw construction is not reference/access permission; dynamic metadata and transport remain pending"
+}

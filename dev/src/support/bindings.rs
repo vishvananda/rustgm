@@ -307,12 +307,15 @@ pub enum SourceIntrinsic {
     CallerLocation,
     PtrMetadata,
     DiscriminantValue,
+    AggregateRawPtr,
 }
 impl SourceIntrinsic {
     /// Declaration attribute decoding only; consumers retain the actual `DefId`.
     #[must_use]
     pub fn from_name(name: &str) -> Option<Self> {
-        if name == "discriminant_value" {
+        if name == "aggregate_raw_ptr" {
+            Some(Self::AggregateRawPtr)
+        } else if name == "discriminant_value" {
             Some(Self::DiscriminantValue)
         } else if name == "ptr_metadata" {
             Some(Self::PtrMetadata)

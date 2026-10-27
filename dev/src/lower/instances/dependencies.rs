@@ -73,8 +73,9 @@ fn source_call(
             tag_dependencies::require(report, facts, body, value, ty)
                 .map(|()| Some(SourceIntrinsic::DiscriminantValue))
         }
-        Some(SourceIntrinsic::PtrMetadata) => ptr_values::require(report, facts, body, value, ty)
-            .map(|()| Some(SourceIntrinsic::PtrMetadata)),
+        Some(kind @ (SourceIntrinsic::PtrMetadata | SourceIntrinsic::AggregateRawPtr)) => {
+            ptr_values::require_operation(report, facts, body, value, ty, kind).map(|()| Some(kind))
+        }
         Some(SourceIntrinsic::UbChecks) => {
             let instance = Instance::new(&facts.types, ty)?;
             let (selection, _, _) = Reader::new(facts)
@@ -176,6 +177,7 @@ impl Discovered {
                 | SourceIntrinsic::Transmute
                 | SourceIntrinsic::CallerLocation
                 | SourceIntrinsic::PtrMetadata
+                | SourceIntrinsic::AggregateRawPtr
                 | SourceIntrinsic::DiscriminantValue,
             ) => {
                 // Only this authenticated direct Call omits callable-body demand.

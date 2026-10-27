@@ -4149,6 +4149,16 @@ type to justify public bounds. Metadata classification does not prove source
 well-formedness, an unsizing conversion or a caller's `Sized` requirement.
 Keep those proofs separate from the PA22 source rules.
 
+Actual source raw-pointer composition authenticates the complete direct-call
+instance and retains ordinary source associated-type obligations. Query the
+existing ABI metadata owner to distinguish Thin/unit and Length/usize; pointer
+width alone is insufficient. Evaluate both arguments, including erased unit,
+without pointee reads or new access authority. Reference/access consumers retain
+the existing sequence validity owner. The
+[composition checkpoint](docs/pa28-raw-pointer-composition.md) records the source
+sizing prerequisite, independent disagreements and remaining original wrapper,
+dynamic metadata and transport boundaries.
+
 Nominal sizedness follows declaration schemas, including full mixed argument
 slots and projected storage conditions. Seal these schemas after fields complete;
 reserved nominal identities must not permanently claim `Sized`. Retain the

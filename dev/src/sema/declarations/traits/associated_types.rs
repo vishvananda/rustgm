@@ -413,9 +413,7 @@ impl Checker<'_> {
                 }
             }
         }
-        if !relaxed && !required.contains(&Bound::Sized) {
-            required.push(Bound::Sized);
-        }
+        self.source_associated_default(key, id, relaxed, &mut required, &mut syntax)?;
         // Copy and Clone also entail Sized in this language profile.
         let sized = required
             .iter()

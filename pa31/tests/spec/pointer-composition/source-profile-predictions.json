@@ -1,0 +1,28 @@
+{
+  "status": "actual minimal source profile predictions before first candidate execution",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "profile": [
+    "--edition=2024",
+    "--target=x86_64-unknown-linux-gnu",
+    "--crate-type=lib",
+    "--emit=metadata",
+    "-Cpanic=abort",
+    "-Copt-level=0",
+    "-Coverflow-checks=on",
+    "-Cdebug-assertions=off"
+  ],
+  "cases": [
+    {
+      "source": "source-profile-positive.rs",
+      "sha256": "80f856d89a97d65e0b16b9148464acfcc122681f779d2879429144346c869d0c",
+      "status": 0
+    },
+    {
+      "source": "source-profile-wrong-signature.rs",
+      "sha256": "04a3e730c6218ac4539d130a58065d944854ec21efef6e9ebe7c916ff9f6c68f",
+      "status": 1
+    }
+  ],
+  "boundary": "actual core helpers in oracle; candidate will preserve genuine source chain and UB-check bodies, source identities/ordinary proof; raw construction is not reference/access permission; dynamic metadata and transport remain pending"
+}

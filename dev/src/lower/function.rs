@@ -882,6 +882,9 @@ impl Lower<'_, '_, '_> {
                 if let Some(value) = self.source_discriminant(id)? {
                     return Ok(value);
                 }
+                if let Some(value) = self.source_raw_parts(id)? {
+                    return Ok(value);
+                }
                 if let Some(value) = self.source_ptr_metadata(id)? {
                     return Ok(value);
                 }
