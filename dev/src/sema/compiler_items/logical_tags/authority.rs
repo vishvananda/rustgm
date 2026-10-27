@@ -50,6 +50,7 @@ pub(super) fn plan(report: &Report, facts: &Declarations) -> Result<Option<Plan>
             "source DiscriminantKind requires its actual single associated result",
         ));
     }
+    required_member(report, member)?;
     let contract = facts
         .associated
         .require_projection_header(member.definition)
@@ -69,6 +70,37 @@ pub(super) fn plan(report: &Report, facts: &Declarations) -> Result<Option<Plan>
     Ok(Some(plan))
 }
 
+fn required_member(report: &Report, member: Declaration) -> Result<(), Error> {
+    let error = |message| Declarations::error(report, member.origin, message);
+    if report
+        .resolution
+        .definitions
+        .get(member.definition.0 as usize)
+        .is_none_or(|d| {
+            d.kind != crate::resolve::model::DefKind::TypeAlias || d.node != Some(member.origin)
+        })
+    {
+        return Err(error(
+            "source discriminant requires its actual type declaration",
+        ));
+    }
+    let ast = &report.package.unit(member.origin.file).configured.ast;
+    let crate::syntax::ast::Kind::Item(index) = ast.node(member.origin.node).kind else {
+        return Err(error("source discriminant lost its actual result item"));
+    };
+    let item = ast.items[index as usize];
+    if !matches!(
+        item.kind,
+        crate::syntax::item::ItemKind::TypeAlias { ty: None, .. }
+    ) || !ast.list(item.generics).is_empty()
+    {
+        return Err(error(
+            "source discriminant requires its actual required non-GAT result",
+        ));
+    }
+    Ok(())
+}
+
 fn validate_member(facts: &Declarations, plan: &Plan) -> Result<(), &'static str> {
     if plan.member.parent != Some(plan.trait_.definition)
         || facts.associated.trait_owner(plan.member.definition) != Some(plan.trait_.definition)
@@ -77,7 +109,7 @@ fn validate_member(facts: &Declarations, plan: &Plan) -> Result<(), &'static str
             .generics
             .parameters
             .get(&plan.member.definition)
-            .is_none_or(|p| !p.is_empty())
+            .is_some_and(|p| !p.is_empty())
     {
         return Err("source discriminant changed its actual required member owner or parameters");
     }

@@ -135,17 +135,10 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
             )?,
             LangItem::TrivialClone => copying::validate_trivial(facts, catalog, &header)
                 .map_err(|message| Declarations::error(report, declaration.origin, message))?,
-            LangItem::Send | LangItem::Sync | LangItem::Unpin => {
-                if !header.members.is_empty() || header.written.supertraits != 0 {
-                    return Err(Declarations::error(
-                        report,
-                        declaration.origin,
-                        "source auto marker requires its actual empty declaration",
-                    ));
-                }
-            }
             LangItem::Tuple => validate_marker(report, facts, declaration)?,
-            LangItem::Freeze => freezing::validate(report, facts, declaration)?,
+            LangItem::Freeze | LangItem::Send | LangItem::Sync | LangItem::Unpin => {
+                freezing::validate(report, facts, declaration, role)?
+            }
             LangItem::Unsize | LangItem::CoerceUnsized => {
                 unsizing::validate(report, facts, catalog, declaration, role, self_type)?;
             }
