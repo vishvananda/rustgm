@@ -1,0 +1,58 @@
+{
+  "state": "independent observations and failures retained; no generated text reference",
+  "metadata": [
+    {
+      "directory": "observed-v1",
+      "results_sha256": "fe39eb988de33ef1bca42211d31c6b6da868764cfdd8052022ca883d7ff24518",
+      "binding_sha256": "c97ce27c341bca5ab43be4343d6c2d97d2e52dfd70bd477e686dfbf792b1b0da",
+      "observations": 94,
+      "infrastructure_failures": 0,
+      "status_prediction_disagreements": 0
+    },
+    {
+      "directory": "observed-extra-v1",
+      "results_sha256": "15d547d83240ac117e117bbc7ec975c8b59042d131eed3d38515dfab30b3eb15",
+      "binding_sha256": "f1611bbc5af21648d938fc853ddb1c420d7436f8b0fcc47b0108853a69f95c46",
+      "observations": 20,
+      "infrastructure_failures": 0,
+      "status_prediction_disagreements": 2
+    },
+    {
+      "directory": "observed-owned-v1",
+      "results_sha256": "ec5bdeb40e40f9b9d4f6d772a2cec0329096c88d96eabdbf905f47ac934a6eea",
+      "binding_sha256": "7c0eb00256507c1d4a300cadf9c3b4c7c9e50c2d4c37cd9cc1120c7a72337e59",
+      "observations": 2,
+      "infrastructure_failures": 0,
+      "status_prediction_disagreements": 0
+    }
+  ],
+  "native": {
+    "state": "passed",
+    "commands": 7,
+    "native_observations": 2,
+    "seconds": 4.6134904702194035,
+    "results_sha256": "cf9ef09b267f695b2827ccca4172f9bfa1d6bd8f7b1a94726d34a57afcf2f3f4",
+    "binding_sha256": "e4b935eec1ea61cb3a2a7101086e16b67d0743689f16db07023e0f7688e166b4",
+    "stdout": "3 3 2 33\n"
+  },
+  "native_plan_sha256": "120fc1eadd6a4e945f7718464de9599708e5e1c25600e518a5ef60afb0ab5fce",
+  "native_runner_sha256": "58cedde870e3dfb52d77d88ed21e4687c6fe474f8c6f504c7af6d748ea9aad9f",
+  "core": {
+    "infrastructure_failure": false,
+    "classification": "observed original-core blocker",
+    "expected_cli_sha256": "7ecaec04be6d49350536da3e78f5627df62046d3842bfd00f905250fc2a6095e",
+    "expected_cli_source": "explicit caller input",
+    "status": 1,
+    "first_error": "ERROR: file 12: 0: source macro contracts exceed their work or storage budget",
+    "inputs_unchanged": true,
+    "opened_source_count": 371,
+    "total_seconds": 6.497662833891809,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "80d0d9bfedb394adda5eafca7d9f6c920b72c7d30bbe94bf9c282efff0c746d0",
+      "whole-core.openat": "65d4743560694b76d2de66396cc4518ea1cde2936ae7fd36748dd057154b9be6",
+      "opened-sources.json": "563c9085c35224a8b66942ced6aee435250e2513993f395eaf2895d8955e2ade"
+    }
+  },
+  "performance_summary_sha256": "d0df724ce3154b9815d375d18bfe2b1fca4726e022356fbf8ab0e5c404ced083"
+}

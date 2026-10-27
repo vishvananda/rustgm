@@ -14,10 +14,12 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The current original-core observer passes scoped builtin Iter and reaches
-`${concat(...)}` in `fmt/num.rs:149` (LIB-039). All722 pinned inputs verify,
-206 original files are opened in2.376s and no artifact exists. The live tracker
-owns this result; older checkpoints retain their narrower evidence.
+The current original-core observer passes typed concat and numeric metavariable
+expressions, then rejects the source macro-contract work budget (LIB-042).
+All722 pinned inputs verify;371 files are opened in6.50s and no artifact exists.
+The live tracker owns current lane priorities and this result; the checkpoint
+paragraphs below retain earlier consumer context. Actual DispatchFromDyn is the
+next shared prerequisite for the unchanged Formatter receiver, ahead of shift/BitOr.
 
 - A: complete actual imported Provided execution. Names and receiver shapes now
   pass combined checks. Join selected checked headers, defining environments,

@@ -1,0 +1,10 @@
+{
+  "state": "new executable companion and observer frozen before first observation; original library transport failure retained",
+  "source_sha256": "eed7d803dc915177c7e1e8b63953bf2a9010fec5608d573fee231c9e328f7db8",
+  "observer_sha256": "b74f7c8b334cfd1486e49119c5b68e10e6d54b654a940740bc9cd63c81c52230",
+  "edition": 2024,
+  "expected_status": 0,
+  "expected_stdout": "3 3 2 33\n",
+  "expected_stderr": "",
+  "scope": "same source and C observer, real Rust and CPPGM native execution; no full-core claim"
+}

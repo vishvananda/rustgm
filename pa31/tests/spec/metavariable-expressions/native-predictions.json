@@ -1,0 +1,10 @@
+{
+  "state": "frozen before first native observation",
+  "source_sha256": "a3493f5702441d91db578686f1de24de7008e9a9a20d5a2025f23993157a3388",
+  "observer_sha256": "9ad451157bdf0beb0973acc7f13c5ccc2d262afcfb73a1c164bb6513859bc130",
+  "edition": 2024,
+  "expected_status": 0,
+  "expected_stdout": "3 3 2 33\n",
+  "expected_stderr": "",
+  "scope": "same source and C observer, real Rust and CPPGM native execution; no full-core claim"
+}

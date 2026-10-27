@@ -2,6 +2,13 @@
 
 Planned: no graded manifest or generated reference outputs yet.
 
+`spec/metavariable-expressions/` retains independently declared count/ignore/
+index/len/escaped-dollar protocols, genuine feature/hygiene opponents and a
+separate executable consumer. The 69-test combined gate and PA7/PA8 text suites
+pass. The native companion matches pinned Rust's `3 3 2 33`; source macro
+metadata transport and whole-library execution remain required. The protocol
+README records the retained failed hypotheses and development-build overhead.
+
 `spec/metavariable-concat/` retains LIB-039's original invoked-name reducer and
 feature opponent plus twenty protocol sources. Forty new pinned library-metadata
 observations cover operand categories, repetition, forwarding, definition-site
