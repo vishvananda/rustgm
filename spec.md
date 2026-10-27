@@ -853,6 +853,13 @@ repetition work; feature checks grant syntax authority only. The independently
 qualified [protocol sources](pa31/tests/spec/metavariable-concat/README.md)
 separate definition admission, actual invocation and generated-name resolution.
 
+The pinned concat parser requires the actual crate feature even for generated
+macro definitions with an internal feature allowance. Preserve that distinction
+from invocation-time allowance consumers. Literal symbols may still be typed
+DeferredLiteral payloads: validate suffix/radix through the shared literal
+producer without evaluating arbitrary-width integer spelling. The original
+source and typed fragment identity remain authoritative.
+
 Keep actual expansion ancestry separate from a token's syntax context and its
 physical source/edition provenance. A captured name does not determine the
 contexts of the surrounding generated macro body. Mark each definition token
