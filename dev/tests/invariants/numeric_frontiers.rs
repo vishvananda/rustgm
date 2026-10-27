@@ -147,3 +147,33 @@ fn ordinary_watches_and_failed_numeric_growth_keep_existing_authority() -> TestR
     assert!(context.steps > first);
     Ok(())
 }
+
+#[test]
+fn final_publication_rejects_only_live_numeric_frontiers() -> TestResult {
+    for mode in ["pending", "settled", "cancelled", "ordinary"] {
+        let mut context = Context::default();
+        let mut store = crate::types::Store::default();
+        let numeric = context.variable(Domain::Integer)?;
+        if mode != "ordinary" {
+            let output = projection(&mut context, &mut store, numeric)?;
+            let watch = context.watch_inputs(&[output, numeric], &[], true, Fallback::Predicate)?;
+            drain(&mut context, &store)?;
+            if mode == "cancelled" {
+                context.cancel_watch(watch)?;
+            } else if mode == "settled" {
+                let ty = TypeId::primitive(Primitive::I32);
+                let value = context.known(&store, ty)?;
+                context.equate(&store, numeric, value)?;
+                context.apply_normalization(&mut store, output, ty)?;
+                drain(&mut context, &store)?;
+            }
+        }
+        let result = context.finish(&mut store);
+        if mode == "pending" {
+            assert!(matches!(result, Err(Error::Normalization)));
+        } else {
+            assert!(result.is_ok(), "{mode}: {:?}", result.err());
+        }
+    }
+    Ok(())
+}

@@ -81,6 +81,9 @@ pub(super) struct Storage {
     changed: VecDeque<WatchId>,
 }
 impl Storage {
+    pub(super) fn numeric_frontier_pending(&self) -> bool {
+        self.fallback_watches != 0
+    }
     fn has_pending_resolution(&self) -> bool {
         !self.ready.is_empty() || !self.work.is_empty() || !self.changed.is_empty()
     }

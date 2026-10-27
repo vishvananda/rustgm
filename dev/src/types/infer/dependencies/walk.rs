@@ -136,9 +136,10 @@ impl Storage {
                     None
                 }
             }
-            Dependency::Type(term) => match context.terms[term.0 as usize].value {
-                Value::Variable(domain) => Some(domain),
-                _ => {
+            Dependency::Type(term) => {
+                if let Value::Variable(domain) = context.terms[term.0 as usize].value {
+                    Some(domain)
+                } else {
                     let own = match self.watches[id.0 as usize].fallback {
                         super::Fallback::Projection(root) => context.root(root)? == term,
                         _ => false,
@@ -148,7 +149,7 @@ impl Storage {
                     }
                     None
                 }
-            },
+            }
         };
         Ok(match (domain, visible) {
             (Some(Domain::Integer | Domain::Float), true) => Visit::Numeric,

@@ -225,10 +225,10 @@ impl Context {
     pub(in crate::types::infer) fn default_numeric_frontier(
         &mut self,
     ) -> Result<Option<bool>, Error> {
-        if !self
+        if self
             .dependencies
             .as_ref()
-            .is_some_and(|s| s.fallback_watches != 0)
+            .is_none_or(|s| s.fallback_watches == 0)
         {
             return Ok(None);
         }

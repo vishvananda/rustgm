@@ -909,7 +909,12 @@ impl Context {
         self.solve_types(store)
     }
     fn solve_types(&mut self, store: &mut Store) -> Result<Solved, Error> {
-        if self.has_deferred_equations() {
+        if self.has_deferred_equations()
+            || self
+                .dependencies
+                .as_ref()
+                .is_some_and(|s| s.numeric_frontier_pending())
+        {
             return Err(Error::Normalization);
         }
         let mut resolved = vec![None; self.terms.len()];
