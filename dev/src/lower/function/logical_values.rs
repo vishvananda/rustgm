@@ -55,7 +55,7 @@ impl Lower<'_, '_, '_> {
             return Err("source discriminant requires one evaluated shared reference");
         };
         let input = *input;
-        if signature != selected.signature()
+        if !selected.opened_signature_matches(self.context.types, signature)
             || value.ty != selected.output()
             || self
                 .body

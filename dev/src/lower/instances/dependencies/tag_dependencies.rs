@@ -36,7 +36,7 @@ pub(super) fn require(
     else {
         return Err("source discriminant requires exactly one reference");
     };
-    if signature != selected.signature()
+    if !selected.opened_signature_matches(&facts.types, signature)
         || value.ty != selected.output()
         || body
             .values

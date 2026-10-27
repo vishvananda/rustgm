@@ -41,13 +41,17 @@ impl Machine<'_, '_> {
             .evaluator
             .checked_source_discriminant(target, body.source)?
             .ok_or("source discriminant lost its checked source declaration")?;
-        let arguments = super::reached_layout::checked_call_arguments(
+        let arguments = super::reached_layout::checked_call_arguments_with_signature(
             self.evaluator.facts(),
             body,
             frame,
             position,
             target,
             (selected.definition(), selected.output()),
+            |actual, public| {
+                public == selected.signature()
+                    && selected.opened_signature_matches(&self.evaluator.facts().types, actual)
+            },
         )?;
         let [input] = body
             .arguments

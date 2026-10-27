@@ -95,7 +95,7 @@ fn actual_headers_and_source_incarnations_authenticate_one_cold_owner() -> TestR
 }
 #[test]
 fn canonical_query_search_and_body_normalize_actual_declared_repr() -> TestResult {
-    let report = provider("consumers/actual-calls")?;
+    let report = provider("consumers/opened-scope")?;
     // This group owns actual checked-body/normalizer facts; the next group owns reached CTFE.
     let mut analysis = pipeline::analyze(&report, declarations::analyze(&report)?)?;
     observe_call_signatures(&report, &analysis.facts)?;
@@ -183,6 +183,7 @@ fn canonical_query_search_and_body_normalize_actual_declared_repr() -> TestResul
 }
 fn observe_call_signatures(report: &Report, facts: &Declarations) -> TestResult {
     let ast = &report.package.units[0].configured.ast;
+    let mut first_owner = None;
     for (index, node) in facts.nodes[0].iter().enumerate() {
         let Some(crate::sema::model::Operation::Call { signature, .. }) = node.operation else {
             continue;
@@ -191,17 +192,24 @@ fn observe_call_signatures(report: &Report, facts: &Declarations) -> TestResult 
         let crate::syntax::ast::Kind::Call { callee, .. } = ast.node(id).kind else {
             continue;
         };
+        let key = crate::resolve::unit::NodeKey {
+            file: crate::resolve::unit::FileId(0),
+            node: id,
+        };
+        let Some(callable) = facts
+            .node(crate::resolve::unit::NodeKey {
+                node: callee,
+                ..key
+            })
+            .and_then(|n| n.ty)
+        else {
+            continue;
+        };
         let Some(Kind::FunctionItem {
             item,
             signature: public,
             arguments,
-        }) = facts
-            .node(crate::resolve::unit::NodeKey {
-                file: crate::resolve::unit::FileId(0),
-                node: callee,
-            })
-            .and_then(|n| n.ty)
-            .and_then(|ty| facts.types.kind(ty))
+        }) = facts.types.kind(callable)
         else {
             continue;
         };
@@ -213,6 +221,38 @@ fn observe_call_signatures(report: &Report, facts: &Declarations) -> TestResult 
             != Some(crate::support::bindings::SourceIntrinsic::DiscriminantValue)
         {
             continue;
+        }
+        let Some(crate::sema::model::Operation::Call {
+            source_use: Some(source_use),
+            ..
+        }) = node.operation
+        else {
+            return Err("checked call source use".into());
+        };
+        let owner = source_use.owner(facts)?;
+        let catalog = facts.source_bindings.as_deref().ok_or("source catalog")?;
+        catalog.validate_discriminant_opening(report, facts, owner, key, (callable, signature))?;
+        assert!(
+            catalog
+                .validate_discriminant_opening(report, facts, owner, key, (callable, public))
+                .is_err()
+        );
+        if let Some(other) = first_owner {
+            if other != owner {
+                assert!(
+                    catalog
+                        .validate_discriminant_opening(
+                            report,
+                            facts,
+                            other,
+                            key,
+                            (callable, signature)
+                        )
+                        .is_err()
+                );
+            }
+        } else {
+            first_owner = Some(owner);
         }
         eprintln!(
             "actual-discriminant-call node={id:?} offset={} item={item:?} args={arguments:?} public={public:?}:{:?} opened={signature:?}:{:?}",

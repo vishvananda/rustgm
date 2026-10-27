@@ -1,4 +1,5 @@
 //! Reached discriminant calls retain actual source identity and ordinary call proof.
+mod opened_calls;
 use super::Catalog;
 use crate::{
     resolve::{body_origin::BodyOrigin, expansion::Report, model::DefId},
