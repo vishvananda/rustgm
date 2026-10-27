@@ -151,6 +151,21 @@
     "original_drop": "object generation rejects missing freeze lang_item; metadata remains accepted; original prediction retained"
   },
   "native_companion": {
+    "source": "pa31/tests/spec/source-try-blocks/source-native-complete-drop.rs",
+    "sha256": "76a3e7ad01e41bbc3a1b9f220f9e75fcfc8e3c41aaaaff4b9ae663a9c62aa1cc",
+    "base_source": "pa31/tests/spec/source-try-blocks/source-drop-exit.rs",
+    "base_sha256": "0aa1b4c2abef2e98a7db6a6e6a1deac9dd0b1d2b2eb403a0e080e4c8bddd811a",
+    "adaptation": "original Drop program bodies plus genuine Freeze and exact existing source-freeze/automatic-cleanup Destruct/drop_glue declaration family",
+    "observer": "pa31/tests/spec/source-try-blocks/drop-observer.c",
+    "observer_sha256": "66762de5df8969e861f6738db9b6d46a3efcc57465db57691ff051879aa69aef",
+    "edition": "2024",
+    "expected_status": 0,
+    "native_stdout": "21\n",
+    "status": "frozen; unobserved",
+    "hooks_source": "pa31/tests/spec/source-freeze/automatic-cleanup.rs",
+    "hooks_source_sha256": "633442327cf88bd6f30745d737706695860e5ea96cdbfd2662a81cdb25e1d110"
+  },
+  "native_companion_v1": {
     "source": "pa31/tests/spec/source-try-blocks/source-native-drop-exit.rs",
     "sha256": "29dabe8703ef7f0a611000f000f43e524921c9059b9ae70ffae5d8363a12baf1",
     "base_source": "pa31/tests/spec/source-try-blocks/source-drop-exit.rs",
@@ -161,6 +176,12 @@
     "edition": "2024",
     "expected_status": 0,
     "native_stdout": "21\n",
-    "status": "frozen; unobserved"
+    "status": "frozen; unobserved",
+    "observation": {
+      "binding_sha256": "ab2151ca928d588259d8dd31772bc6bfab15d51a922e2617a5b82f670db0a72e",
+      "results_sha256": "7e913389fed7db75b061091660593a8a15244f33414ef70503aac496150ec500",
+      "rustc_object_status": 1,
+      "diagnostic": "requires drop_glue lang_item"
+    }
   }
 }
