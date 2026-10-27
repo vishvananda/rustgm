@@ -50,9 +50,16 @@ pub enum LangItem {
     PanicLocation,
     PanicInfo,
     TrivialClone,
+    TryTrait,
+    TryFromResidual,
+    TryFromOutput,
+    TryBranch,
+    IntoTryType,
+    ControlFlowContinue,
+    ControlFlowBreak,
 }
 impl LangItem {
-    pub const ALL: [Self; 35] = [
+    pub const ALL: [Self; 42] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -88,6 +95,13 @@ impl LangItem {
         Self::PanicLocation,
         Self::PanicInfo,
         Self::TrivialClone,
+        Self::TryTrait,
+        Self::TryFromResidual,
+        Self::TryFromOutput,
+        Self::TryBranch,
+        Self::IntoTryType,
+        Self::ControlFlowContinue,
+        Self::ControlFlowBreak,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -127,6 +141,13 @@ impl LangItem {
             Self::PanicLocation => 32,
             Self::PanicInfo => 33,
             Self::TrivialClone => 34,
+            Self::TryTrait => 35,
+            Self::TryFromResidual => 36,
+            Self::TryFromOutput => 37,
+            Self::TryBranch => 38,
+            Self::IntoTryType => 39,
+            Self::ControlFlowContinue => 40,
+            Self::ControlFlowBreak => 41,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -168,6 +189,13 @@ impl LangItem {
             "panic_location" => Some(Self::PanicLocation),
             "panic_info" => Some(Self::PanicInfo),
             "trivial_clone" => Some(Self::TrivialClone),
+            "Try" => Some(Self::TryTrait),
+            "from_residual" => Some(Self::TryFromResidual),
+            "from_output" => Some(Self::TryFromOutput),
+            "branch" => Some(Self::TryBranch),
+            "into_try_type" => Some(Self::IntoTryType),
+            "Continue" => Some(Self::ControlFlowContinue),
+            "Break" => Some(Self::ControlFlowBreak),
             _ => None,
         }
     }

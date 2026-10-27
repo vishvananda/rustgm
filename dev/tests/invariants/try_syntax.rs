@@ -61,7 +61,9 @@ fn grammar_keeps_real_block_edges_statement_boundaries_and_explicit_semantic_fen
             .err()
             .ok_or("try gained execution")?;
         assert!(
-            error.message.contains("source Try control-flow semantics"),
+            error
+                .message
+                .contains("source Try requires its actual provider catalog"),
             "{error}"
         );
         let question = report("fn f()->Option<u8>{Some(7)?;None}", edition)?;
@@ -69,7 +71,9 @@ fn grammar_keeps_real_block_edges_statement_boundaries_and_explicit_semantic_fen
             .err()
             .ok_or("question mark gained execution")?;
         assert!(
-            error.message.contains("source Try control-flow semantics"),
+            error
+                .message
+                .contains("source Try requires its actual provider catalog"),
             "{error}"
         );
     }

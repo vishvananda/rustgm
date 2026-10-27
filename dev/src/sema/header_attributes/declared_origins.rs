@@ -68,8 +68,8 @@ pub(in crate::sema) fn observe_owner(
         return Ok(());
     }
     if !admitted(report, declaration) {
-        reserve_source_contracts(facts, 3, 0)?;
-        if !pointee_role_site(report, declaration) {
+        reserve_source_contracts(facts, 5, 0)?;
+        if !retained_role_site(report, declaration) {
             return Ok(());
         }
     }
@@ -418,7 +418,7 @@ fn validate_source(
     }
     Ok(())
 }
-fn pointee_role_site(report: &Report, key: NodeKey) -> bool {
+fn retained_role_site(report: &Report, key: NodeKey) -> bool {
     report
         .resolution
         .source_bindings
@@ -428,6 +428,8 @@ fn pointee_role_site(report: &Report, key: NodeKey) -> bool {
                 LangItem::PointeeTrait,
                 LangItem::MetadataType,
                 LangItem::DynMetadata,
+                LangItem::ControlFlowContinue,
+                LangItem::ControlFlowBreak,
             ]
             .into_iter()
             .any(|role| {
@@ -476,6 +478,47 @@ pub(in crate::sema) fn pointee_source_image(
         .ok_or_else(|| Error::unlocated("source Pointee role lacks its retained owner witness"))?;
     validate_source(facts, report, declaration.origin, header)?;
     Ok(header.source.clone())
+}
+
+/// Variant-role evidence shares the existing configured-owner/image producer.
+/// It never completes a function/trait attribute contract for this variant.
+pub(in crate::sema) fn require_control_flow_variant(
+    facts: &Declarations,
+    report: &Report,
+    declaration: crate::resolve::bindings::Declaration,
+) -> Result<(), Error> {
+    charge_source_contract_query(facts, 3)?;
+    let actual = report
+        .resolution
+        .definitions
+        .get(declaration.definition.0 as usize)
+        .ok_or_else(|| Error::unlocated("source control-flow variant lost its definition"))?;
+    let reserved = report
+        .resolution
+        .source_bindings
+        .as_deref()
+        .ok_or_else(|| Error::unlocated("source control-flow variant lost its provider"))?;
+    if actual.kind != DefKind::Variant
+        || actual.namespace != crate::resolve::model::Namespace::Value
+        || actual.node != Some(declaration.origin)
+        || ![LangItem::ControlFlowContinue, LangItem::ControlFlowBreak]
+            .into_iter()
+            .any(|role| reserved.language(role) == Some(declaration))
+    {
+        return Err(Error::unlocated(
+            "source control-flow variant changed its actual role or kind",
+        ));
+    }
+    let header = facts
+        .must_use_contracts
+        .as_deref()
+        .and_then(|owner| owner.headers.as_deref())
+        .filter(|ledger| ledger.local.complete)
+        .and_then(|ledger| ledger.local.declarations.get(&declaration.origin))
+        .ok_or_else(|| {
+            Error::unlocated("source control-flow variant lacks its retained owner witness")
+        })?;
+    validate_source(facts, report, declaration.origin, header)
 }
 
 /// Replay an already Report-authenticated source seal while the declaration
