@@ -164,11 +164,53 @@ pub(super) fn prepare(
         descriptor: rows.descriptor(),
         provider_index: authority.reservation.index(),
     };
-    let symbol = staged_headers::template_ports::symbol_from(&context, definition, work)?;
+    let symbol = selected_symbol(&context, raw, definition, work)?;
     declarations::preflight_scopes(facts, &scopes, work)?;
     publish(facts, definition, callable, symbol, &mut scopes, work)?;
     template_demands::mark_declarations(&mut selected.recipes, &scopes)?;
     Ok(Demand::Ready(()))
+}
+
+// An actual impl member has a canonical catalog owner, not a public extern path.
+fn selected_symbol(
+    context: &mapped_source::Context<'_>,
+    raw: &crate::support::crates::generics::source::FunctionHeader,
+    definition: DefId,
+    work: &mut ReservationWork,
+) -> Result<Option<String>, Error> {
+    use crate::support::crates::generics::source as s;
+    work.charge(4)?;
+    let rows = context.descriptor.rows();
+    if let Some(parent) = raw.parent
+        && let Some(s::HeaderRef::Implementation(index)) = rows.header(parent).map_err(error)?
+    {
+        let implementation = rows
+            .implementations
+            .get(index as usize)
+            .ok_or_else(|| error("selected method lost its actual impl header"))?;
+        if implementation.self_definition != parent
+            || rows.declarations[raw.declaration.0 as usize]
+                .definition
+                .parent
+                != Some(parent)
+            || rows.declarations[parent.0 as usize].definition.kind != s::DefinitionKind::SelfType
+        {
+            return Err(error(
+                "selected method changed its actual impl lexical owner",
+            ));
+        }
+        let owner = context
+            .catalog
+            .definition_at(context.descriptor.identity(), parent)
+            .map_err(error)?;
+        let declaration = context.catalog.declaration(owner).map_err(error)?;
+        context
+            .catalog
+            .validate_declaration(declaration, owner, crate::resolve::model::DefKind::SelfType)
+            .map_err(error)?;
+        return Ok(None);
+    }
+    staged_headers::template_ports::symbol_from(context, definition, work).map(Some)
 }
 
 fn callable(
@@ -245,7 +287,7 @@ fn publish(
     facts: &mut Declarations,
     definition: DefId,
     callable: staged_headers::Callable,
-    symbol: String,
+    symbol: Option<String>,
     scopes: &mut [template_demands::Declaration],
     work: &mut ReservationWork,
 ) -> Result<(), Error> {
@@ -297,11 +339,13 @@ fn publish(
         facts.lifetimes.functions.capacity(),
         1,
     );
-    growth.include(Growth::map::<DefId, String>(
-        linkage.symbols.len(),
-        linkage.symbols.capacity(),
-        1,
-    ));
+    if symbol.is_some() {
+        growth.include(Growth::map::<DefId, String>(
+            linkage.symbols.len(),
+            linkage.symbols.capacity(),
+            1,
+        ));
+    }
     if receiver.is_some() {
         growth.include(Growth::map::<DefId, (TypeId, u32)>(
             facts.methods.receivers.len(),
@@ -341,7 +385,9 @@ fn publish(
         })
     });
     headers.entries.insert(definition, header);
-    linkage.symbols.insert(definition, symbol);
+    if let Some(symbol) = symbol {
+        linkage.symbols.insert(definition, symbol);
+    }
     facts.lifetimes.functions.insert(definition, regions);
     if let Some(receiver) = receiver {
         facts.methods.receivers.insert(definition, receiver);
