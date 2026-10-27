@@ -60,14 +60,14 @@ impl Stage {
         budget.charge(before.visits.saturating_mul(2).saturating_add(1))?;
         // This shared work count is checked inside the owner installer BEFORE
         // its first write; failure cannot leave a partially installed owner.
-        let mut work = budget.work;
+        let mut work = budget.work.get();
         let installed = facts.associated.install_imported(
             &facts.types,
             crate::sema::crates::ImportedOwners::Ordinary(Rc::clone(&self.graph)),
             owners,
             &mut work,
         );
-        budget.work = work;
+        budget.work.set(work);
         installed.map_err(error)?;
         // Every remaining key, index and allocation bound was checked above.
         // No fallible remap, quota check or proof follows this first publication.

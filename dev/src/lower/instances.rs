@@ -106,7 +106,6 @@ pub(crate) fn inspect_source_trait_inputs_with_numbering(
             super::transported_source::Source::begin_trait_numbered(
                 report, facts, checked, identity,
             )
-            .map_err(|e| diagnostic(report, None, e.into()))
         },
         |source, facts| source.complete_trait_numbered(report, facts),
     )

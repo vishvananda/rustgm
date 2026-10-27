@@ -277,6 +277,19 @@ fn actual_caller_policy(
     let denied = facts.recorded_caller_tracking(owner).is_err();
     facts.types = original;
     assert!(denied, "foreign type arena lent selected caller policy");
+    let headers = facts
+        .crates
+        .as_deref()
+        .and_then(|linkage| linkage.originals.as_deref())
+        .ok_or_else(|| Error::unlocated("selected caller payer disappeared"))?;
+    let old = headers.work.replace(crate::support::crates::MAX_COMPONENTS);
+    let denied = facts.recorded_caller_tracking(owner).is_err();
+    let attempted = headers.work.replace(old);
+    assert!(
+        denied && attempted > crate::support::crates::MAX_COMPONENTS,
+        "selected caller queries did not charge their actual imported payer"
+    );
+
     Ok(())
 }
 
