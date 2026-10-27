@@ -1066,6 +1066,18 @@ the latter's lifetime evidence on the requesting selector's existing stack.
 Immutable structural facts may be cached; caller permissions and witnesses must
 remain in their own proof scope. Object auto bounds add no vtable method slots.
 
+Source dynamic receivers use the genuine DispatchFromDyn declaration and ordinary
+implementation selection. Open the complete method signature and its declaration
+environment, retaining late binders and unused formals; body-specific aliases do
+not replace that environment. A query-local target may reuse the genuine Unsize
+formal only after proving it absent from the signature and complete scope. Keep
+the actual Self/target/principal premises local, and authenticate source headers,
+arena identity and completed declaration/impl state on warm entries too. Receiver
+compatibility grants no vtable, instance, body or metadata execution permission.
+Preserve written impl bounds rather than inventing an Unsize premise on every
+Dispatch impl. The [source receiver checkpoint](docs/source-dispatch-from-dyn-checkpoint.md)
+records its source and native consumers.
+
 Explicit auto-trait impls use typed builtin identities in the ordinary header,
 overlap and candidate indexes. Any explicit impl replaces the structural default
 for its whole nominal family, including applications that fail its conditions.
@@ -4294,6 +4306,14 @@ work and reducing retained representation before tuning individual instructions:
   original-input width separately. The
   [source-artifact/readiness checkpoint](docs/source-artifact-readiness-checkpoint.md)
   records that scope boundary and its measured costs.
+- Share immutable clause and parameter prefixes for method-local proof extensions.
+  Retain only the actual additional rows and their opening; do not flatten an
+  inherited map, rebuild its indexes or copy a principal's whole implied closure
+  for every method. Empty declaration scopes may share their completed parent
+  only when they add no own rows and preserve frozen promises and alias policy.
+  Account for ordinary enclosing/payload growth as well as query rows, prepay
+  failed growth, and vary method count and inherited depth together. Shared
+  carrier storage never carries a completed caller proof across those queries.
 - Reuse per-body recording and traversal buffers without retaining previous
   bodies' semantic authority. Answer empty work queues before allocating their
   continuation machinery. Box rare large diagnostics rather than inflating every

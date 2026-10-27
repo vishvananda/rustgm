@@ -156,6 +156,16 @@ fn consume_annotation(
         .name(forest, report.package.unit(declaration.file).source.text())
         .and_then(Consumer::named);
     match consumer {
+        Some(Consumer::InheritedOverflow) => {
+            crate::sema::header_attributes::consume_inherited_overflow(
+                report,
+                facts,
+                declaration,
+                attribute,
+                forest,
+                allowances,
+            )?;
+        }
         Some(Consumer::Coverage) => {
             if *covered {
                 return Err(Error::at(

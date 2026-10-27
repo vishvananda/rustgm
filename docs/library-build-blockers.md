@@ -148,8 +148,20 @@ The immutable CLI62daa4a5 advances original core to LIB-045.
 the unfinished handler. Twenty-one combined controls pass with authenticated
 source-identical static/build evidence. The new producer emits exactly the
 LowIR used by the adapted native observer (`-1 -7`); no new native execution or
-complete C enum ABI is claimed. Full original Neg attributes and the actual
-Formatter/helper name graph remain active prerequisites.
+complete C enum ABI is claimed. The original Neg diagnostic/overflow attributes
+now pass18 combined controls with both strict modes and actual cold layout
+checks. The actual Formatter/helper name graph and varying driver overflow
+policy remain required.
+
+The [source receiver checkpoint](source-dispatch-from-dyn-checkpoint.md) now
+passes22 combined controls and an exact-source native observer returning7 under
+both pinned Rust and the locked backend. Shared-prefix scaling varies methods
+and inherited depth together; actual ordinary parameter-table growth is recorded.
+Full CI40501891741 on a0c failed six stale private guards (feature-word/role
+counts, newly supported declaration rejection and the earlier enum-index
+diagnostic). All six corrected controls and ten lexer cases pass in108.92s;
+unknown receiver-role denial and wrong-kind validation remain explicit.
+This is no whole-core artifact or additional PA completion.
 
 ## Current execution queue
 
@@ -160,8 +172,8 @@ concrete; a private Ready state is not an executable result.
 | Owner | Issues and owning assignments | Next observable exit |
 | --- | --- | --- |
 | A | LIB-045, PA41 required by PA32; PA31 source bindings | Captured cfg strings/atomic facts are qualified. Investigate real asm syntax, operands/options, safety and explicit backend capabilities at the unchanged SSE consumer. Freeze typed interface and backend feasibility before central edits; no placeholder, skipped stdarch or fabricated scalar permission. |
-| B | LIB-029/021/034, PA25–28/31 | Shared Result/Option identities are integrated. Complete actual Neg on the enum-discriminant path, then genuine Arguments/PanicInfo/handler and false assertion through Abort; preserve actual Formatter fields and all demanded helper proofs. |
-| C | PA27/28/31 receiver bindings | Source discriminant integration and native-1 300 0 1 7 pass. Implement genuine DispatchFromDyn with real impl/receiver proof for unchanged Formatter, ahead of Shl/BitOr; preserve actual source/arena/epoch boundaries. |
+| B | LIB-029/021/034, PA25–28/31 | Original Neg attributes are integrated. Review inert diagnostic-name storage against the pinned compiler, then complete genuine Arguments/PanicInfo/handler and false assertion through Abort; preserve actual Formatter fields and all demanded helper proofs. |
+| C | PA26/31 source operator bindings | DispatchFromDyn now has combined proof/scaling and exact-source native7. Implement genuine Shl/BitOr for the actual FormattingOptions/Arguments path, retaining real method/Rhs/Output/impl/const proof before scalar emission and ordinary overload calls. |
 | Integrator | LIB-008/045, PA26/31/32/41 | Integrate qualified source consumers and progress unchanged core through parsing/checking/export. Current frontier is genuine stdarch inline assembly; Neg native/receiver consumer integration remains active. |
 | Integrator, queued independent preparation | LIB-009/010/011, PA30/33/34/36 | Selected alloc/std dependency/build/runtime inventory and small real ABI/build consumers; do not wait until core works to discover graph prerequisites. |
 

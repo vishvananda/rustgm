@@ -399,3 +399,15 @@ the supported typed enum-to-isize cast. The contract records both hashes and
 the retained panic-hook/C-enum-ABI setup failures. Full original Neg declaration
 attributes, runtime overflow and C enum ABI remain required. This checkpoint
 does not complete formatting or panic execution.
+
+The original-header control retains every pinned Neg method attribute and
+authenticates diagnostic `neg` against the real LangItem::Neg owner. The fixed
+checked-overflow profile validates its inherited-overflow word without adding
+a context field or changing checked arithmetic and const validity. Five
+unaffected controls retain actual passes; the original-header and updated cold
+guard pass separately with both strict modes. Reservations grows2048 to2072
+bytes; hot body/IR widths stay stable. The exact contract retains failed
+setup/lint receipts and independent checked/unchecked observations. Unchecked
+driver contexts, varying foreign policy and broader closure grammar remain
+required. The complete fmt::write input extends pending real name composition;
+it does not establish Formatter or panic execution.

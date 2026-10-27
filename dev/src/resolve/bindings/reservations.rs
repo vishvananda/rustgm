@@ -41,7 +41,7 @@ pub struct Reservations {
     intrinsics: HashMap<DefId, IntrinsicDeclaration>,
     denied_implementations: HashSet<DefId>,
     pub(super) header_attributes: [HeaderAttributes; LangItem::ALL.len()],
-    pub(super) diagnostics: [Option<Declaration>; 34],
+    pub(super) diagnostics: [Option<Declaration>; 35],
     pub steps: usize,
 }
 impl Reservations {
@@ -169,7 +169,7 @@ fn reserve_all(
         intrinsics: HashMap::default(),
         denied_implementations: HashSet::default(),
         header_attributes: [HeaderAttributes::EMPTY; LangItem::ALL.len()],
-        diagnostics: [None; 34],
+        diagnostics: [None; 35],
         steps: 0,
     };
     let parents = parents(package, facts);

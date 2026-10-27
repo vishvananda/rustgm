@@ -95,10 +95,40 @@ reference call and oppose unproved versus inherited written bounds. No old
 observations were rerun. The source reducer and all predicted outcomes remain in
 `pa31/tests/spec/source-dispatch-from-dyn`.
 
-Native execution of the reference-call observer (expected7), combined CLI
-qualification and the actual unchanged Formatter/Options/Error/Write graph remain
-required. In that full graph Write's retained default bodies need the actual
+The integrator authenticated all2926 committed fingerprints and200 evidence
+files before the normal merge. Its combined gate passed22 exact controls,
+both strict modes, formatting, architecture and build in257.50s:
+`obj/qualification/fast/1793103282045873268/receipt.json`, SHA-256
+`581e7b497c1eca7abbd3d14e6a032fab23189e9766475b5c460668fc90a41e8c`.
+This includes the source Neg/Not callers of the shared parameter machinery;
+the previously native-qualified Neg LowIR remains byte-identical.
+
+## Exact-source native followup
+
+The first object observation of the metadata-only source lacked the real Freeze
+language item; that failure is retained. A separately frozen successor adds the
+complete pinned Freeze declaration and auto_traits request without changing
+the receiver, implementation or observer. Pinned Rust and the locked CPPGM
+object backend then both execute the exact same Rust source with the same C
+observer: stdout7 followed by newline, status0 and empty stderr. The candidate
+performs full source/body/original/instance proof before writing LowIR.
+The initial candidate command used an unsupported driver option; its failure is
+retained, and the successful successor uses the existing reviewed object bridge.
+No backend implementation or LowIR vocabulary changed.
+
+The owning native input is `native-followup/actual-reference-call.rs`. Its
+producer passes the original and completed-prefix cases in a focused11-test
+gate with both strict modes in109.48s, receipt
+`obj/qualification/fast/1793103964364618920/receipt.json`. Frozen plans, actual
+commands, raw streams and artifact hashes remain under
+`obj/parallel/source-dispatch-integration-v1/`; successful objects/executables
+were removed after their hashes and observations were recorded.
+
+Combined CLI qualification, metadata transport and the actual unchanged
+Formatter/Options/Error/Write graph remain required. In that full graph Write's
+retained default bodies need the actual
 fmt::write name/body closure. The separately authored small Formatter is not a
 replacement. Shl/BitOr are still declaration-only and execution-fenced; no artifact
 transport, profile expansion, reference generation or assignment activation is
-part of this checkpoint.
+part of this checkpoint. This native source protocol does not replace those
+complete library definitions or complete an assignment.

@@ -117,6 +117,54 @@ pub(in crate::sema) fn consume_const_panic(
     Ok(())
 }
 
+/// This driver's fixed checked profile already emits every arithmetic check.
+/// The word grants no caller context, const eligibility or imported permission.
+pub(in crate::sema) fn consume_inherited_overflow(
+    report: &Report,
+    facts: &mut Declarations,
+    declaration: NodeKey,
+    attribute: Attribute,
+    forest: &crate::syntax::token_tree::Forest,
+    allowances: &mut crate::resolve::expansion::MacroAllowanceSession<'_>,
+) -> Result<(), Error> {
+    facts.reserve_must_use_source(declaration, attribute.span)?;
+    let error = |message| Error::at(declaration.file, attribute.span.start, message);
+    if attribute.unsafe_wrapper || attribute.input != Input::Empty {
+        return Err(error("inherited overflow policy requires a word attribute"));
+    }
+    let name = forest
+        .tree(attribute.path.start)
+        .ok_or_else(|| error("overflow policy lost its actual name"))?
+        .span;
+    if report.package.source_core().is_none()
+        || (!report.package.requested_internal_attributes()
+            && !allowances.allows_at(
+                declaration.file,
+                name,
+                &crate::resolve::bindings::FeatureName::new("rustc_attrs").map_err(error)?,
+            )?)
+    {
+        return Err(error(
+            "inherited overflow policy requires its rustc_attrs source profile",
+        ));
+    }
+    let ast = &report.package.unit(declaration.file).configured.ast;
+    let valid = match ast.node(declaration.node).kind {
+        Kind::Closure { .. } => true,
+        Kind::Item(index) => matches!(
+            ast.items[index as usize].kind,
+            ItemKind::Function { body: Some(_), .. }
+        ),
+        _ => false,
+    };
+    if !valid {
+        return Err(error(
+            "inherited overflow policy requires a function body or closure",
+        ));
+    }
+    Ok(())
+}
+
 impl Declarations {
     /// Each query authenticates the completed physical header before reading
     /// the retained words. No marker result is a role, instance or call proof.
