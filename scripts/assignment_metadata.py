@@ -7,7 +7,7 @@ import sys
 from course import ROOT, load_cases
 from check_native import classification
 from check_layouts import classification as layout_classification
-from assignment_plan import checked_path, validate as validate_plan
+from assignment_plan import checked_path, fixture_owners, validate as validate_plan
 
 
 def collect(root=ROOT):
@@ -20,8 +20,12 @@ def collect(root=ROOT):
                 raise ValueError(f"implemented assignment needs release evidence: {stage['path']}")
             for path in stage["release_evidence"]:
                 checked_path(root, path)
+    units, rows = {}, []
     if (root / "assignment-plan.json").exists():
-        validate_plan(root, stages)
+        ordered, rows = validate_plan(root, stages)
+        units = {unit["id"]: unit for unit in ordered}
+    foundational = {stage["path"] for stage in stages
+                    if stage["number"] <= 24 and stage["status"] != "planned"}
     active = [stage["path"] for stage in stages if stage["status"] != "planned"]
     configured = re.search(r"^ACTIVE_PAS\s*:=\s*(.*)$", (root / "Makefile").read_text(), re.M)
     if configured is None or configured[1].split() != active:
@@ -41,6 +45,9 @@ def collect(root=ROOT):
                 or manifest.get("additional_modes", []) != stage.get("additional_modes", [])):
             raise ValueError(f"assignment modes disagree with manifest: {folder}")
         for case in cases:
+            owners = fixture_owners(stage, case, units, rows)
+            if owners is not None:
+                owners |= foundational
             mode = case.get("mode", manifest["mode"])
             try:
                 if mode == "--emit-lowir":
@@ -51,7 +58,9 @@ def collect(root=ROOT):
                 raise ValueError(f"{stage['path']}/{case['path']}: {error}") from error
             for feature in case.get("features", []):
                 owner = re.match(r"pa(\d+)\.", feature)
-                if owner and int(owner[1]) > stage["number"]:
+                future = owner and (f"pa{owner[1]}" not in owners if owners is not None
+                                    else int(owner[1]) > stage["number"])
+                if future:
                     raise ValueError(f"fixture uses a future-stage feature: {folder / case['path']}: {feature}")
         loaded.append((stage, manifest, cases))
     return stages, loaded

@@ -130,6 +130,13 @@ scope, predecessor IDs and executable exit are in assignment-plan.json.
 | 36 | PA43 | Async ownership and pinning (`async-ownership`) | missing | unpublished |
 | 37 | PA44 | Complete frontend acceptance (`frontend-acceptance`) | missing | unpublished |
 
+A fixture can declare `work_units` selecting its actual owning unit(s). Feature
+owners are then checked against those units' transitive prerequisite graph and
+the active PA1–PA24 foundation. Thus a source-hook fixture can explicitly depend
+on PA31 declaration binding without an unrelated PA42 async exemption. Undeclared
+legacy cases retain the existing numeric placement rule. This changes scheduling
+and fixture validation, never semantic feature or execution permission.
+
 ## Next concrete work and publication queue
 
 1. Integrator: close source-declarations' LIB-046 storage growth, then rerun
@@ -180,3 +187,9 @@ The first graph check correctly caught requirement26.1 mapped only to a complete
 kernel; its ordinary lookup residual now also maps to hook-closure. No compiler
 behavior or reference bytes changed to obtain these status/plan results. This
 is not a new full compiler release/performance run.
+
+The fixture-dependency follow-up passes236 harness tests plus the same complete
+layout/registration/upstream checks in13.75s (actual command time is retained
+in `obj/parallel/assignment-reanalysis-v4/receipt.json`). It verifies an explicitly
+owned source-binding prerequisite is admitted and unrelated future features
+still reject. Legacy fixture and oracle bytes remain unchanged.

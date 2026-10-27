@@ -87,6 +87,31 @@ def unique(values, owner):
     return values
 
 
+def fixture_owners(stage, case, units, rows):
+    """An explicit owned unit admits its prerequisites, never arbitrary later PAs."""
+    selected = case.get("work_units")
+    if selected is None:
+        return None
+    if (not isinstance(selected, list) or not selected
+            or any(not isinstance(value, str) for value in selected)):
+        raise ValueError("fixture work_units must be a nonempty list of unit IDs")
+    unique(selected, case["path"])
+    needed = set()
+    for key in selected:
+        unit = units.get(key)
+        if unit is None or (unit["owner"] != stage["path"] and not any(
+                row["pa"] == stage["number"] and key in row["units"] for row in rows)):
+            raise ValueError(f"fixture selects a non-owning work unit: {stage['path']}: {key}")
+        needed.add(key)
+    pending = list(needed)
+    while pending:
+        for dependency in units[pending.pop()]["depends_on"]:
+            if dependency not in needed:
+                needed.add(dependency)
+                pending.append(dependency)
+    return {units[key]["owner"] for key in needed}
+
+
 def checked_path(root, value):
     path = Path(value)
     if path.is_absolute() or ".." in path.parts or not (root / path).exists():

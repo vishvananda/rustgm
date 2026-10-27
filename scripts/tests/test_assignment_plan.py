@@ -6,7 +6,7 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from assignment_plan import validate
+from assignment_plan import fixture_owners, validate
 
 
 class AssignmentPlan(unittest.TestCase):
@@ -115,6 +115,20 @@ class AssignmentPlan(unittest.TestCase):
             self.write(root, stages, plan, rows)
             with self.assertRaisesRegex(ValueError, "implemented component needs evidence"):
                 validate(root)
+
+    def test_fixture_admits_owned_unit_dependencies_without_future_feature_exemption(self):
+        stage = {"path": "pa26", "number": 26}
+        units = {"hooks": {"owner": "pa26", "depends_on": ["source"]},
+                 "source": {"owner": "pa31", "depends_on": []},
+                 "async": {"owner": "pa42", "depends_on": []}}
+        case = {"path": "tests/hooks.rs", "work_units": ["hooks"]}
+        self.assertEqual(fixture_owners(stage, case, units, []), {"pa26", "pa31"})
+        for selection in (["source"], ["async"], ["missing"], [], "hooks", ["hooks", "hooks"]):
+            with self.subTest(selection=selection), self.assertRaises(ValueError):
+                fixture_owners(stage, {**case, "work_units": selection}, units, [])
+        rows = [{"pa": 26, "units": ["source"]}]
+        self.assertEqual(fixture_owners(stage, {**case, "work_units": ["source"]}, units, rows),
+                         {"pa31"})
 
     def test_duplicate_units_and_unknown_owners_fail(self):
         with tempfile.TemporaryDirectory() as directory:

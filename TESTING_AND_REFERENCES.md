@@ -18,7 +18,10 @@ separate; a completed component cannot mark an unfinished whole PA implemented.
 retained requirements and publication gates. New component release manifests
 must declare outcomes and every input before reference generation, reuse the
 existing text/native/source validators, and retain all unclosed parent requirements.
-Run `python3 scripts/assignment_plan.py` for the current ordered status.
+Run `python3 scripts/assignment_plan.py` for the current ordered status. Fixtures exercising
+reordered prerequisites declare `work_units` from their actual owning units;
+only those units' transitive dependency owners and the active PA1–PA24 foundation
+are admitted. Legacy cases retain numeric placement checks.
 
 ## Development checkpoints
 

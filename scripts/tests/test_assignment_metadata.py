@@ -113,6 +113,30 @@ class AssignmentMetadata(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "root report stages disagree"):
                 collect(root)
 
+    def test_explicit_unit_dependencies_allow_source_bindings_but_not_unrelated_features(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root, stage, manifest, case = self.fixture(directory)
+            case.update(work_units=["consumer"], features=["pa31.source-binding"])
+            self.write(root, stage, manifest)
+            (root / "docs").mkdir()
+            folder = root / "pa31/tests"
+            folder.mkdir(parents=True)
+            for path in ("README.md", "Makefile", "tests/README.md"):
+                (root / "pa31" / path).write_text("source declarations")
+            stages = [stage, {"path": "pa31", "number": 31, "status": "planned"}]
+            (root / "assignments.json").write_text(json.dumps({"stages": stages}))
+            common = {"implementation": "partial", "publication": "unpublished",
+                      "scope": "explicit source contracts", "exit": "native consumer", "requirements": []}
+            units = [{**common, "id": "source", "owner": "pa31", "depends_on": []},
+                     {**common, "id": "consumer", "owner": "pa1", "depends_on": ["source"]}]
+            (root / "assignment-plan.json").write_text(json.dumps({"schema": 1, "units": units}))
+            (root / "docs/assignment-requirements.json").write_text('{"rows": []}')
+            self.assertEqual(len(collect(root)[1]), 1)
+            case["features"] = ["pa42.async"]
+            (root / "pa1/tests/manifest.json").write_text(json.dumps(manifest))
+            with self.assertRaisesRegex(ValueError, "future-stage feature"):
+                collect(root)
+
     def test_planned_stage_cannot_publish_an_executed_manifest(self):
         with tempfile.TemporaryDirectory() as directory:
             root, stage, manifest, _ = self.fixture(directory)
