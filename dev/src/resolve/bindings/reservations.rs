@@ -292,17 +292,7 @@ fn reserve(
             }
         }
         Claim::PanicHandler => {
-            super::panic_claims::validate(package, declaration, LangItem::PanicImpl)?;
-            let ast = &package.unit(declaration.origin.file).configured.ast;
-            if foreign
-                || !matches!(ast.node(declaration.origin.node).kind,
-                    Kind::Item(index) if matches!(ast.items[index as usize].kind,
-                        ItemKind::Function { body: Some(_), .. }))
-            {
-                return Err(error(
-                    "panic_handler requires its actual defining function body",
-                ));
-            }
+            super::panic_claims::validate_handler(package, declaration, foreign)?;
             if reserved.languages[LangItem::PanicImpl.index()]
                 .replace(declaration)
                 .is_some()

@@ -108,7 +108,7 @@ fn explicit_indirect_const_policy_allows_real_const_calls_without_runtime_exempt
 }
 
 #[test]
-fn malformed_const_words_unknown_roles_and_explicit_stable_pairing_remain_closed() -> Result {
+fn malformed_const_words_unknown_roles_and_explicit_stable_pairing_remain_closed() {
     for tail in [
         "#[rustc_const_stable_indirect(x)]const fn malformed(){}",
         "#[rustc_const_stable_indirect]trait Wrong{}",
@@ -118,5 +118,4 @@ fn malformed_const_words_unknown_roles_and_explicit_stable_pairing_remain_closed
     ] {
         assert!(check(tail).is_err(), "{tail}");
     }
-    Ok(())
 }

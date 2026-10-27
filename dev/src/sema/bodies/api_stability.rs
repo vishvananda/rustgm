@@ -64,10 +64,10 @@ impl Checker<'_> {
         let Some(owner) = self.state.environment_owner else {
             return Ok(None);
         };
-        if !inventory.checks_const_body(owner)
-            && !(inventory.const_declaration(owner).is_some()
+        if !(inventory.checks_const_body(owner)
+            || (inventory.const_declaration(owner).is_some()
                 && self.report.package.source_core().is_some()
-                && self.facts.const_panic_markers(report, owner)?.1)
+                && self.facts.const_panic_markers(report, owner)?.1))
         {
             return Ok(None);
         }
