@@ -69,8 +69,10 @@ impl Query {
             {
                 Readiness::Ready(selected) => pending.selected = Some(selected),
                 Readiness::Pending(id) => {
-                    return self
-                        .wait_discriminant(facts, selection::Dependency::SourceResultContracts(id));
+                    return self.wait_discriminant(
+                        facts,
+                        selection::Dependency::SourceResultContracts(id),
+                    );
                 }
                 Readiness::Unrelated => {
                     return Err("source discriminant request lost its actual member");
