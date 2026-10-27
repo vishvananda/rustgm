@@ -44,6 +44,13 @@
       "ordinary method call missing its actual trait implementation",
       "ordinary method call has only a different receiver implementation"
     ],
-    "scope": "skip bootstrap-only name preparation/reservation and unused mask in source provider/client modes; no nonprimitive binary operation permission or factory source fallback"
+    "scope": "skip bootstrap-only name preparation/reservation and unused mask in source provider/client modes; no nonprimitive binary operation permission or factory source fallback",
+    "execution_boundary": "Source ==,!=,<,<=,>,>= remain explicitly unsupported before scalar erasure, including absent/real/misleading source traits; this is a compiler boundary, not a Rust language rejection.",
+    "pre_fence_evidence": {
+      "source": "b561b4351",
+      "private_receipt": "obj/qualification/fast/1793117069611510126/receipt.json",
+      "production_receipt": "obj/qualification/fast/1793117248519097249/receipt.json",
+      "scope": "five named positive/opposing controls and lexer ten passed; source review then identified the missing explicit operator consumer fence, so this predecessor is not a complete handoff"
+    }
   }
 }

@@ -206,3 +206,35 @@ fn unrelated_source_eq_methods_still_require_their_actual_trait_and_implementati
     }
     Ok(())
 }
+
+#[test]
+fn source_binary_comparisons_remain_unsupported_before_any_scalar_or_owner_shortcut()
+-> Result<(), Box<dyn std::error::Error>> {
+    let actual = crate::test_source::fixture(
+        "pa31/tests/spec/source-location/partial-eq-original-declaration.rs",
+    )?;
+    for declaration in [
+        "",
+        actual.as_str(),
+        "trait UserEq{fn eq(&self,other:&Self)->bool;}",
+    ] {
+        for operator in ["==", "<"] {
+            let input = format!(
+                "{}{declaration}pub fn probe(x:u8,y:u8)->bool{{x {operator} y}}",
+                source_comparison_prefix()?
+            );
+            let report = crate::test_source::source_provider(&input, "closed_source_comparison")?;
+            let error = crate::pipeline::analyze_source(&report)
+                .err()
+                .ok_or("source scalar comparison acquired unproved execution")?;
+            assert!(
+                error
+                    .to_string()
+                    .contains("source comparison operator execution is not implemented"),
+                "operator {operator}: {error}"
+            );
+            assert!(report.resolution.builtin_traits.comparisons.is_none());
+        }
+    }
+    Ok(())
+}
