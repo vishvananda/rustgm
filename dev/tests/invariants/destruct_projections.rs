@@ -438,7 +438,7 @@ fn projected_subjects_and_cleanup_sites_have_bounded_work_and_noise() -> Result 
     assert_eq!(size_of::<Formed<'_>>(), size_of::<usize>());
     assert_eq!(size_of::<State>(), 96);
     assert_eq!(size_of::<crate::body::regions::BuiltinRequirements>(), 56);
-    assert_eq!(size_of::<Body>(), 448);
+    assert_eq!(size_of::<Body>(), 456);
     assert_eq!(size_of::<Contract>(), 184);
     Ok(())
 }

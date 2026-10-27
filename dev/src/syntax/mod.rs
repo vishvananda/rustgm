@@ -11,3 +11,5 @@ pub mod item;
 pub mod token_tree;
 pub mod transfer;
 mod walk;
+
+pub(crate) mod assembly;

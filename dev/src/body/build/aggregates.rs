@@ -76,6 +76,20 @@ impl Builder<'_> {
             .ok_or_else(|| self.error(node, "place construction stack underflow"))
     }
     pub(super) fn discard_unreachable_place(&mut self, node: NodeId) -> Result<(), Error> {
+        if let Kind::InlineAssembly(args) = self.kind(node) {
+            let ast = &self.report.package.unit(self.source.file).configured.ast;
+            for &arg in ast.list(args).iter().rev() {
+                if let Kind::AssemblyOperand {
+                    output: Some(place),
+                    ..
+                } = ast.node(arg).kind
+                {
+                    self.pop_place(place)?;
+                }
+            }
+            return Ok(());
+        }
+
         if matches!(self.kind(node), Kind::Struct { base: Some(_), .. })
             || matches!(
                 self.fact(node)?.operation,

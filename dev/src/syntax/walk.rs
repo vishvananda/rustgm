@@ -105,6 +105,21 @@ impl<L> Syntax<L> {
                 visit_all(start, visit)?;
                 visit_all(end, visit)?;
             }
+            Kind::InlineAssembly(arguments) => self.children(arguments, visit)?,
+            Kind::AssemblyTemplate { value, pieces } => {
+                visit(value)?;
+                self.children(pieces, visit)?;
+            }
+            Kind::AssemblyRegister { value, .. } => visit(value)?,
+            Kind::AssemblyOperand { input, output, .. } => {
+                visit_all(input, visit)?;
+                if output != input {
+                    visit_all(output, visit)?;
+                }
+            }
+            Kind::AssemblyOrigin(_)
+            | Kind::AssemblyOptions(_)
+            | Kind::AssemblyPlaceholder { .. } => {}
             Kind::LibraryValue { value, .. }
             | Kind::Return(value)
             | Kind::Break { value, .. }

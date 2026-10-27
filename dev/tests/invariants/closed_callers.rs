@@ -413,7 +413,7 @@ fn actual_original_opening_work_retains_width_sites_and_noise_controls()
     }
     assert_eq!(size_of::<Environment>(), 64);
     assert_eq!(size_of::<super::State>(), 800);
-    assert_eq!(size_of::<crate::body::ir::Body>(), 448);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     assert_eq!(size_of::<crate::body::regions::Contract>(), 184);
     Ok(())
 }

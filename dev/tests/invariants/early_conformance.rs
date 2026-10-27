@@ -294,7 +294,7 @@ fn functions_only_witness_authenticates_both_actual_complete_buckets() -> Result
 #[test]
 fn early_validation_cold_owner_keeps_existing_hot_records_fixed() {
     use std::mem::size_of;
-    assert_eq!(size_of::<crate::body::ir::Body>(), 448);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     assert_eq!(size_of::<crate::body::regions::Contract>(), 184);
     assert_eq!(size_of::<crate::sema::nominals::traits::State>(), 800);
     println!(

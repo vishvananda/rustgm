@@ -1,5 +1,6 @@
 //! Typed control flow consumes solved semantic facts without repeating inference.
 pub(crate) mod adapters;
+pub mod assembly;
 pub mod body_view;
 mod build;
 #[path = "callsite_inputs.rs"]

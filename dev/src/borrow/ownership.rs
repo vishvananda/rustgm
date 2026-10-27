@@ -166,6 +166,12 @@ pub(crate) fn analyze_body_ordered<S: BuildHasher>(
     body: &Body,
     order: Option<&super::order::Order>,
 ) -> Result<BodyFacts, Error> {
+    if body.assembly.is_some() {
+        crate::body::assembly::validate(body).map_err(|message| Error {
+            node: body.source.into(),
+            message,
+        })?;
+    }
     let mut facts = prepare(types, definitions, derives, copies, body, false)?;
     state::verify::<()>(body, &mut facts, types, None, order)?;
     guards::verify(body, &facts, types)?;

@@ -149,9 +149,11 @@ fn known_assembly_declarations_never_execute_their_placeholder_bodies() -> Resul
             .err()
             .ok_or("unavailable assembly executed its placeholder")?;
         assert!(
-            error
-                .to_string()
-                .contains("builtin bang macro execution is not implemented"),
+            error.to_string().contains(if role == Builtin::Asm {
+                "inline assembly requires an expression context"
+            } else {
+                "builtin bang macro execution is not implemented"
+            }),
             "{error}"
         );
     }

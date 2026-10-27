@@ -311,7 +311,7 @@ fn observe_layouts() {
     assert_eq!(size_of::<Kind>(), 24);
     assert_eq!(size_of::<crate::syntax::ast::Kind>(), 28);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
-    assert_eq!(size_of::<crate::body::ir::Body>(), 448);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     eprintln!(
         "Phantom layouts Kind={} AST={} Node={} Definition={} Definitions={} Store={} Package={} Report={} Body={} Catalog={} Reservations={}",

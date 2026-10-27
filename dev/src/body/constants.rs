@@ -179,6 +179,9 @@ fn eligibility_counted(
             operators += 1;
         }
         let message = match value.kind {
+            Rvalue::Assembly { .. } | Rvalue::AssemblyOutput { .. } => {
+                Some("inline assembly is not permitted during constant evaluation")
+            }
             Rvalue::Intrinsic { intrinsic, .. }
                 if intrinsic.descriptor().constant
                     == crate::support::intrinsics::ConstPermission::RuntimeOnly =>

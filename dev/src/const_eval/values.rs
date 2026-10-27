@@ -49,6 +49,9 @@ impl Machine<'_, '_> {
             .ok_or("missing constant rvalue")?;
         let ty = value.ty;
         let result = match value.kind {
+            Rvalue::Assembly { .. } | Rvalue::AssemblyOutput { .. } => {
+                return Err("inline assembly is not permitted in constant evaluation".into());
+            }
             Rvalue::InlineInstance(_) => Self::value(frame, id)?,
             Rvalue::Intrinsic {
                 intrinsic,

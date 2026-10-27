@@ -76,6 +76,9 @@ impl Code {
         )
     }
     pub(crate) fn snapshot(body: &Body) -> Result<Self, &'static str> {
+        if body.assembly.is_some() {
+            return Err("inline assembly has no constant execution snapshot");
+        }
         body.validate_caller_sites()?;
         let mut operands = Vec::with_capacity(Self::operand_count(body)?);
         for statement in &body.statements {

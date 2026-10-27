@@ -132,7 +132,7 @@ fn numbered_family_preserves_actual_allocation_log_and_alias_membership() -> Res
         proof_suffixes > 0,
         "actual normalization domain must extend the semantic log"
     );
-    assert_eq!(size_of::<crate::body::ir::Body>(), 448);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     assert_eq!(size_of::<crate::body::regions::Contract>(), 184);
     println!(
         "SourceRows={} Columns={} HeaderIndex={} NumberingUnits={} BodyUnit={} Body=448 Contract=184",

@@ -158,7 +158,7 @@ fn pointer_contract_storage_keeps_hot_body_and_declaration_widths() {
     assert_eq!(size_of::<crate::resolve::model::Definition>(), 36);
     assert_eq!(size_of::<crate::sema::model::NodeFacts>(), 80);
     assert_eq!(size_of::<crate::sema::model::Operation>(), 16);
-    assert_eq!(size_of::<crate::body::ir::Body>(), 448);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     eprintln!(
         "ptr_metadata layouts intrinsic={} selected={} kind={} node={} operation={} body={}",
         size_of::<SourceIntrinsic>(),

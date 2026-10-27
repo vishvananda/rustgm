@@ -12,7 +12,7 @@ fn full_bodies_charge_proof_storage_and_snapshots_charge_callable_maps() -> Resu
     let body = program.bodies.first_mut().ok_or("missing checked body")?;
     assert_eq!(size_of::<body::ir::Rvalue>(), 20);
     assert_eq!(size_of::<body::ir::Value>(), 24);
-    assert_eq!(size_of::<body::ir::Body>(), 448);
+    assert_eq!(size_of::<body::ir::Body>(), 456);
     let code = Code::storage_bytes(body)?;
     let scalar = Code::snapshot(body)?;
     assert!(scalar.operands.is_empty());

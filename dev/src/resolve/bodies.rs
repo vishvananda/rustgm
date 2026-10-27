@@ -88,6 +88,19 @@ impl Resolver<'_> {
             }
         }
         match self.kind(c, node) {
+            Kind::InlineAssembly(arguments) => self.visit_list(c, arguments, Namespace::Value),
+            Kind::AssemblyOperand { input, output, .. } => {
+                self.optional(c, input, Namespace::Value)?;
+                if output != input {
+                    self.optional(c, output, Namespace::Value)?;
+                }
+                Ok(())
+            }
+            Kind::AssemblyTemplate { .. }
+            | Kind::AssemblyRegister { .. }
+            | Kind::AssemblyOrigin(_)
+            | Kind::AssemblyOptions(_)
+            | Kind::AssemblyPlaceholder { .. } => Ok(()),
             Kind::LibraryValue { kind, value } => {
                 self.prepare_library_value(c, node, kind)?;
                 self.optional(c, value, Namespace::Value)

@@ -154,7 +154,14 @@ pub(super) fn child<L>(
                 Position::Other
             }
         }
-        Kind::LibraryValue { .. }
+        Kind::InlineAssembly(_)
+        | Kind::AssemblyTemplate { .. }
+        | Kind::AssemblyOperand { .. }
+        | Kind::AssemblyRegister { .. }
+        | Kind::AssemblyOrigin(_)
+        | Kind::AssemblyOptions(_)
+        | Kind::AssemblyPlaceholder { .. }
+        | Kind::LibraryValue { .. }
         | Kind::Group(_)
         | Kind::Tuple(_)
         | Kind::Array(_)

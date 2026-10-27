@@ -136,7 +136,14 @@ impl<'a> Writer<'a> {
                 self.enqueue(&[view.n(value)])?;
                 self.attributes(view, attributes)
             }
-            Kind::LibraryValue { .. } => Err(error(
+            Kind::InlineAssembly(_)
+            | Kind::AssemblyTemplate { .. }
+            | Kind::AssemblyOperand { .. }
+            | Kind::AssemblyRegister { .. }
+            | Kind::AssemblyOrigin(_)
+            | Kind::AssemblyOptions(_)
+            | Kind::AssemblyPlaceholder { .. }
+            | Kind::LibraryValue { .. } => Err(error(
                 node.span.start,
                 "source expression writer does not accept synthesized library values",
             )),

@@ -112,7 +112,7 @@ fn check_pair(body: &Body, contract: &Contract, public: TypeId, owned: TypeId) -
 #[test]
 fn signature_pair_preserves_hot_body_record_sizes() {
     assert_eq!(size_of::<Owner>(), 20);
-    assert_eq!(size_of::<Body>(), 448);
+    assert_eq!(size_of::<Body>(), 456);
     assert_eq!(size_of::<Contract>(), 184);
     assert_eq!(size_of::<body::ir::Value>(), 24);
     println!("Prepared signature pair bytes={}", size_of::<Prepared>());

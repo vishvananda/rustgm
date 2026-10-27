@@ -397,6 +397,13 @@ impl<'a> Writer<'a> {
             | Kind::UseTree(_)
             | Kind::Macro { .. }
             | Kind::Attributed { .. }
+            | Kind::InlineAssembly(_)
+            | Kind::AssemblyTemplate { .. }
+            | Kind::AssemblyOperand { .. }
+            | Kind::AssemblyRegister { .. }
+            | Kind::AssemblyOrigin(_)
+            | Kind::AssemblyOptions(_)
+            | Kind::AssemblyPlaceholder { .. }
             | Kind::LibraryValue { .. } => self.declaration_syntax(view, node),
         }
     }

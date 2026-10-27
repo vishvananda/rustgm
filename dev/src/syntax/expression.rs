@@ -12,6 +12,7 @@ use crate::{
     literal,
 };
 
+pub(crate) mod assembly;
 mod control;
 pub mod fragment;
 #[path = "expression/restriction_clause.rs"]

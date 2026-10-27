@@ -726,6 +726,7 @@ impl Engine {
         if template.retained_bytes() > 64 * 1024 * 1024 {
             return Err(report.body_error(source, "constant instance copy exceeds 64 MiB budget"));
         }
+        body::assembly::prepay_instance(report, &template.body)?;
         let mut materialized = body::instantiate::with_contract(facts, template, instance, input)
             .map_err(|e| report.body_error(source, e))?;
         materialized

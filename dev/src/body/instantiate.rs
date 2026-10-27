@@ -208,6 +208,21 @@ fn materialize(
 ) -> Result<(Body, drops::Requirements), &'static str> {
     let Context { premises, cleanup } = context;
     let source = &template.body;
+    if let Some(data) = source.assembly.as_deref() {
+        let steps = data
+            .instructions
+            .len()
+            .saturating_add(data.templates.len())
+            .saturating_add(data.pieces.len())
+            .saturating_add(data.operands.len());
+        facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(steps);
+        if size_of::<super::assembly::Payload>().saturating_add(data.allocation_bytes())
+            > 64_000_000
+        {
+            return Err("assembly instance payload exceeds existing generic body storage budget");
+        }
+    }
+
     let (owner, definition, instance) = selection.owner(facts, source)?;
     if instance
         .is_some_and(|instance| facts.types.contains_parameters(instance.ty()) != Some(false))
@@ -215,6 +230,7 @@ fn materialize(
         return Err("executable instance has unresolved type or const parameters");
     }
     let mut body = Body {
+        assembly: source.assembly.clone(),
         mutable_statics: source.mutable_statics.clone(),
         static_types: source.static_types.clone(),
         const_context: source.const_context,
@@ -320,6 +336,11 @@ fn substitute(
     }
     for value in &mut body.values {
         value.ty = ty(value.ty)?;
+    }
+    if let Some(data) = &mut body.assembly {
+        for operand in &mut data.operands {
+            operand.ty = operand.ty.map(&mut ty).transpose()?;
+        }
     }
     for projection in &mut body.projections {
         projection.ty = ty(projection.ty)?;

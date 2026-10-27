@@ -160,6 +160,14 @@ impl BinaryOperands {
 }
 #[derive(Clone, Copy, Debug)]
 pub enum Rvalue {
+    Assembly {
+        instruction: u32,
+        arguments: ValueList,
+    },
+    AssemblyOutput {
+        effect: ValueId,
+        operand: u32,
+    },
     Unit,
     Aggregate {
         variant: Option<VariantId>,
@@ -435,6 +443,8 @@ pub enum BodyKey {
 }
 #[derive(Clone)]
 pub struct Body {
+    /// Cold owned assembly effects; absent bodies allocate no payload.
+    pub assembly: Option<Box<super::assembly::Payload>>,
     /// Canonical types of static places actually referenced by this CFG.
     pub static_types: Option<std::sync::Arc<crate::support::hash::HashMap<DefId, TypeId>>>,
     /// Immutable declaration permissions, shared by checked bodies and instances.
@@ -523,6 +533,9 @@ impl Body {
     pub(crate) fn allocation_bytes(&self) -> usize {
         use crate::support::retained::{sum, vector};
         sum([
+            self.assembly.as_ref().map_or(0, |data| {
+                size_of::<super::assembly::Payload>().saturating_add(data.allocation_bytes())
+            }),
             self.closure_calls
                 .as_ref()
                 .map_or(0, |calls| calls.retained_bytes()),

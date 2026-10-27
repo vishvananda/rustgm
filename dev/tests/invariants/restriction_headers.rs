@@ -231,7 +231,7 @@ fn observe_layouts() {
     assert_eq!(size_of::<Report>(), 3040);
     assert_eq!(size_of::<crate::sema::associated::OwnerKind>(), 20);
     assert_eq!(size_of::<crate::sema::associated::Owner>(), 32);
-    assert_eq!(size_of::<crate::body::ir::Body>(), 448);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     println!(
         "restriction layouts Syntax={} Configured={} Unit={} Source={} SourceCore={} Package={} Report={} ItemKind={} Item={} Node={}",
         size_of::<crate::syntax::ast::Syntax<crate::literal::storage::StoredValue>>(),

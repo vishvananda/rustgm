@@ -135,7 +135,7 @@ fn const_operator_data_keeps_compact_existing_records() {
         size_of::<crate::body::ir::Value>(),
         size_of::<crate::types::parameters::clauses::Clause>()
     );
-    assert_eq!(size_of::<Body>(), 448);
+    assert_eq!(size_of::<Body>(), 456);
     assert_eq!(size_of::<crate::const_eval::code::Code>(), 304);
     assert_eq!(size_of::<crate::body::ir::Value>(), 24);
 }

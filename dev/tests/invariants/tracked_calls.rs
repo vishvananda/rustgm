@@ -153,7 +153,7 @@ fn caller_metadata_cannot_replace_targets_or_forge_snapshot_identity() -> TestRe
     actual.append_caller_site(site, &facts)?;
     assert!(actual.seal_caller_sites(&facts).is_err());
     assert!(Code::snapshot(actual).is_err());
-    assert_eq!(size_of::<body::ir::Body>(), 448);
+    assert_eq!(size_of::<body::ir::Body>(), 456);
     assert_eq!(size_of::<body::ir::Rvalue>(), 20);
     assert_eq!(size_of::<body::ir::Value>(), 24);
     assert_eq!(size_of::<body::ir::ResolvedCallables>(), 56);

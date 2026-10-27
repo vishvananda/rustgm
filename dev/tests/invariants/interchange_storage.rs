@@ -49,7 +49,7 @@ fn two_new_primitives_preserve_existing_ids_and_enclosing_hot_layouts() {
     assert_eq!(size_of::<Constant>(), 32);
     assert_eq!(size_of::<crate::body::ir::Rvalue>(), 20);
     assert_eq!(size_of::<crate::body::ir::Value>(), 24);
-    assert_eq!(size_of::<crate::body::ir::Body>(), 448);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     assert_eq!(size_of::<crate::lowir::program::Value>(), 12);
     assert_eq!(size_of::<crate::support::crates::Scalar>(), 1);
     println!(

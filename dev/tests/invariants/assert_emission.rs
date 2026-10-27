@@ -119,7 +119,7 @@ fn default_and_custom_assertions_build_once_with_real_paths_and_lazy_suffixes() 
     }
     assert_eq!(size_of::<crate::body::ir::Value>(), 24);
     assert_eq!(size_of::<crate::body::ir::Rvalue>(), 20);
-    assert_eq!(size_of::<crate::body::ir::Body>(), 448);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     Ok(())
 }
 #[test]

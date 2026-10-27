@@ -19,6 +19,7 @@ mod dot_calls;
 mod effect_facts;
 pub(super) use effect_facts::CallContexts;
 pub use effect_facts::{SourceCallUse, TryPlanId};
+mod assembly_values;
 mod environment_values;
 mod field_storage;
 mod finalization;
@@ -1261,6 +1262,7 @@ impl Checker<'_> {
         self.state.work.push(Work::Exit(node));
         self.state.children.clear();
         match self.kind(node) {
+            Kind::InlineAssembly(args) => self.enter_assembly(node, args)?,
             Kind::TryBlock { body, .. } => return self.enter_try_block(node, body, expected),
             Kind::For { iterator, .. } => {
                 self.state.work.push(Work::ForIterator(node));
@@ -1488,6 +1490,7 @@ impl Checker<'_> {
                 start: Some(_),
                 end: Some(_),
             } => self.term(node),
+            Kind::InlineAssembly(args) => self.assembly_result(node, args),
             Kind::LibraryValue { kind, value } => self.library_value(node, kind, value),
             Kind::Literal(index) => self.literal(node, index),
             Kind::Path { .. } | Kind::Name(..) | Kind::Qualified { .. } => {
@@ -2506,6 +2509,10 @@ impl Checker<'_> {
     fn validate_operations(&mut self) -> Result<(), Error> {
         for index in 0..self.state.checks.len() {
             let node = self.state.checks[index];
+            if let Kind::InlineAssembly(args) = self.kind(node) {
+                self.validate_assembly(node, args)?;
+                continue;
+            }
             let operation = match self.kind(node) {
                 Kind::Unary { op, operand } => {
                     if !scalar::unary(op, self.primitive(operand)?) {

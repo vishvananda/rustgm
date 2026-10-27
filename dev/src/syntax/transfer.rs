@@ -327,6 +327,27 @@ impl Bases {
                 *name = span(*name)?;
                 *lifetime = span(*lifetime)?;
             }
+            Kind::InlineAssembly(arguments) => self.list(arguments),
+            Kind::AssemblyTemplate { value, pieces } => {
+                self.node(value);
+                self.list(pieces);
+            }
+            Kind::AssemblyRegister { value, .. } => self.node(value),
+            Kind::AssemblyOperand {
+                register,
+                input,
+                output,
+                name,
+                ..
+            } => {
+                self.optional(register);
+                self.optional(input);
+                self.optional(output);
+                self.optional(name);
+            }
+            Kind::AssemblyOrigin(_)
+            | Kind::AssemblyOptions(_)
+            | Kind::AssemblyPlaceholder { .. } => {}
             Kind::LibraryValue { value, .. } => self.optional(value),
             Kind::Name(name, _) => *name = span(*name)?,
             Kind::GenericMethodCall {

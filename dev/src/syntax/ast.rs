@@ -121,6 +121,30 @@ pub enum TypeConstraint {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
+    InlineAssembly(List),
+    AssemblyTemplate {
+        value: NodeId,
+        pieces: List,
+    },
+    AssemblyPlaceholder {
+        start: u32,
+        end: u32,
+        operand: u32,
+        modifier: u8,
+    },
+    AssemblyOptions(u16),
+    AssemblyOrigin(u32),
+    AssemblyRegister {
+        explicit: bool,
+        value: NodeId,
+    },
+    AssemblyOperand {
+        direction: super::assembly::Direction,
+        register: Option<NodeId>,
+        input: Option<NodeId>,
+        output: Option<NodeId>,
+        name: Option<NodeId>,
+    },
     LibraryValue {
         kind: crate::support::library_types::LibraryValue,
         value: Option<NodeId>,

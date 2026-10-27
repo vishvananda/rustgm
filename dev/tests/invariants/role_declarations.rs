@@ -81,7 +81,7 @@ fn real_frames_cannot_borrow_unavailable_role_headers() -> TestResult {
             matches!(definition.body, Body::Builtin(role) if !role.executable()).then_some(index)
         })
         .collect();
-    assert_eq!(unavailable.len(), 26);
+    assert_eq!(unavailable.len(), 25);
     for index in unavailable {
         report.invocations[0].definition = index;
         for forged in [false, true] {
@@ -155,7 +155,7 @@ fn pinned_roles_keep_exact_kind_owner_and_closed_execution_availability() -> Tes
 fn unavailable_alias_and_kind_opponents_stop_before_execution_work() -> TestResult {
     for (name, message) in [
         (
-            "unavailable-asm-alias.rs",
+            "unavailable-naked-asm-alias.rs",
             "builtin bang macro execution is not implemented",
         ),
         (

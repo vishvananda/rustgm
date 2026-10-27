@@ -180,6 +180,22 @@ fn operands<'a>(
         .get(id.0 as usize)
         .ok_or("invalid owned evaluation")?;
     match &value.kind {
+        Rvalue::Assembly {
+            instruction,
+            arguments,
+        } => {
+            crate::body::assembly::instruction(body, *instruction)?;
+            let values = body
+                .arguments
+                .get(arguments.start as usize..arguments.end as usize)
+                .ok_or("invalid assembly owned inputs")?;
+            Ok((values, Disposition::Transfer))
+        }
+        Rvalue::AssemblyOutput { effect, operand } => {
+            crate::body::assembly::output(body, *effect, *operand, value.ty)?;
+            Ok((&[], Disposition::Transfer))
+        }
+
         Rvalue::Aggregate { fields, .. }
         | Rvalue::Intrinsic {
             arguments: fields, ..

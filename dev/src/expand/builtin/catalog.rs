@@ -224,7 +224,8 @@ impl Builtin {
     pub const fn executable(self) -> bool {
         matches!(
             self,
-            Self::Assert
+            Self::Asm
+                | Self::Assert
                 | Self::Cfg
                 | Self::CfgSelect
                 | Self::FormatArgs
@@ -273,6 +274,7 @@ impl Builtin {
                     | Self::FormatArgs
                     | Self::ConstFormatArgs
                     | Self::FormatArgsNl
+                    | Self::Asm
                     | Self::ConcatBytes
                     | Self::AutodiffForward
                     | Self::AutodiffReverse
@@ -288,13 +290,14 @@ impl Builtin {
     }
     #[must_use]
     pub const fn source_eager(self) -> bool {
-        self.formatting() || matches!(self, Self::ConcatBytes)
+        self.formatting() || matches!(self, Self::ConcatBytes | Self::Asm)
     }
     #[must_use]
     pub const fn eager(self) -> bool {
         matches!(
             self,
-            Self::ConcatBytes
+            Self::Asm
+                | Self::ConcatBytes
                 | Self::FormatArgs
                 | Self::ConstFormatArgs
                 | Self::FormatArgsNl

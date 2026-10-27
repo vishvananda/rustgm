@@ -1,4 +1,4 @@
-role_0	asm	Bang	0
+role_0	asm	Bang	1
 role_1	assert	Bang	1
 role_2	cfg	Bang	1
 role_3	cfg_select	Bang	1

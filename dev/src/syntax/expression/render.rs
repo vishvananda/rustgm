@@ -100,6 +100,43 @@ pub(super) fn operator(op: P) -> &'static str {
 )]
 fn record<L>(source: &str, ast: &Syntax<L>, kind: Kind, output: &mut impl Write) -> io::Result<()> {
     match kind {
+        Kind::InlineAssembly(arguments) => {
+            write!(output, "inline-assembly {}", Children(ast, arguments))
+        }
+        Kind::AssemblyTemplate { value, pieces } => write!(
+            output,
+            "assembly-template {} {}",
+            value.get(),
+            Children(ast, pieces)
+        ),
+        Kind::AssemblyPlaceholder {
+            start,
+            end,
+            operand,
+            modifier,
+        } => write!(
+            output,
+            "assembly-placeholder {start}..{end} operand={operand} modifier={modifier}"
+        ),
+        Kind::AssemblyOrigin(invocation) => {
+            write!(output, "assembly-origin invocation={invocation}")
+        }
+        Kind::AssemblyOptions(options) => write!(output, "assembly-options {options}"),
+        Kind::AssemblyRegister { explicit, value } => write!(
+            output,
+            "assembly-register explicit={explicit} {}",
+            value.get()
+        ),
+        Kind::AssemblyOperand {
+            direction,
+            register,
+            input,
+            output: place,
+            name,
+        } => write!(
+            output,
+            "assembly-operand {direction:?} register={register:?} input={input:?} output={place:?} name={name:?}"
+        ),
         Kind::LibraryValue { kind, value } => write!(
             output,
             "library-value {} value={}",

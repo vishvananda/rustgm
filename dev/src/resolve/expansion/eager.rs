@@ -66,6 +66,18 @@ impl<S: Sources> Engine<'_, S> {
         })?;
         // Preflight before flattening/parsing the real argument forest. Actual
         // opaque payload copies are separately paid through their registry view.
+        if matches!(
+            self.definitions[definition].body,
+            Body::Builtin(Builtin::Asm)
+        ) {
+            source
+                .macros
+                .charge(
+                    forest.nodes().len(),
+                    forest.nodes().len().saturating_mul(512),
+                )
+                .map_err(|message| Error::at(file, 0, message))?;
+        }
         source
             .macros
             .charge(
@@ -143,6 +155,16 @@ impl<S: Sources> Engine<'_, S> {
     pub(super) fn begin_eager(&mut self, index: usize, definition: usize) -> Result<(), Error> {
         let call = &self.calls[index];
         let (file, capture, visit, scope) = (call.file, call.capture, call.visit, call.scope);
+        if matches!(
+            self.definitions[definition].body,
+            Body::Builtin(Builtin::Asm)
+        ) && !matches!(
+            call.grammar.bang().map_err(|e| call.diagnostic(e))?,
+            crate::syntax::ast::MacroContext::Expression
+                | crate::syntax::ast::MacroContext::Statements
+        ) {
+            return Err(call.diagnostic("inline assembly requires an expression context"));
+        }
         self.prepare_source_eager_input(file, capture, definition)?;
         let input = self
             .input(file, capture, false)
@@ -166,6 +188,10 @@ impl<S: Sources> Engine<'_, S> {
                     }
                 },
                 self.config,
+                matches!(
+                    self.definitions[definition].body,
+                    Body::Builtin(Builtin::Asm)
+                ),
             )
             .map_err(|e| Error::at(file, e.offset, e.message));
         let root = root.map_err(|e| self.eager_error(index, definition, e))?;
@@ -294,7 +320,66 @@ impl<S: Sources> Engine<'_, S> {
         let (root, context) = (arguments.root, arguments.context);
         let unit = self.loader.package.unit(file);
         let original = unit.configured.ast.node(visit.node).span;
-        let (generated, include) = if matches!(
+        let assembly = matches!(
+            self.definitions[definition].body,
+            Body::Builtin(Builtin::Asm)
+        );
+        let (generated, include) = if assembly {
+            if self.source_eager_definition(definition)? != Builtin::Asm {
+                return Err(call.diagnostic("assembly builtin changed its actual source role"));
+            }
+            let unit = &self.loader.package.units[file.0 as usize];
+            let crate::syntax::ast::Kind::InlineAssembly(args) =
+                unit.configured.ast.node(root).kind
+            else {
+                return Err(Error::at(
+                    file,
+                    original.start,
+                    "missing actual assembly arguments",
+                ));
+            };
+            let mut bytes = 0usize;
+            for &arg in unit.configured.ast.list(args) {
+                if let crate::syntax::ast::Kind::AssemblyTemplate { value, .. } =
+                    unit.configured.ast.node(arg).kind
+                {
+                    if let crate::syntax::ast::Kind::Literal(index) =
+                        unit.configured.ast.node(value).kind
+                    {
+                        if let crate::literal::Value::String(text) = unit
+                            .literal(index)
+                            .map_err(|e| Error::at(file, e.offset, e.message))?
+                        {
+                            bytes = bytes.saturating_add(text.len());
+                        }
+                    }
+                }
+            }
+            self.loader
+                .package
+                .source_core()
+                .ok_or_else(|| {
+                    Error::at(
+                        file,
+                        original.start,
+                        "missing actual source assembly provider",
+                    )
+                })?
+                .macros
+                .charge(
+                    bytes.saturating_add(args.end as usize - args.start as usize),
+                    bytes.saturating_mul(96).saturating_add(
+                        (args.end as usize - args.start as usize).saturating_mul(512),
+                    ),
+                )
+                .map_err(|message| Error::at(file, original.start, message))?;
+            super::assembly_values::complete(&mut self.loader.package.units[file.0 as usize], root)
+                .map_err(|e| Error::at(file, e.offset, e.message))?;
+            let generated = self.loader.package.units[file.0 as usize]
+                .install_assembly(visit.node, root, context.0)
+                .map_err(|e| Error::at(file, e.offset, e.message))?;
+            (generated, visit.include)
+        } else if matches!(
             self.definitions[definition].body,
             Body::Builtin(builtin::Builtin::Include)
         ) {
@@ -322,7 +407,9 @@ impl<S: Sources> Engine<'_, S> {
             )
         };
         self.invocations[context.0 as usize - 1].generated = generated;
-        self.loader.package.units[file.0 as usize].retire_arguments(root);
+        if !assembly {
+            self.loader.package.units[file.0 as usize].retire_arguments(root);
+        }
         self.calls[index].eager = None;
         self.work.push(Work::Finish {
             output,

@@ -115,6 +115,48 @@ pub fn count(program: &Program, out: &mut impl Write) -> io::Result<()> {
     writeln!(out)
 }
 fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
+    if let Some(data) = &body.assembly {
+        writeln!(
+            out,
+            "  assembly-data instructions={} templates={} operands={} pieces={} bytes={}",
+            data.instructions.len(),
+            data.templates.len(),
+            data.operands.len(),
+            data.pieces.len(),
+            data.allocation_bytes()
+        )?;
+        for (id, instruction) in data.instructions.iter().enumerate() {
+            writeln!(
+                out,
+                "  asm a{id} source={:?} options={} templates={:?} operands={:?}",
+                instruction.source,
+                instruction.options,
+                instruction.templates,
+                instruction.operands
+            )?;
+        }
+        for (id, operand) in data.operands.iter().enumerate() {
+            writeln!(
+                out,
+                "  asm-operand {id} register={:?} input={:?} output={:?} type={:?} late={}",
+                operand.register, operand.input, operand.output, operand.ty, operand.late
+            )?;
+        }
+        for (id, template) in data.templates.iter().enumerate() {
+            writeln!(
+                out,
+                "  asm-template {id} {:?} pieces={:?}",
+                template.text, template.pieces
+            )?;
+        }
+        for piece in &data.pieces {
+            writeln!(
+                out,
+                "  asm-piece {}..{} operand={} modifier={}",
+                piece.start, piece.end, piece.operand, piece.modifier
+            )?;
+        }
+    }
     for (id, local) in body.locals.iter().enumerate() {
         write!(out, "  local l{id} type={} ", local.ty.0)?;
         match local.kind {
@@ -269,6 +311,9 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
             value_list(body, fields, out)
         }
         Rvalue::Repeat { value, .. } => write!(out, "repeat v{}", value.0),
+        Rvalue::AssemblyOutput { effect, operand } => {
+            write!(out, "assembly-output v{} operand={operand}", effect.0)
+        }
         Rvalue::Unit => write!(out, "unit"),
         Rvalue::Scalar(id) => type_view::scalar(body.scalars[id.0 as usize], out),
         Rvalue::Length(value) => {
@@ -347,9 +392,10 @@ fn rvalue(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
             ..
         } => write!(out, "binary {operator:?} v{} v{}", left.0, right.0),
         Rvalue::Cast { kind, operand, .. } => write!(out, "cast {kind:?} v{}", operand.0),
-        Rvalue::Invoke { .. } | Rvalue::Intrinsic { .. } | Rvalue::Call { .. } => {
-            call_value(body, value, out)
-        }
+        Rvalue::Assembly { .. }
+        | Rvalue::Invoke { .. }
+        | Rvalue::Intrinsic { .. }
+        | Rvalue::Call { .. } => call_value(body, value, out),
     }
 }
 fn call_value(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()> {
@@ -360,6 +406,13 @@ fn call_value(body: &Body, value: Rvalue, out: &mut impl Write) -> io::Result<()
             arguments,
         } => {
             write!(out, "invoke {} signature={} ", kind.name(), signature.0)?;
+            arguments
+        }
+        Rvalue::Assembly {
+            instruction,
+            arguments,
+        } => {
+            write!(out, "assembly instruction={instruction} ")?;
             arguments
         }
         Rvalue::Intrinsic {

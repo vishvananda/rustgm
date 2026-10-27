@@ -78,6 +78,8 @@ impl Engine<'_, '_> {
                     ..
                 }
                 | Rvalue::Invoke { .. }
+                | Rvalue::Assembly { .. }
+                | Rvalue::AssemblyOutput { .. }
                 | Rvalue::Intrinsic { .. }
                 | Rvalue::Address(_)
                 | Rvalue::IsVariant { .. }

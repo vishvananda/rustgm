@@ -318,7 +318,7 @@ fn common_request_layout_and_closed_argument_rules_are_unchanged() {
     assert_eq!(size_of::<crate::const_eval::code::Code>(), 304);
     assert_eq!(size_of::<crate::body::ir::Rvalue>(), 20);
     assert_eq!(size_of::<crate::body::ir::Value>(), 24);
-    assert_eq!(size_of::<crate::body::ir::Body>(), 448);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 456);
 }
 
 #[test]

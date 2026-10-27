@@ -500,7 +500,7 @@ fn ordinary_layouts_and_failed_work_keep_existing_owners_and_widths() -> TestRes
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<crate::sema::model::NodeFacts>(), 80);
     assert_eq!(size_of::<crate::sema::model::Operation>(), 16);
-    assert_eq!(size_of::<crate::body::ir::Body>(), 448);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     eprintln!(
         "Discriminant Contracts={} Validated={} Catalog={} Reservations={} Source={} Evidence={} ProjectionQuery={} before={before:?} after={after:?}",
         size_of::<Contracts>(),

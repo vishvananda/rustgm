@@ -423,6 +423,7 @@ impl Unit {
         registry: &crate::expand::registry::Registry,
         other: impl Fn(super::FileId) -> Option<&'a Unit>,
         config: &crate::expand::config::Config,
+        assembly: bool,
     ) -> Result<NodeId, LexError> {
         let source = self.source.text();
         let units = |id| if id == file { Some(&*self) } else { other(id) };
@@ -430,7 +431,11 @@ impl Unit {
         let inputs = crate::syntax::edition_context::WithEditions::new(&view, |token| {
             super::editions::token(file, token, units)
         });
-        let ast = crate::syntax::expression::fragment::parse_arguments(source, tokens, &inputs)?;
+        let ast = if assembly {
+            crate::syntax::expression::assembly::parse(source, tokens, &inputs)?
+        } else {
+            crate::syntax::expression::fragment::parse_arguments(source, tokens, &inputs)?
+        };
         let (ast, mut configuration) = Configuration::take(
             crate::expand::crate_syntax::configure_with_inputs(source, ast, config, &inputs)?,
         );
@@ -673,6 +678,74 @@ impl Unit {
         self.configured.effects.extend(configuration.effects);
     }
 
+    /// Move the already parsed, expanded argument root into its actual asm call.
+    pub(crate) fn install_assembly(
+        &mut self,
+        target: NodeId,
+        root: NodeId,
+        invocation: u32,
+    ) -> Result<Span, LexError> {
+        let original = *self
+            .configured
+            .ast
+            .nodes
+            .get(target.get() as usize)
+            .ok_or_else(|| error(0, "missing assembly call"))?;
+        if !matches!(original.kind, Kind::Macro { .. }) {
+            return Err(error(
+                original.span.start,
+                "assembly call changed before installation",
+            ));
+        }
+        let arguments = *self
+            .configured
+            .ast
+            .nodes
+            .get(root.get() as usize)
+            .ok_or_else(|| error(0, "missing assembly arguments"))?;
+        if !matches!(arguments.kind, Kind::InlineAssembly(_))
+            || self.configured.active.get(root.get() as usize) != Some(&true)
+        {
+            return Err(error(
+                original.span.start,
+                "assembly arguments changed before installation",
+            ));
+        }
+        let Kind::InlineAssembly(args) = arguments.kind else {
+            return Err(error(original.span.start, "missing assembly root"));
+        };
+        let origin = NodeId::checked(
+            u32::try_from(self.configured.ast.nodes.len())
+                .map_err(|_| error(0, "assembly origin index overflow"))?,
+        )
+        .ok_or_else(|| error(0, "assembly origin index overflow"))?;
+        let rows = self.configured.ast.list(args).to_vec();
+        self.configured.ast.nodes.push(crate::syntax::ast::Node {
+            span: original.span,
+            kind: Kind::AssemblyOrigin(invocation),
+        });
+        self.configured.active.push(true);
+        self.owner_indices.push(None);
+        let start = u32::try_from(self.configured.ast.edges.len())
+            .map_err(|_| error(0, "assembly origin range overflow"))?;
+        self.configured.ast.edges.extend(rows);
+        self.configured.ast.edges.push(origin);
+        let end = u32::try_from(self.configured.ast.edges.len())
+            .map_err(|_| error(0, "assembly origin range overflow"))?;
+        self.original.save(
+            target,
+            original,
+            true,
+            self.owner_indices[target.get() as usize],
+            false,
+        );
+        self.configured.ast.nodes[target.get() as usize] = crate::syntax::ast::Node {
+            span: original.span,
+            kind: Kind::InlineAssembly(crate::syntax::ast::List { start, end }),
+        };
+        self.configured.active[root.get() as usize] = false;
+        Ok(original.span)
+    }
     pub(crate) fn retire_arguments(&mut self, root: NodeId) {
         self.retire_tree(root, false);
     }

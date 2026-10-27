@@ -850,6 +850,14 @@ impl Lower<'_, '_, '_> {
                 let value = self.value(operand)?.runtime()?;
                 casts::cast(&mut self.builder, kind, source, target, value, ty)?
             }
+            Rvalue::Assembly { instruction, .. } => {
+                crate::body::assembly::instruction(self.body, instruction)?;
+                return Err("inline assembly requires an unavailable locked backend capability");
+            }
+            Rvalue::AssemblyOutput { effect, operand } => {
+                crate::body::assembly::output(self.body, effect, operand, value.ty)?;
+                return Err("inline assembly requires an unavailable locked backend capability");
+            }
             Rvalue::Intrinsic {
                 intrinsic,
                 instance,

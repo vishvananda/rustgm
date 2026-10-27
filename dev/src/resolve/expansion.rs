@@ -1,4 +1,5 @@
 //! Crate expansion visits new typed syntax and retains module-loading and capture state.
+mod assembly_values;
 use super::{
     index::Context,
     load::{InputFile, Loader, Sources},

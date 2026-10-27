@@ -150,7 +150,7 @@ fn shared_interfaces_keep_bounded_visitation_and_prepaid_failure_paths() -> Resu
     assert_eq!(check(&report, &facts)?.bytes, 0);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     assert_eq!(size_of::<crate::resolve::stability::Inventory>(), 88);
-    assert_eq!(size_of::<crate::body::ir::Body>(), 448);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     assert_eq!(size_of::<Task>(), 8);
     eprintln!(
         "library interfaces costs={observations:?} Task={} Inventory={} Package={} Body={}",

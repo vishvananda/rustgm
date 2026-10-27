@@ -205,6 +205,16 @@ impl<'a> Flow<'a> {
             .ok_or("invalid liveness value operation")?;
         mark(self.values[id.0 as usize], live, false)?;
         match value.kind {
+            Rvalue::Assembly { instruction, .. } => {
+                crate::body::assembly::instruction(self.body, instruction)?;
+            }
+            Rvalue::AssemblyOutput { effect, operand } => {
+                crate::body::assembly::output(self.body, effect, operand, value.ty)?
+            }
+            _ => {}
+        }
+
+        match value.kind {
             Rvalue::Read(place)
             | Rvalue::Address(place)
             | Rvalue::Borrow { place, .. }
@@ -212,7 +222,10 @@ impl<'a> Flow<'a> {
             | Rvalue::TextEquals { place, .. }
             | Rvalue::IsVariant { place, .. }
             | Rvalue::Validate(place) => self.use_place(place, live)?,
-            Rvalue::Aggregate { fields, .. }
+            Rvalue::Assembly {
+                arguments: fields, ..
+            }
+            | Rvalue::Aggregate { fields, .. }
             | Rvalue::Intrinsic {
                 arguments: fields, ..
             }
@@ -235,7 +248,8 @@ impl<'a> Flow<'a> {
                     self.use_value(callee, live)?;
                 }
             }
-            Rvalue::Reify(value)
+            Rvalue::AssemblyOutput { effect: value, .. }
+            | Rvalue::Reify(value)
             | Rvalue::Union { value, .. }
             | Rvalue::Constrain(value)
             | Rvalue::Unsize { value, .. }
@@ -417,6 +431,9 @@ pub fn analyze(
     regions: &mut LiveRegions,
     body: &Body,
 ) -> Result<Analysis, &'static str> {
+    if body.assembly.is_some() {
+        crate::body::assembly::validate(body)?;
+    }
     let mut flow = Flow::new(body, types, regions)?;
     let (incoming, mut live) = flow.solve()?;
     let components = flow.components(types, regions)?;

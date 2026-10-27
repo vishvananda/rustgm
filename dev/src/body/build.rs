@@ -1,6 +1,7 @@
 //! Iterative construction visits executable syntax once and consumes PA9 selections.
 mod addresses;
 mod aggregates;
+mod assembly;
 mod closures;
 mod conditions;
 mod constructors;
@@ -228,6 +229,7 @@ impl Body {
         result: TypeId,
     ) -> Self {
         Self {
+            assembly: None,
             mutable_statics: None,
             static_types: None,
             const_context: matches!(
@@ -273,6 +275,7 @@ struct Reach {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    AssemblyReadPlace(NodeId),
     TryFinish {
         node: NodeId,
         body: NodeId,
@@ -944,6 +947,7 @@ impl<'a> Builder<'a> {
                 self.scratch.places.push(place);
             }
             Work::ReadPlace(node) => self.read_place(node)?,
+            Work::AssemblyReadPlace(node) => self.assembly_read_place(node)?,
             Work::DiscardPlace(node) => {
                 if let Some(place) = self.pop_place(node)? {
                     let ty = self.ty(node)?;
@@ -1392,6 +1396,7 @@ impl<'a> Builder<'a> {
                             self.scratch.work.push(Work::Enter(start));
                         }
                     }
+                    Kind::InlineAssembly(args) => self.assembly_children(args),
                     Kind::LibraryValue { value, .. } => {
                         self.scratch.work.extend(value.map(Work::Enter));
                     }
@@ -1623,6 +1628,7 @@ impl<'a> Builder<'a> {
             Kind::Tuple(elements) if elements.start != elements.end => {
                 self.aggregate_elements(node, elements)?
             }
+            Kind::InlineAssembly(args) => self.assembly_value(node, args)?,
             Kind::LibraryValue { value, .. } => self.library_value(node, value)?,
             Kind::Array(elements) => self.aggregate_elements(node, elements)?,
             Kind::Repeat { value, .. } => self.repeat(node, value)?,

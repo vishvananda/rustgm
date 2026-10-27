@@ -467,6 +467,7 @@ fn specialize(
     request: Specialization<'_>,
 ) -> Result<usize, Error> {
     let error = |e: &str| diagnostic(report, Some(request.source), e.into());
+    body::assembly::prepay_instance(report, &request.template.body)?;
     let mut materialized = body::instantiate::from_checked_caller(
         facts,
         request.template,

@@ -70,7 +70,7 @@ fn explicit_roots_leave_unused_bodies_pending_without_whole_source_or_artifact_s
             3
         );
     }
-    assert_eq!(size_of::<crate::body::ir::Body>(), 448);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     println!(
         "local-roots Body={} Value={} Rvalue={} Code={} Request={}",
         size_of::<crate::body::ir::Body>(),

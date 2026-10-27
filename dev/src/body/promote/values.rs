@@ -269,6 +269,8 @@ impl Engine<'_, '_> {
                 callee, arguments, ..
             } => self.call(callee, arguments)?,
             Rvalue::Invoke { .. }
+            | Rvalue::Assembly { .. }
+            | Rvalue::AssemblyOutput { .. }
             | Rvalue::Intrinsic { .. }
             | Rvalue::Union { .. }
             | Rvalue::Address(_)
