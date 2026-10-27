@@ -171,7 +171,7 @@ it does not reconstruct source paths, expand function bodies, grant a trait
 proof or publish metadata. The design charges existing cold inventory storage, including owned policy
 strings, before temporary allocation. Root review found that the qualified
 predecessor invoked this charge twice consecutively; root's single-charge
-correction and refreshed combined counters are pending. Work and queue/index
+correction passes six combined private controls in 210.82 seconds. Work and queue/index
 growth are prepaid; failed attempts leave no retained completion/cache state.
 Ordinary packages without a library inventory return without a walk or allocation.
 
@@ -191,3 +191,11 @@ visitation counts; the larger preexisting inventory capacity was still counted.
 These are bounded policy charges, not heap-allocation measurements. Actual records
 remain Task 8 bytes, Inventory 88, Package 256 and Body 448. No persistent field,
 profile, wire, role, callable or const authority changed.
+
+The corrected single-charge integration observes 404/976/3816 work steps and
+3810/9802/37098 logical storage bytes for 8/32/128 public functions. Distinct
+type/declaration counts and enclosing layouts are unchanged. These observations
+come from the actual combined test binary at
+`obj/qualification/fast/1793062088332575614`, not a rescaling of the predecessor.
+The six controls include the existing ordinary/policy controls and const/try
+source-gate opponents; production/frontend qualification is recorded separately.

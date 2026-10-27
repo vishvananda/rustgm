@@ -225,3 +225,9 @@ The executable source Try protocol, homogeneous residual reconstruction, real
 branch/constructor calls, scope exits and native proof remain required. Language
 roles 35–41 and runtime plans are approved next work, not implemented by this
 qualified grammar producer.
+
+`spec/source-const-closures/` records pinned keyword authority, cfg-removal and
+edition-fragment observations. Grammar gates do not grant PA25 execution.
+`spec/scoped-builtin-declarations/` wraps the unchanged original Iter declaration
+for LIB-038. Independent metadata accepts it; current RustGM explicitly rejects
+its scoped declaration kind. No coroutine expansion or native execution is claimed.

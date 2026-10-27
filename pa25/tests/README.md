@@ -34,5 +34,6 @@ remaining coverage questions are in [PA25 readiness](../../docs/pa25-readiness.m
 observations for the newly exposed original-core const closure. Const creation
 and a const-fn-produced runtime callable accept; missing feature/context cases
 reject. The original runtime-outside-const acceptance prediction was wrong and
-is preserved with its source and diagnostic. Grammar, feature authority and
-actual const closure semantics remain unimplemented; these are planned cases.
+is preserved with its source and diagnostic. The grammar/keyword gate checkpoint
+has focused local qualification. These remain planned PA25 cases: actual const
+creation, callable and CTFE semantics are still required.

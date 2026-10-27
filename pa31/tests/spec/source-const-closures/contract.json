@@ -1,5 +1,5 @@
 {
-  "state": "predicted before independent observation; grammar and feature authority only; PA25 execution remains required",
+  "state": "independently observed keyword/edition/cfg rules with qualified grammar controls; PA25 execution remains required",
   "owner": "PA31 source internal feature authority; PA4 grammar; PA25 const callable semantics",
   "profile": {
     "rustc": "1.98.0",

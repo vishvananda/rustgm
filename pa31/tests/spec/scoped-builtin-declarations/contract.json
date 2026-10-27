@@ -1,0 +1,30 @@
+{
+  "state": "independent metadata accepts the wrapped original declaration; current candidate rejection reproduced; no invocation/coroutine execution claimed",
+  "owner": "PA31 original builtin claim authority; PA7/8 scoped macro mechanisms; PA42/43 eventual coroutine invocation",
+  "origin": {
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "path": "library/core/src/iter/sources/generator.rs",
+    "sha256": "10d351cc3c69badf4c41d32b494c47f514e40a10f603876c1485e1ce6c402d3b",
+    "preservation": "Entire original file is appended byte-for-byte after a minimal no_core/staged provider prefix.",
+    "observed_core_line": 23,
+    "observed_core_byte": 648
+  },
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "bootstrap": "1",
+    "emit": "metadata"
+  },
+  "cases": [
+    {
+      "path": "iter-declaration.rs",
+      "sha256": "7f22794e7ccf3d3c98746e8525a355d7f7e8a9daf9818a43c4cce4b5f12f27af",
+      "rustc_status": 0,
+      "candidate_status": 1,
+      "candidate_diagnostic": "builtin macro binding requires its supported declaration kind",
+      "candidate_expected": "unsupported"
+    }
+  ]
+}
