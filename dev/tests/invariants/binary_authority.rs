@@ -346,7 +346,7 @@ fn provisional_results_preserve_known_never_cfg_and_explicit_feature_frontier() 
         (
             "branch",
             "associated type projection requires normalization",
-            "Delayed<<1",
+            "if flag",
         ),
     ] {
         let source = input(&format!("delayed-never/{name}"))?;
@@ -390,8 +390,54 @@ fn provisional_results_preserve_known_never_cfg_and_explicit_feature_frontier() 
             .iter()
             .any(|b| matches!(b.terminator, Terminator::Unreachable))
     );
-    assert!(branch.blocks.iter().any(|b|matches!(b.terminator,Terminator::Return(Some(v)) if matches!(v.operand,Operand::Literal(id) if matches!(branch.literals.get(id.0 as usize),Some(Literal::Integer(7)))))));
+    merged_branch_returns_seven(branch)?;
     assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+fn merged_branch_returns_seven(body: &crate::lowir::program::Function) -> TestResult {
+    use crate::lowir::program::{Operation as LowOperation, ResultId};
+    let (return_block, returned) = body
+        .blocks
+        .iter()
+        .enumerate()
+        .find_map(|(index, block)| match block.terminator {
+            Terminator::Return(Some(value)) => Some((index, value.operand)),
+            _ => None,
+        })
+        .ok_or("actual known-Never branch return")?;
+    let Operand::Temporary(returned) = returned else {
+        return Err("branch merge must use its real temporary".into());
+    };
+    let slot = body
+        .instructions
+        .iter()
+        .find_map(
+            |instruction| match (instruction.result, instruction.operation) {
+                (
+                    Some(ResultId::Scalar(result)),
+                    LowOperation::Load {
+                        address: Operand::Slot(slot),
+                        ..
+                    },
+                ) if result == returned => Some(slot),
+                _ => None,
+            },
+        )
+        .ok_or("actual return merge slot")?;
+    let source_block = body.blocks.iter().find(|block| {
+        body.instructions[block.instructions.start as usize..block.instructions.end as usize].iter().any(|instruction| {
+            matches!(instruction.operation, LowOperation::Store { address: Operand::Slot(actual), value } if actual == slot && matches!(value.operand, Operand::Literal(id) if matches!(body.literals.get(id.0 as usize), Some(Literal::Integer(7)))))
+        })
+    }).ok_or("actual seven store into return merge slot")?;
+    assert!(
+        matches!(source_block.terminator, Terminator::Jump(target) if target.0 as usize == return_block)
+    );
+    assert!(
+        body.blocks
+            .iter()
+            .any(|block| matches!(block.terminator, Terminator::Branch { .. }))
+    );
     Ok(())
 }
 
