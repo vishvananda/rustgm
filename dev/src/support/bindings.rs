@@ -57,9 +57,13 @@ pub enum LangItem {
     IntoTryType,
     ControlFlowContinue,
     ControlFlowBreak,
+    PartialEq,
+    StructuralPartialEq,
+    Ordering,
+    PartialOrd,
 }
 impl LangItem {
-    pub const ALL: [Self; 42] = [
+    pub const ALL: [Self; 46] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -102,6 +106,10 @@ impl LangItem {
         Self::IntoTryType,
         Self::ControlFlowContinue,
         Self::ControlFlowBreak,
+        Self::PartialEq,
+        Self::StructuralPartialEq,
+        Self::Ordering,
+        Self::PartialOrd,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -148,6 +156,10 @@ impl LangItem {
             Self::IntoTryType => 39,
             Self::ControlFlowContinue => 40,
             Self::ControlFlowBreak => 41,
+            Self::PartialEq => 42,
+            Self::StructuralPartialEq => 43,
+            Self::Ordering => 44,
+            Self::PartialOrd => 45,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -196,6 +208,10 @@ impl LangItem {
             "into_try_type" => Some(Self::IntoTryType),
             "Continue" => Some(Self::ControlFlowContinue),
             "Break" => Some(Self::ControlFlowBreak),
+            "eq" => Some(Self::PartialEq),
+            "structural_peq" => Some(Self::StructuralPartialEq),
+            "Ordering" => Some(Self::Ordering),
+            "partial_ord" => Some(Self::PartialOrd),
             _ => None,
         }
     }
