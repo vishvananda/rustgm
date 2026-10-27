@@ -201,8 +201,9 @@ fn encoded_calls_reject_real_wrong_type_arity_trait_and_dead_borrow() -> Result 
         "fn main(){let borrowed;{let value=7u8;borrowed=<u8 as base::Holder<u8>>::borrow(&value);}let _=*borrowed;}",
     ] {
         let source = format!("#![feature(no_core)]#![no_core]{source}");
-        let error = client(crates::decode(&bytes)?, &source, |_, _, _| ())
-            .expect_err("malformed named call accepted");
+        let Err(error) = client(crates::decode(&bytes)?, &source, |_, _, _| ()) else {
+            return Err("malformed named call accepted".into());
+        };
         eprintln!("actual encoded call rejection: {error}");
     }
     Ok(())

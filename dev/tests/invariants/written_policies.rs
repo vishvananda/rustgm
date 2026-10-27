@@ -33,12 +33,13 @@ fn plain_override_executes_but_written_modifiers_and_tracking_stay_closed() -> R
         ),
     ] {
         let input = format!("#![feature({feature})]\n{source}\n{extra}");
-        let error = module_packets::exported_profile(
+        let Err(error) = module_packets::exported_profile(
             &input,
             SourcePublication::ProvidedContracts,
             "provided_policy_opponent",
-        )
-        .expect_err("unsupported written policy published");
+        ) else {
+            return Err("unsupported written policy published".into());
+        };
         assert!(error.to_string().contains(expected), "{error}");
     }
     Ok(())
