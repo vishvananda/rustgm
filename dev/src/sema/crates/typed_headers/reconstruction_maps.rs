@@ -64,11 +64,18 @@ impl ProvidedOwners {
         reference: s::TraitApplicationRef,
         steps: &mut usize,
     ) -> Result<Predicate, &'static str> {
-        use crate::sema::crates::typed_headers::predicate_remap::translation::applications::Cache;
-        *steps = steps.saturating_add(1);
-        self.require_store(store)?;
-        self.applications
-            .entry(reference.0 as usize)?
-            .ok_or("selected original requires its actual pending canonical application")
+        let mut work = ReservationWork::default();
+        let result = (|| {
+            self.require_current(store, &mut work)?;
+            self.applications
+                .get(&self.view(), store, reference, &mut work)
+                .map_err(|_| "selected original changed its actual canonical application memo")?
+                .ok_or("selected original requires its actual pending canonical application")
+        })();
+        *steps = steps.saturating_add(work.steps);
+        if *steps > crate::support::crates::MAX_COMPONENTS {
+            return Err("selected original application work budget exceeded");
+        }
+        result
     }
 }

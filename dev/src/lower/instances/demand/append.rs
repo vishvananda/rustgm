@@ -68,9 +68,7 @@ impl Proofs<'_, '_> {
             crate::resolve::model::DefId(item.0),
             service,
         )?;
-        let prepared = crate::pipeline::original_contexts::Original::prepare_selected(
-            facts, &original, service,
-        )?;
+        let prepared = crate::pipeline::OriginalInput::prepare_selected(facts, &original, service)?;
         let Self::Retained(owner) = self else {
             return Err(diagnostic(
                 report,

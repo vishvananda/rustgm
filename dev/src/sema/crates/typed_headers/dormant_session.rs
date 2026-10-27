@@ -25,6 +25,7 @@ mod selected;
 #[path = "registered_templates.rs"]
 mod template_demands;
 pub(super) use selected::SelectedHeaders;
+pub(super) use template_demands::OriginalBody;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/held_stores.rs"]
 mod tests;

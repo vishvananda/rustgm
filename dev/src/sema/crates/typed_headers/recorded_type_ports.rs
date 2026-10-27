@@ -7,7 +7,7 @@ use crate::{
         model::DefId,
         package::Error,
     },
-    sema::crates::typed_headers::unpaid_provided::template_demands::OriginalBody,
+    sema::crates::typed_headers::unpaid_provided::OriginalBody,
     support::crates::{generics::source as s, owner_catalog::DeclarationRef},
     types::{RegionId, Store, arguments::Argument, callable::Templates},
 };

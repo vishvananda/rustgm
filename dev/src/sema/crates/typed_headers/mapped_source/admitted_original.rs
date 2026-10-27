@@ -1,11 +1,11 @@
 //! A callback-scoped provided original borrows the actual selected body authority.
-use super::{Arc, Argument, Catalog, Declarations, DefId, DefKind, Graph, Original, s};
+use super::{Arc, Argument, Catalog, Declarations, DefId, Graph, Original, s};
 pub(super) enum Mapping<'a> {
     Ordinary(&'a Graph),
     Selected {
         owner: &'a super::super::super::unpaid_provided::ProvidedOwners,
         store: &'a crate::types::Store,
-        body: &'a super::super::super::unpaid_provided::template_demands::OriginalBody<'a>,
+        body: &'a super::super::super::unpaid_provided::OriginalBody<'a>,
         view: &'a crate::resolve::crates::unpaid_provided::RecipeView<'a>,
     },
 }
@@ -14,7 +14,7 @@ impl Original<'_> {
         catalog: &'a Catalog,
         owner: &'a super::super::super::unpaid_provided::ProvidedOwners,
         facts: &'a Declarations,
-        body: &'a super::super::super::unpaid_provided::template_demands::OriginalBody<'a>,
+        body: &'a super::super::super::unpaid_provided::OriginalBody<'a>,
         view: &'a crate::resolve::crates::unpaid_provided::RecipeView<'a>,
         definition: DefId,
         steps: &mut usize,

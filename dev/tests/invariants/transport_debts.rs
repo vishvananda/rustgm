@@ -280,7 +280,7 @@ fn imported_header_and_original_work_share_graphs_across_actual_uses() -> Result
             templates.attach(Some(std::rc::Rc::clone(imported)))?;
             assert!(std::ptr::eq(
                 &raw const templates.get(0).ok_or("missing shared template")?.body,
-                &raw const original.template.body,
+                &raw const original.template().body,
             ));
         }
         let counts = first.ok_or("empty use axis")?;
