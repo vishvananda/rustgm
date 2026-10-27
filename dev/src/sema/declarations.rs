@@ -771,6 +771,10 @@ impl Checker<'_> {
         {
             return Ok(());
         }
+        if self.defer_selected_trait_callable(key, context)? {
+            self.drain(steps, limit)?;
+            return Ok(());
+        }
         if let Kind::GenericMethodCall { method, .. } = kind {
             self.prepare_method_arguments(key, method, context, steps, limit, scan)?;
         }
