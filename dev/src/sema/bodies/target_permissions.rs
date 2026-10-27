@@ -115,7 +115,11 @@ impl Checker<'_> {
             .declaration_header(owner)
             .map_err(|e| self.error(node, e))?
             .ok_or_else(|| self.error(node, "target-feature caller lacks its body declaration"))?;
-        if header.body.and_then(|body| body.source()) != Some(root) {
+        if header
+            .body
+            .and_then(crate::resolve::body_origin::BodyOrigin::source)
+            != Some(root)
+        {
             return Err(self.error(node, "target-feature caller body changed its actual owner"));
         }
         match target_features::query(self.report, self.facts, owner)? {

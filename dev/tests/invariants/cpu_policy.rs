@@ -199,6 +199,67 @@ fn pointer_adjustment_uses_actual_item_context_and_retained_body_proof() -> Test
     crate::lowir::writer::write(&program, &mut Vec::new())?;
     Ok(())
 }
+fn changed_input_tree(entry: bool) -> TestResult {
+    let mut changed = crate::test_source::resolve(&input("safe-declaration")?, true)?;
+    let facts = crate::sema::declarations::analyze(&changed)?;
+    let id = named(&changed, "f")?;
+    let row = facts
+        .target_feature_functions
+        .get(&id)
+        .ok_or("actual retained row")?;
+    let site = row.sites.first().ok_or("actual site")?;
+    let file = site.owner.file.0 as usize;
+    let capture = site.capture as usize;
+    let span = site
+        .input
+        .iter()
+        .find(|(_, tree)| {
+            if entry {
+                matches!(
+                    tree.kind,
+                    crate::syntax::token_tree::TreeKind::Token(crate::lex::token::Kind::Identifier)
+                )
+            } else {
+                matches!(
+                    tree.kind,
+                    crate::syntax::token_tree::TreeKind::Token(crate::lex::token::Kind::String)
+                )
+            }
+        })
+        .ok_or("actual parsed input tree")?
+        .1
+        .span;
+    let forest = changed.package.units[file].configured.ast.attributes[capture]
+        .forest
+        .map_spans(&mut |actual| {
+            Ok(if actual == span {
+                crate::syntax::token_tree::Span {
+                    start: actual.start + 1,
+                    ..actual
+                }
+            } else {
+                actual
+            })
+        })
+        .map_err(|error| error.message)?;
+    changed.package.units[file].configured.ast.attributes[capture].forest = forest;
+    assert!(
+        changed
+            .lint_producer()
+            .ok_or("actual generic owner producer")?
+            .validate_owner(&changed.package, site.owner)
+            .is_ok(),
+        "path-only lint witness deliberately does not cover target input"
+    );
+    assert_eq!(
+        query(&changed, &facts, id)
+            .err()
+            .ok_or("changed target input must reject")?
+            .message,
+        "target-feature input trees changed"
+    );
+    Ok(())
+}
 #[test]
 fn current_images_declared_owners_and_imported_unknown_cannot_be_substituted() -> TestResult {
     let source = input("safe-declaration")?;
@@ -241,68 +302,8 @@ fn current_images_declared_owners_and_imported_unknown_cannot_be_substituted() -
         .source
         .node = crate::syntax::ast::NodeId::new(0);
     assert!(query(&changed, &facts2, id).is_err());
-    for entry in [false, true] {
-        let mut changed = crate::test_source::resolve(&input("safe-declaration")?, true)?;
-        let facts = crate::sema::declarations::analyze(&changed)?;
-        let id = named(&changed, "f")?;
-        let row = facts
-            .target_feature_functions
-            .get(&id)
-            .ok_or("actual retained row")?;
-        let site = row.sites.first().ok_or("actual site")?;
-        let file = site.owner.file.0 as usize;
-        let capture = site.capture as usize;
-        let span = site
-            .input
-            .iter()
-            .find(|(_, tree)| {
-                if entry {
-                    matches!(
-                        tree.kind,
-                        crate::syntax::token_tree::TreeKind::Token(
-                            crate::lex::token::Kind::Identifier
-                        )
-                    )
-                } else {
-                    matches!(
-                        tree.kind,
-                        crate::syntax::token_tree::TreeKind::Token(crate::lex::token::Kind::String)
-                    )
-                }
-            })
-            .ok_or("actual parsed input tree")?
-            .1
-            .span;
-        let forest = changed.package.units[file].configured.ast.attributes[capture]
-            .forest
-            .map_spans(&mut |actual| {
-                Ok(if actual == span {
-                    crate::syntax::token_tree::Span {
-                        start: actual.start + 1,
-                        ..actual
-                    }
-                } else {
-                    actual
-                })
-            })
-            .map_err(|error| error.message)?;
-        changed.package.units[file].configured.ast.attributes[capture].forest = forest;
-        assert!(
-            changed
-                .lint_producer()
-                .ok_or("actual generic owner producer")?
-                .validate_owner(&changed.package, site.owner)
-                .is_ok(),
-            "path-only lint witness deliberately does not cover target input"
-        );
-        assert_eq!(
-            query(&changed, &facts, id)
-                .err()
-                .ok_or("changed target input must reject")?
-                .message,
-            "target-feature input trees changed"
-        );
-    }
+    changed_input_tree(false)?;
+    changed_input_tree(true)?;
     let provider = crate::test_source::fixture(
         "pa31/tests/spec/source-functions-transport/minimal-provider.rs",
     )?;
@@ -371,6 +372,29 @@ fn ordinary_library_mode_and_existing_transport_denials_remain_exact() -> TestRe
     assert!(error.to_string().contains("target-feature"), "{error}");
     Ok(())
 }
+fn pending_map_scaling() -> TestResult {
+    for (count, depth) in [(1, 1), (8, 1), (32, 1), (1, 8), (1, 32)] {
+        let mut source = String::from("fn id(x:u8)->u8{x}pub fn measured()->u8{let mut x=7u8;");
+        for _ in 0..count {
+            source.push_str("x=");
+            for _ in 0..depth {
+                source.push_str("id(");
+            }
+            source.push('x');
+            for _ in 0..depth {
+                source.push(')');
+            }
+            source.push(';');
+        }
+        source.push_str("x}");
+        let report = crate::test_source::resolve(&source, true)?;
+        eprintln!(
+            "pending count={count} depth={depth} actual={:?}",
+            crate::sema::bodies::observe_active_calls(&report, "measured")?
+        );
+    }
+    Ok(())
+}
 #[test]
 fn cold_rows_cumulative_failures_and_common_pending_map_cost_are_measured() -> TestResult {
     let (_, Analysis { facts, .. }) = analyze("pub fn ordinary()->u8{7}")?;
@@ -412,26 +436,7 @@ fn cold_rows_cumulative_failures_and_common_pending_map_cost_are_measured() -> T
             header_attributes::attribute_storage(&facts)
         );
     }
-    for (count, depth) in [(1, 1), (8, 1), (32, 1), (1, 8), (1, 32)] {
-        let mut source = String::from("fn id(x:u8)->u8{x}pub fn measured()->u8{let mut x=7u8;");
-        for _ in 0..count {
-            source.push_str("x=");
-            for _ in 0..depth {
-                source.push_str("id(");
-            }
-            source.push('x');
-            for _ in 0..depth {
-                source.push_str(")");
-            }
-            source.push(';');
-        }
-        source.push_str("x}");
-        let report = crate::test_source::resolve(&source, true)?;
-        eprintln!(
-            "pending count={count} depth={depth} actual={:?}",
-            crate::sema::bodies::observe_active_calls(&report, "measured")?
-        );
-    }
+    pending_map_scaling()?;
     let mut high = FeatureSet::default();
     high.insert(
         "xsaves",
