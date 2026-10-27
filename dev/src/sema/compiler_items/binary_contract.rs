@@ -1,0 +1,41 @@
+//! A binary descriptor borrows real identities; it grants no executable permission.
+use super::{
+    DefId, Error, Report,
+    operator_contract::{self, Operator},
+};
+use crate::{
+    resolve::unit::NodeKey, sema::model::Declarations, support::language_hooks::Hook, types::TypeId,
+};
+pub(in crate::sema) struct SourceBinary {
+    pub definition: DefId,
+    pub method: DefId,
+    pub signature: TypeId,
+    pub rhs: TypeId,
+}
+pub(in crate::sema) fn source_binary(
+    report: &Report,
+    facts: &mut Declarations,
+    site: NodeKey,
+    hook: Hook,
+) -> Result<SourceBinary, Error> {
+    let operator = match hook {
+        Hook::Shl => Operator::Shl,
+        Hook::BitOr => Operator::BitOr,
+        _ => {
+            return Err(Declarations::error(
+                report,
+                site,
+                "unsupported source binary operator",
+            ));
+        }
+    };
+    let actual = operator_contract::query(report, facts, site, operator)?;
+    Ok(SourceBinary {
+        definition: actual.definition,
+        method: actual.method,
+        signature: actual.signature,
+        rhs: actual.rhs.ok_or_else(|| {
+            Declarations::error(report, site, "source binary descriptor lost its Rhs formal")
+        })?,
+    })
+}

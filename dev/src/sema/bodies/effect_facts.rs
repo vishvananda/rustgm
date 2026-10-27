@@ -181,7 +181,7 @@ impl Checker<'_> {
                 .operation;
             // ForPlan retains distinct into_iter/next signatures, not one Call.
             if matches!(self.kind(node), crate::syntax::ast::Kind::For { .. })
-                || self.erased_source_unary(node)?
+                || self.erased_source_operator(node)?
             {
                 continue;
             }
@@ -361,7 +361,7 @@ impl Checker<'_> {
         self.commit_caller_sites(&sites, warm);
         for (node, term) in &self.state.calls {
             if matches!(self.kind(*node), crate::syntax::ast::Kind::For { .. })
-                || self.erased_source_unary(*node)?
+                || self.erased_source_operator(*node)?
                 || self.is_try_call(*node)
             {
                 continue;
