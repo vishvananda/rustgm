@@ -9,8 +9,8 @@ use std::sync::Arc;
 pub enum Class {
     Integer,
     Sse,
-    SseUp,
     None,
+    SseUp,
 }
 impl Class {
     #[must_use]

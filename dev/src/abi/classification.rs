@@ -14,8 +14,8 @@ use std::sync::Arc;
 pub enum Class {
     Integer,
     Sse,
-    SseUp,
     None,
+    SseUp,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Classes {

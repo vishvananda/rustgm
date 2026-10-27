@@ -275,15 +275,14 @@ fn shared_shape_queries_warm_abi_and_ordinary_paths_keep_bounded_storage() -> Te
         );
     }
     eprintln!(
-        "SIMD enclosing: Repr={} Definition={} Definitions={} Layout={} Layouts={} TypeKind={} Source={} Body={} Report={}",
+        "SIMD enclosing: Repr={} Definition={} Definitions={} Layout={} Layouts={} TypeKind={} Body={} Report={}",
         size_of::<crate::types::aggregate::Repr>(),
         size_of::<crate::types::aggregate::Definition>(),
         size_of::<Definitions>(),
         size_of::<crate::abi::layout::Layout>(),
         size_of::<Layouts>(),
         size_of::<Kind>(),
-        size_of::<crate::sema::traits::selection::Source>(),
-        size_of::<crate::body::Body>(),
+        size_of::<crate::body::ir::Body>(),
         size_of::<Report>()
     );
     Ok(())
