@@ -94,7 +94,8 @@ fn captured_strings_and_demanded_gates_follow_both_pinned_editions() -> Result {
     Ok(())
 }
 #[test]
-fn stored_and_deferred_strings_borrow_only_their_actual_literal_roots() -> Result {
+fn stored_and_deferred_strings_borrow_only_their_actual_literal_roots()
+-> std::result::Result<(), crate::lex::token::LexError> {
     for (source, expected) in [
         ("\"linux\"", "linux"),
         ("r#\"linux\"#", "linux"),
@@ -102,10 +103,7 @@ fn stored_and_deferred_strings_borrow_only_their_actual_literal_roots() -> Resul
         ("\"\"", ""),
     ] {
         let parsed = ParsedSyntax::own(source, expression::parse(source)?)?;
-        let span = Span {
-            start: 0,
-            end: u32::try_from(source.len())?,
-        };
+        let span = parsed.ast.node(parsed.ast.root).span;
         let splice = Splice {
             fragment: Nonterminal::Syntax {
                 kind: expression::fragment::FragmentKind::Literal,
@@ -133,7 +131,7 @@ fn stored_and_deferred_strings_borrow_only_their_actual_literal_roots() -> Resul
         );
         let token = crate::lex::Lexer::new(source)?
             .next_token()?
-            .ok_or("literal token")?;
+            .ok_or_else(|| crate::syntax::token_tree::error(0, "literal token"))?;
         let deferred = expression::fragment::parse(
             source,
             &[token],
@@ -157,10 +155,7 @@ fn stored_and_deferred_strings_borrow_only_their_actual_literal_roots() -> Resul
         "concat!(\"lin\",\"ux\")",
     ] {
         let parsed = ParsedSyntax::own(source, expression::parse(source)?)?;
-        let span = Span {
-            start: 0,
-            end: u32::try_from(source.len())?,
-        };
+        let span = parsed.ast.node(parsed.ast.root).span;
         assert!(
             Splice {
                 fragment: Nonterminal::Syntax {
