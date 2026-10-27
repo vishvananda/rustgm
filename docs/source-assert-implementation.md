@@ -362,3 +362,35 @@ there is no silent untracked ABI fallback. PanicInfo/handler/Debug, source panic
 CTFE redirection, formatting constructors and false Assert execution remain
 required. Bootstrap24, existing role ordinals, wire permissions and CPPGM are
 unchanged. Production/CLI integration remains the integrator's check.
+
+### Source Debug and formatter-field declarations
+
+Source `650af021e632d93adae1bb89ba7fbda081618970` adds Debug to the same
+once-parsed derive transaction. Its three selections are ephemeral; the existing
+Effects/Transaction owners do not grow. A shared active struct/enum field inventory
+lets the actual rt::ArgumentType formatter function type cross the existing opaque
+type transfer. The bounded Debug struct profile (zero through five fields) emits
+the pinned Formatter helper recipe, including an extra reference to the final
+field, with source-owned labels. Enum Debug and larger helper profiles remain
+explicitly unsupported. No field initializer, ordinary WF or trait proof is skipped.
+
+The existing cold diagnostic array gains actual trait-kind Debug identity. The
+unused global trivial-field-read singleton is removed; each real trait header
+retains its original hint, with same-header duplicates and malformed/wrong-owner
+claims rejected. The hint grants no Clone, overlap, callable or const proof.
+Actual Reservations grows 1120→1136 bytes. Effects 376, Transaction 176,
+Transactions 56, Engine 4088, Report 3040, resolver Body 96 and Definition 136
+remain unchanged. The public before-observer authenticates the qualified
+production rlib; after values come from the actual new private binary.
+
+Five exact controls pass in 243.06 seconds, with metadata, formatting, global audit,
+private strict Clippy and a fresh private build. Receipt
+`obj/qualification/fast/1793071109543750399/receipt.json` has SHA-256
+`8f999dbefd7a1484ca226068493e55caccff5e7be1e16471bac0777d753c8565`;
+all 2,839 source fingerprints match. The first filename-audit failure is retained
+separately. The new fragment's contract explicitly stops at expansion: original
+PanicInfo fields/attributes and actual formatter function-pointer syntax are
+retained, while Formatter/Arguments bodies and their semantic proofs are required.
+The three existing genuine Location controls also pass. This is not a Debug
+runtime, PanicInfo handler, formatting or false-assert qualification; the real
+source consumer remains the next exit. Production/CLI strict checks are pending.
