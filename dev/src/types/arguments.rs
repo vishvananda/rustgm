@@ -97,13 +97,20 @@ impl Store {
     /// Cost only for a selected, already probed type-only mixed-list miss. The empty list keeps
     /// its existing allocation-free lifetime representation.
     pub(crate) fn trait_arguments_growth(&self, count: usize) -> crate::support::retained::Growth {
-        if count == 0 {
+        self.mixed_argument_batch_growth(count, usize::from(count != 0))
+    }
+    pub(in crate::types) fn mixed_argument_batch_growth(
+        &self,
+        values: usize,
+        lists: usize,
+    ) -> crate::support::retained::Growth {
+        if lists == 0 {
             return crate::support::retained::Growth::default();
         }
         if let Some(storage) = &self.arguments {
-            return storage.mixed.interning_growth(count);
+            return storage.mixed.interning_batch_growth(values, lists);
         }
-        let mut growth = Slices::<Argument>::default().interning_growth(count);
+        let mut growth = Slices::<Argument>::default().interning_batch_growth(values, lists);
         growth.bytes = growth.bytes.saturating_add(size_of::<Storage>());
         growth
     }

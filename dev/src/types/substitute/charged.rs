@@ -75,7 +75,7 @@ impl Bound {
         charge(1, 0)?;
         if !matches!(
             self.action,
-            Action::Remove | Action::Shift(_) | Action::Lower(_)
+            Action::Remove | Action::Shift(_) | Action::Lower(_) | Action::Shape { .. }
         ) {
             return Err("charged declaration fold requires an actual parameter/capture mapping");
         }

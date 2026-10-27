@@ -294,6 +294,10 @@ impl Bound {
                 continue;
             }
             if finish {
+                if CHARGED && matches!(self.action, Action::Shape { .. }) {
+                    let growth = store.shape_rebuild_growth(kind)?;
+                    charge(growth.work, growth.bytes)?;
+                }
                 let kind = self.rebuild(store, kind, key.1)?;
                 self.completed.insert(key, store.intern(kind)?);
             } else {
