@@ -1,0 +1,1 @@
+const move |value| value

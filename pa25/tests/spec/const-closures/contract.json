@@ -1,0 +1,45 @@
+{
+  "state": "four independently observed metadata cases; original wrong runtime prediction preserved; RustGM const closures remain unimplemented",
+  "owner": "PA25 const callable/CTFE, PA24 closure machinery, PA4 grammar; original source binding belongs to PA31",
+  "source_frontier": {
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "path": "library/core/src/ops/try_trait.rs",
+    "line": 415,
+    "offset": 16949,
+    "construct": "const move |a| NeverShortCircuit(f(a))"
+  },
+  "profile": {
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "bootstrap": "1",
+    "emit": "metadata"
+  },
+  "cases": [
+    {
+      "path": "runtime.rs",
+      "sha256": "6a58201acf4358c34be566ff4eedf61aa9671bc7c1f3afda8e842b1c43911375",
+      "rustc_status": 1,
+      "predicted_rustc_status": 0,
+      "observation": "Original acceptance prediction was wrong: const closure creation outside a const context is rejected. Original bytes/prediction/diagnostic remain recorded."
+    },
+    {
+      "path": "missing-feature.rs",
+      "sha256": "6495dd7fd1399cddbf5d5f07ced26397fedfbfa109cfb476ce6513f0c19ba468",
+      "rustc_status": 1,
+      "predicted_rustc_status": 1
+    },
+    {
+      "path": "constant.rs",
+      "sha256": "39217cb84a2826a2edf1372f4813ea4871bc0c16d3aa2e3bbd442edc513fad59",
+      "rustc_status": 0,
+      "predicted_rustc_status": 0
+    },
+    {
+      "path": "runtime-from-const-fn.rs",
+      "sha256": "33c0bacdace619af0fd7ac3b999fbc2fa9c229299dd34e337c0064f19d5e8d57",
+      "predicted_rustc_status": 0,
+      "rustc_status": 0
+    }
+  ]
+}

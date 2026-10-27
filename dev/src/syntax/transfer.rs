@@ -315,7 +315,11 @@ impl Bases {
         span: &mut impl FnMut(Span) -> Result<Span, LexError>,
     ) -> Result<(), LexError> {
         match kind {
-            Kind::TryBlock { body, gate } => {
+            Kind::TryBlock { body, gate }
+            | Kind::ConstClosure {
+                closure: body,
+                gate,
+            } => {
                 self.node(body);
                 *gate += self.gate_sites.expressions;
             }

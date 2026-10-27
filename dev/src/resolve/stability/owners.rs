@@ -369,56 +369,35 @@ pub(super) fn reachable(
     draft: &mut Draft,
 ) -> Result<(), Error> {
     use crate::resolve::model::Access;
-    let root = *facts
-        .module_scopes
-        .first()
-        .ok_or_else(|| Error::unlocated("library root scope is absent"))?;
-    let mut seen = HashSet::from_iter([root]);
-    let mut pending = vec![root];
-    while let Some(scope) = pending.pop() {
-        draft.charge(1, 4 * size_of::<ScopeId>())?;
-        for (_, _, binding) in facts.bindings.scope(scope) {
-            draft.charge(1, 0)?;
-            if binding.access != Access::Public {
-                continue;
-            }
-            if binding.ambiguous {
-                return Err(Error::unlocated("ambiguous public library binding"));
-            }
-            let definition = &facts.definitions[binding.target.0 as usize];
-            let Some(key) = definition.node else {
-                continue;
-            };
-            if owners.declarations[binding.target.0 as usize].is_none() {
-                return Err(error(
-                    package,
-                    key,
-                    "public declaration has missing library stability attribute",
-                ));
-            }
-            let unit = package.unit(key.file);
-            if matches!(unit.configured.ast.node(key.node).kind, Kind::Item(index) if matches!(unit.configured.ast.items[index as usize].kind,
-                ItemKind::Function { flags: crate::syntax::item::FunctionFlags { constant: true, .. }, .. } | ItemKind::Trait { constant: true, .. }))
-                && owners
-                    .consts
-                    .as_deref()
-                    .and_then(|c| c.declarations[binding.target.0 as usize])
-                    .is_none()
-            {
-                return Err(error(
-                    package,
-                    key,
-                    "public const declaration has missing const library stability attribute",
-                ));
-            }
-            if matches!(definition.kind, DefKind::Module | DefKind::Trait)
-                && let Some(members) = definition.members
-                && seen.insert(members)
-            {
-                pending.push(members);
-            }
+    let seen = super::visit_public_bindings(facts, draft, |target, _| {
+        let definition = &facts.definitions[target.0 as usize];
+        let Some(key) = definition.node else {
+            return Ok(());
+        };
+        if owners.declarations[target.0 as usize].is_none() {
+            return Err(error(
+                package,
+                key,
+                "public declaration has missing library stability attribute",
+            ));
         }
-    }
+        let unit = package.unit(key.file);
+        if matches!(unit.configured.ast.node(key.node).kind, Kind::Item(index) if matches!(unit.configured.ast.items[index as usize].kind,
+                ItemKind::Function { flags: crate::syntax::item::FunctionFlags { constant: true, .. }, .. } | ItemKind::Trait { constant: true, .. }))
+            && owners
+                .consts
+                .as_deref()
+                .and_then(|c| c.declarations[target.0 as usize])
+                .is_none()
+        {
+            return Err(error(
+                package,
+                key,
+                "public const declaration has missing const library stability attribute",
+            ));
+        }
+        Ok(())
+    })?;
     for (index, import) in facts.imports.iter().enumerate() {
         draft.charge(1, 0)?;
         if import.access == Access::Public

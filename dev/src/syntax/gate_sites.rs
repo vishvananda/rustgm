@@ -7,7 +7,7 @@ use super::{
     token_tree::{Span, error},
 };
 use crate::lex::token::LexError;
-pub(crate) use expressions::{Expression, Prefix};
+pub(crate) use expressions::{Expression, ExpressionKind, Prefix};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Kind {
@@ -356,7 +356,9 @@ impl<L> Syntax<L> {
         Ok(())
     }
     pub(crate) fn move_gate_sites_root(&mut self, from: NodeId, to: NodeId) {
-        if let NodeKind::TryBlock { gate, .. } = self.nodes[from.get() as usize].kind {
+        if let NodeKind::TryBlock { gate, .. } | NodeKind::ConstClosure { gate, .. } =
+            self.nodes[from.get() as usize].kind
+        {
             if let Some(entries) = &mut self.gate_sites
                 && let Some(entry) = entries.expressions.get_mut(gate as usize)
             {

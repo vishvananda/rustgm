@@ -459,6 +459,7 @@ impl Checker<'_> {
             ));
         }
         self.complete_layouts()?;
+        super::api_exposure::check(self.report, &self.facts)?;
         self.reject_alias_execution()?;
         super::specialization::require_execution(&self.facts)
     }

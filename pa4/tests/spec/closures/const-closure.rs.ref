@@ -1,0 +1,6 @@
+node 0 9 10 literal 0
+value 0 integer 9 10 infer 7
+node 1 6 10 closure false false [] - 0
+node 2 0 10 const-closure 1
+root 2
+eof 11

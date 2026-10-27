@@ -1551,10 +1551,9 @@ impl Checker<'_> {
                 self.term(value)
             }
             Kind::TryBlock { body, .. } => self.finish_try_block(node, body),
-            Kind::Unary {
-                op: Unary::Try,
-                operand,
-            } => self.question_mark(node, operand),
+            Kind::Unary { op: Unary::Try, operand } => self.question_mark(node, operand),
+            Kind::ConstClosure { .. } => Err(self.error(node, "const closure callable semantics are not implemented")),
+
             Kind::Block {
                 flavor: BlockFlavor::Plain | BlockFlavor::Unsafe | BlockFlavor::Const,
                 statements,

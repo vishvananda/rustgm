@@ -26,6 +26,24 @@ origin ranges; do not grow ordinary tokens or relex generated spelling. A parsed
 opaque fragment retains its identifier validity when converted to attribute
 paths. Keep that evidence scoped to the actual grafted ranges, rather than
 assigning the output stream or neighboring tokens the capture's edition.
+Copied origins retain exact byte ranges. Typed builtin vocabulary instead uses
+an explicit synthetic-origin kind in the same record, bound to the checked
+definition edition, generated interval, anchor and actual introduction/context.
+Validate that producer/replay once; never reinterpret nonmatching lengths as
+copies or infer a macro feature allowance from an edition. Missing provenance
+still fails. Source try gates follow their actual endpoint span-composition
+rule, sealing both keyword and construct contexts in the existing sparse gate
+owner; this does not change keyword-only rules for other syntax.
+Const closures keep a distinct wrapper around the ordinary closure node and
+reuse that same sparse expression owner. Its kind follows the actual wrapper;
+do not add a gate tag or const flag to every ordinary node/closure. Authenticate
+the keyword, child, spans and source contexts, then check const_closures at the
+actual const keyword. The pinned compiler keeps this gate as an error after cfg
+removal; it does not use try-block endpoint composition or warning behavior.
+Its expr_2021 matcher also excludes a top-level const closure, even with the
+feature enabled. Parsing and feature authority grant no const creation,
+call-trait or CTFE permission. Charge each sparse append before publication even
+when retained capacity lets a failed attempt retry without allocation.
 The [PA34 context foundation](docs/pa34-edition-context.md) records the independent
 mixed-edition controls and the remaining work before enabling Rust 2021 in the CLI.
 

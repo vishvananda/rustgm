@@ -246,3 +246,8 @@ substituted for those bodies. Imported protocol/plan transport and typed
 heterogeneous try syntax remain closed. Draft source is unqualified until its
 focused compiler, body-proof and native controls actually run. New cold capacity
 and enclosing-layout costs remain unknown until that gate prints them.
+`spec/source-const-closures/` records pinned keyword authority, cfg-removal and
+edition-fragment observations. Grammar gates do not grant PA25 execution.
+`spec/scoped-builtin-declarations/` wraps the unchanged original Iter declaration
+for LIB-038. Independent metadata accepts it; current RustGM explicitly rejects
+its scoped declaration kind. No coroutine expansion or native execution is claimed.

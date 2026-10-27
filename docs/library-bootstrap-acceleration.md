@@ -13,13 +13,13 @@ checkpoint documents accumulate faster than executable consumers. This is now
 the main scheduling problem. More workers or fewer semantic tests alone will
 not solve the joins between those components.
 
-The combined compiler `6ef90dd3` executes direct source Thin, PhantomData and
-final trait methods and authenticates source derive helper declarations. Original
-core passes VTable, Share::share and Default's declaration, then stops at
-`try { accum }` in `ops/index_range.rs:172`. It takes 1.881 seconds,
-verifies all 722 source inputs and opens 94 files. That is neither 94 compiled
-modules nor a completion percentage; there is still no core artifact. Broader
-alias/Pointee semantics and actual library body/metadata joins remain required.
+The combined compiler `3cc4e779` executes the qualified direct Thin, PhantomData,
+final-method and full-attribute Location consumers, and authenticates const-closure
+grammar/feature authority. Original core now passes those closures and stops at
+the scoped builtin Iter declaration in `iter/sources/generator.rs:23`. It takes
+3.158 seconds, verifies all 722 source inputs and opens 164 files. This is loading/
+expansion progress; no core artifact exists. Broader alias/Pointee semantics and
+actual library body/metadata joins remain required.
 
 The largest bottleneck is the implementation joins. The integrator has now
 merged qualified actual imported names/receiver shapes and Pointee consumers

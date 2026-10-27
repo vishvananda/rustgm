@@ -117,7 +117,7 @@ impl MacroAllowanceSession<'_> {
             },
             Location {
                 file,
-                span: expression.block,
+                span: expression.construct,
             },
             feature,
         )

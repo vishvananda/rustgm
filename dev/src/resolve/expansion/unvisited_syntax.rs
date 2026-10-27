@@ -218,7 +218,7 @@ impl<S: Sources> Engine<'_, S> {
                     },
                     super::Location {
                         file,
-                        span: site.block,
+                        span: site.construct,
                     },
                     feature,
                 ),
