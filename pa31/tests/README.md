@@ -373,3 +373,5 @@ No artifact/foreign protocol transport or const-closure execution is implied.
 `spec/higher-ranked-const-bounds/contract.json` freezes LIB-040's binder/modifier
 order, impl Trait, reversed-order, lifetime and feature-gate sources. These
 maintainer protocol fixtures do not activate the planned assignment.
+
+`spec/source-slice-methods/` freezes the genuine string/slice len/as_bytes body chain, inherent role target and no-implicit-autoref marker contracts. The independent safe-reference consumer executes `6 3 4`; setup ICE and generic Copy-prerequisite disagreement remain retained. Candidate source/const/native proof is pending.

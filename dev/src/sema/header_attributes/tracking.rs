@@ -265,10 +265,24 @@ pub(super) fn validate_intrinsic_annotations(
     };
     let unit = report.package.unit(declaration.file);
     let mut panic_words = (false, false);
+    let mut no_implicit_autorefs = false;
     for owner in &header.owners {
         super::charge_source_contract_query(facts, owner.effects.len())?;
         for (attribute, forest) in unit.retained_attributes(owner.effects.clone()) {
             match attribute.name(forest, unit.source.text()) {
+                Some("rustc_no_implicit_autorefs") => {
+                    if no_implicit_autorefs
+                        || report.resolution.foreign_owners.contains_key(&definition)
+                    {
+                        return Err(Error::at(
+                            declaration.file,
+                            attribute.span.start,
+                            "duplicate or foreign raw autoref marker",
+                        ));
+                    }
+                    no_implicit_autorefs = true;
+                }
+
                 Some("rustc_inherit_overflow_checks")
                     if report.resolution.foreign_owners.contains_key(&definition)
                         || facts

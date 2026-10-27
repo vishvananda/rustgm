@@ -156,6 +156,16 @@ fn consume_annotation(
         .name(forest, report.package.unit(declaration.file).source.text())
         .and_then(Consumer::named);
     match consumer {
+        Some(Consumer::NoImplicitAutorefs) => {
+            crate::sema::header_attributes::consume_no_implicit_autorefs(
+                report,
+                facts,
+                declaration,
+                attribute,
+                forest,
+                allowances,
+            )?;
+        }
         Some(Consumer::InheritedOverflow) => {
             crate::sema::header_attributes::consume_inherited_overflow(
                 report,

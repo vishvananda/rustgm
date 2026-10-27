@@ -171,6 +171,14 @@ fn source_abort_signature_is_safe_nonconst_and_supplies_no_layout_or_const_permi
 
 #[test]
 fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles() -> Result {
+    eprintln!(
+        "source roles={} Reservations={} Catalog={} Body={} Rvalue={}",
+        LangItem::ALL.len(),
+        size_of::<crate::resolve::bindings::Reservations>(),
+        size_of::<Catalog>(),
+        size_of::<crate::body::ir::Body>(),
+        size_of::<crate::body::ir::Rvalue>()
+    );
     for (index, kind) in Intrinsic::BOOTSTRAP.into_iter().enumerate() {
         assert_eq!(kind.index(), index);
         assert_eq!(Intrinsic::ALL[index], kind);
@@ -187,7 +195,7 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
     assert!(report.resolution.intrinsics.get(Intrinsic::Abort).is_none());
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2056);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
-    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 2080);
+    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 2104);
     assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 176);
     assert_eq!(size_of::<Declaration>(), 20);
     assert_eq!(size_of::<Option<Declaration>>(), 20);
@@ -214,6 +222,7 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
         LangItem::Option,
         LangItem::OptionSome,
         LangItem::OptionNone,
+        LangItem::SliceLen,
     ]) {
         let mut changed = rows.clone();
         changed

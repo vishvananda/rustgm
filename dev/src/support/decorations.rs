@@ -29,6 +29,7 @@ pub(crate) enum Consumer {
     ConstPanicPolicy,
     Coverage,
     InheritedOverflow,
+    NoImplicitAutorefs,
 }
 impl Consumer {
     pub(crate) fn tool_member(tool: &str, name: &str) -> Option<Self> {
@@ -73,6 +74,7 @@ impl Consumer {
             "repr" | "derive" | "derive_const" => Self::Representation,
             "coverage" => Self::Coverage,
             "rustc_inherit_overflow_checks" => Self::InheritedOverflow,
+            "rustc_no_implicit_autorefs" => Self::NoImplicitAutorefs,
             "no_mangle" | "export_name" | "link_name" => Self::Linkage,
             "target_feature" => Self::TargetFeature,
             "allow" | "warn" | "deny" | "forbid" => Self::SafetyLint,
