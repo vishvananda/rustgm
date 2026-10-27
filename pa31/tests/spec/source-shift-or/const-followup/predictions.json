@@ -1,0 +1,49 @@
+{
+  "state": "NEW followup hypotheses frozen after original E0277 results; original sources/predictions unchanged",
+  "editions": [
+    2021,
+    2024
+  ],
+  "metadata": [
+    {
+      "file": "primitive-const-impl.rs",
+      "status": 0,
+      "predicted_error_codes": []
+    },
+    {
+      "file": "const-overflow-impl.rs",
+      "status": 1,
+      "predicted_error_codes": [
+        "E0080"
+      ]
+    },
+    {
+      "file": "const-negative-impl.rs",
+      "status": 1,
+      "predicted_error_codes": [
+        "E0080"
+      ]
+    }
+  ],
+  "native": [
+    {
+      "file": "custom-runtime-only.rs",
+      "kind": "no_core custom primitive syntax versus explicit source calls, no const initializer",
+      "observer": "pa31/tests/spec/source-shift-or/custom-observer.c",
+      "stdout": "7 99 42\n",
+      "overflow_checks": false
+    }
+  ],
+  "source_sha256": {
+    "const-overflow-impl.rs": "f0acd075b75983faf2719176f6c8d3f807961b7a754e4762d56d92ef23e92b55",
+    "primitive-const-impl.rs": "8d1dd65f4fccbfd02f121b6b711a68b97bcdfcfb4a212f693f1d43e8142629f3",
+    "const-negative-impl.rs": "df4e160e5f0f337ebf2eb65f318738620aeab607713853f0ca8e28e34d77b565",
+    "custom-runtime-only.rs": "4c559c4e20678fcb7269ee1897fdbd8b4c4bf486190e9996b9508decf085a281"
+  },
+  "shared_observer": {
+    "path": "pa31/tests/spec/source-shift-or/custom-observer.c",
+    "sha256": "4b5fd8b7c6dbd9e024f6c84c0604d526b7dfa4de73430220f715a8a5137cda03"
+  },
+  "source_changes": "Const followups add real const impls/const_ops declaration attrs; custom runtime followup removes only its separately rejected const initializer. Originals remain immutable.",
+  "scope": "Independent new evidence only; no RustGM compiler build or operator permission yet."
+}
