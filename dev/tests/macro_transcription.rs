@@ -32,6 +32,7 @@ fn transcribe(rules: &str, source: &str) -> Result<(Vec<String>, usize), String>
                 };
                 bytes[token.start as usize..token.end as usize].to_owned()
             }
+            Piece::Integer { value, .. } => value.to_string(),
             Piece::Identifier { name, .. } => names.get(name).to_owned(),
             Piece::Opaque(id) => format!("opaque{}", id.0),
             Piece::Crate(_) => "$crate".to_owned(),

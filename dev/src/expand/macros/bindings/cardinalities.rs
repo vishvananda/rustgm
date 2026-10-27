@@ -120,6 +120,15 @@ impl Cardinalities {
         Ok(first.observed)
     }
 
+    pub(in crate::expand::macros) fn lookup<'a>(
+        &mut self,
+        bindings: &'a Bindings,
+        query: &Count<'_>,
+        work: &mut usize,
+    ) -> Result<Binding<'a>, LexError> {
+        binding(&mut self.current, bindings, query, work)
+    }
+
     pub(in crate::expand::macros) fn repetition_count(
         &mut self,
         bindings: &Bindings,

@@ -179,13 +179,7 @@ impl Writer<'_> {
                     identifier,
                 } => {
                     if let Some(variable) = self.variables.get(&name).copied() {
-                        let Binding::Capture(capture) = self.bindings.at_indices(
-                            self.definition,
-                            self.rule,
-                            variable,
-                            self.indices.iter().map(|frame| frame.index as usize),
-                        )?
-                        else {
+                        let Binding::Capture(capture) = self.variable(variable)? else {
                             return Err(error(
                                 dollar.start,
                                 "metavariable is still repeating at this depth",
@@ -211,6 +205,25 @@ impl Writer<'_> {
             }
         }
         Ok(())
+    }
+    fn variable(&mut self, variable: VariableId) -> Result<Binding<'_>, LexError> {
+        if let Some(cardinalities) = self.cardinalities.as_mut() {
+            let query = Count {
+                definition: self.definition,
+                rule: self.rule,
+                variable,
+                path: &self.indices,
+                depth: 0,
+            };
+            cardinalities.lookup(&self.bindings, &query, &mut self.output.work)
+        } else {
+            self.bindings.at_indices(
+                self.definition,
+                self.rule,
+                variable,
+                self.indices.iter().map(|frame| frame.index as usize),
+            )
+        }
     }
     fn repeat(
         &mut self,

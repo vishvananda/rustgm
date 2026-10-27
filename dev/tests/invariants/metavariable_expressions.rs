@@ -214,6 +214,53 @@ fn repeated_subtree_counts_build_one_linear_index_and_share_depth_queries() -> R
         }
         previous = work;
     }
+    previous = 0;
+    for depth in [8, 16, 32] {
+        let width = depth * 4;
+        let matcher = format!(
+            "{}$($x:ident),*{}",
+            "$( [".repeat(depth),
+            "] )?".repeat(depth)
+        );
+        let input = (0..width)
+            .map(|i| format!("v{i}"))
+            .collect::<Vec<_>>()
+            .join(",");
+        let input = format!("{}{input}{}", "[".repeat(depth), "]".repeat(depth));
+        let template = format!(
+            "{}$(fn $x(){{}})*{}",
+            "$(".repeat(depth),
+            ")*".repeat(depth)
+        );
+        let report = matching(&format!(
+            "macro_rules!m{{({matcher})=>{{{template}}}}}m!({input});"
+        ))?;
+        let call = &report.invocations[0];
+        assert_eq!(
+            call.transcription
+                .pieces
+                .iter()
+                .filter(|piece| matches!(
+                    piece,
+                    transcribe::Piece::Token {
+                        origin: transcribe::Origin::Invocation,
+                        ..
+                    }
+                ))
+                .count(),
+            width
+        );
+        let work = call.transcription.work;
+        eprintln!("ordinary-nested depth={depth} width={width} work={work}");
+        if previous != 0 {
+            assert!(
+                work <= previous * 3,
+                "ordinary capture paths became quadratic"
+            );
+        }
+        previous = work;
+    }
+
     Ok(())
 }
 #[test]

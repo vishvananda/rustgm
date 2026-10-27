@@ -24,16 +24,10 @@ impl Writer<'_> {
                     error(node.span.start, "concat atom lost its canonical symbol")
                 })?),
                 Kind::Substitute { name, .. } => {
-                    let variable = self.variables.get(&name).ok_or_else(|| {
+                    let variable = self.variables.get(&name).copied().ok_or_else(|| {
                         error(node.span.start, "concat references an unknown metavariable")
                     })?;
-                    let Binding::Capture(capture) = self.bindings.at_indices(
-                        self.definition,
-                        self.rule,
-                        *variable,
-                        self.indices.iter().map(|frame| frame.index as usize),
-                    )?
-                    else {
+                    let Binding::Capture(capture) = self.variable(variable)? else {
                         return Err(error(
                             node.span.start,
                             "concat metavariable is still repeating at this depth",
