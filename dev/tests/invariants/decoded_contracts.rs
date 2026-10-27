@@ -82,5 +82,10 @@ fn complete_columns_reject_missing_swapped_sites_namespace_and_failed_storage() 
         size_of::<crate::sema::crates::authored_export::HeaderCompletion>(),
         size_of::<crate::resolve::bindings::consumer_policy::ProviderAdmission>()
     );
+    eprintln!(
+        "provided enclosing Header/Headers/ProvidedOwners/ProofSession/HeaderDraft/SelectedConsumer={:?}; StagedConsumer/Source={:?}",
+        crate::sema::crates::provided_layouts(),
+        crate::resolve::bindings::consumer_policy::layouts()
+    );
     Ok(())
 }

@@ -2,6 +2,17 @@
 mod applications;
 mod consumer_sessions;
 pub(crate) use consumer_sessions::ProofSession;
+#[cfg(test)]
+pub(crate) const fn provided_layouts() -> [usize; 6] {
+    [
+        size_of::<Header>(),
+        size_of::<Headers>(),
+        size_of::<unpaid_provided::ProvidedOwners>(),
+        size_of::<consumer_sessions::ProofSession>(),
+        size_of::<consumer_sessions::HeaderDraft>(),
+        size_of::<SelectedConsumer<'static>>(),
+    ]
+}
 pub(in crate::sema) use consumer_sessions::SelectedConsumer;
 mod context_queries;
 mod ingest;

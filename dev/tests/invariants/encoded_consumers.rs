@@ -75,7 +75,7 @@ fn client<R>(
     ) -> R,
 ) -> Result<R> {
     let context = context(artifact)?;
-    Ok(crate::pipeline::with_provided_client(
+    Ok(crate::lower::instances::with_provided_client(
         InputFile {
             identity: "encoded-consumer.rs".into(),
             path: "encoded-consumer.rs".into(),

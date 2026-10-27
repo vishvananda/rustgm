@@ -25,6 +25,8 @@ pub(in crate::sema) use imported_owners::ImportedOwners;
 pub(crate) use typed_headers::ProofSession;
 pub(in crate::sema) use typed_headers::SelectedConsumer;
 pub(in crate::sema) use typed_headers::predicate_remap::Prepared as PreparedSourceInputs;
+#[cfg(test)]
+pub(crate) use typed_headers::provided_layouts;
 pub(super) use typed_headers::{
     charge_source_headers, mapped_source::Readiness as ImportedReadiness, source_readiness,
     source_trait_header,

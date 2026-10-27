@@ -94,7 +94,7 @@ pub fn run(
         if crates.library || crates.metadata.is_some() {
             return Err("provided-contracts-v1 currently requires an executable consumer".into());
         }
-        return rustgm::pipeline::with_provided_client(
+        return rustgm::lower::instances::with_provided_client(
             root, &mut Files, config, &context, |_, facts, program| {
                 emit_warnings(facts)?;
                 if count {

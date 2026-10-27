@@ -1,4 +1,6 @@
 //! Demand concrete CFGs from checked templates before ordinary executable lowering.
+mod artifact_client;
+pub use artifact_client::with_provided_client;
 mod demand;
 mod dependencies;
 mod namespace_snapshot;

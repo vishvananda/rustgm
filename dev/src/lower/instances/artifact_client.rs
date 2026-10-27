@@ -30,7 +30,7 @@ pub fn with_provided_client<R>(
             report,
             facts,
             entry,
-            super::Prepared::default(),
+            crate::pipeline::Prepared::default(),
             preparation,
         )?;
         Ok(inspect(report, facts, &program))

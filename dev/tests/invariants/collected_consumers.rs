@@ -780,7 +780,7 @@ fn swapped_columns(clear: bool) -> Result {
         .package
         .staged_consumer()
         .ok_or("actual policy")?
-        .unpaid_header_columns()
+        .unpaid_header_columns()?
         .clone();
     if clear {
         for row in &mut columns.functions {
