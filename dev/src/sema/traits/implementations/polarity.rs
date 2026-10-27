@@ -55,6 +55,30 @@ impl Implementations {
         owner: Owner,
         value: Implementation,
     ) -> Result<(), &'static str> {
+        let status = Self::imported_status(store, associated, owner, &value)?;
+        self.prepare_with_status(store, identity, value, status)
+    }
+
+    pub(in crate::sema) fn prepare_imported_charged(
+        &mut self,
+        store: &mut Store,
+        associated: &Inventory,
+        identity: Identity,
+        owner: Owner,
+        value: Implementation,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<usize, &'static str> {
+        charge(1, 0)?;
+        let status = Self::imported_status(store, associated, owner, &value)?;
+        self.prepare_with_observer::<true>(store, identity, value, status, charge)
+    }
+
+    fn imported_status(
+        store: &Store,
+        associated: &Inventory,
+        owner: Owner,
+        value: &Implementation,
+    ) -> Result<Status, &'static str> {
         if value.source.is_some()
             || owner.self_definition != value.owner
             || associated
@@ -73,7 +97,7 @@ impl Implementations {
         } else {
             Status::PositiveHeader
         };
-        self.prepare_with_status(store, identity, value, status)
+        Ok(status)
     }
 
     /// This records the source scheduler's profile result, never conformance.

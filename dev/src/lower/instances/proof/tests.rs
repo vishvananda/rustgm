@@ -61,6 +61,7 @@ fn completed_original_rejects_equal_shaped_foreign_contract_before_collection() 
     let mut context = super::super::staged_originals::Context {
         checked: &checked,
         collector: &mut collector,
+        preparation: None,
     };
     let error = builder
         .append_original(&report, &mut facts, &mut context, staged, &foreign)

@@ -16,6 +16,45 @@ pub(in crate::sema) struct SelectedConsumer<'a> {
     arena: Identity,
     work: &'a mut ReservationWork,
 }
+struct RuntimePreparation<'a, 'work> {
+    report: &'a Report,
+    selected: &'a mut SelectedConsumer<'work>,
+}
+impl crate::sema::dispatch::Preparation for RuntimePreparation<'_, '_> {
+    fn prepay(&mut self, facts: &Declarations, work: usize, bytes: usize) -> Result<(), Error> {
+        self.selected.require(self.report, facts)?;
+        self.selected.work.charge(work)?;
+        self.selected.work.reserve(bytes)
+    }
+    fn prepare(
+        &mut self,
+        facts: &mut Declarations,
+        dependency: crate::sema::dispatch::PreparationDependency,
+    ) -> Result<(), Error> {
+        use crate::sema::dispatch::PreparationDependency;
+        match dependency {
+            PreparationDependency::Header(owner) => {
+                if !self.selected.definition(self.report, facts, owner)? {
+                    return Err(Error::unlocated(
+                        "selected header is not an actual imported owner",
+                    ));
+                }
+                self.selected
+                    .register_implementation(self.report, facts, owner)
+            }
+            PreparationDependency::ImplementationValidated(owner) => {
+                self.selected
+                    .require_imported_implementation(self.report, facts, owner)?;
+                Err(Error::unlocated(
+                    "selected implementation requires its actual member conformance",
+                ))
+            }
+            _ => Err(Error::unlocated(
+                "selected dispatch requires its actual remaining declaration producer",
+            )),
+        }
+    }
+}
 impl HeaderDraft {
     #[cfg_attr(
         not(test),
@@ -24,7 +63,17 @@ impl HeaderDraft {
             reason = "the genuine private consumer awaits demanded original/instance execution and encoded Provided admission"
         )
     )]
-    pub(super) fn analyze(mut self, work: &mut ReservationWork) -> Result<Box<Self>, Error> {
+    pub(super) fn analyze_with<S, R>(
+        mut self,
+        work: &mut ReservationWork,
+        select: impl FnOnce(&mut Report, &mut Declarations) -> Result<S, Error>,
+        execute: impl FnOnce(
+            &Report,
+            &mut Declarations,
+            S,
+            &mut dyn crate::sema::dispatch::Preparation,
+        ) -> Result<R, Error>,
+    ) -> Result<(Box<Self>, R), Error> {
         self.session.authority.synchronize(work)?;
         self.session.authority.require(work)?;
         work.charge(1)?;
@@ -37,7 +86,7 @@ impl HeaderDraft {
         let ProofSession { authority } = *session;
         let ConsumerAuthority {
             facts,
-            report,
+            mut report,
             reservation,
             arena,
         } = authority;
@@ -51,7 +100,7 @@ impl HeaderDraft {
             arena,
             work,
         });
-        let (facts, service) =
+        let (mut facts, service) =
             crate::sema::declarations::analyze_reserved(&report, facts, service)?;
         let SelectedConsumer {
             reservation,
@@ -60,23 +109,125 @@ impl HeaderDraft {
             arena,
             work,
         } = *service;
+        let selection = select(&mut report, &mut facts)?;
+        let mut service = SelectedConsumer {
+            reservation,
+            completion,
+            selected,
+            arena,
+            work,
+        };
+        let result = execute(
+            &report,
+            &mut facts,
+            selection,
+            &mut RuntimePreparation {
+                report: &report,
+                selected: &mut service,
+            },
+        )?;
+        let SelectedConsumer {
+            reservation,
+            completion,
+            selected,
+            arena,
+            work,
+        } = service;
         work.charge(2)?;
         work.reserve(size_of::<Self>().saturating_add(size_of::<ProofSession>()))?;
-        Ok(Box::new(Self {
-            session: Box::new(ProofSession {
-                authority: ConsumerAuthority {
-                    facts,
-                    report,
-                    reservation,
-                    arena,
-                },
+        Ok((
+            Box::new(Self {
+                session: Box::new(ProofSession {
+                    authority: ConsumerAuthority {
+                        facts,
+                        report,
+                        reservation,
+                        arena,
+                    },
+                }),
+                selected,
+                completion: Some(completion),
             }),
-            selected,
-            completion: Some(completion),
-        }))
+            result,
+        ))
     }
 }
 impl SelectedConsumer<'_> {
+    fn register_implementation(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        definition: DefId,
+    ) -> Result<(), Error> {
+        self.require_imported_implementation(report, facts, definition)?;
+        self.work.charge(4)?;
+        let owner = facts
+            .associated
+            .owner(definition)
+            .and_then(|id| facts.associated.get(id))
+            .copied()
+            .ok_or_else(|| Error::unlocated("selected registration lost its actual owner"))?;
+        let predicate = facts
+            .associated
+            .imported_impl_request(&facts.types, owner)
+            .map_err(Error::unlocated)?;
+        let (application, _) = predicate
+            .bound
+            .trait_parts()
+            .ok_or_else(|| Error::unlocated("selected implementation lost its full application"))?;
+        let identity = facts
+            .types
+            .trait_application(application)
+            .ok_or_else(|| Error::unlocated("selected implementation lost its actual trait"))?
+            .item
+            .into();
+        let registry = facts
+            .generics
+            .implementations
+            .as_deref_mut()
+            .ok_or_else(|| {
+                Error::unlocated("selected implementation lacks its reserved registry")
+            })?;
+        if let Some(header) = registry.header(definition) {
+            if header.source.is_some() || header.predicate != predicate {
+                return Err(Error::unlocated(
+                    "selected implementation replaced its actual header",
+                ));
+            }
+            return Ok(());
+        }
+        let before = self.work.retained;
+        let retained = {
+            let work = std::cell::RefCell::new(&mut *self.work);
+            registry
+                .prepare_imported_charged(
+                    &mut facts.types,
+                    &facts.associated,
+                    identity,
+                    owner,
+                    crate::sema::traits::implementations::Implementation {
+                        owner: definition,
+                        source: None,
+                        predicate,
+                        methods: Vec::new(),
+                        types: Vec::new(),
+                        constants: Vec::new(),
+                    },
+                    &|steps, bytes| {
+                        let mut work = work
+                            .try_borrow_mut()
+                            .map_err(|_| "reentrant selected implementation accounting")?;
+                        work.charge(steps)
+                            .map_err(|_| "selected implementation work budget exceeded")?;
+                        work.reserve_raw(bytes)
+                    },
+                )
+                .map_err(Error::unlocated)?
+        };
+        self.work.retained = before.saturating_add(retained);
+        Ok(())
+    }
+
     pub(in crate::sema) fn require_imported_implementation(
         &mut self,
         report: &Report,

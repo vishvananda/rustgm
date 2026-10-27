@@ -142,6 +142,7 @@ fn collect_source<R>(
                 .map_err(|e| diagnostic(report, e.node, e.message.into()))?;
             complete(source, facts)
         },
+        None,
     )?
 }
 
@@ -169,6 +170,43 @@ pub fn build_prepared(
     prepared: crate::pipeline::Prepared,
 ) -> Result<crate::lowir::program::Program, Error> {
     build_roots_prepared(report, facts, super::Roots::executable(entry), prepared)
+}
+
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "the real selected consumer remains private until encoded Provided admission and complete original/instance execution qualify"
+    )
+)]
+pub(crate) fn build_selected_prepared(
+    report: &Report,
+    facts: &mut Declarations,
+    entry: DefId,
+    prepared: crate::pipeline::Prepared,
+    preparation: &mut dyn crate::sema::dispatch::Preparation,
+) -> Result<crate::lowir::program::Program, Error> {
+    if report.package.staged_consumer().is_none() {
+        return Err(diagnostic(
+            report,
+            None,
+            "selected lowering requires its actual private consumer".into(),
+        ));
+    }
+    inspect_staged(
+        report,
+        facts,
+        prepared,
+        |facts, _| {
+            let exports = super::roots::exports(facts, &[])
+                .map_err(|e| diagnostic(report, None, e.into()))?;
+            Ok((Some(entry), exports, ()))
+        },
+        staged_originals::ignore,
+        |facts, assembled, roots, ()| super::build_assembled(facts, assembled, roots),
+        Some(preparation),
+    )?
+    .map_err(|error| diagnostic(report, error.node, error.message.into()))
 }
 /// Check and lower explicit library roots alongside canonical registry exports.
 /// # Errors
@@ -332,6 +370,7 @@ pub fn build_source_library_profile(
             .map_err(|error| facts.retain_error_warnings(error))?;
             Ok((program, interface))
         },
+        None,
     )?
 }
 
@@ -416,6 +455,7 @@ fn inspect_selected<R>(
         |facts, checked| select(facts, checked).map(|(entry, exports)| (entry, exports, ())),
         staged_originals::ignore,
         |facts, assembled, roots, ()| inspect(facts, assembled, roots),
+        None,
     )
 }
 
@@ -454,6 +494,7 @@ fn inspect_staged<S, R>(
         super::roots::Selected<'_>,
         S,
     ) -> R,
+    preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
 ) -> Result<R, Error> {
     require_source_session(report, facts)?;
     let mut templates = prepared.templates.finish(report, facts)?;
@@ -533,14 +574,21 @@ fn inspect_staged<S, R>(
         stage: &mut stage,
         callback: collect,
     };
+    let originals = staged_originals::Context {
+        checked: &checked,
+        collector: &mut collect,
+        preparation,
+    };
+    #[cfg(test)]
+    eprintln!(
+        "selected-dispatch context={}",
+        std::mem::size_of_val(&originals)
+    );
     let program = demand::prepare(
         report,
         facts,
         roots,
-        staged_originals::Context {
-            checked: &checked,
-            collector: &mut collect,
-        },
+        originals,
         inputs,
         prepared.concrete,
         prepared.constants,

@@ -50,6 +50,7 @@ pub(super) fn ignore(
 pub(super) struct Context<'a, 'checked, C> {
     pub checked: &'a Checked<'checked>,
     pub collector: &'a mut C,
+    pub preparation: Option<&'a mut dyn crate::sema::dispatch::Preparation>,
 }
 
 #[cfg(test)]

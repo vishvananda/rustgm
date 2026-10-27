@@ -47,7 +47,7 @@ pub(in crate::sema) use search::{
 use std::sync::Arc;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(in crate::sema) enum Dependency {
+pub(crate) enum Dependency {
     Header(DefId),
     ImplementationValidated(DefId),
     Fields(crate::types::ItemId),
@@ -72,7 +72,7 @@ impl Failure {
     }
 }
 impl Dependency {
-    fn ready(self, facts: &Declarations) -> bool {
+    pub(in crate::sema) fn ready(self, facts: &Declarations) -> bool {
         match self {
             Self::Header(owner) => facts
                 .generics

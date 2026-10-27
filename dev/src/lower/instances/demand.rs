@@ -569,8 +569,19 @@ fn prepare_ordinary<C: Collect>(
                 "missing ordinary dispatch contract".into(),
             )
         })?;
-        body::dispatch::resolve(facts, body, input)
-            .map_err(|e| diagnostic(report, Some(body.source.into()), e))?;
+        if let Some(service) = &mut originals.preparation {
+            body::dispatch::resolve_prepared(facts, body, input, &mut **service).map_err(
+                |failure| match failure {
+                    crate::sema::dispatch::Failure::Invalid(message) => {
+                        diagnostic(report, Some(body.source.into()), message)
+                    }
+                    crate::sema::dispatch::Failure::Preparation(error) => error,
+                },
+            )?;
+        } else {
+            body::dispatch::resolve(facts, body, input)
+                .map_err(|e| diagnostic(report, Some(body.source.into()), e))?;
+        }
     }
     body::promote::analyze(report, facts, &mut program)?;
     let pending = paid_owners::prepare(facts, templates, &program, &mut inputs)

@@ -107,6 +107,27 @@ impl Store {
         growth.bytes = growth.bytes.saturating_add(size_of::<Storage>());
         growth
     }
+    /// Cost only for the same lifetime-only versus mixed allocation choice as
+    /// `intern_arguments`. The caller prepays the immediate input scan.
+    pub(crate) fn argument_interning_growth(
+        &self,
+        arguments: &[Argument],
+    ) -> crate::support::retained::Growth {
+        if arguments
+            .iter()
+            .all(|argument| matches!(argument, Argument::Lifetime(_)))
+        {
+            let mut growth = self.regions.interning_growth(arguments.len());
+            growth.include(crate::support::retained::Growth::vector::<RegionId>(
+                0,
+                0,
+                arguments.len(),
+            ));
+            growth
+        } else {
+            self.trait_arguments_growth(arguments.len())
+        }
+    }
     pub(super) fn argument_extent(&self) -> usize {
         self.arguments.as_ref().map_or(0, |storage| {
             storage

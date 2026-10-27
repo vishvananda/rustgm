@@ -251,6 +251,12 @@ impl Bound {
                 *argument =
                     self.apply_argument_observed::<CHARGED>(store, *argument, depth, charge)?;
             }
+            if CHARGED {
+                charge(arguments.len().saturating_add(1), 0)?;
+                let mut growth = store.argument_interning_growth(&arguments);
+                growth.include(store.trait_application_growth());
+                charge(growth.work.saturating_add(arguments.len()), growth.bytes)?;
+            }
             let arguments = store.intern_arguments(&arguments)?;
             let result = store.intern_trait_application(Application {
                 arguments,

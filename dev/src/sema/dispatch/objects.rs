@@ -43,11 +43,12 @@ pub(crate) fn object_method(
 }
 
 impl Dispatcher {
-    pub(super) fn method_implementation(
+    pub(super) fn method_implementation_using(
         &mut self,
         facts: &mut Declarations,
         predicate: Predicate,
-    ) -> Result<Method, String> {
+        preparation: Option<&mut dyn super::Preparation>,
+    ) -> Result<Method, super::Failure> {
         let language = match predicate.bound {
             crate::types::parameters::predicates::Bound::Trait(id)
             | crate::types::parameters::predicates::Bound::ConstTrait(id)
@@ -66,7 +67,7 @@ impl Dispatcher {
         };
         if !language && !matches!(facts.types.kind(predicate.ty), Some(Kind::Dynamic { .. })) {
             return self
-                .implementation(facts, predicate)
+                .implementation_using(facts, predicate, preparation)
                 .map(|(owner, arguments, proof)| Method::Implementation {
                     owner,
                     arguments,
@@ -85,7 +86,7 @@ impl Dispatcher {
             .map_err(|e| e.to_string())?;
         let empty = super::Assumptions::default();
         let caller = self.caller.as_ref();
-        let evidence = implementation::select_source(
+        let evidence = implementation::select_source_using(
             facts,
             &mut self.context,
             predicate,
@@ -96,6 +97,7 @@ impl Dispatcher {
                 retain_sized: false,
             },
             self.availability,
+            preparation,
         )?;
         self.provisional_size |= evidence.provisional_size;
         match evidence.source {
