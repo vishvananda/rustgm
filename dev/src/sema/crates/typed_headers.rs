@@ -124,6 +124,33 @@ impl Headers {
     }
 }
 impl super::Linkage {
+    /// The legacy producer installs only rows whose ABI has no caller policy.
+    /// Its canonical header and original graph positively identify that profile.
+    pub(crate) fn legacy_caller_tracking_absent(
+        &self,
+        definition: DefId,
+    ) -> Result<bool, &'static str> {
+        let Some(headers) = self
+            .originals
+            .as_deref()
+            .filter(|headers| headers.source.is_none())
+        else {
+            return Ok(false);
+        };
+        let Some(header) = self.checked_original_header(definition)? else {
+            return Ok(false);
+        };
+        let DeclarationOrigin::Imported(declaration) = header.declaration else {
+            return Err("legacy caller policy changed its imported declaration");
+        };
+        let catalog = self
+            .origin_catalog()
+            .ok_or("legacy caller policy lacks its actual catalog")?;
+        let (owner, _, _) = catalog.declaration_coordinate(declaration)?;
+        headers.types(owner)?;
+        Ok(true)
+    }
+
     pub(in crate::sema) fn require_original_store(
         &self,
         store: &crate::types::Store,
