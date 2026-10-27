@@ -487,3 +487,40 @@ remain unchanged. No native repetition or full panic claim accompanies this
 checkpoint. Authentic Assert expansion, source operator/const/member completion,
 selected local body/CFG demand, real PanicInfo/handler linkage and the false-exit
 consumer remain required.
+
+### Checked source Assert expansion
+
+Checkpoint `6a46e3bb2` connects the previously qualified condition parser, owned
+transfer and expression writer to the existing authenticated source dispatcher.
+It emits one ordinary `if !condition` AST. The default failure calls the defining
+crate's real `panicking::panic`; custom arguments remain an unparsed capture for
+the real `panic::panic_2021!` path. Neither branch manufactures a callable, handler
+or operator proof. The real declaration retains `assert_macro` and every original
+attribute. That diagnostic identity requires its paired actual Assert builtin;
+it cannot grant expansion or runtime authority on its own.
+
+The once-parsed condition retains its copied token provenance and opaque payloads.
+Generated vocabulary uses the checked definition's synthetic origin/edition.
+Messages use the pinned expression writer, not token stringification; configured
+literal values become owned without cloning the temporary source or reparsing.
+Borrowed suffix forwarding shares the existing forwarding loop. Absent Assert
+calls add no scan, allocation, IR field or body metadata.
+
+Fastcheck `1793083451168919243` passes both strict modes, global formatting/audit,
+build, six exact private controls and ten lexer controls in178.25s. It includes
+actual original declaration/owner/kind opponents, missing real panic target
+rejection, default/custom conditional structure, failed payment and the old
+relocated/forwarded opaque and transfer controls. The preceding276.13s cold-build
+timeout remains failed evidence with no runtime observations. Actual private
+dispatch Call28 and stack Request120 are measured; hot Value24/Rvalue20/Body448/
+Package256/Report3040 remain unchanged. Reservations1424 includes the normally
+merged Discriminant/Neg/Send/Sync/Unpin declaration identities and diagnostic
+slots Alignment7/Send8/Sync9/AssertMacro10; these claims confer no new intrinsic or
+imported execution permission.
+
+This is AST expansion qualification. Runtime evaluation-once/lazy messages,
+actual Not/source operator bodies, complete Arguments/PanicInfo construction,
+handler linkage, const-panic execution and a false assertion reaching real Abort
+are still required. The private local-root continuation must retain real
+callee/drop/indirect original proofs and keep unrelated bodies explicitly Pending;
+its success cannot become a whole-source or metadata-publication claim.
