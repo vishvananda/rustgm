@@ -25,9 +25,9 @@ the valid native observer. See [raw composition](pa28-raw-pointer-composition.md
 - B: genuine Formatter/Arguments/helper source closure, then PanicInfo/handler and
   false assertion through Abort. Original Neg attributes and inert diagnostic
   names are integrated. Do not replace upstream helpers with library factories.
-- C: the raw-pointer composition checkpoint is integrated. Complete the actual
-  selected Index/IndexMut capture join (LIB-048), with original source, native
-  order and loan opponents; broader raw backing/validity stays required.
+- C: raw-pointer composition and selected Index/IndexMut captures are integrated.
+  Complete the retained char MAX constant boundary, then coordinate the next
+  genuine hook-closure exit; broader raw backing/validity remains required.
 - Integrator: directly owns `rustgm-pa25-work`, the qualified typed assembly
   join, publication and the qualified LIB-046 repair; integrate demanded SIMD/target/backend
   work and advance unchanged core. Preserve PA25 const-callable/CTFE and PA29

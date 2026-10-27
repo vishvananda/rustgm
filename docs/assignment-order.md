@@ -90,9 +90,10 @@ that existing acyclic prerequisite now precedes it. No fixture or obligation is
 removed to preserve an earlier implementation label.
 
 The [current operator counterexamples](operator-kernel-blockers.md) also make
-operator-kernel partial: canonical assignment demand and overloaded mutable
-capture indexing remain required. Their existing Rust-positive fixtures are
-preserved; six broader hook/derive obligations stay in their declared units.
+operator-kernel partial: canonical assignment demand remains required. The
+overloaded mutable capture indexing join is now source/native qualified; both
+original Rust-positive fixtures remain. Six broader hook/derive obligations
+stay in their declared units.
 
 ## Adopted work order
 

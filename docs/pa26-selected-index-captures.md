@@ -1,5 +1,15 @@
 # Selected Index and IndexMut capture join
 
+Integrator qualification reuses all2,928 identical Rust/Cargo bytes from the
+final qualified worker; all runner bytes also match. Only unrelated assignment
+state documents differ. The actual copied CLI compiles the unchanged captured
+input, and its fresh LowIR passes backend construction and clean native
+execution. Metadata and the full harness pass; all integration steps take17.99s
+without a compiler rebuild. CLI SHA-256:
+`ed6e73414107974c0bc97d4b2ba93ba5436e6b8b2bef6b5ca5c203e948496d1c`.
+Root receipt `obj/parallel/index-capture-integration-v1/observed/receipt.json`,
+SHA-256 `30c1f863566f39313eb78998fc9e81841d94fa14495ecdcee666f90163e6451b`.
+
 The unchanged pa26/tests/spec/index-mut/captured.rs now reaches checked LowIR and
 executes successfully through the pinned CPPGM backend. Its SHA-256 remains
 c9065b4f217c4eeaa8f1e8acb8465d8a58f273258fcf69738132d1a5ce9f5415. Preserve
