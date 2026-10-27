@@ -88,7 +88,7 @@ impl Proofs<'_, '_> {
             .append_bound(original.contract(), count)
             .map_err(|e| diagnostic(report, e.node, e.message))?;
         service.prepay(facts, bound.work, bound.bytes)?;
-        *owner =
+        **owner =
             Some(program.append_selected_template(report, facts, retained, original, &prepared)?);
         Ok(())
     }
