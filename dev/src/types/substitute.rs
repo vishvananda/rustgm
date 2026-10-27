@@ -295,8 +295,9 @@ impl Bound {
                 continue;
             }
             if finish {
-                let kind = self.rebuild(store, kind, key.1)?;
-                self.completed.insert(key, store.intern(kind)?);
+                let kind = self.rebuild_observed::<CHARGED>(store, kind, key.1, charge)?;
+                self.completed
+                    .insert(key, store.intern_observed::<CHARGED>(kind, charge)?);
             } else {
                 self.work.push((key, true));
                 self.dependencies(store, kind, key.1)?;
@@ -473,27 +474,43 @@ impl Bound {
         }
     }
 
-    fn list(
+    fn list_observed<const CHARGED: bool>(
         &mut self,
         store: &mut Store,
         list: ListId,
         depth: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<ListId, &'static str> {
         self.children.clear();
         for ty in store.list(list).ok_or("invalid substitution list")? {
             self.children.push(self.child(store, *ty, depth)?);
         }
-        store.intern_list(&self.children)
+        store.intern_list_observed::<CHARGED>(&self.children, charge)
     }
 
-    fn rebuild(&mut self, store: &mut Store, kind: Kind, depth: u16) -> Result<Kind, &'static str> {
-        rewrite::rebuild(&mut rewrite::Mutable { bound: self, store }, kind, depth)
+    fn rebuild_observed<const CHARGED: bool>(
+        &mut self,
+        store: &mut Store,
+        kind: Kind,
+        depth: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Kind, &'static str> {
+        rewrite::rebuild(
+            &mut rewrite::Mutable::<_, CHARGED> {
+                bound: self,
+                store,
+                charge,
+            },
+            kind,
+            depth,
+        )
     }
-    fn arguments(
+    fn arguments_observed<const CHARGED: bool>(
         &mut self,
         store: &mut Store,
         args: super::GenericArgs,
         depth: u16,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<super::GenericArgs, &'static str> {
         if let Some(arguments) = store.region_args(args) {
             self.account_arguments(arguments.len())?;
@@ -502,7 +519,7 @@ impl Bound {
                 let region = self.region(*region, depth)?;
                 self.regions.push(region);
             }
-            return store.intern_regions(&self.regions);
+            return store.intern_regions_observed::<CHARGED>(&self.regions, charge);
         }
         let arguments = store.arguments(args).ok_or("invalid generic arguments")?;
         self.account_arguments(arguments.len())?;
@@ -515,7 +532,7 @@ impl Bound {
             };
             self.generic.push(argument);
         }
-        store.intern_arguments(&self.generic)
+        store.intern_arguments_observed::<CHARGED>(&self.generic, charge)
     }
 
     fn account_arguments(&mut self, count: usize) -> Result<(), &'static str> {

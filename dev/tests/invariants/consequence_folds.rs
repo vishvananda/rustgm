@@ -180,5 +180,9 @@ fn shared_paid_roots(store: &mut Store) -> Result {
 pub(in crate::sema) fn controls() -> Result {
     let mut store = Store::default();
     exact_equations(&mut store)?;
-    shared_paid_roots(&mut store)
+    shared_paid_roots(&mut store)?;
+    retained::controls()
 }
+
+#[path = "consequence_retention.rs"]
+mod retained;

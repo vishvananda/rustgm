@@ -72,12 +72,14 @@ pub(super) fn normalize<const CHARGED: bool>(
             if work > 1_000_000 {
                 return Err("result consequence work budget exceeded".into());
             }
-            let arguments = store.intern_arguments(&arguments)?;
-            let application =
-                store.intern_trait_application(crate::types::traits::Application {
+            let arguments = store.intern_arguments_observed::<CHARGED>(&arguments, charge)?;
+            let application = store.intern_trait_application_observed::<CHARGED>(
+                crate::types::traits::Application {
                     arguments,
                     ..application
-                })?;
+                },
+                charge,
+            )?;
             predicate.bound = Bound::trait_application(application, effect);
         }
     }
@@ -144,8 +146,9 @@ fn rewrite<const CHARGED: bool>(
             Step::Resolve(request) => {
                 // Outer declaration equations cannot capture a nested callable's locals.
                 let replacement = if request.depth == 0 {
-                    let alias = store.intern(request.alias.kind())?;
-                    equations.get(&alias).copied().flatten()
+                    store
+                        .find_kind(request.alias.kind())
+                        .and_then(|alias| equations.get(&alias).copied().flatten())
                 } else {
                     None
                 };

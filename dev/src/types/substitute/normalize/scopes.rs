@@ -147,7 +147,10 @@ impl Normalizer {
                 convention,
             } => Kind::Function {
                 bound_regions,
-                parameters: self.frame.fold.list(store, parameters, 0)?,
+                parameters: self
+                    .frame
+                    .fold
+                    .list_observed::<CHARGED>(store, parameters, 0, charge)?,
                 result: self.frame.fold.child(store, result, 0)?,
                 unsafe_,
                 convention,
@@ -159,13 +162,16 @@ impl Normalizer {
                 region,
             } => Kind::Dynamic {
                 shape,
-                arguments: self.frame.fold.arguments(store, arguments, 0)?,
+                arguments: self
+                    .frame
+                    .fold
+                    .arguments_observed::<CHARGED>(store, arguments, 0, charge)?,
                 bound_regions,
                 region,
             },
             _ => return Err("invalid suspended normalization binder"),
         };
-        let ty = store.intern(kind)?;
+        let ty = store.intern_observed::<CHARGED>(kind, charge)?;
         self.suspended_work = self
             .suspended_work
             .checked_sub(parent.frame.fold.work.len())

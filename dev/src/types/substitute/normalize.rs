@@ -170,7 +170,7 @@ impl Normalizer {
         let key = (request.source, 0);
         match resolution {
             Resolution::Opaque | Resolution::Deferred => {
-                let ty = store.intern(request.alias.kind())?;
+                let ty = store.intern_observed::<CHARGED>(request.alias.kind(), charge)?;
                 self.frame.fold.completed.insert(key, ty);
                 self.frame.active.remove(&key);
             }
@@ -237,7 +237,10 @@ impl Normalizer {
                 if CHARGED {
                     self.pay_node(store, kind, true, charge)?;
                 }
-                let kind = self.frame.fold.rebuild(store, kind, key.1)?;
+                let kind = self
+                    .frame
+                    .fold
+                    .rebuild_observed::<CHARGED>(store, kind, key.1, charge)?;
                 let alias = match kind {
                     Kind::Projection(application) => Some(Alias::Associated(application)),
                     Kind::Opaque(id, arguments)
@@ -258,7 +261,7 @@ impl Normalizer {
                     self.pending = Some(request);
                     return Ok(Step::Resolve(request));
                 }
-                self.complete(key, store.intern(kind)?);
+                self.complete(key, store.intern_observed::<CHARGED>(kind, charge)?);
             } else {
                 if CHARGED {
                     self.pay_active(charge)?;
