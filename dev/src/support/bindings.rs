@@ -71,9 +71,11 @@ pub enum LangItem {
     DispatchFromDyn,
     Shl,
     BitOr,
+    ResultOk,
+    ResultErr,
 }
 impl LangItem {
-    pub const ALL: [Self; 55] = [
+    pub const ALL: [Self; 57] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -129,6 +131,8 @@ impl LangItem {
         Self::DispatchFromDyn,
         Self::Shl,
         Self::BitOr,
+        Self::ResultOk,
+        Self::ResultErr,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -188,6 +192,8 @@ impl LangItem {
             Self::DispatchFromDyn => 52,
             Self::Shl => 53,
             Self::BitOr => 54,
+            Self::ResultOk => 55,
+            Self::ResultErr => 56,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -248,6 +254,8 @@ impl LangItem {
             "dispatch_from_dyn" => Some(Self::DispatchFromDyn),
             "shl" => Some(Self::Shl),
             "bitor" => Some(Self::BitOr),
+            "Ok" => Some(Self::ResultOk),
+            "Err" => Some(Self::ResultErr),
             _ => None,
         }
     }
