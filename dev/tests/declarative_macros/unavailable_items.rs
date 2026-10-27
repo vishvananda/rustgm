@@ -201,15 +201,15 @@ fn original_assert_matches_is_a_real_declaration_with_an_explicit_stability_fron
             }
         ));
         assert!(report.invocations.is_empty());
-        let error = resolve::analyze_expanded(report)
-            .err()
-            .ok_or("scoped stability contract silently accepted")?;
+        let report = resolve::analyze_expanded(report)?;
         assert!(
-            error
-                .message
-                .contains("scoped macro library stability declarations are not implemented"),
-            "{error}"
+            report
+                .package
+                .library_policy()
+                .and_then(resolve::stability::Library::inventory)
+                .is_some()
         );
+        rustgm::pipeline::analyze_source(&report)?;
     }
     Ok(())
 }

@@ -174,9 +174,18 @@ fn actual_attribute_lookup_kind_owner_and_unavailable_execution_remain_distinct(
 fn independent_positive_frontiers_keep_stability_legacy_kind_and_tool_registration_explicit()
 -> TestResult {
     for edition in [Edition::Rust2021, Edition::Rust2024] {
+        for name in ["original-autodiff_forward", "original-autodiff_reverse"] {
+            let report = checked(name, edition)?;
+            assert!(
+                report
+                    .package
+                    .library_policy()
+                    .and_then(resolve::stability::Library::inventory)
+                    .is_some()
+            );
+            rustgm::pipeline::analyze_source(&report)?;
+        }
         for (name, message) in [
-            ("original-autodiff_forward", "stability"),
-            ("original-autodiff_reverse", "stability"),
             ("legacy-attribute-claim", "supported declaration kind"),
             (
                 "registered-user-tool",

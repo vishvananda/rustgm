@@ -143,10 +143,15 @@ fn source_byte_claim_stability_and_ordinary_foreign_frontiers_remain_explicit() 
         entry.body,
         resolve::expansion::Body::Builtin(rustgm::expand::builtin::Builtin::ConcatBytes)
     )));
-    let error = resolve::analyze_expanded(report)
-        .err()
-        .ok_or("staged macro stability ignored")?;
-    assert!(error.message.contains("stability"), "{error}");
+    let report = resolve::analyze_expanded(report)?;
+    assert!(
+        report
+            .package
+            .library_policy()
+            .and_then(resolve::stability::Library::inventory)
+            .is_some()
+    );
+    rustgm::pipeline::analyze_source(&report)?;
     for (name, message) in [
         (
             "scoped-role",

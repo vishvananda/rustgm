@@ -77,10 +77,15 @@ fn real_format_headers_keep_stability_and_claim_opponents_explicit() -> TestResu
         "format-args-nl",
         "three",
     ] {
-        let error = report(&fixture(&format!("declaration-original-{name}"))?)
-            .err()
-            .ok_or_else(|| format!("{name}: staged contract silently ignored"))?;
-        assert!(error.to_string().contains("stability"), "{name}: {error}");
+        let report = report(&fixture(&format!("declaration-original-{name}"))?)?;
+        assert!(
+            report
+                .package
+                .library_policy()
+                .and_then(rustgm::resolve::stability::Library::inventory)
+                .is_some()
+        );
+        rustgm::pipeline::analyze_source(&report)?;
     }
     for name in [
         "declaration-renamed-role",

@@ -180,10 +180,15 @@ fn original_staged_header_is_a_real_builtin_with_its_separate_stability_frontier
         resolve::expansion::Body::Builtin(rustgm::expand::builtin::Builtin::CfgSelect)
     )));
     assert_eq!(report.invocations.len(), 1);
-    let error = resolve::analyze_expanded(report)
-        .err()
-        .ok_or("staged macro contract silently admitted")?;
-    assert!(error.message.contains("stability"), "{error}");
+    let report = resolve::analyze_expanded(report)?;
+    assert!(
+        report
+            .package
+            .library_policy()
+            .and_then(resolve::stability::Library::inventory)
+            .is_some()
+    );
+    rustgm::pipeline::analyze_source(&report)?;
     Ok(())
 }
 #[test]

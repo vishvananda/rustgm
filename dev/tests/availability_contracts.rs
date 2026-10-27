@@ -30,8 +30,8 @@ const CASES: &[(&str, bool)] = &[
     ("zero-issue", false),
     ("missing-issue", false),
     ("nonzero-issue", true),
-    ("signature-exposes-unmarked-type", false),
-    ("signature-exposes-marked-type", false),
+    ("signature-exposes-unmarked-type", true),
+    ("signature-exposes-marked-type", true),
     ("shared-file-both-unstable", true),
     ("shared-file-stable-second", false),
     ("shared-file-private-second", true),
@@ -44,8 +44,8 @@ const CASES: &[(&str, bool)] = &[
     ("marked-import-and-target", true),
     ("marked-import-unmarked-target", false),
     ("public-type-through-signature", false),
-    ("marked-public-type-through-signature", false),
-    ("marked-reexported-public-type", false),
+    ("marked-public-type-through-signature", true),
+    ("marked-reexported-public-type", true),
     ("unmarked-group-import", false),
     ("marked-group-import", true),
     ("marked-glob-import", true),
@@ -82,10 +82,12 @@ fn analyze(path: &Path) -> Result<resolve::expansion::Report> {
 fn local_owner_and_import_outcomes_preserve_independent_observations() -> Result {
     let mut failures = Vec::new();
     for &(name, accepted) in CASES {
-        match analyze(&fixture(name)) {
-            Ok(report) if accepted => {
-                rustgm::pipeline::analyze_source(&report)?;
-            }
+        let checked = analyze(&fixture(name)).and_then(|report| {
+            rustgm::pipeline::analyze_source(&report)?;
+            Ok(report)
+        });
+        match checked {
+            Ok(_) if accepted => {}
             Ok(_) => failures.push(format!("{name}: unexpected acceptance")),
             Err(error) if accepted => failures.push(format!("{name}: {error}")),
             Err(error) if !expected_diagnostic(name, &error.to_string()) => {
@@ -101,11 +103,7 @@ fn local_owner_and_import_outcomes_preserve_independent_observations() -> Result
 fn expected_diagnostic(name: &str, message: &str) -> bool {
     let expected = match name {
         "local-unstable-runtime" | "stable-override-runtime" => "unresolved macro",
-        "signature-exposes-unmarked-type"
-        | "signature-exposes-marked-type"
-        | "public-type-through-signature"
-        | "marked-public-type-through-signature"
-        | "marked-reexported-public-type" => "local library stability profile",
+        "public-type-through-signature" => "missing library stability",
         "missing-root-annotation" => "crate has missing library stability",
         "duplicate-stable" => "duplicate or conflicting library stability",
         "duplicate-feature-key" => "duplicate library stability argument",
@@ -136,7 +134,7 @@ fn deferred_features_use_enabled_expanded_definitions_and_keep_const_separate() 
         ("conflicting-stability", false),
         ("missing-staged-api", false),
         ("missing-const-stability", false),
-        ("runtime-unstable-const", false),
+        ("runtime-unstable-const", true),
     ] {
         let result = analyze(&root.join(format!("{name}.rs")));
         if accepted {
@@ -149,12 +147,7 @@ fn deferred_features_use_enabled_expanded_definitions_and_keep_const_separate() 
                 "undefined-request" | "disabled-definition" => "undefined library feature request",
                 "conflicting-stability" => "duplicate or conflicting library stability",
                 "missing-staged-api" => "library stability requires staged_api",
-                // These valid/invalid const hypotheses remain outside this
-                // candidate profile; an unsupported gate is not Rust evidence.
-                "missing-const-stability" => "local library stability profile",
-                "runtime-unstable-const" => {
-                    "const, default-body and macro library stability contracts are not implemented"
-                }
+                "missing-const-stability" => "missing const library stability attribute",
                 _ => return Err("undeclared API rejection diagnostic".into()),
             };
             assert!(error.to_string().contains(expected), "{name}: {error}");
