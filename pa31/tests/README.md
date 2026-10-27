@@ -355,3 +355,8 @@ identity. Successful objects/executables were removed after hashing; LowIR and
 raw streams remain retained. Original missing-Freeze/drop_glue codegen failures,
 all seven original source bytes and independent observations remain preserved.
 No artifact/foreign protocol transport or const-closure execution is implied.
+
+
+`spec/higher-ranked-const-bounds/contract.json` freezes LIB-040's binder/modifier
+order, impl Trait, reversed-order, lifetime and feature-gate sources. These
+maintainer protocol fixtures do not activate the planned assignment.

@@ -18,7 +18,7 @@ whole-crate attempt. Never patch upstream source to move a blocker.
 
 | Milestone | Current result | Next acceptance evidence |
 | --- | --- | --- |
-| Original core loading and expansion | Qualified CLI `884e0004` passes concat and opens 226 original files, then stops at `slice/cmp.rs:218`, byte8583, on `impl for<'a> [const] FnOnce(...)`: `expected path segment`. All722 pinned inputs verify;11.01s including source acquisition; no artifact. | Fix LIB-040 higher-ranked conditional bound grammar, then finish imported bodies and actual assertion/formatting. |
+| Original core loading and expansion | Qualified CLI `d1e2137d` passes higher-ranked conditional bounds and opens263 original files, then stops at `tuple.rs:31`, byte1199, on `${ignore($T)}`: `unsupported metavariable expression`. All722 pins verify;3.00s; no artifact. | Implement LIB-041 ignore/index/count and the complete typed metavariable-expression protocol; finish imported bodies and actual assertion/formatting. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
@@ -57,14 +57,23 @@ both strict Clippy modes pass. The imported caller-policy join authenticates the
 collector's actual no-tracking guarantee and charges its existing imported header
 owner, including failed queries. Local source budgets are not borrowed.
 
-Original core advances206→226 opened files with all722 inputs unchanged.
-LIB-039's actual template boundary is passed; LIB-040 is now the real parser
-failure. The pointer-metadata native consumer matches pinned Rust's
-`7 6 3 3 7 91 1` through the locked CPPGM backend in2.68s. Const-panic markers do
-not implement the panic runtime; public Provided metadata transport remains open.
-Full CI40448279228 on the prior a492 checkpoint is green; full qualification of
-this successor is delegated to CI after publication. No extra PA release or
-whole library artifact is implied.
+Original core advanced206→226 with concat, then226→263 with the corrected
+higher-ranked const-bound parser. Latest CLI `d1e2137d` fails at tuple.rs31's
+`${ignore($T)}` in3.00s; all722 inputs remain unchanged. LIB-041 owns the actual
+ignore/index/count template family and its independent feature authority. The
+bound grammar preserves existing Binder/Constness fields and relaxed-binder
+rejection locations; all33 focused tests,231 PA5 text cases and758 PA21 text
+cases pass in118.93s with both strict modes and architecture checks. Nine frozen
+sources retain36 matching independent/baseline observations across both editions.
+
+The pointer-metadata native consumer matches pinned Rust's `7 6 3 3 7 91 1`
+through the locked CPPGM backend in2.68s. The integrated private provided consumer's
+source, C observer and LowIR are byte-identical to its independently verified
+native7 graph. Const-panic markers do not implement the panic runtime; public
+Provided metadata transport remains open. Full CI40460106211 on the published
+d1bc checkpoint is fully green, including release/course, native, debug and
+independent Rust qualification. No extra PA release or whole library artifact is
+implied by either checkpoint.
 
 ## Current execution queue
 
@@ -556,7 +565,8 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-037 | Grammar/feature authority qualified; const execution open | Const closure grammar, feature authority and real const-callable/CTFE semantics | PA4 grammar + PA24 closure machinery + PA25 const callable/CTFE + PA31 original source binding / pa4 closure cases, pa25 const-closures and pa31 source-const-closures | Integrator grammar integrated; semantics PA25 | CLI3cc4e779 passes unchanged try_trait const closures and opens164 original files. Six grammar controls and six combined visibility/gate controls pass; three new PA4 references are generated/reviewed, all200 text and independent syntax checks pass (10 documented syntax-only differences). The actual const keyword owns the gate, including cfg-removed hard errors; expr_2021 retains its pinned const-token exclusion. Common records remain unchanged; sparse32-byte rows have measured78/318/1278 work at8/32/128. Original wrong independent predictions are preserved. Actual const creation contexts, call traits, runtime/CTFE, ownership and instance acceptance remain required. |
 | LIB-038 | Declaration/lookup qualified; generator execution and transport open | Authenticated builtin kind across scoped and legacy source forms | PA7/8 + PA31 role/kind authority; PA42/43 generators / pa31 scoped-builtin-declarations | C integrated | CLIb4f107b1 passes unchanged Iter and advances164→206 opened files. Actual source form retains visibility, matcher, hygiene and header; the checked registry supplies invocation kind. Wrong-kind textual candidates use the existing scope/cache and paid work. Full combined32private/26production controls pass, including existing scoped format/concat and legacy attribute opponents. Fourteen independent metadata statuses match; eight wrong warning/category predictions are retained. Actual widths stay unchanged; Iter invocation and wider macro transport remain explicitly unsupported. |
 | LIB-039 | Local grammar, transcription and lookup qualified; original boundary passed | Typed `${concat(...)}` with actual binding path, synthetic definition hygiene and independent crate feature | PA7/8/31 / pa31 metavariable-concat | Integrator integrated | CLI884e0004 passes original fmt/num149 and reaches226 original files. Six private groups pass alongside74 related controls; original20 protocols, five typed-literal protocols and three allowance sources retain all independent predictions/observations. Widths stay40/32/20/32/72/64; emitted work is bounded. Other metavariable operations remain required and unimplemented; no artifact/native claim from concat. |
-| LIB-040 | P0; current unchanged-core parser blocker | Higher-ranked conditional trait-bound order in actual impl Trait parameter | PA5 bound grammar + PA21 binder/const semantics + PA31 feature authority / owning focused fixtures to be added | Integrator | CLI884e0004 stops at slice/cmp218byte8583, `impl for<'a> [const] FnOnce(...)`, expected path segment. Original source and all722 pins unchanged. Existing Bound must retain both actual binders and constness without source reparsing or weakening feature/trait obligations. Independent protocol and positive/negative parser, semantics and gate controls are required. |
+| LIB-040 | Grammar and focused semantics qualified; original boundary passed | Higher-ranked conditional trait-bound order in actual impl Trait parameter | PA5 grammar + PA21 binder/const semantics + PA31 feature authority / pa31 higher-ranked-const-bounds | Integrator integrated | CLI d1e2137d passes slice/cmp218 and opens263 original files. Existing Bound retains both actual binder scope and Constness without new fields or reparsing. Eighteen pinned metadata and18 immutable baseline observations match. All33 focused controls and231/758 owning text cases pass; genuine missing-feature and invalid-order opponents remain rejected. No whole core artifact. |
+| LIB-041 | P0; current unchanged-core template blocker | Typed ignore/index/count/len metavariable expressions with real repetition depth and feature authority | PA7 template/binding grammar + PA8 transcription/hygiene + PA31 macro_metavar_expr / pa31 focused protocol to be added | Integrator | CLI d1e2137d stops at tuple.rs31byte1199 on `${ignore($T)}`, unsupported metavariable expression;263 opened/all722 pinned. Actual tuple templates also use index/count. Consume the same binding tree/current repetition frames, preserve emitted numeric tokens and spans, validate arity/variables/depth and independent feature rules. No skipped templates, new proof owner or extra whole-tree replay. |
 
 The combined functional recovery is recorded in
 [the alias/allowance checkpoint](library-alias-allowances-checkpoint.md):

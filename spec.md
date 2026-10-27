@@ -955,6 +955,12 @@ these clauses for a consumer that only handles ordinary predicates. Local
 shorthand projections may infer bound lifetime arguments in their own body;
 signatures need explicit arguments when those quantified locals occur.
 
+Parse a higher-ranked trait binder before its const modifiers into the existing
+Bound fields. Optional relaxation cannot combine with that binder. Preserve the
+actual binder scope and feature checks; consuming an anonymous impl Trait bound
+must not erase either. Invalid modifier order and modified lifetime bounds fail
+through the ordinary parser rather than being reinterpreted downstream.
+
 ## Semantic identity and demand
 
 Intern names, types, declarations, trait goals, instances and layouts with
