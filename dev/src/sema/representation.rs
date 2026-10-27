@@ -85,7 +85,7 @@ fn parse(report: &Report, key: NodeKey, index: usize) -> Result<Attributes, Erro
             return Err(error("nominal attribute requires parenthesized arguments"));
         };
         let range = parentheses(forest, group).map_err(error)?;
-        if name == Some("derive") {
+        if matches!(name, Some("derive" | "derive_const")) {
             if unit.derive_is_expanded(index) {
                 report.expanded_derive(
                     NodeKey {
@@ -99,6 +99,11 @@ fn parse(report: &Report, key: NodeKey, index: usize) -> Result<Attributes, Erro
             if report.package.uses_source_bindings() {
                 return Err(error(
                     "source derive requires its actual completed local expansion",
+                ));
+            }
+            if name == Some("derive_const") {
+                return Err(error(
+                    "const derive requires its actual completed source expansion",
                 ));
             }
             derive(

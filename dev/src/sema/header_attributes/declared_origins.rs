@@ -16,6 +16,8 @@ use std::cell::Cell;
 #[path = "tracking.rs"]
 mod tracking;
 pub(in crate::sema) use tracking::{consume_tracking, inherit_tracking};
+mod internal_constness;
+pub(in crate::sema) use internal_constness::consume_const_panic;
 
 struct Header {
     tracking: tracking::Tracking,

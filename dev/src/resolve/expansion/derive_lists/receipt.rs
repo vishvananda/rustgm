@@ -109,8 +109,7 @@ impl Report {
         if invocation.node != owner
             || invocation.original != entry.attribute.attribute.span
             || invocation.parser_calls != 1
-            || !matches!(definition.body, Body::Builtin(Builtin::Derive))
-            || header.builtin != Some(Builtin::Derive)
+            || !matches!(definition.body, Body::Builtin(role @ (Builtin::Derive | Builtin::DeriveConst)) if header.builtin == Some(role))
             || header.edition != definition.edition
         {
             return Err(failure());
@@ -138,11 +137,12 @@ impl Report {
                 .definitions
                 .get(member.definition)
                 .ok_or_else(failure)?;
-            let Body::Builtin(role @ (Builtin::Copy | Builtin::Clone | Builtin::Debug)) =
-                definition.body
-            else {
+            let Body::Builtin(role) = definition.body else {
                 return Err(failure());
             };
+            if !crate::expand::builtin::derive_output::MEMBERS.contains(&role) {
+                return Err(failure());
+            }
             let node = definition.node.ok_or_else(failure)?;
             let header =
                 panic_contracts::published(&self.package, node, definition.header.as_ref(), 1)?;

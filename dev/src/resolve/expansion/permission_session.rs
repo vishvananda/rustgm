@@ -84,6 +84,9 @@ impl MacroAllowanceSession<'_> {
     /// # Errors
     /// Rejects changed identities, invalid provenance and exhausted work/storage.
     pub fn allows(&mut self, site: Location, feature: &FeatureName<'_>) -> Result<bool, Error> {
+        if let Some(allowed) = self.report.derived_literal_allowance(site, feature)? {
+            return Ok(allowed);
+        }
         self.query().allows(site, feature)
     }
     /// Authenticate an actual retained token span through the resolver boundary.

@@ -34,10 +34,12 @@ pub(super) fn require(
         .macros
         .charge(origins.len().saturating_mul(4), 0)
         .map_err(|_| failure())?;
-    if entry.contexts.len() > 3 || entry.contexts.is_empty() {
+    if entry.contexts.len() > crate::expand::builtin::derive_output::MEMBERS.len()
+        || entry.contexts.is_empty()
+    {
         return Err(failure());
     }
-    let mut observed = 0_u8;
+    let mut observed = 0_u16;
     for origin in origins {
         if origin.generated.start < invocation.generated.start
             || origin.generated.end > invocation.generated.end

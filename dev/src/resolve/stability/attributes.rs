@@ -29,7 +29,6 @@ pub(in crate::resolve) fn collect(
             | "rustc_allow_const_fn_unstable"
             | "allow_internal_unstable"
             | "allow_internal_unsafe"
-            | "rustc_const_stable_indirect"
     );
     if unit.include_context.is_some() {
         return Ok(extended

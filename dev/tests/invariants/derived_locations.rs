@@ -4,6 +4,8 @@ use crate::{support::bindings::LangItem, test_source};
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 #[path = "debug_fields.rs"]
 mod debug_fields;
+#[path = "formatter_family.rs"]
+mod formatter_family;
 #[path = "synthetic_ancestry.rs"]
 mod synthetic_ancestry;
 const PROVIDER: &str = "pa31/tests/spec/source-location/location-copy-clone.rs";

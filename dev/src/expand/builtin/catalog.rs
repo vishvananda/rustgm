@@ -248,9 +248,16 @@ impl Builtin {
                 | Self::Test
                 | Self::PatternType
                 | Self::Derive
+                | Self::DeriveConst
                 | Self::Copy
                 | Self::Clone
                 | Self::Debug
+                | Self::Default
+                | Self::Eq
+                | Self::PartialEq
+                | Self::Hash
+                | Self::Ord
+                | Self::PartialOrd
         )
     }
     #[must_use]

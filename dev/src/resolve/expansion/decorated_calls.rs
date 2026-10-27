@@ -130,7 +130,8 @@ impl<S: Sources> Engine<'_, S> {
             }
             if matches!(attribute.input, Input::Doc(_))
                 || name.and_then(Consumer::named).is_some()
-                    && !(name == Some("derive") && self.loader.package.source_core().is_some())
+                    && !(matches!(name, Some("derive" | "derive_const"))
+                        && self.loader.package.source_core().is_some())
             {
                 continue;
             }

@@ -15,6 +15,8 @@ pub(super) use calls::record as record_call_effects;
 pub(in crate::sema) use explicit_cleanup::explicit_drop_member;
 pub(crate) use glue_calls::{DropGlueSelection, check_const_drop_glue, source_drop_glue};
 mod abort_declaration;
+mod runtime_panics;
+pub(in crate::sema) use runtime_panics::runtime_body as runtime_panic_body;
 #[path = "compiler_items/location_intrinsic.rs"]
 mod caller_location;
 pub(crate) use caller_location::CallerLocationSelection;

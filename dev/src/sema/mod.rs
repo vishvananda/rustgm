@@ -13,6 +13,7 @@ mod arguments;
 pub(crate) mod callee_premises;
 pub(crate) mod cloning;
 pub(crate) mod compiler_items;
+mod coverage_annotations;
 pub(crate) mod declaration_inputs;
 pub mod declarations;
 pub mod destructors;

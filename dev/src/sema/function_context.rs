@@ -25,6 +25,24 @@ impl FunctionContext {
     }
 }
 impl Declarations {
+    /// Only the checked source panic roles have a runtime-checked defining body.
+    /// Their const declaration and every reached const-call obligation remain.
+    pub(crate) fn source_function_context(
+        &self,
+        report: &crate::resolve::expansion::Report,
+        definition: DefId,
+        body: NodeKey,
+    ) -> Result<FunctionContext, &'static str> {
+        let context = self.function_context(definition, body)?;
+        Ok(
+            if super::compiler_items::runtime_panic_body(report, self, definition, body)? {
+                FunctionContext::Runtime
+            } else {
+                context
+            },
+        )
+    }
+
     /// Abstract/default member identity cannot become executable via Code reuse.
     pub(crate) fn check_const_member_execution(
         &self,

@@ -2,6 +2,12 @@
 
 Planned: no graded manifest or generated reference outputs yet.
 
+`spec/formatter-derives/` freezes the actual Alignment, Sign, DebugAsHex,
+FormattingOptions, Error and Ordering declaration fragments for the source panic
+prerequisite family. Their original enabled derive lists and attributes remain
+unchanged. The contract separates this source freeze from the still-required
+complete independent protocol, candidate consumers and runtime qualification.
+
 `spec/foreign-types/` freezes 17 new no_core provider inputs for genuine extern
 type identity, pointer metadata, direct/tail sizing, privacy/forms and exact
 feature-token authority. Three separate source Freeze opponents bring the actual
