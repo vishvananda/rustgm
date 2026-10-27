@@ -677,7 +677,7 @@ impl<'a, S: Sources> Engine<'a, S> {
         }
         if matches!(
             self.definitions[definition].body,
-            Body::Builtin(Builtin::Derive)
+            Body::Builtin(Builtin::Derive | Builtin::DeriveConst)
         ) {
             return self.begin_derive(index, definition);
         }

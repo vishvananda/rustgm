@@ -1,6 +1,8 @@
 //! Source Copy/paired Clone produce ordinary impls with real field WF assertions.
 mod active_members;
+mod comparisons;
 mod debug_format;
+mod derivation_contexts;
 use super::{choice::Charge, delegation::Delegated, derive_types};
 use crate::{
     expand::{
@@ -22,6 +24,7 @@ use crate::{
         token_tree::{Span, error},
     },
 };
+pub(crate) use derivation_contexts::{MEMBERS, MemberContext};
 
 pub(crate) struct Site<'a> {
     pub file: crate::support::source::FileId,
@@ -30,12 +33,9 @@ pub(crate) struct Site<'a> {
     pub active: &'a [bool],
     pub item: Item,
     pub original: Span,
-    pub copy_context: (SyntaxContextId, ExpansionId),
-    pub clone_context: (SyntaxContextId, ExpansionId),
-    pub debug_context: (SyntaxContextId, ExpansionId),
-    pub copy_edition: crate::support::edition::Edition,
-    pub clone_edition: crate::support::edition::Edition,
-    pub debug_edition: crate::support::edition::Edition,
+    pub members: [Option<MemberContext>; MEMBERS.len()],
+    pub const_: bool,
+    pub prior_copy: bool,
 }
 struct Field {
     parsed: ParsedSyntax,
@@ -53,20 +53,15 @@ struct Output<'a> {
 
 pub(crate) fn build(
     site: &Site<'_>,
-    copy: bool,
-    clone: bool,
-    debug: bool,
     config: &Config,
     charge: &Charge<'_>,
 ) -> Result<Delegated, LexError> {
     let fields = active_members::collect(site, charge)?;
-    if debug && !matches!(site.item.kind, ItemKind::Struct { .. }) {
-        return Err(error(
-            site.original.start,
-            "source Debug enum expansion requires a wider profile",
-        ));
-    }
-    if clone && !copy || site.item.where_clause.start != site.item.where_clause.end {
+    let copy = site.members[0].is_some();
+    let clone = site.members[1].is_some();
+    if clone && !(copy || site.prior_copy)
+        || site.item.where_clause.start != site.item.where_clause.end
+    {
         return Err(error(
             site.original.start,
             "fieldwise or constrained source Clone requires a wider derive profile",
@@ -77,16 +72,15 @@ pub(crate) fn build(
         stream: Stream::default(),
         fields: Vec::new(),
         charge,
-        context: site.copy_context,
-        edition: site.copy_edition,
+        context: (SyntaxContextId::ROOT, ExpansionId(0)),
+        edition: crate::support::edition::Edition::Rust2024,
     };
-    if copy {
+    if output.select(0) {
         output.header("crate::marker::Copy", false)?;
         output.text("{}")?;
     }
     if clone {
-        output.context = site.clone_context;
-        output.edition = site.clone_edition;
+        output.select(1);
         output.header("crate::clone::TrivialClone", true)?;
         output.text("{}")?;
         output.header("crate::clone::Clone", false)?;
@@ -111,11 +105,10 @@ pub(crate) fn build(
         }
         output.text("*self } }")?;
     }
-    if debug {
-        output.context = site.debug_context;
-        output.edition = site.debug_edition;
+    if output.select(2) {
         output.debug(&fields)?;
     }
+    output.comparison_members(&fields)?;
     output.finish(config)
 }
 
@@ -148,15 +141,16 @@ impl Output<'_> {
         let configured = crate_syntax::configure(&self.stream.source, ast, config)?;
         // Configuration interprets demanded literals once in their generated image.
         // Only the new Debug labels are strings; copied field types retain splices.
-        let ast: Ast<'static> = configured.ast.map_literals(|value| {
-            let crate::literal::Value::String(bytes) = value else {
-                return Err(error(
-                    self.site.original.start,
-                    "source derive introduced an unsupported literal",
-                ));
-            };
-            (self.charge)(bytes.len().saturating_add(1), bytes.len().saturating_mul(4))?;
-            Ok(crate::literal::Value::String(bytes.into_owned().into()))
+        let ast: Ast<'static> = configured.ast.map_literals(|value| match value {
+            crate::literal::Value::String(bytes) => {
+                (self.charge)(bytes.len().saturating_add(1), bytes.len().saturating_mul(4))?;
+                Ok(crate::literal::Value::String(bytes.into_owned().into()))
+            }
+            crate::literal::Value::Boolean(value) => Ok(crate::literal::Value::Boolean(value)),
+            _ => Err(error(
+                self.site.original.start,
+                "source derive introduced an unsupported literal",
+            )),
         })?;
         let syntax = crate_syntax::ConfiguredSyntax {
             ast,
@@ -201,20 +195,15 @@ impl Output<'_> {
                     }
                 }
                 OriginKind::Synthetic(edition) => {
-                    let expected = [
-                        (self.site.copy_context, self.site.copy_edition),
-                        (self.site.clone_context, self.site.clone_edition),
-                        (self.site.debug_context, self.site.debug_edition),
-                    ];
                     if origin.original
                         != (Location {
                             file: self.site.file,
                             span: self.site.original,
                         })
-                        || !expected.iter().any(|&(context, expected)| {
-                            origin.context == Some(context.0)
-                                && origin.introduction == context.1
-                                && edition == expected
+                        || !self.site.members.iter().flatten().any(|member| {
+                            origin.context == Some(member.context.0)
+                                && origin.introduction == member.context.1
+                                && edition == member.edition
                         })
                     {
                         return Err(error(
@@ -293,6 +282,9 @@ impl Output<'_> {
     }
     fn header(&mut self, path: &str, unsafe_: bool) -> Result<(), LexError> {
         self.text("#[automatically_derived]")?;
+        if self.site.const_ && path != "crate::marker::StructuralPartialEq" {
+            self.text("#[rustc_const_unstable(feature=\"derive_const\",issue=\"118304\")] const")?;
+        }
         if unsafe_ {
             self.text("unsafe")?;
         }

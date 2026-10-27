@@ -39,6 +39,7 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
             let (key, supported) = declaration(unit, owner_key);
             crate::sema::header_attributes::observe_owner(report, facts, owner_key, key)?;
             crate::sema::specialization::observe_owner(report, facts, owner_key, key)?;
+            let mut covered = false;
             for effect in owner.attributes.clone() {
                 let Some((attribute, forest)) = unit.retained_attributes(effect..effect + 1).next()
                 else {
@@ -48,26 +49,14 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                     report.expanded_derive(owner_key, effect)?;
                     continue;
                 }
-                let name = attribute.name(forest, unit.source.text());
-                if name.and_then(Consumer::named) == Some(Consumer::MarkerTrait) {
-                    crate::sema::marker_traits::consume(
-                        report,
-                        facts,
-                        key,
-                        attribute,
-                        forest,
-                        &mut allowances,
-                    )?;
-                    continue;
-                }
-                if consume_other(
+                if consume_annotation(
                     report,
                     facts,
-                    owner_key,
-                    key,
-                    attribute,
-                    effect,
-                    name.and_then(Consumer::named),
+                    (owner_key, key),
+                    (attribute, effect),
+                    forest,
+                    &mut allowances,
+                    &mut covered,
                 )? {
                     continue;
                 }
@@ -153,6 +142,61 @@ fn complete_imports(report: &Report, facts: &mut Declarations) -> Result<(), Err
         }
     }
     Ok(())
+}
+fn consume_annotation(
+    report: &Report,
+    facts: &mut Declarations,
+    (owner, declaration): (NodeKey, NodeKey),
+    (attribute, effect): (Attribute, usize),
+    forest: &Forest,
+    allowances: &mut crate::resolve::expansion::MacroAllowanceSession<'_>,
+    covered: &mut bool,
+) -> Result<bool, Error> {
+    let consumer = attribute
+        .name(forest, report.package.unit(declaration.file).source.text())
+        .and_then(Consumer::named);
+    match consumer {
+        Some(Consumer::Coverage) => {
+            if *covered {
+                return Err(Error::at(
+                    declaration.file,
+                    attribute.span.start,
+                    "duplicate coverage attribute",
+                ));
+            }
+            *covered = true;
+            crate::sema::coverage_annotations::consume(
+                report,
+                facts,
+                declaration,
+                attribute,
+                forest,
+                allowances,
+            )?;
+        }
+        Some(Consumer::MarkerTrait) => {
+            crate::sema::marker_traits::consume(
+                report,
+                facts,
+                declaration,
+                attribute,
+                forest,
+                allowances,
+            )?;
+        }
+        _ => {
+            return consume_other(
+                report,
+                facts,
+                owner,
+                declaration,
+                attribute,
+                effect,
+                consumer,
+            );
+        }
+    }
+    Ok(true)
 }
 fn consume_other(
     report: &Report,

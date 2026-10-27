@@ -6,7 +6,13 @@ Planned: no graded manifest or generated reference outputs yet.
 feature opponent plus twenty protocol sources. Forty new pinned library-metadata
 observations cover operand categories, repetition, forwarding, definition-site
 hygiene and unused/disabled feature authority. Their predictions all match;
-candidate implementation and native qualification remain pending.
+the integrated compiler now passes those syntax and lookup controls.
+See the protocol README for the current qualified scope; no native concat claim.
+`spec/formatter-derives/` freezes the actual Alignment, Sign, DebugAsHex,
+FormattingOptions, Error and Ordering declaration fragments for the source panic
+prerequisite family. Their original enabled derive lists and attributes remain
+unchanged. The contract separates this source freeze from the still-required
+complete independent protocol, candidate consumers and runtime qualification.
 
 `spec/foreign-types/` freezes 17 new no_core provider inputs for genuine extern
 type identity, pointer metadata, direct/tail sizing, privacy/forms and exact

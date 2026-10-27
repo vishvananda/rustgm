@@ -4,10 +4,7 @@ impl Output<'_> {
     pub(super) fn debug(&mut self, fields: &[NodeId]) -> Result<(), LexError> {
         use crate::syntax::item::Shape;
         let ItemKind::Struct { shape, .. } = self.site.item.kind else {
-            return Err(error(
-                self.site.original.start,
-                "source Debug requires the struct profile",
-            ));
+            return self.enum_debug(fields);
         };
         (self.charge)(fields.len().saturating_add(1), 64)?;
         if fields.len() > 5 {
@@ -73,6 +70,46 @@ impl Output<'_> {
             }
         }
         self.text(") } }")
+    }
+    fn enum_debug(&mut self, fields: &[NodeId]) -> Result<(), LexError> {
+        let ItemKind::Enum { variants } = self.site.item.kind else {
+            return Err(error(
+                self.site.original.start,
+                "source Debug requires a struct or enum",
+            ));
+        };
+        if !fields.is_empty() {
+            return Err(error(
+                self.site.original.start,
+                "source Debug payload variants require a wider profile",
+            ));
+        }
+        self.header("crate::fmt::Debug", false)?;
+        self.text("{ #[inline] fn fmt(&self, f: &mut crate::fmt::Formatter<'_>) -> crate::fmt::Result { crate::fmt::Formatter::write_str(f, match self {")?;
+        for &node in self.site.ast.list(variants) {
+            (self.charge)(1, 0)?;
+            if self.site.active.get(node.get() as usize) != Some(&true) {
+                continue;
+            }
+            let mut inner = node;
+            while let Kind::Attributed { value, .. } = self.site.ast.node(inner).kind {
+                (self.charge)(1, 0)?;
+                inner = value;
+            }
+            let Kind::Variant(index) = self.site.ast.node(inner).kind else {
+                return Err(error(
+                    self.site.original.start,
+                    "derived Debug lost its actual variant",
+                ));
+            };
+            let variant = self.site.ast.variants[index as usize];
+            self.text("Self::")?;
+            self.spelling(variant.name, false)?;
+            self.text("=>")?;
+            self.label(variant.name)?;
+            self.text(",")?;
+        }
+        self.text("}) } }")
     }
     fn label(&mut self, span: Span) -> Result<(), LexError> {
         use unicode_normalization::UnicodeNormalization;

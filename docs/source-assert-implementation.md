@@ -442,3 +442,48 @@ CFG Body 448, Value 24, Rvalue 20, Library 128 and Inventory 88 are unchanged.
 Prior lint and runtime failures remain separate evidence. Actual original panic
 body execution, handler binding, ConstPanicFmt/PanicDisplay hooks and false Assert
 runtime/CTFE are pending, as are production/CLI checks for this checkpoint.
+
+### Formatter derive prerequisites and checked coverage
+
+The formatter family checkpoint `f489dcd4c` extends the existing source derive
+transaction to Default, Eq, PartialEq, Hash, Ord and PartialOrd, and admits
+`derive_const` through the same configured-owner receipt. It keeps the six
+pinned declaration fragments unchanged. Struct equality retains every field
+comparison and `AssertParamIsEq` obligation; fieldless enum comparisons and hashing
+call the actual discriminant intrinsic and ordinary source trait methods. Debug
+uses the real Formatter path for fieldless variants. Wider payload/generic derive
+forms remain explicit unsupported profiles. This is expansion evidence, not
+complete no_core operator, formatter-body or panic execution qualification.
+
+A const Clone can reuse Copy only from an authenticated completed transaction on
+that same owner. The selected source macro declarations retain their actual
+internal feature grants. Coverage syntax and target validation consumes the
+existing attribute walk; an Eq-generated literal obtains its grant only through
+its actual synthetic interval, member introduction, completed transaction and
+same published header. Copied/caller tokens, changed members and incomplete
+receipts do not acquire that grant. No Bang frame authority is relaxed. The only
+supported driver profile has coverage instrumentation disabled, so validated
+`coverage(on/off)` needs no runtime/type/const-call metadata column; publication
+remains supported in that fixed profile. Instrumented compilation remains
+unsupported.
+
+The independent packet has 52 new observations: 12 original AST expansions,
+20 std-backed metadata/object attempts for the five non-lang fragments, and
+20 separate authored reducer attempts. All expansions pass. Alignment's four
+semantic attempts collide with std's existing diagnostic identity. Four
+non-const Clone negatives report E0277 rather than the predicted E0015. Both
+failed predictions remain retained; original Ordering has expansion evidence
+only, never a std-backed language-item or no_core semantic claim.
+
+Standard fastcheck `1793080034737941526` passes production/private strict Clippy,
+formatting, global audit, build, six exact private controls and ten lexer controls
+in 109.02 seconds. It covers original-fragment receipts, actual prior-Copy and
+derive-grant forgeries, coverage forms/targets/duplicates/request denial,
+no-instrumentation publication, existing Location lowering and old ordinal/wire
+controls. The existing legacy scalar-pool publication rejection remains tested.
+Actual cold Reservations grows 1136→1240 and Catalog 1000→1080; Transaction stays
+176, MemberContext is 12, and Value24/Rvalue20/Package256/Report3040/Resolution2056
+remain unchanged. No native repetition or full panic claim accompanies this
+checkpoint. Authentic Assert expansion, source operator/const/member completion,
+selected local body/CFG demand, real PanicInfo/handler linkage and the false-exit
+consumer remain required.
