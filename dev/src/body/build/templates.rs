@@ -407,7 +407,15 @@ impl Prepared {
     /// Complete the template set in the same declaration order as the ordinary builder.
     /// # Errors
     /// Rejects invalid templates and retained owners outside the requested program.
-    pub fn finish(mut self, report: &Report, facts: &Declarations) -> Result<Templates, Error> {
+    pub fn finish(self, report: &Report, facts: &Declarations) -> Result<Templates, Error> {
+        self.finish_selected(report, facts, crate::body::Selection::Complete)
+    }
+    pub(crate) fn finish_selected(
+        mut self,
+        report: &Report,
+        facts: &Declarations,
+        selection: crate::body::Selection,
+    ) -> Result<Templates, Error> {
         let mut bodies = Vec::new();
         for function in &facts.functions {
             if (function.body.is_some()
@@ -416,6 +424,7 @@ impl Prepared {
                     .demanded_length()
                     .is_some_and(|l| l.definition == function.definition))
                 && owns(facts, function.definition)
+                && selection.includes(facts, function.definition)
             {
                 bodies.push(self.function(report, facts, function)?);
             }
@@ -431,6 +440,7 @@ impl Prepared {
         for closure in facts.closures.all() {
             if let Some(owner) = closure.owner
                 && owns(facts, owner)
+                && selection.includes(facts, owner)
             {
                 bodies.push(self.closure(report, facts, closure, owner)?);
             }

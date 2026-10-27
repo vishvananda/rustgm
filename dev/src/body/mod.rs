@@ -32,8 +32,25 @@ pub(crate) mod transported_originals;
 
 pub use build::build;
 pub use build::concrete as build_concrete;
-pub(crate) use build::concrete_prepared;
+pub(crate) use build::concrete_selected;
 pub use build::templates;
+
+/// Construction scope, never a body/call permission. Pending originals still lack proof.
+#[derive(Clone, Copy, Default)]
+pub(crate) enum Selection {
+    #[default]
+    Complete,
+    Typed,
+}
+impl Selection {
+    pub(crate) fn includes(
+        self,
+        facts: &crate::sema::model::Declarations,
+        owner: crate::resolve::model::DefId,
+    ) -> bool {
+        matches!(self, Self::Complete) || facts.typed_function_bodies.contains(&owner)
+    }
+}
 
 /// Prepare source Copy and actual provided-member defining requirements for
 /// this exact body and contract. Ordinary non-default bodies allocate nothing.

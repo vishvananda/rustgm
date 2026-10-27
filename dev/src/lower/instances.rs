@@ -141,7 +141,7 @@ fn collect_source<R>(
                 .map_err(|e| diagnostic(report, e.node, e.message.into()))?;
             complete(source, facts)
         },
-        None,
+        Construction::Complete,
     )?
 }
 
@@ -203,7 +203,7 @@ pub(crate) fn build_selected_prepared(
         },
         staged_originals::ignore,
         |facts, assembled, roots, ()| super::build_assembled(facts, assembled, roots),
-        Some(preparation),
+        Construction::Imported(preparation),
     )?
     .map_err(|error| diagnostic(report, error.node, error.message.into()))
 }
@@ -369,7 +369,7 @@ pub fn build_source_library_profile(
             .map_err(|error| facts.retain_error_warnings(error))?;
             Ok((program, interface))
         },
-        None,
+        Construction::Complete,
     )?
 }
 
@@ -454,7 +454,7 @@ fn inspect_selected<R>(
         |facts, checked| select(facts, checked).map(|(entry, exports)| (entry, exports, ())),
         staged_originals::ignore,
         |facts, assembled, roots, ()| inspect(facts, assembled, roots),
-        None,
+        Construction::Complete,
     )
 }
 
@@ -471,6 +471,49 @@ fn require_source_session(report: &Report, facts: &Declarations) -> Result<(), E
         ));
     }
     Ok(())
+}
+
+enum Construction<'a> {
+    Complete,
+    Imported(&'a mut dyn crate::sema::dispatch::Preparation),
+    Local,
+}
+impl<'a> Construction<'a> {
+    fn selection(&self) -> body::Selection {
+        if matches!(self, Self::Local) {
+            body::Selection::Typed
+        } else {
+            body::Selection::Complete
+        }
+    }
+    fn preparation(self) -> Option<&'a mut dyn crate::sema::dispatch::Preparation> {
+        match self {
+            Self::Imported(service) => Some(service),
+            Self::Complete | Self::Local => None,
+        }
+    }
+}
+
+pub(crate) fn build_local_prepared(
+    report: &Report,
+    facts: &mut Declarations,
+    entry: DefId,
+    prepared: crate::pipeline::Prepared,
+) -> Result<crate::lowir::program::Program, Error> {
+    inspect_staged(
+        report,
+        facts,
+        prepared,
+        |facts, _| {
+            let exports = super::roots::exports(facts, &[])
+                .map_err(|e| diagnostic(report, None, e.into()))?;
+            Ok((Some(entry), exports, ()))
+        },
+        staged_originals::ignore,
+        |facts, assembled, roots, ()| super::build_assembled(facts, assembled, roots),
+        Construction::Local,
+    )?
+    .map_err(|e| diagnostic(report, e.node, e.message.into()))
 }
 
 fn inspect_staged<S, R>(
@@ -493,9 +536,11 @@ fn inspect_staged<S, R>(
         super::roots::Selected<'_>,
         S,
     ) -> R,
-    preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
+    construction: Construction<'_>,
 ) -> Result<R, Error> {
-    let (templates, contexts, inputs) = prepare_template_inputs(report, facts, &mut prepared)?;
+    let selection = construction.selection();
+    let (templates, contexts, inputs) =
+        prepare_template_inputs(report, facts, &mut prepared, selection)?;
     let templates = std::rc::Rc::new(templates);
     if let Some(context) = &prepared.constants {
         context
@@ -547,8 +592,9 @@ fn inspect_staged<S, R>(
     };
     let mut originals = staged_originals::Context {
         checked: &checked,
+        selection,
         collector: &mut collect,
-        preparation,
+        preparation: construction.preparation(),
     };
     #[cfg(test)]
     eprintln!(
@@ -596,6 +642,7 @@ fn prepare_template_inputs(
     report: &Report,
     facts: &mut Declarations,
     prepared: &mut crate::pipeline::Prepared,
+    selection: body::Selection,
 ) -> Result<
     (
         body::templates::Templates,
@@ -605,7 +652,8 @@ fn prepare_template_inputs(
     Error,
 > {
     require_source_session(report, facts)?;
-    let mut templates = std::mem::take(&mut prepared.templates).finish(report, facts)?;
+    let mut templates =
+        std::mem::take(&mut prepared.templates).finish_selected(report, facts, selection)?;
     templates
         .attach(prepared.imported.take())
         .map_err(|e| diagnostic(report, None, e.into()))?;

@@ -12,12 +12,14 @@ pub(super) fn concrete(
     program: &mut Program,
     mut query: Option<&mut NeedsDrop>,
     template: &impl Fn(crate::resolve::model::DefId) -> bool,
+    selection: crate::body::Selection,
 ) -> Result<(), Error> {
     for closure in facts.closures.all() {
-        if closure
-            .owner
-            .is_some_and(|owner| facts.generics.has_parameters(owner) || template(owner))
-        {
+        if closure.owner.is_some_and(|owner| {
+            !selection.includes(facts, owner)
+                || facts.generics.has_parameters(owner)
+                || template(owner)
+        }) {
             continue;
         }
         program

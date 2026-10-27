@@ -22,6 +22,7 @@ mod deferred_arguments;
 mod destructors;
 mod evaluation;
 mod execution;
+pub(crate) use execution::analyze_local_roots;
 mod foreign;
 mod generics;
 pub(in crate::sema) use generics::prepare_callable_template;

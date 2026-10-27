@@ -76,7 +76,22 @@ pub(crate) fn concrete_prepared(
     report: &Report,
     facts: &Declarations,
     template: impl Fn(DefId) -> bool,
+    prepared: HashMap<super::ir::BodyKey, Body>,
+) -> Result<Program, Error> {
+    concrete_selected(
+        report,
+        facts,
+        template,
+        prepared,
+        super::Selection::Complete,
+    )
+}
+pub(crate) fn concrete_selected(
+    report: &Report,
+    facts: &Declarations,
+    template: impl Fn(DefId) -> bool,
     mut prepared: HashMap<super::ir::BodyKey, Body>,
+    selection: super::Selection,
 ) -> Result<Program, Error> {
     let mut drop_query = (!facts.destructors.implementations().is_empty()).then(|| {
         crate::types::destruction::NeedsDrop::new(
@@ -93,7 +108,8 @@ pub(crate) fn concrete_prepared(
         body_regions: facts.body_regions.log().to_vec(),
     };
     for function in &facts.functions {
-        if function.body.is_none()
+        if !selection.includes(facts, function.definition)
+            || function.body.is_none()
             || facts.generics.has_parameters(function.definition)
             || template(function.definition)
         {
@@ -134,6 +150,7 @@ pub(crate) fn concrete_prepared(
         &mut program,
         drop_query.as_mut(),
         &template,
+        selection,
     )?;
     constructors::concrete(report, facts, &mut program, drop_query.as_mut())?;
     if let Some(body) = prepared.values().next() {
