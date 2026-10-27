@@ -64,8 +64,7 @@ pub enum LangItem {
     DiscriminantKind,
     DiscriminantType,
     Neg,
-    /// Internal role index borrowing the actual diagnostic-owned Send declaration.
-    /// It has no `lang` spelling or wire tag.
+    /// Internal diagnostic-owned role, with no `lang` spelling or wire tag.
     Send,
     Sync,
     Unpin,
