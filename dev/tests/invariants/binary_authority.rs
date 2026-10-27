@@ -230,7 +230,7 @@ fn source_binary_headers_reject_wrong_formals_members_and_replayed_images() -> T
         .ok_or("boolean shift RHS accepted")?
         .to_string();
     assert!(
-        error.contains("trait obligation"),
+        error.contains("associated type requires an unambiguous validated implementation"),
         "actual wrong-Rhs cause: {error}"
     );
     let (mut report, Analysis { mut facts, .. }) = analyze(&original)?;
@@ -325,12 +325,10 @@ fn provisional_results_preserve_known_never_cfg_and_explicit_feature_frontier() 
         let source = input(&format!("delayed-never/{name}"))?;
         let error = analyze(&source)
             .err()
-            .ok_or("unsupported never_type request accepted")?
+            .ok_or("delayed Never opponent accepted")?
             .to_string();
         assert!(
-            error.contains(
-                "unsupported active source-core feature or undefined library feature request"
-            ),
+            error.contains("associated type projection requires normalization"),
             "{name}: {error}"
         );
     }
@@ -363,5 +361,39 @@ fn provisional_results_preserve_known_never_cfg_and_explicit_feature_frontier() 
             .any(|b| matches!(b.terminator, Terminator::Unreachable))
     );
     assert!(branch.blocks.iter().any(|b|matches!(b.terminator,Terminator::Return(Some(v)) if matches!(v.operand,Operand::Literal(id) if matches!(branch.literals.get(id.0 as usize),Some(Literal::Integer(7)))))));
+    Ok(())
+}
+
+#[test]
+fn nested_fallback_respects_predeclared_order_and_shared_frontiers() -> TestResult {
+    for name in ["predeclared", "reversed"] {
+        let (report, analysis) = analyze(&input(&format!("readiness/{name}"))?)?;
+        let program = lower(&report, analysis, &["ordered"])?;
+        assert!(
+            program
+                .symbols
+                .iter()
+                .any(|s| s.name == "ordered" && s.body.is_some())
+        );
+    }
+    let error = analyze(&input("readiness/shared")?)
+        .err()
+        .ok_or("unimplemented shared numeric frontier accepted")?
+        .to_string();
+    assert!(
+        error.contains(
+            "trait obligation requires an unambiguous matching assumption or implementation"
+        ),
+        "shared: {error}"
+    );
+    let source = input("readiness/ordinary-closure")?;
+    let report = crate::test_source::resolve(&source, true)?;
+    let facts = declarations::analyze(&report)?;
+    let analysis = pipeline::analyze(&report, facts)?;
+    lower(&report, analysis, &["closure", "inline_constant"])?;
+    for name in ["ambiguous", "cycle"] {
+        let source = input(&format!("readiness/{name}"))?;
+        assert!(analyze(&source).is_err(), "actual {name} opponent accepted");
+    }
     Ok(())
 }

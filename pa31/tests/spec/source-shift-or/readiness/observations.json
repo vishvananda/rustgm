@@ -1,0 +1,126 @@
+{
+  "state": "Observed outcomes; original predictions and no_core closure ICE retained unchanged",
+  "binding_sha256": "9f3ddfc010e70c681629f34bdb5b310506966710fc6e53fa456effdc56eae69f",
+  "results_sha256": "66436eeac11d889e509132352eab6ae205abd3aa5d8dd7af6da23ffcd24ede0a",
+  "outcomes": [
+    {
+      "case": "predeclared.rs",
+      "edition": 2021,
+      "status": 0,
+      "error_codes": [],
+      "warning_codes": [
+        "unused_features"
+      ],
+      "infrastructure": false
+    },
+    {
+      "case": "predeclared.rs",
+      "edition": 2024,
+      "status": 0,
+      "error_codes": [],
+      "warning_codes": [
+        "unused_features"
+      ],
+      "infrastructure": false
+    },
+    {
+      "case": "shared.rs",
+      "edition": 2021,
+      "status": 0,
+      "error_codes": [],
+      "warning_codes": [
+        "unused_features"
+      ],
+      "infrastructure": false
+    },
+    {
+      "case": "shared.rs",
+      "edition": 2024,
+      "status": 0,
+      "error_codes": [],
+      "warning_codes": [
+        "unused_features"
+      ],
+      "infrastructure": false
+    },
+    {
+      "case": "closure.rs",
+      "edition": 2021,
+      "status": 101,
+      "error_codes": [],
+      "warning_codes": [],
+      "infrastructure": true
+    },
+    {
+      "case": "closure.rs",
+      "edition": 2024,
+      "status": 101,
+      "error_codes": [],
+      "warning_codes": [],
+      "infrastructure": true
+    },
+    {
+      "case": "ambiguous.rs",
+      "edition": 2021,
+      "status": 1,
+      "error_codes": [
+        "E0790"
+      ],
+      "warning_codes": [],
+      "infrastructure": false
+    },
+    {
+      "case": "ambiguous.rs",
+      "edition": 2024,
+      "status": 1,
+      "error_codes": [
+        "E0790"
+      ],
+      "warning_codes": [],
+      "infrastructure": false
+    },
+    {
+      "case": "cycle.rs",
+      "edition": 2021,
+      "status": 1,
+      "error_codes": [
+        "E0275"
+      ],
+      "warning_codes": [],
+      "infrastructure": false
+    },
+    {
+      "case": "cycle.rs",
+      "edition": 2024,
+      "status": 1,
+      "error_codes": [
+        "E0275"
+      ],
+      "warning_codes": [],
+      "infrastructure": false
+    },
+    {
+      "case": "reversed.rs",
+      "edition": 2021,
+      "status": 0,
+      "error_codes": [],
+      "warning_codes": [
+        "unused_features"
+      ],
+      "infrastructure": false
+    },
+    {
+      "case": "reversed.rs",
+      "edition": 2024,
+      "status": 0,
+      "error_codes": [],
+      "warning_codes": [
+        "unused_features"
+      ],
+      "infrastructure": false
+    }
+  ],
+  "ordinary_binding_sha256": "e614733103f0024a192859a09c84dee13f09134bb3515a5cd344c729ca65b79f",
+  "ordinary_results_sha256": "87f0029028f50acfe70d3cb7590c0b48e2cf9d1dfda159f7f5a09bfac218537f",
+  "candidate": "predeclared/reversed + ordinary closure/inline positive; shared valid Rust stays explicit unresolved frontier; genuine ambiguity/cycle reject"
+}

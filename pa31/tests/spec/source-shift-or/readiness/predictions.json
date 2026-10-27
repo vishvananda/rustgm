@@ -1,0 +1,70 @@
+{
+  "state": "Independent NEW readiness hypotheses frozen before observation; shared positive may remain explicit RustGM unresolved frontier",
+  "kind": "metadata only, no native claim",
+  "editions": [
+    2021,
+    2024
+  ],
+  "cases": [
+    {
+      "file": "predeclared.rs",
+      "status": 0,
+      "error_codes": [],
+      "warning_codes": [
+        "unused_features"
+      ]
+    },
+    {
+      "file": "shared.rs",
+      "status": 0,
+      "error_codes": [],
+      "warning_codes": [
+        "unused_features"
+      ]
+    },
+    {
+      "file": "closure.rs",
+      "status": 0,
+      "error_codes": [],
+      "warning_codes": [
+        "unused_features"
+      ]
+    },
+    {
+      "file": "ambiguous.rs",
+      "status": 1,
+      "error_codes": [
+        "E0790"
+      ],
+      "warning_codes": [
+        "unused_features"
+      ]
+    },
+    {
+      "file": "cycle.rs",
+      "status": 1,
+      "error_codes": [
+        "E0275"
+      ],
+      "warning_codes": [
+        "unused_features"
+      ]
+    },
+    {
+      "file": "reversed.rs",
+      "status": 0,
+      "error_codes": [],
+      "warning_codes": [
+        "unused_features"
+      ]
+    }
+  ],
+  "sources": {
+    "ambiguous.rs": "9a35b5d2453288eb23c47a33da65eb4c03d26ae0431864c7646cd166bde6bba3",
+    "closure.rs": "0feeee0fa6000cea900f87f0783c4cb5dae45ede8c91dc748e4bd2f2a33d5c05",
+    "cycle.rs": "695cb5c694a933c93a43c5ac24723fb042f9d0f7add521456027bed3ea6165b9",
+    "predeclared.rs": "655c30171f63029517f0d0aba3b1a63885aacaa45a7ef2a4edd6054aa3f2e1b0",
+    "reversed.rs": "be612a4faa7fbc3ac9a8927fb3f28cfbec8cc56162be6c3e42de842cecdcef64",
+    "shared.rs": "3899ab00e29782eb1083ed71ef20330c91eda7683407dc73eeb20b72840ec820"
+  }
+}
