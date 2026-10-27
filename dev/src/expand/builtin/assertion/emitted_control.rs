@@ -122,35 +122,36 @@ pub(crate) fn build(
             },
         )?;
     }
-    let configured = crate_syntax::configure(&output.stream.source, output.ast, config)?;
-    charge(
-        configured.ast.literals.len(),
-        configured
-            .ast
-            .literals
-            .len()
-            .saturating_mul(4 * size_of::<Value<'_>>()),
-    )?;
-    let ast = configured.ast.map_literals(|value| {
-        charge(1, super::literal_bytes(&value).saturating_mul(4))?;
-        Ok(super::own_value(value))
-    })?;
-    let syntax = crate_syntax::ConfiguredSyntax {
-        ast,
-        owners: configured.owners,
-        active: configured.active,
-        effects: configured.effects,
-        cfg_uses: configured.cfg_uses,
-    };
-    Ok((
-        Delegated {
-            stream: output.stream,
-            syntax,
-        },
-        parser_calls,
-    ))
+    Ok((output.finish(config)?, parser_calls))
 }
+
 impl Output<'_> {
+    fn finish(self, config: &Config) -> Result<Delegated, LexError> {
+        let configured = crate_syntax::configure(&self.stream.source, self.ast, config)?;
+        (self.charge)(
+            configured.ast.literals.len(),
+            configured
+                .ast
+                .literals
+                .len()
+                .saturating_mul(4 * size_of::<Value<'_>>()),
+        )?;
+        let ast = configured.ast.map_literals(|value| {
+            (self.charge)(1, super::literal_bytes(&value).saturating_mul(4))?;
+            Ok(super::own_value(value))
+        })?;
+        let syntax = crate_syntax::ConfiguredSyntax {
+            ast,
+            owners: configured.owners,
+            active: configured.active,
+            effects: configured.effects,
+            cfg_uses: configured.cfg_uses,
+        };
+        Ok(Delegated {
+            stream: self.stream,
+            syntax,
+        })
+    }
     fn text(&mut self, text: &str) -> Result<Span, LexError> {
         let bytes = Growth::vector::<u8>(
             self.stream.source.len(),
