@@ -14,9 +14,9 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The current original-core CLIebd0d4d0 passes the observed LIB-046 lint storage
+The current original-core CLIe192630b passes the observed LIB-046 lint storage
 failure with exact complete witness arrays. All722 pinned inputs verify;372 files
-open in9.25s, with no artifact. Limits remain10M work/64MiB. The next rejection
+open in8.25s, with no artifact. Limits remain10M work/64MiB. The next rejection
 is genuine formatting-argument construction, already assigned to B.
 The live tracker owns current priorities; checkpoint paragraphs below retain
 earlier context. Typed assembly proof, inert diagnostic data and source Shl/BitOr
@@ -27,8 +27,9 @@ are combined; two operator native consumers now match safe-input outputs.
 - B: genuine Formatter/Arguments/helper source closure, then PanicInfo/handler and
   false assertion through Abort. Original Neg attributes and inert diagnostic
   names are integrated. Do not replace upstream helpers with library factories.
-- C: LIB-045 genuine SIMD/XMM assembly operand checks using the integrated
-  layout and target-feature owners; preserve backend and metadata boundaries.
+- C: actual aggregate_raw_ptr composition and genuine slice/raw-reference
+  consumers through existing pointer/validity owners; ASM operand proof is
+  integrated, with native emission and metadata still required.
 - Integrator: directly owns `rustgm-pa25-work`, the qualified typed assembly
   join, publication and the qualified LIB-046 repair; integrate demanded SIMD/target/backend
   work and advance unchanged core. Preserve PA25 const-callable/CTFE and PA29
@@ -78,7 +79,7 @@ The historical ownership table below identifies existing worktrees, not a
 requirement to finish all earlier-numbered features before a coherent consumer.
 Root integrated the LIB-046 repair, PA6/19 primitive fallback and typed target
 features. B owns the genuine formatting/panic consumer; C owns the real
-SIMD/assembly frontend join. A supplies bounded read-only reviews. Root also
+aggregate-raw-pointer/slice consumer. A supplies bounded read-only reviews. Root also
 owns shared unit-publication tooling for the finite unsafe-places release.
 See [combined evidence](source-lookup-target-integration.md). No new worktree is needed.
 
