@@ -6,6 +6,7 @@ fn fixture(name: &str) -> PathBuf {
         .join(format!("../pa26/tests/spec/primitive-assignment/{name}.rs"))
 }
 const ACCEPTED: &[&str] = &[
+    "implicit-forwarding-boundary",
     "explicit-forwarding",
     "named-lifetime",
     "static-rhs",
@@ -51,7 +52,6 @@ const ACCEPTED: &[&str] = &[
     "projected-local",
 ];
 const REJECTED: &[&str] = &[
-    "implicit-forwarding-boundary",
     "alias-conflict",
     "bool-add",
     "float-bit",
@@ -77,11 +77,7 @@ fn primitive_contracts_match_independent_outcomes() -> Result<(), Box<dyn std::e
         .chain(REJECTED.iter().map(|n| (n, false)))
     {
         let source = std::fs::read_to_string(fixture(name))?;
-        super::rustc::qualify(
-            &format!("assignment-{name}"),
-            &source,
-            accepted || name == "implicit-forwarding-boundary",
-        )?;
+        super::rustc::qualify(&format!("assignment-{name}"), &source, accepted)?;
         let result = frontend::checked(&source);
         if result.is_ok() != accepted {
             failures.push(format!("{name}: {:?}", result.err()));

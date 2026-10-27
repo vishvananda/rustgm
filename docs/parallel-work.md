@@ -14,24 +14,24 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The current qualified original-core CLIaa6dbb86 retains the source formatting
-constructor frontier. All722 pinned inputs verify;372 files open in11.50s and
-stderr matches the earlier observation. No artifact exists. The combined source
-raw-pointer constructor/metadata and warning changes pass private18, CLI35 and
-the valid native observer. See [raw composition](pa28-raw-pointer-composition.md).
+The combined qualified original-core CLI836e21f3 passes source formatting
+construction and reaches actual offset_of syntax in the original mem macro.
+All722 pinned inputs verify;371 files open in7.28s, with no artifact. Combined
+private24, production13, native32 and final PA6/PA9 checks pass. Root owns the
+[typed offset/layout integration](pa31-offset-of-plan.md); no zero-offset shim
+or per-Instance field-result cache is permitted.
 
-- A: bounded read-only reviews and the finite unsafe-places release checklist.
+- A: bounded read-only source/handoff reviews and component release census.
   No compiler edits or heavy jobs.
-- B: genuine Formatter/Arguments/helper source closure, then PanicInfo/handler and
-  false assertion through Abort. Original Neg attributes and inert diagnostic
-  names are integrated. Do not replace upstream helpers with library factories.
-- C: raw-pointer composition and selected Index/IndexMut captures are integrated.
-  Complete the retained char MAX constant boundary, then coordinate the next
-  genuine hook-closure exit; broader raw backing/validity remains required.
-- Integrator: directly owns `rustgm-pa25-work`, the qualified typed assembly
-  join, publication and the qualified LIB-046 repair; integrate demanded SIMD/target/backend
-  work and advance unchanged core. Preserve PA25 const-callable/CTFE and PA29
-  transport scope. Prepare alloc/std build/runtime inputs at integration exits.
+- B: Debug construction is integrated. Complete genuine mixed Display/Debug,
+  then source slice/str/pointer/Formatter/write and PanicInfo/handler closure.
+  Preserve the original no-Copy call-reborrow requirement separately.
+- C: raw composition, selected indexing captures and char MIN/MAX are integrated.
+  Complete owned-left/shared-RHS Add/Sub, then genuine source Add/Sub language
+  bindings. Float values and broader raw backing/validity remain required.
+- Integrator: `rustgm-pa25-work`, publication and the observed source offset_of
+  syntax/deferred concrete enum+niche layout. Advance unchanged core and retain
+  PA25 const/generic execution plus PA29 transport and artifact obligations.
 
 There are three coding lanes: root, B and C. A supplies bounded read-only review;
 do not create another worktree or enable a fourth heavy job. Root's output cap

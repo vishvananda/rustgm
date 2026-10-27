@@ -183,6 +183,14 @@ Do not allocate policy tables for the default path or add another warning owner.
 `allow_internal_unsafe` applies to the separate unsafe-code lint; it does not
 mask either of these policies. See the [qualified warning repair](docs/unsafe-policy-warning-gap.md).
 
+Implicit compound syntax reserves canonical bootstrap identities after source
+allocation, through the same cold owner as explicit language traits. Activate
+the shared semantic builder only for a real typed nonprimitive/reference RHS;
+retain scalar headers/factories as absent. Source-binding modes keep their
+actual declarations. Implicit operator demand creates no lexical import or
+method-cache entry. Preserve complete family publication and cycle checks;
+see [assignment demand](docs/implicit-assignment-demand.md).
+
 Local structural inherent ownership consumes the actual crate policy and complete
 member inventory. Head/name/context buckets exclude unrelated work; full Self,
 const arguments, caller conditions and visibility still decide applicability.
