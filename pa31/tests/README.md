@@ -2,6 +2,12 @@
 
 Planned: no graded manifest or generated reference outputs yet.
 
+`spec/metavariable-concat/` retains LIB-039's original invoked-name reducer and
+feature opponent plus twenty protocol sources. Forty new pinned library-metadata
+observations cover operand categories, repetition, forwarding, definition-site
+hygiene and unused/disabled feature authority. Their predictions all match;
+candidate implementation and native qualification remain pending.
+
 `spec/foreign-types/` freezes 17 new no_core provider inputs for genuine extern
 type identity, pointer metadata, direct/tail sizing, privacy/forms and exact
 feature-token authority. Three separate source Freeze opponents bring the actual

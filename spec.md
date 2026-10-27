@@ -841,6 +841,18 @@ through the ordinary token/name producers; never reparse a rendered template or
 skip unknown operations inside a later cfg branch. Declaration admission alone
 does not establish invocation, generated-name lookup or execution.
 
+Keep concatenation operands in the existing flat macro node/edge arenas and
+select captured values through the actual repetition binding path. Reuse the
+canonical name arena for generated identifiers; do not attach an owned String
+to every token or transcription piece. Read forwarded literals from their
+retained typed payload and original spelling, preserving fragment restrictions
+without rerunning lexical or expression grammar. Generated spelling requires a
+synthetic source origin with the actual definition context and edition, even
+when an operand was captured at the call site. Bound operand, emitted-byte and
+repetition work; feature checks grant syntax authority only. The independently
+qualified [protocol sources](pa31/tests/spec/metavariable-concat/README.md)
+separate definition admission, actual invocation and generated-name resolution.
+
 Keep actual expansion ancestry separate from a token's syntax context and its
 physical source/edition provenance. A captured name does not determine the
 contexts of the surrounding generated macro body. Mark each definition token
