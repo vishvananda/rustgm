@@ -33,6 +33,7 @@ impl Resolver<'_> {
             }
         }
         self.reserve_operator_comparisons()?;
+        self.reserve_assignment_operators()?;
         self.reserve_iteration()?;
         self.reserve_cloning()?;
         self.reserve_ranges()
@@ -71,6 +72,13 @@ impl Resolver<'_> {
         if !self.package.uses_source_bindings()
             && let Kind::Binary { op, .. } = self.kind(c, node)
         {
+            if let Some(kind) = crate::syntax::compound::hook(op) {
+                self.facts.builtin_traits.note_assignment_operator(
+                    kind,
+                    c.module,
+                    NodeKey { file: c.file, node },
+                );
+            }
             let kind = match op {
                 crate::lex::token::Punctuation::EqualEqual
                 | crate::lex::token::Punctuation::BangEqual => {

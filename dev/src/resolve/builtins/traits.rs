@@ -69,7 +69,7 @@ pub struct Traits {
     pub(super) ops: Option<ScopeId>,
     entries: [Option<DefId>; 11],
     callables: Option<Box<[Callable; 3]>>,
-    language: crate::support::hash::HashMap<Hook, Language>,
+    language: Option<Box<language::Registry>>,
     comparisons: Option<Box<comparisons::Comparisons>>,
     iteration: Option<Box<iteration::Registry>>,
 }
@@ -83,7 +83,7 @@ impl Traits {
             && self.ops.is_none()
             && self.entries.iter().all(Option::is_none)
             && self.callables.is_none()
-            && self.language.is_empty()
+            && self.language.is_none()
             && self.comparisons.is_none()
             && self.iteration.is_none()
     }
@@ -130,7 +130,8 @@ impl Traits {
             .find(|t| self.get(*t) == Some(id))
             .or_else(|| {
                 self.language
-                    .values()
+                    .iter()
+                    .flat_map(|registry| registry.entries.values())
                     .find(|entry| entry.definition == id)
                     .map(|entry| BuiltinTrait::Language(entry.kind))
             })

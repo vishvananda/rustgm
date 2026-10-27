@@ -131,7 +131,7 @@ fn actual_source_not_uses_ordinary_impl_proof_and_erases_only_primitive_dispatch
             >= 3
     );
     assert_eq!(size_of::<crate::sema::compiler_items::Catalog>(), 1400);
-    assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2056);
+    assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     assert_eq!(size_of::<SourceNot>(), 12);
     Ok(())

@@ -1,5 +1,9 @@
 //! Operator metadata enters ordinary trait conformance and selected-call dispatch.
-use super::{Checker, DefId, Error, ItemId, NodeKey, State, Type};
+use super::comparisons::LibraryContracts;
+#[cfg(test)]
+#[path = "../../../tests/invariants/assigned_headers.rs"]
+mod tests;
+use super::{Checker, DefId, Error, ItemId, State, Type};
 use crate::{
     resolve::model::{BuiltinLanguage, BuiltinLanguageOutput},
     sema::{associated::Schema, generics::Parameter, traits::Header},
@@ -15,28 +19,58 @@ use crate::{
 impl Checker<'_> {
     pub(super) fn prepare_language_contracts(&mut self) -> Result<(), Error> {
         for kind in Hook::ALL {
-            if let Some(declaration) = self.report.resolution.builtin_traits.language(kind) {
+            if let Some(declaration) = self.report.resolution.builtin_traits.language(kind)
+                && !self.report.resolution.builtin_traits.language_latent(kind)
+            {
                 self.language_contract(declaration)?;
             }
         }
         Ok(())
     }
-    pub(super) fn language_parameter(
-        &mut self,
-        source: NodeKey,
-        binding: DefId,
-        owner: DefId,
-        sized: bool,
-    ) -> Result<TypeId, Error> {
-        let ty = super::comparisons::LibraryContracts {
+    pub(super) fn language_contract(&mut self, declaration: BuiltinLanguage) -> Result<(), Error> {
+        LibraryContracts {
             report: self.report,
             facts: &mut self.facts,
         }
-        .language_parameter(source, binding, owner, sized)?;
-        self.states[binding.0 as usize] = State::Complete;
-        Ok(ty)
+        .language_contract(declaration)?;
+        for id in [
+            Some(declaration.definition),
+            Some(declaration.self_parameter),
+            declaration.argument,
+            declaration.output.declared(),
+            Some(declaration.method),
+        ]
+        .into_iter()
+        .flatten()
+        {
+            self.states[id.0 as usize] = State::Complete;
+        }
+        Ok(())
     }
-    fn language_contract(&mut self, declaration: BuiltinLanguage) -> Result<(), Error> {
+}
+/// Activate only the actual canonical family reserved by implicit assignment syntax.
+pub(in crate::sema) fn prepare(
+    report: &crate::resolve::expansion::Report,
+    facts: &mut crate::sema::model::Declarations,
+    owner: DefId,
+) -> Result<(), Error> {
+    let declaration = report
+        .resolution
+        .builtin_traits
+        .latent_language_owner(owner)
+        .filter(|declaration| declaration.definition == owner && declaration.kind.assignment())
+        .ok_or_else(|| Error::unlocated("unregistered latent assignment owner"))?;
+    if facts.definitions[declaration.method.0 as usize].is_some() {
+        return Ok(());
+    }
+    LibraryContracts { report, facts }.language_contract(declaration)?;
+    if let Some(contracts) = &mut facts.generics.traits {
+        contracts.complete_results();
+    }
+    Ok(())
+}
+impl LibraryContracts<'_> {
+    pub(super) fn language_contract(&mut self, declaration: BuiltinLanguage) -> Result<(), Error> {
         let (subject, parameters) = self.language_inputs(declaration)?;
         let inputs = parameters.iter().map(|p| p.argument).collect::<Vec<_>>();
         let arguments = self
@@ -211,7 +245,6 @@ impl Checker<'_> {
                 },
             );
             self.facts.definitions[member.0 as usize] = Some(projected);
-            self.states[member.0 as usize] = State::Complete;
             self.facts.generics.parameters.insert(member, Vec::new());
             self.facts.generics.parents.insert(member, definition);
         }

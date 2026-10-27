@@ -58,7 +58,7 @@ fn actual_terminal_abort_preserves_owned_scope_and_prepares_native_controls() ->
         &program,
         &mut std::fs::File::create(folder.join("provider.lowir"))?,
     )?;
-    assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2056);
+    assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     assert_eq!(size_of::<crate::sema::compiler_items::AbortSelection>(), 8);
     eprintln!(

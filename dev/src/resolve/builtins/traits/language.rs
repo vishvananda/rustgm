@@ -1,4 +1,5 @@
 //! Demand-loaded operator declarations retain real trait, parameter and member identities.
+mod demands;
 use super::{Context, DefId, DefKind, Error, Resolver, Traits};
 use crate::{
     resolve::{package::ModuleId, unit::NodeKey},
@@ -54,10 +55,17 @@ pub struct Language {
     pub output: Output,
     pub method: DefId,
 }
+#[derive(Default)]
+pub(super) struct Registry {
+    pub entries: crate::support::hash::HashMap<Hook, Language>,
+    pending: u32,
+    latent: u32,
+    origin: Option<(ModuleId, NodeKey)>,
+}
 impl Traits {
     #[must_use]
     pub fn language(&self, kind: Hook) -> Option<Language> {
-        self.language.get(&kind).copied()
+        self.language.as_deref()?.entries.get(&kind).copied()
     }
 }
 impl Resolver<'_> {
@@ -67,7 +75,7 @@ impl Resolver<'_> {
         node: NodeId,
         kind: Hook,
     ) -> Result<(), Error> {
-        if self.facts.builtin_traits.language.contains_key(&kind) {
+        if self.facts.builtin_traits.language(kind).is_some() {
             return Ok(());
         }
         if kind == Hook::IndexMut {
@@ -138,18 +146,23 @@ impl Resolver<'_> {
             DefKind::Function,
             None,
         )?;
-        self.facts.builtin_traits.language.insert(
-            kind,
-            Language {
-                origin: NodeKey { file: c.file, node },
+        self.facts
+            .builtin_traits
+            .language
+            .get_or_insert_default()
+            .entries
+            .insert(
                 kind,
-                definition,
-                self_parameter,
-                argument,
-                output,
-                method,
-            },
-        );
+                Language {
+                    origin: NodeKey { file: c.file, node },
+                    kind,
+                    definition,
+                    self_parameter,
+                    argument,
+                    output,
+                    method,
+                },
+            );
         Ok(())
     }
 }

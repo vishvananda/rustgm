@@ -71,7 +71,7 @@ fn scope_storage_is_linear_and_hot_records_do_not_gain_provenance() -> TestResul
         size_of::<crate::resolve::paths::Buffer>(),
         size_of::<crate::resolve::paths::Saved>()
     );
-    assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2056);
+    assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     assert_eq!(size_of::<crate::body::ir::Value>(), 24);
     assert_eq!(size_of::<crate::types::Kind>(), 24);

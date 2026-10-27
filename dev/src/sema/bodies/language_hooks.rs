@@ -14,6 +14,37 @@ use crate::{
 };
 pub(super) use mutation::Places;
 impl Checker<'_> {
+    pub(super) fn assignment_readiness(
+        &mut self,
+        node: NodeId,
+    ) -> Result<Option<super::Requirement>, Error> {
+        let crate::syntax::ast::Kind::Binary { op, left, right } = self.kind(node) else {
+            return Ok(None);
+        };
+        let Some(kind) = assignment_hook(op) else {
+            return Ok(None);
+        };
+        let Some(declaration) = self.report.resolution.builtin_traits.language(kind) else {
+            return Ok(None);
+        };
+        if self.facts.definitions[declaration.method.0 as usize].is_some()
+            || !self.uses_language_assignment(node, kind, left, right)?
+        {
+            return Ok(None);
+        }
+        if matches!(
+            self.availability,
+            crate::sema::traits::implementations::Availability::Declarations
+        ) {
+            return Ok(Some(super::Requirement::Definition(declaration.definition)));
+        }
+        crate::sema::declarations::prepare_assignment(
+            self.report,
+            self.facts,
+            declaration.definition,
+        )?;
+        Ok(None)
+    }
     pub(super) fn language_operator(
         &mut self,
         node: NodeId,
@@ -196,19 +227,4 @@ pub(super) const fn binary_hook(operator: crate::lex::token::Punctuation) -> Opt
         _ => None,
     }
 }
-pub(super) const fn assignment_hook(operator: crate::lex::token::Punctuation) -> Option<Hook> {
-    use crate::lex::token::Punctuation;
-    match operator {
-        Punctuation::PlusEqual => Some(Hook::AddAssign),
-        Punctuation::MinusEqual => Some(Hook::SubAssign),
-        Punctuation::StarEqual => Some(Hook::MulAssign),
-        Punctuation::SlashEqual => Some(Hook::DivAssign),
-        Punctuation::PercentEqual => Some(Hook::RemAssign),
-        Punctuation::AndEqual => Some(Hook::BitAndAssign),
-        Punctuation::OrEqual => Some(Hook::BitOrAssign),
-        Punctuation::CaretEqual => Some(Hook::BitXorAssign),
-        Punctuation::ShiftLeftEqual => Some(Hook::ShlAssign),
-        Punctuation::ShiftRightEqual => Some(Hook::ShrAssign),
-        _ => None,
-    }
-}
+pub(super) use crate::syntax::compound::hook as assignment_hook;

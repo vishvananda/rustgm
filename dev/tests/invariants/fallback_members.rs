@@ -143,7 +143,7 @@ fn repeated_primitive_prefixes_keep_fixed_definitions_and_no_retained_fallback_s
             analysis.facts.body_work.inference_steps
         );
     }
-    assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2056);
+    assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     Ok(())

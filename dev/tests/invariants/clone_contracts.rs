@@ -226,7 +226,7 @@ fn iterator_clone_preserves_ordinary_record_sizes_and_lazy_owner_cost() {
     // to the measured 7032-byte baseline.
     assert_eq!(size_of::<Declarations>(), 7032 + 2 * size_of::<usize>());
     // A lazy item-scope owner adds eight bytes; per-item and body rows are unchanged.
-    assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2056);
+    assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
     assert_eq!(size_of::<Kind>(), 24);
     assert_eq!(size_of::<types::infer::Context>(), 400);
     assert_eq!(size_of::<types::Store>(), 472);

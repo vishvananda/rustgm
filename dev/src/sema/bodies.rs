@@ -941,6 +941,7 @@ impl Checker<'_> {
         if let Some(requirement) = self
             .formatting_readiness(node)?
             .or(self.comparison_readiness(node)?)
+            .or(self.assignment_readiness(node)?)
             .or_else(|| self.value_readiness(node))
         {
             self.state.work.push(Work::Exit(node));

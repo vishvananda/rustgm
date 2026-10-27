@@ -33,6 +33,7 @@ mod inherent_headers;
 mod intrinsics;
 pub(in crate::sema) mod iteration;
 mod language_hooks;
+pub(in crate::sema) use language_hooks::prepare as prepare_assignment;
 mod library_types;
 mod lifetimes;
 mod method_overlap;
@@ -522,6 +523,12 @@ impl Checker<'_> {
             .builtin_traits
             .latent_comparison_owner(id)
             .is_some()
+            || self
+                .report
+                .resolution
+                .builtin_traits
+                .latent_language_owner(id)
+                .is_some()
             || self.lazy_library_method(id)
             || iteration::collections::owns(self.report, id)
             || iteration::range_contracts::owns(self.report, id)
@@ -888,7 +895,7 @@ impl Checker<'_> {
         }
         Ok(false)
     }
-    fn activate_comparison_owner(&mut self, id: DefId) -> Result<bool, Error> {
+    fn activate_operator_owner(&mut self, id: DefId) -> Result<bool, Error> {
         if let Some(declaration) = self
             .report
             .resolution
@@ -908,6 +915,25 @@ impl Checker<'_> {
             }
             return Ok(true);
         }
+        if let Some(declaration) = self
+            .report
+            .resolution
+            .builtin_traits
+            .latent_language_owner(id)
+        {
+            if self.states[declaration.definition.0 as usize] == State::Active {
+                return Err(self.error(
+                    declaration.origin,
+                    "recursive canonical assignment preparation",
+                ));
+            }
+            self.states[declaration.definition.0 as usize] = State::Active;
+            self.language_contract(declaration)?;
+            if let Some(contracts) = &mut self.facts.generics.traits {
+                contracts.complete_results();
+            }
+            return Ok(true);
+        }
         Ok(false)
     }
     fn definition(&mut self, id: DefId, finish: bool) -> Result<(), Error> {
@@ -917,7 +943,7 @@ impl Checker<'_> {
         if self.states[id.0 as usize] == State::Complete {
             return Ok(());
         }
-        if self.activate_comparison_owner(id)? {
+        if self.activate_operator_owner(id)? {
             return Ok(());
         }
         if let Some(selected) = self.selected.as_deref_mut()

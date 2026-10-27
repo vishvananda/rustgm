@@ -186,7 +186,7 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
     assert!(report.resolution.source_bindings.is_none());
     assert!(facts.source_bindings.is_none());
     assert!(report.resolution.intrinsics.get(Intrinsic::Abort).is_none());
-    assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2056);
+    assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 2104);
     assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 176);
