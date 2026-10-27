@@ -10,9 +10,9 @@ mod instantiation;
 mod opening_summary;
 mod permissions;
 mod premises;
-mod rigid_parameters;
+mod query_parameters;
 pub(crate) use permissions::Query as BuiltinQuery;
-use rigid_parameters::Parameters;
+use query_parameters::Parameters;
 #[cfg(test)]
 #[path = "../../../tests/invariants/builtin_permissions.rs"]
 mod builtin_tests;

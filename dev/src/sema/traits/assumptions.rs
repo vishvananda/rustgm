@@ -21,7 +21,7 @@ pub(in crate::sema) use universal::{Openings, ScopedEvidence, ScopedSelection};
 #[path = "../../../tests/invariants/declaration_assumptions.rs"]
 mod declaration_tests;
 #[cfg(test)]
-#[path = "../../../tests/invariants/receiver_prefixes.rs"]
+#[path = "../../../tests/invariants/premise_extensions.rs"]
 pub(in crate::sema) mod receiver_prefix_tests;
 #[cfg(test)]
 mod tests;
