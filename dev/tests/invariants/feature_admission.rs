@@ -294,7 +294,7 @@ fn higher_ranked_const_bounds_keep_semantic_and_crate_feature_obligations() -> R
         )
         .err()
         .ok_or("higher-ranked const bound lost its crate feature requirement")?;
-        assert!(error.to_string().contains("const_trait_impl"), "{error}");
+        assert!(error.contains("const_trait_impl"), "{error}");
     }
     Ok(())
 }
