@@ -87,7 +87,7 @@ fn exact_source_calls_lower_thin_wide_and_unit_effects() -> TestResult {
         )
         .map_err(|e| format!("{name}: {e}"))?;
         assert!(
-            !program.functions.is_empty(),
+            program.symbols.iter().any(|symbol| symbol.body.is_some()),
             "{name}: no actual callable was lowered"
         );
     }
@@ -217,6 +217,6 @@ fn ordinary_same_spelling_retains_its_real_function_body() -> TestResult {
         },
         prepared,
     )?;
-    assert!(!program.functions.is_empty());
+    assert!(program.symbols.iter().any(|symbol| symbol.body.is_some()));
     Ok(())
 }
