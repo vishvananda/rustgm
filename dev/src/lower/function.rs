@@ -3,6 +3,7 @@ mod aggregate;
 mod argument_sources;
 mod c_boundary;
 mod callback_dispatch;
+#[path = "function/tracked_locations.rs"]
 mod caller_location;
 mod cleanup;
 mod intrinsics;

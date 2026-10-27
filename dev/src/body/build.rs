@@ -7,6 +7,7 @@ mod constructors;
 pub(super) use constructors::{finish_factory, finish_factory_block};
 pub(in crate::body) use drops::factory_values as factory_owned_values;
 mod adjusted;
+#[path = "build/site_inputs.rs"]
 mod caller_sites;
 mod decisions;
 mod drops;

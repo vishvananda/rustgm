@@ -2,6 +2,7 @@
 pub(crate) mod adapters;
 pub mod body_view;
 mod build;
+#[path = "invocation_inputs.rs"]
 mod callable_inputs;
 mod caller_identity;
 mod clone_factories;

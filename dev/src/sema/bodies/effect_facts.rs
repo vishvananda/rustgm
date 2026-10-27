@@ -2,6 +2,7 @@
 use super::{Checker, Declarations, Error};
 use crate::{resolve::unit::NodeKey, support::constness::Constness, types::infer::Solved};
 use std::num::NonZeroU32;
+#[path = "effect_facts/site_locations.rs"]
 mod caller_sites;
 mod protocol_rows;
 

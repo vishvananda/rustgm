@@ -178,29 +178,9 @@ fn coordinates<'report>(
     facts: &crate::sema::model::Declarations,
     source: NodeKey,
 ) -> Result<(&'report str, crate::support::source::Position), Failure> {
-    let unit = report
-        .package
-        .units
-        .get(source.file.0 as usize)
-        .ok_or("caller location source file disappeared")?;
-    let node = unit
-        .configured
-        .ast
-        .nodes
-        .get(source.node.get() as usize)
-        .ok_or("caller location source node disappeared")?;
-    if unit.configured.active.get(source.node.get() as usize) != Some(&true) {
-        return Err("caller location source node is inactive".into());
-    }
     facts.charge_caller_inputs(1, 0)?;
     let mut origin_steps = 0;
-    let physical = report.physical_call_location(
-        crate::expand::stream::Location {
-            file: source.file,
-            span: node.span,
-        },
-        &mut origin_steps,
-    );
+    let physical = report.physical_node_location(source, &mut origin_steps);
     facts.charge_caller_inputs(origin_steps, 0)?;
     let physical = physical.map_err(|_| "caller location has invalid expansion provenance")?;
     let source = &report.package.unit(physical.file).source;

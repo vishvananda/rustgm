@@ -37,12 +37,34 @@ impl<S: Sources> Engine<'_, S> {
 
 impl super::Report {
     /// Follow the same authenticated expansion call sites used by file/line builtins.
-    pub(crate) fn physical_call_location(
+    pub(crate) fn physical_node_location(
         &self,
-        location: Location,
+        source: super::NodeKey,
         steps: &mut usize,
     ) -> Result<Location, Error> {
-        physical_location(&self.package, &self.invocations, location, steps)
+        let unit = self
+            .package
+            .units
+            .get(source.file.0 as usize)
+            .ok_or_else(|| Error::unlocated("physical source file disappeared"))?;
+        let node = unit
+            .configured
+            .ast
+            .nodes
+            .get(source.node.get() as usize)
+            .ok_or_else(|| Error::unlocated("physical source node disappeared"))?;
+        if unit.configured.active.get(source.node.get() as usize) != Some(&true) {
+            return Err(Error::unlocated("physical source node is inactive"));
+        }
+        physical_location(
+            &self.package,
+            &self.invocations,
+            Location {
+                file: source.file,
+                span: node.span,
+            },
+            steps,
+        )
     }
 }
 fn physical_location(
