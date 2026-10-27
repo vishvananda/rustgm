@@ -246,3 +246,39 @@ substituted for those bodies. Imported protocol/plan transport and typed
 heterogeneous try syntax remain closed. Draft source is unqualified until its
 focused compiler, body-proof and native controls actually run. New cold capacity
 and enclosing-layout costs remain unknown until that gate prints them.
+
+The executable compiler/body checkpoint is qualified at `1cae78716`: standard
+focused validation `1793063696757195473` passed all six exact controls in 114.86s,
+including metadata, format, global architecture, strict private Clippy and build.
+The actual full source protocol, optional trait tag, nearest lexical targets,
+loop/drop exits, move and lifetime opponents, changed-image/gate authentication
+and cumulative failure controls pass. The original seven source files remain
+byte-identical to the independent 14-observation contract. Native outcomes remain
+separate, pending predictions; two C observers now freeze the actual exported
+functions and drop-event stream. No native result is inferred from CFG success.
+
+The shared PA21 correction closes a pre-existing ordinary result-supertrait gap:
+one completed result closure builds one exact projection-equality index, then
+uses one existing Normalizer across consequence argument roots. Missing,
+conflicting, cyclic and quantified cases gain no guessed equality. Existing
+ResultBound selection still requires its real parent proof. The real implicit
+`into_try_type` function also demands the same callable template as a written
+function use, through the existing declaration kernel; no ItemUse is invented.
+The ordinary PA21 bridge and missing-equality opponent both pass. Its one new
+active text case still requires official selected generation after integration.
+
+Actual retained Try Plan is 48 bytes. CallContexts is 48 (the earlier observed
+owner was 24); CallTypes=704, Frame=48, State=2776, Operation=16, NodeFacts=80 and
+Catalog=1000. Frame/CallTypes/State before widths were not observed, so no before
+values are inferred. The transient and retained plan Vec fields each occupy 24
+bytes even when empty; the no-Try source leaves the optional retained owner absent.
+At widths 8/32/128, plan capacities are exactly 8/32/128 and plan payloads
+384/1536/6144 bytes, with inference steps 4885/16069/60805. The shared 32-level
+consequence DAG paid work1127/bytes10944, with Normalizer=368; warm reads and
+failed attempts remain charged. No Normalizer fields or ordinary fold mode changed.
+
+The earlier static helper-arity failure and 276.22s build timeout are retained as
+failed observations. The following warm run passed statics/build but only 2/6
+controls, exposing the genuine implicit-template demand gap; that source was
+corrected before the six-control passing run. Imported protocol/plan transport,
+typed heterogeneous try syntax and unrelated const-closure execution stay closed.

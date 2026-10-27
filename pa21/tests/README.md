@@ -1,7 +1,8 @@
 # PA21 fixture ownership
 
-The manifest registers 744 cases with committed stdout, stderr and status
-sidecars. There are 298 semantic inspections and 446 LowIR checks; 260 accepted
+The manifest registers 745 cases: 744 retain committed stdout, stderr and status
+sidecars; the new ordinary result-supertrait regression awaits selected generation.
+There are 299 semantic inspections and 446 LowIR checks; 260 accepted
 LowIR programs declare native execution (256 pass, four destructor panics).
 All source outcomes are independently checked with pinned rustc object generation.
 Fixtures preserve the source controls in the named `maintainer_origin` field.

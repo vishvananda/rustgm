@@ -26,7 +26,9 @@
         "rustc_status_hypothesis": 0,
         "rustc_error_codes_hypothesis": [],
         "rustc_warning_codes_hypothesis": []
-      }
+      },
+      "native_observer": "pa31/tests/spec/source-try-blocks/protocol-observer.c",
+      "native_observer_sha256": "3a4802167a4307b443717d6ebc0cab7067dc98f37267c9dcb70dde5839f5f25d"
     },
     {
       "source": "pa31/tests/spec/source-try-blocks/source-without-try-role.rs",
@@ -115,12 +117,31 @@
         "rustc_status_hypothesis": 0,
         "rustc_error_codes_hypothesis": [],
         "rustc_warning_codes_hypothesis": []
-      }
+      },
+      "native_observer": "pa31/tests/spec/source-try-blocks/drop-observer.c",
+      "native_observer_sha256": "66762de5df8969e861f6738db9b6d46a3efcc57465db57691ff051879aa69aef"
     }
   ],
   "state": "14 metadata observations completed; four hypothesis disagreements retained; native predictions unobserved",
   "compiler_profile": "actual source-core minicore@try_protocol, no std/bootstrap Try factory",
   "note": "from_residual intentionally returns23 and Weird::from_output43: normal source body calls must execute; no law-based compiler shortcut. Original38 grammar observations stay unchanged. Existing qualified callable declarations are retained for genuine closure-boundary checking.",
   "initial_contract_sha256": "a5e6e54f74b9fdb4a7f28c709f96ec0c7adf582bb5c3a0a90af5631bd217ce50",
-  "metadata_observed_binding_sha256": "5a227626b06a51063c4cd1af2f92f4146541a688ea7f608454091fe7407a6cf4"
+  "metadata_observed_binding_sha256": "5a227626b06a51063c4cd1af2f92f4146541a688ea7f608454091fe7407a6cf4",
+  "native_profile": {
+    "edition": "2024",
+    "rustc_flags": [
+      "--crate-type=lib",
+      "--target=x86_64-unknown-linux-gnu",
+      "-Cpanic=abort",
+      "-Ccodegen-units=1",
+      "--emit=obj"
+    ],
+    "c_flags": [
+      "-std=c11",
+      "-Wall",
+      "-Wextra",
+      "-Werror"
+    ],
+    "status": "frozen; independent and candidate native executions pending"
+  }
 }
