@@ -198,7 +198,7 @@ impl SelectedConsumer<'_> {
             ));
         };
         let raw = rows.implementations[index as usize];
-        let (trait_, links) = linked_trait(rows, raw, self.work)?;
+        let (trait_, links) = linked_trait(&rows, raw, self.work)?;
         self.work.charge(links.len().saturating_add(1))?;
         self.work.reserve(
             links
@@ -375,7 +375,7 @@ fn selected_clone_requirement(
 }
 
 fn linked_trait<'rows>(
-    rows: s::ValidatedView<'rows>,
+    rows: &'rows s::ValidatedView<'_>,
     raw: s::ImplHeader,
     work: &mut super::ReservationWork,
 ) -> Result<(s::TraitHeader, &'rows [s::MemberLink]), Error> {
