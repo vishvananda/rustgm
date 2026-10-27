@@ -7,7 +7,7 @@ mod callables;
 #[path = "values/site_constants.rs"]
 mod caller_sites;
 mod computed;
-mod declared_tags;
+mod variant_queries;
 mod enumerations;
 mod environments;
 mod footprints;
