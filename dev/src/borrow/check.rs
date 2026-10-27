@@ -255,7 +255,7 @@ fn require_resolved_promotions(program: &Program) -> Result<(), Error> {
     Ok(())
 }
 fn require_body_promotions(body: &Body) -> Result<(), Error> {
-    if body.resolved_callables.is_some() {
+    if body.has_resolved_callables() {
         return Err(Error {
             node: Some(body.source.into()),
             message: "resolved callable targets require a completed body proof".into(),

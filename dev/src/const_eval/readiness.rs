@@ -50,8 +50,12 @@ impl Machine<'_, '_> {
     }
     pub(super) fn prepare_operands(&mut self, mut frame: Frame) -> Result<Option<Frame>, Failure> {
         let body = self.bodies[frame.body].clone();
-        while let Some(&operand) = body.operands.get(frame.operand_cursor) {
+        while let Some(operand) = body.operands.get(frame.operand_cursor).cloned() {
             self.charge(1)?;
+            if matches!(operand, PreparedOperand::CallerSites(_)) {
+                frame.operand_cursor += 1;
+                continue;
+            }
             let reader = Reader::new(self.evaluator.facts());
             if let PreparedOperand::Discriminant(variant) = operand {
                 if reader.discriminant(variant)?.is_none() {

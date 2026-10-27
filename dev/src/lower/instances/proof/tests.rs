@@ -362,7 +362,9 @@ fn unresolved_bodies_cannot_supply_callable_proof_results() -> TestResult {
     let checked = originals(&mut f.facts, &f.templates, &f.inputs)?;
     let instance = *f.instances.first().ok_or("missing selected instance")?;
     let (mut body, contract) = specialize(&mut f.facts, &checked, instance)?;
-    body.resolved_callables = Some(Box::default());
+    body.resolved_callables = Some(Box::new(crate::body::ir::ResolvedCallables::from_targets(
+        crate::support::hash::HashMap::default(),
+    )));
     let error = prove(&mut f.facts, &checked, body, &contract)
         .err()
         .ok_or("unproved target table was accepted")?;

@@ -96,6 +96,9 @@ impl Ordinary {
                         crate::support::bindings::SourceIntrinsic::Transmute => {
                             "source transmute requires its proved direct runtime operation"
                         }
+                        crate::support::bindings::SourceIntrinsic::CallerLocation => {
+                            "source caller_location requires its proved direct caller operation"
+                        }
                         crate::support::bindings::SourceIntrinsic::Abort => {
                             "source abort requires its proved reached runtime operation"
                         }

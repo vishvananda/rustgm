@@ -121,7 +121,19 @@ impl Lower<'_, '_, '_> {
         arguments: Arguments,
         result: TypeId,
     ) -> Result<Selected, &'static str> {
-        let signature = self.context.signature(signature)?;
+        self.call_arguments_with_caller(signature, callee, arguments, result, None)
+    }
+    pub(super) fn call_arguments_with_caller(
+        &mut self,
+        signature: TypeId,
+        callee: Operand,
+        arguments: Arguments,
+        result: TypeId,
+        location: Option<crate::lowir::program::Value>,
+    ) -> Result<Selected, &'static str> {
+        let signature = self
+            .context
+            .caller_signature(signature, location.is_some())?;
         if matches!(
             self.context.output.signatures.get(signature.0 as usize),
             Some(crate::lowir::program::Signature::Object(_))
@@ -149,6 +161,9 @@ impl Lower<'_, '_, '_> {
         for index in 0..count {
             let (ty, selected) = arguments.get(self, index)?;
             self.push_argument(ty, selected)?;
+        }
+        if let Some(location) = location {
+            self.arguments.push(location);
         }
         let value =
             self.builder

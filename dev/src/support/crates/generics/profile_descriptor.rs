@@ -1,5 +1,6 @@
 //! A descriptor borrows completed source data; it is never callable permission.
 mod binding_order;
+pub(crate) use binding_order::sort as canonical_order;
 #[path = "namespace_paths.rs"]
 mod callable_paths;
 #[path = "column_storage.rs"]

@@ -246,3 +246,54 @@ pub(super) fn query<'a>(
         inline,
     })
 }
+
+/// These checked legacy profiles cannot encode tracking: their authored producer
+/// rejects tracked headers before publication. A missing descriptor is not absence.
+pub(super) fn caller_tracking_absent(
+    facts: &Declarations,
+    definition: DefId,
+) -> Result<(), &'static str> {
+    let headers = facts
+        .must_use_contracts
+        .as_deref()
+        .and_then(|owner| owner.headers.as_deref())
+        .and_then(|ledger| ledger.imported.as_deref())
+        .ok_or("imported caller policy has no checked inventory")?;
+    headers
+        .charge(1)
+        .map_err(|_| "imported caller policy work budget exceeded")?;
+    let header = headers
+        .entries
+        .get(&definition)
+        .ok_or("imported caller policy has no actual declaration")?;
+    headers
+        .catalog
+        .validate_declaration(header.handle, definition, DefKind::Function)?;
+    let semantic = facts
+        .declaration_header(definition)?
+        .ok_or("imported caller policy has no canonical function header")?;
+    if semantic.declaration
+        != crate::resolve::body_origin::DeclarationOrigin::Imported(header.handle)
+    {
+        return Err("imported caller policy changed its actual canonical owner");
+    }
+    let interface = &headers.inventory.artifacts()[header.artifact];
+    let descriptor = interface
+        .source_descriptor()
+        .ok_or("imported caller policy profile is unknown")?;
+    match descriptor.profile() {
+        s::Profile::Source2024Functions | s::Profile::Source2024FunctionContracts => {}
+        s::Profile::Source2024ModuleContracts => {
+            descriptor.module_contracts()?;
+        }
+        _ => return Err("imported caller policy requires an implemented explicit profile"),
+    }
+    let coordinate = headers.catalog.declaration_coordinate(header.handle)?;
+    if coordinate.0 != interface.identity()
+        || coordinate.1 != header.declaration
+        || coordinate.2 != descriptor.edition()
+    {
+        return Err("imported caller policy changed its function/profile coordinate");
+    }
+    Ok(())
+}

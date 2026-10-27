@@ -228,12 +228,15 @@ pub enum SourceIntrinsic {
     UbChecks,
     Abort,
     Transmute,
+    CallerLocation,
 }
 impl SourceIntrinsic {
     /// Declaration attribute decoding only; consumers retain the actual `DefId`.
     #[must_use]
     pub fn from_name(name: &str) -> Option<Self> {
-        if name == "transmute" {
+        if name == "caller_location" {
+            Some(Self::CallerLocation)
+        } else if name == "transmute" {
             Some(Self::Transmute)
         } else if name == "abort" {
             Some(Self::Abort)

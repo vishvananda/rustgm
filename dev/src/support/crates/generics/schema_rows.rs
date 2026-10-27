@@ -23,6 +23,7 @@ use crate::support::{
 };
 pub use attributes::*;
 pub use bodies::*;
+pub(crate) use descriptor::canonical_order;
 pub use descriptor::{
     BindingSource, Columns, Descriptor, ImplementationDomain, ModuleBindingRow, ModuleContractRows,
     ModuleContractView, ModuleNamespace, ModuleRow, ModuleVisibility, Profile, TraitDomainRow,

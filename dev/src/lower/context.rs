@@ -49,7 +49,7 @@ pub(super) struct Context<'a> {
     adapter_indices: HashMap<crate::types::closure::Adapter, usize>,
     instance_indices: HashMap<Instance, usize>,
     symbols: Vec<Option<SymbolId>>,
-    signatures: HashMap<TypeId, SignatureId>,
+    signatures: HashMap<(TypeId, bool), SignatureId>,
     representations: Vec<Option<Representation>>,
     c_abi: Option<Box<crate::abi::classification::Plans>>,
     queue: Vec<usize>,
@@ -432,7 +432,14 @@ impl<'a> Context<'a> {
         &self.bodies.as_slice()[index]
     }
     pub fn signature(&mut self, ty: TypeId) -> Result<SignatureId, &'static str> {
-        if let Some(id) = self.signatures.get(&ty) {
+        self.caller_signature(ty, false)
+    }
+    pub(super) fn caller_signature(
+        &mut self,
+        ty: TypeId,
+        tracked: bool,
+    ) -> Result<SignatureId, &'static str> {
+        if let Some(id) = self.signatures.get(&(ty, tracked)) {
             return Ok(*id);
         }
         let Some(Kind::Function {
@@ -445,6 +452,9 @@ impl<'a> Context<'a> {
         else {
             return Err("missing selected function signature");
         };
+        if tracked && convention != crate::types::callable::Convention::RUST {
+            return Err("tracked caller ABI requires an actual Rust signature");
+        }
         let mut native = Vec::new();
         let result_type = self.representation(result)?;
         if convention.abi == crate::types::callable::Abi::C
@@ -475,13 +485,16 @@ impl<'a> Context<'a> {
                 native.push(representation);
             }
         }
+        if tracked {
+            native.push(Type::Ptr);
+        }
         let signature = self.output.signature_with_arity(
             &native,
             result_type.result(),
             result == TypeId::NEVER,
             convention.variadic,
         )?;
-        self.signatures.insert(ty, signature);
+        self.signatures.insert((ty, tracked), signature);
         Ok(signature)
     }
     pub fn layout(&mut self, ty: TypeId) -> Result<Layout, &'static str> {
@@ -655,6 +668,16 @@ impl<'a> Context<'a> {
         self.queue.push(index);
         Ok(symbol)
     }
+    pub(super) fn demand_reified(&mut self, instance: Instance) -> Result<SymbolId, &'static str> {
+        if let Some(Kind::FunctionItem { item, .. }) = self.types.kind(instance.ty())
+            && self.constants.caller_tracking(DefId(item.0))?
+        {
+            return Err(
+                "tracked function pointers require a genuine caller-location reification shim",
+            );
+        }
+        self.demand(instance)
+    }
     pub fn demand_definition(&mut self, definition: DefId) -> Result<SymbolId, &'static str> {
         let ty = self
             .definitions
@@ -719,7 +742,8 @@ impl<'a> Context<'a> {
         let Owner::Function { signature, .. } = self.body(index).owner else {
             return Err("call target is not a function");
         };
-        let signature = self.signature(signature)?;
+        let tracked = self.constants.caller_tracking(definition)?;
+        let signature = self.caller_signature(signature, tracked)?;
         let name = super::linkage::select(
             self.foreign.map(crate::sema::foreign::Registry::names),
             self.foreign

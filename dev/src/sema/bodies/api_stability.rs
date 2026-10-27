@@ -1,7 +1,10 @@
 //! Same-crate API naming is allowed; recursively const-stable bodies are separate.
 use super::{Checker, DefId, Error, NodeId};
 use crate::{
-    resolve::stability::Library,
+    resolve::{
+        expansion::MacroAllowanceSession,
+        stability::{Level, Library},
+    },
     syntax::ast::Kind,
     types::{Kind as TypeKind, TypeId, infer::Solved},
 };
@@ -11,10 +14,15 @@ impl Checker<'_> {
         &mut self,
         node: NodeId,
         solved: &Solved,
+        allowances: &mut MacroAllowanceSession<'_>,
     ) -> Result<(), Error> {
-        let Some(owner) = self.const_library_owner(node)? else {
+        let owner = self.const_library_owner(node)?;
+        if owner.is_none()
+            && (self.facts.source_bindings.is_none()
+                || self.callee_use_effect()? == crate::support::constness::Constness::Ordinary)
+        {
             return Ok(());
-        };
+        }
         let callable = if let Some(method) = self.facts.methods.calls.get(&self.key(node)) {
             method.callable
         } else if let Kind::Call { callee, .. } = self.kind(node) {
@@ -29,7 +37,7 @@ impl Checker<'_> {
                 "const-stable generated call API policy is not implemented",
             ));
         };
-        self.check_const_library_target(node, owner, callable)
+        self.check_const_library_target(node, owner, callable, allowances)
     }
 
     /// Generated protocol calls retain their actual callable independently.
@@ -37,11 +45,15 @@ impl Checker<'_> {
         &mut self,
         node: NodeId,
         callable: TypeId,
+        allowances: &mut MacroAllowanceSession<'_>,
     ) -> Result<(), Error> {
-        let Some(owner) = self.const_library_owner(node)? else {
+        let owner = self.const_library_owner(node)?;
+        if owner.is_none()
+            && self.callee_use_effect()? == crate::support::constness::Constness::Ordinary
+        {
             return Ok(());
-        };
-        self.check_const_library_target(node, owner, callable)
+        }
+        self.check_const_library_target(node, owner, callable, allowances)
     }
 
     fn const_library_owner(&mut self, node: NodeId) -> Result<Option<DefId>, Error> {
@@ -80,21 +92,74 @@ impl Checker<'_> {
     fn check_const_library_target(
         &mut self,
         node: NodeId,
-        owner: DefId,
+        owner: Option<DefId>,
         callable: TypeId,
+        allowances: &mut MacroAllowanceSession<'_>,
     ) -> Result<(), Error> {
         let Some(TypeKind::FunctionItem { item, .. }) = self.facts.types.kind(callable) else {
-            return Err(self.error(
-                node,
-                "const-stable indirect call API policy is not implemented",
-            ));
+            return if owner.is_some() {
+                Err(self.error(
+                    node,
+                    "const-stable indirect call API policy is not implemented",
+                ))
+            } else {
+                Ok(())
+            };
         };
-        self.report
-            .package
-            .library_policy()
-            .and_then(Library::inventory)
+        let target = DefId(item.0);
+        let intrinsic = self
+            .facts
+            .source_bindings
+            .as_deref()
+            .map(|catalog| catalog.intrinsic_kind(target))
+            .transpose()
+            .map_err(|e| self.error(node, e))?
+            .flatten();
+        let library = self.report.package.library_policy();
+        let inventory = library.and_then(Library::inventory);
+        if intrinsic.is_some()
+            && self.callee_use_effect()? != crate::support::constness::Constness::Ordinary
+        {
+            let marker = self
+                .facts
+                .intrinsic_const_stable_indirect(self.report, target)?;
+            let policy = inventory.and_then(|inventory| inventory.const_declaration(target));
+            if let Some(policy) =
+                policy.filter(|policy| matches!(policy.level, Level::Unstable { .. }))
+            {
+                let feature = policy.feature_name().map_err(|e| self.error(node, e))?;
+                let requested = library
+                    .ok_or_else(|| self.error(node, "intrinsic const API lost its library owner"))?
+                    .requested_feature(&feature, &mut self.state.steps)
+                    .map_err(|e| self.error(node, e))?;
+                let ast = &self.report.package.unit(self.state.file).configured.ast;
+                let span = match ast.node(node).kind {
+                    Kind::Call { callee, .. } => ast.node(callee).span,
+                    Kind::MethodCall { name, .. } => name,
+                    Kind::GenericMethodCall { method, .. } => ast.node(method).span,
+                    _ => ast.node(node).span,
+                };
+                if !requested && !allowances.allows_at(self.state.file, span, &feature)? {
+                    return Err(self.error(node, "source intrinsic const API requires its checked feature or exact token allowance"));
+                }
+            }
+            if owner.is_some()
+                && !marker
+                && policy.is_none_or(|policy| !matches!(policy.level, Level::Stable(_)))
+            {
+                return Err(self.error(
+                    node,
+                    "const-stable body cannot expose this unstable intrinsic",
+                ));
+            }
+            return Ok(());
+        }
+        let Some(owner) = owner else {
+            return Ok(());
+        };
+        inventory
             .ok_or_else(|| self.error(node, "const API call lost its actual library inventory"))?
-            .const_body_call(owner, DefId(item.0))
+            .const_body_call(owner, target)
             .map_err(|e| self.error(node, e))
     }
 }

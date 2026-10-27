@@ -225,7 +225,7 @@ fn materialize(
         owned: None,
         storage: source.storage.clone(),
         promotions: None,
-        resolved_callables: None,
+        resolved_callables: source.unproved_callable_inputs(facts)?,
         closure_calls: None,
         locals: source.locals.clone(),
         values: source.values.clone(),
@@ -387,5 +387,6 @@ fn substitute(
             *region = actual;
         }
     }
+    body.specialize_caller_inputs(facts)?;
     Ok(projected)
 }

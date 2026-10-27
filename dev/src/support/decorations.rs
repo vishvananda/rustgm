@@ -23,6 +23,9 @@ pub(crate) enum Consumer {
     UnsafeSpecialization,
     MarkerTrait,
     DerivedImplementation,
+    CallerTracking,
+    IntrinsicConstPolicy,
+    IntrinsicNoUnwind,
 }
 impl Consumer {
     pub(crate) fn tool_member(tool: &str, name: &str) -> Option<Self> {
@@ -68,6 +71,9 @@ impl Consumer {
             "target_feature" => Self::TargetFeature,
             "allow" | "warn" | "deny" | "forbid" => Self::SafetyLint,
             "doc" => Self::Documentation,
+            "rustc_nounwind" => Self::IntrinsicNoUnwind,
+            "track_caller" => Self::CallerTracking,
+            "rustc_intrinsic_const_stable_indirect" => Self::IntrinsicConstPolicy,
             "must_use" => Self::MustUse,
             "inline" => Self::Inlining,
             "non_exhaustive" => Self::NonExhaustive,

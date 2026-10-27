@@ -31,7 +31,7 @@ impl Prepared {
         targets: HashMap<Instance, Instance>,
         budget: usize,
     ) -> Result<Self, &'static str> {
-        if !targets.is_empty() && body.resolved_callables.is_some() {
+        if !targets.is_empty() && body.has_resolved_callables() {
             return Err("prepared code cannot replace an earlier callable proof");
         }
         let bytes =
@@ -61,6 +61,7 @@ impl Prepared {
             vector(&code.projections),
             vector(&code.blocks),
             vector(&code.operands),
+            code.caller_site_bytes(),
             map(&code.promotions),
             map(&code.callables),
         ])

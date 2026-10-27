@@ -106,6 +106,24 @@ fn source_call(
             }
             Ok(Some(SourceIntrinsic::Transmute))
         }
+        Some(SourceIntrinsic::CallerLocation) => {
+            let selected = Reader::new(facts)
+                .source_caller_location(Instance::new(&facts.types, ty)?, body.source)?
+                .ok_or("source caller_location lost its dependency descriptor")?;
+            catalog.require_caller_location_report(report, facts, &selected)?;
+            if signature != selected.signature
+                || value.ty != selected.result
+                || !body
+                    .arguments
+                    .get(arguments.start as usize..arguments.end as usize)
+                    .is_some_and(<[crate::body::ir::ValueId]>::is_empty)
+            {
+                return Err(
+                    "source caller_location dependency differs from its complete direct Call",
+                );
+            }
+            Ok(Some(SourceIntrinsic::CallerLocation))
+        }
         Some(SourceIntrinsic::Abort) => {
             let selection = Reader::new(facts)
                 .source_abort(Instance::new(&facts.types, ty)?, body.source)?
@@ -145,7 +163,10 @@ impl Discovered {
                 ));
             }
             Some(
-                SourceIntrinsic::UbChecks | SourceIntrinsic::Abort | SourceIntrinsic::Transmute,
+                SourceIntrinsic::UbChecks
+                | SourceIntrinsic::Abort
+                | SourceIntrinsic::Transmute
+                | SourceIntrinsic::CallerLocation,
             ) => {
                 // Only this authenticated direct Call omits callable-body demand.
                 // Lowering still proves and consumes its reached operation.

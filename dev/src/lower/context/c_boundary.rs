@@ -41,7 +41,7 @@ impl Context<'_> {
             matches!(plan.result, classification::Passing::Scalar(TypeId::NEVER)),
             convention.variadic,
         )?;
-        self.signatures.insert(ty, signature);
+        self.signatures.insert((ty, false), signature);
         Ok(signature)
     }
     pub(in crate::lower) fn c_argument(

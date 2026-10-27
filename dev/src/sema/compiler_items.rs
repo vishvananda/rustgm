@@ -15,6 +15,9 @@ pub(super) use calls::record as record_call_effects;
 pub(in crate::sema) use explicit_cleanup::explicit_drop_member;
 pub(crate) use glue_calls::{DropGlueSelection, check_const_drop_glue, source_drop_glue};
 mod abort_declaration;
+#[path = "compiler_items/location_intrinsic.rs"]
+mod caller_location;
+pub(crate) use caller_location::CallerLocationSelection;
 mod transmute_contract;
 mod transmute_sizes;
 pub(crate) use abort_declaration::AbortSelection;

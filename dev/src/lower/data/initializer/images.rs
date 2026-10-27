@@ -60,7 +60,7 @@ impl Context<'_> {
                     self.initialize_reference(init, offset, id, false, None)
                 }
                 View::Function(instance) => {
-                    let symbol = self.demand(instance)?;
+                    let symbol = self.demand_reified(instance)?;
                     self.initialize_pointer(init, offset, Target::Function(symbol), 0)
                 }
                 _ => Err("constant image relocation lacks a canonical target"),
