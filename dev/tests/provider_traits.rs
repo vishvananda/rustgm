@@ -83,6 +83,30 @@ impl Sources for NoFiles {
 pub(super) fn report(source: &str) -> TestResult<resolve::expansion::Report> {
     report_in_edition(source, rustgm::support::edition::Edition::Rust2024)
 }
+pub(super) fn require_macro_policies(report: &resolve::expansion::Report) -> TestResult {
+    let inventory = report
+        .package
+        .library_policy()
+        .and_then(resolve::stability::Library::inventory)
+        .ok_or("missing completed library policy")?;
+    let mut macros = 0;
+    for (index, definition) in report.resolution.definitions.iter().enumerate() {
+        if definition.node.is_some()
+            && matches!(
+                definition.kind,
+                resolve::model::DefKind::Macro | resolve::model::DefKind::BuiltinMacro
+            )
+        {
+            let id = resolve::model::DefId(u32::try_from(index)?);
+            inventory
+                .declaration(id)
+                .ok_or("actual macro owner lost its library policy")?;
+            macros += 1;
+        }
+    }
+    assert!(macros > 0, "no source macro declaration was checked");
+    Ok(())
+}
 pub(super) fn report_in_edition(
     source: &str,
     edition: rustgm::support::edition::Edition,

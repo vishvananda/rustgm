@@ -67,6 +67,15 @@ procedural macro execution and complete toolchain closure remain required. The q
 isolates Cargo's bootstrap environment and rejects source-compiling probes even
 when a build script catches their failure.
 
+Host compilation must preserve manifest lint levels, priorities, cfg expectations
+and explicit lint caps. The shared host DAG fixtures retain the independently
+observed directory-source and workspace policies. Original libc's selected host
+script now executes with its unchanged package bytes and all 27 predeclared
+directives. Original std's host script also runs with its real public-dependency
+manifest feature and eight predeclared directives; host modifiers stay closed.
+Compiler-builtins' shared inputs remain required. This does not establish target
+libc or any original library artifact.
+
 The maintainer implements compiler responsibilities in `dev/src/` and introduces
 typed interfaces before text views. Follow [spec.md](../spec.md), the pinned Rust
 Reference and CPPGM's efficient representation principles. Parse once, retain

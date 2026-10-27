@@ -184,6 +184,12 @@ impl super::package::Package {
             "try-block client identity changed",
         )
     }
+    pub(crate) fn requested_const_closures(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::ConstClosures,
+            "const-closure client identity changed",
+        )
+    }
     fn requested_expression_feature(
         &self,
         feature: policy::Feature,

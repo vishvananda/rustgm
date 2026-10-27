@@ -1,5 +1,5 @@
 //! Complete a whole list before consuming its configured effect or visiting impls.
-use super::*;
+use super::{Body, Builtin, Effect, Engine, Error, ExpansionId, Range, Sources, receipt};
 use crate::{
     expand::{
         builtin::derive_output,

@@ -1,6 +1,7 @@
 //! Local library availability is distinct from language and const-call permission.
 mod attributes;
 mod constness;
+mod exported_scopes;
 mod inventory;
 mod owners;
 use super::{
@@ -9,6 +10,7 @@ use super::{
     unit::{FileId, NodeKey},
 };
 use crate::support::hash::HashMap;
+pub(crate) use exported_scopes::{Budget as PublicBudget, visit as visit_public_bindings};
 use std::num::{NonZeroU32, NonZeroUsize};
 
 /// A validated library release annotation, retained independently of callability.
@@ -70,6 +72,41 @@ impl Library {
             return Err("library feature requests exceed the profile budget");
         }
         self.requests.push(name.into());
+        Ok(())
+    }
+    /// Account the existing cold policy owner before a second semantic phase
+    /// allocates temporary reachability tables. No new persistent field is needed.
+    pub(crate) fn charge_retained(&self, budget: &mut impl PublicBudget) -> Result<(), Error> {
+        use crate::support::retained::{sum, vector};
+        let inventory = self
+            .inventory
+            .as_ref()
+            .ok_or_else(|| Error::unlocated("library inventory is incomplete"))?;
+        budget.charge(
+            self.requests.len().saturating_add(inventory.policies.len()),
+            sum([
+                size_of::<Self>(),
+                vector(&self.requests),
+                size_of::<Inventory>(),
+                vector(&inventory.policies),
+                vector(&inventory.declarations),
+                vector(&inventory.imports),
+                inventory.consts.as_deref().map_or(0, |consts| {
+                    size_of::<constness::ConstPolicies>()
+                        .saturating_add(vector(&consts.declarations))
+                }),
+            ]),
+        )?;
+        for request in &self.requests {
+            budget.charge(0, request.len())?;
+        }
+        for policy in &inventory.policies {
+            let reason = match &policy.level {
+                Level::Stable(_) => 0,
+                Level::Unstable { reason, .. } => reason.as_deref().map_or(0, str::len),
+            };
+            budget.charge(0, policy.feature.len().saturating_add(reason))?;
+        }
         Ok(())
     }
     #[must_use]

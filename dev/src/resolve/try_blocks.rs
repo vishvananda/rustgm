@@ -5,9 +5,10 @@ use super::{
     package::{Error, Package},
     unit::FileId,
 };
-use crate::syntax::gate_sites::Expression;
-fn walk(
+use crate::syntax::gate_sites::{Expression, ExpressionKind};
+pub(super) fn walk(
     package: &Package,
+    kind: ExpressionKind,
     mut require: impl FnMut(FileId, u32, Expression) -> Result<(), Error>,
 ) -> Result<(), Error> {
     for (index, unit) in package.units.iter().enumerate() {
@@ -22,10 +23,22 @@ fn walk(
                 .map_err(|_| Error::unlocated("try-block file identity overflow"))?,
         );
         for (ordinal, entry) in entries.expressions().iter().copied().enumerate() {
+            entries
+                .charge(1, 0)
+                .map_err(|message| Error::at(file, entry.keyword.start, message))?;
+            if entry
+                .kind(&unit.configured.ast)
+                .map_err(|error| Error::at(file, error.offset, error.message))?
+                != kind
+            {
+                continue;
+            }
             let ordinal = u32::try_from(ordinal)
                 .map_err(|_| Error::unlocated("try-block ordinal overflow"))?;
             super::gate_provenance::checked_expression(package, file, ordinal, entry)?;
-            if unit.configured.active.get(entry.node.get() as usize) != Some(&true) {
+            if kind == ExpressionKind::TryBlock
+                && unit.configured.active.get(entry.node.get() as usize) != Some(&true)
+            {
                 continue;
             }
             require(file, ordinal, entry)?;
@@ -40,16 +53,20 @@ pub(super) fn validate(report: &Report) -> Result<(), Error> {
         .map_err(Error::unlocated)?;
     let feature = FeatureName::new("try_blocks").map_err(Error::unlocated)?;
     let mut session = report.macro_allowances();
-    walk(&report.package, |file, ordinal, entry| {
-        if requested || session.allows_try_block(file, ordinal, entry, &feature)? {
-            return Ok(());
-        }
-        Err(Error::at(
-            file,
-            entry.keyword.start,
-            "try block requires try_blocks or its actual expression allowance",
-        ))
-    })
+    walk(
+        &report.package,
+        ExpressionKind::TryBlock,
+        |file, ordinal, entry| {
+            if requested || session.allows_try_block(file, ordinal, entry, &feature)? {
+                return Ok(());
+            }
+            Err(Error::at(
+                file,
+                entry.keyword.start,
+                "try block requires try_blocks or its actual expression allowance",
+            ))
+        },
+    )
 }
 /// Replay one demanded expression through the same sealed site and allowance rule.
 pub(crate) fn require(report: &Report, key: super::unit::NodeKey) -> Result<(), Error> {
@@ -108,7 +125,7 @@ pub(crate) fn require(report: &Report, key: super::unit::NodeKey) -> Result<(), 
 
 pub(super) fn validate_plain(package: &Package) -> Result<(), Error> {
     let requested = package.requested_try_blocks().map_err(Error::unlocated)?;
-    walk(package, |file, _, entry| {
+    walk(package, ExpressionKind::TryBlock, |file, _, entry| {
         if requested {
             return Ok(());
         }

@@ -1,0 +1,68 @@
+{
+  "state": "independently observed keyword/edition/cfg rules with qualified grammar controls; PA25 execution remains required",
+  "owner": "PA31 source internal feature authority; PA4 grammar; PA25 const callable semantics",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "bootstrap": "1",
+    "emit": "metadata"
+  },
+  "cases": [
+    {
+      "path": "enabled.rs",
+      "sha256": "fb9b0f2e40053b46540bdb06cf20d79f629759551b8da2c2dbbbae7917db19d6",
+      "rustc_status": 0
+    },
+    {
+      "path": "missing-feature.rs",
+      "sha256": "688c511761293465fe134bfc1b3f6bfc6689a17a0062c910ef1ab5dff5dcda53",
+      "rustc_status": 1
+    },
+    {
+      "path": "literal-allowance.rs",
+      "sha256": "72812328d0c8a3317efda5bfca8754679045d5ca4aa3774b5ec763db3d2b8d06",
+      "rustc_status": 0,
+      "observation": "v1 omitted the actual allow_internal_unstable feature request; source, prediction and failing output preserved separately. v2 only adds that request."
+    },
+    {
+      "path": "forwarded-keyword.rs",
+      "sha256": "4dad75e8fbde7dc8d40f7cc587c48cfa3b789025be64ed29c21147f831a328e5",
+      "rustc_status": 1,
+      "observation": "v1 omitted the actual allow_internal_unstable feature request; source, prediction and failing output preserved separately. v2 only adds that request."
+    },
+    {
+      "path": "forwarded-body.rs",
+      "sha256": "f9b7834efe2c34cc300677f5e88718412f10ee9051ed7c03241b20af1ddc61a5",
+      "rustc_status": 0,
+      "observation": "v1 omitted the actual allow_internal_unstable feature request; source, prediction and failing output preserved separately. v2 only adds that request."
+    },
+    {
+      "path": "forwarded-expression.rs",
+      "sha256": "01c3b710e3f8939100989fafc3661d2574ad3fdf4db2a6bd2a9eac2bfc78ac8e",
+      "rustc_status": 1,
+      "observation": "v1 omitted the actual allow_internal_unstable feature request; source, prediction and failing output preserved separately. v2 only adds that request."
+    },
+    {
+      "path": "inactive.rs",
+      "sha256": "7d074f3f507dbab760754af32698dcf3a960e41c32632e59f8c00ada53aec495",
+      "rustc_status": 1,
+      "predicted_rustc_status": 0,
+      "observation": "Original inactive acceptance prediction was wrong: the pinned parser-collected const_closures gate remains a hard error after cfg removal."
+    },
+    {
+      "path": "inactive-malformed.rs",
+      "sha256": "bd15328b888809c4519246b0b40e41a430d968f3cc177bd4790e8c85c53bb844",
+      "rustc_status": 1
+    },
+    {
+      "path": "forwarded-enabled-expression.rs",
+      "sha256": "36ecd4a7eb1a6983138b47f49bcb5e9c41855555128fc654091d002a688fcec0",
+      "rustc_status": 0,
+      "rustc_status_2021": 1,
+      "predicted_rustc_status_2021": 0,
+      "observation": "The pinned expr_2021 matcher excludes a top-level const closure even with const_closures enabled; expr in a 2024 definition accepts it. Original wrong 2021 prediction and complete stderr are preserved."
+    }
+  ]
+}

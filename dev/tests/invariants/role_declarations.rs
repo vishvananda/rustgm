@@ -164,10 +164,6 @@ fn unavailable_alias_and_kind_opponents_stop_before_execution_work() -> TestResu
         ),
         ("derive-as-bang.rs", "unresolved macro"),
         ("derive-as-attribute.rs", "unresolved attribute macro"),
-        (
-            "source-derive-consumer.rs",
-            "builtin attribute execution is not implemented",
-        ),
     ] {
         with_engine(&fixture(name)?, true, |engine| {
             let error = engine
@@ -181,6 +177,23 @@ fn unavailable_alias_and_kind_opponents_stop_before_execution_work() -> TestResu
             Ok(())
         })?;
     }
+    with_engine(&fixture("source-derive-consumer.rs")?, true, |engine| {
+        let error = engine
+            .run()
+            .err()
+            .ok_or("missing Copy declaration accepted")?;
+        assert!(
+            error.message.contains("unresolved attribute macro"),
+            "{error}"
+        );
+        // Derive itself now executes; its missing source Copy binding still fails.
+        assert_eq!(engine.invocations.len(), 1);
+        assert!(matches!(
+            engine.definitions[engine.invocations[0].definition].body,
+            Body::Builtin(Builtin::Derive)
+        ));
+        Ok(())
+    })?;
     with_engine(&fixture("disabled-unavailable-use.rs")?, true, |engine| {
         engine.run()?;
         assert!(engine.invocations.is_empty());

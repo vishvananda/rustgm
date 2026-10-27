@@ -8,6 +8,13 @@ Prerequisite: PA24. The common source profile is Rust 1.98.0, initially edition
 
 Const functions, statics, promotions and symbolic allocation provenance.
 
+Const closures extend PA24's actual anonymous identities and capture/call-trait
+machinery. Enforce const creation contexts separately from runtime invocation:
+the pinned profile accepts a const-fn-produced closure invoked at runtime, and
+rejects creating a const closure directly in an ordinary runtime context. Cover
+real CTFE invocation, captured storage and instance/ownership proofs; grammar
+and the const_closures feature request alone do not establish these semantics.
+
 The maintainer implements this responsibility in `dev/src/` and introduces its
 typed interface before generating text views. Consult `spec.md`, the pinned
 Rust Reference, and the existing CPPGM implementation for efficient algorithms.

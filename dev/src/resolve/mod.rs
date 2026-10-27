@@ -12,6 +12,7 @@ mod container_scopes;
 mod contextual_lookup;
 pub mod crates;
 pub mod expansion;
+mod gated_closures;
 mod hygiene;
 mod identifiers;
 #[path = "module_domains.rs"]
@@ -55,6 +56,7 @@ pub fn analyze(package: &mut package::Package) -> Result<model::Resolution, pack
     default_items::validate_plain(package)?;
     alias_gates::validate_plain(package)?;
     try_blocks::validate_plain(package)?;
+    gated_closures::validate_plain(package)?;
     Ok(state.facts)
 }
 pub mod render;

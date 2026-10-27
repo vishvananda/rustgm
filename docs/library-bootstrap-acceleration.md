@@ -13,12 +13,13 @@ checkpoint documents accumulate faster than executable consumers. This is now
 the main scheduling problem. More workers or fewer semantic tests alone will
 not solve the joins between those components.
 
-The combined compiler `192bb536` now executes direct source Thin, PhantomData and
-final trait methods. Original core passes VTable and Share::share and stops at
-the Default derive helper declaration in `default.rs:143`. It takes 1.902 seconds,
-verifies all 722 source inputs and opens 78 files. That is neither 78 compiled
-modules nor a completion percentage; there is still no core artifact. Broader
-alias/Pointee semantics and actual library body/metadata joins remain required.
+The combined compiler `3cc4e779` executes the qualified direct Thin, PhantomData,
+final-method and full-attribute Location consumers, and authenticates const-closure
+grammar/feature authority. Original core now passes those closures and stops at
+the scoped builtin Iter declaration in `iter/sources/generator.rs:23`. It takes
+3.158 seconds, verifies all 722 source inputs and opens 164 files. This is loading/
+expansion progress; no core artifact exists. Broader alias/Pointee semantics and
+actual library body/metadata joins remain required.
 
 The largest bottleneck is the implementation joins. The integrator has now
 merged qualified actual imported names/receiver shapes and Pointee consumers
@@ -42,9 +43,10 @@ production/CLI Clippy 44.47, private Clippy 58.06 and test execution 0.22 second
 It qualifies three joined consumers in one build; native controls and the core
 observer then reuse that binary. Continue this consolidation within the unchanged
 five-minute development limit rather than repeatedly compiling isolated helpers.
-The normal push workflow currently selects lexer tests. Scheduled 40297261891
-later exposed ordinary bootstrap diagnostic regressions and stale assertions.
-A green narrow push is not complete qualification.
+The push workflow now runs nineteen shared source/CLI smoke controls through
+the same fastcheck runner. Scheduled 40297261891 previously exposed ordinary
+bootstrap diagnostic regressions and stale assertions. Full qualification
+remains in scheduled/manual CI; full run 40403702497 on f1f08f203 is green.
 
 The newer full run `40368263999` took 14m15s and failed: 1,779 private tests passed
 in 2.26s; two publication-replay helpers omitted newly required completed callee

@@ -289,8 +289,20 @@ observer/LowIR hashes match before and after. Successful disposable object and
 executable outputs were scoped-pruned, preserving all raw streams and hashes.
 
 The final handoff changes two old test-only Catalog assertions 792→856 to the
-actual observed cold size; those two old cases await root integration execution.
-No production delta follows the qualified source above. Actual Debug demand,
+actual observed cold size. Both pass the combined integration with twelve
+Location/try-grammar controls: fourteen exact private tests, strict Clippy,
+formatting and global audit in 252.46 seconds. Nineteen production/CLI smoke
+controls also pass in 183.37 seconds. Two production wildcard imports were
+replaced with explicit names; feature IDs 26/27 retain both registrations.
+Fresh combined source and LowIR have the exact native-qualified hashes above,
+retaining the actual `31 7` observation without claiming a new backend run.
+Receipts are `obj/qualification/fast/1793057384271908570/receipt.json` and
+`1793057118041690839/receipt.json` in the integrator checkout.
+
+The unchanged-core observer now passes the try blocks, verifies all 722 inputs,
+opens 96 files in 1.976 seconds, and stops at the const closure in
+`ops/try_trait.rs:415` (LIB-037). There is no original core artifact.
+Actual Debug demand,
 caller_location/track_caller, PanicInfo, source panic handler/CTFE redirect,
 formatting constructors and false Assert execution remain required. CPPGM and
 pinned upstream source bytes are unchanged. PA26/PA31 remain planned.

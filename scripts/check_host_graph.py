@@ -14,6 +14,7 @@ from cargo_plan import Job, execute as plan_cargo
 from crate_vendor import Vendor
 from host_graph import execute
 from host_process import CommandLog, digest
+from package_snapshot import Snapshot
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / 'tests'))
 from host_graph_fixtures import local_packages, packages
@@ -93,13 +94,22 @@ def candidate(root, plan, snapshots, tools):
     context = Context(TRIPLE, TRIPLE, compiler, tools['rustc']['sha256'],
                       tuple((key, tuple(values)) for key, values in cfg.items()),
                       ((root / 'cfg.stdout', digest(root / 'cfg.stdout')),))
-    result = execute(plan, snapshots, {None: context, TRIPLE: context}, root / 'candidate')
+    # Pinned Cargo applies warn caps to this directory-source fixture, while
+    # workspace members have no cap. Keep this independently observed input
+    # explicit; source kind alone is not a general Cargo cap inference rule.
+    caps = {p.cargo_id: 'warn' for p in snapshots if isinstance(p, Snapshot)}
+    result = execute(plan, snapshots, {None: context, TRIPLE: context}, root / 'candidate',
+                     lint_caps=caps)
     receipt = json.loads((root / 'candidate/receipt.json').read_text())
     calls = receipt['commands']
     if (sum(row['name'] == 'compile' for row in calls) != 6
             or sum(row['name'] == 'execute' for row in calls) != 5
             or any('--target' in row['command'] for row in calls)):
         raise ValueError('candidate did not build each required host unit exactly once')
+    if sum('--forbid=unsafe_code' in row['command'] for row in calls) != 3:
+        raise ValueError('helper host library and script lost their actual manifest lint policy')
+    if sum('--cap-lints' in row['command'] for row in calls) != (6 if caps else 0):
+        raise ValueError('host compilation lost its explicitly observed dependency lint caps')
     app = [value for index, value in result.items() if plan.units[index].pkg_id == snapshots[0].cargo_id]
     expected = json.loads((root / 'independent.json').read_text())['answer_sha256']
     if len(app) != 1 or (app[0].folder / 'answer.rs').read_bytes() != ANSWER or app[0].files['answer.rs'] != expected:

@@ -25,6 +25,18 @@ Native assertions check the actual destructor trace in each edition. See the
 
 Required families: per-crate editions; feature and dependency resolution; host versus target artifacts; build script outputs; reproducible build provenance.
 
+`spec/host-manifest-lints/contract.json` predeclares six pinned Cargo outcomes
+for host lint levels, priority overrides and custom cfg expectations. The host
+task and dependency-DAG executors retain these policies in their actual compiler
+commands; unknown tools, unresolved workspace inheritance and unstable manifest
+policy remain explicit failures. The original selected libc build script is the
+first unchanged std-graph host consumer; its 27 directive lines are predeclared
+from the source. Target libc and std compilation remain required.
+Its `original_std` contract adds all eight original std-script directives, the
+complete package inventory pin and the explicit abort-target/unwind-host context.
+The public-dependency request preserves target edges while unsupported host-edge
+modifiers still fail before any process is launched.
+
 Follow the [owning brief](../README.md) and
 [library bootstrap plan](../../docs/library-bootstrap-roadmap.md).
 Declare independent outcomes before creating text references. Register every
