@@ -488,7 +488,7 @@
     },
     {
       "path": "tests/spec/primitive-binary/reference-boundary.rs",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa26.primitive-value-binary"
       ],
@@ -498,8 +498,14 @@
         "status": 0,
         "emit": "obj"
       },
-      "native": false,
-      "panic": false
+      "native": true,
+      "panic": false,
+      "superseded_boundary": {
+        "exit_status": 1,
+        "native": false,
+        "checkpoint": "owned-primitive-value-methods",
+        "followup": "docs/pa26-shared-value-operands.md"
+      }
     },
     {
       "path": "tests/spec/primitive-binary/float-bitand.rs",

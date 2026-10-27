@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait Add<R>{type Output;fn add(self,r:R)->Self::Output;}trait Sub<R>{type Output;fn sub(self,r:R)->Self::Output;}impl Add<&u8> for u8{type Output=u8;fn add(self,_:&u8)->u8{19}}impl Sub<&u8> for u8{type Output=u8;fn sub(self,_:&u8)->u8{23}}fn main(){let b=5;check(<u8 as Add<&u8>>::add(2,&b)==19);check(<u8 as Sub<&u8>>::sub(9,&b)==23);check(<u8 as core::ops::Add<&u8>>::add(2,&b)==7);check(<u8 as core::ops::Sub<&u8>>::sub(9,&b)==4);}

@@ -1,0 +1,286 @@
+{
+  "status": "declared before observation and implementation",
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "cases": [
+    {
+      "name": "add-original",
+      "path": "pa26/tests/spec/primitive-add/reference-boundary.rs",
+      "sha256": "6f3f18c1524bee64c23f068f6f0a76e735bcb7deaf3b8bc8871a964cd62aaecf",
+      "accepted": true,
+      "native": true,
+      "panic": false,
+      "profile": "ordinary"
+    },
+    {
+      "name": "sub-original",
+      "path": "pa26/tests/spec/primitive-binary/reference-boundary.rs",
+      "sha256": "b15564b6f442133b804911e28d55a083c80e8e91105daa4882c75dca3b467174",
+      "accepted": true,
+      "native": true,
+      "panic": false,
+      "profile": "ordinary"
+    },
+    {
+      "name": "qualified",
+      "path": "pa26/tests/spec/shared-value-operands/qualified.rs",
+      "sha256": "dc34b112145e995a770004aaae5271cdb00325dacedb3c77239ac35d8f80f13e",
+      "accepted": true,
+      "native": true,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "generic",
+      "path": "pa26/tests/spec/shared-value-operands/generic.rs",
+      "sha256": "0cef50e796015eac9ccb79d87de5643c8612037f0ab3b6b3562855211b13fc51",
+      "accepted": true,
+      "native": true,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "dot-typed",
+      "path": "pa26/tests/spec/shared-value-operands/dot-typed.rs",
+      "sha256": "2118a5f3ff0067e13bdaadd95ff18f824b9954ef5d509e3c6c147323f3e294f0",
+      "accepted": true,
+      "native": true,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "dot-inferred",
+      "path": "pa26/tests/spec/shared-value-operands/dot-inferred.rs",
+      "sha256": "58eaf97f4155a33ccce8e00112e0dfe110f37e0892435f8f79631ce0ddb4f8e5",
+      "accepted": true,
+      "native": true,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "alias",
+      "path": "pa26/tests/spec/shared-value-operands/alias.rs",
+      "sha256": "78ccade99b4386cde61aa4e538fdfe0e392d8d958ff692bb2e45f839d717e753",
+      "accepted": true,
+      "native": true,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "reified",
+      "path": "pa26/tests/spec/shared-value-operands/reified.rs",
+      "sha256": "168d2ea916051ceef033a5b9b481786584a22d5b1657e1115d122fdea30b9b40",
+      "accepted": true,
+      "native": true,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "reified-static",
+      "path": "pa26/tests/spec/shared-value-operands/reified-static.rs",
+      "sha256": "ed3bfc3ff85280a0cbe1b3856948bcafc4188f00c4f5b53ff80d82a15e91bc96",
+      "accepted": true,
+      "native": true,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "coerced-mut-borrow",
+      "path": "pa26/tests/spec/shared-value-operands/coerced-mut-borrow.rs",
+      "sha256": "02021bf1f0bf4f01e8bbb8223e45c9141b0f77b08b67ffba0e1319f71b836ba9",
+      "accepted": true,
+      "native": true,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "float",
+      "path": "pa26/tests/spec/shared-value-operands/float.rs",
+      "sha256": "3a38282230139502ad9d612c6df3cb49562e644169524b23b2ec7e4df8967761",
+      "accepted": true,
+      "native": true,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "wide",
+      "path": "pa26/tests/spec/shared-value-operands/wide.rs",
+      "sha256": "6f89593697e37b3648b60bd568bb2e41684d9b077b4278de28ead092d30b5f01",
+      "accepted": true,
+      "native": true,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "order",
+      "path": "pa26/tests/spec/shared-value-operands/order.rs",
+      "sha256": "e8ad47a81e881bedb1a285b0e21dbcdc5c2d0d3e07ef3bc6a945283b5b36225f",
+      "accepted": true,
+      "native": true,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "local-owner",
+      "path": "pa26/tests/spec/shared-value-operands/local-owner.rs",
+      "sha256": "e4c61106ba1f3703f3dbb01bcc613adc29a2af3a5e2877cfcfd6c13663b6f6a1",
+      "accepted": true,
+      "native": true,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "lexical-ambiguity",
+      "path": "pa26/tests/spec/shared-value-operands/lexical-ambiguity.rs",
+      "sha256": "00cfee27de3fd4f7b3c004dd324d55e19dfc24e155edcdcbae38cf4175cae494",
+      "accepted": false,
+      "native": false,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "mixed-width",
+      "path": "pa26/tests/spec/shared-value-operands/mixed-width.rs",
+      "sha256": "5a2722492bc7b783e587f9dc82cb8feba0578d423338730854a5ef1fd91ff150",
+      "accepted": false,
+      "native": false,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "mutable-rhs",
+      "path": "pa26/tests/spec/shared-value-operands/mutable-rhs.rs",
+      "sha256": "485b3856b65b455fd1997a4a1efa3782be9d89a2ba56648a1b771f72ed2d22bd",
+      "accepted": false,
+      "native": false,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "deep-reference",
+      "path": "pa26/tests/spec/shared-value-operands/deep-reference.rs",
+      "sha256": "fb228f60e77e7bb85834bef40c051d748a10c2b2d8498824759e8b3b2039f6f7",
+      "accepted": false,
+      "native": false,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "wrong-result",
+      "path": "pa26/tests/spec/shared-value-operands/wrong-result.rs",
+      "sha256": "fd690bf66b53c9db812ec8dc040b9e81db860736e9464ba7dd513ceaf27c438a",
+      "accepted": false,
+      "native": false,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "bool",
+      "path": "pa26/tests/spec/shared-value-operands/bool.rs",
+      "sha256": "7a2dc0bb72a3d7282fda01f04f68b0b626aeda21354bfa1dc2928b2d47d9ba8b",
+      "accepted": false,
+      "native": false,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "char",
+      "path": "pa26/tests/spec/shared-value-operands/char.rs",
+      "sha256": "b87e07359f16a749f0d9f0289f6512a729d4338bcb02b7d44975f4f91ee293ce",
+      "accepted": false,
+      "native": false,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "live-loan",
+      "path": "pa26/tests/spec/shared-value-operands/live-loan.rs",
+      "sha256": "ed11fb8146734bdd8263ad27e32cec926fe2bdb290eb4831f3f196a7fedd534b",
+      "accepted": false,
+      "native": false,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "const-call",
+      "path": "pa26/tests/spec/shared-value-operands/const-call.rs",
+      "sha256": "18058c573dfcf273aed97f09d40ebe84b1cfe8076185bcc6cbba79beeb7d2c63",
+      "accepted": false,
+      "native": false,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "receiver-reference",
+      "path": "pa26/tests/spec/shared-value-operands/receiver-reference.rs",
+      "sha256": "77bd0f82037183e2f7871b13bc907badc56cebc5872aadf7c34db61e4de21e84",
+      "accepted": true,
+      "native": false,
+      "panic": false,
+      "profile": "ordinary",
+      "scope": "retained required shared-left profile; no new permission planned"
+    },
+    {
+      "name": "overflow-add",
+      "path": "pa26/tests/spec/shared-value-operands/overflow-add.rs",
+      "sha256": "38557a1cccc268ee9df8ec0979a71d9065d57f59413a23bf463d684badd4552d",
+      "accepted": true,
+      "native": true,
+      "panic": true,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "overflow-sub",
+      "path": "pa26/tests/spec/shared-value-operands/overflow-sub.rs",
+      "sha256": "999ffb06f0ba286595ca70dd57115fbaa32ffcb4a90645289703c01fa7a6ab2e",
+      "accepted": true,
+      "native": true,
+      "panic": true,
+      "profile": "ordinary",
+      "scope": "primitive owned left/shared RHS"
+    },
+    {
+      "name": "source-owned",
+      "path": "pa31/tests/spec/shared-value-operands/source-owned.rs",
+      "sha256": "29523baf9f432a56e6c1dd82d0040a560f1259054eda5ef1239555c616b94054",
+      "accepted": true,
+      "native": false,
+      "panic": false,
+      "profile": "source-core"
+    },
+    {
+      "name": "source-absent",
+      "path": "pa31/tests/spec/shared-value-operands/source-absent.rs",
+      "sha256": "2413a0acbd973cce9008a121b8f75feafda05df3304d1b975999790419864313",
+      "accepted": false,
+      "native": false,
+      "panic": false,
+      "profile": "source-core"
+    }
+  ],
+  "scope": "Owned primitive left and shared primitive RHS for Add/Sub. Shared left is an independent Rust-positive required boundary; float MAX separate. SourceCore owns actual source impls with no bootstrap factory fallback.",
+  "native": "Accepted scoped profiles only; expected empty stdout/stderr and exit0 except explicit reviewed overflow panic pairs."
+}

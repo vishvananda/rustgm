@@ -79,7 +79,7 @@ pub(super) fn comparison_candidate(
 // Only a selecting query may infer the primitive impl's RHS from known Self.
 // These equations stay in this isolated candidate; competing source evidence
 // still causes ambiguity, while rigid nominal/parameter RHS remains unrelated.
-fn infer_numeric(
+pub(super) fn infer_numeric(
     facts: &Declarations,
     context: &mut Context,
     term: crate::types::infer::TermId,
@@ -117,6 +117,18 @@ pub(super) fn validate_scalars(
     let subject_type = descriptor.validate_receiver(facts, receiver, result, bound_regions)?;
     let scalar = descriptor.scalars()?;
     let expected = descriptor.operand_type(facts, scalar.right)?;
+    // Generic RHS regions are raised beneath the method's function binder,
+    // including an empty binder. Exact region identity belongs to the existing
+    // canonical scoped substitution; only the scalar storage shape is local here.
+    if descriptor.form() == Form::ValueBinary
+        && match scalar.rhs {
+            Rhs::Owned => physical_right != right,
+            Rhs::SharedReference => !matches!(facts.types.kind(physical_right),
+                Some(Kind::Reference {referent,mutable:false,..}) if referent==expected),
+        }
+    {
+        return Err("primitive value RHS differs from its selected scalar shape");
+    }
     if descriptor.form() == Form::Comparison
         && !matches!(facts.types.kind(physical_right),Some(Kind::Reference{referent,mutable:false,region}) if referent==right && region==RegionId::bound(0,1)?)
     {

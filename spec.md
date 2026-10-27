@@ -4540,3 +4540,13 @@ its actual associated declarations and initializers; bootstrap value selection
 must never replace an absent or differently valued source definition. The
 [char checkpoint](docs/pa26-char-constants.md) records ownership, scalar validity,
 physical widths and retained failed setup predictions.
+
+Primitive owned-left/shared-RHS Add/Sub methods reuse the existing selected
+primitive descriptor, canonical Output/member and scoped signature substitution.
+Validate local scalar storage shape separately from region identity: generic
+regions are raised beneath the method function binder even when that binder is
+empty. Exact region equality belongs to the canonical scoped substitution.
+Factories retain ordinary loan/ownership/arithmetic proof and instance-bound
+permits. Bootstrap primitive admission grants no SourceCore language-item
+permission; actual source bodies and source binary/const/execution proof remain
+required. See [the shared RHS checkpoint](docs/pa26-shared-value-operands.md).
