@@ -223,7 +223,7 @@ fn staged_identity_and_existing_query_failures_are_preserved() -> Result {
     assert!(
         error
             .to_string()
-            .contains("source header completion incarnation changed"),
+            .contains("source header configured owner changed"),
         "{error}"
     );
     assert!(!error.to_string().contains("transport is not implemented"));
