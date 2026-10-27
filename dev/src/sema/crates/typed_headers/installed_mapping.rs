@@ -28,6 +28,8 @@ use std::{rc::Rc, sync::Arc};
 
 #[path = "checked_callables.rs"]
 mod callables;
+#[path = "selected_original_maps.rs"]
+mod originals;
 
 pub(in crate::sema) struct ProvidedOwners {
     inventory: Arc<Dependencies>,
@@ -160,7 +162,9 @@ impl ProvidedOwners {
     fn view(&self) -> RecipeView<'_> {
         RecipeView::retained_parts(&self.inventory, self.index, &self.catalog, self.root)
     }
-    fn descriptor(&self) -> Result<SourceDescriptor<'_>, &'static str> {
+    pub(in crate::sema::crates::typed_headers) fn descriptor(
+        &self,
+    ) -> Result<SourceDescriptor<'_>, &'static str> {
         let mut work = ReservationWork::default();
         self.data_identity
             .require_owner(&self.data, &mut work)

@@ -191,7 +191,7 @@ pub(super) fn build(
         key: body.key(),
         source: body.source,
         signature: Some(view.signature()),
-        universals: 0,
+        universals: view.universals(),
         assumptions,
         parameters,
         type_assumptions,
@@ -212,6 +212,17 @@ fn parameter_order(
     parameters: &[crate::types::parameters::ParameterId],
     steps: &mut usize,
 ) -> Result<(), &'static str> {
+    if view.numbered() {
+        if parameters.len() != view.inputs().parameters.len() {
+            return Err("selected original changed its complete raw formal domain");
+        }
+        for (&raw, &actual) in view.inputs().parameters.iter().zip(parameters) {
+            if view.parameter(raw, &facts.types, steps)? != actual {
+                return Err("selected original changed its actual full formal order");
+            }
+        }
+        return Ok(());
+    }
     use crate::types::{Kind, arguments::Argument};
     let mut actual = parameters.iter();
     for parameter in facts

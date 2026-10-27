@@ -1,6 +1,7 @@
 //! Context parents complete original proofs without becoming runtime candidates.
 use super::{
-    Checked, Contract, Contracts, Environment, Error, HashMap, Templates, loans, owners, regions,
+    Checked, Contract, Contracts, Environment, Error, HashMap, State, Templates, loans, owners,
+    regions,
 };
 use crate::types::{ItemId, TypeId, variance::Variances};
 use std::{collections::HashSet, hash::BuildHasher};
@@ -113,12 +114,14 @@ pub(crate) fn verify<'a, S: BuildHasher>(
         .collect::<Result<Vec<Contract>, Error>>()?;
     Ok(Checked {
         templates,
-        index,
-        closures,
-        anonymous,
-        regions,
-        loans,
-        contracts,
+        state: State {
+            index,
+            closures,
+            anonymous,
+            regions,
+            loans,
+            contracts,
+        },
     })
 }
 fn check_budget(

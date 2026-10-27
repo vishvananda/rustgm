@@ -97,7 +97,7 @@ pub(in crate::body) fn prepare_scoped(
     prepare_using(facts, body, contract, scope, None)
         .map_err(crate::sema::dispatch::Failure::message)
 }
-pub(in crate::body) fn prepare_selected(
+pub(crate) fn prepare_selected(
     facts: &mut Declarations,
     body: &Body,
     contract: &mut Contract,

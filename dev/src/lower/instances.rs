@@ -574,7 +574,7 @@ fn inspect_staged<S, R>(
         stage: &mut stage,
         callback: collect,
     };
-    let originals = staged_originals::Context {
+    let mut originals = staged_originals::Context {
         checked: &checked,
         collector: &mut collect,
         preparation,
@@ -584,15 +584,38 @@ fn inspect_staged<S, R>(
         "selected-dispatch context={}",
         std::mem::size_of_val(&originals)
     );
-    let program = demand::prepare(
-        report,
-        facts,
-        roots,
-        originals,
-        inputs,
-        prepared.concrete,
-        prepared.constants,
-    )?;
+    let program = if originals.preparation.is_some() {
+        let (program, ordinary) = demand::prepare_ordinary(
+            report,
+            facts,
+            &mut originals,
+            inputs,
+            prepared.concrete,
+            prepared.constants,
+            roots.globals,
+        )?;
+        let service = originals.preparation.take().ok_or_else(|| {
+            diagnostic(report, None, "selected original service disappeared".into())
+        })?;
+        drop(originals);
+        let retained = checked
+            .retain(std::rc::Rc::clone(&templates))
+            .map_err(|e| diagnostic(report, e.node, e.message))?;
+        // Proof outputs own every prepared context needed by later instances.
+        drop(contexts);
+        drop(templates);
+        demand::materialize_selected(report, facts, roots, retained, program, &ordinary, service)?
+    } else {
+        demand::prepare(
+            report,
+            facts,
+            roots,
+            originals,
+            inputs,
+            prepared.concrete,
+            prepared.constants,
+        )?
+    };
     let assembled = program
         .assemble()
         .map_err(|e| diagnostic(report, e.node, e.message))?;

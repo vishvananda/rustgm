@@ -1,5 +1,7 @@
 //! Immutable imported originals share one owner; no row is a Checked or Permit.
 mod decoded_bodies;
+mod selected_original;
+pub(crate) use selected_original::{demand as demand_selected, validate as validate_selected};
 mod interface_goals;
 mod invocations;
 mod operations;
@@ -13,9 +15,18 @@ use crate::{
 };
 use std::rc::Rc;
 pub(crate) struct Original {
-    pub template: Template,
-    pub contract: Contract,
+    template: Template,
+    contract: Contract,
 }
+impl Original {
+    pub(crate) fn template(&self) -> &Template {
+        &self.template
+    }
+    pub(crate) fn contract(&self) -> &Contract {
+        &self.contract
+    }
+}
+#[derive(Default)]
 pub(crate) struct ImportedOriginals {
     rows: Vec<Original>,
     index: HashMap<DefId, usize>,
@@ -53,6 +64,19 @@ impl ImportedOriginals {
             return Err("imported original construction work budget exceeded");
         }
         Ok(())
+    }
+    pub(crate) fn append_bound(&self) -> crate::support::retained::Growth {
+        use crate::support::retained::Growth;
+        let mut growth = Growth::vector::<Original>(self.rows.len(), self.rows.capacity(), 1);
+        growth.include(Growth::map::<DefId, usize>(
+            self.index.len(),
+            self.index.capacity(),
+            1,
+        ));
+        growth
+    }
+    pub(crate) fn append_selected(&mut self, row: Original) -> Result<(), &'static str> {
+        self.retain(row)
     }
     fn retain(&mut self, row: Original) -> Result<(), &'static str> {
         let crate::body::ir::Owner::Function { definition, .. } = row.template.body.owner else {

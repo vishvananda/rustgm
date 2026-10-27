@@ -13,6 +13,8 @@ use crate::{
 mod declarations;
 #[path = "declared_methods.rs"]
 mod methods;
+#[path = "selected_originals.rs"]
+mod originals;
 
 /// A private append cursor, with no completed header, role or body authority.
 #[derive(Default)]

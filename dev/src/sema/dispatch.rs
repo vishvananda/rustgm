@@ -30,6 +30,15 @@ pub(crate) use tables::table_method;
 
 /// A borrowed selected producer supplies data for a suspended query, never proof.
 pub(crate) trait Preparation {
+    fn with_original(
+        &mut self,
+        facts: &mut Declarations,
+        definition: DefId,
+        consume: &mut dyn FnMut(
+            &Declarations,
+            &crate::sema::crates::SourceOriginal<'_>,
+        ) -> Result<(), crate::resolve::package::Error>,
+    ) -> Result<(), crate::resolve::package::Error>;
     fn copy_declarations(
         &mut self,
         facts: &mut Declarations,

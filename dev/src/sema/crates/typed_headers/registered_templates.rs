@@ -21,7 +21,9 @@ use crate::{
 };
 #[path = "assumed_scopes.rs"]
 mod assumption_environments;
-pub(in crate::sema::crates::typed_headers) use assumption_environments::ScopeReader;
+pub(in crate::sema::crates::typed_headers) use assumption_environments::{
+    OriginalBody, ScopeReader,
+};
 #[path = "formal_ancestry.rs"]
 mod formal_path;
 #[path = "recorded_regions.rs"]
@@ -496,4 +498,40 @@ pub(super) fn prepare<'a>(
     state.callables = Some(prepared);
     result?;
     Ok(Demand::Ready(()))
+}
+
+/// Lend the same installed registration table to the existing defining kernel.
+pub(super) fn defining_body<'a>(
+    recipes: &mut Option<Box<State>>,
+    facts: &mut crate::sema::model::Declarations,
+    owner: DeclarationRef,
+    work: &mut ReservationWork,
+    mut view: impl FnMut(&mut ReservationWork) -> Result<RecipeView<'a>, Error>,
+) -> Result<Demand<()>, Error> {
+    let state = recipes
+        .as_mut()
+        .ok_or_else(|| error("selected defining demand lost its actual recipe state"))?;
+    let mut prepared = state
+        .callables
+        .take()
+        .ok_or_else(|| error("selected defining demand lost its actual callable state"))?;
+    let result = (|| {
+        work.charge(4)?;
+        if !prepared.templates.is_empty() {
+            return Err(error(
+                "selected defining demand retained a second registration table",
+            ));
+        }
+        let first = view(work)?;
+        std::mem::swap(&mut facts.lifetimes.callables, &mut prepared.templates);
+        let status = prepared.defining(first, state, facts, owner, work);
+        std::mem::swap(&mut facts.lifetimes.callables, &mut prepared.templates);
+        let status = status?;
+        if status != Demand::Ready(()) {
+            return Ok(status);
+        }
+        prepared.prepare_original_roots(view(work)?, state, facts, owner, work)
+    })();
+    state.callables = Some(prepared);
+    result
 }

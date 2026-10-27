@@ -58,6 +58,44 @@ impl Original {
         }
         Ok(prepared)
     }
+    pub(crate) fn prepare_selected(
+        facts: &mut Declarations,
+        original: &crate::body::transported_originals::Original,
+        preparation: &mut dyn crate::sema::dispatch::Preparation,
+    ) -> Result<Contract, crate::resolve::package::Error> {
+        use crate::resolve::package::Error;
+        let body = &original.template().body;
+        let crate::body::ir::Owner::Function { definition, .. } = body.owner else {
+            return Err(Error::unlocated(
+                "selected original requires its actual function owner",
+            ));
+        };
+        let mut steps = 0;
+        let validated = preparation.with_original(facts, definition, &mut |facts, view| {
+            crate::body::transported_originals::validate_selected(facts, view, original, &mut steps)
+                .map_err(Error::unlocated)
+        });
+        let charged = preparation.prepay(facts, steps, 0);
+        validated.and(charged)?;
+        let raw = original.contract();
+        preparation.prepay(facts, 1, raw.retained_bytes())?;
+        let mut prepared = raw.clone();
+        crate::body::copy_requirements::prepare_selected(
+            facts,
+            body,
+            &mut prepared,
+            None,
+            preparation,
+        )
+        .map_err(|failure| match failure {
+            crate::sema::dispatch::Failure::Invalid(message) => Error::unlocated(message),
+            crate::sema::dispatch::Failure::Preparation(error) => error,
+        })?;
+        prepared
+            .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
+            .map_err(Error::unlocated)?;
+        Ok(prepared)
+    }
     pub fn validate(&self, facts: &Declarations) -> Result<(), &'static str> {
         Self::validate_parts(facts, &self.template.body, &self.contract)?;
         if let Owner::Function { definition, .. } = self.template.body.owner

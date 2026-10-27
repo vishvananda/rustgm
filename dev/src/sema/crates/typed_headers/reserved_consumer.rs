@@ -24,6 +24,51 @@ struct RuntimePreparation<'a, 'work> {
     selected: &'a mut SelectedConsumer<'work>,
 }
 impl crate::sema::dispatch::Preparation for RuntimePreparation<'_, '_> {
+    fn with_original(
+        &mut self,
+        facts: &mut Declarations,
+        definition: DefId,
+        consume: &mut dyn FnMut(
+            &Declarations,
+            &crate::sema::crates::SourceOriginal<'_>,
+        ) -> Result<(), Error>,
+    ) -> Result<(), Error> {
+        self.selected.require(self.report, facts)?;
+        let result = (|| {
+            if !self.selected.definition(self.report, facts, definition)? {
+                return Err(Error::unlocated(
+                    "selected original requires an actual imported declaration",
+                ));
+            }
+            let catalog = self.selected.reservation.catalog();
+            let id = catalog.declaration(definition).map_err(Error::unlocated)?;
+            catalog
+                .validate_declaration(id, definition, crate::resolve::model::DefKind::Function)
+                .map_err(Error::unlocated)?;
+            let (_, owner, _) = catalog
+                .declaration_coordinate(id)
+                .map_err(Error::unlocated)?;
+            let authority = SchemaAuthority {
+                report: self.report,
+                reservation: &self.selected.reservation,
+                completion: &self.selected.completion,
+            };
+            match self.selected.selected.with_original(
+                facts,
+                &authority,
+                owner,
+                self.selected.work,
+                consume,
+            )? {
+                Demand::Ready(()) => Ok(()),
+                Demand::Blocked(_) => Err(Error::unlocated(
+                    "selected original requires its pending actual defining/body dependency",
+                )),
+            }
+        })();
+        let synchronized = super::synchronize_headers(facts, self.selected.work);
+        result.and(synchronized)
+    }
     fn copy_declarations(&mut self, facts: &mut Declarations) -> Result<(), Error> {
         use crate::support::bindings::LangItem;
         self.selected.require(self.report, facts)?;

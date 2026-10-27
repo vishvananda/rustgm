@@ -50,7 +50,7 @@ struct AllocationLog {
     ordered: Vec<Allocation>,
     by_slot: Vec<Option<RegionId>>,
 }
-struct RecordedDomain {
+pub(in crate::sema::crates::typed_headers) struct RecordedDomain {
     seal: Seal,
     log: AllocationLog,
     aliases: Option<Vec<RegionId>>,
@@ -285,8 +285,36 @@ impl RecordedDomain {
         }
         Ok(())
     }
-    #[cfg(test)]
-    fn region(
+    pub(in crate::sema::crates::typed_headers) fn recorded_region(
+        &self,
+        view: &RecipeView<'_>,
+        reference: s::RegionRef,
+        work: &mut ReservationWork,
+    ) -> Result<Option<RegionId>, Error> {
+        work.charge(3)?;
+        if view.root() != self.seal.root {
+            return Err(error(
+                "recorded region belongs to another actual catalog root",
+            ));
+        }
+        match view.rows()?.regions.get(reference.0 as usize) {
+            Some(s::Region::Variable { body, slot }) => {
+                if *body != self.seal.raw || view.body(*body, work)? != self.seal.body {
+                    return Err(error("recorded region belongs to another actual body"));
+                }
+                self.log
+                    .by_slot
+                    .get(*slot as usize)
+                    .copied()
+                    .flatten()
+                    .map(Some)
+                    .ok_or_else(|| error("recorded region lost its actual allocated slot"))
+            }
+            Some(_) => Ok(None),
+            None => Err(error("recorded region is outside its actual domain")),
+        }
+    }
+    pub(in crate::sema::crates::typed_headers) fn region(
         &self,
         view: &RecipeView<'_>,
         store: &Store,
@@ -324,6 +352,22 @@ impl Owner {
     }
     pub(super) fn retained_bytes(&self) -> usize {
         self.bytes
+    }
+    pub(super) fn selected_record<'a>(
+        &'a self,
+        view: &RecipeView<'_>,
+        store: &Store,
+        expected: &Ready,
+        work: &mut ReservationWork,
+    ) -> Result<&'a Arc<RecordedDomain>, Error> {
+        let stage = DomainStage::new(view, store, expected, work)?;
+        let record = self
+            .entries
+            .get(expected.pair.function_row as usize)
+            .and_then(Option::as_ref)
+            .ok_or_else(|| error("body lookup requires its actual immutable recording"))?;
+        record.require(&stage, store, work)?;
+        Ok(record)
     }
     fn complete(
         &mut self,

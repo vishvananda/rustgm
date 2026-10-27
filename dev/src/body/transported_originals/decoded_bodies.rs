@@ -64,7 +64,7 @@ fn build(
     definition: crate::resolve::model::DefId,
 ) -> Result<Original, Error> {
     let report = context.report;
-    let (mut body, contract, environment) = {
+    let (body, contract, environment) = {
         let view = crate::sema::crates::source_original(facts, definition, &mut work.steps)
             .map_err(|e| report.body_optional_error(None, e))?
             .ok_or_else(|| {
@@ -89,6 +89,16 @@ fn build(
             ),
         )
     };
+    finish(report, facts, scratch, body, contract, environment)
+}
+pub(super) fn finish(
+    report: &crate::resolve::expansion::Report,
+    facts: &mut Declarations,
+    scratch: &mut promote::Scratch,
+    mut body: crate::body::ir::Body,
+    contract: crate::body::regions::Contract,
+    environment: Arc<crate::types::parameters::environment::Environment>,
+) -> Result<Original, Error> {
     let source = body.source;
     let needed = crate::types::destruction::NeedsDrop::new(
         facts.destructors.implementations().iter().map(|i| i.item),
@@ -110,16 +120,41 @@ fn build(
         contract,
     })
 }
+
 fn preflight(
     rows: s::ValidatedView<'_>,
     work: &mut ImportedOriginals,
     allowance: &Allowance,
 ) -> Result<(), &'static str> {
+    let (bytes, visits) = allocation(rows, work, rows.originals.len(), rows.originals.iter())?;
+    if allowance
+        .header_work
+        .saturating_add(work.steps)
+        .saturating_add(visits)
+        > crates::MAX_COMPONENTS
+        || allowance
+            .header_bytes
+            .saturating_add(work.retained_bytes())
+            .saturating_add(bytes)
+            > crates::MAX_BYTES
+        || work.retained_bytes().saturating_add(bytes) > allowance.templates
+    {
+        return Err("source original aggregate work/storage preflight exceeded its budget");
+    }
+    Ok(())
+}
+
+pub(super) fn allocation<'a>(
+    rows: s::ValidatedView<'a>,
+    work: &mut ImportedOriginals,
+    additional: usize,
+    originals: impl Iterator<Item = &'a s::Original>,
+) -> Result<(usize, usize), &'static str> {
     let mut bytes = 4_usize
-        .saturating_mul(work.rows.len().saturating_add(rows.originals.len()))
+        .saturating_mul(work.rows.len().saturating_add(additional))
         .saturating_mul(size_of::<Original>() + size_of::<(crate::resolve::model::DefId, usize)>());
     let mut visits = 0_usize;
-    for raw in &rows.originals {
+    for raw in originals {
         work.charge(1)?;
         let input = rows
             .body_inputs
@@ -186,19 +221,5 @@ fn preflight(
                 size_of::<crate::body::regions::BuiltinRequirements>() + 4 * size_of::<usize>(),
             );
     }
-    if allowance
-        .header_work
-        .saturating_add(work.steps)
-        .saturating_add(visits)
-        > crates::MAX_COMPONENTS
-        || allowance
-            .header_bytes
-            .saturating_add(work.retained_bytes())
-            .saturating_add(bytes)
-            > crates::MAX_BYTES
-        || work.retained_bytes().saturating_add(bytes) > allowance.templates
-    {
-        return Err("source original aggregate work/storage preflight exceeded its budget");
-    }
-    Ok(())
+    Ok((bytes, visits))
 }

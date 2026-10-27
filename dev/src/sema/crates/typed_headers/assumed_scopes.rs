@@ -368,6 +368,10 @@ impl environments::LeafClauses for ImportedLeaves<'_> {
         }
     }
 }
+#[path = "selected_body_inputs.rs"]
+mod selected_body;
+pub(in crate::sema::crates::typed_headers) use selected_body::OriginalBody;
+
 struct NumberedBody {
     recording: numbering_records::Key,
     declaration: Arc<Environment>,

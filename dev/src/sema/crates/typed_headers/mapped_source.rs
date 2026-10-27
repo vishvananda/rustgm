@@ -2,6 +2,7 @@
 pub(super) mod checked_rows;
 mod dag_recipes;
 mod decoded_original;
+mod original_requests;
 pub(crate) use decoded_original::Original as SourceOriginal;
 mod ingested_readiness;
 pub(in crate::sema) use ingested_readiness::Readiness;
@@ -260,33 +261,10 @@ impl Graph {
         &self,
         raw: s::Requirement,
     ) -> Result<Predicate, &'static str> {
-        use crate::types::parameters::predicates::Bound;
-        match raw {
-            s::Requirement::Trait {
-                application,
-                effect,
-            } => {
-                let mut predicate = self.application(application)?;
-                let Bound::Trait(application) = predicate.bound else {
-                    return Err("source request lost its actual complete ordinary application");
-                };
-                predicate.bound = Bound::trait_application(application, effect);
-                Ok(predicate)
-            }
-            s::Requirement::TypeOutlives { subject, shorter } => Ok(Predicate {
-                ty: self
-                    .ty(subject)
-                    .map_err(|_| "source request has an unknown actual type")?,
-                bound: Bound::Outlives(
-                    self.region(shorter)
-                        .map_err(|_| "source request has an unknown actual region")?,
-                ),
-            }),
-            s::Requirement::Outlives(_) => {
-                Err("standalone region request requires its wider source relation profile")
-            }
-        }
+        let mut mapping = self;
+        original_requests::map(&mut mapping, raw)
     }
+
     pub(super) fn slot(&self, reference: s::SlotRef) -> Result<Argument, Error> {
         self.slots
             .get(reference.0 as usize)

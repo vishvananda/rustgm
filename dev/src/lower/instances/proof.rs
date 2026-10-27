@@ -57,6 +57,47 @@ enum Original<'a> {
     Adapter(usize, &'a crate::body::adapters::Template),
 }
 impl Builder {
+    pub(super) fn append_selected_template(
+        &mut self,
+        report: &crate::resolve::expansion::Report,
+        facts: &mut Declarations,
+        retained: templates::Retained,
+        original: crate::body::transported_originals::Original,
+        prepared: Contract,
+    ) -> Result<templates::Retained, crate::resolve::package::Error> {
+        let custom = facts
+            .destructors
+            .implementations()
+            .iter()
+            .map(|implementation| implementation.item)
+            .collect::<Vec<_>>();
+        let mut queries = std::mem::take(&mut self.queries).attach(
+            &facts.types,
+            &facts.lifetimes.nominal_requirements,
+            &facts.lifetimes.callables,
+        );
+        let mut copies = crate::types::copy::Copies::default();
+        let mut environment = borrow::Environment {
+            types: &facts.types,
+            definitions: &facts.aggregates,
+            derives: &facts.derives,
+            source_copy: facts.uses_source_copy(),
+            copies: &mut copies,
+        };
+        let result = retained.append(
+            original,
+            prepared,
+            &mut templates::Append {
+                environment: &mut environment,
+                variances: &facts.lifetimes.variances,
+                queries: &mut queries,
+                custom: &custom,
+                position: |ty, field| crate::body::drops::nominal_position(facts, ty, field),
+            },
+        );
+        self.queries = queries.into_cache();
+        result.map_err(|e| super::diagnostic(report, e.node, e.message))
+    }
     pub(super) fn append_original<C: super::staged_originals::Collect>(
         &mut self,
         report: &crate::resolve::expansion::Report,

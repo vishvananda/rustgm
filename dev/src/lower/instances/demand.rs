@@ -14,6 +14,9 @@ use crate::{
     types::{ItemId, Kind, instance::Instance},
 };
 mod paid_owners;
+mod selected_originals;
+use selected_originals::Proofs;
+pub(super) use selected_originals::materialize as materialize_selected;
 
 enum Work {
     Adapter(body::invocation_entries::Entry, body::ir::ProofSite),
@@ -21,7 +24,7 @@ enum Work {
     Leave(BodyKey),
 }
 #[derive(Default)]
-struct Ordinary {
+pub(super) struct Ordinary {
     functions: HashMap<ItemId, usize>,
     closures: HashMap<crate::types::closure::ClosureId, usize>,
 }
@@ -262,16 +265,25 @@ pub(super) fn prepare<C: Collect>(
     {
         return Ok(program);
     }
-    materialize(report, facts, roots, templates, program, &ordinary)
+    materialize(
+        report,
+        facts,
+        roots,
+        Proofs::Borrowed(templates),
+        program,
+        &ordinary,
+        None,
+    )
 }
 
 fn materialize(
     report: &Report,
     facts: &mut Declarations,
     roots: crate::lower::roots::Selected<'_>,
-    templates: &Checked<'_>,
+    mut templates: Proofs<'_, '_>,
     mut program: proof::Builder,
     ordinary: &Ordinary,
+    mut preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
 ) -> Result<proof::Builder, Error> {
     let (mut work, mut dependencies) = initial_work(report, facts, roots, &mut program, ordinary)?;
     let mut instances = HashMap::default();
@@ -279,97 +291,106 @@ fn materialize(
     let mut budget = Budget::default();
     let mut cleanup = body::instantiate::Cleanup::new(facts);
     while let Some(action) = work.pop() {
-        let (instance, source) = match action {
-            Work::Adapter(entry, source) => {
-                let original = ordinary
-                    .adapter_source(&facts.types, templates, &instances, entry)
-                    .map_err(|e| diagnostic(report, Some(source), e.into()))?;
-                let Some(original) = original else {
-                    work.push(Work::Adapter(entry, source));
-                    work.push(Work::Enter(entry.instance(), source));
-                    continue;
-                };
-                if let Some((index, family)) = budget.adapter(
-                    report,
-                    facts,
-                    templates,
-                    &mut program,
-                    original,
-                    (entry, source),
-                )? {
-                    work.push(Work::Leave(family));
-                    dependencies.schedule(
+        if let Work::Enter(instance, _) = &action
+            && let Some(service) = preparation.as_deref_mut()
+        {
+            templates.demand(report, facts, &mut program, *instance, service)?;
+        }
+        templates.with_checked(report, |templates| {
+            let (instance, source) = match action {
+                Work::Adapter(entry, source) => {
+                    let original = ordinary
+                        .adapter_source(&facts.types, templates, &instances, entry)
+                        .map_err(|e| diagnostic(report, Some(source), e.into()))?;
+                    let Some(original) = original else {
+                        work.push(Work::Adapter(entry, source));
+                        work.push(Work::Enter(entry.instance(), source));
+                        return Ok(());
+                    };
+                    if let Some((index, family)) = budget.adapter(
                         report,
                         facts,
+                        templates,
                         &mut program,
-                        DependencyRoot::Body(index),
-                        &mut work,
-                    )?;
+                        original,
+                        (entry, source),
+                    )? {
+                        work.push(Work::Leave(family));
+                        dependencies.schedule(
+                            report,
+                            facts,
+                            &mut program,
+                            DependencyRoot::Body(index),
+                            &mut work,
+                        )?;
+                    }
+                    return Ok(());
                 }
-                continue;
-            }
-            Work::Enter(instance, source) => (instance, source),
-            Work::Leave(item) => {
-                budget.leave(report, item)?;
-                continue;
-            }
-        };
-        let error = |e: &str| diagnostic(report, Some(source), e.into());
-        let index = if let Some(selected) = facts
-            .primitive_methods
-            .as_deref()
-            .and_then(|registry| registry.get(instance))
-        {
-            if instances.contains_key(&instance) {
-                continue;
-            }
-            let (index, family) =
-                budget.factory(report, facts, templates, &mut program, selected)?;
-            instances.insert(instance, index);
-            work.push(Work::Leave(family));
-            index
-        } else {
-            let Some(selected) = ordinary.select(facts, templates, instance).map_err(error)? else {
-                continue;
+                Work::Enter(instance, source) => (instance, source),
+                Work::Leave(item) => {
+                    budget.leave(report, item)?;
+                    return Ok(());
+                }
             };
-            if let Some((template, input)) = selected.template {
+            let error = |e: &str| diagnostic(report, Some(source), e.into());
+            let index = if let Some(selected) = facts
+                .primitive_methods
+                .as_deref()
+                .and_then(|registry| registry.get(instance))
+            {
                 if instances.contains_key(&instance) {
-                    continue;
+                    return Ok(());
                 }
-                budget
-                    .enter(selected.family, &template.body, input)
-                    .map_err(error)?;
-                let request = Specialization {
-                    template,
-                    input,
-                    instance,
-                    source,
-                };
-                let index = specialize(
-                    report,
-                    facts,
-                    templates,
-                    &mut program,
-                    &mut cleanup,
-                    request,
-                )?;
+                let (index, family) =
+                    budget.factory(report, facts, templates, &mut program, selected)?;
                 instances.insert(instance, index);
-                work.push(Work::Leave(selected.family));
+                work.push(Work::Leave(family));
                 index
             } else {
-                let Some(index) = selected.concrete(&mut visited).map_err(error)? else {
-                    continue;
+                let Some(selected) = ordinary.select(facts, templates, instance).map_err(error)?
+                else {
+                    return Ok(());
                 };
-                index
-            }
-        };
-        dependencies.schedule(
-            report,
-            facts,
-            &mut program,
-            DependencyRoot::Body(index),
-            &mut work,
-        )?;
+                if let Some((template, input)) = selected.template {
+                    if instances.contains_key(&instance) {
+                        return Ok(());
+                    }
+                    budget
+                        .enter(selected.family, &template.body, input)
+                        .map_err(error)?;
+                    let request = Specialization {
+                        template,
+                        input,
+                        instance,
+                        source,
+                    };
+                    let index = specialize(
+                        report,
+                        facts,
+                        templates,
+                        &mut program,
+                        &mut cleanup,
+                        request,
+                    )?;
+                    instances.insert(instance, index);
+                    work.push(Work::Leave(selected.family));
+                    index
+                } else {
+                    let Some(index) = selected.concrete(&mut visited).map_err(error)? else {
+                        return Ok(());
+                    };
+                    index
+                }
+            };
+            dependencies.schedule(
+                report,
+                facts,
+                &mut program,
+                DependencyRoot::Body(index),
+                &mut work,
+            )?;
+            Ok(())
+        })?;
     }
     Ok(program)
 }
@@ -544,7 +565,7 @@ impl Dependencies {
     }
 }
 
-fn prepare_ordinary<C: Collect>(
+pub(super) fn prepare_ordinary<C: Collect>(
     report: &Report,
     facts: &mut Declarations,
     originals: &mut Originals<'_, '_, '_, C>,

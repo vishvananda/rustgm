@@ -395,7 +395,7 @@ pub(super) fn finish(
     })
 }
 impl Prepared {
-    fn defining(
+    pub(in crate::sema::crates::typed_headers) fn defining(
         &mut self,
         view: RecipeView<'_>,
         state: &mut State,
@@ -451,9 +451,9 @@ impl Prepared {
             self,
             &BodyDemand { expected, origin },
             work,
-        )?;
+        );
         self.environments = Some(environments);
-        Ok(status)
+        status
     }
 }
 impl Session {
@@ -485,14 +485,14 @@ impl Session {
             .callables
             .take()
             .ok_or_else(|| error("private defining demand lost its actual template owner"))?;
-        let status = prepared.defining(view, state, &mut session.facts, owner, work)?;
+        let status = prepared.defining(view, state, &mut session.facts, owner, work);
         state.callables = Some(prepared);
-        Ok((session, status))
+        Ok((session, status?))
     }
 }
 
 impl Owner {
-    fn original_parameter(
+    pub(super) fn original_parameter(
         &self,
         rows: s::ValidatedView<'_>,
         prepared: &Prepared,

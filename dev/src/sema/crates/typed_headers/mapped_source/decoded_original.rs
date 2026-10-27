@@ -12,10 +12,14 @@ use crate::{
 };
 use std::sync::Arc;
 
+#[path = "provided_original.rs"]
+mod selected;
+use selected::Mapping;
+
 /// Borrowed reconstruction inputs, not a checked body, permission or executable.
 /// Only the actual current Graph/header/catalog correspondence can construct one.
 pub(crate) struct Original<'a> {
-    graph: &'a Graph,
+    mapping: Mapping<'a>,
     catalog: &'a Catalog,
     header: &'a super::super::Header,
     definition: DefId,
@@ -95,7 +99,7 @@ impl Graph {
             );
         }
         let original = Original {
-            graph: self,
+            mapping: Mapping::Ordinary(self),
             catalog,
             header,
             definition,
@@ -108,6 +112,15 @@ impl Graph {
     }
 }
 impl Original<'_> {
+    pub(crate) fn numbered(&self) -> bool {
+        matches!(&self.mapping, Mapping::Selected { .. })
+    }
+    pub(crate) const fn universals(&self) -> u32 {
+        self.header.universals
+    }
+    pub(crate) fn rows(&self) -> s::ValidatedView<'_> {
+        self.rows
+    }
     pub(crate) fn raw(&self) -> &s::Original {
         &self.rows.originals[self.reference.0 as usize]
     }
@@ -126,6 +139,9 @@ impl Original<'_> {
     pub(crate) fn environment(
         &self,
     ) -> Result<&Arc<crate::types::parameters::environment::Environment>, &'static str> {
+        if let Mapping::Selected { body, .. } = &self.mapping {
+            return Ok(body.environment());
+        }
         self.header
             .environment
             .as_ref()
@@ -133,9 +149,12 @@ impl Original<'_> {
     }
     pub(crate) fn ty(&self, reference: TypeRef, steps: &mut usize) -> Result<TypeId, &'static str> {
         charge(steps)?;
-        self.graph
-            .ty(reference)
-            .map_err(|_| "source original has an unknown actual type root")
+        match &self.mapping {
+            Mapping::Ordinary(graph) => graph
+                .ty(reference)
+                .map_err(|_| "source original has an unknown actual type root"),
+            Mapping::Selected { owner, store, .. } => owner.original_type(store, reference, steps),
+        }
     }
     pub(crate) fn region(
         &self,
@@ -143,9 +162,25 @@ impl Original<'_> {
         steps: &mut usize,
     ) -> Result<RegionId, &'static str> {
         charge(steps)?;
-        self.graph
-            .region(reference)
-            .map_err(|_| "source original has an unknown actual region root")
+        match &self.mapping {
+            Mapping::Ordinary(graph) => graph
+                .region(reference)
+                .map_err(|_| "source original has an unknown actual region root"),
+            Mapping::Selected {
+                owner,
+                store,
+                body,
+                view,
+            } => {
+                let mut work = crate::resolve::crates::ReservationWork::default();
+                let regional = body.region(view, store, reference, &mut work);
+                *steps = steps.saturating_add(work.steps);
+                match regional.map_err(|_| "source original changed its actual recorded region")? {
+                    Some(region) => Ok(region),
+                    None => owner.original_region(store, reference, steps),
+                }
+            }
+        }
     }
     pub(crate) fn predicate(
         &self,
@@ -153,7 +188,16 @@ impl Original<'_> {
         steps: &mut usize,
     ) -> Result<Predicate, &'static str> {
         charge(steps)?;
-        self.graph.requirement(raw)
+        match &self.mapping {
+            Mapping::Ordinary(graph) => graph.requirement(raw),
+            Mapping::Selected { .. } => super::original_requests::map(
+                &mut Requests {
+                    original: self,
+                    steps,
+                },
+                raw,
+            ),
+        }
     }
     pub(crate) fn slot_type(
         &self,
@@ -161,11 +205,7 @@ impl Original<'_> {
         steps: &mut usize,
     ) -> Result<TypeId, &'static str> {
         charge(steps)?;
-        let Argument::Type(ty) = self
-            .graph
-            .slot(reference)
-            .map_err(|_| "source original lost its actual formal slot")?
-        else {
+        let Argument::Type(ty) = self.slot(reference)? else {
             return Err("source original contract parameter is not an actual type formal");
         };
         Ok(ty)
@@ -177,12 +217,22 @@ impl Original<'_> {
         steps: &mut usize,
     ) -> Result<ParameterId, &'static str> {
         charge(steps)?;
-        self.graph.require_store(store)?;
-        let Argument::Type(ty) = self
-            .graph
-            .slot(reference)
-            .map_err(|_| "source original lost its actual formal slot")?
-        else {
+        self.require_store(store)?;
+        if let Mapping::Selected { body, view, .. } = &self.mapping {
+            let mut work = crate::resolve::crates::ReservationWork::default();
+            let actual = body.parameter(view, reference, &mut work);
+            *steps = steps.saturating_add(work.steps);
+            let parameter =
+                actual.map_err(|_| "selected original changed its exact full formal scope")?;
+            let Argument::Type(ty) = self.slot(reference)? else {
+                return Err("selected original formal is not an actual type argument");
+            };
+            if store.kind(ty) != Some(crate::types::Kind::Parameter(parameter)) {
+                return Err("selected original changed its actual scope/map formal identity");
+            }
+            return Ok(parameter);
+        }
+        let Argument::Type(ty) = self.slot(reference)? else {
             return Err("source original contract parameter is not an actual type formal");
         };
         let Some(crate::types::Kind::Parameter(id)) = store.kind(ty) else {
@@ -196,7 +246,7 @@ impl Original<'_> {
         steps: &mut usize,
     ) -> Result<DefId, &'static str> {
         charge(steps)?;
-        let descriptor = self.graph.descriptor(self.catalog)?;
+        let descriptor = self.descriptor()?;
         let rows = descriptor.rows();
         let raw = rows
             .declarations
@@ -250,7 +300,7 @@ impl Original<'_> {
             .ok_or("source original sizing lacks its actual role catalog")?
             .validated_role(LangItem::Sized)?
             .ok_or("source original sizing lacks its actual Sized declaration")?;
-        self.graph.role_origin(role)?;
+        self.role_origin(role)?;
         facts.associated.require_imported_role(role)?;
         let predicate = facts
             .generics
@@ -288,7 +338,7 @@ impl Original<'_> {
             .ok_or("source original Copy query lacks its actual role catalog")?
             .validated_role(crate::support::bindings::LangItem::Copy)?;
         if let Some(role) = role {
-            self.graph.role_origin(role)?;
+            self.role_origin(role)?;
             facts.associated.require_imported_role(role)?;
         }
         let actual = role.map(|role| role.definition);
@@ -306,7 +356,7 @@ impl Original<'_> {
         Ok(actual)
     }
     fn require_facts(&self, facts: &Declarations) -> Result<(), &'static str> {
-        self.graph.require_store(&facts.types)?;
+        self.require_store(&facts.types)?;
         if facts
             .crates
             .as_deref()
@@ -318,7 +368,7 @@ impl Original<'_> {
         Ok(())
     }
     fn check_locals(&self, steps: &mut usize) -> Result<(), &'static str> {
-        let descriptor = self.graph.descriptor(self.catalog)?;
+        let descriptor = self.descriptor()?;
         let rows = descriptor.rows();
         for (index, local) in self.raw().locals.iter().enumerate() {
             charge(steps)?;
@@ -364,4 +414,28 @@ fn charge(steps: &mut usize) -> Result<(), &'static str> {
         return Err("source original query work budget exceeded");
     }
     Ok(())
+}
+
+struct Requests<'view, 'rows, 'steps> {
+    original: &'view Original<'rows>,
+    steps: &'steps mut usize,
+}
+impl super::original_requests::Requests for Requests<'_, '_, '_> {
+    fn application(
+        &mut self,
+        reference: s::TraitApplicationRef,
+    ) -> Result<Predicate, &'static str> {
+        match &self.original.mapping {
+            Mapping::Ordinary(graph) => graph.application(reference),
+            Mapping::Selected { owner, store, .. } => {
+                owner.original_application(store, reference, self.steps)
+            }
+        }
+    }
+    fn ty(&mut self, reference: TypeRef) -> Result<TypeId, &'static str> {
+        self.original.ty(reference, self.steps)
+    }
+    fn region(&mut self, reference: s::RegionRef) -> Result<RegionId, &'static str> {
+        self.original.region(reference, self.steps)
+    }
 }
