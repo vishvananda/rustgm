@@ -84,6 +84,9 @@ impl Declarations {
 
     /// Header data only; callers still prove the exact call/body/instance.
     pub(crate) fn recorded_caller_tracking(&self, definition: DefId) -> Result<bool, &'static str> {
+        if self.constructor_tracking_absent(definition)? {
+            return Ok(false);
+        }
         if matches!(
             self.declaration_header(definition)?
                 .map(|header| header.declaration),
@@ -133,6 +136,14 @@ impl Declarations {
             .get(definition.0 as usize)
             .ok_or_else(|| Error::unlocated("caller policy has an invalid definition"))?;
         if actual.kind != DefKind::Function {
+            if matches!(actual.kind, DefKind::Constructor | DefKind::Variant)
+                && actual.namespace == crate::resolve::model::Namespace::Value
+                && self
+                    .constructor_tracking_absent(definition)
+                    .map_err(Error::unlocated)?
+            {
+                return Ok(false);
+            }
             return Err(Error::unlocated("caller policy requires a function"));
         }
         let Some(key) = actual.node else {
@@ -162,6 +173,37 @@ impl Declarations {
             .ok_or_else(|| Error::unlocated("caller policy changed declaration identity"))?;
         validate_header(report, self, definition, key, header)?;
         Ok(header.tracking != Tracking::Untracked)
+    }
+
+    /// A canonical nominal constructor is callable without a function header.
+    fn constructor_tracking_absent(&self, definition: DefId) -> Result<bool, &'static str> {
+        let Some(variant) = self.members.constructor(definition) else {
+            return Ok(false);
+        };
+        let variant = self
+            .members
+            .variants
+            .get(variant.0 as usize)
+            .ok_or("caller constructor has no actual variant")?;
+        let Some(crate::types::Kind::FunctionItem {
+            item, signature, ..
+        }) = self
+            .definitions
+            .get(definition.0 as usize)
+            .copied()
+            .flatten()
+            .and_then(|ty| self.types.kind(ty))
+        else {
+            return Err("caller constructor has no canonical callable");
+        };
+        if item.0 != definition.0
+            || self.function_indices.contains_key(&definition)
+            || !matches!(self.types.kind(signature), Some(crate::types::Kind::Function { result, .. })
+                if matches!(self.types.kind(result), Some(crate::types::Kind::Adt(owner, ..)) if owner == variant.owner))
+        {
+            return Err("caller constructor changed its actual callable or nominal owner");
+        }
+        Ok(true)
     }
 }
 
