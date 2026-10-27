@@ -39,38 +39,7 @@ pub(super) fn collect(
     {
         return Err("dyn compatibility requires a trait declaration".into());
     }
-    let header = facts
-        .generics
-        .traits
-        .as_ref()
-        .and_then(|t| t.header(ItemId(item.0)))
-        .ok_or("missing completed dyn trait header")?;
-    if sized(facts, item, header.self_type)? {
-        return Err(reject(item, Rule::Sized));
-    }
-    let mut contract = Contract {
-        supertraits: Vec::new(),
-        methods: Vec::new(),
-        associated: Vec::new(),
-    };
-    let mut uses = Occurrences::new(header.self_type, false);
-    for (index, bound) in header.inputs.view().iter().enumerate() {
-        charge(steps, 1)?;
-        let value = predicate(&facts.types, bound.value)?;
-        if let Some((id, _)) = value.bound.trait_parts() {
-            let application = facts
-                .types
-                .trait_application(id)
-                .ok_or("invalid dyn trait requirement")?;
-            if uses.arguments(&facts.types, application.arguments, steps)? {
-                return Err(reject(item, Rule::SelfType));
-            }
-            if header.implies_input(&facts.types, index, bound)? {
-                contract.supertraits.push(bound.value);
-            }
-        }
-    }
-    let self_type = header.self_type;
+    let (self_type, mut contract) = direct_bounds(facts, item, steps)?;
     let mut uses = Occurrences::new(self_type, true);
     let count = facts
         .associated
@@ -118,6 +87,46 @@ pub(super) fn collect(
         }
     }
     Ok(contract)
+}
+
+/// Collect only direct supertrait edges before mutable receiver proof begins.
+fn direct_bounds(
+    facts: &Declarations,
+    item: DefId,
+    steps: &mut usize,
+) -> Result<(TypeId, Contract), Error> {
+    let header = facts
+        .generics
+        .traits
+        .as_ref()
+        .and_then(|t| t.header(ItemId(item.0)))
+        .ok_or("missing completed dyn trait header")?;
+    if sized(facts, item, header.self_type)? {
+        return Err(reject(item, Rule::Sized));
+    }
+    let mut contract = Contract {
+        supertraits: Vec::new(),
+        methods: Vec::new(),
+        associated: Vec::new(),
+    };
+    let mut uses = Occurrences::new(header.self_type, false);
+    for (index, bound) in header.inputs.view().iter().enumerate() {
+        charge(steps, 1)?;
+        let value = predicate(&facts.types, bound.value)?;
+        if let Some((id, _)) = value.bound.trait_parts() {
+            let application = facts
+                .types
+                .trait_application(id)
+                .ok_or("invalid dyn trait requirement")?;
+            if uses.arguments(&facts.types, application.arguments, steps)? {
+                return Err(reject(item, Rule::SelfType));
+            }
+            if header.implies_input(&facts.types, index, bound)? {
+                contract.supertraits.push(bound.value);
+            }
+        }
+    }
+    Ok((header.self_type, contract))
 }
 
 /// Language call traits own completed typed headers, without source AST owners.

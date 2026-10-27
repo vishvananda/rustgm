@@ -131,7 +131,7 @@ pub(super) fn compatible(
     let Some(protocol) = protocol(facts)? else {
         return Ok(None);
     };
-    let prepared = prepare(facts, method, principal, self_type, protocol)?;
+    let prepared = prepare(facts, method, principal, self_type, &protocol)?;
     let mut context = Context::default();
     let mut substitution = Instantiation::new(&mut context, &facts.types, &[])
         .map_err(|_| Error::Invalid("invalid receiver proof instantiation"))?;
@@ -174,7 +174,7 @@ fn prepare(
     method: DefId,
     principal: DefId,
     self_type: TypeId,
-    protocol: Protocol,
+    protocol: &Protocol,
 ) -> Result<Prepared, &'static str> {
     let environment = facts
         .generics
@@ -195,7 +195,7 @@ fn prepare(
         .map_err(|_| "source receiver lacks its actual source payer")?;
     let pay = |steps, bytes| payments.charge(steps, bytes);
     let (environment, signature, mut opening) =
-        opened_method(&mut facts.types, environment, signature, &protocol, &pay)?;
+        opened_method(&mut facts.types, &environment, signature, protocol, &pay)?;
     let (receiver, target) = translated_receiver(
         &mut facts.types,
         signature,
@@ -308,7 +308,7 @@ fn source_header(report: &Report, facts: &Declarations, definition: DefId) -> Re
 
 fn opened_method(
     types: &mut Store,
-    environment: Arc<Environment>,
+    environment: &Arc<Environment>,
     signature: TypeId,
     protocol: &Protocol,
     charge: &impl Fn(usize, usize) -> Result<(), &'static str>,

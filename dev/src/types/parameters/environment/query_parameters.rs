@@ -18,19 +18,19 @@ impl Parameters {
     pub(super) fn extended(&self) -> bool {
         self.prefix.is_some()
     }
-    pub(super) fn get(&self, id: &ParameterId) -> Option<&Abilities> {
+    pub(super) fn get(&self, id: ParameterId) -> Option<&Abilities> {
         self.own
-            .get(id)
-            .or_else(|| self.prefix.as_ref().and_then(|prefix| prefix.own.get(id)))
+            .get(&id)
+            .or_else(|| self.prefix.as_ref().and_then(|prefix| prefix.own.get(&id)))
     }
-    pub(super) fn contains_key(&self, id: &ParameterId) -> bool {
+    pub(super) fn contains_key(&self, id: ParameterId) -> bool {
         self.get(id).is_some()
     }
-    pub(super) fn get_mut(&mut self, id: &ParameterId) -> Option<&mut Abilities> {
+    pub(super) fn get_mut(&mut self, id: ParameterId) -> Option<&mut Abilities> {
         if self.prefix.is_some() {
             return None;
         }
-        self.own.get_mut(id)
+        self.own.get_mut(&id)
     }
     #[cfg(test)]
     pub(super) fn keys(&self) -> impl Iterator<Item = &ParameterId> {
@@ -47,7 +47,7 @@ impl Parameters {
 }
 impl Environment {
     /// A compatibility query admits only the actual unsized source formal. The
-    /// caller authenticates its declaration's PointeeSized bound independently.
+    /// caller authenticates its declaration's `PointeeSized` bound independently.
     pub(crate) fn with_rigid_query_parameter(
         self: &Arc<Self>,
         types: &Store,
@@ -61,7 +61,7 @@ impl Environment {
                 "rigid query scope requires its actual arena and unextended declared prefix",
             );
         }
-        if self.parameters.contains_key(&id)
+        if self.parameters.contains_key(id)
             || !matches!(
                 types.parameter(id).map(|p| p.kind),
                 Some(ParameterKind::Type { sized: false })

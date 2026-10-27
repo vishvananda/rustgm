@@ -8,6 +8,7 @@ use crate::{
     sema::{declarations, model::Declarations},
     support::bindings::LangItem,
 };
+use std::fmt::Write as _;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const FIXTURES: &str = "pa31/tests/spec/source-dispatch-from-dyn";
 fn source(name: &str) -> Result<String> {
@@ -213,7 +214,7 @@ fn method_count_and_inherited_depth_share_scope_and_clause_prefixes() -> Result 
     for captured in [false, true] {
         for methods in [1, 4, 16] {
             for depth in [1, 4, 16] {
-                let text = matrix_source(prefix, methods, depth, captured);
+                let text = matrix_source(prefix, methods, depth, captured)?;
                 let report = provider(&text)?;
                 let mut facts = declarations::analyze(&report)?;
                 let root = definition(&report, "Writer")?;
@@ -271,28 +272,30 @@ fn method_count_and_inherited_depth_share_scope_and_clause_prefixes() -> Result 
     Ok(())
 }
 
-fn matrix_source(prefix: &str, methods: usize, depth: usize, captured: bool) -> String {
+fn matrix_source(prefix: &str, methods: usize, depth: usize, captured: bool) -> Result<String> {
     let mut text = format!("{prefix}\npub trait B0<T:PointeeSized>{{}}\n");
     for index in 1..depth {
-        text.push_str(&format!(
-            "pub trait B{index}<T:PointeeSized>:B{}<T>{{}}\n",
+        writeln!(
+            text,
+            "pub trait B{index}<T:PointeeSized>:B{}<T>{{}}",
             index - 1
-        ));
+        )?;
     }
     let lifetime = if captured { "'a," } else { "" };
-    text.push_str(&format!("pub trait Writer<{lifetime}"));
+    write!(text, "pub trait Writer<{lifetime}")?;
     for index in 0..depth {
-        text.push_str(&format!("T{index}:PointeeSized,"));
+        write!(text, "T{index}:PointeeSized,")?;
     }
-    text.push_str(&format!(">:B{}<T0>{{", depth - 1));
+    write!(text, ">:B{}<T0>{{", depth - 1)?;
     let reference = if captured { "&'a T0" } else { "&T0" };
     for index in 0..methods {
-        text.push_str(&format!(
+        write!(
+            text,
             "fn write{index}(&mut self,value:{reference},nested:for<'z>fn(&'z T0))->u8;"
-        ));
+        )?;
     }
     text.push('}');
-    text
+    Ok(text)
 }
 
 #[test]

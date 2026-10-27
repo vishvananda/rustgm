@@ -374,7 +374,7 @@ impl Environment {
         if uses
             .parameters
             .iter()
-            .any(|id| !self.parameters.contains_key(id))
+            .any(|id| !self.parameters.contains_key(*id))
         {
             return Err("bound parameter is outside its environment");
         }
@@ -437,7 +437,7 @@ impl Environment {
         }
         if let Some(Kind::Parameter(id)) = types.kind(predicate.ty) {
             let parameter = Arc::make_mut(&mut self.parameters)
-                .get_mut(&id)
+                .get_mut(id)
                 .ok_or("bound parameter is outside its environment")?;
             parameter.copy |= properties.copy;
             parameter.clone_ |= properties.clone_;
@@ -577,7 +577,7 @@ impl Environment {
     /// `None` means the parameter is outside this scope, not an unbounded type.
     #[must_use]
     pub fn abilities(&self, parameter: ParameterId) -> Option<Abilities> {
-        self.parameters.get(&parameter).copied()
+        self.parameters.get(parameter).copied()
     }
 }
 
