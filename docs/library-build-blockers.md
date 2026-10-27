@@ -24,6 +24,29 @@ whole-crate attempt. Never patch upstream source to move a blocker.
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
 | Original std and consumer | Not reached; depends on the preceding crate graph and platform contracts. | Build unchanged std and execute a default-std consumer. |
 
+The combined CLI `4585cb94` now executes genuine source Try/FromResidual methods,
+lexical residual exits and cleanup through the locked backend. Its two native
+observers match pinned Rust exactly: `7 23 31 17 23 43 19` and `21`. Direct
+caller-location runtime/const output remains `341 5 343 53 1`: the combined
+compiler's emitted LowIR is byte-identical to the independently matched native
+checkpoint. The source Try protocol, caller policies and metadata are authenticated;
+imported transport and broader adapters remain separate requirements.
+
+Fourteen combined private controls pass in 145.74s, production/CLI five in
+173.01s, and all 758 PA21 text cases in 4.43s. Strict Clippy in both modes,
+formatting, full architecture, 225 harness controls, suite/layout registration
+and pinned upstream verification pass. Only the new declared PA21 reference was
+generated. Integration exposed and fixed a real constructor classification bug;
+missing function headers never stand in for known constructor policy. Shared
+normalization now prepays persistent canonical Store growth, including failed
+and resumed work, rather than reporting scratch storage alone.
+
+The latest unchanged-core observation remains the 164-file LIB-038 frontier
+above: this checkpoint changes semantics after loading, so it does not repeat an
+unchanged loading probe or claim an original crate artifact. Full
+[CI on 488cb10bf](https://github.com/vishvananda/rustgm/actions/runs/40431216329)
+passed every stage; the next integrated full qualification runs separately.
+
 ## Current execution queue
 
 The [execution plan](library-bootstrap-acceleration.md#scheduling-decisions)
@@ -33,8 +56,8 @@ concrete; a private Ready state is not an executable result.
 | Owner | Issues and owning assignments | Next observable exit |
 | --- | --- | --- |
 | A | LIB-007/030, PA29/31 | Complete encoded provider to fresh named Holder consumer, original/instance proof and native output 7. Names/receiver shapes are merged locally; the public Provided codec and body joins remain. |
-| B | LIB-029/021/034, PA25–28/31 | Source PhantomData and full-attribute Location Copy/Clone are integrated with native31 7. Complete caller tracking, PanicInfo/handler and false assertion reaching Abort; follow with dynamic formatting. |
-| C | LIB-036, PA4/26/31 | Try grammar/feature authority is integrated. Execute real Try/FromResidual/ControlFlow calls through the shared question-mark path and ordinary source proofs. Helper declarations are integrated; Provided codec remains queued. |
+| B | LIB-029/021/034, PA25–28/31 | Source PhantomData and full-attribute Location Copy/Clone are integrated with native31 7. Direct tracked runtime/const calls now match native341 5 343 53 1. Complete real Debug/Arguments/PanicInfo/handler and false assertion reaching Abort; retain fnptr/dynamic and imported caller-policy obligations. |
+| C | LIB-038, PA7/8/31; next PA28/31 metadata intrinsic | Genuine source Try/FromResidual execution now matches both native observers. Admit builtin declarations by actual role kind through existing scoped/textual lookup, then implement the real ptr_metadata consumer needed by Arguments::from_str. Provided codec stays queued. |
 | Integrator | LIB-031/008, PA19–21/31/32 | Direct Thin now executes through native7. Integrate complete consumers, keep broader alias forms explicit, and advance original core through checking/export. |
 | Integrator, queued independent preparation | LIB-009/010/011, PA30/33/34/36 | Selected alloc/std dependency/build/runtime inventory and small real ABI/build consumers; do not wait until core works to discover graph prerequisites. |
 
@@ -48,10 +71,8 @@ The direct Thin, PhantomData and final-method consumers are integrated together.
 The actual Thin source prints `7` through the unchanged CPPGM object backend and
 the same C observer as pinned rustc. Fresh PhantomData LowIR is byte-identical
 to its independently qualified native `0 1 0 7` checkpoint. Final-method native
-pairs produce `7/9/7/9`, preserving the ordinary override contrast. C now owns
-source try blocks for LIB-036 after integrating helper-declaration production;
-B owns the LIB-034 derive-use consumer and
-actual Location path. The disjoint Provided codec stays queued while A finishes
+pairs produce `7/9/7/9`, preserving the ordinary override contrast. C now owns the current LIB-038 declaration join after qualifying source Try
+execution; B owns the actual Debug/Arguments/PanicInfo and handler path. The disjoint Provided codec stays queued while A finishes
 real member/body execution. Protect integration time rather than opening another
 long compiler workstream.
 
@@ -512,7 +533,7 @@ without those later features. Do not move fixtures mechanically by subsystem.
 | LIB-033 | Loading blocker removed; final policy transport open | Final trait methods, distinct from ordinary provided bodies and implementation specialization defaultness | PA5 grammar + PA19 method conformance + PA31 source feature authority; PA29 owns eventual transport / exact source-backed Share consumer | C; integrator qualification | Six source controls and four actual paired native programs pass, outputs 7/9/7/9. Ordinary provided overrides remain valid; final dynamic calls use actual static bodies. No hot-field growth. CLI192bb536 passes original Share::share. Official PA5 grammar reference is generated from unchanged independently observed source. NoDefaultModifier does not establish absence of final policy; public transport remains closed. |
 | LIB-034 | Declaration producer qualified; invocation/helper use remains open | Source builtin derive helper declarations and authenticated use | PA8 expansion mechanisms + PA31 source builtin declarations; helper semantics stay with the owning derive / exact Default declaration and source helper opponents | B derive consumer; C producer integrated | Actual source helper declarations, canonical names, checked empty lists and collision-warning policy pass six merged private controls plus nineteen shared smoke controls. Sixty independent metadata observations and measured cold/dense costs remain recorded. CLI6ef90dd3 passes unchanged Default and advances original core78→94 opened files. Actual invocation helper scope, Default execution and foreign macro transport remain required; declaration acceptance grants no execution. |
 | LIB-035 | P1; required original std target editions | Rust 2015 rustc-demangle and Rust 2018 cfg-if semantics through target compilation | PA34 selected-graph requirement; PA40 broader edition closure / pa34 legacy-stdlib-editions and build-unit controls | Integrator, queued after current source joins | The authenticated std graph retains actual2015/2018 values. Four independent metadata observations prove root-import and pattern-fragment opponents. The planner now preserves those editions, but RustGM target options/semantics remain unimplemented. Do not relabel packages2021/2024 or consume prebuilt rustc target crates. |
-| LIB-036 | Grammar qualified; genuine execution remains open | Source try blocks and shared question-mark execution | PA4 expression grammar + PA26 Try/FromResidual desugaring + PA31 actual unstable feature/source binding / owning syntax controls and complete source-backed providers | C | CLI9315d746 now passes the original try blocks and reaches the const closure in try_trait.rs415,96 opened files. Six component grammar controls and fourteen combined private controls pass; two official PA4 references are generated/reviewed, and all197 independent PA4 checks pass with explicit syntax-only classifications. Grammar retains typed blocks and explicit semantic failures until genuine source Try/FromResidual/ControlFlow operations work. Preserve nearest try/function/closure boundaries, tail from_output, residual conversion, ownership and the pinned homogeneous-try inference rule. Actual source/native acceptance and negative controls remain required. |
+| LIB-036 | Source execution and native consumers qualified; transport open | Source try blocks and shared question-mark execution | PA4 grammar + PA26 Try/FromResidual + PA31 actual source roles / owning syntax and full source-backed providers | C checkpoint integrated | Combined CLI4585cb94 uses genuine source methods, associated Output/Residual/TryType and actual ControlFlow variants, nearest lexical exits and ordinary original/instance/region/move/drop proofs. Two locked-backend native observations match pinned Rust in4.935s. Shared result consequences use one equality index/Normalizer with canonical Store growth prepaid. Fourteen combined private controls and all758 PA21 text cases pass; the new ordinary PA21 reference is published. Imported protocol/plan transport, typed heterogeneous try and broader const execution remain required. |
 | LIB-037 | Grammar/feature authority qualified; const execution open | Const closure grammar, feature authority and real const-callable/CTFE semantics | PA4 grammar + PA24 closure machinery + PA25 const callable/CTFE + PA31 original source binding / pa4 closure cases, pa25 const-closures and pa31 source-const-closures | Integrator grammar integrated; semantics PA25 | CLI3cc4e779 passes unchanged try_trait const closures and opens164 original files. Six grammar controls and six combined visibility/gate controls pass; three new PA4 references are generated/reviewed, all200 text and independent syntax checks pass (10 documented syntax-only differences). The actual const keyword owns the gate, including cfg-removed hard errors; expr_2021 retains its pinned const-token exclusion. Common records remain unchanged; sparse32-byte rows have measured78/318/1278 work at8/32/128. Original wrong independent predictions are preserved. Actual const creation contexts, call traits, runtime/CTFE, ownership and instance acceptance remain required. |
 | LIB-038 | P0; current unchanged-core declaration blocker | Authenticated scoped builtin bang declarations, distinct from invocation/coroutine execution | PA7/8 scoped macro mechanism + PA31 original builtin role admission; PA42/43 eventual generator execution / pa31 scoped-builtin-declarations | Integrator, next bounded declaration join | CLI3cc4e779 stops at generator.rs23/byte648 because the existing role-kind filter allows scoped CfgSelect but rejects the genuine scoped builtin Iter. The wrapped original file is preserved byte-for-byte and independently metadata-qualified; the current candidate reproduces the exact declaration rejection. All722 original source pins remain unchanged and164 files opened. Admit genuine declaration identity/kind/owner without granting unsupported expansion. A source search found no iter! invocation in core/alloc/std outside this documentation example; actual generator invocation remains separately required. |
 

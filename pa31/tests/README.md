@@ -335,3 +335,17 @@ observation above remains unchanged. The first same-source attempt retained
 successful static checks but timed out during build; the following unchanged
 warm run is the actual passing bounded gate. Native execution and source
 observations were not repeated for this accounting correction.
+
+The frozen public CLI execution adapters are now candidate-native qualified on
+combined source `346f598ba`, immutable CLI SHA
+`4585cb94c2611a367b2cebc3a89eada35fd14931893a3b09d4f5eabe9a983e50`.
+The unchanged plan/runner completed eight commands and both native executions in
+4.935s, with exact outputs `7 23 31 17 23 43 19\n` and `21\n` and empty
+compiler/backend/link/runtime stderr. Binding
+`a4352f3508e4b2baf87a3889680e6be93b247a872207248826ead757c5af6d30`
+and results `4b6a8bda85013d8f29e7d833db912413434697c7f330fa8be0bc17dc09f9034b`
+retain source-prefix, current source-production, compiler and locked backend
+identity. Successful objects/executables were removed after hashing; LowIR and
+raw streams remain retained. Original missing-Freeze/drop_glue codegen failures,
+all seven original source bytes and independent observations remain preserved.
+No artifact/foreign protocol transport or const-closure execution is implied.
