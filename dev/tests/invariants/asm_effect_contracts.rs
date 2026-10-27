@@ -55,6 +55,7 @@ fn actual_templates_keep_one_parser_and_source_role_without_hot_node_growth() ->
     // Crate attributes remain at the actual crate root, before source declarations.
     actual = actual.replacen("#![feature(", "#![feature(decl_macro,staged_api,", 1);
     actual.insert_str(0, "#![stable(feature=\"core\",since=\"1.6.0\")]\n");
+    actual.push_str("#[rustc_builtin_macro(concat)]macro_rules!concat{($($t:tt)*)=>{};}");
     actual.push_str(&reducer.lines().skip(2).collect::<Vec<_>>().join("\n"));
     let full = crate::test_source::source_provider(&actual, "actual_stream_asm")?;
     assert!(full.package.units.iter().any(|unit| {
@@ -86,7 +87,7 @@ fn actual_templates_keep_one_parser_and_source_role_without_hot_node_growth() ->
 #[test]
 fn scalar_inputs_and_outputs_reach_real_original_proof_then_backend_denial() -> Result {
     let mut report = expanded(
-        "pub fn main(){let mut x:usize=7;unsafe{actual!(\"add {x},1\",x=inout(reg)x,options(pure,nomem,nostack,preserves_flags));}let _=x;}",
+        "pub fn main(){let mut x:usize=7;unsafe{actual!(\"add {x},1\",x=inout(reg)x,options(pure,nomem,nostack));}let _=x;}",
     )?;
     let mut analysis = crate::pipeline::analyze_source(&report)?;
     let entry = crate::sema::entry::select(&mut report, &analysis.facts)?;
@@ -133,11 +134,121 @@ fn scalar_inputs_and_outputs_reach_real_original_proof_then_backend_denial() -> 
             .contains("unavailable locked backend capability"),
         "{error}"
     );
+    operand_evaluation_order()?;
+    output_order_and_divergence()?;
+    Ok(())
+}
+fn operand_evaluation_order() -> Result {
+    use body::ir::Rvalue;
+    let report = expanded(
+        "fn first()->usize{7}fn index()->usize{0}fn ordered(){let mut xs=[0usize,0usize];unsafe{actual!(\"mov {b},{a}; add {c},1\",a=in(reg)first(),b=out(reg)xs[index()],c=inout(reg)xs[index()]);}}",
+    )?;
+    let mut analysis = crate::pipeline::analyze_source(&report)?;
+    let program = body::build_concrete(&report, &analysis.facts)?;
+    let ordered = program
+        .bodies
+        .iter()
+        .find(|b| b.assembly.is_some())
+        .ok_or("ordered body")?;
+    let calls: Vec<_> = ordered
+        .values
+        .iter()
+        .filter_map(|v| {
+            let Rvalue::Call { callee, .. } = v.kind else {
+                return None;
+            };
+            let Rvalue::Function(definition) = ordered.values[callee.0 as usize].kind else {
+                return None;
+            };
+            Some(
+                report
+                    .package
+                    .names
+                    .get(report.resolution.definitions[definition.0 as usize].name),
+            )
+        })
+        .collect();
+    assert_eq!(
+        calls,
+        ["first", "index", "index"],
+        "inout place must be evaluated exactly once, after preceding operands"
+    );
+    crate::lower::instances::inspect_prepared(
+        &report,
+        &mut analysis.facts,
+        analysis.prepared,
+        |_, _| (),
+    )?;
+    Ok(())
+}
+fn output_order_and_divergence() -> Result {
+    use body::ir::{Action, Rvalue, Terminator};
+    let report = expanded(
+        "fn overlap(){let mut x:usize=0;unsafe{actual!(\"mov {a},1; mov {b},2\",a=out(reg)x,b=out(reg)x);}let _=x;}fn diverges()->!{unsafe{actual!(\"ud2\",options(noreturn));}}",
+    )?;
+    let mut analysis = crate::pipeline::analyze_source(&report)?;
+    let program = body::build_concrete(&report, &analysis.facts)?;
+    let mut overlap_seen = false;
+    let mut divergence_seen = false;
+    for body in program.bodies.iter().filter(|b| b.assembly.is_some()) {
+        let data = body.assembly.as_ref().ok_or("assembly data")?;
+        if data.operands.len() == 2 {
+            overlap_seen = true;
+            assert_eq!(data.operands[0].output, data.operands[1].output);
+            let stores: Vec<_> = body
+                .statements
+                .iter()
+                .filter_map(|s| {
+                    let Action::Store { value, .. } = s.action else {
+                        return None;
+                    };
+                    let Rvalue::AssemblyOutput { operand, .. } = body.values[value.0 as usize].kind
+                    else {
+                        return None;
+                    };
+                    Some(operand)
+                })
+                .collect();
+            assert_eq!(
+                stores,
+                [0, 1],
+                "rightmost overlapping output is stored last"
+            );
+        } else {
+            divergence_seen = true;
+            assert_ne!(
+                data.instructions[0].options & crate::syntax::assembly::NORETURN,
+                0
+            );
+            assert!(
+                body.blocks
+                    .iter()
+                    .any(|b| matches!(b.terminator, Terminator::Unreachable))
+            );
+            assert!(
+                !body
+                    .blocks
+                    .iter()
+                    .any(|b| matches!(b.terminator, Terminator::Return(_)))
+            );
+        }
+    }
+    assert!(overlap_seen && divergence_seen);
+    crate::lower::instances::inspect_prepared(
+        &report,
+        &mut analysis.facts,
+        analysis.prepared,
+        |_, _| (),
+    )?;
     Ok(())
 }
 #[test]
 fn asm_place_unsafe_const_and_type_failures_do_not_become_unit_effects() -> Result {
     for (program, message) in [
+        (
+            "fn f(){let x:usize;unsafe{actual!(\"/* {0} */\",in(reg)x);}}",
+            "initialized",
+        ),
         ("fn f(){actual!(\"nop\");}", "unsafe context"),
         ("const unsafe fn f(){unsafe{actual!(\"nop\");}}", "constant"),
         (

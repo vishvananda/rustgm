@@ -116,6 +116,21 @@ impl Walker<'_> {
         self.push(Work::Expression(iterator, extent))?;
         Ok(())
     }
+    fn assembly_scopes(&mut self, arguments: super::List, context: Context) -> Result<(), Error> {
+        for index in (arguments.start..arguments.end).rev() {
+            if let Syntax::AssemblyOperand { input, output, .. } = self.kind(self.child(index)) {
+                if output != input
+                    && let Some(output) = output
+                {
+                    self.push(Work::Expression(output, context))?;
+                }
+                if let Some(input) = input {
+                    self.push(Work::Expression(input, context))?;
+                }
+            }
+        }
+        Ok(())
+    }
     fn operands(&mut self, node: NodeId, kind: Syntax, context: Context) -> Result<(), Error> {
         match kind {
             Syntax::TryBlock { body: value, .. }
@@ -145,6 +160,7 @@ impl Walker<'_> {
                     self.push(Work::Expression(start, context))?;
                 }
             }
+            Syntax::InlineAssembly(arguments) => self.assembly_scopes(arguments, context)?,
             Syntax::Tuple(elements) | Syntax::Array(elements) => {
                 self.expressions(elements, context)?;
             }
