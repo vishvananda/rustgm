@@ -26,6 +26,13 @@ pub macro Clone($item:item) {
     pub macro Debug($item:item) {
         /* compiler built-in */
     }
+#[rustc_builtin_macro(Default, attributes(default))]
+#[stable(feature = "builtin_macro_prelude", since = "1.38.0")]
+#[allow_internal_unstable(core_intrinsics)]
+pub macro Default($item:item) {
+    /* compiler built-in */
+}
+
 
 #[rustc_builtin_macro]
 #[stable(feature = "builtin_macro_prelude", since = "1.38.0")]

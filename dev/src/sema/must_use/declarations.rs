@@ -50,33 +50,17 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                     continue;
                 }
                 let name = attribute.name(forest, unit.source.text());
-                if name.and_then(Consumer::named) == Some(Consumer::MarkerTrait) {
-                    crate::sema::marker_traits::consume(
+                if let Some(consumer @ (Consumer::MarkerTrait | Consumer::Coverage)) =
+                    name.and_then(Consumer::named)
+                {
+                    consume_feature_attribute(
                         report,
                         facts,
                         key,
-                        attribute,
+                        (consumer, attribute),
                         forest,
                         &mut allowances,
-                    )?;
-                    continue;
-                }
-                if name.and_then(Consumer::named) == Some(Consumer::Coverage) {
-                    if covered {
-                        return Err(Error::at(
-                            file,
-                            attribute.span.start,
-                            "duplicate coverage attribute",
-                        ));
-                    }
-                    covered = true;
-                    crate::sema::coverage_annotations::consume(
-                        report,
-                        facts,
-                        key,
-                        attribute,
-                        forest,
-                        &mut allowances,
+                        &mut covered,
                     )?;
                     continue;
                 }
@@ -173,6 +157,43 @@ fn complete_imports(report: &Report, facts: &mut Declarations) -> Result<(), Err
         }
     }
     Ok(())
+}
+fn consume_feature_attribute(
+    report: &Report,
+    facts: &mut Declarations,
+    declaration: NodeKey,
+    (consumer, attribute): (Consumer, Attribute),
+    forest: &Forest,
+    allowances: &mut crate::resolve::expansion::MacroAllowanceSession<'_>,
+    covered: &mut bool,
+) -> Result<(), Error> {
+    if consumer == Consumer::Coverage {
+        if *covered {
+            return Err(Error::at(
+                declaration.file,
+                attribute.span.start,
+                "duplicate coverage attribute",
+            ));
+        }
+        *covered = true;
+        crate::sema::coverage_annotations::consume(
+            report,
+            facts,
+            declaration,
+            attribute,
+            forest,
+            allowances,
+        )
+    } else {
+        crate::sema::marker_traits::consume(
+            report,
+            facts,
+            declaration,
+            attribute,
+            forest,
+            allowances,
+        )
+    }
 }
 fn consume_other(
     report: &Report,

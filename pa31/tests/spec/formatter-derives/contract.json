@@ -99,7 +99,8 @@
   },
   "source_macros": {
     "file": "source-macros.rs",
-    "sha256": "0539dce694d4aed62c665856b8ff67b24793081eec4dc8d44e855367fac5ec9e",
-    "scope": "exact pinned declaration intervals composed at authored root; no implementation substitution"
+    "sha256": "a4f2d7208a728538cdd3e15417752554a4d8e2acd955708ac146a571bece229b",
+    "scope": "exact pinned declaration intervals composed at authored root; no implementation substitution",
+    "extraction_correction": "Initial prefix omitted Default because its builtin attribute has helper arguments; retained initial source commit/failure, corrected exact Default interval without touching original fragments."
   }
 }
