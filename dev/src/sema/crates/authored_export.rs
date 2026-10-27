@@ -8,6 +8,7 @@ mod collected_provider;
 mod contract_rows;
 mod exposed_bindings;
 mod implementation_headers;
+mod modifier_rows;
 mod namespace_emission;
 mod scoped_parameters;
 mod self_requests;

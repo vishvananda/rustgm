@@ -280,6 +280,7 @@ pub enum SourcePublication {
     LegacyFunctions,
     FunctionContracts,
     ModuleContracts,
+    ProvidedContracts,
 }
 
 /// Publish only an explicitly selected ordinary source row profile.
@@ -353,6 +354,9 @@ pub fn build_source_library_profile(
                 SourcePublication::LegacyFunctions => source.complete_payload(report, facts, base),
                 SourcePublication::FunctionContracts => {
                     source.complete_contract_payload(report, facts, base)
+                }
+                SourcePublication::ProvidedContracts => {
+                    source.complete_provided_contract_payload(report, facts, base)
                 }
                 SourcePublication::ModuleContracts => source.complete_module_contract_payload(
                     modules.ok_or_else(|| {

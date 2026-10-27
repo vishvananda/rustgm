@@ -124,6 +124,10 @@ impl Source {
         profile: super::instances::SourcePublication,
     ) -> Result<(Self, Option<s::ModuleContractRows>), &'static str> {
         match profile {
+            super::instances::SourcePublication::ProvidedContracts => Ok((
+                Self::begin_trait_numbered(report, facts, checked, identity)?,
+                None,
+            )),
             super::instances::SourcePublication::ModuleContracts => {
                 let (source, modules) =
                     Self::begin_module_contracts(report, facts, checked, identity)?;

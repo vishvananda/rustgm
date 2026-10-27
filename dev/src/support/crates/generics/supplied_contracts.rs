@@ -77,6 +77,12 @@ impl ProvidedContractRows {
     }
 }
 impl HeaderModifierColumns {
+    pub(crate) fn retained_bytes(&self) -> usize {
+        size_of::<Self>()
+            .saturating_add(retained::vector(&self.functions))
+            .saturating_add(retained::vector(&self.traits))
+            .saturating_add(retained::vector(&self.implementations))
+    }
     fn validate(
         &self,
         rows: &SourceRows,

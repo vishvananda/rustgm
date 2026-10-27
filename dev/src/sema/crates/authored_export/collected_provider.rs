@@ -115,10 +115,31 @@ impl Stage {
         }))
     }
     pub(crate) fn collect_provider_headers(
+        self,
+        report: &Report,
+        facts: &Declarations,
+        check: impl FnMut(&mut Stage, crate::resolve::unit::NodeKey) -> Result<(), Error>,
+    ) -> Result<CollectedStage, Error> {
+        self.collect_provider_using(report, facts, check, None)
+    }
+    pub(crate) fn collect_contract_provider_headers(
+        mut self,
+        report: &Report,
+        facts: &Declarations,
+        check: impl FnMut(&mut Stage, crate::resolve::unit::NodeKey) -> Result<(), Error>,
+    ) -> Result<(CollectedStage, s::HeaderModifierColumns), Error> {
+        let mut modifiers = super::modifier_rows::Draft::new(&mut self)?;
+        let mut collected =
+            self.collect_provider_using(report, facts, check, Some(&mut modifiers))?;
+        let modifiers = modifiers.finish(&mut collected.stage)?;
+        Ok((collected, modifiers))
+    }
+    fn collect_provider_using(
         mut self,
         report: &Report,
         facts: &Declarations,
         mut check: impl FnMut(&mut Stage, crate::resolve::unit::NodeKey) -> Result<(), Error>,
+        mut modifiers: Option<&mut super::modifier_rows::Draft>,
     ) -> Result<CollectedStage, Error> {
         let before = self.work();
         let overhead = size_of::<CollectedRows>()
@@ -139,14 +160,21 @@ impl Stage {
         let names_bytes = names_bytes.map_err(Error::unlocated)?;
         let expected = self.selected_type_slots().map_err(Error::unlocated)?;
         let mut observed = 0usize;
-        let contracts =
-            self.collect_formal_columns(report, facts, |stage, definition, source| {
-                check(stage, source)?;
-                observed = observed.saturating_add(
-                    stage.require_named_parameters(report, facts, definition, source)?,
-                );
-                Ok(())
-            })?;
+        let provided = modifiers.is_some();
+        let collect = |stage: &mut Stage, definition, source| {
+            check(stage, source)?;
+            observed = observed
+                .saturating_add(stage.require_named_parameters(report, facts, definition, source)?);
+            if let Some(modifiers) = &mut modifiers {
+                modifiers.record(stage, definition, source)?;
+            }
+            Ok(())
+        };
+        let contracts = if provided {
+            self.collect_provided_columns(report, facts, collect)?
+        } else {
+            self.collect_formal_columns(report, facts, collect)?
+        };
         if observed != expected {
             return Err(Error::unlocated(
                 "collected formals omitted complete actual type-slot coverage",
@@ -200,6 +228,13 @@ impl CollectedStage {
         self,
         numbering: Option<Vec<Option<s::BodyUnit>>>,
     ) -> Result<CollectedRows, &'static str> {
+        self.finish_with_extra(numbering, 0)
+    }
+    pub(crate) fn finish_with_extra(
+        self,
+        numbering: Option<Vec<Option<s::BodyUnit>>>,
+        extra: usize,
+    ) -> Result<CollectedRows, &'static str> {
         let (mut rows, mut work) = self.stage.into_rows()?;
         if let Some(numbering) = numbering {
             let mut units = Vec::with_capacity(numbering.len());
@@ -208,7 +243,7 @@ impl CollectedStage {
             }
             rows.body_units = units;
         }
-        validate_collected_rows(&rows, &mut work, self.live)?;
+        validate_collected_rows(&rows, &mut work, self.live.saturating_add(extra))?;
         let collected = CollectedRows {
             rows,
             work,
