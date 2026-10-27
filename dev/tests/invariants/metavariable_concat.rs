@@ -141,7 +141,8 @@ fn typed_concat_work_and_name_storage_scale_with_actual_emitted_bytes() -> Resul
             write!(source, "v{index}")?;
         }
         source.push_str(");");
-        let report = session::analyze(&source, &Config::default())?;
+        let report =
+            session::analyze(&source, &Config::default()).map_err(|error| format!("{error:?}"))?;
         let call = &report.invocations[0];
         assert_eq!(call.matched.captures.parser_calls, 0);
         assert_eq!(
@@ -168,7 +169,7 @@ fn typed_concat_work_and_name_storage_scale_with_actual_emitted_bytes() -> Resul
     let error = session::analyze(&source, &Config::default())
         .err()
         .ok_or("concat work limit bypassed")?;
-    assert!(error.message.contains("work budget"), "{error}");
+    assert!(error.message.contains("work budget"), "{error:?}");
     Ok(())
 }
 
