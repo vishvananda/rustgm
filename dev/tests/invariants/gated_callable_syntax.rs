@@ -100,7 +100,24 @@ fn real_keyword_authority_and_cfg_removed_hard_gate_match_pinned_rust() -> Resul
             let error = report(&fixture(name)?, edition)
                 .err()
                 .ok_or_else(|| format!("{name} gained feature authority"))?;
-            assert!(error.message.contains("const_closures"), "{name}: {error}");
+            let message = if name == "forwarded-expression" && edition == Edition::Rust2021 {
+                "no macro rule matches"
+            } else {
+                "const_closures"
+            };
+            assert!(error.message.contains(message), "{name}: {error}");
+        }
+        let forwarded = report(&fixture("forwarded-enabled-expression")?, edition);
+        if edition == Edition::Rust2021 {
+            assert!(
+                forwarded
+                    .err()
+                    .ok_or("expr_2021 gained const capture")?
+                    .message
+                    .contains("no macro rule matches")
+            );
+        } else {
+            forwarded?;
         }
         assert!(report(&fixture("inactive-malformed")?, edition).is_err());
         let enabled = report(&fixture("enabled")?, edition)?;

@@ -55,6 +55,14 @@
       "path": "inactive-malformed.rs",
       "sha256": "bd15328b888809c4519246b0b40e41a430d968f3cc177bd4790e8c85c53bb844",
       "rustc_status": 1
+    },
+    {
+      "path": "forwarded-enabled-expression.rs",
+      "sha256": "36ecd4a7eb1a6983138b47f49bcb5e9c41855555128fc654091d002a688fcec0",
+      "rustc_status": 0,
+      "rustc_status_2021": 1,
+      "predicted_rustc_status_2021": 0,
+      "observation": "The pinned expr_2021 matcher excludes a top-level const closure even with const_closures enabled; expr in a 2024 definition accepts it. Original wrong 2021 prediction and complete stderr are preserved."
     }
   ]
 }

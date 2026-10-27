@@ -230,7 +230,7 @@ impl<L> Syntax<L> {
             1,
         );
         entries
-            .charge(growth.work, growth.bytes)
+            .charge(1_usize.saturating_add(growth.work), growth.bytes)
             .map_err(|message| error(keyword.start, message))?;
         entries
             .expressions

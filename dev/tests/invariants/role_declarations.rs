@@ -164,10 +164,7 @@ fn unavailable_alias_and_kind_opponents_stop_before_execution_work() -> TestResu
         ),
         ("derive-as-bang.rs", "unresolved macro"),
         ("derive-as-attribute.rs", "unresolved attribute macro"),
-        (
-            "source-derive-consumer.rs",
-            "builtin attribute execution is not implemented",
-        ),
+        ("source-derive-consumer.rs", "unresolved attribute macro"),
     ] {
         with_engine(&fixture(name)?, true, |engine| {
             let error = engine
