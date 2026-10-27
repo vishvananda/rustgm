@@ -153,3 +153,41 @@ fn actual_overloads_keep_calls_and_primitive_impl_bodies_do_not_recurse() -> Tes
     assert_eq!(size_of::<crate::body::ir::Rvalue>(), 20);
     Ok(())
 }
+
+#[test]
+fn actual_enum_and_const_neg_prepare_native_exports_after_source_proof() -> TestResult {
+    let input = fixture("native")?;
+    let report = crate::test_source::source_provider(&input, "source_neg_native")?;
+    let Analysis {
+        mut facts,
+        prepared,
+    } = pipeline::analyze_source(&report)?;
+    let program = crate::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        crate::lower::Roots {
+            entry: None,
+            exports: &[],
+        },
+        prepared,
+    )?;
+    for name in ["neg_enum", "neg_constant"] {
+        assert_eq!(
+            program
+                .symbols
+                .iter()
+                .filter(|symbol| symbol.name == name && symbol.body.is_some())
+                .count(),
+            1
+        );
+    }
+    let output = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../obj/parallel/all-attribute-selected-output-v1/native/source-neg");
+    std::fs::create_dir_all(&output)?;
+    std::fs::write(output.join("provider.rs"), input)?;
+    crate::lowir::writer::write(
+        &program,
+        &mut std::fs::File::create(output.join("provider.lowir"))?,
+    )?;
+    Ok(())
+}

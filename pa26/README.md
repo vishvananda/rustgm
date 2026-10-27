@@ -392,6 +392,10 @@ The four independently observed no_core cases and exact qualification are in
 its four PA31 source-location `neg-*.rs` fixtures.
 Missing Neg and a nonconst impl in a const discriminant remain rejected. Existing
 source Not positive, forged-owner, effect and closed-wire controls still pass.
-SourceUnary remains 12 bytes, Body 448 and Rvalue 20. Full original Neg
-declaration attributes, runtime overflow and the new native consumer remain
-required; this checkpoint does not complete formatting or panic execution.
+SourceUnary remains 12 bytes, Body 448 and Rvalue 20. The adapted native enum/const consumer prints `-1 -7` through the locked
+backend, matching independent Rust execution. Both adapters retain identical
+source declarations; Rust returns the repr(isize) enum and the candidate uses
+the supported typed enum-to-isize cast. The contract records both hashes and
+the retained panic-hook/C-enum-ABI setup failures. Full original Neg declaration
+attributes, runtime overflow and C enum ABI remain required. This checkpoint
+does not complete formatting or panic execution.

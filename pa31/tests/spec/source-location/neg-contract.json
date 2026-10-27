@@ -58,5 +58,33 @@
     "receipt": "obj/qualification/fast/1793099488469987255/receipt.json",
     "sha256": "213dabeebc75b63832c92881cde46b08d16e0dac8c6482216782151a02bece24",
     "scope": "six exact private groups, lexer ten; both strict modes and global formatting/audit. Native pending; no unchanged full Neg source claim."
+  },
+  "native": {
+    "source": "pa31/tests/spec/source-location/neg-native.rs",
+    "sha256": "1a3b897d7d0ea5f724142a2c653040d8f7316dd189f3b6c3fb1ab23a3fc8af4a",
+    "plan": "obj/parallel/pa31/source-location-claims-v1/panic-handler-v1/neg-native-v2/plan.json",
+    "plan_sha256": "d30750d03870edc605c5688a822c17c706edb39078bf9bdb42aee00c005c61f5",
+    "independent_receipt": "obj/parallel/pa31/source-location-claims-v1/panic-handler-v1/neg-native-v2/oracle-receipt.json",
+    "independent_sha256": "827a1fba69f7a1c6af3967b4328b97365599b16966dfe950079b241db6e9a7e4",
+    "expected_stdout": "-1 -7\n",
+    "actual_independent_status": 0,
+    "candidate": "PASS adapted native stdout -1 -7 newline, exit0, empty stderr; real declaration/const/instance/enum_cast proof precedes scalar export. Not runtime-variable overflow/full original Neg attributes/C enum ABI.",
+    "retained_failed_cast_observation": "../neg-native-v1/oracle-receipt.json requires real panic_const_add_overflow",
+    "retained_candidate_enum_return_failure": {
+      "receipt": "obj/qualification/fast/1793101364649066052/receipt.json",
+      "actual": "C aggregate ABI profile requires a nonempty aligned repr(C) struct",
+      "scope": "both strict modes/build/lexer10 passed; exact new producer failed. C enum ABI remains unsupported."
+    },
+    "common_declarations_sha256": "c61340867474775b7c943d71398902179c5ba0a49b88dde5170d856a557a1348",
+    "adapted_evidence": "Identical literal source trait/impl/enum/const prefix; only C ABI export signature and enum cast differ. Not exact-sourcecrate parity or completed enum C ABI.",
+    "candidate_receipt": "obj/parallel/pa31/source-location-claims-v1/panic-handler-v1/neg-native-v2/candidate-receipt.json",
+    "candidate_receipt_sha256": "b213aecb3cf25c4d5e1a34095d2c1d7b77ef7587911ee7cfa7d0633ee53cebb8",
+    "candidate_plan_sha256": "65934cb72e11c0dc1871021f5c8b802fc98912cf88c758dce5d08222b588de57",
+    "candidate_lowir_sha256": "149004c000aca89c133d09178df221abda3dba3a05a3fc993fccde4413597efd",
+    "producer_receipt": "obj/qualification/fast/1793101534048705593/receipt.json",
+    "producer_receipt_sha256": "9093e1f8af1acb02b604ff577be9f63c5cff200d9a8dbac56caa77496ffe6f68",
+    "fixture_replay_plan": "obj/parallel/pa31/source-location-claims-v1/panic-handler-v1/neg-native-v2/fixture-runtime-plan.json",
+    "fixture_replay_stdout_sha256": "2efcb54ef953ccb9d3c5d2d98a04deef3b966fcd2a7b2c4853ba0614287a9866",
+    "fixture_replay_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   }
 }
