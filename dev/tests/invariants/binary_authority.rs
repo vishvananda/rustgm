@@ -427,7 +427,7 @@ fn merged_branch_returns_seven(body: &crate::lowir::program::Function) -> TestRe
         .ok_or("actual return merge slot")?;
     let source_block = body.blocks.iter().find(|block| {
         body.instructions[block.instructions.start as usize..block.instructions.end as usize].iter().any(|instruction| {
-            matches!(instruction.operation, LowOperation::Store { address: Operand::Slot(actual), value } if actual == slot && matches!(value.operand, Operand::Literal(id) if matches!(body.literals.get(id.0 as usize), Some(Literal::Integer(7)))))
+            matches!(instruction.operation, LowOperation::Store { address: Operand::Slot(actual), value, access: crate::lowir::program::Access::Ordinary } if actual == slot && matches!(value.operand, Operand::Literal(id) if matches!(body.literals.get(id.0 as usize), Some(Literal::Integer(7)))))
         })
     }).ok_or("actual seven store into return merge slot")?;
     assert!(
