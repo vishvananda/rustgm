@@ -17,7 +17,10 @@ use crate::{
         token_tree::{Delimiter, Forest, TreeKind},
     },
 };
-pub(super) fn collect(report: &Report, facts: &mut Declarations) -> Result<Sources, Error> {
+pub(in crate::sema) fn collect(
+    report: &Report,
+    facts: &mut Declarations,
+) -> Result<Sources, Error> {
     let mut rows = Sources::default();
     for (index, unit) in report.package.units.iter().enumerate() {
         if unit.include_context.is_some() {

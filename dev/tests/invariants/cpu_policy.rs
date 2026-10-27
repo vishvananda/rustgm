@@ -284,7 +284,8 @@ fn current_images_declared_owners_and_imported_unknown_cannot_be_substituted() -
                 } else {
                     actual
                 })
-            })?;
+            })
+            .map_err(|error| error.message)?;
         changed.package.units[file].configured.ast.attributes[capture].forest = forest;
         assert!(
             changed

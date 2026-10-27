@@ -91,7 +91,10 @@ impl Contract {
         Ok(())
     }
 }
-pub(super) fn validate_method(facts: &Declarations, definition: DefId) -> Result<(), Error> {
+pub(in crate::sema) fn validate_method(
+    facts: &Declarations,
+    definition: DefId,
+) -> Result<(), Error> {
     let Some(row) = facts.target_feature_functions.get(&definition) else {
         return Ok(());
     };
@@ -123,7 +126,7 @@ pub(super) fn validate_method(facts: &Declarations, definition: DefId) -> Result
     }
     Ok(())
 }
-pub(super) fn body_unsafe(
+pub(in crate::sema) fn body_unsafe(
     report: &Report,
     facts: &Declarations,
     definition: DefId,
