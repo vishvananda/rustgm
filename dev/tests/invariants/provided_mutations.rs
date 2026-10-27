@@ -50,6 +50,9 @@ fn complete_columns_reject_missing_swapped_sites_namespace_and_failed_storage() 
         |r, _, c| {
             c.namespace.root = r.functions[0].declaration;
         },
+        |_, _, c| {
+            c.namespace.bindings.push(c.namespace.bindings[0].clone());
+        },
         |_, a, _| {
             a.functions.pop();
         },
