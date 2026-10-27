@@ -1,0 +1,248 @@
+{
+  "scope": "NEW pinned x86_64 target-feature declaration/call/coercion metadata observations; no native AVX execution",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "cases": [
+    {
+      "source": "safe-declaration.rs",
+      "sha256": "1264460416b44e60c84f0f0d610cc6dc1a6de2e38e23de5ccacdcaea5019117d",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "missing-caller-feature.rs",
+      "sha256": "2238fb1b8a5756506f71b86ed9509b6274eaafb57433a230cfda497e573ef483",
+      "status": 1,
+      "errors": [
+        "E0133"
+      ],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "unsafe-block.rs",
+      "sha256": "80d5b27073c60bf26d27fade54db5e0d57e43444e7eb2f44ff761bcff442b740",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "matching-caller.rs",
+      "sha256": "e92458be6731c508d0a3d8ef5bedd94383c562fbe56080948d0c27ededb0541e",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "implied-caller.rs",
+      "sha256": "0e3156a0e61337a7d542c3eaffb1fbe50c357977eedbdccfd0aa5b616ff03cdc",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "insufficient-caller.rs",
+      "sha256": "e409832c909c8423715f7e6c9ff0bcb813e668dcd313b17ef2380060da2ee1f7",
+      "status": 1,
+      "errors": [
+        "E0133"
+      ],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "explicit-unsafe.rs",
+      "sha256": "c4f14900030a41f568dd7e1973c3af1d43923ea9ea1ba306adf84c865f14cf33",
+      "status": 1,
+      "errors": [
+        "E0133"
+      ],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "explicit-unsafe-block.rs",
+      "sha256": "faa5e1c5865be16778806fd4bcec3e05fb955daeee029b7ff0acbd180a439244",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "unsafe-pointer.rs",
+      "sha256": "ee4f68e2a6514fb37a2511e2fa0ac4245dbf8cbacec3f2f65f2f26e366060801",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "safe-pointer-missing.rs",
+      "sha256": "e6ed0dce33911bb0dbe968a7db2f52362cc6cdfc73e3007d385d98731c81d968",
+      "status": 1,
+      "errors": [
+        "E0308"
+      ],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "safe-pointer-matching.rs",
+      "sha256": "992b5dafa9e947bd9878062fec2863ac768026e4669723bdec328d5dc799b886",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "unsafe-pointer-call.rs",
+      "sha256": "8e4845bf57c42e7c4cd3c78bf4773bcf2cddf5f6b0b8539e865fc533a79f8265",
+      "status": 1,
+      "errors": [
+        "E0133"
+      ],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "const-missing.rs",
+      "sha256": "6313c86d6fe8c77a634ed81bfb6e24d2fdd118964eaa44886262167b0c94214d",
+      "status": 1,
+      "errors": [
+        "E0133"
+      ],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "const-unsafe.rs",
+      "sha256": "127dc241f1ba0bc6599ebb7dd6493f56b4335d0dd63aa91ad8d071eb31842654",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "unknown-feature.rs",
+      "sha256": "945cae7f1ea4a5954d213f9cb90f5c7bd8fda398485ae0b1f9caa4938f502997",
+      "status": 1,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "malformed-enable.rs",
+      "sha256": "da6a4faae97f8e64deeb36f73de4f391b905652b8a512769df161431410f4db8",
+      "status": 1,
+      "errors": [
+        "E0539"
+      ],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "duplicate-features.rs",
+      "sha256": "3269bc3513f49402f9e67a07426401e18650d35bc5d10847d26422d800e57819",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "empty-feature.rs",
+      "sha256": "605dbf9a5045838f1eabe10ecbc19437d6b5c9dcbb8da44f65020225760863ff",
+      "status": 1,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "safe-trait-method.rs",
+      "sha256": "4d20db56300e36d504a4283b2950522024c3ead6e5d1f93a537d58f855d9e2d8",
+      "status": 1,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "unsafe-trait-method.rs",
+      "sha256": "05150a67b72ddc69db74fea07358a345ee24b30eaed8ddaa117e27e70ab58fe6",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "safe-body-remains-safe.rs",
+      "sha256": "ee77ad93f2b4a0707e793f991b9ba9d8604dcc860fc91d8dfb433bbc2c4a187a",
+      "status": 1,
+      "errors": [
+        "E0133"
+      ],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "closure-inherits.rs",
+      "sha256": "230445397d5f2d20623b45d57fa28321be534400d5de03207d2fb262712fe279",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "nested-function-separate.rs",
+      "sha256": "c466fb05de8aa7af8a88f098274e024c1fd26c16dc743f9f7010dc331928aea6",
+      "status": 1,
+      "errors": [
+        "E0133"
+      ],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "cfg-disabled.rs",
+      "sha256": "4f51421c7e3dcf9519b359f5c38f3def8ffb65e9b9c804a15de18bf6a59f0122",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "nonfunction-owner.rs",
+      "sha256": "d15bbef15ba4ad02ddb4ba54fddfafe466b2b40c0b38ad87c16c51bcf3cf1dc3",
+      "status": 1,
+      "errors": [
+        "E0518"
+      ],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "safe-c-abi.rs",
+      "sha256": "9dcf5740830efd4a3807147620e257a99a1a29a8f4d7f5b959d3e0038a78d509",
+      "status": 1,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "baseline-no-waiver.rs",
+      "sha256": "ea1165c940a548bdc0f69ce5bd2496a9b8b1174879239a3723a33807c8ac6ae1",
+      "status": 1,
+      "errors": [
+        "E0133"
+      ],
+      "warnings": [],
+      "flags": [
+        "-Ctarget-feature=+avx"
+      ]
+    }
+  ]
+}
