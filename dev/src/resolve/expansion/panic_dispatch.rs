@@ -426,3 +426,7 @@ impl<S: Sources> Engine<'_, S> {
         Ok(context)
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/assert_dispatch.rs"]
+mod assert_tests;

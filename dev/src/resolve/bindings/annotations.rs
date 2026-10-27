@@ -26,6 +26,7 @@ pub(super) enum DiagnosticItem {
     Alignment,
     Send,
     Sync,
+    AssertMacro,
 }
 impl DiagnosticItem {
     pub(super) const fn index(self) -> usize {
@@ -65,6 +66,7 @@ pub(super) fn parse(
         b"Alignment" => Ok(DiagnosticItem::Alignment),
         b"Send" => Ok(DiagnosticItem::Send),
         b"Sync" => Ok(DiagnosticItem::Sync),
+        b"assert_macro" => Ok(DiagnosticItem::AssertMacro),
         _ => Err(error("unsupported source diagnostic identity")),
     }
 }
@@ -93,7 +95,8 @@ pub(super) fn validate(
             | DiagnosticItem::NonNull
             | DiagnosticItem::Debug
             | DiagnosticItem::Alignment
-            | DiagnosticItem::Send => None,
+            | DiagnosticItem::Send
+            | DiagnosticItem::AssertMacro => None,
         };
         if let Some(expected) = expected {
             if !claims
@@ -106,12 +109,14 @@ pub(super) fn validate(
             }
         } else if matches!(
             item,
-            DiagnosticItem::CfgSelect | DiagnosticItem::FormatArgsMacro
+            DiagnosticItem::CfgSelect
+                | DiagnosticItem::FormatArgsMacro
+                | DiagnosticItem::AssertMacro
         ) {
-            let role = if matches!(item, DiagnosticItem::CfgSelect) {
-                crate::expand::builtin::Builtin::CfgSelect
-            } else {
-                crate::expand::builtin::Builtin::FormatArgs
+            let role = match item {
+                DiagnosticItem::CfgSelect => crate::expand::builtin::Builtin::CfgSelect,
+                DiagnosticItem::AssertMacro => crate::expand::builtin::Builtin::Assert,
+                _ => crate::expand::builtin::Builtin::FormatArgs,
             };
             if !claims
                 .iter()
@@ -119,6 +124,8 @@ pub(super) fn validate(
             {
                 return Err(error(if matches!(item, DiagnosticItem::CfgSelect) {
                     "cfg_select diagnostic identity requires its actual builtin role"
+                } else if matches!(item, DiagnosticItem::AssertMacro) {
+                    "assert diagnostic identity requires its actual builtin role"
                 } else {
                     "format_args diagnostic identity requires its actual builtin role"
                 }));
