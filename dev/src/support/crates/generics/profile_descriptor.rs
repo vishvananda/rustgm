@@ -13,6 +13,8 @@ mod module_contracts;
 mod module_exports;
 #[path = "supplied_profile.rs"]
 mod provided;
+#[path = "supplied_contracts.rs"]
+mod provided_contracts;
 use super::{HeaderIndex, SourceRows};
 use crate::support::{
     crates::{
@@ -30,6 +32,10 @@ pub use module_contracts::{
     ModuleNamespace, ModuleRow, ModuleVisibility, TraitDomainRow,
 };
 pub(crate) use module_exports::{ExportBinding, NamespaceColumns, UnpublishedNamespace};
+pub(crate) use provided_contracts::{
+    HeaderModifierColumns, HeaderModifierPolicy, HeaderModifierRecord, ProvidedContractRows,
+    ProvidedContractView,
+};
 
 /// Existing source-mode facade; no source descriptor has been published yet.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -41,6 +47,8 @@ pub enum Profile {
     Source2024FunctionContracts,
     /// Complete unpaid provided-body data; canonical import and proof stay gated.
     Source2024Provided,
+    /// Complete numbered source data with namespace, advisories and explicit plain modifiers.
+    Source2024ProvidedContracts,
     /// Complete ordinary module namespace, implementation domains and advisory facts.
     Source2024ModuleContracts,
 }
@@ -69,6 +77,7 @@ pub struct ValidatedRows {
     columns: Box<Columns>,
     headers: Box<[Option<super::HeaderRef>]>,
     attributes: Option<Box<super::HeaderAttributeColumns>>,
+    provided: Option<Box<provided_contracts::ProvidedContractColumns>>,
     modules: Option<Box<module_contracts::ModuleContractColumns>>,
     budget: Budget,
 }
@@ -78,6 +87,7 @@ impl PartialEq for ValidatedRows {
             && self.profile == other.profile
             && self.columns == other.columns
             && self.attributes == other.attributes
+            && self.provided == other.provided
             && self.modules == other.modules
     }
 }
@@ -141,6 +151,24 @@ impl ValidatedRows {
         staged.attributes = Some(Box::new(attributes));
         Ok(staged)
     }
+    pub(crate) fn stage_provided_contracts(
+        owner: &CrateIdentity,
+        rows: SourceRows,
+        attributes: super::HeaderAttributeColumns,
+        contracts: ProvidedContractRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        Self::stage_complete(
+            owner,
+            rows,
+            base,
+            work,
+            Profile::Source2024ProvidedContracts,
+            &mut |_, _| {},
+            Some((attributes, contracts)),
+        )
+    }
     pub(crate) fn stage_module_contracts(
         owner: &CrateIdentity,
         rows: SourceRows,
@@ -192,6 +220,7 @@ impl ValidatedRows {
             columns,
             headers,
             attributes: Some(Box::new(attributes)),
+            provided: None,
             modules: Some(Box::new(modules)),
             budget,
         })
@@ -213,14 +242,42 @@ impl ValidatedRows {
         profile: Profile,
         observe: &mut impl FnMut(usize, usize),
     ) -> Result<Self, &'static str> {
+        Self::stage_complete(owner, rows, base, work, profile, observe, None)
+    }
+    fn stage_complete(
+        owner: &CrateIdentity,
+        rows: SourceRows,
+        base: usize,
+        work: &mut Work,
+        profile: Profile,
+        observe: &mut impl FnMut(usize, usize),
+        extension: Option<(super::HeaderAttributeColumns, ProvidedContractRows)>,
+    ) -> Result<Self, &'static str> {
         let start = work.steps;
-        let indexed = HeaderIndex::new(&rows, base, work)?;
+        if extension.is_some() != (profile == Profile::Source2024ProvidedContracts) {
+            return Err(
+                "provided contracts require their complete namespace/modifier/advisory data",
+            );
+        }
+        let (attribute_bytes, provided_bytes) = if let Some((attributes, contracts)) = &extension {
+            (
+                attributes.validate(&rows, base, work)?,
+                contracts.storage_bytes(work)?,
+            )
+        } else {
+            (0, 0)
+        };
+        let extension_bytes = attribute_bytes.saturating_add(provided_bytes);
+        let extended_base = base.saturating_add(extension_bytes);
+        let indexed = HeaderIndex::new(&rows, extended_base, work)?;
         let numbering_peak = match profile {
             Profile::Source2024Functions | Profile::Source2024FunctionContracts => {
                 functions::validate(&rows, &indexed, work)?;
                 0
             }
-            Profile::Source2024Provided => provided::validate(&rows, &indexed, work)?,
+            Profile::Source2024Provided | Profile::Source2024ProvidedContracts => {
+                provided::validate(&rows, &indexed, work)?
+            }
             Profile::Source2024 => return Err("unpublished source facade has no data profile"),
             Profile::Source2024ModuleContracts => {
                 return Err(
@@ -228,21 +285,46 @@ impl ValidatedRows {
                 );
             }
         };
+        let (attributes, provided, extension_peak) =
+            complete_extension(extension, &rows, &indexed, provided_bytes, work)?;
         let domains = indexed.domains(work)?;
         let plan = domains.original_inputs(work)?;
-        let previous_peak = plan.peak_bytes().max(numbering_peak);
+        let previous_peak = plan.peak_bytes().max(numbering_peak).max(extension_peak);
         drop(plan);
         drop(domains);
         let indexed = indexed.into_header_rows()?;
-        let (owners, columns, headers, mut budget) =
-            freeze_columns_observed(owner, rows, indexed, base, previous_peak, work, observe)?;
+        let (owners, columns, headers, mut budget) = freeze_columns_observed(
+            owner,
+            rows,
+            indexed,
+            extended_base,
+            previous_peak,
+            work,
+            observe,
+        )?;
+        budget.bytes = budget.bytes.saturating_add(extension_bytes);
+        budget.peak = budget.peak.saturating_add(extension_bytes);
+        if let Some(contracts) = &provided {
+            work.charge(contracts.view().rows().namespace.bindings.len())?;
+            budget.names = budget.names.saturating_add(
+                contracts
+                    .view()
+                    .rows()
+                    .namespace
+                    .bindings
+                    .iter()
+                    .map(|row| row.name.len())
+                    .sum::<usize>(),
+            );
+        }
         budget.atoms = work.steps.saturating_sub(start);
         Ok(Self {
             owners,
             profile,
             columns,
             headers,
-            attributes: None,
+            attributes,
+            provided,
             modules: None,
             budget,
         })
@@ -261,6 +343,30 @@ impl ValidatedRows {
         ValidatedView { source: self }
     }
 }
+type FrozenExtension = (
+    Option<Box<super::HeaderAttributeColumns>>,
+    Option<Box<provided_contracts::ProvidedContractColumns>>,
+    usize,
+);
+fn complete_extension(
+    extension: Option<(super::HeaderAttributeColumns, ProvidedContractRows)>,
+    rows: &SourceRows,
+    indexed: &HeaderIndex<'_>,
+    provided_bytes: usize,
+    work: &mut Work,
+) -> Result<FrozenExtension, &'static str> {
+    let Some((attributes, contracts)) = extension else {
+        return Ok((None, None, 0));
+    };
+    let base = indexed.retained_bytes().saturating_sub(provided_bytes);
+    let (contracts, peak) = contracts.validate(rows, indexed, &attributes, base, work)?;
+    Ok((
+        Some(Box::new(attributes)),
+        Some(Box::new(contracts)),
+        base.saturating_add(peak),
+    ))
+}
+
 type FrozenColumns = (
     BodyCatalog,
     Box<Columns>,
@@ -425,6 +531,16 @@ impl<'a> Descriptor<'a> {
             .as_deref()
             .map(module_contracts::ModuleContractColumns::view)
             .ok_or("version-two module contract columns are missing")
+    }
+    pub(crate) fn provided_contracts(self) -> Result<ProvidedContractView<'a>, &'static str> {
+        if self.source.profile != Profile::Source2024ProvidedContracts {
+            return Err("descriptor has no complete provided contracts");
+        }
+        self.source
+            .provided
+            .as_deref()
+            .map(provided_contracts::ProvidedContractColumns::view)
+            .ok_or("provided namespace/modifier completion is missing")
     }
     #[must_use]
     pub const fn profile(&self) -> Profile {

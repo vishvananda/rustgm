@@ -135,6 +135,11 @@ impl<'a> ValidatedView<'a> {
     ) -> Result<super::module_contracts::ModuleContractView<'a>, &'static str> {
         self.source.descriptor().module_contracts()
     }
+    pub(crate) fn provided_contracts(
+        self,
+    ) -> Result<super::ProvidedContractView<'a>, &'static str> {
+        self.source.descriptor().provided_contracts()
+    }
     #[must_use]
     pub fn header_attributes(self) -> Option<&'a super::super::HeaderAttributeColumns> {
         self.source.attributes.as_deref()
@@ -171,8 +176,10 @@ impl<'a> ValidatedView<'a> {
         work: &mut super::super::super::Work,
     ) -> Result<super::super::AllocationOrdinals<'a>, &'static str> {
         work.charge(1)?;
-        if self.source.profile != super::Profile::Source2024Provided
-            || live_base < self.source.budget.bytes
+        if !matches!(
+            self.source.profile,
+            super::Profile::Source2024Provided | super::Profile::Source2024ProvidedContracts
+        ) || live_base < self.source.budget.bytes
         {
             return Err("frozen allocation inverse requires its actual Provided live owner");
         }

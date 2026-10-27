@@ -10,14 +10,14 @@ use crate::support::{
 };
 use std::{cmp::Ordering, sync::Arc};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct ExportBinding {
     pub module: DeclarationRef,
     pub name: String,
     pub namespace: Namespace,
     pub target: s::DeclarationAddress,
 }
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct NamespaceColumns {
     pub root: DeclarationRef,
     pub modules: Vec<DeclarationRef>,
@@ -189,13 +189,27 @@ impl NamespaceColumns {
         columns: &Columns,
         work: &mut Work,
     ) -> Result<NamespaceWork, &'static str> {
-        self.validate(&columns.declarations, work)?;
+        self.complete(&columns.declarations, work)
+    }
+    pub(crate) fn validate_rows(
+        &mut self,
+        rows: &SourceRows,
+        work: &mut Work,
+    ) -> Result<NamespaceWork, &'static str> {
+        self.complete(&rows.declarations, work)
+    }
+    fn complete(
+        &mut self,
+        declarations: &[s::Declaration],
+        work: &mut Work,
+    ) -> Result<NamespaceWork, &'static str> {
+        self.validate(declarations, work)?;
         let mut observed = NamespaceWork::default();
         self.sort(work, &mut observed)?;
         observed.retained_bytes = self.storage_bytes(work)?;
         observed.peak_bytes = observed
             .retained_bytes
-            .saturating_add(self.validation_scratch(columns.declarations.len()));
+            .saturating_add(self.validation_scratch(declarations.len()));
         Ok(observed)
     }
     fn validate(

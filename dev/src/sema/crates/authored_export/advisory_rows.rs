@@ -14,6 +14,7 @@ use crate::{
 enum Collection {
     Headers,
     FormalScopes,
+    ProvidedContracts,
 }
 
 impl Stage {
@@ -42,6 +43,14 @@ impl Stage {
     ) -> Result<s::HeaderAttributeColumns, Error> {
         self.collect_columns(report, facts, Collection::FormalScopes, check)
     }
+    pub(super) fn collect_provided_columns(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        check: impl FnMut(&mut Stage, DefId, NodeKey) -> Result<(), Error>,
+    ) -> Result<s::HeaderAttributeColumns, Error> {
+        self.collect_columns(report, facts, Collection::ProvidedContracts, check)
+    }
     fn collect_columns(
         &mut self,
         report: &Report,
@@ -64,18 +73,25 @@ impl Stage {
                 Collection::Headers => self
                     .selected_header(report, facts, index)?
                     .map(|(definition, source)| CollectedScope::header_source(definition, source)),
-                Collection::FormalScopes => self.collected_scope(report, facts, index)?,
+                Collection::FormalScopes | Collection::ProvidedContracts => {
+                    self.collected_scope(report, facts, index)?
+                }
             };
             let Some(selected) = selected else {
                 continue;
             };
             let definition = selected.definition();
             let declaration = selected.source();
+            if matches!(mode, Collection::ProvidedContracts) {
+                require_defaultness_transport(report, declaration)?;
+            }
             check(self, definition, declaration)?;
             if !selected.header() {
                 continue;
             }
-            require_defaultness_transport(report, declaration)?;
+            if !matches!(mode, Collection::ProvidedContracts) {
+                require_defaultness_transport(report, declaration)?;
+            }
             let row = self.definitions[index]
                 .ok_or_else(|| Error::unlocated("selected attribute declaration disappeared"))?;
             let view = facts.publication_header_contracts(report, definition)?;

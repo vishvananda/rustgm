@@ -29,7 +29,10 @@ pub use descriptor::{
     ModuleContractView, ModuleNamespace, ModuleRow, ModuleVisibility, Profile, TraitDomainRow,
     ValidatedRows, ValidatedView,
 };
-pub(crate) use descriptor::{ExportBinding, NamespaceColumns, UnpublishedNamespace, callable_path};
+pub(crate) use descriptor::{
+    ExportBinding, HeaderModifierColumns, HeaderModifierPolicy, HeaderModifierRecord,
+    NamespaceColumns, ProvidedContractRows, UnpublishedNamespace, callable_path,
+};
 pub use inputs::*;
 pub use scopes::{Definition, DefinitionKind, ScopeIndex};
 pub use validation::{

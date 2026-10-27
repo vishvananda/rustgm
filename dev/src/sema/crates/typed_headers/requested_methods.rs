@@ -320,7 +320,7 @@ fn publish(
             ));
         }
     };
-    let base = work.retained;
+    Headers::ensure_selected_owner(facts, work)?;
     let growth = publication_growth(facts, symbol.is_some(), receiver.is_some())?;
     let linkage = facts
         .crates
@@ -349,13 +349,10 @@ fn publish(
             signature: header.callable,
         })
         .map_err(error)?;
-    let headers = linkage.originals.get_or_insert_with(|| {
-        Box::new(Headers {
-            source: Some(ImportedOwners::Provided(mapping)),
-            base,
-            ..Headers::default()
-        })
-    });
+    let headers = linkage
+        .originals
+        .as_deref_mut()
+        .ok_or_else(|| error("selected method lost its actual prepaid header owner"))?;
     headers.entries.insert(definition, header);
     if let Some(symbol) = symbol {
         linkage.symbols.insert(definition, symbol);
@@ -392,16 +389,15 @@ fn publication_growth(facts: &Declarations, symbol: bool, receiver: bool) -> Res
             1,
         ));
     }
-    if let Some(headers) = linkage.originals.as_deref() {
-        growth.include(Growth::map::<DefId, Header>(
-            headers.entries.len(),
-            headers.entries.capacity(),
-            1,
-        ));
-    } else {
-        growth.bytes = growth.bytes.saturating_add(size_of::<Headers>());
-        growth.include(Growth::map::<DefId, Header>(0, 0, 1));
-    }
+    let headers = linkage
+        .originals
+        .as_deref()
+        .ok_or_else(|| error("selected method growth lacks its actual header owner"))?;
+    growth.include(Growth::map::<DefId, Header>(
+        headers.entries.len(),
+        headers.entries.capacity(),
+        1,
+    ));
     Ok(growth)
 }
 

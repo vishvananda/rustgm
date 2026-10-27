@@ -1,6 +1,6 @@
 //! One genuine consumer lends its selected producers to declaration checking.
 use super::{
-    CollectedReceipt, ConsumerAuthority, ConsumerReservation, Declarations, Error, HeaderDraft,
+    ConsumerAuthority, ConsumerReservation, Declarations, Error, HeaderCompletion, HeaderDraft,
     Identity, ProofSession, Report, ReservationWork, SelectedHeaders,
 };
 use crate::{
@@ -14,7 +14,7 @@ mod conformance;
 
 pub(in crate::sema) struct SelectedConsumer<'a> {
     reservation: ConsumerReservation,
-    completion: Box<CollectedReceipt>,
+    completion: Box<HeaderCompletion>,
     selected: SelectedHeaders,
     arena: Identity,
     work: &'a mut ReservationWork,
@@ -137,14 +137,7 @@ impl crate::sema::dispatch::Preparation for RuntimePreparation<'_, '_> {
     }
 }
 impl HeaderDraft {
-    #[cfg_attr(
-        not(test),
-        expect(
-            dead_code,
-            reason = "the genuine private consumer awaits demanded original/instance execution and encoded Provided admission"
-        )
-    )]
-    pub(super) fn execute<R>(
+    pub(crate) fn execute<R>(
         mut self,
         work: &mut ReservationWork,
         execute: impl FnOnce(

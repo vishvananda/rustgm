@@ -30,6 +30,9 @@ impl Checker<'_> {
         limit: usize,
         scan: &mut Vec<NodeId>,
     ) -> Result<(), Error> {
+        if self.defer_selected_trait_callable(key, context)? {
+            return Ok(());
+        }
         self.work.push(Work::ConstantArguments(key));
         if self.schedule_self_constructor(key, context)? {
             return Ok(());

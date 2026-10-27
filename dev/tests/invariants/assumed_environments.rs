@@ -203,7 +203,7 @@ fn plain_contract() -> Result {
         .get()
         .map(Box::as_ref)
         .ok_or("actual scope")?;
-    scope.require_empty(*expected)?;
+    scope.require_empty(*expected, product.seal)?;
     assert!(product.environment.is_neutral());
     assert!(!Arc::ptr_eq(&product.environment, &scope.environment));
     assert!(Arc::ptr_eq(&product.declaration, &scope.environment));

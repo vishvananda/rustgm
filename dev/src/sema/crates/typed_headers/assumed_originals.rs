@@ -203,6 +203,7 @@ pub(super) fn leaf_path(
     Ok(true)
 }
 fn body_origin(
+    prepared: &Prepared,
     rows: s::ValidatedView<'_>,
     expected: Ready,
     work: &mut ReservationWork,
@@ -256,6 +257,14 @@ fn body_origin(
                 expected.pair.function_row,
                 expected.header,
                 expected.scope,
+                expected
+                    .header
+                    .parent
+                    .map(|owner| {
+                        work.charge(2)?;
+                        prepared.scope(rows, owner)
+                    })
+                    .transpose()?,
                 work,
             )?
             .map(Origin::Contract),
@@ -274,7 +283,7 @@ fn body_environment(
     match demand.origin {
         Origin::Declaration | Origin::Numbered => Ok((Arc::clone(&scope.environment), 0)),
         Origin::Contract(actual) => {
-            scope.require_empty(demand.expected)?;
+            scope.require_empty(demand.expected, demand.origin)?;
             let mut accounting = Observed {
                 work,
                 allocation: Allocation::default(),
@@ -311,7 +320,7 @@ pub(super) fn finish(
         .and_then(std::cell::OnceCell::get)
         .map(Box::as_ref)
         .ok_or_else(|| error("private original lost its actual prepared scope"))?;
-    let (body, actual) = body_origin(rows, expected, work)?;
+    let (body, actual) = body_origin(prepared, rows, expected, work)?;
     if actual != Some(origin)
         || scope.parameters.len() != expected.formals
         || scope.environment.has_region_builtins()
@@ -427,7 +436,7 @@ impl Prepared {
         let origin = if numbered {
             Some(Origin::Numbered)
         } else {
-            body_origin(rows, expected, work)?.1
+            body_origin(self, rows, expected, work)?.1
         };
         let Some(origin) = origin else {
             return Ok(Demand::Blocked(Dependency::OwnedBodyDomain(

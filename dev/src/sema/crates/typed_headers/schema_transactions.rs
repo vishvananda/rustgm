@@ -325,6 +325,7 @@ fn publish(
     );
     work.steps = steps;
     let id = result.map_err(error)?;
+    super::super::Headers::ensure_selected_owner(facts, work)?;
     *cell = Cell::Installed(id);
     transaction.bytes = transaction.bytes.saturating_sub(moved);
     Ok(Demand::Ready(()))

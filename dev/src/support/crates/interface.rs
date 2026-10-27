@@ -85,7 +85,7 @@ impl Function {
         Linkage::Export
     }
 }
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub struct Interface {
     identity: CrateIdentity,
     dependencies: Vec<CrateIdentity>,
@@ -98,6 +98,21 @@ pub struct Interface {
     atoms: usize,
     names: usize,
 }
+impl PartialEq for Interface {
+    fn eq(&self, other: &Self) -> bool {
+        // Actual validation/sorting and storage counters are paid separately;
+        // they do not change metadata when construction order/capacity differs.
+        self.identity == other.identity
+            && self.dependencies == other.dependencies
+            && self.functions == other.functions
+            && self.constants == other.constants
+            && self.nominals == other.nominals
+            && self.storage == other.storage
+            && self.public_names == other.public_names
+            && self.generic_payload == other.generic_payload
+    }
+}
+impl Eq for Interface {}
 impl Interface {
     /// Publish a bounded canonical table before any resolver/inference allocation.
     /// # Errors

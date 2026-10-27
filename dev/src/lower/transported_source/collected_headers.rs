@@ -55,6 +55,36 @@ impl Source {
         report: &Report,
         facts: &Declarations,
     ) -> Result<TraitInspection, Error> {
+        let (collected, _) = self.complete_collected(report, facts, false)?;
+        Ok(TraitInspection { collected })
+    }
+    pub(in crate::lower) fn complete_provided_contract_payload(
+        self,
+        report: &Report,
+        facts: &Declarations,
+        base: crate::support::crates::Interface,
+    ) -> Result<crate::support::crates::Interface, Error> {
+        if report
+            .package
+            .source_core()
+            .is_none_or(|source| &source.provider != base.identity())
+        {
+            return Err(Error::unlocated(
+                "provided publication changed its actual provider",
+            ));
+        }
+        let (collected, modifiers) = self.complete_collected(report, facts, true)?;
+        collected.into_provided_interface(
+            base,
+            modifiers.ok_or_else(|| Error::unlocated("provided modifier completion is missing"))?,
+        )
+    }
+    fn complete_collected(
+        self,
+        report: &Report,
+        facts: &Declarations,
+        contracts: bool,
+    ) -> Result<(CollectedRows, Option<s::HeaderModifierColumns>), Error> {
         let Source {
             mut stage,
             openings,
@@ -67,17 +97,28 @@ impl Source {
         collector
             .require_root(report, facts, &mut stage)
             .map_err(Error::unlocated)?;
-        let collected = stage.collect_provider_headers(report, facts, |stage, declaration| {
+        let check = |stage: &mut crate::sema::crates::authored_export::Stage, declaration| {
             collector
                 .require_header(report, declaration, stage)
                 .map_err(Error::unlocated)
-        })?;
+        };
+        let (collected, modifiers) = if contracts {
+            let (collected, modifiers) =
+                stage.collect_contract_provider_headers(report, facts, check)?;
+            (collected, Some(modifiers))
+        } else {
+            (stage.collect_provider_headers(report, facts, check)?, None)
+        };
         drop(collector);
         // Preserve the original release boundary before index validation.
         drop(openings);
-        Ok(TraitInspection {
-            collected: collected.finish(numbering).map_err(Error::unlocated)?,
-        })
+        let collected = if let Some(modifiers) = &modifiers {
+            collected.finish_with_extra(numbering, modifiers.retained_bytes())
+        } else {
+            collected.finish(numbering)
+        }
+        .map_err(Error::unlocated)?;
+        Ok((collected, modifiers))
     }
     pub(super) fn complete_with_extra(
         self,

@@ -78,6 +78,33 @@ pub fn run(
         path: path.filter(|p| *p != "-").unwrap_or("<anon>").into(),
         source,
     };
+    let context = crates.context()?;
+    if matches!(mode, Mode::Lowir)
+        && let rustgm::support::bindings::Mode::SourceClient { provider } = &context.mode
+        && context.dependencies.as_ref().is_some_and(|inventory| {
+            inventory.artifacts().iter().any(|artifact| {
+                artifact.identity() == provider
+                    && artifact.source_descriptor().is_some_and(|descriptor| {
+                        descriptor.profile()
+                            == rustgm::support::crates::generics::source::Profile::Source2024ProvidedContracts
+                    })
+            })
+        })
+    {
+        if crates.library || crates.metadata.is_some() {
+            return Err("provided-contracts-v1 currently requires an executable consumer".into());
+        }
+        return rustgm::lower::instances::with_provided_client(
+            resolve::crates::ConsumerRequest::new(root, &mut Files, config, &context), |_, facts, program| {
+                emit_warnings(facts)?;
+                if count {
+                    rustgm::lowir::writer::count(program, out)
+                } else {
+                    rustgm::lowir::writer::write(program, out)
+                }.map_err(|error| error.to_string())
+            },
+        ).map_err(|error| semantic_error(&error))?;
+    }
     if matches!(
         mode,
         Mode::Expanded
@@ -94,10 +121,9 @@ pub fn run(
             | Mode::Constants
             | Mode::Lowir
     ) {
-        let report =
-            resolve::expansion::analyze_with_context(root, &mut Files, config, &crates.context()?)
-                .and_then(resolve::analyze_expanded)
-                .map_err(|error| semantic_error(&error))?;
+        let report = resolve::expansion::analyze_with_context(root, &mut Files, config, &context)
+            .and_then(resolve::analyze_expanded)
+            .map_err(|error| semantic_error(&error))?;
         if matches!(
             mode,
             Mode::Types
@@ -122,9 +148,8 @@ pub fn run(
         }
         .map_err(|e| e.to_string());
     }
-    let mut package =
-        resolve::load::load_with_context(root, &mut Files, config, &crates.context()?)
-            .map_err(|e| e.to_string())?;
+    let mut package = resolve::load::load_with_context(root, &mut Files, config, &context)
+        .map_err(|e| e.to_string())?;
     let facts = resolve::analyze(&mut package).map_err(|e| e.to_string())?;
     if count {
         writeln!(

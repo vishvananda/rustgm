@@ -179,6 +179,7 @@ impl ProvidedOwners {
         self.data_identity
             .require_owner(&self.data, &mut work)
             .map_err(|_| "selected owner changed its actual sidecar allocation")?;
+        self.data.require_inventory(&self.inventory, self.index)?;
         let descriptor = self
             .inventory
             .artifacts()
@@ -189,8 +190,10 @@ impl ProvidedOwners {
             .catalog
             .declaration_identity(self.root, DefKind::Module)?;
         let (provider, row, edition) = self.catalog.declaration_coordinate(self.root)?;
-        if descriptor.profile() != s::Profile::Source2024Provided
-            || descriptor.identity() != provider
+        if !matches!(
+            descriptor.profile(),
+            s::Profile::Source2024Provided | s::Profile::Source2024ProvidedContracts
+        ) || descriptor.identity() != provider
             || descriptor.edition() != edition
             || self.catalog.definition_at(provider, row)? != definition
         {

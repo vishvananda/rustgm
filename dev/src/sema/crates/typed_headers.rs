@@ -1,6 +1,18 @@
 //! Canonical imported headers retain actual catalog ownership and declared inputs.
 mod applications;
 mod consumer_sessions;
+pub(crate) use consumer_sessions::ProofSession;
+#[cfg(test)]
+pub(crate) const fn provided_layouts() -> [usize; 6] {
+    [
+        size_of::<Header>(),
+        size_of::<Headers>(),
+        size_of::<unpaid_provided::ProvidedOwners>(),
+        size_of::<consumer_sessions::ProofSession>(),
+        size_of::<consumer_sessions::HeaderDraft>(),
+        size_of::<SelectedConsumer<'static>>(),
+    ]
+}
 pub(in crate::sema) use consumer_sessions::SelectedConsumer;
 mod context_queries;
 mod ingest;
@@ -63,6 +75,58 @@ pub(in crate::sema) struct Headers {
     observed: crate::support::retained::Allocation,
 }
 impl Headers {
+    /// Retain only the existing mapping and its budget; no callable row is ready.
+    pub(super) fn ensure_selected_owner(
+        facts: &mut Declarations,
+        work: &mut crate::resolve::crates::ReservationWork,
+    ) -> Result<(), Error> {
+        let Some(super::ImportedOwners::Provided(mapping)) = facts.associated.imported_owner()
+        else {
+            return Err(error(
+                "selected header budget requires its actual installed owner",
+            ));
+        };
+        let linkage = facts
+            .crates
+            .as_deref()
+            .ok_or_else(|| error("selected header budget lost its actual linkage"))?;
+        let catalog = linkage
+            .origin_catalog()
+            .ok_or_else(|| error("selected header budget lost its actual catalog"))?;
+        let mut steps = 0;
+        let checked = mapping.require_budget_owner(catalog, &facts.types, &mut steps);
+        work.charge(steps)?;
+        checked.map_err(error)?;
+        if let Some(headers) = linkage.originals.as_deref() {
+            return match headers.source.as_ref() {
+                Some(super::ImportedOwners::Provided(actual))
+                    if std::rc::Rc::ptr_eq(actual, mapping) =>
+                {
+                    Ok(())
+                }
+                _ => Err(error(
+                    "selected header budget changed its actual installed owner",
+                )),
+            };
+        }
+        let base = work.retained;
+        work.charge(1)?;
+        work.reserve(size_of::<Self>())?;
+        let source = super::ImportedOwners::Provided(std::rc::Rc::clone(mapping));
+        let headers = Self {
+            source: Some(source),
+            base,
+            bytes: work.retained.saturating_sub(base),
+            work: std::cell::Cell::new(work.steps),
+            ..Self::default()
+        };
+        facts
+            .crates
+            .as_deref_mut()
+            .ok_or_else(|| error("selected header budget lost its exclusive linkage"))?
+            .originals = Some(Box::new(headers));
+        Ok(())
+    }
     pub(in crate::sema) fn reserve(&mut self, growth: usize) -> Result<(), Error> {
         self.bytes = self.bytes.saturating_add(growth);
         if self.bytes.saturating_add(self.base) > crate::support::crates::MAX_BYTES {

@@ -98,8 +98,7 @@ impl Checker<'_> {
                 "cycle in const function body declaration dependencies",
             ));
         }
-        if phase == Phase::Begin && initializer.is_none() && matches!(request, Request::Constant(_))
-        {
+        if phase == Phase::Begin && initializer.is_none() {
             let function = self
                 .facts
                 .function_indices

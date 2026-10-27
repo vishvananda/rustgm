@@ -3,6 +3,9 @@ use super::*;
 use crate::support::crates::{Dependencies, codec};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
+#[path = "encoding_baselines.rs"]
+mod encodings;
+
 fn actual(full: bool) -> Result<(crates::CrateIdentity, s::SourceRows)> {
     let fixture = if full {
         "pa31/tests/spec/source-header-transport/semantic-provider-qualified.rs"

@@ -8,6 +8,8 @@ mod invoked_rows;
 mod namespace_rows;
 mod operation_columns;
 mod owner_rows;
+#[path = "ordinary_columns/supplied_extensions.rs"]
+mod provided_extensions;
 mod recipe_columns;
 mod relation_columns;
 #[cfg(test)]
@@ -64,6 +66,19 @@ pub(super) fn encode_module_contracts(
             .ok_or("version-two advisory columns are missing")?,
     )?;
     namespace_rows::encode(out, modules.rows())
+}
+pub(super) fn encode_provided_contracts(
+    out: &mut Writer,
+    rows: s::ValidatedView<'_>,
+) -> Result<(), &'static str> {
+    let contracts = rows.provided_contracts()?;
+    encode_profile(out, rows, true)?;
+    header_facts::encode(
+        out,
+        rows.header_attributes()
+            .ok_or("provided advisory columns are missing")?,
+    )?;
+    provided_extensions::encode(out, contracts.rows())
 }
 fn encode_profile(
     out: &mut Writer,
@@ -128,6 +143,28 @@ pub(super) fn decode_provided(
     base: usize,
 ) -> Result<s::SourceRows, &'static str> {
     decode_profile(reader, base, true).map(|(rows, _)| rows)
+}
+pub(super) fn decode_provided_contracts(
+    reader: &mut Reader<'_>,
+    base: usize,
+) -> Result<
+    (
+        s::SourceRows,
+        s::HeaderAttributeColumns,
+        s::ProvidedContractRows,
+    ),
+    &'static str,
+> {
+    let (rows, bytes) = decode_profile(reader, base, true)?;
+    let mut read = Input {
+        reader,
+        bytes,
+        base,
+        provided: true,
+    };
+    let attributes = header_facts::decode(&mut read)?;
+    let contracts = provided_extensions::decode(&mut read)?;
+    Ok((rows, attributes, contracts))
 }
 pub(super) fn decode_contracts(
     reader: &mut Reader<'_>,

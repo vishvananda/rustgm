@@ -24,6 +24,11 @@ use std::{
     sync::Arc,
 };
 
+#[path = "consumer_policy/sidecar_columns.rs"]
+mod header_columns;
+use header_columns::UnpaidHeaderData;
+pub(crate) use header_columns::{HeaderDataIdentity, HeaderDataOwner};
+
 #[cfg(test)]
 pub(crate) const fn layouts() -> (usize, usize) {
     (size_of::<StagedConsumer>(), size_of::<Source>())
@@ -49,84 +54,25 @@ pub(crate) fn configuration_opponent(package: &mut Package) -> Result<(), &'stat
 pub(crate) struct ProviderAdmission {
     inventory: Arc<Dependencies>,
     index: u32,
-    headers: Rc<UnpaidHeaderData>,
-}
-/// Structural rows do not certify source completion, absence or defaultness.
-struct UnpaidHeaderData {
-    columns: s::HeaderAttributeColumns,
-    bytes: usize,
-    names: Option<Box<s::NamespaceColumns>>,
-    names_bytes: usize,
-}
-/// Allocation identity only. This carries no source-completion permission.
-pub(crate) struct HeaderDataIdentity {
-    owner: Weak<UnpaidHeaderData>,
-}
-/// Strong ownership of the SAME unpaid allocation; this type certifies no completion.
-pub(crate) struct HeaderDataOwner {
-    data: Rc<UnpaidHeaderData>,
-}
-impl HeaderDataOwner {
-    pub(crate) fn identity(&self, work: &mut ReservationWork) -> Result<HeaderDataIdentity, Error> {
-        work.charge(1)?;
-        Ok(HeaderDataIdentity {
-            owner: Rc::downgrade(&self.data),
-        })
-    }
-    pub(crate) fn columns(&self) -> &s::HeaderAttributeColumns {
-        &self.data.columns
-    }
-}
-impl HeaderDataIdentity {
-    pub(crate) fn retain(
-        &self,
-        consumer: &StagedConsumer,
-        work: &mut ReservationWork,
-    ) -> Result<HeaderDataOwner, Error> {
-        self.require(consumer, work)?;
-        work.charge(1)?;
-        Ok(HeaderDataOwner {
-            data: Rc::clone(&consumer.admission.headers),
-        })
-    }
-    pub(crate) fn require_owner(
-        &self,
-        owner: &HeaderDataOwner,
-        work: &mut ReservationWork,
-    ) -> Result<(), Error> {
-        work.charge(2)?;
-        if Weak::ptr_eq(&self.owner, &Rc::downgrade(&owner.data)) {
-            Ok(())
-        } else {
-            Err(Error::unlocated(
-                "retained source columns changed their actual allocation",
-            ))
-        }
-    }
-    pub(crate) fn require(
-        &self,
-        consumer: &StagedConsumer,
-        work: &mut ReservationWork,
-    ) -> Result<(), Error> {
-        work.charge(2)?;
-        if !Weak::ptr_eq(&self.owner, &Rc::downgrade(&consumer.admission.headers)) {
-            return Err(Error::unlocated(
-                "private consumer changed its actual header-data allocation",
-            ));
-        }
-        Ok(())
-    }
+    headers: HeaderDataOwner,
 }
 impl ProviderAdmission {
     pub(crate) fn retained_bytes(&self) -> usize {
-        size_of::<Self>()
-            .saturating_add(self.headers.bytes)
-            .saturating_add(self.headers.names_bytes)
-            .saturating_add(
-                size_of::<UnpaidHeaderData>()
-                    .saturating_sub(size_of::<s::HeaderAttributeColumns>()),
-            )
-            .saturating_add(2 * size_of::<usize>())
+        size_of::<Self>().saturating_add(self.headers.owned_bytes())
+    }
+    pub(crate) fn from_encoded(
+        inventory: Arc<Dependencies>,
+        index: u32,
+        work: &mut ReservationWork,
+    ) -> Result<Self, Error> {
+        work.charge(1)?;
+        work.reserve(size_of::<Self>())?;
+        let headers = HeaderDataOwner::encoded(Arc::clone(&inventory), index, work)?;
+        Ok(Self {
+            inventory,
+            index,
+            headers,
+        })
     }
     #[cfg_attr(
         not(test),
@@ -207,7 +153,7 @@ impl ProviderAdmission {
         Ok(Self {
             inventory,
             index,
-            headers: Rc::new(UnpaidHeaderData {
+            headers: HeaderDataOwner::unpaid(UnpaidHeaderData {
                 columns: contracts,
                 bytes,
                 names: names.map(Box::new),
@@ -219,10 +165,7 @@ impl ProviderAdmission {
         &self,
         work: &mut ReservationWork,
     ) -> Result<HeaderDataIdentity, Error> {
-        work.charge(1)?;
-        Ok(HeaderDataIdentity {
-            owner: Rc::downgrade(&self.headers),
-        })
+        self.headers.identity(work)
     }
     pub(crate) fn inventory(&self) -> &Arc<Dependencies> {
         &self.inventory
@@ -276,11 +219,18 @@ pub(crate) struct StagedConsumer {
 }
 impl StagedConsumer {
     /// Borrowed data remains unpaid until a distinct semantic receipt is bound.
-    pub(crate) fn unpaid_header_columns(&self) -> &s::HeaderAttributeColumns {
-        &self.admission.headers.columns
+    pub(crate) fn unpaid_header_columns(&self) -> Result<&s::HeaderAttributeColumns, &'static str> {
+        self.admission.headers.columns()
     }
-    pub(crate) fn unpaid_namespace(&self) -> Option<&s::NamespaceColumns> {
-        self.admission.headers.names.as_deref()
+    pub(crate) fn unpaid_namespace(&self) -> Result<Option<&s::NamespaceColumns>, &'static str> {
+        self.admission.headers.names()
+    }
+    pub(crate) fn header_data(&self, work: &mut ReservationWork) -> Result<HeaderDataOwner, Error> {
+        self.admission
+            .headers
+            .require_inventory(self.inventory(), self.index())
+            .map_err(Error::unlocated)?;
+        self.admission.headers.shared(work)
     }
     pub(crate) fn current(&self) -> &CrateIdentity {
         &self.current
@@ -315,13 +265,16 @@ impl StagedConsumer {
             .get(self.index() as usize)
             .and_then(crate::support::crates::Interface::source_descriptor)
             .ok_or("private consumer lost its actual provider descriptor")?;
-        if descriptor.profile() != s::Profile::Source2024Provided
-            || descriptor.identity() != self.provider()?
+        self.admission
+            .headers
+            .require_inventory(self.inventory(), self.index())?;
+        let columns = self.admission.headers.columns()?;
+        if descriptor.identity() != self.provider()?
             || descriptor.provider() != self.provider()?
             || descriptor.edition() != crate::support::edition::Edition::Rust2024
-            || self.admission.headers.columns.functions.len() != descriptor.rows().functions.len()
-            || self.admission.headers.columns.traits.len() != descriptor.rows().traits.len()
-            || self.admission.headers.bytes > crate::support::crates::MAX_BYTES
+            || columns.functions.len() != descriptor.rows().functions.len()
+            || columns.traits.len() != descriptor.rows().traits.len()
+            || self.admission.headers.owned_bytes() > crate::support::crates::MAX_BYTES
         {
             return Err("private consumer changed its sealed unpaid provider data");
         }
@@ -359,9 +312,7 @@ pub(super) fn prepare(
         size_of::<StagedConsumer>()
             + 2 * size_of::<usize>()
             + size_of::<Source>()
-            + request.admission.headers.bytes
-            + size_of::<UnpaidHeaderData>().saturating_sub(size_of::<s::HeaderAttributeColumns>())
-            + 2 * size_of::<usize>(),
+            + request.admission.headers.preparation_bytes(),
     )?;
     let macros = features.macros();
     let consumer = StagedConsumer {

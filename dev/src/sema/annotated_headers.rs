@@ -3,6 +3,7 @@
 mod bootstrap;
 #[path = "header_attributes/metadata_contracts.rs"]
 mod imported;
+pub(in crate::sema) use imported::plain_function as has_plain_provided_function_policy;
 #[path = "header_attributes/incarnations.rs"]
 mod incarnations;
 #[path = "header_attributes/declared_origins.rs"]

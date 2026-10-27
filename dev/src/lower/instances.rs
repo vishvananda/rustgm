@@ -1,4 +1,6 @@
 //! Demand concrete CFGs from checked templates before ordinary executable lowering.
+mod artifact_client;
+pub use artifact_client::with_provided_client;
 mod demand;
 mod dependencies;
 mod namespace_snapshot;
@@ -171,13 +173,6 @@ pub fn build_prepared(
     build_roots_prepared(report, facts, super::Roots::executable(entry), prepared)
 }
 
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "the real selected consumer remains private until encoded Provided admission and complete original/instance execution qualify"
-    )
-)]
 pub(crate) fn build_selected_prepared(
     report: &Report,
     facts: &mut Declarations,
@@ -279,6 +274,7 @@ pub enum SourcePublication {
     LegacyFunctions,
     FunctionContracts,
     ModuleContracts,
+    ProvidedContracts,
 }
 
 /// Publish only an explicitly selected ordinary source row profile.
@@ -312,7 +308,7 @@ pub fn build_source_library_profile(
             let (source, modules) = super::transported_source::Source::begin_publication(
                 report, facts, checked, &identity, profile,
             )
-            .map_err(|e| diagnostic(report, None, e.into()))?;
+            .map_err(|error| report.diagnostic(error))?;
             let mut dependencies =
                 report
                     .resolution
@@ -352,6 +348,9 @@ pub fn build_source_library_profile(
                 SourcePublication::LegacyFunctions => source.complete_payload(report, facts, base),
                 SourcePublication::FunctionContracts => {
                     source.complete_contract_payload(report, facts, base)
+                }
+                SourcePublication::ProvidedContracts => {
+                    source.complete_provided_contract_payload(report, facts, base)
                 }
                 SourcePublication::ModuleContracts => source.complete_module_contract_payload(
                     modules.ok_or_else(|| {

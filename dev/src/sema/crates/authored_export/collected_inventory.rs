@@ -27,6 +27,52 @@ pub(crate) struct CollectedReceipt {
     data: HeaderDataIdentity,
 }
 impl CollectedRows {
+    pub(crate) fn into_provided_interface(
+        self,
+        base: Interface,
+        modifiers: s::HeaderModifierColumns,
+    ) -> Result<Interface, Error> {
+        if base.identity() != &self.provider
+            || base.generic_payload().is_some()
+            || !base.functions().is_empty()
+            || !base.constants().is_empty()
+            || base.nominals().is_some()
+            || base.storage().is_some()
+            || base.public_names().is_some()
+        {
+            return Err(Error::unlocated(
+                "provided publication requires its genuine dedicated artifact base",
+            ));
+        }
+        let base_bytes = base.base_retained_bytes();
+        if base_bytes
+            .saturating_add(self.work.reserved_bytes)
+            .saturating_add(self.work.scratch_bytes)
+            > crate::support::crates::MAX_BYTES
+        {
+            return Err(Error::unlocated(
+                "provided publication exceeds combined collection storage",
+            ));
+        }
+        let mut work = g::Work {
+            steps: self.work.steps,
+            ..g::Work::default()
+        };
+        let contracts = s::ProvidedContractRows {
+            namespace: self.names,
+            modifiers,
+        };
+        let payload = g::Payload::from_source_provided_contracts(
+            &self.provider,
+            self.rows,
+            self.contracts,
+            contracts,
+            base_bytes,
+            &mut work,
+        )
+        .map_err(Error::unlocated)?;
+        base.with_generic_payload(payload).map_err(Error::unlocated)
+    }
     pub(crate) fn into_artifact(
         self,
         base: Interface,
@@ -220,7 +266,7 @@ impl CollectedReceipt {
             ));
         }
         self.data.require_owner(owner, work)?;
-        Ok(owner.columns())
+        owner.columns().map_err(Error::unlocated)
     }
     pub(crate) fn columns<'a>(
         &self,
@@ -240,6 +286,6 @@ impl CollectedReceipt {
             ));
         }
         self.data.require(policy, work)?;
-        Ok(policy.unpaid_header_columns())
+        policy.unpaid_header_columns().map_err(Error::unlocated)
     }
 }

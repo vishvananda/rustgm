@@ -63,8 +63,17 @@ pub(crate) fn raw(interface: &crates::Interface) -> Result<Raw> {
         .source_descriptor()
         .ok_or("actual module descriptor")?;
     let view = descriptor.rows();
+    Ok((
+        raw_rows(view),
+        view.header_attributes()
+            .ok_or("complete advisory columns")?
+            .clone(),
+        descriptor.module_contracts()?.rows().clone(),
+    ))
+}
+pub(crate) fn raw_rows(view: s::ValidatedView<'_>) -> s::SourceRows {
     let c = (*view).clone();
-    let rows = s::SourceRows {
+    s::SourceRows {
         body_owners: view.body_owners().to_vec(),
         policy: c.policy,
         declarations: c.declarations,
@@ -91,12 +100,5 @@ pub(crate) fn raw(interface: &crates::Interface) -> Result<Raw> {
         originals: c.originals,
         body_inputs: c.body_inputs,
         body_units: c.body_units,
-    };
-    Ok((
-        rows,
-        view.header_attributes()
-            .ok_or("complete advisory columns")?
-            .clone(),
-        descriptor.module_contracts()?.rows().clone(),
-    ))
+    }
 }

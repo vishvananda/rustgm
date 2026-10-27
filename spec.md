@@ -376,6 +376,18 @@ names alone grant no semantic or execution permission. The
 [execution plan](docs/library-bootstrap-acceleration.md) records this reviewed
 policy and the unchanged complete default/const transport requirements.
 
+The explicit source Provided-contract profile uses tag 11, row version 1. Retain
+one advisory-column owner, the complete Provided family and numbering, actual
+namespace bindings, and positive policy that supported headers have no written
+`default`, `final` or `track_caller` contract. Missing old columns stay unknown;
+all older first encodings remain unchanged. Resolve a fresh named executable
+through the same Catalog/reservation and selected service, then demand its real
+body Environment, original proof and normal fresh instance obligations. Ordinary
+impl overrides of ordinary provided methods remain legal; modifier absence is
+not specialization finality. The [encoded execution checkpoint](docs/encoded-provided-methods-checkpoint.md)
+records actual carry/borrow native execution and the still-unsupported richer
+modifier, const/default-body and regional contracts.
+
 Private callable preparation consumes the actual reserved declared/callable
 signature pair and complete outer-to-inner formal scope, including unused
 parameters and inherited Self. Share the ordinary callable registration kernel;

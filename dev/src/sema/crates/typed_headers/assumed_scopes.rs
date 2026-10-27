@@ -255,9 +255,13 @@ impl Scope {
             .saturating_add(2 * size_of::<usize>())
             .saturating_add(environment)
     }
-    fn require_empty(&self, expected: Ready) -> Result<(), Error> {
+    fn require_empty(&self, expected: Ready, origin: originals::Origin) -> Result<(), Error> {
+        let originals::Origin::Contract(actual) = origin else {
+            return Err(error("empty Contract requires its sealed construction"));
+        };
+        actual.require_scope(expected.header, self.raw)?;
         if self.raw != expected.scope.1
-            || self.raw.parent.is_some()
+            || expected.formals != 0
             || !self.parameters.is_empty()
             || !self.clauses.is_empty()
             || !self.inputs.all().is_empty()
@@ -688,7 +692,7 @@ impl Owner {
                     .map(Box::as_ref)
                     .ok_or_else(|| error("empty Contract lost its actual prepared declaration"))?;
                 declaration.require(rows, facts)?;
-                declaration.require_empty(expected)?;
+                declaration.require_empty(expected, origin)?;
                 if !Arc::ptr_eq(&product.declaration, &declaration.environment)
                     || Arc::ptr_eq(&product.environment, &declaration.environment)
                     || !product.environment.is_neutral()

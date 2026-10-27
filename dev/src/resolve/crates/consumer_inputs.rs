@@ -23,21 +23,16 @@ pub(crate) struct ConsumerInput {
     reservation: ConsumerReservation,
 }
 /// Parsing stays at its actual resolver boundary; semantic callers hold no Config.
-pub(crate) struct ConsumerRequest<'a, S> {
+pub struct ConsumerRequest<'a, S> {
     root: InputFile,
     sources: &'a mut S,
     config: &'a Config,
     context: &'a Context,
 }
 impl<'a, S: Sources> ConsumerRequest<'a, S> {
-    #[cfg_attr(
-        not(test),
-        expect(
-            dead_code,
-            reason = "the actual private consumer request awaits selected role/header and original-body admission"
-        )
-    )]
-    pub(crate) fn new(
+    /// Retain actual driver inputs; admission and source parsing happen on consumption.
+    #[must_use]
+    pub fn new(
         root: InputFile,
         sources: &'a mut S,
         config: &'a Config,
@@ -67,6 +62,35 @@ impl<'a, S: Sources> ConsumerRequest<'a, S> {
             ));
         }
         Ok(())
+    }
+    pub(crate) fn admit_encoded(self, work: &mut ReservationWork) -> Result<ConsumerInput, Error> {
+        let crate::support::bindings::Mode::SourceClient { provider } = &self.context.mode else {
+            return Err(error(
+                "encoded provided admission requires its actual source-client context",
+            ));
+        };
+        let inventory = self
+            .context
+            .dependencies
+            .as_ref()
+            .ok_or_else(|| error("encoded provided admission requires actual dependencies"))?;
+        work.charge(
+            inventory.artifacts().len().saturating_mul(
+                provider
+                    .name()
+                    .len()
+                    .saturating_add(provider.disambiguator().len())
+                    .saturating_add(2),
+            ),
+        )?;
+        let index = inventory
+            .artifacts()
+            .iter()
+            .position(|artifact| artifact.identity() == provider)
+            .ok_or_else(|| error("encoded provided admission has no actual selected provider"))?;
+        let index = u32::try_from(index).map_err(|_| error("encoded provider index overflow"))?;
+        let admission = ProviderAdmission::from_encoded(Arc::clone(inventory), index, work)?;
+        self.admit(admission, work)
     }
     pub(crate) fn admit(
         self,
@@ -165,7 +189,7 @@ pub(in crate::resolve) fn reserve_names(
         .cloned()
         .ok_or_else(|| error("named reservation requires its actual staged consumer"))?;
     policy.require_package(resolver.package).map_err(error)?;
-    let Some(names) = policy.unpaid_namespace() else {
+    let Some(names) = policy.unpaid_namespace().map_err(error)? else {
         return Ok(None);
     };
     if resolver.facts.crates.is_some() {
@@ -260,8 +284,9 @@ impl ConsumerReservation {
             .ok_or_else(|| error("retained header owner lost its actual descriptor"))?;
         if provider != descriptor.identity()
             || edition != descriptor.edition()
-            || descriptor.profile()
-                != crate::support::crates::generics::source::Profile::Source2024Provided
+            || !matches!(descriptor.profile(),
+                crate::support::crates::generics::source::Profile::Source2024Provided
+                | crate::support::crates::generics::source::Profile::Source2024ProvidedContracts)
             || self.catalog.definition_at(provider, row).map_err(error)? != definition
             || descriptor
                 .rows()
