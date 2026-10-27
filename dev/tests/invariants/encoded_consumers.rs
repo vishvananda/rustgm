@@ -76,14 +76,16 @@ fn client<R>(
 ) -> Result<R> {
     let context = context(artifact)?;
     Ok(crate::lower::instances::with_provided_client(
-        InputFile {
-            identity: "encoded-consumer.rs".into(),
-            path: "encoded-consumer.rs".into(),
-            source: SourceFile::new(source.as_bytes().to_vec())?,
-        },
-        &mut NoFiles,
-        &Config::default(),
-        &context,
+        crate::resolve::crates::ConsumerRequest::new(
+            InputFile {
+                identity: "encoded-consumer.rs".into(),
+                path: "encoded-consumer.rs".into(),
+                source: SourceFile::new(source.as_bytes().to_vec())?,
+            },
+            &mut NoFiles,
+            &Config::default(),
+            &context,
+        ),
         inspect,
     )?)
 }

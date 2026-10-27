@@ -95,7 +95,7 @@ pub fn run(
             return Err("provided-contracts-v1 currently requires an executable consumer".into());
         }
         return rustgm::lower::instances::with_provided_client(
-            root, &mut Files, config, &context, |_, facts, program| {
+            resolve::crates::ConsumerRequest::new(root, &mut Files, config, &context), |_, facts, program| {
                 emit_warnings(facts)?;
                 if count {
                     rustgm::lowir::writer::count(program, out)

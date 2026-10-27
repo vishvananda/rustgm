@@ -24,6 +24,7 @@ use std::{
     sync::Arc,
 };
 
+#[path = "consumer_policy/sidecar_columns.rs"]
 mod header_columns;
 use header_columns::UnpaidHeaderData;
 pub(crate) use header_columns::{HeaderDataIdentity, HeaderDataOwner};

@@ -23,14 +23,16 @@ pub(crate) struct ConsumerInput {
     reservation: ConsumerReservation,
 }
 /// Parsing stays at its actual resolver boundary; semantic callers hold no Config.
-pub(crate) struct ConsumerRequest<'a, S> {
+pub struct ConsumerRequest<'a, S> {
     root: InputFile,
     sources: &'a mut S,
     config: &'a Config,
     context: &'a Context,
 }
 impl<'a, S: Sources> ConsumerRequest<'a, S> {
-    pub(crate) fn new(
+    /// Retain actual driver inputs; admission and source parsing happen on consumption.
+    #[must_use]
+    pub fn new(
         root: InputFile,
         sources: &'a mut S,
         config: &'a Config,
