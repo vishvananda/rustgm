@@ -132,6 +132,11 @@ impl Producer {
     ) -> Result<(), Violation> {
         self.work.charge(key, 1, bytes)
     }
+    /// Typed attribute classification consumes the existing general read budget;
+    /// this cost-only operation publishes no owner, lint change or permission.
+    pub(crate) fn attribute_read(&self, key: NodeKey, steps: usize) -> Result<(), Violation> {
+        self.diagnostic_payload(key, steps, 0)
+    }
     pub(crate) fn diagnostic_read(&self, key: NodeKey, bytes: usize) -> Result<(), Violation> {
         self.diagnostic_payload(key, 1, bytes)
     }

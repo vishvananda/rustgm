@@ -231,6 +231,13 @@ remain a separate per-use traversal cost and must be measured with depth times
 uses. This provenance query does not authorize foreign API use or const calls;
 those consumers and their authenticated metadata remain required. The two panic
 edition consumers test the precise `edition_panic` membership.
+
+Generic source attribute classification pays the existing cold attribute-policy
+producer's bounded read work, separately from macro permission/header/frame
+work. Retain the source macro State's sticky failure check before classification
+and all genuine permission and storage charges. Ordinary source allocation
+behavior remains unchanged; a general cost payer grants no feature permission.
+See [the classification checkpoint](docs/source-attribute-classification-work.md).
 See [the local allowance handoff](docs/pa31-internal-allowances-handoff.md) for
 qualified component evidence and remaining integration requirements. The
 [stability investigation](docs/pa31-library-stability.md) records the independent

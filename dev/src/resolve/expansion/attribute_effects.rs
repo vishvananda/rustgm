@@ -50,6 +50,15 @@ impl<S: Sources> Engine<'_, S> {
         {
             return Ok(parent);
         }
+        self.ensure_attribute_policy(key)?;
+        self.attribute_effects
+            .as_deref_mut()
+            .and_then(|effects| effects.policy.as_mut())
+            .ok_or_else(|| Error::at(key.file, 0, "missing actual attribute policy payer"))?
+            .owner(&self.loader.package, key, parent)
+            .map_err(Error::from)
+    }
+    pub(super) fn ensure_attribute_policy(&mut self, key: NodeKey) -> Result<(), Error> {
         let frames = self.frame_mark()?;
         let calls = u32::try_from(self.calls.len())
             .map_err(|_| Error::at(key.file, 0, "lint call index overflow"))?;
@@ -63,14 +72,11 @@ impl<S: Sources> Engine<'_, S> {
                 derives: None,
             }));
         }
-        let producer = self
-            .attribute_effects
+        self.attribute_effects
             .get_or_insert_default()
             .policy
             .get_or_insert_with(|| Producer::new(frames, calls));
-        producer
-            .owner(&self.loader.package, key, parent)
-            .map_err(Error::from)
+        Ok(())
     }
     pub(super) fn visit_key(&self, visit: Visit) -> NodeKey {
         NodeKey {
