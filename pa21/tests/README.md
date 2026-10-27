@@ -45,3 +45,10 @@ belong to PA16. No upstream input was modified or imported for this release.
 Maintainer invariants must test proof scope ownership, cache environment identity,
 completed versus pending failures, bounded work and structural sharing separately
 from language outcomes. Never serialize work counters into text oracles.
+
+The `contracts/polymorphic-outputs/accepted/semantics/result-supertrait-equality.rs`
+regression requires an associated output's genuine equality to reach its inherited
+supertrait argument. Both pinned editions accept the exact new source. The prior
+qualified compiler rejects its ordinary call, independently of source Try hooks.
+The case declares semantic success; selected official reference generation remains
+pending the shared solver correction. This adds no native execution claim.
