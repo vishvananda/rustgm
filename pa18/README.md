@@ -51,7 +51,10 @@ nested callable lifetime. Generic array lengths remain typed const parameters
 until substituted. Stable const arguments may use the existing closed constant
 expression subset or a standalone const parameter, optionally in one block;
 general arithmetic on a parameter in a type-level length remains invalid under
-the pinned stable profile. Runtime arithmetic on a scalar const parameter is
+the pinned stable profile. Macro-forwarded literals and permitted expression/block
+roots enter this same const-argument grammar from their retained typed captures.
+Keep scalar kinds, unary negation, block safety, edition and source provenance;
+neither opaque arithmetic nor a type context becomes valid by forwarding. Runtime arithmetic on a scalar const parameter is
 ordinary checked arithmetic, including overflow and bounds panics.
 
 Partial callable inference also preserves the distinction between a hole for an

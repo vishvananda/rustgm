@@ -175,6 +175,54 @@ impl Splice<'_> {
             None
         }
     }
+    /// Classify only the captured syntax grammar; no constant value is proved.
+    /// The pinned parser accepts literals, negated literals and actual blocks.
+    pub(crate) fn begins_const_argument(&self) -> bool {
+        use super::ast::{BlockFlavor, Unary};
+        let Nonterminal::Syntax { kind, parsed } = self.fragment else {
+            return false;
+        };
+        if !matches!(
+            kind,
+            FragmentKind::Literal
+                | FragmentKind::Expression
+                | FragmentKind::Expression2021
+                | FragmentKind::Block
+        ) {
+            return false;
+        }
+        let Some(root) = parsed.ast.nodes.get(parsed.ast.root.get() as usize) else {
+            return false;
+        };
+        match root.kind {
+            Kind::Literal(_) | Kind::DeferredLiteral(_) => kind != FragmentKind::Block,
+            Kind::Unary {
+                op: Unary::Negate,
+                operand,
+            } => {
+                kind != FragmentKind::Block
+                    && parsed
+                        .ast
+                        .nodes
+                        .get(operand.get() as usize)
+                        .is_some_and(|node| {
+                            matches!(node.kind, Kind::Literal(_) | Kind::DeferredLiteral(_))
+                        })
+            }
+            Kind::Block {
+                flavor: BlockFlavor::Plain,
+                ..
+            } => kind != FragmentKind::Literal,
+            Kind::Block {
+                flavor: BlockFlavor::Unsafe,
+                ..
+            } => matches!(
+                kind,
+                FragmentKind::Expression | FragmentKind::Expression2021
+            ),
+            _ => false,
+        }
+    }
     /// # Errors
     /// Rejects invalid origin spans and inconsistent copied spelling ranges.
     pub fn span(&self, span: Span) -> Result<Span, LexError> {
@@ -333,3 +381,7 @@ impl Splice<'_> {
         })
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/const_fragment_inputs.rs"]
+mod const_arguments;
