@@ -4,7 +4,7 @@ use crate::{
     pipeline::{self, Analysis},
     resolve::{expansion::Report, model::DefId},
     sema::compiler_items::try_protocol,
-    syntax::ast::{Kind as Syntax, NodeId},
+    syntax::ast::NodeId,
 };
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 fn fixture(name: &str) -> Result<String> {

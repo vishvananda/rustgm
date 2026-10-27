@@ -430,7 +430,7 @@ fn context_storage_tracks_bodies_instead_of_calls_and_charges_real_ports() -> Re
             .call_contexts
             .as_deref()
             .ok_or("contexts")?;
-        let bytes = CallContexts::bytes(contexts.rows.capacity())?;
+        let bytes = contexts.bytes(contexts.rows.capacity())?;
         assert!(bytes <= MAX_RETAINED);
         println!(
             "contexts width={width} rows={} capacity={} retained={bytes} repeated_ports={}",

@@ -7,6 +7,11 @@ mod protocol_rows;
 /// Current-table location; it grants no call, source or const permission.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TryPlanId(NonZeroU32);
+impl TryPlanId {
+    pub(crate) const fn index(self) -> u32 {
+        self.0.get() - 1
+    }
+}
 
 /// A current-table location, never eligibility, proof payment or a foreign effect.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
