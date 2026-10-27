@@ -228,7 +228,7 @@ fn observe_layouts() {
     );
     assert_eq!(size_of::<crate::resolve::bindings::Source>(), 184);
     assert_eq!(size_of::<Package>(), 256);
-    assert_eq!(size_of::<Report>(), 3040);
+    assert_eq!(size_of::<Report>(), 3016);
     assert_eq!(size_of::<crate::sema::associated::OwnerKind>(), 20);
     assert_eq!(size_of::<crate::sema::associated::Owner>(), 32);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);

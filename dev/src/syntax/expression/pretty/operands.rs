@@ -35,6 +35,15 @@ impl<'a> Writer<'a> {
             Kind::CrateRoot(_) => self.text("$crate"),
             Kind::Group(value) => self.enqueue(&[W("("), view.expr().n(value), W(")")]),
             Kind::TryBlock { body, .. } => self.enqueue(&[W("try "), view.expr().n(body)]),
+            Kind::OffsetOf {
+                container, fields, ..
+            } => self.enqueue(&[
+                W("builtin # offset_of("),
+                view.ty().n(container),
+                W(", "),
+                view.expr().n(fields),
+                W(")"),
+            ]),
             Kind::ConstClosure { closure, .. } => {
                 self.enqueue(&[W("const "), view.expr().n(closure)])
             }

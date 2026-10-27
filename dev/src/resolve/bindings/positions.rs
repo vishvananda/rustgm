@@ -176,6 +176,7 @@ pub(super) fn child<L>(
         | Kind::Return(_)
         | Kind::Break { .. } => Position::Expression,
         Kind::Receiver { .. }
+        | Kind::OffsetOf { .. }
         | Kind::DeferredLiteral(_)
         | Kind::Variadic
         | Kind::Crate(_)

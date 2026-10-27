@@ -37,6 +37,17 @@ impl<L> Syntax<L> {
         visit: &mut impl FnMut(NodeId) -> Result<(), E>,
     ) -> Result<(), E> {
         match self.nodes[id.get() as usize].kind {
+            Kind::OffsetOf {
+                container,
+                fields,
+                expression,
+                ..
+            } => {
+                visit_all([container, expression], visit)?;
+                if fields != expression {
+                    visit(fields)?;
+                }
+            }
             Kind::GenericMethodCall {
                 receiver,
                 method,

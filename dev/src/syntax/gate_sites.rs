@@ -356,8 +356,9 @@ impl<L> Syntax<L> {
         Ok(())
     }
     pub(crate) fn move_gate_sites_root(&mut self, from: NodeId, to: NodeId) {
-        if let NodeKind::TryBlock { gate, .. } | NodeKind::ConstClosure { gate, .. } =
-            self.nodes[from.get() as usize].kind
+        if let NodeKind::TryBlock { gate, .. }
+        | NodeKind::ConstClosure { gate, .. }
+        | NodeKind::OffsetOf { gate, .. } = self.nodes[from.get() as usize].kind
         {
             if let Some(entries) = &mut self.gate_sites
                 && let Some(entry) = entries.expressions.get_mut(gate as usize)

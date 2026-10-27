@@ -193,6 +193,9 @@ fn record<L>(source: &str, ast: &Syntax<L>, kind: Kind, output: &mut impl Write)
         Kind::TypePattern { base, .. } => write!(output, "type-pattern {} !null", base.get()),
         Kind::Group(value) => write!(output, "group {}", value.get()),
         Kind::TryBlock { body, .. } => write!(output, "try-block {}", body.get()),
+        Kind::OffsetOf {
+            container, fields, ..
+        } => write!(output, "offset-of {} {}", container.get(), fields.get()),
         Kind::ConstClosure { closure, .. } => write!(output, "const-closure {}", closure.get()),
         Kind::Tuple(list) => write!(output, "tuple {}", Children(ast, list)),
         Kind::Array(list) => write!(output, "array {}", Children(ast, list)),

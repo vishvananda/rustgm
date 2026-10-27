@@ -1270,6 +1270,7 @@ impl Checker<'_> {
         self.state.children.clear();
         match self.kind(node) {
             Kind::InlineAssembly(args) => self.enter_assembly(node, args)?,
+            Kind::OffsetOf { .. } => {}
             Kind::TryBlock { body, .. } => return self.enter_try_block(node, body, expected),
             Kind::For { iterator, .. } => {
                 self.state.work.push(Work::ForIterator(node));
@@ -1565,6 +1566,9 @@ impl Checker<'_> {
                 self.term(value)
             }
             Kind::TryBlock { body, .. } => self.finish_try_block(node, body),
+            Kind::OffsetOf { .. } => {
+                Err(self.error(node, "typed offset_of field selection is not implemented"))
+            }
             Kind::Unary {
                 op: Unary::Try,
                 operand,

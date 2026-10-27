@@ -101,6 +101,7 @@ impl Resolver<'_> {
             }
         }
         match self.kind(c, node) {
+            Kind::OffsetOf { container, .. } => self.visit(c, container, Namespace::Type),
             Kind::InlineAssembly(arguments) => self.visit_list(c, arguments, Namespace::Value),
             Kind::AssemblyOperand { input, output, .. } => {
                 self.optional(c, input, Namespace::Value)?;
