@@ -25,7 +25,7 @@
     "runtime false assertion reaches Abort; CTFE executes actual ConstPanicFmt redirect"
   ],
   "source_comparison_preparation": {
-    "state": "frozen before first candidate qualification",
+    "state": "qualified narrow source member/name preparation; source binary execution explicitly unsupported",
     "fixture": "pa31/tests/spec/source-location/partial-eq-original-declaration.rs",
     "sha256": "a0c2ae122cda29cf83786c97a9a7ed2f23dc414974c06b504ed98b59b391e979",
     "primary": {
@@ -51,6 +51,22 @@
       "private_receipt": "obj/qualification/fast/1793117069611510126/receipt.json",
       "production_receipt": "obj/qualification/fast/1793117248519097249/receipt.json",
       "scope": "five named positive/opposing controls and lexer ten passed; source review then identified the missing explicit operator consumer fence, so this predecessor is not a complete handoff"
+    },
+    "qualification": {
+      "source": "2702b0caf",
+      "private_receipt": "obj/qualification/fast/1793117681100480144/receipt.json",
+      "private_sha256": "aba7a99fb9553f5d1e742a088167e684635e485af3c4ac6f914a7bb3c8ea0b58",
+      "private_seconds": 112.97,
+      "production_receipt": "obj/qualification/fast/1793117847634122356/receipt.json",
+      "production_sha256": "d82c2e2d275dd3bf63f88df1c98d877d8bb3b1bf34c59132559d2f590cdb7041",
+      "production_seconds": 73.93,
+      "scope": "six exact private controls; lexer ten; both strict modes, metadata, global formatting/architecture; no native or full Formatter/handler claim",
+      "ordinary_layouts": {
+        "Traits": 192,
+        "old_inline_comparison_rows": 208,
+        "existing_cold_comparisons": 224
+      },
+      "ordinary_scaling": "8/32/128 scalar ordering operations all retain73 definitions and no executable comparison contracts"
     }
   }
 }
