@@ -12,8 +12,9 @@ use crate::{
 #[path = "../../tests/invariants/integer_limits.rs"]
 mod tests;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum Member {
+pub(in crate::sema) enum Member {
     Max,
+    Min,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct Descriptor {
@@ -32,17 +33,23 @@ pub(crate) struct Uses {
 }
 impl Descriptor {
     fn value(self) -> Result<Constant, &'static str> {
-        let (signed, width) = self
-            .primitive
-            .integer()
-            .ok_or("primitive constant requires an integer")?;
-        let bits = u128::MAX >> (128 - width);
+        let bits = if self.primitive == Primitive::Char {
+            match self.member {
+                Member::Min => 0,
+                Member::Max => 0x10_FFFF,
+            }
+        } else {
+            let (signed, width) = self
+                .primitive
+                .integer()
+                .filter(|_| self.member == Member::Max)
+                .ok_or("primitive constant requires supported integer MAX or char MIN/MAX")?;
+            let bits = u128::MAX >> (128 - width);
+            if signed { bits >> 1 } else { bits }
+        };
         Ok(Constant {
             ty: TypeId::primitive(self.primitive),
-            bits: match self.member {
-                Member::Max if signed => bits >> 1,
-                Member::Max => bits,
-            },
+            bits,
         })
     }
 }
@@ -53,14 +60,12 @@ impl Uses {
         key: NodeKey,
         prefix: NodeKey,
         ty: TypeId,
+        member: Member,
     ) -> Result<(), &'static str> {
         let Some(Kind::Primitive(primitive)) = types.kind(ty) else {
             return Err("primitive constant has a nonprimitive prefix");
         };
-        let descriptor = Descriptor {
-            primitive,
-            member: Member::Max,
-        };
+        let descriptor = Descriptor { primitive, member };
         let constant = descriptor.value()?;
         if let Some(previous) = self.selected.get(&key) {
             return if previous.prefix == prefix

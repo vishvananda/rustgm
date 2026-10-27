@@ -4524,3 +4524,11 @@ access owner for the actual reference prefix and subtract it exactly once during
 place construction. Built-in sequence captures retain whole-container precision
 and existing leaf-use rules; ordinary move, loan and lifetime proof remains
 required. See the [selected index capture checkpoint](docs/pa26-selected-index-captures.md).
+
+The existing lazy primitive-constant owner may publish typed char MIN/MAX through
+normal scalar validation, CTFE and ConstArgument consumers. Keep integer MAX
+width rules and generic-const restrictions unchanged. SourceCore always resolves
+its actual associated declarations and initializers; bootstrap value selection
+must never replace an absent or differently valued source definition. The
+[char checkpoint](docs/pa26-char-constants.md) records ownership, scalar validity,
+physical widths and retained failed setup predictions.

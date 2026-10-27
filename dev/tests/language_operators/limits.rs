@@ -40,7 +40,7 @@ const CASES: &[(&str, bool, bool)] = &[
     ("unbounded-generic", false, false),
     ("primitive-import", false, false),
     ("float-required", false, true),
-    ("char-required", false, true),
+    ("char-required", true, true),
     ("impl-self", true, true),
     ("impl-self-constant-precedence", true, true),
     ("impl-self-explicit-trait", true, true),

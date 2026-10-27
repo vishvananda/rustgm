@@ -172,3 +172,6 @@ mod integer_ranges;
 
 #[path = "language_operators/index_captures.rs"]
 mod index_captures;
+
+#[path = "language_operators/char_values.rs"]
+mod char_values;

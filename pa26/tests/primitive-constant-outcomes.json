@@ -654,7 +654,7 @@
     {
       "path": "tests/spec/primitive-constants/char-required.rs",
       "mode": "--emit-lowir",
-      "exit_status": 1,
+      "exit_status": 0,
       "features": [
         "pa26.primitive-constants"
       ],
@@ -664,7 +664,10 @@
         "status": 0,
         "emit": "obj"
       },
-      "required_gap": "Rust-positive primitive constant not yet implemented"
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/primitive-constants/impl-self.rs",
