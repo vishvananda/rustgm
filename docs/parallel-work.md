@@ -14,12 +14,13 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The qualified Display/Debug CLI9d7e2adc retains actual offset_of syntax in
-the original mem macro. All722 pinned inputs verify;371 files open in6.98s,
-with no artifact. Combined
-private24, production13, native32 and final PA6/PA9 checks pass. Root owns the
-[typed offset/layout integration](pa31-offset-of-plan.md); no zero-offset shim
-or per-Instance field-result cache is permitted.
+The qualified CLI35835492 passes the original offset_of parser boundary, then
+rejects actual FieldId `{:#034x}` in core/mem/type_info.rs572. All722 pinned
+inputs verify;372 open in8.67s, with no artifact. Combined private9, production/
+CLI strict, native16 and full PA6/PA9 pass. Root owns the remaining
+[typed offset/layout execution](pa31-offset-of-plan.md); B retains the actual
+format-option/source-constructor requirement alongside genuine Formatter/write.
+No zero-offset shim or Instance-only field-result cache is permitted.
 
 - A: bounded read-only source/handoff reviews and component release census.
   No compiler edits or heavy jobs.

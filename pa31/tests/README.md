@@ -383,3 +383,11 @@ constructor/native observations use genuine pinned shared-reference Copy/Clone
 impls; the original Rust-positive no-Copy source remains a known call-reborrow
 frontier (PA16 semantics/PA31 source profile), not a language rejection. Full
 Formatter/write/PanicInfo/handler execution remains required.
+
+`spec/source-offset-of/` retains 57 independently qualified full requirement
+fixtures plus nine separately frozen parser setup controls. The exact original
+mem macro, generic tagged/niche offsets, same-instance field results, source
+feature/capture opponents and DST cases stay required. Syntax controls isolate
+root API-inventory setup; their expansion-only observations do not grant layout,
+constant execution or std macro availability. See the directory contract and
+README for retained prediction disagreements and upstream runtime-intrinsic ICEs.

@@ -1270,7 +1270,6 @@ impl Checker<'_> {
         self.state.children.clear();
         match self.kind(node) {
             Kind::InlineAssembly(args) => self.enter_assembly(node, args)?,
-            Kind::OffsetOf { .. } => {}
             Kind::TryBlock { body, .. } => return self.enter_try_block(node, body, expected),
             Kind::For { iterator, .. } => {
                 self.state.work.push(Work::ForIterator(node));
@@ -1328,7 +1327,11 @@ impl Checker<'_> {
             Kind::Struct { path, fields, base } => {
                 return self.enter_struct(node, path, fields, base, expected);
             }
-            Kind::Path { .. } | Kind::Name(..) | Kind::Qualified { .. } | Kind::Item(_) => {}
+            Kind::OffsetOf { .. }
+            | Kind::Path { .. }
+            | Kind::Name(..)
+            | Kind::Qualified { .. }
+            | Kind::Item(_) => {}
             Kind::Let {
                 pattern,
                 ty,

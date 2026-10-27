@@ -157,6 +157,27 @@ fn parsed_expression(
     expression
         .validate(&unit.configured.ast, ordinal)
         .map_err(|error| Error::at(file, error.offset, error.message))?;
+    if let crate::syntax::ast::Kind::OffsetOf {
+        expression: original,
+        fields,
+        ..
+    } = unit.configured.ast.node(expression.node).kind
+    {
+        let entries = unit
+            .configured
+            .ast
+            .gate_sites
+            .as_ref()
+            .ok_or_else(invalid)?;
+        crate::syntax::offset_fields::validate_source(
+            &unit.configured.ast,
+            original,
+            fields,
+            unit.source.text(),
+            |steps| entries.charge(steps, 0),
+        )
+        .map_err(|error| Error::at(file, error.offset, error.message))?;
+    }
     if unit.configured.ast.expression_gate(ordinal) != Some(&expression)
         || unit
             .source

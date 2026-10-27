@@ -713,5 +713,13 @@
       "observation": "Matches predeclared prediction",
       "required_scope": "grammar, feature/source authority, layout and execution as applicable; no candidate completion inferred"
     }
-  ]
+  ],
+  "additional_syntax_controls": {
+    "manifest": "syntax-only/contract.json",
+    "sha256": "a1cb858f5d155e23dbba51938908769f46af1b775c6f2c3b3c419f90757736c6",
+    "cases": 9,
+    "rustc_expansion_observations": 18,
+    "original_disagreements_retained": 2,
+    "scope": "syntax source-profile setup; original57fixture bytes/predictions remain unchanged"
+  }
 }

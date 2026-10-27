@@ -40,13 +40,12 @@ fn genuine_field_captures_and_name_authority_follow_independent_parser_observati
     use crate::support::edition::Edition;
     for edition in [Edition::Rust2021, Edition::Rust2024] {
         for path in [
-            "const-api-followup/bare-numeric-chain",
-            "const-api-followup/captured-numeric-chain",
-            "const-api-followup/captured-base-zero",
-            "const-api-followup/captured-literal-zero",
-            "const-api-followup/macro-literal-builtin-allowance",
+            "syntax-only/bare-numeric-chain",
+            "syntax-only/captured-numeric-chain",
+            "syntax-only/captured-base-zero",
+            "syntax-only/captured-literal-zero",
+            "syntax-only/macro-literal-builtin-allowance",
             "original/double-forwarded-fields",
-            "original/original-generic-option",
         ] {
             let found =
                 fixture_report(path, edition).map_err(|error| format!("{path}: {error}"))?;
@@ -67,15 +66,24 @@ fn genuine_field_captures_and_name_authority_follow_independent_parser_observati
             }
             assert!(count > 0, "{path}");
         }
+        // The full native fixture also requires std's real println macro.
+        // Its unchanged executable positive remains required after parsing.
+        let pending = fixture_report("original/original-generic-option", edition)
+            .err()
+            .ok_or("original std macro boundary unexpectedly changed")?;
+        assert!(
+            pending.to_string().contains("unresolved macro"),
+            "{pending}"
+        );
         for path in [
             "original/raw-builtin-name",
             "original/raw-builtin-prefix",
             "original/cfg-disabled-missing-builtin-gate",
-            "const-api-followup/no-builtin-gate",
-            "const-api-followup/captured-builtin-does-not-inherit",
-            "const-api-followup/captured-grouped-name",
-            "const-api-followup/grouped-field",
-            "const-api-followup/captured-literal-hex-zero",
+            "original/no-builtin-gate",
+            "syntax-only/captured-builtin-does-not-inherit",
+            "syntax-only/captured-grouped-name",
+            "syntax-only/grouped-field",
+            "syntax-only/captured-literal-hex-zero",
         ] {
             assert!(fixture_report(path, edition).is_err(), "{path}");
         }
@@ -84,9 +92,84 @@ fn genuine_field_captures_and_name_authority_follow_independent_parser_observati
 }
 
 #[test]
+fn swapped_field_roots_cannot_borrow_a_current_source_gate() -> Result {
+    use crate::{
+        resolve::{gate_provenance, unit::FileId},
+        support::edition::Edition,
+        syntax::ast::NodeId,
+    };
+    for path in [
+        "syntax-only/captured-numeric-chain",
+        "syntax-only/macro-literal-builtin-allowance",
+    ] {
+        let mut found = fixture_report(path, Edition::Rust2024)?;
+        let ast = &found.package.units[0].configured.ast;
+        let entry = *ast
+            .gate_sites
+            .as_ref()
+            .ok_or("gate owner")?
+            .expressions()
+            .first()
+            .ok_or("actual gate")?;
+        let original = ast.node(entry.node).kind;
+        let Kind::OffsetOf {
+            container,
+            fields,
+            expression,
+            gate,
+        } = original
+        else {
+            return Err("actual offset kind".into());
+        };
+        gate_provenance::checked_expression(&found.package, FileId(0), gate, entry)?;
+        let (index, _) = ast
+            .nodes
+            .iter()
+            .enumerate()
+            .find(|(_, node)| matches!(node.kind, Kind::Name(..)))
+            .ok_or("ordinary unrelated name")?;
+        let forged = NodeId::checked(u32::try_from(index)?).ok_or("compact name id")?;
+        assert_ne!(forged, fields);
+        let prior = ast
+            .gate_sites
+            .as_ref()
+            .ok_or("gate owner")?
+            .expression_storage()
+            .2;
+        found.package.units[0].configured.ast.nodes[entry.node.get() as usize].kind =
+            Kind::OffsetOf {
+                container,
+                fields: forged,
+                expression,
+                gate,
+            };
+        let ast = &found.package.units[0].configured.ast;
+        entry.validate(ast, gate).map_err(|error| error.message)?;
+        let error = gate_provenance::checked_expression(&found.package, FileId(0), gate, entry)
+            .err()
+            .ok_or("unrelated field root acquired source authority")?;
+        assert!(error.message.contains("normalized fields"), "{error}");
+        assert!(
+            found.package.units[0]
+                .configured
+                .ast
+                .gate_sites
+                .as_ref()
+                .ok_or("attempt debt")?
+                .expression_storage()
+                .2
+                > prior
+        );
+        found.package.units[0].configured.ast.nodes[entry.node.get() as usize].kind = original;
+        gate_provenance::checked_expression(&found.package, FileId(0), gate, entry)?;
+    }
+    Ok(())
+}
+
+#[test]
 fn field_paths_are_typed_without_expression_or_layout_permission() -> Result {
     for (source, expected) in [
-        ("builtin # offset_of(Option<B>, Some.0)", vec!["0", "Some"]),
+        ("builtin # offset_of(S, Some.0)", vec!["0", "Some"]),
         ("builtin # offset_of((u8,(u16,u32)), 1.1,)", vec!["1", "1"]),
         (
             "builtin # offset_of(S, r#type.inner)",
@@ -178,12 +261,13 @@ fn transfer_and_failed_retry_preserve_the_actual_gate_edges() -> Result {
             .is_err()
         );
         assert!(target.nodes.is_empty());
-        let (rows, _, work, _) = target
+        assert!(target.gate_sites.is_none());
+        let (rows, _, work, _) = ast
             .gate_sites
             .as_ref()
             .ok_or("attempt debt")?
             .expression_storage();
-        assert_eq!(rows, 0);
+        assert_eq!(rows, 1);
         assert!(work > prior);
         prior = work;
     }

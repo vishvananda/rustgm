@@ -157,7 +157,7 @@ fn cold_storage_and_enclosing_layouts() -> TestResult {
     assert_eq!(size_of::<crate::sema::model::NodeFacts>(), 80);
     assert_eq!(size_of::<crate::resolve::lint_policy::Policy>(), 12);
     assert_eq!(size_of::<Report>(), 3016);
-    assert_eq!(size_of::<Engine<'_, NoFiles>>(), 4088);
+    assert_eq!(size_of::<Engine<'_, NoFiles>>(), 4064);
     assert_eq!(size_of::<crate::resolve::expansion::Body>(), 96);
     assert_eq!(size_of::<crate::resolve::expansion::Definition>(), 136);
     assert_eq!(size_of::<crate::resolve::package::ErrorData>(), 128);
