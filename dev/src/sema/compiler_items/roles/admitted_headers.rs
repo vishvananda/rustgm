@@ -74,7 +74,7 @@ pub(in crate::sema) fn selected_copying(
     crates::charge_source_headers(
         facts,
         steps,
-        if checked.is_ok() && fresh {
+        if checked.as_ref().is_ok_and(|roles| *roles != 0) && fresh {
             size_of::<Validated>()
         } else {
             0
