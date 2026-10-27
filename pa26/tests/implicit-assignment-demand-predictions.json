@@ -1,0 +1,206 @@
+{
+  "schema": 1,
+  "status": "Predictions frozen before new observations; draft, not active manifest or oracle",
+  "language": "Rust1.98.0",
+  "edition": "2024",
+  "scope": "Canonical assignment demand, typed reference RHS, genuine owner, normal selected calls/loans/order and cold scalar path; no source-binding fallback",
+  "cases": [
+    {
+      "input": "tests/spec/implicit-assignment-demand/bound-reference.rs",
+      "source_sha256": "276302ddb7783c7ae7cc08d2b31a65ee8e6642272b923238d071d70c5fa52023",
+      "required_candidate_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "input": "tests/spec/implicit-assignment-demand/returned-reference.rs",
+      "source_sha256": "9ae0d0cb7a99bcb579fb57cc4026bd382d931b194d22fb3a1276b1d1d68f2249",
+      "required_candidate_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "input": "tests/spec/implicit-assignment-demand/lexical-shadow.rs",
+      "source_sha256": "481fedf6825a8a5ed6f21059ad26cb6dd4faae73df119c1970e5c60dba4c9579",
+      "required_candidate_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "input": "tests/spec/implicit-assignment-demand/module-shadow.rs",
+      "source_sha256": "67b0b7fd813f295af2a8459256dc177ab38054da2409f9d3baeb3b22d599e581",
+      "required_candidate_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "input": "tests/spec/implicit-assignment-demand/aliased-scalars.rs",
+      "source_sha256": "e77e1d83a18a3daf6bf719160a1b7c4781be788e9d4fa303ccb0969b21a897fa",
+      "required_candidate_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "input": "tests/spec/implicit-assignment-demand/call-order.rs",
+      "source_sha256": "029c791fda77522fe6666d447916295b793122fc3b94e640075fd40d460dba8f",
+      "required_candidate_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "input": "tests/spec/implicit-assignment-demand/scalar-control.rs",
+      "source_sha256": "a3fed628f0a28d5f6cf14aacdfdecef16e1d57d161af7e13cb48e604aa4c1f41",
+      "required_candidate_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "input": "tests/spec/implicit-assignment-demand/no-demand.rs",
+      "source_sha256": "50cbd5fbb56ac3c7579ff1b73aaa8a356ef4f7f6374033ca77b3f2db99fac4a4",
+      "required_candidate_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "input": "tests/spec/implicit-assignment-demand/disabled-demand.rs",
+      "source_sha256": "c6cdd4dc9ac5efffab72b3c1c3c729b3e1eb2b5a75f60f1cc0a2a5dca1937622",
+      "required_candidate_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "input": "tests/spec/implicit-assignment-demand/boolean-forward.rs",
+      "source_sha256": "4c8dbbb3a62fd8d257696fcd521f689fbad0ed676394085e714fc36195b6889a",
+      "required_candidate_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "input": "tests/spec/implicit-assignment-demand/mutable-rhs.rs",
+      "source_sha256": "f1a55209f0c593db6833b21862acc5101de176d777403e744ce64f4f4e81dab3",
+      "required_candidate_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "input": "tests/spec/implicit-assignment-demand/mixed-width.rs",
+      "source_sha256": "121e41137fdd6dfae8f954236f6abf781061609e6577f91b237bcff8a4fb515a",
+      "required_candidate_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "input": "tests/spec/implicit-assignment-demand/boolean-add.rs",
+      "source_sha256": "3eed907b3bcd5e993a506fa74c6ae04177afef6f0f13fbce695ab56a832f43d6",
+      "required_candidate_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    },
+    {
+      "input": "tests/spec/implicit-assignment-demand/all-families.rs",
+      "source_sha256": "e55081eec8a8f6710b9e5245f645b78652df3510b088a33c73db290b1b65606f",
+      "required_candidate_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "input": "tests/spec/primitive-assignment/implicit-forwarding-boundary.rs",
+      "source_sha256": "28fb4c45a426d3eaed57c14d6b7b4ef56bf024ce1265df53acc09e2e3193d2f2",
+      "required_candidate_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "input": "tests/spec/primitive-assignment/explicit-forwarding.rs",
+      "source_sha256": "9372c0b8da3f2384d0e3ff01016b190b8337b91d03d40c0bc719145f4e28c38d",
+      "required_candidate_status": 0,
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      }
+    },
+    {
+      "input": "tests/spec/primitive-assignment/alias-conflict.rs",
+      "source_sha256": "21b794e4e29933ac79686a4530343686b0444443c4b54b1aa417a0aafb73e3c1",
+      "required_candidate_status": 1,
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      }
+    }
+  ]
+}
