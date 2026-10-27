@@ -86,5 +86,105 @@
     "fixture_replay_plan": "obj/parallel/pa31/source-location-claims-v1/panic-handler-v1/neg-native-v2/fixture-runtime-plan.json",
     "fixture_replay_stdout_sha256": "2efcb54ef953ccb9d3c5d2d98a04deef3b966fcd2a7b2c4853ba0614287a9866",
     "fixture_replay_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "original_declaration": {
+    "state": "frozen before compiler edit",
+    "diagnostic_slot": 34,
+    "expected_owner": "actual required function member of reserved LangItem::Neg48; trait itself need not have a diagnostic identity",
+    "source": "neg-original-declaration.rs",
+    "positive": "real pinned attributes retained; no callable/const permission from diagnostic",
+    "opponents": [
+      "missing actual Neg role",
+      "other actual language trait owner",
+      "module function",
+      "associated type",
+      "duplicate actual diagnostic claim"
+    ],
+    "overflow_marker": {
+      "fixed_profile": "checked only, const validity unchanged; no caller/const/foreign varying-context permission or persistent field",
+      "independent_scope": "NEW std-backed runtime modes scalar/explicitstdNeg/authoredmarked, -Coverflow-checks yes/no, plus markedconstE0080; not no_core provider parity",
+      "plan_sha256": "9a40223fb44a3c5f9f141cd1e3f6b0f11fc6c158b3311bf1a002ecb372032465",
+      "observed_sha256": "de7e4ea7c7fa810a54cf2ecba5efc0be7426fe27f7485c42516fe7ad54d20383",
+      "actual_rows": 10,
+      "actual_state": "passed",
+      "retained_runtime_signals": "actual -6 in checked rows, not a promised signal",
+      "unsupported": "unchecked driver/foreign varying-overflow context; broader closure statement-attribute grammar not qualified by first method consumer",
+      "candidate_controls_frozen_before_first_execution": {
+        "positive": [
+          "original complete Neg trait/method attributes, actual Lang48 owner",
+          "free and inherent/trait-impl functions, checked scalar guard and const overflow rejection"
+        ],
+        "negative": [
+          "word with args",
+          "unsafe wrapper",
+          "struct target",
+          "trait default method target",
+          "foreign declaration",
+          "missing actual rustc_attrs source profile"
+        ]
+      }
+    },
+    "retained_foundation_failure": {
+      "receipt": "obj/qualification/fast/1793103521192658260/receipt.json",
+      "actual": "byte2009, authored public const Destruct lacks const stability once staged_api is enabled",
+      "repair": "full exact pinned Destruct attributes already used by the qualified caller foundation; original Neg attrs unchanged"
+    },
+    "qualification": {
+      "retained_five": "obj/qualification/fast/1793103521192658260/receipt.json",
+      "affected_original_positive": "obj/qualification/fast/1793103911330043180/receipt.json",
+      "updated_cold_guard": "obj/qualification/fast/1793104340610358202/receipt.json",
+      "measured": "Reservations2072 (+24), Catalog1376 original branch only; SourceUnary12 Body448 Value24 Rvalue20 Resolution2056 Package256 unchanged",
+      "scope": "known Neg diagnostic/header and fixed checked-overflow method profile; no unchecked varying context, foreign grant, full Formatter/handler or closure grammar claim"
+    }
+  },
+  "new_original_inputs": {
+    "neg-original-declaration.rs": {
+      "sha256": "6455d950677595c5db62e73e81645dfdfd217f2bd07fdd3768f71e43cef33f0a",
+      "segments": [
+        {
+          "primary": "library/core/src/ops/arith.rs",
+          "primary_sha256": "a495c8c9838be09ce2c239462153a6221b6f471aa2efe43ce437e83581636c91",
+          "first_line": 686,
+          "last_line": 707,
+          "byte_start": 19973,
+          "byte_end": 20640,
+          "output_start": 0,
+          "output_end": 667,
+          "sha256": "6455d950677595c5db62e73e81645dfdfd217f2bd07fdd3768f71e43cef33f0a"
+        }
+      ]
+    },
+    "neg-destruct-declaration.rs": {
+      "sha256": "b5aec6c9c472c9dd8bea45191d0ce4c7c6ce4053563ecb65311316722465805a",
+      "segments": [
+        {
+          "primary": "library/core/src/marker.rs",
+          "primary_sha256": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575",
+          "first_line": 1057,
+          "last_line": 1063,
+          "byte_start": 41168,
+          "byte_end": 41484,
+          "output_start": 0,
+          "output_end": 316,
+          "sha256": "b5aec6c9c472c9dd8bea45191d0ce4c7c6ce4053563ecb65311316722465805a"
+        }
+      ]
+    },
+    "fmt-write-source.rs": {
+      "sha256": "1d40c5a325c90aa044c5252979f7399fcb375bde47bf90cfba7481eb175e74b0",
+      "segments": [
+        {
+          "primary": "library/core/src/fmt/mod.rs",
+          "primary_sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+          "first_line": 1630,
+          "last_line": 1740,
+          "byte_start": 60263,
+          "byte_end": 64446,
+          "output_start": 0,
+          "output_end": 4183,
+          "sha256": "1d40c5a325c90aa044c5252979f7399fcb375bde47bf90cfba7481eb175e74b0"
+        }
+      ]
+    }
   }
 }

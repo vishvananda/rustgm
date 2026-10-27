@@ -18,3 +18,9 @@ checks. It retains the selected original caller/getter and attribute contracts.
 assertion milestone records qualification and failures. Function-pointer/dynamic
 shims, broader inherited/generated callers and PanicInfo/false Assert remain
 required; the direct result does not replace those profiles.
+
+`neg-original-declaration.rs` keeps the full original Neg trait/method attributes.
+`neg-destruct-declaration.rs` retains the real staged const Destruct support, and
+`fmt-write-source.rs` preserves the complete formatting helper for pending name
+composition. Their exact source intervals are bound in `neg-contract.json`.
+These inputs grant no full Formatter, handler or whole-source execution result.
