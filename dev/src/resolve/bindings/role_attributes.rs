@@ -137,7 +137,7 @@ pub(super) fn validate(
         let allowed = if *attribute == HeaderAttribute::DynIncompatible {
             matches!(
                 role,
-                LangItem::Sized | LangItem::Destruct | LangItem::Unsize | LangItem::PointeeTrait
+                LangItem::Sized | LangItem::Destruct | LangItem::Unsize | LangItem::PointeeTrait | LangItem::DiscriminantKind
             )
         } else {
             matches!(
