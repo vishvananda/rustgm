@@ -124,7 +124,8 @@ impl Source {
         checked: &Checked<'_>,
         identity: &CrateIdentity,
         profile: super::instances::SourcePublication,
-    ) -> Result<(Self, Option<s::ModuleContractRows>), &'static str> {
+    ) -> Result<(Self, Option<s::ModuleContractRows>), crate::resolve::package::Error> {
+        let legacy_error = |message: &'static str| report.body_optional_error(None, message);
         match profile {
             super::instances::SourcePublication::ProvidedContracts => Ok((
                 Self::begin_trait_numbered(report, facts, checked, identity)?,
@@ -132,13 +133,15 @@ impl Source {
             )),
             super::instances::SourcePublication::ModuleContracts => {
                 let (source, modules) =
-                    Self::begin_module_contracts(report, facts, checked, identity)?;
+                    Self::begin_module_contracts(report, facts, checked, identity)
+                        .map_err(legacy_error)?;
                 Ok((source, Some(modules)))
             }
             super::instances::SourcePublication::LegacyFunctions
-            | super::instances::SourcePublication::FunctionContracts => {
-                Ok((Self::begin(report, facts, checked, identity)?, None))
-            }
+            | super::instances::SourcePublication::FunctionContracts => Ok((
+                Self::begin(report, facts, checked, identity).map_err(legacy_error)?,
+                None,
+            )),
         }
     }
     fn begin_stage(

@@ -160,7 +160,7 @@ impl Stage {
         let names_bytes = names_bytes.map_err(Error::unlocated)?;
         let expected = self.selected_type_slots().map_err(Error::unlocated)?;
         let mut observed = 0usize;
-        let provided = modifiers.is_some();
+        let contracts_requested = modifiers.is_some();
         let collect = |stage: &mut Stage, definition, source| {
             check(stage, source)?;
             observed = observed
@@ -170,7 +170,7 @@ impl Stage {
             }
             Ok(())
         };
-        let contracts = if provided {
+        let contracts = if contracts_requested {
             self.collect_provided_columns(report, facts, collect)?
         } else {
             self.collect_formal_columns(report, facts, collect)?

@@ -315,7 +315,7 @@ pub fn build_source_library_profile(
             let (source, modules) = super::transported_source::Source::begin_publication(
                 report, facts, checked, &identity, profile,
             )
-            .map_err(|e| diagnostic(report, None, e.into()))?;
+            .map_err(|error| report.diagnostic(error))?;
             let mut dependencies =
                 report
                     .resolution

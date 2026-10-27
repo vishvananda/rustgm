@@ -58,7 +58,7 @@ impl Source {
         let (collected, _) = self.complete_collected(report, facts, false)?;
         Ok(TraitInspection { collected })
     }
-    pub(super) fn complete_provided_contract_payload(
+    pub(in crate::lower) fn complete_provided_contract_payload(
         self,
         report: &Report,
         facts: &Declarations,

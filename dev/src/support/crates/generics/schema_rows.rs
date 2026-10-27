@@ -31,8 +31,7 @@ pub use descriptor::{
 };
 pub(crate) use descriptor::{
     ExportBinding, HeaderModifierColumns, HeaderModifierPolicy, HeaderModifierRecord,
-    NamespaceColumns, ProvidedContractRows, ProvidedContractView, UnpublishedNamespace,
-    callable_path,
+    NamespaceColumns, ProvidedContractRows, UnpublishedNamespace, callable_path,
 };
 pub use inputs::*;
 pub use scopes::{Definition, DefinitionKind, ScopeIndex};

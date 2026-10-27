@@ -28,7 +28,7 @@ impl Draft {
     ) -> Result<(), Error> {
         stage.charge(2).map_err(Error::unlocated)?;
         let declaration = stage.declaration(definition).map_err(Error::unlocated)?;
-        let site = stage.site(source).map_err(Error::unlocated)?;
+        let site = stage.site(declaration, source).map_err(Error::unlocated)?;
         let row = self
             .completed
             .get_mut(declaration.0 as usize)
