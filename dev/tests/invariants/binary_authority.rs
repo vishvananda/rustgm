@@ -135,8 +135,18 @@ fn actual_overloads_and_explicit_custom_bodies_reach_original_instance_lowering(
             ["syntax", "explicit_shift", "explicit_or"],
         ),
     ] {
-        let (report, analysis) = analyze(&input(name)?)?;
+        let source = input(name)?;
+        let (report, analysis) = analyze(&source)?;
         let program = lower(&report, analysis, &exports)?;
+        let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../obj/parallel/lib045-root-implementation-v1/operators-native")
+            .join(name.replace('/', "_"));
+        std::fs::create_dir_all(&folder)?;
+        std::fs::write(folder.join("provider.rs"), source)?;
+        crate::lowir::writer::write(
+            &program,
+            &mut std::fs::File::create(folder.join("provider.lowir"))?,
+        )?;
         for name in exports {
             assert_eq!(
                 program
