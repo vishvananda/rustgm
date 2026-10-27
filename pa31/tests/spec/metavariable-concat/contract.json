@@ -1,0 +1,52 @@
+{
+  "state": "independently metadata-qualified; actual current candidate rejects template grammar",
+  "owner": "PA7 macro template grammar + PA8 transcription; PA31 pinned internal feature authority",
+  "primary_source": "src/doc/unstable-book/src/language-features/macro-metavar-expr-concat.md",
+  "origin": {
+    "path": "library/core/src/fmt/num.rs",
+    "sha256": "bbb79b2c1b45c68d4640cf25e5336c7e9e8dfe8fd624757b206751dad2062d9a",
+    "line": 149,
+    "byte": 6248,
+    "opened_sources": 206,
+    "all_source_pins": 722
+  },
+  "profile": {
+    "edition": [
+      2021,
+      2024
+    ],
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "bootstrap": true,
+    "emit": "metadata"
+  },
+  "cases": [
+    {
+      "path": "pa31/tests/spec/metavariable-concat/identifier.rs",
+      "sha256": "e856ffa70d7163185a109d7fdfaaf2c91319c5f719a976e2b2b2eb2ae3ef9777",
+      "rustc_status": 0,
+      "candidate_status": 1,
+      "candidate_expected": "unsupported"
+    },
+    {
+      "path": "pa31/tests/spec/metavariable-concat/missing-feature.rs",
+      "sha256": "d5f694d204d63da0072e0b0b4e4765c2145eda27d9ed60bbed345c1b45c1d82c",
+      "rustc_status": 1,
+      "candidate_status": 1,
+      "candidate_expected": "reject"
+    }
+  ],
+  "feature_rule": "macro_metavar_expr_concat is independent of macro_metavar_expr; real invocation and generated identifier binding are required",
+  "candidate_cli_sha256": "b4f107b164f569f4fba61fd1ba49954ee6841fd80ca2ce97902982698c611c43",
+  "scope": "new reduced grammar/transcription observations, no runtime/native claim",
+  "observed": {
+    "state": "passed",
+    "observations": 6,
+    "infrastructure_failures": 0,
+    "seconds": 3.6479807808063924,
+    "binding_sha256": "7d686ee0ebbc8ffaace9af8cf9f831e69d866071a0262c8a8d1e0b524dad84c8",
+    "results_sha256": "4133ac47a068c9aa19aa2c16db4af5660d51bc046fb0f36964932bc0e1fbf826"
+  },
+  "candidate_diagnostic": "expected macro token",
+  "remaining": "Implement typed concat template syntax, independent feature authority, identifier construction/hygiene and ordinary generated-name resolution. No runtime claim."
+}

@@ -576,8 +576,13 @@ Rust ABI. Reuse sparse call-context and callable-input owners for sealed site
 data; the presence of metadata never establishes a completed callable-target
 proof. Canonical nominal constructors are known untracked through the existing
 constructor inventory and actual callable/result owner, not through missing
-function headers. Unknown callable/header policy remains an error. Keep the
-source signature unchanged and distinguish tracked native signatures explicitly.
+function headers. Legacy imported headers and local source-client functions
+use their positively authenticated catalog/profile to establish the closed
+untracked ABI. Empty caller-site data keeps the current call-context storage
+budget and cannot borrow a missing local source-header producer. Actual new
+site data retains its source-owner prepayment. Unknown policy remains an error.
+Keep the source signature unchanged and distinguish tracked native signatures
+explicitly.
 Runtime forwarding and CTFE frames consume the same prepared static Location
 values. Store immutable snapshot site data once as a typed footer after legacy
 prepared operands, with indexed queries rather than per-call scans. Count its
@@ -820,6 +825,21 @@ execution availability. Retain known unused declarations without manufacturing
 an implementation. Wrong-kind or unavailable invocations fail before matcher,
 capture and expansion work. New declaration-only roles must not grow ordinary
 bootstrap tables or grant permission through an alternate attribute consumer.
+
+Compile each builtin's actual source declaration grammar before replacing its
+expander with the authenticated registry kind. Source form continues to govern
+textual versus item visibility, hygiene and publication. Typed lookup traverses
+existing textual scopes for the expected kind, preserving the unfiltered cache
+and unresolved imports. Charge skipped candidates and warm failures; a filtered
+miss never becomes an unfiltered absence. Share the actual kind classifier
+across scoped and legacy publication without adding another cache or owner.
+
+Metavariable concatenation belongs to typed template grammar and transcription.
+Its macro_metavar_expr_concat feature is independent of macro_metavar_expr.
+Consume actual captured identifiers/literals and preserve generated-name hygiene
+through the ordinary token/name producers; never reparse a rendered template or
+skip unknown operations inside a later cfg branch. Declaration admission alone
+does not establish invocation, generated-name lookup or execution.
 
 Keep actual expansion ancestry separate from a token's syntax context and its
 physical source/edition provenance. A captured name does not determine the
