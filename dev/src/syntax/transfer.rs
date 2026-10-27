@@ -345,9 +345,6 @@ impl Bases {
                 self.optional(output);
                 self.optional(name);
             }
-            Kind::AssemblyOrigin(_)
-            | Kind::AssemblyOptions(_)
-            | Kind::AssemblyPlaceholder { .. } => {}
             Kind::LibraryValue { value, .. } => self.optional(value),
             Kind::Name(name, _) => *name = span(*name)?,
             Kind::GenericMethodCall {
@@ -373,7 +370,10 @@ impl Bases {
             | Kind::Wildcard
             | Kind::RestPattern
             | Kind::InferType
-            | Kind::NeverType => {}
+            | Kind::NeverType
+            | Kind::AssemblyOrigin(_)
+            | Kind::AssemblyOptions(_)
+            | Kind::AssemblyPlaceholder { .. } => {}
             Kind::Item(index) => *index += self.items,
             Kind::Generic(index) => *index += self.generics,
             Kind::FunctionType(index) => *index += self.function_types,

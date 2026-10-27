@@ -170,24 +170,23 @@ pub(crate) fn validate(body: &super::ir::Body) -> Result<(), &'static str> {
                     return Err("assembly input order differs from retained operands");
                 }
                 for operand in operands {
-                    if let Some(id) = operand.input {
-                        if body
+                    if let Some(id) = operand.input
+                        && body
                             .values
                             .get(id.0 as usize)
                             .is_none_or(|v| Some(v.ty) != operand.ty)
-                        {
-                            return Err("assembly input type differs from retained operand");
-                        }
+                    {
+                        return Err("assembly input type differs from retained operand");
                     }
-                    if let Some(place) = operand.output {
-                        if body.place_type(place) != operand.ty {
-                            return Err("assembly output type differs from retained place");
-                        }
+                    if let Some(place) = operand.output
+                        && body.place_type(place) != operand.ty
+                    {
+                        return Err("assembly output type differs from retained place");
                     }
                 }
             }
             super::ir::Rvalue::AssemblyOutput { effect, operand } => {
-                output(body, effect, operand, value.ty)?
+                output(body, effect, operand, value.ty)?;
             }
             _ => {}
         }

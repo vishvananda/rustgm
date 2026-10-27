@@ -56,7 +56,10 @@ impl<L> Syntax<L> {
             | Kind::RestPattern
             | Kind::InferType
             | Kind::NeverType
-            | Kind::Variadic => {}
+            | Kind::Variadic
+            | Kind::AssemblyOrigin(_)
+            | Kind::AssemblyOptions(_)
+            | Kind::AssemblyPlaceholder { .. } => {}
             Kind::Item(index) => self.visit_item_children(index, visit)?,
             Kind::PreciseCapture(list)
             | Kind::Crate(list)
@@ -79,7 +82,8 @@ impl<L> Syntax<L> {
             | Kind::ReferencePattern { pattern: value, .. }
             | Kind::PatternField { pattern: value, .. }
             | Kind::ImplRestriction { path: value }
-            | Kind::Macro { path: value, .. } => visit(value)?,
+            | Kind::Macro { path: value, .. }
+            | Kind::AssemblyRegister { value, .. } => visit(value)?,
             Kind::Binary { left, right, .. }
             | Kind::Repeat {
                 value: left,
@@ -110,16 +114,12 @@ impl<L> Syntax<L> {
                 visit(value)?;
                 self.children(pieces, visit)?;
             }
-            Kind::AssemblyRegister { value, .. } => visit(value)?,
             Kind::AssemblyOperand { input, output, .. } => {
                 visit_all(input, visit)?;
                 if output != input {
                     visit_all(output, visit)?;
                 }
             }
-            Kind::AssemblyOrigin(_)
-            | Kind::AssemblyOptions(_)
-            | Kind::AssemblyPlaceholder { .. } => {}
             Kind::LibraryValue { value, .. }
             | Kind::Return(value)
             | Kind::Break { value, .. }

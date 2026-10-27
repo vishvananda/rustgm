@@ -9,11 +9,11 @@ impl Builder<'_> {
     pub(super) fn assembly_read_place(&mut self, node: NodeId) -> Result<(), Error> {
         let place = self.pop_place(node)?;
         self.scratch.places.push(place);
-        if let Some(place) = place {
-            if self.current.is_some() {
-                let value = self.evaluate(node, self.ty(node)?, Rvalue::Read(place))?;
-                self.save(node, value)?;
-            }
+        if let Some(place) = place
+            && self.current.is_some()
+        {
+            let value = self.evaluate(node, self.ty(node)?, Rvalue::Read(place))?;
+            self.save(node, value)?;
         }
         Ok(())
     }

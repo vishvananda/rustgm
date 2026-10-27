@@ -190,7 +190,7 @@ fn asm_storage_and_width_growth_remain_cold_and_body_owned() -> Result {
             use std::fmt::Write as _;
             write!(program, "{{a{i}}} ")?;
         }
-        program.push_str("\"");
+        program.push('\"');
         for i in 0..width {
             use std::fmt::Write as _;
             write!(program, ",a{i}=in(reg)x")?;

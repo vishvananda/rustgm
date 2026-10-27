@@ -197,17 +197,7 @@ fn with_premises(
     })
 }
 
-fn materialize(
-    facts: &mut Declarations,
-    template: &Template,
-    selection: anonymous::Selection,
-    substitution: &mut Bound,
-    mut contract: Option<&mut super::regions::Contract>,
-    comparison: Option<(crate::types::TypeId, crate::types::TypeId)>,
-    context: Context<'_>,
-) -> Result<(Body, drops::Requirements), &'static str> {
-    let Context { premises, cleanup } = context;
-    let source = &template.body;
+fn assembly_instance_work(facts: &mut Declarations, source: &Body) -> Result<(), &'static str> {
     if let Some(data) = source.assembly.as_deref() {
         let steps = data
             .instructions
@@ -222,6 +212,22 @@ fn materialize(
             return Err("assembly instance payload exceeds existing generic body storage budget");
         }
     }
+
+    Ok(())
+}
+
+fn materialize(
+    facts: &mut Declarations,
+    template: &Template,
+    selection: anonymous::Selection,
+    substitution: &mut Bound,
+    mut contract: Option<&mut super::regions::Contract>,
+    comparison: Option<(crate::types::TypeId, crate::types::TypeId)>,
+    context: Context<'_>,
+) -> Result<(Body, drops::Requirements), &'static str> {
+    let Context { premises, cleanup } = context;
+    let source = &template.body;
+    assembly_instance_work(facts, source)?;
 
     let (owner, definition, instance) = selection.owner(facts, source)?;
     if instance

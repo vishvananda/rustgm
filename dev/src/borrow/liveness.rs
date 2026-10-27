@@ -209,7 +209,7 @@ impl<'a> Flow<'a> {
                 crate::body::assembly::instruction(self.body, instruction)?;
             }
             Rvalue::AssemblyOutput { effect, operand } => {
-                crate::body::assembly::output(self.body, effect, operand, value.ty)?
+                crate::body::assembly::output(self.body, effect, operand, value.ty)?;
             }
             _ => {}
         }

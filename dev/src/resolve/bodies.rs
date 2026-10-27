@@ -100,7 +100,9 @@ impl Resolver<'_> {
             | Kind::AssemblyRegister { .. }
             | Kind::AssemblyOrigin(_)
             | Kind::AssemblyOptions(_)
-            | Kind::AssemblyPlaceholder { .. } => Ok(()),
+            | Kind::AssemblyPlaceholder { .. }
+            | Kind::Macro { .. }
+            | Kind::UseTree(_) => Ok(()),
             Kind::LibraryValue { kind, value } => {
                 self.prepare_library_value(c, node, kind)?;
                 self.optional(c, value, Namespace::Value)
@@ -365,7 +367,6 @@ impl Resolver<'_> {
                 self.optional(c, value, Namespace::Value)
             }
             Kind::Continue(Some(label)) => self.label(c, node, label),
-            Kind::Macro { .. } | Kind::UseTree(_) => Ok(()),
             Kind::Binding { .. }
             | Kind::Pattern { .. }
             | Kind::StructPattern { .. }

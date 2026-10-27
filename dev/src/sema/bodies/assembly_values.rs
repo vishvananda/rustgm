@@ -83,13 +83,13 @@ impl Checker<'_> {
             if let Some(out) = output {
                 self.assignment_target(node, out)?;
             }
-            if let (Some(input), Some(output)) = (input, output) {
-                if self.ty(input)? != self.ty(output)? {
-                    return Err(self.error(
-                        arg,
-                        "assembly tied input and output must have the same type",
-                    ));
-                }
+            if let (Some(input), Some(output)) = (input, output)
+                && self.ty(input)? != self.ty(output)?
+            {
+                return Err(self.error(
+                    arg,
+                    "assembly tied input and output must have the same type",
+                ));
             }
             if matches!(direction, Direction::Const | Direction::Sym) {
                 return Err(self.error(arg,"assembly const and sym operands require their retained constant and relocation contract"));
@@ -209,11 +209,11 @@ impl Checker<'_> {
                 xmm: false,
                 bytes: 1,
                 ..
-            } => !float && bytes == 1,
+            }
+            | Register::Byte => !float && bytes == 1,
             Register::General | Register::Abcd | Register::Explicit { xmm: false, .. } => {
                 bytes >= 2
             }
-            Register::Byte => !float && bytes == 1,
             Register::Xmm | Register::Explicit { xmm: true, .. } => matches!(bytes, 4 | 8),
         };
         if valid {

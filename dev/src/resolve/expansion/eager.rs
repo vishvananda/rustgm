@@ -325,59 +325,7 @@ impl<S: Sources> Engine<'_, S> {
             Body::Builtin(Builtin::Asm)
         );
         let (generated, include) = if assembly {
-            if self.source_eager_definition(definition)? != Builtin::Asm {
-                return Err(call.diagnostic("assembly builtin changed its actual source role"));
-            }
-            let unit = &self.loader.package.units[file.0 as usize];
-            let crate::syntax::ast::Kind::InlineAssembly(args) =
-                unit.configured.ast.node(root).kind
-            else {
-                return Err(Error::at(
-                    file,
-                    original.start,
-                    "missing actual assembly arguments",
-                ));
-            };
-            let mut bytes = 0usize;
-            for &arg in unit.configured.ast.list(args) {
-                if let crate::syntax::ast::Kind::AssemblyTemplate { value, .. } =
-                    unit.configured.ast.node(arg).kind
-                {
-                    if let crate::syntax::ast::Kind::Literal(index) =
-                        unit.configured.ast.node(value).kind
-                    {
-                        if let crate::literal::Value::String(text) = unit
-                            .literal(index)
-                            .map_err(|e| Error::at(file, e.offset, e.message))?
-                        {
-                            bytes = bytes.saturating_add(text.len());
-                        }
-                    }
-                }
-            }
-            self.loader
-                .package
-                .source_core()
-                .ok_or_else(|| {
-                    Error::at(
-                        file,
-                        original.start,
-                        "missing actual source assembly provider",
-                    )
-                })?
-                .macros
-                .charge(
-                    bytes.saturating_add(args.end as usize - args.start as usize),
-                    bytes.saturating_mul(96).saturating_add(
-                        (args.end as usize - args.start as usize).saturating_mul(512),
-                    ),
-                )
-                .map_err(|message| Error::at(file, original.start, message))?;
-            super::assembly_values::complete(&mut self.loader.package.units[file.0 as usize], root)
-                .map_err(|e| Error::at(file, e.offset, e.message))?;
-            let generated = self.loader.package.units[file.0 as usize]
-                .install_assembly(visit.node, root, context.0)
-                .map_err(|e| Error::at(file, e.offset, e.message))?;
+            let generated = self.finish_assembly(definition, file, visit.node, root, context)?;
             (generated, visit.include)
         } else if matches!(
             self.definitions[definition].body,
@@ -428,6 +376,76 @@ impl<S: Sources> Engine<'_, S> {
         )?;
         self.scan()?;
         self.completed(index)
+    }
+    fn finish_assembly(
+        &mut self,
+        definition: usize,
+        file: FileId,
+        node: NodeId,
+        root: NodeId,
+        context: ExpansionId,
+    ) -> Result<crate::syntax::token_tree::Span, Error> {
+        let original = self
+            .loader
+            .package
+            .unit(file)
+            .configured
+            .ast
+            .node(node)
+            .span;
+        if self.source_eager_definition(definition)? != Builtin::Asm {
+            return Err(Error::at(
+                file,
+                original.start,
+                "assembly builtin changed its actual source role",
+            ));
+        }
+        let unit = &self.loader.package.units[file.0 as usize];
+        let crate::syntax::ast::Kind::InlineAssembly(args) = unit.configured.ast.node(root).kind
+        else {
+            return Err(Error::at(
+                file,
+                original.start,
+                "missing actual assembly arguments",
+            ));
+        };
+        let mut bytes = 0usize;
+        for &arg in unit.configured.ast.list(args) {
+            if let crate::syntax::ast::Kind::AssemblyTemplate { value, .. } =
+                unit.configured.ast.node(arg).kind
+                && let crate::syntax::ast::Kind::Literal(index) =
+                    unit.configured.ast.node(value).kind
+                && let crate::literal::Value::String(text) = unit
+                    .literal(index)
+                    .map_err(|e| Error::at(file, e.offset, e.message))?
+            {
+                bytes = bytes.saturating_add(text.len());
+            }
+        }
+        self.loader
+            .package
+            .source_core()
+            .ok_or_else(|| {
+                Error::at(
+                    file,
+                    original.start,
+                    "missing actual source assembly provider",
+                )
+            })?
+            .macros
+            .charge(
+                bytes.saturating_add(args.end as usize - args.start as usize),
+                bytes
+                    .saturating_mul(96)
+                    .saturating_add((args.end as usize - args.start as usize).saturating_mul(512)),
+            )
+            .map_err(|message| Error::at(file, original.start, message))?;
+        super::assembly_values::complete(&mut self.loader.package.units[file.0 as usize], root)
+            .map_err(|e| Error::at(file, e.offset, e.message))?;
+        let generated = self.loader.package.units[file.0 as usize]
+            .install_assembly(node, root, context.0)
+            .map_err(|e| Error::at(file, e.offset, e.message))?;
+        Ok(generated)
     }
     fn eager_value(
         &mut self,

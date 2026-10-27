@@ -114,7 +114,7 @@ pub fn count(program: &Program, out: &mut impl Write) -> io::Result<()> {
     }
     writeln!(out)
 }
-fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
+fn assembly_contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
     if let Some(data) = &body.assembly {
         writeln!(
             out,
@@ -157,6 +157,10 @@ fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
             )?;
         }
     }
+    Ok(())
+}
+fn contents(body: &Body, out: &mut impl Write) -> io::Result<()> {
+    assembly_contents(body, out)?;
     for (id, local) in body.locals.iter().enumerate() {
         write!(out, "  local l{id} type={} ", local.ty.0)?;
         match local.kind {
