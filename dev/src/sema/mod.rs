@@ -8,6 +8,7 @@ mod constants;
 pub mod crates;
 pub mod numbered_regions;
 pub use constants::values;
+mod api_exposure;
 mod arguments;
 pub(crate) mod callee_premises;
 pub(crate) mod cloning;
