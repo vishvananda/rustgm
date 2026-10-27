@@ -132,9 +132,10 @@ fn stored_and_deferred_strings_borrow_only_their_actual_literal_roots()
         let token = crate::lex::Lexer::new(source)?
             .next_token()?
             .ok_or_else(|| crate::syntax::token_tree::error(0, "literal token"))?;
+        let tokens = [token];
         let deferred = expression::fragment::parse(
             source,
-            &[token],
+            &tokens,
             expression::fragment::FragmentKind::Literal,
         )?;
         let deferred = ParsedSyntax::own(source, deferred.ast)?;

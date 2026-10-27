@@ -210,6 +210,7 @@ pub(in crate::resolve) fn prepare_with_admission(
         }
         return Ok(Prepared {
             source: if features.has(Feature::InternalMacroAllowance)
+                || features.has(Feature::CfgTargetHasAtomic)
                 || features.has(Feature::ImplRestriction)
                 || features.has(Feature::MinSpecialization)
                 || features.has(Feature::Specialization)
