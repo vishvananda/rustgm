@@ -122,7 +122,26 @@ pub(crate) fn build(
             },
         )?;
     }
-    let syntax = crate_syntax::configure(&output.stream.source, output.ast, config)?;
+    let configured = crate_syntax::configure(&output.stream.source, output.ast, config)?;
+    charge(
+        configured.ast.literals.len(),
+        configured
+            .ast
+            .literals
+            .len()
+            .saturating_mul(4 * size_of::<Value<'_>>()),
+    )?;
+    let ast = configured.ast.map_literals(|value| {
+        charge(1, super::literal_bytes(&value).saturating_mul(4))?;
+        Ok(super::own_value(value))
+    })?;
+    let syntax = crate_syntax::ConfiguredSyntax {
+        ast,
+        owners: configured.owners,
+        active: configured.active,
+        effects: configured.effects,
+        cfg_uses: configured.cfg_uses,
+    };
     Ok((
         Delegated {
             stream: output.stream,

@@ -299,7 +299,7 @@ impl<S: Sources> Engine<'_, S> {
             path_context,
             grammar: call.grammar,
         };
-        let mut provenance = |token| {
+        let mut provenance = |token: crate::lex::token::Token| {
             let raw = self
                 .loader
                 .package

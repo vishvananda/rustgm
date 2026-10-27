@@ -216,21 +216,25 @@ impl Prepared<'_> {
     }
 }
 fn own_literal(value: &crate::literal::Value<'_>) -> crate::literal::Value<'static> {
+    own_value(value.clone())
+}
+fn own_value(value: crate::literal::Value<'_>) -> crate::literal::Value<'static> {
     use crate::literal::{Value, value::Float};
     match value {
-        Value::Integer(value) => Value::Integer(*value),
-        Value::Character(value) => Value::Character(*value),
-        Value::Byte(value) => Value::Byte(*value),
-        Value::Boolean(value) => Value::Boolean(*value),
+        Value::Integer(value) => Value::Integer(value),
+        Value::Character(value) => Value::Character(value),
+        Value::Byte(value) => Value::Byte(value),
+        Value::Boolean(value) => Value::Boolean(value),
         Value::Float(value) => Value::Float(Float {
-            decimal: value.decimal.to_string().into(),
+            decimal: value.decimal.into_owned().into(),
             suffix: value.suffix,
         }),
-        Value::String(bytes) => Value::String(bytes.to_vec().into()),
-        Value::ByteString(bytes) => Value::ByteString(bytes.to_vec().into()),
-        Value::CString(bytes) => Value::CString(bytes.to_vec().into()),
+        Value::String(bytes) => Value::String(bytes.into_owned().into()),
+        Value::ByteString(bytes) => Value::ByteString(bytes.into_owned().into()),
+        Value::CString(bytes) => Value::CString(bytes.into_owned().into()),
     }
 }
+
 fn literal_bytes(value: &crate::literal::Value<'_>) -> usize {
     use crate::literal::Value;
     match value {
