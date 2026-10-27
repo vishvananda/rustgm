@@ -1,1 +1,1 @@
-ERROR: file 0: 169: associated type projection requires normalization
+ERROR: file 0: 144: associated type requires an unambiguous validated implementation

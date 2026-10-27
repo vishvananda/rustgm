@@ -27,7 +27,7 @@ whole-crate attempt. Never patch upstream source to move a blocker.
 
 | Milestone | Current result | Next acceptance evidence |
 | --- | --- | --- |
-| Original core loading and expansion | Qualified CLI `6a99faf3` passes the LIB-046 lint storage failure under unchanged limits. Its next rejection is actual source formatting-argument construction in write!/format_args!. All722 pins verify;372 opened;8.25s; no artifact. | Integrate qualified source lookup/target features, finish genuine formatting/assertion and required LIB-045 backend work, then full checking/export and original artifacts. |
+| Original core loading and expansion | Qualified CLI `ebd0d4d0` passes the LIB-046 lint storage failure under unchanged limits. Its next rejection is actual source formatting-argument construction in write!/format_args!. All722 pins verify;372 opened;9.25s; no artifact. | Source lookup/target features are integrated; finish genuine formatting/assertion and required LIB-045 backend work, then full checking/export and original artifacts. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
@@ -180,10 +180,10 @@ concrete; a private Ready state is not an executable result.
 
 | Owner | Issues and owning assignments | Next observable exit |
 | --- | --- | --- |
-| A, read-only review | LIB-046, PA8/31 | Exact owning-engine/Sources/config counter-observer seams are reviewed and handed off; no compiler edits or heavy jobs. Warm policy replay remains separate from the proved frame reuse overcharge and remaining source-record pressure. |
+| A, read-only review | Assignment release evidence / PA27 unsafe-places | Concrete shared unit-selection/provenance and release checklist is handed off to root; no compiler edits or heavy jobs. |
 | B | LIB-029/021/034, PA25–28/31 | Inert diagnostic names and original Neg attributes are integrated. Assemble genuine Formatter/Arguments/helper source dependencies, then complete PanicInfo/handler and false assertion through Abort; preserve actual fields and demanded helper bodies/proofs. |
-| C | LIB-045, PA27/28/30/31/41 | Shl/BitOr and two safe-input native consumers are integrated. Implement demanded real SIMD representation/layout and Rust-indirect/C128 ABI with independent native copy controls, then actual target-feature facts. Coordinate the shared type query with root's assembly consumer. |
-| Integrator, direct compiler owner | LIB-008/045/046, PA8/26/31/32/41 | Own `rustgm-pa25-work`; exact compact witnesses pass the observed storage failure. Integrate qualified primitive lookup and target-feature handoffs, complete demanded assembly/backend consumers and advance unchanged core through real source formatting. Preserve proof/transport requirements. |
+| C | LIB-045, PA27/28/30/31/41 | Shl/BitOr and two safe-input native consumers are integrated. SIMD layout/Rust-indirect/C128 ABI and typed target-feature facts are integrated. Join actual128-bit numeric SIMD/XMM assembly operand checks using the same owners; preserve backend/transport boundaries. |
+| Integrator, direct compiler owner | LIB-008/045/046, PA8/26/31/32/41 | Own `rustgm-pa25-work`; exact compact witnesses pass the observed storage failure. Primitive lookup and target-feature handoffs are integrated. Complete demanded assembly/backend consumers and advance unchanged core through real source formatting. Preserve proof/transport requirements. |
 | Integrator, queued independent preparation | LIB-009/010/011, PA30/33/34/36 | Selected alloc/std dependency/build/runtime inventory and small real ABI/build consumers; do not wait until core works to discover graph prerequisites. |
 
 Track assignment closure separately: implemented behavior, owning text fixtures,

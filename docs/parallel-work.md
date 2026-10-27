@@ -14,21 +14,21 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The current original-core CLI6a99faf3 passes the observed LIB-046 lint storage
+The current original-core CLIebd0d4d0 passes the observed LIB-046 lint storage
 failure with exact complete witness arrays. All722 pinned inputs verify;372 files
-open in8.25s, with no artifact. Limits remain10M work/64MiB. The next rejection
+open in9.25s, with no artifact. Limits remain10M work/64MiB. The next rejection
 is genuine formatting-argument construction, already assigned to B.
 The live tracker owns current priorities; checkpoint paragraphs below retain
 earlier context. Typed assembly proof, inert diagnostic data and source Shl/BitOr
 are combined; two operator native consumers now match safe-input outputs.
 
-- A: read-only LIB-046 attribution/review. No compiler edits or heavy jobs.
+- A: bounded read-only reviews and the finite unsafe-places release checklist.
+  No compiler edits or heavy jobs.
 - B: genuine Formatter/Arguments/helper source closure, then PanicInfo/handler and
   false assertion through Abort. Original Neg attributes and inert diagnostic
   names are integrated. Do not replace upstream helpers with library factories.
-- C: required LIB-045 SIMD representation/layout and Rust-indirect/C128 ABI, then
-  typed target features. Qualify real source/native copy controls and coordinate
-  the shared type query with the root-owned assembly consumer.
+- C: LIB-045 genuine SIMD/XMM assembly operand checks using the integrated
+  layout and target-feature owners; preserve backend and metadata boundaries.
 - Integrator: directly owns `rustgm-pa25-work`, the qualified typed assembly
   join, publication and the qualified LIB-046 repair; integrate demanded SIMD/target/backend
   work and advance unchanged core. Preserve PA25 const-callable/CTFE and PA29
@@ -70,11 +70,11 @@ Use [assignment-order.md](assignment-order.md) and the validated
 [unit graph](../assignment-plan.json) instead of a cumulative PA-number queue.
 The historical ownership table below identifies existing worktrees, not a
 requirement to finish all earlier-numbered features before a coherent consumer.
-Root owns LIB-046 storage and integration; B closes the independently reproduced
-ordinary PA6/19 primitive-member fallback before the genuine formatting/panic
-consumer; C's isolated typed target-feature checkpoint awaits root integration
-and the real SIMD/assembly/backend join. A completed the read-only46-family
-requirement audit and is idle. No additional worker/worktree is needed.
+Root integrated the LIB-046 repair, PA6/19 primitive fallback and typed target
+features. B owns the genuine formatting/panic consumer; C owns the real
+SIMD/assembly frontend join. A supplies bounded read-only reviews. Root also
+owns shared unit-publication tooling for the finite unsafe-places release.
+See [combined evidence](source-lookup-target-integration.md). No new worktree is needed.
 
 Track implementation and publication independently. Publish finite unsafe/place,
 C ABI, declaration-interface and const-machine components using existing bound
