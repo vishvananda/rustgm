@@ -1,0 +1,70 @@
+{
+  "scope": "NEW already parsed ordinary/raw string root producer and wrong/nonliteral siblings; no old repetition/no native",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "cases": [
+    {
+      "source": "literal-enabled.rs",
+      "sha256": "3795b548bdf53573b0f427cc4e342310067b203069362a517272dcead70c4409",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "raw-enabled.rs",
+      "sha256": "6a5cf3d23abab5c71302e2f2a10eb26077bf7ccea6e9911d2311d6f3f5073998",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "byte-string.rs",
+      "sha256": "dcc117e89fdd9389dcc2ec860d981777d6088240ed61ef7ee76e81de16d939a3",
+      "status": 1,
+      "errors": [
+        "E0539"
+      ],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "c-string.rs",
+      "sha256": "c40d1385165b230d72ed32b105890572c0e560d14077daf43d5bb22adb567eca",
+      "status": 1,
+      "errors": [
+        "E0539"
+      ],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "nonliteral.rs",
+      "sha256": "c49b96b2984b702366b8a3245162f8ff6a5ed5e17c5e3f0fa43b2c9c88a03fe1",
+      "status": 1,
+      "errors": [
+        "E0539"
+      ],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "concat-expression.rs",
+      "sha256": "637385ae9ae8568cc0680eae3f803b3312dc1c236d6a0a6632daaa24ee8793bc",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    },
+    {
+      "source": "ordinary-doc-cfg.rs",
+      "sha256": "e5f8304a042125137359832ca5e01ada7f93c1987823f0f312a5847ea28d5480",
+      "status": 0,
+      "errors": [],
+      "warnings": [],
+      "flags": []
+    }
+  ]
+}
