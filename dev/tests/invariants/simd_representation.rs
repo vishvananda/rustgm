@@ -224,10 +224,36 @@ fn genuine_source_rust_and_c_copy_bodies_lower_with_distinct_signatures() -> Tes
     crate::lowir::writer::write(&program, &mut bytes)?;
     let text = String::from_utf8(bytes)?;
     assert!(text.contains("sse_sseup"), "{text}");
-    assert!(
-        text.contains("rust_identity"),
-        "actual Rust identity body is retained"
+    use crate::lowir::{
+        program::{Operand, Operation, Signature, SymbolId},
+        vocabulary::Type,
+    };
+    let private = program
+        .symbols
+        .iter()
+        .enumerate()
+        .filter(|(_, symbol)| {
+            symbol.body.is_some()
+                && matches!(
+                    program.signatures[symbol.signature.0 as usize],
+                    Signature::Scalar(_)
+                )
+        })
+        .collect::<Vec<_>>();
+    let [(index, rust)] = private.as_slice() else {
+        return Err("one actual Rust identity body".into());
+    };
+    let Signature::Scalar(signature) = &program.signatures[rust.signature.0 as usize] else {
+        return Err("actual Rust signature".into());
+    };
+    assert_eq!(signature.result, Type::Void);
+    assert_eq!(
+        program.parameters(rust.signature)?,
+        [Type::Ptr, Type::Ptr],
+        "Rust result and argument are indirect"
     );
+    let target = SymbolId(u32::try_from(*index)?);
+    assert!(program.symbols.iter().filter_map(|symbol| symbol.body.as_ref()).flat_map(|body| &body.instructions).any(|instruction| matches!(instruction.operation,Operation::Call { callee: Operand::Symbol(id), signature, .. } if id==target && signature==rust.signature)),"actual call uses the indirect Rust signature");
     Ok(())
 }
 #[test]
