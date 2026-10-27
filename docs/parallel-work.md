@@ -14,9 +14,11 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The current original-core CLI9156793b passes the old unavailable-asm expansion
-boundary and reaches a source lint policy budget failure in num/saturating.rs
-(LIB-046). All722 pinned inputs verify;371 files open in13.32s, with no artifact.
+The current original-core CLI9d3ea4f6 passes the old asm/saturating boundaries
+after a real frame-capacity accounting repair. Source lint policy storage still
+exhausts in ops/bit.rs (LIB-046). All722 pinned inputs verify;371 files open in7.87s,
+with no artifact. Limits remain10M work/64MiB; the next observation separates
+remaining attempted cumulative storage from actual retained source records.
 The live tracker owns current priorities; checkpoint paragraphs below retain
 earlier context. Typed assembly proof, inert diagnostic data and source Shl/BitOr
 are combined; two operator native consumers now match safe-input outputs.

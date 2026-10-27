@@ -246,6 +246,14 @@ producer's bounded read work, separately from macro permission/header/frame
 work. Retain the source macro State's sticky failure check before classification
 and all genuine permission and storage charges. Ordinary source allocation
 behavior remains unchanged; a general cost payer grants no feature permission.
+Traversal frame publication and frame storage have different costs. Releasing a
+frame keeps reusable capacity; do not charge another allocation when a sibling
+reuses that slot. Prepay actual capacity growth and its copy work through the
+existing payer before publishing the row or extent. Retain every attempted read
+and publication step, including failed attempts, and distinguish work/storage
+exhaustion without changing either limit. Persistent source owner/witness/call
+records keep their own charges. See the
+[frame-storage checkpoint](docs/lint-policy-frame-storage-checkpoint.md).
 See [the classification checkpoint](docs/source-attribute-classification-work.md).
 See [the local allowance handoff](docs/pa31-internal-allowances-handoff.md) for
 qualified component evidence and remaining integration requirements. The

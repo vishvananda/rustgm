@@ -103,6 +103,64 @@ fn generated_attributes_charge_the_general_payer_linearly() -> TestResult {
 }
 
 #[test]
+fn sibling_frames_reuse_storage_while_real_source_visits_keep_paying_work() -> TestResult {
+    let mut previous = None;
+    for width in [1_usize, 8, 32, 128, 1024] {
+        let mut source = String::from(
+            "#![feature(no_core)]#![no_core]#![allow(unused_must_use)]macro_rules! make{($($name:ident),*)=>{$(fn $name(){ { let _=7u8; } })*}}make!(",
+        );
+        for index in 0..width {
+            if index != 0 {
+                source.push(',');
+            }
+            write!(source, "sibling_{index}")?;
+        }
+        source.push_str(");");
+        with_engine(&source, true, |engine| {
+            engine.run()?;
+            assert_eq!(engine.invocations.len(), 1);
+            let functions = engine
+                .paths
+                .state
+                .facts
+                .definitions
+                .iter()
+                .filter(|definition| {
+                    definition.kind == crate::resolve::model::DefKind::Function
+                        && engine
+                            .loader
+                            .package
+                            .names
+                            .get(definition.name)
+                            .starts_with("sibling_")
+                })
+                .count();
+            assert_eq!(functions, width);
+            let work = payer(engine)?.work();
+            assert!(work.frames >= width);
+            assert_eq!(work.calls, 1);
+            if let Some((old_width, old_steps, old_frames, owners, bytes)) = previous {
+                assert_eq!(work.owners, owners);
+                assert_eq!(
+                    work.bytes, bytes,
+                    "same-depth siblings allocated more lint storage at width {width}"
+                );
+                assert!(work.frames > old_frames);
+                assert!(work.steps > old_steps);
+                assert!(work.steps <= old_steps * (width / old_width) + 4096);
+            }
+            eprintln!(
+                "lint siblings width={width} owners={} frames={} calls={} work={} bytes={}",
+                work.owners, work.frames, work.calls, work.steps, work.bytes
+            );
+            previous = Some((width, work.steps, work.frames, work.owners, work.bytes));
+            Ok(())
+        })?;
+    }
+    Ok(())
+}
+
+#[test]
 fn ordinary_attributes_do_not_spend_or_revive_panic_permissions() -> TestResult {
     with_engine(
         "#![feature(no_core)]#![no_core]#[doc=\"kept\"]#[inline]fn target(){}",
@@ -185,7 +243,7 @@ fn exhausted_attribute_payer_blocks_children_and_failed_retries() -> TestResult 
             assert!(
                 error
                     .message
-                    .contains("source lint policy work or storage budget exceeded"),
+                    .contains("source lint policy work budget exceeded"),
                 "{error}"
             );
             assert!(engine.calls.is_empty());

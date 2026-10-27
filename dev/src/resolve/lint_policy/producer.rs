@@ -68,8 +68,13 @@ pub(crate) struct Work {
     pub bytes: usize,
 }
 impl Work {
-    fn exhausted(&self) -> bool {
-        self.steps > 10_000_000 || self.bytes > 64 * 1024 * 1024
+    fn exhaustion(&self) -> Option<&'static str> {
+        match (self.steps > 10_000_000, self.bytes > 64 * 1024 * 1024) {
+            (false, false) => None,
+            (true, false) => Some("source lint policy work budget exceeded"),
+            (false, true) => Some("source lint policy storage budget exceeded"),
+            (true, true) => Some("source lint policy work and storage budgets exceeded"),
+        }
     }
     pub(super) fn charge(
         &mut self,
@@ -79,11 +84,11 @@ impl Work {
     ) -> Result<(), Violation> {
         self.steps = self.steps.saturating_add(steps);
         self.bytes = self.bytes.saturating_add(bytes);
-        if self.exhausted() {
+        if let Some(message) = self.exhaustion() {
             return Err(Violation {
                 key,
                 offset: 0,
-                message: "source lint policy work or storage budget exceeded",
+                message,
             });
         }
         Ok(())
@@ -153,7 +158,7 @@ impl Producer {
         self.work().charge(key, 0, 0)
     }
     pub(crate) fn diagnostic_budget_exhausted(&self) -> bool {
-        self.work().exhausted()
+        self.work().exhaustion().is_some()
     }
     pub(crate) fn validate_diagnostic_path(
         &self,
@@ -288,7 +293,7 @@ impl Producer {
                 "source lint frame publication skipped its actual index",
             ));
         }
-        self.frame_extent = self.frame_extent.max(
+        let extent = self.frame_extent.max(
             frame
                 .checked_add(1)
                 .ok_or_else(|| invalid(key, "source lint frame extent overflow"))?,
@@ -309,12 +314,19 @@ impl Producer {
                             "source lint frame was not appended in live index order",
                         ));
                     }
-                    self.work.charge(key, 1, 4 * size_of::<Frame>())?;
+                    let growth = crate::support::retained::Growth::vector::<Frame>(
+                        self.frames.len(),
+                        self.frames.capacity(),
+                        1,
+                    );
+                    self.work
+                        .charge(key, 1usize.saturating_add(growth.work), growth.bytes)?;
                     self.frames.push(Frame { index: frame, tail });
                     self.work.frames += 1;
                 }
             }
         }
+        self.frame_extent = extent;
         Ok(())
     }
     pub(crate) fn truncate(&mut self, mark: u32) {
@@ -480,13 +492,13 @@ impl Producer {
     }
     pub(crate) fn validate(&self, package: &Package) -> Result<(usize, usize, bool), Violation> {
         let work = self.work();
-        if work.steps > 10_000_000 || work.bytes > 64 * 1024 * 1024 {
+        if let Some(message) = work.exhaustion() {
             return Err(invalid(
                 NodeKey {
                     file: crate::resolve::unit::FileId(0),
                     node: package.modules[0].root,
                 },
-                "combined lint source work or storage budget exceeded",
+                message,
             ));
         }
         if !self.sealed {

@@ -20,6 +20,7 @@ impl Fixture {
             types: Store::default(),
             definitions: aggregate::Definitions::default(),
             body: Body {
+                assembly: None,
                 const_context: false,
                 mutable_statics: None,
                 static_types: None,
