@@ -1,0 +1,152 @@
+{
+  "status": "declared before observation",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "profile": [
+    "--edition=2024",
+    "--target=x86_64-unknown-linux-gnu",
+    "--crate-type=lib",
+    "--emit=metadata",
+    "-Cpanic=abort",
+    "-Copt-level=0"
+  ],
+  "cases": [
+    {
+      "source": "numeric-u8.rs",
+      "sha256": "d2f6ae416e25a4060d069d466b6ecfed38ba7d284b72917a86052de07235e663",
+      "status": 0
+    },
+    {
+      "source": "numeric-i8.rs",
+      "sha256": "dab333634a5cb1904ae6d881440894b841627e8c19437c197f8e60542fe2b93c",
+      "status": 0
+    },
+    {
+      "source": "numeric-u16.rs",
+      "sha256": "bf662e157ececbbad44f35a425038bad94d9908e40bac4790f221b79e85edeec",
+      "status": 0
+    },
+    {
+      "source": "numeric-i16.rs",
+      "sha256": "5943c14162ccd7e9476bdae2cb10935ea66e8ed973c8db006fca4974b7f38cf5",
+      "status": 0
+    },
+    {
+      "source": "numeric-u32.rs",
+      "sha256": "5ed83946b5f91f5c142fd167bba17c40022b56bd3ebb5b9c92d786d7032521b7",
+      "status": 0
+    },
+    {
+      "source": "numeric-i32.rs",
+      "sha256": "165eae61eb1dc5df4c2c5e8c2a46606e709c60966b1cc94e10f0f47c59a5d71f",
+      "status": 0
+    },
+    {
+      "source": "numeric-u64.rs",
+      "sha256": "791ab5845f9fd890852fa0cbb7d46aa5cafead9ba4b6096ffe444b68a93e311c",
+      "status": 0
+    },
+    {
+      "source": "numeric-i64.rs",
+      "sha256": "b6bfc3f0edcca12d5bbfca5534cf54d0e937c2cedea59ed02192530fcc22fcca",
+      "status": 0
+    },
+    {
+      "source": "numeric-f32.rs",
+      "sha256": "b22748dfcda33d88c4fa8c84725e59c221892ca19b47128537c23419cca6cb2e",
+      "status": 0
+    },
+    {
+      "source": "numeric-f64.rs",
+      "sha256": "872d6bf531c71da2a79fe9eb200d97b1f2ba7e734dcd660f7c0a69c16ee1cff0",
+      "status": 0
+    },
+    {
+      "source": "short.rs",
+      "sha256": "0476eb33749fee1f50fa87fbb18b86b611f918e14f17630e0f1cc3ba7a5a17cb",
+      "status": 1
+    },
+    {
+      "source": "padded.rs",
+      "sha256": "b20c8ceacb7d8c7b1e750582647756b570b12acbe3ac57f97aad5bd4c104625d",
+      "status": 1
+    },
+    {
+      "source": "large.rs",
+      "sha256": "b8d2b23a1a7fe873ae71ea8ff1c6aae4b3673fa1c10e91d86da1439b1f019988",
+      "status": 1
+    },
+    {
+      "source": "pointer.rs",
+      "sha256": "60ba937b59c663082cf3d08d8611fb62fcae10fd8a5d0c7d8e1b409f19e58f6d",
+      "status": 1
+    },
+    {
+      "source": "bool.rs",
+      "sha256": "1d4e550fa66fc19401d495e05bfaec598613517610e37865e37d7df3d04b66c4",
+      "status": 1
+    },
+    {
+      "source": "wide-lane.rs",
+      "sha256": "405c5b289cc46c820db11ffacdfa4b405619b4794659092a9c4565fd2721ad2a",
+      "status": 1
+    },
+    {
+      "source": "wrapper.rs",
+      "sha256": "42a0a2a5dcf74db56a7b1a1c6c4581d0e58ae8414e6a4cb875e0e52a7ac13a03",
+      "status": 1
+    },
+    {
+      "source": "explicit.rs",
+      "sha256": "a5d8105f517a65a6da5caf3f1644a8eadbea4e483e53508f7d7a7ce834791fd4",
+      "status": 0
+    },
+    {
+      "source": "general-class.rs",
+      "sha256": "9c1987b4a61745bd872bd9e98f8b34bd928cb528229c54705adcacc2b94660fc",
+      "status": 1
+    },
+    {
+      "source": "uninitialized.rs",
+      "sha256": "e96511820f697330e6125ab433aadeaa217315bbeeb0048cdfd7004fad6c8ddc",
+      "status": 1
+    },
+    {
+      "source": "unsafe.rs",
+      "sha256": "3683f412a0e3ec3c84a688b098bcc0a10393143a5dbe7b0aa0f899a4ee126c8b",
+      "status": 1
+    },
+    {
+      "source": "immutable-output.rs",
+      "sha256": "080d133b1bb65bc886ce0be060c894736efbc5607374e0555122e05697c074d6",
+      "status": 1
+    },
+    {
+      "source": "tied-mismatch.rs",
+      "sha256": "cf6c8fd4f23026146094376f83092006fdfed4b01df44000f71092705ef187bd",
+      "status": 1
+    },
+    {
+      "source": "inout.rs",
+      "sha256": "6961f572a3cad033ae5f5bab798f95dbfe564ae29cb43dcc810d4f8a13a7f093",
+      "status": 0
+    },
+    {
+      "source": "ymm-no-feature.rs",
+      "sha256": "68ca867e5cc53ce8c41ffe1784eb6716129235003d0a2513f996f29cbafedf99",
+      "status": 1
+    },
+    {
+      "source": "ymm-body-feature.rs",
+      "sha256": "bc0208cefef2f4065276781d572f003fd2606d9f566c3293c0048fd68b45b998",
+      "status": 0
+    },
+    {
+      "source": "noncopy.rs",
+      "sha256": "61cb2dc102d3df6de4a078fa450ce85f09b7cdfd6bc2d127902ee09279b69f83",
+      "status": 1
+    }
+  ],
+  "candidate_boundary": "exact128 numeric XMM, actual source/proof; Ymm stays explicitly unsupported even when independently accepted; no AVX execution, backend or metadata permission",
+  "retained_source": "../asm-frontend/stream-ps.rs unchanged function body; independent stream source observation follows separately"
+}
