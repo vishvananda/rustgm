@@ -33,6 +33,10 @@ fn real_identifiers_literals_repetitions_and_forwarded_literals_reach_body_check
             "protocol/repetition",
             "protocol/literal-forwarding",
             "protocol/matching-definition-hygiene",
+            "protocol/literal-string",
+            "protocol/literal-wide-spelling",
+            "protocol/normalized-name",
+            "protocol/scoped-expression",
         ] {
             let report =
                 report(&fixture(name)?, edition).map_err(|error| format!("{name}: {error}"))?;
@@ -57,6 +61,7 @@ fn invalid_operand_categories_arity_and_binding_depth_remain_rejected() -> Resul
             "unknown-variable",
             "still-repeating",
             "escaped-string",
+            "literal-boolean",
         ] {
             let error = report(&fixture(&format!("protocol/{name}"))?, edition)
                 .err()

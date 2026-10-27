@@ -132,6 +132,16 @@ impl Writer<'_> {
 
 fn literal_symbol<'a>(parsed: &ParsedSyntax, source: &'a str) -> Result<&'a str, LexError> {
     let node = parsed.ast.node(parsed.ast.root);
+    if let Syntax::DeferredLiteral(token) = node.kind {
+        return match token.kind {
+            TokenKind::Integer => crate::literal::integer_symbol(source, token),
+            TokenKind::String => token_symbol(source, token),
+            _ => Err(error(
+                token.start,
+                "concat literal must be an unsuffixed string or integer",
+            )),
+        };
+    }
     let Syntax::Literal(index) = node.kind else {
         return Err(error(
             node.span.start,

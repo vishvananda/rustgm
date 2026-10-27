@@ -10,6 +10,22 @@ pub mod value;
 use crate::lex::token::{Kind, LexError, Token};
 pub use value::Value;
 
+/// Interpret only an already classified integer token's digits and suffix.
+/// No numeric magnitude is needed by a macro-generated identifier.
+pub(crate) fn integer_symbol(source: &str, token: Token) -> Result<&str, LexError> {
+    let error = |message| LexError {
+        offset: token.start,
+        message,
+    };
+    if token.kind != Kind::Integer {
+        return Err(error("concat requires an integer literal token"));
+    }
+    let spelling = source
+        .get(token.start as usize..token.end as usize)
+        .ok_or_else(|| error("concat literal is outside its source"))?;
+    number::unsuffixed_integer(spelling).map_err(error)
+}
+
 /// Whether a token has literal syntax, without interpreting macro/disabled input.
 #[must_use]
 pub fn is_token(source: &str, token: Token) -> bool {
