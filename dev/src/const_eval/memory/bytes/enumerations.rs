@@ -227,6 +227,23 @@ impl Machine<'_, '_> {
         offset: u64,
         ty: TypeId,
     ) -> Result<VariantId, Failure> {
+        if let crate::sema::values::StoredShape::Product {
+            variant: Some(variant),
+            union: false,
+            ..
+        } = Reader::new(self.evaluator.facts()).storage_shape(ty)?
+        {
+            self.charge(1)?;
+            Reader::new(self.evaluator.facts()).enum_variant_fields(ty, variant)?;
+            let end = offset
+                .checked_add(self.footprint(ty)?.size)
+                .and_then(|end| usize::try_from(end).ok())
+                .ok_or("tagless enum read extent overflow")?;
+            if end > self.byte_data(source)?.bytes.len() {
+                return Err("tagless enum read exceeds backing bounds".into());
+            }
+            return Ok(variant);
+        }
         self.prepare_byte_enum(ty)?;
         if matches!(
             Reader::new(self.evaluator.facts()).storage_shape(ty)?,

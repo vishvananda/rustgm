@@ -1,6 +1,72 @@
 //! Inferred C tags and selected Rust tags use one retained tag lookup algorithm.
+use super::payload::{integer, place};
 use super::*;
+use crate::const_eval::memory::{Read, UnionField};
+use crate::sema::members::{FieldId, Selection};
 use crate::types::Primitive;
+#[test]
+fn active_union_tags_keep_exact_fields_without_reading_payloads() -> Result<(), String> {
+    for declaration in [
+        "#[repr(C)]enum E{A(u32),Empty}",
+        "enum E{A(u32),Empty}",
+        "enum E{Only(u32)}",
+    ] {
+        let source = format!("#[derive(Copy,Clone)]{declaration}union U{{e:E,b:[u8;16]}}");
+        with_enum_source(&source, 0, |machine, enums| {
+            let (ty, ids) = &enums[0];
+            let (union, groups) = &enums[1];
+            let field =
+                FieldId(machine.evaluator.facts().members.variants[groups[0].0 as usize].start);
+            let value = machine.evaluator.fields(&[integer(37)], Some(ids[0]))?;
+            let image = machine.make_union(*union, Selection::Nominal(field), value)?;
+            let address = machine.allocate(&mut Vec::new(), Some(image), *union)?;
+            let selected = crate::const_eval::memory::Resolved {
+                union: Some(UnionField {
+                    owner: *union,
+                    field: Selection::Nominal(field),
+                }),
+                ..place(address, *ty)
+            };
+            assert!(
+                matches!(machine.read_active_variant(selected)?, Read::Value(id) if id == ids[0])
+            );
+            assert!(
+                machine
+                    .read_active_variant(crate::const_eval::memory::Resolved {
+                        ty: TypeId::primitive(Primitive::U32),
+                        ..selected
+                    })
+                    .is_err()
+            );
+            let root = address.location().ok_or("union root")?;
+            let backing = machine.convert_byte_root(root)?;
+            if ids.len() == 1 {
+                for offset in [16, u64::MAX] {
+                    assert!(
+                        machine
+                            .decode_byte_variant(Source::Backing(backing), offset, *ty)
+                            .is_err()
+                    );
+                }
+            }
+            let (_, offsets) =
+                Reader::new(machine.evaluator.facts()).enum_variant_fields(*ty, ids[0])?;
+            let start = usize::try_from(offsets[0]).map_err(|_| "payload offset")?;
+            for index in start..start + 4 {
+                machine.memory.bytes.roots[backing.0 as usize].initialized[index / 64] &=
+                    !(1 << (index % 64));
+            }
+            assert!(
+                matches!(machine.read_active_variant(selected)?, Read::Value(id) if id == ids[0])
+            );
+            assert!(machine.read(selected).is_err());
+            machine.memory.expire(&[root]);
+            assert!(machine.read_active_variant(selected).is_err());
+            Ok(())
+        })?;
+    }
+    Ok(())
+}
 #[test]
 fn c_enum_tag_families_follow_retained_signed_and_unsigned_abi_facts() -> Result<(), String> {
     for (variants, tag, bits) in [
