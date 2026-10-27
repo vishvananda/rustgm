@@ -75,21 +75,47 @@ pub fn analyze_source(report: &Report) -> Result<Analysis, Error> {
     let context = execution::Context::default();
     let facts = sema::declarations::analyze_with_executor(report, context.executor())?;
     let mut analysis = analyze(report, facts)?;
-    context
-        .check_inline_bodies(report, &mut analysis.facts)
-        .map_err(|error| analysis.facts.retain_error_warnings(error))?;
-    if !analysis.facts.initializers.is_empty() {
-        let validated = {
-            let mut evaluator = sema::values::Evaluator::new(report, &mut analysis.facts);
-            evaluator.validate_ordinary_initializers()
-        };
-        validated.map_err(|error| analysis.facts.retain_error_warnings(error))?;
-    }
-    context
-        .transfer(report, &mut analysis.facts, &mut analysis.prepared)
-        .map_err(|error| analysis.facts.retain_error_warnings(error))?;
+    complete_constants(
+        report,
+        &context,
+        &mut analysis.facts,
+        &mut analysis.prepared,
+    )?;
     analysis.prepared.constants = Some(context);
     Ok(analysis)
+}
+
+/// Prepare explicit bodies through the ordinary declaration and constant services.
+pub(crate) fn prepare_local_runtime(
+    report: &Report,
+    roots: &[DefId],
+) -> Result<(Declarations, Prepared), Error> {
+    let context = execution::Context::default();
+    let mut facts =
+        crate::sema::declarations::analyze_local_roots(report, roots, context.executor())?;
+    let mut prepared = Prepared::default();
+    complete_constants(report, &context, &mut facts, &mut prepared)?;
+    prepared.constants = Some(context);
+    Ok((facts, prepared))
+}
+
+fn complete_constants(
+    report: &Report,
+    context: &execution::Context,
+    facts: &mut Declarations,
+    prepared: &mut Prepared,
+) -> Result<(), Error> {
+    context
+        .check_inline_bodies(report, facts)
+        .map_err(|error| facts.retain_error_warnings(error))?;
+    if !facts.initializers.is_empty() {
+        let validated =
+            sema::values::Evaluator::new(report, facts).validate_ordinary_initializers();
+        validated.map_err(|error| facts.retain_error_warnings(error))?;
+    }
+    context
+        .transfer(report, facts, prepared)
+        .map_err(|error| facts.retain_error_warnings(error))
 }
 
 impl Demand {

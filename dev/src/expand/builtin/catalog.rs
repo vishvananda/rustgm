@@ -224,7 +224,8 @@ impl Builtin {
     pub const fn executable(self) -> bool {
         matches!(
             self,
-            Self::Cfg
+            Self::Assert
+                | Self::Cfg
                 | Self::CfgSelect
                 | Self::FormatArgs
                 | Self::ConstFormatArgs

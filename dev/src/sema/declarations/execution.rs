@@ -29,6 +29,53 @@ pub(super) struct Pending {
     suspended: HashMap<DefId, Box<bodies::State>>,
 }
 
+/// Header/WF preparation plus explicit current bodies; unrelated bodies stay Pending.
+pub(crate) fn analyze_local_roots(
+    report: &crate::resolve::expansion::Report,
+    roots: &[DefId],
+    executor: Box<dyn crate::sema::values::execution::Executor>,
+) -> Result<crate::sema::model::Declarations, Error> {
+    if roots.is_empty() {
+        return Err(Error::unlocated(
+            "selected local runtime requires at least one actual root",
+        ));
+    }
+    let mut checker = Checker::new(report)?;
+    checker.facts.set_constant_executor(executor);
+    let result = (|| {
+        checker.run()?;
+        crate::sema::compiler_items::pointee::authenticate(report, &checker.facts)?;
+        let mut steps = 0;
+        let limit = checker.work_limit();
+        for &definition in roots {
+            checker.work.push(Work::Execution(
+                Request::SourceBody(definition),
+                Phase::Begin,
+            ));
+            checker.drain(&mut steps, limit)?;
+        }
+        // Source selection does not excuse initializer WF or const requirements.
+        for index in 0..checker.facts.initializers.len() {
+            if !checker.facts.initializers[index].type_checked() {
+                let definition = checker.facts.initializers[index].definition;
+                checker.work.push(Work::Execution(
+                    Request::Constant(Requirement::InitializerBody(definition)),
+                    Phase::Begin,
+                ));
+                checker.drain(&mut steps, limit)?;
+            }
+        }
+        crate::sema::compiler_items::pointee::authenticate(report, &checker.facts)?;
+        Ok(())
+    })();
+    result.map_err(|error| {
+        checker
+            .facts
+            .retain_error_warnings(report.diagnostic(error))
+    })?;
+    Ok(checker.facts)
+}
+
 impl Checker<'_> {
     pub(super) fn execution_body(&mut self, request: Request, phase: Phase) -> Result<(), Error> {
         let owner = match request {
@@ -123,11 +170,6 @@ impl Checker<'_> {
         Ok(())
     }
     fn source_body_owner(&self, definition: DefId) -> Result<DefId, Error> {
-        if self.selected.is_none() {
-            return Err(Error::unlocated(
-                "selected body requires its actual private consumer",
-            ));
-        }
         let declared = self
             .report
             .resolution
@@ -176,6 +218,11 @@ impl Checker<'_> {
         Ok(definition)
     }
     pub(super) fn selected_bodies(&mut self) -> Result<(), Error> {
+        if self.selected.is_none() {
+            return Err(Error::unlocated(
+                "selected body requires its actual private consumer",
+            ));
+        }
         let mut steps = 0;
         let limit = self.work_limit();
         #[cfg(test)]

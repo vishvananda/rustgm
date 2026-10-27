@@ -47,6 +47,6 @@ pub(crate) fn inspect_source_namespace(
                 .complete_namespace(state.1, identity)
                 .map_err(|e| diagnostic(report, None, e.into()))
         },
-        None,
+        super::Construction::Complete,
     )?
 }

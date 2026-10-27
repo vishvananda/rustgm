@@ -627,11 +627,12 @@ pub(super) fn prepare_ordinary<C: Collect>(
     globals: &[DefId],
 ) -> Result<(proof::Builder, Ordinary), Error> {
     let templates = originals.checked;
-    let mut program = body::concrete_prepared(
+    let mut program = body::concrete_selected(
         report,
         facts,
         |owner| templates.get(ItemId(owner.0)).is_some(),
         concrete,
+        originals.selection,
     )?;
     let mut inputs: HashMap<_, _> = inputs.into_iter().map(|c| (c.key, c)).collect();
     for body in &mut program.bodies {

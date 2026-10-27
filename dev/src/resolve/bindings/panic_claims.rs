@@ -69,6 +69,9 @@ pub(super) fn validate(
     }
     let function = match role {
         LangItem::Not
+        | LangItem::Neg
+        | LangItem::Sync
+        | LangItem::Unpin
         | LangItem::TrivialClone
         | LangItem::PartialEq
         | LangItem::StructuralPartialEq

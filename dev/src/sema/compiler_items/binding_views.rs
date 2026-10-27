@@ -379,7 +379,9 @@ fn role_kind(role: LangItem) -> DefKind {
         | LangItem::PanicLocation
         | LangItem::PanicInfo => DefKind::Struct,
         LangItem::MemSizeConst | LangItem::MemAlignConst => DefKind::Const,
-        LangItem::FnOnceOutput | LangItem::MetadataType => DefKind::TypeAlias,
+        LangItem::FnOnceOutput | LangItem::MetadataType | LangItem::DiscriminantType => {
+            DefKind::TypeAlias
+        }
         _ => DefKind::Trait,
     }
 }
