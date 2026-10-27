@@ -24,7 +24,7 @@ pub(in crate::sema) fn selected_copying(
     let mut steps = 0usize;
     let checked = (|| {
         let catalog = catalog(report, facts)?;
-        let mut complete = 0u32;
+        let mut complete = 0u64;
         for role in [LangItem::Clone, LangItem::Copy] {
             steps += 1;
             let Some(declaration) = catalog.role(role)? else {
@@ -54,14 +54,14 @@ pub(in crate::sema) fn selected_copying(
             )?;
             if role == LangItem::Clone {
                 clone_member(facts, catalog, &header, &mut steps)?;
-                complete |= 1 << LangItem::CloneFn.index();
+                complete |= super::bit(LangItem::CloneFn);
             } else if !header.members.is_empty() {
                 return Err("source copying marker must not declare members");
             }
-            complete |= 1 << role.index();
+            complete |= super::bit(role);
         }
         if catalog.role(LangItem::CloneFn)?.is_some()
-            && complete & (1 << LangItem::CloneFn.index()) == 0
+            && complete & super::bit(LangItem::CloneFn) == 0
         {
             return Err("source language member has no validated actual trait owner");
         }

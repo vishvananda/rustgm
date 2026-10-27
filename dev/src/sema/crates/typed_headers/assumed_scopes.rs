@@ -1,5 +1,7 @@
 //! Private declaration assumptions share canonical clauses and Environment indexes.
 use super::{Prepared, Progress, Ready, Session, State, formal_path, numbering_records};
+#[cfg(test)]
+use crate::types::parameters::predicates::Predicate;
 use crate::{
     resolve::{
         crates::{ReservationWork, unpaid_provided::RecipeView},
@@ -25,7 +27,7 @@ use crate::{
             ParameterId,
             clauses::Clause,
             environment::{Abilities, Environment},
-            predicates::{Bound, Predicate},
+            predicates::Bound,
         },
     },
 };
