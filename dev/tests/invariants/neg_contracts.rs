@@ -149,7 +149,7 @@ fn actual_overloads_keep_calls_and_primitive_impl_bodies_do_not_recurse() -> Tes
         assert!(pipeline::analyze_source(&report).is_err());
     }
     assert_eq!(size_of::<SourceUnary>(), 12);
-    assert_eq!(size_of::<crate::body::ir::Body>(), 448);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     assert_eq!(size_of::<crate::body::ir::Rvalue>(), 20);
     Ok(())
 }
@@ -246,7 +246,7 @@ fn original_neg_diagnostic_requires_actual_language_member_and_keeps_cold_layout
         size_of::<crate::resolve::package::Package>()
     );
     assert_eq!(size_of::<SourceUnary>(), 12);
-    assert_eq!(size_of::<crate::body::ir::Body>(), 448);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     assert_eq!(size_of::<crate::body::ir::Rvalue>(), 20);
     Ok(())
 }

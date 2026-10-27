@@ -352,6 +352,6 @@ fn ordinary_receivers_keep_existing_no_source_allocations_and_hot_layouts() -> R
     );
     assert_eq!(size_of::<crate::sema::traits::selection::Source>(), 16);
     assert_eq!(size_of::<crate::sema::model::Operation>(), 16);
-    assert_eq!(size_of::<crate::body::ir::Body>(), 448);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     Ok(())
 }

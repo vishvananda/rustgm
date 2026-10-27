@@ -135,12 +135,14 @@ fn numbered_family_preserves_actual_allocation_log_and_alias_membership() -> Res
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     assert_eq!(size_of::<crate::body::regions::Contract>(), 184);
     println!(
-        "SourceRows={} Columns={} HeaderIndex={} NumberingUnits={} BodyUnit={} Body=448 Contract=184",
+        "SourceRows={} Columns={} HeaderIndex={} NumberingUnits={} BodyUnit={} Body={} Contract={}",
         size_of::<s::SourceRows>(),
         size_of::<s::Columns>(),
         size_of::<HeaderIndex<'_>>(),
         size_of::<s::NumberingUnits<'_>>(),
-        size_of::<s::BodyUnit>()
+        size_of::<s::BodyUnit>(),
+        size_of::<crate::body::ir::Body>(),
+        size_of::<crate::body::regions::Contract>()
     );
     Ok(())
 }

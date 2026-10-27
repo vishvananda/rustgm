@@ -55,6 +55,12 @@ fn actual_templates_keep_one_parser_and_source_role_without_hot_node_growth() ->
     // Crate attributes remain at the actual crate root, before source declarations.
     actual = actual.replacen("#![feature(", "#![feature(decl_macro,staged_api,", 1);
     actual.insert_str(0, "#![unstable(feature=\"asm_fixture\",issue=\"none\")]\n");
+    // The independently authored foundation's const traits need their own policy.
+    assert_eq!(actual.matches("pub const trait").count(), 2);
+    actual = actual.replace(
+        "pub const trait",
+        "#[rustc_const_unstable(feature=\"asm_fixture\",issue=\"none\")]pub const trait",
+    );
     actual.push_str("#[rustc_builtin_macro(concat)]macro_rules!concat{($($t:tt)*)=>{};}");
     actual.push_str(&reducer.lines().skip(2).collect::<Vec<_>>().join("\n"));
     let full = crate::test_source::source_provider(&actual, "actual_stream_asm")?;
@@ -214,25 +220,33 @@ fn output_order_and_divergence() -> Result {
             overlap_seen = true;
             assert_eq!(data.operands[0].output, data.operands[1].output);
             assert!(matches!(terminator, Terminator::Return(_)));
+            let Action::Evaluate(effect_value) = actions[effect] else {
+                return Err("assembly effect statement".into());
+            };
             let stores: Vec<_> = actions
                 .iter()
                 .enumerate()
                 .filter_map(|(position, action)| {
-                    let Action::Store { value, .. } = *action else {
+                    let Action::Store { place, value } = *action else {
                         return None;
                     };
-                    let Rvalue::AssemblyOutput { operand, .. } = body.values[value.0 as usize].kind
+                    let Rvalue::AssemblyOutput { effect, operand } =
+                        body.values[value.0 as usize].kind
                     else {
                         return None;
                     };
-                    Some((position, operand))
+                    Some((position, operand, place, effect))
                 })
                 .collect();
-            assert!(stores.iter().all(|&(position, _)| position > effect));
+            assert!(stores.iter().all(|&(position, operand, place, value)| {
+                position > effect
+                    && data.operands[operand as usize].output == Some(place)
+                    && value == effect_value
+            }));
             assert_eq!(
                 stores
                     .iter()
-                    .map(|&(_, operand)| operand)
+                    .map(|&(_, operand, _, _)| operand)
                     .collect::<Vec<_>>(),
                 [0, 1],
                 "rightmost overlapping output is stored last"
