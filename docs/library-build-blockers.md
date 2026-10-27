@@ -34,7 +34,9 @@ an active tag and checks canonical tagless source bounds without reading payload
 It adds no fields or caches and changes no existing fixture or reference.
 Both worker private/static qualifications are retained; the combined gate runs
 the affected source controls. Full qualification of this combined cut remains
-pending CI. No additional assignment or original library artifact is complete.
+proven by full CI40491033726 on0f087: release/course, native maintainer, debug
+invariants and independent Rust all pass. No additional assignment or original
+library artifact is complete.
 
 The [shared diagnostic/enum identity component](source-enum-identities-checkpoint.md)
 is now integrated separately from the unfinished handler graph. Its combined
@@ -42,6 +44,13 @@ gate passes24 exact controls and both strict modes in165.41s. Actual Result/Opti
 variant ownership and old metadata denials are checked; declarations grant no
 handler or library-method execution. The current core probe remains the earlier
 CLI fac1e54d observation, not a new whole-core result for this component.
+
+The source-use boundary for newly recognized Shl/BitOr now rejects an attempted
+primitive fallback, including a missing actual source trait. Thirteen focused
+controls and both strict modes pass in171.23s. The genuine source hooks remain
+required after the receiver prerequisite; valid frozen Rust programs are still
+recorded as unimplemented positives. See the same identity checkpoint for exact
+scope and independent evidence.
 
 The combined CLI `4585cb94` now executes genuine source Try/FromResidual methods,
 lexical residual exits and cleanup through the locked backend. Its two native

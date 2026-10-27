@@ -38,3 +38,29 @@ No new public oracle is generated here. The complete actual Formatter,
 Arguments, PanicInfo and handler graph, source Neg/receiver consumers,
 cross-crate transport and original core artifact remain required. This
 checkpoint does not complete PA26, PA29 or PA31.
+
+## Binary source-use boundary
+
+The existing primitive operator path predates the newly recognized Shl/BitOr
+source declarations. Reached source uses now authenticate their source catalog
+and reject with an explicit unsupported-execution diagnostic until genuine
+selected-method hooks exist. A missing actual source declaration also rejects;
+pinned Rust reports E0369 for that former primitive fallback. This guard covers
+the shared body checker used by runtime and constant initializers. Compound
+assignment roles remain distinct. Ordinary/bootstrap operators keep their
+existing path. No new storage, cache or body/IR field is introduced.
+
+Six frozen PA31 inputs preserve actual trait declarations and authored reducers.
+Twelve existing independent metadata observations and twenty-four raw streams
+were authenticated before freezing the candidate expectations. The valid
+runtime/const inputs remain required implementation failures, rather than being
+reclassified as Rust rejections. No new independent or native execution is
+claimed for the fence. Its owning `fence-contract.json` lists every source hash.
+
+The focused gate passes thirteen exact tests across three binaries in171.23s:
+two source-use controls, ten ordinary lexer controls and the existing binary
+operator matrix. Both strict Clippy modes, formatting and architecture pass.
+Receipt: `obj/qualification/fast/1793099669243845774/receipt.json`. An earlier
+gate stopped at the filename audit before compiling; the new private test file
+was renamed to describe operator authority without exceeding the repository's
+filename-prefix limit. Expected behavior stayed unchanged.

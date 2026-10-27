@@ -114,6 +114,25 @@ impl Checker<'_> {
         kind: Hook,
         operand: NodeId,
     ) -> Result<bool, Error> {
+        let source_role = match kind {
+            Hook::Shl => Some(crate::support::bindings::LangItem::Shl),
+            Hook::BitOr => Some(crate::support::bindings::LangItem::BitOr),
+            _ => None,
+        };
+        if let Some(role) = source_role
+            && let Some(catalog) = self.facts.source_bindings.as_deref()
+        {
+            catalog
+                .require_provider_report(self.report)
+                .map_err(|message| self.error(node, message))?;
+            if catalog.language(role).is_none() {
+                return Err(self.error(
+                    node,
+                    "source binary operator requires its actual language declaration",
+                ));
+            }
+            return Err(self.error(node, "source binary language execution is not implemented"));
+        }
         if self
             .report
             .resolution
@@ -165,6 +184,10 @@ impl Checker<'_> {
         Ok(false)
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/operator_authority.rs"]
+mod binary_guards;
 
 pub(super) const fn unary_hook(operator: crate::syntax::ast::Unary) -> Option<Hook> {
     use crate::syntax::ast::Unary;

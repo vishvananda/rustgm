@@ -1,0 +1,70 @@
+{
+  "status": "draft source execution fence; no PA activation or new scalar permission",
+  "language": "Rust 1.98.0",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "source_commit": "4572314fc5573ff614bb9dfee8c0a20ef2a5b214",
+  "owner": "PA31 source bindings; PA26 operator semantics remain required",
+  "cases": [
+    {
+      "path": "missing-shift-trait.rs",
+      "source_sha256": "ceb44a66084ad91c74338593774bfac2d6ef04c49003557ffdb60fb67603ccc0",
+      "rustc_status": 1,
+      "rustc_error": "E0369",
+      "candidate_status": 1,
+      "candidate_error": "source binary operator requires its actual language declaration",
+      "state": "required rejection"
+    },
+    {
+      "path": "missing-shift-impl.rs",
+      "source_sha256": "f20c50b0d7f32edb19c8c20570dcb478562e3d93a8981df45a00427f279983ab",
+      "rustc_status": 1,
+      "rustc_error": "E0369",
+      "candidate_status": 1,
+      "candidate_error": "source binary language execution is not implemented",
+      "state": "required rejection"
+    },
+    {
+      "path": "missing-or-impl.rs",
+      "source_sha256": "2ceb66787fcea6cfd1714497b02af96a2a05f93cc061306d844a1689319321c1",
+      "rustc_status": 1,
+      "rustc_error": "E0369",
+      "candidate_status": 1,
+      "candidate_error": "source binary language execution is not implemented",
+      "state": "required rejection"
+    },
+    {
+      "path": "wrong-output.rs",
+      "source_sha256": "066ec674b9cab7a018764c8bc739ba3e107adb728b1f80291df6cf1b46e60edb",
+      "rustc_status": 1,
+      "rustc_error": "E0308",
+      "candidate_status": 1,
+      "candidate_error": "source binary language execution is not implemented",
+      "state": "required rejection"
+    },
+    {
+      "path": "runtime-overloads.rs",
+      "source_sha256": "a8d0080b8fa0e40967e0160377c3a11f829d24f178d00bf278405e0b2cfb818b",
+      "rustc_status": 0,
+      "rustc_error": null,
+      "candidate_status": 1,
+      "candidate_error": "source binary language execution is not implemented",
+      "state": "valid Rust requiring genuine source hooks"
+    },
+    {
+      "path": "const-followup/primitive-const-impl.rs",
+      "source_sha256": "8d1dd65f4fccbfd02f121b6b711a68b97bcdfcfb4a212f693f1d43e8142629f3",
+      "rustc_status": 0,
+      "rustc_error": null,
+      "candidate_status": 1,
+      "candidate_error": "source binary language execution is not implemented",
+      "state": "valid Rust requiring genuine source hooks"
+    }
+  ],
+  "upstream": {
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "trait_source": "library/core/src/ops/bit.rs",
+    "trait_source_sha256": "4f0dab1c9c85c900d231e29d3f0c5e55c7b1fe87a762e48c4988d64bd1955d57",
+    "note": "Complete pinned trait blocks and existing sizing/Clone/Copy foundation; primitive impl reducers are authored. Preserve repository NOTICE and Rust attribution."
+  }
+}
