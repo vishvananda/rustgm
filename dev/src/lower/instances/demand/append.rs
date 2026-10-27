@@ -131,7 +131,7 @@ fn imported_source_function(
                     .into(),
             ));
         }
-        return Ok(());
+        return Ok(false);
     };
     if actual.node.is_some() {
         return Err(diagnostic(
