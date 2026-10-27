@@ -60,7 +60,8 @@ fn genuine_protocol_and_optional_try_tag_keep_all_source_call_bodies() -> Result
     )?;
     let report = crate::test_source::resolve(&ordinary, true)?;
     pipeline::analyze_source(&report)?;
-    let missing = ordinary.replace("Product<Residual=Self>", "Product");
+    let missing = ordinary.replace("Product<Residual = Self>", "Product");
+    assert_ne!(ordinary, missing);
     let report = crate::test_source::resolve(&missing, true)?;
     assert!(pipeline::analyze_source(&report).is_err());
     for name in ["source-protocol", "source-without-try-role"] {
