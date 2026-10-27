@@ -8,10 +8,9 @@ fn family_prefix() -> String {
         .into_iter()
         .chain(crate::expand::builtin::derive_output::MEMBERS)
     {
-        source.push_str(&format!(
-            "#[rustc_builtin_macro]pub macro {}($item:item){{}}",
-            role.name()
-        ));
+        source.push_str("#[rustc_builtin_macro]pub macro ");
+        source.push_str(role.name());
+        source.push_str("($item:item){}");
     }
     source
 }
