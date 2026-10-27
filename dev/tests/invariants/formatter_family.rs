@@ -18,8 +18,8 @@ fn exact_formatter_fragments_expand_all_members_once_with_actual_source_receipts
         let original =
             test_source::fixture(&format!("pa31/tests/spec/formatter-derives/{name}.rs"))?;
         let source = family_prefix()? + &original;
-        let report =
-            expanded_provider(&source, name).map_err(|error| format!("{name}: {error}"))?;
+        let report = expanded_provider(&source, &name.replace('-', "_"))
+            .map_err(|error| format!("{name}: {error}"))?;
         let entries = &report
             .attribute_effects
             .as_deref()

@@ -28,7 +28,7 @@ fn coverage_forms_targets_duplicates_and_unrequested_local_tokens_remain_checked
     }
     let public = String::from("#![feature(coverage_attribute)]")
         + &foundation
-        + "#[coverage(off)]pub fn covered()->u8{7u8}";
+        + "#[coverage(off)]pub fn covered(x:u8)->u8{x}";
     let report = test_source::source_provider(&public, "coverage_publication")?;
     let mut analysis = pipeline::analyze_source(&report)?;
     let identity = report
@@ -49,6 +49,29 @@ fn coverage_forms_targets_duplicates_and_unrequested_local_tokens_remain_checked
             .ok_or("actual source descriptor")?
             .profile(),
         crate::support::crates::SourceProfile::Source2024Functions
+    );
+    let scalar = public.replace("pub fn covered(x:u8)->u8{x}", "pub fn covered()->u8{7u8}");
+    let report = test_source::source_provider(&scalar, "coverage_scalar_boundary")?;
+    let mut analysis = pipeline::analyze_source(&report)?;
+    let identity = report
+        .package
+        .source_core()
+        .ok_or("actual scalar provider")?
+        .provider
+        .clone();
+    let error = crate::lower::instances::build_library_prepared(
+        &report,
+        &mut analysis.facts,
+        identity,
+        analysis.prepared,
+    )
+    .err()
+    .ok_or("legacy scalar pool boundary silently widened")?;
+    assert!(
+        error
+            .to_string()
+            .contains("source scalar pool requires a wider transport profile"),
+        "{error}"
     );
     let report = test_source::source_provider(
         &(foundation + "#[coverage(off)]fn unrequested(){}"),
