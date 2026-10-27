@@ -17,7 +17,7 @@ use std::cell::Cell;
 mod tracking;
 pub(in crate::sema) use tracking::{consume_tracking, inherit_tracking};
 mod internal_constness;
-pub(in crate::sema) use internal_constness::consume_const_panic;
+pub(in crate::sema) use internal_constness::{consume_const_panic, consume_inherited_overflow};
 
 struct Header {
     tracking: tracking::Tracking,

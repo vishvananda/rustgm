@@ -10,6 +10,7 @@ mod readiness;
 mod rpit_defaults;
 pub(in crate::sema::declarations) use readiness::Readiness;
 mod coercions;
+mod dispatches;
 mod eligibility_profile;
 mod implementation_pairs;
 mod prerequisite_queries;

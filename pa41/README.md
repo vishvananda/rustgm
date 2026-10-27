@@ -10,6 +10,53 @@ implementation priority, source pins and the migration of unreleased numbers.
 
 Target attributes and assembly contracts against explicit backend capabilities.
 
+### Required core prerequisite
+
+The original core source needs this assignment's assembly slice during PA32,
+before the broader PA41 release. Track that implementation as LIB-045; do not
+add another assignment or postpone a required core feature to this number.
+PA31 authenticates the source builtin declaration and feature provenance;
+PA27/PA28 supply the ordinary place, safety, memory and intrinsic rules. PA25
+and PA29 retain const-evaluation and body-transport ownership.
+
+For the first source path, preserve the original `_mm_stream_ps` function,
+its `vps!`/`concat!` template production, `in(reg)` pointer, `in(xmm_reg)` real
+`__m128` input, and `nostack`/`preserves_flags` options. Parsing its syntax does
+not establish SIMD layout, target-feature compatibility, an exported body or
+native emission. Complete each required boundary before claiming that consumer.
+
+- Parse templates and operand expressions once. Preserve source spans, template
+  pieces, names, positional references, modifiers and declaration ownership
+  through macro expansion. A builtin's placeholder macro body cannot implement
+  an assembly invocation.
+- Check register classes and explicit aliases, input/output and tied-operand
+  types, output places, initialization, Copy obligations, unsafe context,
+  option combinations and actual feature availability. Evaluate operand
+  expressions left to right and write outputs left to right after the effect.
+  Overlapping output places receive the rightmost output last.
+- Retain the real effect in checked CFG and instance data. Preserve memory,
+  flags, register clobbers and divergence; `noreturn` has no normal successor.
+  Const and symbol operands require real constant and relocation producers.
+  Export and import must preserve the checked operation and revalidate its
+  identities; an unsupported body protocol must fail explicitly.
+- Implement the required SIMD representation and target-feature rules against
+  the pinned compiler. A 128-bit vector is not two independent scalar arguments.
+  Attribute presence alone proves neither the enabled instruction set nor call
+  compatibility. Lower only independently proved Rust layout and ABI facts.
+- Qualify a real backend operation for every demanded emitted instruction.
+  The non-temporal store must preserve all128 bits and its actual memory
+  semantics. An ordinary store, erased statement or frontend delegation cannot
+  replace it. Keep unsupported backend forms distinct from Rust language errors.
+
+### Broader target closure
+
+Complete the pinned assembly operand, option, ABI-clobber and supported-target
+contracts beyond the initial source path, including valid forms retained as
+unsupported in earlier checkpoints. Inventory labels, symbols, target-specific
+register/modifier rules, global/naked assembly and unwind restrictions against
+the pinned Reference and compiler. State the supported target policy explicitly;
+an unrelated architecture is not an excuse for a required selected-target gap.
+
 Earlier library/crate milestones must already qualify their active target paths.
 This assignment closes the general assembly/target contract, including explicit
 unsupported-capability diagnostics. Separately scope any required CPPGM extension;
@@ -35,6 +82,20 @@ the configured CPPGM backend; text output alone is insufficient.
 - Asm constraints.
 - Target features.
 - Unsupported capability rejection.
+
+Use text oracles for template/operand bindings, typed effects and CFG, target
+facts and precise diagnostics. Independently observe accepted and rejected
+source cases before generating references. Include operand/place side effects,
+aliased outputs, uninitialized inputs, `noreturn`, foreign or changed source
+owners, const/relocation contracts, and ordinary programs without assembly.
+Measure row/byte growth and work on shared and repeated inputs. Retain actual
+source/body/layout costs, including costs paid by ordinary bodies.
+
+Native consumers must check the original demanded source body, full-width input
+bits, destination and surrounding sentinels, and the required instruction's
+presence. Validate its real Rust/C ABI against independent compilers where the
+ABI crosses that boundary. Metadata acceptance or an instruction in disassembly
+alone does not establish correct linked execution.
 
 Place each fixture in the earliest assignment owning all features it exercises.
 Keep original upstream bytes, attribution and checksums. Declare expected outcomes

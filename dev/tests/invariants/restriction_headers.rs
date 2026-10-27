@@ -221,7 +221,7 @@ fn observe_layouts() {
     assert_eq!(size_of::<crate::syntax::item::ItemKind>(), 28);
     assert_eq!(size_of::<crate::syntax::item::Item>(), 64);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
-    assert_eq!(size_of::<crate::resolve::bindings::policy::Features>(), 4);
+    assert_eq!(size_of::<crate::resolve::bindings::policy::Features>(), 8);
     assert_eq!(
         size_of::<crate::resolve::bindings::policy::MacroFeatures>(),
         1

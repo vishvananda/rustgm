@@ -269,6 +269,25 @@ pub(super) fn validate_intrinsic_annotations(
         super::charge_source_contract_query(facts, owner.effects.len())?;
         for (attribute, forest) in unit.retained_attributes(owner.effects.clone()) {
             match attribute.name(forest, unit.source.text()) {
+                Some("rustc_inherit_overflow_checks")
+                    if report.resolution.foreign_owners.contains_key(&definition)
+                        || facts
+                            .associated
+                            .owner(definition)
+                            .and_then(|owner| facts.associated.get(owner))
+                            .is_some_and(|owner| {
+                                matches!(
+                                    owner.kind,
+                                    crate::sema::associated::OwnerKind::Trait { .. }
+                                )
+                            }) =>
+                {
+                    return Err(Error::at(
+                        declaration.file,
+                        attribute.span.start,
+                        "inherited overflow policy requires a free or implementation function",
+                    ));
+                }
                 Some("rustc_do_not_const_check") => panic_words.0 = true,
                 Some("rustc_const_stable_indirect") => panic_words.1 = true,
                 Some("rustc_intrinsic_const_stable_indirect")

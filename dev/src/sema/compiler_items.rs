@@ -67,7 +67,7 @@ pub(super) use layout::validate_member as validate_layout_member;
 pub(crate) use needs_drop::NeedsDropSelection;
 pub(super) use roles::validate as validate_traits;
 pub(super) use sizing::validate as validate_sizing;
-pub(in crate::sema) use unary_contract::source_not;
+pub(in crate::sema) use unary_contract::{source_neg, source_not};
 #[cfg(test)]
 #[path = "../../tests/invariants/panic_declarations.rs"]
 mod panic_declarations;

@@ -13,6 +13,14 @@ pub(crate) struct Opening {
     fold: Mutex<Bound>,
 }
 impl Opening {
+    pub(in crate::types::parameters) fn construction_bytes(count: usize) -> usize {
+        size_of::<Self>()
+            + 2 * size_of::<usize>()
+            + Identity::allocation_bytes()
+            + Bound::region_mapping_bytes()
+            + crate::support::retained::new_map::<RegionId, RegionId>(count)
+    }
+
     pub(in crate::types::parameters) fn require_base(
         &self,
         types: &Store,
@@ -102,16 +110,17 @@ impl Opening {
             }
         })
     }
-    pub(in crate::types::parameters) fn replay(
+    pub(in crate::types::parameters) fn replay_observed<const CHARGED: bool>(
         &self,
         types: &Store,
         fold: &mut Bound,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<(), &'static str> {
         fold.account_region_summary_work(1)?;
         self.validate(types)?;
         for &(_, region) in &self.regions {
             fold.account_region_summary_work(1)?;
-            if fold.region(region, 0)? != region {
+            if fold.region_observed::<CHARGED>(region, 0, charge)? != region {
                 return Err("opened trait caller changed its captured lifetime");
             }
         }

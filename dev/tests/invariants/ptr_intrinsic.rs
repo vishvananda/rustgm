@@ -141,11 +141,25 @@ fn actual_header_role_gate_and_signature_opponents_stay_closed() -> TestResult {
     let offset = text
         .find("#[lang=\"dispatch_from_dyn\"]")
         .ok_or("actual dynamic receiver source role")?;
-    let error = report("dynamic-result")
+    let recognized = report("dynamic-result")?;
+    assert!(
+        recognized
+            .resolution
+            .source_bindings
+            .as_deref()
+            .and_then(|reserved| reserved.language(LangItem::DispatchFromDyn))
+            .is_some()
+    );
+    let unknown = text.replacen(
+        "#[lang=\"dispatch_from_dyn\"]",
+        "#[lang=\"__rustgm_forged_receiver\"]",
+        1,
+    );
+    let error = crate::test_source::source_provider(&unknown, "unknown_pointer_receiver")
         .err()
-        .ok_or("unsupported dynamic receiver source role was silently accepted")?;
+        .ok_or("unknown receiver language identity was silently accepted")?;
     assert_eq!(
-        error.to_string(),
+        error,
         format!("file 0: {offset}: unsupported source language item")
     );
 

@@ -166,9 +166,7 @@ impl Assumptions {
         };
         let candidates = subject.heads().flat_map(|head| {
             self.candidates(item, head)
-                .iter()
-                .copied()
-                .map(Clause::Predicate)
+                .map(|(predicate, opening)| (Clause::Predicate(predicate), opening))
                 .chain(
                     index
                         .candidates
@@ -176,7 +174,7 @@ impl Assumptions {
                         .into_iter()
                         .flatten()
                         .copied()
-                        .map(Clause::ForAll),
+                        .map(|clause| (Clause::ForAll(clause), None)),
                 )
         });
         let mut openings = Openings::default();
@@ -185,7 +183,15 @@ impl Assumptions {
             context,
             goal,
             candidates,
-            |store, context, clause| openings.prepare(store, context, clause, first),
+            |store, context, (clause, opening)| {
+                let clause = match (clause, opening) {
+                    (Clause::Predicate(predicate), Some(opening)) => {
+                        Clause::Predicate(opening.predicate(store, context, predicate)?)
+                    }
+                    _ => clause,
+                };
+                openings.prepare(store, context, clause, first)
+            },
             |store, context, left, right| {
                 if matches!(
                     (left.clause, right.clause),

@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "state": "New complete-call prefix prediction; preserves original source/stability-prefix failures",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    2021,
+    2024
+  ],
+  "metadata": [
+    {
+      "file": "actual-reference-call.rs",
+      "source_sha256": "0f04fc96345d1e3960f129f00f2109fa913c38ed860f61563767b141eda8e4a8",
+      "status": 0,
+      "warning_codes": [
+        "unused_features",
+        "unused_features",
+        "unused_features"
+      ]
+    }
+  ]
+}

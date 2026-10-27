@@ -202,7 +202,7 @@ impl Checker<'_> {
                 .ok_or_else(|| self.error(source, "invalid object trait application"))?
                 .item;
             let contract = queries
-                .demand(self.report, &self.facts, DefId(item.0))
+                .demand(self.report, &mut self.facts, DefId(item.0))
                 .map_err(|e| self.error(source, e.to_string()))?;
             for &member in &contract.associated {
                 required.insert(self.object_member_key(

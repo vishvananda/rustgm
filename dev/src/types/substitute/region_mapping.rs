@@ -44,11 +44,36 @@ pub(super) struct Mapping {
     pub(super) replacements: HashMap<RegionId, RegionId>,
 }
 impl Mapping {
-    pub(super) fn region(
+    pub(super) fn permits_charged_observation(&self) -> bool {
+        matches!(self.mode, Mode::Observe | Mode::Open { .. })
+    }
+}
+impl Mapping {
+    fn insert_observed<const CHARGED: bool>(
+        &mut self,
+        key: RegionId,
+        value: RegionId,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        if CHARGED {
+            let growth = crate::support::retained::Growth::map::<RegionId, RegionId>(
+                self.replacements.len(),
+                self.replacements.capacity(),
+                usize::from(!self.replacements.contains_key(&key)),
+            );
+            charge(growth.work, growth.bytes)?;
+        }
+        self.replacements.insert(key, value);
+        Ok(())
+    }
+}
+impl Mapping {
+    pub(super) fn region_observed<const CHARGED: bool>(
         &mut self,
         original: RegionId,
         depth: u16,
         steps: &mut usize,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<RegionId, &'static str> {
         if original == RegionId::STATIC {
             return Ok(original);
@@ -89,7 +114,7 @@ impl Mapping {
                 if original.0 >= first {
                     return Err("existing free lifetime overlaps the fresh region interval");
                 }
-                self.replacements.insert(original, original);
+                self.insert_observed::<CHARGED>(original, original, charge)?;
                 return Ok(original);
             }
             None => original,
@@ -97,7 +122,7 @@ impl Mapping {
         let replacement = if let Some(&replacement) = self.replacements.get(&key) {
             replacement
         } else if matches!(self.mode, Mode::Observe | Mode::ObserveBudget(_)) {
-            self.replacements.insert(key, key);
+            self.insert_observed::<CHARGED>(key, key, charge)?;
             key
         } else if let Mode::Export(export) = &mut self.mode {
             export.region(key, &mut self.replacements, steps)?
@@ -107,7 +132,7 @@ impl Mapping {
                 .checked_add(1)
                 .filter(|end| *end < 0x8000_0000)
                 .ok_or("opened lifetime identity space exhausted")?;
-            self.replacements.insert(key, replacement);
+            self.insert_observed::<CHARGED>(key, replacement, charge)?;
             replacement
         } else if let Mode::Restore { retained } = &self.mode
             && key.bound_parts().is_none()
@@ -116,7 +141,7 @@ impl Mapping {
             key
         } else if let Mode::Close(closing) = &mut self.mode {
             let replacement = closing.region(key, &self.replacements, steps)?;
-            self.replacements.insert(key, replacement);
+            self.insert_observed::<CHARGED>(key, replacement, charge)?;
             replacement
         } else {
             return Err("selected type retains an unmapped lifetime");
@@ -133,6 +158,23 @@ impl Mapping {
     }
 }
 impl Bound {
+    pub(crate) const fn region_mapping_bytes() -> usize {
+        size_of::<Mapping>()
+    }
+
+    pub(crate) fn observe_regions_charged(
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Self, &'static str> {
+        charge(1, size_of::<Mapping>())?;
+        Ok(Self::observe_regions())
+    }
+    pub(crate) fn open_regions_charged(
+        first: u32,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Self, &'static str> {
+        charge(1, size_of::<Mapping>())?;
+        Self::open_regions(first)
+    }
     /// Inspect surrounding region occurrences without changing their identities.
     /// Nested callable binders remain private to their own signatures.
     pub(crate) fn observe_regions() -> Self {

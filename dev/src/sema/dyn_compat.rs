@@ -1,5 +1,9 @@
 //! Dyn compatibility is a demand-driven query over completed declaration contracts.
 mod contracts;
+mod receivers;
+#[cfg(test)]
+#[path = "../../tests/invariants/dyn_receivers.rs"]
+mod source_tests;
 use super::model::Declarations;
 use crate::support::hash::HashMap;
 use crate::{
@@ -79,6 +83,7 @@ enum State {
 pub struct Queries {
     states: HashMap<DefId, State>,
     pub steps: usize,
+    source: Option<crate::types::arena::Identity>,
 }
 impl Queries {
     /// Validate an object's base trait and its shared supertrait graph once.
@@ -87,9 +92,33 @@ impl Queries {
     pub fn demand(
         &mut self,
         report: &Report,
-        facts: &Declarations,
+        facts: &mut Declarations,
         root: DefId,
     ) -> Result<&Contract, Error> {
+        if self.source.is_some() {
+            self.charge(1)?;
+        }
+        if self
+            .source
+            .as_ref()
+            .is_some_and(|source| !facts.types.has_identity(source))
+        {
+            return Err("dyn source query belongs to another declaration arena".into());
+        }
+        if receivers::authenticate(report, facts, root)? && self.source.is_none() {
+            crate::sema::header_attributes::charge_source_retention(
+                facts,
+                1,
+                size_of::<crate::types::arena::Identity>()
+                    + if facts.types.existing_arena_identity().is_none() {
+                        crate::types::arena::Identity::allocation_bytes()
+                    } else {
+                        0
+                    },
+            )
+            .map_err(|_| Error::Invalid("dyn query arena retention exhausted"))?;
+            self.source = Some(facts.types.arena_identity());
+        }
         if let Err(error) = self.walk(report, facts, root) {
             self.states
                 .retain(|_, state| !matches!(state, State::Active(_)));
@@ -101,7 +130,12 @@ impl Queries {
             _ => Err(Error::Invalid("missing completed dyn compatibility query")),
         }
     }
-    fn walk(&mut self, report: &Report, facts: &Declarations, root: DefId) -> Result<(), Error> {
+    fn walk(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        root: DefId,
+    ) -> Result<(), Error> {
         let mut work = vec![(root, false)];
         while let Some((item, finish)) = work.pop() {
             self.charge(1)?;

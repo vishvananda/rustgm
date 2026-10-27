@@ -275,7 +275,7 @@ impl Checker<'_> {
                 continue;
             }
             queries
-                .demand(self.report, &self.facts, principal)
+                .demand(self.report, &mut self.facts, principal)
                 .map_err(|e| self.error(source, e.to_string()))?;
             self.check_object_bindings(source, ty, principal, &mut queries)?;
         }

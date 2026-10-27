@@ -50,6 +50,7 @@ pub(super) enum DiagnosticItem {
     Hash,
     Result,
     Option,
+    NegMethod,
 }
 impl DiagnosticItem {
     pub(super) const fn index(self) -> usize {
@@ -113,6 +114,7 @@ pub(super) fn parse(
         b"Hash" => Ok(DiagnosticItem::Hash),
         b"Result" => Ok(DiagnosticItem::Result),
         b"Option" => Ok(DiagnosticItem::Option),
+        b"neg" => Ok(DiagnosticItem::NegMethod),
 
         _ => Err(error("unsupported source diagnostic identity")),
     }
@@ -252,39 +254,55 @@ fn validate_module_item(
     Ok(())
 }
 
-fn member_owner(item: DiagnosticItem) -> Option<DiagnosticItem> {
-    match item {
-        DiagnosticItem::PartialEqEq | DiagnosticItem::PartialEqNe => {
-            Some(DiagnosticItem::PartialEq)
-        }
-        DiagnosticItem::EqTotal => Some(DiagnosticItem::Eq),
+#[derive(Clone, Copy)]
+enum MemberOwner {
+    Diagnostic(DiagnosticItem),
+    Language(LangItem),
+}
+fn member_owner(item: DiagnosticItem) -> Option<MemberOwner> {
+    let expected = match item {
+        DiagnosticItem::NegMethod => return Some(MemberOwner::Language(LangItem::Neg)),
+        DiagnosticItem::PartialEqEq | DiagnosticItem::PartialEqNe => DiagnosticItem::PartialEq,
+        DiagnosticItem::EqTotal => DiagnosticItem::Eq,
         DiagnosticItem::OrdCmp | DiagnosticItem::OrdMax | DiagnosticItem::OrdMin => {
-            Some(DiagnosticItem::Ord)
+            DiagnosticItem::Ord
         }
         DiagnosticItem::PartialOrdCmp
         | DiagnosticItem::PartialOrdLt
         | DiagnosticItem::PartialOrdLe
         | DiagnosticItem::PartialOrdGt
-        | DiagnosticItem::PartialOrdGe => Some(DiagnosticItem::PartialOrd),
-        DiagnosticItem::DefaultFn => Some(DiagnosticItem::Default),
-        _ => None,
-    }
+        | DiagnosticItem::PartialOrdGe => DiagnosticItem::PartialOrd,
+        DiagnosticItem::DefaultFn => DiagnosticItem::Default,
+        _ => return None,
+    };
+    Some(MemberOwner::Diagnostic(expected))
 }
 fn validate_member(
     package: &Package,
     reserved: &Reservations,
     declaration: Declaration,
-    expected: DiagnosticItem,
+    expected: MemberOwner,
 ) -> Result<(), Error> {
-    let owner = reserved.diagnostics[expected.index()].ok_or_else(|| {
+    let owner = match expected {
+        MemberOwner::Diagnostic(item) => reserved.diagnostics[item.index()],
+        MemberOwner::Language(item) => reserved.language(item),
+    }
+    .ok_or_else(|| {
         super::reservations::error(
             package,
             declaration.origin,
-            "diagnostic member requires its actual diagnostic trait owner",
+            "diagnostic member requires its actual trait owner",
         )
     })?;
+    validate_member_definition(package, declaration, owner.definition)
+}
+fn validate_member_definition(
+    package: &Package,
+    declaration: Declaration,
+    owner: crate::resolve::model::DefId,
+) -> Result<(), Error> {
     let ast = &package.unit(declaration.origin.file).configured.ast;
-    if declaration.parent != Some(owner.definition)
+    if declaration.parent != Some(owner)
         || !matches!(ast.node(declaration.origin.node).kind,
         Kind::Item(index) if matches!(ast.items[index as usize].kind, ItemKind::Function {..}))
     {
@@ -332,7 +350,8 @@ fn expected_language(item: DiagnosticItem) -> Option<LangItem> {
         | DiagnosticItem::DefaultFn
         | DiagnosticItem::Hash
         | DiagnosticItem::Result
-        | DiagnosticItem::Option => None,
+        | DiagnosticItem::Option
+        | DiagnosticItem::NegMethod => None,
     }
 }
 

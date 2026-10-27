@@ -1637,8 +1637,13 @@ impl Checker<'_> {
                 op: op @ (Unary::Negate | Unary::Not),
                 operand,
             } => {
-                if op == Unary::Not && self.facts.source_bindings.is_some() {
-                    return self.source_not_operator(node, operand);
+                if self.facts.source_bindings.is_some() {
+                    if op == Unary::Negate
+                        && let Some(literal) = self.literal_operand(operand)
+                    {
+                        self.state.negated.insert(literal);
+                    }
+                    return self.source_unary_operator(node, op, operand);
                 }
                 let kind = language_hooks::unary_hook(op)
                     .ok_or_else(|| self.error(node, "missing unary library hook"))?;

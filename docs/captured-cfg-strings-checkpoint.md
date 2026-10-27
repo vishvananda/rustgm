@@ -46,8 +46,51 @@ Source184, Local128, Contracts104, Core176, Package256, Report3040,
 Definition136, Session16 and Context16 remain unchanged. No new hot token/IR
 field, cache or proof owner was added.
 
-Exactly25 PA8 and two PA3 reference cases remain pending root-owned generation.
+Exactly25 PA8 and two PA3 reference cases have root-owned generated oracles.
 PA3 computes facts before PA8 gate authorization, so its two paired cases
 intentionally accept while their independent Rust program and PA8 cases deny.
-The manifest preserves that distinction. No references, fresh core probe,
-release build or broad sweep were run by this checkpoint.
+The manifest preserves that distinction. Worker qualification generated no
+references and ran no core probe, release build or broad sweep.
+
+The integrator authenticated all2923 committed source fingerprints and209
+evidence files before the normal merge. Its production/CLI gate passes39 exact
+controls, strict Clippy, formatting and architecture in169.35s; receipt
+`obj/qualification/fast/1793101336360010781/receipt.json`. The seven worker
+private controls retain their actual predecessor and missing-only evidence.
+
+The existing course writer generated the27 new reference triplets. Its first
+scoped PA3 attempt correctly rejected the legacy receipt before writing. The
+documented full refresh then compared all88 old cases and preserved every old
+oracle hash while upgrading PA3 provenance. PA8 generated only25 selected cases.
+Full PA3/7/8 text passes90/183/120 cases; harness/upstream passes in13.30s.
+All commands and output hashes are retained under
+`obj/parallel/captured-cfg-integration-v1/`.
+
+Immutable CLI `62daa4a5` verifies the722 unchanged source pins, opens371 files
+and clears the original atomic cfg failure. After7.09s it stops at the genuine
+asm invocation in `stdarch/crates/core_arch/src/x86/sse.rs:2071`, LIB-045.
+Only the actual Config source pin changes in the observer manifest; target,
+edition, panic and source profile remain unchanged. No whole-core semantic,
+export, object or consumer success is claimed.
+
+## Independent stage classification
+
+Full CI40507541719 passes release/course, native and debug checks, then exposes
+two missing independent-classification reasons in PA3. That stage deliberately
+computes cfg facts without PA8 feature authorization; complete rustc rejects the
+two missing-feature programs. Their expected statuses already record this
+difference. The repair adds the explicit reason and keeps the source, compiler
+behavior and expected statuses unchanged.
+
+Pinned rustc now passes79 PA3 independent checks with11 declared fragments and
+two documented acceptance differences. The course writer refreshes only the two
+case contracts; all270 existing oracle sidecar hashes remain unchanged. Full
+PA3 text passes90/90 and harness/upstream passes. The immutable CLI is authenticated
+against the combined Neg producer; the only source-fingerprint difference is the
+manifest classification. Evidence remains under
+`obj/parallel/atomic-cfg-independent-repair-v1/`, continuation receipt SHA-256
+`566f9366a062e248962e417083d65aede40769e2a5bcec5e97a679267b893baa`.
+The initial wrapper incorrectly compared the course writer's successful boolean
+return with an exit code; its setup failure is retained. The continuation
+authenticates its completed independent/writer observations and runs only the
+missing full text/harness checks. No failing outcome is reclassified as passing.

@@ -248,3 +248,22 @@ under `obj/parallel/std-host-v1/`. All 224 harness tests and layout/upstream che
 pass. Two of the three original host pairs execute; compiler-builtins' shared
 `configure.rs` inputs and complete external-tool/configuration closure remain.
 Original target core, alloc, libc and std artifacts remain unbuilt.
+
+The original compiler-builtins host pair now runs too, using the existing
+executor with no implementation change. Its shared `libm/configure.rs` is pinned
+in the existing Context inputs against the original acquisition inventory and
+checked before and after execution. The selected features retain `arch`,
+`compiler-builtins`, `default` and `unmangled-names`, with an unwind host profile
+and independently captured abort target cfg. All141 predeclared directive lines
+match in0.446 seconds. Only `intrinsics_enabled` and `mem_unaligned` are enabled;
+no generated source or compiler query appears. The native host executable was
+removed after recording its hash.
+
+The portable owning contract and stdout template are under
+`pa34/tests/spec/stdlib-host/compiler-builtins/`; raw inputs, commands and receipt
+remain under `obj/parallel/compiler-builtins-host-v1/`. The receipt SHA-256 is
+`f24b1a1253f40920ab0a6c634567a6b945a705b234d33a89a47dc8569574978d`.
+All three selected original host compile/run pairs are now observed. This
+closes that execution observation, while complete rerun/environment/external-tool
+closure, target artifact kinds and target consumption of build-script output
+remain unfinished. No target library compilation or PA completion is implied.

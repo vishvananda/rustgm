@@ -73,8 +73,10 @@ observed directory-source and workspace policies. Original libc's selected host
 script now executes with its unchanged package bytes and all 27 predeclared
 directives. Original std's host script also runs with its real public-dependency
 manifest feature and eight predeclared directives; host modifiers stay closed.
-Compiler-builtins' shared inputs remain required. This does not establish target
-libc or any original library artifact.
+The original compiler-builtins pair also passes141 predeclared lines with its
+shared configure.rs explicitly pinned. Complete environment/rerun/external-tool
+closure and target consumption remain required. This establishes no target
+library artifact.
 
 The maintainer implements compiler responsibilities in `dev/src/` and introduces
 typed interfaces before text views. Follow [spec.md](../spec.md), the pinned Rust

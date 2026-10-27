@@ -21,6 +21,12 @@ pub(super) struct Storage {
 }
 
 impl Store {
+    /// Cached structural region summary, never proof of a trait application.
+    pub(crate) fn trait_application_has_free_regions(&self, id: ApplicationId) -> Option<bool> {
+        let properties = self.trait_properties(id)?;
+        Some(properties.escaping != 0 || properties.has(super::Property::FreeRegions))
+    }
+
     pub(super) fn trait_tables_bytes(&self) -> usize {
         self.arguments
             .as_ref()
