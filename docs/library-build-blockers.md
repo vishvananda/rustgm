@@ -24,6 +24,18 @@ whole-crate attempt. Never patch upstream source to move a blocker.
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
 | Original std and consumer | Not reached; depends on the preceding crate graph and platform contracts. | Build unchanged std and execute a default-std consumer. |
 
+The latest combined development gate passes15 exact controls (ten lexer and
+five enum-memory controls), all498 PA18 text cases, production/CLI strict Clippy,
+formatting and architecture in92.23s. Receipt:
+`obj/qualification/fast/1793097842091115266/receipt.json`. Full CI40484630026
+on6f01 failed four enum-memory source controls after its private tests passed.
+The qualified repair preserves the actual selected union field before reading
+an active tag and checks canonical tagless source bounds without reading payloads.
+It adds no fields or caches and changes no existing fixture or reference.
+Both worker private/static qualifications are retained; the combined gate runs
+the affected source controls. Full qualification of this combined cut remains
+pending CI. No additional assignment or original library artifact is complete.
+
 The combined CLI `4585cb94` now executes genuine source Try/FromResidual methods,
 lexical residual exits and cleanup through the locked backend. Its two native
 observers match pinned Rust exactly: `7 23 31 17 23 43 19` and `21`. Direct
