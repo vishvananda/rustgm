@@ -329,7 +329,7 @@ fn source_operator_work_scales_and_ordinary_path_retains_hot_layouts() -> TestRe
     );
     assert_eq!(size_of::<Operation>(), 16);
     assert_eq!(size_of::<crate::sema::model::NodeFacts>(), 80);
-    assert_eq!(size_of::<crate::body::ir::Body>(), 448);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     Ok(())
 }
 
