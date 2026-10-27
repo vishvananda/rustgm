@@ -82,3 +82,37 @@ Raw evidence, immutable native runner/plan and the source map are in
 prediction disagreements, including Rust's deref_nullptr versus the initial
 E0080 prediction, remain history. General full-bound formatting, foreign
 protocol transport and original library completion are not claimed here.
+
+## Combined selected-root integration
+
+Source `25646f4c7` normally merges the immutable checkpoint with root
+`a5dcce0c3`. It authenticates the same discriminant owner at the existing
+Report-aware selected-local-root boundaries and leaves the new imported Copy
+ledger's discriminant slot absent. The private value-query module is renamed
+`variant_queries` to satisfy the combined filename-prefix audit; its body is
+unchanged. No new source permission or proof owner is introduced.
+
+The integrated semantic group now also lowers all six actual main/callee roots
+from the unchanged caller fixture plus a real main. Omitting the genuine callee
+roots rejects execution. Actual selected dispatch context is 40 bytes; this
+positive records six CFG functions, six typed bodies and 1036 canonical steps.
+
+Receipt `1793090416445160431` passes metadata, formatting, global audit and both
+strict lint modes, then fails on the cold build deadline; it is not a passing
+run. Missing-only receipt `1793090818760028391` authenticates all 2909 identical
+source/configuration fingerprints and exact retained static commands, then
+passes the remaining build in 172.89s and all 22 selected tests: the six
+discriminant groups, three selected-local-root groups, two macro-expression
+groups, one cardinality-payment group and ten lexer tests. No passed static
+step or independent oracle is repeated. Both individual gates remain bounded
+by their development deadlines.
+
+The fresh measurements are Contracts152, Validated48, Catalog1208,
+Reservations1424, Source16, Evidence136 and projection Query912 bytes. The
+reservation change includes the integrated Assert diagnostic identity; it is
+not an extra discriminant owner. Warm32 work 639 to 863 retains the same 29328
+logical bytes, declaration count21/capacity28, owner capacity56 and Header72.
+Body448/Value24/Rvalue20/Code304 are observed through actual local roots.
+Candidate combined CLI/native execution still belongs to root's one fresh
+integration build; the frozen native runner, plan and companion bytes are
+unchanged.
