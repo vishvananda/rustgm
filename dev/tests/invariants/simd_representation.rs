@@ -1,4 +1,8 @@
 //! Real nominal array fields feed SIMD layout and the existing object boundary.
+use crate::lowir::{
+    program::{Operand, Operation, Signature, SymbolId},
+    vocabulary::Type,
+};
 use crate::{
     abi::{
         classification::{Class, Classes, Passing, Plans},
@@ -224,10 +228,6 @@ fn genuine_source_rust_and_c_copy_bodies_lower_with_distinct_signatures() -> Tes
     crate::lowir::writer::write(&program, &mut bytes)?;
     let text = String::from_utf8(bytes)?;
     assert!(text.contains("sse_sseup"), "{text}");
-    use crate::lowir::{
-        program::{Operand, Operation, Signature, SymbolId},
-        vocabulary::Type,
-    };
     let private = program
         .symbols
         .iter()
