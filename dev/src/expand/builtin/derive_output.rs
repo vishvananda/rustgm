@@ -1,6 +1,6 @@
 //! Source Copy/paired Clone produce ordinary impls with real field WF assertions.
+mod active_members;
 mod debug_format;
-mod field_inventory;
 use super::{choice::Charge, delegation::Delegated, derive_types};
 use crate::{
     expand::{
@@ -59,7 +59,7 @@ pub(crate) fn build(
     config: &Config,
     charge: &Charge<'_>,
 ) -> Result<Delegated, LexError> {
-    let fields = field_inventory::collect(site, charge)?;
+    let fields = active_members::collect(site, charge)?;
     if debug && !matches!(site.item.kind, ItemKind::Struct { .. }) {
         return Err(error(
             site.original.start,
