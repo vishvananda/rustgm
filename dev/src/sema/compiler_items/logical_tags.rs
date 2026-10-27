@@ -245,7 +245,7 @@ pub(in crate::sema) fn prepared_member(
     Ok(true)
 }
 
-pub(in crate::sema) fn authenticate(report: &Report, facts: &Declarations) -> Result<(), Error> {
+pub(crate) fn authenticate(report: &Report, facts: &Declarations) -> Result<(), Error> {
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(());
     };

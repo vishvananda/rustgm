@@ -4,7 +4,7 @@ use crate::{
     body::ir::{Rvalue, ValueList},
     sema::{
         model::Scalar,
-        values::{Metadata, Overflow, Reader, View},
+        values::{Metadata, Overflow, Reader},
     },
     types::{Kind, Primitive, TypeId, instance::Instance},
 };

@@ -1,7 +1,5 @@
 //! One explicit equality lookup preserves the same proved parent and opened goal.
-use super::{
-    Completion, Declarations, Normalization, Opened, Search, Source, equalities, inference,
-};
+use super::{Completion, Declarations, Normalization, Opened, Search, equalities, inference};
 use crate::types::{TypeId, infer::projections::Application};
 #[derive(Clone, Copy)]
 pub(super) enum ResultEquality {
@@ -61,7 +59,7 @@ impl Search<'_> {
             }
             equalities::Selection::Absent => {
                 #[cfg(test)]
-                super::copy_trace::record(|| {
+                crate::sema::copy_trace::record(|| {
                     let source = self.query.nodes[node].source.as_ref();
                     format!(
                         "opaque-associated-equality-absent query={:p} scope={:?} node={node} node_scope={:?} node_goal={:?} application={:?} assumption={} result_bound={} quantified={}",
@@ -70,13 +68,13 @@ impl Search<'_> {
                         self.query.node_scope(node),
                         self.query.nodes[node].goal,
                         opened.application.associated(),
-                        matches!(source, Some(Source::Assumption(_))),
-                        matches!(source, Some(Source::ResultBound(_))),
+                        matches!(source, Some(super::Source::Assumption(_))),
+                        matches!(source, Some(super::Source::ResultBound(_))),
                         matches!(
                             source,
                             Some(
-                                Source::QuantifiedAssumption { .. }
-                                    | Source::QuantifiedResultBound { .. }
+                                super::Source::QuantifiedAssumption { .. }
+                                    | super::Source::QuantifiedResultBound { .. }
                             )
                         )
                     )

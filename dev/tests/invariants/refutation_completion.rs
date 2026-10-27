@@ -98,7 +98,7 @@ fn negative_owner_cannot_enter_positive_extraction_or_reuse() -> Result {
     ))?;
     let predicate = Predicate {
         ty,
-        bound: freezing::bound(&mut facts)?,
+        bound: freezing::bound(&mut facts, crate::types::auto_traits::AutoTrait::Freeze)?,
     };
     for export in [false, true] {
         let (mut context, goal) = tests::instantiate(&mut facts, predicate)?;
@@ -137,7 +137,7 @@ fn refutation_keeps_exact_goal_and_caller_frontier() -> Result {
     ))?;
     let predicate = Predicate {
         ty,
-        bound: freezing::bound(&mut facts)?,
+        bound: freezing::bound(&mut facts, crate::types::auto_traits::AutoTrait::Freeze)?,
     };
     let assumptions = Assumptions::default();
     let (mut context, goal) = tests::instantiate(&mut facts, predicate)?;
@@ -209,7 +209,7 @@ fn closed_negative_with_private_capture_keeps_unpaid_graph() -> Result {
     ))?;
     let predicate = Predicate {
         ty,
-        bound: freezing::bound(&mut facts)?,
+        bound: freezing::bound(&mut facts, crate::types::auto_traits::AutoTrait::Freeze)?,
     };
     let (mut context, goal) = tests::instantiate(&mut facts, predicate)?;
     let assumptions = Assumptions::default();
@@ -250,7 +250,7 @@ fn source_nominal_freeze_formation_retains_actual_sizing_obligations() -> Result
         .types
         .intern_arguments(&[crate::types::arguments::Argument::Type(n)])?;
     let ty = facts.types.intern(Kind::Adt(ItemId(w.0), arguments))?;
-    let bound = freezing::bound(&mut facts)?;
+    let bound = freezing::bound(&mut facts, crate::types::auto_traits::AutoTrait::Freeze)?;
     let predicate = Predicate { ty, bound };
     let (mut context, goal) = tests::instantiate(&mut facts, predicate)?;
     let assumptions = Assumptions::default();

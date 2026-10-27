@@ -7,7 +7,7 @@ use super::{Action, Decision, Declarations, Frame, Goal, Search, Source, inferen
 use crate::sema::{projections::Definition, traits::equalities};
 use crate::types::{
     TypeId,
-    infer::{Instantiation, projections::Application},
+    infer::Instantiation,
     lifetime_proof::ScopeId,
     substitute::{Alias, Normalizer, Resolution, Step},
 };

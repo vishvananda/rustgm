@@ -30,7 +30,8 @@ fn nested_nominal_formation_records_actual_work_and_retained_edges() -> Result {
                     let fields = facts.types.intern_list(&vec![ty; extent])?;
                     ty = facts.types.intern(Kind::Tuple(fields))?;
                 }
-                let bound = freezing::bound(&mut facts)?;
+                let bound =
+                    freezing::bound(&mut facts, crate::types::auto_traits::AutoTrait::Freeze)?;
                 let (mut context, goal) = tests::instantiate(&mut facts, Predicate { ty, bound })?;
                 let assumptions = Assumptions::default();
                 let mut search =
