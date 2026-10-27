@@ -321,6 +321,7 @@ fn publish(
         }
     };
     let base = work.retained;
+    let growth = publication_growth(facts, symbol.is_some(), receiver.is_some())?;
     let linkage = facts
         .crates
         .as_deref_mut()
@@ -333,35 +334,6 @@ fn publish(
         return Err(error(
             "selected method changed its actual header owner/index",
         ));
-    }
-    let mut growth = Growth::map::<DefId, FunctionRegions>(
-        facts.lifetimes.functions.len(),
-        facts.lifetimes.functions.capacity(),
-        1,
-    );
-    if symbol.is_some() {
-        growth.include(Growth::map::<DefId, String>(
-            linkage.symbols.len(),
-            linkage.symbols.capacity(),
-            1,
-        ));
-    }
-    if receiver.is_some() {
-        growth.include(Growth::map::<DefId, (TypeId, u32)>(
-            facts.methods.receivers.len(),
-            facts.methods.receivers.capacity(),
-            1,
-        ));
-    }
-    if let Some(headers) = linkage.originals.as_deref() {
-        growth.include(Growth::map::<DefId, Header>(
-            headers.entries.len(),
-            headers.entries.capacity(),
-            1,
-        ));
-    } else {
-        growth.bytes = growth.bytes.saturating_add(size_of::<Headers>());
-        growth.include(Growth::map::<DefId, Header>(0, 0, 1));
     }
     work.charge(growth.work)?;
     work.reserve(
@@ -394,6 +366,43 @@ fn publish(
     }
     facts.definitions[definition.0 as usize] = Some(ty);
     declarations::install_scopes(facts, scopes)
+}
+
+fn publication_growth(facts: &Declarations, symbol: bool, receiver: bool) -> Result<Growth, Error> {
+    let linkage = facts
+        .crates
+        .as_deref()
+        .ok_or_else(|| error("selected method lost its current linkage"))?;
+    let mut growth = Growth::map::<DefId, FunctionRegions>(
+        facts.lifetimes.functions.len(),
+        facts.lifetimes.functions.capacity(),
+        1,
+    );
+    if symbol {
+        growth.include(Growth::map::<DefId, String>(
+            linkage.symbols.len(),
+            linkage.symbols.capacity(),
+            1,
+        ));
+    }
+    if receiver {
+        growth.include(Growth::map::<DefId, (TypeId, u32)>(
+            facts.methods.receivers.len(),
+            facts.methods.receivers.capacity(),
+            1,
+        ));
+    }
+    if let Some(headers) = linkage.originals.as_deref() {
+        growth.include(Growth::map::<DefId, Header>(
+            headers.entries.len(),
+            headers.entries.capacity(),
+            1,
+        ));
+    } else {
+        growth.bytes = growth.bytes.saturating_add(size_of::<Headers>());
+        growth.include(Growth::map::<DefId, Header>(0, 0, 1));
+    }
+    Ok(growth)
 }
 
 fn is_constant(value: crate::support::constness::Constness) -> Result<bool, Error> {
