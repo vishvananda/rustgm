@@ -60,15 +60,9 @@ impl Builder<'_> {
                 } => {
                     templates += 1;
                     pieces = pieces.saturating_add((range.end - range.start) as usize);
-                    let Kind::Literal(index) = unit.configured.ast.node(value).kind else {
-                        return Err(self.error(node, "assembly template lost its actual literal"));
-                    };
-                    let crate::literal::Value::String(text) = unit
-                        .literal(index)
-                        .map_err(|e| self.error(node, e.message))?
-                    else {
-                        return Err(self.error(node, "assembly template lost its string storage"));
-                    };
+                    let text = unit
+                        .assembly_string(value)
+                        .map_err(|e| self.error(node, e.message))?;
                     bytes = bytes.saturating_add(text.len());
                 }
                 Kind::AssemblyOperand { .. } => operands += 1,
@@ -132,17 +126,9 @@ impl Builder<'_> {
                 return Err(self.error(node, "assembly register lost its checked node"));
             };
             let spelling = if explicit {
-                let Kind::Literal(index) = unit.configured.ast.node(value).kind else {
-                    return Err(self.error(node, "explicit assembly register lost its literal"));
-                };
-                let crate::literal::Value::String(text) = unit
-                    .literal(index)
+                unit.assembly_string(value)
                     .map_err(|e| self.error(node, e.message))?
-                else {
-                    return Err(self.error(node, "explicit assembly register is not a string"));
-                };
-                String::from_utf8(text.into_owned())
-                    .map_err(|_| self.error(node, "invalid explicit assembly register"))?
+                    .to_owned()
             } else {
                 let span = unit.configured.ast.node(value).span;
                 unit.source
@@ -193,15 +179,9 @@ impl Builder<'_> {
             match unit.configured.ast.node(arg).kind {
                 Kind::AssemblyOptions(bits) => options |= bits,
                 Kind::AssemblyTemplate { value, pieces } => {
-                    let Kind::Literal(index) = unit.configured.ast.node(value).kind else {
-                        return Err(self.error(node, "missing retained assembly literal"));
-                    };
-                    let crate::literal::Value::String(text) = unit
-                        .literal(index)
-                        .map_err(|e| self.error(node, e.message))?
-                    else {
-                        return Err(self.error(node, "missing retained assembly string"));
-                    };
+                    let text = unit
+                        .assembly_string(value)
+                        .map_err(|e| self.error(node, e.message))?;
                     let start = self.index(node, data.pieces.len())?;
                     for &piece in unit.configured.ast.list(pieces) {
                         let Kind::AssemblyPlaceholder {
@@ -223,8 +203,7 @@ impl Builder<'_> {
                         });
                     }
                     data.templates.push(Template {
-                        text: String::from_utf8(text.into_owned())
-                            .map_err(|_| self.error(node, "invalid assembly template text"))?,
+                        text: text.to_owned(),
                         pieces: List {
                             start,
                             end: self.index(node, data.pieces.len())?,

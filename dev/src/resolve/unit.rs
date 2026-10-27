@@ -11,7 +11,7 @@ use crate::{
     },
     support::{names::Names, source::SourceFile},
     syntax::{
-        ast::{MacroContext, NodeId},
+        ast::{Kind, MacroContext, NodeId},
         attribute::Attribute,
         token_tree::{Span, error},
     },
@@ -201,6 +201,30 @@ impl Unit {
             .text()
             .get(span.start as usize..span.end as usize)
             .ok_or_else(|| error(span.start, "invalid source span"))
+    }
+
+    /// Borrow only an actual completed string root from this unit's literal pool.
+    pub(crate) fn assembly_string(&self, value: NodeId) -> Result<&str, LexError> {
+        let node = self
+            .configured
+            .ast
+            .nodes
+            .get(value.get() as usize)
+            .ok_or_else(|| error(0, "missing actual assembly string root"))?;
+        let Kind::Literal(index) = node.kind else {
+            return Err(error(
+                node.span.start,
+                "assembly string must have a completed literal root",
+            ));
+        };
+        let Value::String(std::borrow::Cow::Borrowed(bytes)) = self.literal(index)? else {
+            return Err(error(
+                node.span.start,
+                "assembly string has no completed string storage",
+            ));
+        };
+        std::str::from_utf8(bytes)
+            .map_err(|_| error(node.span.start, "assembly string storage is not UTF-8"))
     }
 
     /// # Errors
