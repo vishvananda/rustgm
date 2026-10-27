@@ -14,27 +14,30 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The current original-core observer passes typed concat, numeric metavariable
-expressions, the corrected generic attribute payer and typed forwarded const
-arguments and captured cfg strings with actual atomic target facts. It now
-reaches genuine inline assembly in stdarch x86/sse.rs2071 (LIB-045).
-All722 pinned inputs verify;371 files are opened in7.09s and no artifact exists.
-The live tracker owns current lane priorities and this result; the checkpoint
-paragraphs below retain earlier consumer context. Genuine DispatchFromDyn now
-has combined proof/scaling checks and an exact-source native observer returning7.
+The current original-core CLI9156793b passes the old unavailable-asm expansion
+boundary and reaches a source lint policy budget failure in num/saturating.rs
+(LIB-046). All722 pinned inputs verify;371 files open in13.32s, with no artifact.
+The live tracker owns current priorities; checkpoint paragraphs below retain
+earlier context. Typed assembly proof, inert diagnostic data and source Shl/BitOr
+are combined; two operator native consumers now match safe-input outputs.
 
-- A: LIB-045, typed inline assembly at the original SSE consumer. Preserve actual
-  operand/place/effect checking and explicit backend capability boundaries. SIMD,
-  target features and real assembly emission remain required.
-- B: complete original Neg attributes and actual source diagnostic ownership,
-  then the genuine Formatter/Arguments/PanicInfo/handler closure and false
-  assertion reaching Abort. Do not replace upstream helpers with library factories.
-- C: genuine source Shl/BitOr for FormattingOptions/Arguments, retaining actual
-  trait/member/Rhs/Output/impl/const proof and ordinary overload calls. Dispatch
-  receiver compatibility grants no body, vtable or artifact execution permission.
-- Integrator: authenticate and qualify combined source consumers, publish to main,
-  advance the unchanged-core observer and prepare alloc/std build/runtime inputs.
-  Preserve PA25's full const-callable/CTFE requirement and PA29 transport scope.
+- A: read-only LIB-046 attribution/review. No compiler edits or heavy jobs.
+- B: genuine Formatter/Arguments/helper source closure, then PanicInfo/handler and
+  false assertion through Abort. Original Neg attributes and inert diagnostic
+  names are integrated. Do not replace upstream helpers with library factories.
+- C: required LIB-045 SIMD representation/layout and Rust-indirect/C128 ABI, then
+  typed target features. Qualify real source/native copy controls and coordinate
+  the shared type query with the root-owned assembly consumer.
+- Integrator: directly owns `rustgm-pa25-work`, the qualified typed assembly
+  join, publication and LIB-046 repair; integrate demanded SIMD/target/backend
+  work and advance unchanged core. Preserve PA25 const-callable/CTFE and PA29
+  transport scope. Prepare alloc/std build/runtime inputs at integration exits.
+
+There are three coding lanes: root, B and C. A supplies bounded read-only review;
+do not create another worktree or enable a fourth heavy job. Root's output cap
+is16GiB, B's16GiB and C's12GiB. The shared three-job controller,150GiB reserve,
+per-process CPU/RAM/task limits and two Cargo/test threads remain unchanged.
+Existing historical ownership tables do not override this current assignment.
 
 Keep one executable exit per lane. Shared-interface preparation is work within
 that task, not an endlessly expanding replacement milestone. At consumer exits,

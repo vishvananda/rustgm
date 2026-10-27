@@ -144,6 +144,15 @@ grants execution or trait permission. The
 [versioned transport checkpoint](docs/source-header-contract-transport.md)
 records exact-byte, fresh-consumer, origin, budget and layout controls.
 
+Unknown source diagnostic-item strings remain exact inert data in an optional
+cold column of the existing reservation owner. Preserve declaration and
+attribute identity, including empty, Unicode and NUL-containing strings, without
+adding a compiler role or execution permission. Reuse the shared name interner;
+its paid insertion charges hashing, probing, comparisons and capacity/rehash
+work before mutation. A failed payment preserves the previous table and IDs.
+Ordinary insertion uses the same algorithm without a second table or owner.
+Do not publish these rows through an older metadata profile.
+
 Free unnamed constants retain real declaration identities, item keys, scopes and
 all initializer typing and evaluation obligations. Omit only their lexical name
 binding and declaration-name wakeup. Associated constants require names. Retain
@@ -2900,6 +2909,17 @@ or impl. Numeric variables retain their integer or floating-point domain: search
 only compatible scalar heads, and infer a unique matching type when possible.
 Apply numeric defaults only after ordinary equations and trait progress stop,
 then retry the remaining goals. Candidate probes never apply numeric defaults.
+Use the existing dependency identities and bounded ready queue for this frontier.
+Distinguish visible numeric inputs from leaves beneath unresolved projections;
+each hidden visit may upgrade once when normalization publishes a result. An
+eligible seed yields to actual trait/normalization work before another default.
+Drain real ready equations, including contexts with no watches, before resuming
+fallback. Final publication rejects a live unresolved frontier; cancelled or
+settled work does not block it. Charge growth, rehash and failed work through the
+same cumulative inference payer. Do not add repeated whole-goal scans or an
+independent scheduler/byte ledger. The
+[operator checkpoint](docs/source-shift-or-checkpoint.md) records actual ordinary
+watch costs and the valid shared-numeric-input case that remains unsupported.
 Other arguments may be inferred, and a bounded worklist revisits ambiguous goals
 after another goal constrains their shared arguments. Check declaration ambiguity
 even for unused owners. Distinct lifetime applications that remain type-compatible
@@ -3880,6 +3900,24 @@ A typed control-flow IR retains places, projections, moves, borrows, storage
 lifetimes, initialization and abstract drop obligations. It is an executable
 body representation, not a second copy of the complete syntax tree. Do not call
 it MIR without qualification: CPPGM already uses MIR for machine IR.
+
+Source inline assembly uses the existing parsed syntax and eager expansion
+worklist. Preserve actual builtin declaration, template/placeholder spans and
+captured operand expressions without rendering or reparsing Rust. Check actual
+register, type, place, initialization, Copy, safety, options and feature facts;
+an attribute or familiar vector name cannot establish layout or availability.
+Keep one cold optional payload in the actual Body and indexed effect/output
+operations in ordinary values. Evaluate inputs and output places left to right,
+each place once, then store outputs left to right after the effect. Preserve
+memory/flags/clobbers and real divergence in the executable CFG. Body cloning,
+instance proof and storage accounting consume the same owner and revalidate
+effect/output identities. Const eligibility and demanded execution reject
+assembly; const and symbol operands need their own real value/relocation facts.
+An absent body codec or backend capability diagnoses at that boundary. Never
+replace assembly with Unit or ordinary stores. PA41 owns broader closure, but
+the selected upstream target's required slice must work by PA32. See the
+[assembly checkpoint](docs/source-inline-assembly-checkpoint.md) for implemented
+scope, every-Body cost and remaining SIMD, transport and emission requirements.
 
 Retain const-function permission by resolved declaration identity and propagate
 the enclosing constant context into the typed body and its specializations.

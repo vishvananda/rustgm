@@ -48,6 +48,16 @@ closure/inline-constant probe accepts. Delayed-Never wrong predictions are also
 retained. Candidate native execution and fresh combined integration remain the
 integrator's next checks; no candidate native result is implied here.
 
+The subsequent combined integration at `0396139b3` passes all16 operator controls
+within the33-control assembly/diagnostic/operator private gate. Two exact source
+and C-observer consumers now execute through the locked backend and match
+`7 12 13` and `7 99 42`, with status0/empty stderr. Pinned Rust's earlier native
+profile disables overflow checks; the candidate uses its checked default, so
+these fixed safe inputs prove output parity only. The
+[combined checkpoint](source-inline-assembly-checkpoint.md) binds raw receipts.
+Its assembly payload raises actual Body width to456; the448 measurement below
+belongs to the earlier isolated operator compiler.
+
 A valid-Rust numeric variable shared directly with a blocked consumer remains an
 explicit unresolved frontier. Completing that general inference case remains
 required. Assignment operators have separate roles. Imported role/body and
