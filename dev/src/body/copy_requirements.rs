@@ -258,6 +258,19 @@ fn read_types(facts: &mut Declarations, body: &Body) -> Result<Vec<TypeId>, Stri
             return Err("source Copy requirement budget exceeded".into());
         }
     }
+    if let Some(assembly) = &body.assembly {
+        facts.body_work.canonical_steps = facts
+            .body_work
+            .canonical_steps
+            .checked_add(assembly.operands.len())
+            .ok_or("source Copy assembly discovery work exhausted")?;
+        for ty in assembly.operands.iter().filter_map(|operand| operand.ty) {
+            types.insert(ty);
+            if types.len() > 1_000_000 {
+                return Err("source Copy requirement budget exceeded".into());
+            }
+        }
+    }
     let mut types: Vec<_> = types.into_iter().collect();
     types.sort_unstable_by_key(|ty| ty.0);
     Ok(types)

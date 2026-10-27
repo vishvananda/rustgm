@@ -1,0 +1,32 @@
+{
+  "status": "mandatory input/output Copy hypotheses declared before observation",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "profile": [
+    "--edition=2024",
+    "--target=x86_64-unknown-linux-gnu",
+    "--crate-type=lib",
+    "--emit=metadata",
+    "-Cpanic=abort",
+    "-Copt-level=0"
+  ],
+  "cases": [
+    {
+      "source": "output-copy.rs",
+      "sha256": "2cabb52278620b1d1e2115f77e77bdff5d494eda52d9e4d256bfac005c0f9be7",
+      "status": 0
+    },
+    {
+      "source": "output-noncopy.rs",
+      "sha256": "9c9b445244f3a3600a2a9699a4cd0011ed0e695aa0722d854631ea335742d20b",
+      "status": 1
+    },
+    {
+      "source": "inout-noncopy.rs",
+      "sha256": "1a714ae4d3f376ecbdf1919275fb63dbf02e281970cef6cc569af9464f2d35a0",
+      "status": 1
+    }
+  ],
+  "candidate_boundary": "exact128 numeric XMM, actual source/proof; Ymm stays explicitly unsupported even when independently accepted; no AVX execution, backend or metadata permission",
+  "retained_source": "../asm-frontend/stream-ps.rs unchanged function body; independent stream source observation follows separately"
+}

@@ -50,6 +50,13 @@ const TARGET_VALUES: &[(&str, &str)] = &[
     ("target_vendor", "unknown"),
 ];
 
+/// Borrow enabled CPU facts from the same fixed target owner used by cfg.
+pub(crate) fn target_features() -> impl Iterator<Item = &'static str> {
+    TARGET_VALUES
+        .iter()
+        .filter_map(|&(name, value)| (name == "target_feature").then_some(value))
+}
+
 #[derive(Default, Debug)]
 pub struct Config {
     edition: crate::support::edition::Edition,

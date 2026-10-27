@@ -80,7 +80,7 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    fn target_body_features(&mut self, node: NodeId) -> Result<FeatureSet, Error> {
+    pub(super) fn target_body_features(&mut self, node: NodeId) -> Result<FeatureSet, Error> {
         if !self.state.in_function {
             return Ok(FeatureSet::default());
         }
@@ -264,3 +264,7 @@ pub(in crate::sema) fn observe_active_calls(
         ),
     ])
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/asm_cpu_contexts.rs"]
+mod assembly_tests;
