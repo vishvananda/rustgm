@@ -63,11 +63,13 @@ def check(stage, app, jobs=None):
     if not version.startswith("rustc 1.98.0 "):
         raise ValueError(f"expected rustc 1.98.0, got {version.strip()}")
     manifest, cases = load_cases(ROOT, stage)
+    # Reject malformed metadata before compiling any earlier case in the batch.
+    for case in cases:
+        check_classification(case)
     directory = ROOT / "obj/rustc-syntax" / stage
     directory.mkdir(parents=True, exist_ok=True)
 
     def worker(case):
-        check_classification(case)
         metadata = case["rustc"]
         kind = metadata["kind"]
         if kind == "fragment":

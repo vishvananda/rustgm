@@ -13,11 +13,12 @@ checkpoint documents accumulate faster than executable consumers. This is now
 the main scheduling problem. More workers or fewer semantic tests alone will
 not solve the joins between those components.
 
-The combined compiler `6ef90dd3` executes direct source Thin, PhantomData and
-final trait methods and authenticates source derive helper declarations. Original
-core passes VTable, Share::share and Default's declaration, then stops at
-`try { accum }` in `ops/index_range.rs:172`. It takes 1.881 seconds,
-verifies all 722 source inputs and opens 94 files. That is neither 94 compiled
+The combined compiler `9315d746` executes direct source Thin, PhantomData, final
+trait methods and full-attribute Location derives, and authenticates source
+derive helpers and try-block syntax. Original core passes VTable, Share::share,
+Default and the try blocks, then stops at the const closure in
+`ops/try_trait.rs:415`. It takes 1.976 seconds,
+verifies all 722 source inputs and opens 96 files. That is neither 96 compiled
 modules nor a completion percentage; there is still no core artifact. Broader
 alias/Pointee semantics and actual library body/metadata joins remain required.
 

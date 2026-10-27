@@ -2184,7 +2184,8 @@
       ],
       "rustc": {
         "kind": "expression",
-        "status": 1
+        "status": 1,
+        "reason": "PA4 parses try-block syntax; the independent wrapper has no unstable try_blocks feature and no required Try result typing. Feature authority and execution belong to PA26/PA31."
       }
     },
     {
