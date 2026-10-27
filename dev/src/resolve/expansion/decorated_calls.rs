@@ -93,7 +93,11 @@ impl<S: Sources> Engine<'_, S> {
         self.ready.push_back(index);
         Ok(true)
     }
-    fn macro_attribute(&self, visit: Visit, file: FileId) -> Result<Option<(usize, u32)>, Error> {
+    fn macro_attribute(
+        &mut self,
+        visit: Visit,
+        file: FileId,
+    ) -> Result<Option<(usize, u32)>, Error> {
         let unit = self.loader.package.unit(file);
         let owner_index = unit.owner_indices[visit.node.get() as usize]
             .ok_or_else(|| Error::at(file, 0, "attribute use has no configured owner"))?;
@@ -105,8 +109,35 @@ impl<S: Sources> Engine<'_, S> {
                 "attribute use has a different configured owner",
             ));
         }
-        for index in owner.attributes.clone() {
-            charge(&self.loader.package, file, 0, 1, 0)?;
+        let attributes = owner.attributes.clone();
+        let key = super::NodeKey {
+            file,
+            node: visit.node,
+        };
+        let source = self.loader.package.source_core().is_some();
+        if let Some(provider) = self.loader.package.source_core() {
+            provider
+                .macros
+                .charge(0, 0)
+                .map_err(|message| Error::at(file, 0, message))?;
+            self.ensure_attribute_policy(key)?;
+        }
+        let unit = self.loader.package.unit(file);
+        let policy = self
+            .attribute_effects
+            .as_deref()
+            .and_then(|effects| effects.policy.as_ref());
+        let charge_read = |steps| {
+            if source {
+                policy
+                    .ok_or_else(|| Error::at(file, 0, "missing actual attribute policy payer"))?
+                    .attribute_read(key, steps)
+                    .map_err(Error::from)?;
+            }
+            Ok::<(), Error>(())
+        };
+        for index in attributes {
+            charge_read(1)?;
             let effect = &unit.configured.effects[index];
             if effect.attribute.effect != Effect::Keep {
                 continue;
@@ -114,13 +145,7 @@ impl<S: Sources> Engine<'_, S> {
             let attribute = effect.attribute.attribute;
             let forest = &unit.configured.ast.attributes[effect.capture as usize].forest;
             let name = attribute.name(forest, unit.source.text());
-            charge(
-                &self.loader.package,
-                file,
-                attribute.span.start,
-                name.map_or(0, str::len),
-                0,
-            )?;
+            charge_read(name.map_or(0, str::len))?;
             if name == Some("register_tool") {
                 return Err(Error::at(
                     file,

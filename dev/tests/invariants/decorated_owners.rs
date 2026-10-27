@@ -1,5 +1,7 @@
 //! Opponents use the actual source-created engine, owner, lookup and retained rows.
 use super::*;
+#[path = "classification_costs.rs"]
+mod costs;
 use crate::{
     expand::{
         builtin::{Builtin, BuiltinKind},
