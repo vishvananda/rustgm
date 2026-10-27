@@ -1,6 +1,8 @@
 //! Real encoded family opponents preserve owner/site/namespace and budget fences.
 use super::*;
 use crate::support::crates::generics::{self as g, source as s};
+type Mutation =
+    fn(&mut s::SourceRows, &mut s::HeaderAttributeColumns, &mut s::ProvidedContractRows);
 
 fn check(
     artifact: &crates::Interface,
@@ -35,12 +37,10 @@ fn check(
 #[test]
 fn complete_columns_reject_missing_swapped_sites_namespace_and_failed_storage() -> Result {
     let (_, artifact) = provider("")?;
-    for change in [
-        (|_: &mut s::SourceRows,
-          _: &mut s::HeaderAttributeColumns,
-          c: &mut s::ProvidedContractRows| {
+    let opponents: [Mutation; 6] = [
+        |_, _, c| {
             c.modifiers.functions.pop();
-        }) as fn(_, _, _),
+        },
         |_, _, c| {
             c.modifiers.functions.swap(0, 1);
         },
@@ -56,7 +56,8 @@ fn complete_columns_reject_missing_swapped_sites_namespace_and_failed_storage() 
         |_, a, _| {
             a.functions.pop();
         },
-    ] {
+    ];
+    for change in opponents {
         let mut work = g::Work::default();
         let result = check(&artifact, change, artifact.base_retained_bytes(), &mut work);
         assert!(result.is_err());
