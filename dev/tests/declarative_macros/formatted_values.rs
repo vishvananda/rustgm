@@ -84,16 +84,13 @@ fn real_format_headers_keep_stability_and_claim_opponents_explicit() -> TestResu
     for name in [
         "declaration-renamed-role",
         "declaration-authored-same-spelling",
+        "declaration-scoped-format-role",
     ] {
         lower(&fixture(name)?)?;
     }
     for (name, message) in [
         ("diagnostic-only", "format_args diagnostic"),
         ("wrong-diagnostic-role", "format_args diagnostic"),
-        (
-            "scoped-format-role",
-            "builtin macro binding requires its supported declaration kind",
-        ),
         ("unknown-role", "builtin"),
         ("wrong-target", "macro"),
         ("unsafe-missing-feature", "requires allow_internal_unsafe"),

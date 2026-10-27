@@ -146,11 +146,8 @@ fn source_byte_claim_stability_and_ordinary_foreign_frontiers_remain_explicit() 
     let report = resolve::analyze_expanded(report)?;
     crate::provider_traits::require_macro_policies(&report)?;
     rustgm::pipeline::analyze_source(&report)?;
+    lower("scoped-role", Edition::Rust2024)?;
     for (name, message) in [
-        (
-            "scoped-role",
-            "builtin macro binding requires its supported declaration kind",
-        ),
         ("unknown-role", "builtin"),
         ("ordinary-requested", "unresolved"),
         ("ordinary-unrequested", "unresolved"),
