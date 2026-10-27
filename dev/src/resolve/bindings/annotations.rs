@@ -27,6 +27,29 @@ pub(super) enum DiagnosticItem {
     Send,
     Sync,
     AssertMacro,
+    Formatter,
+    Display,
+    FmtWrite,
+    PartialEq,
+    PartialEqEq,
+    PartialEqNe,
+    Eq,
+    EqTotal,
+    Ord,
+    OrdCmp,
+    OrdMax,
+    OrdMin,
+    PartialOrd,
+    PartialOrdCmp,
+    PartialOrdLt,
+    PartialOrdLe,
+    PartialOrdGt,
+    PartialOrdGe,
+    Default,
+    DefaultFn,
+    Hash,
+    Result,
+    Option,
 }
 impl DiagnosticItem {
     pub(super) const fn index(self) -> usize {
@@ -67,6 +90,30 @@ pub(super) fn parse(
         b"Send" => Ok(DiagnosticItem::Send),
         b"Sync" => Ok(DiagnosticItem::Sync),
         b"assert_macro" => Ok(DiagnosticItem::AssertMacro),
+        b"Formatter" => Ok(DiagnosticItem::Formatter),
+        b"Display" => Ok(DiagnosticItem::Display),
+        b"FmtWrite" => Ok(DiagnosticItem::FmtWrite),
+        b"PartialEq" => Ok(DiagnosticItem::PartialEq),
+        b"cmp_partialeq_eq" => Ok(DiagnosticItem::PartialEqEq),
+        b"cmp_partialeq_ne" => Ok(DiagnosticItem::PartialEqNe),
+        b"Eq" => Ok(DiagnosticItem::Eq),
+        b"assert_receiver_is_total_eq" => Ok(DiagnosticItem::EqTotal),
+        b"Ord" => Ok(DiagnosticItem::Ord),
+        b"ord_cmp_method" => Ok(DiagnosticItem::OrdCmp),
+        b"cmp_ord_max" => Ok(DiagnosticItem::OrdMax),
+        b"cmp_ord_min" => Ok(DiagnosticItem::OrdMin),
+        b"PartialOrd" => Ok(DiagnosticItem::PartialOrd),
+        b"cmp_partialord_cmp" => Ok(DiagnosticItem::PartialOrdCmp),
+        b"cmp_partialord_lt" => Ok(DiagnosticItem::PartialOrdLt),
+        b"cmp_partialord_le" => Ok(DiagnosticItem::PartialOrdLe),
+        b"cmp_partialord_gt" => Ok(DiagnosticItem::PartialOrdGt),
+        b"cmp_partialord_ge" => Ok(DiagnosticItem::PartialOrdGe),
+        b"Default" => Ok(DiagnosticItem::Default),
+        b"default_fn" => Ok(DiagnosticItem::DefaultFn),
+        b"Hash" => Ok(DiagnosticItem::Hash),
+        b"Result" => Ok(DiagnosticItem::Result),
+        b"Option" => Ok(DiagnosticItem::Option),
+
         _ => Err(error("unsupported source diagnostic identity")),
     }
 }
@@ -85,19 +132,7 @@ pub(super) fn validate(
         if !source.features.has(Feature::RustcAttributes) {
             return Err(error("diagnostic identity requires rustc_attrs"));
         }
-        let expected = match item {
-            DiagnosticItem::Clone => Some(LangItem::Clone),
-            DiagnosticItem::Copy => Some(LangItem::Copy),
-            DiagnosticItem::Sync => Some(LangItem::Sync),
-            DiagnosticItem::Identity
-            | DiagnosticItem::CfgSelect
-            | DiagnosticItem::FormatArgsMacro
-            | DiagnosticItem::NonNull
-            | DiagnosticItem::Debug
-            | DiagnosticItem::Alignment
-            | DiagnosticItem::Send
-            | DiagnosticItem::AssertMacro => None,
-        };
+        let expected = expected_language(*item);
         if let Some(expected) = expected {
             if !claims
                 .iter()
@@ -106,6 +141,9 @@ pub(super) fn validate(
                 return Err(error(
                     "diagnostic identity has a different actual language owner",
                 ));
+            }
+            if matches!(item, DiagnosticItem::PartialEq | DiagnosticItem::PartialOrd) {
+                validate_module_item(package, declaration, *item)?;
             }
         } else if matches!(
             item,
@@ -130,9 +168,22 @@ pub(super) fn validate(
                     "format_args diagnostic identity requires its actual builtin role"
                 }));
             }
+        } else if let Some(expected_owner) = member_owner(*item) {
+            validate_member(package, reserved, declaration, expected_owner)?;
         } else if matches!(
             item,
-            DiagnosticItem::Debug | DiagnosticItem::Alignment | DiagnosticItem::Send
+            DiagnosticItem::Debug
+                | DiagnosticItem::Alignment
+                | DiagnosticItem::Send
+                | DiagnosticItem::Formatter
+                | DiagnosticItem::Display
+                | DiagnosticItem::FmtWrite
+                | DiagnosticItem::Eq
+                | DiagnosticItem::Ord
+                | DiagnosticItem::Default
+                | DiagnosticItem::Hash
+                | DiagnosticItem::Result
+                | DiagnosticItem::Option
         ) {
             validate_module_item(package, declaration, *item)?;
         } else if matches!(item, DiagnosticItem::NonNull) {
@@ -180,8 +231,10 @@ fn validate_module_item(
     let unit = package.unit(declaration.origin.file);
     let right_kind = matches!(unit.configured.ast.node(declaration.origin.node).kind,
         Kind::Item(index) if matches!((item,unit.configured.ast.items[index as usize].kind),
-            (DiagnosticItem::Debug,ItemKind::Trait{..})
-                | (DiagnosticItem::Alignment,ItemKind::Enum{..})
+            (DiagnosticItem::Debug | DiagnosticItem::Display | DiagnosticItem::FmtWrite | DiagnosticItem::PartialEq | DiagnosticItem::PartialOrd
+                    | DiagnosticItem::Eq | DiagnosticItem::Ord | DiagnosticItem::Default | DiagnosticItem::Hash,ItemKind::Trait{..})
+                | (DiagnosticItem::Formatter,ItemKind::Struct{..})
+                | (DiagnosticItem::Alignment | DiagnosticItem::Result | DiagnosticItem::Option,ItemKind::Enum{..})
                 | (DiagnosticItem::Send,ItemKind::Trait{auto_:true,unsafe_:true,constant:false,..})));
     if declaration.parent.is_some() || !right_kind {
         return Err(super::reservations::error(
@@ -189,10 +242,96 @@ fn validate_module_item(
             declaration.origin,
             if matches!(item, DiagnosticItem::Send) {
                 "Send diagnostic identity requires its actual unsafe module auto trait"
-            } else {
+            } else if matches!(item, DiagnosticItem::Debug | DiagnosticItem::Alignment) {
                 "diagnostic identity requires its actual Debug trait or Alignment enum"
+            } else {
+                "diagnostic identity requires its actual module declaration kind"
             },
         ));
     }
     Ok(())
+}
+
+fn member_owner(item: DiagnosticItem) -> Option<DiagnosticItem> {
+    match item {
+        DiagnosticItem::PartialEqEq | DiagnosticItem::PartialEqNe => {
+            Some(DiagnosticItem::PartialEq)
+        }
+        DiagnosticItem::EqTotal => Some(DiagnosticItem::Eq),
+        DiagnosticItem::OrdCmp | DiagnosticItem::OrdMax | DiagnosticItem::OrdMin => {
+            Some(DiagnosticItem::Ord)
+        }
+        DiagnosticItem::PartialOrdCmp
+        | DiagnosticItem::PartialOrdLt
+        | DiagnosticItem::PartialOrdLe
+        | DiagnosticItem::PartialOrdGt
+        | DiagnosticItem::PartialOrdGe => Some(DiagnosticItem::PartialOrd),
+        DiagnosticItem::DefaultFn => Some(DiagnosticItem::Default),
+        _ => None,
+    }
+}
+fn validate_member(
+    package: &Package,
+    reserved: &Reservations,
+    declaration: Declaration,
+    expected: DiagnosticItem,
+) -> Result<(), Error> {
+    let owner = reserved.diagnostics[expected.index()].ok_or_else(|| {
+        super::reservations::error(
+            package,
+            declaration.origin,
+            "diagnostic member requires its actual diagnostic trait owner",
+        )
+    })?;
+    let ast = &package.unit(declaration.origin.file).configured.ast;
+    if declaration.parent != Some(owner.definition)
+        || !matches!(ast.node(declaration.origin.node).kind,
+        Kind::Item(index) if matches!(ast.items[index as usize].kind, ItemKind::Function {..}))
+    {
+        return Err(super::reservations::error(
+            package,
+            declaration.origin,
+            "diagnostic member has another declaration kind or trait owner",
+        ));
+    }
+    Ok(())
+}
+
+fn expected_language(item: DiagnosticItem) -> Option<LangItem> {
+    match item {
+        DiagnosticItem::Clone => Some(LangItem::Clone),
+        DiagnosticItem::Copy => Some(LangItem::Copy),
+        DiagnosticItem::Sync => Some(LangItem::Sync),
+        DiagnosticItem::PartialEq => Some(LangItem::PartialEq),
+        DiagnosticItem::PartialOrd => Some(LangItem::PartialOrd),
+        DiagnosticItem::Identity
+        | DiagnosticItem::CfgSelect
+        | DiagnosticItem::FormatArgsMacro
+        | DiagnosticItem::NonNull
+        | DiagnosticItem::Debug
+        | DiagnosticItem::Alignment
+        | DiagnosticItem::Send
+        | DiagnosticItem::AssertMacro
+        | DiagnosticItem::Formatter
+        | DiagnosticItem::Display
+        | DiagnosticItem::FmtWrite
+        | DiagnosticItem::PartialEqEq
+        | DiagnosticItem::PartialEqNe
+        | DiagnosticItem::Eq
+        | DiagnosticItem::EqTotal
+        | DiagnosticItem::Ord
+        | DiagnosticItem::OrdCmp
+        | DiagnosticItem::OrdMax
+        | DiagnosticItem::OrdMin
+        | DiagnosticItem::PartialOrdCmp
+        | DiagnosticItem::PartialOrdLt
+        | DiagnosticItem::PartialOrdLe
+        | DiagnosticItem::PartialOrdGt
+        | DiagnosticItem::PartialOrdGe
+        | DiagnosticItem::Default
+        | DiagnosticItem::DefaultFn
+        | DiagnosticItem::Hash
+        | DiagnosticItem::Result
+        | DiagnosticItem::Option => None,
+    }
 }

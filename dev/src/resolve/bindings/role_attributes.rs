@@ -221,7 +221,14 @@ pub(super) fn primary(
                 claims.iter().any(|claim| {
                     matches!(
                         claim,
-                        Claim::Language(LangItem::ControlFlowContinue | LangItem::ControlFlowBreak)
+                        Claim::Language(
+                            LangItem::ControlFlowContinue
+                                | LangItem::ControlFlowBreak
+                                | LangItem::ResultOk
+                                | LangItem::ResultErr
+                                | LangItem::OptionSome
+                                | LangItem::OptionNone
+                        )
                     )
                 })
             });
@@ -240,6 +247,7 @@ pub(super) fn primary(
         | (ItemKind::Const { .. }, DefKind::Const)
         | (ItemKind::Static { .. }, DefKind::Static)
         | (ItemKind::Struct { .. }, DefKind::Struct)
+        | (ItemKind::Enum { .. }, DefKind::Enum)
         | (ItemKind::TypeAlias { .. }, DefKind::TypeAlias)
         | (ItemKind::Impl { .. }, DefKind::SelfType)
         | (ItemKind::MacroRules { .. }, DefKind::Macro) => true,
