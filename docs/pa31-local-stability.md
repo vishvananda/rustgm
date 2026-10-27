@@ -168,8 +168,10 @@ private module and types mentioned only in function bodies do not become APIs.
 The semantic pass shares one visited set across all interfaces. It follows
 canonical signatures, explicit predicates, complete arguments and public fields;
 it does not reconstruct source paths, expand function bodies, grant a trait
-proof or publish metadata. Existing cold inventory storage is charged once,
-including owned policy strings, before temporary allocation. Work and queue/index
+proof or publish metadata. The design charges existing cold inventory storage, including owned policy
+strings, before temporary allocation. Root review found that the qualified
+predecessor invoked this charge twice consecutively; root's single-charge
+correction and refreshed combined counters are pending. Work and queue/index
 growth are prepaid; failed attempts leave no retained completion/cache state.
 Ordinary packages without a library inventory return without a walk or allocation.
 
@@ -181,8 +183,9 @@ remain integration checks. The prior architecture-only filename failure remains
 retained; no independent Rust observations were repeated or fixtures rewritten.
 
 For 8/32/128 public functions sharing one normalized nested signature, the pass
-observed 15/39/135 distinct types and 9/33/129 declarations. Work charges were
-415/1011/3947, with conservative logical storage charges 5204/13764/51332 bytes.
+observed 15/39/135 distinct types and 9/33/129 declarations. The twice-billed predecessor's work charges were 415/1011/3947, with conservative
+logical storage charges 5204/13764/51332 bytes. These are retained historical
+observations, not the corrected single-charge measurements.
 Changing one unrelated hidden public type to 128 changed none of those work or
 visitation counts; the larger preexisting inventory capacity was still counted.
 These are bounded policy charges, not heap-allocation measurements. Actual records
