@@ -383,5 +383,5 @@ impl Splice<'_> {
 }
 
 #[cfg(test)]
-#[path = "../../tests/invariants/const_fragment_inputs.rs"]
+#[path = "../../tests/invariants/interpolated_arguments.rs"]
 mod const_arguments;
