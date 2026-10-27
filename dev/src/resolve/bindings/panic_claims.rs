@@ -76,9 +76,7 @@ pub(super) fn validate(
         | LangItem::PartialEq
         | LangItem::StructuralPartialEq
         | LangItem::PartialOrd
-        | LangItem::Send
-        | LangItem::Sync
-        | LangItem::Unpin => false,
+        | LangItem::Send => false,
         LangItem::Panic
         | LangItem::PanicFmt
         | LangItem::PanicImpl
