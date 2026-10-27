@@ -58,6 +58,41 @@ fn no_attributes_allocate_no_effects_but_nonlint_attributes_have_positive_empty_
     );
     assert_eq!(size_of::<Frame>(), 8);
     assert_eq!(size_of::<Option<Tail>>(), 4);
+    let offsets = [
+        ("size.Owner", size_of::<Owner>()),
+        ("size.Witness", size_of::<Witness>()),
+        ("size.Change", size_of::<Change>()),
+        (
+            "size.TreePair",
+            size_of::<(u32, crate::syntax::token_tree::Tree)>(),
+        ),
+        ("Work.attributes", std::mem::offset_of!(Work, attributes)),
+        ("Work.entries", std::mem::offset_of!(Work, entries)),
+        ("Work.owners", std::mem::offset_of!(Work, owners)),
+        ("Work.frames", std::mem::offset_of!(Work, frames)),
+        ("Work.calls", std::mem::offset_of!(Work, calls)),
+        (
+            "Work.compositions",
+            std::mem::offset_of!(Work, compositions),
+        ),
+        ("Work.steps", std::mem::offset_of!(Work, steps)),
+        ("Work.bytes", std::mem::offset_of!(Work, bytes)),
+        ("Producer.owners", std::mem::offset_of!(Producer, owners)),
+        ("Producer.index", std::mem::offset_of!(Producer, index)),
+        ("Producer.frames", std::mem::offset_of!(Producer, frames)),
+        ("Producer.calls", std::mem::offset_of!(Producer, calls)),
+        (
+            "Producer.composed",
+            std::mem::offset_of!(Producer, composed),
+        ),
+        ("Producer.work", std::mem::offset_of!(Producer, work)),
+        ("Producer.reads", std::mem::offset_of!(Producer, reads)),
+        ("Owner.parsed", std::mem::offset_of!(Owner, parsed)),
+        ("Parsed.changes", std::mem::offset_of!(Parsed, changes)),
+        ("Parsed.witnesses", std::mem::offset_of!(Parsed, witnesses)),
+        ("Witness.trees", std::mem::offset_of!(Witness, trees)),
+    ];
+    println!("policy-observer-layout={offsets:?}");
     Ok(())
 }
 #[test]

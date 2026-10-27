@@ -8,6 +8,7 @@ use crate::{
 use std::sync::Arc;
 
 struct OriginBody<O> {
+    assembly: Option<Box<crate::body::assembly::Payload>>,
     static_types: Option<Arc<crate::support::hash::HashMap<ir::DefId, TypeId>>>,
     mutable_statics: Option<Arc<crate::support::hash::HashSet<ir::DefId>>>,
     const_context: bool,

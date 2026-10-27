@@ -64,3 +64,36 @@ frozen native runner/plan are under
 same source through the real CLI and locked object bridge; hand-authored LowIR
 is not a substitute. Typed target-feature rows follow on the accepted combined
 base, preserving distinct language call safety and ASM effective features.
+
+## Combined integration and native copy qualification
+
+Normal merge `41258fdc` integrates this source with the typed assembly compiler.
+Twenty-three combined private controls pass in250.90s. Three separately repaired
+CI guards pass in124.48s: the body layout mirror now includes the existing
+assembly payload; marker ownership and duplicate attributes have separate
+negative controls; feature-request checks distinguish real inline assembly from
+global assembly and ordinary same-named macros. These are test repairs.
+Production/CLI strict Clippy, formatting, architecture, lexer10, feature-request5
+and all120 PA8 text cases pass in38.23s, receipt1793119857069645726. The combined
+Body is456 bytes, including the separately introduced8-byte assembly payload.
+
+Immutable combined CLI SHA-256 is
+`1b5d6518ee7aa179a640f6461b1928e47a7a3fb99c2cf75acae42300bced2e04`.
+An actual native copy/ABI consumer matches pinned Rust through the locked CPPGM
+object backend: `1.25 -2.00 3.50 4.00 5.50 -6.25 7 -8 3.50\n`. All nine commands
+pass in6.06s. The complete authored Rust provider prefix is unchanged; an
+explicit entry calls the original C observer through `observer-bridge.c`. Rustc
+uses the same Rust input as a library object with `observer-entry.c`; RustGM
+uses its genuine executable entry shim. No source bodies or LowIR are replaced.
+Evidence is under
+`obj/parallel/lib045-root-implementation-v1/simd-integration/native-probe/`;
+results SHA-256 is
+`3eca7cced1d2c2e1fa0080d7abb3480f4ff1aa01ed90130a5c9dc9d39778b63f`.
+
+The earlier runner's missing-entry and duplicate-entry failures remain recorded.
+The unchanged library-mode source still rejects unsupported source stability
+metadata; SIMD record transport also remains explicitly unsupported. Thus this
+is native copy/ABI qualification with an explicit entry, not a complete source
+library artifact, assembly execution or whole stdarch build. Full CI40537834822
+failed the three stale guards above before course/native checks; the focused
+repairs do not retroactively turn that run into a pass.

@@ -446,12 +446,24 @@ fn source_marker_impls_override_structural_defaults_without_std_leaks() -> TestR
         )
         .replace(
             "#[rustc_diagnostic_item=\"Send\"]",
-            "#[rustc_diagnostic_item=\"Send\"]#[rustc_diagnostic_item=\"Sync\"]",
+            "#[rustc_diagnostic_item=\"Sync\"]",
         );
     let error = crate::test_source::source_provider(&wrong, "wrong_sync_owner")
         .err()
         .ok_or("foreign Sync diagnostic owner accepted")?;
     assert!(error.contains("different actual language owner"), "{error}");
+
+    let duplicate = source("markers/raw-without-negative")?.replace(
+        "#[rustc_diagnostic_item=\"Send\"]",
+        "#[rustc_diagnostic_item=\"Send\"]#[rustc_diagnostic_item=\"Sync\"]",
+    );
+    let error = crate::test_source::source_provider(&duplicate, "duplicate_marker_diagnostics")
+        .err()
+        .ok_or("duplicate diagnostic item attributes accepted")?;
+    assert!(
+        error.contains("multiple diagnostic item attributes"),
+        "{error}"
+    );
 
     Ok(())
 }

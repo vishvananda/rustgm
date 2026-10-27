@@ -3927,6 +3927,19 @@ the selected upstream target's required slice must work by PA32. See the
 [assembly checkpoint](docs/source-inline-assembly-checkpoint.md) for implemented
 scope, every-Body cost and remaining SIMD, transport and emission requirements.
 
+Nominal SIMD layout reuses prepared substituted aggregate fields through
+`Definitions::simd_shape`; it returns NotSimd, Pending or an actual lane/count.
+Do not infer vector shape from a source name, add a parallel type cache, or
+substitute at this query boundary. Preserve the single array field at offset
+zero. Rust arguments and results use the existing indirect object convention.
+Qualified C128 uses SSE followed by SSEUP in one vector register; larger and
+nested unsupported vectors reject before the generic memory fallback. The
+`simd_ffi` gate applies to direct foreign-block declarations under the pinned
+rules, independently of layout or target-call permission. Old metadata cannot
+publish this representation until its actual codec is implemented. See the
+[SIMD checkpoint](docs/source-simd-layout-checkpoint.md) for native evidence
+and the exact supported lane and ABI profile.
+
 Retain const-function permission by resolved declaration identity and propagate
 the enclosing constant context into the typed body and its specializations.
 Function pointers carry no const-call permission, even when their original

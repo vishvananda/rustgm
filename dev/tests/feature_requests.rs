@@ -150,7 +150,7 @@ fn unknown_source_requests_are_retained_then_rejected_by_completed_inventory() -
 }
 
 #[test]
-fn requests_follow_root_configuration_and_never_authorize_assembly() -> Result {
+fn requests_follow_root_configuration_and_preserve_assembly_roles_and_contexts() -> Result {
     for request in [
         "#![cfg_attr(all(),feature(asm_experimental_arch))]",
         "#![cfg_attr(all(),cfg_attr(all(),feature(never_type)))]",
@@ -164,28 +164,65 @@ fn requests_follow_root_configuration_and_never_authorize_assembly() -> Result {
             )?;
         }
     }
-    for role in ["asm", "global_asm"] {
-        let declaration = format!(
-            "#![feature(asm_experimental_arch)]{HEADER}#[rustc_builtin_macro]macro_rules!{role}{{()=>{{}}}}"
-        );
-        package(&declaration, &mut Files::default(), true)?;
-        let mut loaded = package(&declaration, &mut Files::default(), false)?;
-        resolve::analyze(&mut loaded)?;
-        let invoked = format!("{declaration}{role}!(\"nop\");");
-        let error = package(&invoked, &mut Files::default(), true)
-            .err()
-            .ok_or("source feature request enabled assembly execution")?;
-        assert!(
-            error
-                .to_string()
-                .contains("builtin bang macro execution is not implemented"),
-            "{error}"
-        );
-    }
+    let declaration = format!(
+        "#![feature(asm_experimental_arch)]{HEADER}#[rustc_builtin_macro]macro_rules!asm{{()=>{{}}}}"
+    );
+    package(&declaration, &mut Files::default(), true)?;
+    let mut loaded = package(&declaration, &mut Files::default(), false)?;
+    resolve::analyze(&mut loaded)?;
+    let invoked = format!("{declaration}asm!(\"nop\");");
+    let error = package(&invoked, &mut Files::default(), true)
+        .err()
+        .ok_or("inline assembly accepted in item context")?;
+    assert!(
+        error.to_string().contains("requires an expression context"),
+        "{error}"
+    );
+    let invoked = format!("{declaration}fn f(){{unsafe{{asm!(\"nop\");}}}}");
+    let actual = package(&invoked, &mut Files::default(), true)?;
+    assert!(actual.units.iter().any(|unit| {
+        unit.configured
+            .ast
+            .nodes
+            .iter()
+            .enumerate()
+            .any(|(index, node)| {
+                unit.configured.active[index]
+                    && matches!(node.kind, rustgm::syntax::ast::Kind::InlineAssembly(_))
+            })
+    }));
+    let global = format!(
+        "#![feature(asm_experimental_arch)]{HEADER}#[rustc_builtin_macro]macro_rules!global_asm{{()=>{{}}}}global_asm!(\"nop\");"
+    );
+    let error = package(&global, &mut Files::default(), true)
+        .err()
+        .ok_or("source feature request enabled unavailable global assembly")?;
+    assert!(
+        error
+            .to_string()
+            .contains("builtin bang macro execution is not implemented"),
+        "{error}"
+    );
+    let unbound = format!("#![feature(asm_experimental_arch)]{HEADER}fn f(){{asm!(\"nop\");}}");
+    let error = package(&unbound, &mut Files::default(), true)
+        .err()
+        .ok_or("feature request manufactured an asm declaration")?;
+    assert!(error.to_string().contains("unresolved macro"), "{error}");
     let ordinary = format!(
         "#![feature(asm_experimental_arch)]{HEADER}macro_rules!asm{{()=>{{1u8}}}}const N:u8=asm!();"
     );
-    package(&ordinary, &mut Files::default(), true)?;
+    let ordinary = package(&ordinary, &mut Files::default(), true)?;
+    assert!(ordinary.units.iter().all(|unit| {
+        unit.configured
+            .ast
+            .nodes
+            .iter()
+            .enumerate()
+            .all(|(index, node)| {
+                !unit.configured.active[index]
+                    || !matches!(node.kind, rustgm::syntax::ast::Kind::InlineAssembly(_))
+            })
+    }));
     Ok(())
 }
 
