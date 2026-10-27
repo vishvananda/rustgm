@@ -55,7 +55,7 @@ fn declaration_forms_required_gates_and_all_owner_sites_are_checked() -> TestRes
         "forwarded/raw-enabled",
         "forwarded/ordinary-doc-cfg",
     ] {
-        analyze(&input(name)?)?;
+        analyze(&input(name)?).map_err(|error| format!("{name}: {error}"))?;
     }
     for name in ["unknown-feature", "empty-feature"] {
         reject(
@@ -84,6 +84,14 @@ fn declaration_forms_required_gates_and_all_owner_sites_are_checked() -> TestRes
             name,
             "target feature requires its actual crate language gate",
         )?;
+    }
+    for name in [
+        "forwarded/byte-string",
+        "forwarded/c-string",
+        "forwarded/nonliteral",
+        "forwarded/concat-expression",
+    ] {
+        reject(name, "target_feature requires a string literal")?;
     }
     let (_, Analysis { facts, .. }) = analyze(&input("duplicate-features")?)?;
     let rows = facts.target_feature_functions.values().collect::<Vec<_>>();
@@ -437,6 +445,7 @@ fn cold_rows_cumulative_failures_and_common_pending_map_cost_are_measured() -> T
         );
     }
     pending_map_scaling()?;
+    assert!(feature_sets::index_is_complete());
     let mut high = FeatureSet::default();
     high.insert(
         "xsaves",

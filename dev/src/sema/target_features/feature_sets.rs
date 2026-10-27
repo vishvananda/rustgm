@@ -25,27 +25,27 @@ static FEATURES: &[Specification] = &[
     Specification::new("amx-avx512", Some(Gate::Amx), &[10]),
     Specification::new("amx-bf16", Some(Gate::Amx), &[10]),
     Specification::new("amx-complex", Some(Gate::Amx), &[10]),
-    Specification::new("amx-fp8", Some(Gate::Amx), &[10]),
     Specification::new("amx-fp16", Some(Gate::Amx), &[10]),
+    Specification::new("amx-fp8", Some(Gate::Amx), &[10]),
     Specification::new("amx-int8", Some(Gate::Amx), &[10]),
     Specification::new("amx-movrs", Some(Gate::Amx), &[10]),
     Specification::new("amx-tf32", Some(Gate::Amx), &[10]),
     Specification::new("amx-tile", Some(Gate::Amx), &[]),
     Specification::new("apxf", Some(Gate::Apx), &[]),
     Specification::new("avx", None, &[64]),
-    Specification::new("avx2", None, &[12]),
     Specification::new(
         "avx10.1",
         Some(Gate::Avx10),
         &[16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 29],
     ),
-    Specification::new("avx10.2", Some(Gate::Avx10), &[14, 32, 33, 34]),
+    Specification::new("avx10.2", Some(Gate::Avx10), &[13, 32, 34, 33]),
+    Specification::new("avx2", None, &[12]),
     Specification::new("avx512bf16", None, &[18]),
     Specification::new("avx512bitalg", None, &[18]),
     Specification::new("avx512bw", None, &[21]),
     Specification::new("avx512cd", None, &[21]),
     Specification::new("avx512dq", None, &[21]),
-    Specification::new("avx512f", None, &[13, 41, 40]),
+    Specification::new("avx512f", None, &[15, 41, 40]),
     Specification::new("avx512fp16", None, &[18]),
     Specification::new("avx512ifma", None, &[21]),
     Specification::new("avx512vbmi", None, &[18]),
@@ -54,11 +54,11 @@ static FEATURES: &[Specification] = &[
     Specification::new("avx512vnni", None, &[21]),
     Specification::new("avx512vp2intersect", None, &[21]),
     Specification::new("avx512vpopcntdq", None, &[21]),
-    Specification::new("avxifma", None, &[13]),
-    Specification::new("avxneconvert", None, &[13]),
-    Specification::new("avxvnni", None, &[13]),
-    Specification::new("avxvnniint8", None, &[13]),
-    Specification::new("avxvnniint16", None, &[13]),
+    Specification::new("avxifma", None, &[15]),
+    Specification::new("avxneconvert", None, &[15]),
+    Specification::new("avxvnni", None, &[15]),
+    Specification::new("avxvnniint16", None, &[15]),
+    Specification::new("avxvnniint8", None, &[15]),
     Specification::new("bmi1", None, &[]),
     Specification::new("bmi2", None, &[]),
     Specification::new("clflushopt", Some(Gate::Clflushopt), &[]),
@@ -81,9 +81,9 @@ static FEATURES: &[Specification] = &[
     Specification::new("rdseed", None, &[]),
     Specification::new("rtm", Some(Gate::Rtm), &[]),
     Specification::new("sha", None, &[61]),
-    Specification::new("sha512", None, &[13]),
+    Specification::new("sha512", None, &[15]),
     Specification::new("sm3", None, &[12]),
-    Specification::new("sm4", None, &[13]),
+    Specification::new("sm4", None, &[15]),
     Specification::new("sse", None, &[]),
     Specification::new("sse2", None, &[60]),
     Specification::new("sse3", None, &[61]),
@@ -92,7 +92,7 @@ static FEATURES: &[Specification] = &[
     Specification::new("sse4a", None, &[62]),
     Specification::new("ssse3", None, &[62]),
     Specification::new("tbm", None, &[]),
-    Specification::new("vaes", None, &[13, 1]),
+    Specification::new("vaes", None, &[15, 1]),
     Specification::new("vpclmulqdq", None, &[12, 50]),
     Specification::new("widekl", None, &[45]),
     Specification::new("x87", Some(Gate::X87), &[]),
@@ -165,4 +165,12 @@ fn named(name: &str) -> Option<Feature> {
         .ok()
         .and_then(|index| u8::try_from(index).ok())
         .map(Feature)
+}
+
+#[cfg(test)]
+pub(super) fn index_is_complete() -> bool {
+    FEATURES
+        .iter()
+        .enumerate()
+        .all(|(index, feature)| named(feature.name).is_some_and(|id| usize::from(id.0) == index))
 }
