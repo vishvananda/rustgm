@@ -35,11 +35,14 @@ pub(super) fn consume(
     };
     let TreeKind::Group {
         delimiter: Delimiter::Parenthesis,
-        children,
+        ..
     } = tree.kind
     else {
         return Err(error("coverage requires parenthesized on or off"));
     };
+    let children = forest
+        .children(group)
+        .ok_or_else(|| error("coverage lost its parsed children"))?;
     let unit = report.package.unit(declaration.file);
     if children.end != children.start + 1
         || !matches!(
