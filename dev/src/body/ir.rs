@@ -504,6 +504,7 @@ impl Body {
     #[must_use]
     pub(crate) fn header(&self) -> Self {
         Self {
+            assembly: None,
             static_types: None,
             mutable_statics: None,
             const_context: self.const_context,

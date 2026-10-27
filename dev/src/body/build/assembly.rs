@@ -46,6 +46,75 @@ impl Builder<'_> {
                 "inline assembly is not permitted in constant contexts",
             ));
         }
+        let operands = self.assembly_preflight(node, args)?;
+        let collected = self.assembly_operands(node, args, operands)?;
+        let start = self.index(node, self.body.arguments.len())?;
+        self.body
+            .arguments
+            .extend(collected.iter().filter_map(|o| o.input));
+        let arguments = ValueList {
+            start,
+            end: self.index(node, self.body.arguments.len())?,
+        };
+        let mut data = self.body.assembly.take().unwrap_or_default();
+        let source = self
+            .body
+            .source
+            .source()
+            .ok_or_else(|| self.error(node, "assembly body has no actual source owner"))?;
+        if data.source.is_some_and(|actual| actual != source) {
+            return Err(self.error(node, "assembly payload belongs to another source body"));
+        }
+        data.source = Some(source);
+        let instruction = self.index(node, data.instructions.len())?;
+        let operand_start = self.index(node, data.operands.len())?;
+        data.operands.extend(collected.iter().copied());
+        let operand_range = List {
+            start: operand_start,
+            end: self.index(node, data.operands.len())?,
+        };
+        let (templates, options) = self.assembly_templates(node, args, &mut data)?;
+        data.instructions.push(Instruction {
+            source: crate::resolve::unit::NodeKey {
+                node,
+                ..self.source
+            },
+            templates,
+            operands: operand_range,
+            options,
+        });
+        self.body.assembly = Some(data);
+        let effect = self.evaluate(
+            node,
+            TypeId::UNIT,
+            Rvalue::Assembly {
+                instruction,
+                arguments,
+            },
+        )?;
+        if options & assembly::NORETURN != 0 {
+            self.terminate(node, super::Terminator::Unreachable);
+            return Ok(effect);
+        }
+        for (operand, output) in collected.iter().enumerate() {
+            if let Some(place) = output.output {
+                let value = self.evaluate(
+                    node,
+                    output
+                        .ty
+                        .ok_or_else(|| self.error(node, "assembly output has no actual type"))?,
+                    Rvalue::AssemblyOutput {
+                        effect,
+                        operand: u32::try_from(operand)
+                            .map_err(|_| self.error(node, "too many assembly outputs"))?,
+                    },
+                )?;
+                self.store(node, place, value)?;
+            }
+        }
+        Ok(effect)
+    }
+    fn assembly_preflight(&self, node: NodeId, args: List) -> Result<usize, Error> {
         let unit = self.report.package.unit(self.source.file);
         let rows = unit.configured.ast.list(args);
         let mut templates = 0usize;
@@ -87,6 +156,16 @@ impl Builder<'_> {
             rows.len().saturating_add(bytes).saturating_add(pieces),
             bound,
         )?;
+        Ok(operands)
+    }
+    fn assembly_operands(
+        &mut self,
+        node: NodeId,
+        args: List,
+        operands: usize,
+    ) -> Result<Vec<Operand>, Error> {
+        let unit = self.report.package.unit(self.source.file);
+        let rows = unit.configured.ast.list(args);
         let mut collected = Vec::with_capacity(operands);
         for &arg in rows.iter().rev() {
             let Kind::AssemblyOperand {
@@ -120,25 +199,9 @@ impl Builder<'_> {
                     "assembly constant and symbolic operands have no retained runtime contract",
                 )
             })?;
-            let Kind::AssemblyRegister { explicit, value } =
-                unit.configured.ast.node(register).kind
-            else {
-                return Err(self.error(node, "assembly register lost its checked node"));
-            };
-            let spelling = if explicit {
-                unit.assembly_string(value)
-                    .map_err(|e| self.error(node, e.message))?
-                    .to_owned()
-            } else {
-                let span = unit.configured.ast.node(value).span;
-                unit.source
-                    .text()
-                    .get(span.start as usize..span.end as usize)
-                    .ok_or_else(|| self.error(node, "invalid assembly register span"))?
-                    .to_owned()
-            };
-            let register =
-                assembly::register(&spelling, explicit).map_err(|e| self.error(node, e))?;
+            let register = unit
+                .assembly_register(register)
+                .map_err(|e| self.error(node, e.message))?;
             collected.push(Operand {
                 register,
                 input: input_value,
@@ -148,31 +211,16 @@ impl Builder<'_> {
             });
         }
         collected.reverse();
-        let start = self.index(node, self.body.arguments.len())?;
-        self.body
-            .arguments
-            .extend(collected.iter().filter_map(|o| o.input));
-        let arguments = ValueList {
-            start,
-            end: self.index(node, self.body.arguments.len())?,
-        };
-        let mut data = self.body.assembly.take().unwrap_or_default();
-        let source = self
-            .body
-            .source
-            .source()
-            .ok_or_else(|| self.error(node, "assembly body has no actual source owner"))?;
-        if data.source.is_some_and(|actual| actual != source) {
-            return Err(self.error(node, "assembly payload belongs to another source body"));
-        }
-        data.source = Some(source);
-        let instruction = self.index(node, data.instructions.len())?;
-        let operand_start = self.index(node, data.operands.len())?;
-        data.operands.extend(collected.iter().copied());
-        let operand_range = List {
-            start: operand_start,
-            end: self.index(node, data.operands.len())?,
-        };
+        Ok(collected)
+    }
+    fn assembly_templates(
+        &self,
+        node: NodeId,
+        args: List,
+        data: &mut Payload,
+    ) -> Result<(List, u16), Error> {
+        let unit = self.report.package.unit(self.source.file);
+        let rows = unit.configured.ast.list(args);
         let template_start = self.index(node, data.templates.len())?;
         let mut options = 0;
         for &arg in rows {
@@ -213,47 +261,12 @@ impl Builder<'_> {
                 _ => {}
             }
         }
-        data.instructions.push(Instruction {
-            source: crate::resolve::unit::NodeKey {
-                node,
-                ..self.source
-            },
-            templates: List {
+        Ok((
+            List {
                 start: template_start,
                 end: self.index(node, data.templates.len())?,
             },
-            operands: operand_range,
             options,
-        });
-        self.body.assembly = Some(data);
-        let effect = self.evaluate(
-            node,
-            TypeId::UNIT,
-            Rvalue::Assembly {
-                instruction,
-                arguments,
-            },
-        )?;
-        if options & assembly::NORETURN != 0 {
-            self.terminate(node, super::Terminator::Unreachable);
-            return Ok(effect);
-        }
-        for (operand, output) in collected.iter().enumerate() {
-            if let Some(place) = output.output {
-                let value = self.evaluate(
-                    node,
-                    output
-                        .ty
-                        .ok_or_else(|| self.error(node, "assembly output has no actual type"))?,
-                    Rvalue::AssemblyOutput {
-                        effect,
-                        operand: u32::try_from(operand)
-                            .map_err(|_| self.error(node, "too many assembly outputs"))?,
-                    },
-                )?;
-                self.store(node, place, value)?;
-            }
-        }
-        Ok(effect)
+        ))
     }
 }

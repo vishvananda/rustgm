@@ -15,96 +15,15 @@ pub(crate) fn complete(unit: &mut Unit, root: NodeId) -> Result<(), LexError> {
         return Err(error(0, "missing parsed assembly"));
     };
     let rows = unit.configured.ast.list(args).to_vec();
-    let mut names = HashMap::default();
-    let mut registers = Vec::new();
-    let mut options = 0;
-    let mut outputs = 0;
-    let mut real_outputs = 0;
-    let mut named = false;
-    for &row in &rows {
-        let node = *unit.configured.ast.node(row);
-        match node.kind {
-            Kind::AssemblyOptions(bits) => {
-                if options & bits != 0 {
-                    return Err(error(node.span.start, "duplicate assembly option"));
-                }
-                options |= bits;
-            }
-            Kind::AssemblyOperand {
-                register,
-                name,
-                output,
-                direction,
-                ..
-            } => {
-                let explicit = register.is_some_and(|r| {
-                    matches!(
-                        unit.configured.ast.node(r).kind,
-                        Kind::AssemblyRegister { explicit: true, .. }
-                    )
-                });
-                if explicit && name.is_some() {
-                    return Err(error(
-                        node.span.start,
-                        "explicit assembly registers cannot be named",
-                    ));
-                }
-                if let Some(name) = name {
-                    let span = unit.configured.ast.node(name).span;
-                    let key = unit
-                        .source
-                        .text()
-                        .get(span.start as usize..span.end as usize)
-                        .ok_or_else(|| error(span.start, "invalid assembly operand name"))?
-                        .to_owned();
-                    if names.insert(key, registers.len()).is_some() {
-                        return Err(error(span.start, "duplicate assembly operand name"));
-                    }
-                    named = true;
-                } else if !explicit && named {
-                    return Err(error(
-                        node.span.start,
-                        "positional assembly operand follows named or explicit operand",
-                    ));
-                }
-                if explicit {
-                    named = true;
-                }
-                if matches!(
-                    direction,
-                    Direction::Out | Direction::LateOut | Direction::InOut | Direction::InLateOut
-                ) {
-                    outputs += 1;
-                    real_outputs += usize::from(output.is_some());
-                }
-                registers.push(explicit);
-            }
-            _ => {}
-        }
-    }
-    if options & assembly::NOMEM != 0 && options & assembly::READONLY != 0 {
-        return Err(error(
-            0,
-            "assembly nomem and readonly are mutually exclusive",
-        ));
-    }
-    if options & assembly::PURE != 0
-        && (options & (assembly::NOMEM | assembly::READONLY) == 0
-            || options & assembly::NORETURN != 0
-            || real_outputs == 0)
-    {
-        return Err(error(
-            0,
-            "pure assembly requires real outputs and nomem or readonly, without noreturn",
-        ));
-    }
-    if options & assembly::NORETURN != 0 && outputs != 0 {
-        return Err(error(0, "noreturn assembly cannot have outputs"));
-    }
+    let Operands {
+        names,
+        registers,
+        options,
+    } = argument_layout(unit, &rows)?;
     let mut used = vec![false; registers.len()];
     let mut implicit = 0;
     for row in rows {
-        let node = *unit.configured.ast.node(row);
+        let node = unit.configured.ast.node(row);
         let Kind::AssemblyTemplate { value, .. } = node.kind else {
             continue;
         };
@@ -168,6 +87,105 @@ pub(crate) fn complete(unit: &mut Unit, root: NodeId) -> Result<(), LexError> {
     }
     Ok(())
 }
+struct Operands {
+    names: HashMap<String, usize>,
+    registers: Vec<bool>,
+    options: u16,
+}
+fn argument_layout(unit: &Unit, rows: &[NodeId]) -> Result<Operands, LexError> {
+    let mut names = HashMap::default();
+    let mut registers = Vec::new();
+    let mut options = 0;
+    let mut outputs = 0;
+    let mut real_outputs = 0;
+    let mut positional_closed = false;
+    for &row in rows {
+        let node = unit.configured.ast.node(row);
+        match node.kind {
+            Kind::AssemblyOptions(bits) => {
+                if options & bits != 0 {
+                    return Err(error(node.span.start, "duplicate assembly option"));
+                }
+                options |= bits;
+            }
+            Kind::AssemblyOperand {
+                register,
+                name,
+                output,
+                direction,
+                ..
+            } => {
+                let explicit = register.is_some_and(|r| {
+                    matches!(
+                        unit.configured.ast.node(r).kind,
+                        Kind::AssemblyRegister { explicit: true, .. }
+                    )
+                });
+                if explicit && name.is_some() {
+                    return Err(error(
+                        node.span.start,
+                        "explicit assembly registers cannot be named",
+                    ));
+                }
+                if let Some(name) = name {
+                    let span = unit.configured.ast.node(name).span;
+                    let key = unit
+                        .source
+                        .text()
+                        .get(span.start as usize..span.end as usize)
+                        .ok_or_else(|| error(span.start, "invalid assembly operand name"))?
+                        .to_owned();
+                    if names.insert(key, registers.len()).is_some() {
+                        return Err(error(span.start, "duplicate assembly operand name"));
+                    }
+                    positional_closed = true;
+                } else if !explicit && positional_closed {
+                    return Err(error(
+                        node.span.start,
+                        "positional assembly operand follows named or explicit operand",
+                    ));
+                }
+                if explicit {
+                    positional_closed = true;
+                }
+                if matches!(
+                    direction,
+                    Direction::Out | Direction::LateOut | Direction::InOut | Direction::InLateOut
+                ) {
+                    outputs += 1;
+                    real_outputs += usize::from(output.is_some());
+                }
+                registers.push(explicit);
+            }
+            _ => {}
+        }
+    }
+    if options & assembly::NOMEM != 0 && options & assembly::READONLY != 0 {
+        return Err(error(
+            0,
+            "assembly nomem and readonly are mutually exclusive",
+        ));
+    }
+    if options & assembly::PURE != 0
+        && (options & (assembly::NOMEM | assembly::READONLY) == 0
+            || options & assembly::NORETURN != 0
+            || real_outputs == 0)
+    {
+        return Err(error(
+            0,
+            "pure assembly requires real outputs and nomem or readonly, without noreturn",
+        ));
+    }
+    if options & assembly::NORETURN != 0 && outputs != 0 {
+        return Err(error(0, "noreturn assembly cannot have outputs"));
+    }
+    Ok(Operands {
+        names,
+        registers,
+        options,
+    })
+}
+
 fn placeholders(
     text: &str,
     names: &HashMap<String, usize>,
@@ -260,41 +278,13 @@ impl super::Report {
             .macros
             .charge(1, 0)
             .map_err(|message| Error::at(key.file, 0, message))?;
-        let unit = self
-            .package
-            .units
-            .get(key.file.0 as usize)
-            .ok_or_else(|| Error::at(key.file, 0, "missing assembly source unit"))?;
-        let node = unit
-            .configured
-            .ast
-            .nodes
-            .get(key.node.get() as usize)
-            .ok_or_else(|| Error::at(key.file, 0, "missing assembly source node"))?;
-        let fail = |message| Error::at(key.file, node.span.start, message);
-        let Kind::InlineAssembly(args) = node.kind else {
-            return Err(fail("assembly changed its actual syntax kind"));
-        };
-        if unit.configured.active.get(key.node.get() as usize) != Some(&true) {
-            return Err(fail("assembly source node is not active"));
-        }
-        let origin = unit
-            .configured
-            .ast
-            .list(args)
-            .last()
-            .and_then(|n| unit.configured.ast.nodes.get(n.get() as usize))
-            .ok_or_else(|| fail("assembly has no actual invocation origin"))?;
-        let Kind::AssemblyOrigin(context) = origin.kind else {
-            return Err(fail("assembly has no actual invocation origin"));
-        };
+        let (context, span) = self.assembly_context(key)?;
+        let fail = |message| Error::at(key.file, span.start, message);
         let invocation = context
             .checked_sub(1)
             .and_then(|n| self.invocations.get(n as usize))
             .ok_or_else(|| fail("assembly invocation identity is invalid"))?;
-        if invocation.context.0 != context
-            || invocation.node != key
-            || invocation.generated != node.span
+        if invocation.context.0 != context || invocation.node != key || invocation.generated != span
         {
             return Err(fail("assembly belongs to another actual invocation"));
         }
@@ -327,6 +317,41 @@ impl super::Report {
             return Err(fail("assembly declaration has another published role"));
         }
         source.macros.charge(steps, bytes).map_err(fail)
+    }
+    fn assembly_context(
+        &self,
+        key: crate::resolve::unit::NodeKey,
+    ) -> Result<(u32, crate::syntax::token_tree::Span), crate::resolve::package::Error> {
+        use crate::resolve::package::Error;
+        let unit = self
+            .package
+            .units
+            .get(key.file.0 as usize)
+            .ok_or_else(|| Error::at(key.file, 0, "missing assembly source unit"))?;
+        let node = unit
+            .configured
+            .ast
+            .nodes
+            .get(key.node.get() as usize)
+            .ok_or_else(|| Error::at(key.file, 0, "missing assembly source node"))?;
+        let fail = |message| Error::at(key.file, node.span.start, message);
+        let Kind::InlineAssembly(args) = node.kind else {
+            return Err(fail("assembly changed its actual syntax kind"));
+        };
+        if unit.configured.active.get(key.node.get() as usize) != Some(&true) {
+            return Err(fail("assembly source node is not active"));
+        }
+        let origin = unit
+            .configured
+            .ast
+            .list(args)
+            .last()
+            .and_then(|n| unit.configured.ast.nodes.get(n.get() as usize))
+            .ok_or_else(|| fail("assembly has no actual invocation origin"))?;
+        let Kind::AssemblyOrigin(context) = origin.kind else {
+            return Err(fail("assembly has no actual invocation origin"));
+        };
+        Ok((context, node.span))
     }
 }
 

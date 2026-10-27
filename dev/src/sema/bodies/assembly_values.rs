@@ -66,7 +66,7 @@ impl Checker<'_> {
         let count = unit.configured.ast.list(args).len();
         self.report
             .prepare_assembly(self.key(node), count, count.saturating_mul(256))?;
-        let mut explicit = Vec::with_capacity(count);
+        let mut explicit: Vec<(u8, bool, bool, bool, bool)> = Vec::with_capacity(count);
         let mut classes = Vec::with_capacity(count);
         let unit = self.report.package.unit(self.state.file);
         for &arg in unit.configured.ast.list(args) {
@@ -96,36 +96,9 @@ impl Checker<'_> {
             }
             let register =
                 register.ok_or_else(|| self.error(arg, "assembly operand has no register"))?;
-            let Kind::AssemblyRegister {
-                explicit: is_explicit,
-                value,
-            } = unit.configured.ast.node(register).kind
-            else {
-                return Err(self.error(arg, "assembly register changed its typed form"));
-            };
-            let spelling = if is_explicit {
-                let Kind::Literal(index) = unit.configured.ast.node(value).kind else {
-                    return Err(self.error(arg, "explicit assembly register is not a literal"));
-                };
-                let crate::literal::Value::String(bytes) = unit
-                    .literal(index)
-                    .map_err(|e| self.error(arg, e.message))?
-                else {
-                    return Err(self.error(arg, "assembly register must be a string"));
-                };
-                std::str::from_utf8(&bytes)
-                    .map_err(|_| self.error(arg, "assembly register string is invalid"))?
-                    .to_owned()
-            } else {
-                let span = unit.configured.ast.node(value).span;
-                unit.source
-                    .text()
-                    .get(span.start as usize..span.end as usize)
-                    .ok_or_else(|| self.error(arg, "assembly register span is invalid"))?
-                    .to_owned()
-            };
-            let class =
-                assembly::register(&spelling, is_explicit).map_err(|e| self.error(arg, e))?;
+            let class = unit
+                .assembly_register(register)
+                .map_err(|e| self.error(arg, e.message))?;
             if let Register::Explicit { base, xmm, .. } = class {
                 let late = matches!(direction, Direction::LateOut | Direction::InLateOut);
                 let reads = input.is_some();
@@ -156,6 +129,14 @@ impl Checker<'_> {
             }
             classes.push(class);
         }
+        self.assembly_modifiers(args, &classes)
+    }
+    fn assembly_modifiers(
+        &self,
+        args: crate::syntax::ast::List,
+        classes: &[Register],
+    ) -> Result<(), Error> {
+        let unit = self.report.package.unit(self.state.file);
         for &template in unit.configured.ast.list(args) {
             if let Kind::AssemblyTemplate { pieces, .. } = unit.configured.ast.node(template).kind {
                 for &piece in unit.configured.ast.list(pieces) {
@@ -174,7 +155,7 @@ impl Checker<'_> {
                                 Register::Abcd => b"lhxer".contains(&modifier),
                                 Register::Byte => false,
                                 Register::Xmm | Register::Explicit { xmm: true, .. } => {
-                                    modifier == b'x'
+                                    b"xyz".contains(&modifier)
                                 }
                             };
                             if !valid {

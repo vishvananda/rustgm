@@ -203,6 +203,27 @@ impl Unit {
             .ok_or_else(|| error(span.start, "invalid source span"))
     }
 
+    /// Read a register spelling from the same parsed assembly node, without name resolution.
+    pub(crate) fn assembly_register(
+        &self,
+        register: NodeId,
+    ) -> Result<crate::syntax::assembly::Register, LexError> {
+        let Kind::AssemblyRegister { explicit, value } = self.configured.ast.node(register).kind
+        else {
+            return Err(error(0, "assembly register changed its typed form"));
+        };
+        let spelling = if explicit {
+            self.assembly_string(value)?
+        } else {
+            let Kind::Name(span, _) = self.configured.ast.node(value).kind else {
+                return Err(error(0, "assembly class lost its actual identifier"));
+            };
+            self.spelling(span)?
+        };
+        crate::syntax::assembly::register(spelling, explicit)
+            .map_err(|message| error(self.configured.ast.node(register).span.start, message))
+    }
+
     /// Borrow only an actual completed string root from this unit's literal pool.
     pub(crate) fn assembly_string(&self, value: NodeId) -> Result<&str, LexError> {
         let node = self
