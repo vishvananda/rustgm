@@ -1,5 +1,5 @@
 {
-  "state": "pinned independent metadata outcomes; candidate inert column qualification pending",
+  "state": "pinned independent metadata outcomes; candidate inert-column exact controls qualified",
   "primary_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
   "plan_sha256": "4c2c1739c3175d657f825590fb6f4cf9cb2c3b12021af91373e0f493c58bbc8a",
   "observed_sha256": "100014e39e03800df4740fbb69caf5232dd689a0b74e4d871d67146cf10111f8",
@@ -100,5 +100,41 @@
     "Missing-feature status/E0658 prediction matched but primary wording differed; raw runner remains hypothesis-disagreement.",
     "Literal bytes already exercised decodedNUL/NFC/NFD in first packet; duplicate execution retained and excluded from unique evidence.",
     "Unknown language and builtin declarations stay rejecting; diagnostics are inert data only."
-  ]
+  ],
+  "candidate": {
+    "source": "b47f6b9f422bb4a7d24f73b5d6c5726aa47ee3da",
+    "receipt": "obj/qualification/fast/1793110001894726054/receipt.json",
+    "receipt_sha256": "f32aa88493532969539056616895fea266638b98d6706ce6797e34d86d4b57f4",
+    "scope": "five exact private controls plus lexer ten; successful static checks retained with identical full source/tool/input proof from build-timeout predecessor",
+    "seconds": 174.66,
+    "source_work": [
+      83,
+      769,
+      3780,
+      16384
+    ],
+    "extra_names": [
+      0,
+      8,
+      32,
+      128
+    ],
+    "retained_column_bytes": [
+      0,
+      184,
+      664,
+      2584
+    ],
+    "layouts": {
+      "Reservations": 2080,
+      "Claim": 2,
+      "Entry": 20,
+      "Column": 24,
+      "Names": 96,
+      "Body": 448,
+      "Rvalue": 20,
+      "Package": 256
+    },
+    "boundary": "inert declaration data; no formatter/handler/native/foreign transport or original-crate completion"
+  }
 }
