@@ -57,6 +57,33 @@ to the actual worker native input. This preserves that native observation and
 does not claim another native execution. Bindings are under
 `obj/parallel/captured-cfg-integration-v1/neg-native-*.json`.
 
-Full original Neg diagnostic/overflow attributes, varying unchecked/foreign
-overflow policy, the complete Formatter graph, panic handler and broader
-transport remain required. PA26/PA31 and the original libraries remain unfinished.
+## Original declaration attributes
+
+The original pinned Neg declaration now retains its diagnostic and inherited
+overflow attributes. Diagnostic `neg` requires the actual Neg language-item
+parent and member declaration; an attribute spelling grants no call permission.
+The fixed checked profile validates the overflow word, source gate and placement
+while preserving checked arithmetic and constant overflow rejection. Independent
+checked/unchecked observations remain in the owning contract; varying unchecked
+or foreign driver policy is still unsupported.
+
+The integrator authenticated all2924 worker source fingerprints,72 raw streams,
+three exact pinned inputs and the26-file overflow packet. It cherry-picked only
+the reviewed component `b730fd738`; the unfinished handler ancestry is excluded.
+The component retains an existing test hook and excludes the handler's header
+refactor, so those subset differences are explicitly recorded in
+`obj/parallel/neg-original-attrs-integration-v1/review.json`.
+
+The combined root passes18 exact controls, including original attributes,
+overflow, Neg/Not, closed wire and receiver/body lowering. Both strict Clippy
+modes, formatting, architecture and build pass. Receipt
+`obj/qualification/fast/1793106072452713108/receipt.json`, SHA-256
+`6eab80b9b0093bf047d5ebf0cfaf1883d82559c3a11cfc1d5a33a95097805c33`,
+takes29.00s using the source-identical cached build. Its predecessor passed all
+static/build steps but failed a misspelled receiver selector before execution;
+that failed receipt remains retained. Reservations grows2048 to2072 bytes;
+the checked Body448, SourceUnary12 and Rvalue20 widths remain stable. The receiver
+observer's LowIR remains byte-identical. Harness and upstream checks pass.
+
+The complete Formatter graph, panic handler, broader transport and varying
+overflow policy remain required. PA26/PA31 and the original libraries are unfinished.
