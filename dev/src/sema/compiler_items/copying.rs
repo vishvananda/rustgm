@@ -63,7 +63,7 @@ pub(crate) fn copy_decisions(
         universals,
         first,
         goals,
-        |state, facts, goal| state.copy_decision(facts, goal),
+        State::copy_decision,
     )
 }
 pub(crate) fn copy_decisions_prepared(

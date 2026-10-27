@@ -198,49 +198,7 @@ impl SelectedConsumer<'_> {
             ));
         };
         let raw = rows.implementations[index as usize];
-        let application = raw
-            .trait_application
-            .and_then(|id| rows.trait_applications.get(id.0 as usize))
-            .ok_or_else(|| {
-                Error::unlocated("selected conformance lost its actual trait application")
-            })?;
-        if application.declaration.artifact != rows.policy.provider {
-            return Err(Error::unlocated(
-                "selected conformance requires its actual dependency trait producer",
-            ));
-        }
-        let Some(s::HeaderRef::Trait(trait_index)) = rows
-            .header(application.declaration.declaration)
-            .map_err(Error::unlocated)?
-        else {
-            return Err(Error::unlocated(
-                "selected conformance lost its actual trait row",
-            ));
-        };
-        let trait_ = rows.traits[trait_index as usize];
-        let declared = trait_
-            .members
-            .slice(&rows.members)
-            .map_err(Error::unlocated)?;
-        self.work.charge(declared.len().saturating_add(1))?;
-        if raw.unsafe_ != (trait_.flags.bits() & s::TraitFlags::UNSAFE != 0)
-            || declared.iter().any(|member| {
-                rows.declarations[member.0 as usize].definition.kind != s::DefinitionKind::Function
-            })
-        {
-            return Err(Error::unlocated(
-                "selected impl safety/member kinds disagree with its actual trait",
-            ));
-        }
-        let links = raw
-            .members
-            .slice(&rows.member_links)
-            .map_err(Error::unlocated)?;
-        if links.len() != declared.len() {
-            return Err(Error::unlocated(
-                "selected impl omitted an actual trait member link",
-            ));
-        }
+        let (trait_, links) = linked_trait(rows, raw, self.work)?;
         self.work.charge(links.len().saturating_add(1))?;
         self.work.reserve(
             links
@@ -414,4 +372,55 @@ fn selected_clone_requirement(
                 .arguments(application.arguments)
                 .is_some_and(|arguments| arguments.len() == 0),
     )
+}
+
+fn linked_trait<'rows>(
+    rows: s::ValidatedView<'rows>,
+    raw: s::ImplHeader,
+    work: &mut super::ReservationWork,
+) -> Result<(s::TraitHeader, &'rows [s::MemberLink]), Error> {
+    let application = raw
+        .trait_application
+        .and_then(|id| rows.trait_applications.get(id.0 as usize))
+        .ok_or_else(|| {
+            Error::unlocated("selected conformance lost its actual trait application")
+        })?;
+    if application.declaration.artifact != rows.policy.provider {
+        return Err(Error::unlocated(
+            "selected conformance requires its actual dependency trait producer",
+        ));
+    }
+    let Some(s::HeaderRef::Trait(trait_index)) = rows
+        .header(application.declaration.declaration)
+        .map_err(Error::unlocated)?
+    else {
+        return Err(Error::unlocated(
+            "selected conformance lost its actual trait row",
+        ));
+    };
+    let trait_ = rows.traits[trait_index as usize];
+    let declared = trait_
+        .members
+        .slice(&rows.members)
+        .map_err(Error::unlocated)?;
+    work.charge(declared.len().saturating_add(1))?;
+    if raw.unsafe_ != (trait_.flags.bits() & s::TraitFlags::UNSAFE != 0)
+        || declared.iter().any(|member| {
+            rows.declarations[member.0 as usize].definition.kind != s::DefinitionKind::Function
+        })
+    {
+        return Err(Error::unlocated(
+            "selected impl safety/member kinds disagree with its actual trait",
+        ));
+    }
+    let links = raw
+        .members
+        .slice(&rows.member_links)
+        .map_err(Error::unlocated)?;
+    if links.len() != declared.len() {
+        return Err(Error::unlocated(
+            "selected impl omitted an actual trait member link",
+        ));
+    }
+    Ok((trait_, links))
 }
