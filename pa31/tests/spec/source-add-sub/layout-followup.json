@@ -1,0 +1,6 @@
+{
+  "status": "corrected before first candidate observation",
+  "Reservations_bytes": 2160,
+  "reason": "Existing qualified panic_declarations asserts Option<Declaration>20bytes, not16. B actual62-role2120 plus2*20=2160. Original2152 hypothesis retained in prior committed prediction; no measurement yet.",
+  "no_mask_or_hot_owner_change": true
+}
