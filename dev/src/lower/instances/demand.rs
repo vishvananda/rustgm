@@ -569,19 +569,7 @@ fn prepare_ordinary<C: Collect>(
                 "missing ordinary dispatch contract".into(),
             )
         })?;
-        if let Some(service) = &mut originals.preparation {
-            body::dispatch::resolve_prepared(facts, body, input, &mut **service).map_err(
-                |failure| match failure {
-                    crate::sema::dispatch::Failure::Invalid(message) => {
-                        diagnostic(report, Some(body.source.into()), message)
-                    }
-                    crate::sema::dispatch::Failure::Preparation(error) => error,
-                },
-            )?;
-        } else {
-            body::dispatch::resolve(facts, body, input)
-                .map_err(|e| diagnostic(report, Some(body.source.into()), e))?;
-        }
+        resolve_ordinary(report, facts, body, input, &mut originals.preparation)?;
     }
     body::promote::analyze(report, facts, &mut program)?;
     let pending = paid_owners::prepare(facts, templates, &program, &mut inputs)
@@ -655,4 +643,27 @@ fn prepare_ordinary<C: Collect>(
         }
     }
     Ok((program, ordinary))
+}
+
+fn resolve_ordinary(
+    report: &Report,
+    facts: &mut Declarations,
+    body: &mut Body,
+    input: &mut Contract,
+    preparation: &mut Option<&mut dyn crate::sema::dispatch::Preparation>,
+) -> Result<(), Error> {
+    if let Some(service) = preparation {
+        body::dispatch::resolve_prepared(facts, body, input, &mut **service).map_err(
+            |failure| match failure {
+                crate::sema::dispatch::Failure::Invalid(message) => {
+                    diagnostic(report, Some(body.source.into()), message)
+                }
+                crate::sema::dispatch::Failure::Preparation(error) => error,
+            },
+        )?;
+    } else {
+        body::dispatch::resolve(facts, body, input)
+            .map_err(|e| diagnostic(report, Some(body.source.into()), e))?;
+    }
+    Ok(())
 }

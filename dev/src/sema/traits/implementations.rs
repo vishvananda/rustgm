@@ -424,33 +424,7 @@ impl Implementations {
         if let Some(pending) = &self.pending {
             pending.validate(value.owner, item, head)?;
         }
-        if CHARGED {
-            let arguments = value
-                .predicate
-                .bound
-                .trait_parts()
-                .and_then(|(id, _)| store.trait_application(id))
-                .and_then(|application| store.arguments(application.arguments))
-                .map_or(0, |arguments| arguments.len());
-            charge(arguments.saturating_add(1), 0)?;
-        }
-        let mut shape_bytes = 0;
-        let shape = if value.predicate.contains_parameters(store)? {
-            None
-        } else {
-            Some(if CHARGED {
-                let mut predicate = value.predicate;
-                if let Some((application, _)) = predicate.bound.trait_parts() {
-                    predicate.bound =
-                        crate::types::parameters::predicates::Bound::Trait(application);
-                }
-                let (key, _, bytes) = store.shape_key_charged(predicate, charge)?;
-                shape_bytes = bytes;
-                key
-            } else {
-                candidate_shape(store, value.predicate)?.0
-            })
-        };
+        let (shape, shape_bytes) = registration_shape::<CHARGED>(store, value.predicate, charge)?;
         let (first, second, third) = if let Some(shape) = shape {
             (
                 self.closed
@@ -668,4 +642,32 @@ fn bucket_growth<K: Eq + std::hash::Hash>(
         1,
     ));
     growth
+}
+
+fn registration_shape<const CHARGED: bool>(
+    store: &mut Store,
+    mut predicate: Predicate,
+    charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+) -> Result<(Option<ShapeKey>, usize), &'static str> {
+    if CHARGED {
+        let arguments = predicate
+            .bound
+            .trait_parts()
+            .and_then(|(id, _)| store.trait_application(id))
+            .and_then(|application| store.arguments(application.arguments))
+            .map_or(0, |arguments| arguments.len());
+        charge(arguments.saturating_add(1), 0)?;
+    }
+    if predicate.contains_parameters(store)? {
+        return Ok((None, 0));
+    }
+    if CHARGED {
+        if let Some((application, _)) = predicate.bound.trait_parts() {
+            predicate.bound = crate::types::parameters::predicates::Bound::Trait(application);
+        }
+        let (key, _, bytes) = store.shape_key_charged(predicate, charge)?;
+        Ok((Some(key), bytes))
+    } else {
+        Ok((Some(candidate_shape(store, predicate)?.0), 0))
+    }
 }

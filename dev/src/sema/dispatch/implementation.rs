@@ -54,7 +54,7 @@ pub(super) fn select_source_using(
         .map_err(|e| e.to_string())?;
     facts.dispatch_dependencies.work.selections += 1;
     let selected = if let Some(preparation) = preparation {
-        prepared_selection(facts, context, &goal, caller, preparation)?
+        prepared_selection(facts, context, &goal, &caller, preparation)?
     } else {
         selection::select_available(facts, context, &goal, caller, availability)?
     };
@@ -72,7 +72,7 @@ fn prepared_selection(
     facts: &mut Declarations,
     context: &mut Context,
     goal: &crate::types::infer::predicates::Predicate,
-    caller: selection::Caller<'_>,
+    caller: &selection::Caller<'_>,
     preparation: &mut dyn super::Preparation,
 ) -> Result<selection::Selection, super::Failure> {
     use selection::{OwnedCaller, Progress};
