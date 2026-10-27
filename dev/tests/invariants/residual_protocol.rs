@@ -58,10 +58,10 @@ fn genuine_protocol_and_optional_try_tag_keep_all_source_call_bodies() -> Result
     let ordinary = crate::test_source::fixture(
         "pa21/tests/spec/contracts/polymorphic-outputs/accepted/semantics/result-supertrait-equality.rs",
     )?;
-    let report = crate::test_source::resolve(&ordinary)?;
+    let report = crate::test_source::resolve(&ordinary, true)?;
     pipeline::analyze_source(&report)?;
     let missing = ordinary.replace("Product<Residual=Self>", "Product");
-    let report = crate::test_source::resolve(&missing)?;
+    let report = crate::test_source::resolve(&missing, true)?;
     assert!(pipeline::analyze_source(&report).is_err());
     for name in ["source-protocol", "source-without-try-role"] {
         let (report, analysis) = analyze(&fixture(name)?)?;
