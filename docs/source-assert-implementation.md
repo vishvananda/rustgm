@@ -306,3 +306,59 @@ Actual Debug demand,
 caller_location/track_caller, PanicInfo, source panic handler/CTFE redirect,
 formatting constructors and false Assert execution remain required. CPPGM and
 pinned upstream source bytes are unchanged. PA26/PA31 remain planned.
+
+### Direct source caller tracking
+
+The direct caller checkpoint uses the unchanged authored
+`pa31/tests/spec/source-location/caller-location.rs` provider (SHA-256
+`932880e0177a64ee3f51bdfb58c795022a9ef4e7eb64b0b5dbc820e4e7258665`).
+Its original selected `Location::caller` body reaches the checked safe const
+`caller_location` intrinsic. The ordinary source signature stays unchanged;
+tracked Rust functions receive a separate final native Location pointer.
+An untracked function supplies its actual call site, and tracked functions
+forward their incoming pointer. CTFE walks existing checked frames and sealed
+call-site data. Both paths use the real completed Location fields and immutable
+filename storage, including a terminator outside the str metadata length.
+
+Header policy stays in the existing source ledger. Trait inheritance is produced
+only after ordinary canonical method conformance. Legacy Functions/v1/v2
+publication rejects tracked source headers; authenticated existing imported
+profiles retain their proved absence, while unknown/Provided policy stays closed.
+Const intrinsic library features use the completed inventory and actual callee
+origin, separately from semantic const eligibility. Completed root requests are
+ordered only after the prior source-order validation, with charged comparisons;
+one borrowed allowance session is reused across the body's calls.
+
+Sparse caller data shares the existing callable-input owner while its optional
+resolved-target map remains independent. One immutable footer follows all legacy
+Code operands; consumers distinguish it from inline/discriminant readiness.
+Actual measurements are Header 64→72, callable owner 32→56, and CallContexts
+48→72 bytes. CallerSite is 20 bytes. PreparedOperand grows 28→32 (alignment 8),
+adding four bytes to every stored legacy operand as well as the new footer;
+its copied site allocation/control/padding is charged once per snapshot.
+Code stays 304, Rvalue 20, Value 24 and Body 448 bytes. Ordinary operand-free
+snapshots retain zero operand capacity. The ABI cache's key becomes
+`(TypeId, bool)` (8 bytes rather than 4); its owner remains one existing map.
+
+Five exact private controls, private strict Clippy, formatting and architecture
+checks pass in 100.12 seconds on source `5edadfcb219dd88521c4ed5aa0ca52b3f0dbe0c0`.
+Receipt `obj/qualification/fast/1793066469121406138/receipt.json` has SHA-256
+`edb5ea6b8339d77499487563a9e233425e53221b9c194ca5d38b12001ff40bab`.
+The actual LowIR SHA-256 is
+`dc5e9c2ae031bbc554bf2fa5af42c9dc355f97512c553640e8bced099c5738c4`.
+The unchanged pinned backend and C observer produce exit 0, stdout
+`341 5 343 53 1\n`, and empty stderr, matching the prior independent Rust
+observation. All 2,830 compiler/source fingerprints and the private binary were
+authenticated before and after. Native receipt is
+`obj/parallel/pa31/source-location-claims-v1/caller-tracking-v1/native-v1/receipt.json`,
+SHA-256 `e26c4b54ec13e3053cdeab9003ea1fa5dfb96b1ab14b856d656b6e3a7eeb6a8d`.
+Disposable outputs were scoped-pruned. Prior setup, selector, audit, typing,
+lint and timeout failures remain retained; they are not passing runtime evidence.
+
+This qualifies the direct provider only. Tracked function-pointer/dynamic shims,
+trait-inheritance source/native opponents, broader generated call adapters and
+transported tracking policy remain required. Reification is explicitly closed;
+there is no silent untracked ABI fallback. PanicInfo/handler/Debug, source panic
+CTFE redirection, formatting constructors and false Assert execution remain
+required. Bootstrap24, existing role ordinals, wire permissions and CPPGM are
+unchanged. Production/CLI integration remains the integrator's check.
