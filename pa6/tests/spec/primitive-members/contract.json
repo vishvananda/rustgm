@@ -1,5 +1,5 @@
 {
-  "state": "independently observed metadata and immutable baseline before compiler fix; candidate pending",
+  "state": "ordinary resolver/compiler checkpoint qualified; reviewed root reference generation pending",
   "edition": "2024",
   "target": "x86_64-unknown-linux-gnu",
   "cases": [
@@ -88,5 +88,53 @@
     "main": "obj/parallel/pa6/primitive-members-v1/oracle/observed.json",
     "errors": "obj/parallel/pa6/primitive-members-v1/error-boundaries/oracle/observed.json"
   },
-  "scope": "ordinary source only; PA6 name references plus PA19 actual static trait dispatch. No SourceCore/metadata/ABI/profile change. Root owns reviewed reference generation."
+  "scope": "ordinary source only; PA6 name references plus PA19 actual static trait dispatch. No SourceCore/metadata/ABI/profile change. Root owns reviewed reference generation.",
+  "candidate": {
+    "source": "376c9ed90",
+    "private_receipt": "obj/qualification/fast/1793125069501624364/receipt.json",
+    "production_receipt": "obj/qualification/fast/1793125257967248173/receipt.json",
+    "cli_observations": "obj/parallel/pa6/primitive-members-v1/candidate/observed.json",
+    "cases": 10,
+    "public_name_commands": 10,
+    "public_lowir_commands": 2,
+    "reference_generation": "not performed; root owns generation",
+    "costs": {
+      "width": [
+        8,
+        32,
+        128
+      ],
+      "definitions": [
+        39,
+        39,
+        39
+      ],
+      "scopes": [
+        9,
+        9,
+        9
+      ],
+      "primitives": [
+        19,
+        19,
+        19
+      ],
+      "references": [
+        12,
+        36,
+        132
+      ],
+      "inference": [
+        394,
+        1546,
+        6154
+      ]
+    },
+    "layouts": {
+      "Resolution": 2056,
+      "Package": 256,
+      "Body": 456
+    },
+    "no_fields_cache_or_profile_change": true
+  }
 }

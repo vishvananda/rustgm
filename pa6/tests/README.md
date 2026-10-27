@@ -16,3 +16,10 @@ a same-named module is visible, including an imported module. Real nominal and
 alias shadows and qualified module members remain ordinary resolved bindings.
 Pinned metadata accepts both new sources; their text sidecars are pending the
 integrator's reviewed scoped generation.
+
+The primitive-members cluster extends the ordinary module/primitive rule to
+failed member paths. Real module members and nominal/alias shadows take their
+normal routes; private, ambiguous, qualified and import failures remain errors.
+All ten pinned metadata outcomes were declared and observed before the compiler
+change. Candidate names and actual trait-member LowIR checks pass; generated
+sidecars remain pending the integrator's reviewed scoped generation.
