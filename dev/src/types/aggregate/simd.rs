@@ -67,6 +67,9 @@ impl Definitions {
         if definition.repr.representation != Representation::Simd {
             return Ok(SimdShape::NotSimd);
         }
+        if definition.kind != super::Kind::Struct || self.variants(definition).len() != 1 {
+            return Err("SIMD representation requires one struct field group");
+        }
         let ShapeReadiness::Ready(shape) = self.try_shape(types, ty)? else {
             return Ok(SimdShape::Pending);
         };

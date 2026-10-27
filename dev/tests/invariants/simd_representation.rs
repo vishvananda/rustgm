@@ -173,6 +173,32 @@ fn c_vectors_use_sseup_and_large_nested_vectors_cannot_hide_in_memory() -> TestR
             Some("C SIMD boundary supports only aligned 128-bit vectors")
         );
     }
+    let (report, Analysis { facts, .. }) =
+        analyze("#![feature(repr_simd)]#[repr(simd)]struct V([f32;4]);fn main(){}")?;
+    let ty = nominal(&report, &facts, "V")?;
+    let Some(Kind::Adt(item, _)) = facts.types.kind(ty) else {
+        return Err("actual SIMD item".into());
+    };
+    let definition = facts.aggregates.get(item).ok_or("actual SIMD definition")?;
+    let mut invalid = Definitions::default();
+    invalid.insert(
+        item,
+        crate::types::aggregate::Kind::Enum,
+        definition.repr,
+        facts.aggregates.variants(definition),
+    )?;
+    assert_eq!(
+        Layouts::default()
+            .demand(&facts.types, &invalid, ty)
+            .err()
+            .ok_or("malformed typed representation must reject")?
+            .message,
+        "SIMD representation requires a struct without an integer tag"
+    );
+    assert_eq!(
+        invalid.simd_shape(&facts.types, ty).err(),
+        Some("SIMD representation requires one struct field group")
+    );
     let span = crate::lowir::program::MemorySpan {
         bytes: 16,
         align: 16,

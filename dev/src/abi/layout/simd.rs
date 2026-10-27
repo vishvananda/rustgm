@@ -74,6 +74,9 @@ impl Layouts {
         shape: aggregate::Shape<'_>,
         budget: &mut Budget,
     ) -> Result<Layout, &'static str> {
+        budget.charge(&mut self.steps, 1)?;
+        super::validate_repr(shape.definition, shape.variants().len())?;
+        definitions.validate_simd_declaration(types, shape.definition)?;
         let SimdShape::Ready { lane, count } = definitions.simd_shape(types, ty)? else {
             return Err("SIMD layout requires completed array fields");
         };
