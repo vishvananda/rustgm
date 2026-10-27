@@ -1,0 +1,76 @@
+{
+  "state": "NEW tiny followup frozen before observation; no repeat metadata for existing18",
+  "editions": [
+    2021,
+    2024
+  ],
+  "metadata": [
+    {
+      "file": "cfg-disabled.rs",
+      "status": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "cfg-attribute-disabled.rs",
+      "status": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "gate-defined-literal.rs",
+      "status": 0,
+      "errors": [],
+      "warnings": []
+    },
+    {
+      "file": "gate-captured-meta.rs",
+      "status": 1,
+      "errors": [
+        "E0658"
+      ],
+      "warnings": []
+    },
+    {
+      "file": "gate-captured-hint.rs",
+      "status": 1,
+      "errors": [
+        "E0658"
+      ],
+      "warnings": []
+    }
+  ],
+  "objects": [
+    {
+      "file": "generic-bool.rs",
+      "status": 0,
+      "errors": []
+    },
+    {
+      "file": "generic-aggregate.rs",
+      "status": 1,
+      "errors": []
+    }
+  ],
+  "layout": {
+    "files": [
+      "layout-family.rs",
+      "align-corrected.rs"
+    ],
+    "observer": "layout-observer.c",
+    "stdout": "16 16 16 16 16 16 12 4 16 16\n",
+    "status": 0
+  },
+  "sources": {
+    "cfg-disabled.rs": "a5c0824c2952032282cf8bc163e8058226b212c516f2f3d7799577f2d86d5bce",
+    "cfg-attribute-disabled.rs": "cbbcafa7a9dcce3b7231866b7b66fafed2b90c5349506fbbaf855e2637fba189",
+    "gate-defined-literal.rs": "46e856872ebd4d6db4819833fb65e7a1dbe934a76409f51935e24fb22d27265d",
+    "gate-captured-meta.rs": "04eec990946e5fea20bb7f63fc4f8635904d1954135850985b491b66b781eb28",
+    "gate-captured-hint.rs": "ade2949ee911d23bd64592953dc13a7de60edf067c66b5e6d75dfb2495c665d8",
+    "generic-bool.rs": "daac65f837f7584e94c27b7d2501549ba8caff25699d3b4d73762737a4c36427",
+    "generic-aggregate.rs": "46d9035579041e5b94725d1b38478ce0f0eb744fa14af207f4a2337b4d1a51e2",
+    "layout-family.rs": "a1e7c6adeccebefdf5291da32b6982523819141138b7de22ecaea55b8b5a151d",
+    "align-corrected.rs": "e939cdb6bc36a5a325d4bf39d5ecc1b7cf9e60850f82f021fcf24773917595bb",
+    "layout-observer.c": "2d960af060e02470be378edfa4baefc5d05f7c8f90390d072984453a97303982"
+  }
+}
