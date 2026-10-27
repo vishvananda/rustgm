@@ -179,8 +179,9 @@ fn independent_positive_frontiers_keep_stability_legacy_kind_and_tool_registrati
             crate::provider_traits::require_macro_policies(&report)?;
             rustgm::pipeline::analyze_source(&report)?;
         }
+        // This genuine legacy declaration has no staged API policy to query.
+        lower("legacy-attribute-claim", edition)?;
         for (name, message) in [
-            ("legacy-attribute-claim", "supported declaration kind"),
             (
                 "registered-user-tool",
                 "source tool registration is not implemented",

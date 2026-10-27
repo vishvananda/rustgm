@@ -227,13 +227,9 @@ pub(super) fn primary(
     };
     match (unit.configured.ast.items[index as usize].kind, kind) {
         (ItemKind::DeclarativeMacro { .. }, DefKind::Macro) => claims.is_some_and(|claims| {
-            claims.iter().any(|claim| {
-                matches!(
-                    claim,
-                    Claim::BuiltinMacro(role) if *role == crate::expand::builtin::Builtin::CfgSelect
-                        || role.kind() != crate::expand::builtin::BuiltinKind::Bang
-                )
-            })
+            claims
+                .iter()
+                .any(|claim| matches!(claim, Claim::BuiltinMacro(_)))
         }),
         (ItemKind::Trait { .. }, DefKind::Trait)
         | (ItemKind::Function { .. }, DefKind::Function)

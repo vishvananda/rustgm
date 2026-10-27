@@ -301,11 +301,10 @@ impl Checker<'_> {
                 .as_deref()
                 .is_some_and(|catalog| catalog.call_contexts.is_none())
             {
-                crate::sema::header_attributes::charge_source_retention(
-                    self.facts,
-                    1,
-                    size_of::<CallContexts>() + size_of::<Option<Box<CallContexts>>>(),
-                )?;
+                // The current call-context budget includes its enclosing owner.
+                // A source client has no local source-header retention producer.
+                charge(&mut self.state.steps, 1)
+                    .map_err(|error| self.error(self.state.body.node, error))?;
                 self.facts
                     .source_bindings
                     .as_deref_mut()

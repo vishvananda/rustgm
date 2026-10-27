@@ -126,6 +126,11 @@ impl Imported {
 }
 
 impl Catalog {
+    /// Source clients retain the closed local-header ABI of their import profile.
+    pub(crate) const fn local_caller_tracking_closed(&self) -> bool {
+        matches!(self.bindings, Bindings::Imported(_))
+    }
+
     #[cfg(test)]
     pub(crate) const fn binding_layouts() -> (usize, usize, usize) {
         (
