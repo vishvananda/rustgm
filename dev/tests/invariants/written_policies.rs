@@ -9,9 +9,42 @@ fn plain_override_executes_but_written_modifiers_and_tracking_stay_closed() -> R
     let bytes = crates::encode(&artifact)?;
     client(
         crates::decode(&bytes)?,
-        "#![feature(no_core)]#![no_core]fn main(){let _=<u8 as base::Overridable>::value(7u8);}",
-        |_, _, _| (),
-    )?;
+        "#![feature(no_core)]#![no_core]fn main(){let _=<u8 as base::Overridable>::value(7u8);let _=<u8 as base::Overridable>::value(7u8);}",
+        |report, facts, _| -> Result {
+            let imported = report
+                .resolution
+                .crates
+                .as_deref()
+                .ok_or("actual catalog")?;
+            let mut prepared = 0;
+            for definition in imported.generic_definitions() {
+                let definition = definition?;
+                let actual = &report.resolution.definitions[definition.0 as usize];
+                if report.package.names.get(actual.name) != "value" {
+                    continue;
+                }
+                // The actual override is demanded twice; its unrelated provided
+                // default stays pending, rather than borrowing declaration proof.
+                if let Ok(Some(header)) = facts.function_header(definition) {
+                    assert!(header.body.is_some());
+                    assert_eq!(header.universals, 0);
+                    assert!(
+                        header
+                            .environment
+                            .ok_or("actual body environment")?
+                            .is_neutral()
+                    );
+                    assert!(matches!(
+                        header.declaration,
+                        crate::resolve::body_origin::DeclarationOrigin::Imported(_)
+                    ));
+                    prepared += 1;
+                }
+            }
+            assert_eq!(prepared, 1);
+            Ok(())
+        },
+    )??;
     let source = crate::test_source::fixture(
         "pa31/tests/spec/source-header-transport/semantic-provider-qualified.rs",
     )?;

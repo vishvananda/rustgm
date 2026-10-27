@@ -28,6 +28,7 @@ impl EmptyContract {
         function: u32,
         header: s::FunctionHeader,
         scope: (usize, s::ParameterScope),
+        parent: Option<(usize, s::ParameterScope)>,
         budget: &mut impl Budget,
     ) -> Result<Option<Self>, Error> {
         budget.charge(14)?;
@@ -81,8 +82,7 @@ impl EmptyContract {
             }
         }
         if input.environment != s::EnvironmentOrigin::Contract
-            || header.parent.is_some()
-            || scope.1.parent.is_some()
+            || !Self::supports_parent(rows, header, scope.1, parent, unit, budget)?
             || scope.1.captures != 0
             || !scope
                 .1
@@ -111,6 +111,76 @@ impl EmptyContract {
             declaration: header.declaration,
             frame: input.frame,
         }))
+    }
+    fn supports_parent(
+        rows: s::ValidatedView<'_>,
+        header: s::FunctionHeader,
+        scope: s::ParameterScope,
+        parent: Option<(usize, s::ParameterScope)>,
+        unit: &s::BodyUnit,
+        budget: &mut impl Budget,
+    ) -> Result<bool, Error> {
+        let Some(owner) = header.parent else {
+            return Ok(scope.parent.is_none() && parent.is_none());
+        };
+        budget.charge(8)?;
+        let Some((index, parent)) = parent else {
+            return Err(error("empty Contract lost its actual parent scope"));
+        };
+        if scope.parent != Some(owner)
+            || parent.owner != owner
+            || rows.scopes.get(index) != Some(&parent)
+        {
+            return Err(error("empty Contract changed its actual parent scope"));
+        }
+        let Some(s::HeaderRef::Implementation(index)) = rows.header(owner).map_err(error)? else {
+            return Ok(false);
+        };
+        let implementation = rows.implementations[index as usize];
+        Ok(implementation.self_definition == owner
+            && implementation.scope == owner
+            && implementation.trait_application.is_some()
+            && !implementation.constant
+            && !implementation.negative
+            && header.constness == crate::support::constness::Constness::Ordinary
+            && implementation.region_captures == 0
+            && implementation
+                .region_bounds
+                .slice(&rows.region_bounds)
+                .map_err(error)?
+                .is_empty()
+            && implementation
+                .inputs
+                .slice(&rows.clauses)
+                .map_err(error)?
+                .is_empty()
+            && implementation.declared_inputs == 0
+            && parent.parent.is_none()
+            && parent.captures == 0
+            && parent
+                .declared
+                .slice(&rows.slots)
+                .map_err(error)?
+                .is_empty()
+            && unit.allocation_order.is_empty()
+            && unit.aliases.is_none())
+    }
+    pub(in crate::sema::crates::typed_headers) fn require_scope(
+        self,
+        header: s::FunctionHeader,
+        scope: s::ParameterScope,
+    ) -> Result<(), Error> {
+        if header.body != s::FunctionBody::Original(self.body)
+            || header.declaration != self.declaration
+            || header.original.binder != self.frame
+            || scope.owner != header.scope
+            || scope.parent != header.parent
+        {
+            return Err(error(
+                "empty Contract changed its sealed header/scope identity",
+            ));
+        }
+        Ok(())
     }
 }
 
