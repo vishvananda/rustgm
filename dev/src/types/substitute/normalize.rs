@@ -1,4 +1,5 @@
 //! Suspend the common type fold at projections so semantic selection can borrow the store.
+mod accounting;
 mod aliases;
 mod scopes;
 use super::{Action, Bound, Key};
@@ -30,6 +31,25 @@ pub enum Resolution {
     /// An alias contract retains this unproved type-formation requirement for its uses.
     /// The resolver must store the requirement before returning this response.
     Deferred,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Failure {
+    Cycle,
+    Invalid(&'static str),
+}
+impl From<&'static str> for Failure {
+    fn from(message: &'static str) -> Self {
+        Self::Invalid(message)
+    }
+}
+impl Failure {
+    pub(crate) const fn message(self) -> &'static str {
+        match self {
+            Self::Cycle => "cycle in associated type normalization",
+            Self::Invalid(message) => message,
+        }
+    }
 }
 
 /// One immutable semantic environment owns this cache. Keep availability, caller
@@ -66,12 +86,27 @@ impl Normalizer {
     /// # Errors
     /// Rejects an unfinished/failed query, malformed types, cycles or exhausted work.
     pub fn start(&mut self, store: &mut Store, ty: TypeId) -> Result<Step, &'static str> {
+        self.start_observed::<false>(store, ty, &|_, _| Ok(()))
+            .map_err(Failure::message)
+    }
+    pub(crate) fn start_observed<const CHARGED: bool>(
+        &mut self,
+        store: &mut Store,
+        ty: TypeId,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Step, Failure> {
+        if CHARGED {
+            charge(1, 0)?;
+        }
         if self.root.is_some() || self.failed {
-            return Err("normalization scope has an unfinished or failed query");
+            return Err("normalization scope has an unfinished or failed query".into());
+        }
+        if CHARGED {
+            self.pay_queue(1, charge)?;
         }
         self.root = Some((ty, 0));
         self.frame.fold.queue(ty, 0)?;
-        self.advance(store)
+        self.advance_observed::<CHARGED>(store, charge)
     }
 
     /// Begin a root whose child is already a normal form in this exact scope.
@@ -116,8 +151,21 @@ impl Normalizer {
         request: Request,
         resolution: Resolution,
     ) -> Result<Step, &'static str> {
+        self.resume_observed::<false>(store, request, resolution, &|_, _| Ok(()))
+            .map_err(Failure::message)
+    }
+    pub(crate) fn resume_observed<const CHARGED: bool>(
+        &mut self,
+        store: &mut Store,
+        request: Request,
+        resolution: Resolution,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Step, Failure> {
+        if CHARGED {
+            self.pay_response(resolution, charge)?;
+        }
         if self.pending != Some(request) || self.failed {
-            return Err("normalization response does not match its pending request");
+            return Err("normalization response does not match its pending request".into());
         }
         let key = (request.source, 0);
         match resolution {
@@ -137,11 +185,15 @@ impl Normalizer {
             }
         }
         self.pending = None;
-        self.advance(store)
+        self.advance_observed::<CHARGED>(store, charge)
     }
 
-    fn advance(&mut self, store: &mut Store) -> Result<Step, &'static str> {
-        let result = self.drain(store);
+    fn advance_observed<const CHARGED: bool>(
+        &mut self,
+        store: &mut Store,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Step, Failure> {
+        let result = self.drain_observed::<CHARGED>(store, charge);
         if result.is_err() {
             self.failed = true;
             self.frame.fold.work.clear();
@@ -152,11 +204,18 @@ impl Normalizer {
         result
     }
 
-    fn drain(&mut self, store: &mut Store) -> Result<Step, &'static str> {
+    fn drain_observed<const CHARGED: bool>(
+        &mut self,
+        store: &mut Store,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Step, Failure> {
         loop {
+            if CHARGED {
+                charge(1, 0)?;
+            }
             self.check_work()?;
             let Some((key, finish)) = self.frame.fold.work.pop() else {
-                if self.finish_binder(store)? {
+                if self.finish_binder::<CHARGED>(store, charge)? {
                     continue;
                 }
                 break;
@@ -168,10 +227,16 @@ impl Normalizer {
             if finish {
                 if let Some(&(ty, depth)) = self.frame.redirects.get(&key) {
                     let ty = self.frame.fold.child(store, ty, depth)?;
+                    if CHARGED {
+                        self.pay_complete(charge)?;
+                    }
                     self.complete(key, ty);
                     continue;
                 }
                 let kind = store.kind(key.0).ok_or("invalid normalization type")?;
+                if CHARGED {
+                    self.pay_node(store, kind, true, charge)?;
+                }
                 let kind = self.frame.fold.rebuild(store, kind, key.1)?;
                 let alias = match kind {
                     Kind::Projection(application) => Some(Alias::Associated(application)),
@@ -195,15 +260,21 @@ impl Normalizer {
                 }
                 self.complete(key, store.intern(kind)?);
             } else {
+                if CHARGED {
+                    self.pay_active(charge)?;
+                }
                 if !self.frame.active.insert(key) {
-                    return Err("cycle in associated type normalization");
+                    return Err(Failure::Cycle);
                 }
                 let kind = store
                     .kind(key.0)
                     .ok_or("invalid normalization dependency")?;
                 if matches!(kind, Kind::Function { .. } | Kind::Dynamic { .. }) {
-                    self.enter_binder(store, key, kind)?;
+                    self.enter_binder::<CHARGED>(store, key, kind, charge)?;
                 } else {
+                    if CHARGED {
+                        self.pay_node(store, kind, false, charge)?;
+                    }
                     self.frame.fold.work.push((key, true));
                     self.frame.fold.dependencies(store, kind, key.1)?;
                 }

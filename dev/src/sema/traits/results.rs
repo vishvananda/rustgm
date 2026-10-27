@@ -18,6 +18,8 @@ use crate::{
     },
 };
 use std::sync::Arc;
+#[cfg(test)]
+pub(in crate::sema) use templates::consequence_controls;
 
 /// Pure mapped clauses, never caller permission or implementation proof.
 #[derive(Default)]
