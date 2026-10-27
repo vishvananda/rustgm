@@ -1,0 +1,62 @@
+{
+  "scope": "Four NEW authored no_core metadata reducers; not replacement core traits or native/value-bit proof. Actual discriminant and const effect requirements for original Ordering -1.",
+  "plan_sha256": "2992f7978c25f759d050de192b6ffe03c1088a9bc9dfa2ec40dd6aaf300678eb",
+  "observed_sha256": "3efa23e766213e5465ea3210d6061411a3538e38c1e46390ac3da1e4866a2c62",
+  "rows": [
+    {
+      "file": "neg-missing-const.rs",
+      "sha256": "75560fd048d122a93345911999705115331ed8462b1e612048c974ae2f304055",
+      "expected_status": 1,
+      "expected_primary_code": "E0600",
+      "actual_status": 1,
+      "actual_error_codes": [
+        "E0600"
+      ]
+    },
+    {
+      "file": "neg-missing-discriminant.rs",
+      "sha256": "ef7b9a79698ede6b6f6fb5d737649bcdf091d849206aae1f9da0746fc0d97bac",
+      "expected_status": 1,
+      "expected_primary_code": "E0600",
+      "actual_status": 1,
+      "actual_error_codes": [
+        "E0600",
+        "E0081"
+      ]
+    },
+    {
+      "file": "neg-const-real-discriminant.rs",
+      "sha256": "a31f6e98d46cacfd1675573b25ac04eb4a65513410253ff6a5e0e8b2444f2dbb",
+      "expected_status": 0,
+      "expected_primary_code": null,
+      "actual_status": 0,
+      "actual_error_codes": []
+    },
+    {
+      "file": "neg-ordinary-impl-const-discriminant.rs",
+      "sha256": "e3dc699b193ac06678589558a0084de832527738faa13c0b7b8932e83fe1d4dc",
+      "expected_status": 1,
+      "expected_primary_code": "E0277",
+      "actual_status": 1,
+      "actual_error_codes": [
+        "E0277",
+        "E0081"
+      ]
+    }
+  ],
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir_typeck/src/expr.rs": "eeabc2d6357ce271405d4dab00b3580be2257298515015ad69cce1863ee77aab",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir_typeck/src/op.rs": "ff5dbdf06b039b5534affbe5f7ef575e3e83ca63658357bc335926f8a97a29cd",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_ast_lowering/src/expr.rs": "5a346a88df995b066dd638ec109f53eeb27cfd46b6db9d252155657c28b7b1c5"
+  },
+  "profile": "Same pinned no_core Not observer opt0 defaults; no custom cfg/overflow/debug override.",
+  "tool_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "edition": 2024,
+  "notes": "All primary outcomes agree; two additional cascading E0081 diagnostics retained. No older Not/Shl/BitOr observations rerun.",
+  "qualification": {
+    "source": "2b094e7310ad0976ff5f2c87d289303dcdc820ba",
+    "receipt": "obj/qualification/fast/1793099488469987255/receipt.json",
+    "sha256": "213dabeebc75b63832c92881cde46b08d16e0dac8c6482216782151a02bece24",
+    "scope": "six exact private groups, lexer ten; both strict modes and global formatting/audit. Native pending; no unchanged full Neg source claim."
+  }
+}
