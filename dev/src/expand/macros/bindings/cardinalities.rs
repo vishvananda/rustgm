@@ -169,10 +169,7 @@ fn binding<'a>(
     let mut iteration = IterationId(0);
     while start != 0 {
         charge(work, 1)?;
-        if let Some(cached) = self
-            .current
-            .get(&(repeats[start - 1], query.path[start - 1].key))
-        {
+        if let Some(cached) = current.get(&(repeats[start - 1], query.path[start - 1].key)) {
             iteration = *cached;
             break;
         }

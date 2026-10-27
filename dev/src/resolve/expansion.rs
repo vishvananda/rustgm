@@ -1046,7 +1046,7 @@ impl<'a, S: Sources> Engine<'a, S> {
         .map_err(|e| Error::at(file, e.offset, e.message))?;
         let index = self.definitions.len();
         let name_context = package.item_context(file, span.start)?;
-        self.check_concat(file, &definition)?;
+        self.check_template_features(file, &definition)?;
         self.definitions.push(Definition {
             node: Some(NodeKey {
                 file,
