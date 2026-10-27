@@ -50,6 +50,9 @@ pub(crate) fn checked(
     let error = |message| super::model::Declarations::error(report, node, message);
     super::header_attributes::charge_source_contract_query(facts, 5)?;
     let plan = id.current(facts, owner, node).map_err(error)?;
+    if matches!(plan.kind, Kind::Block { .. }) {
+        crate::resolve::require_try_block(report, node)?;
+    }
     let protocol = super::compiler_items::try_protocol::source(report, facts, node)?;
     let actual = report
         .package

@@ -63,7 +63,7 @@ pub(in crate::sema) fn observe_owner(
         return Ok(());
     }
     if !admitted(report, declaration) {
-        reserve_source_contracts(facts, 3, 0)?;
+        reserve_source_contracts(facts, 5, 0)?;
         if !retained_role_site(report, declaration) {
             return Ok(());
         }
@@ -492,6 +492,7 @@ pub(in crate::sema) fn require_control_flow_variant(
         .as_deref()
         .ok_or_else(|| Error::unlocated("source control-flow variant lost its provider"))?;
     if actual.kind != DefKind::Variant
+        || actual.namespace != crate::resolve::model::Namespace::Value
         || actual.node != Some(declaration.origin)
         || ![LangItem::ControlFlowContinue, LangItem::ControlFlowBreak]
             .into_iter()

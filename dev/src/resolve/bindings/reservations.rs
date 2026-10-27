@@ -175,6 +175,7 @@ fn reserve_all(
             package,
             key,
             definition.kind,
+            definition.namespace,
             claims.get(&key).map(Vec::as_slice),
         ) {
             continue;
@@ -350,8 +351,13 @@ fn parents(package: &Package, facts: &Resolution) -> HashMap<ScopeId, DefId> {
         .enumerate()
         .filter_map(|(index, definition)| {
             let key = definition.node?;
-            if !super::role_attributes::primary(package, key, definition.kind, None)
-                || !matches!(definition.kind, DefKind::Trait | DefKind::SelfType)
+            if !super::role_attributes::primary(
+                package,
+                key,
+                definition.kind,
+                definition.namespace,
+                None,
+            ) || !matches!(definition.kind, DefKind::Trait | DefKind::SelfType)
             {
                 return None;
             }

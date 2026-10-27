@@ -4,7 +4,7 @@ use crate::{
     pipeline::{self, Analysis},
     resolve::{expansion::Report, model::DefId},
     sema::compiler_items::try_protocol,
-    syntax::ast::NodeId,
+    syntax::ast::{Kind as Syntax, NodeId},
 };
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 fn fixture(name: &str) -> Result<String> {
@@ -84,6 +84,20 @@ fn genuine_protocol_and_optional_try_tag_keep_all_source_call_bodies() -> Result
             assert!(id.current(&analysis.facts, owner, plan.node)? == *plan);
             assert!(!analysis.facts.methods.calls.contains_key(&plan.node));
         }
+        for role in [
+            crate::support::bindings::LangItem::ControlFlowContinue,
+            crate::support::bindings::LangItem::ControlFlowBreak,
+        ] {
+            let claimed = report
+                .resolution
+                .source_bindings
+                .as_deref()
+                .and_then(|reserved| reserved.language(role))
+                .ok_or("actual variant role")?;
+            let actual = &report.resolution.definitions[claimed.definition.0 as usize];
+            assert_eq!(actual.namespace, crate::resolve::model::Namespace::Value);
+            assert_eq!(actual.kind, crate::resolve::model::DefKind::Variant);
+        }
         lower(
             &report,
             analysis,
@@ -162,7 +176,11 @@ fn current_plan_rejects_other_bodies_nodes_and_changed_source_images() -> Result
         .as_deref()
         .and_then(|catalog| catalog.call_contexts.as_deref())
         .ok_or("current call owner")?;
-    let plan = *contexts.plans.first().ok_or("actual Try row")?;
+    let plan = *contexts
+        .plans
+        .iter()
+        .find(|plan| matches!(plan.kind, Kind::Block { .. }))
+        .ok_or("actual Try block row")?;
     let Some(Operation::Try { plan: id }) = analysis
         .facts
         .node(plan.node)
@@ -177,6 +195,19 @@ fn current_plan_rejects_other_bodies_nodes_and_changed_source_images() -> Result
     };
     assert!(id.current(&analysis.facts, wrong, plan.node).is_err());
     assert!(id.current(&analysis.facts, owner, wrong).is_err());
+    let original = report.package.units[0].configured.ast.nodes[plan.node.node.get() as usize].kind;
+    let Syntax::TryBlock { body, .. } = original else {
+        return Err("actual Try block wrapper".into());
+    };
+    report.package.units[0].configured.ast.nodes[plan.node.node.get() as usize].kind =
+        Syntax::TryBlock {
+            body,
+            gate: u32::MAX,
+        };
+    assert!(
+        crate::sema::try_plans::checked(&report, &analysis.facts, owner, plan.node, id).is_err()
+    );
+    report.package.units[0].configured.ast.nodes[plan.node.node.get() as usize].kind = original;
     report.package.units[0].source = report.package.units[0].source.physical_copy();
     assert!(try_protocol::source(&report, &analysis.facts, plan.node).is_err());
     Ok(())

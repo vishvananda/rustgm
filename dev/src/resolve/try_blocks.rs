@@ -51,6 +51,61 @@ pub(super) fn validate(report: &Report) -> Result<(), Error> {
         ))
     })
 }
+/// Replay one demanded expression through the same sealed site and allowance rule.
+pub(crate) fn require(report: &Report, key: super::unit::NodeKey) -> Result<(), Error> {
+    let unit = report
+        .package
+        .units
+        .get(key.file.0 as usize)
+        .ok_or_else(|| Error::at(key.file, 0, "Try expression lost its actual source unit"))?;
+    let Some(crate::syntax::ast::Kind::TryBlock { gate, .. }) = unit
+        .configured
+        .ast
+        .nodes
+        .get(key.node.get() as usize)
+        .map(|node| node.kind)
+    else {
+        return Err(Error::at(
+            key.file,
+            0,
+            "Try expression lost its actual parsed wrapper",
+        ));
+    };
+    let entry = *unit
+        .configured
+        .ast
+        .expression_gate(gate)
+        .ok_or_else(|| Error::at(key.file, 0, "Try expression lost its actual sealed site"))?;
+    if entry.node != key.node || unit.configured.active.get(key.node.get() as usize) != Some(&true)
+    {
+        return Err(Error::at(
+            key.file,
+            entry.keyword.start,
+            "Try expression is not its actual active sealed site",
+        ));
+    }
+    super::gate_provenance::checked_expression(&report.package, key.file, gate, entry)?;
+    if report
+        .package
+        .requested_try_blocks()
+        .map_err(Error::unlocated)?
+    {
+        return Ok(());
+    }
+    let feature = FeatureName::new("try_blocks").map_err(Error::unlocated)?;
+    if report
+        .macro_allowances()
+        .allows_try_block(key.file, gate, entry, &feature)?
+    {
+        return Ok(());
+    }
+    Err(Error::at(
+        key.file,
+        entry.keyword.start,
+        "try block requires try_blocks or its actual expression allowance",
+    ))
+}
+
 pub(super) fn validate_plain(package: &Package) -> Result<(), Error> {
     let requested = package.requested_try_blocks().map_err(Error::unlocated)?;
     walk(package, |file, _, entry| {
