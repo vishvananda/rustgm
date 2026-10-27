@@ -24,7 +24,7 @@ pub(in crate::sema) fn selected_copying(
     let mut steps = 0usize;
     let checked = (|| {
         let catalog = catalog(report, facts)?;
-        let mut complete = 0u64;
+        let mut complete = super::RoleSet::EMPTY;
         for role in [LangItem::Clone, LangItem::Copy] {
             steps += 1;
             let Some(declaration) = catalog.role(role)? else {
@@ -54,15 +54,13 @@ pub(in crate::sema) fn selected_copying(
             )?;
             if role == LangItem::Clone {
                 clone_member(facts, catalog, &header, &mut steps)?;
-                complete |= super::bit(LangItem::CloneFn);
+                complete.insert(LangItem::CloneFn);
             } else if !header.members.is_empty() {
                 return Err("source copying marker must not declare members");
             }
-            complete |= super::bit(role);
+            complete.insert(role);
         }
-        if catalog.role(LangItem::CloneFn)?.is_some()
-            && complete & super::bit(LangItem::CloneFn) == 0
-        {
+        if catalog.role(LangItem::CloneFn)?.is_some() && !complete.contains(LangItem::CloneFn) {
             return Err("source language member has no validated actual trait owner");
         }
         Ok(complete)
@@ -71,10 +69,13 @@ pub(in crate::sema) fn selected_copying(
         .source_bindings
         .as_deref()
         .is_some_and(|catalog| catalog.traits.is_none());
+    if checked.is_ok() {
+        steps = steps.saturating_add(2 * (super::completion_set::WORDS - 1));
+    }
     crates::charge_source_headers(
         facts,
         steps,
-        if checked.as_ref().is_ok_and(|roles| *roles != 0) && fresh {
+        if checked.as_ref().is_ok_and(|roles| !roles.is_empty()) && fresh {
             size_of::<Validated>()
         } else {
             0
@@ -86,8 +87,8 @@ pub(in crate::sema) fn selected_copying(
         .as_deref_mut()
         .ok_or_else(|| Error::unlocated("selected Copy catalog disappeared"))?;
     if let Some(prior) = catalog.traits.as_deref_mut() {
-        prior.roles |= complete;
-    } else if complete != 0 {
+        prior.roles.extend(complete);
+    } else if !complete.is_empty() {
         catalog.traits = Some(Box::new(Validated {
             roles: complete,
             methods: [None; 3],
@@ -183,12 +184,12 @@ fn trait_headers(
     report: &Report,
     facts: &Declarations,
     steps: &mut usize,
-) -> Result<u64, &'static str> {
+) -> Result<super::RoleSet, &'static str> {
     let catalog = catalog(report, facts)?;
     if catalog.traits.is_some() {
         return Err("source roles were validated twice");
     }
-    let mut complete = 0;
+    let mut complete = super::RoleSet::EMPTY;
     for role in LangItem::ALL {
         *steps = steps.saturating_add(1);
         let Some(declaration) = catalog.role(role)? else {
@@ -216,19 +217,17 @@ fn trait_headers(
                 )?;
                 if role == LangItem::Clone {
                     clone_member(facts, catalog, &header, steps)?;
-                    complete |= crate::sema::compiler_items::role_bit(LangItem::CloneFn);
+                    complete.insert(LangItem::CloneFn);
                 } else if !header.members.is_empty() {
                     return Err("source copying marker must not declare members");
                 }
-                complete |= crate::sema::compiler_items::role_bit(role);
+                complete.insert(role);
             }
             LangItem::CloneFn => {}
             _ => return Err("imported source role requires its wider explicit header profile"),
         }
     }
-    if catalog.role(LangItem::CloneFn)?.is_some()
-        && complete & (crate::sema::compiler_items::role_bit(LangItem::CloneFn)) == 0
-    {
+    if catalog.role(LangItem::CloneFn)?.is_some() && !complete.contains(LangItem::CloneFn) {
         return Err("source language member has no validated actual trait owner");
     }
     Ok(complete)

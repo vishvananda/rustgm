@@ -1,5 +1,7 @@
 //! Source roles become usable only after their actual complete headers validate.
+mod completion_set;
 mod copying;
+pub(super) use completion_set::RoleSet;
 mod destructibility;
 mod freezing;
 mod glue;
@@ -10,7 +12,7 @@ pub(super) mod admitted_headers;
 mod invocation;
 pub(crate) use invocation::definition as callable_role;
 mod unsizing;
-use super::{Catalog, role_bit};
+use super::Catalog;
 use crate::{
     resolve::{
         bindings::Declaration,
@@ -25,14 +27,8 @@ use crate::{
 };
 pub(crate) use unsizing::{kind as unsizing_role, predicate as unsizing_predicate};
 
-// Every role has an explicit stable index, checked against this cold mask width.
-const _: [(); 1] = [(); (LangItem::ALL.len() <= u64::BITS as usize) as usize];
-pub(in crate::sema) const fn bit(role: LangItem) -> u64 {
-    1_u64 << role.index()
-}
-
 pub(super) struct Validated {
-    pub(super) roles: u64,
+    pub(super) roles: RoleSet,
     pub(super) methods: [Option<DefId>; 3],
     pub(super) pointee: Option<std::rc::Rc<super::pointee::Contracts>>,
     pub(super) discriminant: Option<std::rc::Rc<super::discriminant::Contracts>>,
@@ -57,11 +53,7 @@ impl Catalog {
             if self.sizing.as_ref().map(|ids| ids[index]) != Some(declaration.definition) {
                 return Err("source sizing role requires completed declaration validation");
             }
-        } else if self
-            .traits
-            .as_ref()
-            .is_none_or(|v| v.roles & (role_bit(role)) == 0)
-        {
+        } else if self.traits.as_ref().is_none_or(|v| !v.roles.contains(role)) {
             return Err("source trait role requires completed declaration validation");
         }
         Ok(Some(declaration))
@@ -75,11 +67,7 @@ impl Catalog {
         let Some(declaration) = self.language(role) else {
             return Ok(None);
         };
-        if self
-            .traits
-            .as_ref()
-            .is_none_or(|v| v.roles & (role_bit(role)) == 0)
-        {
+        if self.traits.as_ref().is_none_or(|v| !v.roles.contains(role)) {
             return Err("source trait role requires completed declaration validation");
         }
         Ok(Some(declaration))
@@ -106,7 +94,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         return Ok(());
     };
     let mut complete = Validated {
-        roles: 0,
+        roles: RoleSet::EMPTY,
         methods: [None; 3],
         pointee: None,
         discriminant: None,
@@ -163,7 +151,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
                     invocation::validate(report, facts, catalog, declaration, role, self_type)?;
                 complete.methods[kind as usize] = Some(method);
                 if kind == CallTrait::FnOnce {
-                    complete.roles |= role_bit(LangItem::FnOnceOutput);
+                    complete.roles.insert(LangItem::FnOnceOutput);
                 }
                 callables.push((declaration, kind, method));
             }
@@ -175,14 +163,20 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
                 ));
             }
         }
-        complete.roles |= role_bit(role);
+        complete.roles.insert(role);
     }
     if let Some(declaration) = catalog.language(LangItem::DropGlue) {
         glue::validate(report, facts, catalog, declaration, complete.roles)?;
-        complete.roles |= role_bit(LangItem::DropGlue);
+        complete.roles.insert(LangItem::DropGlue);
     }
     validate_owned_members(report, catalog, complete.roles)?;
-    if complete.roles == 0 {
+    if completion_set::WORDS > 1 {
+        crate::sema::header_attributes::charge_source_contract_query(
+            facts,
+            completion_set::WORDS - 1,
+        )?;
+    }
+    if complete.roles.is_empty() {
         return Ok(());
     }
     require_distinct_pointee(report, facts, catalog, complete.roles)?;
@@ -196,25 +190,33 @@ fn require_distinct_pointee(
     report: &Report,
     facts: &Declarations,
     catalog: &Catalog,
-    roles: u64,
+    roles: RoleSet,
 ) -> Result<(), Error> {
     crate::sema::header_attributes::charge_source_contract_query(facts, 1)?;
     let Some(prior) = catalog.traits.as_deref() else {
         return Ok(());
     };
-    let mut expected = 0;
+    if completion_set::WORDS > 1 {
+        crate::sema::header_attributes::charge_source_contract_query(
+            facts,
+            3 * (completion_set::WORDS - 1),
+        )?;
+    }
+    let mut expected = RoleSet::EMPTY;
     if prior.pointee.is_some() {
-        expected |= role_bit(LangItem::PointeeTrait) | role_bit(LangItem::MetadataType);
+        expected.insert(LangItem::PointeeTrait);
+        expected.insert(LangItem::MetadataType);
         if catalog.language(LangItem::DynMetadata).is_some() {
-            expected |= role_bit(LangItem::DynMetadata);
+            expected.insert(LangItem::DynMetadata);
         }
     }
     if prior.discriminant.is_some() {
-        expected |= role_bit(LangItem::DiscriminantKind) | role_bit(LangItem::DiscriminantType);
+        expected.insert(LangItem::DiscriminantKind);
+        expected.insert(LangItem::DiscriminantType);
     }
-    if expected == 0
+    if expected.is_empty()
         || prior.roles != expected
-        || prior.roles & roles != 0
+        || prior.roles.intersects(roles)
         || prior.methods != [None; 3]
     {
         return Err(Error::unlocated("source roles were validated twice"));
@@ -241,7 +243,7 @@ fn publish(
         .is_some_and(|catalog| catalog.traits.is_none());
     crate::sema::header_attributes::reserve_source_contracts(
         facts,
-        1,
+        completion_set::WORDS,
         usize::from(fresh) * size_of::<Validated>(),
     )?;
     facts
@@ -256,7 +258,7 @@ fn publish(
         )
     })?;
     if let Some(prior) = catalog.traits.as_deref_mut() {
-        prior.roles |= complete.roles;
+        prior.roles.extend(complete.roles);
         prior.methods = complete.methods;
     } else {
         catalog.traits = Some(Box::new(complete));
@@ -264,10 +266,10 @@ fn publish(
     Ok(())
 }
 
-fn validate_owned_members(report: &Report, catalog: &Catalog, roles: u64) -> Result<(), Error> {
+fn validate_owned_members(report: &Report, catalog: &Catalog, roles: RoleSet) -> Result<(), Error> {
     for role in [LangItem::CloneFn, LangItem::FnOnceOutput] {
         if let Some(declaration) = catalog.language(role)
-            && roles & (role_bit(role)) == 0
+            && !roles.contains(role)
         {
             return Err(Declarations::error(
                 report,
@@ -422,17 +424,16 @@ pub(super) fn complete_nominal(
         .ok_or_else(|| Error::unlocated("source nominal catalog disappeared"))?;
     let ledger = catalog.traits.get_or_insert_with(|| {
         Box::new(Validated {
-            roles: 0,
+            roles: RoleSet::EMPTY,
             methods: [None; 3],
             pointee: None,
             discriminant: None,
         })
     });
-    let bit = role_bit(role);
-    if ledger.roles & bit != 0 {
+    if ledger.roles.contains(role) {
         return Err(Error::unlocated("source nominal role was completed twice"));
     }
-    ledger.roles |= bit;
+    ledger.roles.insert(role);
     Ok(())
 }
 

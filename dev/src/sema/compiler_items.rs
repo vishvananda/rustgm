@@ -48,7 +48,6 @@ pub(crate) use copying::{
 };
 pub(crate) use select_calls::{Select, check_const_select, prepare_select, source_select};
 mod roles;
-pub(super) use roles::bit as role_bit;
 pub(in crate::sema) mod site_records;
 pub(in crate::sema) use roles::admitted_headers::selected_copying;
 pub(crate) use roles::callable_role;

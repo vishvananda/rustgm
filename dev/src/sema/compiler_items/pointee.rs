@@ -173,16 +173,16 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
         .ok_or_else(|| Error::unlocated("source Pointee catalog disappeared"))?;
     let ledger = catalog.traits.get_or_insert_with(|| {
         Box::new(super::roles::Validated {
-            roles: 0,
+            roles: super::roles::RoleSet::EMPTY,
             methods: [None; 3],
             pointee: None,
             discriminant: None,
         })
     });
-    ledger.roles |= (crate::sema::compiler_items::role_bit(LangItem::PointeeTrait))
-        | (crate::sema::compiler_items::role_bit(LangItem::MetadataType));
+    ledger.roles.insert(LangItem::PointeeTrait);
+    ledger.roles.insert(LangItem::MetadataType);
     if plan.nominal.is_some() {
-        ledger.roles |= crate::sema::compiler_items::role_bit(LangItem::DynMetadata);
+        ledger.roles.insert(LangItem::DynMetadata);
     }
     ledger.pointee = Some(contract);
     Ok(())

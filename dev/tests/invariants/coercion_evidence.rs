@@ -47,7 +47,12 @@ fn source_unsizing_lookup_requires_its_exact_completed_role() -> Result {
     }
     let catalog = facts.source_bindings.as_deref_mut().ok_or("catalog")?;
     let saved = catalog.traits.as_deref().ok_or("roles")?.roles;
-    catalog.traits.as_deref_mut().ok_or("roles")?.roles &= !(1 << LangItem::Unsize.index());
+    catalog
+        .traits
+        .as_deref_mut()
+        .ok_or("roles")?
+        .roles
+        .remove(LangItem::Unsize);
     assert!(kind(&facts, declaration.definition).is_err());
     assert!(proof.prove(&mut facts, goal, false).is_err());
     facts

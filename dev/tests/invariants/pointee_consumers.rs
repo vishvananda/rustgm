@@ -108,10 +108,15 @@ fn role_publication_preserves_the_existing_owner(
         .ok_or("validated source roles")?;
     let owner = std::rc::Rc::clone(ledger.pointee.as_ref().ok_or("actual Pointee owner")?);
     let roles = ledger.roles;
-    let mask = (1 << LangItem::PointeeTrait.index())
-        | (1 << LangItem::MetadataType.index())
-        | (1 << LangItem::DynMetadata.index());
-    assert_ne!(roles & (1 << LangItem::Copy.index()), 0);
+    let mut mask = roles::RoleSet::EMPTY;
+    for role in [
+        LangItem::PointeeTrait,
+        LangItem::MetadataType,
+        LangItem::DynMetadata,
+    ] {
+        mask.insert(role);
+    }
+    assert!(roles.contains(LangItem::Copy));
     assert!(
         roles::validate(report, facts).is_err(),
         "duplicate regular validation succeeded"

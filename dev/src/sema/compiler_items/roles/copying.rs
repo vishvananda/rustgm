@@ -10,7 +10,7 @@ pub(super) fn validate(
     declaration: Declaration,
     role: LangItem,
     header: &Trait<'_>,
-    complete: &mut u64,
+    complete: &mut super::RoleSet,
 ) -> Result<(), Error> {
     let error = |message| Declarations::error(report, declaration.origin, message);
     let expected = match role {
@@ -52,7 +52,7 @@ pub(super) fn validate(
         },
     )
     .map_err(error)?;
-    *complete |= crate::sema::compiler_items::role_bit(LangItem::CloneFn);
+    complete.insert(LangItem::CloneFn);
     Ok(())
 }
 

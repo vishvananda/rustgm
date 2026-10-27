@@ -79,9 +79,10 @@ impl Selection {
             .as_deref()
             .and_then(|c| c.traits.as_deref())
             .ok_or_else(|| Error::unlocated("source discriminant lost completed role state"))?;
-        let required =
-            roles::bit(LangItem::DiscriminantKind) | roles::bit(LangItem::DiscriminantType);
-        if roles.roles & required != required || !Rc::ptr_eq(current, &self.0) {
+        if !roles.roles.contains(LangItem::DiscriminantKind)
+            || !roles.roles.contains(LangItem::DiscriminantType)
+            || !Rc::ptr_eq(current, &self.0)
+        {
             return Err(Error::unlocated(
                 "source discriminant belongs to another catalog",
             ));
@@ -208,7 +209,7 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
         .ok_or_else(|| Error::unlocated("source discriminant catalog disappeared"))?;
     let ledger = catalog.traits.get_or_insert_with(|| {
         Box::new(roles::Validated {
-            roles: 0,
+            roles: roles::RoleSet::EMPTY,
             methods: [None; 3],
             pointee: None,
             discriminant: None,
@@ -219,7 +220,8 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
             "source discriminant contracts completed twice",
         ));
     }
-    ledger.roles |= roles::bit(LangItem::DiscriminantKind) | roles::bit(LangItem::DiscriminantType);
+    ledger.roles.insert(LangItem::DiscriminantKind);
+    ledger.roles.insert(LangItem::DiscriminantType);
     ledger.discriminant = Some(contract);
     Ok(())
 }
