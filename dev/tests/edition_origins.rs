@@ -41,7 +41,8 @@ fn expand(
         &mut Workspace::default(),
         context,
     )?;
-    let transcription = transcribe::transcribe(&compiled.definition, &matched, source, &input)?;
+    let transcription =
+        transcribe::transcribe(&compiled.definition, &matched, source, &input, &mut names)?;
     let stream = Stream::transcribe(
         &transcription,
         &matched,
@@ -58,7 +59,9 @@ fn expand(
             context: SyntaxContextId::ROOT,
             introduction: ExpansionId(2),
             crate_id: 0,
+            edition: defining,
         },
+        &names,
     )?;
     Ok((stream, matched))
 }

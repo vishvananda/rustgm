@@ -46,7 +46,9 @@ fn install(unit: &mut Unit, original: &str, corrupt: bool) -> Result<(), String>
             context: SyntaxContextId::ROOT,
             introduction: ExpansionId(1),
             crate_id: 0,
+            edition: rustgm::support::edition::Edition::Rust2024,
         },
+        &report.names,
     )
     .map_err(|e| format!("{e:?}"))?;
     let splices = stream

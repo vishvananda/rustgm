@@ -1,0 +1,141 @@
+{
+  "state": "predicted before independent pinned Cargo observation",
+  "owner": "PA34 host build orchestration",
+  "profile": {
+    "host": "x86_64-unknown-linux-gnu",
+    "rust": "1.98.0",
+    "offline": true
+  },
+  "inputs": {
+    "build.rs": "83733c69d1c45f659a14a26b9f8f917c51e7ce4d20da617c27b09a96d9ba6e53",
+    "lib.rs": "83487d893117eacd0f9d6f4bb0a6d594e83d2dc4df79d9a1658836ad897d9562"
+  },
+  "cases": [
+    {
+      "name": "ordinary",
+      "lints": {},
+      "status": 0
+    },
+    {
+      "name": "deny-dead-code",
+      "lints": {
+        "rust": {
+          "dead_code": "deny"
+        }
+      },
+      "status": 1
+    },
+    {
+      "name": "priority-override",
+      "lints": {
+        "rust": {
+          "unused": {
+            "level": "deny",
+            "priority": -1
+          },
+          "dead_code": {
+            "level": "allow",
+            "priority": 1
+          },
+          "unexpected_cfgs": "allow"
+        },
+        "clippy": {
+          "all": {
+            "level": "warn",
+            "priority": -1
+          }
+        }
+      },
+      "status": 0
+    },
+    {
+      "name": "check-cfg",
+      "lints": {
+        "rust": {
+          "dead_code": "allow",
+          "unexpected_cfgs": {
+            "level": "deny",
+            "check-cfg": [
+              "cfg(host_lint_probe)"
+            ]
+          }
+        }
+      },
+      "status": 0
+    },
+    {
+      "name": "priority-upper-bound",
+      "lints": {
+        "rust": {
+          "unused": {
+            "level": "warn",
+            "priority": 128
+          }
+        }
+      },
+      "status": 1
+    },
+    {
+      "name": "unsupported-level",
+      "lints": {
+        "rust": {
+          "unused": "expect"
+        }
+      },
+      "status": 1
+    }
+  ],
+  "script_output": "cargo::rustc-cfg=host_lint_checked\n",
+  "scope": "Host lint policy and original libc host script; no RustGM target artifact claim.",
+  "original_libc": {
+    "package": {
+      "name": "libc",
+      "version": "0.2.185",
+      "archive_sha256": "52ff2c0fe9bc6cb6b14a0592c2ff4fa9ceb83eea9db979b0487cd054946a2b8f"
+    },
+    "target": "x86_64-unknown-linux-gnu",
+    "target_panic": "abort",
+    "host_panic": "unwind",
+    "features": [
+      "align",
+      "rustc-dep-of-std",
+      "rustc-std-workspace-core"
+    ],
+    "expected_status": 0,
+    "expected_stdout": "cargo:rerun-if-changed=build.rs\ncargo:rerun-if-env-changed=RUST_LIBC_UNSTABLE_FREEBSD_VERSION\ncargo:rustc-cfg=freebsd12\ncargo:rerun-if-env-changed=RUST_LIBC_UNSTABLE_MUSL_V1_2_3\ncargo:rerun-if-env-changed=RUST_LIBC_UNSTABLE_LINUX_TIME_BITS64\ncargo:rerun-if-env-changed=RUST_LIBC_UNSTABLE_GNU_FILE_OFFSET_BITS\ncargo:rerun-if-env-changed=RUST_LIBC_UNSTABLE_GNU_TIME_BITS\ncargo:rustc-check-cfg=cfg(emscripten_old_stat_abi)\ncargo:rustc-check-cfg=cfg(espidf_picolibc)\ncargo:rustc-check-cfg=cfg(espidf_time32)\ncargo:rustc-check-cfg=cfg(freebsd10)\ncargo:rustc-check-cfg=cfg(freebsd11)\ncargo:rustc-check-cfg=cfg(freebsd12)\ncargo:rustc-check-cfg=cfg(freebsd13)\ncargo:rustc-check-cfg=cfg(freebsd14)\ncargo:rustc-check-cfg=cfg(freebsd15)\ncargo:rustc-check-cfg=cfg(gnu_file_offset_bits64)\ncargo:rustc-check-cfg=cfg(gnu_time_bits64)\ncargo:rustc-check-cfg=cfg(libc_deny_warnings)\ncargo:rustc-check-cfg=cfg(linux_time_bits64)\ncargo:rustc-check-cfg=cfg(musl_v1_2_3)\ncargo:rustc-check-cfg=cfg(musl32_time64)\ncargo:rustc-check-cfg=cfg(musl_redir_time64)\ncargo:rustc-check-cfg=cfg(vxworks_lt_25_09)\ncargo:rustc-check-cfg=cfg(target_os,values(\"switch\",\"aix\",\"ohos\",\"hurd\",\"rtems\",\"visionos\",\"nuttx\",\"cygwin\",\"qurt\"))\ncargo:rustc-check-cfg=cfg(target_env,values(\"illumos\",\"wasi\",\"aix\",\"ohos\",\"nto71_iosock\",\"nto80\"))\ncargo:rustc-check-cfg=cfg(target_arch,values(\"loongarch64\",\"mips32r6\",\"mips64r6\",\"csky\"))\n",
+    "expected_generated": {},
+    "expected_cfg": [
+      "freebsd12"
+    ],
+    "expected_query_count": 1,
+    "expected_query": "--version",
+    "target_compilations": 0,
+    "source_path": "build.rs",
+    "build_script_sha256": "4b348c53d0a0cd0067ef9887b50f60a1fffdc5d00dda5c0e27fae6aa0ce3dee8"
+  },
+  "original_std": {
+    "package": {
+      "name": "std",
+      "version": "0.0.0",
+      "origin": "rust/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/std",
+      "inventory_sha256": "d56e1983c1d58f8e1e6e950188b62471f1e15447a6c24aa01e123ebc245bb14a"
+    },
+    "target": "x86_64-unknown-linux-gnu",
+    "host_panic": "unwind",
+    "target_panic": "abort",
+    "features": [],
+    "expected_status": 0,
+    "expected_stdout": "cargo:rerun-if-changed=build.rs\ncargo:rustc-check-cfg=cfg(netbsd10)\ncargo::rustc-check-cfg=cfg(no_global_oom_handling)\ncargo:rustc-check-cfg=cfg(restricted_std)\ncargo:rustc-check-cfg=cfg(backtrace_in_libstd)\ncargo:rustc-cfg=backtrace_in_libstd\ncargo:rustc-env=STD_ENV_ARCH=x86_64\ncargo:rustc-check-cfg=cfg(vxworks_lt_25_09)\n",
+    "expected_cfg": [
+      "backtrace_in_libstd"
+    ],
+    "expected_environment": {
+      "STD_ENV_ARCH": "x86_64"
+    },
+    "expected_generated": {},
+    "expected_queries": 0,
+    "target_compilations": 0,
+    "source_path": "library/std/build.rs",
+    "source_sha256": "f5510c905e126f1de772d73c02cacb7a5ed0a485a22fb99f395593b16a9de8b2"
+  }
+}

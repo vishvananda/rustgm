@@ -6,13 +6,55 @@ use crate::{
     syntax::{ast::Kind, item::ItemKind},
 };
 
+/// The stable attribute owns a defining declaration, distinct from weak imports.
+pub(super) fn validate_handler(
+    package: &Package,
+    declaration: Declaration,
+    foreign: bool,
+) -> Result<(), Error> {
+    validate(package, declaration, LangItem::PanicImpl)?;
+    let ast = &package.unit(declaration.origin.file).configured.ast;
+    if foreign
+        || !matches!(ast.node(declaration.origin.node).kind,
+            Kind::Item(index) if matches!(ast.items[index as usize].kind,
+                ItemKind::Function { body: Some(_), .. }))
+    {
+        return Err(error(
+            package,
+            declaration.origin,
+            "panic_handler requires its actual defining function body",
+        ));
+    }
+    Ok(())
+}
+
 pub(super) fn validate(
     package: &Package,
     declaration: Declaration,
     role: LangItem,
 ) -> Result<(), Error> {
+    if matches!(role, LangItem::PanicLocation | LangItem::PanicInfo) {
+        let ast = &package.unit(declaration.origin.file).configured.ast;
+        let Kind::Item(index) = ast.node(declaration.origin.node).kind else {
+            return Err(error(
+                package,
+                declaration.origin,
+                "source panic nominal has no actual item",
+            ));
+        };
+        if declaration.parent.is_some()
+            || !matches!(ast.items[index as usize].kind, ItemKind::Struct { .. })
+        {
+            return Err(error(
+                package,
+                declaration.origin,
+                "source panic nominal requires an actual module structure",
+            ));
+        }
+        return Ok(());
+    }
     let function = match role {
-        LangItem::Not => false,
+        LangItem::Not | LangItem::TrivialClone => false,
         LangItem::Panic
         | LangItem::PanicFmt
         | LangItem::PanicImpl
@@ -41,7 +83,7 @@ pub(super) fn validate(
         return Err(error(
             package,
             declaration.origin,
-            "source Not role requires an actual trait",
+            "source language operator or cloning marker requires an actual trait",
         ));
     }
     Ok(())

@@ -10,7 +10,7 @@ use crate::{
 pub(crate) mod collections;
 pub(crate) mod range_originals;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) struct Call {
     pub callable: TypeId,
     pub signature: TypeId,

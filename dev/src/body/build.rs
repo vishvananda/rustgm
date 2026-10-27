@@ -7,6 +7,8 @@ mod constructors;
 pub(super) use constructors::{finish_factory, finish_factory_block};
 pub(in crate::body) use drops::factory_values as factory_owned_values;
 mod adjusted;
+#[path = "build/site_inputs.rs"]
+mod caller_sites;
 mod decisions;
 mod drops;
 mod environments;
@@ -23,6 +25,7 @@ mod operators;
 mod pattern_tests;
 mod patterns;
 mod references;
+mod residual_edges;
 mod retries;
 mod storage;
 pub mod templates;
@@ -176,7 +179,11 @@ fn function_body(
         source,
         result,
     );
-    body.const_context = facts.is_const_function(function.definition);
+    body.const_context = facts.is_const_function(function.definition)
+        && facts
+            .source_function_context(report, function.definition, source)
+            .map_err(|error| report.body_error(source, error))?
+            .checks_const();
     let scope_plan = scopes::function_with_scratch(
         report,
         facts,
@@ -249,6 +256,10 @@ struct Reach {
 }
 #[derive(Clone, Copy)]
 enum Work {
+    TryFinish {
+        node: NodeId,
+        body: NodeId,
+    },
     ForInitialize {
         node: NodeId,
         base: usize,
@@ -584,6 +595,7 @@ impl<'a> Builder<'a> {
     fn evaluate(&mut self, node: NodeId, ty: TypeId, kind: Rvalue) -> Result<ValueId, Error> {
         let value = ValueId(self.index(node, self.body.values.len())?);
         self.body.values.push(Value { ty, kind });
+        self.record_caller_site(node, value)?;
         self.statement(node, Action::Evaluate(value))?;
         self.create_owned(node, value)?;
         Ok(value)
@@ -830,6 +842,9 @@ impl<'a> Builder<'a> {
             return Err(self.error(root, "unbalanced reference adjustment continuations"));
         }
         self.settle();
+        self.body
+            .seal_caller_sites(self.facts)
+            .map_err(|error| self.error(root, error))?;
         let scope_work = self.scope_plan.work;
         let (source_scopes, scratch) = self.scope_plan.finish();
         let scope_work = scope_work.saturating_add(source_scopes.len());
@@ -1036,6 +1051,7 @@ impl<'a> Builder<'a> {
             Work::ForInitialize { node, base } => self.initialize_for(node, base)?,
             Work::ForRepeat { node, header, base } => self.repeat_for(node, header, base)?,
             Work::ForFinish { node, exit, base } => self.finish_for(node, exit, base)?,
+            Work::TryFinish { node, body } => self.finish_try_block(node, body)?,
             Work::Repeat {
                 node,
                 target,
@@ -1149,6 +1165,7 @@ impl<'a> Builder<'a> {
             return Ok(());
         }
         match self.kind(node) {
+            Kind::TryBlock { body, .. } => self.enter_try_block(node, body)?,
             Kind::Match { value, .. } => {
                 self.scratch.work.push(Work::MatchStart(node));
                 self.scratch.work.push(Work::Place(value));
@@ -1623,6 +1640,10 @@ impl<'a> Builder<'a> {
                 }
                 self.unit(node)?
             }
+            Kind::Unary {
+                op: crate::syntax::ast::Unary::Try,
+                operand,
+            } => self.question_mark(node, operand)?,
             Kind::Unary { operand, .. } => self.unary_value(node, operand)?,
             Kind::Binary { left, right, .. } => self.binary(node, left, right)?,
             Kind::Cast { value, .. } => {

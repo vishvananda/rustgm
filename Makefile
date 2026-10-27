@@ -23,6 +23,7 @@ SMOKE_CASES := lexer \
 	ctfe_selector::source_ctfe_selector_uses_owned_tuple_and_actual_callback_without_placeholder \
 	ctfe_selector::source_ctfe_selector_keeps_reached_fault_and_argument_ownership \
 	crate_linking::instantiable::actual_generic_originals_execute_runtime_and_constant_instances_after_roundtrip \
+	crate_linking::packet_libraries::cli_required_trait_methods_accept_fresh_local_implementations \
 	never_editions::opposite_token_origins_reach_source_validation_and_lowir \
 	expanded_cli::source_edition_options_retain_configuration_and_keep_metadata_profile_closed
 smoke:

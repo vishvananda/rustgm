@@ -1,0 +1,46 @@
+{
+  "state": "independent metadata qualified; candidate repair pending",
+  "profile": "rustc 1.98.0; metadata lib; bootstrap; 2021/2024; x86_64-unknown-linux-gnu; abort",
+  "cases": [
+    {
+      "name": "literal-string",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/literal-string.rs",
+      "sha256": "62f944852b41a0d04e601b0ebfd57f2abebc2a462bfa72b175a0e37b822a7ad7",
+      "rustc_status": 0
+    },
+    {
+      "name": "literal-wide-spelling",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/literal-wide-spelling.rs",
+      "sha256": "97a02bba7469d9184a386d20521fd0a814977b5e6bd285a0c739956c9c66f4e9",
+      "rustc_status": 0
+    },
+    {
+      "name": "literal-boolean",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/literal-boolean.rs",
+      "sha256": "7ede2c722a6f11a83828fd3e116dbc81693753ec51282a0513a30af703dd04af",
+      "rustc_status": 1
+    },
+    {
+      "name": "normalized-name",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/normalized-name.rs",
+      "sha256": "9596f5cd42a9d3d1cc90b62aa8146b4e6dff7c40b2ce2e1aeda7fbf754e9fc1b",
+      "rustc_status": 0
+    },
+    {
+      "name": "scoped-expression",
+      "path": "pa31/tests/spec/metavariable-concat/protocol/scoped-expression.rs",
+      "sha256": "d15cc4e9f6863e86397e7bbb561ff1271c6508e54949853208ec90064ec057a9",
+      "rustc_status": 0
+    }
+  ],
+  "observed": {
+    "state": "observed",
+    "observations": 10,
+    "disagreements": [],
+    "infrastructure_failures": 0,
+    "seconds": 0.30219733295962214,
+    "binding_sha256": "5e92dd09be2e8f53de2b4b99e20ead3aa3002e62cc62917b562a29797b59631a",
+    "results_sha256": "8ba3feab54f7fa921064184c7589fcf1e00b52184df6841692c28de849b0f33e"
+  },
+  "scope": "Typed literal spelling, bool fragment restriction, NFC and scoped expression macro; no native claim"
+}

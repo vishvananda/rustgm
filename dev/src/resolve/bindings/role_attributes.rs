@@ -12,6 +12,7 @@ pub(crate) enum HeaderAttribute {
     Specialization,
     Coinductive,
     DynIncompatible,
+    Marker,
 }
 impl HeaderAttribute {
     pub(super) fn named(name: &str) -> Option<Self> {
@@ -42,6 +43,16 @@ impl HeaderAttributes {
     }
     pub(crate) const fn contains(self, attribute: HeaderAttribute) -> bool {
         self.0 & attribute.bit() != 0
+    }
+    pub(crate) fn with_marker(self, marker: bool) -> Self {
+        Self(
+            self.0
+                | if marker {
+                    HeaderAttribute::Marker.bit()
+                } else {
+                    0
+                },
+        )
     }
     pub(crate) fn requires_sizing_profile(self) -> bool {
         [
@@ -150,22 +161,28 @@ pub(super) fn validate(
     if let Some(role) = role {
         reserved.header_attributes[role.index()] = flags;
     }
-    if claims
+    let trivial_reads = claims
         .iter()
-        .any(|claim| matches!(claim, Claim::TrivialFieldReads))
-    {
-        if !source.features.has(Feature::RustcAttributes) || role != Some(LangItem::Clone) {
+        .filter(|claim| matches!(claim, Claim::TrivialFieldReads))
+        .count();
+    if trivial_reads != 0 {
+        let unit = package.unit(declaration.origin.file);
+        if !source.features.has(Feature::RustcAttributes)
+            || !matches!(unit.configured.ast.node(declaration.origin.node).kind,
+                crate::syntax::ast::Kind::Item(index) if matches!(unit.configured.ast.items[index as usize].kind, crate::syntax::item::ItemKind::Trait { .. }))
+        {
             return Err(error(
-                "trivial-field-read diagnostics require the actual source Clone trait",
+                "trivial-field-read diagnostics require an actual source trait",
             ));
         }
-        if reserved
-            .trivial_field_reads
-            .replace(declaration.definition)
-            .is_some()
-        {
-            return Err(error("duplicate trivial-field-read diagnostic owner"));
+        if trivial_reads != 1 {
+            return Err(error(
+                "duplicate trivial-field-read diagnostic on one trait",
+            ));
         }
+        // The existing header owns the original attribute and its source image.
+        // A lint hint neither reserves a unique global trait nor grants a proof.
+        reserved.steps = reserved.steps.saturating_add(1);
     }
     if role == Some(LangItem::Unsize) && !flags.contains(HeaderAttribute::DynIncompatible) {
         return Err(error(
@@ -185,6 +202,7 @@ pub(super) fn primary(
     package: &Package,
     key: crate::resolve::unit::NodeKey,
     kind: crate::resolve::model::DefKind,
+    namespace: crate::resolve::model::Namespace,
     claims: Option<&[Claim]>,
 ) -> bool {
     use crate::{
@@ -192,18 +210,26 @@ pub(super) fn primary(
         syntax::{ast::Kind, item::ItemKind},
     };
     let unit = package.unit(key.file);
+    if matches!(unit.configured.ast.node(key.node).kind, Kind::Variant(_)) {
+        return kind == DefKind::Variant
+            && namespace == crate::resolve::model::Namespace::Value
+            && claims.is_some_and(|claims| {
+                claims.iter().any(|claim| {
+                    matches!(
+                        claim,
+                        Claim::Language(LangItem::ControlFlowContinue | LangItem::ControlFlowBreak)
+                    )
+                })
+            });
+    }
     let Kind::Item(index) = unit.configured.ast.node(key.node).kind else {
         return false;
     };
     match (unit.configured.ast.items[index as usize].kind, kind) {
         (ItemKind::DeclarativeMacro { .. }, DefKind::Macro) => claims.is_some_and(|claims| {
-            claims.iter().any(|claim| {
-                matches!(
-                    claim,
-                    Claim::BuiltinMacro(role) if *role == crate::expand::builtin::Builtin::CfgSelect
-                        || role.kind() != crate::expand::builtin::BuiltinKind::Bang
-                )
-            })
+            claims
+                .iter()
+                .any(|claim| matches!(claim, Claim::BuiltinMacro(_)))
         }),
         (ItemKind::Trait { .. }, DefKind::Trait)
         | (ItemKind::Function { .. }, DefKind::Function)

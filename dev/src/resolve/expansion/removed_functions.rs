@@ -188,6 +188,7 @@ impl<S: Sources> Engine<'_, S> {
                 removals,
                 policy: None,
                 visibilities: None,
+                derives: None,
             }));
         }
         let removal = self.checked_test_removal(index, definition)?;

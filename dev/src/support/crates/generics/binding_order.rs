@@ -1,7 +1,7 @@
 //! Fallible canonical binding-key ordering pays comparisons before visiting bytes.
 use crate::support::crates::generics::Work;
 use std::cmp::Ordering;
-pub(super) fn sort<T>(
+pub(crate) fn sort<T>(
     bindings: &mut [T],
     work: &mut Work,
     swaps: &mut usize,

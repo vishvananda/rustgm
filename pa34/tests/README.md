@@ -2,6 +2,13 @@
 
 Planned: no graded fixtures or generated reference outputs yet.
 
+`stdlib-graph-outcomes.json` records original pinned core/alloc/std planning with
+explicit abort target profiles, authenticated registry/local sources and complete
+unit settings. `spec/legacy-stdlib-editions/contract.json` declares import and
+pattern-fragment opponents for Rust 2015/2018 target dependencies. All four
+pinned rustc metadata observations match. These editions remain required compiler
+work; no library build is implied by the planning observations.
+
 `foreign-edition-outcomes.json` declares 32 paired source outcomes and 13 native
 outcomes for extern blocks, member safety and supported linkage attributes.
 These [development controls](../../docs/pa34-extern-editions.md) pass independent
@@ -17,6 +24,18 @@ Native assertions check the actual destructor trace in each edition. See the
 [temporary scope checkpoint](../../docs/pa34-temporary-editions.md).
 
 Required families: per-crate editions; feature and dependency resolution; host versus target artifacts; build script outputs; reproducible build provenance.
+
+`spec/host-manifest-lints/contract.json` predeclares six pinned Cargo outcomes
+for host lint levels, priority overrides and custom cfg expectations. The host
+task and dependency-DAG executors retain these policies in their actual compiler
+commands; unknown tools, unresolved workspace inheritance and unstable manifest
+policy remain explicit failures. The original selected libc build script is the
+first unchanged std-graph host consumer; its 27 directive lines are predeclared
+from the source. Target libc and std compilation remain required.
+Its `original_std` contract adds all eight original std-script directives, the
+complete package inventory pin and the explicit abort-target/unwind-host context.
+The public-dependency request preserves target edges while unsupported host-edge
+modifiers still fail before any process is launched.
 
 Follow the [owning brief](../README.md) and
 [library bootstrap plan](../../docs/library-bootstrap-roadmap.md).

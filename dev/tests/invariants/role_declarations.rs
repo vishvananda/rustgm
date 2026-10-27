@@ -3,7 +3,7 @@ use super::*;
 use crate::support::{bindings::Mode, crates::CrateIdentity, source::SourceFile};
 use std::path::Path;
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
-struct NoFiles;
+pub(super) struct NoFiles;
 impl Sources for NoFiles {
     fn read(&mut self, _: &Path) -> Result<Option<InputFile>, String> {
         Ok(None)
@@ -14,7 +14,7 @@ fn fixture(name: &str) -> TestResult<String> {
         "pa31/tests/spec/source-builtin-declarations/{name}"
     ))?)
 }
-fn with_engine(
+pub(super) fn with_engine(
     source: &str,
     provider: bool,
     body: impl FnOnce(&mut Engine<'_, NoFiles>) -> TestResult,
@@ -81,7 +81,7 @@ fn real_frames_cannot_borrow_unavailable_role_headers() -> TestResult {
             matches!(definition.body, Body::Builtin(role) if !role.executable()).then_some(index)
         })
         .collect();
-    assert_eq!(unavailable.len(), 38);
+    assert_eq!(unavailable.len(), 34);
     for index in unavailable {
         report.invocations[0].definition = index;
         for forged in [false, true] {
@@ -164,10 +164,6 @@ fn unavailable_alias_and_kind_opponents_stop_before_execution_work() -> TestResu
         ),
         ("derive-as-bang.rs", "unresolved macro"),
         ("derive-as-attribute.rs", "unresolved attribute macro"),
-        (
-            "source-derive-consumer.rs",
-            "builtin attribute execution is not implemented",
-        ),
     ] {
         with_engine(&fixture(name)?, true, |engine| {
             let error = engine
@@ -181,6 +177,23 @@ fn unavailable_alias_and_kind_opponents_stop_before_execution_work() -> TestResu
             Ok(())
         })?;
     }
+    with_engine(&fixture("source-derive-consumer.rs")?, true, |engine| {
+        let error = engine
+            .run()
+            .err()
+            .ok_or("missing Copy declaration accepted")?;
+        assert!(
+            error.message.contains("unresolved attribute macro"),
+            "{error}"
+        );
+        // Derive itself now executes; its missing source Copy binding still fails.
+        assert_eq!(engine.invocations.len(), 1);
+        assert!(matches!(
+            engine.definitions[engine.invocations[0].definition].body,
+            Body::Builtin(Builtin::Derive)
+        ));
+        Ok(())
+    })?;
     with_engine(&fixture("disabled-unavailable-use.rs")?, true, |engine| {
         engine.run()?;
         assert!(engine.invocations.is_empty());
@@ -193,7 +206,6 @@ fn unknown_claims_forms_and_provider_opponents_do_not_change_ordinary_derives() 
     for name in [
         "unknown-role.rs",
         "wrong-owner.rs",
-        "wrong-derive-form.rs",
         "missing-gate.rs",
         "malformed-claim.rs",
         "duplicate-claim.rs",
@@ -216,6 +228,33 @@ fn unknown_claims_forms_and_provider_opponents_do_not_change_ordinary_derives() 
     crate::pipeline::analyze_source(&report)?;
     real_frames_cannot_borrow_unavailable_role_headers()?;
     Ok(())
+}
+
+#[test]
+fn registered_derive_keeps_legacy_source_form_without_execution_permission() -> TestResult {
+    let source = fixture("wrong-derive-form.rs")?;
+    with_engine(&source, true, |engine| {
+        engine.run()?;
+        let definition = engine
+            .definitions
+            .iter()
+            .position(|definition| matches!(definition.body, Body::Builtin(Builtin::From)))
+            .ok_or("registered From declaration missing")?;
+        let error = engine
+            .require_invocable(
+                definition,
+                crate::expand::builtin::BuiltinKind::Derive,
+                FileId(0),
+                0,
+            )
+            .err()
+            .ok_or("unavailable From executed")?;
+        assert!(error.message.contains(Builtin::From.unavailable_message()));
+        assert!(engine.invocations.is_empty());
+        assert_eq!(engine.captures.len(), 0);
+        assert_eq!(engine.loader.package.marks.context_count(), 1);
+        Ok(())
+    })
 }
 
 #[test]

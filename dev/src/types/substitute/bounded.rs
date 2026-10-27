@@ -151,6 +151,14 @@ fn needs(store: &Store, kind: Kind) -> Result<Needs, &'static str> {
         .saturating_add(result.list);
     Ok(result)
 }
+/// Prepay metadata inspection/rebuild loops without another type-kind classifier.
+pub(super) fn normalization_work(store: &Store, kind: Kind) -> Result<usize, &'static str> {
+    let needs = needs(store, kind)?;
+    Ok(1_usize
+        .saturating_add(needs.edges)
+        .saturating_add(needs.arguments)
+        .saturating_add(needs.list))
+}
 /// Growth payment is separate from actual traversal-step reconciliation. Store
 /// interning retains canonical data under its existing arena limits.
 pub(super) fn charge_prepare(

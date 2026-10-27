@@ -217,3 +217,228 @@ Their actual source and LowIR remain byte-identical in the
 observations supersede the earlier Not prerequisite only. Actual Abort,
 panic/format/runtime/constant consumers and imported contracts remain open;
 Source Assert is still not executable.
+
+## Source Location derive consumer
+
+Production source `2c0df1c518f3aa44bff47f402d8e4ba4a8689019` passes the six
+focused controls in local fastcheck `1793056083311073081` (243.16 seconds).
+Metadata, formatting, architecture audit, strict private Clippy, fresh private
+build and all six tests pass. Root integration owns production/CLI Clippy; this
+receipt is private-mode qualification. Earlier failed syntax, lint, policy and
+edition observations remain retained under `obj/parallel/pa31/source-location-claims-v1/`.
+No previous independent observation was repeated.
+
+The authored selected-source provider retains Location's four real fields,
+NonNull/PhantomData declarations, Copy/Clone derive list, TrivialClone's real
+lang/unsafe/const/marker/conditional Clone contract, and the selected regular/
+const stability and allow_internal_unstable attributes. Its Pointee declaration
+is the explicitly reduced independently qualified family, not a replacement for
+the complete upstream Metadata bounds. A test helper constructs the genuine
+private Location representation with filename `loc` and its extra trailing NUL;
+it does not implement caller_location or replace a library constructor.
+
+The complete list resolves actual source derive headers before one composite
+parse/install. Parsed field types are forwarded as opaque occurrences with exact
+copied origins. Generated impl/member bodies undergo ordinary trait, field-WF,
+ownership, lifetime and lowering proof. Consumed configuration is replayed through
+the existing cold effect index and authenticates the current source image, owner,
+list, members and introductions. It is not trait or call permission. Ordinary
+bootstrap derives keep their existing route and 24 intrinsic slots. No new field
+was added to Call, Visit, Node, Body, Engine, Report, Package or Context.
+
+The first profile is module structs with lifetime-only unbounded formals and
+paired Copy/simple Clone. Fieldwise/type-parameter/enum/union/other derive profiles,
+marker overlap arbitration and imported derive execution remain required. Marker
+attribute gates use the actual name token: captured caller metadata does not
+inherit a definition's allowance. Non-Bang allowance frames stay closed. No
+feature/const/optimization permission follows merely from the empty marker.
+
+PanicLocation (32), PanicInfo (33) and TrivialClone (34) append old-stable language ordinals.
+The same cold mask becomes u64 with a compile-time 64-role bound. Actual nominal
+claim completion uses real fields/lifetimes; it grants neither caller tracking,
+PanicInfo construction nor handler permission. Existing wire/profile guards reject
+untransported roles, markers and stability; original v0/v1/v2 admission is closed.
+
+Synthetic vocabulary has an explicit `OriginKind::Synthetic(Edition)` in the same
+Origin record. Its actual checked definition edition agrees with pinned rustc's
+`deriving/mod.rs:54–56` def-site context. Producer/replay bind the actual generated
+interval, anchor, member introduction, header and exact opaque mark. Copied names/
+field types remain byte-exact; editions::parent never clamps or accepts synthetic
+bytes as copies. Opposing 2021/2024 parsed Unit controls and live foreign-introduction,
+changed-edition/context/kind and invalid UTF-8 opponents pass. This supplies no
+macro feature allowance or new foreign macro profile.
+
+Actual measurements: Origin 32 (alignment 4), OriginKind 1, Stream 104, Unit 688,
+Package 256, Report 3040, Engine 4088, Call 168, Body 96, Definition 136 and Validated 40
+remain unchanged. Effects grows 368→376 for its one optional transaction owner;
+Transaction/Transactions are 176/56. Reservations grows 912→976 and Catalog 792→856
+for the three cold source role slots. The initial 984-byte Reservations prediction
+failed and remains recorded. Library/Inventory grow 120→128 and 80→88 with one
+optional 24-byte const-policy owner; Policy 48/Level 24 remain unchanged. Ordinary
+sources allocate no derive transaction or library policy. Source storage/work
+charges include attempted allocations; this is not a whole-heap measurement.
+
+The provider source SHA-256 is
+`27d396405a174743ebecbaa3b4818642062ed409b23c5db3bf7f449c10e16dfd`;
+its actual LowIR SHA-256 is
+`9ca1b09ae3f4395a561d37b21b2394ccf30c93a56e5d0ab332f58ae3cc740e6c`.
+The pinned CPPGM object backend and independently fixed C observer produce exit 0,
+stdout `31 7\n`, empty stderr. Native receipt is
+`obj/parallel/pa31/source-location-claims-v1/native-v1/receipt.json`; source/tool/
+observer/LowIR hashes match before and after. Successful disposable object and
+executable outputs were scoped-pruned, preserving all raw streams and hashes.
+
+The final handoff changes two old test-only Catalog assertions 792→856 to the
+actual observed cold size. Both pass the combined integration with twelve
+Location/try-grammar controls: fourteen exact private tests, strict Clippy,
+formatting and global audit in 252.46 seconds. Nineteen production/CLI smoke
+controls also pass in 183.37 seconds. Two production wildcard imports were
+replaced with explicit names; feature IDs 26/27 retain both registrations.
+Fresh combined source and LowIR have the exact native-qualified hashes above,
+retaining the actual `31 7` observation without claiming a new backend run.
+Receipts are `obj/qualification/fast/1793057384271908570/receipt.json` and
+`1793057118041690839/receipt.json` in the integrator checkout.
+
+The unchanged-core observer now passes the try blocks, verifies all 722 inputs,
+opens 96 files in 1.976 seconds, and stops at the const closure in
+`ops/try_trait.rs:415` (LIB-037). There is no original core artifact.
+Actual Debug demand,
+caller_location/track_caller, PanicInfo, source panic handler/CTFE redirect,
+formatting constructors and false Assert execution remain required. CPPGM and
+pinned upstream source bytes are unchanged. PA26/PA31 remain planned.
+
+### Direct source caller tracking
+
+The direct caller checkpoint uses the unchanged authored
+`pa31/tests/spec/source-location/caller-location.rs` provider (SHA-256
+`932880e0177a64ee3f51bdfb58c795022a9ef4e7eb64b0b5dbc820e4e7258665`).
+Its original selected `Location::caller` body reaches the checked safe const
+`caller_location` intrinsic. The ordinary source signature stays unchanged;
+tracked Rust functions receive a separate final native Location pointer.
+An untracked function supplies its actual call site, and tracked functions
+forward their incoming pointer. CTFE walks existing checked frames and sealed
+call-site data. Both paths use the real completed Location fields and immutable
+filename storage, including a terminator outside the str metadata length.
+
+Header policy stays in the existing source ledger. Trait inheritance is produced
+only after ordinary canonical method conformance. Legacy Functions/v1/v2
+publication rejects tracked source headers; authenticated existing imported
+profiles retain their proved absence, while unknown/Provided policy stays closed.
+Const intrinsic library features use the completed inventory and actual callee
+origin, separately from semantic const eligibility. Completed root requests are
+ordered only after the prior source-order validation, with charged comparisons;
+one borrowed allowance session is reused across the body's calls.
+
+Sparse caller data shares the existing callable-input owner while its optional
+resolved-target map remains independent. One immutable footer follows all legacy
+Code operands; consumers distinguish it from inline/discriminant readiness.
+Actual measurements are Header 64→72, callable owner 32→56, and CallContexts
+48→72 bytes. CallerSite is 20 bytes. PreparedOperand grows 28→32 (alignment 8),
+adding four bytes to every stored legacy operand as well as the new footer;
+its copied site allocation/control/padding is charged once per snapshot.
+Code stays 304, Rvalue 20, Value 24 and Body 448 bytes. Ordinary operand-free
+snapshots retain zero operand capacity. The ABI cache's key becomes
+`(TypeId, bool)` (8 bytes rather than 4); its owner remains one existing map.
+
+Five exact private controls, private strict Clippy, formatting and architecture
+checks pass in 100.12 seconds on source `5edadfcb219dd88521c4ed5aa0ca52b3f0dbe0c0`.
+Receipt `obj/qualification/fast/1793066469121406138/receipt.json` has SHA-256
+`edb5ea6b8339d77499487563a9e233425e53221b9c194ca5d38b12001ff40bab`.
+The actual LowIR SHA-256 is
+`dc5e9c2ae031bbc554bf2fa5af42c9dc355f97512c553640e8bced099c5738c4`.
+The unchanged pinned backend and C observer produce exit 0, stdout
+`341 5 343 53 1\n`, and empty stderr, matching the prior independent Rust
+observation. All 2,830 compiler/source fingerprints and the private binary were
+authenticated before and after. Native receipt is
+`obj/parallel/pa31/source-location-claims-v1/caller-tracking-v1/native-v1/receipt.json`,
+SHA-256 `e26c4b54ec13e3053cdeab9003ea1fa5dfb96b1ab14b856d656b6e3a7eeb6a8d`.
+Disposable outputs were scoped-pruned. Prior setup, selector, audit, typing,
+lint and timeout failures remain retained; they are not passing runtime evidence.
+
+This qualifies the direct provider only. Tracked function-pointer/dynamic shims,
+trait-inheritance source/native opponents, broader generated call adapters and
+transported tracking policy remain required. Reification is explicitly closed;
+there is no silent untracked ABI fallback. PanicInfo/handler/Debug, source panic
+CTFE redirection, formatting constructors and false Assert execution remain
+required. Bootstrap24, existing role ordinals, wire permissions and CPPGM are
+unchanged. Production/CLI integration remains the integrator's check.
+
+### Source Debug and formatter-field declarations
+
+Source `650af021e632d93adae1bb89ba7fbda081618970` adds Debug to the same
+once-parsed derive transaction. Its three selections are ephemeral; the existing
+Effects/Transaction owners do not grow. A shared active struct/enum field inventory
+lets the actual rt::ArgumentType formatter function type cross the existing opaque
+type transfer. The bounded Debug struct profile (zero through five fields) emits
+the pinned Formatter helper recipe, including an extra reference to the final
+field, with source-owned labels. Enum Debug and larger helper profiles remain
+explicitly unsupported. No field initializer, ordinary WF or trait proof is skipped.
+
+The existing cold diagnostic array gains actual trait-kind Debug identity. The
+unused global trivial-field-read singleton is removed; each real trait header
+retains its original hint, with same-header duplicates and malformed/wrong-owner
+claims rejected. The hint grants no Clone, overlap, callable or const proof.
+Actual Reservations grows 1120→1136 bytes. Effects 376, Transaction 176,
+Transactions 56, Engine 4088, Report 3040, resolver Body 96 and Definition 136
+remain unchanged. The public before-observer authenticates the qualified
+production rlib; after values come from the actual new private binary.
+
+Five exact controls pass in 243.06 seconds, with metadata, formatting, global audit,
+private strict Clippy and a fresh private build. Receipt
+`obj/qualification/fast/1793071109543750399/receipt.json` has SHA-256
+`8f999dbefd7a1484ca226068493e55caccff5e7be1e16471bac0777d753c8565`;
+all 2,839 source fingerprints match. The first filename-audit failure is retained
+separately. The new fragment's contract explicitly stops at expansion: original
+PanicInfo fields/attributes and actual formatter function-pointer syntax are
+retained, while Formatter/Arguments bodies and their semantic proofs are required.
+The three existing genuine Location controls also pass. This is not a Debug
+runtime, PanicInfo handler, formatting or false-assert qualification; the real
+source consumer remains the next exit.
+
+The integrator normally merged the immutable handoff and authenticated all 2,839
+fingerprints, then updated the measured Reservations assertion. The combined 37
+private controls pass in 145.09s, including the five new groups and the affected
+Try, caller, source-client and declaration/layout controls. Production strict
+Clippy and 26 exact CLI/linking controls pass in 91.01s at `f36363f80`, receipt
+`obj/qualification/combined-cli/1793074024630727391/receipt.json`.
+The new immutable dev-fast CLI has SHA-256
+`b446bc8aaf596577b34ffa529e573318ece7617041c042a000294bdd859cfada`.
+This qualifies the integrated prerequisite; runtime/handler scope above is unchanged.
+
+The preceding full CI run at `7ebb1bf8c` passed 1,837 private tests but exposed one
+stale declaration-form assertion. The exact unchanged legacy From fixture is
+independently accepted as library metadata in editions 2021/2024. Its expected
+result now follows the real registry kind; an actual invocation-availability
+query still rejects From before captures/marks/invocations. Both affected
+private groups pass in 108.87s, receipt `1793073832559208213`. The source bytes and
+historical filename are preserved. Full CI is rerun after publication.
+
+### Const-panic header policy
+
+Source `249ab01d2a8752d69275ff73058164ecec3e38f9` validates the original
+`rustc_do_not_const_check` and `rustc_const_stable_indirect` words in the existing
+header-owner walk. Fresh queries authenticate the same completed header image;
+no body/header fields or second policy owner are added. Explicit const-unstable
+APIs marked const-stable-indirect participate in the real recursive API check.
+The marker supplies no const-call eligibility. Malformed words, unsupported
+do-not-check roles and the const-stable/indirect pairing remain rejected.
+
+The stable `panic_handler` claim uses the existing PanicImpl slot without a
+lang_items request. Genuine foreign lang declarations remain separate DefIds and
+do not reserve that defining slot. This qualifies claim ownership only; completed
+handler signature/body validation and exact weak-symbol linkage remain required.
+The Report-aware defining context additionally requires actual local PanicFmt or
+PanicDisplay identity, current signature/body and both markers. It never changes
+the source const declaration or grants CTFE entry. CFG const eligibility retains
+its separate declaration test; the predecessor's accidental promotion of a
+const-trait default body failed on the real Clone::clone_from and is retained.
+
+All six focused controls pass in 96.62 seconds with metadata, formatting, global
+audit, private strict Clippy and build. Receipt
+`obj/qualification/fast/1793074570782818331/receipt.json` has SHA-256
+`c7b1b33bd3f2ac5ad498a2fad1937a4a0db872f90d0cb739a0bc8e97ba0c3b5a`;
+all 2,844 source fingerprints match. Reservations 1136, Package 256, Report 3040,
+CFG Body 448, Value 24, Rvalue 20, Library 128 and Inventory 88 are unchanged.
+Prior lint and runtime failures remain separate evidence. Actual original panic
+body execution, handler binding, ConstPanicFmt/PanicDisplay hooks and false Assert
+runtime/CTFE are pending, as are production/CLI checks for this checkpoint.

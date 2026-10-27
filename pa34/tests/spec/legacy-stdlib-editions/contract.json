@@ -1,0 +1,29 @@
+{
+  "state": "predicted before independent metadata observation; target frontend editions remain required",
+  "owner": "PA34 selected std graph; PA40 broader edition closure",
+  "source_pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "profile": {
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "emit": "metadata",
+    "bootstrap": false
+  },
+  "cases": [
+    {
+      "path": "pa34/tests/spec/legacy-stdlib-editions/root-import.rs",
+      "sha256": "18e36e2ed94d3c3335ae751f321b9ec42284d731116302ee89d821480104c86f",
+      "metadata_outcomes": {
+        "2015": 0,
+        "2018": 1
+      }
+    },
+    {
+      "path": "pa34/tests/spec/legacy-stdlib-editions/pattern-fragment.rs",
+      "sha256": "df3b11a9ccc41d9945fcbaf0a235ca06386e4ca1c90354bbb7e103af65d73e4c",
+      "metadata_outcomes": {
+        "2018": 0,
+        "2021": 1
+      }
+    }
+  ]
+}

@@ -2,6 +2,12 @@
 
 Planned: no graded manifest or generated reference outputs yet.
 
+`spec/metavariable-concat/` retains LIB-039's original invoked-name reducer and
+feature opponent plus twenty protocol sources. Forty new pinned library-metadata
+observations cover operand categories, repetition, forwarding, definition-site
+hygiene and unused/disabled feature authority. Their predictions all match;
+candidate implementation and native qualification remain pending.
+
 `spec/foreign-types/` freezes 17 new no_core provider inputs for genuine extern
 type identity, pointer metadata, direct/tail sizing, privacy/forms and exact
 feature-token authority. Three separate source Freeze opponents bring the actual
@@ -179,3 +185,173 @@ outcomes. They distinguish final trait bodies/override prohibition, ordinary
 provided overrides, dynamic static-versus-virtual calls, actual source Share,
 exact keyword authority and inactive syntax. The initial contract is retained
 even when observations disprove a prediction. This does not activate PA31.
+
+`spec/source-location/` plans genuine source `Location` Copy/Clone expansion and
+field obligations, with NonNull/PhantomData fields preserved. Caller tracking,
+Debug/formatting and false assertion execution remain separate requirements.
+
+`spec/builtin-derive-helpers/` freezes nineteen new source builtin helper-list
+declarations and opposing owner/form/gate/scope inputs, with 38 independent
+metadata predictions. Declaration data grants neither derive execution nor
+helper use; actual selected-derive ownership is a separate consumer requirement.
+
+`spec/source-try-blocks/` freezes genuine source feature/endpoint and residual
+opponents for the original `ops/index_range.rs` try blocks. The pinned checks
+collected 38 metadata observations, zero infrastructure failures; four initial
+predictions disagreed and remain bound to raw diagnostics. A forwarded keyword
+with a definition-owned block accepts, while whole-expression and both-endpoint
+caller captures retain caller gating. Homogeneous try-block residuals differ from
+function-level conversion. The first grammar checkpoint retains explicit semantic
+unsupported at active TryBlock/`?` checking; real Try/FromResidual/branch/from_output,
+residual reconstruction, ownership and native execution remain required PA26/31
+work. No Default derive or assignment activation follows from this syntax work.
+
+The grammar/feature producer is focused-qualified at
+`cd80733707747600e0c70449246b4304f5acaa86`: one standard six-control gate passed
+metadata, full formatting, global architecture, strict private Clippy, build and
+all six tests in 119.03 seconds. Receipt
+`obj/qualification/fast/1793056439747228259/receipt.json`, SHA-256
+`af6f11d1a34da7ddac65a2ec43f01ecb34e988005b552aae2c5cd846a2edf48b`.
+The separate cold timeout and continuation's five-pass/one-fail result remain
+retained as failures; neither is combined into a claimed five-minute pass.
+
+The same sparse gate owner now measures 88 bytes (previously 56) for every
+existing item-gate owner as well as new expression owners. A try expression row is
+32 bytes and retains its actual node/body edge, block/keyword spans and both
+sealed contexts. Item rows stay 24 bytes. Packed original/transfer prefixes stay
+8 bytes. Actual Kind28, Node36, Item64, Syntax312, Unit688, Extent104,
+Original160/Saved44, Report3040 and Engine4088 are unchanged. Widths 8/32/128
+retain capacities 8/32/128 and total column payload 344/1112/4184 bytes; attempted
+work is 54/222/894 steps. Ordinary no-gate syntax has no sparse owner allocation.
+These are type/capacity/accounting observations, not allocator counts.
+
+The PA4 `control/try-block.rs` and `control/try-needs-block.rs` inputs declare
+syntax-only outcomes; their official selected references are pending integration.
+The executable source Try protocol, homogeneous residual reconstruction, real
+branch/constructor calls, scope exits and native proof remain required. Language
+roles 35–41 and runtime plans are approved next work, not implemented by this
+qualified grammar producer.
+
+`spec/source-const-closures/` records pinned keyword authority, cfg-removal and
+edition-fragment observations. Grammar gates do not grant PA25 execution.
+`spec/scoped-builtin-declarations/` wraps the unchanged original Iter declaration
+for LIB-038. Independent metadata accepts it; current RustGM explicitly rejects
+its scoped declaration kind. No coroutine expansion or native execution is claimed.
+
+The separate executable successor freezes seven genuine no-core protocol sources
+in `source-try-blocks/execution-contract.json`. Fourteen pinned metadata
+observations completed without infrastructure failures. Four initial predictions
+were wrong: removing the Try trait tag alone still accepts when the actual
+methods remain tagged, and the unused wrong-output body reports E0271. Initial
+predictions and all source bytes/raw diagnostics remain retained. At the initial freeze the two native
+outcomes were separate, unobserved predictions; metadata acceptance alone did not
+qualify them.
+
+The executable consumer retains the actual tagged method parents, associated
+Output/Residual declarations and two single-field variants of the same real
+ControlFlow enum. It instantiates ordinary source callables, retains two calls
+for question-mark sites under the existing call-context owner, and uses existing
+lexical frames, CFG branches, moves and drop exits. A homogeneous try block calls
+the actual into_try_type function on residual exit; a function exit calls actual
+from_residual. No residual algebra law or synthetic Option/Result constructor is
+substituted for those bodies. Imported protocol/plan transport and typed
+heterogeneous try syntax remain closed. Compiler and body-proof controls are qualified below; candidate CLI/native
+execution remains a separate pending check. Actual cold capacities and enclosing
+layout observations are recorded below.
+
+The executable compiler/body checkpoint is qualified at `1cae78716`: standard
+focused validation `1793063696757195473` passed all six exact controls in 114.86s,
+including metadata, format, global architecture, strict private Clippy and build.
+The actual full source protocol, optional trait tag, nearest lexical targets,
+loop/drop exits, move and lifetime opponents, changed-image/gate authentication
+and cumulative failure controls pass. The original seven source files remain
+byte-identical to the independent 14-observation contract. Native outcomes remain
+separate, pending predictions; two C observers now freeze the actual exported
+functions and drop-event stream. No native result is inferred from CFG success.
+
+The shared PA21 correction closes a pre-existing ordinary result-supertrait gap:
+one completed result closure builds one exact projection-equality index, then
+uses one existing Normalizer across consequence argument roots. Missing,
+conflicting, cyclic and quantified cases gain no guessed equality. Existing
+ResultBound selection still requires its real parent proof. The real implicit
+`into_try_type` function also demands the same callable template as a written
+function use, through the existing declaration kernel; no ItemUse is invented.
+The ordinary PA21 bridge and missing-equality opponent both pass. Its one new
+active text case still requires official selected generation after integration.
+
+Actual retained Try Plan is 48 bytes. CallContexts is 48 (the earlier observed
+owner was 24); CallTypes=704, Frame=48, State=2776, Operation=16, NodeFacts=80 and
+Catalog=1000. Frame/CallTypes/State before widths were not observed, so no before
+values are inferred. The transient and retained plan Vec fields each occupy 24
+bytes even when empty; the no-Try source leaves the optional retained owner absent.
+At widths 8/32/128, plan capacities are exactly 8/32/128 and plan payloads
+384/1536/6144 bytes, with inference steps 4885/16069/60805. The shared 32-level
+consequence DAG paid work1127/bytes10944, with Normalizer=368; warm reads and
+failed attempts remain charged. No Normalizer fields or ordinary fold mode changed.
+
+The earlier static helper-arity failure and 276.22s build timeout are retained as
+failed observations. The following warm run passed statics/build but only 2/6
+controls, exposing the genuine implicit-template demand gap; that source was
+corrected before the six-control passing run. Imported protocol/plan transport,
+typed heterogeneous try syntax and unrelated const-closure execution stay closed.
+
+Independent native observations now distinguish the language bodies from no-core
+codegen prerequisites. The original protocol source executes exactly
+`7 23 31 17 23 43 19\n`. The original Drop source passes metadata but object
+generation requires Freeze; the first separately frozen Freeze companion then
+requires drop_glue. Both failed codegen predictions and original sources remain
+retained. `source-native-complete-drop.rs` preserves every original Drop program
+body and appends the genuine Freeze and existing source Destruct/drop_glue
+declarations from `source-freeze/automatic-cleanup.rs`; its pinned native output
+is exactly `21\n`. These are new native observations, not repeated metadata
+checks. RustGM native parity remains pending the integrated qualified CLI and
+locked prebuilt backend against the two frozen observers. No original-input or
+original-Drop native success is claimed from these companions.
+
+The final public CLI execution adapters are `source-execute-protocol.rs` and
+`source-execute-drop.rs`. Each retains its complete provider as an exact prefix
+and appends only an exported observer entry plus genuine Rust main. Its paired C
+observer supplies main only for the Rust object link; the candidate LowIR program
+supplies its own actual entry. Both adapters independently execute the expected
+outputs with pinned Rust (six commands, 0.349s, no disagreements). Candidate
+commands use `--emit-lowir --edition=2024 --source-core minicore@try_protocol
+--crate-name minicore --crate-disambiguator try_protocol`; no library/publication
+profile is requested. Actual combined CLI and locked-backend native executions
+remain pending, with the imported protocol and artifact fences retained.
+
+The persistent-accounting successor is qualified at `30ffca330` on the normally
+merged current root source. The shared observed Folder now prepays canonical
+Store nodes, child/lifetime lists, mixed arguments and trait applications before
+growth, including normalization resume and binder completion. Consequence
+lookups use existing canonical identities without insertion. Ordinary public
+interner signatures and canonicalize/probe/validate ordering remain unchanged;
+no Store, Bound or Normalizer fields were added.
+
+The exact six-control gate `1793066606130575832` passed in 171.74s with both
+production and private strict Clippy, metadata, format, global architecture and
+build. Failed Store-growth attempts preserve all prior identities and charge
+cumulative retries; warm hits, shared inputs and real binder reconstruction pass.
+The transient Mutable Folder measures 24 bytes; no predecessor measurement was
+retained, so only its additional borrowed payer reference is reported as a source
+delta. Normalizer remains 368 bytes. The shared 32-level control now pays
+work2064/bytes30336, covering persistent Store growth omitted from the earlier
+1127/10944 accounting. The dedicated Store reconstruction control pays1984 bytes.
+Every reported Try capacity, plan payload, enclosing size and inference-step
+observation above remains unchanged. The first same-source attempt retained
+successful static checks but timed out during build; the following unchanged
+warm run is the actual passing bounded gate. Native execution and source
+observations were not repeated for this accounting correction.
+
+The frozen public CLI execution adapters are now candidate-native qualified on
+combined source `346f598ba`, immutable CLI SHA
+`4585cb94c2611a367b2cebc3a89eada35fd14931893a3b09d4f5eabe9a983e50`.
+The unchanged plan/runner completed eight commands and both native executions in
+4.935s, with exact outputs `7 23 31 17 23 43 19\n` and `21\n` and empty
+compiler/backend/link/runtime stderr. Binding
+`a4352f3508e4b2baf87a3889680e6be93b247a872207248826ead757c5af6d30`
+and results `4b6a8bda85013d8f29e7d833db912413434697c7f330fa8be0bc17dc09f9034b`
+retain source-prefix, current source-production, compiler and locked backend
+identity. Successful objects/executables were removed after hashing; LowIR and
+raw streams remain retained. Original missing-Freeze/drop_glue codegen failures,
+all seven original source bytes and independent observations remain preserved.
+No artifact/foreign protocol transport or const-closure execution is implied.

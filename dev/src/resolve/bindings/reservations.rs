@@ -41,8 +41,7 @@ pub struct Reservations {
     intrinsics: HashMap<DefId, IntrinsicDeclaration>,
     denied_implementations: HashSet<DefId>,
     pub(super) header_attributes: [HeaderAttributes; LangItem::ALL.len()],
-    pub(super) trivial_field_reads: Option<DefId>,
-    pub(super) diagnostics: [Option<Declaration>; 6],
+    pub(super) diagnostics: [Option<Declaration>; 7],
     pub steps: usize,
 }
 impl Reservations {
@@ -77,6 +76,10 @@ impl Reservations {
     pub fn denies_implementation(&self, definition: DefId) -> bool {
         self.denied_implementations.contains(&definition)
     }
+    /// Checked diagnostic declaration data only; no layout or nonnull proof.
+    pub(crate) fn nonnull_declaration(&self) -> Option<Declaration> {
+        self.diagnostics[super::annotations::DiagnosticItem::NonNull.index()]
+    }
     pub(crate) fn role_attributes(&self, role: LangItem) -> HeaderAttributes {
         self.header_attributes[role.index()]
     }
@@ -84,6 +87,7 @@ impl Reservations {
 #[derive(Clone, Copy)]
 pub(super) enum Claim {
     Language(LangItem),
+    PanicHandler,
     Intrinsic,
     DenyImplementations,
     BuiltinMacro(crate::expand::builtin::Builtin),
@@ -100,9 +104,14 @@ pub(in crate::resolve) fn finish(
 ) -> Result<(), Error> {
     let mut library = None;
     let claims = claims(package, &mut library)?;
-    let inventory = crate::resolve::stability::complete(package, facts, library)?;
+    let mut inventory = crate::resolve::stability::complete(package, facts, library)?;
     let reserved = reserve_all(package, facts, &claims)?;
     // Both drafts are complete before either owner publishes new state.
+    if let (Some(library), Some(inventory)) = (package.library.as_deref_mut(), inventory.as_mut()) {
+        library
+            .prepare_request_order(inventory)
+            .map_err(|error| Error::at(FileId(0), 0, error))?;
+    }
     facts.source_bindings = reserved;
     if let (Some(library), Some(inventory)) = (package.library.as_deref_mut(), inventory) {
         library.publish(inventory);
@@ -156,8 +165,7 @@ fn reserve_all(
         intrinsics: HashMap::default(),
         denied_implementations: HashSet::default(),
         header_attributes: [HeaderAttributes::EMPTY; LangItem::ALL.len()],
-        trivial_field_reads: None,
-        diagnostics: [None; 6],
+        diagnostics: [None; 7],
         steps: 0,
     };
     let parents = parents(package, facts);
@@ -171,6 +179,7 @@ fn reserve_all(
             package,
             key,
             definition.kind,
+            definition.namespace,
             claims.get(&key).map(Vec::as_slice),
         ) {
             continue;
@@ -191,7 +200,14 @@ fn reserve_all(
         };
         for claim in claims {
             reserved.steps += 1;
-            reserve(package, source, &mut reserved, declaration, *claim)?;
+            reserve(
+                package,
+                source,
+                &mut reserved,
+                declaration,
+                *claim,
+                facts.foreign_owners.contains_key(&id),
+            )?;
         }
         super::role_attributes::validate(package, source, &mut reserved, declaration, claims)?;
         super::annotations::validate(package, source, &mut reserved, declaration, claims)?;
@@ -212,6 +228,7 @@ fn reserve(
     reserved: &mut Reservations,
     declaration: Declaration,
     claim: Claim,
+    foreign: bool,
 ) -> Result<(), Error> {
     let error = |message| {
         Error::at(
@@ -256,16 +273,15 @@ fn reserve(
                 .insert(declaration.definition);
         }
         Claim::Language(kind) => {
-            if !source.features.has(Feature::LangItems) {
-                return Err(error("lang requires its explicit source feature"));
-            }
-            super::panic_claims::validate(package, declaration, kind)?;
-            super::pointee_claims::validate(package, declaration, kind)?;
-            if reserved.languages[kind.index()]
+            reserve_language(package, source, reserved, declaration, kind, foreign)?;
+        }
+        Claim::PanicHandler => {
+            super::panic_claims::validate_handler(package, declaration, foreign)?;
+            if reserved.languages[LangItem::PanicImpl.index()]
                 .replace(declaration)
                 .is_some()
             {
-                return Err(error("duplicate source language item"));
+                return Err(error("duplicate source panic handler"));
             }
         }
         Claim::Intrinsic => {
@@ -308,6 +324,41 @@ fn reserve(
     Ok(())
 }
 
+fn reserve_language(
+    package: &Package,
+    source: &SourceCore,
+    reserved: &mut Reservations,
+    declaration: Declaration,
+    kind: LangItem,
+    foreign: bool,
+) -> Result<(), Error> {
+    if !source.features.has(Feature::LangItems) {
+        return Err(error(
+            package,
+            declaration.origin,
+            "lang requires its explicit source feature",
+        ));
+    }
+    super::panic_claims::validate(package, declaration, kind)?;
+    super::pointee_claims::validate(package, declaration, kind)?;
+    super::try_claims::validate(package, declaration, kind)?;
+    // Weak foreign declarations never own the defining handler's slot.
+    if kind == LangItem::PanicImpl && foreign {
+        return Ok(());
+    }
+    if reserved.languages[kind.index()]
+        .replace(declaration)
+        .is_some()
+    {
+        return Err(error(
+            package,
+            declaration.origin,
+            "duplicate source language item",
+        ));
+    }
+    Ok(())
+}
+
 fn prototype(
     package: &Package,
     facts: &Resolution,
@@ -345,8 +396,13 @@ fn parents(package: &Package, facts: &Resolution) -> HashMap<ScopeId, DefId> {
         .enumerate()
         .filter_map(|(index, definition)| {
             let key = definition.node?;
-            if !super::role_attributes::primary(package, key, definition.kind, None)
-                || !matches!(definition.kind, DefKind::Trait | DefKind::SelfType)
+            if !super::role_attributes::primary(
+                package,
+                key,
+                definition.kind,
+                definition.namespace,
+                None,
+            ) || !matches!(definition.kind, DefKind::Trait | DefKind::SelfType)
             {
                 return None;
             }
@@ -447,6 +503,12 @@ fn attribute_claim(
     }
     let claim = match name {
         Some("lang") => language_claim(unit, file, attribute, forest)?,
+        Some("panic_handler") => {
+            if attribute.input != Input::Empty || attribute.unsafe_wrapper {
+                return Err(error("panic_handler requires a word attribute"));
+            }
+            Claim::PanicHandler
+        }
         Some("rustc_intrinsic") => {
             if attribute.input != Input::Empty {
                 return Err(error("rustc_intrinsic requires no arguments"));

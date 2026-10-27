@@ -40,12 +40,14 @@ mod cfg_gates;
 mod decorated_calls;
 #[path = "expansion/unvisited_syntax.rs"]
 mod default_warnings;
+mod derive_lists;
 mod diagnostics;
 mod eager;
 pub(crate) mod removed_functions;
 use application_kind::CallGrammar;
 mod format_values;
 mod location;
+mod metavariables;
 mod panic_dispatch;
 mod permission_frames;
 mod permission_session;
@@ -77,6 +79,13 @@ enum MacroTarget {
     SourceDerive(usize),
 }
 impl MacroTarget {
+    fn local(index: usize, kind: builtin::BuiltinKind) -> Self {
+        match kind {
+            builtin::BuiltinKind::Bang => Self::Declarative(index),
+            builtin::BuiltinKind::Attribute => Self::SourceAttribute(index),
+            builtin::BuiltinKind::Derive => Self::SourceDerive(index),
+        }
+    }
     fn kind(self) -> builtin::BuiltinKind {
         match self {
             Self::Declarative(_) => builtin::BuiltinKind::Bang,
@@ -98,6 +107,14 @@ pub struct Definition {
     pub edition: Edition,
     pub edition_panic: bool,
     pub(super) header: Option<std::rc::Rc<super::bindings::panic_contracts::HeaderData>>,
+}
+impl Definition {
+    fn macro_kind(&self) -> builtin::BuiltinKind {
+        match self.body {
+            Body::Builtin(role) => role.kind(),
+            _ => builtin::BuiltinKind::Bang,
+        }
+    }
 }
 pub struct Invocation {
     pub context: ExpansionId,
@@ -318,6 +335,12 @@ fn finish_analysis<S: Sources>(mut engine: Engine<'_, S>) -> Result<Report, Erro
             super::alias_gates::validate(&report).map_err(|error| report.diagnostic(error))
         })
         .and_then(|()| {
+            super::try_blocks::validate(&report).map_err(|error| report.diagnostic(error))
+        })
+        .and_then(|()| {
+            super::gated_closures::validate(&report).map_err(|error| report.diagnostic(error))
+        })
+        .and_then(|()| {
             super::impl_restrictions::validate(&report).map_err(|error| report.diagnostic(error))
         })
         .and_then(|()| {
@@ -425,6 +448,7 @@ impl<'a, S: Sources> Engine<'a, S> {
         if let Some(error) = self.paths.take_error() {
             return Err(error);
         }
+        self.attach_derives()?;
         Ok(())
     }
     fn wake(&mut self, index: usize) {
@@ -621,6 +645,9 @@ impl<'a, S: Sources> Engine<'a, S> {
         }
         if let Some(previous) = self.calls[index].selected {
             if found == Some(previous) {
+                if self.derive_outer(index) {
+                    return self.finish_derive(index);
+                }
                 if self.calls[index].state == State::Removed {
                     return Ok(());
                 }
@@ -644,6 +671,16 @@ impl<'a, S: Sources> Engine<'a, S> {
             self.calls[index].state = State::Waiting;
             return Ok(());
         };
+        if matches!(self.calls[index].grammar, CallGrammar::Derive) {
+            self.calls[index].selected = Some(definition);
+            return self.completed(index);
+        }
+        if matches!(
+            self.definitions[definition].body,
+            Body::Builtin(Builtin::Derive)
+        ) {
+            return self.begin_derive(index, definition);
+        }
         if matches!(
             self.definitions[definition].body,
             Body::Builtin(Builtin::Test)
@@ -1009,6 +1046,7 @@ impl<'a, S: Sources> Engine<'a, S> {
         .map_err(|e| Error::at(file, e.offset, e.message))?;
         let index = self.definitions.len();
         let name_context = package.item_context(file, span.start)?;
+        self.check_concat(file, &definition)?;
         self.definitions.push(Definition {
             node: Some(NodeKey {
                 file,
@@ -1048,7 +1086,11 @@ impl<'a, S: Sources> Engine<'a, S> {
             visit.node,
             name,
             flags.exported,
-            (index, visit.introduction),
+            (
+                index,
+                visit.introduction,
+                builtin.map_or(builtin::BuiltinKind::Bang, Builtin::kind),
+            ),
         )?;
         self.paths
             .macro_visibility(context, visit.node, item.visibility);
@@ -1056,18 +1098,26 @@ impl<'a, S: Sources> Engine<'a, S> {
     }
     fn lookup_call(&mut self, index: usize) -> Result<Option<usize>, Error> {
         let call = &self.calls[index];
-        if matches!(call.grammar, CallGrammar::Attribute) {
-            decorated_calls::validate(&self.loader.package, &self.paths.state.facts, call)?;
+        if matches!(call.grammar, CallGrammar::Attribute | CallGrammar::Derive) {
+            if self.derive_consumed(index)? {
+                decorated_calls::validate_derived(
+                    &self.loader.package,
+                    &self.paths.state.facts,
+                    call,
+                )?;
+            } else {
+                decorated_calls::validate(&self.loader.package, &self.paths.state.facts, call)?;
+            }
         }
         if call.absolute {
             return Err(call.diagnostic("external macro paths require external metadata"));
         }
-        if matches!(call.grammar, CallGrammar::Bang(_)) && call.path.len() == 1 {
+        if call.path.len() == 1 {
             let name = call.path[0];
             match (bindings::Bindings {
                 definitions: &self.definitions,
             })
-            .textual(
+            .textual_kind(
                 &mut self.scopes,
                 &self.paths.state.facts.introductions.ancestry,
                 call.scope,
@@ -1079,6 +1129,14 @@ impl<'a, S: Sources> Engine<'a, S> {
                         .map_err(|e| call.diagnostic(e))?,
                 ),
                 call.visit.introduction,
+                (call.grammar.kind(), &|steps| {
+                    self.loader.package.source_core().map_or(Ok(()), |source| {
+                        source
+                            .macros
+                            .charge(steps, 0)
+                            .map_err(|message| crate::syntax::token_tree::error(0, message))
+                    })
+                }),
             )
             .map_err(|e| self.calls[index].diagnostic(e.message))?
             {
@@ -1186,6 +1244,7 @@ impl<'a, S: Sources> Engine<'a, S> {
                     context: None,
                     introduction: ExpansionId(0),
                     joint: origin.joint,
+                    kind: crate::expand::stream::OriginKind::Copied,
                 }));
             Some(mapped)
         } else {
@@ -1360,6 +1419,7 @@ impl<'a, S: Sources> Engine<'a, S> {
             context: Some(syntax),
             introduction: context,
             joint: None,
+            kind: crate::expand::stream::OriginKind::Copied,
         }];
         let generated = self.loader.package.units[file.0 as usize]
             .install_expansion(target, &generated.source, generated.syntax, &origins)

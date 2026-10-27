@@ -248,15 +248,10 @@ impl Paths {
             .header
             .as_ref()
             .and_then(|header| header.declaration().builtin);
-        let target = match role.map(Builtin::kind) {
-            Some(crate::expand::builtin::BuiltinKind::Attribute) => {
-                MacroTarget::SourceAttribute(index)
-            }
-            Some(crate::expand::builtin::BuiltinKind::Derive) => MacroTarget::SourceDerive(index),
-            Some(crate::expand::builtin::BuiltinKind::Bang) | None => {
-                MacroTarget::Declarative(index)
-            }
-        };
+        let target = MacroTarget::local(
+            index,
+            role.map_or(crate::expand::builtin::BuiltinKind::Bang, Builtin::kind),
+        );
         self.macro_targets.insert(id, target);
         self.macros.resize(index + 1, None);
         self.macros[index] = Some(id);
@@ -422,9 +417,9 @@ impl Paths {
         node: NodeId,
         name: NameId,
         exported: bool,
-        introduced: (usize, ExpansionId),
+        introduced: (usize, ExpansionId, crate::expand::builtin::BuiltinKind),
     ) -> Result<(), Error> {
-        let (index, expansion) = introduced;
+        let (index, expansion, kind) = introduced;
         let access = if exported {
             Access::Public
         } else {
@@ -460,7 +455,7 @@ impl Paths {
             .node_scopes
             .insert(context.module, context.file, node, context.scope);
         self.macro_targets
-            .insert(id, MacroTarget::Declarative(index));
+            .insert(id, MacroTarget::local(index, kind));
         self.macros.resize(index + 1, None);
         self.macros[index] = Some(id);
         if exported {

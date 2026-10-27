@@ -221,7 +221,8 @@ fn corrupt(report: &mut Report, file: FileId, ordinal: usize, opponent: usize) -
             match effect {
                 crate::expand::configured::Effect::Cfg(value)
                 | crate::expand::configured::Effect::CfgAttr(value) => *value = !*value,
-                crate::expand::configured::Effect::Keep => {
+                crate::expand::configured::Effect::Keep
+                | crate::expand::configured::Effect::ExpandedDerive => {
                     return Err("expected actual cfg effect".into());
                 }
             }
@@ -354,6 +355,7 @@ fn failed_retirement_preflight_publishes_neither_flags_nor_receipts() -> TestRes
         removals,
         policy: None,
         visibilities: None,
+        derives: None,
     }));
     let call = engine
         .calls

@@ -3,10 +3,13 @@ mod aggregate;
 mod argument_sources;
 mod c_boundary;
 mod callback_dispatch;
+#[path = "function/tracked_locations.rs"]
+mod caller_location;
 mod cleanup;
 mod intrinsics;
 mod invocations;
 mod pointers;
+mod ptr_values;
 mod references;
 mod referents;
 mod reinterpret_calls;
@@ -512,7 +515,7 @@ impl Lower<'_, '_, '_> {
         let symbol = if matches!(self.context.types.kind(ty), Some(Kind::Closure { .. })) {
             Some(self.context.demand_closure(ty)?)
         } else if let Selected::Item(definition) = selected {
-            Some(self.context.demand(definition)?)
+            Some(self.context.demand_reified(definition)?)
         } else {
             None
         };
@@ -861,6 +864,15 @@ impl Lower<'_, '_, '_> {
                 callee,
                 arguments,
             } => {
+                if let Some(value) = self.source_caller_location(id)? {
+                    return Ok(value);
+                }
+                if let Some(value) = self.tracked_call(id)? {
+                    return Ok(value);
+                }
+                if let Some(value) = self.source_ptr_metadata(id)? {
+                    return Ok(value);
+                }
                 if let Some(value) = self.runtime_transmute(id)? {
                     return Ok(value);
                 }

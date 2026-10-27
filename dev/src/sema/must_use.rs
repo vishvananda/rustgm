@@ -211,6 +211,24 @@ impl Declarations {
         code: WarningCode,
         message: String,
     ) -> Result<(), Error> {
+        self.must_use_diagnostic_in(
+            report,
+            key,
+            offset,
+            issue,
+            code,
+            (message, crate::resolve::model::ExpansionId(0)),
+        )
+    }
+    pub(in crate::sema) fn must_use_diagnostic_in(
+        &mut self,
+        report: &Report,
+        key: NodeKey,
+        offset: u32,
+        issue: u32,
+        code: WarningCode,
+        message: (String, crate::resolve::model::ExpansionId),
+    ) -> Result<(), Error> {
         let level = match code {
             WarningCode::UnusedMustUse => self.safety_policies.must_use(key),
             WarningCode::UnusedAttributes => self.safety_policies.unused_attributes(key),
@@ -218,6 +236,9 @@ impl Declarations {
             WarningCode::UnstableSyntaxPreExpansion => Level::Warn,
             WarningCode::DuplicateMacroAttributes => {
                 self.safety_policies.duplicate_macro_attributes(key)
+            }
+            WarningCode::AmbiguousDeriveHelpers => {
+                self.safety_policies.ambiguous_derive_helpers(key)
             }
             WarningCode::MalformedDiagnosticAttributes => {
                 self.safety_policies.diagnostic_attributes(key, 0)
@@ -232,7 +253,9 @@ impl Declarations {
         if level == Level::Allow {
             return Ok(());
         }
-        let diagnostic = report.diagnostic(Error::at(key.file, offset, message));
+        let mut raw = Error::at(key.file, offset, message.0);
+        raw.introduction = message.1;
+        let diagnostic = report.diagnostic(raw);
         if level.denies() {
             return Err(diagnostic);
         }

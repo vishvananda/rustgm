@@ -57,11 +57,12 @@ impl Normalizer {
         Ok(())
     }
 
-    pub(super) fn enter_binder(
+    pub(super) fn enter_binder<const CHARGED: bool>(
         &mut self,
         store: &Store,
         source: Key,
         signature: Kind,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<(), &'static str> {
         let (Kind::Function { bound_regions, .. } | Kind::Dynamic { bound_regions, .. }) =
             signature
@@ -70,6 +71,9 @@ impl Normalizer {
         };
         if self.suspended.len() >= 0x7fff {
             return Err("normalization binder depth exhausted");
+        }
+        if CHARGED {
+            self.pay_binder(charge)?;
         }
         self.binders.push((self.frame.scope, bound_regions));
         let scope = ScopeId(
@@ -83,6 +87,9 @@ impl Normalizer {
             source,
             signature,
         });
+        if CHARGED {
+            self.pay_node(store, signature, false, charge)?;
+        }
         match signature {
             Kind::Function {
                 parameters, result, ..
@@ -114,10 +121,23 @@ impl Normalizer {
         self.check_work()
     }
 
-    pub(super) fn finish_binder(&mut self, store: &mut Store) -> Result<bool, &'static str> {
+    pub(super) fn finish_binder<const CHARGED: bool>(
+        &mut self,
+        store: &mut Store,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<bool, &'static str> {
         let Some(mut parent) = self.suspended.pop() else {
             return Ok(false);
         };
+        if CHARGED {
+            self.pay_node(store, parent.signature, true, charge)?;
+            let growth = crate::support::retained::Growth::map::<Key, crate::types::TypeId>(
+                parent.frame.fold.completed.len(),
+                parent.frame.fold.completed.capacity(),
+                1,
+            );
+            charge(growth.work, growth.bytes)?;
+        }
         let kind = match parent.signature {
             Kind::Function {
                 bound_regions,
@@ -127,7 +147,10 @@ impl Normalizer {
                 convention,
             } => Kind::Function {
                 bound_regions,
-                parameters: self.frame.fold.list(store, parameters, 0)?,
+                parameters: self
+                    .frame
+                    .fold
+                    .list_observed::<CHARGED>(store, parameters, 0, charge)?,
                 result: self.frame.fold.child(store, result, 0)?,
                 unsafe_,
                 convention,
@@ -139,13 +162,16 @@ impl Normalizer {
                 region,
             } => Kind::Dynamic {
                 shape,
-                arguments: self.frame.fold.arguments(store, arguments, 0)?,
+                arguments: self
+                    .frame
+                    .fold
+                    .arguments_observed::<CHARGED>(store, arguments, 0, charge)?,
                 bound_regions,
                 region,
             },
             _ => return Err("invalid suspended normalization binder"),
         };
-        let ty = store.intern(kind)?;
+        let ty = store.intern_observed::<CHARGED>(kind, charge)?;
         self.suspended_work = self
             .suspended_work
             .checked_sub(parent.frame.fold.work.len())

@@ -1,4 +1,5 @@
 //! Close declaration rules once, then select candidates before mapping caller inputs.
+mod consequences;
 use crate::support::{
     hash::{HashMap, HashSet},
     retained::Growth,
@@ -15,6 +16,8 @@ use crate::{
         },
     },
 };
+#[cfg(test)]
+pub(in crate::sema) use consequences::controls as consequence_controls;
 use std::sync::Arc;
 
 #[derive(Default)]
@@ -219,6 +222,8 @@ impl Closure {
                 self.insert::<CHARGED>(store, contracts, clause, charge)?;
             }
         }
+        let normalized = consequences::normalize::<CHARGED>(store, &mut self.index, charge)?;
+        self.charge(normalized)?;
         Ok((self.index, self.steps))
     }
     fn insert<const CHARGED: bool>(

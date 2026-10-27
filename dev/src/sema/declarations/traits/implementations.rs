@@ -93,6 +93,17 @@ impl Checker<'_> {
         let (path, definition) = self.resolved_impl_trait_path(path)?;
         self.validate_implementation_domain(owner, definition)?;
         self.validate_source_impl_policy(owner.source, definition)?;
+        if matches!(owner.kind, OwnerKind::Impl { constant: true, .. })
+            && let Some(inventory) = self
+                .report
+                .package
+                .library_policy()
+                .and_then(crate::resolve::stability::Library::inventory)
+        {
+            inventory
+                .const_impl(owner.self_definition, definition)
+                .map_err(|e| self.error(owner.source, e))?;
+        }
         let trait_unsafe = self.impl_trait_safety(path, definition)?;
         if if negative {
             unsafe_

@@ -125,7 +125,13 @@ impl Machine<'_, '_> {
             .next
             .checked_sub(1)
             .ok_or("source intrinsic call has no current statement")?;
+        if let Some(answer) = self.source_caller_location(body, frame, position, target)? {
+            return Ok(answer);
+        }
         if let Some(answer) = self.source_transmute(body, frame, position, target)? {
+            return Ok(answer);
+        }
+        if let Some(answer) = self.source_ptr_metadata(body, frame, position, target)? {
             return Ok(answer);
         }
         if let Some(answer) = self.source_runtime_check(body, frame, position, target)? {

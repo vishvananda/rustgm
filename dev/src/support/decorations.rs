@@ -21,6 +21,12 @@ pub(crate) enum Consumer {
     InherentPolicy,
     NonExhaustive,
     UnsafeSpecialization,
+    MarkerTrait,
+    DerivedImplementation,
+    CallerTracking,
+    IntrinsicConstPolicy,
+    IntrinsicNoUnwind,
+    ConstPanicPolicy,
 }
 impl Consumer {
     pub(crate) fn tool_member(tool: &str, name: &str) -> Option<Self> {
@@ -53,22 +59,28 @@ impl Consumer {
             | "rustc_dyn_incompatible_trait"
             | "rustc_trivial_field_reads"
             | "rustc_nonnull_optimization_guaranteed"
-            | "rustc_never_returns_null_ptr" => Self::SourceBindings,
+            | "rustc_never_returns_null_ptr"
+            | "panic_handler" => Self::SourceBindings,
             "stable"
             | "unstable"
             | "rustc_const_stable"
             | "rustc_const_unstable"
             | "rustc_default_body_unstable"
-            | "rustc_allow_const_fn_unstable"
-            | "rustc_const_stable_indirect" => Self::Stability,
+            | "rustc_allow_const_fn_unstable" => Self::Stability,
+            "rustc_const_stable_indirect" | "rustc_do_not_const_check" => Self::ConstPanicPolicy,
             "repr" | "derive" => Self::Representation,
             "no_mangle" | "export_name" | "link_name" => Self::Linkage,
             "target_feature" => Self::TargetFeature,
             "allow" | "warn" | "deny" | "forbid" => Self::SafetyLint,
             "doc" => Self::Documentation,
+            "rustc_nounwind" => Self::IntrinsicNoUnwind,
+            "track_caller" => Self::CallerTracking,
+            "rustc_intrinsic_const_stable_indirect" => Self::IntrinsicConstPolicy,
             "must_use" => Self::MustUse,
             "inline" => Self::Inlining,
             "non_exhaustive" => Self::NonExhaustive,
+            "marker" => Self::MarkerTrait,
+            "automatically_derived" => Self::DerivedImplementation,
             "rustc_unsafe_specialization_marker" => Self::UnsafeSpecialization,
             "rustc_paren_sugar" => Self::TraitParentheses,
             "rustc_coherence_is_core" | "rustc_preserve_ub_checks" => Self::CrateOptions,

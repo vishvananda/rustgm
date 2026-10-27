@@ -168,3 +168,6 @@ mod semantic_privacy;
 
 #[path = "declarative_macros/attributed_values.rs"]
 mod attributed_values;
+
+#[path = "declarative_macros/registry_kinds.rs"]
+mod registry_kinds;

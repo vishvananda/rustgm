@@ -30,7 +30,7 @@ use crate::{
     support::{crates::CrateIdentity, hash::HashMap},
     types::{TypeId, parameters::environment::Environment},
 };
-use std::sync::Arc;
+use std::{cell::Cell, sync::Arc};
 fn error(message: &'static str) -> Error {
     Error::unlocated(message)
 }
@@ -59,7 +59,7 @@ pub(in crate::sema) struct Headers {
     applications: HashMap<CrateIdentity, Vec<applications::Application>>,
     source: Option<super::ImportedOwners>,
     bytes: usize,
-    work: usize,
+    work: Cell<usize>,
     base: usize,
     observed: crate::support::retained::Allocation,
 }
@@ -96,9 +96,9 @@ impl Headers {
             >(1));
         self.reserve(growth)
     }
-    pub(in crate::sema) fn charge(&mut self, count: usize) -> Result<(), Error> {
-        self.work = self.work.saturating_add(count);
-        if self.work > crate::support::crates::MAX_COMPONENTS {
+    pub(in crate::sema) fn charge(&self, count: usize) -> Result<(), Error> {
+        self.work.set(self.work.get().saturating_add(count));
+        if self.work.get() > crate::support::crates::MAX_COMPONENTS {
             return Err(error("imported generic header work budget exceeded"));
         }
         Ok(())
@@ -136,6 +136,33 @@ fn symbol(
 }
 
 impl super::Linkage {
+    /// The legacy producer installs only rows whose ABI has no caller policy.
+    /// Its canonical header and original graph positively identify that profile.
+    pub(crate) fn legacy_caller_tracking_absent(
+        &self,
+        definition: DefId,
+    ) -> Result<bool, &'static str> {
+        let Some(headers) = self
+            .originals
+            .as_deref()
+            .filter(|headers| headers.source.is_none())
+        else {
+            return Ok(false);
+        };
+        let Some(header) = self.checked_original_header(definition)? else {
+            return Ok(false);
+        };
+        let DeclarationOrigin::Imported(declaration) = header.declaration else {
+            return Err("legacy caller policy changed its imported declaration");
+        };
+        let catalog = self
+            .origin_catalog()
+            .ok_or("legacy caller policy lacks its actual catalog")?;
+        let (owner, _, _) = catalog.declaration_coordinate(declaration)?;
+        headers.types(owner)?;
+        Ok(true)
+    }
+
     pub(in crate::sema) fn require_original_store(
         &self,
         store: &crate::types::Store,
@@ -182,7 +209,7 @@ impl super::Linkage {
     pub(crate) fn original_work(&self) -> Option<(usize, usize, usize, usize)> {
         self.originals
             .as_ref()
-            .map(|h| (h.work, h.bytes, h.observed.bytes, h.observed.visits))
+            .map(|h| (h.work.get(), h.bytes, h.observed.bytes, h.observed.visits))
     }
     pub(crate) fn original_callable(&self, definition: DefId) -> Option<(TypeId, bool)> {
         self.originals

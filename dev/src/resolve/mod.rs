@@ -12,6 +12,7 @@ mod container_scopes;
 mod contextual_lookup;
 pub mod crates;
 pub mod expansion;
+mod gated_closures;
 mod hygiene;
 mod identifiers;
 #[path = "module_domains.rs"]
@@ -34,6 +35,8 @@ mod patterns;
 #[path = "impl_admission.rs"]
 pub(crate) mod specialization_authority;
 mod table;
+mod try_blocks;
+pub(crate) use try_blocks::require as require_try_block;
 pub mod unit;
 
 /// Resolve configured modules into stable scope, definition and reference facts.
@@ -52,6 +55,8 @@ pub fn analyze(package: &mut package::Package) -> Result<model::Resolution, pack
     float_features::validate_plain(package, &state.facts)?;
     default_items::validate_plain(package)?;
     alias_gates::validate_plain(package)?;
+    try_blocks::validate_plain(package)?;
+    gated_closures::validate_plain(package)?;
     Ok(state.facts)
 }
 pub mod render;

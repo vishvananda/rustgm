@@ -47,9 +47,19 @@ pub enum LangItem {
     MetadataType,
     DynMetadata,
     PhantomData,
+    PanicLocation,
+    PanicInfo,
+    TrivialClone,
+    TryTrait,
+    TryFromResidual,
+    TryFromOutput,
+    TryBranch,
+    IntoTryType,
+    ControlFlowContinue,
+    ControlFlowBreak,
 }
 impl LangItem {
-    pub const ALL: [Self; 32] = [
+    pub const ALL: [Self; 42] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -82,6 +92,16 @@ impl LangItem {
         Self::MetadataType,
         Self::DynMetadata,
         Self::PhantomData,
+        Self::PanicLocation,
+        Self::PanicInfo,
+        Self::TrivialClone,
+        Self::TryTrait,
+        Self::TryFromResidual,
+        Self::TryFromOutput,
+        Self::TryBranch,
+        Self::IntoTryType,
+        Self::ControlFlowContinue,
+        Self::ControlFlowBreak,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -118,6 +138,16 @@ impl LangItem {
             Self::MetadataType => 29,
             Self::DynMetadata => 30,
             Self::PhantomData => 31,
+            Self::PanicLocation => 32,
+            Self::PanicInfo => 33,
+            Self::TrivialClone => 34,
+            Self::TryTrait => 35,
+            Self::TryFromResidual => 36,
+            Self::TryFromOutput => 37,
+            Self::TryBranch => 38,
+            Self::IntoTryType => 39,
+            Self::ControlFlowContinue => 40,
+            Self::ControlFlowBreak => 41,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -156,6 +186,16 @@ impl LangItem {
             "metadata_type" => Some(Self::MetadataType),
             "dyn_metadata" => Some(Self::DynMetadata),
             "phantom_data" => Some(Self::PhantomData),
+            "panic_location" => Some(Self::PanicLocation),
+            "panic_info" => Some(Self::PanicInfo),
+            "trivial_clone" => Some(Self::TrivialClone),
+            "Try" => Some(Self::TryTrait),
+            "from_residual" => Some(Self::TryFromResidual),
+            "from_output" => Some(Self::TryFromOutput),
+            "branch" => Some(Self::TryBranch),
+            "into_try_type" => Some(Self::IntoTryType),
+            "Continue" => Some(Self::ControlFlowContinue),
+            "Break" => Some(Self::ControlFlowBreak),
             _ => None,
         }
     }
@@ -188,12 +228,18 @@ pub enum SourceIntrinsic {
     UbChecks,
     Abort,
     Transmute,
+    CallerLocation,
+    PtrMetadata,
 }
 impl SourceIntrinsic {
     /// Declaration attribute decoding only; consumers retain the actual `DefId`.
     #[must_use]
     pub fn from_name(name: &str) -> Option<Self> {
-        if name == "transmute" {
+        if name == "ptr_metadata" {
+            Some(Self::PtrMetadata)
+        } else if name == "caller_location" {
+            Some(Self::CallerLocation)
+        } else if name == "transmute" {
             Some(Self::Transmute)
         } else if name == "abort" {
             Some(Self::Abort)

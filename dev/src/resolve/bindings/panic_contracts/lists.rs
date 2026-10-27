@@ -20,6 +20,8 @@ pub(super) struct Builder {
     pool: HashSet<Rc<str>>,
     features: HashSet<Rc<str>>,
     pool_bytes: usize,
+    pub(super) helpers: Vec<super::HelperAttribute>,
+    pub(super) helper_input: Option<(usize, std::ops::Range<u32>)>,
 }
 impl Builder {
     pub(super) fn parse(
@@ -61,6 +63,19 @@ impl Builder {
         Ok(())
     }
     fn feature(&mut self, name: &str, work: &mut State) -> Result<(), &'static str> {
+        let symbol = self.symbol(name, work)?;
+        work.charge(symbol.len(), 0)?;
+        if self.features.contains(symbol.as_ref()) {
+            return Ok(());
+        }
+        work.charge(1, 4 * size_of::<Rc<str>>())?;
+        self.features
+            .try_reserve(1)
+            .map_err(|_| "macro feature allocation failed")?;
+        self.features.insert(symbol);
+        self.check_storage(work)
+    }
+    pub(super) fn symbol(&mut self, name: &str, work: &mut State) -> Result<Rc<str>, &'static str> {
         work.charge(name.len().saturating_mul(4), 0)?;
         let canonical = if name.is_ascii() {
             Cow::Borrowed(name)
@@ -71,17 +86,7 @@ impl Builder {
             work.charge(canonical.len(), canonical.capacity())?;
             Cow::Owned(canonical)
         };
-        let symbol = self.lexeme(&canonical, work)?;
-        work.charge(canonical.len(), 0)?;
-        if self.features.contains(canonical.as_ref()) {
-            return Ok(());
-        }
-        work.charge(1, 4 * size_of::<Rc<str>>())?;
-        self.features
-            .try_reserve(1)
-            .map_err(|_| "macro feature allocation failed")?;
-        self.features.insert(symbol);
-        self.check_storage(work)
+        self.lexeme(&canonical, work)
     }
     pub(super) fn lexeme(&mut self, name: &str, work: &mut State) -> Result<Rc<str>, &'static str> {
         work.charge(name.len(), 0)?;
@@ -98,17 +103,22 @@ impl Builder {
         self.check_storage(work)?;
         Ok(spelling)
     }
-    fn check_storage(&self, work: &mut State) -> Result<(), &'static str> {
+    pub(super) fn check_storage(&self, work: &mut State) -> Result<(), &'static str> {
         let bytes = self
             .pool
             .capacity()
             .saturating_add(self.features.capacity())
             .saturating_mul(size_of::<Rc<str>>())
-            .saturating_add(self.pool_bytes);
+            .saturating_add(self.pool_bytes)
+            .saturating_add(
+                self.helpers
+                    .capacity()
+                    .saturating_mul(size_of::<super::HelperAttribute>()),
+            );
         work.payload(bytes)
     }
-    pub(super) fn finish(self) -> (HashSet<Rc<str>>, usize) {
-        (self.features, self.pool_bytes)
+    pub(super) fn finish(self) -> (HashSet<Rc<str>>, Vec<super::HelperAttribute>, usize) {
+        (self.features, self.helpers, self.pool_bytes)
     }
 }
 
@@ -142,7 +152,7 @@ pub(super) fn collect(
         return Ok(Some(Entry::Plain(declaration)));
     }
     let witnesses = capture(owner, declaration.builtin, &mut names, work).map_err(error)?;
-    let (features, lexeme_bytes) = names.finish();
+    let (features, helpers, lexeme_bytes) = names.finish();
     for feature in [
         KnownFeature::EditionPanic,
         KnownFeature::PanicInternals,
@@ -155,20 +165,28 @@ pub(super) fn collect(
             declaration.consumers |= feature.mask();
         }
     }
-    let witness_work = 1 + witnesses
+    work.charge(helpers.len(), 0).map_err(error)?;
+    let helper_work = helpers
         .iter()
-        .map(|witness| {
-            1 + witness
-                .nodes
-                .iter()
-                .map(|(_, _, spelling)| {
-                    1 + spelling
-                        .as_ref()
-                        .map_or(0, |spelling| spelling.name().len())
-                })
-                .sum::<usize>()
-        })
+        .map(|helper| 1 + helper.name().len())
         .sum::<usize>();
+    let witness_work = 1
+        + helper_work
+        + witnesses
+            .iter()
+            .map(|witness| {
+                1 + witness
+                    .nodes
+                    .iter()
+                    .map(|(_, _, spelling)| {
+                        1 + spelling
+                            .as_ref()
+                            .map_or(0, |spelling| spelling.name().len())
+                    })
+                    .sum::<usize>()
+            })
+            .sum::<usize>();
+    work.charge(1, 0).map_err(error)?;
     grants::retain(
         HeaderData {
             declaration,
@@ -176,6 +194,8 @@ pub(super) fn collect(
             features,
             witness_work,
             lexeme_bytes,
+            helpers,
+            image: std::sync::Arc::clone(owner.unit.source.original_image()),
         },
         work,
     )
@@ -215,9 +235,12 @@ fn read(
                 if declaration.builtin.is_some() {
                     return Err(error("duplicate source builtin macro claim"));
                 }
-                declaration.builtin = Some(super::super::source_builtin::parse(
-                    package, owner.node, attribute, forest,
-                )?);
+                let claim =
+                    super::super::source_builtin::parse(package, owner.node, attribute, forest)?;
+                names
+                    .parse_helpers(package, owner, forest, index, claim.helpers, work)
+                    .map_err(error)?;
+                declaration.builtin = Some(claim.role);
             }
             Some("allow_internal_unsafe") => {
                 declaration.unsafe_lint = true;

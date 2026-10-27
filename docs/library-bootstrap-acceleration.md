@@ -13,12 +13,26 @@ checkpoint documents accumulate faster than executable consumers. This is now
 the main scheduling problem. More workers or fewer semantic tests alone will
 not solve the joins between those components.
 
-The combined compiler `192bb536` now executes direct source Thin, PhantomData and
-final trait methods. Original core passes VTable and Share::share and stops at
-the Default derive helper declaration in `default.rs:143`. It takes 1.902 seconds,
-verifies all 722 source inputs and opens 78 files. That is neither 78 compiled
-modules nor a completion percentage; there is still no core artifact. Broader
-alias/Pointee semantics and actual library body/metadata joins remain required.
+The combined compiler `b4f107b1` qualifies source Try/FromResidual execution,
+direct runtime/const caller tracking and source-form-independent builtin kinds.
+Its Try LowIR is identical to the two verified native consumers; caller LowIR
+remains identical to its native341 5 343 53 1 checkpoint. The actual unchanged
+core observer now advances164→206 opened files in2.376 seconds, all722 pins
+verified, stopping at `${concat(...)}` in `fmt/num.rs:149`. No artifact exists.
+
+The current joined checks pass32 private controls in103.43s and26production/CLI
+controls in158.93s. These include all16private/5linking regressions revealed by
+full CI on8d3: actual ownership fixes, measured stale widths and earlier source
+authentication diagnostics. Keep the existing full smoke selection when joining
+shared caller/body paths. All758 PA21 text cases pass in4.17s; native LowIR
+comparisons and harness/upstream reuse the same CLI. Full qualification runs
+separately after publication.
+
+Next: integrate B's qualified Debug expansion prerequisite without claiming
+formatter/handler execution, then close LIB-039 concatenation. C implements
+actual ptr_metadata for Arguments while A completes imported-body proof and B
+the real PanicInfo/handler chain. Reuse immutable inputs and one combined CLI
+per coherent integration, preserving every unresolved artifact/proof requirement.
 
 The largest bottleneck is the implementation joins. The integrator has now
 merged qualified actual imported names/receiver shapes and Pointee consumers
@@ -42,9 +56,10 @@ production/CLI Clippy 44.47, private Clippy 58.06 and test execution 0.22 second
 It qualifies three joined consumers in one build; native controls and the core
 observer then reuse that binary. Continue this consolidation within the unchanged
 five-minute development limit rather than repeatedly compiling isolated helpers.
-The normal push workflow currently selects lexer tests. Scheduled 40297261891
-later exposed ordinary bootstrap diagnostic regressions and stale assertions.
-A green narrow push is not complete qualification.
+The push workflow now runs nineteen shared source/CLI smoke controls through
+the same fastcheck runner. Scheduled 40297261891 previously exposed ordinary
+bootstrap diagnostic regressions and stale assertions. Full qualification
+remains in scheduled/manual CI; full run 40403702497 on f1f08f203 is green.
 
 The newer full run `40368263999` took 14m15s and failed: 1,779 private tests passed
 in 2.26s; two publication-replay helpers omitted newly required completed callee
@@ -169,9 +184,10 @@ Apply the following rules at the next handoffs:
   into that selection. Private and public/CLI controls share one standard batch
   where needed; avoid repeating static work just to change selectors.
 - Use `make smoke` for shared push coverage through the existing runner. Its
-  eighteen exact tests cover source roles/Pointee, reached const execution and
-  ownership failures, an encoded generic import, frontend-to-LowIR execution
-  and ordinary lexer cases. The local check passes in 37.33 seconds including
+  nineteen exact tests cover source roles/Pointee, reached const execution and
+  ownership failures, encoded generic/source imports, required local trait impls,
+  frontend-to-LowIR execution
+  and ordinary lexer cases. The local check passes in 34.63 seconds including
   strict Clippy, formatting, global audit and both integration binaries. Keep
   the existing five-minute limit and ordinary exact selection for changed paths.
 - Update the live tracker and the owning handout at a consumer milestone.
@@ -386,8 +402,7 @@ two wrong predictions remain recorded. No complete alias execution, assignment
 release or original library artifact is claimed.
 
 The shared push smoke now uses the existing fastcheck runner through `make smoke`;
-the workflow uses that same target. SSH repository publication is available, so
-the previous OAuth workflow-scope limitation does not require a new approval.
+the workflow uses that same target and passes push CI.
 A reusable source-observation runner remains separate work. New custom gate wrappers
 have already caused avoidable serialization/launcher failures, so workers now
 use standard exact private selections and share reviewed source dependencies.

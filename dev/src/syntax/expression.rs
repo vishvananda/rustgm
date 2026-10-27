@@ -455,14 +455,11 @@ impl<'source> Parser<'source, '_> {
                     self.closure(true, false, token.start)
                 }
                 Word::Async => self.async_expression(),
-                Word::Unsafe | Word::Const => {
+                Word::Try => self.try_block(),
+                Word::Const => self.const_expression(),
+                Word::Unsafe => {
                     self.cursor.take()?;
-                    let flavor = if word == Word::Unsafe {
-                        BlockFlavor::Unsafe
-                    } else {
-                        BlockFlavor::Const
-                    };
-                    let block = self.block(flavor)?;
+                    let block = self.block(BlockFlavor::Unsafe)?;
                     self.ast.nodes[block.get() as usize].span.start = token.start;
                     Ok(block)
                 }
@@ -869,6 +866,7 @@ impl<'source> Parser<'source, '_> {
                 ..
             }
             | Kind::If { .. }
+            | Kind::TryBlock { .. }
             | Kind::Loop { .. }
             | Kind::While { .. }
             | Kind::For { .. }

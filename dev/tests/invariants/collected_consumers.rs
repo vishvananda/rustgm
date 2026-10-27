@@ -48,6 +48,21 @@ fn artifact_with_alias(
     Ok((artifact, arena))
 }
 #[test]
+fn tracked_collected_functions_stop_at_actual_source_publication() -> Result {
+    let mut work = ReservationWork::default();
+    let source = HOLDER.replace("fn carry", "#[track_caller]fn carry");
+    let error = artifact_with_alias(&source, Some("base"), &mut work)
+        .err()
+        .ok_or("tracked source function escaped the closed transport")?;
+    assert!(
+        error
+            .to_string()
+            .contains("caller tracking policy transport"),
+        "{error}"
+    );
+    Ok(())
+}
+#[test]
 fn named_collected_artifact_resolves_actual_qualified_calls_before_semantic_preparation() -> Result
 {
     let mut work = ReservationWork::default();
@@ -199,6 +214,7 @@ fn actual_normalization_owner(
         }
     }
     let owner = owner.ok_or_else(|| Error::unlocated("actual imported borrow declaration"))?;
+    actual_caller_policy(facts, owner)?;
     let mut steps = 0;
     let result = preparation.with_original(facts, owner, &mut |_, view| {
         let mut intervals = 0;
@@ -230,6 +246,51 @@ fn actual_normalization_owner(
         Ok(())
     });
     result.and(preparation.prepay(facts, steps, 0))
+}
+
+fn actual_caller_policy(
+    facts: &mut crate::sema::model::Declarations,
+    owner: crate::resolve::model::DefId,
+) -> std::result::Result<(), crate::resolve::package::Error> {
+    use crate::resolve::package::Error;
+    assert!(
+        !facts
+            .recorded_caller_tracking(owner)
+            .map_err(Error::unlocated)?
+    );
+    let header = facts
+        .crates
+        .as_deref_mut()
+        .and_then(|linkage| linkage.originals.as_deref_mut())
+        .and_then(|headers| headers.entries.remove(&owner))
+        .ok_or_else(|| Error::unlocated("actual selected caller header"))?;
+    let denied = facts.recorded_caller_tracking(owner).is_err();
+    facts
+        .crates
+        .as_deref_mut()
+        .and_then(|linkage| linkage.originals.as_deref_mut())
+        .ok_or_else(|| Error::unlocated("selected caller header owner disappeared"))?
+        .entries
+        .insert(owner, header);
+    assert!(denied, "missing selected header lent an untracked policy");
+    let original = std::mem::take(&mut facts.types);
+    let denied = facts.recorded_caller_tracking(owner).is_err();
+    facts.types = original;
+    assert!(denied, "foreign type arena lent selected caller policy");
+    let headers = facts
+        .crates
+        .as_deref()
+        .and_then(|linkage| linkage.originals.as_deref())
+        .ok_or_else(|| Error::unlocated("selected caller payer disappeared"))?;
+    let old = headers.work.replace(crate::support::crates::MAX_COMPONENTS);
+    let denied = facts.recorded_caller_tracking(owner).is_err();
+    let attempted = headers.work.replace(old);
+    assert!(
+        denied && attempted > crate::support::crates::MAX_COMPONENTS,
+        "selected caller queries did not charge their actual imported payer"
+    );
+
+    Ok(())
 }
 
 fn repeated_owner(

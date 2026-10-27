@@ -19,7 +19,7 @@ pub(crate) enum Inline {
     Closed(NodeKey),
     Instance(crate::sema::inline_constants::InlineInstance),
 }
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub(crate) enum PreparedOperand {
     Inline {
         destination: ValueId,
@@ -27,6 +27,7 @@ pub(crate) enum PreparedOperand {
         result: crate::types::TypeId,
     },
     Discriminant(crate::sema::members::VariantId),
+    CallerSites(std::sync::Arc<[crate::body::ir::CallerSite]>),
 }
 
 pub(crate) struct Code {
@@ -69,16 +70,22 @@ impl Code {
         .fold(0, usize::saturating_add))
     }
     fn operand_count(body: &Body) -> Result<usize, &'static str> {
-        body.statements.iter().try_fold(0, |count, statement| {
-            Ok(count + usize::from(Self::operand(body, statement)?.is_some()))
-        })
+        body.statements.iter().try_fold(
+            usize::from(!body.caller_sites().is_empty()),
+            |count, statement| Ok(count + usize::from(Self::operand(body, statement)?.is_some())),
+        )
     }
     pub(crate) fn snapshot(body: &Body) -> Result<Self, &'static str> {
+        body.validate_caller_sites()?;
         let mut operands = Vec::with_capacity(Self::operand_count(body)?);
         for statement in &body.statements {
             if let Some(operand) = Self::operand(body, statement)? {
                 operands.push(operand);
             }
+        }
+        if !body.caller_sites().is_empty() {
+            // Exactly one data footer follows every legacy prepared operand.
+            operands.push(PreparedOperand::CallerSites(body.caller_sites().into()));
         }
         Ok(Self {
             instance: body.instance,
@@ -101,6 +108,30 @@ impl Code {
             callables: body.callable_targets(),
             operands,
         })
+    }
+    pub(crate) fn caller_site(
+        &self,
+        destination: ValueId,
+    ) -> Result<Option<crate::body::ir::CallerSite>, &'static str> {
+        let Some(PreparedOperand::CallerSites(sites)) = self.operands.last() else {
+            return Ok(None);
+        };
+        let site = sites
+            .binary_search_by_key(&destination.0, |site| site.value.0)
+            .ok()
+            .map(|index| sites[index]);
+        if site.is_some_and(|site| Some(site.owner) != self.source.source()) {
+            return Err("prepared caller site belongs to another actual Code owner");
+        }
+        Ok(site)
+    }
+    pub(crate) fn caller_site_bytes(&self) -> usize {
+        match self.operands.last() {
+            Some(PreparedOperand::CallerSites(sites)) => std::mem::size_of_val(sites.as_ref())
+                .saturating_add(2 * size_of::<usize>())
+                .next_multiple_of(align_of::<usize>()),
+            _ => 0,
+        }
     }
     fn operand(
         body: &Body,

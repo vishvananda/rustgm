@@ -4,12 +4,15 @@ mod relocations;
 pub use relocations::{ImageFragment, WordTarget};
 pub(crate) use relocations::{MetadataShape, WordAddress, WordShape};
 mod callables;
+#[path = "values/site_constants.rs"]
+mod caller_sites;
 mod computed;
 mod enumerations;
 mod environments;
 mod footprints;
 mod niches;
 mod physical_types;
+mod ptr_values;
 pub(crate) use footprints::{ProjectionStorage, StorageLayout, StoredShape};
 pub mod execution;
 mod memory;

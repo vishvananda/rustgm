@@ -9,6 +9,7 @@ from build_environment import package_environment
 from build_script_output import Kind
 from build_units import Execution, MAX_BYTES, parse
 import host_profile
+import manifest_lints
 from local_package import LocalPackage, validate_layout
 
 
@@ -32,9 +33,10 @@ class Package:
     features: tuple[str, ...]
     key: str
     sources: frozenset[str]
+    lint_arguments: tuple[str, ...]
 
     @classmethod
-    def load(cls, snapshot):
+    def load(cls, snapshot, lint_cap=None):
         snapshot.verify()
         document = tomllib.loads((snapshot.root / 'Cargo.toml').read_text())
         environment = package_environment(snapshot, document)
@@ -50,12 +52,17 @@ class Package:
                 features.update(name for name, dependency in table.get(kind, {}).items()
                                 if isinstance(dependency, dict) and dependency.get('optional')
                                 and name not in suppressed)
-        key = fingerprint((snapshot.identity, snapshot.files, snapshot.directories))
+        inputs = (snapshot.identity, snapshot.files, snapshot.directories)
+        if lint_cap is not None:
+            inputs += (('lint_cap', lint_cap),)
+        key = fingerprint(inputs)
         return cls(snapshot, environment, links, tuple(sorted(features)), key,
-                   frozenset(str(snapshot.root / name) for name, _, _ in snapshot.files))
+                   frozenset(str(snapshot.root / name) for name, _, _ in snapshot.files),
+                   manifest_lints.arguments(document.get('lints', {}))
+                   + manifest_lints.cap_arguments(lint_cap))
 
 
-def prepare(plan, snapshots, contexts):
+def prepare(plan, snapshots, contexts, lint_caps=None):
     """Verify each package/context once, then bind each unit in constant time."""
     if None not in contexts:
         raise ValueError('host graph requires an explicit host context')
@@ -82,6 +89,12 @@ def prepare(plan, snapshots, contexts):
     if len(encoded) > MAX_BYTES or parse(encoded, next(iter(targets))) != plan:
         raise ValueError('host graph differs from its validated dependency order')
     packages = {}
+    caps = {} if lint_caps is None else lint_caps
+    if (not isinstance(caps, dict) or len(caps) > len(snapshots)
+            or set(caps) - {snapshot.cargo_id for snapshot in snapshots}):
+        raise ValueError('host lint caps must name their exact selected package identities')
+    for cap in caps.values():
+        manifest_lints.cap_arguments(cap)
     if len(snapshots) > len(plan.units) or sum(len(p.files) for p in snapshots) > 1_000_000:
         raise ValueError('host package inventory exceeds combined count budget')
     validate_layout(tuple(p for p in snapshots if isinstance(p, LocalPackage)))
@@ -91,7 +104,7 @@ def prepare(plan, snapshots, contexts):
     for snapshot in snapshots:
         if snapshot.cargo_id in packages:
             raise ValueError('duplicate host package identity')
-        packages[snapshot.cargo_id] = Package.load(snapshot)
+        packages[snapshot.cargo_id] = Package.load(snapshot, caps.get(snapshot.cargo_id))
     linked = {}
     for package in packages.values():
         if package.links is not None:

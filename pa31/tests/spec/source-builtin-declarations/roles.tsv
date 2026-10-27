@@ -34,7 +34,7 @@ role_32	bench	Attribute	0
 role_33	cfg_accessible	Attribute	0
 role_34	cfg_eval	Attribute	0
 role_35	define_opaque	Attribute	0
-role_36	derive	Attribute	0
+role_36 derive Attribute 1
 role_37	derive_const	Attribute	0
 role_38	eii	Attribute	0
 role_39	eii_declaration	Attribute	0
@@ -44,10 +44,10 @@ role_42	offload_kernel	Attribute	0
 role_43	test	Attribute	1
 role_44	test_case	Attribute	0
 role_45	unsafe_eii	Attribute	0
-role_46	Clone	Derive	0
-role_47	Copy	Derive	0
+role_46 Clone Derive 1
+role_47 Copy Derive 1
 role_48	ConstParamTy	Derive	0
-role_49	Debug	Derive	0
+role_49	Debug	Derive	1
 role_50	Default	Derive	0
 role_51	Eq	Derive	0
 role_52	Hash	Derive	0

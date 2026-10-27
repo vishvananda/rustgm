@@ -1,6 +1,7 @@
 //! Source-owned macro claims and the one implemented internal edition permission.
 use super::KnownFeature;
 mod grants;
+mod helpers;
 mod lists;
 mod witness;
 use crate::{
@@ -18,7 +19,7 @@ use crate::{
     },
 };
 use grants::Entry;
-pub(in crate::resolve) use grants::{CheckedHeader, HeaderData};
+pub(in crate::resolve) use grants::{CheckedHeader, HeaderData, HelperAttribute};
 use std::{cell::RefCell, rc::Rc};
 use witness::{Node as WitnessNode, Witness};
 
@@ -260,6 +261,7 @@ pub(in crate::resolve) fn published(
         || current.node != declaration.node
         || (current.attributes.start, current.attributes.end) != declaration.attributes
         || !is_macro(current.unit, current.node)
+        || expected.is_some_and(|data| !data.image_matches(current.unit))
     {
         return Err(error("published macro owner or attribute range changed"));
     }
@@ -271,6 +273,14 @@ pub(in crate::resolve) fn existing(
     package: &Package,
     key: NodeKey,
 ) -> Result<Option<Declaration>, Error> {
+    Ok(checked_definition(package, key)?.map(|header| header.summary()))
+}
+/// Follow an already-published actual declaration to its configured wrapper;
+/// inner item nodes intentionally have no entry in the owner's dense index.
+pub(in crate::resolve) fn checked_definition(
+    package: &Package,
+    key: NodeKey,
+) -> Result<Option<CheckedHeader<'_>>, Error> {
     let context = package
         .macro_context()
         .map_err(|message| Error::at(key.file, 0, message))?
@@ -284,13 +294,18 @@ pub(in crate::resolve) fn existing(
         state
             .charge(1, 0)
             .map_err(|message| Error::at(key.file, 0, message))?;
-        state
-            .declarations
-            .get(&key)
-            .map(|entry| entry.declaration().owner)
+        let declaration = state.declarations.get(&key).map(Entry::declaration);
+        if declaration.is_some_and(|declaration| declaration.node != key) {
+            return Err(Error::at(
+                key.file,
+                0,
+                "source macro declaration key changed",
+            ));
+        }
+        declaration.map(|declaration| declaration.owner)
     };
     owner
-        .map(|owner| declaration(package, owner))
+        .map(|owner| checked(package, owner))
         .transpose()
         .map(Option::flatten)
 }

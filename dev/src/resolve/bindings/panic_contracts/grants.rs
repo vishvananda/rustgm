@@ -1,11 +1,30 @@
 //! Shared immutable header data is distinct from each borrowed authentication.
 use super::{Allowance, Declaration, Package, State, Unit, Witness, WitnessNode};
 use crate::{
+    expand::builtin::{Builtin, BuiltinKind},
     resolve::{bindings::FeatureName, package::Error},
     support::hash::HashSet,
+    support::source::OriginalImage,
     syntax::attribute::Attribute,
+    syntax::token_tree::Span,
 };
-use std::rc::Rc;
+use std::{rc::Rc, sync::Arc};
+
+pub(in crate::resolve) struct HelperAttribute {
+    name: Rc<str>,
+    span: Span,
+}
+impl HelperAttribute {
+    pub(super) fn new(name: Rc<str>, span: Span) -> Self {
+        Self { name, span }
+    }
+    pub(in crate::resolve) fn name(&self) -> &str {
+        &self.name
+    }
+    pub(in crate::resolve) const fn span(&self) -> Span {
+        self.span
+    }
+}
 
 pub(in crate::resolve) struct HeaderData {
     pub(super) declaration: Declaration,
@@ -13,8 +32,13 @@ pub(in crate::resolve) struct HeaderData {
     pub(super) features: HashSet<Rc<str>>,
     pub(super) witness_work: usize,
     pub(super) lexeme_bytes: usize,
+    pub(super) helpers: Vec<HelperAttribute>,
+    pub(super) image: Arc<OriginalImage>,
 }
 impl HeaderData {
+    pub(super) fn image_matches(&self, unit: &Unit) -> bool {
+        Arc::ptr_eq(&self.image, unit.source.original_image())
+    }
     #[cfg(test)]
     pub(in crate::resolve) fn feature_count(&self) -> usize {
         self.features.len()
@@ -24,6 +48,21 @@ impl HeaderData {
     }
     pub(in crate::resolve) fn contains(&self, feature: &FeatureName<'_>) -> bool {
         self.features.contains(feature.spelling())
+    }
+    /// Read only after the existing selected-header authentication. This list
+    /// does not itself authorize a helper on any attributed owner.
+    pub(in crate::resolve) fn derive_helpers(
+        &self,
+        expected: Builtin,
+    ) -> Result<&[HelperAttribute], Error> {
+        if expected.kind() != BuiltinKind::Derive || self.declaration.builtin != Some(expected) {
+            return Err(Error::at(
+                self.declaration.node.file,
+                0,
+                "helper query requires its actual selected derive role",
+            ));
+        }
+        Ok(&self.helpers)
     }
     pub(super) fn payload(&self) -> usize {
         size_of::<Self>()
@@ -49,6 +88,11 @@ impl HeaderData {
                     .saturating_mul(size_of::<Rc<str>>()),
             )
             .saturating_add(self.lexeme_bytes)
+            .saturating_add(
+                self.helpers
+                    .capacity()
+                    .saturating_mul(size_of::<HelperAttribute>()),
+            )
     }
 }
 
@@ -72,7 +116,9 @@ impl Entry {
     pub(super) fn valid(&self, unit: &Unit) -> bool {
         match self {
             Self::Plain(_) => true,
-            Self::Owned(data) => data.witnesses.iter().all(|witness| witness.valid(unit)),
+            Self::Owned(data) => {
+                data.image_matches(unit) && data.witnesses.iter().all(|witness| witness.valid(unit))
+            }
         }
     }
     pub(super) fn shared(&self) -> Option<Rc<HeaderData>> {
@@ -107,6 +153,28 @@ impl<'package> CheckedHeader<'package> {
     }
     pub(in crate::resolve) fn into_data(self) -> Option<Rc<HeaderData>> {
         self.data
+    }
+    /// Declaration data only: a selected derive and its invocation owner must
+    /// still be authenticated before a helper can be used.
+    pub(in crate::resolve) fn derive_helpers(
+        &self,
+        expected: Builtin,
+    ) -> Result<&[HelperAttribute], Error> {
+        if expected.kind() != BuiltinKind::Derive || self.declaration.builtin != Some(expected) {
+            return Err(Error::at(
+                self.declaration.node.file,
+                0,
+                "helper query requires its actual selected derive role",
+            ));
+        }
+        let data = self.data.as_ref().ok_or_else(|| {
+            Error::at(
+                self.declaration.node.file,
+                0,
+                "derive helper declaration data is missing",
+            )
+        })?;
+        data.derive_helpers(expected)
     }
     pub(in crate::resolve) fn allowance_at(
         &self,

@@ -34,6 +34,7 @@ class Job:
     default_features: bool = True
     vendor: Vendor | None = None
     local_packages: tuple[local_package.LocalPackage, ...] = ()
+    panic: str | None = None
 
     def validate(self):
         for path, expected in ((self.cargo, self.cargo_sha256),
@@ -59,6 +60,8 @@ class Job:
             raise ValueError('invalid or duplicate selected feature')
         if type(self.default_features) is not bool:
             raise ValueError('default features must be explicitly enabled or disabled')
+        if self.panic not in (None, 'abort', 'unwind'):
+            raise ValueError('panic strategy must be abort, unwind or the manifest default')
         if self.vendor is not None:
             self.vendor.verify(self.lockfile)
             if any(path.is_relative_to(self.vendor.root) for path in paths):
@@ -93,6 +96,8 @@ def execute(job, folder):
         'RUSTGM_PLAN_QUERY_SHA256': job.query_compiler_sha256,
         'RUSTGM_PLAN_TARGET': job.target, 'RUSTGM_PLAN_QUERY_LOG': str(folder / 'queries.jsonl'),
     }
+    if job.panic is not None:
+        environment['CARGO_PROFILE_DEV_PANIC'] = job.panic
     command = [str(job.cargo), 'build', '--manifest-path', str(job.manifest),
                '-p', job.package, '--lib', '--target', job.target,
                '--frozen', '--unit-graph', '-Z', 'unstable-options']

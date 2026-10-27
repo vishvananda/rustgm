@@ -87,7 +87,7 @@ impl Checker<'_> {
         if self.report.resolution.definitions[owner.0 as usize].kind
             == crate::resolve::model::DefKind::Function
         {
-            self.demand_function_template(key, owner)?;
+            prepare_callable_template(self.report, &mut self.facts, key, owner)?;
         }
         let (_, supplied) = self.item_argument_lists(key, owner)?;
         self.work.push(Work::ItemArguments(key, owner));
@@ -130,31 +130,6 @@ impl Checker<'_> {
             }
         }
         Ok(())
-    }
-    fn demand_function_template(&mut self, key: NodeKey, owner: DefId) -> Result<(), Error> {
-        if self
-            .facts
-            .lifetimes
-            .callables
-            .get(crate::types::ItemId(owner.0))
-            .is_some()
-        {
-            return Ok(());
-        }
-        let ty = self.facts.definitions[owner.0 as usize]
-            .ok_or_else(|| self.error(key, "missing generic function type"))?;
-        let Some(crate::types::Kind::FunctionItem { signature, .. }) = self.facts.types.kind(ty)
-        else {
-            return Err(self.error(key, "missing generic function signature"));
-        };
-        let scheme = self.facts.lifetimes.functions.get(&owner).cloned();
-        let Some(scheme) = scheme else {
-            if self.facts.generics.has_parameters(owner) {
-                return Err(self.error(key, "missing generic function lifetime scheme"));
-            }
-            return Ok(());
-        };
-        self.callable_template(key, owner, signature, &scheme)
     }
     pub(in super::super) fn complete_item_arguments(
         &mut self,
@@ -203,5 +178,43 @@ impl Checker<'_> {
             },
         );
         Ok(())
+    }
+}
+
+/// Both written and implicit calls demand the same actual declaration template.
+pub(in crate::sema) fn prepare_callable_template(
+    report: &crate::resolve::expansion::Report,
+    facts: &mut crate::sema::model::Declarations,
+    key: NodeKey,
+    owner: DefId,
+) -> Result<(), Error> {
+    super::super::comparisons::LibraryContracts { report, facts }
+        .demand_function_template(key, owner)
+}
+impl super::super::comparisons::LibraryContracts<'_> {
+    fn demand_function_template(&mut self, key: NodeKey, owner: DefId) -> Result<(), Error> {
+        if self
+            .facts
+            .lifetimes
+            .callables
+            .get(crate::types::ItemId(owner.0))
+            .is_some()
+        {
+            return Ok(());
+        }
+        let ty = self.facts.definitions[owner.0 as usize]
+            .ok_or_else(|| self.error(key, "missing generic function type"))?;
+        let Some(crate::types::Kind::FunctionItem { signature, .. }) = self.facts.types.kind(ty)
+        else {
+            return Err(self.error(key, "missing generic function signature"));
+        };
+        let scheme = self.facts.lifetimes.functions.get(&owner).cloned();
+        let Some(scheme) = scheme else {
+            if self.facts.generics.has_parameters(owner) {
+                return Err(self.error(key, "missing generic function lifetime scheme"));
+            }
+            return Ok(());
+        };
+        self.callable_template(key, owner, signature, &scheme)
     }
 }

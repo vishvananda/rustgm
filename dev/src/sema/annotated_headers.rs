@@ -9,6 +9,9 @@ mod incarnations;
 #[path = "header_attributes/declared_origins.rs"]
 mod local;
 pub(in crate::sema) use incarnations::SourceImage;
+pub(in crate::sema) use local::{
+    consume_const_panic, consume_tracking, inherit_tracking, marker_trait,
+};
 #[cfg(test)]
 #[path = "../../tests/invariants/nodeless_owners.rs"]
 mod owner_compatibility_tests;
@@ -141,8 +144,8 @@ pub(super) use imported::prepare as prepare_imported;
 pub(super) use local::{bind_definition, finish, observe_owner};
 pub(in crate::sema) use local::{
     charge_source_contract_query, charge_source_retention, completed_source_image,
-    pointee_source_image, require_recorded_pointee_image, reserve_source_contracts,
-    source_payments,
+    pointee_source_image, require_control_flow_variant, require_recorded_pointee_image,
+    reserve_source_contracts, source_payments,
 };
 pub(super) fn has_imported(facts: &Declarations, definition: DefId) -> bool {
     facts

@@ -15,6 +15,11 @@ pub(super) use calls::record as record_call_effects;
 pub(in crate::sema) use explicit_cleanup::explicit_drop_member;
 pub(crate) use glue_calls::{DropGlueSelection, check_const_drop_glue, source_drop_glue};
 mod abort_declaration;
+mod runtime_panics;
+pub(in crate::sema) use runtime_panics::runtime_body as runtime_panic_body;
+#[path = "compiler_items/location_intrinsic.rs"]
+mod caller_location;
+pub(crate) use caller_location::CallerLocationSelection;
 mod transmute_contract;
 mod transmute_sizes;
 pub(crate) use abort_declaration::AbortSelection;
@@ -24,7 +29,9 @@ mod intrinsic_contracts;
 mod layout;
 mod needs_drop;
 pub(in crate::sema) mod pointee;
+mod ptr_metadata;
 mod runtime_checks;
+pub(crate) use ptr_metadata::PtrMetadataSelection;
 pub(crate) use runtime_checks::RuntimeCheckSelection;
 mod select_calls;
 mod select_contract;
@@ -34,11 +41,14 @@ pub(crate) use copying::{
 };
 pub(crate) use select_calls::{Select, check_const_select, prepare_select, source_select};
 mod roles;
+pub(super) use roles::bit as role_bit;
+pub(in crate::sema) mod site_records;
 pub(in crate::sema) use roles::admitted_headers::selected_copying;
 pub(crate) use roles::callable_role;
 pub(crate) use roles::{destruct_predicate, drop_glue_member, freeze_predicate};
 pub(crate) use roles::{unsizing_predicate, unsizing_role};
 mod sizing;
+pub(in crate::sema) mod try_protocol;
 mod unary_contract;
 use crate::{
     resolve::{
@@ -327,4 +337,9 @@ pub(crate) fn tuple_predicate(
             facts.types.kind(predicate.ty),
             Some(crate::types::Kind::Tuple(_))
         ))
+}
+
+#[cfg(test)]
+pub(crate) const fn validated_layout_bytes() -> usize {
+    roles::layout_bytes()
 }

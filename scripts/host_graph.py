@@ -46,7 +46,8 @@ class Build:
         self.library_folder.mkdir()
         self.receipt = {'state': 'running', 'units': [asdict(unit) for unit in plan.units],
                         'order': plan.order, 'commands': [], 'completed': [],
-                        'packages': [dict(package.snapshot.identity, input_sha256=package.key)
+                        'packages': [dict(package.snapshot.identity, input_sha256=package.key,
+                                          lint_arguments=package.lint_arguments)
                                      for package in packages.values()],
                         'contexts': [{'platform': platform, 'context': asdict(context)}
                                      for platform, context in contexts.items()]}
@@ -102,6 +103,7 @@ class Build:
         command = [context.compiler, f'--edition={unit.target.edition}', '--crate-name', name,
                    '--crate-type', 'bin' if script else 'rlib', unit.target.src_path, '-o', output,
                    '-C', f'metadata={key}', *host_profile.arguments(unit.profile_json)]
+        command += package.lint_arguments
         values = ','.join(json.dumps(feature, ensure_ascii=False) for feature in package.features)
         command += ['--check-cfg', f'cfg(feature,values({values}))', '--check-cfg', 'cfg(docsrs,test)']
         for feature in unit.features:
@@ -204,13 +206,13 @@ class Build:
                 raise ValueError('generated script input changed during graph execution')
 
 
-def execute(plan, snapshots, contexts, folder):
+def execute(plan, snapshots, contexts, folder, *, lint_caps=None):
     """Build each selected host node once, retaining per-run target context.
 
     This is invocation-local sharing. No persistent cache or successful target
     compilation is inferred from the graph or its completed host artifacts.
     """
-    packages, contexts = prepare(plan, snapshots, contexts)
+    packages, contexts = prepare(plan, snapshots, contexts, lint_caps)
     folder = folder.absolute()
     if any(folder.is_relative_to(p.snapshot.root) for p in packages.values()):
         raise ValueError('host graph output must be outside package snapshots')
@@ -220,7 +222,8 @@ def execute(plan, snapshots, contexts, folder):
     implementation = {name: digest(Path(__file__).with_name(name)) for name in (
         'host_graph.py', 'host_inputs.py', 'host_process.py', 'host_build_script.py',
         'build_environment.py', 'build_script_output.py', 'host_profile.py',
-        'build_units.py', 'cargo_query.py', 'package_snapshot.py', 'local_package.py')}
+        'build_units.py', 'cargo_query.py', 'package_snapshot.py', 'local_package.py',
+        'manifest_lints.py')}
     build = Build(plan, packages, contexts, folder)
     build.receipt['implementation_sha256'] = implementation
     build.save()

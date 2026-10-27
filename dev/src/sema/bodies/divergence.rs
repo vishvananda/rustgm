@@ -93,7 +93,9 @@ impl Checker<'_> {
                 }
                 // Loop exits were checked against their own control frame, so an
                 // internal break is not an escape from the enclosing expression.
-                Kind::Loop { .. } | Kind::While { .. } => self.state.diverges[node.get() as usize],
+                Kind::Loop { .. } | Kind::While { .. } | Kind::TryBlock { .. } => {
+                    self.state.diverges[node.get() as usize]
+                }
                 _ => false,
             }
         };

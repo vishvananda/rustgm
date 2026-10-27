@@ -5,6 +5,29 @@ plan nor a successful host build script is evidence that RustGM compiled a
 target crate. Every target Rust dependency must eventually use the RustGM
 frontend, including the source sysroot.
 
+The [original library observations](../pa34/tests/stdlib-graph-outcomes.json)
+now retain the pinned source sysroot's own package graphs: one core unit, five
+alloc units and nineteen std units. The std graph has thirteen target compile
+units and three paired host compile/run scripts (`compiler_builtins`, `libc`,
+`std`). All thirty registry archives match the complete original lockfile;
+nineteen local packages and 2,375 original files are authenticated. The shared
+source tree is reused without changing its manifests or lockfile.
+
+`Job.panic` explicitly selects abort/unwind through Cargo's development profile;
+`None` preserves the manifest default and does not inherit an ambient override.
+Independent query-only observations show abort target profiles with unchanged
+unwind host profiles. The graph reader retains all four Rust edition values and
+the optional ordered per-package `rustflags`, including repetitions. The selected
+panic_abort unit carries `-Cpanic=abort`; execution must interpret supported
+settings or reject them. Recording a profile does not implement that execution.
+
+The original std graph requires Rust 2015 rustc-demangle and Rust 2018 cfg-if.
+The owning PA34 fixtures independently distinguish root imports and pattern
+fragments from later editions. Frontend support remains required. Actual
+compiler-builtins build-script input closure also includes
+`library/compiler-builtins/libm/configure.rs` outside its Cargo package root;
+the full input/configuration closure and target execution remain open.
+
 The adapter uses pinned Cargo 1.98.0's
 [unit graph](https://doc.rust-lang.org/cargo/reference/unstable.html#unit-graph)
 with `--frozen --unit-graph -Z unstable-options`. Cargo is a package planner here.
@@ -168,3 +191,60 @@ once per unit. No RustGM rebuild or full frontend suite was needed for this
 Python-only checkpoint. Scoped cleanup removed 44 generated files and preserved
 original inputs and receipts. Completion SHA-256:
 `50806abc65dc5b5948af492d3b0367491ad8ea8675bf3fbb1a3abcc6b7ce96d3`.
+
+## Host manifest lint policy and original libc
+
+The host task and DAG executors now preserve explicit `[lints.rust]` and
+`[lints.clippy]` levels, signed i8 priorities and `unexpected_cfgs.check-cfg`.
+Lower priorities precede overrides, following the
+[Cargo manifest contract](https://doc.rust-lang.org/cargo/reference/manifest.html#the-lints-section).
+`scripts/manifest_lints.py` validates and produces bounded arguments; package
+loading retains them for every host unit. Unknown tools, unresolved workspace
+inheritance, unsupported settings and unknown unstable manifest policy still
+diagnose. The known `public-dependency` Cargo request preserves typed target-edge
+visibility without enabling host dependency modifiers, Rust syntax or queries.
+The caller supplies lint caps explicitly: `host_build_script.Job.lint_cap`,
+`planned_build_script.execute(..., lint_cap=...)`, or the DAG executor's
+`lint_caps` keyed by exact selected package ID. Caps enter artifact keys and
+receipts. General Cargo cap inference and target policy consumption remain open.
+
+Six predeclared independent pinned Cargo cases pass, including real compilation
+failure for a denied lint, a valid priority override, cfg expectations and
+malformed-level/priority failures. The actual registry and local host DAGs still
+match independent Cargo with six compilations and five script runs each.
+Their helper has two script feature variants and one library; all three retain
+the real forbid policy. The directory-source fixture's explicit warn caps and
+the workspace fixture's uncapped commands are checked separately.
+
+The unchanged selected `libc 0.2.185` script now executes through its genuine
+std-plan compile/run pair with the actual features and abort target context.
+It matches all 27 predeclared directive lines, retains one version-only compiler
+query and generates no source files. Its snapshot archive SHA-256 is
+`52ff2c0fe9bc6cb6b14a0592c2ff4fa9ceb83eea9db979b0487cd054946a2b8f`.
+The explicitly capped run takes 0.900 seconds, receipt SHA-256
+`a04d8dba3c966c31e5fe52a018f9d6b98a5f1e3209de4219c0152bdd4418c58f`;
+the earlier uncapped observation takes 2.452 seconds. These are separate
+qualification observations, not a performance comparison. The first execution
+trace retains both absent `emcc` probes in the explicit `/usr/bin:/bin` path;
+complete external-tool/rerun closure and persistent caching remain open.
+
+Evidence is in the integrator's `obj/parallel/host-manifest-lints-v1/` and host
+DAG runs `1793055289392840154` / `1793055291608027358`. All 223 Python tests,
+383 registered integration roots, assignment layout and upstream checks pass.
+Successful executables/objects were scoped-pruned, including the diagnosed
+earlier wrong two-command assertion. Compiler-builtins' shared `configure.rs`
+input closure and std's manifest policy remain required for the other two
+original host pairs. No target library or additional assignment is complete.
+
+The subsequent original std host pair now passes too. It consumes that actual
+manifest feature and lint table, keeps the selected target graph's public edges,
+and rejects public/noprelude/nounused modifiers on the host script edge before
+execution. The unchanged script produces all eight predeclared directive lines:
+`backtrace_in_libstd` and `STD_ENV_ARCH=x86_64`, plus rerun/cfg expectations.
+It makes no compiler queries and generates no source files. The observed run is
+0.699 seconds, receipt SHA-256
+`7be92eecee223a8af1e7bc834f7db6e1349af3df2bc2c2aba8ceb23dd3139577`,
+under `obj/parallel/std-host-v1/`. All 224 harness tests and layout/upstream checks
+pass. Two of the three original host pairs execute; compiler-builtins' shared
+`configure.rs` inputs and complete external-tool/configuration closure remain.
+Original target core, alloc, libc and std artifacts remain unbuilt.

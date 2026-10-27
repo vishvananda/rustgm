@@ -15,10 +15,21 @@ the SourceCore derive metadata bypass. `contract.json` distinguishes primary
 registry facts, frozen candidate expectations and unrun independent observations.
 The original contract retains its declaration-only predictions; the availability
 column is maintained as real consumers qualify, without changing the Rust source
-inputs or pinned role identities. The MacroRules derive-form restriction is an explicit supported-profile denial;
-it is not presented as an independently observed Rust semantic rejection.
+inputs or pinned role identities. The historical `wrong-derive-form.rs` filename
+and source bytes are retained, but the expected result is now acceptance:
+pinned rustc 1.98.0 accepts this library metadata input in editions2021/2024.
+The registry supplies the derive invocation kind independently of its
+`macro_rules!` source form. This declaration does not enable From execution;
+the private consumer control rejects that use before expansion work.
 
 This does not implement assertion expansion, tracing, attribute rewriting,
 derive output, allocator glue, contracts, EII, assembly, proc-macro hosting or
 foreign macro transport. Each execution family remains required at its owning
 assignment. Ordinary supported derives keep their current real consumer.
+
+Nonempty `attributes(...)` lists now have a separately authored typed declaration
+producer and exact checked-header API. It retains canonical identifiers/spans on
+the existing cold header, preserving role/provider/source identity and checked
+empty versus missing state. It grants no derive execution or global helper scope.
+See [the helper declaration checkpoint](../../../../docs/source-builtin-helper-declarations.md)
+for independent hypotheses, actual lint outcomes and qualification status.

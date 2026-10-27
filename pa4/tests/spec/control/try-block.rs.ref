@@ -1,0 +1,6 @@
+node 0 6 7 literal 0
+value 0 integer 6 7 infer 7
+node 1 4 9 block Plain [] 0
+node 2 0 9 try-block 1
+root 2
+eof 10

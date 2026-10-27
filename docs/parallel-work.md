@@ -14,11 +14,10 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The current original-core observer passes final Share::share and reaches
-`default.rs:143`, the source `attributes(default)` helper declaration (LIB-034).
-All 722 pinned inputs verify, 78 files are opened, and no artifact exists. The
-[formatter integration](formatter-pointer-erasure-checkpoint.md#combined-integration-and-core-frontier)
-records the earlier VTable boundary; the live tracker owns the newer result.
+The current original-core observer passes scoped builtin Iter and reaches
+`${concat(...)}` in `fmt/num.rs:149` (LIB-039). All722 pinned inputs verify,
+206 original files are opened in2.376s and no artifact exists. The live tracker
+owns this result; older checkpoints retain their narrower evidence.
 
 - A: complete actual imported Provided execution. Names and receiver shapes now
   pass combined checks. Join selected checked headers, defining environments,
@@ -26,19 +25,23 @@ records the earlier VTable boundary; the live tracker owns the newer result.
   Next exit is the [encoded/native7 consumer](parallel/provided-method-execution.md).
   Complete source checking and structural/coherence inventory remain mandatory;
   unrelated imported elaboration and bodies may remain Pending until needed.
-- B: Pattern/NonNull and PhantomData are integrated. Complete actual source
-  Location derives, track_caller/PanicInfo and
-  a false assertion reaching the real handler/Abort. Formatting follows through
+- B: Pattern/NonNull, PhantomData and actual full-attribute Location Copy/Clone
+  derives are integrated, with native `31 7`. Direct source track_caller is
+  native-qualified. Complete actual Debug/Arguments/PanicInfo and a false assertion
+  reaching the real handler/Abort. Formatting follows through
   source constructors and selected methods. Reuse the same Pointee metadata
   classifier and source-owned obligations rather than new library algorithms.
-- C: actual source derive helper-declaration producer, beginning with Default's
-  `attributes(default)`. Coordinate typed helper authority with B's invocation
-  consumer. Final methods and their native override controls are integrated;
-  public final policy transport remains required. Keep the disjoint Provided
-  codec task queued until this newly observed blocker is covered.
+- C: genuine source Try execution and builtin declaration-kind lookup are
+  integrated. Join source ptr_metadata to the same Pointee classifier for B's
+  actual Arguments::from_str. Thin/Length come first, with genuine dynamic
+  metadata/storage debt retained. The disjoint Provided codec stays queued.
 - Integrator: direct Thin now reaches actual native execution. Continue consumer
   joins, original core checking/export and publication. Prioritize supported declarations
   and uses over unrelated alias breadth; preserve explicit unsupported forms.
+  Const-closure grammar/feature authority and builtin declaration kinds are
+  integrated. Debug is now integrated with 37 private/26 production controls;
+  implement LIB-039 concatenation at the new frontier.
+  Preserve PA25's full const-callable/CTFE requirement.
   Prepare the selected alloc/std dependency/runtime graph and PA34 orchestration
   before core completion. Do not change CPPGM or pinned upstream sources.
 
@@ -48,8 +51,10 @@ reconcile the owning PA's remaining implementation and release checklist.
 
 Keep at most one qualified handoff queued per worker; the integrator takes shared
 bases before adding an unrelated implementation task. Combined Thin/PhantomData/
-final-method integration advances original core; C now owns the newly observed
-helper-declaration blocker. A's disjoint Provided codec remains
+final-method/helper-declaration/try-grammar integration advances original core;
+C takes actual pointer metadata after Try and builtin-kind qualification;
+the integrator qualifies the combined compiler and advances the original-core
+observer. A's disjoint Provided codec remains
 queued with its exact wire rows in the existing milestone, while A retains
 member/body semantics. The integrator
 protects integration/observation time rather

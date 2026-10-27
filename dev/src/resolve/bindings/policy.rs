@@ -40,6 +40,10 @@ pub(in crate::resolve) enum Feature {
     PatternTypes,
     ExternTypes = 24,
     FinalAssociatedFunctions = 25,
+    MarkerTraitAttr = 26,
+    TryBlocks = 27,
+    ConstClosures = 28,
+    MetavariableConcat = 29,
 }
 
 /// Recognizing a gate request is not evidence that its active constructs work.
@@ -77,10 +81,14 @@ impl Request {
             "trait_alias" => Self::Capability(Feature::TraitAlias),
             "extern_types" => Self::Capability(Feature::ExternTypes),
             "final_associated_functions" => Self::Capability(Feature::FinalAssociatedFunctions),
+            "marker_trait_attr" => Self::Capability(Feature::MarkerTraitAttr),
+            "try_blocks" => Self::Capability(Feature::TryBlocks),
+            "const_closures" => Self::Capability(Feature::ConstClosures),
+            "macro_metavar_expr_concat" => Self::Capability(Feature::MetavariableConcat),
             "pattern_type_macro" => Self::Library(Feature::PatternTypeMacro),
             "pattern_types" => Self::Capability(Feature::PatternTypes),
             // Requests do not authorize the unsupported live const-drop operation.
-            "const_destruct" | "asm_experimental_arch" => Self::NoCapability,
+            "const_destruct" | "asm_experimental_arch" | "macro_metavar_expr" => Self::NoCapability,
             _ => return None,
         })
     }
@@ -204,6 +212,10 @@ pub(in crate::resolve) fn prepare_with_admission(
                 || features.has(Feature::PatternTypes)
                 || features.has(Feature::ExternTypes)
                 || features.has(Feature::FinalAssociatedFunctions)
+                || features.has(Feature::MarkerTraitAttr)
+                || features.has(Feature::TryBlocks)
+                || features.has(Feature::ConstClosures)
+                || features.has(Feature::MetavariableConcat)
             {
                 Some(Box::new(Source::LocalMacros(super::LocalMacros::new(
                     unit, features,

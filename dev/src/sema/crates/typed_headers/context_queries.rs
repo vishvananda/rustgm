@@ -128,3 +128,41 @@ impl ImportedOwners {
         }
     }
 }
+
+impl super::super::Linkage {
+    pub(crate) fn selected_caller_tracking_absent(
+        &self,
+        facts: &Declarations,
+        definition: DefId,
+    ) -> Result<bool, &'static str> {
+        let Some(headers) = self.originals.as_deref() else {
+            return Ok(false);
+        };
+        let Some(ImportedOwners::Provided(owner)) = headers.source.as_ref() else {
+            return Ok(false);
+        };
+        let mut steps = 3_usize;
+        let result = (|| {
+            let actual = self
+                .checked_original_header(definition)?
+                .ok_or("selected caller policy lacks its installed canonical header")?;
+            let semantic = facts
+                .declaration_header(definition)?
+                .ok_or("selected caller policy lacks its actual semantic function")?;
+            if actual.declaration != semantic.declaration {
+                return Err("selected caller policy changed its canonical declaration");
+            }
+            let catalog = self
+                .origin_catalog()
+                .ok_or("selected caller policy lost its catalog")?;
+            owner.caller_tracking_absent(catalog, facts, definition, &mut steps)?;
+            Ok(true)
+        })();
+        // Immutable policy queries pay through the same installed imported
+        // header owner, including attempted authentication on rejection.
+        headers
+            .charge(steps)
+            .map_err(|_| "selected caller policy work budget exceeded")?;
+        result
+    }
+}

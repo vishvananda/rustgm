@@ -54,7 +54,13 @@ impl Witness {
             .map_err(|_| "macro attribute witness allocation failed")?;
         for node in (attribute.path.start..attribute.path.end).chain(input) {
             let spelling = if let Some(name) = forest.name(owner.unit.source.text(), node) {
-                if allowance && !(attribute.path.start..attribute.path.end).contains(&node) {
+                let helper = names
+                    .helper_input
+                    .as_ref()
+                    .is_some_and(|(effect, range)| *effect == index && range.contains(&node));
+                if (allowance || helper)
+                    && !(attribute.path.start..attribute.path.end).contains(&node)
+                {
                     let span = forest
                         .tree(node)
                         .ok_or("missing feature witness tree")?
@@ -65,7 +71,12 @@ impl Witness {
                         .text()
                         .get(span.start as usize..span.end as usize)
                         .ok_or("missing feature witness lexeme")?;
-                    Some(Spelling::Feature(names.lexeme(source, work)?))
+                    let spelling = names.lexeme(source, work)?;
+                    Some(if helper {
+                        Spelling::Helper(spelling)
+                    } else {
+                        Spelling::Feature(spelling)
+                    })
                 } else {
                     Some(Spelling::read(name, builtin)?)
                 }

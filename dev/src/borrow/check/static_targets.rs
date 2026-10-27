@@ -47,15 +47,13 @@ pub(super) fn resolve(
     body: &mut Body,
     fold: &mut Bound,
 ) -> Result<(), &'static str> {
-    if body.resolved_callables.is_some() {
+    if body.has_resolved_callables() {
         return Err("callable targets already belong to a completed proof");
     }
     let mut work = 0;
     let targets = select(types, body, fold, usize::MAX, &mut work)?;
     if !targets.is_empty() {
-        body.resolved_callables = Some(Box::new(crate::body::ir::ResolvedCallables::from_targets(
-            targets,
-        )));
+        body.install_callable_targets(targets)?;
     }
     Ok(())
 }
@@ -75,7 +73,7 @@ pub(crate) fn solved(
     let Some(mut fold) = prepare(proof)? else {
         return Ok(HashMap::default());
     };
-    if body.resolved_callables.is_some() {
+    if body.has_resolved_callables() {
         return Err("callable targets already belong to a completed proof");
     }
     select(types, body, &mut fold, bytes, work)

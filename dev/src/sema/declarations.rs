@@ -24,6 +24,7 @@ mod evaluation;
 mod execution;
 mod foreign;
 mod generics;
+pub(in crate::sema) use generics::prepare_callable_template;
 mod heads;
 mod impl_headers;
 mod implicit_methods;
@@ -483,6 +484,7 @@ impl Checker<'_> {
         self.complete_nominals(&mut steps, work_limit)?;
         super::compiler_items::phantom::complete(self.report, &mut self.facts)?;
         super::compiler_items::pointee::prepare(self.report, &mut self.facts)?;
+        super::compiler_items::site_records::complete(self.report, &mut self.facts)?;
         super::traits::results::prepare_opaque_outlives(&mut self.facts)
             .map_err(|e| Error::at(FileId(0), 0, e))?;
         self.trait_defaults()?;
@@ -508,6 +510,7 @@ impl Checker<'_> {
             ));
         }
         self.complete_layouts()?;
+        super::api_exposure::check(self.report, &self.facts)?;
         self.reject_alias_execution()?;
         super::specialization::require_execution(&self.facts)
     }

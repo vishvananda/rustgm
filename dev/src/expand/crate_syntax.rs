@@ -263,6 +263,7 @@ pub fn write_configuration<L>(
             }
             match entry.effect {
                 Effect::Keep => writeln!(output, " keep")?,
+                Effect::ExpandedDerive => writeln!(output, " expanded-derive")?,
                 Effect::Cfg(value) => writeln!(output, " cfg={value}")?,
                 Effect::CfgAttr(value) => writeln!(output, " cfg_attr={value}")?,
             }

@@ -90,16 +90,14 @@ fn source_selector_ctfe_ignores_placeholder_and_malformed_header_diagnoses_safel
 #[test]
 fn original_staged_provider_retains_its_explicit_unsupported_profile() -> TestResult {
     // Pinned rustc accepts and executes this unchanged full-staged provider.
-    // Its API/const-stability profile remains required separately from the
-    // independently qualified semantic provider used by the runtime cases.
+    // Library stability now completes; Tuple's remaining internal header
+    // attributes still need their actual source-role implementation.
     let error = lower(&source("literal-attributed-declaration", "rs")?)
         .err()
         .ok_or("full-staged provider support changed; review its retained boundary")?;
     let message = error.to_string();
     assert!(
-        message.ends_with(
-            "const, default-body and macro library stability contracts are not implemented"
-        ),
+        message.ends_with("source header attribute is outside the supported actual-role profile"),
         "{message}"
     );
     Ok(())

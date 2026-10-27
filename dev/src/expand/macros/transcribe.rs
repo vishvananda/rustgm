@@ -1,16 +1,20 @@
 //! Typed substitution keeps opaque syntax identities and explicit spelling origins.
+mod concatenation;
 use super::{
     bindings::{Binding, Bindings},
     capture::{CaptureId, Payload},
     input::{Input, delimiters},
     matcher::Matched,
-    model::{Definition, Kind, List, Repetition, Rule, VariableId},
+    model::{Definition, Fragment, Kind, List, Repetition, Rule, VariableId},
 };
 use crate::support::hash::HashMap;
 use crate::{
     lex::token::{Kind as TokenKind, LexError, Token},
-    support::names::NameId,
-    syntax::token_tree::{Span, error},
+    support::names::{NameId, Names},
+    syntax::{
+        interpolation::{EMPTY_INPUTS, Inputs},
+        token_tree::{Span, error},
+    },
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -28,6 +32,11 @@ pub enum Piece {
     Opaque(CaptureId),
     /// Definition-site crate identity is attached by the expansion session.
     Crate(Span),
+    /// Canonical generated spelling, anchored in the actual definition context.
+    Identifier {
+        name: NameId,
+        span: Span,
+    },
     Doc {
         inner: bool,
         body: Span,
@@ -46,6 +55,8 @@ struct Writer<'a> {
     variables: HashMap<NameId, VariableId>,
     input: &'a Input,
     source: &'a str,
+    names: &'a mut Names,
+    inputs: &'a dyn Inputs,
     indices: Vec<usize>,
     output: Transcription,
 }
@@ -56,6 +67,20 @@ pub fn transcribe(
     matched: &Matched,
     source: &str,
     input: &Input,
+    names: &mut Names,
+) -> Result<Transcription, LexError> {
+    transcribe_with_inputs(definition, matched, source, input, names, &EMPTY_INPUTS)
+}
+/// Forwarded literals retain their actual parsed fragment and original source.
+/// # Errors
+/// Rejects invalid captures, concatenation operands and transcription budgets.
+pub fn transcribe_with_inputs(
+    definition: &Definition,
+    matched: &Matched,
+    source: &str,
+    input: &Input,
+    names: &mut Names,
+    inputs: &dyn Inputs,
 ) -> Result<Transcription, LexError> {
     let rule = definition
         .rules
@@ -76,6 +101,8 @@ pub fn transcribe(
         variables,
         input,
         source,
+        names,
+        inputs,
         indices: Vec::new(),
         output: Transcription {
             pieces: Vec::new(),
@@ -87,10 +114,13 @@ pub fn transcribe(
 }
 impl Writer<'_> {
     fn tick(&mut self, offset: u32) -> Result<(), LexError> {
-        if self.output.work >= 1_000_000 {
+        self.charge(offset, 1)
+    }
+    fn charge(&mut self, offset: u32, work: usize) -> Result<(), LexError> {
+        if work > 1_000_000_usize.saturating_sub(self.output.work) {
             return Err(error(offset, "macro transcription work budget exceeded"));
         }
-        self.output.work += 1;
+        self.output.work += work;
         Ok(())
     }
     fn token(&mut self, token: Token, origin: Origin) -> Result<(), LexError> {
@@ -104,6 +134,7 @@ impl Writer<'_> {
             self.tick(node.span.start)?;
             match node.kind {
                 Kind::Crate => self.output.pieces.push(Piece::Crate(node.span)),
+                Kind::Concat(operands) => self.concat(operands, node.span)?,
                 Kind::Doc { inner, body } => self.output.pieces.push(Piece::Doc {
                     inner,
                     body,
@@ -232,7 +263,9 @@ impl Writer<'_> {
                             count = Some(values.len());
                         }
                     }
-                    Kind::Group { children, .. } | Kind::Repeat { children, .. } => {
+                    Kind::Group { children, .. }
+                    | Kind::Repeat { children, .. }
+                    | Kind::Concat(children) => {
                         work.push(children);
                     }
                     Kind::Atom(_) | Kind::Capture(_) | Kind::Crate | Kind::Doc { .. } => {}

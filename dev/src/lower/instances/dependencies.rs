@@ -19,6 +19,7 @@ pub(super) struct Dependencies {
     locations: HashSet<LocationId>,
     steps: usize,
 }
+mod ptr_values;
 enum Work {
     Value(TypeId, Constant),
     Location(LocationId),
@@ -67,6 +68,8 @@ fn source_call(
     };
     match catalog.intrinsic_kind(crate::resolve::model::DefId(item.0))? {
         Some(SourceIntrinsic::ConstEvalSelect) => Ok(Some(SourceIntrinsic::ConstEvalSelect)),
+        Some(SourceIntrinsic::PtrMetadata) => ptr_values::require(report, facts, body, value, ty)
+            .map(|()| Some(SourceIntrinsic::PtrMetadata)),
         Some(SourceIntrinsic::UbChecks) => {
             let instance = Instance::new(&facts.types, ty)?;
             let (selection, _, _) = Reader::new(facts)
@@ -105,6 +108,24 @@ fn source_call(
                 return Err("source transmute dependency differs from its complete direct Call");
             }
             Ok(Some(SourceIntrinsic::Transmute))
+        }
+        Some(SourceIntrinsic::CallerLocation) => {
+            let selected = Reader::new(facts)
+                .source_caller_location(Instance::new(&facts.types, ty)?, body.source)?
+                .ok_or("source caller_location lost its dependency descriptor")?;
+            catalog.require_caller_location_report(report, facts, &selected)?;
+            if signature != selected.signature
+                || value.ty != selected.result
+                || !body
+                    .arguments
+                    .get(arguments.start as usize..arguments.end as usize)
+                    .is_some_and(<[crate::body::ir::ValueId]>::is_empty)
+            {
+                return Err(
+                    "source caller_location dependency differs from its complete direct Call",
+                );
+            }
+            Ok(Some(SourceIntrinsic::CallerLocation))
         }
         Some(SourceIntrinsic::Abort) => {
             let selection = Reader::new(facts)
@@ -145,7 +166,11 @@ impl Discovered {
                 ));
             }
             Some(
-                SourceIntrinsic::UbChecks | SourceIntrinsic::Abort | SourceIntrinsic::Transmute,
+                SourceIntrinsic::UbChecks
+                | SourceIntrinsic::Abort
+                | SourceIntrinsic::Transmute
+                | SourceIntrinsic::CallerLocation
+                | SourceIntrinsic::PtrMetadata,
             ) => {
                 // Only this authenticated direct Call omits callable-body demand.
                 // Lowering still proves and consumes its reached operation.

@@ -356,9 +356,9 @@ fn synchronize_headers(facts: &mut Declarations, work: &mut ReservationWork) -> 
             "private consumer cannot synchronize an ordinary import budget",
         ));
     }
-    work.steps = work.steps.max(headers.work);
+    work.steps = work.steps.max(headers.work.get());
     work.charge(1)?;
-    headers.work = work.steps;
+    headers.work.set(work.steps);
     work.reserve(
         headers
             .base

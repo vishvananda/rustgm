@@ -20,54 +20,58 @@ impl CollectorOrigin {
         report: &Report,
         facts: &mut Declarations,
         stage: &mut Stage,
-    ) -> Result<Box<Self>, &'static str> {
-        stage.charge(report.resolution.definitions.len().saturating_add(1))?;
-        stage.reserve(
-            size_of::<Self>()
-                .saturating_add(
-                    report
-                        .package
-                        .units
-                        .len()
-                        .saturating_mul(size_of::<Option<Arc<OriginalImage>>>()),
-                )
-                .saturating_add(if facts.types.existing_arena_identity().is_none() {
-                    Identity::allocation_bytes()
-                } else {
-                    0
-                }),
-        )?;
+    ) -> Result<Box<Self>, crate::resolve::package::Error> {
+        use crate::resolve::package::Error;
+        stage
+            .charge(report.resolution.definitions.len().saturating_add(1))
+            .map_err(Error::unlocated)?;
+        stage
+            .reserve(
+                size_of::<Self>()
+                    .saturating_add(
+                        report
+                            .package
+                            .units
+                            .len()
+                            .saturating_mul(size_of::<Option<Arc<OriginalImage>>>()),
+                    )
+                    .saturating_add(if facts.types.existing_arena_identity().is_none() {
+                        Identity::allocation_bytes()
+                    } else {
+                        0
+                    }),
+            )
+            .map_err(Error::unlocated)?;
         let provider = report
             .package
             .source_core()
-            .ok_or("collected source requires its actual provider")?;
+            .ok_or_else(|| Error::unlocated("collected source requires its actual provider"))?;
         if provider.current != provider.provider {
-            return Err("collected source identity is not its actual provider");
+            return Err(Error::unlocated(
+                "collected source identity is not its actual provider",
+            ));
         }
         let root_unit = report
             .package
             .units
             .first()
-            .ok_or("collected source root is absent")?;
+            .ok_or_else(|| Error::unlocated("collected source root is absent"))?;
         let mut units = vec![None; report.package.units.len()];
         units[0] = Some(Arc::clone(root_unit.source.original_image()));
         for index in 0..stage.definitions.len() {
-            let Some(scope) = stage
-                .collected_scope(report, facts, index)
-                .map_err(|_| "collected source header has no actual declaration context")?
-            else {
+            let Some(scope) = stage.collected_scope(report, facts, index)? else {
                 continue;
             };
             let declaration = scope.source();
-            stage.charge(2)?;
+            stage.charge(2).map_err(Error::unlocated)?;
             let unit = report
                 .package
                 .units
                 .get(declaration.file.0 as usize)
-                .ok_or("collected source header unit is absent")?;
+                .ok_or_else(|| Error::unlocated("collected source header unit is absent"))?;
             let slot = units
                 .get_mut(declaration.file.0 as usize)
-                .ok_or("collected source header unit is foreign")?;
+                .ok_or_else(|| Error::unlocated("collected source header unit is foreign"))?;
             if slot.is_none() {
                 *slot = Some(Arc::clone(unit.source.original_image()));
             }

@@ -126,6 +126,11 @@ impl Imported {
 }
 
 impl Catalog {
+    /// Source clients retain the closed local-header ABI of their import profile.
+    pub(crate) const fn local_caller_tracking_closed(&self) -> bool {
+        matches!(self.bindings, Bindings::Imported(_))
+    }
+
     #[cfg(test)]
     pub(crate) const fn binding_layouts() -> (usize, usize, usize) {
         (
@@ -360,11 +365,18 @@ fn role_kind(role: LangItem) -> DefKind {
         | LangItem::PanicFmt
         | LangItem::PanicImpl
         | LangItem::PanicDisplay
-        | LangItem::ConstPanicFmt => DefKind::Function,
+        | LangItem::ConstPanicFmt
+        | LangItem::TryFromResidual
+        | LangItem::TryFromOutput
+        | LangItem::TryBranch
+        | LangItem::IntoTryType => DefKind::Function,
+        LangItem::ControlFlowContinue | LangItem::ControlFlowBreak => DefKind::Variant,
         LangItem::FormatArguments
         | LangItem::FormatArgument
         | LangItem::DynMetadata
-        | LangItem::PhantomData => DefKind::Struct,
+        | LangItem::PhantomData
+        | LangItem::PanicLocation
+        | LangItem::PanicInfo => DefKind::Struct,
         LangItem::MemSizeConst | LangItem::MemAlignConst => DefKind::Const,
         LangItem::FnOnceOutput | LangItem::MetadataType => DefKind::TypeAlias,
         _ => DefKind::Trait,

@@ -357,9 +357,9 @@
       "name": "wrong-derive-form",
       "path": "wrong-derive-form.rs",
       "sha256": "187db42d38a1870c13df5631f3ccb13f241639def8cb6b2718d253e9c5d01fa2",
-      "candidate_status": 1,
-      "independent_rustc_status": null,
-      "note": "Supported declaration-form restriction, not an independently observed Rust rejection.",
+      "candidate_status": 0,
+      "independent_rustc_status": 0,
+      "note": "Exact unchanged historical filename; library metadata accepted by pinned rustc 1.98.0 in editions 2021 and 2024. Registry derive kind is independent of macro_rules source form. From execution remains unavailable.",
       "ordinary": false
     },
     {

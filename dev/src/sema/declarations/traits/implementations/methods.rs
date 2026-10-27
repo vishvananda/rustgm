@@ -239,7 +239,13 @@ impl Checker<'_> {
             actual_method,
             definitions,
         )
-        .map_err(|e| self.error(actual.node, e))
+        .map_err(|e| self.error(actual.node, e))?;
+        crate::sema::header_attributes::inherit_tracking(
+            self.report,
+            &mut self.facts,
+            expected.definition,
+            actual.definition,
+        )
     }
     fn trait_override(&self, function: Function) -> Result<(), Error> {
         let item = self.item(function.node)?;

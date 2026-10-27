@@ -118,6 +118,7 @@ impl Stream {
                 context: (!matches!(token.kind, Kind::Interpolated(_))).then_some(context),
                 introduction: ExpansionId(0),
                 joint: Some(joint),
+                kind: crate::expand::stream::OriginKind::Copied,
             });
         }
         Ok(projection)

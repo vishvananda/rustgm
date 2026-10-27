@@ -1,0 +1,121 @@
+{
+  "state": "six private source/CTFE/LowIR controls qualified; production CLI and candidate native pending",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source_intrinsic": "ptr_metadata",
+  "declaration": "safe const Rust P:Pointee<Metadata=M>+PointeeSized,M; one *const P; exact M result",
+  "producer": "actual source intrinsic DefId/formals/signature/current header and existing completed Pointee roles",
+  "consumer": "actual completed direct Call/body/Instance proof retains P::Metadata=M; solved M plus actual pointer ABI layout; pointer read once, pointee memory untouched",
+  "source_inputs": {
+    "pa31/tests/spec/pointer-metadata-intrinsic/combined-observer.c": "5743df4ecd0c7319f1483eb3cf59a12ac75d20d671431f92c5c0ef9b7045fc10",
+    "pa31/tests/spec/pointer-metadata-intrinsic/dynamic-result.rs": "6a19b2f5f9fe7cb2d61721f7d6978f4ee2bbfa0dd4b237bb5733352371be027f",
+    "pa31/tests/spec/pointer-metadata-intrinsic/execute-combined.rs": "6e77158760bfbd568f86a8c16c8e1f1de3f55fde83ac42de9d54e67d2f879848",
+    "pa31/tests/spec/pointer-metadata-intrinsic/foreign-thin.rs": "3ae2ddc904edf8f1e315e7edf26ee2e3226f6c963b1881fea47f4649700e9ebc",
+    "pa31/tests/spec/pointer-metadata-intrinsic/mutable-intrinsic-input.rs": "47788f7dff3581f4d0baa1e08fc569637c6599294b47f3ef952e36434aadfa70",
+    "pa31/tests/spec/pointer-metadata-intrinsic/observe-once.c": "405cc4ad3350b19340e26bd674733fddba9c867796420d41901e98fbb5d9c3a9",
+    "pa31/tests/spec/pointer-metadata-intrinsic/observe.c": "ace9b4b42931b34fd5b0fa2341fc6c7aea0ea96cb5448502ad179e55e556f662",
+    "pa31/tests/spec/pointer-metadata-intrinsic/ordinary-name.rs": "187e6b5c5c20d01fca006437442cd3d3f9b27538df45632e6e8cef980c0f44d3",
+    "pa31/tests/spec/pointer-metadata-intrinsic/provider.rs": "a62b35a68e7a9b539085c9a2ea004c260810afd9b7829e71df6fee20663c6dc0",
+    "pa31/tests/spec/pointer-metadata-intrinsic/slice-length.rs": "65ecfa9d6f1f6a9ddc6915ec6f92abab3941e242ba1ca2b4a6abbefde28beb4f",
+    "pa31/tests/spec/pointer-metadata-intrinsic/string-length.rs": "1d5a882139acc0789a4320fe50293f69bece4088fc35afedd262c7a4e364b34b",
+    "pa31/tests/spec/pointer-metadata-intrinsic/tail-without-dereference.rs": "e44fad9c7b999286ee1eceaa8d95a25983cd71d86b139388d1bdc84c8f49be90",
+    "pa31/tests/spec/pointer-metadata-intrinsic/thin-unit.rs": "300b5d714c5b2d8c99773d7c1020416bb4f45fa20c736349075cee62ba8d9d01",
+    "pa31/tests/spec/pointer-metadata-intrinsic/unit-argument-fault.rs": "b05ebf8e5db373429a8629774e3418399c3fc68ab6392e0a894e79b6d7bf0852",
+    "pa31/tests/spec/pointer-metadata-intrinsic/unit-argument-once.rs": "746947ffaaf959ea7e9aa3afff9726c7d9ce7cf99ba044f054abd8277f913697",
+    "pa31/tests/spec/pointer-metadata-intrinsic/unrequested-intrinsics.rs": "ee7433ab890fa87c6ae380d0f98d55835a8637b6baf5766434b9f704d81d2f53"
+  },
+  "independent_evidence": [
+    {
+      "directory": "observed-v1",
+      "complete_sha256": "f439edb9bd81a13291ee2b7dbc739aa2cb4f31f59d92cdd388efc750bf847af7",
+      "binding_sha256": "7c2a4f0ba0d6637833422c4fb087c99c559d9a886aa17c4abfe8c755c8b88ddb",
+      "results_sha256": "3f8efe6f59c7d46189ac1951a7642c748325383d47a7a48370b61052725d52ef",
+      "commands": 16,
+      "infra": 0,
+      "disagreements": 12
+    },
+    {
+      "directory": "observed-v2",
+      "complete_sha256": "49ab04f71badd124f833a266b5842f86a9695ace2b22c1af22e5355082139afc",
+      "binding_sha256": "422660f412a9b77750bb53c660f2116c0bc5c00e16a9c31d9381fedf7c330879",
+      "results_sha256": "bac4ad85ed576a2faa23877532308aa4bd5eca450eeda8d1bb64df7e7ae679bc",
+      "commands": 16,
+      "infra": 0,
+      "disagreements": 14
+    },
+    {
+      "directory": "observed-v3",
+      "complete_sha256": "6ad50be657b6a2b95a6cc177932811ad74fb5d61582005c8c5d236ac26720c7c",
+      "binding_sha256": "bbf2fa2ebc508ebc74c060c18edbf5a8dc8537fa47114285a0377deb00caa98d",
+      "results_sha256": "a6163ab032f726e54aad4ec282b50460e9888659e70e1ef2e8a12a041ba7da79",
+      "commands": 24,
+      "infra": 0,
+      "disagreements": 12
+    },
+    {
+      "directory": "edge-observed-v1",
+      "complete_sha256": "0611704b76f543587962256ceb47f02bf93d1a78b0f90cb442129b33562f6caa",
+      "binding_sha256": "645fc15d41c9ca50c74e98a4d1f576261deb8d105ea1ded21db4c233f261b187",
+      "results_sha256": "04c73259a2a8198955ca5dfd5cd0a8dc7ceee0edaf507e934fcf9fd3e127109a",
+      "commands": 9,
+      "infra": 0,
+      "disagreements": 3
+    },
+    {
+      "directory": "edge-observed-v2",
+      "complete_sha256": "a98dc8c2136c223a88e6eaf9b5e6b646428f7c93f9c45ebdcc5e63c7ebcb117b",
+      "binding_sha256": "566c5954b42c86d9c0ea749ad0a5b07a549501572e3aa22ea781a6beb754fd7b",
+      "results_sha256": "c748e0797c207075b914858719649d7be78a25409adf03525218b8d1876d8e7f",
+      "commands": 12,
+      "infra": 0,
+      "disagreements": 6
+    },
+    {
+      "directory": "profile-observed-v1",
+      "complete_sha256": "ca5788ec25e7e6a8bedcccd39de2a57faa10781f01b85547183c56a00eb0cb2f",
+      "binding_sha256": "2f73e4667e471fac2ff3e7149f2934714837e8b791c94faaab1f5596650999d4",
+      "results_sha256": "60c2c4115a2d649731dcbc3d335ce6837c96b6a729a2c7c4219bf115ddc8c2be",
+      "commands": 7,
+      "infra": 0,
+      "disagreements": 1
+    }
+  ],
+  "native_observations": {
+    "thin-unit": "7\n",
+    "string-length": "6\n",
+    "slice-length": "3\n",
+    "tail-without-dereference": "3\n",
+    "unit-argument-once": "7 1\n",
+    "foreign-thin": "7\n",
+    "ordinary-name": "91\n"
+  },
+  "negative_observations": {
+    "mutable-intrinsic-input": "E0308 both editions",
+    "unrequested-intrinsics": "E0658 both editions",
+    "unit-argument-fault": "E0080 both editions"
+  },
+  "dynamic": "genuine NonNull<VTable>/PhantomData DynMetadata +actual DispatchFromDyn declaration/reference impl metadata accepts both editions; current candidate rejects actual unsupported dispatch_from_dyn language role at its exact source attribute, BEFORE standalone extraction. Runtime dynamic branch remains unqualified.",
+  "warning_scope": "Observed unused_features/unused_variables streams and every incorrect earlier setup/prediction retained; no warning parity claim for those existing lint gaps",
+  "pending": [
+    "first compiler/consumer source gate",
+    "actual candidate linked native outputs using one integrator CLI",
+    "dynamic standalone value extraction remains required; no fake fields/vtable words",
+    "foreign/imported intrinsic transport and indirect invocation remain closed",
+    "source DispatchFromDyn role/receiver implementation support required by the unchanged dynamic opponent; not a layout permission"
+  ],
+  "supported_profile_correction": "Initial Rust-positive Destruct without its upstream deny-explicit-impl/dyn-incompatible attrs remains archived with actual candidate rejection. Current provider uses genuine pinned attrs; changed shared prefix +one explicitly authored CLI companion independently requalified, no old full matrix repeated.",
+  "native_execution_companion": {
+    "source": "pa31/tests/spec/pointer-metadata-intrinsic/execute-combined.rs",
+    "sha256": "6e77158760bfbd568f86a8c16c8e1f1de3f55fde83ac42de9d54e67d2f879848",
+    "observer": "pa31/tests/spec/pointer-metadata-intrinsic/combined-observer.c",
+    "observer_sha256": "5743df4ecd0c7319f1483eb3cf59a12ac75d20d671431f92c5c0ef9b7045fc10",
+    "stdout": "7 6 3 3 7 91 1\n",
+    "binding_sha256": "2f73e4667e471fac2ff3e7149f2934714837e8b791c94faaab1f5596650999d4"
+  },
+  "candidate_evidence": {
+    "source": "9728bad8b",
+    "retained_five_receipt_sha256": "8bc7d5dd95a5f6ad5ad357b899b65f866c3ab021a60acd5dd4683cfd1ddd24b1",
+    "affected_one_receipt_sha256": "aad8d02d7776c37da160ba96c2a88978d0e456a6945123abc45d69b25aeef2d0",
+    "handoff_sha256": "c41d24335a5211c2eacb93155cf77058b0e5b2574868f6bddc9d63b7e64b78a6",
+    "dynamic_current_boundary": "file 0: 2787: unsupported source language item (dispatch_from_dyn); standalone extraction remains required"
+  }
+}

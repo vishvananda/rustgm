@@ -119,6 +119,9 @@ impl<S: Sources> Engine<'_, S> {
         }
         self.calls[index].notified = true;
         if let Some(parent) = self.calls[index].visit.eager {
+            if self.derive_outer(parent) {
+                return self.derive_completed(parent);
+            }
             let call = &mut self.calls[parent];
             let file = call.file;
             let offset = call.offset;

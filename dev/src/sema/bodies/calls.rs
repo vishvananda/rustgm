@@ -10,6 +10,7 @@ use crate::{
 
 #[derive(Default)]
 pub(super) struct CallTypes {
+    pub try_plans: Vec<super::try_control::OpenPlan>,
     pub iteration: Option<Box<super::iteration::Pending>>,
     pub formatting: Option<Box<super::formatting_values::Pending>>,
     pub closure_expectations: Hints,
@@ -81,6 +82,7 @@ impl CallTypes {
         self.universal_regions.clone()
     }
     pub fn clear(&mut self) {
+        self.try_plans.clear();
         self.iteration = None;
         self.formatting = None;
         self.closure_expectations = Hints::default();

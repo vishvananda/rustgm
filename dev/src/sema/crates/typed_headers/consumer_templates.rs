@@ -11,7 +11,7 @@ use crate::{
 
 #[path = "declared_headers.rs"]
 mod declarations;
-#[path = "declared_methods.rs"]
+#[path = "requested_methods.rs"]
 mod methods;
 #[path = "admitted_borrows.rs"]
 mod originals;

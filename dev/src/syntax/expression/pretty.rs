@@ -302,6 +302,7 @@ impl<'a> Writer<'a> {
                         && matches!(
                             node.kind,
                             Kind::Block { .. }
+                                | Kind::TryBlock { .. }
                                 | Kind::If { .. }
                                 | Kind::Match { .. }
                                 | Kind::Loop { .. }
@@ -330,6 +331,8 @@ impl<'a> Writer<'a> {
             | Kind::DeferredLiteral(_)
             | Kind::CrateRoot(_)
             | Kind::Group(_)
+            | Kind::TryBlock { .. }
+            | Kind::ConstClosure { .. }
             | Kind::Tuple(_)
             | Kind::Array(_)
             | Kind::Repeat { .. }

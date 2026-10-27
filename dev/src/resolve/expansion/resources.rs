@@ -137,6 +137,7 @@ impl<S: Sources> Engine<'_, S> {
             context: Some(crate::expand::marks::SyntaxContextId::ROOT),
             introduction: crate::expand::marks::ExpansionId(0),
             joint: None,
+            kind: crate::expand::stream::OriginKind::Copied,
         }];
         let generated = destination
             .install_include(target, source, &origins)

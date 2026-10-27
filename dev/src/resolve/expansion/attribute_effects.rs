@@ -8,6 +8,7 @@ use crate::resolve::lint_policy::{
 pub(crate) struct Effects {
     pub removals: Removals,
     pub policy: Option<Producer>,
+    pub(super) derives: Option<Box<super::derive_lists::Transactions>>,
     pub(super) visibilities: Option<Box<super::unnamed_visibility::Causes>>,
 }
 impl Report {
@@ -59,6 +60,7 @@ impl<S: Sources> Engine<'_, S> {
                 removals: Removals::default(),
                 policy: Some(producer),
                 visibilities: None,
+                derives: None,
             }));
         }
         let producer = self
@@ -126,6 +128,18 @@ impl<S: Sources> Engine<'_, S> {
         }
         let site = self.lint_site(index)?;
         let tail = self.lint_frame(frame, site.owner)?;
+        if let Some(producer) = self
+            .attribute_effects
+            .as_deref_mut()
+            .and_then(|effects| effects.policy.as_mut())
+        {
+            producer.call(site, tail)?;
+        }
+        Ok(())
+    }
+    pub(super) fn lint_derive_call(&mut self, index: usize, parent: usize) -> Result<(), Error> {
+        let tail = self.lint_call_tail(parent)?;
+        let site = self.lint_site(index)?;
         if let Some(producer) = self
             .attribute_effects
             .as_deref_mut()

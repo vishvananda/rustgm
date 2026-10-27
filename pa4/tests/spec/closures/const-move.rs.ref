@@ -1,0 +1,7 @@
+node 0 12 17 binding false false "value" -
+node 1 12 17 parameter 0 -
+node 2 19 24 name "value"
+node 3 6 24 closure true false [1] - 2
+node 4 0 24 const-closure 3
+root 4
+eof 25

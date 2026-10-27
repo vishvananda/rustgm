@@ -22,13 +22,24 @@ versions, issue numbers and reasons. Duplicate levels/arguments, malformed
 versions and non-identifier feature names reject. Cached include templates are
 provenance; only installed active syntax contributes library annotations.
 
-The first functional profile is local ordinary functions with bodies, modules,
-and their named/group/glob imports. Generic and const functions, nominal/trait
-owners and nominal type reachability remain explicit unsupported boundaries.
-Const/default-body stability, implied/renamed features, macro allowances and
-external dependency availability also remain unsupported. Metadata export
-rejects library policy rather than silently omitting it. These boundaries must
-be extended to build the original upstream libraries.
+The initial ordinary-function/module profile is extended by the source Location
+consumer below. The same owner pass now validates actual local generic, const,
+nominal, trait, impl and scoped macro declaration annotations. Regular and const
+API policies remain separate entries in the same table. Const annotations require
+staged_api, a real const function/trait/trait-impl target, and valid nonconflicting
+arguments. Immediate associated members inherit an unstable const parent policy;
+a const function may inherit its unstable regular policy as implicitly safe for
+stable const exposure. A selected const impl checks its policy against the actual
+trait identity. Stable or implicitly indirect const bodies check each actual
+callee's API policy independently of semantic const-call, unsafe, body and trait
+obligations. Same-crate API naming needs no foreign unstable-feature permission.
+
+The source Location checkpoint still closes dependency availability and all
+v0/v1/v2 stability publication. Explicit default-body, allow_const_fn_unstable,
+const_stable_indirect and implied/renamed policies remain unsupported. The semantic exposure correction below checks hidden-public nominal types in
+normalized public interfaces. This remains a local policy consumer, not a
+publishable original-core artifact. Foreign availability and broader effective
+visibility of opaque promises and generic defaults remain required PA31 work.
 
 Module instances retain separate effective policies even when they share a
 parsed source file. Outer and loaded inner annotations identify the same actual
@@ -55,7 +66,10 @@ reexport target does not annotate its import; a truly private type in a public
 signature is accepted with capped lints. Eight isolating followups all matched:
 publicly declared types reached through signatures need their own stability,
 and marked import/group/glob cases distinguish import from target ownership.
-The current candidate explicitly defers the five nominal families.
+The original candidate's five nominal limitations remain recorded in that
+historical contract. The semantic exposure correction now accepts the four
+independently valid forms and rejects the independently invalid unannotated
+public type exposed through a signature.
 
 Original owner results SHA-256:
 `1adcbd583fd96369ab4c1ae8443f7ee4efbcc68071757b4ce14a07fc42f9821a`.
@@ -127,3 +141,61 @@ Checks receipt SHA-256:
 `4014df9e1dba4885b939db417c65631e0812e8bb898cfd2f684ea59aee2e0b8f`.
 These are focused candidate results; broad release/native/text qualification is
 still required for integration and public publication.
+
+## Source Location const-policy extension
+
+The actual selected Location source, including its original regular/const policy
+and macro allowance attributes, passes source checking, lowering and a native C
+observer returning `31 7`. See the [source assertion milestone](source-assert-implementation.md#source-location-derive-consumer)
+for exact source/LowIR hashes and the remaining caller-tracking/panic requirements.
+The cold Inventory grows 80→88 bytes and embedded Library 120→128. One optional
+24-byte ConstPolicies owner holds direct declaration IDs only when needed; the
+Policy/Level sizes remain 48/24. No-const and ordinary no-library controls pass.
+Both policy axes share the existing parent-first scope walk and bounded work/
+storage charges. No Node, Body, Context, Package or Report field was added.
+
+## Normalized public-interface correction
+
+The regular and const declaration checks still run at the resolver boundary.
+After semantic declarations and alias normalization complete, one temporary
+interface visitor checks actual canonical type and declaration identities. Both
+phases use the same resolved public-binding/module traversal, so public aliases
+retain their real targets. Private nominal declarations do not acquire a missing
+stability error just because a public function names them. Public nominals
+reached through a signature do require their own policy. Unrelated types in a
+private module and types mentioned only in function bodies do not become APIs.
+
+The semantic pass shares one visited set across all interfaces. It follows
+canonical signatures, explicit predicates, complete arguments and public fields;
+it does not reconstruct source paths, expand function bodies, grant a trait
+proof or publish metadata. The design charges existing cold inventory storage, including owned policy
+strings, before temporary allocation. Root review found that the qualified
+predecessor invoked this charge twice consecutively; root's single-charge
+correction passes six combined private controls in 210.82 seconds. Work and queue/index
+growth are prepaid; failed attempts leave no retained completion/cache state.
+Ordinary packages without a library inventory return without a walk or allocation.
+
+Source `fa7c1ba982febb2e6e7ebb2469afed330cea1fc7` passed the two new private
+semantic/cost groups and the existing ordinary-allocation and policy-scaling
+controls. Formatting, global architecture and strict private Clippy passed in
+the same 238.75-second bounded run. Production and combined frontend qualification
+remain integration checks. The prior architecture-only filename failure remains
+retained; no independent Rust observations were repeated or fixtures rewritten.
+
+For 8/32/128 public functions sharing one normalized nested signature, the pass
+observed 15/39/135 distinct types and 9/33/129 declarations. The twice-billed predecessor's work charges were 415/1011/3947, with conservative
+logical storage charges 5204/13764/51332 bytes. These are retained historical
+observations, not the corrected single-charge measurements.
+Changing one unrelated hidden public type to 128 changed none of those work or
+visitation counts; the larger preexisting inventory capacity was still counted.
+These are bounded policy charges, not heap-allocation measurements. Actual records
+remain Task 8 bytes, Inventory 88, Package 256 and Body 448. No persistent field,
+profile, wire, role, callable or const authority changed.
+
+The corrected single-charge integration observes 404/976/3816 work steps and
+3810/9802/37098 logical storage bytes for 8/32/128 public functions. Distinct
+type/declaration counts and enclosing layouts are unchanged. These observations
+come from the actual combined test binary at
+`obj/qualification/fast/1793062088332575614`, not a rescaling of the predecessor.
+The six controls include the existing ordinary/policy controls and const/try
+source-gate opponents; production/frontend qualification is recorded separately.

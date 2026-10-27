@@ -31,6 +31,7 @@ fn environment<'a>(definition: &'a str, invocation: &'a str) -> Environment<'a> 
         context: SyntaxContextId::ROOT,
         introduction: ExpansionId(2),
         crate_id: 0,
+        edition: rustgm::support::edition::Edition::Rust2024,
     }
 }
 fn compile_rules(rules: &str, names: &mut Names) -> Result<Compiled, String> {
@@ -86,6 +87,7 @@ fn forwarded_fragments_follow_the_independently_checked_compatibility_matrix() -
             &call.matched,
             &call.input,
             &environment(&source, &source),
+            &report.names,
         )
         .map_err(|e| format!("{e:?}"))?;
         let splices = stream
@@ -129,6 +131,7 @@ fn forwarding_keeps_opacity_identity_and_precedence_through_nested_calls() -> Re
         &call.matched,
         &call.input,
         &environment(source, source),
+        &report.names,
     )
     .map_err(|e| format!("{e:?}"))?;
     let splices = stream
@@ -153,14 +156,20 @@ fn forwarding_keeps_opacity_identity_and_precedence_through_nested_calls() -> Re
         .map_err(|e| format!("{e:?}"))?;
     assert_eq!(matched.rule, 1);
     assert_eq!(matched.captures.parser_calls, 0);
-    let transcription =
-        transcribe::transcribe(&compiled.definition, &matched, &stream.source, &input)
-            .map_err(|e| format!("{e:?}"))?;
+    let transcription = transcribe::transcribe(
+        &compiled.definition,
+        &matched,
+        &stream.source,
+        &input,
+        &mut names,
+    )
+    .map_err(|e| format!("{e:?}"))?;
     let nested = Stream::transcribe(
         &transcription,
         &matched,
         &input,
         &environment(rules, &stream.source),
+        &names,
     )
     .map_err(|e| format!("{e:?}"))?;
     let inputs = nested

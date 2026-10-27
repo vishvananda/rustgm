@@ -104,11 +104,14 @@ pub(super) fn rebuild<F: Folder>(folder: &mut F, kind: Kind, depth: u16) -> Resu
     })
 }
 
-pub(super) struct Mutable<'a> {
+pub(super) struct Mutable<'a, F, const CHARGED: bool> {
     pub bound: &'a mut Bound,
     pub store: &'a mut Store,
+    pub charge: &'a F,
 }
-impl Folder for Mutable<'_> {
+impl<F: Fn(usize, usize) -> Result<(), &'static str>, const CHARGED: bool> Folder
+    for Mutable<'_, F, CHARGED>
+{
     type Error = &'static str;
     fn child(&mut self, ty: TypeId, depth: u16) -> Result<TypeId, Self::Error> {
         self.bound.child(self.store, ty, depth)
@@ -117,24 +120,31 @@ impl Folder for Mutable<'_> {
         self.bound.region(region, depth)
     }
     fn list(&mut self, list: ListId, depth: u16) -> Result<ListId, Self::Error> {
-        self.bound.list(self.store, list, depth)
+        self.bound
+            .list_observed::<CHARGED>(self.store, list, depth, self.charge)
     }
     fn arguments(&mut self, args: GenericArgs, depth: u16) -> Result<GenericArgs, Self::Error> {
-        self.bound.arguments(self.store, args, depth)
+        self.bound
+            .arguments_observed::<CHARGED>(self.store, args, depth, self.charge)
     }
     fn application(&mut self, id: ApplicationId, depth: u16) -> Result<ApplicationId, Self::Error> {
         let original = self
             .store
             .trait_application(id)
             .ok_or("invalid substituted projection trait")?;
-        let arguments = self
-            .bound
-            .arguments(self.store, original.arguments, depth)?;
-        self.store
-            .intern_trait_application(crate::types::traits::Application {
+        let arguments = self.bound.arguments_observed::<CHARGED>(
+            self.store,
+            original.arguments,
+            depth,
+            self.charge,
+        )?;
+        self.store.intern_trait_application_observed::<CHARGED>(
+            crate::types::traits::Application {
                 arguments,
                 ..original
-            })
+            },
+            self.charge,
+        )
     }
     fn constant(&mut self, id: ConstId) -> Result<ConstId, Self::Error> {
         self.bound.constant(self.store, id)

@@ -26,6 +26,24 @@ origin ranges; do not grow ordinary tokens or relex generated spelling. A parsed
 opaque fragment retains its identifier validity when converted to attribute
 paths. Keep that evidence scoped to the actual grafted ranges, rather than
 assigning the output stream or neighboring tokens the capture's edition.
+Copied origins retain exact byte ranges. Typed builtin vocabulary instead uses
+an explicit synthetic-origin kind in the same record, bound to the checked
+definition edition, generated interval, anchor and actual introduction/context.
+Validate that producer/replay once; never reinterpret nonmatching lengths as
+copies or infer a macro feature allowance from an edition. Missing provenance
+still fails. Source try gates follow their actual endpoint span-composition
+rule, sealing both keyword and construct contexts in the existing sparse gate
+owner; this does not change keyword-only rules for other syntax.
+Const closures keep a distinct wrapper around the ordinary closure node and
+reuse that same sparse expression owner. Its kind follows the actual wrapper;
+do not add a gate tag or const flag to every ordinary node/closure. Authenticate
+the keyword, child, spans and source contexts, then check const_closures at the
+actual const keyword. The pinned compiler keeps this gate as an error after cfg
+removal; it does not use try-block endpoint composition or warning behavior.
+Its expr_2021 matcher also excludes a top-level const closure, even with the
+feature enabled. Parsing and feature authority grant no const creation,
+call-trait or CTFE permission. Charge each sparse append before publication even
+when retained capacity lets a failed attempt retry without allocation.
 The [PA34 context foundation](docs/pa34-edition-context.md) records the independent
 mixed-edition controls and the remaining work before enabling Rust 2021 in the CLI.
 
@@ -544,6 +562,34 @@ The defining effect remains distinct from the reached caller's Const payment.
 Keep ordinary calls allocation-free and preserve the common operation and node
 fact layouts. Preflight bounded descriptor storage before publishing any rows.
 
+Source Try blocks and question-mark operations use one authenticated protocol
+plan per actual operation. Select real Try/FromResidual methods, associated
+Output/Residual/TryType and ControlFlow variants from their source declarations;
+implicit calls demand the same ordinary callable templates as written calls.
+Reuse lexical frames for nearest try/function/closure targets and normal cleanup,
+move and region proof. A retained plan ordinal belongs to its actual source body
+and current catalog. Grammar admission never grants imported protocol transport
+or unsupported typed heterogeneous inference.
+
+Caller tracking belongs to the completed source function header and its actual
+Rust ABI. Reuse sparse call-context and callable-input owners for sealed site
+data; the presence of metadata never establishes a completed callable-target
+proof. Canonical nominal constructors are known untracked through the existing
+constructor inventory and actual callable/result owner, not through missing
+function headers. Legacy imported headers and local source-client functions
+use their positively authenticated catalog/profile to establish the closed
+untracked ABI. Empty caller-site data keeps the current call-context storage
+budget and cannot borrow a missing local source-header producer. Actual new
+site data retains its source-owner prepayment. Unknown policy remains an error.
+Keep the source signature unchanged and distinguish tracked native signatures
+explicitly.
+Runtime forwarding and CTFE frames consume the same prepared static Location
+values. Store immutable snapshot site data once as a typed footer after legacy
+prepared operands, with indexed queries rather than per-call scans. Count its
+actual alignment, every allocated legacy operand's width and each enclosing
+owner's growth. Function-pointer/dynamic adapters and policy transport require
+their own real consumers before admission.
+
 Derive a function's defining context from its actual completed declaration and
 direct associated owner. Runtime, const function and const-trait default are
 distinct; a default's conditional defining legality never makes its body an
@@ -708,6 +754,14 @@ Pair a host script with its exact compilation unit and package snapshot, retaini
 distinct compile and execution profiles. Validate every supported profile setting
 and reject unsupported ones. A script that catches a rejected compiler probe must
 still fail the outer task; probe failure is not evidence of language incapability.
+Retain actual package lint levels, priority order and check-cfg expectations in
+host compilation. An explicit per-package lint cap is a separate authenticated
+input, included in receipts and artifact keys; do not infer it from source kind
+or drop manifest policy. The manifest's `public-dependency` Cargo feature controls
+retained target graph edges; it grants no host Rust or compiler-query capability.
+Unsupported host edge modifiers, tools, workspace inheritance and other unstable
+manifest policy remain explicit errors. Parse the manifest once per
+package and reuse its environment and lint arguments across host units.
 Planning receipts are not compilation results. The
 [planning adapter](docs/crate-planning.md) supports frozen local path inputs and
 authenticated crates.io archive snapshots. Preserve original package bytes and
@@ -771,6 +825,33 @@ execution availability. Retain known unused declarations without manufacturing
 an implementation. Wrong-kind or unavailable invocations fail before matcher,
 capture and expansion work. New declaration-only roles must not grow ordinary
 bootstrap tables or grant permission through an alternate attribute consumer.
+
+Compile each builtin's actual source declaration grammar before replacing its
+expander with the authenticated registry kind. Source form continues to govern
+textual versus item visibility, hygiene and publication. Typed lookup traverses
+existing textual scopes for the expected kind, preserving the unfiltered cache
+and unresolved imports. Charge skipped candidates and warm failures; a filtered
+miss never becomes an unfiltered absence. Share the actual kind classifier
+across scoped and legacy publication without adding another cache or owner.
+
+Metavariable concatenation belongs to typed template grammar and transcription.
+Its macro_metavar_expr_concat feature is independent of macro_metavar_expr.
+Consume actual captured identifiers/literals and preserve generated-name hygiene
+through the ordinary token/name producers; never reparse a rendered template or
+skip unknown operations inside a later cfg branch. Declaration admission alone
+does not establish invocation, generated-name lookup or execution.
+
+Keep concatenation operands in the existing flat macro node/edge arenas and
+select captured values through the actual repetition binding path. Reuse the
+canonical name arena for generated identifiers; do not attach an owned String
+to every token or transcription piece. Read forwarded literals from their
+retained typed payload and original spelling, preserving fragment restrictions
+without rerunning lexical or expression grammar. Generated spelling requires a
+synthetic source origin with the actual definition context and edition, even
+when an operand was captured at the call site. Bound operand, emitted-byte and
+repetition work; feature checks grant syntax authority only. The independently
+qualified [protocol sources](pa31/tests/spec/metavariable-concat/README.md)
+separate definition admission, actual invocation and generated-name resolution.
 
 Keep actual expansion ancestry separate from a token's syntax context and its
 physical source/edition provenance. A captured name does not determine the
@@ -2984,6 +3065,18 @@ in its requesting proof scope and excludes it when that alternative is discarded
 Captured substitution preserves mixed declaration order, local binders and nested
 callable scopes. Ordinary equality environments keep compact entries and reuse
 their existing substitution storage.
+
+A completed associated-result closure builds one exact equality index for that
+same closure and shares the existing Normalizer across its consequence roots.
+Result-bound selection still requires the actual parent proof; missing,
+conflicting, cyclic or quantified equations grant no guessed replacement.
+Observed normalization prepays canonical Store growth as well as its scratch
+fold: nodes, child/lifetime lists, mixed arguments and trait applications,
+including resume and binder completion. Lookup-only equality probes never insert
+a canonical node. Use the shared interning/folding kernels with a transient
+borrowed payer and retain failed payments cumulatively; add no duplicate DAG
+walk or persistent accounting owner. Ordinary interning keeps its existing
+canonicalization, probe and validation order.
 
 When otherwise matching quantified alternatives differ only in unused or reordered
 local slots, compare their complete clauses modulo local numbering. Preserve all

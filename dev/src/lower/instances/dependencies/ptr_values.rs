@@ -1,0 +1,48 @@
+//! Only the actual source intrinsic Call omits an ordinary callable-body demand.
+use crate::{
+    body::ir::{Body, Rvalue, Value},
+    resolve::expansion::Report,
+    sema::{model::Declarations, values::Reader},
+    types::{TypeId, instance::Instance},
+};
+pub(super) fn require(
+    report: &Report,
+    facts: &Declarations,
+    body: &Body,
+    value: &Value,
+    ty: TypeId,
+) -> Result<(), &'static str> {
+    let selected = Reader::new(facts)
+        .source_ptr_metadata(Instance::new(&facts.types, ty)?, body.source)?
+        .ok_or("source ptr_metadata lost its dependency descriptor")?;
+    facts
+        .source_bindings
+        .as_deref()
+        .ok_or("source ptr_metadata catalog disappeared")?
+        .require_ptr_metadata_report(report, facts, &selected)?;
+    let Rvalue::Call {
+        signature,
+        arguments,
+        ..
+    } = value.kind
+    else {
+        return Err("source ptr_metadata dependency requires its actual Call");
+    };
+    let [input] = body
+        .arguments
+        .get(arguments.start as usize..arguments.end as usize)
+        .ok_or("source ptr_metadata argument range disappeared")?
+    else {
+        return Err("source ptr_metadata requires one direct pointer argument");
+    };
+    if signature != selected.signature()
+        || value.ty != selected.output()
+        || body
+            .values
+            .get(input.0 as usize)
+            .is_none_or(|v| Some(v.ty) != selected.input(facts).ok())
+    {
+        return Err("source ptr_metadata dependency differs from its complete direct Call");
+    }
+    Ok(())
+}

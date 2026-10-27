@@ -14,9 +14,11 @@ pub(super) fn power(kind: Kind) -> u8 {
             ..
         } => 150,
         Kind::Unary { .. } => 130,
-        Kind::Return(_) | Kind::Break { .. } | Kind::Closure { .. } | Kind::LetCondition { .. } => {
-            0
-        }
+        Kind::Return(_)
+        | Kind::Break { .. }
+        | Kind::Closure { .. }
+        | Kind::ConstClosure { .. }
+        | Kind::LetCondition { .. } => 0,
         _ => 160,
     }
 }
@@ -32,6 +34,10 @@ impl<'a> Writer<'a> {
             Kind::Literal(_) | Kind::DeferredLiteral(_) => self.enqueue(&[view.span(node.span)]),
             Kind::CrateRoot(_) => self.text("$crate"),
             Kind::Group(value) => self.enqueue(&[W("("), view.expr().n(value), W(")")]),
+            Kind::TryBlock { body, .. } => self.enqueue(&[W("try "), view.expr().n(body)]),
+            Kind::ConstClosure { closure, .. } => {
+                self.enqueue(&[W("const "), view.expr().n(closure)])
+            }
             Kind::Tuple(list) => self.enqueue(&[
                 W("("),
                 view.expr().sequence(list, ", "),

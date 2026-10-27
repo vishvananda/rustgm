@@ -1,0 +1,633 @@
+{
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    "2021",
+    "2024"
+  ],
+  "flags": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "--emit=metadata",
+    "--error-format=json"
+  ],
+  "environment": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": [
+    {
+      "source": "pa31/tests/spec/source-try-blocks/enabled-value.rs",
+      "sha256": "7804d4e685a5eab2a7032f72f56a0a81e1a29a8ff99fe60ea6a535a412950db8",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypotheses": {
+        "rustc_status_hypothesis": 0,
+        "rustc_error_codes_hypothesis": [],
+        "rustc_warning_codes_hypothesis": []
+      },
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/enabled-unit.rs",
+      "sha256": "b3a84d2f79fff306465ebe5c68ed5c3f2a0ab0d7b846ef59ce2811446a70c9b0",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypotheses": {
+        "rustc_status_hypothesis": 0,
+        "rustc_error_codes_hypothesis": [],
+        "rustc_warning_codes_hypothesis": []
+      },
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/missing-gate.rs",
+      "sha256": "9308a438b2d21bb23fd4dd60fe9cc7fbaf643d3f434703141060c3376e5dfb5c",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0658"
+      ],
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypotheses": {
+        "rustc_status_hypothesis": 1,
+        "rustc_error_codes_hypothesis": [
+          "E0658"
+        ],
+        "rustc_warning_codes_hypothesis": []
+      },
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/disabled-owner.rs",
+      "sha256": "321a8a1797ff98be2603518adf698b3e2bdf28f7c4e43ab6d8ab000806415a46",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [
+        "unstable_syntax_pre_expansion"
+      ],
+      "initial_hypotheses": {
+        "rustc_status_hypothesis": 0,
+        "rustc_error_codes_hypothesis": [],
+        "rustc_warning_codes_hypothesis": [
+          "unstable_syntax_pre_expansion"
+        ]
+      },
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [
+            "unstable_syntax_pre_expansion"
+          ],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [
+            "unstable_syntax_pre_expansion"
+          ],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/disabled-enabled.rs",
+      "sha256": "320076f4b3871b7514aedca783548f5f5aca5ed24f45f61cab4a71ec7312c350",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypotheses": {
+        "rustc_status_hypothesis": 0,
+        "rustc_error_codes_hypothesis": [],
+        "rustc_warning_codes_hypothesis": []
+      },
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/disabled-malformed.rs",
+      "sha256": "6a7db6fb3a4320a344e879b746d4494c83542ceb8b4a4cd54e0e78291e6280de",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypotheses": {
+        "rustc_status_hypothesis": 1,
+        "rustc_error_codes_hypothesis": null,
+        "rustc_warning_codes_hypothesis": []
+      },
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/requires-braces.rs",
+      "sha256": "f3d0d37729669fb01d541dbb1d81a76c2cfd817a81fe4e962ba89dc353bb232f",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypotheses": {
+        "rustc_status_hypothesis": 1,
+        "rustc_error_codes_hypothesis": null,
+        "rustc_warning_codes_hypothesis": []
+      },
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/literal-allowance.rs",
+      "sha256": "a03fb8c516f1d489b888296636335f1c26da4ea929f0cc758329732846f97ef8",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypotheses": {
+        "rustc_status_hypothesis": 0,
+        "rustc_error_codes_hypothesis": [],
+        "rustc_warning_codes_hypothesis": []
+      },
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/forwarded-token.rs",
+      "sha256": "91bd2486648b9749e149d92842fda0fe4974f533e39727dd80128437cbefe9f7",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypotheses": {
+        "rustc_status_hypothesis": 1,
+        "rustc_error_codes_hypothesis": [
+          "E0658"
+        ],
+        "rustc_warning_codes_hypothesis": []
+      },
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": true,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": true,
+            "error_codes": true,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/ancestor-allowance.rs",
+      "sha256": "13cffac9a1c996d6c4bad6da4af59143f82b87a5dec43a1db59342314c3691bb",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0658"
+      ],
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypotheses": {
+        "rustc_status_hypothesis": 1,
+        "rustc_error_codes_hypothesis": [
+          "E0658"
+        ],
+        "rustc_warning_codes_hypothesis": []
+      },
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/homogeneous-residual.rs",
+      "sha256": "a6d2c907af8ad75c6f84728440900233975021e3b08bc5d14bea5facbfe3cbd7",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0308"
+      ],
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypotheses": {
+        "rustc_status_hypothesis": 1,
+        "rustc_error_codes_hypothesis": [
+          "E0308"
+        ],
+        "rustc_warning_codes_hypothesis": []
+      },
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0308"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0308"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/function-conversion.rs",
+      "sha256": "01dcc30c4a7316b7edb1b50a1b99d57536db42d0a9490aed68479d1ff6fd5824",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypotheses": {
+        "rustc_status_hypothesis": 0,
+        "rustc_error_codes_hypothesis": [],
+        "rustc_warning_codes_hypothesis": []
+      },
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/nested-targets.rs",
+      "sha256": "65f3e30a0b3d6b9e40c64f17a56f15126022e04fc3dd1918ce1c28b4afe048a1",
+      "rustc_status_hypothesis": 0,
+      "rustc_error_codes_hypothesis": [],
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypotheses": {
+        "rustc_status_hypothesis": 0,
+        "rustc_error_codes_hypothesis": [],
+        "rustc_warning_codes_hypothesis": []
+      },
+      "observed": {
+        "2021": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 0,
+          "error_codes": [],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/closure-boundary.rs",
+      "sha256": "27032410a84c8e2a1cba8abfdd567690cb1fd41e147091bdd9ed5cf3bd4cb162",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0277"
+      ],
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypotheses": {
+        "rustc_status_hypothesis": 1,
+        "rustc_error_codes_hypothesis": [
+          "E0277"
+        ],
+        "rustc_warning_codes_hypothesis": []
+      },
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0277"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0277"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/unlabelled-break.rs",
+      "sha256": "bfaec326449df64390ae9b0f46285b05ccb58dd4ddbe8b2c5d2ce575c30b4929",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0268"
+      ],
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypotheses": {
+        "rustc_status_hypothesis": 1,
+        "rustc_error_codes_hypothesis": null,
+        "rustc_warning_codes_hypothesis": [
+          "unreachable_code"
+        ]
+      },
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0268"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": true
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0268"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": true
+          }
+        }
+      }
+    },
+    {
+      "source": "pa31/tests/spec/source-try-blocks/typed-form-gate.rs",
+      "sha256": "55491a146e5e77b1515b4df8244a1e79fdfcd14297ca6771ef86dd71050e6595",
+      "rustc_status_hypothesis": 1,
+      "rustc_error_codes_hypothesis": [
+        "E0658"
+      ],
+      "rustc_warning_codes_hypothesis": [],
+      "initial_hypotheses": {
+        "rustc_status_hypothesis": 1,
+        "rustc_error_codes_hypothesis": [
+          "E0658"
+        ],
+        "rustc_warning_codes_hypothesis": []
+      },
+      "observed": {
+        "2021": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        },
+        "2024": {
+          "status": 1,
+          "error_codes": [
+            "E0658"
+          ],
+          "warning_codes": [],
+          "disagreements": {
+            "status": false,
+            "error_codes": false,
+            "warning_codes": false
+          }
+        }
+      }
+    }
+  ],
+  "pending": [
+    "runtime and actual no_core source protocol consumer",
+    "typed heterogeneous syntax remains separate unsupported assignment requirement"
+  ],
+  "original_core": {
+    "source": "library/core/src/ops/index_range.rs",
+    "offset": 5482,
+    "actual": "try { accum }"
+  },
+  "note": "Independent hypotheses frozen before observation. Null error-code hypothesis means status-only prediction; retain all actual diagnostics. No candidate behavior or native claims.",
+  "initial_contract_sha256": "8efc2880d36fa7ddd23e00b54438cfc469492a1b9a90654bfafa6ec283c54e3d",
+  "observed_binding_sha256": "e098d2c569d7007ca828fe6b3a0c43cbae0dfab4f935f9f8003cb2fbe3858400"
+}

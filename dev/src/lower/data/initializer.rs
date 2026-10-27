@@ -99,7 +99,7 @@ impl Context<'_> {
                 )
             }
             View::Function(id) => {
-                let symbol = self.demand(id)?;
+                let symbol = self.demand_reified(id)?;
                 self.initialize_pointer(init, offset, Target::Function(symbol), 0)
             }
             View::Reference(id) => self.initialize_reference(

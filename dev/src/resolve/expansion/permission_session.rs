@@ -97,6 +97,31 @@ impl MacroAllowanceSession<'_> {
     ) -> Result<bool, Error> {
         self.allows(Location { file, span }, feature)
     }
+    pub(crate) fn allows_try_block(
+        &mut self,
+        file: super::FileId,
+        ordinal: u32,
+        expression: crate::syntax::gate_sites::Expression,
+        feature: &FeatureName<'_>,
+    ) -> Result<bool, Error> {
+        crate::resolve::gate_provenance::checked_expression(
+            &self.report.package,
+            file,
+            ordinal,
+            expression,
+        )?;
+        self.query().allows_composed(
+            Location {
+                file,
+                span: expression.keyword,
+            },
+            Location {
+                file,
+                span: expression.construct,
+            },
+            feature,
+        )
+    }
     /// Inspect only the actual token's outer unsafe-code lint metadata.
     /// This does not authorize an unsafe operation or enable a crate feature.
     /// # Errors
@@ -111,6 +136,74 @@ pub(super) struct Query<'view, 'memo> {
     pub memo: &'memo mut Option<Box<Memo>>,
 }
 impl Query<'_, '_> {
+    /// The parser combines the introducer and real block spans. A captured
+    /// endpoint can use its actual metavar-output frame, as in pinned
+    /// `Span::prepare_to_combine`; a forwarded whole expression gains no frame.
+    pub(super) fn allows_composed(
+        &mut self,
+        first: Location,
+        last: Location,
+        feature: &FeatureName<'_>,
+    ) -> Result<bool, Error> {
+        let (a, _, _) = self.context(first)?;
+        let (b, _, _) = self.context(last)?;
+        let selected = if a == b || b.is_none() {
+            first
+        } else if a.is_none() || self.metavar_endpoint(first, last, b)? {
+            last
+        } else {
+            first
+        };
+        self.allows(selected, feature)
+    }
+    fn metavar_endpoint(
+        &self,
+        first: Location,
+        last: Location,
+        context: Option<ExpansionId>,
+    ) -> Result<bool, Error> {
+        let Some(context) = context else {
+            return Ok(false);
+        };
+        let frame = self.view().frame(context)?;
+        let package = self.view.package;
+        let error = |message| Error::at(first.file, first.span.start, message);
+        let owner = package
+            .macro_context()
+            .map_err(error)?
+            .ok_or_else(|| error("missing composed-span provider"))?;
+        let unit = package
+            .units
+            .get(first.file.0 as usize)
+            .ok_or_else(|| error("missing composed-span source"))?;
+        owner
+            .contracts()
+            .charge(
+                2 + 2 * unit.origins.len().checked_ilog2().unwrap_or(0) as usize,
+                0,
+            )
+            .map_err(error)?;
+        let Some(captured) = package.origin(first.file, first.span.start) else {
+            return Ok(false);
+        };
+        let Some(literal) = package.origin(last.file, last.span.start) else {
+            return Ok(false);
+        };
+        let invocation = self
+            .view
+            .invocations
+            .get(context.0 as usize - 1)
+            .ok_or_else(|| error("composed-span frame disappeared"))?;
+        Ok(first.file == last.file
+            && frame.call.file == first.file
+            && captured.introduction.0 == 0
+            && first.span.end <= captured.generated.end
+            && literal.introduction == context
+            && invocation.generated.start <= first.span.start
+            && first.span.end <= invocation.generated.end
+            && invocation.generated.start <= last.span.start
+            && last.span.end <= invocation.generated.end)
+    }
     fn view(&self) -> FrameView<'_> {
         FrameView {
             package: self.view.package,

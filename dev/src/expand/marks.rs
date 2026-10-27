@@ -122,6 +122,24 @@ impl Marks {
         self.node(context)
             .map(|node| node.map(|node| node.key.expansion))
     }
+    /// Exact compiler-generated literal mark, without allocating or rebasing.
+    pub(crate) fn is_opaque(
+        &self,
+        context: SyntaxContextId,
+        original: SyntaxContextId,
+        expansion: ExpansionId,
+    ) -> bool {
+        self.node(context).is_ok_and(|node| {
+            node.is_some_and(|node| {
+                node.key
+                    == Key {
+                        parent: original,
+                        expansion,
+                        transparency: Transparency::Opaque,
+                    }
+            })
+        })
+    }
     /// Remove one local-normalized mark, preserving that token's own parent.
     /// # Errors
     /// Rejects a context outside the arena.

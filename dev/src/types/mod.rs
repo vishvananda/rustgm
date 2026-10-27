@@ -6,6 +6,7 @@ pub mod auto_traits;
 mod binder_shift;
 pub mod bound_uses;
 pub mod callable;
+mod charged_intern;
 pub mod closure;
 pub mod copy;
 pub mod destruction;
@@ -481,7 +482,17 @@ impl Store {
     ///
     /// # Errors
     /// Rejects invalid children, non-function item signatures and identity overflow.
-    pub fn intern(&mut self, mut kind: Kind) -> Result<TypeId, &'static str> {
+    pub fn intern(&mut self, kind: Kind) -> Result<TypeId, &'static str> {
+        self.intern_observed::<false>(kind, &|_, _| Ok(()))
+    }
+    pub(crate) fn intern_observed<const CHARGED: bool>(
+        &mut self,
+        mut kind: Kind,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<TypeId, &'static str> {
+        if CHARGED {
+            charge(1, 0)?;
+        }
         if let Kind::ArrayTerm { element, length } = kind {
             if self.const_type(length) != Some(TypeId::primitive(Primitive::Usize)) {
                 return Err("array length term must have type usize");
@@ -559,6 +570,10 @@ impl Store {
             return Err("invalid canonical type child or signature");
         }
         let id = TypeId(u32::try_from(self.kinds.len()).map_err(|_| "too many canonical types")?);
+        if CHARGED {
+            let growth = self.node_interning_growth();
+            charge(growth.work, growth.bytes)?;
+        }
         let properties = self.properties(kind)?;
         self.has_nominals |= matches!(kind, Kind::Adt(..));
         self.kinds.push(kind);

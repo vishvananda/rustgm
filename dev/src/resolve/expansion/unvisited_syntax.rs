@@ -6,13 +6,15 @@ use super::{
 use crate::{
     resolve::{
         bindings::FeatureName,
-        default_items,
         package::{Package, RetentionNote, Warning},
         unit::FileId,
     },
     support::{diagnostics::WarningCode, hash::HashSet},
     syntax::gate_sites::{Declarations, Kind},
 };
+#[path = "unvisited_syntax/sites.rs"]
+mod sites;
+use sites::Site;
 const MESSAGE: &str = "specialization is experimental";
 const ALIAS_MESSAGE: &str = "trait aliases are experimental";
 #[cfg(test)]
@@ -45,7 +47,7 @@ fn failure(entries: &Declarations, error: Error) -> Failure {
 }
 fn diagnostic(
     file: FileId,
-    declaration: &crate::syntax::gate_sites::Declaration,
+    span: crate::syntax::token_tree::Span,
     entries: &Declarations,
     message: &str,
     project: &impl Fn(Error, &Declarations) -> Result<Error, Error>,
@@ -58,15 +60,15 @@ fn diagnostic(
                 // Prepay coexistence with the exact terminal Vec<Warning> conversion.
                 + 4 * (size_of::<(NodeKey, Warning)>() + size_of::<Warning>()),
         )
-        .map_err(|message| failure(entries, Error::at(file, declaration.span.start, message)))?;
-    let diagnostic = project(Error::at(file, declaration.span.start, message), entries)
+        .map_err(|message| failure(entries, Error::at(file, span.start, message)))?;
+    let diagnostic = project(Error::at(file, span.start, message), entries)
         .map_err(|error| failure(entries, error))?;
     let (steps, bytes) = diagnostic.warning_payload().ok_or_else(|| {
         failure(
             entries,
             Error::at(
                 file,
-                declaration.span.start,
+                span.start,
                 "default warning acquired a nested carrier",
             ),
         )
@@ -76,99 +78,69 @@ fn diagnostic(
             steps,
             bytes
                 + crate::support::retained::new_map::<
-                    (FileId, u32, Option<std::num::NonZeroU32>),
+                    (
+                        FileId,
+                        u32,
+                        Option<(std::num::NonZeroU32, std::num::NonZeroU32)>,
+                    ),
                     (),
                 >(1),
         )
-        .map_err(|message| failure(entries, Error::at(file, declaration.span.start, message)))?;
+        .map_err(|message| failure(entries, Error::at(file, span.start, message)))?;
     Ok(diagnostic)
 }
 fn collect(
     package: &Package,
-    mut allows: impl FnMut(
-        FileId,
-        crate::syntax::token_tree::Span,
-        &FeatureName<'_>,
-    ) -> Result<bool, Error>,
+    mut allows: impl FnMut(FileId, Site<'_>, &FeatureName<'_>) -> Result<bool, Error>,
     project: impl Fn(Error, &Declarations) -> Result<Error, Error>,
 ) -> Result<Vec<(NodeKey, Warning)>, Failure> {
     let mut warnings = Vec::new();
     let mut origins = None;
-    for (file, unit) in package.units.iter().enumerate() {
+    for (index, unit) in package.units.iter().enumerate() {
         let Some(entries) = &unit.configured.ast.gate_sites else {
             continue;
         };
-        let full = FeatureName::new("specialization")
-            .map_err(|message| Failure::Origin(Error::unlocated(message)))?;
-        let minimal = FeatureName::new("min_specialization")
-            .map_err(|message| Failure::Origin(Error::unlocated(message)))?;
-
         let file = FileId(
-            u32::try_from(file)
-                .map_err(|_| Failure::Origin(Error::unlocated("default warning file overflow")))?,
+            u32::try_from(index)
+                .map_err(|_| Failure::Origin(Error::unlocated("feature warning file overflow")))?,
         );
-        for declaration in entries.entries() {
-            // Pinned extern-types gating happens after configuration. Unlike
-            // defaultness and aliases, inactive Foreign syntax emits no warning.
-            if matches!(declaration.kind, Kind::ForeignType | Kind::FinalFunction) {
+        let items = entries.entries().iter().map(|site| Ok(Site::Item(site)));
+        let expressions = entries
+            .expressions()
+            .iter()
+            .enumerate()
+            .map(|(index, site)| {
+                u32::try_from(index)
+                    .map(|index| Site::Expression(index, site))
+                    .map_err(|_| {
+                        Failure::Origin(Error::unlocated("expression-gate ordinal overflow"))
+                    })
+            });
+        for site in items.chain(expressions) {
+            let site = site?;
+            let Some(message) = sites::prepare(package, file, unit, entries, site, &mut allows)?
+            else {
                 continue;
-            }
-            let key = NodeKey {
-                file,
-                node: declaration.node,
             };
-            default_items::checked(package, key, declaration)
-                .map_err(|error| failure(entries, error))?;
-            if unit.configured.active[declaration.node.get() as usize] {
-                continue;
-            }
-            let message = if declaration.kind == Kind::TraitAlias {
-                let feature = FeatureName::new("trait_alias")
-                    .map_err(|message| Failure::Origin(Error::unlocated(message)))?;
-                if package.requested_alias_feature(false).map_err(|message| {
-                    failure(entries, Error::at(file, declaration.span.start, message))
-                })? || allows(file, declaration.span, &feature)
-                    .map_err(|error| failure(entries, error))?
-                {
-                    continue;
-                }
-                ALIAS_MESSAGE
-            } else {
-                if package
-                    .requested_defaultness(declaration.kind == Kind::Function)
-                    .map_err(|message| {
-                        failure(entries, Error::at(file, declaration.span.start, message))
-                    })?
-                    || allows(file, declaration.span, &full)
-                        .map_err(|error| failure(entries, error))?
-                    || declaration.kind == Kind::Function
-                        && allows(file, declaration.span, &minimal)
-                            .map_err(|error| failure(entries, error))?
-                {
-                    continue;
-                }
-                MESSAGE
-            };
-            let diagnostic = diagnostic(file, declaration, entries, message, &project)?;
+            let diagnostic = diagnostic(file, site.span(), entries, message, &project)?;
             let origin = diagnostic.file.source().ok_or_else(|| {
                 failure(
                     entries,
-                    Error::at(
-                        file,
-                        declaration.span.start,
-                        "default warning lost its source",
-                    ),
+                    Error::at(file, site.span().start, "feature warning lost its source"),
                 )
             })?;
             if !origins.get_or_insert_with(HashSet::default).insert((
                 origin,
                 diagnostic.span.start,
-                declaration.context_key(),
+                site.context(),
             )) {
                 continue;
             }
             warnings.push((
-                key,
+                NodeKey {
+                    file,
+                    node: site.node(),
+                },
                 Warning {
                     code: WarningCode::UnstableSyntaxPreExpansion,
                     diagnostic,
@@ -196,7 +168,12 @@ impl Report {
         let mut session = self.macro_allowances();
         collect(
             &self.package,
-            |file, span, feature| session.allows_at(file, span, feature),
+            |file, site, feature| match site {
+                Site::Item(site) => session.allows_at(file, site.span, feature),
+                Site::Expression(ordinal, site) => {
+                    session.allows_try_block(file, ordinal, *site, feature)
+                }
+            },
             |error, entries| {
                 self.diagnostic_charged(error, |steps, bytes| entries.charge(steps, bytes))
             },
@@ -226,7 +203,26 @@ impl<S: Sources> Engine<'_, S> {
         };
         let warnings = collect(
             &self.loader.package,
-            |file, span, feature| query.allows(super::Location { file, span }, feature),
+            |file, site, feature| match site {
+                Site::Item(site) => query.allows(
+                    super::Location {
+                        file,
+                        span: site.span,
+                    },
+                    feature,
+                ),
+                Site::Expression(_, site) => query.allows_composed(
+                    super::Location {
+                        file,
+                        span: site.keyword,
+                    },
+                    super::Location {
+                        file,
+                        span: site.construct,
+                    },
+                    feature,
+                ),
+            },
             |error, entries| {
                 self.diagnostic_charged(error, |steps, bytes| entries.charge(steps, bytes))
             },

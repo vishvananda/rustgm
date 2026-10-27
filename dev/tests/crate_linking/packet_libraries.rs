@@ -127,6 +127,47 @@ fn build(folder: &Path) -> Result {
     )?;
     Ok(())
 }
+
+#[test]
+fn cli_required_trait_methods_accept_fresh_local_implementations() -> Result {
+    let folder = output()?.join("required-methods");
+    std::fs::create_dir_all(&folder)?;
+    build(&folder)?;
+    let source = folder.join("required.rs");
+    std::fs::write(
+        &source,
+        "#![feature(no_core)]#![no_core]extern crate base;\n\
+         struct Local;\n\
+         impl base::Clone for Local {fn clone(&self)->Self{Local}}\n\
+         impl base::Copy for Local {}\n\
+         #[unsafe(no_mangle)]pub extern \"C\" fn required_clone()->u8{\n\
+         let value=Local;let _=base::Clone::clone(&value);7}\n",
+    )?;
+    let lowir = folder.join("required-client.lowir");
+    artifacts::checked(
+        "required-client",
+        &folder,
+        command()
+            .args([
+                "--emit-lowir",
+                "--crate-type=lib",
+                "--crate-name",
+                "required_client",
+                "--crate-disambiguator",
+                "required_methods",
+                "--source-client",
+                PROVIDER,
+                "--extern",
+            ])
+            .arg(format!("base={}", folder.join("provider.rgm").display()))
+            .arg("-o")
+            .arg(&lowir)
+            .arg(&source),
+    )?;
+    let text = std::fs::read_to_string(lowir)?;
+    assert!(text.contains("required_clone") && text.contains("call"));
+    Ok(())
+}
 #[test]
 #[ignore = "requires configured pinned object backend and host C compiler; fixture already independently Rust-qualified"]
 fn cli_source_artifact_to_fresh_native_consumer_returns_seven() -> Result {

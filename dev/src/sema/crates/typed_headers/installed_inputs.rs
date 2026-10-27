@@ -1,5 +1,8 @@
 //! Borrow installed inputs from the same fixed private scope allocation.
-use super::*;
+use super::{
+    Arc, DeclarationRef, Error, Input, OnceCell, Owner, Prepared, Rc, RecipeView, ReservationWork,
+    Scope, error, originals, s,
+};
 use crate::{
     resolve::body_origin::{Catalog, ImportedDeclarationId},
     sema::generics::Generics,

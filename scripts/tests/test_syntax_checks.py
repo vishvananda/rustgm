@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 import unittest
+import tempfile
 from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -46,6 +47,23 @@ class IndependentSyntaxTests(unittest.TestCase):
             check_classification(case)
         case["rustc"]["reason"] = "types are checked later"
         check_classification(case)
+
+    def test_bad_last_classification_rejects_before_compiling_valid_earlier_cases(self):
+        cases = [{"path": "valid.rs", "exit_status": 0,
+                  "rustc": {"kind": "expression", "status": 0}},
+                 {"path": "bad.rs", "exit_status": 0,
+                  "rustc": {"kind": "expression", "status": 1}}]
+        with tempfile.TemporaryDirectory() as temporary, \
+                mock.patch("check_syntax.ROOT", Path(temporary)), \
+                mock.patch("check_syntax.load_cases", return_value=({"mode": "--emit-ast"}, cases)), \
+                mock.patch("check_syntax.subprocess.check_output", return_value="rustc 1.98.0 pinned"), \
+                mock.patch("check_syntax.subprocess.run") as compiler, \
+                mock.patch("check_syntax.run_case") as candidate:
+            with self.assertRaisesRegex(ValueError, 'explicit reason'):
+                check("pa4", Path("unused"), 1)
+            compiler.assert_not_called()
+            candidate.assert_not_called()
+            self.assertFalse((Path(temporary) / 'obj').exists())
 
     def test_expression_wrapper_preserves_bytes_and_explicit_context(self):
         data = b'"\xc3\xa9"\r\n'

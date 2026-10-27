@@ -11,6 +11,7 @@ import subprocess
 
 from build_script_output import MAX_BYTES, parse
 import host_profile
+import manifest_lints
 from host_process import CommandLog, digest
 
 MAX_FILES = 100_000
@@ -31,8 +32,12 @@ class Job:
     # Explicit already built host libraries. Target artifacts never enter here.
     dependencies: tuple[tuple[str, Path, str], ...] = ()
     profile_json: str | None = None
+    lints: dict | None = None
+    lint_cap: str | None = None
 
     def validate(self):
+        manifest_lints.arguments({} if self.lints is None else self.lints)
+        manifest_lints.cap_arguments(self.lint_cap)
         if self.profile_json is not None:
             host_profile.decode(self.profile_json)
         if not self.package.is_absolute() or not self.source.is_absolute():
@@ -112,6 +117,8 @@ def execute(job, folder):
         'compiler': str(job.compiler), 'compiler_sha256': job.compiler_sha256,
         'inputs': job.inputs, 'features': list(job.features),
         'profile': None if job.profile_json is None else json.loads(job.profile_json),
+        'lints': job.lints,
+        'lint_cap': job.lint_cap,
         'dependencies': [(alias, str(path), sha) for alias, path, sha in job.dependencies],
         'commands': commands, 'state': 'running',
     }
@@ -128,6 +135,8 @@ def execute(job, folder):
                    'build_script_build', job.source, '-o', binary]
         if job.profile_json is not None:
             command += host_profile.arguments(job.profile_json)
+        command += manifest_lints.arguments({} if job.lints is None else job.lints)
+        command += manifest_lints.cap_arguments(job.lint_cap)
         for feature in sorted(job.features):
             command += ['--cfg', 'feature=' + json.dumps(feature, ensure_ascii=False)]
         for alias, path, _ in sorted(job.dependencies):
