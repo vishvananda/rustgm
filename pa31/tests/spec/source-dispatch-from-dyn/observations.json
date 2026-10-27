@@ -1,5 +1,5 @@
 {
-  "state": "Independent metadata observations only; compiler/LowIR/native checkpoint not yet qualified",
+  "state": "38 independent metadata observations retained; actual focused compiler/body-to-LowIR checkpoint qualified separately; native and full original Formatter pending",
   "batches": [
     {
       "folder": "obj/parallel/pa31/source-dispatch-from-dyn-v1/observed-v1",
@@ -376,6 +376,14 @@
       "binding_sha256": "c6723ab33adc9ffd8b8de6517e747776682b7e8aeec588ff2a7896f0d5d66acd",
       "results_sha256": "df74780f0308c0038c37dcfdcd77d1874fb7620d8fa910e5a7b063a44dd65dda",
       "commands": 2,
+      "infrastructure_failures": 0,
+      "prediction_disagreements": []
+    },
+    {
+      "folder": "obj/parallel/pa31/source-dispatch-from-dyn-v1/observed-premises-v1",
+      "binding_sha256": "b75aa9d350d19e70d17317f0c202cfb2345e3e677ce48f74504175baeba24f2e",
+      "results_sha256": "8213e048cb61b957a9bb3418fc45c151bec2fa0ce5bd9ab32b42dc5d671dc61a",
+      "commands": 4,
       "infrastructure_failures": 0,
       "prediction_disagreements": []
     }

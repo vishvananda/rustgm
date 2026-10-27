@@ -5,7 +5,10 @@ They do not replace the retained complete Formatter/Options/Error/Write input ow
 by the source panic consumer. In particular, the small `Formatter` in the first
 call reducer is not a claim that all original formatting declarations execute.
 
-The compiler checkpoint is UNQUALIFIED. It checks actual role/member ownership,
+The [focused compiler checkpoint](../../../../docs/source-dispatch-from-dyn-checkpoint.md)
+passes six source controls and ten lexer controls, including actual body-to-LowIR
+reference-call lowering. Native execution and the full original Formatter remain
+pending. It checks actual role/member ownership,
 written impl requirements and receiver compatibility through ordinary selection.
 Compatibility is modulo regions, as in the pinned compiler; it does not grant a
 method body, instance, vtable layout or artifact transport permission. The existing
@@ -26,6 +29,8 @@ missing producer state, query mutation, repeated failed growth, mapped and quant
 clauses. The method-count/inherited-depth matrix includes unused type formals,
 captured trait lifetimes and nested late-bound function arguments. It asserts the
 actual completed parent Arc is shared, rather than accepting a large work budget
-as evidence against repeated copying. Sizes and work remain unknown until measured.
+as evidence against repeated copying. Actual sizes and all18 matrix observations are recorded in that checkpoint.
+The parameter-table payload adds8 bytes per retained allocation, including ordinary
+tables; Environment remains64 bytes. No allocator-count measurement is claimed.
 
 No reference generation, PA activation or full upstream build is implied.
