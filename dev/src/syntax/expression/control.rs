@@ -7,6 +7,13 @@ use super::{
 use super::fragment::FragmentKind as F;
 
 impl Parser<'_, '_> {
+    pub(super) fn const_closure_after(&mut self) -> Result<bool, LexError> {
+        Ok(self.cursor.peek_word(1)? == Word::Move
+            || self
+                .cursor
+                .peek(1)?
+                .is_some_and(|token| matches!(token.kind, TokenKind::Punctuation(P::Or | P::OrOr))))
+    }
     pub(super) fn const_expression(&mut self) -> Result<NodeId, LexError> {
         let token = self.required()?;
         if !self.cursor.at_word(Word::Move)?

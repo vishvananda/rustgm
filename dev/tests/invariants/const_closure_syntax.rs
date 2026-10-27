@@ -79,6 +79,7 @@ fn grammar_keeps_the_ordinary_closure_and_const_blocks_distinct() -> Result {
         let ast = expression::parse(source).map_err(|error| error.message)?;
         assert!(ast.gate_sites.is_none(), "{source}");
     }
+    expression::parse("{const || 7;}").map_err(|error| error.message)?;
     for source in ["const 7", "const move {7}", "const |value| -> u8 value"] {
         assert!(expression::parse(source).is_err(), "{source}");
     }
