@@ -1,0 +1,49 @@
+{
+  "edition": "2024",
+  "toolchain": "1.98.0",
+  "target": "x86_64-unknown-linux-gnu",
+  "status": "declared before followup independent observation or candidate test execution",
+  "cases": [
+    {
+      "name": "shared-noncopy-output",
+      "path": "pa26/tests/spec/index-capture/shared-noncopy-output.rs",
+      "sha256": "9aede5f4a9280aa2a4610eca620b11f4c2c8d8b44e424915ee3ecaf23c045182",
+      "accepted": true,
+      "native": true,
+      "exit_status": 0
+    },
+    {
+      "name": "precise-field",
+      "path": "pa26/tests/spec/index-capture/precise-field.rs",
+      "sha256": "565f855134a8e8996dd06d4e3e80ce316dc2f9a55035f769fe6fd54e4d002466",
+      "accepted": true,
+      "native": true,
+      "exit_status": 0
+    },
+    {
+      "name": "scaling-1",
+      "path": "pa26/tests/spec/index-capture/scaling-1.rs",
+      "sha256": "7ae0fc174340210e38b245c63c5d68f3e1e454bffce682a5e3c94266d6c0a2b0",
+      "accepted": true,
+      "native": false,
+      "exit_status": 0
+    },
+    {
+      "name": "scaling-8",
+      "path": "pa26/tests/spec/index-capture/scaling-8.rs",
+      "sha256": "26b9c0eab3f89d4095ca0d40b0725f78a3e85725cbb17729832089af32956c9c",
+      "accepted": true,
+      "native": false,
+      "exit_status": 0
+    },
+    {
+      "name": "scaling-32",
+      "path": "pa26/tests/spec/index-capture/scaling-32.rs",
+      "sha256": "7b0d5b28da9fe4bb5d31775ef1dc844ab662fd4a9730b527c3bedc269251accd",
+      "accepted": true,
+      "native": false,
+      "exit_status": 0
+    }
+  ],
+  "scaling": "Repeated index sites share the existing two-path receiver graph and one selected capture; sparse per-site adjusted access rows grow linearly."
+}
