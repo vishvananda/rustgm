@@ -2,7 +2,7 @@
 mod active_members;
 mod comparisons;
 mod debug_format;
-mod member_selection;
+mod derivation_contexts;
 use super::{choice::Charge, delegation::Delegated, derive_types};
 use crate::{
     expand::{
@@ -24,7 +24,7 @@ use crate::{
         token_tree::{Span, error},
     },
 };
-pub(crate) use member_selection::{MEMBERS, MemberContext};
+pub(crate) use derivation_contexts::{MEMBERS, MemberContext};
 
 pub(crate) struct Site<'a> {
     pub file: crate::support::source::FileId,
