@@ -187,7 +187,7 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
     assert!(report.resolution.intrinsics.get(Intrinsic::Abort).is_none());
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2056);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
-    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 1424);
+    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 2048);
     assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 176);
     assert_eq!(size_of::<Declaration>(), 20);
     assert_eq!(size_of::<Option<Declaration>>(), 20);
@@ -205,7 +205,16 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
     )?;
     let interface = crate::module_packets::exported(&source)?;
     let (rows, attributes, modules) = crate::module_packets::raw(&interface)?;
-    for (role, _) in ROLES {
+    for role in ROLES.into_iter().map(|(role, _)| role).chain([
+        LangItem::DispatchFromDyn,
+        LangItem::Shl,
+        LangItem::BitOr,
+        LangItem::ResultOk,
+        LangItem::ResultErr,
+        LangItem::Option,
+        LangItem::OptionSome,
+        LangItem::OptionNone,
+    ]) {
         let mut changed = rows.clone();
         changed
             .roles

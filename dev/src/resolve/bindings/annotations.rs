@@ -335,3 +335,7 @@ fn expected_language(item: DiagnosticItem) -> Option<LangItem> {
         | DiagnosticItem::Option => None,
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/enum_claims.rs"]
+mod tests;
