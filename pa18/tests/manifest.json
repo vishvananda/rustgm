@@ -7475,7 +7475,11 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix"
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/forwarded-consts/braced-arithmetic.rs",
@@ -7488,7 +7492,11 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix"
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/forwarded-consts/char-literal.rs",
@@ -7501,7 +7509,11 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix"
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/forwarded-consts/forwarded-twice.rs",
@@ -7514,7 +7526,11 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix"
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/forwarded-consts/integer-repetition.rs",
@@ -7527,7 +7543,11 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix"
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/forwarded-consts/literal-in-type-context.rs",
@@ -7579,7 +7599,11 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix"
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/forwarded-consts/opaque-block-fragment.rs",
@@ -7592,7 +7616,11 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix"
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/forwarded-consts/opaque-expression-literal.rs",
@@ -7605,7 +7633,11 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix"
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/forwarded-consts/opaque-expression-signed.rs",
@@ -7618,7 +7650,11 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix"
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/forwarded-consts/opaque-expression-type-context.rs",
@@ -7670,7 +7706,11 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix"
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/forwarded-consts/signed-literal.rs",
@@ -7683,7 +7723,11 @@
         "status": 0,
         "default_lints": true
       },
-      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix"
+      "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     },
     {
       "path": "tests/spec/forwarded-consts/unbraced-arithmetic.rs",
