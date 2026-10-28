@@ -13,6 +13,52 @@ use crate::{
     },
 };
 impl<S: Sources> Engine<'_, S> {
+    pub(super) fn formatting_requires_inputs(
+        &self,
+        index: usize,
+        root: NodeId,
+    ) -> Result<bool, Error> {
+        let call = &self.calls[index];
+        let unit = self.loader.package.unit(call.file);
+        let Kind::Expansion {
+            children,
+            tail: None,
+        } = unit.configured.ast.node(root).kind
+        else {
+            return Err(call.diagnostic("missing actual formatting input list"));
+        };
+        let inputs = unit.configured.ast.list(children);
+        let [first] = inputs else {
+            return Ok(true);
+        };
+        let Kind::Literal(literal) = unit.configured.ast.node(*first).kind else {
+            return Ok(true);
+        };
+        let Value::String(text) = unit
+            .literal(literal)
+            .map_err(|e| Error::at(call.file, e.offset, e.message))?
+        else {
+            return Ok(true);
+        };
+        self.loader
+            .package
+            .source_core()
+            .ok_or_else(|| call.diagnostic("missing formatting source provider"))?
+            .macros
+            .charge(text.len().saturating_add(1), 0)
+            .map_err(|message| call.diagnostic(message))?;
+        // This route discriminator does not parse arguments or resolve names. The
+        // selected producer validates the complete literal exactly as before.
+        let text = std::str::from_utf8(&text)
+            .map_err(|_| call.diagnostic("formatting template is not UTF-8"))?;
+        let mut chars = text.chars();
+        while let Some(character) = chars.next() {
+            if character == '{' && chars.next() != Some('{') {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
     pub(super) fn finish_format_inputs(
         &mut self,
         index: usize,
@@ -30,8 +76,8 @@ impl<S: Sources> Engine<'_, S> {
             .ast
             .node(target)
             .span;
-        let (draft, first) = self.prepare_format_inputs(index, definition, arguments)?;
-        let adopted = self.prepare_format_adoption(file, arguments, &draft, original)?;
+        let (draft, first, values) = self.prepare_format_inputs(index, definition, arguments)?;
+        let adopted = self.prepare_format_adoption(file, &values, &draft, original)?;
         let call_site =
             crate::resolve::unit::contexts::callee(&self.loader.package.units, file, target)?;
         let syntax = self
@@ -61,13 +107,15 @@ impl<S: Sources> Engine<'_, S> {
             joint: None,
             kind: OriginKind::Synthetic(self.definitions[definition].edition),
         }];
+        let captured = self.format_capture_origins(file, first, &draft, context, origins[0])?;
+        let origins = captured.as_deref().unwrap_or(&origins);
         let unit = &mut self.loader.package.units[file.0 as usize];
         let generated = unit
             .install_expansion(
                 target,
                 &draft.expansion.source,
                 draft.expansion.syntax,
-                &origins,
+                origins,
             )
             .map_err(|e| Error::at(file, e.offset, e.message))?;
         // Preflight above authenticates every destination against this append. No
@@ -84,7 +132,7 @@ impl<S: Sources> Engine<'_, S> {
         index: usize,
         definition: usize,
         arguments: NodeId,
-    ) -> Result<(builtin::format_arguments::Draft, NodeId), Error> {
+    ) -> Result<(builtin::format_arguments::Draft, NodeId, Vec<NodeId>), Error> {
         let role = self.source_eager_definition(definition)?;
         if !role.formatting() {
             return Err(Error::unlocated(
@@ -108,7 +156,6 @@ impl<S: Sources> Engine<'_, S> {
             return Err(call.diagnostic("missing actual formatting input list"));
         };
         let inputs = unit.configured.ast.list(children);
-        let count = inputs.len().saturating_sub(1);
         let Some(first) = inputs.first().copied() else {
             return Err(call.diagnostic("missing formatting template"));
         };
@@ -130,6 +177,17 @@ impl<S: Sources> Engine<'_, S> {
                 .charge(steps, bytes)
                 .map_err(|message| error(original.start, message))
         };
+        let actual =
+            super::argument_bindings::collect(unit, file, arguments, call.capture, &payer)?;
+        let input_names: Vec<_> = actual.names.iter().map(|name| name.as_deref()).collect();
+        let allow_capture = super::argument_bindings::direct_literal(
+            unit,
+            call.capture,
+            &self.captures,
+            &payer,
+            |id| package.units.get(id.0 as usize),
+        )
+        .map_err(|e| Error::at(file, e.offset, e.message))?;
         let mut names = [crate::support::names::NameId(0); 4];
         for (slot, constructor) in [
             FormatConstructor::Arguments,
@@ -150,36 +208,29 @@ impl<S: Sources> Engine<'_, S> {
         let draft = builtin::format_arguments::build(
             std::str::from_utf8(&text)
                 .map_err(|_| Error::at(file, original.start, "formatting template is not UTF-8"))?,
-            count,
+            &input_names,
+            allow_capture,
+            builtin::format_arguments::Environment {
+                symbols: &mut package.names,
+                grammar,
+                config: self.config,
+            },
             role == builtin::Builtin::FormatArgsNl,
             names,
-            grammar,
-            self.config,
             &payer,
         )
         .map_err(|e| Error::at(file, e.offset, e.message))?;
-        Ok((draft, first))
+        Ok((draft, first, actual.values))
     }
     fn prepare_format_adoption(
         &self,
         file: super::FileId,
-        arguments: NodeId,
+        values: &[NodeId],
         draft: &builtin::format_arguments::Draft,
         original: Span,
     ) -> Result<Vec<(NodeId, NodeId)>, Error> {
         let unit = self.loader.package.unit(file);
-        let Kind::Expansion {
-            children,
-            tail: None,
-        } = unit.configured.ast.node(arguments).kind
-        else {
-            return Err(Error::at(
-                file,
-                original.start,
-                "missing actual formatting input list",
-            ));
-        };
-        let count = unit.configured.ast.list(children).len().saturating_sub(1);
+        let count = values.len();
         let source = self
             .loader
             .package
@@ -192,8 +243,9 @@ impl<S: Sources> Engine<'_, S> {
                 count.saturating_mul(size_of::<(NodeId, NodeId)>()),
             )
             .map_err(|message| Error::at(file, original.start, message))?;
-        let (input_base, sites) = draft_input_sites(draft, count)
-            .map_err(|message| Error::at(file, original.start, message))?;
+        let (input_base, sites) =
+            draft_input_sites(draft, count.saturating_add(draft.captured.len()))
+                .map_err(|message| Error::at(file, original.start, message))?;
         if draft.inputs.len() != count {
             return Err(Error::at(
                 file,
@@ -201,18 +253,34 @@ impl<S: Sources> Engine<'_, S> {
                 "formatting input cardinality changed",
             ));
         }
+        for (ordinal, &captured) in draft.captured.iter().enumerate() {
+            source
+                .macros
+                .charge(3, 0)
+                .map_err(|message| Error::at(file, original.start, message))?;
+            let site = sites.get(count + ordinal).copied().ok_or_else(|| {
+                Error::at(file, original.start, "formatting capture site changed")
+            })?;
+            if !matches!(draft.expansion.syntax.ast.node(site).kind, Kind::Group(name) if name == captured)
+                || !matches!(
+                    draft.expansion.syntax.ast.node(captured).kind,
+                    Kind::Name(_, Some(_))
+                )
+            {
+                return Err(Error::at(
+                    file,
+                    original.start,
+                    "formatting capture occurrence changed",
+                ));
+            }
+        }
         let mut adopted = Vec::with_capacity(count);
         let base = u32::try_from(unit.configured.ast.nodes.len())
             .map_err(|_| Error::at(file, original.start, "formatting node overflow"))?;
         for (expected, &(node, ordinal)) in draft.inputs.iter().enumerate() {
-            let input = *unit
-                .configured
-                .ast
-                .list(children)
-                .get(ordinal + 1)
-                .ok_or_else(|| {
-                    Error::at(file, original.start, "formatting input ordinal changed")
-                })?;
+            let input = *values.get(ordinal).ok_or_else(|| {
+                Error::at(file, original.start, "formatting input ordinal changed")
+            })?;
             if ordinal != expected
                 || sites.get(ordinal) != Some(&node)
                 || unit.configured.active.get(input.get() as usize) != Some(&true)

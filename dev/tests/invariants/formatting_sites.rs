@@ -15,6 +15,103 @@ fn expanded_arguments(arguments: &str) -> Result<Report> {
         "formatting_sites",
     )?)
 }
+#[test]
+fn capture_origins_keep_literal_context_and_reject_current_image_and_foreign_forgery() -> Result {
+    use crate::expand::stream::OriginKind;
+    let expression = "{let value=1u32;format_args!(\"{value}\")}";
+    let report = expanded_arguments(expression)?;
+    let root = output_root(&report)?;
+    report.formatting_value(root)?;
+    let unit = report.package.unit(root.file);
+    let index = unit
+        .origins
+        .iter()
+        .position(|origin| matches!(origin.kind, OriginKind::Captured(_)))
+        .ok_or("missing actual captured identifier origin")?;
+    let origin = unit.origins[index];
+    assert_eq!(
+        origin.context,
+        Some(crate::expand::marks::SyntaxContextId::ROOT)
+    );
+    assert_eq!(
+        unit.spelling(origin.generated)
+            .map_err(|error| error.message)?,
+        "value"
+    );
+    assert_eq!(
+        crate::resolve::unit::contexts::at(
+            &report.package.units,
+            root.file,
+            origin.generated.start
+        )?,
+        crate::expand::marks::SyntaxContextId::ROOT
+    );
+    assert!(crate::resolve::unit::editions::parent(&unit.origins, origin.generated).is_err());
+    let feature = crate::resolve::bindings::FeatureName::new("fmt_internals")?;
+    assert!(
+        !report
+            .macro_allowances()
+            .allows_at(root.file, origin.generated, &feature)?
+    );
+    let actual = crate::resolve::unit::editions::at(
+        crate::expand::stream::Location {
+            file: root.file,
+            span: origin.generated,
+        },
+        |id| report.package.units.get(id.0 as usize),
+    )
+    .map_err(|error| error.message)?;
+    for mutation in 0..5 {
+        let mut report = expanded_arguments(expression)?;
+        let root = output_root(&report)?;
+        let unit = &mut report.package.units[root.file.0 as usize];
+        let origin = &mut unit.origins[index];
+        match mutation {
+            0 => origin.introduction = crate::expand::marks::ExpansionId(0),
+            1 => origin.original.file = crate::resolve::unit::FileId(u32::MAX),
+            2 => origin.original.span.end = u32::MAX,
+            3 => {
+                origin.kind =
+                    OriginKind::Captured(if actual == crate::support::edition::Edition::Rust2021 {
+                        crate::support::edition::Edition::Rust2024
+                    } else {
+                        crate::support::edition::Edition::Rust2021
+                    });
+            }
+            _ => origin.kind = OriginKind::Synthetic(actual),
+        }
+        let span = origin.generated;
+        assert!(
+            crate::resolve::unit::editions::at(
+                crate::expand::stream::Location {
+                    file: root.file,
+                    span
+                },
+                |id| report.package.units.get(id.0 as usize)
+            )
+            .is_err(),
+            "mutation {mutation}"
+        );
+    }
+    let mut report = expanded_arguments(expression)?;
+    let root = output_root(&report)?;
+    let opaque = report
+        .package
+        .unit(root.file)
+        .origins
+        .iter()
+        .find(|origin| matches!(origin.kind, OriginKind::Synthetic(_)))
+        .and_then(|origin| origin.context)
+        .ok_or("missing actual constructor context")?;
+    let origin = &mut report.package.units[root.file.0 as usize].origins[index];
+    origin.context = Some(opaque);
+    let span = origin.generated;
+    assert!(
+        crate::resolve::unit::contexts::at(&report.package.units, root.file, span.start).is_err()
+    );
+    observe_capture_layouts();
+    Ok(())
+}
 fn output_root(report: &Report) -> Result<NodeKey> {
     for (file, unit) in report.package.units.iter().enumerate() {
         for (node, actual) in unit.configured.ast.nodes.iter().enumerate() {
@@ -299,4 +396,16 @@ fn lower_hex_and_option_pair_sites_keep_constant_root_authentication_and_owned_s
     *actual = name;
     assert!(report.formatting_value(NodeKey { node, ..root }).is_err());
     Ok(())
+}
+
+fn observe_capture_layouts() {
+    eprintln!(
+        "captured origins Origin={} Kind={} Stream={} Unit={} Package={} Report={}",
+        size_of::<crate::expand::stream::Origin>(),
+        size_of::<crate::expand::stream::OriginKind>(),
+        size_of::<crate::expand::stream::Stream>(),
+        size_of::<crate::resolve::unit::Unit>(),
+        size_of::<crate::resolve::package::Package>(),
+        size_of::<Report>()
+    );
 }

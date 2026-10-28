@@ -188,10 +188,15 @@ impl<S: Sources> Engine<'_, S> {
                     }
                 },
                 self.config,
-                matches!(
-                    self.definitions[definition].body,
-                    Body::Builtin(Builtin::Asm)
-                ),
+                match self.definitions[definition].body {
+                    Body::Builtin(Builtin::Asm) => {
+                        crate::syntax::expression::fragment::ArgumentsGrammar::Assembly
+                    }
+                    Body::Builtin(role) if role.formatting() => {
+                        crate::syntax::expression::fragment::ArgumentsGrammar::Formatting
+                    }
+                    _ => crate::syntax::expression::fragment::ArgumentsGrammar::Expressions,
+                },
             )
             .map_err(|e| Error::at(file, e.offset, e.message));
         let root = root.map_err(|e| self.eager_error(index, definition, e))?;
@@ -326,9 +331,7 @@ impl<S: Sources> Engine<'_, S> {
         );
         let formatting_inputs = matches!(self.definitions[definition].body,
             Body::Builtin(role) if role.formatting())
-            && matches!(unit.configured.ast.node(root).kind,
-                crate::syntax::ast::Kind::Expansion { children, tail: None }
-                if children.end.saturating_sub(children.start) > 1);
+            && self.formatting_requires_inputs(index, root)?;
         let (generated, include) = if assembly {
             let generated = self.finish_assembly(definition, file, visit.node, root, context)?;
             (generated, visit.include)

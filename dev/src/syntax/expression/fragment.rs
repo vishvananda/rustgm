@@ -370,6 +370,12 @@ pub fn parse_expansion_with_inputs<'s>(
     Ok(parser.ast)
 }
 
+#[derive(Clone, Copy)]
+pub(crate) enum ArgumentsGrammar {
+    Expressions,
+    Assembly,
+    Formatting,
+}
 /// Parse a builtin's comma-separated expression arguments once over classified tokens.
 /// The expansion-shaped root is an argument container, not a source-level expression.
 ///
@@ -380,11 +386,53 @@ pub fn parse_arguments<'s>(
     tokens: &'s [Token],
     inputs: &dyn crate::syntax::interpolation::Inputs,
 ) -> Result<Ast<'s>, LexError> {
+    arguments(source, tokens, inputs, false)
+}
+pub(crate) fn parse_format_arguments<'s>(
+    source: &'s str,
+    tokens: &'s [Token],
+    inputs: &dyn crate::syntax::interpolation::Inputs,
+) -> Result<Ast<'s>, LexError> {
+    arguments(source, tokens, inputs, true)
+}
+fn arguments<'s>(
+    source: &'s str,
+    tokens: &'s [Token],
+    inputs: &dyn crate::syntax::interpolation::Inputs,
+    formatting: bool,
+) -> Result<Ast<'s>, LexError> {
     let mut parser = Parser::with_cursor(Cursor::from_tokens(source, tokens), true);
     parser.inputs = inputs;
     parser.has_opaque = !inputs.is_empty();
     while parser.cursor.peek(0)?.is_some() {
-        let argument = parser.expr(0, NORMAL)?;
+        let named = formatting
+            && !parser.scratch.is_empty()
+            && parser.cursor.peek(0)?.is_some_and(|token| {
+                matches!(
+                    token.kind,
+                    super::TokenKind::Identifier | super::TokenKind::RawIdentifier
+                )
+            })
+            && parser
+                .cursor
+                .peek(1)?
+                .is_some_and(|token| token.kind == super::TokenKind::Punctuation(P::Equal));
+        let argument = if named {
+            let token = parser.required()?;
+            let left = parser.name_node(token)?;
+            parser.expect(P::Equal)?;
+            let right = parser.expr(0, NORMAL)?;
+            parser.node(
+                token.start,
+                Kind::Binary {
+                    op: P::Equal,
+                    left,
+                    right,
+                },
+            )?
+        } else {
+            parser.expr(0, NORMAL)?
+        };
         parser.scratch.push(argument);
         if !parser.eat(P::Comma)? && parser.cursor.peek(0)?.is_some() {
             return Err(parser.error("expected comma between builtin arguments")?);

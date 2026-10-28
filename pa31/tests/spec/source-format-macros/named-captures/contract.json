@@ -1,0 +1,153 @@
+{
+  "state": "predictions frozen before new observations",
+  "scope": "New ordinary std-backed named/capture semantics and hygiene; not actual RustGM source provider or formatter-runtime proof",
+  "tool": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+  "tool_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    2021,
+    2024
+  ],
+  "options": [
+    "-Awarnings"
+  ],
+  "primary": {
+    "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_builtin_macros/src/format.rs",
+    "sha256": "3cad2b16e6c83190cb747e2542adf09a26ab75c9e5c60301a4e60450db1fe900",
+    "parse_args": "50-157 top-level named grammar and direct literal eligibility",
+    "capture_lookup": "395-454 explicit name priority and literal-context capture"
+  },
+  "cases": [
+    {
+      "name": "evaluation-order",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/evaluation-order.rs",
+      "sha256": "8089b11759b8cacb53d193b5a4ab2543d7dcd4a1e226651466cb6f5cc2d5a0ba",
+      "metadata": 0,
+      "stdout": "e1;e2;2 3 2 1\n"
+    },
+    {
+      "name": "capture-hygiene",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/capture-hygiene.rs",
+      "sha256": "66c7d7661fbff0408579e0029482277b70394d06b830cb06eabb5fc3891b40c9",
+      "metadata": 0,
+      "stdout": "7 3 3 11\n"
+    },
+    {
+      "name": "capture-utf8",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/capture-utf8.rs",
+      "sha256": "8e5931cc7dd36f617e8d3bbdd9836abb2c71d77c55534b7221488e40a39ed3bb",
+      "metadata": 0,
+      "stdout": "7 8\n"
+    },
+    {
+      "name": "explicit-and-positional",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/explicit-and-positional.rs",
+      "sha256": "5369dc89129b791f13e9ab932661d518b35c2db564419400b5c8c5d63575338b",
+      "metadata": 0,
+      "stdout": "8 7 8\n"
+    },
+    {
+      "name": "expanded-explicit",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/expanded-explicit.rs",
+      "sha256": "5715700a85d04b0b19fe75b3c1e888f593cdae25fd39e39d1d1519e237f82d94",
+      "metadata": 0,
+      "stdout": "7\n"
+    },
+    {
+      "name": "assignment-inputs",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/assignment-inputs.rs",
+      "sha256": "1dffa88933898fa3888bcc523abb3447f546567e632abb529dceac122be88f5a",
+      "metadata": 0,
+      "stdout": "3 ()\n3\n"
+    },
+    {
+      "name": "borrow-escape",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/borrow-escape.rs",
+      "sha256": "fc01907a5c8d25c5e5c78a1de3a9a61fc4353f2c2a0541e9218f3a72cf2ce535",
+      "metadata": 1,
+      "stdout": null
+    },
+    {
+      "name": "block-escape",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/block-escape.rs",
+      "sha256": "2b5ca277861caf7050f47fadcf5adcbd23184af8cf8c843dd55f9890cd2c6cae",
+      "metadata": 1,
+      "stdout": null
+    },
+    {
+      "name": "unsafe-input",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/unsafe-input.rs",
+      "sha256": "d1bfa204e736d39f1faad05c2e7cad5420218dea6133163acf3736b46ecd154b",
+      "metadata": 1,
+      "stdout": null
+    },
+    {
+      "name": "duplicate-name",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/duplicate-name.rs",
+      "sha256": "6b1d1dbd0a301825dc466859704b2566dd3997636b87c549b9b51a195fcdbe63",
+      "metadata": 1,
+      "stdout": null
+    },
+    {
+      "name": "positional-after-named",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/positional-after-named.rs",
+      "sha256": "e90d9d07045481aece4ddbf25ad997234a34ef5196dde2067fcf8d3c3d0a920d",
+      "metadata": 1,
+      "stdout": null
+    },
+    {
+      "name": "unused-named",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/unused-named.rs",
+      "sha256": "12f7d5b19061325a6ba10eb357e5dfb8b4039aba2e97956b4c3619bd0fa55fa4",
+      "metadata": 1,
+      "stdout": null
+    },
+    {
+      "name": "unused-positional",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/unused-positional.rs",
+      "sha256": "f6e68511a7b075c407d3a6c4c1004421360b6923ec1b299881c6c63de4dcc942",
+      "metadata": 1,
+      "stdout": null
+    },
+    {
+      "name": "missing-capture",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/missing-capture.rs",
+      "sha256": "c24ec55dbe02e8838d43fe525f14b44b0788ab69f1703903f1321424add3526b",
+      "metadata": 1,
+      "stdout": null
+    },
+    {
+      "name": "expanded-capture",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/expanded-capture.rs",
+      "sha256": "211e69b057072a047738072d579b94446471ee11d112143c5b32c4d8f223bb5c",
+      "metadata": 1,
+      "stdout": null
+    },
+    {
+      "name": "grouped-capture",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/grouped-capture.rs",
+      "sha256": "0c3d6203c90990baabe1e5138b7aa24a80f6859f98e6103a36e56c26bf4ece71",
+      "metadata": 1,
+      "stdout": null
+    },
+    {
+      "name": "raw-format-name",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/raw-format-name.rs",
+      "sha256": "7e4dd5467d0223579aace1d3dcc8e5205bca20666e69694e160967a50b7d13c0",
+      "metadata": 1,
+      "stdout": null
+    },
+    {
+      "name": "named-repeated-traits",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/named-repeated-traits.rs",
+      "sha256": "55b4a187be0b5f6425c301072614cbf7ce512d8df7229b5fe344ba24952c4746",
+      "metadata": 0,
+      "stdout": "15/15/f/15\n"
+    }
+  ],
+  "candidate_requirements": [
+    "Actual source role/header constructor and captured source/root identity",
+    "Each explicit RHS adopted once in order; captures appended once by name; (input,trait) first use retained",
+    "Ordinary borrow/safety/const/body proof; only constructor unsafe block",
+    "Dynamic counts remain separate required profile"
+  ]
+}

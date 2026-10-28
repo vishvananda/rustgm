@@ -403,3 +403,11 @@ constructor and static option recipe. Independent options/trait-negative and
 real source template/pair-storage native observations are distinct from full
 Formatter/write invocation. Dynamic counts, other constructors and named inputs
 remain required; no scalar-formatting factory is substituted.
+
+`spec/source-format-macros/named-captures/` freezes named RHS order, first-use
+capture/trait pairs, macro hygiene, exact Unicode symbols and ordinary borrow/
+unsafe failures. Four real source constructor protocols pass independent Rust
+and locked native observations without invoking a fabricated Formatter. The
+same anchored Captured origin retains caller context and grants no feature or
+transport permission. Dynamic counts, remaining constructors and actual
+Formatter/write/PanicInfo/handler execution remain required.

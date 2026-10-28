@@ -416,25 +416,34 @@ impl Unit {
     ///
     /// # Errors
     /// Reports argument grammar/configuration errors and arena overflow.
-    pub fn retain_arguments<'a>(
+    pub(crate) fn retain_arguments<'a>(
         &mut self,
         file: super::FileId,
         tokens: &[crate::lex::token::Token],
         registry: &crate::expand::registry::Registry,
         other: impl Fn(super::FileId) -> Option<&'a Unit>,
         config: &crate::expand::config::Config,
-        assembly: bool,
+        grammar: crate::syntax::expression::fragment::ArgumentsGrammar,
     ) -> Result<NodeId, LexError> {
+        use crate::syntax::expression::fragment::ArgumentsGrammar;
         let source = self.source.text();
         let units = |id| if id == file { Some(&*self) } else { other(id) };
         let view = registry.view(|id| units(id).map(|unit| unit.source.text()));
         let inputs = crate::syntax::edition_context::WithEditions::new(&view, |token| {
             super::editions::token(file, token, units)
         });
-        let ast = if assembly {
-            crate::syntax::expression::assembly::parse(source, tokens, &inputs)?
-        } else {
-            crate::syntax::expression::fragment::parse_arguments(source, tokens, &inputs)?
+        let ast = match grammar {
+            ArgumentsGrammar::Assembly => {
+                crate::syntax::expression::assembly::parse(source, tokens, &inputs)?
+            }
+            ArgumentsGrammar::Formatting => {
+                crate::syntax::expression::fragment::parse_format_arguments(
+                    source, tokens, &inputs,
+                )?
+            }
+            ArgumentsGrammar::Expressions => {
+                crate::syntax::expression::fragment::parse_arguments(source, tokens, &inputs)?
+            }
         };
         let (ast, mut configuration) = Configuration::take(
             crate::expand::crate_syntax::configure_with_inputs(source, ast, config, &inputs)?,

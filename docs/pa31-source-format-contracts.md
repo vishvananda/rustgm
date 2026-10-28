@@ -414,3 +414,53 @@ verification pass. The pinned CLI is4f9fecd133a4f319b8c6636e993e2ed30567a0e629f9
 the locked native receipt iscbcf40ab807bc93359ceb262b03a0b27f7c99b21a0c16c78868dba6b93a96955.
 This qualification does not repeat or claim a whole original-core observation;
 the integrator owns that next probe with the exact binary.
+
+## Named arguments and literal captures
+
+The next original-core frontier is `field.rs51–52`, whose write macros capture
+`type_name`, `variant` and `field`. Named arguments and implicit literal captures
+now use the same real constructor path. Only actual top-level `name = expr`
+tokens introduce named arguments; grouped or opaque assignments remain ordinary
+expressions. Explicit right-hand sides are adopted once in source order.
+Explicit names take precedence, captures are appended in first-use order, and
+pair identity remains `(input, formatting trait)`. Duplicate names, positional
+arguments after names, unused arguments and missing positions reject.
+
+Captured identifiers retain the original literal's exact caller context, not
+the constructor's definition context. The same Origin owner gains
+`Captured(Edition)` anchored to that actual literal. Context and edition walkers
+follow the anchor and verify the claimed values in the current source image.
+Synthetic ROOT and exact Copied-span restrictions remain unchanged. Captured
+origins grant no builtin feature allowance or derive vocabulary permission, and
+have no wire codec. Direct literals forwarded as literal or expression fragments
+remain eligible; strings produced by another macro cannot gain implicit capture.
+Explicit identifier tokens normalize normally, while names inside the format
+string preserve the pinned exact-symbol behavior, including non-NFC opponents.
+
+The [frozen family](../pa31/tests/spec/source-format-macros/named-captures/contract.json)
+matches64 new pinned-Rust metadata/build/native commands. A separate six-command
+Unicode packet also matches. Four source providers change only authored input
+and forwarding-macro code around the already qualified original constructors;
+all32 independent metadata/object/link/native commands match. Locked CPPGM also
+matches all four traces, `e1;e2;t1;p0L9;p1D7;p2M9;d9;d7;3`. These observations
+cover evaluation, template bytes, real formatter-method pointer identity and
+destruction, not actual Formatter invocation. The earlier static-options LowIR
+remains byte-identical, SHA-256
+`8c095cc5cc34578fc98ce8aee7cc2b33599b4085181afddfb3828d63383edc3c`.
+
+Actual OriginKind grows1→2 bytes within unchanged Origin32. Stream104,
+Unit688, Package256, Report3016, LibraryValue12 and Kind28/Node36 stay unchanged.
+Transient Output416→440 and Template48→72 grow by one capture vector each;
+Draft464 has no measured predecessor, Characters16 and named Inputs88 are actual
+observations. Empty captured/name collections allocate nothing. N8/32/128 pays
+work2604/11094/46038 and bytes5536/23474/94134. The map uses expected hashing
+costs; these bounded observations are not a worst-case or timing claim.
+
+Private6 passes116.23s, separate production/CLI lexer10 passes159.07s, and all
+3,002 committed compiler/input fingerprints match both receipts. Production CLI
+source semantic4 passes4.35s; locked native4 passes2.64s. Filename-ownership,
+strict-test and initial delimiter/layout failures remain retained. Dynamic
+counts and remaining formatting constructors stay required, as do the genuine
+Formatter/write/helper graph, source comparisons, PanicInfo and real handler.
+In particular Count must execute the original checked `from_usize` body and its
+overflow panic path; no scalar Count or formatting-library replacement follows.
