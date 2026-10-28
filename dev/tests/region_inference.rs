@@ -138,6 +138,8 @@ fn local_assignments_keep_a_common_inferred_region_and_directed_sources() -> Res
             Some(Kind::Reference { region, .. }) => Some(region),
             _ => None,
         })
+        // Fresh runtime-borrow bridges are separate from the two input sources.
+        .filter(|region| region.bound_parts().is_some())
         .collect::<Vec<_>>();
     sources.sort_unstable_by_key(|r| r.0);
     sources.dedup();

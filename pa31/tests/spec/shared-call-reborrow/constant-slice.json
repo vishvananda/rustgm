@@ -1,0 +1,22 @@
+{
+  "scope": "Actual source CoerceUnsized/Unsize and no implicit reference Copy; shared array constant and explicit wide reborrow retain metadata",
+  "source": "pa31/tests/spec/shared-call-reborrow/constant-slice.rs",
+  "sha256": "3f5f8a97a15a388b2a0f9e24fe332ff755e96f7f534413a5326ef6e3b5bc4443",
+  "expected_rustc_status": 0,
+  "editions": [
+    2021,
+    2024
+  ],
+  "expected_candidate": "whole-source and demanded original/instance LowIR success; actual array length remains3",
+  "native_claim": false,
+  "qualification": {
+    "independent_editions": [
+      2021,
+      2024
+    ],
+    "independent_scope": "Rust1.98.0 metadata; original no_core support retained",
+    "candidate_scope": "whole source plus demanded original/instance LowIR lowering",
+    "receipt_sha256": "912f9ac85b63fd50f3bac88092e0354619176f8b7093544266332661368fa78f",
+    "native_scope": "existing ordinary slice-length and symbolic pointer-word suites; no native claim for this new source-library fixture"
+  }
+}

@@ -185,15 +185,25 @@ fn failure_edges_remove_condition_storage_before_else_entry() -> Result<(), Stri
 
 #[test]
 fn let_else_failure_also_ends_lifetime_extended_initializer_operands() -> Result<(), String> {
-    let program = build(
+    let (report, declarations) = semantic::analyze(
         "enum E<'a>{A(&'a u8),B}fn temp()->u8{7}fn see(_: &u8){}fn f(){let p=&temp();let E::B=E::A(&temp()) else{see(p);return;};}",
     )?;
+    let definition = report
+        .resolution
+        .definitions
+        .iter()
+        .position(|d| report.package.names.get(d.name) == "f")
+        .ok_or("missing f declaration")?;
+    let program = body::build(&report, &declarations).map_err(|e| e.to_string())?;
     verify(&program)?;
     // Synthetic constructor bodies follow source functions in Program.
     let body = program
         .bodies
         .iter()
-        .find(|b| b.temporaries.len() == 3)
+        .find(|b| {
+            matches!(b.owner, body::ir::Owner::Function { definition: d, .. }
+            if d.0 as usize == definition)
+        })
         .ok_or("missing let-else body")?;
     let facts = body.storage.as_ref().ok_or("missing storage")?;
     assert_eq!(body.temporaries[0].lifetime, body.temporaries[1].lifetime);
@@ -205,7 +215,8 @@ fn let_else_failure_also_ends_lifetime_extended_initializer_operands() -> Result
         facts
             .exits
             .iter()
-            .any(|e| matches!(e.end, End::Temporaries { start: 1, end: 3 }))
+            .any(|e| matches!(e.end, End::Temporaries { start: 1, end }
+                if end as usize == body.temporaries.len()))
     );
     Ok(())
 }

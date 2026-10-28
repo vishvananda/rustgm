@@ -217,6 +217,12 @@ fn ordinary_and_source_call_bodies_reach_native_producers() -> Result {
     }
     Ok(())
 }
+
+#[test]
+fn source_constant_slices_keep_checked_reborrow_length_metadata() -> Result {
+    let input = test_source::fixture("pa31/tests/spec/shared-call-reborrow/constant-slice.rs")?;
+    write_native(&input, true, "source-constant-slice")
+}
 #[test]
 fn actual_no_copy_formatting_source_reaches_original_native_input() -> Result {
     let input =

@@ -20,12 +20,17 @@ fn borrows_preserve_local_referent_and_projected_storage_without_moves() -> Resu
         let (report, facts) = semantic::analyze(source).map_err(|e| format!("{source}: {e}"))?;
         let program = body::build(&report, &facts).map_err(|e| e.to_string())?;
         let body = program.bodies.first().ok_or("missing body")?;
+        let reborrows = facts.reference_adjustments.values().collect::<Vec<_>>();
         assert_eq!(
             body.projections
                 .iter()
                 .filter(|p| matches!(p.kind, ProjectionKind::Dereference { .. }))
                 .count(),
-            dereferences,
+            dereferences
+                + reborrows
+                    .iter()
+                    .map(|r| r.conversion.dereferences as usize)
+                    .sum::<usize>(),
             "{source}"
         );
         let borrows: Vec<_> = body
@@ -36,7 +41,7 @@ fn borrows_preserve_local_referent_and_projected_storage_without_moves() -> Resu
                 _ => None,
             })
             .collect();
-        assert_eq!(borrows.len(), 1, "{source}");
+        assert_eq!(borrows.len(), 1 + reborrows.len(), "{source}");
         assert_eq!(
             matches!(borrows[0].0, Place::Local(_)),
             borrowed_local,
@@ -74,6 +79,12 @@ fn borrow_place_evaluation_runs_effects_once_and_balances_diverging_operands() -
         let (report, facts) = semantic::analyze(source).map_err(|e| format!("{source}: {e}"))?;
         let program = body::build(&report, &facts).map_err(|e| format!("{source}: {e}"))?;
         let body = program.bodies.last().ok_or("missing body")?;
+        let reborrows = facts
+            .reference_adjustments
+            .keys()
+            .filter(|key| body.source.source().is_some_and(|s| s.file == key.file))
+            .filter(|key| body.statements.iter().any(|s| s.source == key.node.into()))
+            .count();
         assert_eq!(
             body.values
                 .iter()
@@ -87,7 +98,7 @@ fn borrow_place_evaluation_runs_effects_once_and_balances_diverging_operands() -
                 .iter()
                 .filter(|v| matches!(v.kind, Rvalue::Borrow { .. }))
                 .count(),
-            borrows,
+            borrows + reborrows,
             "{source}"
         );
         for (index, _) in body.values.iter().enumerate() {
