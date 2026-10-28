@@ -241,15 +241,7 @@ fn actual_generic_const_helper_requires_its_complete_conditional_trait_premise()
         .associated
         .trait_owner(DefId(item.0))
         .ok_or("actual trait")?;
-    let crate::types::parameters::predicates::Bound::Trait(parent) =
-        facts.const_self_predicate(parent)?.bound
-    else {
-        return Err("actual ordinary parent application".into());
-    };
-    let parent = facts
-        .types
-        .trait_application(parent)
-        .ok_or("actual trait application")?;
+    assert_eq!(facts.associated.constant_trait(parent), Some(true));
     assert_eq!(arguments.len(), 2);
     // Keep Self while changing Rhs as well as the separate changed-Self case.
     // Neither the trait name nor a same-Self premise pays another application.
@@ -266,8 +258,8 @@ fn actual_generic_const_helper_requires_its_complete_conditional_trait_premise()
         facts
             .types
             .intern_trait_application(crate::types::traits::Application {
+                item: crate::types::ItemId(parent.0),
                 arguments: parent_arguments,
-                ..parent
             })?;
         let changed = facts.types.intern_arguments(&changed)?;
         let wrong = facts.types.intern(Kind::FunctionItem {
