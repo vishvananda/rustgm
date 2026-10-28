@@ -2,7 +2,8 @@
 
 The user has reauthorized up to two subagents. Root continues direct compiler
 implementation and integration in `rustgm-pa25-work`. Worker `lint_expectations`
-owns the bounded explicit lint-cap bring-up control in `rustgm-pa26-work`; broader
+completed the bounded lint cap, now integrated and qualified. It owns the typed
+non-type feature-predicate core/proof in `rustgm-pa26-work`; broader
 diagnostic parity is deferred unless it blocks actual compilation. Worker
 `const_call_review` completed availability v3 transport in `rustgm-pa27-work`,
 now integrated with private21 and production53/PA6 qualification. Its next exit
@@ -19,7 +20,8 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The current strict CLIa946b4b3 reaches original mem/transmutability.rs86,
+The current CLI6a5c58a2 has explicit separate strict/Allow profiles. Both reach
+original mem/transmutability.rs86,
 `#[unstable_feature_bound(transmutability)]` on the actual unsafe trait. All722
 source pins and effective target arguments remain unchanged;60 sources open
 before the current impl-only capture rejects. No original artifact exists.

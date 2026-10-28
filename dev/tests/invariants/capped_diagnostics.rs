@@ -63,7 +63,9 @@ fn capped_replacement_hints_still_require_the_actual_language_feature() -> Resul
         if matches!(name, "accepted" | "used") {
             result?;
         } else {
-            let error = result.err().ok_or("capped invalid replacement hint accepted")?;
+            let error = result
+                .err()
+                .ok_or("capped invalid replacement hint accepted")?;
             let expected = match name {
                 "wrong-value" => "string",
                 "duplicate" => "unique",

@@ -8,7 +8,7 @@ Compilation-first priority, updated 2026-10-28: keep Rust's `allow`, `deny`,
 `forbid` and `expect` controls, but prioritize diagnostic work only when it
 unblocks actual compilation. Wider lint parity remains required in PA40 and
 is deferred from the immediate implementation queue. The standard explicit
-`--cap-lints=allow` bring-up option is being implemented with a separate
+`--cap-lints=allow` bring-up option is now qualified with a separate
 authenticated observation profile. Default behavior remains strict. A capped
 build is useful compilation evidence, but cannot close strict qualification
 or any remaining assignment requirement. Syntax, typing, unsafe permission,

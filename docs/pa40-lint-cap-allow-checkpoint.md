@@ -50,3 +50,38 @@ Raw predictions, mismatches, diagnostics, hashes and receipts remain under
 Original-core capped probes must record the effective cap in both their manifest
 and producer binding and remain distinct from the unchanged strict 722-pin
 reference. A capped observation cannot close the strict release/core goal.
+
+## Integrated compilation-first qualification
+
+Root normally merged this with source availability v3 and replacement metadata.
+The 15 affected private controls pass in 210.05 seconds; production/CLI, metadata
+codec and lexer 55 controls, all PA6 and all 805 PA13 cases pass in 210.99 seconds.
+Both strict Clippy modes, formatting and architecture checks pass. The first
+combined cold harness build exceeded its fixed budget; its infrastructure failure
+is preserved, and the unchanged warm retry passed. Receipts are
+`obj/qualification/fast/1793211677206940905/receipt.json` (SHA
+`d2aa09ae8e3d80d273ac57a53971a525b5d11ff7e646b782bea386ce44e31ec0`)
+and `obj/qualification/fast/1793212590516114517/receipt.json` (SHA
+`1a03ca0d192260ad96414f3769cac63a5c83b41006103d20264eafeb982a6789`).
+
+Twelve additional independent capped Rust observations verify actual deprecation
+suppression while malformed/duplicate replacement strings and missing feature
+requests remain errors. Original macro-only allowances do not replace that
+language gate. The contract is
+`pa40/tests/spec/deprecation-suggestion/contract-capped-v1.json`; oracle receipt
+SHA is `13232c6ad7c0d3771e2105f37a12f89e69ebfe0a60de6116093a153535e5ab25`.
+
+Joined CLI `6a5c58a25fa1b78894b88f91594336c5a18c48639df35427489ed1d258361c8d`
+has separate authenticated uncapped and Allow manifests/bindings. Both verify
+all 722 original pins, open 60 sources and stop at the same hard
+`unstable_feature_bound` trait-owner boundary in `mem/transmutability.rs:86`.
+Neither emits an original crate artifact. The effective target arguments are
+unchanged; the new configuration-source hashes explicitly bind the cap driver.
+The seven fresh availability-client programs/metadata/source inputs remain
+byte-identical to their independent/native-7 checkpoint. Registration, placement
+and upstream integrity pass. Postcheck receipt SHA:
+`038181876c10882aeca25cac8003ecedcadde4f3d10cb227587098e3ec44c535`.
+
+Broader optional lint parity is deferred while the next work implements the real
+trait feature predicate and source panic-handler execution. Typed feature
+requirements stay independent of diagnostic caps.
