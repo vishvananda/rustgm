@@ -63,3 +63,7 @@ requirements remain open.
 The unpublished [hidden glob reexport checkpoint](../docs/pa40-hidden-glob-reexports-checkpoint.md)
 adds completed resolver events, exact public import chains and namespace-sensitive
 expectations, with the next unchanged original-core boundary recorded explicitly.
+
+The unpublished [ineffective unstable trait impl checkpoint](../docs/pa40-ineffective-unstable-impl-checkpoint.md)
+adds genuine resolved header events, exact unstable-attribute witnesses and
+header-only expectation completion, with imported transport remaining explicit.

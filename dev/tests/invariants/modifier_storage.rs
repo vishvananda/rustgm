@@ -157,7 +157,7 @@ fn cold_storage_and_enclosing_layouts() -> TestResult {
     assert_eq!(size_of::<crate::sema::model::NodeFacts>(), 80);
     // Full policies now live in interned cold rows, reached through dense u32 IDs.
     assert_eq!(size_of::<crate::resolve::lint_policy::Level>(), 1);
-    assert_eq!(size_of::<crate::resolve::lint_policy::Policy>(), 140);
+    assert_eq!(size_of::<crate::resolve::lint_policy::Policy>(), 152);
     // One cold lineage pointer and its nine-counter budget belong to import Work.
     assert_eq!(size_of::<Report>(), 3096);
     assert_eq!(size_of::<Engine<'_, NoFiles>>(), 4144);

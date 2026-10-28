@@ -3,6 +3,7 @@
 pub enum WarningCode {
     Deprecated,
     HiddenGlobReexports,
+    IneffectiveUnstableTraitImpl,
     UnfulfilledLintExpectations,
     InvalidAtomicOrdering,
     UnreachablePatterns,
@@ -24,6 +25,7 @@ impl WarningCode {
         match self {
             Self::Deprecated => "deprecated",
             Self::HiddenGlobReexports => "hidden_glob_reexports",
+            Self::IneffectiveUnstableTraitImpl => "ineffective_unstable_trait_impl",
             Self::UnfulfilledLintExpectations => "unfulfilled_lint_expectations",
             Self::InvalidAtomicOrdering => "invalid_atomic_ordering",
             Self::UnreachablePatterns => "unreachable_patterns",

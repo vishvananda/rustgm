@@ -208,6 +208,19 @@ Close this early lint at completed name resolution without additional body
 demands. The [finite checkpoint](docs/pa40-hidden-glob-reexports-checkpoint.md)
 records namespace, effective visibility, work/storage and original-source controls.
 
+Ineffective unstable trait-impl events consume completed local stability rows and
+actual resolved self/trait header paths, preserving alias and generic-argument
+identity. Missing/imported policy is required information. Retain exact underlying
+impl, wrapper and attribute-effect witnesses in a paid cold column of the existing
+producer; take diagnostic spans from those authenticated attributes. Never reparse
+bodies or add body demands to close this header-only lint. Local feature bounds
+suppress this lint without granting availability, and untransported bounds fence
+exports. Keep one-byte levels and four-byte dense policy IDs; the sixteenth lint
+uses cold Policy152 and policy/completion row160 bytes. Charge owner traversal, header
+work, allocation and failed attempts before mutation. The
+[finite checkpoint](docs/pa40-ineffective-unstable-impl-checkpoint.md) records actual
+source, invalidation, scaling and original-core boundaries.
+
 Unsafe-operation and mutable-static-reference warnings use that same sink and
 the actual retained lexical lint level. Explicit unsafe blocks satisfy the
 operation policy; Allow stays silent and safe contexts still require unsafe

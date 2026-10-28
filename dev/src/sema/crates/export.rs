@@ -151,6 +151,7 @@ fn validate_profile(
 ) -> Result<(), Error> {
     if let Some(producer) = report.lint_producer() {
         producer.require_deprecation_transport(&report.package)?;
+        producer.require_impl_bound_transport(&report.package)?;
     }
     if facts.members.has_contextual_fields() {
         return Err(error(

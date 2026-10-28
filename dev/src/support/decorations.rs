@@ -66,6 +66,7 @@ impl Consumer {
             | "panic_handler" => Self::SourceBindings,
             "stable"
             | "unstable"
+            | "unstable_feature_bound"
             | "rustc_const_stable"
             | "rustc_const_unstable"
             | "rustc_default_body_unstable"

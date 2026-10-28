@@ -1,0 +1,428 @@
+{
+  "state": "predictions frozen before independent oracle and candidate implementation",
+  "profile": {
+    "rustc": "1.98.0",
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": true,
+    "panic": "abort",
+    "kind": "library metadata",
+    "cap_lints": null
+  },
+  "scope": "authored local/source trait-impl lint and effective expectations; imported stability/feature-bound transport remains required",
+  "cases": [
+    {
+      "name": "default-deny",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/default-deny.rs",
+      "sha256": "3802f02a25d2b6246daca8a6aa7884d2fc2165c6316a97348b2ff0218a29ea25",
+      "expected_status": 1,
+      "expected_diagnostics": {
+        "ineffective_unstable_trait_impl": 1
+      },
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "warn",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/warn.rs",
+      "sha256": "b32e818ffeed7ce4dbe6ddb82179f65e31f95c2407e9c2767350aa7ee7b6ba93",
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "ineffective_unstable_trait_impl": 1
+      },
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "expect",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/expect.rs",
+      "sha256": "dd1e63ac8c7ef66dea112a918e7fe647ce8a6be9c6667988ab990e83f56b3cda",
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "allow",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/allow.rs",
+      "sha256": "b6fb82049c90e4b1b8246695d14c0882dd9ef50a67f8d58da6fed50706d4492f",
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "deny",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/deny.rs",
+      "sha256": "a453704fe14daaa360dda504447220245742ec9ab6c55f642bd4a4357dba0d3e",
+      "expected_status": 1,
+      "expected_diagnostics": {
+        "ineffective_unstable_trait_impl": 1
+      },
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "forbid",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/forbid.rs",
+      "sha256": "178615816a4e6f7558a846e05a127369d6c01342d58a0cd6931261229b78a40e",
+      "expected_status": 1,
+      "expected_diagnostics": {
+        "ineffective_unstable_trait_impl": 1
+      },
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "primitive",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/primitive.rs",
+      "sha256": "de7faa99d4292df4dc3b6e2eaf00ccc53ef2b0ec03804cca5b058a3aabf25533",
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "f16",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/f16.rs",
+      "sha256": "10f574423a35bccfe505e5143dd834391cbb488be9bf1568442ffdd059fea741",
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": "An unstable primitive is stable for this source visitor."
+    },
+    {
+      "name": "unstable-self",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/unstable-self.rs",
+      "sha256": "fa88174d4a9319cfc9490d92aa16186a865f9f719264310a067861a46a2e5977",
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "unstable-trait",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/unstable-trait.rs",
+      "sha256": "9ec859f59fc40de178c8a1ec3e6e85ee6946b024cd950f8398c31f4652aa13a5",
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "unstable-argument",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/unstable-argument.rs",
+      "sha256": "9ae671f32af46e0ec7ca56e5c943290e416639f3a27b30219bffa39cf4e5cadb",
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "stable-argument",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/stable-argument.rs",
+      "sha256": "cca0036839971115b51a6d7d851b29a73b15b77a01621891878f3aaa7b3f7949",
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "unstable-alias",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/unstable-alias.rs",
+      "sha256": "84fd7e33b5f13cc573e806c209de95ccd31f0f5179f8f22b13b81939cbda9347",
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": "The resolved alias path owns policy; normalization must not erase it."
+    },
+    {
+      "name": "stable-impl",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/stable-impl.rs",
+      "sha256": "ac5f7a7c03c19614d5d80452f04e906635b09cd5e37f3b2a24c3cdcd1fcd2387",
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "inherited-unstable",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/inherited-unstable.rs",
+      "sha256": "8df50dfbec7324f82f1b5782147b58d7a5722f3856da854248c9882fd8c3d9f4",
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "never-self",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/never-self.rs",
+      "sha256": "3a1d86c62d616cff478257839d87abf9a01f350e54e182a1cf198f559ea8c03d",
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "never-parameter",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/never-parameter.rs",
+      "sha256": "49085bae2ea339b94c9eb3d685fd4c599ebf4df5bfb36ba92720ba8ed62ede01",
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "never-return",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/never-return.rs",
+      "sha256": "90a1c80f14358dadcc0d2bce046d124ca3dca96d36074305d9b08234b7fa13a5",
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "rust-call-abi",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/rust-call-abi.rs",
+      "sha256": "2a7bcd367084a81d3683d4ef4a81cb912b6fad14aedaa05819e5e3f843b0cb67",
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "bound-matching",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/bound-matching.rs",
+      "sha256": "cc67429270961ebd794f058e435664860f924358e631f47b99f393ca90c6fc60",
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "bound-unrelated",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/bound-unrelated.rs",
+      "sha256": "987550e0016726e1b3ff4d46d64036968a8445edde0acd255aa4e6355aa4bdea",
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "bound-combined",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/bound-combined.rs",
+      "sha256": "bae92b6eb1afac84fb2f74391c64a1033c9113e83bee5579b046c5765a8e4393",
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "wrong-owner",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/wrong-owner.rs",
+      "sha256": "c8e1b8e44e14eea6b486b8ea64dcf6776f885ebc35d793e3c9345a617863014c",
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": ""
+    },
+    {
+      "name": "forbid-allow",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/forbid-allow.rs",
+      "sha256": "b8b869fa5aa02cf54cc62ea1460d8ffcb14446d89707ca11423fdfa90fc73ba2",
+      "expected_status": 1,
+      "expected_diagnostics": {},
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived hypothesis; unobserved",
+      "notes": "Attribute precedence error E0453; no promised lint count until independently observed."
+    },
+    {
+      "name": "nested-header-event",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/nested-header-event.rs",
+      "sha256": "1265f678f933fe70271194311237ebaaa32508f84d9142d4185f4b38761a0eaa",
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived header-scope hypothesis; unobserved",
+      "notes": "Header events complete independently of untouched function bodies."
+    },
+    {
+      "name": "crate-header-empty",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/crate-header-empty.rs",
+      "sha256": "e013dfadc44e8dc2d3e63180a1dd920ce04d516b876faf1edc8f5e11ce1c3b55",
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived header-scope hypothesis; unobserved",
+      "notes": "Header events complete independently of untouched function bodies."
+    },
+    {
+      "name": "crate-header-event",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/crate-header-event.rs",
+      "sha256": "3a680bb9a2f029ce57014facb7d7b1184e95c20a49adf269233133f8ddd1bf67",
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "primary-derived header-scope hypothesis; unobserved",
+      "notes": "Header events complete independently of untouched function bodies."
+    },
+    {
+      "name": "generic-self",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/generic-self.rs",
+      "sha256": "e6b69d9670d885193431bd18db58b5a2e2a0807cf468878bc4ba471e94a97006",
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "unobserved before source candidate qualification",
+      "candidate_mode": "ordinary"
+    },
+    {
+      "name": "source-rust-call",
+      "path": "pa40/tests/spec/ineffective-unstable-impl/source-rust-call.rs",
+      "sha256": "5f8338c1220af12963869cd2370fe2a812dbbaf5fb5423c5dbc28d0617b9b96b",
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "editions": [
+        2021,
+        2024
+      ],
+      "prediction": "unobserved before source candidate qualification",
+      "candidate_mode": "authenticated actual source provider"
+    }
+  ]
+}

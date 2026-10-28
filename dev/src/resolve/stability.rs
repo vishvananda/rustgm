@@ -127,6 +127,19 @@ pub struct Inventory {
     steps: usize,
 }
 impl Inventory {
+    /// Observe a completed local row; missing rows are not known absence.
+    pub(crate) fn local_declaration(&self, id: DefId) -> Result<Option<&Policy>, &'static str> {
+        let row = self
+            .declarations
+            .get(id.0 as usize)
+            .ok_or("local stability declaration inventory is incomplete")?;
+        row.map(|id| {
+            self.policies
+                .get(id.get() - 1)
+                .ok_or("local stability declaration policy identity is missing")
+        })
+        .transpose()
+    }
     #[must_use]
     pub fn declaration(&self, id: DefId) -> Option<&Policy> {
         let id = self.declarations.get(id.0 as usize).copied().flatten()?;
