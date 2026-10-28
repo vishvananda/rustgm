@@ -1,0 +1,85 @@
+{
+  "state": "frozen before independent or candidate observation",
+  "owner": "PA26 derives + PA31 genuine source-owned attribute/trait/field consumers",
+  "profile": {
+    "rustc": "1.98.0",
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": true,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "lint_cap": "uncapped"
+  },
+  "originals": [
+    {
+      "path": "library/core/src/net/ip_addr.rs",
+      "byte_start": 78806,
+      "byte_end": 78968,
+      "sha256": "a3df9960a3a7a107d2b44662a3ed4f199fd3e93fdca2000c6d3dc54550f75582",
+      "retained": "span-original.rs"
+    },
+    {
+      "path": "library/core/src/default.rs",
+      "retained": "default-original.rs",
+      "sha256": "154234635bde8f36df1661720c42e1089bb19b7b39b4cb42e794bf854d800ed4",
+      "parts": "Exact Default trait attributes/body, Default builtin declaration, default_impl macro and original usize invocation; authored module composition only"
+    }
+  ],
+  "foundation": {
+    "path": "pa31/tests/spec/source-location/location-copy-clone.rs",
+    "sha256": "27d396405a174743ebecbaa3b4818642062ed409b23c5db3bf7f449c10e16dfd",
+    "retained_prefix": true
+  },
+  "cases": [
+    {
+      "name": "span-source",
+      "path": "pa31/tests/spec/block-derives/span-source.rs",
+      "sha256": "0b27be8474f77e232d1bb78ad45d41b1176593f7b2dbd932e269355d8c4cbb35",
+      "rustc_metadata_status": 0,
+      "candidate_status": "success through genuine local LowIR"
+    },
+    {
+      "name": "name-leak",
+      "path": "pa31/tests/spec/block-derives/name-leak.rs",
+      "sha256": "16bde5216e50a6bb636c8d0fb7d78bc5b19bb8368f7688992ad029aa4f4bb4cd",
+      "rustc_metadata_status": 1,
+      "candidate_status": "reject at real name/type/trait boundary"
+    },
+    {
+      "name": "other-local-owner",
+      "path": "pa31/tests/spec/block-derives/other-local-owner.rs",
+      "sha256": "0bafce8a3b68d1f12a43d3220df92a81b15e90770164624e3d3fb1f334e3d104",
+      "rustc_metadata_status": 1,
+      "candidate_status": "reject at real name/type/trait boundary"
+    },
+    {
+      "name": "nested-generic-capture",
+      "path": "pa31/tests/spec/block-derives/nested-generic-capture.rs",
+      "sha256": "90f7387a84840040db57a7d4ee82d1de69bbc568ffb0b987b52e6592eddab127",
+      "rustc_metadata_status": 1,
+      "candidate_status": "reject at real name/type/trait boundary"
+    },
+    {
+      "name": "missing-default",
+      "path": "pa31/tests/spec/block-derives/missing-default.rs",
+      "sha256": "1296403f9669505ded9edb68a77dc31374a99cb319bd4c9b680156260c48778d",
+      "rustc_metadata_status": 1,
+      "candidate_status": "reject at real name/type/trait boundary"
+    }
+  ],
+  "native": {
+    "provider": "span-source",
+    "observer": "observer.c",
+    "observer_sha256": "6750c2e75325c68e0b019c40bf24c4fb313a062656da75ed4e80aec3eb3e6a97",
+    "status": 0,
+    "stdout": "0:0:0;1:7:3;2:7:3;7\n",
+    "stderr": ""
+  },
+  "required_boundaries": [
+    "Complete Ipv6Addr formatter execution",
+    "Wider local generic/closure/enum/default and metadata transport contracts",
+    "Missing field Default cannot become zero initialization; no Copy/Clone/Default permission from names alone"
+  ]
+}

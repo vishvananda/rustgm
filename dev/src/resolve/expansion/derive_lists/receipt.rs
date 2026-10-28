@@ -4,13 +4,14 @@ use crate::resolve::expansion::Report;
 
 pub(super) fn current(
     package: &super::super::Package,
+    facts: &crate::resolve::model::Resolution,
     entry: &Transaction,
     expanded: bool,
 ) -> Result<(), Error> {
     if let Some(source) = package.source_core() {
         source
             .macros
-            .charge(1 + entry.trees.len() + entry.spelling.len(), 0)
+            .charge(9 + entry.trees.len() + entry.spelling.len(), 0)
             .map_err(|message| {
                 Error::at(
                     entry.owner.file,
@@ -26,6 +27,10 @@ pub(super) fn current(
             "source derive configured owner or capture changed",
         )
     };
+    entry
+        .placement
+        .validate(facts, entry.owner)
+        .map_err(|message| Error::at(entry.owner.file, 0, message))?;
     let unit = package
         .units
         .get(entry.owner.file.0 as usize)
@@ -94,7 +99,7 @@ impl Report {
             .get(&(owner.file, effect))
             .ok_or_else(failure)?;
         let entry = &transactions.entries[position];
-        current(&self.package, entry, true)?;
+        current(&self.package, &self.resolution, entry, true)?;
         if entry.owner != owner || entry.output.is_none() {
             return Err(failure());
         }
@@ -106,7 +111,8 @@ impl Report {
         let node = definition.node.ok_or_else(failure)?;
         let header =
             panic_contracts::published(&self.package, node, definition.header.as_ref(), 1)?;
-        if invocation.node != owner
+        if invocation.parent != entry.placement.introduction
+            || invocation.node != owner
             || invocation.original != entry.attribute.attribute.span
             || invocation.parser_calls != 1
             || !matches!(definition.body, Body::Builtin(role @ (Builtin::Derive | Builtin::DeriveConst)) if header.builtin == Some(role))
