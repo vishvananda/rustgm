@@ -232,6 +232,9 @@ impl Declarations {
         code: WarningCode,
         message: (String, crate::resolve::model::ExpansionId),
     ) -> Result<(), Error> {
+        if report.package.lint_cap().suppresses_lints() {
+            return Ok(());
+        }
         let level = match code {
             WarningCode::Deprecated => self.safety_policies.deprecated(key),
             WarningCode::HiddenGlobReexports => self.safety_policies.hidden_glob_reexports(key),

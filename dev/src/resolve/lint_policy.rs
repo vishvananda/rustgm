@@ -41,6 +41,30 @@ pub(crate) struct Policy {
     pub(crate) deprecation_explicit: bool,
 }
 impl Policy {
+    pub(crate) const CAPPED: Self =
+        Self::DEFAULT.capped(crate::support::diagnostics::LintCap::Allow);
+    pub(crate) const fn capped(self, cap: crate::support::diagnostics::LintCap) -> Self {
+        if !cap.suppresses_lints() {
+            return self;
+        }
+        Self {
+            operation: Level::Allow,
+            reference: Level::Allow,
+            atomic_ordering: Level::Allow,
+            unreachable_patterns: Level::Allow,
+            must_use: Level::Allow,
+            unused_attributes: Level::Allow,
+            unused_visibilities: Level::Allow,
+            duplicate_macro_attributes: Level::Allow,
+            ambiguous_derive_helpers: Level::Allow,
+            diagnostic_attributes: [Level::Allow; 3],
+            deprecated: Level::Allow,
+            unfulfilled: Level::Allow,
+            hidden_glob_reexports: Level::Allow,
+            ineffective_unstable_trait_impl: Level::Allow,
+            ..self
+        }
+    }
     pub(crate) const DEFAULT: Self = Self {
         operation: Level::Warn,
         reference: Level::Deny,
@@ -102,7 +126,12 @@ impl From<Violation> for Error {
     }
 }
 impl Policy {
-    pub(crate) fn apply(&mut self, key: NodeKey, change: &Change) -> Result<(), Violation> {
+    pub(crate) fn apply(
+        &mut self,
+        key: NodeKey,
+        change: &Change,
+        cap: crate::support::diagnostics::LintCap,
+    ) -> Result<(), Violation> {
         if change.lint == Lint::Deprecated {
             self.deprecation_explicit = true;
         }
@@ -125,7 +154,9 @@ impl Policy {
             }
         };
         if *level == Level::Forbid {
-            if matches!(change.level, Level::Allow | Level::Warn | Level::Expect) {
+            if matches!(change.level, Level::Allow | Level::Warn | Level::Expect)
+                && !cap.suppresses_lints()
+            {
                 return Err(Violation {
                     key,
                     offset: change.offset,

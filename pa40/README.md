@@ -72,3 +72,8 @@ The unpublished [deprecation suggestion checkpoint](../docs/pa40-deprecation-sug
 retains actual replacement metadata and enforces its source feature gate.
 Suggestion rendering and broader diagnostic parity are deferred while the
 immediate work prioritizes library compilation.
+
+The unpublished [explicit Allow cap checkpoint](../docs/pa40-lint-cap-allow-checkpoint.md)
+keeps strict policy as the default while permitting an authenticated compilation
+to suppress optional diagnostics. Hard semantic checks and witnessed expectation
+debt remain separate from diagnostic suppression.

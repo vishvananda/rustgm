@@ -189,6 +189,7 @@ impl<'a, S: Sources> Loader<'a, S> {
                 library,
                 macro_features: prepared.macros,
                 runtime_checks: config.runtime_checks(),
+                lint_cap: config.lint_cap(),
                 no_std,
                 file_paths: vec![root.path.components().collect()],
                 crate_name: if root.path == Path::new("<anon>") {

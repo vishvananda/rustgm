@@ -78,6 +78,10 @@ shared configure.rs explicitly pinned. Complete environment/rerun/external-tool
 closure and target consumption remain required. This establishes no target
 library artifact.
 
+The frontend's finite [explicit Allow cap checkpoint](../docs/pa40-lint-cap-allow-checkpoint.md)
+accepts `--cap-lints=allow` and its spaced spelling. Package graph propagation,
+other cap levels and complete manifest policy closure remain required here.
+
 The maintainer implements compiler responsibilities in `dev/src/` and introduces
 typed interfaces before text views. Follow [spec.md](../spec.md), the pinned Rust
 Reference and CPPGM's efficient representation principles. Parse once, retain

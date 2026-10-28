@@ -17,7 +17,8 @@ pub(super) fn owner(
     tail: super::producer::Tail,
     effects: std::ops::Range<usize>,
     work: &mut Work,
-) -> Result<Parsed, Violation> {
+    cap: crate::support::diagnostics::LintCap,
+) -> Result<(Parsed, u32), Violation> {
     let (rows, pairs) = counts(unit, key, effects.clone(), work)?;
     let bytes = rows
         .saturating_mul(size_of::<Witness>())
@@ -26,6 +27,7 @@ pub(super) fn owner(
     let mut witnesses = Vec::with_capacity(rows);
     let mut trees = Vec::with_capacity(pairs);
     let mut parsed = Parsed::default();
+    let mut deferred = 0_u32;
     for (effect, attribute, forest) in unit.retained_indexed_attributes(effects) {
         let covered = coverage(forest, attribute, unit.source.text(), key)?;
         let effect = u32::try_from(effect)
@@ -60,8 +62,14 @@ pub(super) fn owner(
                 &mut parsed,
                 forest,
                 attribute,
-                (level, tail, effect),
-                unit.source.text(),
+                Setting {
+                    level,
+                    tail,
+                    effect,
+                    cap,
+                    unit,
+                    deferred: &mut deferred,
+                },
                 key,
                 work,
             )?;
@@ -81,7 +89,7 @@ pub(super) fn owner(
     }
     parsed.witnesses = witnesses.into_boxed_slice();
     parsed.trees = trees.into_boxed_slice();
-    Ok(parsed)
+    Ok((parsed, deferred))
 }
 fn counts(
     unit: &Unit,
@@ -186,16 +194,31 @@ pub(super) fn coverage(
         level,
     })
 }
+struct Setting<'a> {
+    level: Level,
+    tail: super::producer::Tail,
+    effect: u32,
+    cap: crate::support::diagnostics::LintCap,
+    unit: &'a Unit,
+    deferred: &'a mut u32,
+}
 fn changes(
     parsed: &mut Parsed,
     forest: &Forest,
     attribute: Attribute,
-    setting: (Level, super::producer::Tail, u32),
-    source: &str,
+    mut setting: Setting<'_>,
     key: NodeKey,
     work: &mut Work,
 ) -> Result<(), Violation> {
-    let (level, tail, effect) = setting;
+    let (level, tail, effect) = (setting.level, setting.tail, setting.effect);
+    let source = setting.unit.source.text();
+    if setting.cap.suppresses_lints() && attribute.unsafe_wrapper {
+        return Err(invalid(
+            key,
+            attribute,
+            "capped lint attributes cannot use unsafe wrappers",
+        ));
+    }
     parsed.attributes += 1;
     work.attributes += 1;
     let Input::Delimited(group) = attribute.input else {
@@ -245,14 +268,10 @@ fn changes(
             } else {
                 &[]
             };
-            if selected.is_empty() && level == Level::Expect {
-                return Err(invalid(
-                    key,
-                    attribute,
-                    "unsupported lint expectation requires an implemented lint producer",
-                ));
+            if selected.is_empty() {
+                deferred_lint(forest, attribute, key, start..index, &mut setting, work)?;
             }
-            let expectation = if level == Level::Expect {
+            let expectation = if level == Level::Expect && !selected.is_empty() {
                 Some(register(
                     parsed,
                     attribute,
@@ -288,6 +307,86 @@ fn changes(
             work.charge(key, 1 + reason.len(), reason.len())?;
             row.reason = Some(reason.clone());
         }
+    }
+    Ok(())
+}
+fn deferred_lint(
+    forest: &Forest,
+    attribute: Attribute,
+    key: NodeKey,
+    range: std::ops::Range<u32>,
+    setting: &mut Setting<'_>,
+    work: &mut Work,
+) -> Result<(), Violation> {
+    if setting.cap.suppresses_lints() {
+        optional_path(forest, setting.unit, key, attribute, range, work)?;
+        if setting.level == Level::Expect {
+            work.charge(key, 1, 0)?;
+            *setting.deferred = setting.deferred.checked_add(1).ok_or_else(|| {
+                invalid(key, attribute, "deferred diagnostic count exceeds 32 bits")
+            })?;
+        }
+    } else if setting.level == Level::Expect {
+        return Err(invalid(
+            key,
+            attribute,
+            "unsupported lint expectation requires an implemented lint producer",
+        ));
+    }
+    Ok(())
+}
+
+fn optional_path(
+    forest: &Forest,
+    unit: &Unit,
+    key: NodeKey,
+    attribute: Attribute,
+    range: std::ops::Range<u32>,
+    work: &mut Work,
+) -> Result<(), Violation> {
+    work.charge(key, (range.end - range.start) as usize, 0)?;
+    let identifier = |index| {
+        forest
+            .token(index)
+            .zip(forest.name(unit.source.text(), index))
+            .filter(|(token, name)| {
+                crate::lex::keyword::identifier_in(token.kind, name, unit.edition())
+            })
+            .map(|(_, name)| name)
+    };
+    let Some(first) = identifier(range.start) else {
+        return Err(invalid(
+            key,
+            attribute,
+            "capped lint attribute requires an identifier path",
+        ));
+    };
+    work.charge(key, first.len(), 0)?;
+    if range.end == range.start + 1 {
+        return Ok(());
+    }
+    if range.end != range.start + 3 || !forest.punctuation(range.start + 1, Punctuation::ColonColon)
+    {
+        return Err(invalid(
+            key,
+            attribute,
+            "capped lint attribute has malformed path arguments",
+        ));
+    }
+    let Some(last) = identifier(range.start + 2) else {
+        return Err(invalid(
+            key,
+            attribute,
+            "capped tool lint requires an identifier",
+        ));
+    };
+    work.charge(key, last.len(), 0)?;
+    if first != "rustdoc" && crate::support::decorations::PredefinedTool::named(first).is_none() {
+        return Err(invalid(
+            key,
+            attribute,
+            "unregistered tool in capped lint attribute",
+        ));
     }
     Ok(())
 }

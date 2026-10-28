@@ -43,7 +43,10 @@ pub(crate) struct PendingExpectation<'a> {
     pub resolution_complete: bool,
     pub ordinal: u32,
 }
-pub(super) struct Domain;
+pub(super) struct Domain {
+    cap: crate::support::diagnostics::LintCap,
+    deferred: u32,
+}
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum State {
     Fulfilled,
@@ -54,8 +57,74 @@ pub(crate) struct Progress {
     states: HashMap<ExpectationId, State>,
 }
 impl Producer {
+    pub(super) fn cap(&self) -> crate::support::diagnostics::LintCap {
+        self.domain
+            .as_ref()
+            .map_or(crate::support::diagnostics::LintCap::Uncapped, |domain| {
+                domain.cap
+            })
+    }
+    pub(super) fn ensure_domain(&mut self, key: NodeKey) -> Result<(), Violation> {
+        self.ensure_cap_domain(key, self.cap())
+    }
+    pub(super) fn ensure_cap_domain(
+        &mut self,
+        key: NodeKey,
+        cap: crate::support::diagnostics::LintCap,
+    ) -> Result<(), Violation> {
+        if let Some(domain) = &self.domain {
+            if domain.cap != cap {
+                return Err(invalid(key, "lint domain changed its immutable cap"));
+            }
+        } else {
+            if self.sealed {
+                return Err(invalid(
+                    key,
+                    "sealed lint producer cannot change its cap domain",
+                ));
+            }
+            self.reserve_diagnostic(key, 2 * size_of::<usize>() + size_of::<Domain>())?;
+            self.domain = Some(Arc::new(Domain { cap, deferred: 0 }));
+        }
+        Ok(())
+    }
+    pub(super) fn publish_deferred(&mut self, key: NodeKey, count: u32) -> Result<(), Violation> {
+        if count == 0 {
+            return Ok(());
+        }
+        self.reserve_diagnostic(key, 0)?;
+        if !self.cap().suppresses_lints() || self.sealed {
+            return Err(invalid(
+                key,
+                "deferred diagnostic requires its active capped producer",
+            ));
+        }
+        self.ensure_domain(key)?;
+        let domain = self.domain.as_mut().and_then(Arc::get_mut).ok_or_else(|| {
+            invalid(
+                key,
+                "deferred diagnostics cannot mutate a borrowed request domain",
+            )
+        })?;
+        domain.deferred = domain
+            .deferred
+            .checked_add(count)
+            .ok_or_else(|| invalid(key, "deferred diagnostic count exceeds 32 bits"))?;
+        Ok(())
+    }
+    pub(crate) fn deferred_expectation_count(
+        &self,
+        package: &Package,
+        key: NodeKey,
+    ) -> Result<u32, Violation> {
+        self.require_cap(package, key)?;
+        Ok(self.domain.as_ref().map_or(0, |domain| domain.deferred))
+    }
     pub(crate) fn new_progress(&self, key: NodeKey) -> Result<Option<Box<Progress>>, Violation> {
         self.attribute_read(key, 1)?;
+        if self.expectation_owners.is_empty() {
+            return Ok(None);
+        }
         let Some(domain) = &self.domain else {
             return Ok(None);
         };
@@ -74,7 +143,7 @@ impl Producer {
         if self
             .domain
             .as_ref()
-            .is_none_or(|domain| !Arc::ptr_eq(domain, &progress.domain))
+            .is_none_or(|domain| !Arc::ptr_eq(domain, &progress.domain) || domain.cap != self.cap())
         {
             return Err(invalid(
                 key,
@@ -89,6 +158,7 @@ impl Producer {
         id: ExpectationId,
         key: NodeKey,
     ) -> Result<&Expectation, Violation> {
+        self.require_cap(package, key)?;
         self.attribute_read(key, 1)?;
         let owner = self.record(id.owner, key)?;
         owner.validate(package, &self.reads)?;

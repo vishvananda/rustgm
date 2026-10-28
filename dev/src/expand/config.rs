@@ -63,11 +63,20 @@ pub(crate) fn target_features() -> impl Iterator<Item = &'static str> {
 pub struct Config {
     edition: crate::support::edition::Edition,
     runtime_checks: crate::support::runtime_checks::RuntimeCheckConfig,
+    lint_cap: crate::support::diagnostics::LintCap,
     flags: HashSet<String>,
     values: HashMap<String, HashSet<String>>,
 }
 
 impl Config {
+    #[must_use]
+    pub const fn lint_cap(&self) -> crate::support::diagnostics::LintCap {
+        self.lint_cap
+    }
+    /// Select diagnostic policy before loading this compilation's source.
+    pub fn set_lint_cap(&mut self, cap: crate::support::diagnostics::LintCap) {
+        self.lint_cap = cap;
+    }
     /// Select the physical source edition; this does not enable a driver profile.
     #[must_use]
     pub fn in_edition(edition: crate::support::edition::Edition) -> Self {

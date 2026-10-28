@@ -4,6 +4,9 @@ use crate::resolve::{
     package::{Error, ModuleId},
     unit::NodeKey,
 };
+#[cfg(test)]
+#[path = "../../tests/invariants/capped_diagnostics.rs"]
+mod cap_tests;
 
 pub(super) use crate::resolve::lint_policy::Level;
 use crate::resolve::lint_policy::{
@@ -24,6 +27,7 @@ pub(super) struct Policies {
     rows: Vec<Row>,
     pub(super) progress: Option<Box<crate::resolve::lint_policy::Progress>>,
     unreachable_denials: bool,
+    cap: crate::support::diagnostics::LintCap,
     work: Work,
 }
 impl Default for Policies {
@@ -33,6 +37,7 @@ impl Default for Policies {
             rows: Vec::new(),
             progress: None,
             unreachable_denials: true,
+            cap: crate::support::diagnostics::LintCap::Uncapped,
             work: Work::default(),
         }
     }
@@ -49,6 +54,36 @@ struct Row {
     completion: Completion,
 }
 impl Policies {
+    fn for_request(report: &Report) -> Self {
+        let cap = report.package.lint_cap();
+        Self {
+            cap,
+            unreachable_denials: !cap.suppresses_lints(),
+            ..Self::default()
+        }
+    }
+    fn require_context(&self, report: &Report) -> Result<(), Error> {
+        if self.cap != report.package.lint_cap() {
+            return Err(Error::unlocated(
+                "semantic lint request changed its actual compilation cap",
+            ));
+        }
+        let key = NodeKey {
+            file: root_file(report),
+            node: report.package.modules[0].root,
+        };
+        if let Some(producer) = report.lint_producer() {
+            producer.validate_cap(&report.package, key)?;
+            if let Some(progress) = self.progress.as_deref() {
+                producer.validate_progress(progress, key)?;
+            }
+        } else if self.progress.is_some() {
+            return Err(Error::unlocated(
+                "semantic lint request lost its actual producer",
+            ));
+        }
+        Ok(())
+    }
     #[cfg(test)]
     fn retained_storage(&self) -> (usize, usize, usize) {
         self.nodes.as_ref().map_or((0, 0, 0), |files| {
@@ -65,7 +100,7 @@ impl Policies {
         if let Some(removals) = report.removed_functions() {
             removals.validate(report)?;
         }
-        let mut policies = Self::default();
+        let mut policies = Self::for_request(report);
         let producer = report.lint_producer();
         let (attributes, entries, has_changes) = if let Some(producer) = producer {
             let summary = producer.validate(&report.package)?;
@@ -156,7 +191,7 @@ impl Policies {
             })
             .collect();
         policies.rows.push(Row {
-            policy: Policy::default(),
+            policy: Policy::default().capped(policies.cap),
             completion: Completion::Whole,
         });
         policies.walk(report, producer, &mut nodes)?;
@@ -213,7 +248,7 @@ impl Policies {
                     producer.diagnostic_payload(key, 1 + growth.work, growth.bytes)?;
                     let mut policy = self.rows[row as usize].policy;
                     for change in changes.entries {
-                        policy.apply(key, change)?;
+                        policy.apply(key, change, self.cap)?;
                     }
                     row = u32::try_from(self.rows.len()).map_err(|_| {
                         Error::at(key.file, 0, "lint policy row identity exceeds 32 bits")
@@ -221,7 +256,10 @@ impl Policies {
                     if let Some(origin) = deprecated_origin {
                         policy.deprecated_origin = Some(origin);
                     }
-                    self.rows.push(Row { policy, completion });
+                    self.rows.push(Row {
+                        policy: policy.capped(self.cap),
+                        completion,
+                    });
                 }
                 tail = changes.tail;
             }
@@ -259,9 +297,14 @@ impl Policies {
         Ok(())
     }
     fn at(&self, key: NodeKey) -> &Policy {
-        self.nodes.as_ref().map_or(&Policy::DEFAULT, |files| {
-            &self.rows[files[key.file.0 as usize][key.node.get() as usize] as usize].policy
-        })
+        self.nodes.as_ref().map_or(
+            if self.cap.suppresses_lints() {
+                &Policy::CAPPED
+            } else {
+                &Policy::DEFAULT
+            },
+            |files| &self.rows[files[key.file.0 as usize][key.node.get() as usize] as usize].policy,
+        )
     }
     pub(super) fn explicit_deprecation(&self, key: NodeKey) -> bool {
         self.at(key).deprecation_explicit
@@ -344,6 +387,11 @@ impl Policies {
     }
     pub(super) fn work(&self) -> Work {
         self.work
+    }
+}
+impl crate::sema::model::Declarations {
+    pub(crate) fn require_lint_context(&self, report: &Report) -> Result<(), Error> {
+        self.safety_policies.require_context(report)
     }
 }
 

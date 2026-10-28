@@ -1,0 +1,471 @@
+{
+  "state": "primary-derived predictions frozen before observations; default frontend strict remains its existing finite profile",
+  "rustc": "1.98.0",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "target": "x86_64-unknown-linux-gnu",
+  "bootstrap": true,
+  "kind": "library metadata",
+  "panic": "abort",
+  "caps": [
+    null,
+    "allow"
+  ],
+  "cases": [
+    {
+      "name": "unknown-expect",
+      "path": "pa40/tests/spec/lint-cap-allow/unknown-expect.rs",
+      "sha256": "e1dc36c748555ba289b4740553560a113b5fc981c1515aa5f46a809d4829adca",
+      "mode": "ordinary",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 0,
+      "expected_uncapped_lints": {
+        "unknown_lints": 1
+      },
+      "expected_capped_status": 0,
+      "expected_capped_lints": {},
+      "required_error_codes": [],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "unimplemented-expect",
+      "path": "pa40/tests/spec/lint-cap-allow/unimplemented-expect.rs",
+      "sha256": "85360f45d2a7a2dcc4b5cf889215d8719f436b6c35abe67d7cdaafa7114fe5e0",
+      "mode": "ordinary",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 0,
+      "expected_uncapped_lints": {},
+      "expected_capped_status": 0,
+      "expected_capped_lints": {},
+      "required_error_codes": [],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "known-empty",
+      "path": "pa40/tests/spec/lint-cap-allow/known-empty.rs",
+      "sha256": "d46faaa9e6dcd17cd8710da50bea02f55a37ea8941d898d9e001a56455c621d4",
+      "mode": "ordinary",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 0,
+      "expected_uncapped_lints": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "expected_capped_status": 0,
+      "expected_capped_lints": {},
+      "required_error_codes": [],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "known-event",
+      "path": "pa40/tests/spec/lint-cap-allow/known-event.rs",
+      "sha256": "115b700d1a174e4133dcfe2bc71ba1d566bda4d110f36f57fefe8ac3897dc566",
+      "mode": "ordinary",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 0,
+      "expected_uncapped_lints": {},
+      "expected_capped_status": 0,
+      "expected_capped_lints": {},
+      "required_error_codes": [],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "deny",
+      "path": "pa40/tests/spec/lint-cap-allow/deny.rs",
+      "sha256": "1cca689f35d4c4b4f2e933cb359404b45b1c15f129a121c4ed80ed5e1e9786bd",
+      "mode": "ordinary",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_lints": {
+        "deprecated": 1
+      },
+      "expected_capped_status": 0,
+      "expected_capped_lints": {},
+      "required_error_codes": [],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "forbid",
+      "path": "pa40/tests/spec/lint-cap-allow/forbid.rs",
+      "sha256": "7f3a7142e5c9c3d811d26ed576183828fad466edc799aa1ee301cf335d7bf950",
+      "mode": "ordinary",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_lints": {
+        "deprecated": 1
+      },
+      "expected_capped_status": 0,
+      "expected_capped_lints": {},
+      "required_error_codes": [],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "forbid-weakening",
+      "path": "pa40/tests/spec/lint-cap-allow/forbid-weakening.rs",
+      "sha256": "c8ec9ebf05604dadb36e9cfbd52bc05c4b3ecf65d4681ee7c3688029f3b204c3",
+      "mode": "ordinary",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_lints": {},
+      "expected_capped_status": 0,
+      "expected_capped_lints": {},
+      "required_error_codes": [],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "hard-type",
+      "path": "pa40/tests/spec/lint-cap-allow/hard-type.rs",
+      "sha256": "ebe75672ad10567323e1ea74f21d1a01233bbf974381d33882707e414d54151a",
+      "mode": "ordinary",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_lints": {},
+      "expected_capped_status": 1,
+      "expected_capped_lints": {},
+      "required_error_codes": [
+        "E0308"
+      ],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "hard-unsafe",
+      "path": "pa40/tests/spec/lint-cap-allow/hard-unsafe.rs",
+      "sha256": "cc1610d22bbf0bda38cb28bb009818def41415a467cd16bcf48e71b26d380cbd",
+      "mode": "ordinary",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_lints": {},
+      "expected_capped_status": 1,
+      "expected_capped_lints": {},
+      "required_error_codes": [
+        "E0133"
+      ],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "source-unknown-expect",
+      "path": "pa40/tests/spec/lint-cap-allow/source-unknown-expect.rs",
+      "sha256": "24c66c62298ae224ee59654ef84628431c5d01ad3d992b93bfc8694ae658cd14",
+      "mode": "source-provider",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 0,
+      "expected_uncapped_lints": {
+        "unknown_lints": 1
+      },
+      "expected_capped_status": 0,
+      "expected_capped_lints": {},
+      "required_error_codes": [],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "source-unimplemented-expect",
+      "path": "pa40/tests/spec/lint-cap-allow/source-unimplemented-expect.rs",
+      "sha256": "970fe4a277225490430f78ab6e0edbe8cb763e30a6c70b19c1f6b16ab27dc89a",
+      "mode": "source-provider",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 0,
+      "expected_uncapped_lints": {},
+      "expected_capped_status": 0,
+      "expected_capped_lints": {},
+      "required_error_codes": [],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "source-known-empty",
+      "path": "pa40/tests/spec/lint-cap-allow/source-known-empty.rs",
+      "sha256": "e52e9aa233ade9042768f8afb8ceccbe60931f08af450c83f79ad372571dd010",
+      "mode": "source-provider",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 0,
+      "expected_uncapped_lints": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "expected_capped_status": 0,
+      "expected_capped_lints": {},
+      "required_error_codes": [],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "source-known-event",
+      "path": "pa40/tests/spec/lint-cap-allow/source-known-event.rs",
+      "sha256": "b75bd38364033ad4eaee664352f1ce4be01c5104b046fe94322653a323bc7de0",
+      "mode": "source-provider",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 0,
+      "expected_uncapped_lints": {},
+      "expected_capped_status": 0,
+      "expected_capped_lints": {},
+      "required_error_codes": [],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "source-deny",
+      "path": "pa40/tests/spec/lint-cap-allow/source-deny.rs",
+      "sha256": "65f87a31c74983a08b95ddde16b7de80cb01589af158e832b799c71ecdcc1c40",
+      "mode": "source-provider",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_lints": {
+        "deprecated": 1
+      },
+      "expected_capped_status": 0,
+      "expected_capped_lints": {},
+      "required_error_codes": [],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "source-forbid",
+      "path": "pa40/tests/spec/lint-cap-allow/source-forbid.rs",
+      "sha256": "d035851eb6413b3c7dcb600a78c62c6fc6436b89730f551854b9e85a7138478e",
+      "mode": "source-provider",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_lints": {
+        "deprecated": 1
+      },
+      "expected_capped_status": 0,
+      "expected_capped_lints": {},
+      "required_error_codes": [],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "source-forbid-weakening",
+      "path": "pa40/tests/spec/lint-cap-allow/source-forbid-weakening.rs",
+      "sha256": "e035a6d1a586003c9ae3dac75b9be37269c9e4d2171e1f4263a3e94d3e98520f",
+      "mode": "source-provider",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_lints": {},
+      "expected_capped_status": 0,
+      "expected_capped_lints": {},
+      "required_error_codes": [],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "source-hard-type",
+      "path": "pa40/tests/spec/lint-cap-allow/source-hard-type.rs",
+      "sha256": "95af198eefa136bbc430cae4ca97d05ef255b4222af5af7b43cc2503cb485c2e",
+      "mode": "source-provider",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_lints": {},
+      "expected_capped_status": 1,
+      "expected_capped_lints": {},
+      "required_error_codes": [
+        "E0308"
+      ],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "source-hard-unsafe",
+      "path": "pa40/tests/spec/lint-cap-allow/source-hard-unsafe.rs",
+      "sha256": "e81486b27a23d3420aadddeed4039f4aa7cd4242425e7e023cab8162bff8e1a7",
+      "mode": "source-provider",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_lints": {},
+      "expected_capped_status": 1,
+      "expected_capped_lints": {},
+      "required_error_codes": [
+        "E0133"
+      ],
+      "prediction": "revised isolating unsafe call; v1 hard-rejected missing copy lang_item, retained as counterexample"
+    },
+    {
+      "name": "unknown-tool",
+      "path": "pa40/tests/spec/lint-cap-allow/unknown-tool.rs",
+      "sha256": "d4fd3ed6c7460202966341a8b2009a25c094b943f3bb67c00d8cc6aebb4a4cff",
+      "mode": "ordinary",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_lints": {},
+      "expected_capped_status": 1,
+      "expected_capped_lints": {},
+      "required_error_codes": [
+        "E0710"
+      ],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "malformed-reason",
+      "path": "pa40/tests/spec/lint-cap-allow/malformed-reason.rs",
+      "sha256": "a268f0954be9b6669dd931a66935399cf71c088f564636544f77e9e3d9f71c96",
+      "mode": "ordinary",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_lints": {},
+      "expected_capped_status": 1,
+      "expected_capped_lints": {},
+      "required_error_codes": [],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "hard-feature",
+      "path": "pa40/tests/spec/lint-cap-allow/hard-feature.rs",
+      "sha256": "401bac1e151ec1063f12c534912bf1eae23e83a985dd91444e42e4275947c5f4",
+      "mode": "ordinary",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_lints": {},
+      "expected_capped_status": 1,
+      "expected_capped_lints": {},
+      "required_error_codes": [
+        "E0658"
+      ],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "hard-feature-name",
+      "path": "pa40/tests/spec/lint-cap-allow/hard-feature-name.rs",
+      "sha256": "b88953f6b975625ecef9f06704cd49abbf36ecd24409c1d239476e40fcd957fa",
+      "mode": "ordinary",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_lints": {},
+      "expected_capped_status": 1,
+      "expected_capped_lints": {},
+      "required_error_codes": [
+        "E0635"
+      ],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "hard-syntax",
+      "path": "pa40/tests/spec/lint-cap-allow/hard-syntax.rs",
+      "sha256": "b69add7816c175442602afa678e9d2476b64d86ffb49c9a548bafaa671b897db",
+      "mode": "ordinary",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_lints": {},
+      "expected_capped_status": 1,
+      "expected_capped_lints": {},
+      "required_error_codes": [],
+      "prediction": "frozen before Rust/candidate observation"
+    },
+    {
+      "name": "hard-ctfe",
+      "path": "pa40/tests/spec/lint-cap-allow/hard-ctfe.rs",
+      "sha256": "ea19dc2c57ce66d00dbf4ebb316e223a14ae7942556ad313795c56c099263743",
+      "mode": "ordinary",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_lints": {},
+      "expected_capped_status": 1,
+      "expected_capped_lints": {},
+      "required_error_codes": [
+        "E0080"
+      ],
+      "prediction": "frozen CTFE/safety permission boundary before candidate observations"
+    },
+    {
+      "name": "unsafe-operation-lint",
+      "path": "pa40/tests/spec/lint-cap-allow/unsafe-operation-lint.rs",
+      "sha256": "7fa0d2d1a9bec55a0443ea54272797a82b75e4adbdddb0d16b2c28b0b76cc72b",
+      "mode": "ordinary",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_lints": {},
+      "expected_capped_status": 0,
+      "expected_capped_lints": {},
+      "required_error_codes": [
+        "E0133"
+      ],
+      "prediction": "v3 confirmed lint error uses E0133 diagnostic code; cap suppresses this typed lint, not hard unsafe calls"
+    },
+    {
+      "name": "default-static-reference",
+      "path": "pa40/tests/spec/lint-cap-allow/default-static-reference.rs",
+      "sha256": "278d483bda65c57a33a1eb363685f60a671d01b7f26725818051c45bcfcd2861",
+      "mode": "ordinary",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_status_by_edition": {
+        "2021": 0,
+        "2024": 1
+      },
+      "expected_uncapped_lints": {
+        "static_mut_refs": 1
+      },
+      "expected_capped_status": 0,
+      "expected_capped_lints": {},
+      "required_error_codes": [],
+      "prediction": "frozen attribute-free default-policy control before candidate observation"
+    }
+  ]
+}

@@ -93,6 +93,10 @@ impl Declarations {
     /// Close only lint producers completed by this request. Header-only callers
     /// close import owners; a complete body request may close all source owners.
     pub(crate) fn finalize_lints(&mut self, report: &Report, bodies: bool) -> Result<(), Error> {
+        self.require_lint_context(report)?;
+        if report.package.lint_cap().suppresses_lints() {
+            return Ok(());
+        }
         let Some(producer) = report.lint_producer() else {
             return Ok(());
         };

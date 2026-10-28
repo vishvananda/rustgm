@@ -1,4 +1,25 @@
 //! Phase-neutral warning identities have no printing or semantic permission.
+/// One explicit compilation input; this never grants language or API permission.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum LintCap {
+    #[default]
+    Uncapped,
+    Allow,
+}
+impl LintCap {
+    #[must_use]
+    pub const fn suppresses_lints(self) -> bool {
+        matches!(self, Self::Allow)
+    }
+    /// # Errors
+    /// Other standard levels remain outside this finite driver profile.
+    pub fn parse(value: &str) -> Result<Self, &'static str> {
+        match value {
+            "allow" => Ok(Self::Allow),
+            _ => Err("unsupported lint cap; this profile implements only allow"),
+        }
+    }
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum WarningCode {
     Deprecated,

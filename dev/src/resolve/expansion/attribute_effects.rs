@@ -12,6 +12,21 @@ pub(crate) struct Effects {
     pub(super) visibilities: Option<Box<super::unnamed_visibility::Causes>>,
 }
 impl Report {
+    /// Parsed optional expectations deferred by an explicit cap have no IDs or
+    /// fulfillment proof. The original attribute witnesses remain retained.
+    /// # Errors
+    /// Rejects a changed compilation cap or diagnostic work exhaustion.
+    pub fn deferred_lint_expectations(&self) -> Result<u32, Error> {
+        let key = NodeKey {
+            file: self.package.modules[0].file,
+            node: self.package.modules[0].root,
+        };
+        self.lint_producer().map_or(Ok(0), |producer| {
+            producer
+                .deferred_expectation_count(&self.package, key)
+                .map_err(Into::into)
+        })
+    }
     pub(crate) fn removed_functions(&self) -> Option<&Removals> {
         self.attribute_effects
             .as_deref()
@@ -62,20 +77,18 @@ impl<S: Sources> Engine<'_, S> {
         let frames = self.frame_mark()?;
         let calls = u32::try_from(self.calls.len())
             .map_err(|_| Error::at(key.file, 0, "lint call index overflow"))?;
-        if self.attribute_effects.is_none() {
-            let mut producer = Producer::new(frames, calls);
-            producer.reserve_diagnostic(key, size_of::<Effects>())?;
-            self.attribute_effects = Some(Box::new(Effects {
-                removals: Removals::default(),
-                policy: Some(producer),
-                visibilities: None,
-                derives: None,
-            }));
+        if self
+            .attribute_effects
+            .as_deref()
+            .is_none_or(|effects| effects.policy.is_none())
+        {
+            let mut producer =
+                Producer::capped(frames, calls, self.loader.package.lint_cap(), key)?;
+            if self.attribute_effects.is_none() {
+                producer.reserve_diagnostic(key, size_of::<Effects>())?;
+            }
+            self.attribute_effects.get_or_insert_default().policy = Some(producer);
         }
-        self.attribute_effects
-            .get_or_insert_default()
-            .policy
-            .get_or_insert_with(|| Producer::new(frames, calls));
         Ok(())
     }
     pub(super) fn visit_key(&self, visit: Visit) -> NodeKey {
