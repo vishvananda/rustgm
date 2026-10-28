@@ -256,7 +256,8 @@ fn marker_shape_ordinary_storage_and_derive_owner_layouts_preserve_boundaries() 
             size_of::<crate::resolve::bindings::Reservations>(),
             crate::sema::compiler_items::validated_layout_bytes()
         );
-        assert_eq!(size_of::<super::super::Report>(), 3016);
+        // Inline import work adds one lineage pointer and nine usize counters.
+        assert_eq!(size_of::<super::super::Report>(), 3096);
         assert_eq!(size_of::<super::super::Body>(), 96);
         assert_eq!(size_of::<super::super::Definition>(), 136);
         assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
