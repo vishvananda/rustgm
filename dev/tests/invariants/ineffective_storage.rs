@@ -220,3 +220,49 @@ fn exhausted_annotation_observation_keeps_each_failed_attempt_paid() -> TestResu
     assert_eq!(producer.work().bytes, before.bytes);
     Ok(())
 }
+#[test]
+fn feature_name_validation_prepays_attempted_bytes_before_retention() -> TestResult {
+    let name = "a".repeat(64);
+    let source = format!(
+        "#![feature(staged_api)]#![stable(feature=\"base\",since=\"1.0.0\")]#[unstable(feature=\"sample\",issue=\"none\")]#[unstable_feature_bound({name})]fn f(){{}}"
+    );
+    let report = crate::test_source::resolve(&source, true)?;
+    let producer = report.lint_producer().ok_or("source annotation producer")?;
+    let (&key, row) = producer
+        .ineffective_headers
+        .as_ref()
+        .ok_or("annotation column")?
+        .rows
+        .iter()
+        .next()
+        .ok_or("source annotation")?;
+    let owner = producer
+        .record(row.tail, key)
+        .map_err(crate::resolve::package::Error::from)?;
+    let unit = report.package.unit(key.file);
+    let witness = owner
+        .parsed
+        .witnesses
+        .iter()
+        .find(|witness| {
+            let capture = &unit.configured.ast.attributes[witness.capture as usize];
+            witness.attribute.name(&capture.forest, unit.source.text())
+                == Some("unstable_feature_bound")
+        })
+        .ok_or("actual bound effect")?;
+    let forest = &unit.configured.ast.attributes[witness.capture as usize].forest;
+    let mut work = Work {
+        steps: 10_000_000 - 32,
+        ..Work::default()
+    };
+    let mut bounds = Vec::new();
+    let error = feature_bounds(unit, key, witness.attribute, forest, &mut bounds, &mut work)
+        .err()
+        .ok_or("unpaid name retained")?;
+    assert!(error.message.contains("work budget"));
+    assert!(work.steps > 10_000_000 && bounds.is_empty());
+    let before = work.steps;
+    assert!(feature_bounds(unit, key, witness.attribute, forest, &mut bounds, &mut work).is_err());
+    assert!(work.steps > before && bounds.is_empty());
+    Ok(())
+}

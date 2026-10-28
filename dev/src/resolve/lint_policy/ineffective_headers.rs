@@ -1,4 +1,4 @@
-//! Cold exact impl/attribute joins; these rows grant no API availability.
+//! Cold exact declaration/attribute joins; these rows grant no API availability.
 use super::{
     Violation,
     producer::{Parsed, Producer, Tail, Work, invalid},
@@ -32,12 +32,13 @@ pub(super) struct Annotation {
     bounds: Vec<Box<str>>,
 }
 #[derive(Clone, Copy)]
-pub(crate) struct ImplAnnotation<'a> {
+pub(crate) struct DeclarationAnnotation<'a> {
     pub owner: NodeKey,
     pub unstable: Option<Attribute>,
     pub bound: Option<Attribute>,
     pub bounds: &'a [Box<str>],
 }
+pub(crate) type ImplAnnotation<'a> = DeclarationAnnotation<'a>;
 pub(super) fn capture(
     unit: &Unit,
     key: NodeKey,
@@ -67,6 +68,13 @@ pub(super) fn capture(
             }
         )
     });
+    let accepts_bound = is_impl
+        || item.is_some_and(|item| {
+            matches!(
+                item.kind,
+                ItemKind::Trait { .. } | ItemKind::Function { .. }
+            )
+        });
     let mut unstable = None;
     let mut bound = None;
     let mut bounds = Vec::new();
@@ -76,14 +84,19 @@ pub(super) fn capture(
         let forest = &capture.forest;
         let attribute = witness.attribute;
         match attribute.name(forest, unit.source.text()) {
-            Some("unstable") if is_impl => unstable = Some(witness.effect),
+            Some("unstable") if accepts_bound => unstable = Some(witness.effect),
             Some("unstable_feature_bound") => {
-                bound = Some(witness.effect);
-                if !is_impl {
+                if bound.replace(witness.effect).is_some() {
+                    return Err(invalid(
+                        key,
+                        "repeated unstable_feature_bound attributes require a wider source profile",
+                    ));
+                }
+                if !accepts_bound {
                     return Err(Violation {
                         key,
                         offset: attribute.span.start,
-                        message: "unstable_feature_bound consumer requires an actual local trait impl; other owners remain required",
+                        message: "unstable_feature_bound requires an actual trait, function or trait impl declaration",
                     });
                 }
                 feature_bounds(unit, key, attribute, forest, &mut bounds, work)?;
@@ -91,14 +104,14 @@ pub(super) fn capture(
             _ => {}
         }
     }
-    if unstable.is_none() && bound.is_none() {
+    if bound.is_none() && (!is_impl || unstable.is_none()) {
         return Ok(None);
     }
     Ok(Some(Annotation {
         tail,
         key: declaration,
         node,
-        item: item.ok_or_else(|| invalid(key, "impl annotation lost actual item"))?,
+        item: item.ok_or_else(|| invalid(key, "declaration annotation lost actual item"))?,
         unstable,
         bound,
         bounds,
@@ -133,6 +146,7 @@ fn feature_bounds(
         let name = forest
             .name(unit.source.text(), index)
             .ok_or_else(|| invalid(key, "unstable_feature_bound requires feature identifiers"))?;
+        work.charge(key, name.len().saturating_mul(2).saturating_add(1), 0)?;
         if crate::resolve::bindings::FeatureName::new(name).is_err()
             || forest.after(index) != index + 1
         {
@@ -194,6 +208,15 @@ impl Producer {
         annotations.rows.insert(row.key, row);
         Ok(())
     }
+    /// Data-only enumeration; each key still needs its authenticated source query.
+    /// The upper size hint counts all rows and prepays filtering traversal.
+    pub(crate) fn feature_bound_keys(&self) -> impl Iterator<Item = NodeKey> + '_ {
+        self.ineffective_headers
+            .as_ref()
+            .map(|column| column.rows.iter())
+            .unwrap_or_default()
+            .filter_map(|(&key, row)| row.bound.is_some().then_some(key))
+    }
     pub(crate) fn has_impl_annotations(&self) -> bool {
         self.ineffective_headers.is_some()
     }
@@ -202,6 +225,30 @@ impl Producer {
         package: &Package,
         key: NodeKey,
     ) -> Result<Option<ImplAnnotation<'_>>, Violation> {
+        let Some(annotation) = self.declaration_annotation(package, key)? else {
+            return Ok(None);
+        };
+        self.attribute_read(key, 1)?;
+        let is_impl = self
+            .ineffective_headers
+            .as_ref()
+            .and_then(|column| column.rows.get(&key))
+            .is_some_and(|row| {
+                matches!(
+                    row.item.kind,
+                    ItemKind::Impl {
+                        trait_path: Some(_),
+                        ..
+                    }
+                )
+            });
+        Ok(is_impl.then_some(annotation))
+    }
+    pub(crate) fn declaration_annotation(
+        &self,
+        package: &Package,
+        key: NodeKey,
+    ) -> Result<Option<DeclarationAnnotation<'_>>, Violation> {
         self.attribute_read(key, 1)?;
         let Some(row) = self
             .ineffective_headers
@@ -230,7 +277,7 @@ impl Producer {
                 "impl annotation changed actual source declaration",
             ));
         }
-        Ok(Some(ImplAnnotation {
+        Ok(Some(DeclarationAnnotation {
             owner: owner.key,
             unstable: row
                 .unstable
@@ -248,7 +295,7 @@ impl Producer {
             for (&key, row) in &column.rows {
                 self.attribute_read(key, 1)?;
                 if row.bound.is_some() {
-                    self.impl_annotation(package, key)?;
+                    self.declaration_annotation(package, key)?;
                     return Err(invalid(
                         key,
                         "unstable_feature_bound transport is not implemented for this metadata profile",

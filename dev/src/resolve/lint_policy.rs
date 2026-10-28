@@ -4,7 +4,7 @@ mod expectations;
 mod ineffective_headers;
 mod suggestions;
 pub(crate) use expectations::{ExpectationId, PendingExpectation, Progress};
-pub(crate) use ineffective_headers::ImplAnnotation;
+pub(crate) use ineffective_headers::{DeclarationAnnotation, ImplAnnotation};
 pub(crate) mod producer;
 use crate::resolve::{package::Error, unit::NodeKey};
 #[derive(Clone, Copy, PartialEq, Eq)]

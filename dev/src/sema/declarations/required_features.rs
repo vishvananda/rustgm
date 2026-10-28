@@ -1,4 +1,5 @@
 //! Required features consume the completed source request inventory.
+pub(super) mod annotated;
 use super::{Checker, Error};
 use crate::{
     resolve::{expansion::Report, model::DefId, unit::NodeKey},
