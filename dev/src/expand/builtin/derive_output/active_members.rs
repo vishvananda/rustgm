@@ -1,6 +1,14 @@
 //! One bounded active field inventory is shared by every selected derive member.
 use super::{Charge, ItemKind, Kind, LexError, NodeId, Site, error};
 use crate::syntax::ast::List;
+pub(super) struct VariantMembers {
+    pub variant: crate::syntax::item::Variant,
+    pub fields: std::ops::Range<usize>,
+}
+pub(super) struct Inventory {
+    pub fields: Vec<NodeId>,
+    pub variants: Vec<VariantMembers>,
+}
 fn append(
     site: &Site<'_>,
     range: List,
@@ -28,11 +36,14 @@ fn append(
     }
     Ok(())
 }
-pub(super) fn collect(site: &Site<'_>, charge: &Charge<'_>) -> Result<Vec<NodeId>, LexError> {
-    charge(1, 0)?;
-    let mut output = Vec::new();
+pub(super) fn collect(site: &Site<'_>, charge: &Charge<'_>) -> Result<Inventory, LexError> {
+    charge(1, size_of::<Inventory>())?;
+    let mut output = Inventory {
+        fields: Vec::new(),
+        variants: Vec::new(),
+    };
     match site.item.kind {
-        ItemKind::Struct { fields, .. } => append(site, fields, &mut output, charge)?,
+        ItemKind::Struct { fields, .. } => append(site, fields, &mut output.fields, charge)?,
         ItemKind::Enum { variants } => {
             for &node in site.ast.list(variants) {
                 charge(1, 0)?;
@@ -50,12 +61,25 @@ pub(super) fn collect(site: &Site<'_>, charge: &Charge<'_>) -> Result<Vec<NodeId
                         "derived enum lost its actual variant",
                     ));
                 };
-                append(
-                    site,
-                    site.ast.variants[index as usize].fields,
-                    &mut output,
-                    charge,
-                )?;
+                let variant = site.ast.variants[index as usize];
+                let start = output.fields.len();
+                append(site, variant.fields, &mut output.fields, charge)?;
+                let growth = crate::support::retained::Growth::vector::<VariantMembers>(
+                    output.variants.len(),
+                    output.variants.capacity(),
+                    1,
+                );
+                charge(growth.work.saturating_add(1), growth.bytes)?;
+                output.variants.try_reserve(1).map_err(|_| {
+                    error(
+                        site.original.start,
+                        "derived variant inventory allocation failed",
+                    )
+                })?;
+                output.variants.push(VariantMembers {
+                    variant,
+                    fields: start..output.fields.len(),
+                });
             }
         }
         _ => {

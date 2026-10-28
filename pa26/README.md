@@ -427,3 +427,10 @@ the local source role declarations and actual implementation bodies, including
 full reference-forwarding macro CTFE. This closes the earlier source role debt
 for that supported profile; full checked macro panic closure and broader
 source/default/imported execution remain required.
+
+The source derive follow-up includes fieldwise generic Clone and actual enum
+payload expansion using the existing authenticated transaction. Clone calls the
+field's selected ordinary method even when Copy appears in the same list. The
+original Result/Option/ControlFlow enabled lists now expand without replacing
+those declarations. Source comparison/discriminant, complete generic forms and
+full formatter/panic execution remain required; this is not a PA26 release.

@@ -27,3 +27,54 @@ test protocol and every composite input/options/prediction. A reduced protocol
 does not replace the complete pinned traits or formatter/runtime declarations.
 All unsupported wider forms and hypothesis disagreements must remain visible.
 No reference, library artifact or full panic/Assert qualification is declared.
+
+The generic-payload follow-up retains the original Result, Option and ControlFlow
+attributes and fields in `generic-payload/`. Their completed transaction controls
+cover all enabled member expansions; comparison/hash execution still needs the
+actual source operator/discriminant family. Unbounded type/lifetime parameters
+and defaults use ordinary generic trait bounds. Explicit bounds, where clauses,
+const parameters and larger Debug helper families remain unsupported here.
+
+Fieldwise Clone now borrows actual struct/variant fields and calls their real
+Clone methods; paired Copy never adds a Copy bound to generic Clone. The genuine
+source reducer clones three non-Copy fields through ordinary checking, ownership,
+instances and CPPGM native execution (`c7;c9;c11;v7;v9;v11;7`). The negative missing
+Clone and repeated-move/conditional Copy cases are checked at their actual semantic
+and borrow/instance boundaries respectively. The separate ordinary Rust packet
+has 46 independently matched metadata/build/native commands; the same authored
+source-provider family has eight independently matched commands. Neither packet
+qualifies the full original generic derive family or runtime formatter.
+
+The ephemeral active-member inventory is 48 bytes (two Vecs), with 40-byte variant
+rows into the same flat active-field Vec. Output168/Site232/Field352 and persistent
+owners are unchanged. Actual emitted N=8/32/128 payload variants used work
+5671/11039/32655 and charged bytes404016/1357344/5169888; retained witness count8572
+was unchanged. All capacities, generated names and copied/parser work are paid.
+Earlier parse/privacy/test-setup failures remain in the evidence receipts; no
+visibility bypass, generic Copy truth or source body substitute was introduced.
+
+Maintainer recovery (worker wrap-up): the isolated implementation commit is
+`7d7574ba160c75d1628284c41ad48327bb943062`. Its exact-five private gate is
+`obj/qualification/fast/1793162981051127193/receipt.json`; production strict and
+ten lexer controls pass at `1793163196877650335`. Source/native bindings and all
+failed predecessor receipts are indexed by
+`obj/parallel/pa31/panic-handler-exit-v2/generic-derive-component/handoff.json`.
+The optional direct CLI library observer reaches the existing closed source
+stability publication profile; it is a retained prediction disagreement, not a
+successful source-library artifact. Private ordinary body/borrow/instance proof
+and the identical native payload remain the qualified execution scope.
+
+Unfinished handler work is preserved separately in local branch
+`source-panic-handler-exit-v2`, commit
+`d2ad7f8d5c28716cc47f7477ef3c86edb7d04da2`; it is not part of this component.
+The next correction must separate weak-import canonical naming from optional
+local handler binding: original library objects may legitimately have no local
+handler. Root approved an ephemeral optional handler in the existing batch and a
+fresh reached-call query at Work::Enter, without another owner/cache/field.
+That correction, fixed panic=abort nounwind admission, complete original helper
+assembly and actual PanicInfo/handler/false-Assert execution remain pending.
+Use the retained original assembly-v9 graph as source data; include genuine
+Result/Option manual Clone impls and original Not/Shl/BitOr definitions/bodies,
+consume C's variant stability/comparison prerequisite, and retain unused bodies
+as Pending only under the existing private local-root profile. Preserve all
+original declarations/attributes; no replacement Formatter/handler/helper.

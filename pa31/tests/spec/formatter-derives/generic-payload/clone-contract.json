@@ -1,0 +1,42 @@
+{
+  "state": "source predictions frozen before independent observation/candidate runtime",
+  "scope": "Genuine generic fieldwise Clone over actual prior source Clone/header foundation; source support reduction, no full Formatter/panic completion",
+  "source": {
+    "path": "pa31/tests/spec/formatter-derives/generic-payload/clone-source.rs",
+    "sha256": "50054422caa9c09ff6611f3d3a0673865bcf9b341612fa83871d0450a0a41510"
+  },
+  "consumer": {
+    "path": "pa31/tests/spec/formatter-derives/generic-payload/clone-consumer.c",
+    "sha256": "ec38f09f3f3744b367b69fada718e88d287e7f1ae061f5be253703cc6961a59f"
+  },
+  "foundation": {
+    "path": "pa31/tests/spec/source-location/location-copy-clone.rs",
+    "sha256": "27d396405a174743ebecbaa3b4818642062ed409b23c5db3bf7f449c10e16dfd",
+    "exact_prefix": true
+  },
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "host": {
+    "path": "/usr/bin/x86_64-linux-gnu-gcc-15",
+    "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88"
+  },
+  "editions": [
+    2021,
+    2024
+  ],
+  "options": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Coverflow-checks=yes",
+    "--cap-lints=allow"
+  ],
+  "metadata": 0,
+  "expected_native_stdout": "c7;c9;c11;v7;v9;v11;7\n",
+  "env": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "setup_note": "Before first observation: actual self-alias plus explicit derive/Clone namespace imports on authored user module; original foundation exact prefix retained."
+}
