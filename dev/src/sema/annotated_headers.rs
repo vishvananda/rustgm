@@ -11,7 +11,7 @@ mod local;
 pub(in crate::sema) use incarnations::SourceImage;
 pub(in crate::sema) use local::{
     consume_const_panic, consume_inherited_overflow, consume_no_implicit_autorefs,
-    consume_tracking, inherit_tracking, marker_trait,
+    consume_pointer_lint, consume_tracking, inherit_tracking, marker_trait,
 };
 #[cfg(test)]
 #[path = "../../tests/invariants/nodeless_owners.rs"]

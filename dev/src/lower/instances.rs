@@ -503,7 +503,7 @@ impl<'a> Construction<'a> {
 pub(crate) fn build_local_prepared(
     report: &Report,
     facts: &mut Declarations,
-    entry: DefId,
+    entry: Option<DefId>,
     prepared: crate::pipeline::Prepared,
 ) -> Result<crate::lowir::program::Program, Error> {
     inspect_staged(
@@ -513,7 +513,7 @@ pub(crate) fn build_local_prepared(
         |facts, _| {
             let exports = super::roots::exports(facts, &[])
                 .map_err(|e| diagnostic(report, None, e.into()))?;
-            Ok((Some(entry), exports, ()))
+            Ok((entry, exports, ()))
         },
         staged_originals::ignore,
         |facts, assembled, roots, ()| super::build_assembled(facts, assembled, roots),

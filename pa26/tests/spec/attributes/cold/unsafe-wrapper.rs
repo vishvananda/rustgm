@@ -1,0 +1,2 @@
+#[unsafe(cold)]
+fn observed(){}

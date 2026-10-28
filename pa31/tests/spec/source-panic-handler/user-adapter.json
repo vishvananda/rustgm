@@ -1,0 +1,12 @@
+{
+  "adaptation": "Explicit no_core prelude import only; no newline, declaration header or body edit. Some resolves to actual existing Option variant. Later line/columns remain original. No original-source whole-artifact acceptance.",
+  "original_source_sha256": "5620daf131c37576e5b9696886edaa571ff4f7b5403f485b1f8b10b35c917739",
+  "prefix": "use crate::Option::Some;",
+  "prefix_sha256": "b2b8f611727bd09b87acde021ffa319ed7434a8f85d4fd625caced730464a676",
+  "effective_source_sha256": "24d86ff06bb825961966061ed0776c6c11f7996e9f7a483befece330e2a2e5a7",
+  "original_chunk_offset": 24,
+  "original_line_count": 24,
+  "effective_line_count": 24,
+  "assert_line": 22,
+  "assert_column": 5
+}

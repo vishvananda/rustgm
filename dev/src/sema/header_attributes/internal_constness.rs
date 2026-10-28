@@ -166,6 +166,77 @@ pub(in crate::sema) fn consume_inherited_overflow(
 }
 
 impl Declarations {
+    pub(in crate::sema) fn weak_panic_import(
+        &self,
+        report: &Report,
+        definition: DefId,
+    ) -> Result<bool, Error> {
+        if !report.resolution.foreign_owners.contains_key(&definition) {
+            return Err(Error::unlocated(
+                "weak panic query requires its actual foreign owner",
+            ));
+        }
+        let mut found = false;
+        let mut custom_linkage = false;
+        if !super::implicit_receivers::visit_attributes(
+            self,
+            report,
+            definition,
+            |attribute, forest, unit| {
+                let name = attribute.name(forest, unit.source.text());
+                if matches!(name, Some("link_name" | "export_name" | "no_mangle")) {
+                    custom_linkage = true;
+                }
+                if name != Some("lang") {
+                    return Ok(());
+                }
+                let bytes =
+                    usize::try_from(attribute.span.end.saturating_sub(attribute.span.start))
+                        .map_err(|_| {
+                            Error::unlocated("weak panic attribute span exceeds its arena")
+                        })?;
+                super::charge_source_retention(self, bytes, bytes)?;
+                let Input::Equals(range) = attribute.input else {
+                    return Err(Error::unlocated(
+                        "source language claim requires its retained literal",
+                    ));
+                };
+                if range.end != range.start + 1 {
+                    return Err(Error::unlocated(
+                        "source language claim requires one retained literal",
+                    ));
+                }
+                let token = forest
+                    .token(range.start)
+                    .ok_or_else(|| Error::unlocated("source language claim lost its literal"))?;
+                let Some(crate::literal::Value::String(value)) =
+                    crate::literal::interpret(unit.source.text(), token)
+                        .map_err(|error| Error::unlocated(error.message))?
+                else {
+                    return Err(Error::unlocated(
+                        "source language claim lost its string value",
+                    ));
+                };
+                if value.as_ref() == b"panic_impl" {
+                    if found {
+                        return Err(Error::unlocated("duplicate weak panic language claim"));
+                    }
+                    found = true;
+                }
+                Ok(())
+            },
+        )? {
+            return Err(Error::unlocated(
+                "weak panic language query requires completed current source headers",
+            ));
+        }
+        if found && custom_linkage {
+            return Err(Error::unlocated(
+                "custom weak panic linkage adaptation is not implemented",
+            ));
+        }
+        Ok(found)
+    }
     /// Each query authenticates the completed physical header before reading
     /// the retained words. No marker result is a role, instance or call proof.
     pub(in crate::sema) fn const_panic_markers(

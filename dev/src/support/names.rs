@@ -144,6 +144,18 @@ impl Names {
     fn canonical(&mut self, spelling: &str) -> Result<NameId, &'static str> {
         self.intern_exact_paid(spelling, &mut |_| Ok(()))
     }
+    pub(crate) fn find_exact_paid(
+        &self,
+        spelling: &str,
+        pay: &mut impl FnMut(crate::support::retained::Growth) -> Result<(), &'static str>,
+    ) -> Result<Option<NameId>, &'static str> {
+        pay(crate::support::retained::Growth {
+            work: spelling.len().saturating_add(1),
+            bytes: 0,
+        })?;
+        self.find(spelling, self.hash.hash_one(spelling), pay)
+            .map(|found| found.1)
+    }
     /// The same interner with explicit cold work/storage payment. No new arena.
     pub(crate) fn intern_exact_paid(
         &mut self,

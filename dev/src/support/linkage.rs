@@ -31,6 +31,32 @@ impl SymbolNames {
         }
         self.names.intern_exact(spelling).map(SymbolNameId)
     }
+    pub(crate) fn find_exact_paid(
+        &self,
+        spelling: &str,
+        pay: &mut impl FnMut(super::retained::Growth) -> Result<(), &'static str>,
+    ) -> Result<Option<SymbolNameId>, &'static str> {
+        self.names
+            .find_exact_paid(spelling, pay)
+            .map(|name| name.map(SymbolNameId))
+    }
+    /// Exact cold interning prepays work and growth without another arena.
+    pub(crate) fn intern_paid(
+        &mut self,
+        spelling: &str,
+        pay: &mut impl FnMut(super::retained::Growth) -> Result<(), &'static str>,
+    ) -> Result<SymbolNameId, &'static str> {
+        pay(super::retained::Growth {
+            work: spelling.len().saturating_add(1),
+            bytes: 0,
+        })?;
+        if spelling.is_empty() || spelling.contains('\0') {
+            return Err("external symbol spelling must be nonempty and NUL-free");
+        }
+        self.names
+            .intern_exact_paid(spelling, pay)
+            .map(SymbolNameId)
+    }
     #[must_use]
     pub fn get(&self, id: SymbolNameId) -> Option<&str> {
         (usize::try_from(id.0.0).ok()? < self.names.len()).then(|| self.names.get(id.0))
