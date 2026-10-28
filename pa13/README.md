@@ -202,6 +202,10 @@ alternatives within an otherwise useful arm remain outside this producer.
 Item inheritance follows lexical policy independently of body and unsafe
 contexts. Warning contracts preserve exact code, count, order and source byte
 locations rather than discarding diagnostics during comparison.
+The [whole-arm warning outcomes](tests/unreachable-warning-outcomes.json) freeze
+the affected shipped fixtures' exact diagnostic bytes and preserve their stdout
+and acceptance/error contracts. Six rejected inputs retain these warnings before
+their unchanged initialization errors.
 
 Dynamic slices add a length variable to the same coverage graph. A query lazily
 collects tested start/end positions by canonical slice type from its own roots.

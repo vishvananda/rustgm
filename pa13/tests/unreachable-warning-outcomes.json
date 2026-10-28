@@ -1,0 +1,431 @@
+{
+  "schema": 1,
+  "family": "pa13.whole-arm-warning-output",
+  "profile": "RustGM whole-arm source profile; pinned Rust1.98 independent validation; individual redundant alternatives remain excluded",
+  "cases": [
+    {
+      "path": "tests/spec/constructors/reject-dead-constructor-capture.rs",
+      "source_sha256": "d9816bb205c3f714cc1c4ded2346be3e68b8a16bf15d45df0de43b8cff1b1b0d",
+      "exit_status": 1,
+      "mode": "--emit-lowir",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 46,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 46: unreachable pattern\nERROR: file 0: 47: local may be uninitialized or moved at this read\n",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 1,
+      "known_discrepancy": null
+    },
+    {
+      "path": "tests/spec/constructors/reject-dead-constructor-read.rs",
+      "source_sha256": "48c88a7645a2274a0bfe19512d11a7e02a3ee26cb3527daffc08d8aaa70ec2fb",
+      "exit_status": 1,
+      "mode": "--emit-lowir",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 48,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 48: unreachable pattern\nERROR: file 0: 58: local may be uninitialized at this read\n",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 1,
+      "known_discrepancy": null
+    },
+    {
+      "path": "tests/spec/constructors/reject-dead-constructor-test.rs",
+      "source_sha256": "e853496a04585a45f4874b23eceef6607b8df96a5d79230cd07cd23750792b8e",
+      "exit_status": 1,
+      "mode": "--emit-lowir",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 38,
+          "message": "unreachable pattern"
+        },
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 48,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 38: unreachable pattern\nwarning[unreachable_patterns]: file 0: 48: unreachable pattern\nERROR: file 0: 39: local may be uninitialized at this read\n",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 1,
+      "known_discrepancy": null
+    },
+    {
+      "path": "tests/spec/floats/f32-0-zeros.rs",
+      "source_sha256": "fccf9684cdf6eef05b2c162c40434e07d261a0917a79cb7317e3b237521b3ed3",
+      "exit_status": 0,
+      "mode": "--emit-lowir",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 169,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 169: unreachable pattern\n",
+      "stdout_sha256": "b99b603029ca613ea9118169b0615a9a44823da4cf9c5d329cb641e0bcba66f8",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 0,
+      "known_discrepancy": null
+    },
+    {
+      "path": "tests/spec/floats/f64-0-zeros.rs",
+      "source_sha256": "71d63901751dd2235ebece62d397094c14bdfdeaed6207c92ffe3b5b159ac5b1",
+      "exit_status": 0,
+      "mode": "--emit-lowir",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 169,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 169: unreachable pattern\n",
+      "stdout_sha256": "7b68b27d4f6a5099729372041a55c8f525162880281dcc200a90b1d0feb2c997",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 0,
+      "known_discrepancy": null
+    },
+    {
+      "path": "tests/spec/pattern-policies/unreachable-default.rs",
+      "source_sha256": "b86e88fe3c5bab7699b65a4796cb9a3461ca918c7c409be03e9dddd94fe62bcd",
+      "exit_status": 0,
+      "mode": "--emit-patterns",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 25,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 25: unreachable pattern\n",
+      "stdout_sha256": "bf476497e6f5cdf90b5312ef0e2c9d806ae463dbc913f5e2ca982c19e447edce",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 0,
+      "known_discrepancy": null
+    },
+    {
+      "path": "tests/spec/pattern-policies/unreachable-inner-warn.rs",
+      "source_sha256": "348ae7d2c219ec73967891e288bde166e9ea5d330987b9ab413ad38335b61b0d",
+      "exit_status": 0,
+      "mode": "--emit-patterns",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 83,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 83: unreachable pattern\n",
+      "stdout_sha256": "bf476497e6f5cdf90b5312ef0e2c9d806ae463dbc913f5e2ca982c19e447edce",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 0,
+      "known_discrepancy": null
+    },
+    {
+      "path": "tests/spec/references/autoderef-constructor-control-explicit.rs",
+      "source_sha256": "8bbf952f290007497937d79bff9a41167b66692d63560fe7f8fe45785c2881ad",
+      "exit_status": 0,
+      "mode": "--emit-patterns",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 35,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 35: unreachable pattern\n",
+      "stdout_sha256": "57d004cb7ab74d8afb82b4660fee70669201931d6f1920c3ba5ff9c0d0573627",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 0,
+      "known_discrepancy": null
+    },
+    {
+      "path": "tests/spec/references/autoderef-constructor-control-implicit.rs",
+      "source_sha256": "0c08dd75bb96a49a7b123267a16aa7b05e2c1aa575d157c888cc6186ba67b153",
+      "exit_status": 0,
+      "mode": "--emit-patterns",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 34,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 34: unreachable pattern\n",
+      "stdout_sha256": "f5f72a12ae41768066700461181b16343897c8f8c553c19e56c4f7b081826262",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 0,
+      "known_discrepancy": null
+    },
+    {
+      "path": "tests/spec/references/autoderef-unit-explicit.rs",
+      "source_sha256": "e322d7e7d79785a950b8569d09c258bd648c6cb9613af75512548f7ea78b0a88",
+      "exit_status": 0,
+      "mode": "--emit-patterns",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 41,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 41: unreachable pattern\n",
+      "stdout_sha256": "937918a874bf679ecb3f20b33bf4640e421fc6289563e7949f5fd6d27f5614ef",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 0,
+      "known_discrepancy": null
+    },
+    {
+      "path": "tests/spec/references/autoderef-unit-implicit.rs",
+      "source_sha256": "119517baff2107fbe63610f11593560f7a14ac161b5ddb15cd63efb406b70b63",
+      "exit_status": 0,
+      "mode": "--emit-patterns",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 40,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 40: unreachable pattern\n",
+      "stdout_sha256": "0fccfeb0d5d6eca7ba1e2edbaf9be6fc96253c54df446c8dd3e0879e7ff8ba0d",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 1,
+      "known_discrepancy": "Reference non-reference constant autoderef accepted by RustGM; pinned Rust requires explicit reference"
+    },
+    {
+      "path": "tests/spec/scalars/irrefutable-or-arm.rs",
+      "source_sha256": "3f16edf4b3bd2e6172a5a5ddb239157759ba519224020b0c17e560d0aa07cee1",
+      "exit_status": 0,
+      "mode": "--emit-lowir",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 102,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 102: unreachable pattern\n",
+      "stdout_sha256": "dd4f5484778f7f09b846c43ea36b335d88f823087f59579bc31a1f2e023cad18",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 0,
+      "known_discrepancy": null
+    },
+    {
+      "path": "tests/spec/scalars/reject-reject-00.rs",
+      "source_sha256": "37605ac5d9426e21cf03a76d0b2d305c1f90b4f9cbaee9a1f28baf85ddd990bc",
+      "exit_status": 1,
+      "mode": "--emit-lowir",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 33,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 33: unreachable pattern\nERROR: file 0: 33: local may be uninitialized at this read\n",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 1,
+      "known_discrepancy": null
+    },
+    {
+      "path": "tests/spec/scalars/reject-reject-01.rs",
+      "source_sha256": "0a8b7734b0ef46996e3660af1427175e877d0d366655f3c310f8d70f561ea284",
+      "exit_status": 1,
+      "mode": "--emit-lowir",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 33,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 33: unreachable pattern\nERROR: file 0: 33: local may be uninitialized at this read\n",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 1,
+      "known_discrepancy": null
+    },
+    {
+      "path": "tests/spec/scalars/reject-reject-02.rs",
+      "source_sha256": "f15cfd8d491cb1edde0ce2fbaf1f9a33c15a23762eb8b1a4dcc16614b9f52e4a",
+      "exit_status": 1,
+      "mode": "--emit-lowir",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 35,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 35: unreachable pattern\nERROR: file 0: 45: local may be uninitialized at this read\n",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 1,
+      "known_discrepancy": null
+    },
+    {
+      "path": "tests/spec/text/accept-byte-nul.rs",
+      "source_sha256": "acc29dabf7a33cc4a190a0e98b23d4469ede3ac77a27333d0581d75520cec341",
+      "exit_status": 0,
+      "mode": "--emit-patterns",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 36,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 36: unreachable pattern\n",
+      "stdout_sha256": "2fe16d899c24bb22baf9af852c0bba59c4c29fad6069040597855894eb310f5c",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 0,
+      "known_discrepancy": null
+    },
+    {
+      "path": "tests/spec/text/accept-byte-prefix.rs",
+      "source_sha256": "1b4a701bfb15c151ff25d4deadf0f9398f949f0708f31b7f78c014d9d0377302",
+      "exit_status": 0,
+      "mode": "--emit-patterns",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 34,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 34: unreachable pattern\n",
+      "stdout_sha256": "6cb2e6e5bb678f208e097e13483f3466da09826463a378ec56324ae1131afb1f",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 0,
+      "known_discrepancy": null
+    },
+    {
+      "path": "tests/spec/text/accept-byte-raw.rs",
+      "source_sha256": "587db13eec951269bfa69e48b949c57d62a9942ba54952929afcb2f951200847",
+      "exit_status": 0,
+      "mode": "--emit-patterns",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 35,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 35: unreachable pattern\n",
+      "stdout_sha256": "10a48d9fe1147908c16a9a5df93b959cc5d59c34f4c93e7ed4adc393ab758f1d",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 0,
+      "known_discrepancy": null
+    },
+    {
+      "path": "tests/spec/text/accept-byte-suffix.rs",
+      "source_sha256": "70f128781e1f26b820137bf65565586c60b32ba7a740fd20e953188460582488",
+      "exit_status": 0,
+      "mode": "--emit-patterns",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 34,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 34: unreachable pattern\n",
+      "stdout_sha256": "37c2f41cf6322e4be1938081444cba77eae28028cc9fa46fcd684b58a1cd8967",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 0,
+      "known_discrepancy": null
+    },
+    {
+      "path": "tests/spec/text/accept-forward.rs",
+      "source_sha256": "345b34070fecb80ac54778b57a764513da8d8061a64a9419f320ac179e38eb07",
+      "exit_status": 0,
+      "mode": "--emit-patterns",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 59,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 59: unreachable pattern\n",
+      "stdout_sha256": "fae99e99ee881c729e1efcb5e3d4944f348f1eb3625f0f3955453431a14aff34",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 0,
+      "known_discrepancy": null
+    },
+    {
+      "path": "tests/spec/text/accept-raw.rs",
+      "source_sha256": "6331a31ddf96b7ba12e310ba89ef80462c80e64be5cb003f73c936098b1446da",
+      "exit_status": 0,
+      "mode": "--emit-patterns",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 32,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 32: unreachable pattern\n",
+      "stdout_sha256": "0289b9af519ecdfd29df53d9c569a26b2abfbddb0ef13f7a91d1139ad87b71a0",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 0,
+      "known_discrepancy": null
+    },
+    {
+      "path": "tests/spec/text/accept-string-slice.rs",
+      "source_sha256": "dc1b48b5fbd346cfa5b58b2152d2553bb8442952e5b705c258ddf7b6eca0cf62",
+      "exit_status": 0,
+      "mode": "--emit-patterns",
+      "warnings": [
+        {
+          "code": "unreachable_patterns",
+          "file": 0,
+          "byte_offset": 41,
+          "message": "unreachable pattern"
+        }
+      ],
+      "expected_stderr": "warning[unreachable_patterns]: file 0: 41: unreachable pattern\n",
+      "stdout_sha256": "f70ecd68793b33f05f72a286f9e1f60874caa5f4f5f352be9fbcad9cac77b3d0",
+      "prior_primary_error_bytes_preserved": true,
+      "rustc_status": 0,
+      "known_discrepancy": null
+    }
+  ]
+}

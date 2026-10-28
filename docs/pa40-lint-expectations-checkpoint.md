@@ -185,3 +185,28 @@ independent review, normal harness generation and byte-diff review; this test
 checkpoint does not bless reference churn. Lexically nested pending-body
 completion is under separate review and is not an additional guarantee of this
 warning-contract followup.
+
+The separate PA13 reference review now checks all 805 cases: every source,
+stdout and exit status is unchanged. Exactly 22 stderr sidecars gain 23 typed
+whole-arm warning lines. Six initially unchanged-reference hypotheses were
+opposed by actual warnings retained before existing initialization errors;
+their source-derived revised predictions independently retain Rust E0381 and
+the existing compiler primary-error bytes. The
+[owning outcome contract](../pa13/tests/unreachable-warning-outcomes.json) records
+every code/count/location/order and complete stderr. Twenty-six additional pinned
+Rust observations pass, including primary warning span coverage and four
+separately authored nested-scope full-source observations. These do not qualify
+selected-runtime descendant completion.
+
+Only the checked 22 cases were regenerated through the normal selected harness.
+The scoped receipt is
+`pa13/reference-batches/1793202997817616891-52693d7bc1c7.json`; the full base
+`pa13/reference.json` is unchanged. Selected comparison and the complete 805-case
+PA13 comparison pass, alongside 260 harness tests, 383 roots in thirteen binaries,
+the 44-stage layout and upstream verification. Full byte-diff review confirms
+only the added warning lines, with no stdout or status changes. Raw source
+predictions, opposing observations, independent diagnostics and generator/check
+commands remain under
+`obj/parallel/lib058-warning-fixture-contracts-v1/reference-qualification-v2/`.
+The immutable diagnostic CLI is
+`c10a08556f0d9b3c682f31d37a87def048b20c6671be04557dbb2253f374595b`.

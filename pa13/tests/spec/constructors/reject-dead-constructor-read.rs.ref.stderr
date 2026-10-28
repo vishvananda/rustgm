@@ -1,1 +1,2 @@
+warning[unreachable_patterns]: file 0: 48: unreachable pattern
 ERROR: file 0: 58: local may be uninitialized at this read
