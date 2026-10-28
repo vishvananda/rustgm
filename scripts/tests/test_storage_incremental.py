@@ -90,3 +90,83 @@ class IncrementalRetirement(unittest.TestCase):
         with mock.patch.object(storage_incremental, "active_artifacts", return_value=[]):
             self.assertEqual(storage_incremental.retire(self.root), [])
         self.assertTrue(old.is_dir())
+
+    def test_idle_linker_scratch_preserves_hardlinked_incremental_objects(self):
+        current = self.session("s-current-complete", 1)
+        deps = self.crate.parent.parent / "deps"
+        deps.mkdir()
+        shared = deps / "test.unit.rcgu.o"
+        shared.write_bytes(b"compiled")
+        os.link(shared, current / "cached.o")
+        loose = deps / "test.other.rcgu.o"
+        loose.write_bytes(b"abandoned")
+        metadata = deps / "libtest.rmeta"
+        metadata.write_bytes(b"warm")
+        with mock.patch.object(storage_incremental, "active_artifacts", return_value=[]):
+            rows = storage_incremental.retire(self.root)
+        self.assertEqual(len(rows), 2)
+        self.assertFalse(shared.exists())
+        self.assertFalse(loose.exists())
+        self.assertEqual((current / "cached.o").read_bytes(), b"compiled")
+        self.assertEqual(metadata.read_bytes(), b"warm")
+
+    def test_pinned_linker_scratch_is_preserved(self):
+        deps = self.crate.parent.parent / "deps"
+        deps.mkdir()
+        (deps / ".keep-artifacts").touch()
+        scratch = deps / "test.unit.rcgu.o"
+        scratch.write_bytes(b"pinned")
+        with mock.patch.object(storage_incremental, "active_artifacts", return_value=[]):
+            self.assertEqual(storage_incremental.retire(self.root), [])
+        self.assertTrue(scratch.exists())
+
+    def test_codegen_symlink_is_rejected_before_unlinking_scratch(self):
+        deps = self.crate.parent.parent / "deps"
+        deps.mkdir()
+        scratch = deps / "a.rcgu.o"
+        scratch.write_bytes(b"keep")
+        (deps / "z.rcgu.o").symlink_to(scratch)
+        with mock.patch.object(storage_incremental, "active_artifacts", return_value=[]):
+            with self.assertRaisesRegex(ValueError, "symlinked codegen"):
+                storage_incremental.retire(self.root)
+        self.assertEqual(scratch.read_bytes(), b"keep")
+
+    def test_generated_root_symlink_is_rejected_before_retirement(self):
+        import shutil
+        original = self.root / "obj"
+        outside = self.root / "outside"
+        shutil.move(original, outside)
+        original.symlink_to(outside, target_is_directory=True)
+        with mock.patch.object(storage_incremental, "active_artifacts", return_value=[]):
+            with self.assertRaisesRegex(ValueError, "symlinked"):
+                storage_incremental.retire(self.root)
+        self.assertTrue((outside / "rust/dev-fast/incremental/example").is_dir())
+
+    def test_working_session_needs_a_free_known_lock_before_retirement(self):
+        import fcntl
+        current = self.session("s-current-complete", 1)
+        working = self.session("s-interrupted-working", 2)
+        (current / "cached.o").write_bytes(b"warm")
+        os.link(current / "cached.o", working / "cached.o")
+        lock = self.crate / "s-interrupted.lock"
+        with lock.open("wb") as descriptor:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            with mock.patch.object(storage_incremental, "active_artifacts", return_value=[]):
+                self.assertEqual(storage_incremental.retire(self.root), [])
+            self.assertTrue(working.is_dir())
+        with mock.patch.object(storage_incremental, "active_artifacts", return_value=[]):
+            rows = storage_incremental.retire(self.root)
+        self.assertEqual([row["path"] for row in rows], [str(working.relative_to(self.root))])
+        self.assertFalse(working.exists())
+        self.assertEqual((current / "cached.o").read_bytes(), b"warm")
+        self.assertTrue(lock.exists())
+
+    def test_unknown_working_session_lock_and_explicit_pin_are_preserved(self):
+        working = self.session("s-pinned-working", 1)
+        (working / ".keep-artifacts").touch()
+        (self.crate / "s-pinned.lock").touch()
+        unknown = self.session("s-unknown-working", 2)
+        with mock.patch.object(storage_incremental, "active_artifacts", return_value=[]):
+            self.assertEqual(storage_incremental.retire(self.root), [])
+        self.assertTrue(working.is_dir())
+        self.assertTrue(unknown.is_dir())
