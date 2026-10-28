@@ -160,6 +160,98 @@ fn removed_test_owners_inherit_policy_before_their_own_lint_attributes() -> Test
 }
 
 #[test]
+fn removed_owner_completion_keeps_direct_and_parent_expectations_in_their_actual_scope()
+-> TestResult {
+    use std::fmt::Write;
+    for (name, codes) in [
+        ("removed-direct-before", &[][..]),
+        ("removed-direct-after", &[][..]),
+        ("removed-direct-empty", &[][..]),
+        (
+            "removed-parent-crate",
+            &["unfulfilled_lint_expectations"][..],
+        ),
+        (
+            "removed-parent-module",
+            &["unfulfilled_lint_expectations"][..],
+        ),
+        ("removed-parent-duplicate", &[][..]),
+        (
+            "removed-owner-duplicate",
+            &["duplicate_macro_attributes"][..],
+        ),
+        (
+            "removed-sibling-unfulfilled",
+            &["unfulfilled_lint_expectations"][..],
+        ),
+        ("removed-sibling-fulfilled", &[][..]),
+        (
+            "removed-parent-deprecated",
+            &["unfulfilled_lint_expectations"][..],
+        ),
+    ] {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join(format!("../pa40/tests/spec/lint-expectations/{name}.rs"));
+        let source = std::fs::read_to_string(path)?;
+        let (report, facts) = crate::attribute_contracts::analyze(&source)?;
+        assert!(
+            !report.resolution.definitions.iter().any(|definition| report
+                .package
+                .names
+                .get(definition.name)
+                == "gone"),
+            "{name}: invented removed declaration"
+        );
+        let mut expected = String::new();
+        for code in codes {
+            let (offset, message) = if *code == "duplicate_macro_attributes" {
+                let first = source.find("#[test]").ok_or("missing first test")?;
+                (
+                    first
+                        + 7
+                        + source[first + 7..]
+                            .find("#[test]")
+                            .ok_or("missing duplicate test")?,
+                    "duplicated test attribute",
+                )
+            } else {
+                (
+                    source
+                        .find("#![expect")
+                        .or_else(|| source.find("#[expect"))
+                        .ok_or("missing expected source owner")?,
+                    "this lint expectation is unfulfilled",
+                )
+            };
+            writeln!(expected, "warning[{code}]: file 0: {offset}: {message}")?;
+        }
+        let mut actual = String::new();
+        for warning in facts.warnings() {
+            writeln!(
+                actual,
+                "warning[{}]: {}",
+                warning.code.name(),
+                warning.diagnostic
+            )?;
+        }
+        assert_eq!(actual, expected, "{name}: exact code/count/location/order");
+        let header = rustgm::sema::declarations::analyze(&report)?;
+        assert_eq!(
+            header.body_work.cfg_functions.get(),
+            0,
+            "{name}: header request built a body"
+        );
+        assert!(
+            header
+                .warnings()
+                .all(|warning| warning.code.name() == "duplicate_macro_attributes"),
+            "{name}: prematurely finalized an untouched parent/body expectation"
+        );
+    }
+    Ok(())
+}
+
+#[test]
 fn malformed_first_test_transfers_the_warning_through_the_expansion_driver_boundary() -> TestResult
 {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))

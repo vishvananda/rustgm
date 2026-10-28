@@ -621,6 +621,136 @@
       ],
       "status": "prediction frozen before independent observation",
       "owning_assignment": 40
+    },
+    {
+      "name": "removed-direct-before",
+      "path": "pa40/tests/spec/lint-expectations/removed-direct-before.rs",
+      "sha256": "948bd6576fa966bdca7a854bdf537ab233eee8ad056e0ac970f5f1a60be72b60",
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "editions": [
+        2024
+      ],
+      "status": "source-derived hypothesis; not independently observed",
+      "owning_assignment": 40
+    },
+    {
+      "name": "removed-direct-after",
+      "path": "pa40/tests/spec/lint-expectations/removed-direct-after.rs",
+      "sha256": "78551d9f5c7b78c1b76828278bd8b51dec878a2cf275e0978b2f318107d7da8c",
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "editions": [
+        2024
+      ],
+      "status": "source-derived hypothesis; not independently observed",
+      "owning_assignment": 40
+    },
+    {
+      "name": "removed-direct-empty",
+      "path": "pa40/tests/spec/lint-expectations/removed-direct-empty.rs",
+      "sha256": "f6b3bbe1a2e34b0a310eaf9af94cd17b66cda64975c2346bc8a5b3b560abacff",
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "editions": [
+        2024
+      ],
+      "status": "source-derived hypothesis; not independently observed",
+      "owning_assignment": 40
+    },
+    {
+      "name": "removed-parent-crate",
+      "path": "pa40/tests/spec/lint-expectations/removed-parent-crate.rs",
+      "sha256": "d54738d49d72c1d2b38d871fa87f55c9c4e2b4ada3841d4e49e613aff1af635a",
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "editions": [
+        2024
+      ],
+      "status": "source-derived hypothesis; not independently observed",
+      "owning_assignment": 40
+    },
+    {
+      "name": "removed-parent-module",
+      "path": "pa40/tests/spec/lint-expectations/removed-parent-module.rs",
+      "sha256": "20e4bb59b928124ca7e6735673bab7e8fa38cbf1c437e37db4ad36ae9715c5bb",
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "editions": [
+        2024
+      ],
+      "status": "source-derived hypothesis; not independently observed",
+      "owning_assignment": 40
+    },
+    {
+      "name": "removed-parent-duplicate",
+      "path": "pa40/tests/spec/lint-expectations/removed-parent-duplicate.rs",
+      "sha256": "919224b44ff3581a7ccebc9b1b9258cbadcd116ae1094d5151e054493fb1d3ce",
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "editions": [
+        2024
+      ],
+      "status": "source-derived hypothesis; not independently observed",
+      "owning_assignment": 40
+    },
+    {
+      "name": "removed-owner-duplicate",
+      "path": "pa40/tests/spec/lint-expectations/removed-owner-duplicate.rs",
+      "sha256": "56e49fec2c323929c5db9e8a4cd2d17ce0eb863dbac7051242832360e5c8796c",
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "duplicate_macro_attributes": 1
+      },
+      "editions": [
+        2024
+      ],
+      "status": "source-derived hypothesis; not independently observed",
+      "owning_assignment": 40
+    },
+    {
+      "name": "removed-sibling-unfulfilled",
+      "path": "pa40/tests/spec/lint-expectations/removed-sibling-unfulfilled.rs",
+      "sha256": "ced20d00f7f46113eaeeeacc8a0fa76920b9d300c85f5a061a8f9be9909a198a",
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "editions": [
+        2024
+      ],
+      "status": "source-derived hypothesis; not independently observed",
+      "owning_assignment": 40
+    },
+    {
+      "name": "removed-sibling-fulfilled",
+      "path": "pa40/tests/spec/lint-expectations/removed-sibling-fulfilled.rs",
+      "sha256": "cfe4d5b2d37603751c96df029e7241dfb0b913aaabcf4c7c7f8c471bdca5f631",
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "editions": [
+        2024
+      ],
+      "status": "source-derived hypothesis; not independently observed",
+      "owning_assignment": 40
+    },
+    {
+      "name": "removed-parent-deprecated",
+      "path": "pa40/tests/spec/lint-expectations/removed-parent-deprecated.rs",
+      "sha256": "2f2ef02a526e0a0b5a04f4895ea88ce2616938461dde31914cd97dc2f59b80a6",
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "editions": [
+        2024
+      ],
+      "status": "source-derived hypothesis; not independently observed",
+      "owning_assignment": 40
     }
   ],
   "remaining": [

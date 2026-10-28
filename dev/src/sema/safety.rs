@@ -196,7 +196,9 @@ impl Policies {
             if !unit.configured.active[key.node.get() as usize] && !removed {
                 continue;
             }
-            completion = completion_for(report, module, key, completion, producer)?;
+            if !removed {
+                completion = completion_for(report, module, key, completion, producer)?;
+            }
             if !removed && let Some(producer) = producer {
                 let changes = producer.changes(package, key, tail)?;
                 let deprecated_origin = changes.deprecated;
