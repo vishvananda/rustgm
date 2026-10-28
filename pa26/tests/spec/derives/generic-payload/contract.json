@@ -1,0 +1,108 @@
+{
+  "state": "predictions frozen before new observation and generic/payload implementation",
+  "scope": "ordinary derived trait semantics; separate source-provider and candidate proof required",
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "editions": [
+    2021,
+    2024
+  ],
+  "options": [
+    "-Cpanic=abort",
+    "-Coverflow-checks=yes",
+    "--cap-lints=allow"
+  ],
+  "env": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "cases": [
+    {
+      "name": "clone-noncopy",
+      "path": "pa26/tests/spec/derives/generic-payload/clone-noncopy.rs",
+      "sha256": "db05054f4d19df6799dabe4b5269761cd2ad14e4672bddcb4fb0fd04e691e55d",
+      "metadata": 0,
+      "stdout": "7 9 11 3\n"
+    },
+    {
+      "name": "payload-order",
+      "path": "pa26/tests/spec/derives/generic-payload/payload-order.rs",
+      "sha256": "4c9afa13920d7114e22953daea7ca6781221ab0b9404415bdbba5c1afaa00d47",
+      "metadata": 0,
+      "stdout": "true false true true Record { field: 9 } Low(9)\n"
+    },
+    {
+      "name": "partial-without-ord",
+      "path": "pa26/tests/spec/derives/generic-payload/partial-without-ord.rs",
+      "sha256": "13a865b9729199d21db65cd3188d78ea3a125e476700be87eb54b09449355e80",
+      "metadata": 0,
+      "stdout": "F;None\nSome(Less)\n"
+    },
+    {
+      "name": "hash-fields",
+      "path": "pa26/tests/spec/derives/generic-payload/hash-fields.rs",
+      "sha256": "861f547c2dc535847e0fc6a177f61f499941e6eb401f83a8cc8ce01510015efc",
+      "metadata": 0,
+      "stdout": "f9ff;05;\n1b00;\n2c01;07;\n09;\n"
+    },
+    {
+      "name": "defaults-lifetimes",
+      "path": "pa26/tests/spec/derives/generic-payload/defaults-lifetimes.rs",
+      "sha256": "7723217a895ab58d2c47dad84cc84112a117b67acd69c75c65ebd2b7332ce9c4",
+      "metadata": 0,
+      "stdout": "true Pair { left: 7, right: 9 }\n"
+    },
+    {
+      "name": "const-clone",
+      "path": "pa26/tests/spec/derives/generic-payload/const-clone.rs",
+      "sha256": "e366185249637d4f9826290205979f67ec688f01af36cab91ad77f344d2c34a7",
+      "metadata": 0,
+      "stdout": "7\n"
+    },
+    {
+      "name": "missing-clone",
+      "path": "pa26/tests/spec/derives/generic-payload/missing-clone.rs",
+      "sha256": "bffce1b9a4b4ba70890dc3b91a4982a42fa71bfce072b5473f0247da6de5c8fe",
+      "metadata": 1,
+      "stdout": null
+    },
+    {
+      "name": "copy-requires-copy",
+      "path": "pa26/tests/spec/derives/generic-payload/copy-requires-copy.rs",
+      "sha256": "1e9394089b99799f23964942404b1950b34a8b94747311ffd0704d8ce389c7f4",
+      "metadata": 1,
+      "stdout": null
+    },
+    {
+      "name": "const-nonconst-field",
+      "path": "pa26/tests/spec/derives/generic-payload/const-nonconst-field.rs",
+      "sha256": "cf4dd9693345af5607e3939afc96419d23b9632af261b241fcf0e17c4f272661",
+      "metadata": 1,
+      "stdout": null
+    },
+    {
+      "name": "missing-eq",
+      "path": "pa26/tests/spec/derives/generic-payload/missing-eq.rs",
+      "sha256": "d9ca6b65a7f75a30023e1f496ae82e230312e5faebe300562a9ccf990134295e",
+      "metadata": 1,
+      "stdout": null
+    },
+    {
+      "name": "missing-order",
+      "path": "pa26/tests/spec/derives/generic-payload/missing-order.rs",
+      "sha256": "c8463c8c64c1cd0f4a0f5364d43c5d6f412f65f5bbbd2ad22dfe72d7c2d09604",
+      "metadata": 1,
+      "stdout": null
+    }
+  ],
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_builtin_macros/src/deriving/clone.rs": "21c6df8a3320568e277af504e6dc251aceee38d3b4e4b0b16dc7276556ceedfc",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_builtin_macros/src/deriving/generic/mod.rs": "a925fa1ee9e3a8478c3f5c2a7d1bc296e6e9efb21e1dbff90715fff1780e92ee",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_builtin_macros/src/deriving/cmp/partial_ord.rs": "f713f91e8cdf6e9f3fb48ae020ef1838fb0728e5c6475f2543c5c90e42da93bf",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_builtin_macros/src/deriving/cmp/ord.rs": "6b451cc76160a48bab1554ba2bf939ef9869f712c3bfa96ba99e756f95e82ef4",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_builtin_macros/src/deriving/cmp/partial_eq.rs": "700bfd390ee61d2379bd1b6df8dde6bac1f5c1ce454886906b763774c9b9bde9",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_builtin_macros/src/deriving/hash.rs": "779e581b1148058ae8712eeb0f8a673e34c28b1605f6c1e9137e17eecb2d4e38",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_builtin_macros/src/deriving/debug.rs": "54a980d860f798afd0040ad29a64ea094ef5ed9a6f429c272ade34b56e4a85d8"
+  }
+}

@@ -1,10 +1,16 @@
 //! Source Debug follows the pinned formatter helper recipe and ordinary field proof.
-use super::{ItemKind, Kind, LexError, NodeId, Output, Span, error};
+use super::{
+    ItemKind, Kind, LexError, NodeId, Output, Span, active_members::VariantMembers, error,
+};
 impl Output<'_> {
-    pub(super) fn debug(&mut self, fields: &[NodeId]) -> Result<(), LexError> {
+    pub(super) fn debug(
+        &mut self,
+        fields: &[NodeId],
+        variants: &[VariantMembers],
+    ) -> Result<(), LexError> {
         use crate::syntax::item::Shape;
         let ItemKind::Struct { shape, .. } = self.site.item.kind else {
-            return self.enum_debug(fields);
+            return self.enum_debug(fields, variants);
         };
         (self.charge)(fields.len().saturating_add(1), 64)?;
         if fields.len() > 5 {
@@ -71,45 +77,60 @@ impl Output<'_> {
         }
         self.text(") } }")
     }
-    fn enum_debug(&mut self, fields: &[NodeId]) -> Result<(), LexError> {
-        let ItemKind::Enum { variants } = self.site.item.kind else {
-            return Err(error(
-                self.site.original.start,
-                "source Debug requires a struct or enum",
-            ));
-        };
-        if !fields.is_empty() {
-            return Err(error(
-                self.site.original.start,
-                "source Debug payload variants require a wider profile",
-            ));
-        }
+    fn enum_debug(
+        &mut self,
+        fields: &[NodeId],
+        variants: &[VariantMembers],
+    ) -> Result<(), LexError> {
+        use crate::syntax::item::Shape;
         self.header("crate::fmt::Debug", false)?;
-        self.text("{ #[inline] fn fmt(&self, f: &mut crate::fmt::Formatter<'_>) -> crate::fmt::Result { crate::fmt::Formatter::write_str(f, match self {")?;
-        for &node in self.site.ast.list(variants) {
-            (self.charge)(1, 0)?;
-            if self.site.active.get(node.get() as usize) != Some(&true) {
-                continue;
-            }
-            let mut inner = node;
-            while let Kind::Attributed { value, .. } = self.site.ast.node(inner).kind {
-                (self.charge)(1, 0)?;
-                inner = value;
-            }
-            let Kind::Variant(index) = self.site.ast.node(inner).kind else {
+        self.text("{ #[inline] fn fmt(&self,f:&mut crate::fmt::Formatter<'_>)->crate::fmt::Result{ match self{")?;
+        for row in variants {
+            let fields = &fields[row.fields.clone()];
+            if fields.len() > 5 {
                 return Err(error(
                     self.site.original.start,
-                    "derived Debug lost its actual variant",
+                    "source Debug field-array helpers require a wider profile",
                 ));
-            };
-            let variant = self.site.ast.variants[index as usize];
-            self.text("Self::")?;
-            self.spelling(variant.name, false)?;
-            self.text("=>")?;
-            self.label(variant.name)?;
-            self.text(",")?;
+            }
+            self.variant_pattern(row, fields, "__derive_field_")?;
+            self.text("=>crate::fmt::Formatter::")?;
+            if fields.is_empty() {
+                self.text("write_str")?;
+            } else {
+                self.text(&format!(
+                    "debug_{}_field{}_finish",
+                    if row.variant.shape == Shape::Record {
+                        "struct"
+                    } else {
+                        "tuple"
+                    },
+                    fields.len()
+                ))?;
+            }
+            self.text("(f,")?;
+            self.label(row.variant.name)?;
+            for (index, &field) in fields.iter().enumerate() {
+                (self.charge)(1, 0)?;
+                self.text(",")?;
+                if row.variant.shape == Shape::Record {
+                    let (name, _) = self.actual_field(field)?;
+                    self.label(name.ok_or_else(|| {
+                        error(
+                            self.site.original.start,
+                            "derived Debug record field lost its name",
+                        )
+                    })?)?;
+                    self.text(",")?;
+                }
+                if index + 1 == fields.len() {
+                    self.text("&")?;
+                }
+                self.binding("__derive_field_", index)?;
+            }
+            self.text("),")?;
         }
-        self.text("}) } }")
+        self.text("} } }")
     }
     fn label(&mut self, span: Span) -> Result<(), LexError> {
         use unicode_normalization::UnicodeNormalization;

@@ -79,7 +79,6 @@ fn exact_formatter_fragments_expand_all_members_once_with_actual_source_receipts
 #[test]
 fn failed_family_members_and_forged_prior_copy_do_not_hide_obligations() -> TestResult {
     for declaration in [
-        "#[derive(Clone)]struct NoCopy;",
         "#[derive(Copy,Eq,Missing)]struct Missing;",
         "#[derive(Copy,Eq,Eq)]struct Duplicate;",
         "#[derive(Default)]enum MissingDefault{First,Second}",
@@ -198,5 +197,145 @@ fn forged_grants() -> TestResult {
             .macro_allowances()
             .allows_at(FileId(0), generated, &feature)?
     );
+    Ok(())
+}
+
+#[test]
+fn original_generic_payload_declarations_keep_each_member_and_checked_transaction() -> TestResult {
+    for name in ["result", "option", "control-flow"] {
+        let declaration = test_source::fixture(&format!(
+            "pa31/tests/spec/formatter-derives/generic-payload/{name}-source.rs"
+        ))?;
+        let source = family_prefix()? + &declaration;
+        let report = expanded_provider(&source, "generic_payload")?;
+        let entries = &report
+            .attribute_effects
+            .as_deref()
+            .and_then(|owner| owner.derives.as_deref())
+            .ok_or("actual generic transactions")?
+            .entries;
+        assert_eq!(entries.len(), 2, "{name}");
+        for entry in entries {
+            report.expanded_derive(entry.owner, entry.effect)?;
+            assert_eq!(report.invocations[entry.invocation].parser_calls, 1);
+        }
+        let generated = &report.package.units[0].source.text()[source.len()..];
+        assert!(generated.contains("match"), "{name}");
+        assert!(
+            generated.contains("crate::fmt::Formatter::")
+                && generated.contains("debug_tuple_field1_finish"),
+            "{name}"
+        );
+        if name == "result" {
+            assert!(generated.contains("[const] crate::cmp::Ord"), "{name}");
+        }
+    }
+    Ok(())
+}
+#[test]
+fn generic_clone_source_calls_real_noncopy_fields_and_does_not_invent_copy_bounds() -> TestResult {
+    let source =
+        test_source::fixture("pa31/tests/spec/formatter-derives/generic-payload/clone-source.rs")?;
+    let report = test_source::source_provider(&source, "generic_clone")?;
+    let crate::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = crate::pipeline::analyze_source(&report)?;
+    let program = crate::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        crate::lower::Roots {
+            entry: None,
+            exports: &[],
+        },
+        prepared,
+    )?;
+    let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../obj/parallel/pa31/panic-handler-exit-v2/generic-clone-native");
+    std::fs::create_dir_all(&folder)?;
+    std::fs::write(folder.join("provider.rs"), &source)?;
+    crate::lowir::writer::write(
+        &program,
+        &mut std::fs::File::create(folder.join("provider.lowir"))?,
+    )?;
+    let missing = source.replace(
+        "impl Clone for Leaf { fn clone(&self)->Self { unsafe {cloned(self.0)}; Self(self.0) } }",
+        "",
+    );
+    assert_ne!(missing, source);
+    let report = test_source::source_provider(&missing, "missing_clone")?;
+    assert!(crate::pipeline::analyze_source(&report).is_err());
+    let moved = source
+        .replace(
+            "pub mod generic_user {",
+            "pub mod generic_user {use crate::marker::Copy;",
+        )
+        .replace(
+            "#[derive(Clone)] struct Wrapper<T>",
+            "#[derive(Clone,Copy)] struct Wrapper<T>",
+        )
+        .replace(
+            "let b=a.clone();",
+            "let moved=a;let again=a;let b=again.clone();",
+        );
+    assert_ne!(moved, source);
+    let report = test_source::source_provider(&moved, "missing_copy")?;
+    let crate::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = crate::pipeline::analyze_source(&report)?;
+    // Moves and their actual conditional Copy goals are checked by ordinary
+    // borrow/instance preparation, after successful declaration/body typing.
+    assert!(
+        crate::lower::instances::build_roots_prepared(
+            &report,
+            &mut facts,
+            crate::lower::Roots {
+                entry: None,
+                exports: &[]
+            },
+            prepared,
+        )
+        .is_err()
+    );
+    Ok(())
+}
+
+#[test]
+fn generic_variant_work_scales_with_actual_emitted_members_and_storage() -> TestResult {
+    use std::fmt::Write as _;
+    let mut prior = None;
+    for count in [8, 32, 128] {
+        let mut input = family_prefix()?;
+        input.push_str("#[derive(Clone)]enum Group<T>{");
+        for n in 0..count {
+            write!(&mut input, "V{n}(T),")?;
+        }
+        input.push('}');
+        let report = expanded_provider(&input, "generic_work")?;
+        let source = report.package.source_core().ok_or("source macro budget")?;
+        let usage = source.macros.usage();
+        if let Some((work, bytes)) = prior {
+            assert!(usage.0 <= work * 6);
+            assert!(usage.1 <= bytes * 6);
+        }
+        prior = Some((usage.0, usage.1));
+        eprintln!(
+            "generic derive variants={count} usage={usage:?} layouts={:?}",
+            crate::expand::builtin::derive_output::transient_layouts()
+        );
+    }
+    for declaration in [
+        "#[derive(Clone)]struct Bounded<T:Clone>(T);",
+        "#[derive(Clone)]struct Array<T,const N:usize>([T;N]);",
+        "#[derive(Clone)]struct Where<T>(T)where T:Clone;",
+    ] {
+        assert!(expanded_provider(&(family_prefix()? + declaration), "wider_generic").is_err());
+    }
+    // Closed paired Clone remains separate from the generic fieldwise recipe.
+    expanded_provider(
+        &(family_prefix()? + "#[derive(Clone)]struct WithoutCopy;"),
+        "fieldwise_unit",
+    )?;
     Ok(())
 }

@@ -1,8 +1,10 @@
 //! Source Copy/paired Clone produce ordinary impls with real field WF assertions.
 mod active_members;
+mod cloned_fields;
 mod comparisons;
 mod debug_format;
 mod derivation_contexts;
+mod payload_members;
 use super::{choice::Charge, delegation::Delegated, derive_types};
 use crate::{
     expand::{
@@ -56,15 +58,14 @@ pub(crate) fn build(
     config: &Config,
     charge: &Charge<'_>,
 ) -> Result<Delegated, LexError> {
-    let fields = active_members::collect(site, charge)?;
+    let inventory = active_members::collect(site, charge)?;
+    let fields = &inventory.fields;
     let copy = site.members[0].is_some();
     let clone = site.members[1].is_some();
-    if clone && !(copy || site.prior_copy)
-        || site.item.where_clause.start != site.item.where_clause.end
-    {
+    if site.item.where_clause.start != site.item.where_clause.end {
         return Err(error(
             site.original.start,
-            "fieldwise or constrained source Clone requires a wider derive profile",
+            "source derive where clauses require a wider profile",
         ));
     }
     let mut output = Output {
@@ -80,35 +81,12 @@ pub(crate) fn build(
         output.text("{}")?;
     }
     if clone {
-        output.select(1);
-        output.header("crate::clone::TrivialClone", true)?;
-        output.text("{}")?;
-        output.header("crate::clone::Clone", false)?;
-        output.text("{ #[inline] fn clone(&self) -> Self {")?;
-        for &field in &fields {
-            if site.active.get(field.get() as usize) != Some(&true) {
-                continue;
-            }
-            let mut field = field;
-            while let Kind::Attributed { value, .. } = site.ast.node(field).kind {
-                field = value;
-            }
-            let Kind::FieldDefinition { ty, .. } = site.ast.node(field).kind else {
-                return Err(error(
-                    site.original.start,
-                    "derived Clone lost an actual field declaration",
-                ));
-            };
-            output.text("let _: crate::clone::AssertParamIsClone<")?;
-            output.field(ty)?;
-            output.text(">;")?;
-        }
-        output.text("*self } }")?;
+        output.clone_members(fields, &inventory.variants, copy || site.prior_copy)?;
     }
     if output.select(2) {
-        output.debug(&fields)?;
+        output.debug(fields, &inventory.variants)?;
     }
-    output.comparison_members(&fields)?;
+    output.comparison_members(fields, &inventory.variants)?;
     output.finish(config)
 }
 
@@ -295,7 +273,7 @@ impl Output<'_> {
             self.text("unsafe")?;
         }
         self.text("impl")?;
-        self.generics()?;
+        self.generics(Some(path))?;
         self.text(path)?;
         self.text("for")?;
         let name = self
@@ -304,9 +282,9 @@ impl Output<'_> {
             .name
             .ok_or_else(|| error(self.site.original.start, "derived struct has no name"))?;
         self.spelling(name, false)?;
-        self.generics()
+        self.generics(None)
     }
-    fn generics(&mut self) -> Result<(), LexError> {
+    fn generics(&mut self, implementation: Option<&str>) -> Result<(), LexError> {
         let parameters = self.site.ast.list(self.site.item.generics);
         if parameters.is_empty() {
             return Ok(());
@@ -321,15 +299,25 @@ impl Output<'_> {
                 ));
             };
             let parameter = self.site.ast.generics[index as usize];
-            if parameter.flavor != GenericFlavor::Lifetime
+            if parameter.flavor == GenericFlavor::Const
                 || parameter.bounds.start != parameter.bounds.end
             {
                 return Err(error(
                     parameter.name.start,
-                    "this paired source derive requires lifetime-only unbounded formals",
+                    "this source derive requires unbounded type or lifetime formals",
                 ));
             }
-            self.spelling(parameter.name, true)?;
+            self.spelling(parameter.name, parameter.flavor == GenericFlavor::Lifetime)?;
+            if parameter.flavor == GenericFlavor::Type
+                && let Some(path) = implementation
+                && path != "crate::marker::StructuralPartialEq"
+            {
+                self.text(":")?;
+                if self.site.const_ {
+                    self.text("[const]")?;
+                }
+                self.text(path)?;
+            }
             self.text(",")?;
         }
         self.text(">")
@@ -383,4 +371,15 @@ impl Output<'_> {
         });
         Ok(())
     }
+}
+
+#[cfg(test)]
+pub(crate) const fn transient_layouts() -> (usize, usize, usize, usize, usize) {
+    (
+        size_of::<active_members::Inventory>(),
+        size_of::<active_members::VariantMembers>(),
+        size_of::<Output<'_>>(),
+        size_of::<Site<'_>>(),
+        size_of::<Field>(),
+    )
 }

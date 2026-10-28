@@ -1,0 +1,22 @@
+{
+  "result": {
+    "sha256": "ce087c4a25d83ea6cf11f57756559942c61b04556d3ce527143a2a12ec86b915",
+    "source_commit": "71a7bf290e7664605a279fecc3ea29c4e770447f",
+    "source_path": "pa31/tests/spec/source-location/result-source.rs",
+    "scope": "exact original declaration/attributes retained; not standalone crate"
+  },
+  "option": {
+    "sha256": "e8f6a46f199f6cd9381b0345aa25012841da793bed781f5db6b1b805391a9570",
+    "source_commit": "71a7bf290e7664605a279fecc3ea29c4e770447f",
+    "source_path": "pa31/tests/spec/source-location/option-source.rs",
+    "scope": "exact original declaration/attributes retained; not standalone crate"
+  },
+  "control-flow": {
+    "sha256": "0ff1277f99d1ce926550a1c27dbaf6620bcc50b501478b1ed2a520d5d198ec81",
+    "primary": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/control_flow.rs",
+    "primary_sha256": "b2d68f974be47934ec42cc7a54560165c51a4fcb2ec01c1e602d07f36ac82b24",
+    "first_line": 82,
+    "last_line": 101,
+    "scope": "exact original declaration/attributes retained; not standalone crate"
+  }
+}
