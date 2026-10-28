@@ -211,7 +211,7 @@ impl<C: Fn(ItemId) -> bool> Builder<'_, C> {
             if status == Status::Never || !self.needed.demand(self.types, self.definitions, ty)? {
                 continue;
             }
-            if !matches!(tracked, Tracking::Path(_)) {
+            if status == Status::Always || !matches!(tracked, Tracking::Path(_)) {
                 return Ok(true);
             }
             let Tracking::Path(path) = tracked else {

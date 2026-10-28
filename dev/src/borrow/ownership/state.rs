@@ -491,8 +491,11 @@ pub(super) fn status(words: &[Word<u64>], path: &Path) -> Status {
     let mut must = true;
     let mut may = false;
     range(path, |index, mask| {
-        must &= words[index].must & mask == mask;
-        may |= words[index].initialized & mask != 0;
+        let initialized = words[index].initialized & mask;
+        // Excluded inactive fields can remain initialized for read permission.
+        // Cleanup is uniformly live only when both planes cover this interval.
+        must &= words[index].must & mask == mask && initialized == mask;
+        may |= initialized != 0;
     });
     if !may {
         Status::Never

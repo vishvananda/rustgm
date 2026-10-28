@@ -311,3 +311,28 @@ fn sparse_variant_refinement_has_bounded_payload_work_and_ignores_other_members(
     assert_eq!(size_of::<crate::const_eval::code::Code>(), 304);
     Ok(())
 }
+
+#[test]
+fn untouched_wide_aggregates_keep_constant_cleanup_selection_work() -> Result {
+    let mut baseline = None;
+    for width in [8, 32, 128] {
+        let fields = std::iter::repeat_n("T", width)
+            .collect::<Vec<_>>()
+            .join(",");
+        let source = format!("struct Wide<T>({fields});fn probe<T>(x:Wide<T>){{}}");
+        let (facts, template) = ordinary(&source)?;
+        let plan = select(&facts, &template, None)?;
+        let input = template.body.locals.first().ok_or("input")?.ty;
+        assert!(
+            plan.schedule()
+                .cleanups()
+                .any(|c| c.access && c.live_type == Some(input))
+        );
+        if let Some(steps) = baseline {
+            assert_eq!(plan.steps, steps);
+        }
+        baseline = Some(plan.steps);
+        println!("untouched_fields={width} selection_steps={}", plan.steps);
+    }
+    Ok(())
+}
