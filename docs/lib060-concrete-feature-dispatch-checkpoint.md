@@ -25,7 +25,10 @@ warm work/bytes stay constant across 8/32/128 features. The actual handler contr
 and existing default dispatch reuse also pass. Failed payer work reaches body
 accounting through the retained constructor Result, including failures.
 
-The initial strict Clippy style failure is retained. Production/CLI and joined
-native execution remain pending; Root owns those checks. This checkpoint grants
-no metadata, original-core or release completion claim. Source-linked evidence
-is under `obj/parallel/concrete-feature-dispatch-v1/`.
+The initial strict Clippy style failure is retained. Root subsequently qualifies
+joined private36 (152.35s), production/CLI lexer10+PA6 (110.75s), both unchanged
+feature native7 fixtures and the genuine handler native5 baseline. Exact joined
+receipts and fresh strict/capped core observations are in the
+[joined checkpoint](pa31-source-feature-integration.md). This checkpoint grants
+no metadata, original-core or release completion claim. Worker source-linked
+evidence is under `obj/parallel/concrete-feature-dispatch-v1/`.

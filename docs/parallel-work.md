@@ -3,8 +3,9 @@
 The user has reauthorized up to two existing subagents. Root owns direct
 implementation, combined qualification and public main integration in
 `rustgm-pa25-work`. Worker `lint_expectations` in `rustgm-pa26-work` owns the
-actual concrete Dispatcher caller-feature port. Its typed core, source caller
-materialization and completed-environment cache are integrated. Worker
+genuine feature-predicate metadata v4 port. Its concrete Dispatcher caller-feature
+port, source caller materialization and completed-environment cache are integrated
+and locally/native qualified. Worker
 `const_call_review` in `rustgm-pa27-work` owns authentic source `prelude_import`
 selection and lookup; its source attribute capture and repeated-effect
 validation are integrated. Broader advisory lint producers are deferred unless
@@ -17,15 +18,15 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The qualified CLI `3c1978d9` passes the former trait-owned feature-attribute
+The qualified CLI `8a2cb4fe` passes the former trait-owned feature-attribute
 boundary. Both original-core observations verify all722 pinned source hashes
 and unchanged effective target arguments. Strict opens68 sources and stops at
 `expect(implicit_provenance_casts)` in `ptr/const_ptr.rs186`; this additional
 advisory producer is deferred. Explicit Allow opens374 and stops at the actual
 `prelude_import` in `lib.rs196`. These are loading observations, not compiled
 files or an original artifact. [Joined source qualification](pa31-source-feature-integration.md)
-records private32, all26 local feature outcomes, production/CLI lexer10+PA6 and
-the genuine pending native-dispatch/metadata boundaries. The
+records private36, all26 local feature outcomes, production/CLI lexer10+PA6, both
+unchanged feature native7 fixtures and genuine pending metadata/artifact boundaries. The
 [constructor checkpoint](pa31-constructor-family-integration.md) and
 [actual source offset macro](pa31-offset-members-checkpoint.md) retain their
 finite native proof and broader source/layout requirements.
@@ -44,8 +45,8 @@ proposal and confer no source body/runtime/metadata authority.
   consumers. That saved snapshot is historical, not the current execution queue.
 - Read-only offset/lint expectation/release proposals remain evidence, with no
   new compiler or publication authority.
-- The integrator is qualifying the concrete caller-feature native port and
-  publishing the joined source checkpoint. Genuine panic/formatting, PA25
+- The integrator is publishing the qualified caller-feature native/source
+  checkpoint and integrating the next source-prelude exit. Genuine panic/formatting, PA25
   generic/const, PA29 transport and original crate artifacts remain required.
 
 Keep one heavy job in the integrator's active worktree, two Cargo/test/native
@@ -66,9 +67,9 @@ reconcile the owning PA's remaining implementation and release checklist.
 
 Keep at most one qualified handoff queued per worker. Take shared interfaces
 before opening unrelated compiler work, and protect integration/observation time.
-The current exits are concrete caller-feature native execution (B), original
-source prelude lookup (C), and joined qualification/publication (Root). Metadata
-feature transport and original crate artifacts remain required after these exits.
+The current exits are genuine feature-predicate metadata v4 (B), original source
+prelude lookup (C), and joined qualification/publication (Root). Actual nominal
+provider/export transport and original crate artifacts remain required.
 Use at most two existing subagents; shared type/ABI/proof edits require explicit
 ownership coordination, not another concurrent owner.
 

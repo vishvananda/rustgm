@@ -6,16 +6,18 @@ to the real unsafe trait and imposes a non-type feature requirement. Genuine
 Trait/Fn/impl source capture and paid clauses now pass that loading boundary.
 Accepting syntax without retaining and proving the requirement is insufficient.
 The [joined source checkpoint](pa31-source-feature-integration.md) records
-local proof, the concrete native-dispatch gap and remaining wire requirements.
+local/native proof and remaining wire requirements.
 
 The unpublished contract in
 `pa31/tests/spec/feature-bound-predicates/contract.json` freezes 26 local and
 seven genuine external-client inputs. Its metadata qualification joins 78
 source/profile outcomes and two external-provider builds from pinned Rust 1.98,
 editions 2021/2024. The two unchanged local native fixtures independently return
-`7` under pinned Rust. The candidate whole-source native probe exposes a real
-missing concrete Dispatcher caller port; candidate native execution remains
-pending. This is neither an implemented assignment nor a core artifact.
+`7` under pinned Rust. The joined candidate also returns `7` for both unchanged
+whole-source fixtures through LowIR and the native backend. The initial concrete
+Dispatcher gap and its qualified repair are retained in the joined checkpoint.
+Cross-crate feature transport remains pending. This is neither an implemented
+assignment nor a core artifact.
 
 Observed semantics include matching function/impl/callee scope, closure
 inheritance, nested-function isolation, reification and prior generic trait-bound
