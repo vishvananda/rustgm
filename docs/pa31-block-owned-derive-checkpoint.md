@@ -40,7 +40,35 @@ is `154e3381496970c3fc96cf51a74b3b44276f0c58899b72302eb37a583c85f82f`.
 Generated objects/executables were retired with scoped guarded cleanup; raw
 sources, diagnostics, hashes and receipts remain.
 
-Root production/CLI and original-core integration remain pending. This finite
+Root joined production/private/CLI qualification passes17 private controls,10
+lexer controls, all4 CI caller regressions and PA6 in190.20s. Both strict Clippy
+modes, formatting and architecture pass. Receipt
+`obj/qualification/fast/1793231299061764597/receipt.json`, SHA-256
+`776a8f869d19c1d890a74ffb271d87a724172161e83d8c7999d7e427a986fa75`.
+The initial four-target build budget failure is retained; the exact unchanged
+warm retry passes within the same five-minute deadline.
+
+Fresh Root LowIR is byte-identical to the qualified worker output. Its actual
+Span native trace matches, as do the prelude/feature/handler baselines, harness,
+upstream pins and reference controls. Joined post receipt
+`obj/parallel/block-derive-integration-v1/observed-v2/receipt.json`, SHA-256
+`386b53cca22833d9a67893aeba4ead53a73ba5d241cd2064a9bb2b478ea23486`,
+passes in40.42s. Span native receipt SHA-256 is
+`a04697326639c50913562396a489fe9da067c0ef758027ec35ac71d831e2c6a5`.
+
+Qualified CLI `41d3842a0ae000e27ee7e7acea768de7c8c783eeae753de800e7f9380e37b904`
+retains separate strict/capped722-pin original-core observations. Strict remains
+the deferred pointer-cast expectation after68 source opens. Allow now reports
+builtin derive execution on SimdAlign at `intrinsics/simd/mod.rs407`, after372
+opens. The retained expansion trace identifies ConstParamTy as the actual
+unsupported member, not Debug/PartialEq/Eq. Receipt hashes are
+`9c61a4869e82379b8a602061e55012491d70376a409766ef46440ef12b154356`
+and `1b38540d9df1969c4e0ecaf0fedfae6ed226fa00d7965b7f7969243103668696`.
+Counts describe loading order, not compiled files or original crate success.
+
+The [actual CI caller/metadata repair](ci-40778928096-caller-repair.md) is included
+in this joined source; old provided golden bytes are preserved. Full CI must
+qualify the new public cut; focused success is not a full-CI claim. This finite
 local declaration does not establish full Ipv6Addr formatting, wider local
 generic or closure families, non-record fieldwise Default, nominal metadata
 transport, or whole PA26/PA31 completion.

@@ -6,8 +6,8 @@ implementation, combined qualification and public main integration in
 genuine feature-predicate metadata v4 port. Its concrete Dispatcher caller-feature
 port, source caller materialization and completed-environment cache are integrated
 and locally/native qualified. Worker
-`const_call_review` in `rustgm-pa27-work` owns block-local source Copy/Clone/Default
-derives. Its authentic source `prelude_import` selection/lookup and previous
+`const_call_review` in `rustgm-pa27-work` owns the actual unsupported source derive on SimdAlign. Its block-local
+Copy/Clone/Default derive exit is qualified. Its authentic source `prelude_import` selection/lookup and previous
 source attribute capture/repeated-effect validation are integrated and qualified. Broader advisory lint producers are deferred unless
 needed for compilation. Preserve `allow`, `deny`, `forbid`, `expect` and separate
 strict evidence from explicit capped bring-up. At most two heavy commands may
@@ -18,17 +18,16 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The qualified CLI `a3857798` has separate strict and explicit-Allow original-core
-observations with all722 source pins and effective target arguments unchanged.
-Strict opens68 sources and stops at the deferred advisory expectation in
-`ptr/const_ptr.rs186`. Allow opens372 and reports the actual block-local
-`derive(Copy, Clone, Default)` in `net/ip_addr.rs2146`. This replaces the earlier
-first prelude diagnostic; loading order/count is not a monotonic compilation
-metric. [Joined prelude qualification](pa31-source-prelude-integration.md) records
-private44+lexer10+PA6 in219.52s, five independently matched prelude native programs,
-two feature native controls, the handler baseline and explicit remaining scope.
-No original artifact exists. The [feature checkpoint](pa31-source-feature-integration.md)
-retains local26 metadata proof and cross-crate requirements.
+The qualified CLI `41d3842a` retains separate strict/explicit-Allow observations
+with all722 source pins and target args unchanged. Strict opens68 at the deferred
+pointer-cast lint expectation; Allow opens372 at actual SimdAlign builtin derive
+execution (`intrinsics/simd/mod.rs407`). [Block-owned source derives](pa31-block-owned-derive-checkpoint.md)
+and [source prelude](pa31-source-prelude-integration.md) have real independently
+matched native exits. Joined private17+lexer10+4CIintegration controls+PA6 pass
+in190.20s, plus native/core/harness/upstream post40.42s. The initial larger cold
+join hit its fixed build budget; its unchanged warm retry passes without an
+extended deadline. Loading counts are not monotonic compilation progress.
+No original artifact or whole assignment exists.
 
 The actual65-role/two-word completion set, physical source Option profile and
 old-wire denials remain qualified. Complete known-role reservations are still a
@@ -45,7 +44,7 @@ proposal and confer no source body/runtime/metadata authority.
 - Read-only offset/lint expectation/release proposals remain evidence, with no
   new compiler or publication authority.
 - The integrator is publishing the qualified caller-feature native/source
-  checkpoint and integrating the actual block-owned derive exit. Genuine panic/formatting, PA25
+  checkpoint and integrating the next actual source-derived contract. Genuine panic/formatting, PA25
   generic/const, PA29 transport and original crate artifacts remain required.
 
 Keep one heavy job in the integrator's active worktree, two Cargo/test/native
@@ -67,7 +66,7 @@ reconcile the owning PA's remaining implementation and release checklist.
 Keep at most one qualified handoff queued per worker. Take shared interfaces
 before opening unrelated compiler work, and protect integration/observation time.
 The current exits are genuine feature-predicate metadata v4 and imported call
-proof (B), actual block-local source derives (C), and joined qualification, source
+proof (B), the actual unsupported SimdAlign source derive (C), and joined qualification, source
 scalar/callable transport and publication (Root). Actual nominal provider and
 original crate artifacts remain required.
 Use at most two existing subagents; shared type/ABI/proof edits require explicit
