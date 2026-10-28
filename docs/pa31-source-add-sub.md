@@ -2,9 +2,10 @@
 
 This checkpoint joins the actual source Add/Sub declarations to the existing
 source binary contract and execution owners. AllocLayout remains ordinal 61;
-Add/Sub append 62/63, preserving every earlier ordinal. The current 64-role mask
-still fits its existing u64. The integrator owns the subsequent RoleSet/OffsetOf
-change. No bootstrap trait registration, primitive factory, wire family, backend
+Add/Sub append 62/63, preserving every earlier ordinal. The combined typed
+RoleSet has64 actual roles, one8-byte word and the same48-byte cold ledger.
+The subsequent genuine OffsetOf role and multiword measurement remain pending.
+No bootstrap trait registration, primitive factory, wire family, backend
 operation or retained proof/cache field is added.
 
 `pa31/tests/spec/source-add-sub/` preserves exact pinned arith.rs Add/Sub trait
@@ -107,3 +108,20 @@ opponent reused a valid root site/expression view; corrected opponents use a
 known different initializer. All generated native artifacts are retired while
 raw inputs, streams, timings and hashes remain. The final qualified-v1 packet
 authenticates the committed tree and every retained receipt.
+
+Combined integration qualifies private27 in122.05s and production/CLI source3
+(95 outcomes), PA13 and all473 PA24 cases in118.02s. Exact source maps match.
+All three real source programs emit byte-identical LowIR to the worker and
+repeat the independent native outputs above. The retained LowerHex constructor
+also repeats its original native trace on the combined compiler. Harness253,
+registration and upstream verification pass. Typed role membership reports
+64 roles/one word/8 bytes/ledger48; the existing bounded operator work and hot
+record sizes above are unchanged. Combined receipt
+`obj/parallel/add-sub-integration-v1/observed/receipt.json` SHA-256
+`b7854b9a8488a608b5d58533d2a7622c709b6a4dc1c21fd69cb9c54de58272f4`.
+
+Immutable CLI06b17dc4 retains all722 original core pins and372 opened files,
+then stops at the same captured-format-input boundary in field.rs51 in8.36s.
+It produces no core artifact. The allocation-identity guard now checks its
+actual stable ALL index61 rather than assuming a total62 roles; declaration
+recognition still grants no completed allocation/layout or wire permission.

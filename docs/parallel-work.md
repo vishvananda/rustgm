@@ -26,7 +26,8 @@ No zero-offset shim or Instance-only field-result cache is permitted.
 The [typed completion-set integration](source-role-completion-set.md) adds genuine
 AllocLayout61 recognition and removes the fixed completion-mask ceiling in the
 same cold ledger. Current62-role storage and old-wire denial are qualified;
-C's actual Add62/Sub63 and root OffsetOf65 remain separate source/runtime work.
+C's actual Add62/Sub63 are now integrated with source/native and const proof;
+root OffsetOf64 (the65th role) remains separate source/runtime work.
 The PA24 canonical-AddAssign oracle correction is independently native-qualified.
 
 - A: bounded read-only source/handoff reviews and component release census.
@@ -34,9 +35,10 @@ The PA24 canonical-AddAssign oracle correction is independently native-qualified
 - B: Debug and mixed Display/Debug construction are integrated. Complete genuine
   source slice/str/pointer/Formatter/write and PanicInfo/handler closure.
   Preserve the original no-Copy call-reborrow requirement separately.
-- C: raw composition, selected indexing captures and char MIN/MAX are integrated.
-  Complete owned-left/shared-RHS Add/Sub, then genuine source Add/Sub language
-  bindings. Float values and broader raw backing/validity remain required.
+- C: raw composition, selected indexing captures, char MIN/MAX and genuine
+  source Add/Sub are integrated. Complete contextual shared-reference call
+  reborrowing without Copy (LIB051). Float values and broader raw backing/validity
+  remain required.
 - Integrator: `rustgm-pa25-work`, publication and the observed source offset_of
   syntax/deferred concrete enum+niche layout. Advance unchanged core and retain
   PA25 const/generic execution plus PA29 transport and artifact obligations.
