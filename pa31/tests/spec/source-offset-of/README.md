@@ -48,3 +48,12 @@ no rendered-text parsing or alternate source macro is allowed. Layout execution
 must authenticate each actual variant/field call and defer generic containers.
 The size/alignment cache keyed only by callable Instance cannot store offsets of
 different fields. See docs/pa31-offset-of-plan.md for the remaining full exit.
+
+The `provider/` companion removes the std println dependency while retaining the
+actual intrinsic bytes, exact original macro and a real source Option hierarchy.
+Its no_core provider requires only explicit genuine PointeeSized/MetaSized/Sized
+headers. Two editions independently pass metadata, object, C link and execution:
+`1 4 8 0 0 8 16`. No host core, Copy/Clone stub or replacement macro is used.
+The three Fields queries share one intrinsic callable instance and require distinct
+results. These observations qualify the Rust protocol; candidate declaration,
+generic deferral, current-call/layout and native execution remain required.

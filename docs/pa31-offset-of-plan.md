@@ -50,3 +50,10 @@ FieldId alternate/zero-padded34-wide LowerHex format. Current-source capture and
 hard-gate controls pass; full field selection and reached CTFE remain required.
 The exact57-source Rust oracle packet and nine syntax setup controls live under
 pa31/tests/spec/source-offset-of, with original disagreements preserved.
+
+The independently qualified `pa31/tests/spec/source-offset-of/provider/` now gives
+an executable no_core exit without std println: actual intrinsic bytes and exact
+original macro, explicit sizing hierarchy, source Option and same-instance Fields
+queries. Eight commands across both editions all pass with `1 4 8 0 0 8 16`.
+Use this as the first genuine candidate source/instance/CTFE/native target; preserve
+all other57 originals, nine syntax controls and complete DST/runtime requirements.

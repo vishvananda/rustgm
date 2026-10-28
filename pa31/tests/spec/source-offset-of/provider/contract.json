@@ -1,0 +1,191 @@
+{
+  "state": "independently qualified genuine no_core offset provider; candidate source/instance/layout execution required pending",
+  "profile": {
+    "rustc": "1.98.0",
+    "editions": [
+      2021,
+      2024
+    ],
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": "yes"
+  },
+  "origin": {
+    "path": "/home/vishvananda/rustgm-pa29-work/obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/intrinsics/mod.rs",
+    "sha256": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+    "byte_start": 109499,
+    "byte_end": 109800,
+    "intrinsic_sha256": "9bef96529000773bc1bb4ccab2e932677ceddfa2f5c7af4fd6d8b18219c20bcb",
+    "macro_sha256": "cf4cd78f7b7d56d3ad9dd5b146f0ba1edd0f5af2484437ba222736ad4d965d32",
+    "foundation": "minimal three sizing declarations mirror exact pinned hierarchy, not full core implementation"
+  },
+  "prediction": {
+    "metadata": 0,
+    "object": 0,
+    "native": 0,
+    "stdout": "1 4 8 0 0 8 16\n",
+    "reason": "same genuine genericOption<B> macro and safe const-only intrinsic, distinct concrete tagged/niche layouts plus three fields of SAME callableInstance"
+  },
+  "primary": {
+    "path": "provider.rs",
+    "sha256": "e99eb43843e7289ebd66825d0b5d7e23fba9477131bb837aa2dc09951b8afeca",
+    "candidate_required": "original source-provider validation, actual lang/intrinsic identity and exactbody/source/instance/borrow/code proof before querying real Layout; generic Option<B> deferral; no fake zero/resultcache"
+  },
+  "auxiliary": [
+    {
+      "path": "intrinsic.rs",
+      "sha256": "9bef96529000773bc1bb4ccab2e932677ceddfa2f5c7af4fd6d8b18219c20bcb"
+    },
+    {
+      "path": "observer.c",
+      "sha256": "d66079bf7d4097af64c5736a886d195107ce1a44843f7d7f3872eb8ebcfb56e7"
+    }
+  ],
+  "independent": {
+    "prediction_sha256": "960e8389520205d27ba5894ac0efb65b4c4ee668a057c06bafb3718dc7184355",
+    "receipt_sha256": "efc1a4eb59c5ae826b94ed342abd060a984b3b0063ecd2fb8dcb3fdd26017de6",
+    "commands": [
+      {
+        "tag": "2021-metadata",
+        "command": [
+          "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "--edition=2021",
+          "--target=x86_64-unknown-linux-gnu",
+          "--crate-type=lib",
+          "--crate-name=offset_provider",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=off",
+          "/home/vishvananda/rustgm-pa25-work/obj/parallel/offset-execution-v1/frozen/provider.rs",
+          "--emit=metadata",
+          "-o",
+          "/home/vishvananda/rustgm-pa25-work/obj/parallel/offset-execution-v1/observed/2021.rmeta"
+        ],
+        "status": 0,
+        "seconds": 0.02936148503795266,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "tag": "2021-object",
+        "command": [
+          "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "--edition=2021",
+          "--target=x86_64-unknown-linux-gnu",
+          "--crate-type=lib",
+          "--crate-name=offset_provider",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=off",
+          "/home/vishvananda/rustgm-pa25-work/obj/parallel/offset-execution-v1/frozen/provider.rs",
+          "--emit=obj",
+          "-o",
+          "/home/vishvananda/rustgm-pa25-work/obj/parallel/offset-execution-v1/observed/2021.o"
+        ],
+        "status": 0,
+        "seconds": 0.02917553996667266,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "tag": "2021-link",
+        "command": [
+          "/usr/bin/cc",
+          "/home/vishvananda/rustgm-pa25-work/obj/parallel/offset-execution-v1/frozen/observer.c",
+          "/home/vishvananda/rustgm-pa25-work/obj/parallel/offset-execution-v1/observed/2021.o",
+          "-o",
+          "/home/vishvananda/rustgm-pa25-work/obj/parallel/offset-execution-v1/observed/2021.native"
+        ],
+        "status": 0,
+        "seconds": 0.083838258869946,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "tag": "2021-native",
+        "command": [
+          "/home/vishvananda/rustgm-pa25-work/obj/parallel/offset-execution-v1/observed/2021.native"
+        ],
+        "status": 0,
+        "seconds": 0.0015042126178741455,
+        "stdout_sha256": "b68d3e0d6f527fec05b79ff6913b616286e0932723c75b5d582a0d06d29b8187",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "tag": "2024-metadata",
+        "command": [
+          "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "--edition=2024",
+          "--target=x86_64-unknown-linux-gnu",
+          "--crate-type=lib",
+          "--crate-name=offset_provider",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=off",
+          "/home/vishvananda/rustgm-pa25-work/obj/parallel/offset-execution-v1/frozen/provider.rs",
+          "--emit=metadata",
+          "-o",
+          "/home/vishvananda/rustgm-pa25-work/obj/parallel/offset-execution-v1/observed/2024.rmeta"
+        ],
+        "status": 0,
+        "seconds": 0.026273862924426794,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "tag": "2024-object",
+        "command": [
+          "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "--edition=2024",
+          "--target=x86_64-unknown-linux-gnu",
+          "--crate-type=lib",
+          "--crate-name=offset_provider",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=yes",
+          "-Cdebug-assertions=off",
+          "/home/vishvananda/rustgm-pa25-work/obj/parallel/offset-execution-v1/frozen/provider.rs",
+          "--emit=obj",
+          "-o",
+          "/home/vishvananda/rustgm-pa25-work/obj/parallel/offset-execution-v1/observed/2024.o"
+        ],
+        "status": 0,
+        "seconds": 0.03194013284519315,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "tag": "2024-link",
+        "command": [
+          "/usr/bin/cc",
+          "/home/vishvananda/rustgm-pa25-work/obj/parallel/offset-execution-v1/frozen/observer.c",
+          "/home/vishvananda/rustgm-pa25-work/obj/parallel/offset-execution-v1/observed/2024.o",
+          "-o",
+          "/home/vishvananda/rustgm-pa25-work/obj/parallel/offset-execution-v1/observed/2024.native"
+        ],
+        "status": 0,
+        "seconds": 0.05247913021594286,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "tag": "2024-native",
+        "command": [
+          "/home/vishvananda/rustgm-pa25-work/obj/parallel/offset-execution-v1/observed/2024.native"
+        ],
+        "status": 0,
+        "seconds": 0.0019848081283271313,
+        "stdout_sha256": "b68d3e0d6f527fec05b79ff6913b616286e0932723c75b5d582a0d06d29b8187",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "tool_sha256": {
+      "rustc": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+      "cc": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88"
+    }
+  },
+  "scope": "complete exact intrinsic bytes+original447byte macro; minimal explicit genuine three-sizing hierarchy; custom source Option real lang roles. No host core used in provider, no Copy/Clone stubs, no candidate compiler acceptance or execution claimed."
+}
