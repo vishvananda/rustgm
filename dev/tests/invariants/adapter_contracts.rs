@@ -26,6 +26,7 @@ fn generic_entry(
         checked.get(item).ok_or("outer template")?,
         outer,
         checked.input(item).ok_or("outer contract")?,
+        None,
         &mut cleanup,
     )?;
     body::dispatch::resolve(facts, &mut outer.body, &mut outer.contract)?;
@@ -98,6 +99,7 @@ fn generic_adapter_requires_its_exact_specialized_source() -> TestResult {
             template,
             entry.instance(),
             input,
+            None,
             &mut cleanup,
         )?;
         body::dispatch::resolve(&mut facts, &mut original.body, &mut original.contract)?;
@@ -165,6 +167,7 @@ fn selected(
         checked.get(item).ok_or("caller template")?,
         instance,
         checked.input(item).ok_or("caller contract")?,
+        None,
         &mut cleanup,
     )?;
     body::dispatch::resolve(facts, &mut materialized.body, &mut materialized.contract)?;
@@ -380,6 +383,7 @@ fn only_the_sealed_caller_inherits_its_declared_output_equality() -> TestResult 
         template,
         instance,
         input,
+        None,
         &mut cleanup,
     )?;
     assert!(manual.contract.assumptions.is_empty());
@@ -489,6 +493,7 @@ fn equal_projection_results_do_not_equate_their_inputs() -> TestResult {
         checked.get(item).ok_or("template")?,
         instance,
         checked.input(item).ok_or("input")?,
+        None,
         &mut cleanup,
     )?;
     assert!(value.contract.universals >= 2);

@@ -120,10 +120,16 @@ fn source_seal_precedes_declared_specialization_and_required_stays_unpaid() -> R
     let (template, input) = checked.closure(identity).ok_or("checked closure")?;
     let instance = Instance::closure(&facts.types, ty)?;
     let mut cleanup = body::instantiate::Cleanup::new(&facts);
-    let missing =
-        body::instantiate::from_checked_caller(&mut facts, template, instance, input, &mut cleanup)
-            .err()
-            .ok_or("missing seal accepted")?;
+    let missing = body::instantiate::from_checked_caller(
+        &mut facts,
+        template,
+        instance,
+        input,
+        None,
+        &mut cleanup,
+    )
+    .err()
+    .ok_or("missing seal accepted")?;
     assert!(missing.contains("checked source execution conditions"));
     assert!(publish(&mut facts, &checked)? > 0);
     assert_eq!(
@@ -160,6 +166,7 @@ fn source_seal_precedes_declared_specialization_and_required_stays_unpaid() -> R
         template,
         instance,
         input,
+        None,
         &mut cleanup,
     )?;
     verify_instance(&mut facts, &declared)?;

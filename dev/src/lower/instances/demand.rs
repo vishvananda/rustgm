@@ -13,7 +13,9 @@ use crate::{
     sema::model::Declarations,
     types::{ItemId, Kind, instance::Instance},
 };
+mod current_caller;
 mod paid_owners;
+pub(super) use current_caller::Caller;
 #[path = "demand/append.rs"]
 mod selected_originals;
 use selected_originals::Proofs;
@@ -21,8 +23,8 @@ pub(super) use selected_originals::materialize as materialize_selected;
 
 #[derive(Clone, Copy)]
 enum Work {
-    Adapter(body::invocation_entries::Entry, body::ir::ProofSite),
-    Enter(Instance, body::ir::ProofSite),
+    Adapter(body::invocation_entries::Entry, body::ir::ProofSite, Caller),
+    Enter(Instance, body::ir::ProofSite, Caller),
     Leave(BodyKey),
 }
 #[derive(Default)]
@@ -168,6 +170,25 @@ struct Budget {
     adapters: HashSet<crate::types::closure::Adapter>,
 }
 impl Budget {
+    fn push_work(
+        &mut self,
+        facts: &mut Declarations,
+        work: &mut Vec<Work>,
+        value: Work,
+    ) -> Result<(), &'static str> {
+        let growth =
+            crate::support::retained::Growth::vector::<Work>(work.len(), work.capacity(), 1);
+        facts.body_work.canonical_steps = facts
+            .body_work
+            .canonical_steps
+            .saturating_add(growth.work.saturating_add(1));
+        self.bytes = self.bytes.saturating_add(growth.bytes);
+        if self.bytes > 64_000_000 {
+            return Err("generic instance work exceeds 64 MB budget");
+        }
+        work.push(value);
+        Ok(())
+    }
     fn adapter(
         &mut self,
         report: &Report,
@@ -305,7 +326,9 @@ fn materialize(
     ordinary: &Ordinary,
     mut preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
 ) -> Result<proof::Builder, Error> {
-    let (work, dependencies) = initial_work(report, facts, roots, &mut program, ordinary)?;
+    let mut budget = Budget::default();
+    let (work, dependencies) =
+        initial_work(report, facts, roots, &mut program, ordinary, &mut budget)?;
     let mut traversal = Traversal {
         program,
         ordinary,
@@ -313,11 +336,11 @@ fn materialize(
         dependencies,
         instances: HashMap::default(),
         visited: HashSet::default(),
-        budget: Budget::default(),
+        budget,
         cleanup: body::instantiate::Cleanup::new(facts),
     };
     while let Some(action) = traversal.work.pop() {
-        if let Work::Enter(instance, _) = &action
+        if let Work::Enter(instance, _, _) = &action
             && let Some(service) = preparation.as_deref_mut()
         {
             templates.demand(report, facts, &mut traversal.program, *instance, service)?;
@@ -348,14 +371,24 @@ impl Traversal<'_> {
         templates: &Checked<'_>,
         entry: body::invocation_entries::Entry,
         source: body::ir::ProofSite,
+        caller: Caller,
     ) -> Result<(), Error> {
+        let error = |e: &str| diagnostic(report, Some(source), e.into());
         let original = self
             .ordinary
             .adapter_source(&facts.types, templates, &self.instances, entry)
             .map_err(|e| diagnostic(report, Some(source), e.into()))?;
         let Some(original) = original else {
-            self.work.push(Work::Adapter(entry, source));
-            self.work.push(Work::Enter(entry.instance(), source));
+            self.budget
+                .push_work(facts, &mut self.work, Work::Adapter(entry, source, caller))
+                .map_err(error)?;
+            self.budget
+                .push_work(
+                    facts,
+                    &mut self.work,
+                    Work::Enter(entry.instance(), source, caller),
+                )
+                .map_err(error)?;
             return Ok(());
         };
         if let Some((index, family)) = self.budget.adapter(
@@ -366,13 +399,16 @@ impl Traversal<'_> {
             original,
             (entry, source),
         )? {
-            self.work.push(Work::Leave(family));
+            self.budget
+                .push_work(facts, &mut self.work, Work::Leave(family))
+                .map_err(error)?;
             self.dependencies.schedule(
                 report,
                 facts,
                 &mut self.program,
                 DependencyRoot::Body(index),
                 &mut self.work,
+                &mut self.budget,
             )?;
         }
         Ok(())
@@ -384,11 +420,11 @@ impl Traversal<'_> {
         templates: &Checked<'_>,
         action: Work,
     ) -> Result<(), Error> {
-        let (instance, source) = match action {
-            Work::Adapter(entry, source) => {
-                return self.adapter(report, facts, templates, entry, source);
+        let (instance, source, caller) = match action {
+            Work::Adapter(entry, source, caller) => {
+                return self.adapter(report, facts, templates, entry, source, caller);
             }
-            Work::Enter(instance, source) => (instance, source),
+            Work::Enter(instance, source, caller) => (instance, source, caller),
             Work::Leave(item) => {
                 self.budget.leave(report, item)?;
                 return Ok(());
@@ -407,7 +443,9 @@ impl Traversal<'_> {
                 self.budget
                     .factory(report, facts, templates, &mut self.program, selected)?;
             self.instances.insert(instance, index);
-            self.work.push(Work::Leave(family));
+            self.budget
+                .push_work(facts, &mut self.work, Work::Leave(family))
+                .map_err(error)?;
             index
         } else {
             let Some(selected) = self
@@ -429,6 +467,7 @@ impl Traversal<'_> {
                     input,
                     instance,
                     source,
+                    caller,
                 };
                 let index = specialize(
                     report,
@@ -439,7 +478,9 @@ impl Traversal<'_> {
                     request,
                 )?;
                 self.instances.insert(instance, index);
-                self.work.push(Work::Leave(selected.family));
+                self.budget
+                    .push_work(facts, &mut self.work, Work::Leave(selected.family))
+                    .map_err(error)?;
                 index
             } else {
                 let Some(index) = selected.concrete(&mut self.visited).map_err(error)? else {
@@ -454,20 +495,22 @@ impl Traversal<'_> {
             &mut self.program,
             DependencyRoot::Body(index),
             &mut self.work,
+            &mut self.budget,
         )?;
         Ok(())
     }
 }
 
 #[derive(Clone, Copy)]
-struct Specialization<'a> {
-    template: &'a body::templates::Template,
-    input: &'a Contract,
-    instance: Instance,
-    source: body::ir::ProofSite,
+pub(super) struct Specialization<'a> {
+    pub(super) template: &'a body::templates::Template,
+    pub(super) input: &'a Contract,
+    pub(super) instance: Instance,
+    pub(super) source: body::ir::ProofSite,
+    pub(super) caller: Caller,
 }
 // Entered dependencies come only from a body sealed by Builder::push.
-fn specialize(
+pub(super) fn specialize(
     report: &Report,
     facts: &mut Declarations,
     templates: &Checked<'_>,
@@ -477,11 +520,16 @@ fn specialize(
 ) -> Result<usize, Error> {
     let error = |e: &str| diagnostic(report, Some(request.source), e.into());
     body::assembly::prepay_instance(report, &request.template.body)?;
+    let caller = request
+        .caller
+        .environment(facts, templates, program, request.source)
+        .map_err(error)?;
     let mut materialized = body::instantiate::from_checked_caller(
         facts,
         request.template,
         request.instance,
         request.input,
+        caller,
         cleanup,
     )
     .map_err(error)?;
@@ -511,6 +559,7 @@ fn initial_work(
     roots: crate::lower::roots::Selected<'_>,
     program: &mut proof::Builder,
     ordinary: &Ordinary,
+    budget: &mut Budget,
 ) -> Result<(Vec<Work>, Dependencies), Error> {
     let mut work = Vec::new();
     for definition in roots.functions.iter().rev() {
@@ -535,9 +584,16 @@ fn initial_work(
             .ok_or_else(|| diagnostic(report, Some(source.into()), "missing root type".into()))?;
         let instance = Instance::new(&facts.types, ty)
             .map_err(|e| diagnostic(report, Some(source.into()), e.into()))?;
-        work.push(Work::Enter(instance, source.into()));
+        budget
+            .push_work(
+                facts,
+                &mut work,
+                Work::Enter(instance, source.into(), Caller::ROOT),
+            )
+            .map_err(|e| diagnostic(report, Some(source.into()), e.into()))?;
     }
-    let dependencies = Dependencies::roots(report, facts, program, roots.globals, &mut work)?;
+    let dependencies =
+        Dependencies::roots(report, facts, program, roots.globals, &mut work, budget)?;
     Ok((work, dependencies))
 }
 
@@ -553,6 +609,7 @@ impl Dependencies {
         program: &mut proof::Builder,
         globals: &[DefId],
         work: &mut Vec<Work>,
+        budget: &mut Budget,
     ) -> Result<Self, Error> {
         let mut dependencies = Self::default();
         for &definition in globals {
@@ -562,6 +619,7 @@ impl Dependencies {
                 program,
                 DependencyRoot::Global(definition),
                 work,
+                budget,
             )?;
         }
         Ok(dependencies)
@@ -573,8 +631,9 @@ impl Dependencies {
         program: &mut proof::Builder,
         root: DependencyRoot,
         work: &mut Vec<Work>,
+        budget: &mut Budget,
     ) -> Result<(), Error> {
-        let (source, demands, cleanup) = match root {
+        let (source, demands, cleanup, caller) = match root {
             DependencyRoot::Body(index) => {
                 let body = program
                     .body(index)
@@ -586,7 +645,13 @@ impl Dependencies {
                 let cleanup = program
                     .cleanup_dependencies(facts, index)
                     .map_err(|e| diagnostic(report, Some(source.into()), e.into()))?;
-                (source.root_site(), demands, cleanup)
+                (
+                    source.root_site(),
+                    demands,
+                    cleanup,
+                    Caller::body(index)
+                        .map_err(|e| diagnostic(report, Some(source.root_site()), e.into()))?,
+                )
             }
             DependencyRoot::Global(definition) => {
                 let initializer = facts
@@ -603,20 +668,26 @@ impl Dependencies {
                 let demands = self
                     .global(report, facts, definition)
                     .map_err(|e| diagnostic(report, Some(source.into()), e))?;
-                (source.into(), demands, Vec::new())
+                (
+                    source.into(),
+                    demands,
+                    Vec::new(),
+                    Caller::global(definition)
+                        .map_err(|e| diagnostic(report, Some(source.into()), e.into()))?,
+                )
             }
         };
         let error = |e: &str| diagnostic(report, Some(source), e.into());
-        work.extend(
-            demands
-                .adapters
-                .into_iter()
-                .rev()
-                .map(|entry| Work::Adapter(entry, source)),
-        );
+        for entry in demands.adapters.into_iter().rev() {
+            budget
+                .push_work(facts, work, Work::Adapter(entry, source, caller))
+                .map_err(error)?;
+        }
         for ty in demands.closures {
             let instance = Instance::closure(&facts.types, ty).map_err(error)?;
-            work.push(Work::Enter(instance, source));
+            budget
+                .push_work(facts, work, Work::Enter(instance, source, caller))
+                .map_err(error)?;
         }
         let mut next = demands.calls;
         next.extend(
@@ -625,7 +696,11 @@ impl Dependencies {
                 .map_err(error)?,
         );
         next.extend(cleanup);
-        work.extend(next.into_iter().rev().map(|i| Work::Enter(i, source)));
+        for instance in next.into_iter().rev() {
+            budget
+                .push_work(facts, work, Work::Enter(instance, source, caller))
+                .map_err(error)?;
+        }
         Ok(())
     }
 }
@@ -752,5 +827,54 @@ fn resolve_ordinary(
         body::dispatch::resolve(facts, body, input)
             .map_err(|e| diagnostic(report, Some(body.source.into()), e))?;
     }
+    Ok(())
+}
+
+#[cfg(test)]
+pub(super) fn caller_work_layouts() -> (usize, usize, usize) {
+    #[expect(
+        dead_code,
+        reason = "the exact original queue sum is retained only for ABI comparison"
+    )]
+    enum Original {
+        Adapter(body::invocation_entries::Entry, body::ir::ProofSite),
+        Enter(Instance, body::ir::ProofSite),
+        Leave(BodyKey),
+    }
+    (
+        size_of::<Original>(),
+        size_of::<Work>(),
+        size_of::<Caller>(),
+    )
+}
+
+#[cfg(test)]
+pub(super) fn caller_work_payments(
+    facts: &mut Declarations,
+    key: BodyKey,
+) -> Result<(), &'static str> {
+    let mut budget = Budget::default();
+    let mut work = Vec::new();
+    let before = facts.body_work.canonical_steps;
+    budget.push_work(facts, &mut work, Work::Leave(key))?;
+    let cold = budget.bytes;
+    assert!(cold >= work.capacity() * size_of::<Work>());
+    assert!(cold >= size_of::<Work>());
+    assert_eq!(facts.body_work.canonical_steps - before, 1);
+    budget.push_work(facts, &mut work, Work::Leave(key))?;
+    assert_eq!(budget.bytes, cold);
+    assert_eq!(facts.body_work.canonical_steps - before, 2);
+    let mut rejected = Vec::new();
+    budget.bytes = 64_000_000;
+    let attempted = facts.body_work.canonical_steps;
+    assert!(
+        budget
+            .push_work(facts, &mut rejected, Work::Leave(key))
+            .is_err()
+    );
+    assert!(rejected.is_empty());
+    assert_eq!(rejected.capacity(), 0);
+    assert!(budget.bytes > 64_000_000);
+    assert_eq!(facts.body_work.canonical_steps - attempted, 1);
     Ok(())
 }

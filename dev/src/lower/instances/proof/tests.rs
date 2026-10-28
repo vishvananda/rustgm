@@ -1,6 +1,8 @@
 //! Exercise the sealed incremental boundary with real semantic and CFG inputs.
 #[path = "../../../../tests/invariants/adapter_contracts.rs"]
 mod adapters;
+#[path = "../../../../tests/invariants/sealed_permissions.rs"]
+mod sealed_permissions;
 use crate::{
     body::{
         self,
@@ -106,6 +108,7 @@ fn instance_cleanup_shares_completed_types_across_distinct_callees() -> TestResu
                 checked.get(item).ok_or("missing template")?,
                 instance,
                 checked.input(item).ok_or("missing contract")?,
+                None,
                 &mut cleanup,
             )?;
             assert!(!result.destruction.locals.contains(&true));
@@ -155,6 +158,9 @@ fn resolve_source(source: &str) -> TestResult<resolve::expansion::Report> {
     .and_then(resolve::analyze_expanded)?)
 }
 fn fixture(source: &str) -> TestResult<Fixture> {
+    fixture_with_report(source).map(|(_, fixture)| fixture)
+}
+fn fixture_with_report(source: &str) -> TestResult<(resolve::expansion::Report, Fixture)> {
     let report = resolve_source(source)?;
     let mut facts =
         sema::declarations::analyze(&report).and_then(|f| sema::bodies::analyze(&report, f))?;
@@ -174,13 +180,16 @@ fn fixture(source: &str) -> TestResult<Fixture> {
             }
         }
     }
-    Ok(Fixture {
-        facts,
-        templates,
-        inputs,
-        instances,
-        program,
-    })
+    Ok((
+        report,
+        Fixture {
+            facts,
+            templates,
+            inputs,
+            instances,
+            program,
+        },
+    ))
 }
 fn originals<'a>(
     facts: &mut Declarations,

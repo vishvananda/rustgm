@@ -51,6 +51,7 @@ fn materialize(
         None,
         Context {
             premises,
+            caller: None,
             cleanup: &mut cleanup,
         },
     )?;
