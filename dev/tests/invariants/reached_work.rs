@@ -2,6 +2,8 @@
 use super::*;
 use crate::sema::values::execution::{Progress, Requirement, Target};
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
+#[path = "arity_payments.rs"]
+mod arity;
 fn fixture(name: &str) -> TestResult<String> {
     Ok(std::fs::read_to_string(
         std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -17,12 +19,13 @@ fn replay(
     root: usize,
     answer: u128,
 ) -> TestResult<(usize, usize, usize)> {
+    let limits = super::super::Limits::default();
     let before = facts.body_work.canonical_steps;
     let mut pending = None;
     let mut payments = 0;
     loop {
         let evaluator = crate::sema::values::Evaluator::new(report, facts);
-        let mut machine = Machine::catalog(evaluator, catalog, super::super::Limits::default());
+        let mut machine = Machine::catalog(evaluator, catalog, limits);
         if let Some(state) = pending.take() {
             machine.restore(state);
         } else {
@@ -41,8 +44,18 @@ fn replay(
             Progress::Prepare(Requirement::FunctionBody(target)) => {
                 let (mut state, _) = machine.suspend();
                 assert!(state.paid_call.is_none());
-                let reached = state.reached_const_call(facts, catalog, rows, target)?;
-                state.pay_const_call(facts, catalog, rows, &reached, usize::MAX)?;
+                let reached =
+                    state.reached_const_call(facts, catalog, rows, target, limits.steps)?;
+                state.pay_const_call(
+                    facts,
+                    catalog,
+                    rows,
+                    &reached,
+                    super::super::Limits {
+                        slots: usize::MAX,
+                        ..limits
+                    },
+                )?;
                 pending = Some(state);
                 payments += 1;
             }

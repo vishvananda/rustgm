@@ -32,10 +32,14 @@ fn reached_payment_is_one_use_and_keeps_the_same_box_across_suspension() -> Resu
     context.inspect_const_call(
         Target::Initializer(definition),
         |catalog, rows, root| -> Result {
+            let limits = const_eval::Limits::default();
+            let payment_limits = const_eval::Limits {
+                slots: usize::MAX,
+                ..limits
+            };
             for corrupt in [0, 1, 2, 3, 4, 5, 6, 7] {
                 let evaluator = crate::sema::values::Evaluator::new(&report, &mut facts);
-                let mut machine =
-                    Machine::catalog(evaluator, catalog, const_eval::Limits::default());
+                let mut machine = Machine::catalog(evaluator, catalog, limits);
                 machine.begin(root, &[]).map_err(|e| e.message)?;
                 let Progress::Prepare(Requirement::FunctionBody(target)) =
                     machine.advance().map_err(|e| e.message)?
@@ -43,50 +47,39 @@ fn reached_payment_is_one_use_and_keeps_the_same_box_across_suspension() -> Resu
                     return Err("cached code skipped the reached payment".into());
                 };
                 let (mut state, _) = machine.suspend();
-                let reached = state.reached_const_call(&facts, catalog, rows, target)?;
+                let reached =
+                    state.reached_const_call(&facts, catalog, rows, target, limits.steps)?;
                 let slots = state.retained_slots();
                 assert!(
                     state
-                        .pay_const_call(&mut facts, catalog, rows, &reached, slots)
+                        .pay_const_call(
+                            &mut facts,
+                            catalog,
+                            rows,
+                            &reached,
+                            const_eval::Limits { slots, ..limits }
+                        )
                         .is_err()
                 );
                 assert!(state.paid_call.is_none());
-                state.pay_const_call(&mut facts, catalog, rows, &reached, usize::MAX)?;
+                state.pay_const_call(&mut facts, catalog, rows, &reached, payment_limits)?;
                 assert!(
                     state
-                        .pay_const_call(&mut facts, catalog, rows, &reached, usize::MAX)
+                        .pay_const_call(&mut facts, catalog, rows, &reached, payment_limits)
                         .is_err()
                 );
                 let pointer = std::ptr::from_ref(state.paid_call.as_deref().ok_or("payment")?);
                 let evaluator = crate::sema::values::Evaluator::new(&report, &mut facts);
-                let mut machine =
-                    Machine::catalog(evaluator, catalog, const_eval::Limits::default());
+                let mut machine = Machine::catalog(evaluator, catalog, limits);
                 machine.restore(state);
                 let (mut state, _) = machine.suspend();
                 assert_eq!(
                     pointer,
                     std::ptr::from_ref(state.paid_call.as_deref().ok_or("moved payment")?)
                 );
-                let paid = state.paid_call.as_mut().ok_or("payment")?;
-                match corrupt {
-                    1 => paid.site.frame += 1,
-                    2 => paid.site.position += 1,
-                    3 => paid.caller = Rc::clone(&paid.callee),
-                    4 => state.frames.last_mut().ok_or("frame")?.next += 1,
-                    5 => paid.callee = Rc::clone(&paid.caller),
-                    6 => paid.target_code = usize::MAX,
-                    7 => {
-                        paid.site.form = crate::const_eval::function_calls::Form::Selected {
-                            // A genuine direct-call payment cannot acquire selected
-                            // callback authority by changing its cold form tag.
-                            selector: paid.site.target,
-                        }
-                    }
-                    _ => {}
-                }
+                corrupt_payment(&mut state, corrupt)?;
                 let evaluator = crate::sema::values::Evaluator::new(&report, &mut facts);
-                let mut machine =
-                    Machine::catalog(evaluator, catalog, const_eval::Limits::default());
+                let mut machine = Machine::catalog(evaluator, catalog, limits);
                 machine.restore(state);
                 let result = machine.advance();
                 if corrupt == 0 {
@@ -106,5 +99,26 @@ fn reached_payment_is_one_use_and_keeps_the_same_box_across_suspension() -> Resu
             Ok(())
         },
     )??;
+    Ok(())
+}
+
+fn corrupt_payment(state: &mut State, corrupt: usize) -> Result {
+    let paid = state.paid_call.as_mut().ok_or("payment")?;
+    match corrupt {
+        1 => paid.site.frame += 1,
+        2 => paid.site.position += 1,
+        3 => paid.caller = Rc::clone(&paid.callee),
+        4 => state.frames.last_mut().ok_or("frame")?.next += 1,
+        5 => paid.callee = Rc::clone(&paid.caller),
+        6 => paid.target_code = usize::MAX,
+        7 => {
+            paid.site.form = crate::const_eval::function_calls::Form::Selected {
+                // A genuine direct-call payment cannot acquire selected
+                // callback authority by changing its cold form tag.
+                selector: paid.site.target,
+            }
+        }
+        _ => {}
+    }
     Ok(())
 }

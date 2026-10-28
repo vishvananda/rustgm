@@ -232,35 +232,40 @@ fn actual_generic_const_helper_requires_its_complete_conditional_trait_premise()
     else {
         return Err("actual generic trait member".into());
     };
-    let mut arguments = facts
+    let arguments = facts
         .types
         .arguments(arguments)
         .ok_or("actual complete arguments")?
         .collect::<Vec<_>>();
-    let subject = arguments.first_mut().ok_or("actual Self")?;
-    assert!(matches!(
-        *subject,
-        crate::types::arguments::Argument::Type(_)
-    ));
-    *subject = crate::types::arguments::Argument::Type(crate::types::TypeId::UNIT);
-    let arguments = facts.types.intern_arguments(&arguments)?;
-    let wrong = facts.types.intern(Kind::FunctionItem {
-        item,
-        arguments,
-        signature,
-    })?;
-    let context = prepare(&facts, &body, definition, &mut work)?;
-    let error = context
-        .check(
-            Call {
-                target: wrong,
-                ..call
-            },
-            |n| work.charge(n),
-        )
-        .err()
-        .ok_or("foreign subject acquired a conditional trait premise")?;
-    assert!(error.contains("conditional trait premise"), "{error}");
-    context.check(call, |n| work.charge(n))?;
+    // Keep Self while changing Rhs as well as the separate changed-Self case.
+    // Neither the trait name nor a same-Self premise pays another application.
+    for slot in 0..2 {
+        let mut changed = arguments.clone();
+        let argument = changed.get_mut(slot).ok_or("actual Self/Rhs formal")?;
+        assert!(matches!(
+            *argument,
+            crate::types::arguments::Argument::Type(_)
+        ));
+        *argument = crate::types::arguments::Argument::Type(crate::types::TypeId::UNIT);
+        let changed = facts.types.intern_arguments(&changed)?;
+        let wrong = facts.types.intern(Kind::FunctionItem {
+            item,
+            arguments: changed,
+            signature,
+        })?;
+        let context = prepare(&facts, &body, definition, &mut work)?;
+        let error = context
+            .check(
+                Call {
+                    target: wrong,
+                    ..call
+                },
+                |n| work.charge(n),
+            )
+            .err()
+            .ok_or("foreign Self/Rhs acquired a conditional trait premise")?;
+        assert!(error.contains("conditional trait premise"), "{error}");
+        context.check(call, |n| work.charge(n))?;
+    }
     Ok(())
 }

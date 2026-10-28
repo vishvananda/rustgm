@@ -180,11 +180,11 @@ concrete; a private Ready state is not an executable result.
 
 | Owner | Issues and owning assignments | Next observable exit |
 | --- | --- | --- |
-| Integrator, retained read-only proposals | Assignment release evidence / PA26 operator-kernel | Reconcile the complete existing fixture census into a proposed canonical component manifest and explicit residual/runtime coverage; no compiler edits, status changes or heavy jobs. |
-| Integrator, saved derive/panic lane | LIB-029/021/034/055/057, PA25–28/31 | Nine constructors and the [generic payload derive prerequisite](pa31-generic-payload-derive-checkpoint.md) are integrated. Finish genuine source PanicInfo/Location/handler/abort and full Count/Formatter/write; runtime expansion parity for all other derive families remains required. |
-| Integrator, saved comparison lane | LIB-051/056, PA16/19/26/28/31 | Reborrow flow repair passes its seven regressions, all affected independent/native checks and all8605 active text cases. Then finish saved genuine source comparisons/three_way_compare with actual method/body/const/Ordering proof. |
-| Integrator, direct compiler owner | LIB-050/051/054/058, PA12/16/18/25/28/31/40 | Shared identity/contextual flow repair is public with independently verified references. Implement actual lint expectations and original builtin offset field selection/generic deferral. Preserve all crate artifact acceptance. |
-| Integrator, queued independent preparation | LIB-009/010/011, PA30/33/34/36 | Selected alloc/std dependency/build/runtime inventory and small real ABI/build consumers; do not wait until core works to discover graph prerequisites. |
+| Root, direct compiler owner | LIB-051/056, PA16/18/25/26/28/31 | Finish genuine source comparison/three_way_compare lowering and native execution. Reached arbitrary-arity work/replay controls pass; original const-function cleanup test setup and joined producer remain pending. |
+| `const_call_review`, existing C worktree | LIB-056, PA14/16/17/25/31 | Prove fresh actual enum-test refinement clears inactive payloads only from may-live cleanup state. Preserve read/move permission, custom Drop, original environment and concrete CTFE guards; qualify source comparison producer. |
+| `lint_expectations`, existing B worktree | LIB-058, PA6/31/40 | Actual deprecation/expectation events pass focused private checks; finish production/CLI, import/export opponents and original-core observation. Imported deprecation transport and unsupported expected lint families remain explicit. |
+| Root, saved derive/panic lane | LIB-029/021/034/055/057, PA25–28/31 | Nine constructors and the [generic payload derive prerequisite](pa31-generic-payload-derive-checkpoint.md) are integrated. Finish genuine source PanicInfo/Location/handler/abort and full Count/Formatter/write; runtime expansion parity for all other derive families remains required. |
+| Root, queued source and independent work | LIB-050/054/009/010/011, PA12/18/28/30/33/34/36 | Original builtin offset field selection/generic deferral and alloc/std graph/runtime closure remain required. Preserve all crate artifact acceptance; prepare only concrete next consumers. |
 
 Track assignment closure separately: implemented behavior, owning text fixtures,
 independent/native evidence and publication/release checks. Broad remaining

@@ -42,19 +42,20 @@ impl Engine {
             .const_calls
             .as_deref()
             .ok_or_else(|| error("source const-call inputs were not retained"))?;
+        let limits = self.available_limits()?;
         let reached = state
-            .reached_const_call(facts, &self.catalog, rows, instance)
+            .reached_const_call(facts, &self.catalog, rows, instance, limits.steps)
             .map_err(error)?;
         if !self.function_for_reached(report, facts, &reached)? {
             return Ok(false);
         }
-        let slots = self.available_limits()?.slots;
+        let limits = self.available_limits()?;
         let rows = self
             .const_calls
             .as_deref()
             .ok_or_else(|| error("source const-call inputs were not retained"))?;
         state
-            .pay_const_call(facts, &self.catalog, rows, &reached, slots)
+            .pay_const_call(facts, &self.catalog, rows, &reached, limits)
             .map_err(error)?;
         Ok(true)
     }

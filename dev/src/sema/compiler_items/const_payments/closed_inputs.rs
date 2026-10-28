@@ -7,11 +7,17 @@ use crate::{
         substitute::Bound,
     },
 };
-pub(super) fn closed_arguments(store: &Store, parameters: ListId) -> Result<bool, &'static str> {
+pub(super) fn closed_arguments(
+    store: &Store,
+    parameters: ListId,
+    charge: &mut impl FnMut(usize) -> Result<(), &'static str>,
+) -> Result<bool, &'static str> {
+    charge(1)?;
     let parameters = store
         .list(parameters)
         .ok_or("source const signature has invalid parameters")?;
     for &parameter in parameters {
+        charge(2)?;
         match store.kind(parameter) {
             Some(Kind::Primitive(primitive)) if primitive != Primitive::Str => {}
             Some(Kind::FunctionItem { signature, .. })

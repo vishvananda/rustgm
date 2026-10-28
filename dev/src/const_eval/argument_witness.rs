@@ -11,7 +11,9 @@ pub(super) fn checked_call(
     position: u32,
     target: Instance,
     contract: (crate::resolve::model::DefId, Primitive),
+    charge: &mut impl FnMut(usize) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
+    charge(16)?;
     let arguments = super::reached_layout::checked_call_arguments(
         facts,
         body,
@@ -38,6 +40,7 @@ pub(super) fn checked_call(
         return Err("paid call changed its checked arity");
     }
     for (&parameter, &value) in parameters.iter().zip(arguments) {
+        charge(4)?;
         if body
             .values
             .get(value.0 as usize)

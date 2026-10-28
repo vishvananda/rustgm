@@ -98,7 +98,9 @@ impl Payment {
 pub(crate) fn profile(
     facts: &Declarations,
     instance: Instance,
+    charge: &mut impl FnMut(usize) -> Result<(), &'static str>,
 ) -> Result<(DefId, TypeId, crate::types::GenericArgs, Primitive), &'static str> {
+    charge(12)?;
     let Some(Kind::FunctionItem {
         item,
         signature,
@@ -143,13 +145,21 @@ pub(crate) fn profile(
         return Err("source const payment currently requires a primitive result");
     };
     if primitive == Primitive::Str
-        || !closed_arguments(&facts.types, parameters)?
-        || !facts.types.arguments_are_concrete(arguments)?
+        || !closed_arguments(&facts.types, parameters, charge)?
         || facts.types.needs_region_context(instance.ty()) != Some(false)
     {
         return Err(
             "source const payment for this open, lifetime-bearing or argument shape is not implemented",
         );
+    }
+    let count = facts
+        .types
+        .arguments(arguments)
+        .ok_or("invalid source const generic arguments")?
+        .len();
+    charge(1 + count)?;
+    if !facts.types.arguments_are_concrete(arguments)? {
+        return Err("source const payment requires complete concrete generic arguments");
     }
     Ok((definition, signature, arguments, primitive))
 }
@@ -158,7 +168,16 @@ pub(crate) fn prepare(
     instance: Instance,
     budget: usize,
 ) -> Result<Arc<Requirements>, &'static str> {
-    let (definition, signature, _, primitive) = profile(facts, instance)?;
+    let mut attempted = 0_usize;
+    let result = profile(facts, instance, &mut |count| {
+        attempted = attempted.saturating_add(count);
+        if attempted > 1_000_000 {
+            return Err("source const-call profile work budget exceeded");
+        }
+        Ok(())
+    });
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(attempted);
+    let (definition, signature, _, primitive) = result?;
     let environment = facts
         .generics
         .environments

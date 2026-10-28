@@ -23,7 +23,9 @@ is_some_and had an active composite cleanup, TypeId120/Adt ItemId61, rather than
 only the unused F's direct conditional Destruct claim. The test-only diagnostic
 has been removed. The cold gate now uses a completed registration when available
 and otherwise reads actual non-lifetime declaration parameters; that final
-fallback has not yet been run. Never invent T:Destruct, suppress accesses, or
+fallback now reaches both genuine const-function carriers. Its first two manual
+controls still failed later fixture setup and remain pending correction. Never
+invent T:Destruct, suppress accesses, or
 classify a conditional cleanup as dropless to satisfy this consumer.
 
 The new original const-function carrier reuses existing defining-cleanup
@@ -40,8 +42,20 @@ At the user's renewed two-agent authorization, the second worker takes precise
 symbolic cleanup in the existing pa27 worktree. Root takes the accepted reached
 arity-accounting review finding; the first worker independently implements real
 deprecation/expectation semantics in pa26. No new worktrees or increased budgets.
-The scalar/owned-item const profile still needs precharged attempted work across
-all four inspect phases and configured-budget/rejected-operand scaling controls.
+The scalar/owned-item const profile now precharges attempted work across all four
+inspect phases against the configured cumulative budget. Receipt1793193560251533885
+passed strict formatting/audit/private Clippy and7 of9 controls, including genuine
+8/32/128-operand cold/warm, first/last malformed-value, exhausted resume and
+one-use payment opponents. Its two new manual cleanup controls failed: the
+ordinary-bound negative had not demanded its generic proof, and the positive
+manual loan query lacked the actual parameter environment. Those setups are now
+corrected but not yet rerun; no cleanup permission was weakened. The same-Self,
+changed-Rhs generic-premise opponent is also added and awaiting the next check.
+Independent Rust1.98 metadata/object/link/run observations passed all24 operations
+for the exact8/32/128 sources in editions2021/2024, each native result7; receipt
+`arity-oracle-v1/observed/receipt.json` has SHA256
+`c1e0e808a178966c1427c9b79bd06c3ee53b80053d6c939084d59c473ab18eff`.
+This does not qualify the still-pending comparison/native consumer.
 Native observer is prepared under obj/parallel/source-comparison-integration-v1
 but has not run; do not claim its producer outputs or stale artifacts as passes.
 

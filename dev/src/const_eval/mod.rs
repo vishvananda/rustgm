@@ -66,6 +66,18 @@ pub struct Work {
     pub peak_frames: usize,
     pub peak_slots: usize,
 }
+impl Work {
+    fn charge(&mut self, amount: usize, step_limit: usize) -> Result<(), Failure> {
+        self.steps = self
+            .steps
+            .checked_add(amount)
+            .ok_or("constant execution work overflow")?;
+        if self.steps > step_limit {
+            return Err(Failure::Fault("constant execution step limit exceeded"));
+        }
+        Ok(())
+    }
+}
 pub struct Error {
     pub source: Option<crate::body::ir::ProofSite>,
     pub message: &'static str,
@@ -279,15 +291,7 @@ impl<'a, 'b> Machine<'a, 'b> {
         }
     }
     fn charge(&mut self, amount: usize) -> Result<(), Failure> {
-        self.work.steps = self
-            .work
-            .steps
-            .checked_add(amount)
-            .ok_or("constant execution work overflow")?;
-        if self.work.steps > self.limits.steps {
-            return Err(Failure::Fault("constant execution step limit exceeded"));
-        }
-        Ok(())
+        self.work.charge(amount, self.limits.steps)
     }
     fn push(
         &mut self,

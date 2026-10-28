@@ -43,7 +43,9 @@ fn inspect(
     frame: &Frame,
     phase: super::selector_sites::Phase,
     target: Instance,
+    charge: &mut impl FnMut(usize) -> Result<(), &'static str>,
 ) -> Result<Site, &'static str> {
+    charge(8)?;
     let position = phase.position(frame)?;
     catalog.validate_entry(frame.body)?;
     let body = catalog
@@ -59,7 +61,7 @@ fn inspect(
             selector: call.selector(),
         }
     } else {
-        let (definition, _, _, primitive) = const_payments::profile(facts, target)?;
+        let (definition, _, _, primitive) = const_payments::profile(facts, target, charge)?;
         super::argument_witness::checked_call(
             facts,
             body,
@@ -67,6 +69,7 @@ fn inspect(
             position,
             target,
             (definition, primitive),
+            charge,
         )?;
         super::function_calls::Form::Direct
     };
@@ -81,11 +84,12 @@ fn inspect(
 }
 impl State {
     pub(crate) fn reached_const_call(
-        &self,
+        &mut self,
         facts: &Declarations,
         catalog: &Catalog,
         inputs: &Inputs,
         target: Instance,
+        step_limit: usize,
     ) -> Result<Reached, &'static str> {
         if self.paid_call.is_some() {
             return Err("source const call was already paid");
@@ -102,6 +106,11 @@ impl State {
                 frame,
                 super::selector_sites::Phase::Suspended,
                 target,
+                &mut |count| {
+                    self.work
+                        .charge(count, step_limit)
+                        .map_err(crate::sema::values::Failure::message)
+                },
             )?,
         })
     }
@@ -111,7 +120,7 @@ impl State {
         catalog: &Catalog,
         inputs: &Inputs,
         reached: &Reached,
-        slots: usize,
+        limits: super::Limits,
     ) -> Result<(), &'static str> {
         if self.paid_call.is_some() {
             return Err("source const-call payment cannot be replayed");
@@ -128,6 +137,11 @@ impl State {
                 frame,
                 super::selector_sites::Phase::Suspended,
                 reached.site.target,
+                &mut |count| {
+                    self.work
+                        .charge(count, limits.steps)
+                        .map_err(crate::sema::values::Failure::message)
+                },
             )?
         {
             return Err("source const payment changed its reached statement");
@@ -151,7 +165,7 @@ impl State {
         requirements.matches(facts, reached.site.target)?;
         let payment = const_payments::pay(facts, requirements, origin.environment())?;
         let extra = size_of::<Continuation>().div_ceil(size_of::<super::Constant>());
-        if self.retained_slots().saturating_add(extra) > slots {
+        if self.retained_slots().saturating_add(extra) > limits.slots {
             return Err("source const-call continuation exceeds retained slot budget");
         }
         self.paid_call = Some(Box::new(Continuation {
@@ -166,7 +180,11 @@ impl State {
 }
 impl Machine<'_, '_> {
     pub(super) fn validate_const_resume(&mut self, frame: &Frame) -> Result<(), &'static str> {
-        let Some(continuation) = self.paid_call.as_ref() else {
+        let Some(expected) = self
+            .paid_call
+            .as_ref()
+            .map(|continuation| continuation.site)
+        else {
             return Ok(());
         };
         let checked = inspect(
@@ -175,13 +193,20 @@ impl Machine<'_, '_> {
             self.bodies.inputs(),
             frame,
             super::selector_sites::Phase::Suspended,
-            continuation.site.target,
+            expected.target,
+            &mut |count| {
+                self.work
+                    .charge(count, self.limits.steps)
+                    .map_err(crate::sema::values::Failure::message)
+            },
         );
-        if checked.is_err() || checked.ok() != Some(continuation.site) {
-            self.paid_call = None;
-            return Err("source const payment resumed outside its exact checked statement");
-        }
-        Ok(())
+        let error = match checked {
+            Ok(actual) if actual == expected => return Ok(()),
+            Ok(_) => "source const payment resumed outside its exact checked statement",
+            Err(error) => error,
+        };
+        self.paid_call = None;
+        Err(error)
     }
     pub(super) fn consume_const_call(
         &mut self,
@@ -201,6 +226,11 @@ impl Machine<'_, '_> {
             frame,
             super::selector_sites::Phase::Executing,
             target,
+            &mut |count| {
+                self.work
+                    .charge(count, self.limits.steps)
+                    .map_err(crate::sema::values::Failure::message)
+            },
         )?;
         if continuation.site != site || site.form != form {
             return Err("source const-call continuation belongs to another frame or statement");

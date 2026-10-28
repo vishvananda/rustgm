@@ -24,8 +24,8 @@ fn report(conditional: bool) -> Result<crate::resolve::expansion::Report> {
     )?)
 }
 
-fn original() -> Result<(Declarations, Template, Contract)> {
-    let report = report(true)?;
+fn original(conditional: bool) -> Result<(Declarations, Template, Contract)> {
+    let report = report(conditional)?;
     let crate::pipeline::Analysis {
         mut facts,
         mut prepared,
@@ -69,7 +69,7 @@ fn original() -> Result<(Declarations, Template, Contract)> {
 
 #[test]
 fn const_function_cleanup_requires_conditional_bound_and_sealed_original_carrier() -> Result {
-    let (facts, template, contract) = original()?;
+    let (facts, template, contract) = original(true)?;
     let builtins = contract.builtins.as_deref().ok_or("builtins")?;
     let state = builtins.defining().ok_or("actual const function carrier")?;
     let mut work = Work::new(1_000_000);
@@ -104,8 +104,8 @@ fn const_function_cleanup_requires_conditional_bound_and_sealed_original_carrier
         return Err("function".into());
     };
     assert!(facts.is_const_function(actual));
-    let ordinary = report(false)?;
-    let error = crate::pipeline::analyze_source(&ordinary)
+    let (mut facts, template, contract) = original(false)?;
+    let error = verify(&mut facts, template, contract)
         .err()
         .ok_or("ordinary Destruct paid a const cleanup")?;
     assert!(
@@ -119,7 +119,7 @@ fn const_function_cleanup_requires_conditional_bound_and_sealed_original_carrier
 
 #[test]
 fn symbolic_const_cleanup_cannot_authorize_concrete_glue_or_an_instance() -> Result {
-    let (mut facts, template, contract) = original()?;
+    let (mut facts, template, contract) = original(true)?;
     let proof = projections::regions(&mut facts, &template, &contract)?;
     let body = &template.body;
     let mut copies = Copies::in_environment(Arc::clone(&template.environment));
@@ -149,7 +149,8 @@ fn symbolic_const_cleanup_cannot_authorize_concrete_glue_or_an_instance() -> Res
         .find(|c| c.access)
         .ok_or("real active generic cleanup")?;
     let mut live = crate::types::outlives::LiveRegions::default();
-    let mut drops = crate::types::destruction::regions::Regions::new([])?;
+    let mut drops = crate::types::destruction::regions::Regions::new([])?
+        .scoped(Arc::clone(&template.environment));
     loans::check_schedule(
         &facts.types,
         &facts.aggregates,
@@ -198,7 +199,8 @@ fn reject_instance(
 ) -> Result {
     let body = &template.body;
     let mut live = crate::types::outlives::LiveRegions::default();
-    let mut drops = crate::types::destruction::regions::Regions::new([])?;
+    let mut drops = crate::types::destruction::regions::Regions::new([])?
+        .scoped(Arc::clone(&template.environment));
     let mut instance = body.clone();
     let Owner::Function { definition, .. } = body.owner else {
         return Err("function".into());
