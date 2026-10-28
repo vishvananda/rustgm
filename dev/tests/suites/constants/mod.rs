@@ -55,3 +55,6 @@ pub(crate) mod semantic;
 mod sequence_constants;
 #[path = "../../helpers/source_cases.rs"]
 pub(crate) mod source_cases;
+
+#[path = "../../harness/warning_contracts.rs"]
+pub(crate) mod warning_contracts;

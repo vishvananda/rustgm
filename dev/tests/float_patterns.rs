@@ -241,7 +241,7 @@ fn independent(file: &Path, executable: bool) -> Result<(), Box<dyn std::error::
     }
     Ok(())
 }
-fn views(file: &Path, expected: i32) -> Result<(), Box<dyn std::error::Error>> {
+fn views(file: &Path, expected: i32, warnings: &[u32]) -> Result<(), Box<dyn std::error::Error>> {
     for stage in ["patterns", "lowir"] {
         let output = frontend(file, &format!("--emit-{stage}"))?;
         assert_eq!(
@@ -264,12 +264,14 @@ fn views(file: &Path, expected: i32) -> Result<(), Box<dyn std::error::Error>> {
             assert_eq!(count.stderr, output.stderr);
             continue;
         }
-        assert!(output.stderr.is_empty());
+        crate::warning_contracts::unreachable(&output.stderr, warnings)?;
         let repeated = frontend(file, &format!("--emit-{stage}"))?;
         assert!(repeated.status.success());
+        crate::warning_contracts::unreachable(&repeated.stderr, warnings)?;
         assert_eq!(output.stdout, repeated.stdout);
         let count = frontend(file, &format!("--count-{stage}"))?;
-        assert!(count.status.success() && count.stderr.is_empty());
+        assert!(count.status.success());
+        crate::warning_contracts::unreachable(&count.stderr, warnings)?;
         if stage == "patterns" {
             let text = std::str::from_utf8(&output.stdout)?;
             let footer = text
@@ -310,7 +312,7 @@ fn float_pattern_programs_and_rejections_agree_with_rustc() -> Result<(), Box<dy
                     assert_eq!(result.status.code(), Some(expected));
                     assert!(result.stdout.is_empty() && !result.stderr.is_empty());
                 } else {
-                    views(&file, expected)?;
+                    views(&file, expected, if *name == "zeros" { &[169] } else { &[] })?;
                     if name.ends_with("missing-nan") {
                         let error =
                             std::fs::read_to_string(file.with_extension("patterns-stderr"))?;
@@ -361,7 +363,7 @@ fn mixed_zero_retries_follow_the_reference_and_record_the_rustc_discrepancy()
                 &file,
                 format!("{program}fn main(){{check(f(-0.0)==2&&f(0.0)==2&&f(0.0/0.0)==0);}}"),
             )?;
-            views(&file, 0)?;
+            views(&file, 0, &[])?;
             let oracle = folder.join(format!("rustc-{ty}-{name}.rs"));
             std::fs::write(
                 &oracle,
