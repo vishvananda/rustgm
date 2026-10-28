@@ -14,12 +14,13 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The qualified CLI35835492 passes the original offset_of parser boundary, then
-rejects actual FieldId `{:#034x}` in core/mem/type_info.rs572. All722 pinned
-inputs verify;372 open in8.67s, with no artifact. Combined private9, production/
-CLI strict, native16 and full PA6/PA9 pass. Root owns the remaining
-[typed offset/layout execution](pa31-offset-of-plan.md); B retains the actual
-format-option/source-constructor requirement alongside genuine Formatter/write.
+The qualified CLIa271afa6 passes the original offset_of parser and FieldId
+`{:#034x}` static LowerHex construction, then rejects captured names in
+core/field.rs51. All722 pinned inputs verify;372 open in8.58s, with no artifact.
+Combined private9, production/CLI strict, lexer10, PA8 and all473 PA24 pass.
+The actual source-constructor native trace matches pinned Rust. Root owns the
+remaining [typed offset/layout execution](pa31-offset-of-plan.md); B takes the
+observed named/captured-input prerequisite alongside genuine Formatter/write.
 No zero-offset shim or Instance-only field-result cache is permitted.
 
 The [typed completion-set integration](source-role-completion-set.md) adds genuine

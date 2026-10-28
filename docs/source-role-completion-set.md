@@ -9,6 +9,12 @@ the existing header payer. The present62-role set is one8-byte word and the
 Validated ledger remains48 bytes. Wider real-role configurations still require
 actual high-word tests and measurement before claiming their qualification.
 
+Full CI40607099972 exposed the last PhantomData test census still expecting61
+language roles after genuine AllocLayout62. Its expectation now uses the actual
+62-role census; the separate61 builtin-macro census remains unchanged. Combined
+private9 and production/CLI strict checks qualify the correction. This is a
+test expectation repair, with no new semantic permission or source role.
+
 At the current one-word size, readers consume a Copy set by value, as strict
 Clippy requires. When adding the65th real role, switch membership/empty readers
 to borrowed receivers before measuring multiword work; do not copy the entire

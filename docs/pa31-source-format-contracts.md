@@ -351,6 +351,19 @@ by a compiler formatting algorithm or counted complete by this identity step.
 
 ## Static options and LowerHex construction
 
+Combined integration CLIa271afa6 now passes the exact FieldId call and advances
+unchanged core to named/captured inputs in field.rs51. All722 pins verify;
+372 files open in8.58s. Combined private9 passes239.15s; production/CLI strict,
+lexer10, PA8 and all473 PA24 pass169.44s. The actual private producer emits the
+same8c095cc5 LowIR as B; an independent combined native execution repeats the
+exact trace below. Harness253, registrations and upstream checks pass. Receipt
+`obj/parallel/static-options-integration-v1/observed-v3/receipt.json` SHA-256
+`dc25a38ec84883d73c148beb82220304705993a5a92284a9cf6f421ca21c0480`.
+The first observer omitted library mode; the second encountered the retained
+source-stability metadata-profile fence. Both failures remain in observed and
+observed-v2; native execution uses the qualified actual private producer.
+Neither that metadata boundary nor full Formatter/runtime closure is waived.
+
 LIB052 is the unchanged original `mem/type_info.rs572` call
 `write!(f, "FieldId({:#034x})", self.frt_type_id.as_u128())`. The typed producer
 now selects the real `Argument::new_lower_hex<T: LowerHex>` beside Display and
