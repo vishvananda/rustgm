@@ -2010,7 +2010,9 @@ impl Checker<'_> {
         if op == Op::Equal || scalar::compound_operator(op).is_some() {
             return self.assignment(node, op, left, right);
         }
-        if self.facts.source_bindings.is_some() && matches!(op, Op::ShiftLeft | Op::Or) {
+        if self.facts.source_bindings.is_some()
+            && matches!(op, Op::ShiftLeft | Op::Or | Op::Plus | Op::Minus)
+        {
             let hook = language_hooks::binary_hook(op)
                 .ok_or_else(|| self.error(node, "invalid source binary hook"))?;
             return self.source_binary_operator(node, hook, left, right);

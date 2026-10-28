@@ -13,6 +13,11 @@ mod callers;
 mod originals;
 pub(crate) use originals::{anonymous as original_anonymous, initializer as original_initializer};
 
+/// Borrow the same actual member identity used by concrete operand dispatch.
+pub(crate) fn trait_function(facts: &Declarations, value: &super::ir::Value) -> bool {
+    matches!(value.kind, Rvalue::Function(id) if facts.associated.trait_owner(id).is_some())
+}
+
 pub(crate) fn resolve(
     facts: &mut Declarations,
     body: &mut Body,
@@ -59,8 +64,10 @@ fn resolve_using(
     mut preparation: Option<&mut dyn crate::sema::dispatch::Preparation>,
 ) -> Result<(), crate::sema::dispatch::Failure> {
     let dispatch = body.values.iter().any(|value| {
-        matches!(value.kind, Rvalue::AssociatedConstant(_) | Rvalue::SourceAssociated(_))
-            || matches!(value.kind, Rvalue::Function(id) if facts.associated.trait_owner(id).is_some())
+        matches!(
+            value.kind,
+            Rvalue::AssociatedConstant(_) | Rvalue::SourceAssociated(_)
+        ) || trait_function(facts, value)
     });
     if !dispatch {
         return finish_using(facts, body, contract, scope.as_deref(), preparation);

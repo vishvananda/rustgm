@@ -32,26 +32,25 @@ pub(super) fn check(
     expected: usize,
     work: &mut Work,
 ) -> Result<(), &'static str> {
-    check_calls(facts, body, (expected, 0), work)
+    check_calls(None, facts, body, (expected, 0), work)
 }
 pub(super) fn check_calls(
+    report: Option<&crate::resolve::expansion::Report>,
     facts: &Declarations,
     body: &Body,
     expected: (usize, usize),
     work: &mut Work,
 ) -> Result<(), &'static str> {
-    let definition = defining_owner(facts, body, work)?;
+    let definition = if expected.0 == 0 {
+        None
+    } else {
+        Some(defining_owner(facts, body, work)?)
+    };
     if expected.0 != 0 {
         work.charge(3)?;
         crate::sema::compiler_items::callable_role(facts, CallTrait::FnOnce)?;
     }
-    let member_context = if expected.1 == 0 {
-        None
-    } else {
-        Some(super::provided_calls::prepare(
-            facts, body, definition, work,
-        )?)
-    };
+    let mut member_context = None;
     let mut seen = HashSet::default();
     let mut members = 0;
     for statement in &body.statements {
@@ -74,6 +73,20 @@ pub(super) fn check_calls(
                 if !seen.insert(id) {
                     return Err("const member value is evaluated at multiple source sites");
                 }
+                // A closed defining request is authenticated against the current
+                // source call. Ordinary dispatch and checked const function entry
+                // still select and prove its executable implementation.
+                if let Some(report) = report
+                    && super::provided_calls::closed_request(report, facts, body, statement, work)?
+                {
+                    members += 1;
+                    continue;
+                }
+                if member_context.is_none() {
+                    let owner = defining_owner(facts, body, work)?;
+                    member_context =
+                        Some(super::provided_calls::prepare(facts, body, owner, work)?);
+                }
                 super::provided_calls::check(
                     member_context
                         .as_ref()
@@ -95,7 +108,13 @@ pub(super) fn check_calls(
         if !seen.insert(id) {
             return Err("const invocation value is evaluated at multiple source sites");
         }
-        check_invocation(facts, body, definition, statement, work)?;
+        check_invocation(
+            facts,
+            body,
+            definition.ok_or("const invocation lost its defining function")?,
+            statement,
+            work,
+        )?;
     }
     if members != expected.1 || seen.len() != expected.0.saturating_add(expected.1) {
         return Err("const invocation has no exact evaluated source site");

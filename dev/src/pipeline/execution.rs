@@ -507,8 +507,8 @@ impl Engine {
             )?;
             template
         };
-        let specialize = facts.generics.has_parameters(definition)
-            || facts.opaques.owners.contains_key(&definition);
+        let retained = body::templates::owns(facts, definition);
+        let specialize = retained || Self::needs_method_dispatch(facts, &template.body);
         let purpose = if specialize {
             ProofPurpose::Original
         } else {
@@ -516,9 +516,16 @@ impl Engine {
         };
         let checked = self.prove_defining_original(report, facts, &template, &input, purpose)?;
         if specialize {
-            self.reserve_template(report, facts, definition, &template)?;
+            if retained {
+                self.reserve_template(report, facts, definition, &template)?;
+            }
             self.specialize(report, facts, instance, &template, &input)?;
-            self.originals.insert(definition, template);
+            if retained {
+                self.originals.insert(definition, template);
+            } else {
+                self.concrete
+                    .insert(BodyKey::Declaration(definition), template.body);
+            }
         } else {
             let index = self
                 .publish_code(facts, checked, Some(instance))
@@ -544,6 +551,12 @@ impl Engine {
             report.body_error(source, "constant CFG lender is preparing another body")
         })?;
         if let Some(body) = stored.get(&BodyKey::Declaration(definition)) {
+            // A lent original still carries abstract source member operands.
+            // Resolve them through the existing materialized-instance producer
+            // before a Code-purpose proof can authorize actual const entry.
+            if Self::needs_method_dispatch(facts, body) {
+                return Ok(false);
+            }
             body::constants::eligibility_charged(report, facts, body)?;
             let mut needed = crate::types::destruction::NeedsDrop::new(
                 facts.destructors.implementations().iter().map(|i| i.item),
@@ -570,6 +583,18 @@ impl Engine {
             return Ok(true);
         }
         Ok(false)
+    }
+    fn needs_method_dispatch(facts: &mut Declarations, body: &Body) -> bool {
+        if facts.source_bindings.is_none() {
+            return false;
+        }
+        let mut visits = 0;
+        let needed = body.values.iter().any(|value| {
+            visits += 1;
+            body::dispatch::trait_function(facts, value)
+        });
+        facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(visits);
+        needed
     }
     fn cached_function(
         &self,

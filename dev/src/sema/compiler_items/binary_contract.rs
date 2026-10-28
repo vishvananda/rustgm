@@ -21,6 +21,8 @@ pub(in crate::sema) fn source_binary(
     let operator = match hook {
         Hook::Shl => Operator::Shl,
         Hook::BitOr => Operator::BitOr,
+        Hook::Add => Operator::Add,
+        Hook::Sub => Operator::Sub,
         _ => {
             return Err(Declarations::error(
                 report,

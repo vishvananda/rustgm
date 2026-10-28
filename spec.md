@@ -4550,3 +4550,15 @@ Factories retain ordinary loan/ownership/arithmetic proof and instance-bound
 permits. Bootstrap primitive admission grants no SourceCore language-item
 permission; actual source bodies and source binary/const/execution proof remain
 required. See [the shared RHS checkpoint](docs/pa26-shared-value-operands.md).
+
+Closed required source const-trait member requests authenticate the actual
+provider, body owner, typed Call, complete selected/resolved callee and defining
+const effect. This is defining legality, never implementation or execution
+permission. Select concrete method operands through the existing materialized
+instance/dispatch owner before borrow and Code proof. Keep abstract/default
+entry fences. Ordinary CFG caches retain semantic originals; selected Code owns
+its selected body and extended contract, including fresh dispatch region facts.
+Reuse the existing original-template ownership and byte payers rather than
+retaining closed bodies in a generic-template cache. The
+[source operator checkpoint](docs/pa31-source-add-sub.md) records genuine Add/Sub
+headers, macro CTFE and source/native consumers without a primitive factory grant.
