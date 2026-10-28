@@ -52,3 +52,29 @@ owners are unchanged. Actual emitted N=8/32/128 payload variants used work
 was unchanged. All capacities, generated names and copied/parser work are paid.
 Earlier parse/privacy/test-setup failures remain in the evidence receipts; no
 visibility bypass, generic Copy truth or source body substitute was introduced.
+
+Maintainer recovery (worker wrap-up): the isolated implementation commit is
+`7d7574ba160c75d1628284c41ad48327bb943062`. Its exact-five private gate is
+`obj/qualification/fast/1793162981051127193/receipt.json`; production strict and
+ten lexer controls pass at `1793163196877650335`. Source/native bindings and all
+failed predecessor receipts are indexed by
+`obj/parallel/pa31/panic-handler-exit-v2/generic-derive-component/handoff.json`.
+The optional direct CLI library observer reaches the existing closed source
+stability publication profile; it is a retained prediction disagreement, not a
+successful source-library artifact. Private ordinary body/borrow/instance proof
+and the identical native payload remain the qualified execution scope.
+
+Unfinished handler work is preserved separately in local branch
+`source-panic-handler-exit-v2`, commit
+`d2ad7f8d5c28716cc47f7477ef3c86edb7d04da2`; it is not part of this component.
+The next correction must separate weak-import canonical naming from optional
+local handler binding: original library objects may legitimately have no local
+handler. Root approved an ephemeral optional handler in the existing batch and a
+fresh reached-call query at Work::Enter, without another owner/cache/field.
+That correction, fixed panic=abort nounwind admission, complete original helper
+assembly and actual PanicInfo/handler/false-Assert execution remain pending.
+Use the retained original assembly-v9 graph as source data; include genuine
+Result/Option manual Clone impls and original Not/Shl/BitOr definitions/bodies,
+consume C's variant stability/comparison prerequisite, and retain unused bodies
+as Pending only under the existing private local-root profile. Preserve all
+original declarations/attributes; no replacement Formatter/handler/helper.
