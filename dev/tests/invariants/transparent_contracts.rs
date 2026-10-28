@@ -175,7 +175,7 @@ fn alias_applications_substitute_all_slots_and_preserve_real_leaf_equalities() -
                 .bound
                 .trait_parts()
                 .map(|(id, _)| (predicate.ty, id)),
-            Clause::ForAll(_) => None,
+            Clause::ForAll(_) | Clause::UnstableFeature(_) => None,
         })
         .ok_or("actual leaf application")?;
     assert_eq!(actual.0, requested.subject);

@@ -52,6 +52,12 @@ impl Quantifier {
     ) -> Result<Clause, &'static str> {
         self.account_observed::<CHARGED>(1, charge)?;
         let (predicate, bound_regions) = match value {
+            Clause::UnstableFeature(id) => {
+                store
+                    .feature_name(id)
+                    .ok_or("invalid composed feature clause")?;
+                return Ok(value);
+            }
             Clause::Predicate(predicate) => (predicate, self.count),
             Clause::ForAll(id) => {
                 let inner = store.quantified(id).ok_or("invalid composed clause")?;

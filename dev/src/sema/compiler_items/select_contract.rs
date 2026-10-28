@@ -110,6 +110,9 @@ fn requirements(
     let mut found = 0_u8;
     for clause in facts.generics.declared_predicates(definition) {
         let predicate = match clause.value {
+            Clause::UnstableFeature(_) => {
+                return Err("source selector feature conditions require an explicit contract");
+            }
             Clause::Predicate(p) => p,
             Clause::ForAll(id) => {
                 let p = facts

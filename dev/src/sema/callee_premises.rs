@@ -30,9 +30,10 @@ pub(crate) fn specialize(
     facts: &mut Declarations,
     owner: DefId,
     substitution: &mut Bound,
+    caller: Option<&crate::types::parameters::environment::Environment>,
     universals: u32,
 ) -> Result<Option<Assumptions>, &'static str> {
-    requirements(facts, owner, substitution, universals, 1)?
+    requirements(facts, owner, substitution, caller, universals, 1)?
         .map(|proof| witnesses(facts, proof, universals))
         .transpose()
 }
@@ -44,6 +45,7 @@ pub(crate) fn requirements(
     facts: &mut Declarations,
     owner: DefId,
     substitution: &mut Bound,
+    caller: Option<&crate::types::parameters::environment::Environment>,
     universals: u32,
     first: u32,
 ) -> Result<Option<Obligations>, &'static str> {
@@ -51,6 +53,19 @@ pub(crate) fn requirements(
     for predicate in facts.generics.declared_predicates_in_scope(owner) {
         facts.body_work.canonical_steps += 1;
         let body = match predicate.value {
+            Clause::UnstableFeature(id) => {
+                let work = std::cell::Cell::new(0_usize);
+                let result = facts.prove_feature(id, caller, &|steps, _| {
+                    work.set(work.get().saturating_add(steps));
+                    Ok(())
+                });
+                facts.body_work.canonical_steps =
+                    facts.body_work.canonical_steps.saturating_add(work.get());
+                if !result? {
+                    return Err("callee feature requirement lacks actual caller evidence");
+                }
+                continue;
+            }
             Clause::Predicate(value) => value,
             Clause::ForAll(id) => {
                 facts

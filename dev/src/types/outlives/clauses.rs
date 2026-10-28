@@ -99,6 +99,7 @@ impl Declarations {
         budget: &mut Budget,
     ) -> Result<Option<Predicate>, &'static str> {
         let id = match clause {
+            Clause::UnstableFeature(_) => return Ok(None),
             Clause::Predicate(predicate) => {
                 return Ok(matches!(predicate.bound, Bound::Outlives(_)).then_some(predicate));
             }

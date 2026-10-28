@@ -81,6 +81,12 @@ impl Checker<'_> {
             parameters::{clauses::Clause, predicates::Bound},
         };
         let (predicate, regions) = match clause {
+            Clause::UnstableFeature(_) => {
+                return Err(self.error(
+                    node,
+                    "contextual callable feature conditions require an actual caller proof",
+                ));
+            }
             Clause::Predicate(predicate) => (predicate, 0),
             Clause::ForAll(id) => {
                 let quantified = self

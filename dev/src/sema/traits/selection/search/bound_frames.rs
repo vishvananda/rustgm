@@ -21,6 +21,11 @@ impl Search<'_> {
     ) -> Result<Frame, String> {
         let mut first = self.query.allocations.reserve_scoped();
         let (predicate, scope) = match request.clause {
+            Clause::UnstableFeature(_) => {
+                return Err(
+                    "non-type formation must finish before a trait frame is constructed".into(),
+                );
+            }
             Clause::Predicate(predicate) => (predicate, request.scope),
             Clause::ForAll(id) => {
                 if self.caller.retain_sized {

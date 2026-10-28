@@ -53,6 +53,13 @@ impl Sole {
         clause: Clause,
     ) -> Result<Option<ParameterId>, &'static str> {
         let predicate = match clause {
+            Clause::UnstableFeature(id) => {
+                self.charge(1)?;
+                store
+                    .feature_name(id)
+                    .ok_or("invalid feature occurrence clause")?;
+                return Ok(None);
+            }
             Clause::Predicate(value) => value,
             Clause::ForAll(id) => {
                 store

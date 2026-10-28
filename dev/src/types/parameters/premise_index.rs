@@ -7,6 +7,7 @@ use super::{
 use crate::support::hash::{HashMap, HashSet};
 use crate::types::{ItemId, Store, infer, subject_head::Head};
 use std::sync::OnceLock;
+mod features;
 mod indexed_clauses;
 mod opening;
 pub(crate) use opening::Opening;
@@ -20,6 +21,7 @@ struct View {
 
 #[derive(Clone, Default)]
 pub(crate) struct ClauseIndex {
+    pub(super) features: Option<Arc<features::Set>>,
     view: Option<Box<View>>,
     pub candidates: HashMap<(ItemId, Head), Vec<Predicate>>,
     pub seen: HashSet<Predicate>,
@@ -76,6 +78,11 @@ impl ClauseIndex {
             total.boxed(self);
             total.map(&self.candidates);
             total.set(&self.seen);
+            if let Some(features) = &self.features {
+                total.boxed(features.as_ref());
+                total.add(2 * size_of::<usize>());
+                total.set(&features.values);
+            }
             for values in self.candidates.values() {
                 total.vector(values);
             }
@@ -114,6 +121,7 @@ impl ClauseIndex {
         }
         opening.require_base(types, &base, work)?;
         Ok(Arc::new(Self {
+            features: base.features.clone(),
             view: Some(Box::new(View {
                 base,
                 opening: Some(opening),
@@ -198,6 +206,7 @@ impl ClauseIndex {
             result.insert_clause_charged(types, clause.into(), charge)?;
         }
         if let Some(base) = base {
+            result.features.clone_from(&base.features);
             charge(1, size_of::<View>())?;
             result.view = Some(Box::new(View {
                 base,

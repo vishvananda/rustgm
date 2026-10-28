@@ -174,6 +174,7 @@ fn check_requirement(
         return Ok(true);
     }
     let subject = match bound {
+        Clause::UnstableFeature(_) => return proof.prove_clause(facts, bound),
         Clause::Predicate(value) => value.ty,
         Clause::ForAll(id) => {
             facts

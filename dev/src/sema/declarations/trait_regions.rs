@@ -124,6 +124,7 @@ impl Checker<'_> {
         let mut requirements = Vec::with_capacity(predicates.len());
         for (source, predicate) in predicates {
             let body = match predicate {
+                Clause::UnstableFeature(_) => continue,
                 Clause::Predicate(body) => body,
                 Clause::ForAll(id) => {
                     self.facts
@@ -361,6 +362,7 @@ impl Pending {
         }
         for &clause in requirements.required() {
             let predicate = match clause {
+                Clause::UnstableFeature(_) => continue,
                 Clause::Predicate(predicate) => predicate,
                 Clause::ForAll(id) => {
                     let quantified = types

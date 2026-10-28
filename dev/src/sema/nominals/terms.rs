@@ -132,6 +132,7 @@ impl Proof {
         clause: Clause,
     ) -> Result<(Predicate, Option<u32>), &'static str> {
         match clause {
+            Clause::UnstableFeature(_) => Err("non-type feature requirement has no type term"),
             Clause::Predicate(value) => Ok((value, None)),
             Clause::ForAll(id) => {
                 let value = facts

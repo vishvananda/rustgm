@@ -247,6 +247,10 @@ impl Checker<'_> {
         predicate: Predicate,
     ) -> Result<u32, Error> {
         match self.bound_clause(key, scope, predicate)? {
+            crate::types::parameters::clauses::Clause::UnstableFeature(_) => Err(self.error(
+                key,
+                "non-type feature condition cannot become an object binder",
+            )),
             crate::types::parameters::clauses::Clause::Predicate(_) => Ok(0),
             crate::types::parameters::clauses::Clause::ForAll(id) => self
                 .facts

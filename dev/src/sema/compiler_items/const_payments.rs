@@ -201,6 +201,7 @@ pub(crate) fn prepare(
     for clause in clauses {
         facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
         let predicate = match clause {
+            Clause::UnstableFeature(_) => continue,
             Clause::Predicate(predicate) => predicate,
             Clause::ForAll(id) => {
                 facts

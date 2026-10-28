@@ -44,6 +44,7 @@ impl Openings {
         first: u32,
     ) -> Result<(Predicate, ScopedEvidence), infer::Error> {
         let id = match clause {
+            Clause::UnstableFeature(_) => return Err(infer::Error::InvalidIdentity),
             Clause::Predicate(predicate) => {
                 return Ok((
                     predicate,
@@ -104,6 +105,7 @@ impl Assumptions {
     ) -> Result<bool, infer::Error> {
         context.account_work(1)?;
         let present = match source {
+            Clause::UnstableFeature(_) => return Err(infer::Error::InvalidIdentity),
             Clause::Predicate(value) => value == predicate && self.contains(value),
             Clause::ForAll(id) => self.contains_quantified(id),
         };

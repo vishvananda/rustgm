@@ -1,4 +1,5 @@
 //! Body obligations share the same fixed assumptions as repeat and shape queries.
+mod features;
 mod permissions;
 mod universal;
 use super::{Checker, DefId, Error, NodeId, TypeId};
@@ -71,6 +72,9 @@ impl Checker<'_> {
                 .map_err(|e| self.error(node, e))?;
         for requirement in requirements {
             match requirement {
+                crate::types::parameters::clauses::Clause::UnstableFeature(id) => {
+                    self.prove_feature_bound(node, id)?;
+                }
                 crate::types::parameters::clauses::Clause::Predicate(requirement) => {
                     self.prove_bound(node, requirement.ty, requirement.bound)?;
                 }
@@ -537,6 +541,7 @@ impl Checker<'_> {
             .clause(&mut self.facts.types, clause)
             .map_err(|e| self.error(node, e))?;
         let (value, bound_regions) = match clause {
+            Clause::UnstableFeature(id) => return self.prove_feature_bound(node, id),
             Clause::Predicate(value) => (value, None),
             Clause::ForAll(id) => {
                 let value = self

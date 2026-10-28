@@ -71,6 +71,7 @@ impl Constraints<'_> {
             return Ok(None);
         };
         let id = match clause {
+            Clause::UnstableFeature(_) => return Ok(None),
             Clause::Predicate(predicate) => {
                 if let Bound::Outlives(shorter) = predicate.bound {
                     self.assume_type_outlives(queries, predicate.ty, shorter)?;
@@ -134,6 +135,7 @@ impl Constraints<'_> {
         source: u32,
     ) -> Result<(), String> {
         let (predicate, count) = match clause {
+            Clause::UnstableFeature(_) => return Ok(()),
             Clause::Predicate(predicate) => (predicate, None),
             Clause::ForAll(id) => {
                 let value = self

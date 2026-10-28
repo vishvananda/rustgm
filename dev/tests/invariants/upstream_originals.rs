@@ -153,6 +153,7 @@ fn paired_original(
     {
         println!("{name} original-environment {clause:?}");
         let predicate = match clause {
+            Clause::UnstableFeature(_) => continue,
             Clause::Predicate(predicate) => predicate,
             Clause::ForAll(id) => {
                 facts

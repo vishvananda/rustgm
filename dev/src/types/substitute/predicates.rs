@@ -111,6 +111,16 @@ impl Bound {
         charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<Clause, &'static str> {
         Ok(match clause {
+            Clause::UnstableFeature(id) => {
+                self.steps = self.steps.saturating_add(1);
+                if CHARGED {
+                    charge(1, 0)?;
+                }
+                store
+                    .feature_name(id)
+                    .ok_or("invalid substituted feature clause")?;
+                clause
+            }
             Clause::Predicate(predicate) => {
                 Clause::Predicate(self.predicate_observed::<CHARGED>(store, predicate, 0, charge)?)
             }

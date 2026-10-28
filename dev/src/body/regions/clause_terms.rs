@@ -16,6 +16,7 @@ pub(super) fn collect(
         crate::sema::declaration_inputs::own(&facts.generics, facts.crates.as_deref(), owner)?
     {
         match predicate.value {
+            Clause::UnstableFeature(_) => {}
             Clause::Predicate(value) => {
                 // Equality formation follows its separate trait premise. The
                 // opaque subject cannot replace the result's own formation.

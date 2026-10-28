@@ -88,7 +88,7 @@ pub(super) fn instantiate(
         )?;
         match value {
             Clause::Predicate(predicate) => predicates.push(predicate),
-            clause @ Clause::ForAll(_) => {
+            clause @ (Clause::ForAll(_) | Clause::UnstableFeature(_)) => {
                 let clause = fold.clause(&mut facts.types, clause)?;
                 quantified
                     .get_or_insert_with(|| {

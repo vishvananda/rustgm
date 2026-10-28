@@ -78,10 +78,15 @@ pub(super) fn observe(
         return Err("source premise inputs have another caller or availability".into());
     }
     let mut fold = selected.selected.substitution(facts)?;
+    let caller_environment = key
+        .declaration
+        .and_then(|owner| facts.generics.body_environment(owner))
+        .cloned();
     let requirements = crate::sema::callee_premises::requirements(
         facts,
         selected.selected.definition,
         &mut fold,
+        caller_environment.as_deref(),
         0,
         selected.first,
     );

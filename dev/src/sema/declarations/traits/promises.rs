@@ -138,6 +138,9 @@ impl Checker<'_> {
                 .ok_or_else(|| self.error(key, "missing completed trait headers"))?
                 .associated_bounds(ItemId(member.0))
             {
+                if matches!(predicate, Clause::UnstableFeature(_)) {
+                    continue;
+                }
                 let bound = self.promise_bound(key, *predicate)?;
                 let properties = if let Bound::Trait(id) = bound {
                     let application = self
@@ -200,6 +203,9 @@ impl Checker<'_> {
                 {
                     continue;
                 }
+                if matches!(predicate.value, Clause::UnstableFeature(_)) {
+                    continue;
+                }
                 let bound = self.promise_bound(key, predicate.value)?;
                 if let Bound::Trait(id) = bound {
                     let parent = self
@@ -227,6 +233,9 @@ impl Checker<'_> {
     /// required for implementation validation and never becomes unbound evidence.
     fn promise_bound(&self, key: NodeKey, clause: Clause) -> Result<Bound, Error> {
         match clause {
+            Clause::UnstableFeature(_) => {
+                Err(self.error(key, "non-type requirement cannot become a builtin promise"))
+            }
             Clause::Predicate(predicate) => Ok(predicate.bound),
             Clause::ForAll(id) => self
                 .facts

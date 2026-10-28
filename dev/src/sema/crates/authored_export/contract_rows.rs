@@ -67,6 +67,9 @@ impl Stage {
             .ok_or("source export input lacks actual source provenance")?;
         let site = self.site(context.owner, source)?;
         let (predicate, binder, inner) = match input.value {
+            Clause::UnstableFeature(_) => {
+                return Err("non-type feature conditions require explicit metadata transport");
+            }
             Clause::Predicate(predicate) => (predicate, None, context),
             Clause::ForAll(id) => {
                 let actual = facts

@@ -344,6 +344,25 @@ impl State {
         closed: bool,
     ) -> Result<bool, &'static str> {
         let requirement = match requirement {
+            Clause::UnstableFeature(id) => {
+                let work = std::cell::Cell::new(0_usize);
+                let result = facts.prove_feature(
+                    id,
+                    if closed {
+                        None
+                    } else {
+                        self.environment.as_deref()
+                    },
+                    &|steps, _| {
+                        work.set(work.get().saturating_add(steps));
+                        Ok(())
+                    },
+                );
+                self.context
+                    .account_work(work.get())
+                    .map_err(|_| "feature proof work exhausted")?;
+                return result;
+            }
             Clause::Predicate(predicate) => predicate,
             Clause::ForAll(id) => return self.prove_quantified(facts, id, closed),
         };

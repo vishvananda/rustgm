@@ -50,6 +50,7 @@ mod equalities;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/equality_search.rs"]
 mod equality_tests;
+mod feature_conditions;
 mod forwarding;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/forwarded_calls.rs"]

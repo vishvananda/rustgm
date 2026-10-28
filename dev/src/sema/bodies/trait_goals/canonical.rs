@@ -33,6 +33,9 @@ impl Checker<'_> {
         clause: Clause,
     ) -> Result<(), Error> {
         let clause = self.alias_clause(node, clause)?;
+        if let Clause::UnstableFeature(id) = clause {
+            return self.prove_feature_bound(node, id);
+        }
         let pending = self
             .state
             .canonical_requirements
@@ -142,6 +145,12 @@ impl Checker<'_> {
         first: u32,
     ) -> Result<(Goal, selection::Progress), Error> {
         let (predicate, count) = match clause {
+            Clause::UnstableFeature(_) => {
+                return Err(self.error(
+                    node,
+                    "non-type requirement reached a trait-only continuation",
+                ));
+            }
             Clause::Predicate(value) => (value, None),
             Clause::ForAll(id) => {
                 let value =

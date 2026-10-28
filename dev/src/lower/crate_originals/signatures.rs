@@ -221,6 +221,9 @@ fn clauses(
     )?;
     for input in inputs {
         let (predicate, has_frame) = match input.value {
+            Clause::UnstableFeature(_) => {
+                return Err("non-type feature conditions require explicit recorded body transport");
+            }
             Clause::Predicate(predicate) => (predicate, false),
             Clause::ForAll(id) => {
                 let value = export

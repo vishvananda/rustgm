@@ -35,6 +35,7 @@ impl super::super::Header {
         // Only inspect ownership here. The returned member retains the whole
         // clause; its binder is never discarded from the resulting contract.
         let (predicate, depth) = match clause {
+            Clause::UnstableFeature(_) => return Ok(None),
             Clause::Predicate(predicate) => (predicate, 0),
             Clause::ForAll(id) => (
                 store

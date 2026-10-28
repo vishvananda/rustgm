@@ -197,6 +197,7 @@ impl Interfaces<'_> {
     }
     fn clause(&mut self, clause: Clause, budget: &mut Budget) -> Result<(), Error> {
         let predicate = match clause {
+            Clause::UnstableFeature(_) => return Ok(()),
             Clause::Predicate(predicate) => predicate,
             // This visits declaration identities, not quantified evidence or uses.
             Clause::ForAll(id) => {

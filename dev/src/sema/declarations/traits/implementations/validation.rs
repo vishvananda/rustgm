@@ -436,7 +436,7 @@ pub(in crate::sema) fn validate_impl_requirements_prepared(
                 }
                 Clause::Predicate(predicate)
             }
-            Clause::ForAll(_) => requirement,
+            Clause::ForAll(_) | Clause::UnstableFeature(_) => requirement,
         };
         let proven = match &mut preparation {
             Some(service) => proof.prove_clause_prepared(facts, requirement, &mut **service)?,
