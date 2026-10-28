@@ -1,0 +1,2 @@
+warning[unreachable_patterns]: file 0: 222: unreachable pattern
+warning[unreachable_patterns]: file 0: 295: unreachable pattern
