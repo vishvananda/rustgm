@@ -208,6 +208,9 @@ impl Stage {
             producer
                 .require_deprecation_transport(&report.package)
                 .map_err(|error| error.message)?;
+            producer
+                .require_impl_bound_transport(&report.package)
+                .map_err(|error| error.message)?;
         }
         let provider = report
             .package

@@ -27,6 +27,7 @@ pub(crate) mod function_context;
 pub(crate) mod function_headers;
 pub mod generics;
 mod glob_shadowing;
+mod ineffective_impls;
 pub mod inline_constants;
 pub(crate) mod invocations;
 pub(crate) mod iteration;

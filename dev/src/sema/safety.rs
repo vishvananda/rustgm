@@ -291,6 +291,9 @@ impl Policies {
     pub(super) fn hidden_glob_reexports(&self, key: NodeKey) -> Level {
         self.at(key).hidden_glob_reexports
     }
+    pub(super) fn ineffective_unstable_trait_impl(&self, key: NodeKey) -> Level {
+        self.at(key).ineffective_unstable_trait_impl
+    }
     pub(super) fn unreachable_patterns(&self, key: NodeKey) -> Level {
         self.at(key).unreachable_patterns
     }

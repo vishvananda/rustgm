@@ -1,7 +1,9 @@
 //! Source-owned lexical lint rules are shared by expansion diagnostics and semantics.
 mod attribute_changes;
 mod expectations;
+mod ineffective_headers;
 pub(crate) use expectations::{ExpectationId, Progress};
+pub(crate) use ineffective_headers::ImplAnnotation;
 pub(crate) mod producer;
 use crate::resolve::{package::Error, unit::NodeKey};
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -32,7 +34,8 @@ pub(crate) struct Policy {
     pub(crate) deprecated: Level,
     pub(crate) unfulfilled: Level,
     pub(crate) hidden_glob_reexports: Level,
-    expectations: [Option<ExpectationId>; 15],
+    pub(crate) ineffective_unstable_trait_impl: Level,
+    expectations: [Option<ExpectationId>; 16],
     pub(crate) deprecated_origin: Option<producer::Tail>,
     pub(crate) deprecation_explicit: bool,
 }
@@ -51,7 +54,8 @@ impl Policy {
         deprecated: Level::Warn,
         unfulfilled: Level::Warn,
         hidden_glob_reexports: Level::Warn,
-        expectations: [None; 15],
+        ineffective_unstable_trait_impl: Level::Deny,
+        expectations: [None; 16],
         deprecated_origin: None,
         deprecation_explicit: false,
     };
@@ -76,6 +80,7 @@ pub(crate) enum Lint {
     Deprecated,
     UnfulfilledExpectations,
     HiddenGlobReexports,
+    IneffectiveUnstableTraitImpl,
 }
 pub(crate) struct Change {
     pub(crate) lint: Lint,
@@ -103,6 +108,7 @@ impl Policy {
         let level = match change.lint {
             Lint::Deprecated => &mut self.deprecated,
             Lint::HiddenGlobReexports => &mut self.hidden_glob_reexports,
+            Lint::IneffectiveUnstableTraitImpl => &mut self.ineffective_unstable_trait_impl,
             Lint::UnfulfilledExpectations => &mut self.unfulfilled,
             Lint::Operation => &mut self.operation,
             Lint::Reference => &mut self.reference,
@@ -126,6 +132,9 @@ impl Policy {
                         Lint::Deprecated => "forbidden deprecated lint cannot be weakened",
                         Lint::HiddenGlobReexports => {
                             "forbidden hidden_glob_reexports lint cannot be weakened"
+                        }
+                        Lint::IneffectiveUnstableTraitImpl => {
+                            "forbidden ineffective_unstable_trait_impl lint cannot be weakened"
                         }
                         Lint::UnfulfilledExpectations => {
                             "forbidden unfulfilled_lint_expectations lint cannot be weakened"
@@ -180,6 +189,7 @@ impl Lint {
             Self::Deprecated => 12,
             Self::UnfulfilledExpectations => 13,
             Self::HiddenGlobReexports => 14,
+            Self::IneffectiveUnstableTraitImpl => 15,
         }
     }
 }
@@ -195,6 +205,7 @@ impl Lint {
         Some(match code {
             W::Deprecated => Self::Deprecated,
             W::HiddenGlobReexports => Self::HiddenGlobReexports,
+            W::IneffectiveUnstableTraitImpl => Self::IneffectiveUnstableTraitImpl,
             W::UnfulfilledLintExpectations => Self::UnfulfilledExpectations,
             W::InvalidAtomicOrdering => Self::AtomicOrdering,
             W::UnreachablePatterns => Self::UnreachablePatterns,

@@ -131,6 +131,7 @@ pub(crate) struct Producer {
         reason = "a cold optional pointer keeps ordinary producer records compact"
     )]
     pub(in crate::resolve) hidden_globs: Option<Box<Vec<crate::resolve::hidden_globs::Cause>>>,
+    pub(super) ineffective_headers: Option<Box<super::ineffective_headers::Annotations>>,
 }
 impl Producer {
     pub(crate) fn new(frames: u32, calls: u32) -> Self {
@@ -150,6 +151,7 @@ impl Producer {
             expectation_owners: Vec::new(),
             early: Vec::new(),
             hidden_globs: None,
+            ineffective_headers: None,
         }
     }
     pub(crate) fn work(&self) -> Work {
@@ -276,6 +278,14 @@ impl Producer {
         } else {
             parent
         };
+        let annotation = super::ineffective_headers::capture(
+            package.unit(key.file),
+            key,
+            tail,
+            &parsed,
+            &mut self.work,
+        )?;
+        self.publish_impl_annotation(key, annotation)?;
         let node = package.unit(key.file).configured.ast.node(key.node);
         let crate::syntax::ast::Kind::Attributed { attributes, value } = node.kind else {
             return Err(invalid(

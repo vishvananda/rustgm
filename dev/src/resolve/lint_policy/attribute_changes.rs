@@ -150,7 +150,11 @@ pub(super) fn coverage(
         Some("forbid") => Some(Level::Forbid),
         _ => None,
     };
-    let input = if level.is_some() || name == Some("deprecated") {
+    let input = if level.is_some()
+        || matches!(
+            name,
+            Some("deprecated" | "unstable" | "unstable_feature_bound")
+        ) {
         match attribute.input {
             Input::Delimited(group) => TreeRange {
                 start: group,
@@ -441,6 +445,7 @@ fn lints(forest: &Forest, source: &str, index: u32) -> &'static [Lint] {
     match forest.name(source, index) {
         Some("deprecated") => &[Lint::Deprecated],
         Some("hidden_glob_reexports") => &[Lint::HiddenGlobReexports],
+        Some("ineffective_unstable_trait_impl") => &[Lint::IneffectiveUnstableTraitImpl],
         Some("unfulfilled_lint_expectations") => &[Lint::UnfulfilledExpectations],
         Some("unsafe_op_in_unsafe_fn") => &[Lint::Operation],
         Some("static_mut_refs") => &[Lint::Reference],

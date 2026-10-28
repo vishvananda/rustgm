@@ -566,6 +566,7 @@ impl Declarations {
         super::must_use::collect(report, self)?;
         super::deprecation::imports(report, self)?;
         super::glob_shadowing::collect(report, self)?;
+        super::ineffective_impls::collect(report, self)?;
         super::inlining::collect(report, self)?;
         super::parentheses::collect(report, self)?;
         super::diagnostic_contracts::collect(report, self)?;

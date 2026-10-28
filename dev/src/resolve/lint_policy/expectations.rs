@@ -216,7 +216,10 @@ impl Producer {
                     span: row.span,
                     reason: row.reason.as_deref(),
                     self_expect: row.lint == Lint::UnfulfilledExpectations,
-                    resolution_complete: row.lint == Lint::HiddenGlobReexports,
+                    resolution_complete: matches!(
+                        row.lint,
+                        Lint::HiddenGlobReexports | Lint::IneffectiveUnstableTraitImpl
+                    ),
                     ordinal: row.ordinal,
                 });
             }
