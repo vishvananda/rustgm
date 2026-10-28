@@ -215,8 +215,8 @@ impl Producer {
         let mut reads = self.reads.get();
         let result = reads.charge(key, steps, bytes);
         self.reads.set(reads);
-        result?;
-        self.work().charge(key, 0, 0)
+        self.work().charge(key, 0, 0)?;
+        result
     }
     pub(crate) fn diagnostic_budget_exhausted(&self) -> bool {
         self.work().exhaustion().is_some()
