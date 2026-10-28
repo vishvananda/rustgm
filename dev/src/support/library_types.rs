@@ -35,9 +35,62 @@ pub enum FormatConstructor {
     Debug,
     Display,
     LowerHex,
+    Octal,
+    UpperHex,
+    Pointer,
+    Binary,
+    LowerExp,
+    UpperExp,
+    Count,
 }
 impl FormatConstructor {
-    pub const FORMAT_COUNT: usize = 3;
+    pub const FORMAT_COUNT: usize = 9;
+    pub const PAIR_COUNT: usize = Self::FORMAT_COUNT + 1;
+    pub const ALL: [Self; 11] = [
+        Self::Arguments,
+        Self::Debug,
+        Self::Display,
+        Self::LowerHex,
+        Self::Octal,
+        Self::UpperHex,
+        Self::Pointer,
+        Self::Binary,
+        Self::LowerExp,
+        Self::UpperExp,
+        Self::Count,
+    ];
+    #[must_use]
+    pub const fn index(self) -> usize {
+        match self {
+            Self::Arguments => 0,
+            Self::Debug => 1,
+            Self::Display => 2,
+            Self::LowerHex => 3,
+            Self::Octal => 4,
+            Self::UpperHex => 5,
+            Self::Pointer => 6,
+            Self::Binary => 7,
+            Self::LowerExp => 8,
+            Self::UpperExp => 9,
+            Self::Count => 10,
+        }
+    }
+    #[must_use]
+    pub const fn pair_slot(self) -> Option<usize> {
+        match self {
+            Self::Arguments => None,
+            Self::Display => Some(0),
+            Self::Debug => Some(1),
+            Self::LowerHex => Some(2),
+            Self::Octal => Some(3),
+            Self::UpperHex => Some(4),
+            Self::Pointer => Some(5),
+            Self::Binary => Some(6),
+            Self::LowerExp => Some(7),
+            Self::UpperExp => Some(8),
+            Self::Count => Some(9),
+        }
+    }
     #[must_use]
     pub const fn name(self) -> &'static str {
         match self {
@@ -45,15 +98,29 @@ impl FormatConstructor {
             Self::Debug => "new_debug",
             Self::Display => "new_display",
             Self::LowerHex => "new_lower_hex",
+            Self::Octal => "new_octal",
+            Self::UpperHex => "new_upper_hex",
+            Self::Pointer => "new_pointer",
+            Self::Binary => "new_binary",
+            Self::LowerExp => "new_lower_exp",
+            Self::UpperExp => "new_upper_exp",
+            Self::Count => "from_usize",
         }
     }
     #[must_use]
     pub const fn owner(self) -> crate::support::bindings::LangItem {
         match self {
             Self::Arguments => crate::support::bindings::LangItem::FormatArguments,
-            Self::Debug | Self::Display | Self::LowerHex => {
-                crate::support::bindings::LangItem::FormatArgument
-            }
+            Self::Debug
+            | Self::Display
+            | Self::LowerHex
+            | Self::Octal
+            | Self::UpperHex
+            | Self::Pointer
+            | Self::Binary
+            | Self::LowerExp
+            | Self::UpperExp
+            | Self::Count => crate::support::bindings::LangItem::FormatArgument,
         }
     }
 }

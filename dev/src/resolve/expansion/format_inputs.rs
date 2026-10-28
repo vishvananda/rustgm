@@ -188,16 +188,8 @@ impl<S: Sources> Engine<'_, S> {
             |id| package.units.get(id.0 as usize),
         )
         .map_err(|e| Error::at(file, e.offset, e.message))?;
-        let mut names = [crate::support::names::NameId(0); 4];
-        for (slot, constructor) in [
-            FormatConstructor::Arguments,
-            FormatConstructor::Debug,
-            FormatConstructor::Display,
-            FormatConstructor::LowerHex,
-        ]
-        .into_iter()
-        .enumerate()
-        {
+        let mut names = [crate::support::names::NameId(0); FormatConstructor::ALL.len()];
+        for (slot, constructor) in FormatConstructor::ALL.into_iter().enumerate() {
             names[slot] = package
                 .names
                 .intern_exact_paid(constructor.name(), &mut |growth| {
@@ -339,7 +331,7 @@ fn draft_input_sites(
         .len()
         .checked_sub(count)
         .filter(|base| {
-            *base >= 3 + count && *base <= 3 + count.saturating_mul(FormatConstructor::FORMAT_COUNT)
+            *base >= 3 + count && *base <= 3 + count.saturating_mul(FormatConstructor::PAIR_COUNT)
         })
         .ok_or("formatting draft pair cardinality changed")?;
     Ok((base, &sites[base..]))

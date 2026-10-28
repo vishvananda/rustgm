@@ -183,9 +183,11 @@ fn shape(
         .end
         .checked_sub(arguments.start)
         .filter(|count| *count > 0);
+    let pair_limit = u32::try_from(FormatConstructor::PAIR_COUNT)
+        .map_err(|_| error("formatting pair cardinality exceeds its site coordinates"))?;
     if inputs.zip(count).is_none_or(|(inputs, count)| {
         count < inputs
-            || count > inputs.saturating_mul(3)
+            || count > inputs.saturating_mul(pair_limit)
             || sites.end.checked_sub(sites.start)
                 != inputs.checked_add(count).and_then(|n| n.checked_add(3))
     }) {
@@ -227,10 +229,11 @@ impl OutputShape {
                 }
                 call
             }
-            (
-                slot,
-                FormatConstructor::Debug | FormatConstructor::Display | FormatConstructor::LowerHex,
-            ) if slot >= 3 && (slot as usize) < 3 + self.count => {
+            (slot, constructor)
+                if constructor.owner() == crate::support::bindings::LangItem::FormatArgument
+                    && slot >= 3
+                    && (slot as usize) < 3 + self.count =>
+            {
                 at(self.arguments, slot as usize - 3)?
             }
             _ => {

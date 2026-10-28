@@ -425,3 +425,11 @@ Formatter/write/PanicInfo/handler execution remain required.
 with no reference impls, independent positive and move/loan opponents, typed
 unsizing foundations and two thin native profiles. Ordinary counterparts belong
 to PA16. Generic value moves remain separate from contextual reference reborrows.
+
+
+`spec/source-format-macros/constructor-family/` retains the complete nine-trait
+constructor/Count recipe packet and a real six-new-trait source provider.
+Independent scalar-count/evaluation/overflow observations remain separate from
+candidate Count execution. The full checked original `from_usize` body and real
+comparison/panic dependencies are retained, with no scalar Count shortcut or
+claim of full Formatter/handler execution.

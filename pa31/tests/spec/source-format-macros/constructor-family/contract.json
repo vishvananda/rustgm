@@ -1,0 +1,160 @@
+{
+  "state": "new family predictions frozen before observation",
+  "scope": "std-backed independent constructor/count behavior, not actual candidate source-provider/Formatter execution",
+  "tool": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+  "tool_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    2021,
+    2024
+  ],
+  "options": [
+    "-Awarnings",
+    "-Cpanic=abort",
+    "-Coverflow-checks=yes"
+  ],
+  "primary": {
+    "library/core/src/fmt/rt.rs": {
+      "sha256": "7a7dd4b1640a734fcb82f178ab69868b8f2f624a8c1f5a6fcf85002f4e2e4423",
+      "anchors": "87-136 actual nine constructors/checked Count"
+    },
+    "compiler/rustc_ast_lowering/src/format.rs": {
+      "sha256": "4292f5bacd885c1acd9d396e04427a215cfbfcf956dfb12380c3cd377149e914",
+      "anchors": "230-275 selectors/count keys;365-420 format,width,precision pair order and flags"
+    },
+    "compiler/rustc_builtin_macros/src/format.rs": {
+      "sha256": "3cad2b16e6c83190cb747e2542adf09a26ab75c9e5c60301a4e60450db1fe900",
+      "anchors": "lookup argument then precision then width"
+    },
+    "compiler/rustc_parse_format/src/lib.rs": {
+      "sha256": "1eb3706b9bfcd19e8b9e3a4132e8d9bb741b09992fa6c7443e4dd8469c62cc49",
+      "anchors": "533-558 precision-star then implicit position;772-792 count grammar"
+    }
+  },
+  "cases": [
+    {
+      "name": "all-traits",
+      "path": "pa31/tests/spec/source-format-macros/constructor-family/all-traits.rs",
+      "sha256": "8e30111a711389c3c10095c3fdb1e5277d10046267e9784e8bd0b218f3d98402",
+      "metadata": 0,
+      "stdout": "Display|Debug|Octal|LowerHex|UpperHex|Pointer|Binary|LowerExp|UpperExp\n",
+      "abnormal": false,
+      "panic_message": null
+    },
+    {
+      "name": "count-names",
+      "path": "pa31/tests/spec/source-format-macros/constructor-family/count-names.rs",
+      "sha256": "366bd8dbbce4439fabd871c3e20b3768c73167db2d74f74dc06c5558f551445e",
+      "metadata": 0,
+      "stdout": "wSome(5):pSome(2)\n",
+      "abnormal": false,
+      "panic_message": null
+    },
+    {
+      "name": "count-star",
+      "path": "pa31/tests/spec/source-format-macros/constructor-family/count-star.rs",
+      "sha256": "05acba8725e7586244599f1c56486224f0941bd7b2c27f17ee63be1b645d9b35",
+      "metadata": 0,
+      "stdout": "wNone:pSome(2)|wNone:pNone\n",
+      "abnormal": false,
+      "panic_message": null
+    },
+    {
+      "name": "count-indexes",
+      "path": "pa31/tests/spec/source-format-macros/constructor-family/count-indexes.rs",
+      "sha256": "6c1e4aa21c08cb30c5553b77769fb3ca90109d025a3ec9b9ff201cca8d139552",
+      "metadata": 0,
+      "stdout": "wSome(5):pSome(2)\n",
+      "abnormal": false,
+      "panic_message": null
+    },
+    {
+      "name": "count-reuse",
+      "path": "pa31/tests/spec/source-format-macros/constructor-family/count-reuse.rs",
+      "sha256": "be7580fa92f3cf2947265bb022f4c56397953333cecb1eb3ffd2de040795233f",
+      "metadata": 0,
+      "stdout": "wSome(3):pSome(3)|wSome(3):pNone|wNone:pNone\n",
+      "abnormal": false,
+      "panic_message": null
+    },
+    {
+      "name": "count-value",
+      "path": "pa31/tests/spec/source-format-macros/constructor-family/count-value.rs",
+      "sha256": "14725db0b263498dd3bca0d0eb9efc9a30996527712b5ad682dfc7db1cedd2b7",
+      "metadata": 0,
+      "stdout": "[  3]\n",
+      "abnormal": false,
+      "panic_message": null
+    },
+    {
+      "name": "count-evaluation",
+      "path": "pa31/tests/spec/source-format-macros/constructor-family/count-evaluation.rs",
+      "sha256": "8d6e3a86938d19817b9fb9eb4eaaf099f17487f218fe77d830f2e450a790f8cb",
+      "metadata": 0,
+      "stdout": "c2;v;c3;wSome(2):pSome(3)\n",
+      "abnormal": false,
+      "panic_message": null
+    },
+    {
+      "name": "count-alias",
+      "path": "pa31/tests/spec/source-format-macros/constructor-family/count-alias.rs",
+      "sha256": "10308bf9fc239661ad507c011cd5c845bf5a3ba79d8d10d0939b446f7932e51a",
+      "metadata": 0,
+      "stdout": "wSome(0):pSome(0)\n",
+      "abnormal": false,
+      "panic_message": null
+    },
+    {
+      "name": "count-overflow",
+      "path": "pa31/tests/spec/source-format-macros/constructor-family/count-overflow.rs",
+      "sha256": "58097f0a8b4f5b4ec0ac4957cbd6ca04b71edea000b4bd90bbf963a2f9f7529e",
+      "metadata": 0,
+      "stdout": null,
+      "abnormal": true,
+      "panic_message": "Formatting argument out of range"
+    },
+    {
+      "name": "width-wrong-type",
+      "path": "pa31/tests/spec/source-format-macros/constructor-family/width-wrong-type.rs",
+      "sha256": "561dcc4ef4572a17dcdca45a97aa560251e0f68c39f7dc138e828256099329d4",
+      "metadata": 1,
+      "stdout": null,
+      "abnormal": false,
+      "panic_message": null
+    },
+    {
+      "name": "precision-wrong-type",
+      "path": "pa31/tests/spec/source-format-macros/constructor-family/precision-wrong-type.rs",
+      "sha256": "265361b5f620ca762e66c057ea2065cd4ccca85680993d30f48b4fec4699d158",
+      "metadata": 1,
+      "stdout": null,
+      "abnormal": false,
+      "panic_message": null
+    },
+    {
+      "name": "width-star",
+      "path": "pa31/tests/spec/source-format-macros/constructor-family/width-star.rs",
+      "sha256": "2da6273f3489e49a26e59ba80b6a49cb93d9598462d3c0af6d27bf03f0474783",
+      "metadata": 1,
+      "stdout": null,
+      "abnormal": false,
+      "panic_message": null
+    },
+    {
+      "name": "missing-trait",
+      "path": "pa31/tests/spec/source-format-macros/constructor-family/missing-trait.rs",
+      "sha256": "6de5628b2aa03adc879ca355f803be93621638bb14f58e1c589a96d012fd879b",
+      "metadata": 1,
+      "stdout": null,
+      "abnormal": false,
+      "panic_message": null
+    }
+  ],
+  "source_requirements": [
+    "Actual nine owned generic constructor calls with source trait/body/instance/borrow proof",
+    "Actual Count from_usize body; shared greater-than and real panic prerequisites may remain unsupported, not scalar-converted",
+    "Count is separate input/use pair; constructor names total11; pair slots total10",
+    "Value then precision then width capture lookup; format then width then precision pair insertion",
+    "Dynamic metadata flags16/32 and Count-row u16 positions; literal zero omits payload while dynamic zero index retains it"
+  ],
+  "outcomes": "abnormal runtime requires successful metadata/build then nonzero non-timeout program status with actual pinned panic message; no exact signal promise"
+}
