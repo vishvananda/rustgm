@@ -26,6 +26,7 @@ pub mod foreign;
 pub(crate) mod function_context;
 pub(crate) mod function_headers;
 pub mod generics;
+mod glob_shadowing;
 pub mod inline_constants;
 pub(crate) mod invocations;
 pub(crate) mod iteration;

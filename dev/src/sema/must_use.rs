@@ -234,6 +234,7 @@ impl Declarations {
     ) -> Result<(), Error> {
         let level = match code {
             WarningCode::Deprecated => self.safety_policies.deprecated(key),
+            WarningCode::HiddenGlobReexports => self.safety_policies.hidden_glob_reexports(key),
             WarningCode::UnfulfilledLintExpectations => self.safety_policies.unfulfilled(key),
             WarningCode::InvalidAtomicOrdering => self.safety_policies.atomic_ordering(key),
             WarningCode::UnreachablePatterns => self.safety_policies.unreachable_patterns(key),

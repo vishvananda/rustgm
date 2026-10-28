@@ -188,6 +188,17 @@ exports stay closed until explicit transport exists. The
 [finite checkpoint](docs/pa40-lint-expectations-checkpoint.md) records its scope
 and remaining producer, transport and release obligations.
 
+Hidden glob reexport events consume completed namespace/context-aware resolver
+contributions and actual successful import selections. Missing imported-origin
+edges require information; only positively retained Direct selections terminate
+a chain. Memoize visited binding/import identities across exported roots, pay
+growth before mutation, and retain sparse authenticated causes in the same lint
+owner. A private single import owns its event at its source site. Resolve public
+glob export through exact alias chains rather than matching ultimate targets.
+Close this early lint at completed name resolution without additional body
+demands. The [finite checkpoint](docs/pa40-hidden-glob-reexports-checkpoint.md)
+records namespace, effective visibility, work/storage and original-source controls.
+
 Unsafe-operation and mutable-static-reference warnings use that same sink and
 the actual retained lexical lint level. Explicit unsafe blocks satisfy the
 operation policy; Allow stays silent and safe contexts still require unsafe

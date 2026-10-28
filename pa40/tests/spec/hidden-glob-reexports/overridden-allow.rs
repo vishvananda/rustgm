@@ -1,0 +1,7 @@
+#![allow(dead_code, unused_imports)]
+mod source { pub mod item {} pub mod visible {} }
+pub use source::*;
+#[expect(hidden_glob_reexports)]
+#[allow(hidden_glob_reexports)]
+mod item {}
+fn main() {}

@@ -36,6 +36,7 @@ pub(crate) struct PendingExpectation<'a> {
     pub span: Span,
     pub reason: Option<&'a str>,
     pub self_expect: bool,
+    pub resolution_complete: bool,
     pub ordinal: u32,
 }
 pub(super) struct Domain;
@@ -215,6 +216,7 @@ impl Producer {
                     span: row.span,
                     reason: row.reason.as_deref(),
                     self_expect: row.lint == Lint::UnfulfilledExpectations,
+                    resolution_complete: row.lint == Lint::HiddenGlobReexports,
                     ordinal: row.ordinal,
                 });
             }

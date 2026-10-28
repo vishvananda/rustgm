@@ -13,6 +13,7 @@ mod contextual_lookup;
 pub mod crates;
 pub mod expansion;
 mod gated_closures;
+mod hidden_globs;
 mod hygiene;
 mod identifiers;
 #[path = "module_domains.rs"]
@@ -95,12 +96,16 @@ pub fn analyze_expanded(
         .primitives()
         .and_then(|()| resolver.declare_pending(&pending, &mut work))
         .and_then(|()| resolver.finish_imports(work))
-        .and_then(|()| resolver.bodies());
+        .and_then(|work| resolver.bodies().map(|()| work));
     report.resolution = state.facts;
-    result.map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
+    let work =
+        result.map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
     bindings::finish(&mut report.package, &mut report.resolution)
         .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
     float_features::validate_paths(&report)
+        .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
+    report
+        .complete_hidden_globs(work)
         .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
     report.names_resolved = true;
     Ok(report)

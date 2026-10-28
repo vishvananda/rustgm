@@ -440,6 +440,7 @@ fn invalid(key: NodeKey, attribute: Attribute, message: &'static str) -> Violati
 fn lints(forest: &Forest, source: &str, index: u32) -> &'static [Lint] {
     match forest.name(source, index) {
         Some("deprecated") => &[Lint::Deprecated],
+        Some("hidden_glob_reexports") => &[Lint::HiddenGlobReexports],
         Some("unfulfilled_lint_expectations") => &[Lint::UnfulfilledExpectations],
         Some("unsafe_op_in_unsafe_fn") => &[Lint::Operation],
         Some("static_mut_refs") => &[Lint::Reference],

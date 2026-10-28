@@ -28,6 +28,7 @@ pub(crate) fn accepted(output: &Output, expected: &[u8]) -> Result<(), &'static 
 fn header(line: &str) -> bool {
     [
         "warning[deprecated]: file ",
+        "warning[hidden_glob_reexports]: file ",
         "warning[unfulfilled_lint_expectations]: file ",
         "warning[invalid_atomic_ordering]: file ",
         "warning[unreachable_patterns]: file ",

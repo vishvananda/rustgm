@@ -2,6 +2,7 @@
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum WarningCode {
     Deprecated,
+    HiddenGlobReexports,
     UnfulfilledLintExpectations,
     InvalidAtomicOrdering,
     UnreachablePatterns,
@@ -22,6 +23,7 @@ impl WarningCode {
     pub const fn name(self) -> &'static str {
         match self {
             Self::Deprecated => "deprecated",
+            Self::HiddenGlobReexports => "hidden_glob_reexports",
             Self::UnfulfilledLintExpectations => "unfulfilled_lint_expectations",
             Self::InvalidAtomicOrdering => "invalid_atomic_ordering",
             Self::UnreachablePatterns => "unreachable_patterns",

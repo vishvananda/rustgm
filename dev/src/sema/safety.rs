@@ -286,6 +286,9 @@ impl Policies {
     pub(super) fn atomic_ordering(&self, key: NodeKey) -> Level {
         self.at(key).atomic_ordering
     }
+    pub(super) fn hidden_glob_reexports(&self, key: NodeKey) -> Level {
+        self.at(key).hidden_glob_reexports
+    }
     pub(super) fn unreachable_patterns(&self, key: NodeKey) -> Level {
         self.at(key).unreachable_patterns
     }
