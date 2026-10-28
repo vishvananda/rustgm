@@ -490,6 +490,7 @@ impl Resolver<'_> {
             return self.lifetime(c, node, span, name);
         }
         let (absolute, path) = self.pooled_path(c, node)?;
+        let mut availability = self.availability_trace(path.len())?;
         let self_constructor = ns == Namespace::Value
             && !absolute
             && path.len() == 1
@@ -509,7 +510,14 @@ impl Resolver<'_> {
             && !absolute
             && !matches!(self.package.names.get(path[0]), "crate" | "self" | "super");
         let mut found = if lexical {
-            Some(self.lookup_path(c, node, absolute, path.view(), LookupMode::Use(ns), None)?)
+            Some(self.lookup_path(
+                c,
+                node,
+                absolute,
+                path.view(),
+                LookupMode::Use(ns),
+                availability.as_mut(),
+            )?)
         } else {
             None
         };
@@ -530,18 +538,32 @@ impl Resolver<'_> {
             {
                 ns = Namespace::Value;
                 found = None;
+                if let Some(selected) = availability
+                    .as_mut()
+                    .and_then(|trace| trace.selected.as_mut())
+                {
+                    selected.clear();
+                }
             }
         }
         let found = match found {
             Some(found) => found,
             None if self_constructor => self.self_constructor(c, path[0]),
-            None => self.lookup_path(c, node, absolute, path.view(), LookupMode::Use(ns), None)?,
+            None => self.lookup_path(
+                c,
+                node,
+                absolute,
+                path.view(),
+                LookupMode::Use(ns),
+                availability.as_mut(),
+            )?,
         };
         let found = self.primitive_reference(found, absolute, path.view(), ns);
         let target = self.target(c, node, &found, ns)?;
         if let Lookup::Associated(owner, start) | Lookup::Member(_, owner, start) = found {
             self.associated_path(c, node, start, &path, ns, owner)?;
         }
+        self.record_availability(NodeKey { file: c.file, node }, availability.as_ref())?;
         self.recycle_path(path);
         self.facts.references.push(Reference {
             scope: c.scope,

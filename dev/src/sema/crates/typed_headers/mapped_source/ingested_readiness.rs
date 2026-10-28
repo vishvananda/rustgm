@@ -42,7 +42,7 @@ impl Graph {
                 if cell.is_some() || rows.header(row)?.is_some() {
                     return Err("source module readiness requires its actual typeless module");
                 }
-                if descriptor.profile() == s::Profile::Source2024ModuleContracts {
+                if descriptor.profile().module_contracts() {
                     descriptor.module_contracts()?.require_module(row)?;
                 } else if row != self.root_row {
                     return Err("legacy source module readiness requires its actual root");

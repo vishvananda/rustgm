@@ -14,6 +14,7 @@ pub(super) const PROVIDED_TAG: u8 = 11;
 const ROW_VERSION: u16 = 0;
 const CONTRACT_VERSION: u16 = 1;
 const MODULE_CONTRACT_VERSION: u16 = 2;
+const AVAILABILITY_VERSION: u16 = 3;
 const DEFINING_RUST2024: u8 = 0;
 
 pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
@@ -26,7 +27,8 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     let tag = match descriptor.profile() {
         Profile::Source2024Functions
         | Profile::Source2024FunctionContracts
-        | Profile::Source2024ModuleContracts => TAG,
+        | Profile::Source2024ModuleContracts
+        | Profile::Source2024ModuleAvailability => TAG,
         Profile::Source2024Provided | Profile::Source2024ProvidedContracts => PROVIDED_TAG,
         Profile::Source2024 => return Err("unpublished source facade has no wire profile"),
     };
@@ -43,6 +45,7 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     out.bytes(&PROFILE[..2])?;
     out.u8(tag)?;
     out.u16(match descriptor.profile() {
+        Profile::Source2024ModuleAvailability => AVAILABILITY_VERSION,
         Profile::Source2024ModuleContracts => MODULE_CONTRACT_VERSION,
         Profile::Source2024FunctionContracts | Profile::Source2024ProvidedContracts => {
             CONTRACT_VERSION
@@ -59,6 +62,8 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
         ordinary_columns::encode_provided_contracts(&mut out, descriptor.rows())?;
     } else if tag == PROVIDED_TAG {
         ordinary_columns::encode_provided(&mut out, descriptor.rows())?;
+    } else if descriptor.profile() == Profile::Source2024ModuleAvailability {
+        ordinary_columns::encode_module_availability(&mut out, descriptor.rows())?;
     } else if descriptor.profile() == Profile::Source2024ModuleContracts {
         ordinary_columns::encode_module_contracts(&mut out, descriptor.rows())?;
     } else if descriptor.profile() == Profile::Source2024FunctionContracts {
@@ -80,7 +85,7 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
         || !provided
             && !matches!(
                 version,
-                ROW_VERSION | CONTRACT_VERSION | MODULE_CONTRACT_VERSION
+                ROW_VERSION | CONTRACT_VERSION | MODULE_CONTRACT_VERSION | AVAILABILITY_VERSION
             ))
         || input.u8()? != DEFINING_RUST2024
     {
@@ -93,25 +98,43 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
     if base > MAX_BYTES {
         return Err("source envelope base exceeds retained storage budget");
     }
-    let (rows, attributes, modules, contracts) = if provided && version == CONTRACT_VERSION {
+    let (rows, attributes, modules, contracts, availability) = if !provided
+        && version == AVAILABILITY_VERSION
+    {
+        let packet = ordinary_columns::decode_module_availability(input, base)?;
+        (
+            packet.rows,
+            Some(packet.attributes),
+            Some(packet.modules),
+            None,
+            Some(packet.availability),
+        )
+    } else if provided && version == CONTRACT_VERSION {
         let (rows, attributes, contracts) =
             ordinary_columns::decode_provided_contracts(input, base)?;
-        (rows, Some(attributes), None, Some(contracts))
+        (rows, Some(attributes), None, Some(contracts), None)
     } else if provided {
         (
             ordinary_columns::decode_provided(input, base)?,
             None,
             None,
             None,
+            None,
         )
     } else if version == MODULE_CONTRACT_VERSION {
         let (rows, attributes, modules) = ordinary_columns::decode_module_contracts(input, base)?;
-        (rows, Some(attributes), Some(modules), None)
+        (rows, Some(attributes), Some(modules), None, None)
     } else if version == CONTRACT_VERSION {
         let (rows, attributes) = ordinary_columns::decode_contracts(input, base)?;
-        (rows, Some(attributes), None, None)
+        (rows, Some(attributes), None, None, None)
     } else {
-        (ordinary_columns::decode(input, base)?, None, None, None)
+        (
+            ordinary_columns::decode(input, base)?,
+            None,
+            None,
+            None,
+            None,
+        )
     };
     if !input.done() {
         return Err("trailing source metadata bytes");
@@ -120,7 +143,17 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
         steps: input.used_atoms(),
         ..Work::default()
     };
-    let payload = if let Some(contracts) = contracts {
+    let payload = if let Some(availability) = availability {
+        Payload::from_source_module_availability(
+            interface.identity(),
+            rows,
+            attributes.ok_or("availability advisory columns missing")?,
+            modules.ok_or("availability namespace columns missing")?,
+            availability,
+            base,
+            &mut work,
+        )?
+    } else if let Some(contracts) = contracts {
         Payload::from_source_provided_contracts(
             interface.identity(),
             rows,

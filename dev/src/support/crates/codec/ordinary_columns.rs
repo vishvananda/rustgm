@@ -1,5 +1,6 @@
 //! Draft ordinary-source columns. Public descriptor admission stays disconnected.
 mod allocation_columns;
+mod availability_wire;
 mod cfg_columns;
 mod contract_columns;
 #[path = "ordinary_columns/annotation_rows.rs"]
@@ -66,6 +67,40 @@ pub(super) fn encode_module_contracts(
             .ok_or("version-two advisory columns are missing")?,
     )?;
     namespace_rows::encode(out, modules.rows())
+}
+pub(super) fn encode_module_availability(
+    out: &mut Writer,
+    rows: s::ValidatedView<'_>,
+) -> Result<(), &'static str> {
+    encode_module_contracts(out, rows)?;
+    availability_wire::encode(out, rows.availability()?)
+}
+pub(super) struct AvailabilityPacket {
+    pub rows: s::SourceRows,
+    pub attributes: s::HeaderAttributeColumns,
+    pub modules: s::ModuleContractRows,
+    pub availability: s::AvailabilityRows,
+}
+pub(super) fn decode_module_availability(
+    reader: &mut Reader<'_>,
+    base: usize,
+) -> Result<AvailabilityPacket, &'static str> {
+    let (rows, bytes) = decode_profile(reader, base, false)?;
+    let mut read = Input {
+        reader,
+        bytes,
+        base,
+        provided: false,
+    };
+    let attributes = header_facts::decode(&mut read)?;
+    let modules = namespace_rows::decode(&mut read)?;
+    let availability = availability_wire::decode(&mut read)?;
+    Ok(AvailabilityPacket {
+        rows,
+        attributes,
+        modules,
+        availability,
+    })
 }
 pub(super) fn encode_provided_contracts(
     out: &mut Writer,

@@ -78,7 +78,8 @@ impl Graph {
         }
         if !descriptor.profile().ordinary_functions() {
             match descriptor.profile() {
-                s::Profile::Source2024ModuleContracts => {
+                s::Profile::Source2024ModuleContracts
+                | s::Profile::Source2024ModuleAvailability => {
                     descriptor.module_contracts()?;
                 }
                 _ => return Err("source header profile is unsupported"),

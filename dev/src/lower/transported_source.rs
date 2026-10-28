@@ -118,6 +118,19 @@ impl Source {
             modules,
         ))
     }
+    pub(super) fn begin_module_availability(
+        report: &Report,
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+        identity: &CrateIdentity,
+    ) -> Result<(Self, s::ModuleContractRows), &'static str> {
+        let mut stage = Stage::begin_module_availability(report, facts, identity)?;
+        let modules = stage.module_contract_rows(report, facts)?;
+        Ok((
+            Self::begin_stage(facts, checked, stage, false, None)?,
+            modules,
+        ))
+    }
     pub(super) fn begin_publication(
         report: &Report,
         facts: &mut Declarations,
@@ -134,6 +147,12 @@ impl Source {
             super::instances::SourcePublication::ModuleContracts => {
                 let (source, modules) =
                     Self::begin_module_contracts(report, facts, checked, identity)
+                        .map_err(legacy_error)?;
+                Ok((source, Some(modules)))
+            }
+            super::instances::SourcePublication::ModuleAvailability => {
+                let (source, modules) =
+                    Self::begin_module_availability(report, facts, checked, identity)
                         .map_err(legacy_error)?;
                 Ok((source, Some(modules)))
             }
@@ -375,12 +394,13 @@ impl Source {
             .map_err(|message| report.diagnostic(report.body_optional_error(None, message)))
     }
 
-    pub(super) fn complete_module_contract_payload(
+    pub(super) fn complete_module_policy_payload(
         mut self,
         modules: s::ModuleContractRows,
         report: &Report,
         facts: &Declarations,
         base: crate::support::crates::Interface,
+        availability: bool,
     ) -> Result<crate::support::crates::Interface, crate::resolve::package::Error> {
         if report
             .package
@@ -394,6 +414,15 @@ impl Source {
         // Reuse the complete selected-header producer, including its final-header
         // fence when defaultness syntax is integrated. No absence is invented.
         let attributes = self.collect_header_columns(report, facts)?;
+        let availability = if availability {
+            Some(
+                self.stage
+                    .availability_rows(report, facts, &modules)
+                    .map_err(crate::resolve::package::Error::unlocated)?,
+            )
+        } else {
+            None
+        };
         if self.numbering.is_some() {
             return Err(crate::resolve::package::Error::unlocated(
                 "Provided numbering has no module-contract publisher",
@@ -416,14 +445,26 @@ impl Source {
             steps: observed.steps,
             ..g::Work::default()
         };
-        let payload = g::Payload::from_source_module_contracts(
-            base.identity(),
-            rows,
-            attributes,
-            modules,
-            base_bytes,
-            &mut work,
-        )
+        let payload = if let Some(availability) = availability {
+            g::Payload::from_source_module_availability(
+                base.identity(),
+                rows,
+                attributes,
+                modules,
+                availability,
+                base_bytes,
+                &mut work,
+            )
+        } else {
+            g::Payload::from_source_module_contracts(
+                base.identity(),
+                rows,
+                attributes,
+                modules,
+                base_bytes,
+                &mut work,
+            )
+        }
         .map_err(|message| report.diagnostic(report.body_optional_error(None, message)))?;
         base.with_generic_payload(payload)
             .map_err(crate::resolve::package::Error::unlocated)

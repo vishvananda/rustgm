@@ -55,7 +55,7 @@ fn profile_has_inventory(
         return Ok(true);
     }
     match descriptor.profile() {
-        s::Profile::Source2024ModuleContracts => {
+        s::Profile::Source2024ModuleContracts | s::Profile::Source2024ModuleAvailability => {
             descriptor.module_contracts().map_err(Error::unlocated)?;
         }
         s::Profile::Source2024ProvidedContracts => {
@@ -147,6 +147,7 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
                     descriptor.profile(),
                     s::Profile::Source2024FunctionContracts
                         | s::Profile::Source2024ModuleContracts
+                        | s::Profile::Source2024ModuleAvailability
                         | s::Profile::Source2024ProvidedContracts
                 )
             });
@@ -313,7 +314,7 @@ pub(super) fn caller_tracking_absent(
         .ok_or("imported caller policy profile is unknown")?;
     match descriptor.profile() {
         s::Profile::Source2024Functions | s::Profile::Source2024FunctionContracts => {}
-        s::Profile::Source2024ModuleContracts => {
+        s::Profile::Source2024ModuleContracts | s::Profile::Source2024ModuleAvailability => {
             descriptor.module_contracts()?;
         }
         _ => return Err("imported caller policy requires an implemented explicit profile"),

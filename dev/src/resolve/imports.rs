@@ -389,6 +389,16 @@ impl Resolver<'_> {
         let terminal = observed.selected.as_mut().and_then(Vec::pop)
             .filter(|selection| matches!(&result, Ok(Lookup::Found(binding)) if *binding == selection.binding));
         if let Some(mut selections) = observed.selected.take() {
+            if !ambiguous
+                && matches!(&result, Ok(Lookup::Found(_)))
+                && let Some(imports) = self
+                    .facts
+                    .crates
+                    .as_deref_mut()
+                    .and_then(|imports| imports.availability.as_deref_mut())
+            {
+                imports.record(import.node, &selections)?;
+            }
             selections.clear();
             work.selections = selections;
         }

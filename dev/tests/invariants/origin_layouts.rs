@@ -83,7 +83,7 @@ fn frozen_catalog_sharing_adds_only_cold_import_owner_slots() {
     // original-declaration/header workspace; neither grows hot body records.
     assert_eq!(
         size_of::<crate::resolve::crates::Imported>(),
-        size_of::<LegacyImported>() + 2 * size_of::<usize>()
+        size_of::<LegacyImported>() + 3 * size_of::<usize>()
     );
     assert_eq!(
         size_of::<crate::sema::crates::Linkage>(),

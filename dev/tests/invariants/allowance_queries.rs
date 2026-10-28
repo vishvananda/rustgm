@@ -182,6 +182,7 @@ fn public_symbols_validate_once_and_ordinary_sessions_allocate_no_memo() -> Test
     let invalid = report.package.names.intern_exact("not a feature name")?;
     assert!(report.feature_name(invalid).is_err());
     let policy = crate::resolve::stability::Policy {
+        kind: crate::resolve::stability::PolicyKind::Regular,
         feature: "invalid feature".into(),
         level: crate::resolve::stability::Level::Stable(crate::resolve::stability::Since::Current),
         origin: crate::resolve::unit::NodeKey {

@@ -117,7 +117,7 @@ impl Resolver<'_> {
         let adjusted = self.scope_adjustment(scope, context, c.module)?;
         let key = (scope, name, namespace, adjusted.context);
         if let Some(observed) = observed {
-            observed.dependencies.push(key);
+            observed.dependency(key);
         }
         Ok(self
             .facts
@@ -173,7 +173,7 @@ impl Resolver<'_> {
                 .ok_or("unknown item lookup scope")?;
             let key = (scope, name, namespace, context);
             if let Some(observed) = observed.as_deref_mut() {
-                observed.dependencies.push(key);
+                observed.dependency(key);
             }
             if let Some(target) = frame.nominal_self
                 && barriers == 0

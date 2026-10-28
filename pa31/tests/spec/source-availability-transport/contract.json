@@ -1,0 +1,94 @@
+{
+  "state": "version 3 corrected predictions frozen before candidate observations",
+  "provider": "provider.rs",
+  "preserved_roles": "source-functions-transport/minimal-provider.rs with real stability annotations; no role or semantic attributes removed",
+  "cases": {
+    "stable-client.rs": {
+      "prediction": "accept/native7",
+      "sha256": "90312f8eabbb9cb218a10370c9fa7ad1152d37b55a33c95486352db470326111"
+    },
+    "unstable-client.rs": {
+      "prediction": "accept/native7",
+      "sha256": "46f31c09b1ccfd6112068390501ef591a6864d4b804d77739207b6ed0ba84ae4"
+    },
+    "missing-feature.rs": {
+      "prediction": "reject",
+      "sha256": "b107a06c4916f9ee128a0e537c1ed8f1f40b8fb7bceacbde9e93a40a4ee32e4f"
+    },
+    "unknown-feature.rs": {
+      "prediction": "reject",
+      "sha256": "95d27ea4633a969af9324eca740622f8c790dc3a81d990625ea6966e680c8c04"
+    },
+    "alias-client.rs": {
+      "prediction": "accept/native7",
+      "sha256": "92624e90fcc10ad28608ea7b0acfd151bdfbfced43851afd775dcae0599ed3bc"
+    },
+    "alias-missing.rs": {
+      "prediction": "accept/native7 (corrected from retained v2 counterexample)",
+      "sha256": "04ce5c22e92ff152e2db9494522d0dd0e32d7600401c39e4948a98ee20de14e2"
+    },
+    "alias-target-only.rs": {
+      "prediction": "accept/native7 (corrected from retained v2 counterexample)",
+      "sha256": "fb4eb7f13f5bc9d97ceaffc433eb0efd9ed96f5065f707e40a9e1d47fb9b9c88"
+    },
+    "const-misuse.rs": {
+      "prediction": "reject",
+      "sha256": "042d3606c3472202ebd913905bb1f06bac51783722d3c868a25c97e0283bafbe"
+    },
+    "stable_alias_none.rs": {
+      "prediction": "reject",
+      "sha256": "4609b51f044c177cacceaaeebabe9b3c4566c02dc589224663a8ac0685ddeb16"
+    },
+    "unstable_alias_none.rs": {
+      "prediction": "reject",
+      "sha256": "bdd5e5e8353a9894bb8900c1151afb341ad197a3ab84b4e7f6ec3e64cce7d165"
+    },
+    "unstable_alias_target.rs": {
+      "prediction": "accept/native7",
+      "sha256": "dd196522cf7633923ad7d2095caf0dda467df0503748fef6e34fd300ce7897e6"
+    },
+    "unstable_alias_own.rs": {
+      "prediction": "reject",
+      "sha256": "d27d8b9dd93274f4917f05584f16e203ae7ee6ade1c4ed7025789db797d31754"
+    },
+    "module-client.rs": {
+      "prediction": "accept/native7",
+      "sha256": "3e85ac440534d44988330baf067027cbbc51b3f77935ff6a8f09e1de52029ae4"
+    },
+    "module-missing.rs": {
+      "prediction": "reject",
+      "sha256": "83bd3d0e7fe456400143e65ba8118a747c22ad59cfdd065f4ae79f70cdaaeee9"
+    },
+    "module-alias-only.rs": {
+      "prediction": "reject",
+      "sha256": "04d7c999fcbfc63e31bf96d18d68272061d9bdfc7551512b25228190e600dc09"
+    }
+  },
+  "provider_sha256": "6603843166503dccb44e5ab311b7eb8837e04f2b35fd3deb10f17abf9f5403f9",
+  "metadata_opponents": [
+    "missing availability columns/old source profile -> unsupported/Unknown",
+    "incomplete declaration/binding census -> reject",
+    "foreign artifact/declaration/site or sibling policy ancestor -> reject",
+    "Const policy in Regular position -> reject"
+  ],
+  "pending": [
+    "macro/name provenance",
+    "imported deprecation",
+    "wider provided/default const execution",
+    "whole core/alloc/std artifacts"
+  ],
+  "supersedes": "v1/v2 inputs and contradicted hypotheses retained under rust-observed-v1, rust-observed-v2, path-observed-v1",
+  "rust_environment": {
+    "toolchain": "repository-pinned 1.98.0",
+    "RUSTC_BOOTSTRAP": "1",
+    "panic": "abort",
+    "codegen_units": 1
+  },
+  "derived_provider_opponent": {
+    "construction": "remove only the stable annotation on LegacyReceiver for &T; preserve all role attributes",
+    "sha256": "aef31a0c0b7f14a53db68df1c0bfc27836159ba5de44b4256a8ddedbc0a54349",
+    "prediction": "reject missing trait-implementation stability policy"
+  },
+  "valid_absence": "private_identity and parameter/local rows retain explicitly validated None under complete staged coverage",
+  "policy_rule": "Pinned ordinary use checks actual target and module-prefix declarations; pub-use annotations remain truthful independent metadata/feature definitions but do not override or add a target request."
+}

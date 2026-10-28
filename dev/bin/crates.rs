@@ -21,6 +21,10 @@ impl Options {
             return Err("duplicate --source-profile".into());
         }
         match value {
+            Some("module-availability-v3") => {
+                self.source_profile =
+                    Some(rustgm::lower::instances::SourcePublication::ModuleAvailability);
+            }
             Some("module-contracts-v2") => {
                 self.source_profile =
                     Some(rustgm::lower::instances::SourcePublication::ModuleContracts);
@@ -31,7 +35,7 @@ impl Options {
             }
             _ => {
                 return Err(
-                    "--source-profile requires module-contracts-v2 or provided-contracts-v1".into(),
+                    "--source-profile requires module-contracts-v2, module-availability-v3 or provided-contracts-v1".into(),
                 );
             }
         }

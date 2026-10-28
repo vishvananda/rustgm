@@ -133,7 +133,7 @@ pub(in crate::resolve) fn finish(
     if let (Some(library), Some(inventory)) = (package.library.as_deref_mut(), inventory) {
         library.publish(inventory);
     }
-    Ok(())
+    crate::resolve::stability::availability_imports::check_all(package, facts)
 }
 
 fn reserve_all(

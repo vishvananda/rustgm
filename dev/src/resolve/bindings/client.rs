@@ -24,6 +24,20 @@ pub struct SourceClient {
     provider_index: u32,
 }
 impl SourceClient {
+    pub(crate) fn availability_required(
+        &self,
+        dependencies: Option<&Dependencies>,
+    ) -> Result<bool, &'static str> {
+        let dependencies = dependencies.unwrap_or(&self.dependencies);
+        let index = self.require_inventory(dependencies)?;
+        Ok(dependencies
+            .artifacts()
+            .get(index as usize)
+            .and_then(crate::support::crates::Interface::source_descriptor)
+            .ok_or("source client availability descriptor is absent")?
+            .profile()
+            == crate::support::crates::generics::source::Profile::Source2024ModuleAvailability)
+    }
     pub(super) fn validate_inventory(&self) -> Result<(), &'static str> {
         self.require_inventory(&self.dependencies).map(|_| ())
     }
@@ -56,7 +70,9 @@ impl SourceClient {
         }
         if !descriptor.profile().ordinary_functions() {
             match descriptor.profile() {
-                crate::support::crates::generics::source::Profile::Source2024ModuleContracts => {
+                crate::support::crates::generics::source::Profile::Source2024ModuleContracts
+                | crate::support::crates::generics::source::Profile::Source2024ModuleAvailability =>
+                {
                     descriptor.module_contracts()?;
                 }
                 _ => return Err("source client retained provider profile is unsupported"),

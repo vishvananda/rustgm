@@ -1516,6 +1516,12 @@ impl Checker<'_> {
                     return Ok(term);
                 }
                 super::deprecation::check(self.report, self.facts, self.key(node), id)?;
+                crate::resolve::stability::check_imported_api(
+                    self.report,
+                    self.key(node),
+                    id,
+                    false,
+                )?;
                 let definition = &self.report.resolution.definitions[id.0 as usize];
                 if !matches!(
                     definition.kind,
