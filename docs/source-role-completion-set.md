@@ -5,16 +5,20 @@ comes from LangItem::ALL. Stable role indices remain unchanged. This removes the
 64-role representation ceiling without adding an owner, heap table, result cache,
 feature capability or metadata tag. Membership inspects its selected word; exact
 family equality/disjointness and publication use bounded word passes paid through
-the existing header payer. The present64-role set is one8-byte word and the
-Validated ledger remains48 bytes. Wider real-role configurations still require
-actual high-word tests and measurement before claiming their qualification.
+the existing header payer. Genuine OffsetOf64 is now qualified:65 actual roles
+use two words/16 bytes and the existing ledger is56 bytes. Membership borrows
+the set and indexes one word; real high-word distinctness, union and removal
+controls pass. [Reached execution](pa31-reached-offset-kernel.md) records source,
+caller/operand and native qualification. The full220-role proposal still needs
+its dense/enclosing allocation preflight, measurements and controls.
 
 Genuine source Add62/Sub63 are now integrated through actual source bodies and
 original/instance const-call proof. Combined private27, production/CLI source3,
 PA13/PA24 and four native source programs pass. Exact membership/union controls
 measure64 roles/one word/8 bytes/Validated48. Dense cold Reservations2160 and
 Catalog1464 include the two actual claims; hot owner widths stay unchanged.
-OffsetOf64 will be the first genuine second-word role and is still pending.
+That64-role measurement is the predecessor; genuine OffsetOf64 now exercises
+the second word with Reservations2184/Catalog1488. Body456/Operation16 stay unchanged.
 
 Full CI40607099972 exposed the last PhantomData test census still expecting61
 language roles after genuine AllocLayout62. Its expectation now uses the actual

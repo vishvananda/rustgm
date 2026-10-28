@@ -38,10 +38,11 @@ impl LibraryContracts<'_> {
                 self.error(declaration.origin, "canonical Option lacks payload variant")
             })?,
             field: 0,
+            fallback_tag: None,
         };
         self.facts
             .aggregates
-            .register_nullable_enum(&self.facts.types, item, policy)
+            .register_nullable_enum(&self.facts.types, item, policy, None)
             .map_err(|error| self.error(declaration.origin, error))
     }
 }

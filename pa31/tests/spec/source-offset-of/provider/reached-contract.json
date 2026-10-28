@@ -1,0 +1,42 @@
+{
+  "state": "frozen direct reached intrinsic controls before observations; full original macro semantic exit remains independently required",
+  "primary": {
+    "path": "reached-provider.rs",
+    "sha256": "dd8b29d1d044691f2cf90b0b4a1385a24cb53a3c142f565721d952fe3f516b78"
+  },
+  "origin": {
+    "path": "/home/vishvananda/rustgm-pa29-work/obj/parallel/original-core-inputs-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/intrinsics/mod.rs",
+    "sha256": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+    "byte_start": 109499,
+    "byte_end": 109800,
+    "intrinsic_sha256": "9bef96529000773bc1bb4ccab2e932677ceddfa2f5c7af4fd6d8b18219c20bcb",
+    "macro_sha256": "cf4cd78f7b7d56d3ad9dd5b146f0ba1edd0f5af2484437ba222736ad4d965d32",
+    "foundation": "minimal three sizing declarations mirror exact pinned hierarchy, not full core implementation"
+  },
+  "profile": {
+    "rustc": "1.98.0",
+    "editions": [
+      2021,
+      2024
+    ],
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": "yes"
+  },
+  "prediction": {
+    "metadata": 0,
+    "object": 0,
+    "native": 0,
+    "stdout": "1 4 8 0 0 8 16\n",
+    "reason": "actual exact intrinsic and unchanged original macro declaration; authored direct const calls isolate per-call u32 operands and generic tagged/niche layout, same-instance fields0/1/2"
+  },
+  "source_setup": "new authored direct const-call probes and explicit core_intrinsics request; original provider.rs and exact macro/intrinsic remain unchanged",
+  "independent_prediction_sha256": "7ef48cbe2d304f1f95f457ad45738b9dedd737be108f05d807940dd4e2505402",
+  "qualification": {
+    "scope": "direct reached intrinsic only; original builtin field semantics remain required",
+    "record": "../../../../../docs/pa31-reached-offset-kernel.md",
+    "independent": "both editions, metadata/object/link/native match frozen stdout",
+    "combined_receipt_sha256": "9f7824d00d1c573e71a2d8054793ad4e0fdfc021ea036033a5192ba673f94f85",
+    "cli_sha256": "28d95e837c1e203fa1b713c1ba2e14075906e8b2582253412c1c870fab457f3a"
+  }
+}

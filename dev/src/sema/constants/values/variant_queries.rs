@@ -20,6 +20,16 @@ impl Reader<'_> {
     }
 }
 impl Evaluator<'_> {
+    pub(crate) fn check_source_offset_report(
+        &self,
+        definition: crate::resolve::model::DefId,
+    ) -> Result<(), &'static str> {
+        self.facts()
+            .source_bindings
+            .as_deref()
+            .ok_or("source offset_of catalog disappeared")?
+            .require_offset_report(self.queries.report, self.facts(), definition)
+    }
     pub(crate) fn checked_source_discriminant(
         &self,
         instance: Instance,

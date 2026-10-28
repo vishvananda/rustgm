@@ -353,7 +353,8 @@ impl Layouts {
             return Err("nominal layout requires a nominal identity");
         };
         let shape = definitions.shape(types, ty)?;
-        if let Some(policy) = definitions.nullable_enum(item)
+        let policy = definitions.nullable_enum(item);
+        if let Some(policy) = policy
             && let Some(layout) =
                 self.nullable_layout(types, definitions, ty, shape, policy, budget)?
         {
@@ -362,7 +363,12 @@ impl Layouts {
         if shape.definition.repr.representation == Representation::Simd {
             return self.simd_layout(types, definitions, ty, shape, budget);
         }
-        self.aggregate(types, shape, definitions.packing_checked())
+        self.aggregate(
+            types,
+            shape,
+            definitions.packing_checked(),
+            policy.and_then(|p| p.fallback_tag),
+        )
     }
     pub(super) fn niche_mark(&self) -> usize {
         self.niches.as_ref().map_or(0, |n| n.records.len())

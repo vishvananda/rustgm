@@ -63,11 +63,64 @@ fn nullable(
                 empty: 1,
                 payload: 0,
                 field: 0,
+                fallback_tag: None,
             },
+            None,
         )?;
     }
     types.intern(Kind::Adt(item, GenericArgs::EMPTY))
 }
+#[test]
+fn typed_fallback_tag_changes_only_the_registered_physical_profile() -> Result<(), String> {
+    let mut types = Store::default();
+    let mut definitions = Definitions::default();
+    let child = TypeId::primitive(crate::types::Primitive::U8);
+    let course = nullable(&mut types, &mut definitions, ItemId(10), child, true)?;
+    let source = nullable(&mut types, &mut definitions, ItemId(11), child, false)?;
+    definitions.register_nullable_enum(
+        &types,
+        ItemId(11),
+        NullableEnum {
+            empty: 1,
+            payload: 0,
+            field: 0,
+            fallback_tag: Some(crate::types::Primitive::U8),
+        },
+        None,
+    )?;
+    let mut layouts = Layouts::default();
+    for (ty, tag, offset, size) in [
+        (course, crate::types::Primitive::I64, 8, 16),
+        (source, crate::types::Primitive::U8, 1, 2),
+    ] {
+        layouts
+            .demand(&types, &definitions, ty)
+            .map_err(|e| e.to_string())?;
+        let layout = layouts.get(ty).ok_or("layout")?;
+        let Shape::Aggregate {
+            tag: Some(actual), ..
+        } = layout.shape
+        else {
+            return Err("tagged layout".into());
+        };
+        assert_eq!(actual.ty, tag);
+        assert_eq!(layout.size, size);
+        let variants = layouts.variants(layout);
+        assert_eq!(layouts.offsets(&variants[0]), &[offset]);
+        assert_eq!(variants[0].discriminant, 7);
+        assert_eq!(variants[1].discriminant, 19);
+    }
+    println!(
+        "nullable policy={} Layouts={} Layout={} Shape={} Variant={}",
+        size_of::<NullableEnum>(),
+        size_of::<Layouts>(),
+        size_of::<Layout>(),
+        size_of::<Shape>(),
+        size_of::<Variant>()
+    );
+    Ok(())
+}
+
 #[test]
 fn nullable_layout_is_canonical_and_keeps_ordinary_density() -> Result<(), String> {
     let mut types = Store::default();

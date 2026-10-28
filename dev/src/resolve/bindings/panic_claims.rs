@@ -104,6 +104,7 @@ pub(super) fn validate(
         | LangItem::PanicFmt
         | LangItem::PanicImpl
         | LangItem::PanicDisplay
+        | LangItem::OffsetOf
         | LangItem::ConstPanicFmt => true,
         _ => return Ok(()),
     };

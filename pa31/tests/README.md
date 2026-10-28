@@ -2,6 +2,13 @@
 
 Planned: no graded manifest or generated reference outputs yet.
 
+`spec/source-offset-of/provider/reached-contract.json` adds an independently
+frozen direct intrinsic consumer; it does not replace the original macro exit.
+The actual source pipeline and locked backend now match `1 4 8 0 0 8 16`,
+including generic tagged/niche layouts and same-instance fields. The
+[kernel record](../../docs/pa31-reached-offset-kernel.md) retains the original
+layout mismatch, current source/operand guards and remaining builtin/DST work.
+
 `spec/metavariable-expressions/` retains independently declared count/ignore/
 index/len/escaped-dollar protocols, genuine feature/hygiene opponents and a
 separate executable consumer. The 69-test combined gate and PA7/PA8 text suites

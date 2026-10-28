@@ -54,7 +54,7 @@ pub(super) fn validate(
     Ok(())
 }
 
-/// These claims identify variants of the genuine diagnostic enum, not spelling.
+/// Variant claims retain their actual enum owner, independently of its spelling.
 pub(super) fn enum_variants(
     package: &Package,
     facts: &crate::resolve::model::Resolution,
@@ -71,13 +71,20 @@ pub(super) fn enum_variants(
         let Some(variant) = reserved.language(role) else {
             continue;
         };
-        let owner = reserved.diagnostics[diagnostic.index()].ok_or_else(|| {
-            error(
-                package,
-                variant.origin,
-                "source variant requires its actual diagnostic enum owner",
-            )
-        })?;
+        // Option has a real language identity. A diagnostic marker is optional
+        // and cannot replace that owner when both inventories are present.
+        let language = matches!(role, LangItem::OptionSome | LangItem::OptionNone)
+            .then(|| reserved.language(LangItem::Option))
+            .flatten();
+        let owner = language
+            .or(reserved.diagnostics[diagnostic.index()])
+            .ok_or_else(|| {
+                error(
+                    package,
+                    variant.origin,
+                    "source variant requires its actual diagnostic enum owner",
+                )
+            })?;
         let actual = &facts.definitions[variant.definition.0 as usize];
         let parent = &facts.definitions[owner.definition.0 as usize];
         if parent.members != Some(actual.scope) {

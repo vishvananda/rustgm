@@ -67,6 +67,9 @@ fn signature(
     function: Function,
     kind: SourceIntrinsic,
 ) -> Result<(), &'static str> {
+    if kind == SourceIntrinsic::OffsetOf {
+        return super::displacement::validate(facts, function);
+    }
     if kind == SourceIntrinsic::DiscriminantValue {
         return super::tag_intrinsic::validate(facts, function);
     }
@@ -271,7 +274,7 @@ fn layout_element(
         .ok_or("invalid source intrinsic arguments")?;
     let Some(Argument::Type(element)) = arguments.next() else {
         return Err(match kind {
-            SourceIntrinsic::Layout(_) => {
+            SourceIntrinsic::Layout(_) | SourceIntrinsic::OffsetOf => {
                 "selected source layout intrinsic lacks its type argument"
             }
             SourceIntrinsic::NeedsDrop => "selected source needs_drop lacks its type argument",
@@ -302,7 +305,7 @@ fn layout_element(
         || types.contains_projections(element) != Some(false)
     {
         return Err(match kind {
-            SourceIntrinsic::Layout(_) => {
+            SourceIntrinsic::Layout(_) | SourceIntrinsic::OffsetOf => {
                 "source layout intrinsic requires a complete closed type argument"
             }
             SourceIntrinsic::NeedsDrop => {

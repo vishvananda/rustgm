@@ -16,6 +16,7 @@ mod function_calls;
 mod operator_calls;
 mod place_cache;
 mod ptr_values;
+mod queried_fields;
 mod raw_reads;
 mod reached_drop;
 mod reached_layout;

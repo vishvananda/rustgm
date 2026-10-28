@@ -6,9 +6,32 @@ pub(crate) struct NullableEnum {
     pub empty: u32,
     pub payload: u32,
     pub field: u32,
+    pub fallback_tag: Option<crate::types::Primitive>,
 }
 pub(super) type Policies = HashMap<ItemId, NullableEnum>;
 impl Definitions {
+    pub(crate) fn nullable_publication_growth(&self) -> crate::support::retained::Growth {
+        let mut cost = self.nullable_enums.as_deref().map_or_else(
+            || crate::support::retained::Growth {
+                work: 0,
+                bytes: size_of::<Policies>(),
+            },
+            |_| crate::support::retained::Growth::default(),
+        );
+        let (length, capacity) = self
+            .nullable_enums
+            .as_deref()
+            .map_or((0, 0), |p| (p.len(), p.capacity()));
+        cost.include(
+            crate::support::retained::Growth::map::<ItemId, NullableEnum>(length, capacity, 1),
+        );
+        cost
+    }
+    pub(crate) fn nullable_storage_bytes(&self) -> usize {
+        self.nullable_enums.as_deref().map_or(0, |p| {
+            size_of::<Policies>() + crate::support::retained::map(p)
+        })
+    }
     pub(crate) fn nullable_enum(&self, item: ItemId) -> Option<NullableEnum> {
         self.nullable_enums.as_deref()?.get(&item).copied()
     }
@@ -17,6 +40,7 @@ impl Definitions {
         types: &Store,
         item: ItemId,
         policy: NullableEnum,
+        storage_limit: Option<usize>,
     ) -> Result<(), &'static str> {
         let definition = self.get(item).ok_or("missing nullable enum declaration")?;
         let variants = self.variants(definition);
@@ -26,6 +50,9 @@ impl Definitions {
             || definition.repr.packed.is_some()
             || definition.repr.align.is_some()
             || variants.len() != 2
+            || policy
+                .fallback_tag
+                .is_some_and(|tag| tag.integer().is_none())
             || policy.empty == policy.payload
             || policy.field != 0
         {
@@ -47,6 +74,17 @@ impl Definitions {
             return Err("nullable enum fields differ from their canonical policy");
         }
         let policies = self.nullable_enums.get_or_insert_with(Default::default);
+        if policies.contains_key(&item) {
+            return Err("nullable enum policy is already registered");
+        }
+        policies
+            .try_reserve(1)
+            .map_err(|_| "nullable policy allocation failed")?;
+        if storage_limit.is_some_and(|limit| {
+            size_of::<Policies>() + crate::support::retained::map(policies) > limit
+        }) {
+            return Err("nullable policy allocation exceeds prepaid storage");
+        }
         match policies.entry(item) {
             std::collections::hash_map::Entry::Vacant(entry) => {
                 entry.insert(policy);

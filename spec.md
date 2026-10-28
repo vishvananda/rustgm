@@ -306,6 +306,15 @@ actual module/scope and import-target identities, excluding local and synthetic
 bindings from API inheritance. Stability-bearing metadata must reject until its
 transport and use consumers exist; regular policy cannot grant const-callability.
 
+Reached source offset queries consume evaluated variant/field operands and the
+ordinary completed aggregate Layout. They must retain current source-header and
+checked-call proof on both cold preparation and warm reads. An Instance-only
+size/alignment result cache cannot own field offsets. Publish source Option's
+physical nullable policy from actual declaration/field facts before nominal
+completion can expose a concrete layout; reuse the existing cold table and
+prepay retained growth. No whole-store rescans or parallel layout authority.
+See [the reached kernel and remaining builtin obligations](docs/pa31-reached-offset-kernel.md).
+
 Source-role semantic attributes are validated claims on exact declarations.
 Sparse item feature sites share one source-incarnation witness, transaction and
 monotonic retention envelope across default modifiers and trait aliases. Keep

@@ -134,6 +134,9 @@ impl Machine<'_, '_> {
         if let Some(answer) = self.source_discriminant(body, frame, position, target)? {
             return Ok(answer);
         }
+        if let Some(answer) = self.source_offset(body, frame, position, target)? {
+            return Ok(answer);
+        }
         if let Some(answer) = self.source_raw_parts(body, frame, position, target)? {
             return Ok(answer);
         }

@@ -57,6 +57,35 @@ fn renamed_enum_variants_keep_actual_parent_identity_and_source_nodes() -> TestR
 }
 
 #[test]
+fn option_language_owner_does_not_require_a_diagnostic_marker() -> TestResult {
+    for diagnostic in ["", "#[rustc_diagnostic_item=\"Option\"]enum Hint{Value}"] {
+        let report = report(&format!(
+            "{diagnostic}#[lang=\"Option\"]enum Maybe<T>{{#[lang=\"None\"]Absent,#[lang=\"Some\"]Present(T)}}"
+        ))?;
+        let reserved = report
+            .resolution
+            .source_bindings
+            .as_deref()
+            .ok_or("claims")?;
+        let owner = reserved
+            .language(LangItem::Option)
+            .ok_or("language owner")?;
+        for role in [LangItem::OptionNone, LangItem::OptionSome] {
+            let variant = reserved.language(role).ok_or("variant")?;
+            assert_eq!(
+                report.resolution.definitions[owner.definition.0 as usize].members,
+                Some(report.resolution.definitions[variant.definition.0 as usize].scope)
+            );
+        }
+    }
+    assert!(
+        report("#[lang=\"Option\"]enum Actual<T>{Value(T)}enum Other{#[lang=\"None\"]Absent}")
+            .is_err()
+    );
+    Ok(())
+}
+
+#[test]
 fn wrong_enum_kinds_or_detached_variants_cannot_acquire_claims() {
     for source in [
         r#"#[rustc_diagnostic_item="Result"]trait Wrong{}"#,

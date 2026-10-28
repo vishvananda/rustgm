@@ -10,7 +10,10 @@ fn actual_add_sub_headers_keep_exact_roles_without_bootstrap_factories() -> Test
     let source = arithmetic_input("authored-bodies")?;
     let (report, Analysis { mut facts, .. }) = analyze(&source)?;
     assert!(facts.primitive_methods.is_none());
-    assert_eq!(crate::support::bindings::LangItem::ALL.len(), 64);
+    assert_eq!(
+        crate::support::bindings::LangItem::ALL.get(63),
+        Some(&crate::support::bindings::LangItem::Sub)
+    );
     println!(
         "source-arithmetic-layout Reservations={} Catalog={} Body={} Operation={} Traits={} Resolution={}",
         size_of::<crate::resolve::bindings::Reservations>(),

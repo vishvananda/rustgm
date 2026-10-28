@@ -80,9 +80,10 @@ pub enum LangItem {
     AllocLayout,
     Add,
     Sub,
+    OffsetOf,
 }
 impl LangItem {
-    pub const ALL: [Self; 64] = [
+    pub const ALL: [Self; 65] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -147,6 +148,7 @@ impl LangItem {
         Self::AllocLayout,
         Self::Add,
         Self::Sub,
+        Self::OffsetOf,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -215,6 +217,7 @@ impl LangItem {
             Self::AllocLayout => 61,
             Self::Add => 62,
             Self::Sub => 63,
+            Self::OffsetOf => 64,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -284,6 +287,7 @@ impl LangItem {
             "alloc_layout" => Some(Self::AllocLayout),
             "add" => Some(Self::Add),
             "sub" => Some(Self::Sub),
+            "offset_of" => Some(Self::OffsetOf),
             _ => None,
         }
     }
@@ -320,12 +324,15 @@ pub enum SourceIntrinsic {
     PtrMetadata,
     DiscriminantValue,
     AggregateRawPtr,
+    OffsetOf,
 }
 impl SourceIntrinsic {
     /// Declaration attribute decoding only; consumers retain the actual `DefId`.
     #[must_use]
     pub fn from_name(name: &str) -> Option<Self> {
-        if name == "aggregate_raw_ptr" {
+        if name == "offset_of" {
+            Some(Self::OffsetOf)
+        } else if name == "aggregate_raw_ptr" {
             Some(Self::AggregateRawPtr)
         } else if name == "discriminant_value" {
             Some(Self::DiscriminantValue)

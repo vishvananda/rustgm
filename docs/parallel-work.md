@@ -14,34 +14,31 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The qualified CLIa271afa6 passes the original offset_of parser and FieldId
-`{:#034x}` static LowerHex construction, then rejects captured names in
-core/field.rs51. All722 pinned inputs verify;372 open in8.58s, with no artifact.
-Combined private9, production/CLI strict, lexer10, PA8 and all473 PA24 pass.
-The actual source-constructor native trace matches pinned Rust. Root owns the
-remaining [typed offset/layout execution](pa31-offset-of-plan.md); B takes the
-observed named/captured-input prerequisite alongside genuine Formatter/write.
-No zero-offset shim or Instance-only field-result cache is permitted.
+The qualified CLI28d95e83 passes captured FieldId arguments and advances original
+core to UpperHex in str/lossy.rs144. All722 pinned inputs verify;372 open in8.19s,
+with no artifact. Combined private21, production/CLI strict,13 frontend controls,
+all473 PA24 and nine native programs pass. The reached offset intrinsic matches
+Rust exactly (`1 4 8 0 0 8 16`); see the [kernel record](pa31-reached-offset-kernel.md).
+The original builtin field-selection/generic/DST exit remains required.
 
-The [typed completion-set integration](source-role-completion-set.md) adds genuine
-AllocLayout61 recognition and removes the fixed completion-mask ceiling in the
-same cold ledger. Current62-role storage and old-wire denial are qualified;
-C's actual Add62/Sub63 are now integrated with source/native and const proof;
-root OffsetOf64 (the65th role) remains separate source/runtime work.
-The PA24 canonical-AddAssign oracle correction is independently native-qualified.
+The [typed completion-set integration](source-role-completion-set.md) now includes
+genuine OffsetOf64, actual65-role/two-word storage and old-wire denial. Source
+Option uses its actual declaration and the existing cold nullable table with a
+physical U8 fallback after niche selection. Broader layout debt remains explicit.
+The complete known-role reservation proposal has no execution authority and is
+not adopted merely by recognizing the65th actual role.
 
 - A: bounded read-only source/handoff reviews and component release census.
-  No compiler edits or heavy jobs.
-- B: Debug and mixed Display/Debug construction are integrated. Complete genuine
-  source slice/str/pointer/Formatter/write and PanicInfo/handler closure.
-  Preserve the original no-Copy call-reborrow requirement separately.
-- C: raw composition, selected indexing captures, char MIN/MAX and genuine
-  source Add/Sub are integrated. Complete contextual shared-reference call
-  reborrowing without Copy (LIB051). Float values and broader raw backing/validity
-  remain required.
-- Integrator: `rustgm-pa25-work`, publication and the observed source offset_of
-  syntax/deferred concrete enum+niche layout. Advance unchanged core and retain
-  PA25 const/generic execution plus PA29 transport and artifact obligations.
+  Authenticate the queued shared-call and constructor packets; no heavy jobs.
+- B: captured/named inputs are integrated. Integrate the qualified remaining
+  constructors, then complete actual Count/helper/Formatter/write and handler
+  closure; source Count encoding alone does not implement its checked body.
+- C: real source Add/Sub is integrated. Shared-call reborrowing and actual source
+  unsize proofs have a qualified handoff. After integration, implement actual
+  source comparisons shared by Count and formatting helpers (LIB056).
+- Integrator: `rustgm-pa25-work`, publication, queued handoff integration, current
+  unchanged-core probes and original builtin offset field/generic/layout work.
+  Retain PA25 const/generic execution and PA29 transport/artifact obligations.
 
 There are three coding lanes: root, B and C. A supplies bounded read-only review;
 do not create another worktree or enable a fourth heavy job. Root's output cap

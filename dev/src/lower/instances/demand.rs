@@ -95,6 +95,9 @@ impl Ordinary {
                         crate::support::bindings::SourceIntrinsic::NeedsDrop => {
                             "source needs_drop intrinsic must be evaluated in a const block"
                         }
+                        crate::support::bindings::SourceIntrinsic::OffsetOf => {
+                            "source offset_of intrinsic must be evaluated in a const block"
+                        }
                         crate::support::bindings::SourceIntrinsic::ConstEvalSelect => {
                             "source callback selection requires its proved reached runtime operation"
                         }

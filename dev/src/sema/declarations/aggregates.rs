@@ -2,6 +2,7 @@
 mod derives;
 mod formation;
 mod headers;
+mod nullable_members;
 mod outlives;
 mod readiness;
 mod sizedness;
@@ -164,6 +165,7 @@ impl Checker<'_> {
             .insert(item, kind, repr, &variants)
             .map_err(|e| self.error(key, e))?;
         self.register_value_rules(item, key, kind)?;
+        self.source_nullable_members(item)?;
         self.nominals.entries[index].state = State::Complete;
         if let Some(pending) = &mut self.facts.generics.size_rules {
             pending.active.remove(&item);

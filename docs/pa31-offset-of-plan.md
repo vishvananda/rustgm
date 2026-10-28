@@ -57,3 +57,8 @@ original macro, explicit sizing hierarchy, source Option and same-instance Field
 queries. Eight commands across both editions all pass with `1 4 8 0 0 8 16`.
 Use this as the first genuine candidate source/instance/CTFE/native target; preserve
 all other57 originals, nine syntax controls and complete DST/runtime requirements.
+
+The [reached intrinsic kernel](pa31-reached-offset-kernel.md) now passes a
+separately frozen direct-call probe with real source Option tagged/niche layouts
+and three same-instance fields, matching both pinned editions. Actual builtin
+field selection remains fenced; the unchanged macro exit is still required.

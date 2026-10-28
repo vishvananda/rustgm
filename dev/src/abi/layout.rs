@@ -589,6 +589,7 @@ impl Layouts {
         types: &Store,
         shape: aggregate::Shape<'_>,
         packing_checked: bool,
+        fallback_tag: Option<Primitive>,
     ) -> Result<Layout, &'static str> {
         let definition = shape.definition;
         let variants = shape.variants();
@@ -630,7 +631,7 @@ impl Layouts {
             && repr.tag.is_none()
             && variants.len() <= 1;
         let tag = (!no_tag).then_some(Tag {
-            ty: enum_tag(repr, shape.variants())?,
+            ty: fallback_tag.map_or_else(|| enum_tag(repr, shape.variants()), Ok)?,
             offset: 0,
         });
         let tag_layout = tag.map_or(Ok(scalar(0, 1)), |tag| primitive(tag.ty))?;
