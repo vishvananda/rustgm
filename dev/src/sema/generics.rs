@@ -262,6 +262,14 @@ impl Generics {
             .get(&owner)
             .or_else(|| self.environments.get(&owner))
     }
+    /// A real body producer completes these scopes before retaining its final Arc.
+    /// This tests direct rows only; it never certifies an unchecked caller.
+    pub(crate) fn caller_scope_pending(&self, owner: DefId) -> bool {
+        !self.environments.contains_key(&owner)
+            && (self.parameters.contains_key(&owner)
+                || self.predicates.contains_key(&owner)
+                || self.parents.contains_key(&owner))
+    }
     /// Only a sealed/completed source caller may use this absence certificate.
     /// Presence of any uncompleted scope row is Required, including empty rows.
     pub(crate) fn sealed_caller_environment(

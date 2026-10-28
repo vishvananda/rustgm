@@ -2,6 +2,7 @@
 mod features;
 mod permissions;
 mod universal;
+mod unretained_scopes;
 use super::{Checker, DefId, Error, NodeId, TypeId};
 use crate::types::{
     Kind,
@@ -92,7 +93,8 @@ impl Checker<'_> {
         signature: Option<TypeId>,
     ) -> Result<(), Error> {
         self.state.environment_owner = Some(owner);
-        let declaration_environment = self.facts.generics.environments.get(&owner).cloned();
+        let retain_scope = self.facts.generics.caller_scope_pending(owner);
+        let declaration_environment = self.caller_declaration_environment(node, owner)?;
         self.state.trait_environment = None;
         self.state.canonical_trait_inference = None;
         self.state.canonical_trait_proofs = None;
@@ -158,13 +160,10 @@ impl Checker<'_> {
             .finish(self.state.body_binders, aliases)
             .map_err(|e| self.error(node, e))?;
         let environment = completed.environment;
-        if completed.changed
+        if (completed.changed || retain_scope)
             && let Some(environment) = &environment
         {
-            self.facts
-                .generics
-                .body_environments
-                .insert(owner, std::sync::Arc::clone(environment));
+            self.retain_body_environment(node, owner, std::sync::Arc::clone(environment))?;
         }
         self.state.method_environment.clone_from(&environment);
         self.state.prepare_parameter_queries();
