@@ -6,16 +6,7 @@ impl Output<'_> {
         fields: &[NodeId],
         variants: &[VariantMembers],
     ) -> Result<(), LexError> {
-        if self.select(3) {
-            if !fields.is_empty() || !matches!(self.site.item.kind, ItemKind::Struct { .. }) {
-                return Err(error(
-                    self.site.original.start,
-                    "this source Default requires a fieldless struct",
-                ));
-            }
-            self.header("crate::default::Default", false)?;
-            self.text("{ #[inline] fn default()->Self{Self{}} }")?;
-        }
+        self.default_members(fields)?;
         if self.select(4) {
             self.header("crate::cmp::Eq", false)?;
             self.text(

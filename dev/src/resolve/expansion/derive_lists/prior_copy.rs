@@ -31,7 +31,7 @@ impl<S: Sources> Engine<'_, S> {
             if prior.owner != current.owner || prior.output.is_none() {
                 continue;
             }
-            receipt::current(&self.loader.package, prior, true)?;
+            receipt::current(&self.loader.package, &self.paths.state.facts, prior, true)?;
             for member in prior.contexts.clone() {
                 source
                     .macros

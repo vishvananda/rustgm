@@ -1,6 +1,8 @@
 //! One cold transaction owns each demanded list until all actual members resolve.
 mod literal_grants;
 mod paired_impls;
+mod placed_owner;
+use placed_owner::Placement;
 mod prior_copy;
 mod receipt;
 #[cfg(test)]
@@ -30,6 +32,7 @@ pub(super) struct Transactions {
 }
 struct Transaction {
     outer: usize,
+    placement: Placement,
     owner: NodeKey,
     effect: usize,
     capture: u32,
@@ -86,7 +89,12 @@ impl<S: Sources> Engine<'_, S> {
             .and_then(|effects| effects.derives.as_deref())
             .ok_or_else(|| Error::unlocated("missing derive owner"))?
             .entries[position];
-        receipt::current(&self.loader.package, entry, entry.output.is_some())?;
+        receipt::current(
+            &self.loader.package,
+            &self.paths.state.facts,
+            entry,
+            entry.output.is_some(),
+        )?;
         Ok(entry.output.is_some())
     }
     pub(super) fn derive_completed(&mut self, outer: usize) -> Result<(), Error> {
@@ -117,11 +125,6 @@ impl<S: Sources> Engine<'_, S> {
             );
         };
         self.checked_derive_definition(definition, role)?;
-        if self.calls[index].visit.in_block {
-            return Err(
-                self.calls[index].diagnostic("block-owned source derives require a wider profile")
-            );
-        }
         let ranges = self.derive_ranges(index)?;
         let mut transaction = self.prepare_derive_transaction(index, ranges.len())?;
         self.calls
@@ -202,6 +205,7 @@ impl<S: Sources> Engine<'_, S> {
             .map_err(|message| call.diagnostic(message))?;
         Ok(Transaction {
             outer: index,
+            placement: Placement::capture(&self.loader.package, &self.paths.state.facts, call)?,
             owner: NodeKey { file, node: owner },
             effect,
             capture: actual.capture,

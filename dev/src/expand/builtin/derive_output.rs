@@ -4,6 +4,7 @@ mod cloned_fields;
 mod comparisons;
 mod debug_format;
 mod derivation_contexts;
+mod initialized_fields;
 mod payload_members;
 use super::{choice::Charge, delegation::Delegated, derive_types};
 use crate::{

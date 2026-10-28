@@ -23,7 +23,7 @@ impl<S: Sources> Engine<'_, S> {
         if entry.pending != 0 {
             return Ok(());
         }
-        receipt::current(&self.loader.package, entry, false)?;
+        receipt::current(&self.loader.package, &self.paths.state.facts, entry, false)?;
         let children = entry.children.clone();
         let parent = self.invocations[entry.invocation].context;
         let (file, effect) = (entry.owner.file, entry.effect);

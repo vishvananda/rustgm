@@ -66,6 +66,11 @@ impl Unit {
             let children = append_list(&mut self.configured.ast.edges, rewrite.children);
             let kind = match previous.kind {
                 Kind::Crate(_) => Kind::Crate(children),
+                Kind::Block { flavor, tail, .. } => Kind::Block {
+                    flavor,
+                    statements: children,
+                    tail,
+                },
                 Kind::Expansion { tail, .. } => Kind::Expansion { children, tail },
                 Kind::Item(index) => {
                     let mut item = self.configured.ast.items[index as usize];
@@ -156,7 +161,11 @@ impl Unit {
                 continue;
             }
             let list = match node.kind {
-                Kind::Crate(list) | Kind::Expansion { children: list, .. } => Some(list),
+                Kind::Crate(list)
+                | Kind::Expansion { children: list, .. }
+                | Kind::Block {
+                    statements: list, ..
+                } => Some(list),
                 Kind::Item(item) => match ast.items[item as usize].kind {
                     ItemKind::Module { items } => items,
                     _ => None,
@@ -207,7 +216,7 @@ impl Unit {
         if found.iter().any(|count| *count != 1) {
             return Err(error(
                 0,
-                "derived owner must occur once in an actual module item list",
+                "derived owner must occur once in an actual item or statement list",
             ));
         }
         Plan::checked(owners, groups, rewrites, ast)
