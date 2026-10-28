@@ -102,7 +102,7 @@ impl super::Index {
         Ok(result)
     }
 
-    fn contextual_local(
+    pub(super) fn contextual_local(
         &mut self,
         report: &Report,
         scope: ScopeId,

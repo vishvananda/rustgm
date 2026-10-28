@@ -32,6 +32,7 @@ pub(crate) enum Consumer {
     NoImplicitAutorefs,
     PointerLintMarker,
     ColdAdvisory,
+    PreludeImport,
 }
 impl Consumer {
     pub(crate) fn tool_member(tool: &str, name: &str) -> Option<Self> {
@@ -80,6 +81,7 @@ impl Consumer {
             "rustc_no_implicit_autorefs" => Self::NoImplicitAutorefs,
             "rustc_as_ptr" => Self::PointerLintMarker,
             "cold" => Self::ColdAdvisory,
+            "prelude_import" => Self::PreludeImport,
             "no_mangle" | "export_name" | "link_name" => Self::Linkage,
             "target_feature" => Self::TargetFeature,
             "allow" | "warn" | "deny" | "forbid" | "expect" | "deprecated" => Self::SafetyLint,

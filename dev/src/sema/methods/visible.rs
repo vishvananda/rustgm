@@ -1,5 +1,6 @@
 //! Trait lookup consumes final lexical bindings and shares inherited candidate lists.
 mod discovery;
+mod prelude;
 #[cfg(test)]
 #[path = "../../../tests/invariants/extern_preludes.rs"]
 mod prelude_tests;
@@ -56,7 +57,12 @@ impl Index {
                 }
             }
         }
-        if !report.package.uses_source_bindings() {
+        if !report.package.uses_source_bindings()
+            && report
+                .resolution
+                .source_prelude_scope(&report.package)?
+                .is_none()
+        {
             for kind in crate::support::comparisons::Comparison::ALL {
                 if let Some(declaration) = report.resolution.builtin_traits.comparison(kind) {
                     index.prelude_members(declaration.definition)?;
@@ -154,6 +160,7 @@ impl Index {
                 lexical.insert(index, method);
             }
         }
+        self.source_prelude_members(report, scope, name, context, &mut lexical)?;
         Ok([bound, lexical])
     }
     fn visible(

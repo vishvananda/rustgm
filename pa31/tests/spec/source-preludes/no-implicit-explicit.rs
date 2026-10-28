@@ -1,0 +1,12 @@
+#![feature(prelude_import)]
+mod provider {
+    pub enum Choice { Chosen(u32) }
+    pub trait Read { fn read(self) -> u32; }
+    impl Read for Choice { fn read(self) -> u32 { match self { Choice::Chosen(value) => value } } }
+}
+mod prelude { pub use crate::provider::{Choice::Chosen, Read}; }
+#[prelude_import]
+use crate::prelude::*;
+#[no_implicit_prelude] mod consumer { pub fn run() -> u32 { crate::provider::Read::read(crate::provider::Choice::Chosen(7)) } }
+#[unsafe(no_mangle)]
+pub extern "C" fn observed() -> u32 { consumer::run() }

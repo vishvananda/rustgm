@@ -146,6 +146,21 @@ impl<S: Sources> Engine<'_, S> {
             let forest = &unit.configured.ast.attributes[effect.capture as usize].forest;
             let name = attribute.name(forest, unit.source.text());
             charge_read(name.map_or(0, str::len))?;
+            if name == Some("prelude_import") {
+                crate::resolve::prelude_scope::claim(
+                    &self.loader.package,
+                    &mut self.paths.state.facts,
+                    key,
+                    index,
+                    crate::resolve::index::Context {
+                        module: visit.module,
+                        file,
+                        scope: visit.path_scope,
+                        foreign: visit.foreign,
+                    },
+                )?;
+                continue;
+            }
             if name == Some("register_tool") {
                 return Err(Error::at(
                     file,

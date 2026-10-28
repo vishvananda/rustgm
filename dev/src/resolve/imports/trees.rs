@@ -22,6 +22,9 @@ enum Step {
 
 impl Resolver<'_> {
     pub fn import(&mut self, c: Context, node: NodeId, access: Access) -> Result<(), Error> {
+        if self.select_source_prelude(c, node)? {
+            return Ok(());
+        }
         let mut path = self.paths.pop().unwrap_or_default();
         path.truncate(0);
         let mut pending = vec![Step::Tree {

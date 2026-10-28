@@ -9,6 +9,7 @@ use crate::{
 /// One cold owner per expanded crate; physical scopes have implicit root ancestry.
 #[derive(Default)]
 pub(crate) struct ItemScopes {
+    pub(super) prelude: Option<Box<super::prelude_scope::Prelude>>,
     introduced: HashMap<ScopeId, ExpansionId>,
     definitions: Vec<DefinitionSite>,
     /// Original item/statement-macro blocks remain lookup boundaries even when

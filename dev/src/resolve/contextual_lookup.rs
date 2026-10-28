@@ -232,16 +232,14 @@ impl Resolver<'_> {
             barriers += u32::from(frame.barrier);
             current = frame.parent;
         }
-        // Primitive and library preludes have no contextual names. Reuse only
-        // the existing terminal fallback, including inside a generated module
-        // whose item context remains opaque at its lexical boundary.
-        Ok(self
-            .lexical_prelude(privacy, name, namespace)
-            .filter(|(_, binding)| filter.is_none_or(|filter| filter.permits(binding.target)))
-            .map(|(scope, binding)| Selected {
-                key: (scope, name, namespace, ItemContext::ROOT),
-                binding,
-                privacy,
-            }))
+        self.terminal_prelude(
+            Context {
+                module: privacy,
+                ..c
+            },
+            (name, namespace, context),
+            observed,
+            filter,
+        )
     }
 }

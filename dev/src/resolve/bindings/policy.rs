@@ -65,6 +65,7 @@ pub(in crate::resolve) enum Feature {
     BuiltinSyntax = 48,
     OffsetOfEnum = 49,
     DeprecatedSuggestion = 50,
+    PreludeImport = 51,
 }
 
 impl Feature {
@@ -97,6 +98,7 @@ enum Request {
 impl Request {
     fn named(name: &str) -> Option<Self> {
         Some(match name {
+            "prelude_import" => Self::Capability(Feature::PreludeImport),
             "no_core" => Self::Capability(Feature::NoCore),
             "lang_items" => Self::Capability(Feature::LangItems),
             "intrinsics" => Self::Capability(Feature::Intrinsics),
@@ -151,7 +153,8 @@ impl Features {
         self.0 & (1_u64 << feature as u8) != 0
     }
     fn needs_local_owner(&self) -> bool {
-        self.has(Feature::InternalMacroAllowance)
+        self.has(Feature::PreludeImport)
+            || self.has(Feature::InternalMacroAllowance)
             || crate::support::cpu_features::Gate::ALL
                 .into_iter()
                 .any(|gate| self.has(Feature::cpu_gate(gate)))

@@ -402,6 +402,9 @@ impl Resolver<'_> {
             }
             return Some((external, *binding));
         }
+        if self.facts.introductions.has_source_prelude() {
+            return None;
+        }
         if let Some(target) = self.facts.library_types.prelude(name, namespace) {
             let scope = self.facts.definitions[target.0 as usize].scope;
             return self
