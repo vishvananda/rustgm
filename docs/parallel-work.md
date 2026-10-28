@@ -2,16 +2,17 @@
 
 The user has reauthorized up to two subagents. Root continues direct compiler
 implementation and integration in `rustgm-pa25-work`. One implementation worker,
-`lint_expectations`, completed LIB-058's actual local/source deprecation and lint
-expectation protocol, now root-qualified, and owns the next actual
-hidden_glob_reexports producer in the existing `rustgm-pa26-work`; the second agent has completed
-read-only const-call review and completed LIB-056's precise symbolic cleanup
-consumer, now merged and qualified through actual comparison native execution.
-That agent now owns LIB-050's bounded typed OffsetOf source consumer in the existing
-`rustgm-pa27-work`. Root owns reached-call accounting
-and integration; coordinate the guarded heavy checks rather than creating more
-worktrees. No new worktree
-is needed. Earlier derive/comparison/panic snapshots remain preserved; their old
+`lint_expectations`, completed LIB-058's source deprecation/expectation protocol
+and actual hidden-glob producer in the existing `rustgm-pa26-work`. It now owns
+the warning-contract and removed-test completion regression repair. The second
+agent, `const_call_review`, completed LIB-056's precise cleanup consumer and
+LIB-050's actual source OffsetOf member producer, both integrated and qualified
+through native execution. It now owns LIB-059's authenticated availability
+metadata/fresh-client consumer in the existing `rustgm-pa27-work`. Root owns
+combined qualification, publication and the next actual core lint consumer.
+Coordinate guarded heavy checks; keep at most two heavy commands active even
+though the shared controller permits three. No new worktree is needed.
+Earlier derive/comparison/panic snapshots remain preserved; their old
 workers are stopped. Do not start additional workers beyond this authorization.
 Stopping a worker or retaining a proposal does not qualify unfinished work.
 
@@ -20,14 +21,15 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The joined deprecation/expectation CLI73f01995 now reaches original
-prelude/v1.rs74 `#[expect(hidden_glob_reexports)]`. All722 source pins/config remain
-unchanged; eager owner validation rejects after3 source opens, without an artifact.
+The later hidden-glob CLIa0474e44 reaches original num/float_parse.rs84
+`#[expect(ineffective_unstable_trait_impl)]`. All722 source pins/config remain
+unchanged; eager owner validation rejects after41 source opens, without an artifact.
 Opened-source counts are not compilation progress. The earlier constructor-family
 checkpoint passes all nine formatting selectors. Source/native
 validation and exact scope are in the [constructor checkpoint](pa31-constructor-family-integration.md).
-The earlier reached offset kernel still matches Rust; its original builtin
-field/generic/DST semantics remain required.
+The [actual source offset macro](pa31-offset-members-checkpoint.md) now reaches
+the kernel and matches Rust's native output. Nested/DST/external source/layout
+and metadata closure remain required.
 
 The actual65-role/two-word completion set, physical source Option profile and
 old-wire denials remain qualified. Complete known-role reservations are still a
@@ -38,15 +40,14 @@ proposal and confer no source body/runtime/metadata authority.
   [qualified by root](pa31-generic-payload-derive-checkpoint.md). Its separate
   unqualified handler snapshot is `d2ad7f8d5c28716cc47f7477ef3c86edb7d04da2`.
 - The stopped comparison lane is saved at
-  `2e095472bebcc392bd03fe1797baa5cfbddebcd0`. The actual full comparison/native
-  candidate is unfinished; variant regular-stability controls are a narrower
-  qualified prerequisite. Its replay notes remain in that worktree.
+  `2e095472bebcc392bd03fe1797baa5cfbddebcd0`. Root subsequently integrated and
+  qualified the actual source comparison, authored override and closed const
+  consumers. That saved snapshot is historical, not the current execution queue.
 - Read-only offset/lint expectation/release proposals remain evidence, with no
   new compiler or publication authority.
-- The integrator is finishing shared-reference/capture flow qualification and
-  the affected independent/native/text checks. It then takes the saved derive,
-  comparison, source panic/weak linkage, actual lint and builtin offset exits.
-  PA25 generic/const, PA29 transport and original crate artifacts remain required.
+- The integrator is qualifying combined offset/lint regression repairs and the
+  next original-core observer. Genuine panic/formatting, PA25 generic/const,
+  PA29 transport and original crate artifacts remain required.
 
 Keep one heavy job in the integrator's active worktree, two Cargo/test/native
 threads, a16GiB absolute output cap and the unchanged150GiB disk reserve.

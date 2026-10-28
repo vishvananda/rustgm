@@ -1,5 +1,10 @@
 # Reached source offset queries
 
+The subsequent [source member checkpoint](pa31-offset-members-checkpoint.md)
+closes the finite original macro consumer left fenced in this kernel record.
+Its original provider now reaches this kernel without rewriting the macro.
+The remaining nested/DST/layout and metadata requirements stay open.
+
 The maintainer pipeline now executes the actual safe, bodyless const
 `offset_of<T: PointeeSized>(variant: u32, field: u32) -> usize`. Its language and
 intrinsic declarations must coincide. The own formal, actual zero-region

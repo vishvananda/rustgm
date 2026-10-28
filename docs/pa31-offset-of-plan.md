@@ -1,5 +1,11 @@
 # Original-core offset_of requirement
 
+The [actual member-selection checkpoint](pa31-offset-members-checkpoint.md)
+now executes the unchanged original macro and generic enum provider, matching
+native `1 4 8 0 0 8 16`. The historical observations below explain its producer
+requirements. Nested paths, DST/static alignment and source transport remain
+open; the finite checkpoint does not complete either owning assignment.
+
 Combined CLI836e21 passes the prior formatting construction guard and exposes
 the next original-core failure: `expected semicolon or end of block` at
 core/mem/mod.rs1619, inside the real offset_of macro. The call at
