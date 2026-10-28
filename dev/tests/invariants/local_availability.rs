@@ -274,7 +274,7 @@ fn const_policy_axes_validate_local_owners_and_keep_execution_distinct() -> Resu
     assert_eq!(size_of::<Library>(), 128);
     assert_eq!(size_of::<Inventory>(), 88);
     assert_eq!(size_of::<super::constness::ConstPolicies>(), 24);
-    assert_eq!(size_of::<Policy>(), 48);
+    assert_eq!(size_of::<Policy>(), 56);
     eprintln!(
         "stability layouts Library={} Inventory={} ConstPolicies={} Policy={} Level={} Package={} Report={}",
         size_of::<Library>(),

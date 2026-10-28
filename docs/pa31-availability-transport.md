@@ -78,3 +78,13 @@ Macro/name provenance, imported deprecation, wider source/body profiles and
 provided/default const execution keep their existing fences. Synthetic protocol
 API consumers and broader policy applicability still require their own exits.
 Whole original library artifacts and release/CI performance gates remain open.
+
+Periodic full CI `40739694219` on the integrated `410ca457b` passed lint,
+architecture, harness and every integration target. Its private run passed
+2,109 controls and failed one stale cold-layout assertion: the new regular/const
+Policy kind makes Policy 56 bytes rather than 48. The existing const-policy
+semantic loops passed before that assertion. The expected width is corrected;
+the exact const-policy control, private Clippy, format and architecture pass in
+121.81 seconds (`obj/qualification/fast/1793214328791058318/receipt.json`).
+Native, debug and independent jobs were skipped after that failed step and
+remain pending the next full run. No compiler behavior was changed by this repair.
