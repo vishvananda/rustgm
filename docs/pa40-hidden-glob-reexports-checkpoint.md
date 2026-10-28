@@ -1,5 +1,23 @@
 # Finite hidden glob reexport checkpoint
 
+Root subsequently joins the actual offset macro and hidden-glob producers.
+Gate `1793200728407559823` passes17 exact private controls, including all eight
+audited layout assertions, in205.24s. Gate `1793201275928932869` passes the two
+exact atomic/whole-arm warning contracts, an ordinary atomics growth control,
+production/CLI strict Clippy and all PA6 text cases in207.86s. Warning codes,
+counts and offsets are explicit; accepted cases do not silently discard stderr.
+
+Joined CLI SHA-256
+`5dfd4d1a201acf37bfca22133882b9f06b1fb5f8d89d28dc9d9ccc66314ddc35`
+reproduces the same unchanged722-pin/core-config first error described below.
+Registration, placement, upstream verification and the original-core observer
+pass their checks in13.41s. The observer's compiler invocation rejects the
+unsupported lint; it produces no crate artifact. Root receipt
+`obj/parallel/combined-library-frontier-v1/observed-v1/receipt.json` has SHA-256
+`3925f5eaf2732d9e50f30aac34da01544f9f5e5881e776cfa0d37937401f0b12`.
+The separate removed-owner and remaining warning regression repair is still
+under integration; these finite checks do not claim a passing full CI run.
+
 This unpublished PA40 slice extends the [expectation protocol](pa40-lint-expectations-checkpoint.md)
 with genuine `hidden_glob_reexports` events. PA40 remains planned. It does not
 complete the lint inventory, cross-crate deprecation transport, or a library release.
