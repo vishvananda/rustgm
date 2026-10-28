@@ -195,7 +195,8 @@ impl Dispatcher {
                     predicate.contains_parameters(&facts.types)?
                         || predicate.has_free_regions(&facts.types)?
                 }
-                crate::types::parameters::clauses::Clause::ForAll(_) => true,
+                crate::types::parameters::clauses::Clause::ForAll(_)
+                | crate::types::parameters::clauses::Clause::UnstableFeature(_) => true,
             };
             if opaque {
                 assumptions

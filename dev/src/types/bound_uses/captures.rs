@@ -90,6 +90,13 @@ impl Captures {
     ) -> Result<bool, &'static str> {
         use crate::types::parameters::clauses::Clause;
         match clause {
+            Clause::UnstableFeature(id) => {
+                charge(1, 0)?;
+                store
+                    .feature_name(id)
+                    .ok_or("invalid feature capture clause")?;
+                Ok(false)
+            }
             Clause::Predicate(predicate) => self.predicate_inside(store, predicate, 0, charge),
             Clause::ForAll(id) => {
                 let value = store.quantified(id).ok_or("invalid capture clause")?;

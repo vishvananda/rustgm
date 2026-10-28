@@ -234,6 +234,7 @@ impl Closure {
         charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<(), String> {
         let (predicate, count) = match clause {
+            Clause::UnstableFeature(_) => return Ok(()),
             Clause::Predicate(value) => (value, None),
             Clause::ForAll(id) => {
                 let value = store.quantified(id).ok_or("invalid result clause")?;
@@ -385,6 +386,7 @@ fn index_clause<const CHARGED: bool>(
 
 fn relevant(template: crate::types::TypeId, clause: Clause) -> bool {
     match clause {
+        Clause::UnstableFeature(_) => false,
         Clause::Predicate(predicate) => {
             (predicate.ty == template
                 && matches!(

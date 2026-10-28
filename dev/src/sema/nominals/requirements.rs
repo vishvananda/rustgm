@@ -53,6 +53,9 @@ impl Requirements {
         }
         .into();
         match self.lift(store, clause, projection.depth)? {
+            Some(Clause::UnstableFeature(_)) => {
+                Err("outlives lifting changed to a non-type clause")
+            }
             Some(Clause::Predicate(predicate)) => Ok(Some(predicate)),
             None => Ok(None),
             Some(Clause::ForAll(_)) => Err("outlives lifting changed the retained clause kind"),

@@ -54,6 +54,9 @@ impl Equalities {
         self.region_mapping |= clause.has_free_regions(types)?;
         let count = self.unique.len() + self.quantified.as_ref().map_or(0, |q| q.unique.len());
         match clause {
+            Clause::UnstableFeature(_) => {
+                return Err("non-type requirement cannot grant a type equality");
+            }
             Clause::Predicate(predicate) => {
                 let item = member(types, predicate)?;
                 if count >= 1_000_000 && !self.unique.contains(&predicate) {

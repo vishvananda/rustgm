@@ -330,6 +330,10 @@ impl Proof {
         requirement: Clause,
     ) -> Result<bool, &'static str> {
         match requirement {
+            Clause::UnstableFeature(_) => {
+                self.trait_state(facts)?
+                    .prove_clause(facts, requirement, false)
+            }
             Clause::Predicate(predicate) => self.prove(facts, predicate),
             Clause::ForAll(_) => self
                 .trait_state(facts)?

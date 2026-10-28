@@ -5,6 +5,7 @@ pub(in crate::sema) mod callables;
 pub(super) mod conformance;
 pub(in crate::sema) mod effects;
 pub(in crate::sema) mod equalities;
+mod feature_bounds;
 pub(super) mod formation;
 pub(super) mod heads;
 pub(super) mod implementations;
@@ -62,6 +63,7 @@ impl Header {
         }
         // Classification of the written Self subject does not open its clause.
         let subject = match predicate.value {
+            Clause::UnstableFeature(_) => return Ok(false),
             Clause::Predicate(value) => value.ty,
             Clause::ForAll(id) => {
                 store
@@ -84,6 +86,7 @@ impl Header {
             return Ok(true);
         }
         let body = match predicate.value {
+            Clause::UnstableFeature(_) => return Ok(false),
             Clause::Predicate(body) => body,
             Clause::ForAll(id) => {
                 store
@@ -111,6 +114,7 @@ pub(super) struct Requirements {
 
 #[derive(Default)]
 pub(super) struct Contracts {
+    feature_policy: Option<Box<feature_bounds::Policy>>,
     headers: HashMap<ItemId, Header>,
     order: Vec<ItemId>,
     applications: HashMap<Predicate, Arc<Requirements>>,
@@ -236,6 +240,7 @@ impl Contracts {
                         .get(index)
                         .ok_or((item, "trait input prefix is incomplete"))?;
                     let value = match predicate.value {
+                        Clause::UnstableFeature(_) => continue,
                         Clause::Predicate(value) => value,
                         Clause::ForAll(id) => {
                             store

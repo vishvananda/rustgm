@@ -40,7 +40,7 @@ fn raw_declared_premise_selection_does_not_assume_its_own_lifetime_debt() -> Res
                 .intern_arguments(&[Argument::Lifetime(b), Argument::Type(reference)])?,
         };
         let mut substitution = instance.substitution(&facts)?;
-        let proof = requirements(&mut facts, owner, &mut substitution, 2, first)?
+        let proof = requirements(&mut facts, owner, &mut substitution, None, 2, first)?
             .ok_or("declared premise did not select an implementation")?;
         assert_eq!(proof.regions.start, first);
         assert!(proof.regions.end >= first + 2);

@@ -158,6 +158,11 @@ impl<'a> Inventory<'a> {
             return Ok(());
         };
         let predicate = match input.value {
+            Clause::UnstableFeature(_) => {
+                return Err(
+                    "non-type feature conditions require explicit trait metadata transport",
+                );
+            }
             Clause::Predicate(value) => value,
             Clause::ForAll(id) => {
                 facts

@@ -499,6 +499,9 @@ impl Scopes {
                 .opening
                 .clause_charged(&mut facts.types, Clause::Predicate(predicate), charge)
                 .and_then(|clause| match clause {
+                    Clause::UnstableFeature(_) => {
+                        Err("opened member predicate changed to a non-type condition")
+                    }
                     Clause::Predicate(predicate) => Ok(predicate),
                     Clause::ForAll(_) => Err("opened member predicate changed clause kind"),
                 })

@@ -41,7 +41,7 @@ impl Proof {
                     continue; // Proved with the completed nominal lifetime contracts.
                 }
                 Clause::Predicate(value) => self.normalize_builtin(facts, value)?.into(),
-                Clause::ForAll(_) => requirement,
+                Clause::ForAll(_) | Clause::UnstableFeature(_) => requirement,
             };
             if !self.prove_clause(facts, requirement)? {
                 return Err("trait argument does not satisfy its declaration requirements");

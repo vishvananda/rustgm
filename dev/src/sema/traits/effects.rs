@@ -16,6 +16,12 @@ pub(in crate::sema) fn in_context(
     context: Constness,
 ) -> Result<Clause, &'static str> {
     let (mut predicate, count) = match clause {
+        Clause::UnstableFeature(id) => {
+            store
+                .feature_name(id)
+                .ok_or("invalid feature effect clause")?;
+            return Ok(clause);
+        }
         Clause::Predicate(predicate) => (predicate, None),
         Clause::ForAll(id) => {
             let value = store

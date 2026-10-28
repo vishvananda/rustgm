@@ -142,6 +142,7 @@ impl Generics {
 
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 enum Identity {
+    Feature(crate::types::parameters::features::FeatureId),
     Ordinary(Input),
     Quantified(Comparison),
 }
@@ -164,6 +165,12 @@ impl Consequences {
     }
     fn insert(&mut self, store: &mut Store, clause: Clause) -> Result<bool, &'static str> {
         let (key, work) = match clause {
+            Clause::UnstableFeature(id) => {
+                store
+                    .feature_name(id)
+                    .ok_or("invalid feature consequence")?;
+                (Identity::Feature(id), 1)
+            }
             Clause::Predicate(value) => (Identity::Ordinary(value), 1),
             Clause::ForAll(id) => {
                 let (key, work) = store.clause_comparison(id)?;
@@ -184,6 +191,7 @@ fn trait_input(
     clause: Clause,
 ) -> Result<Option<(Input, Option<u32>)>, &'static str> {
     let (predicate, count) = match clause {
+        Clause::UnstableFeature(_) => return Ok(None),
         Clause::Predicate(predicate) => (predicate, None),
         Clause::ForAll(id) => {
             let value = store.quantified(id).ok_or("invalid supertrait premise")?;

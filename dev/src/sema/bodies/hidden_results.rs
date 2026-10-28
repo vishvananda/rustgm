@@ -101,6 +101,9 @@ impl Checker<'_> {
                     .clause(&mut self.facts.types, clause)
                     .map_err(|e| self.error(source.node, e))?;
                 match clause {
+                    Clause::UnstableFeature(_) => {
+                        self.defer_canonical_requirement(source.node, clause)?;
+                    }
                     Clause::Predicate(value) => {
                         self.prove_bound(source.node, value.ty, value.bound)?;
                     }

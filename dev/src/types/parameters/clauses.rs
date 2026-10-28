@@ -18,6 +18,7 @@ pub struct QuantifiedId(pub u32);
 pub enum Clause {
     Predicate(Predicate),
     ForAll(QuantifiedId),
+    UnstableFeature(super::features::FeatureId),
 }
 
 impl From<Predicate> for Clause {
@@ -37,6 +38,12 @@ impl Clause {
     pub fn checks_parameter_default(self, store: &Store) -> Result<bool, &'static str> {
         use super::predicates::Bound;
         let predicate = match self {
+            Self::UnstableFeature(id) => {
+                store
+                    .feature_name(id)
+                    .ok_or("invalid non-type feature clause")?;
+                return Ok(false);
+            }
             Self::Predicate(predicate) => predicate,
             Self::ForAll(id) => {
                 store
@@ -72,6 +79,12 @@ impl Clause {
         use super::predicates::Bound;
         use crate::types::{Kind, RegionId};
         let value = match self {
+            Self::UnstableFeature(id) => {
+                store
+                    .feature_name(id)
+                    .ok_or("invalid non-type feature clause")?;
+                return Ok(None);
+            }
             Self::Predicate(predicate) => {
                 return Ok(matches!(predicate.bound, Bound::Outlives(_)).then_some(self));
             }
@@ -104,6 +117,12 @@ impl Clause {
     /// Rejects an unknown quantified identity.
     pub fn is_outlives(self, store: &Store) -> Result<bool, &'static str> {
         let bound = match self {
+            Self::UnstableFeature(id) => {
+                store
+                    .feature_name(id)
+                    .ok_or("invalid non-type feature clause")?;
+                return Ok(false);
+            }
             Self::Predicate(predicate) => predicate.bound,
             Self::ForAll(id) => {
                 store
@@ -122,6 +141,12 @@ impl Clause {
     /// Rejects malformed clauses and invalid predicate inputs.
     pub fn requires_definition_proof(self, store: &Store) -> Result<bool, &'static str> {
         match self {
+            Self::UnstableFeature(id) => {
+                store
+                    .feature_name(id)
+                    .ok_or("invalid non-type feature clause")?;
+                Ok(false)
+            }
             Self::Predicate(predicate) => predicate.requires_definition_proof(store),
             Self::ForAll(id) => {
                 let value = store
@@ -139,6 +164,7 @@ impl Clause {
         match self {
             Self::Predicate(predicate) => Ok(predicate),
             Self::ForAll(_) => Err("quantified clause requires a scoped consumer"),
+            Self::UnstableFeature(_) => Err("non-type clause requires its feature consumer"),
         }
     }
 
@@ -147,6 +173,12 @@ impl Clause {
     /// Rejects malformed clauses, types or trait applications.
     pub fn contains_parameters(self, store: &Store) -> Result<bool, &'static str> {
         match self {
+            Self::UnstableFeature(id) => {
+                store
+                    .feature_name(id)
+                    .ok_or("invalid non-type feature clause")?;
+                Ok(false)
+            }
             Self::Predicate(predicate) => predicate.contains_parameters(store),
             Self::ForAll(id) => store
                 .quantified(id)
@@ -161,6 +193,12 @@ impl Clause {
     /// Rejects unknown clause, type or application identities.
     pub fn has_free_regions(self, store: &Store) -> Result<bool, &'static str> {
         match self {
+            Self::UnstableFeature(id) => {
+                store
+                    .feature_name(id)
+                    .ok_or("invalid non-type feature clause")?;
+                Ok(false)
+            }
             Self::Predicate(predicate) => predicate.has_free_regions(store),
             Self::ForAll(id) => store
                 .quantified(id)
@@ -175,6 +213,12 @@ impl Clause {
     /// Rejects unknown clause, type or application identities.
     pub fn escaping_binders(self, store: &Store) -> Result<u16, &'static str> {
         match self {
+            Self::UnstableFeature(id) => {
+                store
+                    .feature_name(id)
+                    .ok_or("invalid non-type feature clause")?;
+                Ok(0)
+            }
             Self::Predicate(predicate) => predicate.escaping_binders(store),
             Self::ForAll(id) => Ok(store
                 .quantified(id)
@@ -196,6 +240,7 @@ pub struct Quantified {
 
 #[derive(Default)]
 pub(in crate::types) struct Storage {
+    pub(super) features: Option<Box<super::features::Names>>,
     values: Vec<Quantified>,
     index: HashMap<Quantified, QuantifiedId>,
     slots: Slots,

@@ -54,6 +54,9 @@ impl Basis {
     ) -> Result<(), &'static str> {
         while let Some(clause) = self.pending.pop() {
             budget.charge(1, 0)?;
+            if matches!(clause, Clause::UnstableFeature(_)) {
+                continue; // Retained in clauses; it has no supertrait type consequence.
+            }
             let Clause::Predicate(predicate) = clause else {
                 return Err(
                     "higher-ranked specialization predicate elaboration is not implemented",

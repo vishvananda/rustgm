@@ -245,6 +245,7 @@ impl Checker<'_> {
         clause: Clause,
     ) -> Result<bool, Error> {
         let predicate = match clause {
+            Clause::UnstableFeature(_) => return Ok(false),
             Clause::Predicate(predicate) => predicate,
             Clause::ForAll(id) => {
                 self.facts
@@ -297,6 +298,9 @@ impl Checker<'_> {
         context: Option<regions::Context>,
     ) -> Result<Predicate, Error> {
         match clause {
+            Clause::UnstableFeature(_) => {
+                Err(self.error(key, "non-type requirement cannot name a trait projection"))
+            }
             Clause::Predicate(predicate) => Ok(predicate),
             Clause::ForAll(id) => {
                 let value = self

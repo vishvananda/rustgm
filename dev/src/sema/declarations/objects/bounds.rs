@@ -102,6 +102,11 @@ impl Checker<'_> {
 
     fn object_equality(&self, key: NodeKey, clause: Clause) -> Result<Equality, Error> {
         let (value, bound_regions) = match clause {
+            Clause::UnstableFeature(_) => {
+                return Err(
+                    self.error(key, "non-type requirement cannot become an object equality")
+                );
+            }
             Clause::Predicate(_) => {
                 return Err(self.error(key, "object binding requires a complete binder"));
             }

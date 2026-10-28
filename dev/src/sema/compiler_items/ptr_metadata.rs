@@ -178,6 +178,9 @@ fn protocol(
     let mut projection = None;
     for clause in facts.generics.declared_predicates(definition) {
         let predicate = match clause.value {
+            Clause::UnstableFeature(_) => {
+                return Err("source ptr_metadata feature conditions require an explicit contract");
+            }
             Clause::Predicate(p) => p,
             Clause::ForAll(id) => {
                 let clause = facts

@@ -155,6 +155,7 @@ impl Source {
     }
     fn assumed(evidence: &ScopedEvidence) -> Result<Self, infer::Error> {
         Ok(match evidence.clause {
+            Clause::UnstableFeature(_) => return Err(infer::Error::InvalidIdentity),
             Clause::Predicate(predicate) => Self::Assumption(predicate),
             Clause::ForAll(clause) => {
                 let Some((application, _)) = evidence.predicate.bound.trait_parts() else {

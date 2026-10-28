@@ -213,6 +213,9 @@ fn predicate(
     clause: Clause,
 ) -> Result<crate::types::parameters::predicates::Predicate, Error> {
     match clause {
+        Clause::UnstableFeature(_) => Err(Error::Invalid(
+            "non-type feature clause has no dyn type subject",
+        )),
         Clause::Predicate(predicate) => Ok(predicate),
         Clause::ForAll(id) => types
             .quantified(id)

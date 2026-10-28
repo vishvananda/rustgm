@@ -159,6 +159,7 @@ impl Expansion<'_> {
             .predicate(clause.source)
             .unwrap_or(clause.value);
         let predicate = match original {
+            Clause::UnstableFeature(_) => return Ok(false),
             Clause::Predicate(predicate) => predicate,
             Clause::ForAll(id) => {
                 store

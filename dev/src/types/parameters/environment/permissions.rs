@@ -79,6 +79,9 @@ impl Index {
             return Err("builtin assumption storage budget exceeded");
         }
         let (predicate, quantified) = match clause {
+            Clause::UnstableFeature(_) => {
+                return Err("non-type requirement cannot grant a type builtin");
+            }
             Clause::Predicate(predicate) => (predicate, false),
             Clause::ForAll(id) => (
                 types

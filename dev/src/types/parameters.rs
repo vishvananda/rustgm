@@ -2,6 +2,7 @@
 pub mod clauses;
 pub(crate) mod constraints;
 pub mod environment;
+pub mod features;
 pub mod predicates;
 pub(crate) mod premise_index;
 pub mod shape;

@@ -50,12 +50,20 @@ impl Search<'_> {
         facts: &mut Declarations,
         trial: &mut Trial,
         arguments: GenericArgs,
-    ) -> Result<bool, String> {
+    ) -> Result<Option<bool>, String> {
         let Some(conditions) = &mut trial.instance.quantified else {
-            return Ok(true);
+            return Ok(Some(true));
         };
+        while let Some(Clause::UnstableFeature(id)) =
+            conditions.clauses.get(conditions.cursor).copied()
+        {
+            if !self.feature_condition(facts, &mut trial.inputs.context, id)? {
+                return Ok(Some(false));
+            }
+            conditions.cursor += 1;
+        }
         if conditions.cursor == conditions.clauses.len() {
-            return Ok(true);
+            return Ok(Some(true));
         }
         if self.caller.retain_sized {
             return Err("quantified impl conditions require scoped sized requirements".into());
@@ -81,7 +89,7 @@ impl Search<'_> {
             conditions.fold = Some(fold);
         }
         conditions.waiting = true;
-        Ok(false)
+        Ok(None)
     }
 
     pub(super) fn condition_child(

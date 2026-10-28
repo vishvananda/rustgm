@@ -132,6 +132,11 @@ impl Active {
         method: &SelectedMethod,
     ) -> Result<Self, String> {
         let (predicate, bound_regions) = match clause {
+            Clause::UnstableFeature(_) => {
+                return Err(
+                    "specialization feature condition requires its non-type caller proof".into(),
+                );
+            }
             Clause::Predicate(predicate) => (predicate, None),
             Clause::ForAll(id) => {
                 let value = facts

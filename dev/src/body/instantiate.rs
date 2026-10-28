@@ -268,6 +268,7 @@ fn materialize(
             facts,
             definition,
             substitution,
+            None,
             contract.universals,
         )?
     {

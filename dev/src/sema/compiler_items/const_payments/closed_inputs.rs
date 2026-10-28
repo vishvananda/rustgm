@@ -38,6 +38,9 @@ pub(super) fn closed_arguments(
 /// Reading a binder does not remove it; only fresh payment opens its body.
 pub(super) fn closed_clause(store: &Store, clause: Clause) -> Result<Predicate, &'static str> {
     match clause {
+        Clause::UnstableFeature(_) => {
+            Err("non-type feature condition cannot become a const type payment")
+        }
         Clause::Predicate(predicate) => Ok(predicate),
         Clause::ForAll(id) => {
             let quantified = store

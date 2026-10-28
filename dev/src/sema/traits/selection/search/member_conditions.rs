@@ -165,6 +165,7 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Action, String> {
+        self.feature_formation(facts, frame)?;
         if frame
             .formation
             .as_ref()

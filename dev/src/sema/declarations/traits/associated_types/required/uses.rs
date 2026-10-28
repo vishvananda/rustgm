@@ -20,6 +20,7 @@ pub(super) struct Collector {
 impl Collector {
     pub fn clause(&mut self, types: &Store, clause: Clause) -> Result<(), &'static str> {
         let (predicate, depth) = match clause {
+            Clause::UnstableFeature(_) => return Ok(()),
             Clause::Predicate(p) => (p, 0),
             Clause::ForAll(id) => (
                 types

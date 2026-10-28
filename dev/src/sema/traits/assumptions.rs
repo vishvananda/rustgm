@@ -47,6 +47,20 @@ impl Evidence {
 }
 
 impl Assumptions {
+    pub(in crate::sema) fn contains_feature(
+        &self,
+        types: &Store,
+        id: crate::types::parameters::features::FeatureId,
+        pay: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<bool, &'static str> {
+        pay(1, 0)?;
+        types
+            .feature_name(id)
+            .ok_or("foreign caller feature identity")?;
+        self.index
+            .as_ref()
+            .map_or(Ok(false), |index| index.contains_feature(types, id, pay))
+    }
     /// Preserve exact canonical membership for consumers which already have a
     /// fully formed requirement. This does not resolve an inference alternative.
     pub(in crate::sema) fn mapped_exact_member(

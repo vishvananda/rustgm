@@ -134,6 +134,13 @@ impl Uses {
     ) -> Result<(), &'static str> {
         use super::parameters::clauses::Clause;
         match clause {
+            Clause::UnstableFeature(id) => {
+                self.steps = self.steps.saturating_add(1);
+                store
+                    .feature_name(id)
+                    .ok_or("invalid non-type feature use")?;
+                Ok(())
+            }
             Clause::Predicate(predicate) => self.predicate_inside(store, predicate, 0),
             Clause::ForAll(id) => {
                 let value = store.quantified(id).ok_or("invalid bound-use clause")?;

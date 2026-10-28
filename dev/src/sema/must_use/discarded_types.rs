@@ -170,6 +170,7 @@ impl Declarations {
     ) -> Result<Option<Requirement>, Error> {
         for &clause in bounds.iter().rev() {
             let predicate = match clause {
+                Clause::UnstableFeature(_) => continue,
                 Clause::Predicate(predicate) => predicate,
                 Clause::ForAll(id) => {
                     self.types

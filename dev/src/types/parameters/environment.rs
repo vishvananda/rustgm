@@ -2,6 +2,7 @@
 //! that a concrete instantiation lacks it; it only withholds that operation here.
 mod binder_opening;
 mod equalities;
+mod features;
 mod owned_payload;
 pub(crate) use owned_payload::Retained;
 #[cfg(test)]
@@ -335,6 +336,11 @@ impl Environment {
         let mut uses = super::uses::Uses::default();
         for clause in clauses {
             match clause {
+                Clause::UnstableFeature(id) => {
+                    types.feature_name(id).ok_or("foreign feature assumption")?;
+                    Arc::make_mut(self.traits.get_or_insert_with(Default::default))
+                        .insert(types, clause)?;
+                }
                 Clause::Predicate(predicate) => {
                     uses.predicate(types, predicate)?;
                     if !matches!(predicate.bound, Bound::Outlives(_)) {

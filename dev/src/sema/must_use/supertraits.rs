@@ -127,6 +127,7 @@ impl Declarations {
                     continue;
                 }
                 let predicate = match located.value {
+                    Clause::UnstableFeature(_) => continue,
                     Clause::Predicate(predicate) => predicate,
                     Clause::ForAll(id) => {
                         self.types

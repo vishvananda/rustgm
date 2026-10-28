@@ -15,6 +15,7 @@ type ProjectionKey = (ItemId, ItemId);
 
 #[derive(Clone, Default)]
 pub(super) struct TraitAssumptions {
+    pub(super) features: Option<Box<super::features::Premises>>,
     pub region_mapping: bool,
     pub(super) opening: OnceLock<Arc<super::opening_summary::Summary>>,
     pub(super) mapped: Option<Arc<Mapped>>,
@@ -80,6 +81,9 @@ impl TraitAssumptions {
         total.set(&self.unique);
         total.set(&self.constants);
         total.map(&self.projected);
+        if let Some(features) = &self.features {
+            total.include(features.allocation());
+        }
         for values in self.projected.values() {
             total.vector(values);
         }
@@ -195,6 +199,10 @@ impl TraitAssumptions {
         }
         self.predicates.is_empty()
             && self
+                .features
+                .as_ref()
+                .is_none_or(|features| features.entries.is_empty())
+            && self
                 .quantified
                 .as_ref()
                 .is_none_or(|q| q.entries.is_empty())
@@ -207,6 +215,37 @@ impl TraitAssumptions {
         self.region_mapping |= clause.has_free_regions(types)?;
         let count = self.unique.len() + self.quantified.as_ref().map_or(0, |q| q.unique.len());
         match clause {
+            Clause::UnstableFeature(id) => {
+                types.feature_name(id).ok_or("foreign feature assumption")?;
+                let position = self.predicates.len()
+                    + self.quantified.as_ref().map_or(0, |q| q.entries.len())
+                    + self
+                        .features
+                        .as_ref()
+                        .map_or(0, |features| features.entries.len());
+                let features = self.features.get_or_insert_with(Default::default);
+                if features
+                    .arena
+                    .as_ref()
+                    .is_some_and(|arena| !types.has_identity(arena))
+                {
+                    return Err("feature declaration changed its caller type arena");
+                }
+                features.arena = Some(
+                    types
+                        .existing_arena_identity()
+                        .ok_or("feature assumption has no actual arena witness")?
+                        .clone(),
+                );
+                if position >= 1_000_000 && !features.seen.contains(&id) {
+                    return Err("feature assumption storage budget exceeded");
+                }
+                if features.seen.insert(id) {
+                    features.entries.push((position, id));
+                    self.index.take();
+                    self.opening.take();
+                }
+            }
             Clause::Predicate(predicate) => {
                 if count >= 1_000_000 && !self.unique.contains(&predicate) {
                     return Err("trait assumption storage budget exceeded");
@@ -248,12 +287,28 @@ impl TraitAssumptions {
     }
 
     pub fn clauses(&self) -> impl Iterator<Item = Clause> {
-        ordered(
+        let mut original = ordered(
             &self.predicates,
             self.quantified
                 .as_ref()
                 .map_or(&[], |q| q.entries.as_slice()),
         )
+        .peekable();
+        let mut features = self
+            .features
+            .iter()
+            .flat_map(|features| &features.entries)
+            .peekable();
+        let mut position = 0;
+        std::iter::from_fn(move || {
+            let clause = if features.peek().is_some_and(|(at, _)| *at == position) {
+                features.next().map(|(_, id)| Clause::UnstableFeature(*id))
+            } else {
+                original.next()
+            };
+            position += usize::from(clause.is_some());
+            clause
+        })
     }
 
     pub fn projected(&self, key: ProjectionKey) -> impl Iterator<Item = Clause> {
@@ -305,6 +360,10 @@ impl TraitAssumptions {
                 .ok_or("missing composed trait opening")?;
             let mut materialized = Self::default();
             for clause in mapped.source.clauses() {
+                if matches!(clause, Clause::UnstableFeature(_)) {
+                    materialized.insert(types, clause)?;
+                    continue;
+                }
                 let Clause::Predicate(predicate) = clause else {
                     return Err("quantified trait opening requires full preparation");
                 };
@@ -431,6 +490,10 @@ impl TraitAssumptions {
                 .saturating_mul(size_of::<ParameterId>()),
         )?;
         charge(self.projected.len(), retained::map(&self.projected))?;
+        if let Some(features) = &self.features {
+            let allocation = features.allocation();
+            charge(allocation.visits, allocation.bytes)?;
+        }
         for values in self.projected.values() {
             charge(1 + values.len(), retained::vector(values))?;
         }

@@ -367,6 +367,7 @@ impl<'a> Privacy<'a> {
             // This inspects declaration identities, not a proof or instantiated
             // value. Bound lifetime coordinates do not change their visibility.
             let predicate = match clause {
+                Clause::UnstableFeature(_) => continue,
                 Clause::Predicate(predicate) => predicate,
                 Clause::ForAll(id) => {
                     facts

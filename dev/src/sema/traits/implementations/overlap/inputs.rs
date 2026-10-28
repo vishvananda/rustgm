@@ -45,6 +45,15 @@ impl Inputs {
             Instantiation::new(context, &facts.types, &bindings).map_err(|e| e.to_string())?;
         let mut lifetimes = self.lifetimes(facts, owner)?;
         for requirement in facts.generics.predicates_in_scope(owner) {
+            if let Clause::UnstableFeature(id) = requirement.value {
+                context.account_work(1).map_err(|e| e.to_string())?;
+                facts
+                    .types
+                    .feature_name(id)
+                    .ok_or("invalid overlap feature condition")?;
+                // An unavailable feature never proves two implementations disjoint.
+                continue;
+            }
             let Clause::Predicate(predicate) = requirement.value else {
                 continue;
             };

@@ -43,7 +43,11 @@ impl ClauseIndex {
         if self.view.is_some() {
             return Err(infer::Error::InvalidIdentity.into());
         }
+        if let Clause::UnstableFeature(id) = clause {
+            return self.insert_feature::<CHARGED, E>(store, id, charge);
+        }
         let predicate = match clause {
+            Clause::UnstableFeature(_) => return Err(infer::Error::InvalidIdentity.into()),
             Clause::Predicate(predicate) => predicate,
             Clause::ForAll(id) => {
                 store

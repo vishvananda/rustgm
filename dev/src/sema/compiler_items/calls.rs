@@ -110,6 +110,7 @@ fn declared_effect(facts: &mut Declarations, definition: DefId) -> Result<Effect
             .checked_add(1)
             .ok_or("source const-call effect work exhausted")?;
         let predicate = match clause.value {
+            Clause::UnstableFeature(_) => continue,
             Clause::Predicate(value) => value,
             Clause::ForAll(id) => {
                 facts

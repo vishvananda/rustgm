@@ -190,6 +190,9 @@ fn declared_goal(
     clause: crate::types::parameters::clauses::Clause,
 ) -> Result<Predicate, &'static str> {
     let predicate = match clause {
+        crate::types::parameters::clauses::Clause::UnstableFeature(_) => {
+            return Err("non-type feature conditions require explicit imported body transport");
+        }
         crate::types::parameters::clauses::Clause::Predicate(predicate) => predicate,
         crate::types::parameters::clauses::Clause::ForAll(id) => {
             let scoped = facts

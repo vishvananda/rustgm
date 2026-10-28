@@ -27,6 +27,12 @@ impl Checker<'_> {
         {
             let predicate = self.facts.generics.predicates[&owner][index];
             let body = match predicate.value {
+                Clause::UnstableFeature(id) => {
+                    self.facts.types.feature_name(id).ok_or_else(|| {
+                        self.error(predicate.source, "invalid declared feature clause")
+                    })?;
+                    continue;
+                }
                 Clause::Predicate(value) => value,
                 Clause::ForAll(id) => {
                     self.facts
@@ -156,6 +162,9 @@ impl Checker<'_> {
             .predicate(predicate.source)
             .unwrap_or(predicate.value);
         let original_body = match original {
+            Clause::UnstableFeature(_) => {
+                return Err(self.error(predicate.source, "feature clause is not an equality bound"));
+            }
             Clause::Predicate(value) => value,
             Clause::ForAll(id) => {
                 self.facts
@@ -175,6 +184,9 @@ impl Checker<'_> {
             return Ok(());
         }
         let original = match original {
+            Clause::UnstableFeature(_) => {
+                return Err(self.error(predicate.source, "feature clause is not an equality bound"));
+            }
             Clause::Predicate(value) => value,
             Clause::ForAll(id) => {
                 let value = self
@@ -203,6 +215,12 @@ impl Checker<'_> {
         let mut assumptions = crate::sema::traits::assumptions::Assumptions::default();
         for predicate in self.facts.generics.predicates_in_scope(owner) {
             let value = match predicate.value {
+                crate::types::parameters::clauses::Clause::UnstableFeature(_) => {
+                    assumptions
+                        .insert_clause(&self.facts.types, predicate.value)
+                        .map_err(|e| self.error(predicate.source, e.to_string()))?;
+                    continue;
+                }
                 crate::types::parameters::clauses::Clause::Predicate(value) => value,
                 crate::types::parameters::clauses::Clause::ForAll(id) => {
                     self.facts

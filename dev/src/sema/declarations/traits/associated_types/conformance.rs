@@ -243,6 +243,7 @@ impl crate::sema::declarations::comparisons::LibraryContracts<'_> {
     ) -> Result<Clause, Error> {
         let (projection, actual) = result_types;
         let (mut requirement, count) = match clause {
+            Clause::UnstableFeature(_) => return Ok(clause),
             Clause::Predicate(value) => (value, None),
             Clause::ForAll(id) => {
                 let value = self

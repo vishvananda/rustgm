@@ -292,9 +292,13 @@ impl Search<'_> {
             }
             Err(error) => return Err(inference(error)),
         };
-        if !self.conditions(facts, trial, arguments)? {
-            trial.requirements = Some(Box::new(requirements));
-            return Ok(None);
+        match self.conditions(facts, trial, arguments)? {
+            Some(false) => return Ok(Some(Decision::Absent)),
+            None => {
+                trial.requirements = Some(Box::new(requirements));
+                return Ok(None);
+            }
+            Some(true) => {}
         }
         let owned_end = trial.first
             + u32::try_from(trial.instance.regions.len())
