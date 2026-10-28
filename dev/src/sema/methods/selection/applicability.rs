@@ -29,7 +29,7 @@ pub(in crate::sema::methods) fn applicable(
     receiver: Option<Receiver>,
     caller: Caller<'_>,
 ) -> Result<bool, &'static str> {
-    let Some(conditions) = prepare(facts, context, prefix, owner, receiver)? else {
+    let Some(conditions) = prepare(facts, context, prefix, owner, receiver, caller)? else {
         return Ok(false);
     };
     if !trait_requirements(facts, context, &conditions.traits, caller)? {
@@ -44,6 +44,7 @@ pub(super) fn prepare(
     prefix: TermId,
     owner: DefId,
     receiver: Option<Receiver>,
+    caller: Caller<'_>,
 ) -> Result<Option<Conditions>, &'static str> {
     let target = facts
         .associated
@@ -70,7 +71,6 @@ pub(super) fn prepare(
     };
     let mut bindings = Vec::with_capacity(ids.len());
     let mut obligations = Vec::new();
-    let mut traits = Vec::new();
     for id in ids {
         let argument = context
             .parameter_variable(&facts.types, id)
@@ -105,7 +105,42 @@ pub(super) fn prepare(
         Err(infer::Error::Mismatch | infer::Error::Occurs) => return Ok(None),
         Err(e) => return Err(inference(e)),
     }
+    declaration_conditions(
+        facts,
+        context,
+        owner,
+        &mut substitution,
+        caller,
+        Conditions {
+            builtins: obligations,
+            traits: Vec::new(),
+        },
+    )
+}
+
+fn declaration_conditions(
+    facts: &mut Declarations,
+    context: &mut Context,
+    owner: DefId,
+    substitution: &mut Instantiation,
+    caller: Caller<'_>,
+    mut conditions: Conditions,
+) -> Result<Option<Conditions>, &'static str> {
     for predicate in facts.generics.predicates_in_scope(owner) {
+        if let crate::types::parameters::clauses::Clause::UnstableFeature(id) = predicate.value {
+            let work = std::cell::Cell::new(0_usize);
+            let proven =
+                facts.prove_feature(id, caller.environment.map(Arc::as_ref), &|steps, _| {
+                    work.set(work.get().saturating_add(steps));
+                    Ok(())
+                });
+            facts.body_work.canonical_steps =
+                facts.body_work.canonical_steps.saturating_add(work.get());
+            if !proven? {
+                return Ok(None);
+            }
+            continue;
+        }
         let predicate = predicate.value.ordinary()?;
         // Applicability checks the abstract marker and Sized requirements. The
         // chosen callable retains and proves its complete canonical trait goal.
@@ -125,9 +160,9 @@ pub(super) fn prepare(
                 | Bound::ProjectionEqual(_)
                 | Bound::Auto(_)
         ) {
-            traits.push(
+            conditions.traits.push(
                 context
-                    .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
+                    .instantiate_predicate(&mut facts.types, predicate, substitution)
                     .map_err(inference)?,
             );
             continue;
@@ -136,14 +171,11 @@ pub(super) fn prepare(
             continue;
         }
         let term = context
-            .instantiate_with(&mut facts.types, predicate.ty, &mut substitution)
+            .instantiate_with(&mut facts.types, predicate.ty, substitution)
             .map_err(inference)?;
-        obligations.push((term, predicate.bound));
+        conditions.builtins.push((term, predicate.bound));
     }
-    Ok(Some(Conditions {
-        builtins: obligations,
-        traits,
-    }))
+    Ok(Some(conditions))
 }
 
 pub(super) fn builtin_requirements(

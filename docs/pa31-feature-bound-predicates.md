@@ -36,6 +36,11 @@ selection, reification and native instance proof. Old metadata profiles must
 reject unsupported requirements. Keep dense body/node records unchanged and
 avoid copying global feature sets per body or scanning source owners per use.
 
+The semantic text view represents this non-type clause as
+`predicate owner=... source=... feature="feature_bound_probe"`. It has no
+`subject=` field. The quoted spelling is the canonical name in the actual Store;
+an identity from another Store fails instead of exposing a nonce or name slot.
+
 Root owns source production, actual caller/environment parenting, enabling-policy
 publication and transport. The typed-core worker owns clauses, canonical IDs,
 borrowed indexes and proof consumers. Whole assignment and original core/alloc/std

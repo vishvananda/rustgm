@@ -239,7 +239,14 @@ impl Query {
         let prefix = context
             .import(&facts.types, &mut self.prefix, self.term)
             .map_err(applicability::inference)?;
-        let Some(conditions) = applicability::prepare(facts, &mut context, prefix, owner, None)?
+        let Some(conditions) = applicability::prepare(
+            facts,
+            &mut context,
+            prefix,
+            owner,
+            None,
+            self.caller.borrowed(),
+        )?
         else {
             return account_probe(facts, context.steps);
         };

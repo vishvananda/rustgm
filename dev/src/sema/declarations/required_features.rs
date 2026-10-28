@@ -1,5 +1,8 @@
 //! Required features consume the completed source request inventory.
 pub(super) mod annotated;
+#[cfg(test)]
+#[path = "../../../tests/invariants/required_predicates.rs"]
+mod source_tests;
 use super::{Checker, Error};
 use crate::{
     resolve::{

@@ -254,7 +254,13 @@ fn clause(
     out: &mut impl Write,
     advanced: bool,
 ) -> io::Result<()> {
-    if advanced && let crate::types::parameters::clauses::Clause::ForAll(id) = value {
+    if let crate::types::parameters::clauses::Clause::UnstableFeature(id) = value {
+        write!(out, "feature=")?;
+        let name = store
+            .feature_name(id)
+            .ok_or_else(|| io::Error::other("feature view changed its actual Store"))?;
+        quoted::bytes(out, name.as_bytes(), false)
+    } else if advanced && let crate::types::parameters::clauses::Clause::ForAll(id) = value {
         write!(out, "forall={}", id.0)
     } else {
         requirement(store, value.ordinary().map_err(io::Error::other)?, out)
