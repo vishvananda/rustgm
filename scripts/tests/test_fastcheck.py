@@ -10,6 +10,7 @@ from unittest import mock
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from fastcheck_run import Steps
 import fastcheck_run
+import fastcheck
 
 
 class FastcheckBudget(unittest.TestCase):
@@ -43,3 +44,17 @@ class FastcheckBudget(unittest.TestCase):
             args = Namespace(evidence_root=root / "obj/check", prune_under=["dev"])
             with self.assertRaises(ValueError):
                 Steps(root, args)
+
+    def test_cache_retirement_precedes_resource_admission(self):
+        with tempfile.TemporaryDirectory() as directory:
+            events = []
+            root = Path(directory)
+            args = fastcheck.parser().parse_args(["lexer"])
+            process = mock.Mock()
+            process.wait.return_value = 0
+            with mock.patch.object(fastcheck, "ROOT", root), \
+                    mock.patch.object(fastcheck, "retire", side_effect=lambda _: events.append("retire")), \
+                    mock.patch.object(fastcheck, "discover", return_value=None), \
+                    mock.patch.object(fastcheck.subprocess, "Popen", side_effect=lambda *a, **k: (events.append("admit"), process)[1]):
+                self.assertEqual(fastcheck.launch(args, time.monotonic()), 0)
+            self.assertEqual(events, ["retire", "admit"])
