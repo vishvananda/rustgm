@@ -191,6 +191,51 @@ fn checked_template_environments_keep_owner_and_source_authority() -> TestResult
     wrong.source = first.body.source;
     wrong.owner = other.body.owner;
     assert!(checked.environment_for_body(&wrong).is_err());
+    completed_method_scope()?;
+    Ok(())
+}
+fn completed_method_scope() -> TestResult {
+    let (report, fixture) = fixture_with_report(
+        "struct Holder<'a>{value:&'a u8}impl<'a> Holder<'a>{fn get<'b>(&'b self)->&'b u8{self.value}}fn free()->u8{1}",
+    )?;
+    let owner = |name: &str| {
+        report
+            .resolution
+            .definitions
+            .iter()
+            .enumerate()
+            .find_map(|(index, definition)| {
+                (definition.kind == resolve::model::DefKind::Function
+                    && report.package.names.get(definition.name) == name)
+                    .then_some(index)
+            })
+            .and_then(|index| u32::try_from(index).ok())
+            .map(resolve::model::DefId)
+            .ok_or("actual function owner")
+    };
+    let method = owner("get")?;
+    assert!(fixture.facts.typed_function_bodies.contains(&method));
+    assert!(fixture.facts.generics.caller_scope_pending(method));
+    let environment = fixture
+        .facts
+        .generics
+        .sealed_caller_environment(method)?
+        .ok_or("completed ordinary method scope")?;
+    assert!(Arc::ptr_eq(
+        environment,
+        fixture
+            .facts
+            .generics
+            .body_environment(method)
+            .ok_or("retained final body environment")?
+    ));
+    assert!(
+        fixture
+            .facts
+            .generics
+            .sealed_caller_environment(owner("free")?)?
+            .is_none()
+    );
     Ok(())
 }
 #[test]
