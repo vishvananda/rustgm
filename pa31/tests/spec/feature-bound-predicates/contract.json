@@ -1,0 +1,528 @@
+{
+  "state": "Unpublished source contract; all metadata outcomes independently joined; candidate implementation and native predictions pending",
+  "owner": 31,
+  "scope": "Real non-type feature requirements on traits, impls and functions; scope, staged/global, closure and nested function, call and reification; all hypotheses preserved if contradicted",
+  "profile": {
+    "rustc": "1.98.0",
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "bootstrap": true,
+    "target": "x86_64-unknown-linux-gnu",
+    "emit": "metadata",
+    "lint_cap": "uncapped"
+  },
+  "cases": [
+    {
+      "name": "trait-declaration",
+      "path": "pa31/tests/spec/feature-bound-predicates/trait-declaration.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/trait-declaration.rs",
+      "sha256": "d865c98174461662b24dc10878c4945770708fbb895085f2a65df6a275ad4b5c",
+      "expected_status": 0,
+      "expected_feature_error_contains": null,
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/trait-declaration.rs"
+    },
+    {
+      "name": "impl-declaration",
+      "path": "pa31/tests/spec/feature-bound-predicates/impl-declaration.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/impl-declaration.rs",
+      "sha256": "904132f06952aec445bce0a82800e36cb9c58ce1076a2ea9614a95b1d55217a3",
+      "expected_status": 0,
+      "expected_feature_error_contains": null,
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/impl-declaration.rs"
+    },
+    {
+      "name": "matching-caller",
+      "path": "pa31/tests/spec/feature-bound-predicates/matching-caller.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/matching-caller.rs",
+      "sha256": "ca17006abd7d9d9b15f40b00cf360f8fcf704afcb2438ceb543a69dd9c3fef81",
+      "expected_status": 0,
+      "expected_feature_error_contains": null,
+      "expected_native_stdout": "7\n",
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/matching-caller.rs"
+    },
+    {
+      "name": "missing-caller",
+      "path": "pa31/tests/spec/feature-bound-predicates/missing-caller.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/missing-caller.rs",
+      "sha256": "b30c228b0dd318c68cf4123d81e2c36f3137ec0a5f4949aca1ff4178a9e97967",
+      "expected_status": 1,
+      "expected_feature_error_contains": "unstable feature `feature_bound_probe`",
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/missing-caller.rs"
+    },
+    {
+      "name": "unrelated-caller",
+      "path": "pa31/tests/spec/feature-bound-predicates/unrelated-caller.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/unrelated-caller.rs",
+      "sha256": "4dc6fd60c0da9d7652dbfb962946b0cdd3446223e9e4da94c10e569860815923",
+      "expected_status": 1,
+      "expected_feature_error_contains": "unstable feature `feature_bound_probe`",
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/unrelated-caller.rs"
+    },
+    {
+      "name": "global-only-staged",
+      "path": "pa31/tests/spec/feature-bound-predicates/global-only-staged.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/global-only-staged.rs",
+      "sha256": "e2f660b9f191245e4ed2254f2a1f59d4ae7f606fa187b90fefbb4f178f75d1b4",
+      "expected_status": 1,
+      "expected_feature_error_contains": "unstable feature `feature_bound_probe`",
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/global-only-staged.rs"
+    },
+    {
+      "name": "stable-pair",
+      "path": "pa31/tests/spec/feature-bound-predicates/stable-pair.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/stable-pair.rs",
+      "sha256": "381e0064f90f8f6528231cde01fc6f6a70ac36be2a7a50e7e507ddb9e904ea36",
+      "expected_status": 1,
+      "expected_feature_error_contains": null,
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/stable-pair.rs"
+    },
+    {
+      "name": "nested-function",
+      "path": "pa31/tests/spec/feature-bound-predicates/nested-function.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/nested-function.rs",
+      "sha256": "8704c13be57f51fd074e4122d5359cac71d1a7c2d07a977582df81e516136c96",
+      "expected_status": 1,
+      "expected_feature_error_contains": "unstable feature `feature_bound_probe`",
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/nested-function.rs"
+    },
+    {
+      "name": "closure-inheritance",
+      "path": "pa31/tests/spec/feature-bound-predicates/closure-inheritance.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/closure-inheritance.rs",
+      "sha256": "ed15780b870cf4db5e12e8b256c20e16eff37bd3a5e45b0ee6aa876a0a2fd8b4",
+      "expected_status": 0,
+      "expected_feature_error_contains": null,
+      "expected_native_stdout": "7\n",
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/closure-inheritance.rs"
+    },
+    {
+      "name": "function-chain",
+      "path": "pa31/tests/spec/feature-bound-predicates/function-chain.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/function-chain.rs",
+      "sha256": "cfc7173e42a62714a1d633eb836eb6c9a12257735c3107d0ab31c5f455e06404",
+      "expected_status": 0,
+      "expected_feature_error_contains": null,
+      "expected_native_stdout": "7\n",
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/function-chain.rs"
+    },
+    {
+      "name": "function-chain-missing",
+      "path": "pa31/tests/spec/feature-bound-predicates/function-chain-missing.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/function-chain-missing.rs",
+      "sha256": "347fabd4f64c8e6c097ad8c3318565905983dd770082e7c847f635fc52c0daa6",
+      "expected_status": 1,
+      "expected_feature_error_contains": "unstable feature `feature_bound_probe`",
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/function-chain-missing.rs"
+    },
+    {
+      "name": "impl-missing",
+      "path": "pa31/tests/spec/feature-bound-predicates/impl-missing.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/impl-missing.rs",
+      "sha256": "ba9e3f8c7f32e5e819e1aa806fb197aee03c00e4b0ec6830fd2e2a95f12ab664",
+      "expected_status": 1,
+      "expected_feature_error_contains": "unstable feature `feature_bound_probe`",
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/impl-missing.rs"
+    },
+    {
+      "name": "word-form",
+      "path": "pa31/tests/spec/feature-bound-predicates/word-form.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/word-form.rs",
+      "sha256": "9552fd28f4659a3e1b2c65f9e1078b49006c1706818e6420bf3a980694123a0d",
+      "expected_status": 1,
+      "expected_feature_error_contains": "expects a list of feature names",
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/word-form.rs"
+    },
+    {
+      "name": "empty-list",
+      "path": "pa31/tests/spec/feature-bound-predicates/empty-list.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/empty-list.rs",
+      "sha256": "23812afddb498ab456608a01ddf02713731d6c37a312cc19c8bf19f4307779e9",
+      "expected_status": 0,
+      "expected_feature_error_contains": null,
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/empty-list.rs"
+    },
+    {
+      "name": "wrong-owner",
+      "path": "pa31/tests/spec/feature-bound-predicates/wrong-owner.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/wrong-owner.rs",
+      "sha256": "7d4ebbf6e20f950a107ad616a10123ee127440e11474e8717fe28c9eb30e40b3",
+      "expected_status": 1,
+      "expected_feature_error_contains": null,
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/wrong-owner.rs"
+    },
+    {
+      "name": "missing-request",
+      "path": "pa31/tests/spec/feature-bound-predicates/missing-request.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/missing-request.rs",
+      "sha256": "28d9cf19b159a601265bdf28e4e6ca88818c01b98d5d4b44388046287e3fb724",
+      "expected_status": 1,
+      "expected_feature_error_contains": null,
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/missing-request.rs"
+    },
+    {
+      "name": "malformed-name",
+      "path": "pa31/tests/spec/feature-bound-predicates/malformed-name.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/malformed-name.rs",
+      "sha256": "9dc1bcdf33df4e63f013cf7a4762b19ba16cc1a28e35818d8e1002d902742ebb",
+      "expected_status": 1,
+      "expected_feature_error_contains": null,
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/malformed-name.rs"
+    },
+    {
+      "name": "unsafe-wrapper",
+      "path": "pa31/tests/spec/feature-bound-predicates/unsafe-wrapper.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/unsafe-wrapper.rs",
+      "sha256": "af6159bde4dc3f18fe8978c51e3f3ef2c236affcbb3ae8e7d268159ae36217ed",
+      "expected_status": 1,
+      "expected_feature_error_contains": null,
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/unsafe-wrapper.rs"
+    },
+    {
+      "name": "reified-matching",
+      "path": "pa31/tests/spec/feature-bound-predicates/reified-matching.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/reified-matching.rs",
+      "sha256": "770506fc3a61c0877107eee95d138f03bc332e62221778880bbb215068d82895",
+      "expected_status": 0,
+      "expected_feature_error_contains": null,
+      "expected_native_stdout": "7\n",
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/reified-matching.rs"
+    },
+    {
+      "name": "reified-missing",
+      "path": "pa31/tests/spec/feature-bound-predicates/reified-missing.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/reified-missing.rs",
+      "sha256": "6f526b40b1b562b65b4dd271a4bcf8656cbc02f63050894f9e753694b448cdb1",
+      "expected_status": 1,
+      "expected_feature_error_contains": "unstable feature `feature_bound_probe`",
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/reified-missing.rs"
+    },
+    {
+      "name": "generic-forward",
+      "path": "pa31/tests/spec/feature-bound-predicates/generic-forward.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/generic-forward.rs",
+      "sha256": "5eb85bf70d75c7657207454296dd75006773abd9cdd78452d15d3a95c928f47d",
+      "expected_status": 1,
+      "expected_feature_error_contains": "unstable feature `feature_bound_probe`",
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/generic-forward.rs"
+    },
+    {
+      "name": "generic-forward-missing",
+      "path": "pa31/tests/spec/feature-bound-predicates/generic-forward-missing.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/generic-forward-missing.rs",
+      "sha256": "8dcf3f605fe34366f78e0eb3b8b200b240565b169a081965d4319de8dc1152ce",
+      "expected_status": 1,
+      "expected_feature_error_contains": "unstable feature `feature_bound_probe`",
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v1/generic-forward-missing.rs"
+    },
+    {
+      "name": "generic-forward-guarded",
+      "path": "pa31/tests/spec/feature-bound-predicates/generic-forward-guarded.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/generic-forward-guarded.rs",
+      "sha256": "556b5000a552f07de076027ce2871547f6cb1097f5b89d05455c342d806ea907",
+      "expected_status": 0,
+      "expected_feature_error_contains": null,
+      "expected_native_stdout": "7\n",
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v2/generic-forward-guarded.rs"
+    },
+    {
+      "name": "generic-call-missing",
+      "path": "pa31/tests/spec/feature-bound-predicates/generic-call-missing.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/generic-call-missing.rs",
+      "sha256": "61944aefab424868be9b99d994aa44e1d7e7df725de821bb673b202f2e738bcb",
+      "expected_status": 1,
+      "expected_feature_error_contains": "unstable feature `feature_bound_probe`",
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v2/generic-call-missing.rs"
+    },
+    {
+      "name": "generic-bound-unused",
+      "path": "pa31/tests/spec/feature-bound-predicates/generic-bound-unused.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/generic-bound-unused.rs",
+      "sha256": "c15028f67a329dfb491c24f41cda9bc808939b83e3e0bcf3f92947d0b449daca",
+      "expected_status": 1,
+      "expected_feature_error_contains": "unstable feature `feature_bound_probe`",
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v2/generic-bound-unused.rs"
+    },
+    {
+      "name": "generic-bound-in-scope",
+      "path": "pa31/tests/spec/feature-bound-predicates/generic-bound-in-scope.rs",
+      "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/generic-bound-in-scope.rs",
+      "sha256": "9b25c601c82963bd894290607331b04594c8c82e7607c9a9b13c07e5d27aa704",
+      "expected_status": 0,
+      "expected_feature_error_contains": null,
+      "expected_native_stdout": null,
+      "editions": [
+        2021,
+        2024
+      ],
+      "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v2/generic-bound-in-scope.rs"
+    }
+  ],
+  "capped_hard_opponents": [
+    "missing-caller",
+    "unrelated-caller",
+    "nested-function",
+    "reified-missing"
+  ],
+  "original_core": {
+    "path": "library/core/src/mem/transmutability.rs",
+    "line": 86,
+    "attribute": "#[unstable_feature_bound(transmutability)]"
+  },
+  "no_candidate_observations": true,
+  "prior_contract_sha256": "40a2ea2bfd5cef5b4c02fd54bdf55513002392d05c9ed0c67e9f1f9f7b3efae6",
+  "retained_failed_oracle_sha256": "33075889e2ab8e59d77df5c577f5c2cf1cfc70144b53a715569651669251752d",
+  "corrections": {
+    "word-form": "Template word form reaches parser but actual parser requires a list; expect hard rejection.",
+    "generic-forward": "T:Trait does not grant its prior feature formation debt; forwarder must have its own explicit bound."
+  },
+  "external_clients": {
+    "provider_case": "matching-caller",
+    "provider_crate": "feature_bound_provider",
+    "emit": "rlib",
+    "cases": [
+      {
+        "name": "ordinary-both",
+        "path": "pa31/tests/spec/feature-bound-predicates/ordinary-both.rs",
+        "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/ordinary-both.rs",
+        "sha256": "1e8c7e965bc878a087620a9b80aee05b52e151a49750ccebd396bf10b8a43ba7",
+        "expected_status": 0,
+        "expected_feature_error_contains": null,
+        "editions": [
+          2021,
+          2024
+        ],
+        "lint_caps": [
+          "uncapped"
+        ],
+        "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v2/ordinary-both.rs"
+      },
+      {
+        "name": "ordinary-caller-only",
+        "path": "pa31/tests/spec/feature-bound-predicates/ordinary-caller-only.rs",
+        "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/ordinary-caller-only.rs",
+        "sha256": "0d601776c0b172550719693d14aeddc246e7f3fbcb285f1eb40599cb34b383ad",
+        "expected_status": 1,
+        "expected_feature_error_contains": "use of unstable library feature `feature_bound_probe`",
+        "editions": [
+          2021,
+          2024
+        ],
+        "lint_caps": [
+          "uncapped",
+          "allow"
+        ],
+        "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v2/ordinary-caller-only.rs"
+      },
+      {
+        "name": "ordinary-probe-only",
+        "path": "pa31/tests/spec/feature-bound-predicates/ordinary-probe-only.rs",
+        "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/ordinary-probe-only.rs",
+        "sha256": "88e42283081205141de5d97c746be858efb6689405c09213591c4ace0ee153f5",
+        "expected_status": 1,
+        "expected_feature_error_contains": "feature_bound_caller",
+        "editions": [
+          2021,
+          2024
+        ],
+        "lint_caps": [
+          "uncapped"
+        ],
+        "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v2/ordinary-probe-only.rs"
+      },
+      {
+        "name": "ordinary-neither",
+        "path": "pa31/tests/spec/feature-bound-predicates/ordinary-neither.rs",
+        "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/ordinary-neither.rs",
+        "sha256": "86f5c1488974af872e1fc106d4ebc5d1a98cb4063945d7583599c6e03d7f81f4",
+        "expected_status": 1,
+        "expected_feature_error_contains": null,
+        "editions": [
+          2021,
+          2024
+        ],
+        "lint_caps": [
+          "uncapped",
+          "allow"
+        ],
+        "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v2/ordinary-neither.rs"
+      },
+      {
+        "name": "staged-globals",
+        "path": "pa31/tests/spec/feature-bound-predicates/staged-globals.rs",
+        "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/staged-globals.rs",
+        "sha256": "cd60c97bdca903fc7d54e1470ec000806086284124a554bfd4fc691384033a40",
+        "expected_status": 1,
+        "expected_feature_error_contains": "unstable feature `feature_bound_probe`",
+        "editions": [
+          2021,
+          2024
+        ],
+        "lint_caps": [
+          "uncapped"
+        ],
+        "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v2/staged-globals.rs"
+      },
+      {
+        "name": "staged-scope",
+        "path": "pa31/tests/spec/feature-bound-predicates/staged-scope.rs",
+        "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/staged-scope.rs",
+        "sha256": "60e853af236c82be626625f8ae240047e0b2e5f00a59f41419d68814e8388fc4",
+        "expected_status": 0,
+        "expected_feature_error_contains": null,
+        "editions": [
+          2021,
+          2024
+        ],
+        "lint_caps": [
+          "uncapped"
+        ],
+        "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v2/staged-scope.rs"
+      },
+      {
+        "name": "staged-scope-no-api",
+        "path": "pa31/tests/spec/feature-bound-predicates/staged-scope-no-api.rs",
+        "planned_assignment_path": "pa31/tests/spec/feature-bound-predicates/staged-scope-no-api.rs",
+        "sha256": "5c4809d702ca0a021f774d1823ae5112a4ba3859843ec1220284b6e088556bce",
+        "expected_status": 1,
+        "expected_feature_error_contains": "feature_bound_caller",
+        "editions": [
+          2021,
+          2024
+        ],
+        "lint_caps": [
+          "uncapped"
+        ],
+        "observed_input_path": "obj/parallel/trait-feature-bound-v1/frozen-v2/staged-scope-no-api.rs"
+      }
+    ]
+  },
+  "v2_selected_cases": [
+    "word-form",
+    "generic-forward",
+    "generic-forward-guarded",
+    "generic-call-missing",
+    "generic-bound-unused",
+    "generic-bound-in-scope"
+  ],
+  "reuse_note": "All other matching v1 metadata observations retain exact frozen source/tool/profile; v2 observes corrected hypotheses, new formation cases and new ordinary/staged external clients only.",
+  "native_scope": "expected_native_stdout is a frozen prediction only; no native observation in this metadata join"
+}

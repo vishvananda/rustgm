@@ -186,3 +186,8 @@ provides genuine deprecated macro reexport controls for the source prelude.
 The original prelude's later `hidden_glob_reexports` expectation and the other
 original source lint producers remain explicit requirements. The authored
 reducers do not establish a whole original crate build.
+
+The unpublished [feature-predicate investigation](../docs/pa31-feature-bound-predicates.md)
+records genuine trait/function/impl requirements and 78 independently joined
+source/profile metadata outcomes. Typed proof, source production, transport and
+native implementation remain required; diagnostic caps grant no feature permission.

@@ -1,0 +1,650 @@
+{
+  "state": "metadata-qualified; implementation and native execution pending",
+  "contract_sha256": "df799c60d83879d1bf6e59759f5ef60fb8ecc994f066720df68a84c971732bc0",
+  "observations": [
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/trait-declaration.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v1",
+      "observation": "trait-declaration-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/trait-declaration.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v1",
+      "observation": "trait-declaration-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/impl-declaration.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v1",
+      "observation": "impl-declaration-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/impl-declaration.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v1",
+      "observation": "impl-declaration-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/matching-caller.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v1",
+      "observation": "matching-caller-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/matching-caller.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v1",
+      "observation": "matching-caller-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/missing-caller.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "missing-caller-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/missing-caller.rs",
+      "edition": 2021,
+      "lint_cap": "allow",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "missing-caller-2021-capped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/missing-caller.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "missing-caller-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/missing-caller.rs",
+      "edition": 2024,
+      "lint_cap": "allow",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "missing-caller-2024-capped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/unrelated-caller.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "unrelated-caller-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/unrelated-caller.rs",
+      "edition": 2021,
+      "lint_cap": "allow",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "unrelated-caller-2021-capped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/unrelated-caller.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "unrelated-caller-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/unrelated-caller.rs",
+      "edition": 2024,
+      "lint_cap": "allow",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "unrelated-caller-2024-capped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/global-only-staged.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "global-only-staged-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/global-only-staged.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "global-only-staged-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/stable-pair.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "stable-pair-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/stable-pair.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "stable-pair-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/nested-function.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "nested-function-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/nested-function.rs",
+      "edition": 2021,
+      "lint_cap": "allow",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "nested-function-2021-capped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/nested-function.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "nested-function-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/nested-function.rs",
+      "edition": 2024,
+      "lint_cap": "allow",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "nested-function-2024-capped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/closure-inheritance.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v1",
+      "observation": "closure-inheritance-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/closure-inheritance.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v1",
+      "observation": "closure-inheritance-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/function-chain.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v1",
+      "observation": "function-chain-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/function-chain.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v1",
+      "observation": "function-chain-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/function-chain-missing.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "function-chain-missing-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/function-chain-missing.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "function-chain-missing-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/impl-missing.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "impl-missing-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/impl-missing.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "impl-missing-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/word-form.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v2",
+      "observation": "word-form-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/word-form.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v2",
+      "observation": "word-form-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/empty-list.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v1",
+      "observation": "empty-list-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/empty-list.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v1",
+      "observation": "empty-list-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/wrong-owner.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "wrong-owner-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/wrong-owner.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "wrong-owner-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/missing-request.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "missing-request-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/missing-request.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "missing-request-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/malformed-name.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "malformed-name-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/malformed-name.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "malformed-name-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/unsafe-wrapper.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "unsafe-wrapper-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/unsafe-wrapper.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "unsafe-wrapper-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/reified-matching.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v1",
+      "observation": "reified-matching-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/reified-matching.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v1",
+      "observation": "reified-matching-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/reified-missing.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "reified-missing-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/reified-missing.rs",
+      "edition": 2021,
+      "lint_cap": "allow",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "reified-missing-2021-capped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/reified-missing.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "reified-missing-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/reified-missing.rs",
+      "edition": 2024,
+      "lint_cap": "allow",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "reified-missing-2024-capped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/generic-forward.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v2",
+      "observation": "generic-forward-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/generic-forward.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v2",
+      "observation": "generic-forward-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/generic-forward-missing.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "generic-forward-missing-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/generic-forward-missing.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v1",
+      "observation": "generic-forward-missing-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/generic-forward-guarded.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v2",
+      "observation": "generic-forward-guarded-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/generic-forward-guarded.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v2",
+      "observation": "generic-forward-guarded-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/generic-call-missing.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v2",
+      "observation": "generic-call-missing-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/generic-call-missing.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v2",
+      "observation": "generic-call-missing-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/generic-bound-unused.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v2",
+      "observation": "generic-bound-unused-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/generic-bound-unused.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v2",
+      "observation": "generic-bound-unused-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/generic-bound-in-scope.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v2",
+      "observation": "generic-bound-in-scope-2021"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/generic-bound-in-scope.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v2",
+      "observation": "generic-bound-in-scope-2024"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/ordinary-both.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v3",
+      "observation": "ordinary-both-2021-uncapped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/ordinary-both.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v3",
+      "observation": "ordinary-both-2024-uncapped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/ordinary-caller-only.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v3",
+      "observation": "ordinary-caller-only-2021-uncapped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/ordinary-caller-only.rs",
+      "edition": 2021,
+      "lint_cap": "allow",
+      "status": 1,
+      "oracle": "v3",
+      "observation": "ordinary-caller-only-2021-allow"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/ordinary-caller-only.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v3",
+      "observation": "ordinary-caller-only-2024-uncapped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/ordinary-caller-only.rs",
+      "edition": 2024,
+      "lint_cap": "allow",
+      "status": 1,
+      "oracle": "v3",
+      "observation": "ordinary-caller-only-2024-allow"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/ordinary-probe-only.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v3",
+      "observation": "ordinary-probe-only-2021-uncapped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/ordinary-probe-only.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v3",
+      "observation": "ordinary-probe-only-2024-uncapped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/ordinary-neither.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v3",
+      "observation": "ordinary-neither-2021-uncapped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/ordinary-neither.rs",
+      "edition": 2021,
+      "lint_cap": "allow",
+      "status": 1,
+      "oracle": "v3",
+      "observation": "ordinary-neither-2021-allow"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/ordinary-neither.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v3",
+      "observation": "ordinary-neither-2024-uncapped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/ordinary-neither.rs",
+      "edition": 2024,
+      "lint_cap": "allow",
+      "status": 1,
+      "oracle": "v3",
+      "observation": "ordinary-neither-2024-allow"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/staged-globals.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v3",
+      "observation": "staged-globals-2021-uncapped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/staged-globals.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v3",
+      "observation": "staged-globals-2024-uncapped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/staged-scope.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v3",
+      "observation": "staged-scope-2021-uncapped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/staged-scope.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 0,
+      "oracle": "v3",
+      "observation": "staged-scope-2024-uncapped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/staged-scope-no-api.rs",
+      "edition": 2021,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v3",
+      "observation": "staged-scope-no-api-2021-uncapped"
+    },
+    {
+      "input": "pa31/tests/spec/feature-bound-predicates/staged-scope-no-api.rs",
+      "edition": 2024,
+      "lint_cap": "uncapped",
+      "status": 1,
+      "oracle": "v3",
+      "observation": "staged-scope-no-api-2024-uncapped"
+    }
+  ],
+  "oracle_receipts": {
+    "v1": {
+      "path": "obj/parallel/trait-feature-bound-v1/oracle-v1/receipt.json",
+      "sha256": "33075889e2ab8e59d77df5c577f5c2cf1cfc70144b53a715569651669251752d"
+    },
+    "v2": {
+      "path": "obj/parallel/trait-feature-bound-v1/oracle-v2/receipt.json",
+      "sha256": "26d2d3b9b0c42f5453060adca1eb2ad48a9baf3fe9c56770777e19099423ce9e"
+    },
+    "v3": {
+      "path": "obj/parallel/trait-feature-bound-v1/oracle-v3/receipt.json",
+      "sha256": "ebf69252f7913335009c47e6a63d585821327caefc95aaafe2d9f4a5b2c75992"
+    }
+  },
+  "retained_failures": {
+    "v1": "Four incorrect word-form/generic-forward hypotheses retained and corrected after review.",
+    "v2": "All external client rows are excluded from qualification because provider filename lacked required lib prefix. Even superficially matching negatives were infrastructure failures.",
+    "v3": "Valid lib-prefixed provider; all20 new provider/client operations match."
+  },
+  "scope": "78 source/profile metadata outcomes and2 genuine external-provider builds, no native result or original library artifact claim"
+}
