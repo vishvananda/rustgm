@@ -20,7 +20,7 @@ pub(crate) fn build(
     text: &str,
     count: usize,
     newline: bool,
-    names: [NameId; 3],
+    names: [NameId; 4],
     grammar: MacroContext,
     config: &Config,
     charge: &Charge<'_>,

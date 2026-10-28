@@ -397,3 +397,9 @@ unconstrained generic acceptance and wrong-target/duplicate controls. The
 complete upstream Layout attrs/fields remain source data for the formatter/UB
 helper composition. Identity recognition grants no completed layout, allocator,
 body or old-profile transport permission.
+
+`spec/source-format-macros/static-options/` retains LIB052's original LowerHex
+constructor and static option recipe. Independent options/trait-negative and
+real source template/pair-storage native observations are distinct from full
+Formatter/write invocation. Dynamic counts, other constructors and named inputs
+remain required; no scalar-formatting factory is substituted.

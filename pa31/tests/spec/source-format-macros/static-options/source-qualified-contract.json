@@ -1,0 +1,97 @@
+{
+  "state": "frozen source setup successor before observation",
+  "scope": "Real pinned Arguments/new_lower_hex/new_debug/new_display/argument_new bodies; authored ordinary LowerHex method-bearing support and user impl, exact encoded options/pair storage observation; no formatter invocation/full core claim",
+  "path": "pa31/tests/spec/source-format-macros/static-options/source-provider-qualified.rs",
+  "sha256": "68a6cf94041fbf2aa6558b8073019c3ff48a5c777d5707ef07f977bf88390995",
+  "expected_metadata": {
+    "2021": 0,
+    "2024": 0
+  },
+  "expected_native_stdout": "e1;e2;t1;p0L9;p1D7;p2M9;d9;d7;3\n",
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "options": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Coverflow-checks=yes",
+    "--cap-lints=allow"
+  ],
+  "consumer": {
+    "path": "pa31/tests/spec/source-format-macros/static-options/source-consumer.c",
+    "sha256": "65b6097557ac153de0fe0da23899a62d51ac071c4c18106d0bae48044d93c861"
+  },
+  "host": {
+    "path": "/usr/bin/x86_64-linux-gnu-gcc-15",
+    "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88",
+    "version": "x86_64-linux-gnu-gcc-15 (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+  },
+  "c_options": [
+    "-std=c11",
+    "-Wall",
+    "-Wextra",
+    "-Werror"
+  ],
+  "env": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "predecessor": {
+    "path": "pa31/tests/spec/source-format-macros/static-options/source-provider.rs",
+    "sha256": "b832c418f8d7d9e5ce6eb75e187793e0d63d97b4eb3f5c4b47a71438da248971",
+    "actual_observation": "source-oracle/observation.json both metadatafailed E0425 and E0034; no native observation"
+  },
+  "authored_setup_edits": [
+    "Add extern_types request for actual VTable owner",
+    "Append exact pinned DynMetadata/Foreign VTable declaration pair; no fields invented",
+    "Add only genuine verbatim shared-reference Copy and const Clone impls from pinned core"
+  ],
+  "unchanged_pinned_chunks_from_predecessor": true,
+  "primary_marker_rule": "compiler/rustc_trait_selection/src/traits/select/candidate_assembly.rs1154 and select/mod.rs2220; callable signature types need not Clone/Copy",
+  "added_original": {
+    "path": "library/core/src/ptr/metadata.rs",
+    "file_sha256": "90be519b27b46064f0bec607170ffce37aa9afb160a1edfab9c51641c8af15e2",
+    "byte_start": 6287,
+    "byte_end": 6691,
+    "first": 158,
+    "last": 170,
+    "sha256": "4b802bd0482e21d8a7ffa2182167a027ad5938f97eaca1e22e55d41152465794"
+  },
+  "source_pins": {
+    "new_display": {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/fmt/rt.rs",
+      "source_sha256": "7a7dd4b1640a734fcb82f178ab69868b8f2f624a8c1f5a6fcf85002f4e2e4423",
+      "start": 4183,
+      "end": 4318,
+      "chunk_sha256": "484a09a3614711fdf1054091f4f149bd6ed77fbd34d0adcc19717c499f8b7cfa"
+    },
+    "shared_copy": {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/marker.rs",
+      "source_sha256": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575",
+      "first": 487,
+      "last": 489,
+      "start": 17337,
+      "end": 17421,
+      "chunk_sha256": "e5de3fc032e9452a800ea71f308e804f14711f915bf29cbb6b9044c797938670"
+    },
+    "shared_clone": {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/clone.rs",
+      "source_sha256": "fd3467602106e2a2ec416485d8d058b6d2b434ceac7689b4e2f4c792079e500f",
+      "first": 777,
+      "last": 786,
+      "start": 29603,
+      "end": 29994,
+      "chunk_sha256": "2be75cc17df516a1c3db0b307ac7ce3db30b70dff68403495942ab5704529272"
+    },
+    "new_lower_hex": {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/fmt/rt.rs",
+      "source_sha256": "7a7dd4b1640a734fcb82f178ab69868b8f2f624a8c1f5a6fcf85002f4e2e4423",
+      "start": 4710,
+      "end": 4848,
+      "chunk_sha256": "707eebd9a879e1ad33b6561fe1dc613e145e1a5e76ff0f5237620649b0d76c66"
+    }
+  },
+  "selection_observer": "Runtime unsafe transmute of actual function pointers to usize; C compares authentic expected source method addresses. No Formatter fabricated or function called through invalid reference.",
+  "pre_observation_setup": "Fully qualify Result::Ok only in authored LowerHex user impl; all library/constructor source bodies unchanged"
+}

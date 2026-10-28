@@ -235,3 +235,68 @@ fn mixed_constructor_inventory_authenticates_pair_members_and_rejects_changed_tr
     );
     Ok(())
 }
+
+#[test]
+fn lower_hex_and_option_pair_sites_keep_constant_root_authentication_and_owned_spelling() -> Result
+{
+    for count in [8, 32, 128] {
+        let template = (0..count)
+            .map(|i| format!("{{{i}:#034x}}|{{{i}:?}}|{{{i}}}"))
+            .collect::<Vec<_>>()
+            .join(";");
+        let args = vec!["1u32"; count].join(",");
+        let report = expanded_arguments(&format!("format_args!(\"{template}\",{args})"))?;
+        let key = output_root(&report)?;
+        let payer = &report
+            .package
+            .source_core()
+            .ok_or("source provider")?
+            .macros;
+        let before = payer.usage();
+        report.formatting_value(key)?;
+        let after = payer.usage();
+        assert_eq!(after.0 - before.0, 22);
+        assert_eq!(after.1, before.1);
+        eprintln!(
+            "static options N={count} work={} bytes={} root_auth={}",
+            before.0,
+            before.1,
+            after.0 - before.0
+        );
+    }
+    let mut report = expanded_arguments("format_args!(\"{:#034x}\",1u32)")?;
+    let root = output_root(&report)?;
+    let Kind::LibraryValue {
+        kind: LibraryValue::FormatOutput { sites },
+        ..
+    } = report
+        .package
+        .unit(root.file)
+        .configured
+        .ast
+        .node(root.node)
+        .kind
+    else {
+        return Err("actual root".into());
+    };
+    let node = report.package.unit(root.file).configured.ast.edges[sites.start as usize + 3];
+    report.formatting_value(NodeKey { node, ..root })?;
+    let name = report.package.names.intern("new_debug")?;
+    let unit = &mut report.package.units[root.file.0 as usize];
+    let Kind::LibraryValue {
+        kind:
+            LibraryValue::FormatConstructor {
+                constructor,
+                name: actual,
+                ..
+            },
+        ..
+    } = &mut unit.configured.ast.nodes[node.get() as usize].kind
+    else {
+        return Err("actual constructor".into());
+    };
+    *constructor = FormatConstructor::Debug;
+    *actual = name;
+    assert!(report.formatting_value(NodeKey { node, ..root }).is_err());
+    Ok(())
+}

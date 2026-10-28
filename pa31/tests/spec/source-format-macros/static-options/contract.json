@@ -1,0 +1,73 @@
+{
+  "state": "frozen before observation",
+  "scope": "New static format grammar/options and actual std formatting semantics; dynamic/named Rust positives remain unsupported candidate profiles",
+  "tool": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+  "tool_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "options": [
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Coverflow-checks=yes"
+  ],
+  "editions": [
+    2021,
+    2024
+  ],
+  "cases": [
+    {
+      "name": "field-id",
+      "path": "pa31/tests/spec/source-format-macros/static-options/field-id.rs",
+      "sha256": "892e69ae92cbe55ed3d2326f06d8ecfce875774e83f3ff11b0ebf5ca3e15e66a",
+      "metadata": 0,
+      "stdout": "FieldId(0x00000000000000000000000000000123)\n"
+    },
+    {
+      "name": "flag-observer",
+      "path": "pa31/tests/spec/source-format-macros/static-options/flag-observer.rs",
+      "sha256": "487ea71df378fae1278660bdab238ee5f4d8b1df21c6579b08cfe101e6b212e7",
+      "metadata": 0,
+      "stdout": "1:1:0:Some(34):None|0:0:1:None:Some(0)\n"
+    },
+    {
+      "name": "static-fill",
+      "path": "pa31/tests/spec/source-format-macros/static-options/static-fill.rs",
+      "sha256": "f7766a8c9a6826151f503f6f7275676c3e0b41f451cced0324b575ef72cb7428",
+      "metadata": 0,
+      "stdout": null
+    },
+    {
+      "name": "zero-width",
+      "path": "pa31/tests/spec/source-format-macros/static-options/zero-width.rs",
+      "sha256": "6433d147e486991450397e62d11f573bc01e0dbb713bf7b026b61e0e70614755",
+      "metadata": 0,
+      "stdout": null
+    },
+    {
+      "name": "dynamic-width",
+      "path": "pa31/tests/spec/source-format-macros/static-options/dynamic-width.rs",
+      "sha256": "945b843aed8e248ef361a4becef2b76e3b123a318b72990c239e9edb47f142fd",
+      "metadata": 0,
+      "stdout": null
+    },
+    {
+      "name": "named-capture",
+      "path": "pa31/tests/spec/source-format-macros/static-options/named-capture.rs",
+      "sha256": "ca78e47cbc03290928ae33edf93d136e8bd198a9639a1726819c480bb1294b05",
+      "metadata": 0,
+      "stdout": null
+    },
+    {
+      "name": "missing-lower-hex",
+      "path": "pa31/tests/spec/source-format-macros/static-options/missing-lower-hex.rs",
+      "sha256": "021baa3899c16d78e1f8d3eaa44ceed924077573894a625faa6b4171298d39c8",
+      "metadata": 1,
+      "stdout": null
+    },
+    {
+      "name": "oversized-width",
+      "path": "pa31/tests/spec/source-format-macros/static-options/oversized-width.rs",
+      "sha256": "0d8d6d2bbf49dd2816b67f9c6a93eea2a0bf836584bd63f13a348f90c877ad87",
+      "metadata": 1,
+      "stdout": null
+    }
+  ]
+}

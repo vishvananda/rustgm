@@ -111,3 +111,20 @@ fn mixed_display_and_debug_pairs_use_real_source_constructors_once() -> Result {
     )?;
     Ok(())
 }
+
+#[test]
+fn original_lower_hex_constructor_keeps_static_options_and_shared_pair_lifetimes() -> Result {
+    let input = test_source::fixture(
+        "pa31/tests/spec/source-format-macros/static-options/source-provider-qualified.rs",
+    )?;
+    let program = prepare(&input)?;
+    let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../obj/parallel/pa31/format-static-options-v1/native");
+    std::fs::create_dir_all(&folder)?;
+    std::fs::write(folder.join("provider.rs"), input)?;
+    crate::lowir::writer::write(
+        &program,
+        &mut std::fs::File::create(folder.join("provider.lowir"))?,
+    )?;
+    Ok(())
+}
