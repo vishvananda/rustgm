@@ -175,7 +175,11 @@ fn frontend(path: &Path, mode: &str) -> Result<Output, std::io::Error> {
         .arg(path)
         .output()
 }
-fn check(path: &Path, expected: i32) -> Result<String, Box<dyn std::error::Error>> {
+fn check(
+    path: &Path,
+    expected: i32,
+    warnings: &[u32],
+) -> Result<String, Box<dyn std::error::Error>> {
     let independent = Command::new("rustc")
         .args([
             "--edition=2024",
@@ -213,9 +217,10 @@ fn check(path: &Path, expected: i32) -> Result<String, Box<dyn std::error::Error
         assert!(output.stdout.is_empty() && counted.stdout.is_empty() && !output.stderr.is_empty());
         return Ok(String::new());
     }
-    assert!(output.stderr.is_empty());
+    crate::warning_contracts::unreachable(&output.stderr, warnings)?;
     let repeated = frontend(path, "--emit-patterns")?;
-    assert!(repeated.status.success() && repeated.stderr.is_empty());
+    assert!(repeated.status.success());
+    crate::warning_contracts::unreachable(&repeated.stderr, warnings)?;
     assert_eq!(repeated.stdout, output.stdout);
     let text = String::from_utf8(output.stdout)?;
     let footer = text
@@ -234,7 +239,7 @@ fn dynamic_slice_selection_and_execution_proofs_match_rustc()
     for &(name, expected, source) in CASES {
         let path = folder.join(format!("{name}.rs"));
         std::fs::write(&path, format!("{source}fn main(){{}}"))?;
-        let view = check(&path, expected)?;
+        let view = check(&path, expected, &[])?;
         if expected == 0 {
             assert!(view.contains("slice minimum="), "{name}");
             let executable = frontend(&path, "--emit-lowir")?;
@@ -392,6 +397,8 @@ fn boolean_slice_coverage_matches_exhaustive_sequences() -> Result<(), Box<dyn s
         let mut covered = vec![false; values.len()];
         let mut useful = Vec::new();
         let mut arms = String::new();
+        let header = "fn f(x:&[bool]){match x{";
+        let mut warning_offsets = Vec::new();
         for _ in 0..6 {
             let alternatives: Vec<_> = (0..=next(&mut seed) % 2)
                 .map(|_| shape(&mut seed))
@@ -401,12 +408,14 @@ fn boolean_slice_coverage_matches_exhaustive_sequences() -> Result<(), Box<dyn s
                 .iter()
                 .map(|v| alternatives.iter().any(|p| p.accepts(v)))
                 .collect();
-            useful.push(
-                matches
-                    .iter()
-                    .zip(&covered)
-                    .any(|(matched, old)| *matched && !old),
-            );
+            let is_useful = matches
+                .iter()
+                .zip(&covered)
+                .any(|(matched, old)| *matched && !old);
+            useful.push(is_useful);
+            if !is_useful {
+                warning_offsets.push(u32::try_from(header.len() + arms.len())?);
+            }
             if !guarded {
                 for (old, matched) in covered.iter_mut().zip(matches) {
                     *old |= matched;
@@ -426,14 +435,17 @@ fn boolean_slice_coverage_matches_exhaustive_sequences() -> Result<(), Box<dyn s
         let exhaustive = covered.iter().all(|v| *v);
         let path = folder.join(format!("boolean-{case}.rs"));
         std::fs::write(&path, format!("fn f(x:&[bool]){{match x{{{arms}}}}}"))?;
-        check(&path, i32::from(!exhaustive))?;
+        check(&path, i32::from(!exhaustive), &warning_offsets)?;
         useful.push(!exhaustive);
+        if exhaustive {
+            warning_offsets.push(u32::try_from(header.len() + arms.len())?);
+        }
         let path = folder.join(format!("boolean-{case}-complete.rs"));
         std::fs::write(
             &path,
             format!("fn f(x:&[bool]){{match x{{{arms}[..]=>()}}}}"),
         )?;
-        let view = check(&path, 0)?;
+        let view = check(&path, 0, &warning_offsets)?;
         let actual: Vec<_> = view
             .lines()
             .filter(|line| line.starts_with("arm "))

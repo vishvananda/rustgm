@@ -193,8 +193,15 @@ diagnostic constraints, not Rust source to reparse. Whole-arm usefulness still
 ignores guard outcomes and does not diagnose individual redundant alternatives.
 Retained `allow`, `warn`, `deny` and `forbid(unreachable_patterns)` policies
 control rejection of wholly unreachable arms. The default warning level does not
-reject them; nested allow/warn cannot weaken forbid. Item inheritance follows
-lexical policy independently of body and unsafe contexts.
+reject them: default and explicit `warn` emit a typed
+`warning[unreachable_patterns]: file FILE: BYTE: unreachable pattern` for each
+wholly unreachable arm. Successful views can therefore have declared nonempty
+stderr while retaining their exit status and stdout. `allow` suppresses that
+diagnostic; nested allow/warn cannot weaken forbid. Individual redundant
+alternatives within an otherwise useful arm remain outside this producer.
+Item inheritance follows lexical policy independently of body and unsafe
+contexts. Warning contracts preserve exact code, count, order and source byte
+locations rather than discarding diagnostics during comparison.
 
 Dynamic slices add a length variable to the same coverage graph. A query lazily
 collects tested start/end positions by canonical slice type from its own roots.

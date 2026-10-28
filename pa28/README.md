@@ -227,7 +227,12 @@ runtime discriminants. Matching every current Ordering variant still needs a
 wildcard, including nested and refutable patterns. The general scoped
 `unreachable_patterns` policy consumes existing whole-arm usefulness facts;
 partial unreachable alternatives within an otherwise useful arm remain outside
-that retained fact contract. `tests/atomic-method-outcomes.json` records the
+that retained fact contract. Default and explicit `warn` emit the typed
+`unreachable_patterns` diagnostic without rejecting the source; explicit
+`warn(invalid_atomic_ordering)` likewise emits the typed ordering diagnostic.
+Maintainer source controls assert complete stderr bytes and typed code/count
+contracts, including warning-free allow and unknown-variant opponents.
+`tests/atomic-method-outcomes.json` records the
 independent source and native method controls. No concurrent-execution suite or
 additional atomic operation family is claimed by this slice.
 

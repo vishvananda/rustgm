@@ -588,10 +588,18 @@ fn constant_autoderef_follows_the_reference_with_explicit_rustc_discrepancy()
             )?;
             let emitted = frontend(&path, "--emit-patterns")?;
             assert!(
-                emitted.status.success() && emitted.stderr.is_empty(),
+                emitted.status.success(),
                 "{name}: {}",
                 String::from_utf8_lossy(&emitted.stderr)
             );
+            let warnings: &[u32] = match (name, explicit) {
+                ("unit", false) => &[40],
+                ("unit", true) => &[41],
+                ("constructor-control", false) => &[34],
+                ("constructor-control", true) => &[35],
+                _ => &[],
+            };
+            crate::warning_contracts::unreachable(&emitted.stderr, warnings)?;
             let view = std::str::from_utf8(&emitted.stdout)?;
             assert!(view.contains(&format!("implicit={}", !explicit)));
             std::fs::write(path.with_extension("patterns"), &emitted.stdout)?;

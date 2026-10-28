@@ -41,3 +41,6 @@ pub(crate) mod semantic;
 mod slice_patterns;
 #[path = "../../text_patterns.rs"]
 mod text_patterns;
+
+#[path = "../../harness/warning_contracts.rs"]
+pub(crate) mod warning_contracts;

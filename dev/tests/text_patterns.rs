@@ -215,7 +215,16 @@ fn text_pattern_acceptance_and_rejection_agree_with_rustc() -> Result<(), Box<dy
             }
             assert_eq!(emitted.stderr, counted.stderr, "{name}");
             if expected == 0 {
-                assert!(emitted.stderr.is_empty());
+                let warnings: &[u32] = match name {
+                    "raw" => &[32],
+                    "forward" => &[59],
+                    "byte-raw" => &[35],
+                    "byte-prefix" | "byte-suffix" => &[34],
+                    "byte-nul" => &[36],
+                    "string-slice" => &[41],
+                    _ => &[],
+                };
+                crate::warning_contracts::unreachable(&emitted.stderr, warnings)?;
                 let view = std::str::from_utf8(&emitted.stdout)?;
                 let footer = view
                     .lines()
@@ -225,6 +234,7 @@ fn text_pattern_acceptance_and_rejection_agree_with_rustc() -> Result<(), Box<dy
                 assert_eq!(format!("{footer}\n").as_bytes(), counted.stdout, "{name}");
                 let repeated = frontend(&path, "--emit-patterns")?;
                 assert!(repeated.status.success());
+                crate::warning_contracts::unreachable(&repeated.stderr, warnings)?;
                 assert_eq!(emitted.stdout, repeated.stdout, "{name}");
             } else {
                 assert!(emitted.stdout.is_empty() && counted.stdout.is_empty());

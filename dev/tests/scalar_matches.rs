@@ -225,7 +225,12 @@ fn scalar_match_programs_agree_with_rustc_and_publish_stable_views()
             "{name}: {}",
             String::from_utf8_lossy(&ir.stderr)
         );
-        assert!(ir.stderr.is_empty());
+        let warnings: &[u32] = if *name == "irrefutable-or-arm" {
+            &[102]
+        } else {
+            &[]
+        };
+        crate::warning_contracts::unreachable(&ir.stderr, warnings)?;
         std::fs::write(file.with_extension("lowir"), &ir.stdout)?;
         for stage in ["patterns", "lowir"] {
             let first = Command::new(compiler)
@@ -237,12 +242,15 @@ fn scalar_match_programs_agree_with_rustc_and_publish_stable_views()
                 .arg(&file)
                 .output()?;
             assert!(first.status.success() && again.status.success());
+            crate::warning_contracts::unreachable(&first.stderr, warnings)?;
+            crate::warning_contracts::unreachable(&again.stderr, warnings)?;
             assert_eq!(first.stdout, again.stdout);
             let count = Command::new(compiler)
                 .arg(format!("--count-{stage}"))
                 .arg(&file)
                 .output()?;
             assert!(count.status.success());
+            crate::warning_contracts::unreachable(&count.stderr, warnings)?;
             if stage == "patterns" {
                 let view = std::str::from_utf8(&first.stdout)?;
                 let footer = view

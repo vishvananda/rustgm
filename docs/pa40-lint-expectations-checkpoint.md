@@ -150,3 +150,38 @@ maintainer roots in thirteen binaries and the 44-stage active-fixture layout
 check. Broad periodic release/native suites and full edition/lint release
 qualification remain pending. The compiler-source fingerprint for the frozen
 CLI is `61e22594e48b1089951e5e5e2fece44f55f0f87a222644ef3165c7c1b4eada47`.
+
+## Warning contract and removed-owner followup
+
+The old whole-arm producer enabled its query only for denying policies and
+emitted no warning for Warn. The actual Warn/Expect event path also enables
+default warnings. PA13 promises acceptance at the default warning level, not
+silence: whole unreachable arms now emit typed `unreachable_patterns` warnings.
+Partial alternatives remain outside the retained whole-arm contract. PA28's
+explicit atomic-order Warn also emits its typed warning. Exact accepted-source
+code/count/order/byte-location assertions replace empty-stderr assumptions;
+output bytes are compared in full, including repeated and count views. The
+boolean-slice controls derive expected whole-arm warnings from their independent
+exhaustive sequence model before calling the frontend. Existing documented Rust
+constant-autoderef and partial-alternative discrepancies stay explicit.
+
+Removed test functions have authenticated removal records and deliberately have
+no resolved function declaration. The policy walk preserves their inherited
+completion rather than asking for an absent DefId. It neither invents a function
+nor checks its removed body. Ten pinned-Rust fixtures cover discarded direct
+expectations, untouched parent expectations, duplicate-attribute event ownership,
+and live sibling fulfillment/unfulfilled controls. Header requests retain body
+and parent expectations as pending. Source repair `4c1d5ee32` and evidence under
+`obj/parallel/lib058-warning-fixture-contracts-v1/` record this bounded change.
+
+Independent warning/removal predictions pass 33/33 with pinned Rust 1.98.0.
+Gate `1793201661606394703` passes strict production/CLI checks and three exact
+frontend/constants controls, including the existing seventeen removal cases and
+the ten new fixtures. The earlier cold gate passed its tests but timed out in
+outer accounting; only the unchanged warm retry is a terminal pass. Gate
+`1793201793763510304` passes all four affected pattern integration controls with
+strict checks. Owning PA13 text references require separate exact prediction,
+independent review, normal harness generation and byte-diff review; this test
+checkpoint does not bless reference churn. Lexically nested pending-body
+completion is under separate review and is not an additional guarantee of this
+warning-contract followup.
