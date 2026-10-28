@@ -126,7 +126,7 @@ impl Checker<'_> {
         let (converted, selection, mut unsizing) =
             self.reference_conversion(node, actual, expected, identity_reborrow)?;
         let Some(selection) = selection else {
-            return Ok(false);
+            return self.shared_identity_adjustment(node, actual, expected, identity_reborrow);
         };
         if !identity_reborrow
             && selection.dereferences == 1
@@ -293,7 +293,12 @@ impl Checker<'_> {
         // A source-time reference expectation reborrows shared references too.
         // An inferred generic value remains a move; later equality cannot add
         // this place access or substitute for an actual source Copy impl.
-        if !from && !identity_reborrow && dereferences == 1 && !unsize && pending.is_none() {
+        if !from
+            && dereferences == 1
+            && !unsize
+            && pending.is_none()
+            && self.shared_identity_value(node, actual, expected, identity_reborrow)?
+        {
             return Ok((actual, None, None));
         }
         if dereferences != 1 && (unsize || pending.is_some()) {
@@ -338,6 +343,68 @@ impl Checker<'_> {
             }),
             pending,
         ))
+    }
+    fn shared_identity_adjustment(
+        &mut self,
+        node: NodeId,
+        actual: TermId,
+        expected: TermId,
+        contextual: bool,
+    ) -> Result<bool, Error> {
+        if !contextual {
+            return Ok(false);
+        }
+        self.callable_shape(node, actual, expected)?;
+        // A final contextual no-op replaces an earlier inferred reborrow.
+        // Preserve the ordinary full relation, and remove its stale runtime
+        // selection instead of leaving a different lifetime view at branch joins.
+        self.state.adjustments.push(super::PendingAdjustment {
+            node,
+            actual,
+            expected,
+            kind: AdjustmentKind::Equality,
+            reset: true,
+        });
+        Ok(true)
+    }
+    fn shared_identity_value(
+        &mut self,
+        node: NodeId,
+        actual: TermId,
+        expected: TermId,
+        contextual: bool,
+    ) -> Result<bool, Error> {
+        if !contextual
+            || self
+                .state
+                .infer
+                .root(actual)
+                .map_err(|e| self.error(node, e))?
+                == self
+                    .state
+                    .infer
+                    .root(expected)
+                    .map_err(|e| self.error(node, e))?
+        {
+            return Ok(true);
+        }
+        if self.head(node, actual)? != self.head(node, expected)? {
+            return Ok(false);
+        }
+        // Matching regions alone do not prove an identity: an unresolved
+        // annotation still requests a real reborrow. Reuse settled canonical
+        // types for determined generic views before the ordinary full relation
+        // solves any hole. This is the existing charged, memoized DAG query.
+        let actual = match self.state.infer.resolved(&mut self.facts.types, actual) {
+            Ok(ty) => ty,
+            Err(crate::types::infer::Error::Unresolved) => return Ok(false),
+            Err(error) => return Err(self.error(node, error)),
+        };
+        match self.state.infer.resolved(&mut self.facts.types, expected) {
+            Ok(expected) => Ok(actual == expected),
+            Err(crate::types::infer::Error::Unresolved) => Ok(false),
+            Err(error) => Err(self.error(node, error)),
+        }
     }
     fn source_reference_unsizing(
         &mut self,

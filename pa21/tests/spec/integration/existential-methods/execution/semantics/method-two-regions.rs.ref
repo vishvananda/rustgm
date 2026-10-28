@@ -46,12 +46,14 @@ type 43 reference mutable=false region=region:3 referent=11
 type 44 reference mutable=false region=region:4 referent=11
 type 45 tuple [44,43]
 type 46 function binders=0 parameters=[43,44] result=45 unsafe=false
-type 47 reference mutable=false region=region:7 referent=11
-type 48 reference mutable=false region=region:8 referent=11
+type 47 reference mutable=false region=region:9 referent=11
+type 48 reference mutable=false region=region:10 referent=11
 type 49 tuple [47,48]
 type 50 function-item def=17 signature=32 arguments=[type:12]
 type 51 reference mutable=false region=region:5 referent=11
 type 52 reference mutable=false region=region:6 referent=11
+type 53 reference mutable=false region=region:7 referent=11
+type 54 reference mutable=false region=region:8 referent=11
 def 13 type=23 name="check" source=0:13
 def 14 type=25 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:39
@@ -100,11 +102,15 @@ region-var region:2 body=0:100 source=0:77 origin=quantified-proof pending
 region-var region:3 body=0:100 source=0:82 origin=call-argument pending
 region-var region:4 body=0:100 source=0:82 origin=call-argument pending
 region-var region:5 body=0:100 source=0:79 origin=expression-borrow pending
-region-var region:6 body=0:100 source=0:81 origin=expression-borrow pending
-region-var region:7 body=0:100 source=0:82 origin=inference pending
-region-var region:8 body=0:100 source=0:82 origin=inference pending
-region-coercion body=0:100 source=0:79 actual=51 expected=43 kind=same-shape pending
-region-coercion body=0:100 source=0:81 actual=52 expected=44 kind=same-shape pending
+region-var region:6 body=0:100 source=0:79 origin=inference pending
+region-var region:7 body=0:100 source=0:81 origin=expression-borrow pending
+region-var region:8 body=0:100 source=0:81 origin=inference pending
+region-var region:9 body=0:100 source=0:82 origin=inference pending
+region-var region:10 body=0:100 source=0:82 origin=inference pending
+region-coercion body=0:100 source=0:79 actual=51 expected=43 kind=reborrow pending
+region-coercion body=0:100 source=0:79 actual=52 expected=43 kind=same-shape pending
+region-coercion body=0:100 source=0:81 actual=53 expected=44 kind=reborrow pending
+region-coercion body=0:100 source=0:81 actual=54 expected=44 kind=same-shape pending
 region-coercion body=0:100 source=0:82 actual=45 expected=49 kind=same-shape pending
 opaque 0 owner=17 source=0:37 application=28 hidden=- role=trait-result storage-proof=pending
 opaque-bound id=0 index=0 subject=28 bound=copy

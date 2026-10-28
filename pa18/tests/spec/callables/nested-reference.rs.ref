@@ -39,10 +39,13 @@ function @rg.16() -> void {
     return void
 }
 function @rg.15.i3() -> ptr {
+  slot $s0 : ptr
   block ^b0:
     %t0 = addr @rg.data.0
     %t1 = addr @rg.data.1
-    return ptr %t1
+    store ptr %t1, $s0
+    %t2 = load ptr $s0
+    return ptr %t2
 }
 function @rg.13(%p0 : i1) -> void {
   slot $s0 : i1
@@ -60,10 +63,13 @@ function @rg.13(%p0 : i1) -> void {
     return void
 }
 function @rg.15.i4() -> ptr {
+  slot $s0 : ptr
   block ^b0:
     %t0 = addr @rg.data.2
     %t1 = addr @rg.data.3
-    return ptr %t1
+    store ptr %t1, $s0
+    %t2 = load ptr $s0
+    return ptr %t2
 }
 function @rg.14(%p0 : u8) -> u8 {
   slot $s0 : u8

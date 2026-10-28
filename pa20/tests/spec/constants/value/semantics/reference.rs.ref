@@ -28,6 +28,7 @@ type 25 function-item def=17 signature=24
 type 26 aggregate def=13 arguments=[const:16:0x00000000000000000000000000000003]
 type 27 aggregate def=13 arguments=[const:16:0x00000000000000000000000000000005]
 type 28 reference mutable=false region=region:1 referent=16
+type 29 reference mutable=false region=region:2 referent=16
 def 13 type=21 name="S" source=0:2
 def 14 type=21 name="S" source=0:2
 def 15 type=22 name="Self" source=0:15
@@ -61,7 +62,9 @@ parameter owner=15 binding=38 argument=const-parameter:15:0 default=-
 inherent-path source=0:21 method=16 implementation=15 prefix=0:19 annotation=false
 inherent-path source=0:27 method=16 implementation=15 prefix=0:25 annotation=false
 region-var region:1 body=0:13 source=0:13 origin=expression-borrow pending
-region-coercion body=0:13 source=0:13 actual=28 expected=23 kind=same-shape pending
+region-var region:2 body=0:13 source=0:13 origin=inference pending
+region-coercion body=0:13 source=0:13 actual=28 expected=23 kind=reborrow pending
+region-coercion body=0:13 source=0:13 actual=29 expected=23 kind=same-shape pending
 associated-constant def=16 type=23
 constant-use source=0:21 definition=16 arguments=[const:16:0x00000000000000000000000000000003]
 constant-use source=0:27 definition=16 arguments=[const:16:0x00000000000000000000000000000005]

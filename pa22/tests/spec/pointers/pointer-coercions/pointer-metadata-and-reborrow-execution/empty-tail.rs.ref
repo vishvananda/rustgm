@@ -6,11 +6,12 @@ function @rg.17() -> void {
   slot $s4 : obj<16x8>
   slot $s5 : obj<2x2>
   slot $s6 : obj<16x8>
-  slot $s7 : obj<16x8>
+  slot $s7 : ptr
   slot $s8 : obj<16x8>
   slot $s9 : obj<16x8>
   slot $s10 : obj<16x8>
   slot $s11 : obj<16x8>
+  slot $s12 : obj<16x8>
   block ^b0:
     store u16 7, $s5
     %t0 = addr $s5
@@ -30,40 +31,42 @@ function @rg.17() -> void {
     copyobj 16x8 %t8, %t9
     %t10 = addr $s0
     store ptr %t10, $s7
-    %t11 = addr $s7
-    %t12 = index u8 %t11, 8
-    store i64 0, %t12
-    %t13 = addr $s7
-    %t14 = addr $s3
-    copyobj 16x8 %t13, %t14
+    %t11 = load ptr $s7
+    store ptr %t11, $s8
+    %t12 = addr $s8
+    %t13 = index u8 %t12, 8
+    store i64 0, %t13
+    %t14 = addr $s8
     %t15 = addr $s3
-    %t16 = addr $s8
-    copyobj 16x8 %t15, %t16
-    %t17 = addr $s8
-    %t18 = addr $s4
-    copyobj 16x8 %t17, %t18
-    %t19 = addr $s2
-    %t20 = addr $s9
-    copyobj 16x8 %t19, %t20
+    copyobj 16x8 %t14, %t15
+    %t16 = addr $s3
+    %t17 = addr $s9
+    copyobj 16x8 %t16, %t17
+    %t18 = addr $s9
+    %t19 = addr $s4
+    copyobj 16x8 %t18, %t19
+    %t20 = addr $s2
     %t21 = addr $s10
-    %t22 = addr $s9
-    call void @rg.16(%t21, %t22)
-    %t23 = addr $s4
-    %t24 = addr $s11
-    copyobj 16x8 %t23, %t24
-    %t25 = load ptr $s10
-    %t26 = addr $s10
-    %t27 = index u8 %t26, 8
-    %t28 = load i64 %t27
-    %t29 = load ptr $s11
-    %t30 = addr $s11
-    %t31 = index u8 %t30, 8
-    %t32 = load i64 %t31
-    %t33 = cmp eq i64 %t28, %t32
-    %t34 = cmp eq ptr %t25, %t29
-    %t35 = binary and i64 %t34, %t33
-    %t36 = convert trunc i1 i64 %t35
-    call void @rg.13(%t36)
+    copyobj 16x8 %t20, %t21
+    %t22 = addr $s11
+    %t23 = addr $s10
+    call void @rg.16(%t22, %t23)
+    %t24 = addr $s4
+    %t25 = addr $s12
+    copyobj 16x8 %t24, %t25
+    %t26 = load ptr $s11
+    %t27 = addr $s11
+    %t28 = index u8 %t27, 8
+    %t29 = load i64 %t28
+    %t30 = load ptr $s12
+    %t31 = addr $s12
+    %t32 = index u8 %t31, 8
+    %t33 = load i64 %t32
+    %t34 = cmp eq i64 %t29, %t33
+    %t35 = cmp eq ptr %t26, %t30
+    %t36 = binary and i64 %t35, %t34
+    %t37 = convert trunc i1 i64 %t36
+    call void @rg.13(%t37)
     return void
 }
 function @rg.16(%p0 : ptr, %p1 : ptr) -> void {

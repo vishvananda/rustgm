@@ -3,21 +3,39 @@ body 0 source=0:44
   universal b0=g2
   variable r1=g3
   variable r2=g4
+  variable r3=g5
+  variable r4=g6
+  variable r5=g7
   region g0 static
   region g1 local
   region g2 universal universe=0
   region g3 variable universe=0
   region g4 variable universe=0
+  region g5 variable universe=0
+  region g6 variable universe=0
+  region g7 variable universe=0
+  require g2:g3
   require g2:g3
   require g2:g4
   require g2:g4
+  require g2:g4
+  require g2:g5
+  require g2:g6
   require g3:g1
   require g3:g2
+  require g3:g2
+  require g3:g7
   require g4:g1
   require g4:g2
+  require g5:g1
+  require g5:g3
+  require g6:g1
+  require g6:g4
+  require g7:g1
+  require g7:g2
 end-body
 body 1 source=0:46
   region g0 static
   region g1 local
 end-body
-eof bodies=2 universals=1 variables=2 regions=7 assumptions=0 requirements=7
+eof bodies=2 universals=1 variables=5 regions=10 assumptions=0 requirements=19

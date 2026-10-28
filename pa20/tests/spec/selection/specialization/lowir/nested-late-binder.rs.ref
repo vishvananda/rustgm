@@ -1,13 +1,19 @@
 function @rg.23() -> void {
   slot $s0 : u8
+  slot $s1 : ptr
+  slot $s2 : ptr
   block ^b0:
     store u8 7, $s0
     %t0 = addr $s0
-    %t1 = addr $s0
-    %t2 = call u16 @rg.22(%t0, %t1)
-    %t3 = cmp eq u16 %t2, 7
-    %t4 = convert trunc i1 i64 %t3
-    call void @rg.13(%t4)
+    store ptr %t0, $s1
+    %t1 = load ptr $s1
+    %t2 = addr $s0
+    store ptr %t2, $s2
+    %t3 = load ptr $s2
+    %t4 = call u16 @rg.22(%t1, %t3)
+    %t5 = cmp eq u16 %t4, 7
+    %t6 = convert trunc i1 i64 %t5
+    call void @rg.13(%t6)
     return void
 }
 function @rg.22(%p0 : ptr, %p1 : ptr) -> u16 {
@@ -47,21 +53,24 @@ function @rg.20.i5(%p0 : u16, %p1 : ptr) -> u16 {
   slot $s1 : ptr
   slot $s2 : u8
   slot $s3 : ptr
+  slot $s4 : ptr
   block ^b0:
     store u16 %p0, $s0
     store ptr %p1, $s1
     store u8 7, $s2
     %t0 = load ptr $s1
     %t1 = addr $s2
-    %t2 = call ptr %t0(%t1) as (%p0 : ptr) -> ptr
-    store ptr %t2, $s3
-    %t3 = load ptr $s3
-    %t4 = load u8 %t3
-    %t5 = cmp eq u8 %t4, 7
-    %t6 = convert trunc i1 i64 %t5
-    call void @rg.13(%t6)
-    %t7 = load u16 $s0
-    return u16 %t7
+    store ptr %t1, $s3
+    %t2 = load ptr $s3
+    %t3 = call ptr %t0(%t2) as (%p0 : ptr) -> ptr
+    store ptr %t3, $s4
+    %t4 = load ptr $s4
+    %t5 = load u8 %t4
+    %t6 = cmp eq u8 %t5, 7
+    %t7 = convert trunc i1 i64 %t6
+    call void @rg.13(%t7)
+    %t8 = load u16 $s0
+    return u16 %t8
 }
 function @rg.14(%p0 : u8) -> u8 {
   slot $s0 : u8

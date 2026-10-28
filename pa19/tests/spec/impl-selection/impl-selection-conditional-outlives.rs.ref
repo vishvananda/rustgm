@@ -44,6 +44,8 @@ type 41 reference mutable=false region=region:1 referent=11
 type 42 function binders=0 parameters=[41,38] result=1 unsafe=false
 type 43 reference mutable=false region=static referent=11
 type 44 function-item def=16 signature=42 arguments=[region:region:2,type:41]
+type 45 reference mutable=false region=region:3 referent=11
+type 46 reference mutable=false region=region:4 referent=1
 def 14 type=21 name="Self" source=0:1
 def 15 type=22 name="Self" source=0:11
 def 16 type=28 name="g" source=0:28
@@ -85,16 +87,20 @@ predicate owner=13 source=0:1 subject=21 bound=trait:13 arguments=[region:bound:
 predicate owner=15 source=0:4 subject=22 bound=outlives:bound:0:0
 predicate owner=16 source=0:17 subject=23 bound=trait:13 arguments=[region:bound:0:0]
 impl owner=15 source=0:11 subject=22 bound=trait:13 arguments=[region:bound:0:0]
-implementation-use source=0:49 owner=15 arguments=[region:region:3,type:41]
+implementation-use source=0:49 owner=15 arguments=[region:region:5,type:41]
 region-var region:1 body=0:27 source=0:27 origin=universal-alias pending
 region-var region:1 body=0:53 source=0:44 origin=universal-alias pending
 region-var region:2 body=0:53 source=0:44 origin=universal-alias pending
-region-var region:3 body=0:53 source=0:49 origin=inference pending
+region-var region:3 body=0:53 source=0:50 origin=inference pending
+region-var region:4 body=0:53 source=0:51 origin=inference pending
+region-var region:5 body=0:53 source=0:49 origin=inference pending
 region-equal body=0:27 left=region:1 right=bound:0:0
-region-equal body=0:53 left=region:2 right=region:3
+region-equal body=0:53 left=region:2 right=region:5
 region-equal body=0:53 left=region:1 right=bound:0:0
 region-equal body=0:53 left=region:2 right=bound:0:1
-region-coercion body=0:53 source=0:50 actual=29 expected=41 kind=same-shape pending
-region-coercion body=0:53 source=0:51 actual=30 expected=38 kind=same-shape pending
-type-outlives body=0:53 source=0:49 type=41 shorter=region:3 pending
+region-coercion body=0:53 source=0:50 actual=29 expected=41 kind=reborrow pending
+region-coercion body=0:53 source=0:50 actual=45 expected=41 kind=same-shape pending
+region-coercion body=0:53 source=0:51 actual=30 expected=38 kind=reborrow pending
+region-coercion body=0:53 source=0:51 actual=46 expected=38 kind=same-shape pending
+type-outlives body=0:53 source=0:49 type=41 shorter=region:5 pending
 eof owners=2 members=0 parameters=5 predicates=3 impls=1 calls=0 paths=0 impl-uses=1

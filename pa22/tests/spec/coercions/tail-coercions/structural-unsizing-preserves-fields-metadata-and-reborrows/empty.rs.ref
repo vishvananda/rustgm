@@ -1,7 +1,8 @@
 function @rg.17() -> void {
   slot $s0 : obj<2x2>
   slot $s1 : obj<2x2>
-  slot $s2 : obj<16x8>
+  slot $s2 : ptr
+  slot $s3 : obj<16x8>
   block ^b0:
     store u16 7, $s1
     %t0 = addr $s1
@@ -11,12 +12,14 @@ function @rg.17() -> void {
     copyobj 2x2 %t2, %t3
     %t4 = addr $s0
     store ptr %t4, $s2
-    %t5 = addr $s2
-    %t6 = index u8 %t5, 8
-    store i64 0, %t6
-    %t7 = addr $s2
-    %t8 = call i1 @rg.16(%t7)
-    call void @rg.13(%t8)
+    %t5 = load ptr $s2
+    store ptr %t5, $s3
+    %t6 = addr $s3
+    %t7 = index u8 %t6, 8
+    store i64 0, %t7
+    %t8 = addr $s3
+    %t9 = call i1 @rg.16(%t8)
+    call void @rg.13(%t9)
     return void
 }
 function @rg.16(%p0 : ptr) -> i1 {

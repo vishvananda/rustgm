@@ -30,7 +30,8 @@ type 27 opaque id=0 arguments=[region:region:1]
 type 28 reference mutable=false region=region:2 referent=11
 type 29 reference mutable=false region=region:1 referent=11
 type 30 function binders=0 parameters=[29] result=27 unsafe=false
-type 31 opaque id=0 arguments=[region:region:3]
+type 31 opaque id=0 arguments=[region:region:4]
+type 32 reference mutable=false region=region:3 referent=11
 def 13 type=24 name="f" source=0:11
 def 14 type=26 name="main" source=0:26
 def 15 type=2 name="bool"
@@ -59,10 +60,12 @@ region-var region:1 body=0:10 source=0:10 origin=universal-alias pending
 region-var region:2 body=0:10 source=0:10 origin=inference pending
 region-var region:1 body=0:25 source=0:21 origin=call-argument pending
 region-var region:2 body=0:25 source=0:20 origin=expression-borrow pending
-region-var region:3 body=0:25 source=0:21 origin=inference pending
+region-var region:3 body=0:25 source=0:20 origin=inference pending
+region-var region:4 body=0:25 source=0:21 origin=inference pending
 region-equal body=0:10 left=region:1 right=bound:0:0
 region-coercion body=0:10 source=0:10 actual=21 expected=28 kind=same-shape pending
-region-coercion body=0:25 source=0:20 actual=28 expected=29 kind=same-shape pending
+region-coercion body=0:25 source=0:20 actual=28 expected=29 kind=reborrow pending
+region-coercion body=0:25 source=0:20 actual=32 expected=29 kind=same-shape pending
 region-coercion body=0:25 source=0:21 actual=27 expected=31 kind=same-shape pending
 opaque 0 owner=13 source=0:8 application=22 hidden=- role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 subject=22 bound=copy

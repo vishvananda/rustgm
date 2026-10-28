@@ -14,6 +14,7 @@ function @rg.16() -> void {
     return void
 }
 function @rg.15.i3() -> ptr {
+  slot $s0 : ptr
   block ^b0:
     %t0 = convert zext u16 u8 255
     %t1 = binary add u16 %t0, 1
@@ -21,7 +22,9 @@ function @rg.15.i3() -> ptr {
     branch %t2, ^b1, ^b2
   block ^b2:
     %t3 = addr @rg.data.0
-    return ptr %t3
+    store ptr %t3, $s0
+    %t4 = load ptr $s0
+    return ptr %t4
   block ^b1:
     call void @abort()
     unreachable

@@ -32,6 +32,7 @@ type 29 function-item def=13 signature=28 arguments=[type:11]
 type 30 reference mutable=false region=region:1 referent=11
 type 31 function binders=0 parameters=[30] result=1 unsafe=false
 type 32 reference mutable=false region=region:2 referent=11
+type 33 reference mutable=false region=region:3 referent=11
 def 13 type=24 name="f" source=0:7
 def 14 type=26 name="main" source=0:14
 def 15 type=2 name="bool"
@@ -58,5 +59,7 @@ def 42 type=22 name="x" source=0:0
 parameter owner=13 binding=34 argument=type:21 default=-
 region-var region:1 body=0:13 source=0:11 origin=call-argument pending
 region-var region:2 body=0:13 source=0:10 origin=expression-borrow pending
-region-coercion body=0:13 source=0:10 actual=32 expected=30 kind=same-shape pending
+region-var region:3 body=0:13 source=0:10 origin=inference pending
+region-coercion body=0:13 source=0:10 actual=32 expected=30 kind=reborrow pending
+region-coercion body=0:13 source=0:10 actual=33 expected=30 kind=same-shape pending
 eof owners=0 members=0 parameters=1 predicates=0 impls=0 calls=0 paths=0 impl-uses=0 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0 quantifiers=0 families=0 family-bounds=0 family-regions=0 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=0 proof-scopes=0 proof-blocks=0 proof-sources=0 proof-owned=0 proof-relations=0 proof-types=0

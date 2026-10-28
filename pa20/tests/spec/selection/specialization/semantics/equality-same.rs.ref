@@ -101,13 +101,15 @@ region-var region:2 body=0:71 source=0:68 origin=quantified-proof pending
 region-var region:3 body=0:71 source=0:68 origin=inference pending
 region-var region:1 body=0:85 source=0:80 origin=call-argument pending
 region-var region:2 body=0:85 source=0:79 origin=expression-borrow pending
+region-var region:3 body=0:85 source=0:79 origin=inference pending
 region-equal body=0:53 left=region:2 right=bound:0:0
 region-equal body=0:53 left=region:3 right=bound:0:0
 region-equal body=0:53 left=region:1 right=bound:0:0
 region-equal body=0:71 left=region:1 right=region:3
 region-equal body=0:71 left=region:1 right=region:3
 region-equal body=0:71 left=region:1 right=bound:0:0
-region-coercion body=0:85 source=0:79 actual=44 expected=42 kind=same-shape pending
+region-coercion body=0:85 source=0:79 actual=44 expected=42 kind=reborrow pending
+region-coercion body=0:85 source=0:79 actual=46 expected=42 kind=same-shape pending
 associated-type def=17 type=24
 result-contract def=17 projection=24
 result-bound def=17 index=0 subject=24 bound=sized

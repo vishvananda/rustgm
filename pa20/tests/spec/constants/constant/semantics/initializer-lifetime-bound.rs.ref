@@ -32,6 +32,8 @@ type 29 function binders=0 parameters=[27] result=28 unsafe=false
 type 30 function-item def=14 signature=26
 type 31 reference mutable=false region=region:1 referent=11
 type 32 reference mutable=false region=region:2 referent=31
+type 33 reference mutable=false region=static referent=31
+type 34 reference mutable=false region=region:3 referent=22
 def 13 type=21 name="S" source=0:5
 def 14 type=30 name="S" source=0:5
 def 15 type=21 name="Self" source=0:22
@@ -60,6 +62,8 @@ associated-owner 0 kind=inherent self-def=15 self=21 source=0:22 unsafe=false
 associated-member def=16 owner=0
 region-var region:1 body=0:20 source=0:19 origin=expression-borrow pending
 region-var region:2 body=0:20 source=0:20 origin=expression-borrow pending
-region-coercion body=0:20 source=0:20 actual=32 expected=23 kind=same-shape pending
+region-var region:3 body=0:20 source=0:20 origin=inference pending
+region-coercion body=0:20 source=0:20 actual=32 expected=23 kind=reborrow pending
+region-coercion body=0:20 source=0:20 actual=34 expected=23 kind=same-shape pending
 associated-constant def=16 type=23
 eof owners=1 members=1 parameters=0 predicates=0 impls=0 calls=0 paths=0 impl-uses=0 type-members=0 constant-members=1 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0

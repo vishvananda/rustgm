@@ -120,11 +120,13 @@ region-var region:3 body=0:88 source=0:85 origin=inference pending
 region-var region:4 body=0:88 source=0:85 origin=inference pending
 region-var region:1 body=0:98 source=0:96 origin=call-argument pending
 region-var region:2 body=0:98 source=0:95 origin=expression-borrow pending
+region-var region:3 body=0:98 source=0:95 origin=inference pending
 region-equal body=0:88 left=region:1 right=region:1
 region-equal body=0:88 left=region:1 right=region:3
 region-equal body=0:88 left=region:1 right=region:4
 region-equal body=0:88 left=region:1 right=bound:0:0
-region-coercion body=0:98 source=0:95 actual=51 expected=47 kind=same-shape pending
+region-coercion body=0:98 source=0:95 actual=51 expected=47 kind=reborrow pending
+region-coercion body=0:98 source=0:95 actual=52 expected=47 kind=same-shape pending
 type-outlives body=0:72 source=0:69 type=37 shorter=static pending
 type-outlives body=0:88 source=0:85 type=11 shorter=static pending
 associated-type def=17 type=22

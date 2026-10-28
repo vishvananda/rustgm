@@ -5,14 +5,20 @@ global @rg.data.1 : obj<1x1> [storage=readonly] = {
   u8 9
 }
 function @rg.20() -> void {
+  slot $s0 : ptr
+  slot $s1 : ptr
   block ^b0:
     %t0 = addr @rg.data.0
-    %t1 = call i1 @rg.19(%t0)
-    call void @rg.13(%t1)
-    %t2 = addr @rg.data.1
-    %t3 = call i1 @rg.19(%t2)
-    %t4 = unary not i1 %t3
-    call void @rg.13(%t4)
+    store ptr %t0, $s0
+    %t1 = load ptr $s0
+    %t2 = call i1 @rg.19(%t1)
+    call void @rg.13(%t2)
+    %t3 = addr @rg.data.1
+    store ptr %t3, $s1
+    %t4 = load ptr $s1
+    %t5 = call i1 @rg.19(%t4)
+    %t6 = unary not i1 %t5
+    call void @rg.13(%t6)
     return void
 }
 function @rg.19(%p0 : ptr) -> i1 {

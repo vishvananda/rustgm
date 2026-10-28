@@ -12,34 +12,37 @@ global @rg.vtable.1 : obj<24x8> [storage=readonly] = {
 function @rg.16() -> void {
   slot $s0 : u8
   slot $s1 : obj<16x8>
-  slot $s2 : obj<16x8>
+  slot $s2 : ptr
   slot $s3 : obj<16x8>
   slot $s4 : obj<16x8>
+  slot $s5 : obj<16x8>
   block ^b0:
     store u8 7, $s0
     %t0 = addr $s0
-    %t1 = addr @rg.vtable.0
     store ptr %t0, $s2
-    %t2 = addr $s2
-    %t3 = index u8 %t2, 8
-    store ptr %t1, %t3
-    %t4 = addr $s3
-    %t5 = addr $s2
-    call void @rg.15(%t4, %t5)
+    %t1 = load ptr $s2
+    %t2 = addr @rg.vtable.0
+    store ptr %t1, $s3
+    %t3 = addr $s3
+    %t4 = index u8 %t3, 8
+    store ptr %t2, %t4
+    %t5 = addr $s4
     %t6 = addr $s3
-    %t7 = addr $s1
-    copyobj 16x8 %t6, %t7
+    call void @rg.15(%t5, %t6)
+    %t7 = addr $s4
     %t8 = addr $s1
-    %t9 = addr $s4
-    copyobj 16x8 %t8, %t9
-    %t10 = load ptr $s4
-    %t11 = addr $s4
-    %t12 = index u8 %t11, 8
-    %t13 = load i64 %t12
-    %t14 = addr $s0
-    %t15 = cmp eq ptr %t10, %t14
-    %t16 = convert trunc i1 i64 %t15
-    call void @rg.13(%t16)
+    copyobj 16x8 %t7, %t8
+    %t9 = addr $s1
+    %t10 = addr $s5
+    copyobj 16x8 %t9, %t10
+    %t11 = load ptr $s5
+    %t12 = addr $s5
+    %t13 = index u8 %t12, 8
+    %t14 = load i64 %t13
+    %t15 = addr $s0
+    %t16 = cmp eq ptr %t11, %t15
+    %t17 = convert trunc i1 i64 %t16
+    call void @rg.13(%t17)
     return void
 }
 function @rg.15(%p0 : ptr, %p1 : ptr) -> void {
@@ -49,21 +52,26 @@ function @rg.15(%p0 : ptr, %p1 : ptr) -> void {
   block ^b0:
     %t0 = addr $s0
     copyobj 16x8 %p1, %t0
-    %t1 = addr $s0
-    %t2 = addr $s1
-    copyobj 16x8 %t1, %t2
-    %t3 = load ptr $s1
-    %t4 = addr $s1
-    %t5 = index u8 %t4, 8
-    %t6 = load ptr %t5
-    %t7 = index u8 %t6, 24
-    %t8 = load ptr %t7
-    store ptr %t3, $s2
-    %t9 = addr $s2
-    %t10 = index u8 %t9, 8
-    store ptr %t8, %t10
-    %t11 = addr $s2
-    copyobj 16x8 %t11, %p0
+    %t1 = load ptr $s0
+    %t2 = addr $s0
+    %t3 = index u8 %t2, 8
+    %t4 = load ptr %t3
+    store ptr %t1, $s1
+    %t5 = addr $s1
+    %t6 = index u8 %t5, 8
+    store ptr %t4, %t6
+    %t7 = load ptr $s1
+    %t8 = addr $s1
+    %t9 = index u8 %t8, 8
+    %t10 = load ptr %t9
+    %t11 = index u8 %t10, 24
+    %t12 = load ptr %t11
+    store ptr %t7, $s2
+    %t13 = addr $s2
+    %t14 = index u8 %t13, 8
+    store ptr %t12, %t14
+    %t15 = addr $s2
+    copyobj 16x8 %t15, %p0
     return void
 }
 function @rg.13(%p0 : i1) -> void {

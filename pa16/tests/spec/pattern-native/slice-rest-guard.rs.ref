@@ -11,9 +11,11 @@ global @rg.data.1 : obj<3x1> [storage=readonly] = {
 function @rg.16() -> void {
   slot $s0 : i1
   slot $s1 : obj<3x1>
-  slot $s2 : obj<16x8>
-  slot $s3 : obj<3x1>
-  slot $s4 : obj<16x8>
+  slot $s2 : ptr
+  slot $s3 : obj<16x8>
+  slot $s4 : obj<3x1>
+  slot $s5 : ptr
+  slot $s6 : obj<16x8>
   block ^b0:
     store u8 1, $s1
     %t0 = addr $s1
@@ -24,39 +26,43 @@ function @rg.16() -> void {
     store u8 9, %t3
     %t4 = addr @rg.data.0
     store ptr %t4, $s2
-    %t5 = addr $s2
-    %t6 = index u8 %t5, 8
-    store i64 3, %t6
-    %t7 = addr $s2
-    %t8 = call u8 @rg.15(%t7)
-    %t9 = cmp eq u8 %t8, 9
-    %t10 = convert trunc i1 i64 %t9
-    branch %t10, ^b1, ^b2
+    %t5 = load ptr $s2
+    store ptr %t5, $s3
+    %t6 = addr $s3
+    %t7 = index u8 %t6, 8
+    store i64 3, %t7
+    %t8 = addr $s3
+    %t9 = call u8 @rg.15(%t8)
+    %t10 = cmp eq u8 %t9, 9
+    %t11 = convert trunc i1 i64 %t10
+    branch %t11, ^b1, ^b2
   block ^b2:
-    store i1 %t10, $s0
+    store i1 %t11, $s0
     jump ^b3
   block ^b1:
-    store u8 7, $s3
-    %t11 = addr $s3
-    %t12 = index u8 %t11, 1
-    store u8 9, %t12
-    %t13 = addr $s3
-    %t14 = index u8 %t13, 2
-    store u8 1, %t14
-    %t15 = addr @rg.data.1
-    store ptr %t15, $s4
-    %t16 = addr $s4
-    %t17 = index u8 %t16, 8
-    store i64 3, %t17
-    %t18 = addr $s4
-    %t19 = call u8 @rg.15(%t18)
-    %t20 = cmp eq u8 %t19, 9
-    %t21 = convert trunc i1 i64 %t20
-    store i1 %t21, $s0
+    store u8 7, $s4
+    %t12 = addr $s4
+    %t13 = index u8 %t12, 1
+    store u8 9, %t13
+    %t14 = addr $s4
+    %t15 = index u8 %t14, 2
+    store u8 1, %t15
+    %t16 = addr @rg.data.1
+    store ptr %t16, $s5
+    %t17 = load ptr $s5
+    store ptr %t17, $s6
+    %t18 = addr $s6
+    %t19 = index u8 %t18, 8
+    store i64 3, %t19
+    %t20 = addr $s6
+    %t21 = call u8 @rg.15(%t20)
+    %t22 = cmp eq u8 %t21, 9
+    %t23 = convert trunc i1 i64 %t22
+    store i1 %t23, $s0
     jump ^b3
   block ^b3:
-    %t22 = load i1 $s0
-    call void @rg.13(%t22)
+    %t24 = load i1 $s0
+    call void @rg.13(%t24)
     return void
 }
 function @rg.15(%p0 : ptr) -> u8 {

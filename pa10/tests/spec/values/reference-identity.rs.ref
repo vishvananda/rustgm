@@ -24,12 +24,16 @@ type 21 reference mutable=false region=bound:0:0 referent=11
 type 22 function binders=1 parameters=[21] result=21 unsafe=false
 type 23 function-item def=13 signature=22
 type 24 reference mutable=false region=region:1 referent=11
+type 25 reference mutable=false region=region:2 referent=11
 region-var region:1 body=0:13 source=0:10 origin=inference pending
+region-var region:2 body=0:13 source=0:12 origin=inference pending
 region-coercion body=0:13 source=0:10 actual=21 expected=24 kind=same-shape pending
-region-coercion body=0:13 source=0:13 actual=24 expected=21 kind=same-shape pending
+region-coercion body=0:13 source=0:12 actual=24 expected=21 kind=reborrow pending
+region-coercion body=0:13 source=0:12 actual=25 expected=21 kind=same-shape pending
 body 0 function def=13 signature=22 result=21 source=0:13
   local l0 type=21 parameter=0 def=34 mutable=false storage-parent=- source=1
   local l1 type=24 binding def=35 mutable=false storage-parent=l0 source=9
+  projection p0 type=11 base=l1 dereference region=1 mutable=false
   block b0:
     live l0 source=1
     v0 type=21 = read l0 source=10
@@ -37,10 +41,11 @@ body 0 function def=13 signature=22 result=21 source=0:13
     live l1 source=9
     store l1 v1 source=11
     v2 type=1 = unit source=11
-    v3 type=24 = read l1 source=12
-    v4 type=21 = constrain v3 source=13
+    project p0 source=12
+    v3 type=25 = borrow p0 source=12
+    v4 type=21 = constrain v3 source=12
     dead l1 source=13
     dead l0 source=13
     return v4 source=13
 end-body
-eof bodies=1 locals=2 values=5 statements=10 blocks=1
+eof bodies=1 locals=2 values=5 statements=11 blocks=1

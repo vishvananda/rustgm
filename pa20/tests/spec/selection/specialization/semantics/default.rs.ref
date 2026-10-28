@@ -58,6 +58,7 @@ type 55 reference mutable=false region=region:1 referent=11
 type 56 function binders=0 parameters=[55,48] result=12 unsafe=false
 type 57 function-item def=24 signature=56 regions=[region:1,region:2]
 type 58 reference mutable=false region=region:3 referent=11
+type 59 reference mutable=false region=region:5 referent=11
 def 13 type=29 name="check" source=0:13
 def 14 type=31 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:25
@@ -134,7 +135,9 @@ region-var region:9 body=0:100 source=0:97 origin=inference pending
 region-var region:1 body=0:116 source=0:106 origin=item-argument pending
 region-var region:2 body=0:116 source=0:106 origin=item-argument pending
 region-var region:3 body=0:116 source=0:108 origin=expression-borrow pending
-region-var region:4 body=0:116 source=0:110 origin=expression-borrow pending
+region-var region:4 body=0:116 source=0:108 origin=inference pending
+region-var region:5 body=0:116 source=0:110 origin=expression-borrow pending
+region-var region:6 body=0:116 source=0:110 origin=inference pending
 region-equal body=0:56 left=region:2 right=bound:0:0
 region-equal body=0:56 left=region:3 right=bound:0:0
 region-equal body=0:56 left=region:1 right=bound:0:0
@@ -145,8 +148,10 @@ region-equal body=0:100 left=region:2 right=region:9
 region-equal body=0:100 left=region:7 right=region:8
 region-equal body=0:100 left=region:1 right=bound:0:0
 region-equal body=0:100 left=region:2 right=bound:0:1
-region-coercion body=0:116 source=0:108 actual=58 expected=55 kind=same-shape pending
-region-coercion body=0:116 source=0:110 actual=50 expected=48 kind=same-shape pending
+region-coercion body=0:116 source=0:108 actual=58 expected=55 kind=reborrow pending
+region-coercion body=0:116 source=0:108 actual=50 expected=55 kind=same-shape pending
+region-coercion body=0:116 source=0:110 actual=59 expected=48 kind=reborrow pending
+region-coercion body=0:116 source=0:110 actual=52 expected=48 kind=same-shape pending
 region-outlives body=0:100 source=0:97 longer=region:6 shorter=region:5 pending
 region-outlives body=0:100 source=0:97 longer=region:9 shorter=region:8 pending
 region-outlives body=0:116 source=0:106 longer=region:2 shorter=region:1 pending

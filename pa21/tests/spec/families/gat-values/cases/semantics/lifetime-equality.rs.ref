@@ -46,6 +46,7 @@ type 43 function binders=0 parameters=[32] result=11 unsafe=false
 type 44 function-item def=22 signature=43 regions=[region:1]
 type 45 projection def=17 self=21 trait=15 arguments=[] family arguments=[region:region:1]
 type 46 function-item def=22 signature=43 arguments=[region:region:1,type:21]
+type 47 reference mutable=false region=region:3 referent=11
 def 13 type=25 name="check" source=0:13
 def 14 type=27 name="fail" source=0:22
 def 16 type=22 name="Self" source=0:25
@@ -97,9 +98,11 @@ implementation-use source=0:68 owner=20 arguments=[]
 region-var region:1 body=0:59 source=0:59 origin=universal-alias pending
 region-var region:1 body=0:76 source=0:68 origin=item-argument pending
 region-var region:2 body=0:76 source=0:70 origin=expression-borrow pending
+region-var region:3 body=0:76 source=0:70 origin=inference pending
 region-equal body=0:59 left=region:1 right=bound:0:0
 region-equal body=0:76 left=region:1 right=region:1
-region-coercion body=0:76 source=0:70 actual=34 expected=32 kind=same-shape pending
+region-coercion body=0:76 source=0:70 actual=34 expected=32 kind=reborrow pending
+region-coercion body=0:76 source=0:70 actual=47 expected=32 kind=same-shape pending
 associated-type def=17 type=23
 result-contract def=17 projection=23
 result-bound def=17 index=0 subject=23 bound=sized

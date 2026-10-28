@@ -1,6 +1,18 @@
 loans-crate 1
 body 0 source=0:14
+  place p0 root=l0 shared=false
+  place p1 root=l0 parent=p0 dereference mutable=false shared=true
+  point t0 block=b0 at=s0 reachable=true
+  point t1 block=b0 at=s1 reachable=true
+  point t2 block=b0 at=s2 reachable=true
+  point t3 block=b0 at=s3 reachable=true
+  point t4 block=b0 at=s4 reachable=true
+  point t5 block=b0 at=s5 reachable=true
+  point t6 block=b0 at=end reachable=true
+  live-region g0 word=0 bits=000000000000007f
+  live-region g2 word=0 bits=000000000000007f
+  live-region g3 word=0 bits=000000000000000c
 end-body
 body 1 source=0:16
 end-body
-eof bodies=2 loans=0 places=0 points=0 region_words=0 state_words=0
+eof bodies=2 loans=0 places=2 points=7 region_words=3 state_words=0

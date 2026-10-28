@@ -5,6 +5,7 @@ function @rg.16() -> void {
   slot $s3 : obj<8x8>
   slot $s4 : obj<8x8>
   slot $s5 : ptr
+  slot $s6 : ptr
   block ^b0:
     store u8 0, $s0
     %t0 = addr $s0
@@ -18,13 +19,15 @@ function @rg.16() -> void {
     store u8 7, $s2
     %t5 = addr $s1
     %t6 = addr $s2
-    %t7 = call ptr @rg.closure.0(%t5, %t6)
-    store ptr %t7, $s5
-    %t8 = load ptr $s5
-    %t9 = load u8 %t8
-    %t10 = cmp eq u8 %t9, 7
-    %t11 = convert trunc i1 i64 %t10
-    call void @rg.13(%t11)
+    store ptr %t6, $s5
+    %t7 = load ptr $s5
+    %t8 = call ptr @rg.closure.0(%t5, %t7)
+    store ptr %t8, $s6
+    %t9 = load ptr $s6
+    %t10 = load u8 %t9
+    %t11 = cmp eq u8 %t10, 7
+    %t12 = convert trunc i1 i64 %t11
+    call void @rg.13(%t12)
     return void
 }
 function @rg.15.i4(%p0 : ptr, %p1 : ptr) -> void {

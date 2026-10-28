@@ -48,13 +48,14 @@ type 45 aggregate def=18 regions=[region:1]
 type 46 reference mutable=false region=region:1 referent=11
 type 47 function binders=0 parameters=[46] result=45 unsafe=false
 type 48 function-item def=19 signature=47 regions=[region:1]
-type 49 aggregate def=18 regions=[region:3]
+type 49 aggregate def=18 regions=[region:4]
 type 50 opaque id=0 arguments=[type:45]
-type 51 reference mutable=false region=region:3 referent=11
-type 52 aggregate def=18 regions=[region:4]
+type 51 reference mutable=false region=region:4 referent=11
+type 52 aggregate def=18 regions=[region:5]
 type 53 reference mutable=false region=region:2 referent=11
-type 54 function binders=0 parameters=[45] result=46 unsafe=false
-type 55 function-item def=17 signature=54 arguments=[type:45]
+type 54 reference mutable=false region=region:3 referent=11
+type 55 function binders=0 parameters=[45] result=46 unsafe=false
+type 56 function-item def=17 signature=55 arguments=[type:45]
 def 13 type=25 name="check" source=0:13
 def 14 type=27 name="fail" source=0:22
 def 16 type=22 name="Self" source=0:29
@@ -95,22 +96,24 @@ parameter owner=16 binding=16 argument=type:22 default=-
 predicate owner=15 source=0:29 subject=22 bound=trait:15 arguments=[]
 impl owner=20 source=0:51 subject=21 bound=trait:15 arguments=[]
 impl-method owner=20 declaration=17 selected=21 default=false
-method-call source=0:60 method=17 callable=55 dereferences=0 borrow=- receiver=45 origin=lexical
-implementation-use source=0:60 owner=20 arguments=[region:region:4]
+method-call source=0:60 method=17 callable=56 dereferences=0 borrow=- receiver=45 origin=lexical
+implementation-use source=0:60 owner=20 arguments=[region:region:5]
 region-var region:1 body=0:66 source=0:56 origin=item-argument pending
 region-var region:2 body=0:66 source=0:58 origin=expression-borrow pending
-region-var region:3 body=0:66 source=0:60 origin=quantified-proof pending
-region-var region:4 body=0:66 source=0:60 origin=inference pending
-region-equal body=0:66 left=region:1 right=region:4
-region-coercion body=0:66 source=0:58 actual=53 expected=46 kind=same-shape pending
+region-var region:3 body=0:66 source=0:58 origin=inference pending
+region-var region:4 body=0:66 source=0:60 origin=quantified-proof pending
+region-var region:5 body=0:66 source=0:60 origin=inference pending
+region-equal body=0:66 left=region:1 right=region:5
+region-coercion body=0:66 source=0:58 actual=53 expected=46 kind=reborrow pending
+region-coercion body=0:66 source=0:58 actual=54 expected=46 kind=same-shape pending
 opaque 0 owner=17 source=0:27 application=28 hidden=- role=trait-result storage-proof=pending
 opaque-bound id=0 index=0 subject=28 bound=copy
 opaque-implementation owner=20 id=0 type=31 parent-regions=0 regions=[]
 proof 0 body=0:66 source=0:60 pending
 proof-scope proof=0 scope=1 parent=0 regions=0 depth=1
-proof-owned proof=0 start=3 end=4
-proof-block proof=0 index=0 scope=0 aliases=false source=0 start=3 end=4
-proof-block proof=0 index=1 scope=1 aliases=false source=0 start=3 end=4
+proof-owned proof=0 start=4 end=5
+proof-block proof=0 index=0 scope=0 aliases=false source=0 start=4 end=5
+proof-block proof=0 index=1 scope=1 aliases=false source=0 start=4 end=5
 proof-relation proof=0 block=1 kind=equal left=region:1 right=region:1
-proof-relation proof=0 block=1 kind=equal left=region:1 right=region:3
+proof-relation proof=0 block=1 kind=equal left=region:1 right=region:4
 eof owners=2 members=2 parameters=1 predicates=1 impls=1 calls=1 paths=0 impl-uses=1 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0 quantifiers=0 families=0 family-bounds=0 family-regions=0 opaques=1 opaque-bounds=1 hidden-types=0 opaque-body-results=0 opaque-implementations=1 proofs=1 proof-scopes=1 proof-blocks=2 proof-sources=0 proof-owned=1 proof-relations=2 proof-types=0

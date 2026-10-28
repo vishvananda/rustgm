@@ -36,8 +36,10 @@ type 33 function binders=0 parameters=[11,31,32] result=31 unsafe=false
 type 34 function binders=1 parameters=[11,22,22] result=22 unsafe=false
 type 35 function binders=0 parameters=[11,31,31] result=31 unsafe=false
 type 36 function-item def=15 signature=34 arguments=[type:11]
-type 37 reference mutable=false region=region:4 referent=11
+type 37 reference mutable=false region=region:6 referent=11
 type 38 reference mutable=false region=region:3 referent=11
+type 39 reference mutable=false region=region:4 referent=11
+type 40 reference mutable=false region=region:5 referent=11
 def 14 type=21 name="Self" source=0:17
 def 15 type=24 name="f" source=0:16
 def 16 type=11 name="Self" source=0:40
@@ -81,10 +83,14 @@ trait-path source=0:50 method=15 trait=13 qualifier=explicit origin=ordinary sub
 implementation-use source=0:50 owner=16 arguments=[]
 region-var region:1 body=0:77 source=0:75 origin=call-argument pending
 region-var region:2 body=0:77 source=0:72 origin=expression-borrow pending
-region-var region:3 body=0:77 source=0:74 origin=expression-borrow pending
-region-var region:4 body=0:77 source=0:75 origin=inference pending
-region-coercion body=0:77 source=0:72 actual=32 expected=31 kind=same-shape pending
-region-coercion body=0:77 source=0:74 actual=38 expected=31 kind=same-shape pending
+region-var region:3 body=0:77 source=0:72 origin=inference pending
+region-var region:4 body=0:77 source=0:74 origin=expression-borrow pending
+region-var region:5 body=0:77 source=0:74 origin=inference pending
+region-var region:6 body=0:77 source=0:75 origin=inference pending
+region-coercion body=0:77 source=0:72 actual=32 expected=31 kind=reborrow pending
+region-coercion body=0:77 source=0:72 actual=38 expected=31 kind=same-shape pending
+region-coercion body=0:77 source=0:74 actual=39 expected=31 kind=reborrow pending
+region-coercion body=0:77 source=0:74 actual=40 expected=31 kind=same-shape pending
 region-coercion body=0:77 source=0:75 actual=31 expected=37 kind=same-shape pending
 region-coercion body=0:77 source=0:66 actual=36 expected=34 kind=function-pointer pending
 eof owners=2 members=2 parameters=1 predicates=1 impls=1 calls=0 paths=1 impl-uses=1

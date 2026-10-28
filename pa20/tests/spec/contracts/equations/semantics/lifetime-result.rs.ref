@@ -57,6 +57,7 @@ type 54 reference mutable=false region=region:4 referent=11
 type 55 function binders=0 parameters=[48] result=48 unsafe=false
 type 56 function-item def=25 signature=55 regions=[region:1]
 type 57 function-item def=25 signature=55 arguments=[region:region:1,type:11]
+type 58 reference mutable=false region=region:3 referent=11
 def 13 type=28 name="check" source=0:13
 def 14 type=30 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:35
@@ -116,14 +117,16 @@ impl owner=21 source=0:49 subject=11 bound=trait:15 arguments=[region:bound:0:0]
 impl-type owner=21 declaration=17 definition=22
 impl owner=23 source=0:60 subject=12 bound=trait:18 arguments=[region:bound:0:0]
 impl-type owner=23 declaration=20 definition=24
-implementation-use source=0:96 owner=21 arguments=[region:region:3]
+implementation-use source=0:96 owner=21 arguments=[region:region:4]
 region-var region:1 body=0:87 source=0:87 origin=universal-alias pending
 region-var region:1 body=0:105 source=0:96 origin=item-argument pending
 region-var region:2 body=0:105 source=0:98 origin=expression-borrow pending
-region-var region:3 body=0:105 source=0:96 origin=inference pending
+region-var region:3 body=0:105 source=0:98 origin=inference pending
+region-var region:4 body=0:105 source=0:96 origin=inference pending
 region-equal body=0:87 left=region:1 right=bound:0:0
-region-equal body=0:105 left=region:1 right=region:3
-region-coercion body=0:105 source=0:98 actual=37 expected=48 kind=same-shape pending
+region-equal body=0:105 left=region:1 right=region:4
+region-coercion body=0:105 source=0:98 actual=37 expected=48 kind=reborrow pending
+region-coercion body=0:105 source=0:98 actual=58 expected=48 kind=same-shape pending
 associated-type def=17 type=23
 result-contract def=17 projection=23
 result-bound def=17 index=0 subject=23 bound=sized

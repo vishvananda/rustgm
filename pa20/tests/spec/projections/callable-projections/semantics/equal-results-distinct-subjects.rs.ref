@@ -54,13 +54,14 @@ type 51 function-item def=23 signature=50
 type 52 function binders=0 parameters=[] result=1 unsafe=false
 type 53 function-item def=24 signature=52
 type 54 function binders=0 parameters=[36] result=36 unsafe=false
-type 55 function binders=0 parameters=[54,36] result=36 unsafe=false
-type 56 function-item def=22 signature=55 regions=[region:1]
-type 57 projection def=17 self=11 trait=15 arguments=[region:region:1] family arguments=[]
-type 58 projection def=17 self=12 trait=15 arguments=[region:region:1] family arguments=[]
-type 59 reference mutable=false region=region:3 referent=11
-type 60 function-item def=22 signature=55 arguments=[region:region:1,type:11,type:12]
+type 55 reference mutable=false region=region:3 referent=11
+type 56 function binders=0 parameters=[54,36] result=36 unsafe=false
+type 57 function-item def=22 signature=56 regions=[region:1]
+type 58 projection def=17 self=11 trait=15 arguments=[region:region:1] family arguments=[]
+type 59 projection def=17 self=12 trait=15 arguments=[region:region:1] family arguments=[]
+type 60 function-item def=22 signature=56 arguments=[region:region:1,type:11,type:12]
 type 61 reference mutable=false region=region:4 referent=11
+type 62 reference mutable=false region=region:5 referent=11
 def 13 type=24 name="check" source=0:13
 def 14 type=26 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:25
@@ -118,26 +119,32 @@ impl owner=18 source=0:36 subject=11 bound=trait:15 arguments=[region:bound:0:0]
 impl-type owner=18 declaration=17 definition=19
 impl owner=20 source=0:47 subject=12 bound=trait:15 arguments=[region:bound:0:0]
 impl-type owner=20 declaration=17 definition=21
-implementation-use source=0:114 owner=18 arguments=[region:region:5]
-implementation-use source=0:114 owner=20 arguments=[region:region:6]
+implementation-use source=0:114 owner=18 arguments=[region:region:6]
+implementation-use source=0:114 owner=20 arguments=[region:region:7]
 region-var region:1 body=0:92 source=0:92 origin=universal-alias pending
+region-var region:2 body=0:92 source=0:90 origin=inference pending
+region-var region:3 body=0:92 source=0:91 origin=inference pending
 region-var region:1 body=0:124 source=0:114 origin=item-argument pending
 region-var region:2 body=0:124 source=0:114 origin=inference pending
 region-var region:3 body=0:124 source=0:114 origin=inference pending
 region-var region:4 body=0:124 source=0:117 origin=expression-borrow pending
-region-var region:5 body=0:124 source=0:114 origin=inference pending
+region-var region:5 body=0:124 source=0:117 origin=inference pending
 region-var region:6 body=0:124 source=0:114 origin=inference pending
+region-var region:7 body=0:124 source=0:114 origin=inference pending
 region-equal body=0:92 left=region:1 right=bound:0:0
 region-equal body=0:124 left=region:1 right=region:1
 region-equal body=0:124 left=region:1 right=region:2
 region-equal body=0:124 left=region:1 right=region:1
 region-equal body=0:124 left=region:1 right=region:3
-region-equal body=0:124 left=region:1 right=region:5
 region-equal body=0:124 left=region:1 right=region:6
-region-coercion body=0:92 source=0:90 actual=27 expected=36 kind=same-shape pending
-region-coercion body=0:92 source=0:92 actual=36 expected=27 kind=same-shape pending
+region-equal body=0:124 left=region:1 right=region:7
+region-coercion body=0:92 source=0:90 actual=27 expected=36 kind=reborrow pending
+region-coercion body=0:92 source=0:90 actual=39 expected=36 kind=same-shape pending
+region-coercion body=0:92 source=0:91 actual=36 expected=27 kind=reborrow pending
+region-coercion body=0:92 source=0:91 actual=55 expected=27 kind=same-shape pending
 region-coercion body=0:124 source=0:115 actual=51 expected=54 kind=function-pointer pending
-region-coercion body=0:124 source=0:117 actual=61 expected=36 kind=same-shape pending
+region-coercion body=0:124 source=0:117 actual=61 expected=36 kind=reborrow pending
+region-coercion body=0:124 source=0:117 actual=62 expected=36 kind=same-shape pending
 associated-type def=17 type=22
 result-contract def=17 projection=22
 result-bound def=17 index=0 subject=22 bound=sized

@@ -1,13 +1,11 @@
 # Parallel library bootstrap implementation
 
-Use three GPT-6.1-Sol workers at high reasoning and one integrator. Each worker
-owns a separate worktree and local branch. PA24 is published; main integrates
-the remaining PA25–PA30 checkpoints and the prerequisites for original upstream
-core, alloc and std. Do not copy dirty files between workers or reset their
-unfinished work.
-Workers own implementation, independently qualified tests and handout drafts.
-The integrator owns shared interface decisions, integration, public pushes,
-assignment activation and final text-oracle publication.
+At the user's request, all subagents are stopped. The integrator continues the
+active core/alloc/std goal directly. Do not start or resume workers without a new
+explicit request. Their clean branches, WIP snapshots and qualified evidence are
+retained for integration; stopping workers does not qualify unfinished work.
+The integrator owns implementation, review, public main pushes, assignment
+activation and text-oracle publication.
 
 Use [the live library blocker tracker](library-build-blockers.md#current-execution-queue)
 for current assignments and the [execution plan](library-bootstrap-acceleration.md)
@@ -25,23 +23,25 @@ The actual65-role/two-word completion set, physical source Option profile and
 old-wire denials remain qualified. Complete known-role reservations are still a
 proposal and confer no source body/runtime/metadata authority.
 
-- A: bounded read-only handoff/source reviews; expectation and offset join packets
-  are ready. No heavy jobs or compiler edits.
-- B: nine source constructors are integrated. Generic payload derives are the
-  observed prerequisite of its actual panic/Arguments/PanicInfo/Location/handler
-  graph. Full Count, Formatter and source helper execution remain required.
-- C: actual source scalar comparisons and three_way_compare, preserving real
-  method/body/instance/const and Ordering proof, without bootstrap factories.
-- Integrator: shared-value/reborrow flow repair and reference publication, original
-  source probes, actual lint expectations and builtin offset field semantics.
-  C's reborrow handoff stays held until seven ordinary flow regressions are fixed;
-  existing source/native success does not override the full course failures.
+- The stopped derive lane has a qualified finite prerequisite at
+  `7afd78f25321fb5c2de86c6601f5b3c0096fa039`; its separate unqualified handler
+  snapshot is `d2ad7f8d5c28716cc47f7477ef3c86edb7d04da2`.
+- The stopped comparison lane is saved at
+  `2e095472bebcc392bd03fe1797baa5cfbddebcd0`. The actual full comparison/native
+  candidate is unfinished; variant regular-stability controls are a narrower
+  qualified prerequisite. Its replay notes remain in that worktree.
+- Read-only offset/lint expectation/release proposals remain evidence, with no
+  new compiler or publication authority.
+- The integrator is finishing shared-reference/capture flow qualification and
+  the affected independent/native/text checks. It then takes the saved derive,
+  comparison, source panic/weak linkage, actual lint and builtin offset exits.
+  PA25 generic/const, PA29 transport and original crate artifacts remain required.
 
-There are three coding lanes: root, B and C. A supplies bounded read-only review;
-do not create another worktree or enable a fourth heavy job. Root's output cap
-is16GiB, B's16GiB and C's16GiB. The shared three-job controller,150GiB reserve,
-per-process CPU/RAM/task limits and two Cargo/test threads remain unchanged.
-Existing historical ownership tables do not override this current assignment.
+Keep one heavy job in the integrator's active worktree, two Cargo/test/native
+threads, a16GiB absolute output cap and the unchanged150GiB disk reserve.
+The existing shared three-job controller remains configured; stopped workers
+hold no leases. Preserve source/evidence/current pins and clean obsolete outputs
+through the normal guarded scripts. Do not create more worktrees.
 
 C's cap increased12→16GiB at its idle handoff boundary after measured cache
 pressure forced a full cache retirement and a cold five-minute check timeout.

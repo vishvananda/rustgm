@@ -1,1 +1,1 @@
-ERROR: file 0: 47: required lifetime does not outlive its target
+ERROR: file 0: 48: required lifetime does not outlive its target

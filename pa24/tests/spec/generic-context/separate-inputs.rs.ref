@@ -3,20 +3,26 @@ function @rg.16() -> void {
   slot $s1 : u8
   slot $s2 : u8
   slot $s3 : ptr
+  slot $s4 : ptr
+  slot $s5 : ptr
   block ^b0:
     call void @rg.15.i4()
     store u8 7, $s1
     store u8 9, $s2
     %t0 = addr $s0
     %t1 = addr $s1
-    %t2 = addr $s2
-    %t3 = call ptr @rg.closure.0(%t1, %t2)
-    store ptr %t3, $s3
-    %t4 = load ptr $s3
-    %t5 = load u8 %t4
-    %t6 = cmp eq u8 %t5, 7
-    %t7 = convert trunc i1 i64 %t6
-    call void @rg.13(%t7)
+    store ptr %t1, $s3
+    %t2 = load ptr $s3
+    %t3 = addr $s2
+    store ptr %t3, $s4
+    %t4 = load ptr $s4
+    %t5 = call ptr @rg.closure.0(%t2, %t4)
+    store ptr %t5, $s5
+    %t6 = load ptr $s5
+    %t7 = load u8 %t6
+    %t8 = cmp eq u8 %t7, 7
+    %t9 = convert trunc i1 i64 %t8
+    call void @rg.13(%t9)
     return void
 }
 function @rg.15.i4() -> void {

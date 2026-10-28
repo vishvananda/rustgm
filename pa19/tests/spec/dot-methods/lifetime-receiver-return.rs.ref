@@ -31,10 +31,13 @@ function @rg.16(%p0 : ptr, %p1 : u8) -> void {
 }
 function @rg.18(%p0 : ptr) -> ptr {
   slot $s0 : ptr
+  slot $s1 : ptr
   block ^b0:
     store ptr %p0, $s0
     %t0 = load ptr $s0
-    return ptr %t0
+    store ptr %t0, $s1
+    %t1 = load ptr $s1
+    return ptr %t1
 }
 function @rg.13(%p0 : i1) -> void {
   slot $s0 : i1

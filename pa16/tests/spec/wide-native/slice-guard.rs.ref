@@ -9,9 +9,11 @@ global @rg.data.1 : obj<2x1> [storage=readonly] = {
 function @rg.16() -> void {
   slot $s0 : i1
   slot $s1 : obj<2x1>
-  slot $s2 : obj<16x8>
-  slot $s3 : obj<2x1>
-  slot $s4 : obj<16x8>
+  slot $s2 : ptr
+  slot $s3 : obj<16x8>
+  slot $s4 : obj<2x1>
+  slot $s5 : ptr
+  slot $s6 : obj<16x8>
   block ^b0:
     store u8 7, $s1
     %t0 = addr $s1
@@ -19,36 +21,40 @@ function @rg.16() -> void {
     store u8 9, %t1
     %t2 = addr @rg.data.0
     store ptr %t2, $s2
-    %t3 = addr $s2
-    %t4 = index u8 %t3, 8
-    store i64 2, %t4
-    %t5 = addr $s2
-    %t6 = call u8 @rg.15(%t5)
-    %t7 = cmp eq u8 %t6, 9
-    %t8 = convert trunc i1 i64 %t7
-    branch %t8, ^b1, ^b2
+    %t3 = load ptr $s2
+    store ptr %t3, $s3
+    %t4 = addr $s3
+    %t5 = index u8 %t4, 8
+    store i64 2, %t5
+    %t6 = addr $s3
+    %t7 = call u8 @rg.15(%t6)
+    %t8 = cmp eq u8 %t7, 9
+    %t9 = convert trunc i1 i64 %t8
+    branch %t9, ^b1, ^b2
   block ^b2:
-    store i1 %t8, $s0
+    store i1 %t9, $s0
     jump ^b3
   block ^b1:
-    store u8 8, $s3
-    %t9 = addr $s3
-    %t10 = index u8 %t9, 1
-    store u8 9, %t10
-    %t11 = addr @rg.data.1
-    store ptr %t11, $s4
-    %t12 = addr $s4
-    %t13 = index u8 %t12, 8
-    store i64 2, %t13
-    %t14 = addr $s4
-    %t15 = call u8 @rg.15(%t14)
-    %t16 = cmp eq u8 %t15, 0
-    %t17 = convert trunc i1 i64 %t16
-    store i1 %t17, $s0
+    store u8 8, $s4
+    %t10 = addr $s4
+    %t11 = index u8 %t10, 1
+    store u8 9, %t11
+    %t12 = addr @rg.data.1
+    store ptr %t12, $s5
+    %t13 = load ptr $s5
+    store ptr %t13, $s6
+    %t14 = addr $s6
+    %t15 = index u8 %t14, 8
+    store i64 2, %t15
+    %t16 = addr $s6
+    %t17 = call u8 @rg.15(%t16)
+    %t18 = cmp eq u8 %t17, 0
+    %t19 = convert trunc i1 i64 %t18
+    store i1 %t19, $s0
     jump ^b3
   block ^b3:
-    %t18 = load i1 $s0
-    call void @rg.13(%t18)
+    %t20 = load i1 $s0
+    call void @rg.13(%t20)
     return void
 }
 function @rg.15(%p0 : ptr) -> u8 {

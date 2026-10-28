@@ -2,42 +2,48 @@ function @rg.20() -> void {
   slot $s0 : u8
   slot $s1 : u16
   slot $s2 : obj<16x8>
-  slot $s3 : obj<3x1>
-  slot $s4 : obj<16x8>
+  slot $s3 : ptr
+  slot $s4 : obj<3x1>
   slot $s5 : obj<16x8>
+  slot $s6 : ptr
+  slot $s7 : obj<16x8>
   block ^b0:
     store u8 7, $s0
     store u16 517, $s1
     %t0 = addr $s0
-    store u8 1, $s3
-    %t1 = addr $s3
-    %t2 = index u8 %t1, 1
-    store u8 2, %t2
-    %t3 = addr $s3
-    %t4 = index u8 %t3, 2
-    store u8 3, %t4
-    %t5 = addr $s4
-    %t6 = addr $s3
-    call void @rg.16.i3(%t5, %t0, %t6)
-    %t7 = addr $s1
-    %t8 = addr $s5
-    %t9 = addr $s4
-    call void @rg.19.i4(%t8, %t9, %t7)
-    %t10 = addr $s5
-    %t11 = addr $s2
-    copyobj 16x8 %t10, %t11
-    %t12 = load ptr $s2
-    %t13 = load u8 %t12
-    %t14 = cmp eq u8 %t13, 7
-    %t15 = convert trunc i1 i64 %t14
-    call void @rg.13(%t15)
-    %t16 = addr $s2
-    %t17 = index u8 %t16, 8
-    %t18 = load ptr %t17
-    %t19 = load u16 %t18
-    %t20 = cmp eq u16 %t19, 517
-    %t21 = convert trunc i1 i64 %t20
-    call void @rg.13(%t21)
+    store ptr %t0, $s3
+    %t1 = load ptr $s3
+    store u8 1, $s4
+    %t2 = addr $s4
+    %t3 = index u8 %t2, 1
+    store u8 2, %t3
+    %t4 = addr $s4
+    %t5 = index u8 %t4, 2
+    store u8 3, %t5
+    %t6 = addr $s5
+    %t7 = addr $s4
+    call void @rg.16.i3(%t6, %t1, %t7)
+    %t8 = addr $s1
+    store ptr %t8, $s6
+    %t9 = load ptr $s6
+    %t10 = addr $s7
+    %t11 = addr $s5
+    call void @rg.19.i4(%t10, %t11, %t9)
+    %t12 = addr $s7
+    %t13 = addr $s2
+    copyobj 16x8 %t12, %t13
+    %t14 = load ptr $s2
+    %t15 = load u8 %t14
+    %t16 = cmp eq u8 %t15, 7
+    %t17 = convert trunc i1 i64 %t16
+    call void @rg.13(%t17)
+    %t18 = addr $s2
+    %t19 = index u8 %t18, 8
+    %t20 = load ptr %t19
+    %t21 = load u16 %t20
+    %t22 = cmp eq u16 %t21, 517
+    %t23 = convert trunc i1 i64 %t22
+    call void @rg.13(%t23)
     return void
 }
 function @rg.16.i3(%p0 : ptr, %p1 : ptr, %p2 : ptr) -> void {

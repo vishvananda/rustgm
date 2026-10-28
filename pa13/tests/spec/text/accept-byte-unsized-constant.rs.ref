@@ -27,6 +27,7 @@ type 24 function binders=1 parameters=[23] result=1 unsafe=false
 type 25 function-item def=14 signature=24
 type 26 array element=11 length=2
 type 27 reference mutable=false region=static referent=26
+type 28 reference mutable=false region=region:1 referent=21
 root 0:11 pattern=0
 root 0:14 pattern=1
 pattern 0 source=0:11 input=23 deref mutable=false implicit=false pattern=2
@@ -41,5 +42,7 @@ range 1 ranks=98:98
 match 0 source=0:17 input=0:10 arms=0:2 exhaustive=true uninhabited=false work=1222
 arm 0 source=0:13 pattern=0 guard=- useful=true value=0:12
 arm 1 source=0:16 pattern=1 guard=- useful=true value=0:15
-region-coercion body=0:3 source=0:3 actual=27 expected=22 kind=array-to-slice pending
-eof roots=2 patterns=5 fields=2 alternatives=0 ranges=2 matches=1 arms=2 coverage-work=1222 region-vars=0 region-equalities=0 conditions=0 chains=0
+region-var region:1 body=0:3 source=0:3 origin=inference pending
+region-coercion body=0:3 source=0:3 actual=27 expected=22 kind=reborrow pending
+region-coercion body=0:3 source=0:3 actual=28 expected=22 kind=same-shape pending
+eof roots=2 patterns=5 fields=2 alternatives=0 ranges=2 matches=1 arms=2 coverage-work=1222 region-vars=1 region-equalities=0 conditions=0 chains=0

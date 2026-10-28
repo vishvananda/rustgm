@@ -39,10 +39,10 @@ type 36 function binders=0 parameters=[27,12] result=12 unsafe=false
 type 37 reference mutable=false region=region:1 referent=23
 type 38 function binders=0 parameters=[37,12] result=12 unsafe=false
 type 39 reference mutable=false region=region:2 referent=30
-type 40 reference mutable=false region=region:1 referent=30
-type 41 function binders=1 parameters=[31,11] result=11 unsafe=false
-type 42 function-item def=15 signature=41 arguments=[type:30,type:11]
-type 43 function binders=0 parameters=[39,11] result=11 unsafe=false
+type 40 function binders=1 parameters=[31,11] result=11 unsafe=false
+type 41 function-item def=15 signature=40 arguments=[type:30,type:11]
+type 42 function binders=0 parameters=[39,11] result=11 unsafe=false
+type 43 reference mutable=false region=region:3 referent=30
 def 14 type=21 name="Self" source=0:9
 def 15 type=26 name="f" source=0:8
 def 16 type=23 name="Self" source=0:26
@@ -74,7 +74,7 @@ def 41 type=30 name="T" source=0:32
 def 44 type=27 name="self" source=0:16
 def 45 type=12 name="x" source=0:19
 def 46 type=31 name="x" source=0:33
-def 47 type=42 name="f" source=0:38
+def 47 type=41 name="f" source=0:38
 associated-owner 0 kind=trait self-def=14 self=21 source=0:9 trait=13 unsafe=false name="A"
 associated-owner 1 kind=trait-impl self-def=16 self=23 source=0:26 unsafe=false
 associated-member def=15 owner=0 receiver=24 references=1
@@ -90,6 +90,8 @@ impl-method owner=16 declaration=15 selected=17 default=false
 trait-path source=0:41 method=15 trait=13 qualifier=implicit origin=bound subject-source=0:39
 region-var region:1 body=0:47 source=0:41 origin=universal-alias pending
 region-var region:2 body=0:47 source=0:46 origin=call-argument pending
+region-var region:3 body=0:47 source=0:44 origin=inference pending
 region-equal body=0:47 left=region:1 right=bound:0:0
-region-coercion body=0:47 source=0:44 actual=31 expected=39 kind=same-shape pending
+region-coercion body=0:47 source=0:44 actual=31 expected=39 kind=reborrow pending
+region-coercion body=0:47 source=0:44 actual=43 expected=39 kind=same-shape pending
 eof owners=2 members=2 parameters=4 predicates=2 impls=1 calls=0 paths=1 impl-uses=0

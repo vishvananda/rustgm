@@ -1,0 +1,1 @@
+fn read(x:&u8)->u8{*x}fn make(x:&'static u8)->impl Fn()->u8+'static{||read(x)}fn main(){}

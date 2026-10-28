@@ -7,7 +7,8 @@ global @rg.vtable.0 : obj<32x8> [storage=readonly] = {
 function @rg.22() -> void {
   slot $s0 : obj<4x2>
   slot $s1 : obj<4x2>
-  slot $s2 : obj<16x8>
+  slot $s2 : ptr
+  slot $s3 : obj<16x8>
   block ^b0:
     store u8 2, $s1
     %t0 = addr $s1
@@ -17,16 +18,18 @@ function @rg.22() -> void {
     %t3 = addr $s0
     copyobj 4x2 %t2, %t3
     %t4 = addr $s0
-    %t5 = addr @rg.vtable.0
     store ptr %t4, $s2
-    %t6 = addr $s2
-    %t7 = index u8 %t6, 8
-    store ptr %t5, %t7
-    %t8 = addr $s2
-    %t9 = call u16 @rg.21(%t8)
-    %t10 = cmp eq u16 %t9, 1002
-    %t11 = convert trunc i1 i64 %t10
-    call void @rg.13(%t11)
+    %t5 = load ptr $s2
+    %t6 = addr @rg.vtable.0
+    store ptr %t5, $s3
+    %t7 = addr $s3
+    %t8 = index u8 %t7, 8
+    store ptr %t6, %t8
+    %t9 = addr $s3
+    %t10 = call u16 @rg.21(%t9)
+    %t11 = cmp eq u16 %t10, 1002
+    %t12 = convert trunc i1 i64 %t11
+    call void @rg.13(%t12)
     return void
 }
 function @rg.21(%p0 : ptr) -> u16 {

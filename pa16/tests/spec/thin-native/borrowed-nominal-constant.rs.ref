@@ -7,30 +7,36 @@ global @rg.data.1 : obj<1x1> [storage=readonly] = {
 function @rg.19() -> void {
   slot $s0 : i1
   slot $s1 : obj<1x1>
-  slot $s2 : obj<1x1>
+  slot $s2 : ptr
+  slot $s3 : obj<1x1>
+  slot $s4 : ptr
   block ^b0:
     %t0 = addr $s1
     call void @rg.16(%t0, 7)
     %t1 = addr @rg.data.0
-    %t2 = call u8 @rg.18(%t1)
-    %t3 = cmp eq u8 %t2, 1
-    %t4 = convert trunc i1 i64 %t3
-    branch %t4, ^b1, ^b2
+    store ptr %t1, $s2
+    %t2 = load ptr $s2
+    %t3 = call u8 @rg.18(%t2)
+    %t4 = cmp eq u8 %t3, 1
+    %t5 = convert trunc i1 i64 %t4
+    branch %t5, ^b1, ^b2
   block ^b2:
-    store i1 %t4, $s0
+    store i1 %t5, $s0
     jump ^b3
   block ^b1:
-    %t5 = addr $s2
-    call void @rg.16(%t5, 9)
-    %t6 = addr @rg.data.1
-    %t7 = call u8 @rg.18(%t6)
-    %t8 = cmp eq u8 %t7, 2
-    %t9 = convert trunc i1 i64 %t8
-    store i1 %t9, $s0
+    %t6 = addr $s3
+    call void @rg.16(%t6, 9)
+    %t7 = addr @rg.data.1
+    store ptr %t7, $s4
+    %t8 = load ptr $s4
+    %t9 = call u8 @rg.18(%t8)
+    %t10 = cmp eq u8 %t9, 2
+    %t11 = convert trunc i1 i64 %t10
+    store i1 %t11, $s0
     jump ^b3
   block ^b3:
-    %t10 = load i1 $s0
-    call void @rg.13(%t10)
+    %t12 = load i1 $s0
+    call void @rg.13(%t12)
     return void
 }
 function @rg.16(%p0 : ptr, %p1 : u8) -> void {

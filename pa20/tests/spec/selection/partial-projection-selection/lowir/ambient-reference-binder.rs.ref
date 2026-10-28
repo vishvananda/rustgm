@@ -3,12 +3,15 @@ global @rg.data.0 : obj<1x1> [storage=readonly] = {
 }
 function @rg.22() -> void {
   slot $s0 : ptr
+  slot $s1 : ptr
   block ^b0:
     %t0 = addr @rg.21
     store ptr %t0, $s0
     %t1 = load ptr $s0
     %t2 = addr @rg.data.0
-    call void %t1(%t2) as (%p0 : ptr) -> void
+    store ptr %t2, $s1
+    %t3 = load ptr $s1
+    call void %t1(%t3) as (%p0 : ptr) -> void
     return void
 }
 function @rg.21(%p0 : ptr) -> void {

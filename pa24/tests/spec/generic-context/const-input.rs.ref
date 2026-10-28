@@ -4,6 +4,7 @@ function @rg.16() -> void {
   slot $s2 : obj<2x1>
   slot $s3 : obj<2x1>
   slot $s4 : ptr
+  slot $s5 : ptr
   block ^b0:
     store u8 1, $s2
     %t0 = addr $s2
@@ -20,18 +21,20 @@ function @rg.16() -> void {
     copyobj 2x1 %t5, %t6
     %t7 = addr $s0
     %t8 = addr $s1
-    %t9 = call ptr @rg.closure.0(%t8)
-    store ptr %t9, $s4
-    %t10 = load ptr $s4
-    %t11 = cmp uge i64 0, 2
-    branch %t11, ^b1, ^b2
+    store ptr %t8, $s4
+    %t9 = load ptr $s4
+    %t10 = call ptr @rg.closure.0(%t9)
+    store ptr %t10, $s5
+    %t11 = load ptr $s5
+    %t12 = cmp uge i64 0, 2
+    branch %t12, ^b1, ^b2
   block ^b2:
-    %t12 = binary mul i64 0, 1
-    %t13 = index u8 %t10, %t12
-    %t14 = load u8 %t13
-    %t15 = cmp eq u8 %t14, 7
-    %t16 = convert trunc i1 i64 %t15
-    call void @rg.13(%t16)
+    %t13 = binary mul i64 0, 1
+    %t14 = index u8 %t11, %t13
+    %t15 = load u8 %t14
+    %t16 = cmp eq u8 %t15, 7
+    %t17 = convert trunc i1 i64 %t16
+    call void @rg.13(%t17)
     return void
   block ^b1:
     call void @abort()

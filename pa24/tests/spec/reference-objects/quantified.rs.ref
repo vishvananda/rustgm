@@ -15,8 +15,10 @@ function @rg.15() -> void {
   slot $s2 : ptr
   slot $s3 : obj<16x8>
   slot $s4 : obj<1x1>
-  slot $s5 : obj<16x8>
+  slot $s5 : ptr
   slot $s6 : obj<16x8>
+  slot $s7 : obj<16x8>
+  slot $s8 : ptr
   block ^b0:
     store u8 5, $s0
     %t0 = load u8 $s0
@@ -27,28 +29,32 @@ function @rg.15() -> void {
     %t3 = addr $s1
     store ptr %t3, $s2
     %t4 = addr $s2
-    %t5 = addr @rg.vtable.0
     store ptr %t4, $s5
-    %t6 = addr $s5
-    %t7 = index u8 %t6, 8
-    store ptr %t5, %t7
-    %t8 = addr $s5
-    %t9 = addr $s3
-    copyobj 16x8 %t8, %t9
-    %t10 = load ptr $s3
-    %t11 = addr $s3
-    %t12 = index u8 %t11, 8
-    %t13 = load ptr %t12
-    store ptr %t10, $s6
-    %t14 = addr $s6
-    %t15 = index u8 %t14, 8
-    store ptr %t13, %t15
-    %t16 = addr @rg.data.1
-    %t17 = addr $s6
-    %t18 = call u8 @rg.callable.virtual.0(%t17, %t16)
-    %t19 = cmp eq u8 %t18, 7
-    %t20 = convert trunc i1 i64 %t19
-    call void @rg.13(%t20)
+    %t5 = load ptr $s5
+    %t6 = addr @rg.vtable.0
+    store ptr %t5, $s6
+    %t7 = addr $s6
+    %t8 = index u8 %t7, 8
+    store ptr %t6, %t8
+    %t9 = addr $s6
+    %t10 = addr $s3
+    copyobj 16x8 %t9, %t10
+    %t11 = load ptr $s3
+    %t12 = addr $s3
+    %t13 = index u8 %t12, 8
+    %t14 = load ptr %t13
+    store ptr %t11, $s7
+    %t15 = addr $s7
+    %t16 = index u8 %t15, 8
+    store ptr %t14, %t16
+    %t17 = addr @rg.data.1
+    store ptr %t17, $s8
+    %t18 = load ptr $s8
+    %t19 = addr $s7
+    %t20 = call u8 @rg.callable.virtual.0(%t19, %t18)
+    %t21 = cmp eq u8 %t20, 7
+    %t22 = convert trunc i1 i64 %t21
+    call void @rg.13(%t22)
     return void
 }
 function @rg.callable.virtual.0(%p0 : ptr, %p1 : ptr) -> u8 {

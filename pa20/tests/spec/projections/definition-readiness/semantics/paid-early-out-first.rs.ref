@@ -59,35 +59,36 @@ type 56 reference mutable=false region=region:1 referent=11
 type 57 function binders=0 parameters=[56,47] result=41 unsafe=false
 type 58 function-item def=28 signature=57 arguments=[region:region:1,const:16:0x00000000000000000000000000000001]
 type 59 reference mutable=false region=region:3 referent=11
-type 60 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000003]
-type 61 function binders=0 parameters=[] result=60 unsafe=false
-type 62 function-item def=17 signature=61
-type 63 function binders=0 parameters=[] result=1 unsafe=false
-type 64 function-item def=38 signature=63
-type 65 array element=11 length=parameter:15:0
-type 66 function binders=0 parameters=[65] result=21 unsafe=false
-type 67 function-item def=16 signature=66
-type 68 function binders=1 parameters=[44] result=22 unsafe=false
-type 69 aggregate def=18 regions=[bound:1:0]
-type 70 function binders=0 parameters=[52] result=69 unsafe=false
-type 71 function-item def=19 signature=68
-type 72 function binders=1 parameters=[44] result=23 unsafe=false
-type 73 aggregate def=20 regions=[bound:1:0]
-type 74 function binders=0 parameters=[52] result=73 unsafe=false
-type 75 function-item def=21 signature=72
-type 76 projection def=31 self=26 trait=29 arguments=[region:region:1] family arguments=[]
-type 77 array element=11 length=3
-type 78 function binders=0 parameters=[77] result=60 unsafe=false
-type 79 function-item def=16 signature=78 arguments=[const:16:0x00000000000000000000000000000003]
+type 60 reference mutable=false region=region:4 referent=11
+type 61 aggregate def=15 arguments=[const:16:0x00000000000000000000000000000003]
+type 62 function binders=0 parameters=[] result=61 unsafe=false
+type 63 function-item def=17 signature=62
+type 64 function binders=0 parameters=[] result=1 unsafe=false
+type 65 function-item def=38 signature=64
+type 66 array element=11 length=parameter:15:0
+type 67 function binders=0 parameters=[66] result=21 unsafe=false
+type 68 function-item def=16 signature=67
+type 69 function binders=1 parameters=[44] result=22 unsafe=false
+type 70 aggregate def=18 regions=[bound:1:0]
+type 71 function binders=0 parameters=[52] result=70 unsafe=false
+type 72 function-item def=19 signature=69
+type 73 function binders=1 parameters=[44] result=23 unsafe=false
+type 74 aggregate def=20 regions=[bound:1:0]
+type 75 function binders=0 parameters=[52] result=74 unsafe=false
+type 76 function-item def=21 signature=73
+type 77 projection def=31 self=26 trait=29 arguments=[region:region:1] family arguments=[]
+type 78 array element=11 length=3
+type 79 function binders=0 parameters=[78] result=61 unsafe=false
+type 80 function-item def=16 signature=79 arguments=[const:16:0x00000000000000000000000000000003]
 def 13 type=32 name="check" source=0:13
 def 14 type=34 name="fail" source=0:22
 def 15 type=21 name="X" source=0:29
-def 16 type=67 name="X" source=0:29
-def 17 type=62 name="f" source=0:54
+def 16 type=68 name="X" source=0:29
+def 17 type=63 name="f" source=0:54
 def 18 type=22 name="S" source=0:60
-def 19 type=71 name="S" source=0:60
+def 19 type=72 name="S" source=0:60
 def 20 type=23 name="R" source=0:66
-def 21 type=75 name="R" source=0:66
+def 21 type=76 name="R" source=0:66
 def 23 type=25 name="Self" source=0:70
 def 24 type=16 name="N" source=0:69
 def 25 type=23 name="Self" source=0:83
@@ -100,9 +101,9 @@ def 32 type=30 name="Other" source=0:100
 def 33 type=29 name="C" source=0:104
 def 34 type=22 name="Self" source=0:163
 def 35 type=40 name="Out" source=0:130
-def 36 type=60 name="Other" source=0:149
+def 36 type=61 name="Other" source=0:149
 def 37 type=40 name="C" source=0:162
-def 38 type=64 name="main" source=0:175
+def 38 type=65 name="main" source=0:175
 def 39 type=2 name="bool"
 def 40 type=3 name="char"
 def 41 type=4 name="str"
@@ -164,6 +165,7 @@ region-var region:2 body=0:45 source=0:40 origin=inference pending
 region-var region:1 body=0:161 source=0:155 origin=item-argument pending
 region-var region:2 body=0:161 source=0:161 origin=universal-alias pending
 region-var region:3 body=0:161 source=0:157 origin=expression-borrow pending
+region-var region:4 body=0:161 source=0:157 origin=inference pending
 region-var region:1 body=0:146 source=0:141 origin=inference pending
 region-var region:2 body=0:146 source=0:141 origin=inference pending
 region-equal body=0:127 left=static right=region:1
@@ -175,7 +177,8 @@ region-equal body=0:146 left=static right=region:1
 region-equal body=0:146 left=static right=region:1
 region-equal body=0:146 left=static right=region:2
 region-equal body=0:146 left=static right=region:2
-region-coercion body=0:161 source=0:157 actual=59 expected=56 kind=same-shape pending
+region-coercion body=0:161 source=0:157 actual=59 expected=56 kind=reborrow pending
+region-coercion body=0:161 source=0:157 actual=60 expected=56 kind=same-shape pending
 region-coercion body=0:161 source=0:161 actual=41 expected=40 kind=same-shape pending
 associated-constant def=24 type=16
 associated-constant def=26 type=16
@@ -188,7 +191,7 @@ result-contract def=32 projection=30
 result-bound def=32 index=0 subject=30 bound=sized
 associated-constant def=33 type=29
 associated-type def=35 type=40
-associated-type def=36 type=60
+associated-type def=36 type=61
 associated-constant def=37 type=40
 impl-constant owner=25 declaration=24 selected=26 default=false
 impl-constant owner=34 declaration=33 selected=37 default=false

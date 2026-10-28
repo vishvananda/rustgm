@@ -34,6 +34,7 @@ type 31 projection def=17 self=11 trait=15 arguments=[region:region:1] family ar
 type 32 reference mutable=false region=region:2 referent=11
 type 33 reference mutable=false region=region:1 referent=11
 type 34 reference mutable=false region=region:3 referent=11
+type 35 reference mutable=false region=region:4 referent=11
 def 13 type=24 name="check" source=0:13
 def 14 type=26 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:27
@@ -77,9 +78,11 @@ impl-type owner=18 declaration=17 definition=19
 region-var region:1 body=0:60 source=0:45 origin=annotation pending
 region-var region:2 body=0:60 source=0:49 origin=inference pending
 region-var region:3 body=0:60 source=0:51 origin=expression-borrow pending
+region-var region:4 body=0:60 source=0:51 origin=inference pending
 region-equal body=0:60 left=region:1 right=region:1
 region-equal body=0:60 left=region:1 right=region:2
-region-coercion body=0:60 source=0:51 actual=34 expected=33 kind=same-shape pending
+region-coercion body=0:60 source=0:51 actual=34 expected=33 kind=reborrow pending
+region-coercion body=0:60 source=0:51 actual=35 expected=33 kind=same-shape pending
 associated-type def=17 type=22
 result-contract def=17 projection=22
 result-bound def=17 index=0 subject=22 bound=sized

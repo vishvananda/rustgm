@@ -1,16 +1,19 @@
 function @rg.18() -> void {
   slot $s0 : i32
-  slot $s1 : obj<8x8>
+  slot $s1 : ptr
+  slot $s2 : obj<8x8>
   block ^b0:
     store i32 18, $s0
     %t0 = addr $s0
-    %t1 = addr $s1
-    call void @rg.17.i3(%t1, %t0)
-    %t2 = load ptr $s1
-    %t3 = load i32 %t2
-    %t4 = cmp eq i32 %t3, 18
-    %t5 = convert trunc i1 i64 %t4
-    call void @rg.13(%t5)
+    store ptr %t0, $s1
+    %t1 = load ptr $s1
+    %t2 = addr $s2
+    call void @rg.17.i3(%t2, %t1)
+    %t3 = load ptr $s2
+    %t4 = load i32 %t3
+    %t5 = cmp eq i32 %t4, 18
+    %t6 = convert trunc i1 i64 %t5
+    call void @rg.13(%t6)
     return void
 }
 function @rg.17.i3(%p0 : ptr, %p1 : ptr) -> void {

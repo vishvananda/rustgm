@@ -12,12 +12,15 @@ function @rg.19() -> void {
 function @rg.17(%p0 : ptr) -> void {
   slot $s0 : ptr
   slot $s1 : u8
+  slot $s2 : ptr
   block ^b0:
     store ptr %p0, $s0
     store u8 19, $s1
     %t0 = load ptr $s0
     %t1 = addr $s1
-    call void %t0(%t1) as (%p0 : ptr) -> void
+    store ptr %t1, $s2
+    %t2 = load ptr $s2
+    call void %t0(%t2) as (%p0 : ptr) -> void
     return void
 }
 function @rg.16.i5(%p0 : ptr) -> ptr {

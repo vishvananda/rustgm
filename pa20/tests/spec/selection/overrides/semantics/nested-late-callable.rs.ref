@@ -55,6 +55,7 @@ type 52 reference mutable=false region=region:1 referent=12
 type 53 function binders=0 parameters=[41,52] result=12 unsafe=false
 type 54 function-item def=22 signature=51 arguments=[type:13,type:11]
 type 55 reference mutable=false region=region:2 referent=12
+type 56 reference mutable=false region=region:3 referent=12
 def 13 type=27 name="check" source=0:13
 def 14 type=29 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:24
@@ -120,13 +121,15 @@ trait-path source=0:123 method=22 trait=20 qualifier=explicit origin=ordinary su
 implementation-use source=0:123 owner=18 arguments=[]
 implementation-use source=0:123 owner=23 arguments=[type:11]
 region-var region:1 body=0:101 source=0:99 origin=call-argument pending
-region-var region:2 body=0:101 source=0:98 origin=universal-alias pending
+region-var region:2 body=0:101 source=0:98 origin=inference pending
 region-var region:1 body=0:132 source=0:127 origin=call-argument pending
 region-var region:2 body=0:132 source=0:126 origin=expression-borrow pending
-region-equal body=0:101 left=region:2 right=bound:0:0
-region-coercion body=0:101 source=0:98 actual=36 expected=46 kind=same-shape pending
+region-var region:3 body=0:132 source=0:126 origin=inference pending
+region-coercion body=0:101 source=0:98 actual=36 expected=46 kind=reborrow pending
+region-coercion body=0:101 source=0:98 actual=49 expected=46 kind=same-shape pending
 region-coercion body=0:132 source=0:124 actual=42 expected=41 kind=function-pointer pending
-region-coercion body=0:132 source=0:126 actual=55 expected=52 kind=same-shape pending
+region-coercion body=0:132 source=0:126 actual=55 expected=52 kind=reborrow pending
+region-coercion body=0:132 source=0:126 actual=56 expected=52 kind=same-shape pending
 associated-type def=17 type=25
 result-contract def=17 projection=25
 result-bound def=17 index=0 subject=25 bound=sized

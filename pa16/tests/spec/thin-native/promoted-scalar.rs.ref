@@ -14,13 +14,16 @@ function @rg.16() -> void {
     return void
 }
 function @rg.15() -> ptr {
+  slot $s0 : ptr
   block ^b0:
     %t0 = binary add i64 40, 2
     %t1 = cmp ult i64 %t0, 40
     branch %t1, ^b1, ^b2
   block ^b2:
     %t2 = addr @rg.data.0
-    return ptr %t2
+    store ptr %t2, $s0
+    %t3 = load ptr $s0
+    return ptr %t3
   block ^b1:
     call void @abort()
     unreachable

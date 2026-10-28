@@ -198,6 +198,8 @@ def check(app, jobs, stage="pa11", *, unit=None, case_paths=None):
             command = ["rustc", "--edition=2024", "--target", "x86_64-unknown-linux-gnu",
                        *rustc_arguments(case, "native_check"), "-C", "panic=abort", "-C", "overflow-checks=yes",
                        "-C", "debug-assertions=off", str(source), "-o", str(rustexe)]
+            if not case["rustc"].get("default_lints", False):
+                command += ["--cap-lints", "allow"]
             if library:
                 command += ["--crate-type=lib", "--emit=obj"]
             rust = run(command, "rustc")

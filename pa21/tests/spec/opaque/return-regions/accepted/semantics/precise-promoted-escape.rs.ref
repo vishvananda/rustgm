@@ -48,13 +48,14 @@ type 45 reference mutable=false region=region:2 referent=11
 type 46 reference mutable=false region=region:1 referent=11
 type 47 reference mutable=false region=region:4 referent=11
 type 48 function binders=0 parameters=[46] result=37 unsafe=false
-type 49 reference mutable=false region=static referent=37
-type 50 reference mutable=false region=bound:0:0 referent=37
-type 51 function binders=1 parameters=[50] result=11 unsafe=false
-type 52 function-item def=17 signature=51 arguments=[type:37]
-type 53 reference mutable=false region=region:3 referent=37
-type 54 function binders=0 parameters=[53] result=11 unsafe=false
-type 55 reference mutable=false region=region:4 referent=37
+type 49 reference mutable=false region=region:3 referent=11
+type 50 reference mutable=false region=static referent=37
+type 51 reference mutable=false region=bound:0:0 referent=37
+type 52 function binders=1 parameters=[51] result=11 unsafe=false
+type 53 function-item def=17 signature=52 arguments=[type:37]
+type 54 reference mutable=false region=region:4 referent=37
+type 55 function binders=0 parameters=[54] result=11 unsafe=false
+type 56 reference mutable=false region=region:5 referent=37
 def 13 type=25 name="check" source=0:13
 def 14 type=27 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:28
@@ -95,7 +96,7 @@ parameter owner=16 binding=16 argument=type:21 default=-
 predicate owner=15 source=0:28 subject=21 bound=trait:15 arguments=[]
 impl owner=18 source=0:43 subject=22 bound=trait:15 arguments=[]
 impl-method owner=18 declaration=17 selected=19 default=false
-method-call source=0:74 method=17 callable=52 dereferences=0 borrow=55 receiver=53 origin=lexical
+method-call source=0:74 method=17 callable=53 dereferences=0 borrow=56 receiver=54 origin=lexical
 implementation-use source=0:53 owner=18 arguments=[region:region:4]
 region-var region:1 body=0:56 source=0:55 origin=expression-borrow pending
 region-var region:2 body=0:56 source=0:56 origin=inference pending
@@ -103,13 +104,15 @@ region-var region:3 body=0:56 source=0:53 origin=universal-alias pending
 region-var region:4 body=0:56 source=0:53 origin=inference pending
 region-var region:1 body=0:79 source=0:67 origin=call-argument pending
 region-var region:2 body=0:79 source=0:66 origin=expression-borrow pending
-region-var region:3 body=0:79 source=0:74 origin=call-argument pending
-region-var region:4 body=0:79 source=0:74 origin=expression-borrow pending
+region-var region:3 body=0:79 source=0:66 origin=inference pending
+region-var region:4 body=0:79 source=0:74 origin=call-argument pending
+region-var region:5 body=0:79 source=0:74 origin=expression-borrow pending
 region-equal body=0:56 left=region:2 right=region:4
 region-equal body=0:56 left=region:3 right=bound:0:0
 region-coercion body=0:56 source=0:56 actual=46 expected=45 kind=same-shape pending
-region-coercion body=0:79 source=0:74 actual=55 expected=53 kind=same-shape pending
-region-coercion body=0:79 source=0:66 actual=45 expected=46 kind=same-shape pending
+region-coercion body=0:79 source=0:74 actual=56 expected=54 kind=same-shape pending
+region-coercion body=0:79 source=0:66 actual=45 expected=46 kind=reborrow pending
+region-coercion body=0:79 source=0:66 actual=49 expected=46 kind=same-shape pending
 opaque 0 owner=20 source=0:53 application=37 hidden=- role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 subject=37 bound=trait:15 arguments=[]
 opaque-body-result def=20 type=45

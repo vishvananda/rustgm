@@ -117,10 +117,12 @@ region-var region:2 body=0:48 source=0:44 origin=inference pending
 region-var region:3 body=0:48 source=0:48 origin=inference pending
 region-var region:4 body=0:48 source=0:44 origin=inference pending
 region-var region:1 body=0:80 source=0:80 origin=expression-borrow pending
+region-var region:2 body=0:80 source=0:80 origin=inference pending
 region-equal body=0:48 left=region:1 right=region:2
 region-equal body=0:48 left=region:1 right=region:3
 region-equal body=0:48 left=region:1 right=region:4
-region-coercion body=0:80 source=0:80 actual=35 expected=26 kind=same-shape pending
+region-coercion body=0:80 source=0:80 actual=35 expected=26 kind=reborrow pending
+region-coercion body=0:80 source=0:80 actual=38 expected=26 kind=same-shape pending
 associated-type def=24 type=30
 result-contract def=24 projection=30
 result-bound def=24 index=0 subject=30 bound=sized

@@ -71,8 +71,11 @@ type 68 function-item def=23 signature=67 regions=[region:2]
 type 69 reference mutable=false region=region:3 referent=11
 type 70 tuple [69,39]
 type 71 function binders=0 parameters=[39,69] result=70 unsafe=false
-type 72 reference mutable=false region=region:8 referent=11
-type 73 function-item def=23 signature=67 arguments=[region:region:2,type:54]
+type 72 reference mutable=false region=region:10 referent=11
+type 73 reference mutable=false region=region:8 referent=11
+type 74 reference mutable=false region=region:9 referent=11
+type 75 tuple [73,74]
+type 76 function-item def=23 signature=67 arguments=[region:region:2,type:54]
 def 14 type=21 name="Self" source=0:2
 def 15 type=26 name="Out" source=0:1
 def 16 type=23 name="Self" source=0:20
@@ -107,7 +110,7 @@ def 53 type=25 name="x" source=0:60
 def 54 type=23 name="y" source=0:65
 def 55 type=11 name="n" source=0:88
 def 56 type=11 name="m" source=0:91
-def 57 type=66 name="p" source=0:94
+def 57 type=75 name="p" source=0:94
 associated-owner 0 kind=trait self-def=14 self=21 source=0:2 trait=13 unsafe=false name="A"
 associated-owner 1 kind=trait-impl self-def=16 self=23 source=0:20 unsafe=false
 associated-owner 2 kind=trait self-def=19 self=22 source=0:38 trait=18 unsafe=false name="Family"
@@ -130,24 +133,28 @@ impl owner=16 source=0:20 subject=23 bound=trait:13 arguments=[region:bound:0:0]
 impl-type owner=16 declaration=15 definition=17
 impl owner=21 source=0:51 subject=25 bound=trait:18 arguments=[region:bound:0:0]
 impl-type owner=21 declaration=20 definition=22
-implementation-use source=0:99 owner=21 arguments=[region:region:8]
+implementation-use source=0:99 owner=21 arguments=[region:region:10]
 region-var region:1 body=0:121 source=0:97 origin=annotation pending
 region-var region:1 body=0:86 source=0:86 origin=universal-alias pending
 region-var region:2 body=0:86 source=0:86 origin=universal-alias pending
 region-var region:2 body=0:121 source=0:99 origin=item-argument pending
 region-var region:3 body=0:121 source=0:104 origin=call-argument pending
 region-var region:4 body=0:121 source=0:101 origin=expression-borrow pending
-region-var region:5 body=0:121 source=0:103 origin=expression-borrow pending
-region-var region:6 body=0:121 source=0:104 origin=inference pending
-region-var region:7 body=0:121 source=0:104 origin=inference pending
-region-var region:8 body=0:121 source=0:99 origin=inference pending
+region-var region:5 body=0:121 source=0:101 origin=inference pending
+region-var region:6 body=0:121 source=0:103 origin=expression-borrow pending
+region-var region:7 body=0:121 source=0:103 origin=inference pending
+region-var region:8 body=0:121 source=0:104 origin=inference pending
+region-var region:9 body=0:121 source=0:104 origin=inference pending
+region-var region:10 body=0:121 source=0:99 origin=inference pending
 region-equal body=0:86 left=region:1 right=bound:0:0
 region-equal body=0:86 left=region:2 right=bound:0:1
-region-equal body=0:121 left=region:1 right=region:8
-region-equal body=0:121 left=region:2 right=region:8
-region-coercion body=0:121 source=0:101 actual=55 expected=39 kind=same-shape pending
-region-coercion body=0:121 source=0:103 actual=42 expected=69 kind=same-shape pending
-region-coercion body=0:121 source=0:104 actual=70 expected=66 kind=same-shape pending
+region-equal body=0:121 left=region:1 right=region:10
+region-equal body=0:121 left=region:2 right=region:10
+region-coercion body=0:121 source=0:101 actual=55 expected=39 kind=reborrow pending
+region-coercion body=0:121 source=0:101 actual=42 expected=39 kind=same-shape pending
+region-coercion body=0:121 source=0:103 actual=65 expected=69 kind=reborrow pending
+region-coercion body=0:121 source=0:103 actual=64 expected=69 kind=same-shape pending
+region-coercion body=0:121 source=0:104 actual=70 expected=75 kind=same-shape pending
 associated-type def=15 type=26
 result-contract def=15 projection=26
 result-bound def=15 index=0 subject=26 bound=sized

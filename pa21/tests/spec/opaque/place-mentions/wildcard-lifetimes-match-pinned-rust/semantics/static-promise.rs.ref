@@ -29,9 +29,10 @@ type 26 function-item def=14 signature=25
 type 27 opaque id=0 arguments=[region:region:1]
 type 28 reference mutable=false region=region:1 referent=11
 type 29 function binders=0 parameters=[28] result=27 unsafe=false
-type 30 opaque id=0 arguments=[region:region:3]
+type 30 opaque id=0 arguments=[region:region:4]
 type 31 reference mutable=false region=region:2 referent=11
-type 32 opaque id=0 arguments=[region:region:4]
+type 32 reference mutable=false region=region:3 referent=11
+type 33 opaque id=0 arguments=[region:region:5]
 def 13 type=24 name="f" source=0:13
 def 14 type=26 name="main" source=0:32
 def 15 type=2 name="bool"
@@ -58,12 +59,14 @@ def 43 type=11 name="a" source=0:16
 region-var region:1 body=0:12 source=0:12 origin=universal-alias pending
 region-var region:1 body=0:31 source=0:23 origin=call-argument pending
 region-var region:2 body=0:31 source=0:22 origin=expression-borrow pending
-region-var region:3 body=0:31 source=0:23 origin=inference pending
-region-var region:4 body=0:31 source=0:29 origin=inference pending
+region-var region:3 body=0:31 source=0:22 origin=inference pending
+region-var region:4 body=0:31 source=0:23 origin=inference pending
+region-var region:5 body=0:31 source=0:29 origin=inference pending
 region-equal body=0:12 left=region:1 right=bound:0:0
-region-coercion body=0:31 source=0:22 actual=31 expected=28 kind=same-shape pending
+region-coercion body=0:31 source=0:22 actual=31 expected=28 kind=reborrow pending
+region-coercion body=0:31 source=0:22 actual=32 expected=28 kind=same-shape pending
 region-coercion body=0:31 source=0:23 actual=27 expected=30 kind=same-shape pending
-region-coercion body=0:31 source=0:29 actual=30 expected=32 kind=same-shape pending
+region-coercion body=0:31 source=0:29 actual=30 expected=33 kind=same-shape pending
 type-outlives body=0:12 source=0:10 type=1 shorter=static pending
 opaque 0 owner=13 source=0:10 application=22 hidden=1 role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 subject=22 bound=copy

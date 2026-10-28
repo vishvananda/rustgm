@@ -43,8 +43,8 @@ type 40 function-item def=20 signature=39
 type 41 reference mutable=false region=region:3 referent=11
 type 42 function binders=0 parameters=[41] result=1 unsafe=false
 type 43 function-item def=18 signature=42 regions=[region:3]
-type 44 reference mutable=false region=region:1 referent=11
-type 45 function-item def=18 signature=42 arguments=[region:region:3,type:32]
+type 44 function-item def=18 signature=42 arguments=[region:region:3,type:32]
+type 45 reference mutable=false region=region:4 referent=11
 def 14 type=21 name="Self" source=0:1
 def 15 type=24 name="Out" source=0:0
 def 17 type=22 name="Self" source=0:4
@@ -96,11 +96,13 @@ region-var region:1 body=0:18 source=0:18 origin=universal-alias pending
 region-var region:1 body=0:58 source=0:58 origin=universal-alias pending
 region-var region:2 body=0:58 source=0:58 origin=universal-alias pending
 region-var region:3 body=0:58 source=0:54 origin=item-argument pending
+region-var region:4 body=0:58 source=0:55 origin=inference pending
 region-equal body=0:18 left=region:1 right=bound:0:0
 region-equal body=0:58 left=region:1 right=bound:0:0
 region-equal body=0:58 left=region:2 right=bound:0:1
 region-equal body=0:58 left=region:3 right=region:1
-region-coercion body=0:58 source=0:55 actual=26 expected=41 kind=same-shape pending
+region-coercion body=0:58 source=0:55 actual=26 expected=41 kind=reborrow pending
+region-coercion body=0:58 source=0:55 actual=45 expected=41 kind=same-shape pending
 associated-type def=15 type=24
 result-contract def=15 projection=24
 result-bound def=15 index=0 subject=24 bound=sized

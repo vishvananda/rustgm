@@ -6,7 +6,8 @@ global @rg.data.0 : obj<3x1> [storage=readonly] = {
 function @rg.24() -> void {
   slot $s0 : obj<2x1>
   slot $s1 : obj<3x1>
-  slot $s2 : obj<16x8>
+  slot $s2 : ptr
+  slot $s3 : obj<16x8>
   block ^b0:
     store u8 3, $s0
     %t0 = addr $s0
@@ -19,14 +20,16 @@ function @rg.24() -> void {
     copyobj 2x1 %t4, %t3
     %t5 = addr @rg.data.0
     store ptr %t5, $s2
-    %t6 = addr $s2
-    %t7 = index u8 %t6, 8
-    store i64 2, %t7
-    %t8 = addr $s2
-    %t9 = call u8 @rg.23(%t8)
-    %t10 = cmp eq u8 %t9, 5
-    %t11 = convert trunc i1 i64 %t10
-    call void @rg.13(%t11)
+    %t6 = load ptr $s2
+    store ptr %t6, $s3
+    %t7 = addr $s3
+    %t8 = index u8 %t7, 8
+    store i64 2, %t8
+    %t9 = addr $s3
+    %t10 = call u8 @rg.23(%t9)
+    %t11 = cmp eq u8 %t10, 5
+    %t12 = convert trunc i1 i64 %t11
+    call void @rg.13(%t12)
     return void
 }
 function @rg.23(%p0 : ptr) -> u8 {

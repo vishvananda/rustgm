@@ -51,21 +51,23 @@ type 48 function-item def=18 signature=47 regions=[region:2]
 type 49 reference mutable=false region=region:3 referent=11
 type 50 tuple [49,32]
 type 51 function binders=0 parameters=[32,49] result=50 unsafe=false
-type 52 reference mutable=false region=region:10 referent=11
-type 53 reference mutable=false region=region:11 referent=11
+type 52 reference mutable=false region=region:12 referent=11
+type 53 reference mutable=false region=region:13 referent=11
 type 54 tuple [53,32]
-type 55 projection def=15 self=45 trait=13 arguments=[region:region:11] family arguments=[]
+type 55 projection def=15 self=45 trait=13 arguments=[region:region:13] family arguments=[]
 type 56 projection def=15 self=23 trait=13 arguments=[region:static] family arguments=[]
 type 57 tuple [23,23]
-type 58 reference mutable=false region=region:13 referent=11
-type 59 reference mutable=false region=region:12 referent=11
+type 58 reference mutable=false region=region:15 referent=11
+type 59 reference mutable=false region=region:14 referent=11
 type 60 tuple [59,58]
-type 61 reference mutable=false region=region:6 referent=11
-type 62 reference mutable=false region=region:7 referent=11
+type 61 reference mutable=false region=region:8 referent=11
+type 62 reference mutable=false region=region:9 referent=11
 type 63 tuple [61,62]
 type 64 projection def=15 self=45 trait=13 arguments=[region:bound:0:0] family arguments=[]
 type 65 function-item def=18 signature=47 arguments=[region:region:2,type:45]
 type 66 reference mutable=false region=region:5 referent=11
+type 67 reference mutable=false region=region:6 referent=11
+type 68 reference mutable=false region=region:7 referent=11
 def 14 type=21 name="Self" source=0:2
 def 15 type=24 name="Out" source=0:1
 def 16 type=22 name="Self" source=0:20
@@ -109,26 +111,30 @@ predicate owner=18 source=0:56 forall=0
 predicate owner=18 source=0:53 forall=1
 impl owner=16 source=0:20 subject=22 bound=trait:13 arguments=[region:bound:0:0]
 impl-type owner=16 declaration=15 definition=17
-implementation-use source=0:74 owner=16 arguments=[region:region:9,region:region:10]
+implementation-use source=0:74 owner=16 arguments=[region:region:11,region:region:12]
 region-var region:1 body=0:96 source=0:72 origin=annotation pending
 region-var region:1 body=0:61 source=0:61 origin=universal-alias pending
 region-var region:2 body=0:61 source=0:61 origin=universal-alias pending
 region-var region:2 body=0:96 source=0:74 origin=item-argument pending
 region-var region:3 body=0:96 source=0:79 origin=call-argument pending
 region-var region:4 body=0:96 source=0:76 origin=expression-borrow pending
-region-var region:5 body=0:96 source=0:78 origin=expression-borrow pending
-region-var region:6 body=0:96 source=0:79 origin=inference pending
-region-var region:7 body=0:96 source=0:79 origin=inference pending
-region-var region:8 body=0:96 source=0:74 origin=quantified-proof pending
-region-var region:9 body=0:96 source=0:74 origin=quantified-proof pending
+region-var region:5 body=0:96 source=0:76 origin=inference pending
+region-var region:6 body=0:96 source=0:78 origin=expression-borrow pending
+region-var region:7 body=0:96 source=0:78 origin=inference pending
+region-var region:8 body=0:96 source=0:79 origin=inference pending
+region-var region:9 body=0:96 source=0:79 origin=inference pending
 region-var region:10 body=0:96 source=0:74 origin=quantified-proof pending
 region-var region:11 body=0:96 source=0:74 origin=quantified-proof pending
 region-var region:12 body=0:96 source=0:74 origin=quantified-proof pending
 region-var region:13 body=0:96 source=0:74 origin=quantified-proof pending
+region-var region:14 body=0:96 source=0:74 origin=quantified-proof pending
+region-var region:15 body=0:96 source=0:74 origin=quantified-proof pending
 region-equal body=0:61 left=region:1 right=bound:0:0
 region-equal body=0:61 left=region:2 right=bound:0:1
-region-coercion body=0:96 source=0:76 actual=35 expected=32 kind=same-shape pending
-region-coercion body=0:96 source=0:78 actual=66 expected=49 kind=same-shape pending
+region-coercion body=0:96 source=0:76 actual=35 expected=32 kind=reborrow pending
+region-coercion body=0:96 source=0:76 actual=66 expected=32 kind=same-shape pending
+region-coercion body=0:96 source=0:78 actual=67 expected=49 kind=reborrow pending
+region-coercion body=0:96 source=0:78 actual=68 expected=49 kind=same-shape pending
 region-coercion body=0:96 source=0:79 actual=50 expected=63 kind=same-shape pending
 associated-type def=15 type=24
 result-contract def=15 projection=24
@@ -142,24 +148,24 @@ quantifier 2 regions=1 subject=31 bound=projection-equal:33
 quantifier 3 regions=1 subject=31 bound=projection-equal:46
 proof 0 body=0:96 source=0:74 pending
 proof-scope proof=0 scope=1 parent=0 regions=1 depth=1
-proof-owned proof=0 start=8 end=11
-proof-block proof=0 index=0 scope=0 aliases=false source=0 start=8 end=11
-proof-block proof=0 index=1 scope=1 aliases=false source=0 start=8 end=9
-proof-block proof=0 index=2 scope=1 aliases=false source=0 start=9 end=11
-proof-block proof=0 index=3 scope=1 aliases=false source=0 start=11 end=11
-proof-relation proof=0 block=3 kind=equal left=region:1 right=region:10
-proof-relation proof=0 block=3 kind=equal left=region:8 right=region:9
-proof-relation proof=0 block=3 kind=equal left=region:8 right=bound:0:0
+proof-owned proof=0 start=10 end=13
+proof-block proof=0 index=0 scope=0 aliases=false source=0 start=10 end=13
+proof-block proof=0 index=1 scope=1 aliases=false source=0 start=10 end=11
+proof-block proof=0 index=2 scope=1 aliases=false source=0 start=11 end=13
+proof-block proof=0 index=3 scope=1 aliases=false source=0 start=13 end=13
+proof-relation proof=0 block=3 kind=equal left=region:1 right=region:12
+proof-relation proof=0 block=3 kind=equal left=region:10 right=region:11
+proof-relation proof=0 block=3 kind=equal left=region:10 right=bound:0:0
 proof 1 body=0:96 source=0:74 pending
 proof-scope proof=1 scope=1 parent=0 regions=1 depth=1
-proof-owned proof=1 start=11 end=14
-proof-block proof=1 index=0 scope=0 aliases=false source=0 start=11 end=14
-proof-block proof=1 index=1 scope=1 aliases=false source=0 start=11 end=12
-proof-block proof=1 index=2 scope=1 aliases=false source=0 start=12 end=14
-proof-block proof=1 index=3 scope=1 aliases=false source=0 start=14 end=14
-proof-relation proof=1 block=3 kind=equal left=region:13 right=region:2
-proof-relation proof=1 block=3 kind=equal left=region:12 right=region:11
-proof-relation proof=1 block=3 kind=equal left=region:1 right=region:13
-proof-relation proof=1 block=3 kind=equal left=region:11 right=region:12
-proof-relation proof=1 block=3 kind=equal left=region:11 right=bound:0:0
+proof-owned proof=1 start=13 end=16
+proof-block proof=1 index=0 scope=0 aliases=false source=0 start=13 end=16
+proof-block proof=1 index=1 scope=1 aliases=false source=0 start=13 end=14
+proof-block proof=1 index=2 scope=1 aliases=false source=0 start=14 end=16
+proof-block proof=1 index=3 scope=1 aliases=false source=0 start=16 end=16
+proof-relation proof=1 block=3 kind=equal left=region:15 right=region:2
+proof-relation proof=1 block=3 kind=equal left=region:14 right=region:13
+proof-relation proof=1 block=3 kind=equal left=region:1 right=region:15
+proof-relation proof=1 block=3 kind=equal left=region:13 right=region:14
+proof-relation proof=1 block=3 kind=equal left=region:13 right=bound:0:0
 eof owners=2 members=2 parameters=3 predicates=3 impls=1 calls=0 paths=0 impl-uses=1 type-members=2 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=2 normalized-definitions=0 quantifiers=4 families=0 family-bounds=0 family-regions=0 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=2 proof-scopes=2 proof-blocks=8 proof-sources=0 proof-owned=2 proof-relations=8 proof-types=0

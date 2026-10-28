@@ -3,13 +3,19 @@ body 0 source=0:21
   universal b0=g2
   universal b1=g3
   universal b2=g4
+  variable r1=g5
   region g0 static
   region g1 local
   region g2 universal universe=0
   region g3 universal universe=0
   region g4 universal universe=0
+  region g5 variable universe=0
   assume g2:g4
   assume g4:g3
   require g2:g3
+  require g2:g3
+  require g2:g5
+  require g5:g1
+  require g5:g3
 end-body
-eof bodies=1 universals=3 variables=0 regions=5 assumptions=2 requirements=1
+eof bodies=1 universals=3 variables=1 regions=6 assumptions=2 requirements=5

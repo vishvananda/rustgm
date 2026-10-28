@@ -36,6 +36,7 @@ type 33 reference mutable=false region=static referent=11
 type 34 function binders=0 parameters=[] result=1 unsafe=false
 type 35 function-item def=26 signature=34
 type 36 reference mutable=false region=region:2 referent=11
+type 37 reference mutable=false region=region:3 referent=11
 def 13 type=27 name="check" source=0:13
 def 14 type=29 name="fail" source=0:22
 def 16 type=22 name="Self" source=0:33
@@ -96,12 +97,14 @@ trait-path source=0:72 method=18 trait=15 qualifier=explicit origin=ordinary sub
 implementation-use source=0:72 owner=21 arguments=[region:region:1,type:11,const:16:0x00000000000000000000000000000003]
 region-var region:1 body=0:93 source=0:78 origin=inference pending
 region-var region:2 body=0:93 source=0:80 origin=expression-borrow pending
+region-var region:3 body=0:93 source=0:80 origin=inference pending
 region-var region:1 body=0:31 source=0:31 origin=universal-alias pending
 region-var region:1 body=0:72 source=0:72 origin=inference pending
 region-equal body=0:93 left=static right=region:1
 region-equal body=0:31 left=region:1 right=bound:0:0
 region-equal body=0:72 left=static right=region:1
-region-coercion body=0:93 source=0:80 actual=36 expected=33 kind=same-shape pending
+region-coercion body=0:93 source=0:80 actual=36 expected=33 kind=reborrow pending
+region-coercion body=0:93 source=0:80 actual=37 expected=33 kind=same-shape pending
 type-outlives body=0:93 source=0:78 type=11 shorter=region:1 pending
 type-outlives body=0:72 source=0:72 type=11 shorter=region:1 pending
 type-outlives body=0:72 source=0:72 type=11 shorter=static pending

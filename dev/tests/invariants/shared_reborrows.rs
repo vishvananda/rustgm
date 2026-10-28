@@ -281,3 +281,69 @@ fn explicit_reference_unsizing_casts_keep_the_same_source_prerequisites() -> Res
     }
     Ok(())
 }
+
+#[test]
+fn identical_shared_values_preserve_moves_and_source_capture_ancestry() -> Result {
+    for (name, accepted) in [
+        ("branch-field", false),
+        ("branch-root", false),
+        ("root", false),
+        ("move-root", true),
+        ("root-call", true),
+        ("move-root-call", true),
+        ("explicit-field", true),
+        ("implicit-call", true),
+        ("explicit-call", true),
+    ] {
+        let input = test_source::fixture(&format!(
+            "pa24/tests/spec/shared-reborrow-captures/{name}.rs"
+        ))?;
+        let result = check(&input, false);
+        assert_eq!(result.is_ok(), accepted, "{name}: {:?}", result.err());
+    }
+    let original = test_source::fixture("pa24/tests/spec/formation-truncation/reference-field.rs")?;
+    let error = check(&original, false)
+        .err()
+        .ok_or("lost source capture ancestry")?;
+    assert!(error.to_string().contains("required lifetime"), "{error}");
+    for name in [
+        "static-call",
+        "static-let",
+        "generic-static-call",
+        "alias-static-let",
+    ] {
+        let input = test_source::fixture(&format!(
+            "pa31/tests/spec/shared-call-reborrow/{name}-identity.rs"
+        ))?;
+        let error = check(&input, true)
+            .err()
+            .ok_or("identity shared move accepted")?;
+        assert!(
+            error.to_string().contains("uninitialized or moved"),
+            "{name}: {error}"
+        );
+    }
+    let partial = test_source::fixture(
+        "pa31/tests/spec/shared-call-reborrow/partial-static-let-identity.rs",
+    )?;
+    check(&partial, true)?;
+
+    Ok(())
+}
+
+#[test]
+fn contextual_noops_clear_inferred_views_at_real_branch_and_quantified_joins() -> Result {
+    for (assignment, path) in [
+        (15, "declarations/enum-pattern"),
+        (16, "pattern-native/rest-return"),
+        (16, "thin-native/conditional-return"),
+        (16, "wide-native/slice-branch"),
+        (24, "generic-context/captured-identity"),
+        (24, "quantified-dispatch/identity-result"),
+        (24, "receiver-adapters/contextual-quantified-identity"),
+    ] {
+        let input = test_source::fixture(&format!("pa{assignment}/tests/spec/{path}.rs"))?;
+        check(&input, false).map_err(|error| format!("pa{assignment}/{path}: {error}"))?;
+    }
+    Ok(())
+}

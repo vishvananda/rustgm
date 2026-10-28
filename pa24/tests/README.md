@@ -42,3 +42,9 @@ must appear in `manifest.json` with its explicit source/native classification;
 generated `.ref`, `.ref.stderr`, `.ref.exit_status` and `reference.json` files ship
 together. Never hand-edit the generated answers or add a synthetic main to an
 entry-free source merely to make a test executable.
+
+The `spec/shared-reborrow-captures/` controls distinguish identical shared return
+values from fresh call/partial-annotation reborrows. Keep actual source capture
+ancestry across final coercion resets and branch joins. Explicit dereferences,
+move closures and genuine call reborrows retain their independently checked
+positive behavior; short-lived carriers and local references still reject.

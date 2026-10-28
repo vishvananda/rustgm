@@ -7,13 +7,16 @@ function @rg.16() -> void {
     return void
 }
 function @rg.15.i3() -> ptr {
+  slot $s0 : ptr
   block ^b0:
     %t0 = cmp eq i8 128, 128
     branch %t0, ^b1, ^b2
   block ^b2:
     %t1 = unary neg i8 128
     %t2 = addr @rg.data.0
-    return ptr %t2
+    store ptr %t2, $s0
+    %t3 = load ptr $s0
+    return ptr %t3
   block ^b1:
     call void @abort()
     unreachable

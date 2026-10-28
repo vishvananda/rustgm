@@ -1,13 +1,16 @@
 function @rg.15() -> void {
   slot $s0 : u8
   slot $s1 : u8
+  slot $s2 : ptr
   block ^b0:
     store u8 7, $s1
     %t0 = addr $s1
-    %t1 = call u8 @rg.13.i1(%t0)
-    store u8 %t1, $s0
-    %t2 = load u8 $s0
-    call void @rg.14.i2(%t2)
+    store ptr %t0, $s2
+    %t1 = load ptr $s2
+    %t2 = call u8 @rg.13.i1(%t1)
+    store u8 %t2, $s0
+    %t3 = load u8 $s0
+    call void @rg.14.i2(%t3)
     return void
 }
 function @rg.13.i1(%p0 : ptr) -> u8 {

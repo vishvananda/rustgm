@@ -1,21 +1,24 @@
 function @rg.16() -> void {
   slot $s0 : u16
   slot $s1 : ptr
+  slot $s2 : ptr
   block ^b0:
     store u16 519, $s0
     %t0 = addr $s0
-    %t1 = call ptr @rg.15(%t0)
-    store ptr %t1, $s1
-    %t2 = load ptr $s1
-    %t3 = load u16 %t2
-    %t4 = cmp eq u16 %t3, 519
-    %t5 = convert trunc i1 i64 %t4
-    call void @rg.13(%t5)
+    store ptr %t0, $s2
+    %t1 = load ptr $s2
+    %t2 = call ptr @rg.15(%t1)
+    store ptr %t2, $s1
+    %t3 = load ptr $s1
+    %t4 = load u16 %t3
+    %t5 = cmp eq u16 %t4, 519
+    %t6 = convert trunc i1 i64 %t5
+    call void @rg.13(%t6)
     store u16 821, $s0
-    %t6 = load u16 $s0
-    %t7 = cmp eq u16 %t6, 821
-    %t8 = convert trunc i1 i64 %t7
-    call void @rg.13(%t8)
+    %t7 = load u16 $s0
+    %t8 = cmp eq u16 %t7, 821
+    %t9 = convert trunc i1 i64 %t8
+    call void @rg.13(%t9)
     return void
 }
 function @rg.15(%p0 : ptr) -> ptr {

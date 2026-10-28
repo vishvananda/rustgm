@@ -1,0 +1,1 @@
+struct S<'a>{a:&'static u8,b:&'a u8}fn make<'a,'b>(x:&'a S<'b>)->impl Fn()->&'static u8+'static{||if true{x.a}else{x.a}}fn main(){}

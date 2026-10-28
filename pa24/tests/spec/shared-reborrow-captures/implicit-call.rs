@@ -1,0 +1,1 @@
+struct S<'a>{a:&'static u8,b:&'a u8}fn read(x:&u8)->u8{*x}fn make<'a,'b>(x:&'a S<'b>)->impl Fn()->u8+'static{||read(x.a)}fn main(){}

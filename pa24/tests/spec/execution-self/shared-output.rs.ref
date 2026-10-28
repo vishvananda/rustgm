@@ -9,7 +9,7 @@ function @rg.16() -> void {
     store u8 7, $s0
     %t0 = addr $s0
     store ptr %t0, $s1
-    %t1 = addr $s1
+    %t1 = load ptr $s1
     store ptr %t1, $s3
     %t2 = addr $s4
     %t3 = addr $s3
@@ -46,8 +46,7 @@ function @rg.closure.0(%p0 : ptr) -> ptr {
     store ptr %p0, $s0
     %t0 = load ptr $s0
     %t1 = load ptr %t0
-    %t2 = load ptr %t1
-    return ptr %t2
+    return ptr %t1
 }
 function @rg.13(%p0 : i1) -> void {
   slot $s0 : i1

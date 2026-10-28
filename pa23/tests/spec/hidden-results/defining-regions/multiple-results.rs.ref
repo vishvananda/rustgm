@@ -2,42 +2,51 @@ function @rg.24() -> void {
   slot $s0 : u8
   slot $s1 : obj<8x8>
   slot $s2 : obj<8x8>
-  slot $s3 : obj<16x8>
-  slot $s4 : obj<8x8>
+  slot $s3 : ptr
+  slot $s4 : obj<16x8>
   slot $s5 : obj<8x8>
+  slot $s6 : obj<8x8>
+  slot $s7 : ptr
+  slot $s8 : ptr
   block ^b0:
     store u8 19, $s0
     %t0 = addr $s0
-    %t1 = addr $s3
-    call void @rg.23.i5(%t1, %t0)
-    %t2 = addr $s3
+    store ptr %t0, $s3
+    %t1 = load ptr $s3
+    %t2 = addr $s4
+    call void @rg.23.i5(%t2, %t1)
     %t3 = addr $s4
-    copyobj 8x8 %t2, %t3
-    %t4 = addr $s4
-    %t5 = addr $s1
-    copyobj 8x8 %t4, %t5
-    %t6 = addr $s3
-    %t7 = index u8 %t6, 8
-    %t8 = addr $s5
-    copyobj 8x8 %t7, %t8
-    %t9 = addr $s5
-    %t10 = addr $s2
-    copyobj 8x8 %t9, %t10
-    %t11 = addr $s1
-    call void @rg.22.i6(%t11)
-    %t12 = addr $s2
-    call void @rg.22.i7(%t12)
-    %t13 = addr $s1
-    %t14 = call u8 @rg.21(%t13)
-    %t15 = addr $s2
-    %t16 = call u8 @rg.21(%t15)
-    %t17 = binary add u8 %t14, %t16
-    %t18 = cmp ult u8 %t17, %t14
-    branch %t18, ^b1, ^b2
+    %t4 = addr $s5
+    copyobj 8x8 %t3, %t4
+    %t5 = addr $s5
+    %t6 = addr $s1
+    copyobj 8x8 %t5, %t6
+    %t7 = addr $s4
+    %t8 = index u8 %t7, 8
+    %t9 = addr $s6
+    copyobj 8x8 %t8, %t9
+    %t10 = addr $s6
+    %t11 = addr $s2
+    copyobj 8x8 %t10, %t11
+    %t12 = addr $s1
+    store ptr %t12, $s7
+    %t13 = load ptr $s7
+    call void @rg.22.i6(%t13)
+    %t14 = addr $s2
+    store ptr %t14, $s8
+    %t15 = load ptr $s8
+    call void @rg.22.i7(%t15)
+    %t16 = addr $s1
+    %t17 = call u8 @rg.21(%t16)
+    %t18 = addr $s2
+    %t19 = call u8 @rg.21(%t18)
+    %t20 = binary add u8 %t17, %t19
+    %t21 = cmp ult u8 %t20, %t17
+    branch %t21, ^b1, ^b2
   block ^b2:
-    %t19 = cmp eq u8 %t17, 38
-    %t20 = convert trunc i1 i64 %t19
-    call void @rg.13(%t20)
+    %t22 = cmp eq u8 %t20, 38
+    %t23 = convert trunc i1 i64 %t22
+    call void @rg.13(%t23)
     return void
   block ^b1:
     call void @abort()

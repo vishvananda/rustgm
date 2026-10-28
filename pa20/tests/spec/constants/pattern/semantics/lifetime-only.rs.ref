@@ -39,10 +39,12 @@ type 36 aggregate def=15 regions=[region:1]
 type 37 aggregate def=15 regions=[region:2]
 type 38 reference mutable=false region=region:1 referent=11
 type 39 function binders=0 parameters=[38,11] result=2 unsafe=false
-type 40 reference mutable=false region=region:3 referent=11
+type 40 reference mutable=false region=region:4 referent=11
 type 41 function binders=0 parameters=[40,11] result=2 unsafe=false
 type 42 reference mutable=false region=region:2 referent=11
-type 43 reference mutable=false region=region:4 referent=11
+type 43 reference mutable=false region=region:3 referent=11
+type 44 reference mutable=false region=region:5 referent=11
+type 45 reference mutable=false region=region:6 referent=11
 def 13 type=23 name="check" source=0:13
 def 14 type=25 name="fail" source=0:22
 def 15 type=21 name="S" source=0:28
@@ -80,12 +82,16 @@ region-var region:1 body=0:61 source=0:54 origin=item-argument pending
 region-var region:2 body=0:61 source=0:54 origin=universal-alias pending
 region-var region:1 body=0:79 source=0:68 origin=call-argument pending
 region-var region:2 body=0:79 source=0:66 origin=expression-borrow pending
-region-var region:3 body=0:79 source=0:76 origin=call-argument pending
-region-var region:4 body=0:79 source=0:74 origin=expression-borrow pending
+region-var region:3 body=0:79 source=0:66 origin=inference pending
+region-var region:4 body=0:79 source=0:76 origin=call-argument pending
+region-var region:5 body=0:79 source=0:74 origin=expression-borrow pending
+region-var region:6 body=0:79 source=0:74 origin=inference pending
 region-equal body=0:61 left=region:2 right=bound:0:0
 region-equal body=0:61 left=region:1 right=region:2
-region-coercion body=0:79 source=0:66 actual=42 expected=38 kind=same-shape pending
-region-coercion body=0:79 source=0:74 actual=43 expected=40 kind=same-shape pending
+region-coercion body=0:79 source=0:66 actual=42 expected=38 kind=reborrow pending
+region-coercion body=0:79 source=0:66 actual=43 expected=38 kind=same-shape pending
+region-coercion body=0:79 source=0:74 actual=44 expected=40 kind=reborrow pending
+region-coercion body=0:79 source=0:74 actual=45 expected=40 kind=same-shape pending
 associated-constant def=18 type=11
 constant-use source=0:54 definition=18 arguments=[region:region:1]
 eof owners=1 members=1 parameters=0 predicates=0 impls=0 calls=0 paths=1 impl-uses=0 type-members=0 constant-members=1 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=1 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0

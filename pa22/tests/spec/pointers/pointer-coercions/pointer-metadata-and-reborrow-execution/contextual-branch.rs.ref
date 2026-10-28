@@ -7,10 +7,14 @@ function @rg.16() -> void {
   slot $s5 : obj<3x1>
   slot $s6 : obj<16x8>
   slot $s7 : obj<16x8>
-  slot $s8 : obj<16x8>
-  slot $s9 : obj<16x8>
+  slot $s8 : ptr
+  slot $s9 : ptr
   slot $s10 : obj<16x8>
   slot $s11 : obj<16x8>
+  slot $s12 : ptr
+  slot $s13 : ptr
+  slot $s14 : obj<16x8>
+  slot $s15 : obj<16x8>
   block ^b0:
     store u8 3, $s4
     %t0 = addr $s4
@@ -46,45 +50,53 @@ function @rg.16() -> void {
     %t19 = addr $s3
     copyobj 16x8 %t18, %t19
     %t20 = addr $s0
-    %t21 = addr $s1
-    %t22 = addr $s8
-    call void @rg.15(%t22, 1, %t20, %t21)
-    %t23 = addr $s2
-    %t24 = addr $s9
-    copyobj 16x8 %t23, %t24
-    %t25 = load ptr $s8
-    %t26 = addr $s8
-    %t27 = index u8 %t26, 8
-    %t28 = load i64 %t27
-    %t29 = load ptr $s9
-    %t30 = addr $s9
-    %t31 = index u8 %t30, 8
-    %t32 = load i64 %t31
-    %t33 = cmp eq i64 %t28, %t32
-    %t34 = cmp eq ptr %t25, %t29
-    %t35 = binary and i64 %t34, %t33
-    %t36 = convert trunc i1 i64 %t35
-    call void @rg.13(%t36)
-    %t37 = addr $s0
-    %t38 = addr $s1
-    %t39 = addr $s10
-    call void @rg.15(%t39, 0, %t37, %t38)
-    %t40 = addr $s3
-    %t41 = addr $s11
-    copyobj 16x8 %t40, %t41
-    %t42 = load ptr $s10
-    %t43 = addr $s10
-    %t44 = index u8 %t43, 8
-    %t45 = load i64 %t44
-    %t46 = load ptr $s11
-    %t47 = addr $s11
+    store ptr %t20, $s8
+    %t21 = load ptr $s8
+    %t22 = addr $s1
+    store ptr %t22, $s9
+    %t23 = load ptr $s9
+    %t24 = addr $s10
+    call void @rg.15(%t24, 1, %t21, %t23)
+    %t25 = addr $s2
+    %t26 = addr $s11
+    copyobj 16x8 %t25, %t26
+    %t27 = load ptr $s10
+    %t28 = addr $s10
+    %t29 = index u8 %t28, 8
+    %t30 = load i64 %t29
+    %t31 = load ptr $s11
+    %t32 = addr $s11
+    %t33 = index u8 %t32, 8
+    %t34 = load i64 %t33
+    %t35 = cmp eq i64 %t30, %t34
+    %t36 = cmp eq ptr %t27, %t31
+    %t37 = binary and i64 %t36, %t35
+    %t38 = convert trunc i1 i64 %t37
+    call void @rg.13(%t38)
+    %t39 = addr $s0
+    store ptr %t39, $s12
+    %t40 = load ptr $s12
+    %t41 = addr $s1
+    store ptr %t41, $s13
+    %t42 = load ptr $s13
+    %t43 = addr $s14
+    call void @rg.15(%t43, 0, %t40, %t42)
+    %t44 = addr $s3
+    %t45 = addr $s15
+    copyobj 16x8 %t44, %t45
+    %t46 = load ptr $s14
+    %t47 = addr $s14
     %t48 = index u8 %t47, 8
     %t49 = load i64 %t48
-    %t50 = cmp eq i64 %t45, %t49
-    %t51 = cmp eq ptr %t42, %t46
-    %t52 = binary and i64 %t51, %t50
-    %t53 = convert trunc i1 i64 %t52
-    call void @rg.13(%t53)
+    %t50 = load ptr $s15
+    %t51 = addr $s15
+    %t52 = index u8 %t51, 8
+    %t53 = load i64 %t52
+    %t54 = cmp eq i64 %t49, %t53
+    %t55 = cmp eq ptr %t46, %t50
+    %t56 = binary and i64 %t55, %t54
+    %t57 = convert trunc i1 i64 %t56
+    call void @rg.13(%t57)
     return void
 }
 function @rg.15(%p0 : ptr, %p1 : i1, %p2 : ptr, %p3 : ptr) -> void {

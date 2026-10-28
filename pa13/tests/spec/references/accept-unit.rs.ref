@@ -25,9 +25,12 @@ type 22 reference mutable=false region=bound:0:0 referent=1
 type 23 function binders=1 parameters=[22] result=1 unsafe=false
 type 24 function-item def=14 signature=23
 type 25 reference mutable=false region=region:1 referent=1
+type 26 reference mutable=false region=region:2 referent=1
 root 0:5 pattern=0
 pattern 0 source=0:5 input=22 deref mutable=false implicit=false pattern=1
 pattern 1 source=0:5 input=1 product variant=- fields=0:0
 region-var region:1 body=0:3 source=0:3 origin=expression-borrow pending
-region-coercion body=0:3 source=0:3 actual=25 expected=21 kind=same-shape pending
-eof roots=1 patterns=2 fields=0 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=1 region-equalities=0 conditions=0 chains=0
+region-var region:2 body=0:3 source=0:3 origin=inference pending
+region-coercion body=0:3 source=0:3 actual=25 expected=21 kind=reborrow pending
+region-coercion body=0:3 source=0:3 actual=26 expected=21 kind=same-shape pending
+eof roots=1 patterns=2 fields=0 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=2 region-equalities=0 conditions=0 chains=0

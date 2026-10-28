@@ -5,7 +5,8 @@ function @rg.20() -> void {
   slot $s3 : obj<16x8>
   slot $s4 : obj<16x8>
   slot $s5 : obj<24x8>
-  slot $s6 : obj<16x8>
+  slot $s6 : ptr
+  slot $s7 : obj<16x8>
   block ^b0:
     store u8 0, $s0
     %t0 = addr $s0
@@ -23,41 +24,43 @@ function @rg.20() -> void {
     copyobj 16x8 %t7, %t6
     %t8 = addr $s5
     store ptr %t8, $s6
-    %t9 = addr $s6
-    %t10 = index u8 %t9, 8
-    store i64 1, %t10
-    %t11 = addr $s6
-    %t12 = addr $s1
-    copyobj 16x8 %t11, %t12
-    %t13 = load ptr $s1
-    %t14 = addr $s1
-    %t15 = index u8 %t14, 8
-    %t16 = load i64 %t15
-    %t17 = load u8 %t13
-    %t18 = cmp eq u8 %t17, 3
-    %t19 = convert trunc i1 i64 %t18
-    call void @rg.13(%t19)
-    %t20 = load ptr $s1
-    %t21 = addr $s1
-    %t22 = index u8 %t21, 8
-    %t23 = load i64 %t22
-    %t24 = index u8 %t20, 8
-    %t25 = cmp uge i64 0, %t23
-    branch %t25, ^b1, ^b2
+    %t9 = load ptr $s6
+    store ptr %t9, $s7
+    %t10 = addr $s7
+    %t11 = index u8 %t10, 8
+    store i64 1, %t11
+    %t12 = addr $s7
+    %t13 = addr $s1
+    copyobj 16x8 %t12, %t13
+    %t14 = load ptr $s1
+    %t15 = addr $s1
+    %t16 = index u8 %t15, 8
+    %t17 = load i64 %t16
+    %t18 = load u8 %t14
+    %t19 = cmp eq u8 %t18, 3
+    %t20 = convert trunc i1 i64 %t19
+    call void @rg.13(%t20)
+    %t21 = load ptr $s1
+    %t22 = addr $s1
+    %t23 = index u8 %t22, 8
+    %t24 = load i64 %t23
+    %t25 = index u8 %t21, 8
+    %t26 = cmp uge i64 0, %t24
+    branch %t26, ^b1, ^b2
   block ^b2:
-    %t26 = binary mul i64 0, 16
-    %t27 = index u8 %t24, %t26
-    %t28 = index u8 %t27, 8
-    %t29 = load u8 %t28
-    %t30 = cmp eq u8 %t29, 7
-    %t31 = convert trunc i1 i64 %t30
-    call void @rg.13(%t31)
-    %t32 = addr $s5
-    call void @rg.drop.2(%t32)
-    %t33 = load u8 $s0
-    %t34 = cmp eq u8 %t33, 7
-    %t35 = convert trunc i1 i64 %t34
-    call void @rg.13(%t35)
+    %t27 = binary mul i64 0, 16
+    %t28 = index u8 %t25, %t27
+    %t29 = index u8 %t28, 8
+    %t30 = load u8 %t29
+    %t31 = cmp eq u8 %t30, 7
+    %t32 = convert trunc i1 i64 %t31
+    call void @rg.13(%t32)
+    %t33 = addr $s5
+    call void @rg.drop.2(%t33)
+    %t34 = load u8 $s0
+    %t35 = cmp eq u8 %t34, 7
+    %t36 = convert trunc i1 i64 %t35
+    call void @rg.13(%t36)
     return void
   block ^b1:
     call void @abort()

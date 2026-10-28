@@ -3,44 +3,56 @@ function @rg.24() -> void {
   slot $s1 : u8
   slot $s2 : obj<8x8>
   slot $s3 : obj<8x8>
-  slot $s4 : obj<16x8>
-  slot $s5 : obj<8x8>
-  slot $s6 : obj<8x8>
+  slot $s4 : ptr
+  slot $s5 : ptr
+  slot $s6 : obj<16x8>
+  slot $s7 : obj<8x8>
+  slot $s8 : obj<8x8>
+  slot $s9 : ptr
+  slot $s10 : ptr
   block ^b0:
     store u8 19, $s0
     store u8 23, $s1
     %t0 = addr $s0
-    %t1 = addr $s1
-    %t2 = addr $s4
-    call void @rg.23.i5(%t2, %t0, %t1)
-    %t3 = addr $s4
-    %t4 = addr $s5
-    copyobj 8x8 %t3, %t4
-    %t5 = addr $s5
-    %t6 = addr $s2
+    store ptr %t0, $s4
+    %t1 = load ptr $s4
+    %t2 = addr $s1
+    store ptr %t2, $s5
+    %t3 = load ptr $s5
+    %t4 = addr $s6
+    call void @rg.23.i5(%t4, %t1, %t3)
+    %t5 = addr $s6
+    %t6 = addr $s7
     copyobj 8x8 %t5, %t6
-    %t7 = addr $s4
-    %t8 = index u8 %t7, 8
+    %t7 = addr $s7
+    %t8 = addr $s2
+    copyobj 8x8 %t7, %t8
     %t9 = addr $s6
-    copyobj 8x8 %t8, %t9
-    %t10 = addr $s6
-    %t11 = addr $s3
+    %t10 = index u8 %t9, 8
+    %t11 = addr $s8
     copyobj 8x8 %t10, %t11
-    %t12 = addr $s3
-    call void @rg.22.i6(%t12)
-    %t13 = addr $s2
-    call void @rg.22.i7(%t13)
-    %t14 = addr $s2
-    %t15 = call u8 @rg.21(%t14)
-    %t16 = addr $s3
-    %t17 = call u8 @rg.21(%t16)
-    %t18 = binary add u8 %t15, %t17
-    %t19 = cmp ult u8 %t18, %t15
-    branch %t19, ^b1, ^b2
+    %t12 = addr $s8
+    %t13 = addr $s3
+    copyobj 8x8 %t12, %t13
+    %t14 = addr $s3
+    store ptr %t14, $s9
+    %t15 = load ptr $s9
+    call void @rg.22.i6(%t15)
+    %t16 = addr $s2
+    store ptr %t16, $s10
+    %t17 = load ptr $s10
+    call void @rg.22.i7(%t17)
+    %t18 = addr $s2
+    %t19 = call u8 @rg.21(%t18)
+    %t20 = addr $s3
+    %t21 = call u8 @rg.21(%t20)
+    %t22 = binary add u8 %t19, %t21
+    %t23 = cmp ult u8 %t22, %t19
+    branch %t23, ^b1, ^b2
   block ^b2:
-    %t20 = cmp eq u8 %t18, 42
-    %t21 = convert trunc i1 i64 %t20
-    call void @rg.13(%t21)
+    %t24 = cmp eq u8 %t22, 42
+    %t25 = convert trunc i1 i64 %t24
+    call void @rg.13(%t25)
     return void
   block ^b1:
     call void @abort()

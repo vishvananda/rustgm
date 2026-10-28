@@ -1,0 +1,1 @@
+fn make(x:&'static u8)->impl Fn()->&'static u8+'static{||if true{x}else{x}}fn main(){}

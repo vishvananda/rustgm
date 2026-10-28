@@ -41,9 +41,10 @@ type 38 function-item def=18 signature=37 regions=[region:1]
 type 39 projection def=15 self=11 trait=13 arguments=[region:region:1] family arguments=[]
 type 40 projection def=15 self=11 trait=13 arguments=[region:static] family arguments=[]
 type 41 reference mutable=false region=static referent=11
-type 42 reference mutable=false region=region:4 referent=11
+type 42 reference mutable=false region=region:5 referent=11
 type 43 function-item def=18 signature=37 arguments=[region:region:1,type:11]
 type 44 reference mutable=false region=region:2 referent=11
+type 45 reference mutable=false region=region:3 referent=11
 def 14 type=21 name="Self" source=0:2
 def 15 type=22 name="Out" source=0:1
 def 16 type=11 name="Self" source=0:13
@@ -84,14 +85,16 @@ predicate owner=18 source=0:38 forall=0
 predicate owner=18 source=0:35 forall=1
 impl owner=16 source=0:13 subject=11 bound=trait:13 arguments=[region:bound:0:0]
 impl-type owner=16 declaration=15 definition=17
-implementation-use source=0:49 owner=16 arguments=[region:region:3]
+implementation-use source=0:49 owner=16 arguments=[region:region:4]
 region-var region:1 body=0:41 source=0:41 origin=universal-alias pending
 region-var region:1 body=0:60 source=0:49 origin=item-argument pending
 region-var region:2 body=0:60 source=0:51 origin=expression-borrow pending
-region-var region:3 body=0:60 source=0:49 origin=quantified-proof pending
+region-var region:3 body=0:60 source=0:51 origin=inference pending
 region-var region:4 body=0:60 source=0:49 origin=quantified-proof pending
+region-var region:5 body=0:60 source=0:49 origin=quantified-proof pending
 region-equal body=0:41 left=region:1 right=bound:0:0
-region-coercion body=0:60 source=0:51 actual=44 expected=29 kind=same-shape pending
+region-coercion body=0:60 source=0:51 actual=44 expected=29 kind=reborrow pending
+region-coercion body=0:60 source=0:51 actual=45 expected=29 kind=same-shape pending
 associated-type def=15 type=22
 result-contract def=15 projection=22
 result-bound def=15 index=0 subject=22 bound=sized
@@ -104,17 +107,17 @@ quantifier 2 regions=0 subject=24 bound=trait:13 arguments=[region:region:1]
 quantifier 3 regions=0 subject=28 bound=projection-equal:29
 proof 0 body=0:60 source=0:49 pending
 proof-scope proof=0 scope=1 parent=0 regions=0 depth=1
-proof-owned proof=0 start=3 end=4
-proof-block proof=0 index=0 scope=0 aliases=false source=0 start=3 end=4
-proof-block proof=0 index=1 scope=1 aliases=false source=0 start=3 end=4
-proof-block proof=0 index=2 scope=1 aliases=false source=0 start=4 end=4
-proof-relation proof=0 block=2 kind=equal left=region:1 right=region:3
+proof-owned proof=0 start=4 end=5
+proof-block proof=0 index=0 scope=0 aliases=false source=0 start=4 end=5
+proof-block proof=0 index=1 scope=1 aliases=false source=0 start=4 end=5
+proof-block proof=0 index=2 scope=1 aliases=false source=0 start=5 end=5
+proof-relation proof=0 block=2 kind=equal left=region:1 right=region:4
 proof 1 body=0:60 source=0:49 pending
 proof-scope proof=1 scope=1 parent=0 regions=0 depth=1
-proof-owned proof=1 start=4 end=5
-proof-block proof=1 index=0 scope=0 aliases=false source=0 start=4 end=5
-proof-block proof=1 index=1 scope=1 aliases=false source=0 start=4 end=5
-proof-block proof=1 index=2 scope=1 aliases=false source=0 start=5 end=5
-proof-relation proof=1 block=2 kind=equal left=region:4 right=region:1
-proof-relation proof=1 block=2 kind=equal left=region:1 right=region:4
+proof-owned proof=1 start=5 end=6
+proof-block proof=1 index=0 scope=0 aliases=false source=0 start=5 end=6
+proof-block proof=1 index=1 scope=1 aliases=false source=0 start=5 end=6
+proof-block proof=1 index=2 scope=1 aliases=false source=0 start=6 end=6
+proof-relation proof=1 block=2 kind=equal left=region:5 right=region:1
+proof-relation proof=1 block=2 kind=equal left=region:1 right=region:5
 eof owners=2 members=2 parameters=3 predicates=3 impls=1 calls=0 paths=0 impl-uses=1 type-members=2 constant-members=0 result-contracts=1 result-bounds=1 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=2 normalized-definitions=0 quantifiers=4 families=0 family-bounds=0 family-regions=0 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=2 proof-scopes=2 proof-blocks=6 proof-sources=0 proof-owned=2 proof-relations=3 proof-types=0

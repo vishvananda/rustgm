@@ -55,6 +55,7 @@ type 52 reference mutable=false region=region:1 referent=11
 type 53 function binders=0 parameters=[52,46] result=12 unsafe=false
 type 54 function-item def=21 signature=53 regions=[region:1,region:2]
 type 55 reference mutable=false region=region:3 referent=11
+type 56 reference mutable=false region=region:5 referent=11
 def 13 type=26 name="check" source=0:13
 def 14 type=28 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:27
@@ -112,7 +113,9 @@ region-var region:6 body=0:84 source=0:81 origin=inference pending
 region-var region:1 body=0:100 source=0:90 origin=item-argument pending
 region-var region:2 body=0:100 source=0:90 origin=item-argument pending
 region-var region:3 body=0:100 source=0:92 origin=expression-borrow pending
-region-var region:4 body=0:100 source=0:94 origin=expression-borrow pending
+region-var region:4 body=0:100 source=0:92 origin=inference pending
+region-var region:5 body=0:100 source=0:94 origin=expression-borrow pending
+region-var region:6 body=0:100 source=0:94 origin=inference pending
 region-equal body=0:58 left=region:2 right=bound:0:0
 region-equal body=0:58 left=region:3 right=bound:0:0
 region-equal body=0:58 left=region:1 right=bound:0:0
@@ -120,8 +123,10 @@ region-equal body=0:84 left=region:2 right=region:6
 region-equal body=0:84 left=region:1 right=region:5
 region-equal body=0:84 left=region:1 right=bound:0:0
 region-equal body=0:84 left=region:2 right=bound:0:1
-region-coercion body=0:100 source=0:92 actual=55 expected=52 kind=same-shape pending
-region-coercion body=0:100 source=0:94 actual=48 expected=46 kind=same-shape pending
+region-coercion body=0:100 source=0:92 actual=55 expected=52 kind=reborrow pending
+region-coercion body=0:100 source=0:92 actual=48 expected=52 kind=same-shape pending
+region-coercion body=0:100 source=0:94 actual=56 expected=46 kind=reborrow pending
+region-coercion body=0:100 source=0:94 actual=50 expected=46 kind=same-shape pending
 region-outlives body=0:84 source=0:81 longer=region:6 shorter=region:5 pending
 region-outlives body=0:100 source=0:90 longer=region:2 shorter=region:1 pending
 associated-type def=17 type=24

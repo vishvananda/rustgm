@@ -37,6 +37,7 @@ type 34 function-item def=16 signature=33 regions=[region:1]
 type 35 reference mutable=false region=static referent=11
 type 36 function-item def=16 signature=33 arguments=[region:region:1,type:11]
 type 37 reference mutable=false region=region:2 referent=11
+type 38 reference mutable=false region=region:3 referent=11
 def 14 type=21 name="Self" source=0:2
 def 15 type=11 name="Self" source=0:11
 def 16 type=29 name="f" source=0:29
@@ -76,23 +77,25 @@ parameter owner=16 binding=42 argument=type:24 default=-
 predicate owner=13 source=0:2 subject=21 bound=trait:13 arguments=[region:bound:0:0,type:22]
 predicate owner=16 source=0:21 forall=0
 impl owner=15 source=0:11 subject=11 bound=trait:13 arguments=[region:bound:0:0,type:23]
-implementation-use source=0:36 owner=15 arguments=[region:region:4,type:32]
+implementation-use source=0:36 owner=15 arguments=[region:region:5,type:32]
 region-var region:1 body=0:28 source=0:28 origin=universal-alias pending
 region-var region:1 body=0:41 source=0:36 origin=item-argument pending
 region-var region:2 body=0:41 source=0:38 origin=expression-borrow pending
-region-var region:3 body=0:41 source=0:36 origin=quantified-proof pending
+region-var region:3 body=0:41 source=0:38 origin=inference pending
 region-var region:4 body=0:41 source=0:36 origin=quantified-proof pending
+region-var region:5 body=0:41 source=0:36 origin=quantified-proof pending
 region-equal body=0:28 left=region:1 right=bound:0:0
-region-coercion body=0:41 source=0:38 actual=37 expected=32 kind=same-shape pending
+region-coercion body=0:41 source=0:38 actual=37 expected=32 kind=reborrow pending
+region-coercion body=0:41 source=0:38 actual=38 expected=32 kind=same-shape pending
 quantifier 0 regions=1 subject=24 bound=trait:13 arguments=[region:bound:0:0,type:26]
 quantifier 1 regions=1 subject=24 bound=trait:13 arguments=[region:bound:0:0,type:32]
 proof 0 body=0:41 source=0:36 pending
 proof-scope proof=0 scope=1 parent=0 regions=1 depth=1
-proof-owned proof=0 start=3 end=5
-proof-block proof=0 index=0 scope=0 aliases=false source=0 start=3 end=5
-proof-block proof=0 index=1 scope=1 aliases=false source=0 start=3 end=4
-proof-block proof=0 index=2 scope=1 aliases=false source=0 start=4 end=5
-proof-block proof=0 index=3 scope=1 aliases=false source=0 start=5 end=5
-proof-relation proof=0 block=3 kind=equal left=region:3 right=region:4
-proof-relation proof=0 block=3 kind=equal left=region:3 right=bound:0:0
+proof-owned proof=0 start=4 end=6
+proof-block proof=0 index=0 scope=0 aliases=false source=0 start=4 end=6
+proof-block proof=0 index=1 scope=1 aliases=false source=0 start=4 end=5
+proof-block proof=0 index=2 scope=1 aliases=false source=0 start=5 end=6
+proof-block proof=0 index=3 scope=1 aliases=false source=0 start=6 end=6
+proof-relation proof=0 block=3 kind=equal left=region:4 right=region:5
+proof-relation proof=0 block=3 kind=equal left=region:4 right=bound:0:0
 eof owners=2 members=0 parameters=6 predicates=2 impls=1 calls=0 paths=0 impl-uses=1 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0 quantifiers=2 families=0 family-bounds=0 family-regions=0 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=1 proof-scopes=1 proof-blocks=4 proof-sources=0 proof-owned=1 proof-relations=2 proof-types=0

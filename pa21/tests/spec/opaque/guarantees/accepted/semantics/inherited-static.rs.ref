@@ -33,11 +33,12 @@ type 30 function-item def=18 signature=29
 type 31 opaque id=0 arguments=[region:region:1]
 type 32 reference mutable=false region=region:1 referent=11
 type 33 function binders=0 parameters=[32] result=31 unsafe=false
-type 34 opaque id=0 arguments=[region:region:3]
+type 34 opaque id=0 arguments=[region:region:4]
 type 35 reference mutable=false region=region:2 referent=11
-type 36 opaque id=0 arguments=[region:region:4]
-type 37 function binders=0 parameters=[36] result=1 unsafe=false
-type 38 function-item def=17 signature=37 arguments=[type:36]
+type 36 reference mutable=false region=region:3 referent=11
+type 37 opaque id=0 arguments=[region:region:5]
+type 38 function binders=0 parameters=[37] result=1 unsafe=false
+type 39 function-item def=17 signature=38 arguments=[type:37]
 def 14 type=21 name="Self" source=0:2
 def 15 type=11 name="Self" source=0:5
 def 16 type=25 name="f" source=0:17
@@ -77,13 +78,15 @@ implementation-use source=0:14 owner=15 arguments=[]
 region-var region:1 body=0:16 source=0:16 origin=universal-alias pending
 region-var region:1 body=0:44 source=0:35 origin=call-argument pending
 region-var region:2 body=0:44 source=0:34 origin=expression-borrow pending
-region-var region:3 body=0:44 source=0:35 origin=inference pending
-region-var region:4 body=0:44 source=0:41 origin=inference pending
+region-var region:3 body=0:44 source=0:34 origin=inference pending
+region-var region:4 body=0:44 source=0:35 origin=inference pending
+region-var region:5 body=0:44 source=0:41 origin=inference pending
 region-equal body=0:16 left=region:1 right=bound:0:0
-region-coercion body=0:44 source=0:34 actual=35 expected=32 kind=same-shape pending
+region-coercion body=0:44 source=0:34 actual=35 expected=32 kind=reborrow pending
+region-coercion body=0:44 source=0:34 actual=36 expected=32 kind=same-shape pending
 region-coercion body=0:44 source=0:35 actual=31 expected=34 kind=same-shape pending
-region-coercion body=0:44 source=0:41 actual=34 expected=36 kind=same-shape pending
-type-outlives body=0:44 source=0:40 type=36 shorter=static pending
+region-coercion body=0:44 source=0:41 actual=34 expected=37 kind=same-shape pending
+type-outlives body=0:44 source=0:40 type=37 shorter=static pending
 opaque 0 owner=16 source=0:14 application=23 hidden=11 role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 subject=23 bound=trait:13 arguments=[]
 opaque-body-result def=16 type=11

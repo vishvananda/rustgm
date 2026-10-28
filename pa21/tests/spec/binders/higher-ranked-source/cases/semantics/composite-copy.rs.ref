@@ -29,13 +29,13 @@ type 26 function-item def=13 signature=25
 type 27 function binders=0 parameters=[] result=1 unsafe=false
 type 28 function-item def=14 signature=27
 type 29 reference mutable=false region=region:1 referent=11
-type 30 reference mutable=false region=region:5 referent=11
+type 30 reference mutable=false region=region:6 referent=11
 type 31 tuple [30,11]
 type 32 reference mutable=false region=static referent=11
 type 33 tuple [32,11]
-type 34 reference mutable=false region=region:3 referent=11
+type 34 reference mutable=false region=region:4 referent=11
 type 35 tuple [34,11]
-type 36 reference mutable=false region=region:4 referent=11
+type 36 reference mutable=false region=region:5 referent=11
 type 37 tuple [36,11]
 type 38 tuple [35,37]
 type 39 tuple [22,11]
@@ -46,6 +46,7 @@ type 43 tuple [29,11]
 type 44 tuple [43,43]
 type 45 function binders=0 parameters=[43] result=44 unsafe=false
 type 46 reference mutable=false region=region:2 referent=11
+type 47 reference mutable=false region=region:3 referent=11
 def 13 type=26 name="f" source=0:33
 def 14 type=28 name="main" source=0:57
 def 15 type=2 name="bool"
@@ -75,17 +76,19 @@ parameter owner=13 binding=35 argument=type:21 default=-
 predicate owner=13 source=0:27 forall=0
 region-var region:1 body=0:56 source=0:43 origin=call-argument pending
 region-var region:2 body=0:56 source=0:40 origin=expression-borrow pending
-region-var region:3 body=0:56 source=0:43 origin=inference pending
+region-var region:3 body=0:56 source=0:40 origin=inference pending
 region-var region:4 body=0:56 source=0:43 origin=inference pending
-region-var region:5 body=0:56 source=0:38 origin=quantified-proof pending
-region-coercion body=0:56 source=0:40 actual=46 expected=29 kind=same-shape pending
+region-var region:5 body=0:56 source=0:43 origin=inference pending
+region-var region:6 body=0:56 source=0:38 origin=quantified-proof pending
+region-coercion body=0:56 source=0:40 actual=46 expected=29 kind=reborrow pending
+region-coercion body=0:56 source=0:40 actual=47 expected=29 kind=same-shape pending
 region-coercion body=0:56 source=0:43 actual=44 expected=38 kind=same-shape pending
 quantifier 0 regions=1 subject=23 bound=copy
 proof 0 body=0:56 source=0:38 pending
 proof-scope proof=0 scope=1 parent=0 regions=1 depth=1
-proof-owned proof=0 start=5 end=6
-proof-block proof=0 index=0 scope=0 aliases=false source=0 start=5 end=6
-proof-block proof=0 index=1 scope=1 aliases=false source=0 start=5 end=6
-proof-block proof=0 index=2 scope=1 aliases=false source=0 start=6 end=6
-proof-relation proof=0 block=2 kind=equal left=region:5 right=bound:0:0
+proof-owned proof=0 start=6 end=7
+proof-block proof=0 index=0 scope=0 aliases=false source=0 start=6 end=7
+proof-block proof=0 index=1 scope=1 aliases=false source=0 start=6 end=7
+proof-block proof=0 index=2 scope=1 aliases=false source=0 start=7 end=7
+proof-relation proof=0 block=2 kind=equal left=region:6 right=bound:0:0
 eof owners=0 members=0 parameters=1 predicates=1 impls=0 calls=0 paths=0 impl-uses=0 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0 quantifiers=1 families=0 family-bounds=0 family-regions=0 opaques=0 opaque-bounds=0 hidden-types=0 opaque-body-results=0 opaque-implementations=0 proofs=1 proof-scopes=1 proof-blocks=3 proof-sources=0 proof-owned=1 proof-relations=1 proof-types=0

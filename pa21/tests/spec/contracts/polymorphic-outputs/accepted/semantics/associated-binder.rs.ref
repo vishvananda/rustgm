@@ -69,6 +69,7 @@ type 66 reference mutable=false region=region:2 referent=39
 type 67 function binders=0 parameters=[66,47] result=47 unsafe=false
 type 68 reference mutable=false region=region:3 referent=39
 type 69 reference mutable=false region=region:8 referent=11
+type 70 reference mutable=false region=region:9 referent=11
 def 13 type=24 name="check" source=0:13
 def 14 type=26 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:37
@@ -127,15 +128,17 @@ region-var region:5 body=0:92 source=0:86 origin=quantified-proof pending
 region-var region:6 body=0:92 source=0:86 origin=inference pending
 region-var region:7 body=0:92 source=0:86 origin=inference pending
 region-var region:8 body=0:92 source=0:85 origin=expression-borrow pending
-region-var region:9 body=0:92 source=0:86 origin=inference pending
+region-var region:9 body=0:92 source=0:85 origin=inference pending
 region-var region:10 body=0:92 source=0:86 origin=inference pending
+region-var region:11 body=0:92 source=0:86 origin=inference pending
 region-equal body=0:92 left=region:1 right=region:1
 region-equal body=0:92 left=region:1 right=region:6
 region-equal body=0:92 left=region:1 right=region:7
-region-equal body=0:92 left=region:1 right=region:9
-region-equal body=0:92 left=region:9 right=region:10
+region-equal body=0:92 left=region:1 right=region:10
+region-equal body=0:92 left=region:10 right=region:11
 region-coercion body=0:92 source=0:86 actual=68 expected=66 kind=same-shape pending
-region-coercion body=0:92 source=0:85 actual=69 expected=47 kind=same-shape pending
+region-coercion body=0:92 source=0:85 actual=69 expected=47 kind=reborrow pending
+region-coercion body=0:92 source=0:85 actual=70 expected=47 kind=same-shape pending
 associated-type def=17 type=22
 result-contract def=17 projection=22
 result-bound def=17 index=0 subject=22 bound=sized

@@ -54,9 +54,9 @@ type 51 reference mutable=false region=static referent=45
 type 52 reference mutable=false region=bound:0:0 referent=45
 type 53 function binders=1 parameters=[52] result=11 unsafe=false
 type 54 function-item def=17 signature=53 arguments=[type:45]
-type 55 reference mutable=false region=region:3 referent=45
+type 55 reference mutable=false region=region:4 referent=45
 type 56 function binders=0 parameters=[55] result=11 unsafe=false
-type 57 reference mutable=false region=region:4 referent=45
+type 57 reference mutable=false region=region:5 referent=45
 def 13 type=25 name="check" source=0:13
 def 14 type=27 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:28
@@ -104,13 +104,15 @@ region-var region:2 body=0:52 source=0:52 origin=inference pending
 region-var region:3 body=0:52 source=0:50 origin=inference pending
 region-var region:1 body=0:67 source=0:61 origin=call-argument pending
 region-var region:2 body=0:67 source=0:60 origin=expression-borrow pending
-region-var region:3 body=0:67 source=0:62 origin=call-argument pending
-region-var region:4 body=0:67 source=0:62 origin=expression-borrow pending
+region-var region:3 body=0:67 source=0:60 origin=inference pending
+region-var region:4 body=0:67 source=0:62 origin=call-argument pending
+region-var region:5 body=0:67 source=0:62 origin=expression-borrow pending
 region-equal body=0:52 left=region:2 right=region:3
 region-equal body=0:52 left=region:1 right=bound:0:0
 region-coercion body=0:52 source=0:52 actual=22 expected=46 kind=same-shape pending
 region-coercion body=0:67 source=0:62 actual=57 expected=55 kind=same-shape pending
-region-coercion body=0:67 source=0:60 actual=46 expected=48 kind=same-shape pending
+region-coercion body=0:67 source=0:60 actual=46 expected=48 kind=reborrow pending
+region-coercion body=0:67 source=0:60 actual=47 expected=48 kind=same-shape pending
 opaque 0 owner=20 source=0:50 application=37 hidden=- role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 subject=37 bound=trait:15 arguments=[]
 opaque-body-result def=20 type=46

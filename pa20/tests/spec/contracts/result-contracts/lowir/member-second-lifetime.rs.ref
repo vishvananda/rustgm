@@ -1,9 +1,12 @@
 function @rg.22() -> void {
   slot $s0 : u8
+  slot $s1 : ptr
   block ^b0:
     store u8 7, $s0
     %t0 = addr $s0
-    call void @rg.21.i3(%t0)
+    store ptr %t0, $s1
+    %t1 = load ptr $s1
+    call void @rg.21.i3(%t1)
     return void
 }
 function @rg.21.i3(%p0 : ptr) -> void {

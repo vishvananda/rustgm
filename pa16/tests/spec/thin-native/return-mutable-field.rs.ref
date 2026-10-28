@@ -6,6 +6,7 @@ function @rg.16() -> void {
   slot $s4 : obj<16x8>
   slot $s5 : obj<16x8>
   slot $s6 : ptr
+  slot $s7 : ptr
   block ^b0:
     store i64 1, $s4
     %t0 = addr $s4
@@ -25,22 +26,24 @@ function @rg.16() -> void {
     store ptr %t8, $s6
     %t9 = load ptr $s6
     %t10 = addr $s1
-    %t11 = call ptr @rg.15(%t9, %t10)
-    store ptr %t11, $s2
-    %t12 = load ptr $s2
-    %t13 = load i64 %t12
-    store i64 %t13, $s3
-    %t14 = load i64 $s3
-    %t15 = addr $s0
-    %t16 = index u8 %t15, 8
-    %t17 = load i64 %t16
-    %t18 = binary add i64 %t14, %t17
-    %t19 = cmp ult i64 %t18, %t14
-    branch %t19, ^b1, ^b2
+    store ptr %t10, $s7
+    %t11 = load ptr $s7
+    %t12 = call ptr @rg.15(%t9, %t11)
+    store ptr %t12, $s2
+    %t13 = load ptr $s2
+    %t14 = load i64 %t13
+    store i64 %t14, $s3
+    %t15 = load i64 $s3
+    %t16 = addr $s0
+    %t17 = index u8 %t16, 8
+    %t18 = load i64 %t17
+    %t19 = binary add i64 %t15, %t18
+    %t20 = cmp ult i64 %t19, %t15
+    branch %t20, ^b1, ^b2
   block ^b2:
-    %t20 = cmp eq i64 %t18, 10
-    %t21 = convert trunc i1 i64 %t20
-    call void @rg.13(%t21)
+    %t21 = cmp eq i64 %t19, 10
+    %t22 = convert trunc i1 i64 %t21
+    call void @rg.13(%t22)
     return void
   block ^b1:
     call void @abort()

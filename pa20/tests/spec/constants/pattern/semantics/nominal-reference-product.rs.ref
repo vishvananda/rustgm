@@ -48,17 +48,19 @@ type 45 aggregate def=15 regions=[region:2]
 type 46 reference mutable=false region=region:2 referent=11
 type 47 function binders=0 parameters=[46] result=45 unsafe=false
 type 48 function-item def=16 signature=47 regions=[region:2]
-type 49 aggregate def=15 regions=[region:4]
+type 49 aggregate def=15 regions=[region:5]
 type 50 function binders=0 parameters=[49] result=2 unsafe=false
-type 51 aggregate def=15 regions=[region:5]
-type 52 reference mutable=false region=region:5 referent=11
+type 51 aggregate def=15 regions=[region:6]
+type 52 reference mutable=false region=region:6 referent=11
 type 53 function binders=0 parameters=[52] result=51 unsafe=false
-type 54 function-item def=16 signature=53 regions=[region:5]
+type 54 function-item def=16 signature=53 regions=[region:6]
 type 55 reference mutable=false region=region:3 referent=11
-type 56 reference mutable=false region=region:6 referent=11
-type 57 reference mutable=false region=region:1 referent=11
-type 58 function binders=0 parameters=[57] result=43 unsafe=false
-type 59 function-item def=16 signature=58 regions=[region:1]
+type 56 reference mutable=false region=region:4 referent=11
+type 57 reference mutable=false region=region:7 referent=11
+type 58 reference mutable=false region=region:8 referent=11
+type 59 reference mutable=false region=region:1 referent=11
+type 60 function binders=0 parameters=[59] result=43 unsafe=false
+type 61 function-item def=16 signature=60 regions=[region:1]
 def 13 type=24 name="check" source=0:13
 def 14 type=26 name="fail" source=0:22
 def 15 type=21 name="K" source=0:28
@@ -99,18 +101,24 @@ region-var region:2 body=0:72 source=0:65 origin=universal-alias pending
 region-var region:1 body=0:92 source=0:80 origin=call-argument pending
 region-var region:2 body=0:92 source=0:76 origin=item-argument pending
 region-var region:3 body=0:92 source=0:78 origin=expression-borrow pending
-region-var region:4 body=0:92 source=0:89 origin=call-argument pending
-region-var region:5 body=0:92 source=0:85 origin=item-argument pending
-region-var region:6 body=0:92 source=0:87 origin=expression-borrow pending
+region-var region:4 body=0:92 source=0:78 origin=inference pending
+region-var region:5 body=0:92 source=0:89 origin=call-argument pending
+region-var region:6 body=0:92 source=0:85 origin=item-argument pending
+region-var region:7 body=0:92 source=0:87 origin=expression-borrow pending
+region-var region:8 body=0:92 source=0:87 origin=inference pending
 region-var region:1 body=0:48 source=0:45 origin=item-argument pending
 region-var region:2 body=0:48 source=0:47 origin=expression-borrow pending
+region-var region:3 body=0:48 source=0:47 origin=inference pending
 region-equal body=0:72 left=region:2 right=bound:0:0
 region-equal body=0:72 left=region:1 right=region:2
-region-coercion body=0:92 source=0:78 actual=55 expected=46 kind=same-shape pending
+region-coercion body=0:92 source=0:78 actual=55 expected=46 kind=reborrow pending
+region-coercion body=0:92 source=0:78 actual=56 expected=46 kind=same-shape pending
 region-coercion body=0:92 source=0:79 actual=45 expected=43 kind=same-shape pending
-region-coercion body=0:92 source=0:87 actual=56 expected=52 kind=same-shape pending
+region-coercion body=0:92 source=0:87 actual=57 expected=52 kind=reborrow pending
+region-coercion body=0:92 source=0:87 actual=58 expected=52 kind=same-shape pending
 region-coercion body=0:92 source=0:88 actual=51 expected=49 kind=same-shape pending
-region-coercion body=0:48 source=0:47 actual=46 expected=57 kind=same-shape pending
+region-coercion body=0:48 source=0:47 actual=46 expected=59 kind=reborrow pending
+region-coercion body=0:48 source=0:47 actual=55 expected=59 kind=same-shape pending
 region-coercion body=0:48 source=0:48 actual=43 expected=21 kind=same-shape pending
 associated-constant def=20 type=21
 constant-use source=0:65 definition=20 arguments=[region:region:1]

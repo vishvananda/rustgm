@@ -39,10 +39,10 @@ type 36 function-item def=16 signature=32
 type 37 aggregate def=15 arguments=[region:bound:0:0,type:24]
 type 38 reference mutable=false region=region:3 referent=1
 type 39 aggregate def=15 arguments=[region:region:1,type:24]
-type 40 reference mutable=false region=region:1 referent=1
-type 41 aggregate def=15 arguments=[region:region:3,type:24]
-type 42 function binders=0 parameters=[38,24] result=41 unsafe=false
-type 43 function-item def=16 signature=42 arguments=[region:region:3,type:24]
+type 40 aggregate def=15 arguments=[region:region:3,type:24]
+type 41 function binders=0 parameters=[38,24] result=40 unsafe=false
+type 42 function-item def=16 signature=41 arguments=[region:region:3,type:24]
+type 43 reference mutable=false region=region:4 referent=1
 def 14 type=23 name="Self" source=0:1
 def 15 type=22 name="Wrap" source=0:15
 def 16 type=36 name="Wrap" source=0:15
@@ -83,11 +83,13 @@ predicate owner=17 source=0:26 subject=24 bound=trait:13 arguments=[region:bound
 region-var region:1 body=0:47 source=0:47 origin=universal-alias pending
 region-var region:2 body=0:47 source=0:47 origin=universal-alias pending
 region-var region:3 body=0:47 source=0:42 origin=item-argument pending
+region-var region:4 body=0:47 source=0:43 origin=inference pending
 region-equal body=0:47 left=region:1 right=bound:0:0
 region-equal body=0:47 left=region:2 right=bound:0:1
 region-equal body=0:47 left=region:1 right=region:2
 region-equal body=0:47 left=region:3 right=region:2
 region-equal body=0:47 left=region:3 right=region:2
-region-coercion body=0:47 source=0:43 actual=25 expected=38 kind=same-shape pending
-region-coercion body=0:47 source=0:45 actual=41 expected=37 kind=same-shape pending
+region-coercion body=0:47 source=0:43 actual=25 expected=38 kind=reborrow pending
+region-coercion body=0:47 source=0:43 actual=43 expected=38 kind=same-shape pending
+region-coercion body=0:47 source=0:45 actual=40 expected=37 kind=same-shape pending
 eof owners=1 members=0 parameters=5 predicates=3 impls=0 calls=0 paths=0 impl-uses=0

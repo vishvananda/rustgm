@@ -56,6 +56,7 @@ type 53 function binders=0 parameters=[52] result=52 unsafe=false
 type 54 aggregate def=20 arguments=[region:region:1,type:11]
 type 55 function-item def=23 signature=53 arguments=[region:region:1,type:11]
 type 56 reference mutable=false region=region:4 referent=11
+type 57 reference mutable=false region=region:5 referent=11
 def 13 type=28 name="check" source=0:13
 def 14 type=30 name="fail" source=0:22
 def 16 type=23 name="Self" source=0:25
@@ -109,7 +110,7 @@ predicate owner=22 source=0:49 subject=24 bound=trait:15 arguments=[region:bound
 impl owner=18 source=0:36 subject=11 bound=trait:15 arguments=[region:bound:0:0]
 impl-type owner=18 declaration=17 definition=19
 inherent-path source=0:76 method=23 implementation=22 prefix=0:74 annotation=false
-implementation-use source=0:76 owner=18 arguments=[region:region:5]
+implementation-use source=0:76 owner=18 arguments=[region:region:6]
 region-var region:1 body=0:65 source=0:65 origin=universal-alias pending
 region-var region:2 body=0:65 source=0:60 origin=inference pending
 region-var region:3 body=0:65 source=0:65 origin=inference pending
@@ -117,13 +118,15 @@ region-var region:1 body=0:85 source=0:76 origin=item-argument pending
 region-var region:2 body=0:85 source=0:76 origin=item-argument pending
 region-var region:3 body=0:85 source=0:76 origin=quantified-proof pending
 region-var region:4 body=0:85 source=0:78 origin=expression-borrow pending
-region-var region:5 body=0:85 source=0:76 origin=inference pending
+region-var region:5 body=0:85 source=0:78 origin=inference pending
+region-var region:6 body=0:85 source=0:76 origin=inference pending
 region-equal body=0:65 left=region:2 right=bound:0:0
 region-equal body=0:65 left=region:3 right=bound:0:0
 region-equal body=0:65 left=region:1 right=bound:0:0
-region-equal body=0:85 left=region:1 right=region:5
+region-equal body=0:85 left=region:1 right=region:6
 region-equal body=0:85 left=region:1 right=region:2
-region-coercion body=0:85 source=0:78 actual=56 expected=52 kind=same-shape pending
+region-coercion body=0:85 source=0:78 actual=56 expected=52 kind=reborrow pending
+region-coercion body=0:85 source=0:78 actual=57 expected=52 kind=same-shape pending
 associated-type def=17 type=26
 result-contract def=17 projection=26
 result-bound def=17 index=0 subject=26 bound=sized

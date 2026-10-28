@@ -39,6 +39,7 @@ type 36 function binders=0 parameters=[35] result=1 unsafe=false
 type 37 function binders=0 parameters=[34] result=35 unsafe=false
 type 38 function-item def=16 signature=37 arguments=[type:34]
 type 39 reference mutable=false region=region:2 referent=11
+type 40 reference mutable=false region=region:3 referent=11
 def 14 type=23 name="Self" source=0:0
 def 15 type=22 name="W" source=0:6
 def 16 type=33 name="W" source=0:6
@@ -77,7 +78,9 @@ implementation-use source=0:27 owner=17 arguments=[]
 implementation-use source=0:27 owner=17 arguments=[]
 region-var region:1 body=0:30 source=0:28 origin=call-argument pending
 region-var region:2 body=0:30 source=0:26 origin=expression-borrow pending
+region-var region:3 body=0:30 source=0:26 origin=inference pending
 region-equal body=0:30 left=region:1 right=static
 region-equal body=0:30 left=region:1 right=static
-region-coercion body=0:30 source=0:26 actual=39 expected=34 kind=same-shape pending
+region-coercion body=0:30 source=0:26 actual=39 expected=34 kind=reborrow pending
+region-coercion body=0:30 source=0:26 actual=40 expected=34 kind=same-shape pending
 eof owners=2 members=0 parameters=2 predicates=2 impls=1 calls=0 paths=0 impl-uses=2

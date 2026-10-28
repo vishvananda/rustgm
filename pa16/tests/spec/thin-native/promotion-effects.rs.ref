@@ -34,12 +34,15 @@ function @rg.17() -> void {
 }
 function @rg.16(%p0 : ptr) -> ptr {
   slot $s0 : ptr
+  slot $s1 : ptr
   block ^b0:
     store ptr %p0, $s0
     %t0 = load ptr $s0
     call void @rg.15(%t0)
     %t1 = addr @rg.data.0
-    return ptr %t1
+    store ptr %t1, $s1
+    %t2 = load ptr $s1
+    return ptr %t2
 }
 function @rg.13(%p0 : i1) -> void {
   slot $s0 : i1

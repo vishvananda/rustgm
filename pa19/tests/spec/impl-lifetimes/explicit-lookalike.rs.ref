@@ -1,13 +1,16 @@
 function @rg.22() -> void {
   slot $s0 : obj<1x1>
   slot $s1 : ptr
+  slot $s2 : ptr
   block ^b0:
     %t0 = addr $s0
     store ptr %t0, $s1
     %t1 = addr $s1
-    %t2 = addr $s0
-    %t3 = call i1 @rg.21(%t1, %t2)
-    call void @rg.13(%t3)
+    store ptr %t1, $s2
+    %t2 = load ptr $s2
+    %t3 = addr $s0
+    %t4 = call i1 @rg.21(%t2, %t3)
+    call void @rg.13(%t4)
     return void
 }
 function @rg.21(%p0 : ptr, %p1 : ptr) -> i1 {

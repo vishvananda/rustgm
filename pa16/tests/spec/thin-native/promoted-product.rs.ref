@@ -44,6 +44,7 @@ function @rg.15() -> ptr {
   slot $s0 : obj<3x1>
   slot $s1 : i64
   slot $s2 : obj<16x8>
+  slot $s3 : ptr
   block ^b0:
     store i64 0, $s1
     jump ^b1
@@ -66,7 +67,9 @@ function @rg.15() -> ptr {
     %t8 = addr $s0
     copyobj 3x1 %t8, %t7
     %t9 = addr @rg.data.0
-    return ptr %t9
+    store ptr %t9, $s3
+    %t10 = load ptr $s3
+    return ptr %t10
 }
 function @rg.13(%p0 : i1) -> void {
   slot $s0 : i1

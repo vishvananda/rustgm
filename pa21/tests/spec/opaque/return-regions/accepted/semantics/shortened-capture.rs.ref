@@ -56,13 +56,15 @@ type 53 reference mutable=false region=region:1 referent=11
 type 54 function binders=0 parameters=[53,52] result=49 unsafe=false
 type 55 function-item def=20 signature=54 regions=[region:1,region:2]
 type 56 opaque id=0 arguments=[region:static]
-type 57 reference mutable=false region=static referent=49
-type 58 reference mutable=false region=bound:0:0 referent=49
-type 59 function binders=1 parameters=[58] result=11 unsafe=false
-type 60 function-item def=17 signature=59 arguments=[type:49]
-type 61 reference mutable=false region=region:5 referent=49
-type 62 function binders=0 parameters=[61] result=11 unsafe=false
-type 63 reference mutable=false region=region:6 referent=49
+type 57 reference mutable=false region=region:5 referent=11
+type 58 reference mutable=false region=region:6 referent=11
+type 59 reference mutable=false region=static referent=49
+type 60 reference mutable=false region=bound:0:0 referent=49
+type 61 function binders=1 parameters=[60] result=11 unsafe=false
+type 62 function-item def=17 signature=61 arguments=[type:49]
+type 63 reference mutable=false region=region:7 referent=49
+type 64 function binders=0 parameters=[63] result=11 unsafe=false
+type 65 reference mutable=false region=region:8 referent=49
 def 13 type=25 name="check" source=0:13
 def 14 type=27 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:28
@@ -104,7 +106,7 @@ parameter owner=16 binding=16 argument=type:21 default=-
 predicate owner=15 source=0:28 subject=21 bound=trait:15 arguments=[]
 impl owner=18 source=0:43 subject=22 bound=trait:15 arguments=[]
 impl-method owner=18 declaration=17 selected=19 default=false
-method-call source=0:79 method=17 callable=60 dereferences=0 borrow=63 receiver=61 origin=lexical
+method-call source=0:79 method=17 callable=62 dereferences=0 borrow=65 receiver=63 origin=lexical
 implementation-use source=0:62 owner=18 arguments=[region:region:4]
 region-var region:1 body=0:64 source=0:64 origin=universal-alias pending
 region-var region:2 body=0:64 source=0:64 origin=universal-alias pending
@@ -113,16 +115,20 @@ region-var region:4 body=0:64 source=0:62 origin=inference pending
 region-var region:1 body=0:84 source=0:73 origin=item-argument pending
 region-var region:2 body=0:84 source=0:73 origin=item-argument pending
 region-var region:3 body=0:84 source=0:75 origin=expression-borrow pending
-region-var region:4 body=0:84 source=0:77 origin=expression-borrow pending
-region-var region:5 body=0:84 source=0:79 origin=call-argument pending
-region-var region:6 body=0:84 source=0:79 origin=expression-borrow pending
+region-var region:4 body=0:84 source=0:75 origin=inference pending
+region-var region:5 body=0:84 source=0:77 origin=expression-borrow pending
+region-var region:6 body=0:84 source=0:77 origin=inference pending
+region-var region:7 body=0:84 source=0:79 origin=call-argument pending
+region-var region:8 body=0:84 source=0:79 origin=expression-borrow pending
 region-equal body=0:64 left=region:3 right=region:4
 region-equal body=0:64 left=region:1 right=bound:0:0
 region-equal body=0:64 left=region:2 right=bound:0:1
 region-coercion body=0:64 source=0:64 actual=37 expected=50 kind=same-shape pending
-region-coercion body=0:84 source=0:79 actual=63 expected=61 kind=same-shape pending
-region-coercion body=0:84 source=0:75 actual=50 expected=53 kind=same-shape pending
-region-coercion body=0:84 source=0:77 actual=51 expected=52 kind=same-shape pending
+region-coercion body=0:84 source=0:79 actual=65 expected=63 kind=same-shape pending
+region-coercion body=0:84 source=0:75 actual=50 expected=53 kind=reborrow pending
+region-coercion body=0:84 source=0:75 actual=51 expected=53 kind=same-shape pending
+region-coercion body=0:84 source=0:77 actual=57 expected=52 kind=reborrow pending
+region-coercion body=0:84 source=0:77 actual=58 expected=52 kind=same-shape pending
 region-outlives body=0:84 source=0:73 longer=region:2 shorter=region:1 pending
 opaque 0 owner=20 source=0:62 application=38 hidden=- role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 subject=38 bound=trait:15 arguments=[]

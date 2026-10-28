@@ -1,0 +1,43 @@
+function @answer() -> u8 {
+  slot $s0 : u8
+  slot $s1 : obj<8x8>
+  slot $s2 : ptr
+  slot $s3 : u8
+  slot $s4 : ptr
+  slot $s5 : obj<8x8>
+  block ^b0:
+    store u8 9, $s0
+    %t0 = addr $s0
+    store ptr %t0, $s5
+    %t1 = addr $s5
+    %t2 = addr $s1
+    copyobj 8x8 %t1, %t2
+    %t3 = addr @rgc$20_7368617265645f63616c6c5f7265626f72726f77$12_7061313663616c6c72656673$internal$rg.14
+    store ptr %t3, $s2
+    %t4 = load ptr $s1
+    %t5 = call u8 @rgc$20_7368617265645f63616c6c5f7265626f72726f77$12_7061313663616c6c72656673$internal$rg.14(%t4)
+    call void @seen(1, %t5)
+    %t6 = load ptr $s2
+    %t7 = load ptr $s1
+    %t8 = call u8 %t6(%t7) as (%p0 : ptr) -> u8
+    call void @seen(2, %t8)
+    store u8 13, $s3
+    %t9 = addr $s3
+    store ptr %t9, $s4
+    %t10 = load ptr $s4
+    %t11 = call u8 @rgc$20_7368617265645f63616c6c5f7265626f72726f77$12_7061313663616c6c72656673$internal$rg.14(%t10)
+    call void @seen(3, %t11)
+    %t12 = load ptr $s4
+    %t13 = call u8 @rgc$20_7368617265645f63616c6c5f7265626f72726f77$12_7061313663616c6c72656673$internal$rg.14(%t12)
+    call void @seen(4, %t13)
+    return u8 7
+}
+function @rgc$20_7368617265645f63616c6c5f7265626f72726f77$12_7061313663616c6c72656673$internal$rg.14(%p0 : ptr) -> u8 {
+  slot $s0 : ptr
+  block ^b0:
+    store ptr %p0, $s0
+    %t0 = load ptr $s0
+    %t1 = load u8 %t0
+    return u8 %t1
+}
+declare function @seen(%p0 : u8, %p1 : u8) -> void

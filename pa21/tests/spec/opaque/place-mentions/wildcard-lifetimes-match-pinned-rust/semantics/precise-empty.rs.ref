@@ -29,6 +29,7 @@ type 26 function-item def=14 signature=25
 type 27 reference mutable=false region=region:1 referent=11
 type 28 function binders=0 parameters=[27] result=22 unsafe=false
 type 29 reference mutable=false region=region:2 referent=11
+type 30 reference mutable=false region=region:3 referent=11
 def 13 type=24 name="f" source=0:12
 def 14 type=26 name="main" source=0:31
 def 15 type=2 name="bool"
@@ -54,7 +55,9 @@ def 42 type=22 name="x" source=0:13
 def 43 type=11 name="a" source=0:15
 region-var region:1 body=0:30 source=0:22 origin=call-argument pending
 region-var region:2 body=0:30 source=0:21 origin=expression-borrow pending
-region-coercion body=0:30 source=0:21 actual=29 expected=27 kind=same-shape pending
+region-var region:3 body=0:30 source=0:21 origin=inference pending
+region-coercion body=0:30 source=0:21 actual=29 expected=27 kind=reborrow pending
+region-coercion body=0:30 source=0:21 actual=30 expected=27 kind=same-shape pending
 opaque 0 owner=13 source=0:9 application=22 hidden=1 role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 subject=22 bound=copy
 opaque-body-result def=13 type=1

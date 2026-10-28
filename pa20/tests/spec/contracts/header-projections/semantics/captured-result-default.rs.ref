@@ -55,9 +55,10 @@ type 52 function-item def=18 signature=51 regions=[region:1]
 type 53 projection def=17 self=11 trait=15 arguments=[region:region:1] family arguments=[]
 type 54 reference mutable=false region=region:3 referent=11
 type 55 function binders=0 parameters=[45] result=11 unsafe=false
-type 56 reference mutable=false region=region:5 referent=11
+type 56 reference mutable=false region=region:6 referent=11
 type 57 function-item def=18 signature=55 arguments=[region:region:1,type:11]
 type 58 reference mutable=false region=region:4 referent=11
+type 59 reference mutable=false region=region:5 referent=11
 def 13 type=27 name="check" source=0:13
 def 14 type=29 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:47
@@ -118,8 +119,8 @@ impl-method owner=24 declaration=18 selected=18 default=true
 impl-type owner=24 declaration=17 definition=25
 trait-path source=0:42 method=21 trait=19 qualifier=explicit origin=ordinary subject-source=0:39
 trait-path source=0:89 method=18 trait=15 qualifier=explicit origin=ordinary subject-source=0:83
-implementation-use source=0:89 owner=22 arguments=[region:region:5]
-implementation-use source=0:89 owner=24 arguments=[region:region:6]
+implementation-use source=0:89 owner=22 arguments=[region:region:6]
+implementation-use source=0:89 owner=24 arguments=[region:region:7]
 region-var region:1 body=0:45 source=0:39 origin=inference pending
 region-var region:2 body=0:45 source=0:45 origin=universal-alias pending
 region-var region:3 body=0:45 source=0:35 origin=inference pending
@@ -127,8 +128,9 @@ region-var region:1 body=0:97 source=0:85 origin=item-argument pending
 region-var region:2 body=0:97 source=0:89 origin=quantified-proof pending
 region-var region:3 body=0:97 source=0:89 origin=inference pending
 region-var region:4 body=0:97 source=0:91 origin=expression-borrow pending
-region-var region:5 body=0:97 source=0:89 origin=inference pending
+region-var region:5 body=0:97 source=0:91 origin=inference pending
 region-var region:6 body=0:97 source=0:89 origin=inference pending
+region-var region:7 body=0:97 source=0:89 origin=inference pending
 region-equal body=0:45 left=region:1 right=bound:0:0
 region-equal body=0:45 left=region:3 right=bound:0:0
 region-equal body=0:45 left=region:2 right=region:2
@@ -138,10 +140,11 @@ region-equal body=0:45 left=region:2 right=region:2
 region-equal body=0:45 left=region:2 right=bound:0:0
 region-equal body=0:97 left=region:1 right=region:1
 region-equal body=0:97 left=region:1 right=region:3
-region-equal body=0:97 left=region:1 right=region:5
 region-equal body=0:97 left=region:1 right=region:6
+region-equal body=0:97 left=region:1 right=region:7
 region-coercion body=0:45 source=0:43 actual=23 expected=47 kind=same-shape pending
-region-coercion body=0:97 source=0:91 actual=58 expected=45 kind=same-shape pending
+region-coercion body=0:97 source=0:91 actual=58 expected=45 kind=reborrow pending
+region-coercion body=0:97 source=0:91 actual=59 expected=45 kind=same-shape pending
 associated-type def=17 type=23
 result-contract def=17 projection=23
 result-bound def=17 index=0 subject=23 bound=sized

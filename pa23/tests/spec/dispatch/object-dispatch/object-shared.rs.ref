@@ -6,20 +6,23 @@ global @rg.vtable.0 : obj<32x8> [storage=readonly] = {
 }
 function @rg.21() -> void {
   slot $s0 : u8
-  slot $s1 : obj<16x8>
+  slot $s1 : ptr
+  slot $s2 : obj<16x8>
   block ^b0:
     store u8 7, $s0
     %t0 = addr $s0
-    %t1 = addr @rg.vtable.0
     store ptr %t0, $s1
-    %t2 = addr $s1
-    %t3 = index u8 %t2, 8
-    store ptr %t1, %t3
-    %t4 = addr $s1
-    %t5 = call u8 @rg.20(%t4)
-    %t6 = cmp eq u8 %t5, 9
-    %t7 = convert trunc i1 i64 %t6
-    call void @rg.13(%t7)
+    %t1 = load ptr $s1
+    %t2 = addr @rg.vtable.0
+    store ptr %t1, $s2
+    %t3 = addr $s2
+    %t4 = index u8 %t3, 8
+    store ptr %t2, %t4
+    %t5 = addr $s2
+    %t6 = call u8 @rg.20(%t5)
+    %t7 = cmp eq u8 %t6, 9
+    %t8 = convert trunc i1 i64 %t7
+    call void @rg.13(%t8)
     return void
 }
 function @rg.20(%p0 : ptr) -> u8 {

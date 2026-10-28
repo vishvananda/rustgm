@@ -42,6 +42,7 @@ type 39 reference mutable=false region=region:4 referent=11
 type 40 reference mutable=false region=region:5 referent=11
 type 41 function binders=0 parameters=[40] result=1 unsafe=false
 type 42 reference mutable=false region=region:6 referent=11
+type 43 reference mutable=false region=region:7 referent=11
 def 13 type=22 name="W" source=0:3
 def 14 type=36 name="W" source=0:3
 def 16 type=23 name="Self" source=0:6
@@ -90,8 +91,10 @@ region-var region:3 body=0:54 source=0:46 origin=quantified-proof pending
 region-var region:4 body=0:54 source=0:46 origin=quantified-proof pending
 region-var region:5 body=0:54 source=0:52 origin=call-argument pending
 region-var region:6 body=0:54 source=0:51 origin=expression-borrow pending
+region-var region:7 body=0:54 source=0:51 origin=inference pending
 region-coercion body=0:54 source=0:47 actual=32 expected=31 kind=function-pointer pending
-region-coercion body=0:54 source=0:51 actual=42 expected=40 kind=same-shape pending
+region-coercion body=0:54 source=0:51 actual=42 expected=40 kind=reborrow pending
+region-coercion body=0:54 source=0:51 actual=43 expected=40 kind=same-shape pending
 associated-type def=17 type=25
 result-contract def=17 projection=25
 result-bound def=17 index=0 subject=25 bound=sized

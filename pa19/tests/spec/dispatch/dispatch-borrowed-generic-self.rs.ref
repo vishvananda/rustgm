@@ -46,22 +46,24 @@ type 43 function-item def=17 signature=40
 type 44 function binders=0 parameters=[27] result=11 unsafe=false
 type 45 reference mutable=false region=region:1 referent=21
 type 46 function binders=0 parameters=[45] result=11 unsafe=false
-type 47 reference mutable=false region=region:2 referent=33
+type 47 reference mutable=false region=region:1 referent=33
 type 48 function-item def=15 signature=35 arguments=[type:33]
-type 49 reference mutable=false region=region:1 referent=33
-type 50 function binders=0 parameters=[49] result=11 unsafe=false
+type 49 function binders=0 parameters=[47] result=11 unsafe=false
+type 50 reference mutable=false region=region:3 referent=33
 type 51 aggregate def=16 regions=[region:2]
 type 52 reference mutable=false region=region:2 referent=11
 type 53 function binders=0 parameters=[52] result=51 unsafe=false
 type 54 function-item def=17 signature=53 regions=[region:2]
-type 55 aggregate def=16 regions=[region:5]
+type 55 aggregate def=16 regions=[region:7]
 type 56 reference mutable=false region=bound:0:0 referent=51
 type 57 function binders=1 parameters=[56] result=11 unsafe=false
 type 58 function-item def=20 signature=57 arguments=[type:51]
 type 59 reference mutable=false region=region:1 referent=51
 type 60 function binders=0 parameters=[59] result=11 unsafe=false
 type 61 reference mutable=false region=region:3 referent=11
-type 62 reference mutable=false region=region:4 referent=51
+type 62 reference mutable=false region=region:4 referent=11
+type 63 reference mutable=false region=region:5 referent=51
+type 64 reference mutable=false region=region:6 referent=51
 def 14 type=22 name="Self" source=0:5
 def 15 type=26 name="f" source=0:4
 def 16 type=21 name="W" source=0:11
@@ -105,17 +107,23 @@ predicate owner=20 source=0:29 subject=33 bound=trait:13 arguments=[]
 impl owner=18 source=0:27 subject=21 bound=trait:13 arguments=[]
 impl-method owner=18 declaration=15 selected=19 default=false
 trait-path source=0:38 method=15 trait=13 qualifier=explicit origin=ordinary subject-source=-
-implementation-use source=0:47 owner=18 arguments=[region:region:5]
+implementation-use source=0:47 owner=18 arguments=[region:region:7]
 region-var region:1 body=0:41 source=0:40 origin=call-argument pending
 region-var region:2 body=0:41 source=0:40 origin=universal-alias pending
+region-var region:3 body=0:41 source=0:39 origin=inference pending
 region-var region:1 body=0:55 source=0:53 origin=call-argument pending
 region-var region:2 body=0:55 source=0:48 origin=item-argument pending
 region-var region:3 body=0:55 source=0:50 origin=expression-borrow pending
-region-var region:4 body=0:55 source=0:52 origin=expression-borrow pending
-region-var region:5 body=0:55 source=0:47 origin=inference pending
+region-var region:4 body=0:55 source=0:50 origin=inference pending
+region-var region:5 body=0:55 source=0:52 origin=expression-borrow pending
+region-var region:6 body=0:55 source=0:52 origin=inference pending
+region-var region:7 body=0:55 source=0:47 origin=inference pending
 region-equal body=0:41 left=region:2 right=bound:0:0
-region-equal body=0:55 left=region:2 right=region:5
-region-coercion body=0:41 source=0:39 actual=34 expected=49 kind=same-shape pending
-region-coercion body=0:55 source=0:50 actual=61 expected=52 kind=same-shape pending
-region-coercion body=0:55 source=0:52 actual=62 expected=59 kind=same-shape pending
+region-equal body=0:55 left=region:2 right=region:7
+region-coercion body=0:41 source=0:39 actual=34 expected=47 kind=reborrow pending
+region-coercion body=0:41 source=0:39 actual=50 expected=47 kind=same-shape pending
+region-coercion body=0:55 source=0:50 actual=61 expected=52 kind=reborrow pending
+region-coercion body=0:55 source=0:50 actual=62 expected=52 kind=same-shape pending
+region-coercion body=0:55 source=0:52 actual=63 expected=59 kind=reborrow pending
+region-coercion body=0:55 source=0:52 actual=64 expected=59 kind=same-shape pending
 eof owners=2 members=2 parameters=2 predicates=2 impls=1 calls=0 paths=1 impl-uses=1

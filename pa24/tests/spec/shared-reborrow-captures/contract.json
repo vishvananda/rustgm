@@ -1,0 +1,23 @@
+{
+  "state": "outcomes reviewed from exact observed statuses; initial4 wrong hypotheses retained in evidence",
+  "editions": [
+    2021,
+    2024
+  ],
+  "profile": "pinned Rust1.98.0 x86_64 Linux panic=abort",
+  "cases": {
+    "original": 1,
+    "explicit-field": 0,
+    "implicit-call": 0,
+    "explicit-call": 0,
+    "root": 1,
+    "move-root": 0,
+    "root-call": 0,
+    "move-root-call": 0,
+    "branch-field": 1,
+    "branch-root": 1
+  },
+  "initial_receipt_sha256": "6b35fb397d15135d709b0af6519922fcda0e1281859ce9496362cd909f5fc4e5",
+  "note": "An identical shared return remains a value; a fresh call input may reborrow and legitimately improve captures. Original formation-truncation/reference-field.rs stays unchanged.",
+  "branch_receipt_sha256": "62ea1a227ad159a909020f36057e0463847226672f0d84eab0f7cf37aef75709"
+}

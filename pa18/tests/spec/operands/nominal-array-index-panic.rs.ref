@@ -2,10 +2,13 @@ global @rg.data.0 : obj<1x1> [storage=readonly] = {
   zero 1
 }
 function @rg.16() -> void {
+  slot $s0 : ptr
   block ^b0:
     call void @rg.14.i1()
     %t0 = addr @rg.data.0
-    %t1 = call u8 @rg.15.i2(%t0, 0)
+    store ptr %t0, $s0
+    %t1 = load ptr $s0
+    %t2 = call u8 @rg.15.i2(%t1, 0)
     return void
 }
 function @rg.14.i1() -> void {

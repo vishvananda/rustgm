@@ -42,13 +42,14 @@ type 39 function-item def=16 signature=38
 type 40 opaque id=0 arguments=[region:region:1]
 type 41 reference mutable=false region=region:1 referent=11
 type 42 function binders=0 parameters=[41] result=40 unsafe=false
-type 43 opaque id=0 arguments=[region:region:3]
+type 43 opaque id=0 arguments=[region:region:4]
 type 44 aggregate def=15 arguments=[type:43]
 type 45 function binders=0 parameters=[43] result=44 unsafe=false
 type 46 function-item def=16 signature=45 arguments=[type:43]
 type 47 reference mutable=false region=region:2 referent=11
-type 48 opaque id=0 arguments=[region:region:4]
-type 49 aggregate def=15 arguments=[type:48]
+type 48 reference mutable=false region=region:3 referent=11
+type 49 opaque id=0 arguments=[region:region:5]
+type 50 aggregate def=15 arguments=[type:49]
 def 13 type=26 name="check" source=0:13
 def 14 type=28 name="fail" source=0:22
 def 15 type=22 name="W" source=0:26
@@ -90,12 +91,14 @@ parameter owner=17 binding=41 argument=type:23 default=-
 region-var region:1 body=0:55 source=0:55 origin=universal-alias pending
 region-var region:1 body=0:76 source=0:67 origin=call-argument pending
 region-var region:2 body=0:76 source=0:66 origin=expression-borrow pending
-region-var region:3 body=0:76 source=0:67 origin=inference pending
-region-var region:4 body=0:76 source=0:74 origin=inference pending
+region-var region:3 body=0:76 source=0:66 origin=inference pending
+region-var region:4 body=0:76 source=0:67 origin=inference pending
+region-var region:5 body=0:76 source=0:74 origin=inference pending
 region-equal body=0:55 left=region:1 right=bound:0:0
-region-coercion body=0:76 source=0:66 actual=47 expected=41 kind=same-shape pending
+region-coercion body=0:76 source=0:66 actual=47 expected=41 kind=reborrow pending
+region-coercion body=0:76 source=0:66 actual=48 expected=41 kind=same-shape pending
 region-coercion body=0:76 source=0:67 actual=40 expected=43 kind=same-shape pending
-region-coercion body=0:76 source=0:74 actual=44 expected=49 kind=same-shape pending
+region-coercion body=0:76 source=0:74 actual=44 expected=50 kind=same-shape pending
 type-outlives body=0:55 source=0:53 type=11 shorter=static pending
 opaque 0 owner=19 source=0:53 application=33 hidden=11 role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 subject=33 bound=copy

@@ -9,65 +9,74 @@ function @rg.21() -> void {
   slot $s1 : obj<16x8>
   slot $s2 : i1
   slot $s3 : obj<8x8>
-  slot $s4 : obj<16x8>
-  slot $s5 : obj<8x8>
+  slot $s4 : ptr
+  slot $s5 : obj<16x8>
+  slot $s6 : ptr
+  slot $s7 : obj<8x8>
+  slot $s8 : ptr
   block ^b0:
     store u8 7, $s0
     %t0 = addr $s0
-    %t1 = addr $s4
-    call void @rg.18(%t1, %t0)
-    %t2 = addr $s4
-    %t3 = addr $s1
-    copyobj 16x8 %t2, %t3
-    %t4 = cmp uge i64 0, 2
-    branch %t4, ^b8, ^b9
+    store ptr %t0, $s4
+    %t1 = load ptr $s4
+    %t2 = addr $s5
+    call void @rg.18(%t2, %t1)
+    %t3 = addr $s5
+    %t4 = addr $s1
+    copyobj 16x8 %t3, %t4
+    %t5 = cmp uge i64 0, 2
+    branch %t5, ^b8, ^b9
   block ^b9:
-    %t5 = binary mul i64 0, 8
-    %t6 = addr $s1
-    %t7 = index u8 %t6, %t5
-    %t8 = load ptr %t7
-    %t9 = load u8 %t8
-    %t10 = cmp eq u8 %t9, 23
-    %t11 = convert trunc i1 i64 %t10
-    branch %t11, ^b1, ^b2
+    %t6 = binary mul i64 0, 8
+    %t7 = addr $s1
+    %t8 = index u8 %t7, %t6
+    %t9 = load ptr %t8
+    %t10 = load u8 %t9
+    %t11 = cmp eq u8 %t10, 23
+    %t12 = convert trunc i1 i64 %t11
+    branch %t12, ^b1, ^b2
   block ^b2:
-    store i1 %t11, $s2
+    store i1 %t12, $s2
     jump ^b3
   block ^b1:
-    %t12 = cmp uge i64 1, 2
-    branch %t12, ^b8, ^b10
+    %t13 = cmp uge i64 1, 2
+    branch %t13, ^b8, ^b10
   block ^b10:
-    %t13 = binary mul i64 1, 8
-    %t14 = addr $s1
-    %t15 = index u8 %t14, %t13
-    %t16 = load ptr %t15
-    %t17 = load u8 %t16
-    %t18 = cmp eq u8 %t17, 23
-    %t19 = convert trunc i1 i64 %t18
-    store i1 %t19, $s2
+    %t14 = binary mul i64 1, 8
+    %t15 = addr $s1
+    %t16 = index u8 %t15, %t14
+    %t17 = load ptr %t16
+    %t18 = load u8 %t17
+    %t19 = cmp eq u8 %t18, 23
+    %t20 = convert trunc i1 i64 %t19
+    store i1 %t20, $s2
     jump ^b3
   block ^b3:
-    %t20 = load i1 $s2
-    call void @rg.13(%t20)
-    %t21 = addr $s0
-    %t22 = addr $s5
-    call void @rg.19(%t22, %t21)
-    %t23 = addr $s5
-    %t24 = addr $s3
-    copyobj 8x8 %t23, %t24
-    %t25 = cmp uge i64 0, 1
-    branch %t25, ^b8, ^b11
+    %t21 = load i1 $s2
+    call void @rg.13(%t21)
+    %t22 = addr $s0
+    store ptr %t22, $s6
+    %t23 = load ptr $s6
+    %t24 = addr $s7
+    call void @rg.19(%t24, %t23)
+    %t25 = addr $s7
+    %t26 = addr $s3
+    copyobj 8x8 %t25, %t26
+    %t27 = cmp uge i64 0, 1
+    branch %t27, ^b8, ^b11
   block ^b11:
-    %t26 = binary mul i64 0, 8
-    %t27 = addr $s3
-    %t28 = index u8 %t27, %t26
-    %t29 = load ptr %t28
-    %t30 = load u8 %t29
-    %t31 = cmp eq u8 %t30, 23
-    %t32 = convert trunc i1 i64 %t31
-    call void @rg.13(%t32)
-    %t33 = addr $s0
-    call void @rg.20(%t33)
+    %t28 = binary mul i64 0, 8
+    %t29 = addr $s3
+    %t30 = index u8 %t29, %t28
+    %t31 = load ptr %t30
+    %t32 = load u8 %t31
+    %t33 = cmp eq u8 %t32, 23
+    %t34 = convert trunc i1 i64 %t33
+    call void @rg.13(%t34)
+    %t35 = addr $s0
+    store ptr %t35, $s8
+    %t36 = load ptr $s8
+    call void @rg.20(%t36)
     jump ^b5
   block ^b5:
     jump ^b4

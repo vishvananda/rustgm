@@ -27,6 +27,10 @@ type 24 function-item def=14 signature=23
 type 25 reference mutable=false region=region:1 referent=11
 type 26 reference mutable=false region=region:2 referent=11
 type 27 reference mutable=false region=region:3 referent=11
+type 28 reference mutable=false region=region:4 referent=11
+type 29 reference mutable=false region=region:5 referent=11
+type 30 reference mutable=false region=region:6 referent=11
+type 31 reference mutable=false region=region:7 referent=11
 root 0:19 pattern=0
 root 0:22 pattern=1
 pattern 0 source=0:19 input=22 deref mutable=false implicit=false pattern=2
@@ -39,7 +43,16 @@ arm 1 source=0:24 pattern=1 guard=- useful=true value=0:23
 region-var region:1 body=0:12 source=0:4 origin=expression-borrow pending
 region-var region:2 body=0:12 source=0:10 origin=expression-borrow pending
 region-var region:3 body=0:12 source=0:12 origin=inference pending
-region-coercion body=0:12 source=0:5 actual=25 expected=27 kind=same-shape pending
-region-coercion body=0:12 source=0:11 actual=26 expected=27 kind=same-shape pending
-region-coercion body=0:12 source=0:12 actual=27 expected=21 kind=same-shape pending
-eof roots=2 patterns=3 fields=0 alternatives=0 ranges=1 matches=1 arms=2 coverage-work=84 region-vars=3 region-equalities=0 conditions=0 chains=0
+region-var region:4 body=0:12 source=0:4 origin=inference pending
+region-var region:5 body=0:12 source=0:10 origin=inference pending
+region-var region:6 body=0:12 source=0:4 origin=inference pending
+region-var region:7 body=0:12 source=0:10 origin=inference pending
+region-coercion body=0:12 source=0:4 actual=25 expected=27 kind=reborrow pending
+region-coercion body=0:12 source=0:4 actual=28 expected=27 kind=same-shape pending
+region-coercion body=0:12 source=0:10 actual=26 expected=27 kind=reborrow pending
+region-coercion body=0:12 source=0:10 actual=29 expected=27 kind=same-shape pending
+region-coercion body=0:12 source=0:4 actual=25 expected=21 kind=reborrow pending
+region-coercion body=0:12 source=0:4 actual=30 expected=21 kind=same-shape pending
+region-coercion body=0:12 source=0:10 actual=26 expected=21 kind=reborrow pending
+region-coercion body=0:12 source=0:10 actual=31 expected=21 kind=same-shape pending
+eof roots=2 patterns=3 fields=0 alternatives=0 ranges=1 matches=1 arms=2 coverage-work=84 region-vars=7 region-equalities=0 conditions=0 chains=0

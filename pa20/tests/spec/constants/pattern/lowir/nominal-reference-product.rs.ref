@@ -5,22 +5,28 @@ global @rg.data.1 : obj<1x1> [storage=readonly] = {
   u8 9
 }
 function @rg.22() -> void {
-  slot $s0 : obj<8x8>
+  slot $s0 : ptr
   slot $s1 : obj<8x8>
+  slot $s2 : ptr
+  slot $s3 : obj<8x8>
   block ^b0:
     %t0 = addr @rg.data.0
-    %t1 = addr $s0
-    call void @rg.16(%t1, %t0)
-    %t2 = addr $s0
-    %t3 = call i1 @rg.21(%t2)
-    call void @rg.13(%t3)
-    %t4 = addr @rg.data.1
-    %t5 = addr $s1
-    call void @rg.16(%t5, %t4)
-    %t6 = addr $s1
-    %t7 = call i1 @rg.21(%t6)
-    %t8 = unary not i1 %t7
-    call void @rg.13(%t8)
+    store ptr %t0, $s0
+    %t1 = load ptr $s0
+    %t2 = addr $s1
+    call void @rg.16(%t2, %t1)
+    %t3 = addr $s1
+    %t4 = call i1 @rg.21(%t3)
+    call void @rg.13(%t4)
+    %t5 = addr @rg.data.1
+    store ptr %t5, $s2
+    %t6 = load ptr $s2
+    %t7 = addr $s3
+    call void @rg.16(%t7, %t6)
+    %t8 = addr $s3
+    %t9 = call i1 @rg.21(%t8)
+    %t10 = unary not i1 %t9
+    call void @rg.13(%t10)
     return void
 }
 function @rg.16(%p0 : ptr, %p1 : ptr) -> void {

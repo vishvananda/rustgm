@@ -12,6 +12,7 @@ function @rg.16() -> void {
 function @rg.15.i3() -> ptr {
   slot $s0 : obj<4x1>
   slot $s1 : i64
+  slot $s2 : ptr
   block ^b0:
     store i64 0, $s1
     jump ^b1
@@ -34,7 +35,9 @@ function @rg.15.i3() -> ptr {
     %t7 = binary mul i64 4, 1
     %t8 = addr @rg.data.0
     %t9 = index u8 %t8, %t7
-    return ptr %t9
+    store ptr %t9, $s2
+    %t10 = load ptr $s2
+    return ptr %t10
   block ^b4:
     call void @abort()
     unreachable

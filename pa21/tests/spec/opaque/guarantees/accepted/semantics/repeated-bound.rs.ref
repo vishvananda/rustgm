@@ -35,11 +35,13 @@ type 32 reference mutable=false region=region:3 referent=11
 type 33 reference mutable=false region=region:1 referent=11
 type 34 reference mutable=false region=region:2 referent=11
 type 35 function binders=0 parameters=[33,34] result=31 unsafe=false
-type 36 opaque id=0 arguments=[region:region:5,region:region:6]
+type 36 opaque id=0 arguments=[region:region:7,region:region:8]
 type 37 reference mutable=false region=region:4 referent=11
-type 38 opaque id=0 arguments=[region:region:7,region:region:8]
-type 39 function binders=0 parameters=[38] result=1 unsafe=false
-type 40 function-item def=14 signature=39 arguments=[type:38]
+type 38 reference mutable=false region=region:5 referent=11
+type 39 reference mutable=false region=region:6 referent=11
+type 40 opaque id=0 arguments=[region:region:9,region:region:10]
+type 41 function binders=0 parameters=[40] result=1 unsafe=false
+type 42 function-item def=14 signature=41 arguments=[type:40]
 def 13 type=25 name="f" source=0:21
 def 14 type=28 name="take" source=0:27
 def 15 type=30 name="main" source=0:52
@@ -74,18 +76,22 @@ region-var region:3 body=0:20 source=0:20 origin=inference pending
 region-var region:1 body=0:51 source=0:42 origin=call-argument pending
 region-var region:2 body=0:51 source=0:42 origin=call-argument pending
 region-var region:3 body=0:51 source=0:39 origin=expression-borrow pending
-region-var region:4 body=0:51 source=0:41 origin=expression-borrow pending
-region-var region:5 body=0:51 source=0:42 origin=inference pending
-region-var region:6 body=0:51 source=0:42 origin=inference pending
-region-var region:7 body=0:51 source=0:48 origin=inference pending
-region-var region:8 body=0:51 source=0:48 origin=inference pending
+region-var region:4 body=0:51 source=0:39 origin=inference pending
+region-var region:5 body=0:51 source=0:41 origin=expression-borrow pending
+region-var region:6 body=0:51 source=0:41 origin=inference pending
+region-var region:7 body=0:51 source=0:42 origin=inference pending
+region-var region:8 body=0:51 source=0:42 origin=inference pending
+region-var region:9 body=0:51 source=0:48 origin=inference pending
+region-var region:10 body=0:51 source=0:48 origin=inference pending
 region-equal body=0:20 left=region:1 right=bound:0:0
 region-equal body=0:20 left=region:2 right=bound:0:1
 region-coercion body=0:20 source=0:20 actual=21 expected=32 kind=same-shape pending
-region-coercion body=0:51 source=0:39 actual=32 expected=33 kind=same-shape pending
-region-coercion body=0:51 source=0:41 actual=37 expected=34 kind=same-shape pending
+region-coercion body=0:51 source=0:39 actual=32 expected=33 kind=reborrow pending
+region-coercion body=0:51 source=0:39 actual=37 expected=33 kind=same-shape pending
+region-coercion body=0:51 source=0:41 actual=38 expected=34 kind=reborrow pending
+region-coercion body=0:51 source=0:41 actual=39 expected=34 kind=same-shape pending
 region-coercion body=0:51 source=0:42 actual=31 expected=36 kind=same-shape pending
-region-coercion body=0:51 source=0:48 actual=36 expected=38 kind=same-shape pending
+region-coercion body=0:51 source=0:48 actual=36 expected=40 kind=same-shape pending
 type-outlives body=0:20 source=0:18 type=32 shorter=bound:0:0 pending
 type-outlives body=0:20 source=0:18 type=32 shorter=bound:0:0 pending
 opaque 0 owner=13 source=0:18 application=23 hidden=- role=defining-result storage-proof=pending

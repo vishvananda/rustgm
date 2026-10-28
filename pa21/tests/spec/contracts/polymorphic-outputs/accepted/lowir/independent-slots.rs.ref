@@ -2,6 +2,8 @@ function @rg.21() -> void {
   slot $s0 : u8
   slot $s1 : u8
   slot $s2 : u8
+  slot $s3 : ptr
+  slot $s4 : ptr
   block ^b0:
     store u8 2, $s0
     store u8 3, $s1
@@ -9,11 +11,15 @@ function @rg.21() -> void {
     store u8 %t0, $s2
     %t1 = addr $s2
     %t2 = addr $s0
-    %t3 = addr $s1
-    %t4 = call u8 @rg.19(%t1, %t2, %t3)
-    %t5 = cmp eq u8 %t4, 12
-    %t6 = convert trunc i1 i64 %t5
-    call void @rg.13(%t6)
+    store ptr %t2, $s3
+    %t3 = load ptr $s3
+    %t4 = addr $s1
+    store ptr %t4, $s4
+    %t5 = load ptr $s4
+    %t6 = call u8 @rg.19(%t1, %t3, %t5)
+    %t7 = cmp eq u8 %t6, 12
+    %t8 = convert trunc i1 i64 %t7
+    call void @rg.13(%t8)
     return void
 }
 function @rg.20.i4() -> u8 {

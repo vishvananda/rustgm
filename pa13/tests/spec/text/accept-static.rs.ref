@@ -25,5 +25,8 @@ type 22 slice element=11
 type 23 reference mutable=false region=static referent=22
 type 24 array element=11 length=2
 type 25 reference mutable=false region=static referent=24
-region-coercion body=0:7 source=0:7 actual=25 expected=23 kind=array-to-slice pending
-eof roots=0 patterns=0 fields=0 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=0 region-equalities=0 conditions=0 chains=0
+type 26 reference mutable=false region=region:1 referent=22
+region-var region:1 body=0:7 source=0:7 origin=inference pending
+region-coercion body=0:7 source=0:7 actual=25 expected=23 kind=reborrow pending
+region-coercion body=0:7 source=0:7 actual=26 expected=23 kind=same-shape pending
+eof roots=0 patterns=0 fields=0 alternatives=0 ranges=0 matches=0 arms=0 coverage-work=0 region-vars=1 region-equalities=0 conditions=0 chains=0

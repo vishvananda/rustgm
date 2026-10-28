@@ -118,11 +118,13 @@ impl-type owner=20 declaration=17 definition=21
 method-call source=0:80 method=18 callable=60 dereferences=0 borrow=63 receiver=61 origin=lexical
 implementation-use source=0:80 owner=20 arguments=[type:11]
 region-var region:1 body=0:69 source=0:68 origin=expression-borrow pending
+region-var region:2 body=0:69 source=0:68 origin=inference pending
 region-var region:1 body=0:86 source=0:80 origin=call-argument pending
 region-var region:2 body=0:86 source=0:80 origin=expression-borrow pending
 region-var region:3 body=0:86 source=0:80 origin=quantified-proof pending
 region-equal body=0:86 left=region:1 right=region:1
-region-coercion body=0:69 source=0:69 actual=37 expected=34 kind=same-shape pending
+region-coercion body=0:69 source=0:68 actual=37 expected=34 kind=reborrow pending
+region-coercion body=0:69 source=0:68 actual=48 expected=34 kind=same-shape pending
 region-coercion body=0:86 source=0:80 actual=63 expected=61 kind=same-shape pending
 type-outlives body=0:86 source=0:80 type=51 shorter=region:1 pending
 associated-type def=17 type=26

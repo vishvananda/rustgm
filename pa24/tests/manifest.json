@@ -8560,6 +8560,147 @@
       "native": {
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/shared-reborrow-captures/explicit-field.rs",
+      "source_sha256": "3cd91b724c9c299a52c04c3866917e740c2ffb691eaa18b22ba12d3f71f1f291",
+      "exit_status": 0,
+      "features": [
+        "pa24.closures"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/shared-reborrow-captures/implicit-call.rs",
+      "source_sha256": "a2960eb0788b2220847d11c6b74728bdcf91faab16b66116609a7ac0e80f5277",
+      "exit_status": 0,
+      "features": [
+        "pa24.closures"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/shared-reborrow-captures/explicit-call.rs",
+      "source_sha256": "e350f8684e86fe955e31c278fa4b5474b3e830481951ed7fe0cae5557d2cffde",
+      "exit_status": 0,
+      "features": [
+        "pa24.closures"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/shared-reborrow-captures/root.rs",
+      "source_sha256": "6910021092256f94f85383f31ab3cd3c04e06fd6e6401c26230f12c3f7992cf8",
+      "exit_status": 1,
+      "features": [
+        "pa24.closures"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/shared-reborrow-captures/move-root.rs",
+      "source_sha256": "26968f27336f82368e7589dac88d7f96cb46ff8870d0288f7c9da64feb314240",
+      "exit_status": 0,
+      "features": [
+        "pa24.closures"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/shared-reborrow-captures/root-call.rs",
+      "source_sha256": "cb15070962076bc7bdd9799e3fde9e924ce708a1b4b01ace4a3d8b20e097b1f7",
+      "exit_status": 0,
+      "features": [
+        "pa24.closures"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/shared-reborrow-captures/move-root-call.rs",
+      "source_sha256": "449517e79ca54eebf30b7d519448c91471f6abf23bbace2e1996ecdc80025c5a",
+      "exit_status": 0,
+      "features": [
+        "pa24.closures"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/shared-reborrow-captures/branch-field.rs",
+      "source_sha256": "675f0577deaec7d9c7d61414ce9cf74eed5d60379d6646a6cd835cc7dbe70e68",
+      "exit_status": 1,
+      "features": [
+        "pa24.closures"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
+    },
+    {
+      "path": "tests/spec/shared-reborrow-captures/branch-root.rs",
+      "source_sha256": "0a545fcd07835dfbd6b26022aadd20e3132a2f20d7bca9a43b45021856bee1e6",
+      "exit_status": 1,
+      "features": [
+        "pa24.closures"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true
+      }
     }
   ]
 }

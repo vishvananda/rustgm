@@ -51,15 +51,17 @@ type 48 reference mutable=false region=region:4 referent=11
 type 49 reference mutable=false region=region:1 referent=11
 type 50 reference mutable=false region=region:2 referent=11
 type 51 function binders=0 parameters=[49,50] result=46 unsafe=false
-type 52 opaque id=0 arguments=[region:region:5,region:region:6]
+type 52 opaque id=0 arguments=[region:region:7,region:region:8]
 type 53 opaque id=0 arguments=[region:static,region:static]
-type 54 reference mutable=false region=static referent=52
-type 55 reference mutable=false region=bound:0:0 referent=52
-type 56 function binders=1 parameters=[55] result=11 unsafe=false
-type 57 function-item def=17 signature=56 arguments=[type:52]
-type 58 reference mutable=false region=region:7 referent=52
-type 59 function binders=0 parameters=[58] result=11 unsafe=false
-type 60 reference mutable=false region=region:8 referent=52
+type 54 reference mutable=false region=region:5 referent=11
+type 55 reference mutable=false region=region:6 referent=11
+type 56 reference mutable=false region=static referent=52
+type 57 reference mutable=false region=bound:0:0 referent=52
+type 58 function binders=1 parameters=[57] result=11 unsafe=false
+type 59 function-item def=17 signature=58 arguments=[type:52]
+type 60 reference mutable=false region=region:9 referent=52
+type 61 function binders=0 parameters=[60] result=11 unsafe=false
+type 62 reference mutable=false region=region:10 referent=52
 def 13 type=25 name="check" source=0:13
 def 14 type=27 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:28
@@ -102,7 +104,7 @@ parameter owner=16 binding=16 argument=type:21 default=-
 predicate owner=15 source=0:28 subject=21 bound=trait:15 arguments=[]
 impl owner=18 source=0:43 subject=22 bound=trait:15 arguments=[]
 impl-method owner=18 declaration=17 selected=19 default=false
-method-call source=0:85 method=17 callable=57 dereferences=0 borrow=60 receiver=58 origin=lexical
+method-call source=0:85 method=17 callable=59 dereferences=0 borrow=62 receiver=60 origin=lexical
 implementation-use source=0:60 owner=18 arguments=[region:region:4]
 region-var region:1 body=0:62 source=0:62 origin=universal-alias pending
 region-var region:2 body=0:62 source=0:62 origin=universal-alias pending
@@ -111,18 +113,22 @@ region-var region:4 body=0:62 source=0:60 origin=inference pending
 region-var region:1 body=0:90 source=0:78 origin=call-argument pending
 region-var region:2 body=0:90 source=0:78 origin=call-argument pending
 region-var region:3 body=0:90 source=0:75 origin=expression-borrow pending
-region-var region:4 body=0:90 source=0:77 origin=expression-borrow pending
-region-var region:5 body=0:90 source=0:78 origin=inference pending
-region-var region:6 body=0:90 source=0:78 origin=inference pending
-region-var region:7 body=0:90 source=0:85 origin=call-argument pending
-region-var region:8 body=0:90 source=0:85 origin=expression-borrow pending
+region-var region:4 body=0:90 source=0:75 origin=inference pending
+region-var region:5 body=0:90 source=0:77 origin=expression-borrow pending
+region-var region:6 body=0:90 source=0:77 origin=inference pending
+region-var region:7 body=0:90 source=0:78 origin=inference pending
+region-var region:8 body=0:90 source=0:78 origin=inference pending
+region-var region:9 body=0:90 source=0:85 origin=call-argument pending
+region-var region:10 body=0:90 source=0:85 origin=expression-borrow pending
 region-equal body=0:62 left=region:3 right=region:4
 region-equal body=0:62 left=region:1 right=bound:0:0
 region-equal body=0:62 left=region:2 right=bound:0:1
 region-coercion body=0:62 source=0:62 actual=22 expected=47 kind=same-shape pending
-region-coercion body=0:90 source=0:85 actual=60 expected=58 kind=same-shape pending
-region-coercion body=0:90 source=0:75 actual=47 expected=49 kind=same-shape pending
-region-coercion body=0:90 source=0:77 actual=48 expected=50 kind=same-shape pending
+region-coercion body=0:90 source=0:85 actual=62 expected=60 kind=same-shape pending
+region-coercion body=0:90 source=0:75 actual=47 expected=49 kind=reborrow pending
+region-coercion body=0:90 source=0:75 actual=48 expected=49 kind=same-shape pending
+region-coercion body=0:90 source=0:77 actual=54 expected=50 kind=reborrow pending
+region-coercion body=0:90 source=0:77 actual=55 expected=50 kind=same-shape pending
 region-coercion body=0:90 source=0:78 actual=46 expected=52 kind=same-shape pending
 type-outlives body=0:62 source=0:60 type=47 shorter=bound:0:0 pending
 opaque 0 owner=20 source=0:60 application=38 hidden=- role=defining-result storage-proof=pending

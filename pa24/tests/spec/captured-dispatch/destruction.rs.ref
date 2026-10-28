@@ -15,9 +15,10 @@ function @rg.18() -> void {
   slot $s5 : obj<8x8>
   slot $s6 : obj<8x8>
   slot $s7 : obj<8x8>
-  slot $s8 : obj<16x8>
+  slot $s8 : ptr
   slot $s9 : obj<16x8>
   slot $s10 : obj<16x8>
+  slot $s11 : obj<16x8>
   block ^b0:
     store u8 0, $s0
     %t0 = addr $s0
@@ -37,46 +38,48 @@ function @rg.18() -> void {
     %t9 = addr $s2
     copyobj 8x8 %t8, %t9
     %t10 = addr $s2
-    %t11 = addr @rg.vtable.0
     store ptr %t10, $s8
-    %t12 = addr $s8
-    %t13 = index u8 %t12, 8
-    store ptr %t11, %t13
-    %t14 = addr $s8
-    %t15 = addr $s3
-    copyobj 16x8 %t14, %t15
-    %t16 = load ptr $s3
-    %t17 = addr $s3
-    %t18 = index u8 %t17, 8
-    %t19 = load ptr %t18
-    store ptr %t16, $s9
-    %t20 = addr $s9
-    %t21 = index u8 %t20, 8
-    store ptr %t19, %t21
-    %t22 = addr $s9
-    %t23 = call u8 @rg.callable.virtual.0(%t22)
-    %t24 = cmp eq u8 %t23, 7
-    %t25 = convert trunc i1 i64 %t24
-    call void @rg.13(%t25)
-    %t26 = load ptr $s3
-    %t27 = addr $s3
-    %t28 = index u8 %t27, 8
-    %t29 = load ptr %t28
-    store ptr %t26, $s10
-    %t30 = addr $s10
-    %t31 = index u8 %t30, 8
-    store ptr %t29, %t31
-    %t32 = addr $s10
-    %t33 = call u8 @rg.callable.virtual.0(%t32)
-    %t34 = cmp eq u8 %t33, 7
-    %t35 = convert trunc i1 i64 %t34
-    call void @rg.13(%t35)
-    %t36 = addr $s2
-    call void @rg.drop.1(%t36)
-    %t37 = load u8 $s0
-    %t38 = cmp eq u8 %t37, 1
-    %t39 = convert trunc i1 i64 %t38
-    call void @rg.13(%t39)
+    %t11 = load ptr $s8
+    %t12 = addr @rg.vtable.0
+    store ptr %t11, $s9
+    %t13 = addr $s9
+    %t14 = index u8 %t13, 8
+    store ptr %t12, %t14
+    %t15 = addr $s9
+    %t16 = addr $s3
+    copyobj 16x8 %t15, %t16
+    %t17 = load ptr $s3
+    %t18 = addr $s3
+    %t19 = index u8 %t18, 8
+    %t20 = load ptr %t19
+    store ptr %t17, $s10
+    %t21 = addr $s10
+    %t22 = index u8 %t21, 8
+    store ptr %t20, %t22
+    %t23 = addr $s10
+    %t24 = call u8 @rg.callable.virtual.0(%t23)
+    %t25 = cmp eq u8 %t24, 7
+    %t26 = convert trunc i1 i64 %t25
+    call void @rg.13(%t26)
+    %t27 = load ptr $s3
+    %t28 = addr $s3
+    %t29 = index u8 %t28, 8
+    %t30 = load ptr %t29
+    store ptr %t27, $s11
+    %t31 = addr $s11
+    %t32 = index u8 %t31, 8
+    store ptr %t30, %t32
+    %t33 = addr $s11
+    %t34 = call u8 @rg.callable.virtual.0(%t33)
+    %t35 = cmp eq u8 %t34, 7
+    %t36 = convert trunc i1 i64 %t35
+    call void @rg.13(%t36)
+    %t37 = addr $s2
+    call void @rg.drop.1(%t37)
+    %t38 = load u8 $s0
+    %t39 = cmp eq u8 %t38, 1
+    %t40 = convert trunc i1 i64 %t39
+    call void @rg.13(%t40)
     return void
 }
 function @rg.callable.virtual.0(%p0 : ptr) -> u8 {

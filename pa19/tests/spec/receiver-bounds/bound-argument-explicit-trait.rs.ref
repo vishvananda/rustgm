@@ -41,8 +41,8 @@ type 38 function binders=0 parameters=[37,12] result=12 unsafe=false
 type 39 function binders=1 parameters=[31,12] result=12 unsafe=false
 type 40 reference mutable=false region=region:1 referent=30
 type 41 function binders=0 parameters=[40,12] result=12 unsafe=false
-type 42 reference mutable=false region=region:2 referent=30
-type 43 function-item def=15 signature=39 arguments=[type:30,type:12]
+type 42 function-item def=15 signature=39 arguments=[type:30,type:12]
+type 43 reference mutable=false region=region:2 referent=30
 def 14 type=21 name="Self" source=0:9
 def 15 type=26 name="f" source=0:8
 def 16 type=23 name="Self" source=0:26
@@ -89,7 +89,7 @@ impl-method owner=16 declaration=15 selected=17 default=false
 trait-path source=0:44 method=15 trait=13 qualifier=explicit origin=ordinary subject-source=0:38
 implementation-use source=0:44 owner=16 arguments=[type:30]
 region-var region:1 body=0:48 source=0:47 origin=call-argument pending
-region-var region:2 body=0:48 source=0:45 origin=universal-alias pending
-region-equal body=0:48 left=region:2 right=bound:0:0
-region-coercion body=0:48 source=0:45 actual=31 expected=40 kind=same-shape pending
+region-var region:2 body=0:48 source=0:45 origin=inference pending
+region-coercion body=0:48 source=0:45 actual=31 expected=40 kind=reborrow pending
+region-coercion body=0:48 source=0:45 actual=43 expected=40 kind=same-shape pending
 eof owners=2 members=2 parameters=4 predicates=2 impls=1 calls=0 paths=1 impl-uses=1

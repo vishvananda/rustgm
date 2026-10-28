@@ -142,3 +142,14 @@ Run `make test-pa16`, `make test-rustc`, `make test-native-pa16`,
 `make test-maintainer-native`, and root lint/audit/harness checks. Only explicit
 `make ref-test-pa16` regenerates sidecars. Handout, manifests, independent checks
 and reviewed text oracles must be coherent before activation.
+
+### Identical shared reference values
+
+A known reference expectation does not automatically create a shared reborrow.
+An identical determined reference type remains an ordinary value; absent an
+actual Copy implementation, repeated use can therefore move it. A fresh expected
+call lifetime or an unresolved pointee annotation can request a real reborrow.
+Preserve the final coercion selection when earlier inferred contexts are
+refined, including branch and quantified-result joins. PA24 retains the related
+capture distinction: an implicit call borrow can reach a static referent while
+an identical returned reference still captures its source storage.

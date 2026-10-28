@@ -5,34 +5,43 @@ function @rg.18() -> void {
   slot $s0 : u8
   slot $s1 : obj<16x8>
   slot $s2 : obj<8x8>
-  slot $s3 : obj<16x8>
-  slot $s4 : obj<8x8>
-  slot $s5 : ptr
+  slot $s3 : ptr
+  slot $s4 : ptr
+  slot $s5 : obj<16x8>
+  slot $s6 : ptr
+  slot $s7 : obj<8x8>
+  slot $s8 : ptr
   block ^b0:
     store u8 8, $s0
     %t0 = addr @rg.data.0
-    %t1 = addr $s0
     store ptr %t0, $s3
-    %t2 = addr $s3
-    %t3 = index u8 %t2, 8
-    store ptr %t1, %t3
-    %t4 = addr $s3
-    %t5 = addr $s1
-    copyobj 16x8 %t4, %t5
-    %t6 = addr $s1
-    %t7 = addr $s4
-    call void @rg.16.i4(%t7, %t6)
-    %t8 = addr $s4
-    %t9 = addr $s2
-    copyobj 8x8 %t8, %t9
-    %t10 = addr $s2
-    %t11 = call ptr @rg.closure.0.i5(%t10)
-    store ptr %t11, $s5
-    %t12 = load ptr $s5
-    %t13 = load u8 %t12
-    %t14 = cmp eq u8 %t13, 7
-    %t15 = convert trunc i1 i64 %t14
-    call void @rg.13(%t15)
+    %t1 = load ptr $s3
+    %t2 = addr $s0
+    store ptr %t2, $s4
+    %t3 = load ptr $s4
+    store ptr %t1, $s5
+    %t4 = addr $s5
+    %t5 = index u8 %t4, 8
+    store ptr %t3, %t5
+    %t6 = addr $s5
+    %t7 = addr $s1
+    copyobj 16x8 %t6, %t7
+    %t8 = addr $s1
+    store ptr %t8, $s6
+    %t9 = load ptr $s6
+    %t10 = addr $s7
+    call void @rg.16.i4(%t10, %t9)
+    %t11 = addr $s7
+    %t12 = addr $s2
+    copyobj 8x8 %t11, %t12
+    %t13 = addr $s2
+    %t14 = call ptr @rg.closure.0.i5(%t13)
+    store ptr %t14, $s8
+    %t15 = load ptr $s8
+    %t16 = load u8 %t15
+    %t17 = cmp eq u8 %t16, 7
+    %t18 = convert trunc i1 i64 %t17
+    call void @rg.13(%t18)
     return void
 }
 function @rg.16.i4(%p0 : ptr, %p1 : ptr) -> void {
@@ -51,6 +60,7 @@ function @rg.closure.0.i5(%p0 : ptr) -> ptr {
   slot $s0 : ptr
   slot $s1 : obj<8x8>
   slot $s2 : obj<8x8>
+  slot $s3 : ptr
   block ^b0:
     store ptr %p0, $s0
     %t0 = load ptr $s0
@@ -61,7 +71,9 @@ function @rg.closure.0.i5(%p0 : ptr) -> ptr {
     copyobj 8x8 %t2, %t3
     %t4 = addr $s1
     %t5 = call ptr @rg.closure.1.i6(%t4)
-    return ptr %t5
+    store ptr %t5, $s3
+    %t6 = load ptr $s3
+    return ptr %t6
 }
 function @rg.13(%p0 : i1) -> void {
   slot $s0 : i1

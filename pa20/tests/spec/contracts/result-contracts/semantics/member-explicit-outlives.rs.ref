@@ -45,6 +45,7 @@ type 42 aggregate def=18 regions=[region:4]
 type 43 reference mutable=false region=region:4 referent=11
 type 44 reference mutable=false region=region:1 referent=11
 type 45 reference mutable=false region=region:5 referent=11
+type 46 reference mutable=false region=region:6 referent=11
 def 13 type=27 name="check" source=0:13
 def 14 type=29 name="fail" source=0:22
 def 16 type=22 name="Self" source=0:27
@@ -92,11 +93,13 @@ region-var region:2 body=0:75 source=0:60 origin=annotation pending
 region-var region:3 body=0:75 source=0:64 origin=inference pending
 region-var region:4 body=0:75 source=0:64 origin=inference pending
 region-var region:5 body=0:75 source=0:66 origin=expression-borrow pending
+region-var region:6 body=0:75 source=0:66 origin=inference pending
 region-equal body=0:75 left=region:1 right=region:1
 region-equal body=0:75 left=region:2 right=region:2
 region-equal body=0:75 left=region:1 right=region:4
 region-equal body=0:75 left=region:2 right=region:3
-region-coercion body=0:75 source=0:66 actual=45 expected=44 kind=same-shape pending
+region-coercion body=0:75 source=0:66 actual=45 expected=44 kind=reborrow pending
+region-coercion body=0:75 source=0:66 actual=46 expected=44 kind=same-shape pending
 region-outlives body=0:75 source=0:64 longer=region:4 shorter=region:3 pending
 associated-type def=17 type=25
 result-contract def=17 projection=25

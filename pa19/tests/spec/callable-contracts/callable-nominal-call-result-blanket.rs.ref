@@ -39,6 +39,7 @@ type 36 function binders=0 parameters=[34] result=35 unsafe=false
 type 37 reference mutable=false region=region:2 referent=11
 type 38 reference mutable=false region=region:3 referent=11
 type 39 reference mutable=false region=region:4 referent=11
+type 40 reference mutable=false region=region:5 referent=11
 def 14 type=23 name="Self" source=0:0
 def 15 type=22 name="W" source=0:6
 def 16 type=33 name="W" source=0:6
@@ -74,13 +75,15 @@ parameter owner=15 binding=39 argument=type:21 default=-
 predicate owner=13 source=0:0 subject=23 bound=trait:13 arguments=[]
 predicate owner=15 source=0:2 subject=21 bound=trait:13 arguments=[]
 impl owner=17 source=0:12 subject=24 bound=trait:13 arguments=[]
-implementation-use source=0:33 owner=17 arguments=[region:region:3]
 implementation-use source=0:33 owner=17 arguments=[region:region:4]
+implementation-use source=0:33 owner=17 arguments=[region:region:5]
 region-var region:1 body=0:35 source=0:33 origin=call-argument pending
 region-var region:2 body=0:35 source=0:32 origin=expression-borrow pending
-region-var region:3 body=0:35 source=0:33 origin=inference pending
+region-var region:3 body=0:35 source=0:32 origin=inference pending
 region-var region:4 body=0:35 source=0:33 origin=inference pending
-region-equal body=0:35 left=region:1 right=region:3
+region-var region:5 body=0:35 source=0:33 origin=inference pending
 region-equal body=0:35 left=region:1 right=region:4
-region-coercion body=0:35 source=0:32 actual=37 expected=34 kind=same-shape pending
+region-equal body=0:35 left=region:1 right=region:5
+region-coercion body=0:35 source=0:32 actual=37 expected=34 kind=reborrow pending
+region-coercion body=0:35 source=0:32 actual=38 expected=34 kind=same-shape pending
 eof owners=2 members=0 parameters=2 predicates=2 impls=1 calls=0 paths=0 impl-uses=2

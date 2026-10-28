@@ -39,93 +39,138 @@ function @rg.16() -> void {
   slot $s2 : obj<16x8>
   slot $s3 : obj<16x8>
   slot $s4 : obj<16x8>
-  slot $s5 : obj<48x8>
+  slot $s5 : obj<16x8>
   slot $s6 : obj<16x8>
   slot $s7 : obj<16x8>
-  slot $s8 : obj<16x8>
-  slot $s9 : obj<16x8>
+  slot $s8 : obj<48x8>
+  slot $s9 : ptr
   slot $s10 : obj<16x8>
+  slot $s11 : obj<16x8>
+  slot $s12 : obj<16x8>
+  slot $s13 : obj<16x8>
+  slot $s14 : ptr
+  slot $s15 : obj<16x8>
+  slot $s16 : ptr
+  slot $s17 : obj<16x8>
   block ^b0:
     %t0 = addr @rg.data.0
     store ptr %t0, $s2
     %t1 = addr $s2
     %t2 = index u8 %t1, 8
     store i64 1, %t2
-    %t3 = addr @rg.data.1
-    store ptr %t3, $s3
-    %t4 = addr $s3
+    %t3 = load ptr $s2
+    %t4 = addr $s2
     %t5 = index u8 %t4, 8
-    store i64 6, %t5
-    %t6 = addr @rg.data.2
-    store ptr %t6, $s4
-    %t7 = addr $s4
+    %t6 = load i64 %t5
+    store ptr %t3, $s3
+    %t7 = addr $s3
     %t8 = index u8 %t7, 8
-    store i64 4, %t8
-    %t9 = addr $s2
-    %t10 = addr $s5
-    copyobj 16x8 %t9, %t10
-    %t11 = addr $s5
-    %t12 = index u8 %t11, 16
-    %t13 = addr $s3
-    copyobj 16x8 %t13, %t12
-    %t14 = addr $s5
-    %t15 = index u8 %t14, 32
-    %t16 = addr $s4
-    copyobj 16x8 %t16, %t15
-    %t17 = addr @rg.data.3
-    store ptr %t17, $s6
-    %t18 = addr $s6
-    %t19 = index u8 %t18, 8
-    store i64 3, %t19
-    %t20 = addr $s6
-    %t21 = call u8 @rg.15(%t20)
-    %t22 = cmp eq u8 %t21, 7
-    %t23 = convert trunc i1 i64 %t22
-    branch %t23, ^b4, ^b5
-  block ^b5:
-    store i1 %t23, $s1
-    jump ^b6
-  block ^b4:
-    %t24 = addr @rg.data.4
-    store ptr %t24, $s7
+    store i64 %t6, %t8
+    %t9 = addr @rg.data.1
+    store ptr %t9, $s4
+    %t10 = addr $s4
+    %t11 = index u8 %t10, 8
+    store i64 6, %t11
+    %t12 = load ptr $s4
+    %t13 = addr $s4
+    %t14 = index u8 %t13, 8
+    %t15 = load i64 %t14
+    store ptr %t12, $s5
+    %t16 = addr $s5
+    %t17 = index u8 %t16, 8
+    store i64 %t15, %t17
+    %t18 = addr @rg.data.2
+    store ptr %t18, $s6
+    %t19 = addr $s6
+    %t20 = index u8 %t19, 8
+    store i64 4, %t20
+    %t21 = load ptr $s6
+    %t22 = addr $s6
+    %t23 = index u8 %t22, 8
+    %t24 = load i64 %t23
+    store ptr %t21, $s7
     %t25 = addr $s7
     %t26 = index u8 %t25, 8
-    store i64 1, %t26
-    %t27 = addr $s7
+    store i64 %t24, %t26
+    %t27 = addr $s3
     %t28 = addr $s8
     copyobj 16x8 %t27, %t28
-    %t29 = addr @rg.data.5
-    store ptr %t29, $s9
-    %t30 = addr $s9
-    %t31 = index u8 %t30, 8
-    store i64 1, %t31
-    %t32 = addr $s9
-    %t33 = call u8 @rg.15(%t32)
-    %t34 = cmp eq u8 %t33, 9
-    %t35 = convert trunc i1 i64 %t34
-    store i1 %t35, $s1
+    %t29 = addr $s8
+    %t30 = index u8 %t29, 16
+    %t31 = addr $s5
+    copyobj 16x8 %t31, %t30
+    %t32 = addr $s8
+    %t33 = index u8 %t32, 32
+    %t34 = addr $s7
+    copyobj 16x8 %t34, %t33
+    %t35 = addr @rg.data.3
+    store ptr %t35, $s9
+    %t36 = load ptr $s9
+    store ptr %t36, $s10
+    %t37 = addr $s10
+    %t38 = index u8 %t37, 8
+    store i64 3, %t38
+    %t39 = addr $s10
+    %t40 = call u8 @rg.15(%t39)
+    %t41 = cmp eq u8 %t40, 7
+    %t42 = convert trunc i1 i64 %t41
+    branch %t42, ^b4, ^b5
+  block ^b5:
+    store i1 %t42, $s1
+    jump ^b6
+  block ^b4:
+    %t43 = addr @rg.data.4
+    store ptr %t43, $s11
+    %t44 = addr $s11
+    %t45 = index u8 %t44, 8
+    store i64 1, %t45
+    %t46 = load ptr $s11
+    %t47 = addr $s11
+    %t48 = index u8 %t47, 8
+    %t49 = load i64 %t48
+    store ptr %t46, $s12
+    %t50 = addr $s12
+    %t51 = index u8 %t50, 8
+    store i64 %t49, %t51
+    %t52 = addr $s12
+    %t53 = addr $s13
+    copyobj 16x8 %t52, %t53
+    %t54 = addr @rg.data.5
+    store ptr %t54, $s14
+    %t55 = load ptr $s14
+    store ptr %t55, $s15
+    %t56 = addr $s15
+    %t57 = index u8 %t56, 8
+    store i64 1, %t57
+    %t58 = addr $s15
+    %t59 = call u8 @rg.15(%t58)
+    %t60 = cmp eq u8 %t59, 9
+    %t61 = convert trunc i1 i64 %t60
+    store i1 %t61, $s1
     jump ^b6
   block ^b6:
-    %t36 = load i1 $s1
-    branch %t36, ^b1, ^b2
+    %t62 = load i1 $s1
+    branch %t62, ^b1, ^b2
   block ^b2:
-    store i1 %t36, $s0
+    store i1 %t62, $s0
     jump ^b3
   block ^b1:
-    %t37 = addr @rg.data.6
-    store ptr %t37, $s10
-    %t38 = addr $s10
-    %t39 = index u8 %t38, 8
-    store i64 0, %t39
-    %t40 = addr $s10
-    %t41 = call u8 @rg.15(%t40)
-    %t42 = cmp eq u8 %t41, 0
-    %t43 = convert trunc i1 i64 %t42
-    store i1 %t43, $s0
+    %t63 = addr @rg.data.6
+    store ptr %t63, $s16
+    %t64 = load ptr $s16
+    store ptr %t64, $s17
+    %t65 = addr $s17
+    %t66 = index u8 %t65, 8
+    store i64 0, %t66
+    %t67 = addr $s17
+    %t68 = call u8 @rg.15(%t67)
+    %t69 = cmp eq u8 %t68, 0
+    %t70 = convert trunc i1 i64 %t69
+    store i1 %t70, $s0
     jump ^b3
   block ^b3:
-    %t44 = load i1 $s0
-    call void @rg.13(%t44)
+    %t71 = load i1 $s0
+    call void @rg.13(%t71)
     return void
 }
 function @rg.15(%p0 : ptr) -> u8 {

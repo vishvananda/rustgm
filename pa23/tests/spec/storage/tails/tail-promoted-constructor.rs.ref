@@ -60,20 +60,23 @@ function @rg.22() -> void {
 }
 function @rg.21(%p0 : ptr) -> void {
   slot $s0 : obj<16x8>
-  slot $s1 : obj<16x8>
+  slot $s1 : ptr
+  slot $s2 : obj<16x8>
   block ^b0:
     store u8 2, $s0
     %t0 = addr $s0
     %t1 = index u8 %t0, 8
     store i64 1000, %t1
     %t2 = addr @rg.data.0
-    %t3 = addr @rg.vtable.0
     store ptr %t2, $s1
-    %t4 = addr $s1
-    %t5 = index u8 %t4, 8
-    store ptr %t3, %t5
-    %t6 = addr $s1
-    copyobj 16x8 %t6, %p0
+    %t3 = load ptr $s1
+    %t4 = addr @rg.vtable.0
+    store ptr %t3, $s2
+    %t5 = addr $s2
+    %t6 = index u8 %t5, 8
+    store ptr %t4, %t6
+    %t7 = addr $s2
+    copyobj 16x8 %t7, %p0
     return void
 }
 function @rg.virtual.0.0(%p0 : ptr) -> u16 {

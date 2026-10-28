@@ -28,6 +28,8 @@ type 25 function binders=2 parameters=[24] result=1 unsafe=false
 type 26 function-item def=14 signature=25
 type 27 reference mutable=false region=region:1 referent=11
 type 28 reference mutable=false region=region:2 referent=27
+type 29 reference mutable=false region=static referent=27
+type 30 reference mutable=false region=region:3 referent=21
 root 0:13 pattern=0
 root 0:16 pattern=1
 pattern 0 source=0:13 input=24 deref mutable=false implicit=false pattern=2
@@ -40,5 +42,7 @@ arm 0 source=0:15 pattern=0 guard=- useful=true value=0:14
 arm 1 source=0:18 pattern=1 guard=- useful=true value=0:17
 region-var region:1 body=0:5 source=0:4 origin=expression-borrow pending
 region-var region:2 body=0:5 source=0:5 origin=expression-borrow pending
-region-coercion body=0:5 source=0:5 actual=28 expected=22 kind=same-shape pending
-eof roots=2 patterns=4 fields=0 alternatives=0 ranges=1 matches=1 arms=2 coverage-work=88 region-vars=2 region-equalities=0 conditions=0 chains=0
+region-var region:3 body=0:5 source=0:5 origin=inference pending
+region-coercion body=0:5 source=0:5 actual=28 expected=22 kind=reborrow pending
+region-coercion body=0:5 source=0:5 actual=30 expected=22 kind=same-shape pending
+eof roots=2 patterns=4 fields=0 alternatives=0 ranges=1 matches=1 arms=2 coverage-work=88 region-vars=3 region-equalities=0 conditions=0 chains=0

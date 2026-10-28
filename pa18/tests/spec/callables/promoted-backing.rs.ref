@@ -55,6 +55,7 @@ function @rg.16() -> void {
 function @rg.15.i3() -> ptr {
   slot $s0 : obj<24x8>
   slot $s1 : i64
+  slot $s2 : ptr
   block ^b0:
     store i64 0, $s1
     jump ^b1
@@ -72,11 +73,14 @@ function @rg.15.i3() -> ptr {
     jump ^b1
   block ^b3:
     %t6 = addr @rg.data.0
-    return ptr %t6
+    store ptr %t6, $s2
+    %t7 = load ptr $s2
+    return ptr %t7
 }
 function @rg.15.i4() -> ptr {
   slot $s0 : obj<40x8>
   slot $s1 : i64
+  slot $s2 : ptr
   block ^b0:
     store i64 0, $s1
     jump ^b1
@@ -94,7 +98,9 @@ function @rg.15.i4() -> ptr {
     jump ^b1
   block ^b3:
     %t6 = addr @rg.data.1
-    return ptr %t6
+    store ptr %t6, $s2
+    %t7 = load ptr $s2
+    return ptr %t7
 }
 function @rg.13(%p0 : i1) -> void {
   slot $s0 : i1

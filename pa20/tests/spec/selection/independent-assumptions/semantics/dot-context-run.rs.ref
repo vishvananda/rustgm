@@ -56,6 +56,7 @@ type 53 function binders=0 parameters=[52] result=11 unsafe=false
 type 54 projection def=17 self=11 trait=15 arguments=[] family arguments=[]
 type 55 function-item def=27 signature=33 arguments=[type:11,type:12]
 type 56 reference mutable=false region=region:2 referent=12
+type 57 reference mutable=false region=region:3 referent=12
 def 13 type=26 name="check" source=0:13
 def 14 type=28 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:24
@@ -132,9 +133,11 @@ region-var region:2 body=0:87 source=0:86 origin=universal-alias pending
 region-var region:3 body=0:87 source=0:86 origin=expression-borrow pending
 region-var region:1 body=0:102 source=0:97 origin=call-argument pending
 region-var region:2 body=0:102 source=0:96 origin=expression-borrow pending
+region-var region:3 body=0:102 source=0:96 origin=inference pending
 region-equal body=0:87 left=region:2 right=bound:0:0
 region-coercion body=0:87 source=0:86 actual=50 expected=52 kind=same-shape pending
-region-coercion body=0:102 source=0:96 actual=56 expected=46 kind=same-shape pending
+region-coercion body=0:102 source=0:96 actual=56 expected=46 kind=reborrow pending
+region-coercion body=0:102 source=0:96 actual=57 expected=46 kind=same-shape pending
 associated-type def=17 type=24
 result-contract def=17 projection=24
 result-bound def=17 index=0 subject=24 bound=sized

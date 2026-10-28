@@ -1,8 +1,9 @@
 function @rg.16() -> void {
   slot $s0 : obj<2x1>
   slot $s1 : obj<2x1>
-  slot $s2 : obj<16x8>
-  slot $s3 : ptr
+  slot $s2 : ptr
+  slot $s3 : obj<16x8>
+  slot $s4 : ptr
   block ^b0:
     store u8 7, $s1
     %t0 = addr $s1
@@ -13,21 +14,24 @@ function @rg.16() -> void {
     copyobj 2x1 %t2, %t3
     %t4 = addr $s0
     store ptr %t4, $s2
-    %t5 = addr $s2
-    %t6 = index u8 %t5, 8
-    store i64 2, %t6
-    %t7 = addr $s2
-    %t8 = call ptr @rg.15(%t7)
-    store ptr %t8, $s3
-    %t9 = load ptr $s3
-    %t10 = load u8 %t9
-    %t11 = cmp eq u8 %t10, 9
-    %t12 = convert trunc i1 i64 %t11
-    call void @rg.13(%t12)
+    %t5 = load ptr $s2
+    store ptr %t5, $s3
+    %t6 = addr $s3
+    %t7 = index u8 %t6, 8
+    store i64 2, %t7
+    %t8 = addr $s3
+    %t9 = call ptr @rg.15(%t8)
+    store ptr %t9, $s4
+    %t10 = load ptr $s4
+    %t11 = load u8 %t10
+    %t12 = cmp eq u8 %t11, 9
+    %t13 = convert trunc i1 i64 %t12
+    call void @rg.13(%t13)
     return void
 }
 function @rg.15(%p0 : ptr) -> ptr {
   slot $s0 : obj<16x8>
+  slot $s1 : ptr
   block ^b0:
     %t0 = addr $s0
     copyobj 16x8 %p0, %t0
@@ -40,7 +44,9 @@ function @rg.15(%p0 : ptr) -> ptr {
   block ^b2:
     %t6 = binary mul i64 1, 1
     %t7 = index u8 %t1, %t6
-    return ptr %t7
+    store ptr %t7, $s1
+    %t8 = load ptr $s1
+    return ptr %t8
   block ^b1:
     call void @abort()
     unreachable

@@ -2,6 +2,7 @@ function @rg.23() -> void {
   slot $s0 : u8
   slot $s1 : ptr
   slot $s2 : ptr
+  slot $s3 : ptr
   block ^b0:
     store u8 7, $s0
     %t0 = addr @rg.22
@@ -9,13 +10,15 @@ function @rg.23() -> void {
     store ptr %t1, $s1
     %t2 = load ptr $s1
     %t3 = addr $s0
-    %t4 = call ptr %t2(%t3) as (%p0 : ptr) -> ptr
-    store ptr %t4, $s2
-    %t5 = load ptr $s2
-    %t6 = load u8 %t5
-    %t7 = cmp ne u8 %t6, 7
-    %t8 = convert trunc i1 i64 %t7
-    branch %t8, ^b1, ^b2
+    store ptr %t3, $s2
+    %t4 = load ptr $s2
+    %t5 = call ptr %t2(%t4) as (%p0 : ptr) -> ptr
+    store ptr %t5, $s3
+    %t6 = load ptr $s3
+    %t7 = load u8 %t6
+    %t8 = cmp ne u8 %t7, 7
+    %t9 = convert trunc i1 i64 %t8
+    branch %t9, ^b1, ^b2
   block ^b2:
     jump ^b3
   block ^b3:

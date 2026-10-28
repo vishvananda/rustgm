@@ -55,11 +55,11 @@ type 52 function binders=0 parameters=[50,47] result=51 unsafe=false
 type 53 function-item def=14 signature=49
 type 54 reference mutable=false region=region:1 referent=21
 type 55 aggregate def=13 arguments=[region:region:2,type:23,const-parameter:15:2]
-type 56 reference mutable=false region=region:2 referent=23
-type 57 reference mutable=false region=region:1 referent=23
-type 58 aggregate def=13 arguments=[region:region:1,type:23,const-parameter:15:2]
-type 59 function binders=0 parameters=[57,40] result=58 unsafe=false
-type 60 function-item def=14 signature=59 arguments=[region:region:1,type:23,const-parameter:15:2]
+type 56 reference mutable=false region=region:1 referent=23
+type 57 aggregate def=13 arguments=[region:region:1,type:23,const-parameter:15:2]
+type 58 function binders=0 parameters=[56,40] result=57 unsafe=false
+type 59 function-item def=14 signature=58 arguments=[region:region:1,type:23,const-parameter:15:2]
+type 60 reference mutable=false region=region:3 referent=23
 def 13 type=22 name="S" source=0:14
 def 14 type=53 name="S" source=0:14
 def 15 type=24 name="Self" source=0:78
@@ -115,7 +115,9 @@ predicate owner=15 source=0:17 subject=23 bound=copy
 predicate owner=16 source=0:28 subject=26 bound=copy
 region-var region:1 body=0:76 source=0:72 origin=item-argument pending
 region-var region:2 body=0:76 source=0:75 origin=universal-alias pending
+region-var region:3 body=0:76 source=0:73 origin=inference pending
 region-equal body=0:76 left=region:2 right=bound:0:0
-region-coercion body=0:76 source=0:73 actual=39 expected=57 kind=same-shape pending
-region-coercion body=0:76 source=0:76 actual=58 expected=24 kind=same-shape pending
+region-coercion body=0:76 source=0:73 actual=39 expected=56 kind=reborrow pending
+region-coercion body=0:76 source=0:73 actual=60 expected=56 kind=same-shape pending
+region-coercion body=0:76 source=0:76 actual=57 expected=24 kind=same-shape pending
 eof owners=1 members=4 parameters=7 predicates=3 impls=0 calls=0 paths=0 impl-uses=0

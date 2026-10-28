@@ -37,15 +37,16 @@ type 34 function-item def=16 signature=33
 type 35 function binders=0 parameters=[32] result=30 unsafe=false
 type 36 function-item def=16 signature=35 arguments=[const:16:0x00000000000000000000000000000003]
 type 37 reference mutable=false region=region:1 referent=22
-type 38 function binders=0 parameters=[] result=30 unsafe=false
-type 39 function-item def=17 signature=38
-type 40 function binders=0 parameters=[] result=1 unsafe=false
-type 41 function-item def=29 signature=40
+type 38 reference mutable=false region=region:2 referent=22
+type 39 function binders=0 parameters=[] result=30 unsafe=false
+type 40 function-item def=17 signature=39
+type 41 function binders=0 parameters=[] result=1 unsafe=false
+type 42 function-item def=29 signature=41
 def 13 type=26 name="check" source=0:13
 def 14 type=28 name="fail" source=0:22
 def 15 type=21 name="X" source=0:29
 def 16 type=34 name="X" source=0:29
-def 17 type=39 name="f" source=0:44
+def 17 type=40 name="f" source=0:44
 def 19 type=23 name="Self" source=0:47
 def 20 type=16 name="C" source=0:46
 def 22 type=24 name="Self" source=0:52
@@ -55,7 +56,7 @@ def 25 type=11 name="Self" source=0:70
 def 26 type=16 name="C" source=0:69
 def 27 type=12 name="Self" source=0:88
 def 28 type=29 name="C" source=0:87
-def 29 type=41 name="main" source=0:100
+def 29 type=42 name="main" source=0:100
 def 30 type=2 name="bool"
 def 31 type=3 name="char"
 def 32 type=4 name="str"
@@ -98,7 +99,9 @@ trait-path source=0:67 method=23 trait=21 qualifier=explicit origin=ordinary sub
 implementation-use source=0:34 owner=25 arguments=[]
 implementation-use source=0:67 owner=27 arguments=[]
 region-var region:1 body=0:86 source=0:86 origin=expression-borrow pending
-region-coercion body=0:86 source=0:86 actual=37 expected=29 kind=same-shape pending
+region-var region:2 body=0:86 source=0:86 origin=inference pending
+region-coercion body=0:86 source=0:86 actual=37 expected=29 kind=reborrow pending
+region-coercion body=0:86 source=0:86 actual=38 expected=29 kind=same-shape pending
 associated-constant def=20 type=16
 associated-constant def=23 type=29
 associated-constant def=26 type=16

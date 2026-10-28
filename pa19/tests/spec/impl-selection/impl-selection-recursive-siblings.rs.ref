@@ -48,12 +48,13 @@ type 45 reference mutable=false region=region:2 referent=11
 type 46 reference mutable=false region=region:3 referent=11
 type 47 aggregate def=15 arguments=[type:45,type:46]
 type 48 aggregate def=15 arguments=[type:29,type:29]
-type 49 reference mutable=false region=region:5 referent=11
-type 50 reference mutable=false region=region:6 referent=11
+type 49 reference mutable=false region=region:6 referent=11
+type 50 reference mutable=false region=region:7 referent=11
 type 51 function binders=0 parameters=[47,42] result=1 unsafe=false
 type 52 function-item def=19 signature=51 arguments=[region:region:1,type:47]
 type 53 function binders=0 parameters=[45,46] result=47 unsafe=false
 type 54 function-item def=16 signature=53 arguments=[type:45,type:46]
+type 55 reference mutable=false region=region:4 referent=1
 def 14 type=24 name="Self" source=0:1
 def 15 type=23 name="S" source=0:8
 def 16 type=41 name="S" source=0:8
@@ -108,22 +109,24 @@ predicate owner=17 source=0:20 subject=26 bound=trait:13 arguments=[region:bound
 predicate owner=19 source=0:46 subject=30 bound=trait:13 arguments=[region:bound:0:0]
 impl owner=17 source=0:31 subject=27 bound=trait:13 arguments=[region:bound:0:0]
 impl owner=18 source=0:40 subject=28 bound=trait:13 arguments=[region:bound:0:0]
-implementation-use source=0:78 owner=17 arguments=[region:region:4,type:45,type:46]
+implementation-use source=0:78 owner=17 arguments=[region:region:5,type:45,type:46]
 region-var region:1 body=0:56 source=0:56 origin=universal-alias pending
 region-var region:1 body=0:85 source=0:75 origin=universal-alias pending
 region-var region:2 body=0:85 source=0:80 origin=inference pending
 region-var region:3 body=0:85 source=0:81 origin=inference pending
-region-var region:4 body=0:85 source=0:78 origin=inference pending
+region-var region:4 body=0:85 source=0:83 origin=inference pending
 region-var region:5 body=0:85 source=0:78 origin=inference pending
 region-var region:6 body=0:85 source=0:78 origin=inference pending
+region-var region:7 body=0:85 source=0:78 origin=inference pending
 region-equal body=0:56 left=region:1 right=bound:0:0
-region-equal body=0:85 left=region:1 right=region:4
-region-equal body=0:85 left=region:3 right=region:6
-region-equal body=0:85 left=region:4 right=region:6
-region-equal body=0:85 left=region:2 right=region:5
-region-equal body=0:85 left=region:4 right=region:5
+region-equal body=0:85 left=region:1 right=region:5
+region-equal body=0:85 left=region:3 right=region:7
+region-equal body=0:85 left=region:5 right=region:7
+region-equal body=0:85 left=region:2 right=region:6
+region-equal body=0:85 left=region:5 right=region:6
 region-equal body=0:85 left=region:1 right=bound:0:0
 region-coercion body=0:85 source=0:80 actual=28 expected=45 kind=same-shape pending
 region-coercion body=0:85 source=0:81 actual=28 expected=46 kind=same-shape pending
-region-coercion body=0:85 source=0:83 actual=31 expected=42 kind=same-shape pending
+region-coercion body=0:85 source=0:83 actual=31 expected=42 kind=reborrow pending
+region-coercion body=0:85 source=0:83 actual=55 expected=42 kind=same-shape pending
 eof owners=3 members=0 parameters=8 predicates=4 impls=2 calls=0 paths=0 impl-uses=1

@@ -62,8 +62,8 @@ type 59 opaque id=2 arguments=[region:bound:0:0,type:11]
 type 60 opaque id=1 arguments=[region:bound:0:0,type:11,type:11]
 type 61 opaque id=3 arguments=[region:region:6,type:11]
 type 62 opaque id=3 arguments=[region:bound:0:0,type:11]
-type 63 opaque id=2 arguments=[region:region:7,type:11]
-type 64 opaque id=3 arguments=[region:region:8,type:11]
+type 63 opaque id=2 arguments=[region:region:8,type:11]
+type 64 opaque id=3 arguments=[region:region:9,type:11]
 type 65 tuple [63,64]
 type 66 reference mutable=false region=bound:0:0 referent=11
 type 67 tuple [59,62]
@@ -75,6 +75,7 @@ type 72 opaque id=3 arguments=[region:region:3,type:11]
 type 73 tuple [71,72]
 type 74 function binders=0 parameters=[70] result=73 unsafe=false
 type 75 reference mutable=false region=region:4 referent=11
+type 76 reference mutable=false region=region:7 referent=11
 def 14 type=21 name="Self" source=0:21
 def 15 type=28 name="f" source=0:20
 def 16 type=11 name="Self" source=0:49
@@ -126,12 +127,14 @@ region-var region:3 body=0:62 source=0:60 origin=call-argument pending
 region-var region:4 body=0:62 source=0:59 origin=expression-borrow pending
 region-var region:5 body=0:62 source=0:57 origin=quantified-proof pending
 region-var region:6 body=0:62 source=0:57 origin=quantified-proof pending
-region-var region:7 body=0:62 source=0:60 origin=inference pending
+region-var region:7 body=0:62 source=0:59 origin=inference pending
 region-var region:8 body=0:62 source=0:60 origin=inference pending
+region-var region:9 body=0:62 source=0:60 origin=inference pending
 region-equal body=0:47 left=region:1 right=bound:0:0
 region-coercion body=0:47 source=0:44 actual=30 expected=53 kind=same-shape pending
 region-coercion body=0:47 source=0:45 actual=30 expected=54 kind=same-shape pending
-region-coercion body=0:62 source=0:59 actual=75 expected=70 kind=same-shape pending
+region-coercion body=0:62 source=0:59 actual=75 expected=70 kind=reborrow pending
+region-coercion body=0:62 source=0:59 actual=76 expected=70 kind=same-shape pending
 region-coercion body=0:62 source=0:60 actual=73 expected=65 kind=same-shape pending
 type-outlives body=0:47 source=0:37 type=53 shorter=bound:0:0 pending
 type-outlives body=0:47 source=0:42 type=54 shorter=bound:0:0 pending

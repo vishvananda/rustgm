@@ -27,6 +27,7 @@ type 24 function binders=0 parameters=[] result=1 unsafe=false
 type 25 function-item def=20 signature=24
 type 26 projection def=15 self=11 trait=13 arguments=[region:bound:0:0] family arguments=[]
 type 27 reference mutable=false region=region:1 referent=11
+type 28 reference mutable=false region=region:2 referent=11
 def 14 type=21 name="Self" source=0:10
 def 15 type=22 name="Out" source=0:1
 def 16 type=22 name="C" source=0:9
@@ -65,7 +66,9 @@ predicate owner=13 source=0:10 subject=21 bound=trait:13 arguments=[region:bound
 impl owner=17 source=0:27 subject=11 bound=trait:13 arguments=[region:bound:0:0]
 impl-type owner=17 declaration=15 definition=18
 region-var region:1 body=0:25 source=0:25 origin=expression-borrow pending
-region-coercion body=0:25 source=0:25 actual=27 expected=23 kind=same-shape pending
+region-var region:2 body=0:25 source=0:25 origin=inference pending
+region-coercion body=0:25 source=0:25 actual=27 expected=23 kind=reborrow pending
+region-coercion body=0:25 source=0:25 actual=28 expected=23 kind=same-shape pending
 associated-type def=15 type=22
 result-contract def=15 projection=22
 result-bound def=15 index=0 subject=22 bound=sized

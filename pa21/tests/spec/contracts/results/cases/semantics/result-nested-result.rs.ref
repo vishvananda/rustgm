@@ -118,7 +118,9 @@ impl-type owner=26 declaration=25 definition=27
 implementation-use source=0:72 owner=26 arguments=[]
 region-var region:1 body=0:83 source=0:75 origin=call-argument pending
 region-var region:2 body=0:83 source=0:74 origin=expression-borrow pending
-region-coercion body=0:83 source=0:74 actual=49 expected=44 kind=same-shape pending
+region-var region:3 body=0:83 source=0:74 origin=inference pending
+region-coercion body=0:83 source=0:74 actual=49 expected=44 kind=reborrow pending
+region-coercion body=0:83 source=0:74 actual=34 expected=44 kind=same-shape pending
 associated-type def=15 type=24
 result-contract def=15 projection=24
 result-bound def=15 index=0 subject=24 bound=sized

@@ -1,0 +1,38 @@
+{
+  "scope": "exact static shared reference identity remains ordinary value/move; fresh elided call region may reborrow",
+  "independent": {
+    "tool": "Rust1.98.0",
+    "editions": [
+      2021,
+      2024
+    ],
+    "RUSTC_BOOTSTRAP": "1",
+    "receipt_sha256": "876cf622f1476c1b92edbdcf16c63d32240ebe3ad567603df09f4355569a319d"
+  },
+  "files": {
+    "static-call-identity.rs": {
+      "sha256": "f683a05e30270e83b4b1d27b8241765c1b8944d1d6c1c1fb356eef99acbca7a2",
+      "status": 1,
+      "reason": "shared reference has no Copy impl, identical static input is moved before reuse"
+    },
+    "static-let-identity.rs": {
+      "sha256": "ff76d54dd64f393049ac4e10cc366ec46e8aee1c2fa6f0d18b37746c8162cf0b",
+      "status": 1,
+      "reason": "shared reference has no Copy impl, identical static input is moved before reuse"
+    },
+    "generic-static-call-identity.rs": {
+      "sha256": "86404fb64e76caaa38f51673d845de53f4d8803a7a42ea3b3b80f0f430673bc8",
+      "status": 1
+    },
+    "alias-static-let-identity.rs": {
+      "sha256": "7ae6d929fcd00db0e6712e6b173f69877d6197f6e0f0e557de26babae6c0858a",
+      "status": 1
+    },
+    "partial-static-let-identity.rs": {
+      "sha256": "73cfc7a3f5dd4eb4badf39d924f108c404eb390ad86e42ef490056f7dab8fc0c",
+      "status": 0
+    }
+  },
+  "structural_identity_receipt_sha256": "1cec6bb3af385ce9fec9a60e612990e78d4edebd1c9fdee03cad597f659e95cd",
+  "structural_note": "generic/alias exact types move; partial static pointee annotation requests a real reborrow; two wrong initial rejection hypotheses retained"
+}

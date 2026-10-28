@@ -31,6 +31,7 @@ type 28 reference mutable=false region=region:2 referent=11
 type 29 opaque id=0 arguments=[region:region:2]
 type 30 function binders=0 parameters=[11,28] result=29 unsafe=false
 type 31 reference mutable=false region=region:3 referent=11
+type 32 reference mutable=false region=region:4 referent=11
 def 13 type=24 name="f" source=0:28
 def 14 type=26 name="main" source=0:30
 def 15 type=2 name="bool"
@@ -56,14 +57,16 @@ def 35 type=11 name="n" source=0:1
 def 36 type=21 name="x" source=0:4
 region-var region:1 body=0:27 source=0:27 origin=universal-alias pending
 region-var region:2 body=0:27 source=0:24 origin=call-argument pending
-region-var region:3 body=0:27 source=0:26 origin=inference pending
+region-var region:3 body=0:27 source=0:23 origin=inference pending
+region-var region:4 body=0:27 source=0:26 origin=inference pending
 region-equal body=0:27 left=region:1 right=bound:0:0
 region-equal body=0:27 left=region:2 right=region:1
 region-equal body=0:27 left=region:2 right=region:1
-region-coercion body=0:27 source=0:23 actual=21 expected=28 kind=same-shape pending
-region-coercion body=0:27 source=0:18 actual=21 expected=31 kind=same-shape pending
-region-coercion body=0:27 source=0:25 actual=21 expected=31 kind=same-shape pending
-region-coercion body=0:27 source=0:27 actual=31 expected=21 kind=same-shape pending
+region-coercion body=0:27 source=0:23 actual=21 expected=28 kind=reborrow pending
+region-coercion body=0:27 source=0:23 actual=31 expected=28 kind=same-shape pending
+region-coercion body=0:27 source=0:18 actual=21 expected=32 kind=same-shape pending
+region-coercion body=0:27 source=0:25 actual=21 expected=32 kind=same-shape pending
+region-coercion body=0:27 source=0:27 actual=32 expected=21 kind=same-shape pending
 type-outlives body=0:27 source=0:13 type=21 shorter=bound:0:0 pending
 opaque 0 owner=13 source=0:13 application=22 hidden=21 role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 subject=22 bound=copy

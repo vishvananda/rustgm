@@ -30,6 +30,7 @@ type 27 reference mutable=false region=static referent=10
 type 28 function binders=0 parameters=[] result=1 unsafe=false
 type 29 function-item def=24 signature=28
 type 30 reference mutable=false region=region:1 referent=10
+type 31 reference mutable=false region=region:2 referent=10
 def 13 type=24 name="check" source=0:13
 def 14 type=26 name="fail" source=0:22
 def 16 type=22 name="Self" source=0:29
@@ -69,7 +70,9 @@ impl owner=18 source=0:32 subject=11 bound=trait:15 arguments=[]
 trait-path source=0:36 method=17 trait=15 qualifier=explicit origin=ordinary subject-source=0:33
 implementation-use source=0:36 owner=18 arguments=[]
 region-var region:1 body=0:27 source=0:27 origin=expression-borrow pending
-region-coercion body=0:27 source=0:27 actual=30 expected=27 kind=same-shape pending
+region-var region:2 body=0:27 source=0:27 origin=inference pending
+region-coercion body=0:27 source=0:27 actual=30 expected=27 kind=reborrow pending
+region-coercion body=0:27 source=0:27 actual=31 expected=27 kind=same-shape pending
 associated-constant def=17 type=27
 impl-constant owner=18 declaration=17 selected=17 default=true
 constant-use source=0:36 definition=17 arguments=[type:11]

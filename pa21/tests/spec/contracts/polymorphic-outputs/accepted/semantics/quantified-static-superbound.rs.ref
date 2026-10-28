@@ -34,11 +34,12 @@ type 31 function-item def=18 signature=30
 type 32 opaque id=0 arguments=[region:region:1]
 type 33 reference mutable=false region=region:1 referent=11
 type 34 function binders=0 parameters=[33] result=32 unsafe=false
-type 35 opaque id=0 arguments=[region:region:3]
+type 35 opaque id=0 arguments=[region:region:4]
 type 36 reference mutable=false region=region:2 referent=11
-type 37 opaque id=0 arguments=[region:region:4]
-type 38 function binders=0 parameters=[37] result=1 unsafe=false
-type 39 function-item def=17 signature=38 arguments=[type:37]
+type 37 reference mutable=false region=region:3 referent=11
+type 38 opaque id=0 arguments=[region:region:5]
+type 39 function binders=0 parameters=[38] result=1 unsafe=false
+type 40 function-item def=17 signature=39 arguments=[type:38]
 def 14 type=21 name="Self" source=0:3
 def 15 type=11 name="Self" source=0:10
 def 16 type=26 name="f" source=0:26
@@ -80,13 +81,15 @@ region-var region:2 body=0:25 source=0:23 origin=quantified-proof pending
 region-var region:3 body=0:25 source=0:23 origin=quantified-proof pending
 region-var region:1 body=0:53 source=0:44 origin=call-argument pending
 region-var region:2 body=0:53 source=0:43 origin=expression-borrow pending
-region-var region:3 body=0:53 source=0:44 origin=inference pending
-region-var region:4 body=0:53 source=0:50 origin=inference pending
+region-var region:3 body=0:53 source=0:43 origin=inference pending
+region-var region:4 body=0:53 source=0:44 origin=inference pending
+region-var region:5 body=0:53 source=0:50 origin=inference pending
 region-equal body=0:25 left=region:1 right=bound:0:0
-region-coercion body=0:53 source=0:43 actual=36 expected=33 kind=same-shape pending
+region-coercion body=0:53 source=0:43 actual=36 expected=33 kind=reborrow pending
+region-coercion body=0:53 source=0:43 actual=37 expected=33 kind=same-shape pending
 region-coercion body=0:53 source=0:44 actual=32 expected=35 kind=same-shape pending
-region-coercion body=0:53 source=0:50 actual=35 expected=37 kind=same-shape pending
-type-outlives body=0:53 source=0:49 type=37 shorter=static pending
+region-coercion body=0:53 source=0:50 actual=35 expected=38 kind=same-shape pending
+type-outlives body=0:53 source=0:49 type=38 shorter=static pending
 quantifier 0 regions=1 subject=24 bound=trait:13 arguments=[region:bound:0:0]
 quantifier 1 regions=1 subject=24 bound=outlives:static
 quantifier 2 regions=1 subject=11 bound=trait:13 arguments=[region:bound:0:0]

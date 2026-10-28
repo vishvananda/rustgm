@@ -42,6 +42,7 @@ type 39 function-item def=23 signature=38
 type 40 function binders=0 parameters=[11] result=21 unsafe=false
 type 41 function-item def=14 signature=40
 type 42 reference mutable=false region=region:1 referent=11
+type 43 reference mutable=false region=region:2 referent=11
 def 13 type=21 name="S" source=0:2
 def 14 type=41 name="S" source=0:2
 def 15 type=21 name="Self" source=0:83
@@ -90,9 +91,15 @@ associated-member def=20 owner=0 receiver=25 references=1
 associated-member def=21 owner=0 receiver=33 references=2
 associated-member def=22 owner=0
 region-var region:1 body=0:35 source=0:34 origin=expression-borrow pending
+region-var region:2 body=0:35 source=0:34 origin=inference pending
 region-var region:1 body=0:50 source=0:49 origin=expression-borrow pending
+region-var region:2 body=0:50 source=0:49 origin=inference pending
 region-var region:1 body=0:65 source=0:64 origin=expression-borrow pending
-region-coercion body=0:35 source=0:35 actual=42 expected=27 kind=same-shape pending
-region-coercion body=0:50 source=0:50 actual=42 expected=27 kind=same-shape pending
-region-coercion body=0:65 source=0:65 actual=42 expected=27 kind=same-shape pending
+region-var region:2 body=0:65 source=0:64 origin=inference pending
+region-coercion body=0:35 source=0:34 actual=42 expected=27 kind=reborrow pending
+region-coercion body=0:35 source=0:34 actual=43 expected=27 kind=same-shape pending
+region-coercion body=0:50 source=0:49 actual=42 expected=27 kind=reborrow pending
+region-coercion body=0:50 source=0:49 actual=43 expected=27 kind=same-shape pending
+region-coercion body=0:65 source=0:64 actual=42 expected=27 kind=reborrow pending
+region-coercion body=0:65 source=0:64 actual=43 expected=27 kind=same-shape pending
 eof owners=1 members=7 parameters=0 predicates=0 impls=0 calls=0 paths=0 impl-uses=0

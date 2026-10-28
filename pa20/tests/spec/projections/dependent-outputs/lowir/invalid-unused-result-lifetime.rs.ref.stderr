@@ -1,1 +1,1 @@
-ERROR: file 0: 345: required lifetime does not outlive its target
+ERROR: file 0: 346: required lifetime does not outlive its target

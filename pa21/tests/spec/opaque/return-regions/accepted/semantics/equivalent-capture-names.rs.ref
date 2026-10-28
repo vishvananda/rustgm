@@ -61,25 +61,25 @@ type 58 reference mutable=false region=region:1 referent=11
 type 59 tuple [51,52]
 type 60 function binders=0 parameters=[58] result=59 unsafe=false
 type 61 function-item def=20 signature=60 regions=[region:1,region:2]
-type 62 opaque id=0 arguments=[region:region:4]
+type 62 opaque id=0 arguments=[region:region:5]
 type 63 opaque id=0 arguments=[region:static]
-type 64 opaque id=1 arguments=[region:region:5]
+type 64 opaque id=1 arguments=[region:region:6]
 type 65 opaque id=1 arguments=[region:static]
 type 66 tuple [62,64]
 type 67 reference mutable=false region=static referent=62
 type 68 reference mutable=false region=bound:0:0 referent=62
 type 69 function binders=1 parameters=[68] result=11 unsafe=false
 type 70 function-item def=17 signature=69 arguments=[type:62]
-type 71 reference mutable=false region=region:6 referent=62
+type 71 reference mutable=false region=region:7 referent=62
 type 72 function binders=0 parameters=[71] result=11 unsafe=false
-type 73 reference mutable=false region=region:7 referent=62
+type 73 reference mutable=false region=region:8 referent=62
 type 74 reference mutable=false region=static referent=64
 type 75 reference mutable=false region=bound:0:0 referent=64
 type 76 function binders=1 parameters=[75] result=11 unsafe=false
 type 77 function-item def=17 signature=76 arguments=[type:64]
-type 78 reference mutable=false region=region:8 referent=64
+type 78 reference mutable=false region=region:9 referent=64
 type 79 function binders=0 parameters=[78] result=11 unsafe=false
-type 80 reference mutable=false region=region:9 referent=64
+type 80 reference mutable=false region=region:10 referent=64
 def 13 type=25 name="check" source=0:13
 def 14 type=27 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:28
@@ -134,12 +134,13 @@ region-var region:6 body=0:69 source=0:64 origin=inference pending
 region-var region:1 body=0:96 source=0:75 origin=item-argument pending
 region-var region:2 body=0:96 source=0:75 origin=item-argument pending
 region-var region:3 body=0:96 source=0:77 origin=expression-borrow pending
-region-var region:4 body=0:96 source=0:78 origin=inference pending
+region-var region:4 body=0:96 source=0:77 origin=inference pending
 region-var region:5 body=0:96 source=0:78 origin=inference pending
-region-var region:6 body=0:96 source=0:83 origin=call-argument pending
-region-var region:7 body=0:96 source=0:83 origin=expression-borrow pending
-region-var region:8 body=0:96 source=0:91 origin=call-argument pending
-region-var region:9 body=0:96 source=0:91 origin=expression-borrow pending
+region-var region:6 body=0:96 source=0:78 origin=inference pending
+region-var region:7 body=0:96 source=0:83 origin=call-argument pending
+region-var region:8 body=0:96 source=0:83 origin=expression-borrow pending
+region-var region:9 body=0:96 source=0:91 origin=call-argument pending
+region-var region:10 body=0:96 source=0:91 origin=expression-borrow pending
 region-equal body=0:69 left=region:3 right=region:5
 region-equal body=0:69 left=region:4 right=region:6
 region-equal body=0:69 left=region:1 right=bound:0:0
@@ -148,7 +149,8 @@ region-coercion body=0:69 source=0:66 actual=22 expected=53 kind=same-shape pend
 region-coercion body=0:69 source=0:67 actual=22 expected=54 kind=same-shape pending
 region-coercion body=0:96 source=0:83 actual=73 expected=71 kind=same-shape pending
 region-coercion body=0:96 source=0:91 actual=80 expected=78 kind=same-shape pending
-region-coercion body=0:96 source=0:77 actual=53 expected=58 kind=same-shape pending
+region-coercion body=0:96 source=0:77 actual=53 expected=58 kind=reborrow pending
+region-coercion body=0:96 source=0:77 actual=54 expected=58 kind=same-shape pending
 region-coercion body=0:96 source=0:78 actual=59 expected=66 kind=same-shape pending
 region-outlives body=0:96 source=0:75 longer=region:1 shorter=region:2 pending
 region-outlives body=0:96 source=0:75 longer=region:2 shorter=region:1 pending

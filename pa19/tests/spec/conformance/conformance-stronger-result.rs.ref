@@ -32,6 +32,7 @@ type 29 function-item def=19 signature=28
 type 30 function binders=0 parameters=[22] result=22 unsafe=false
 type 31 reference mutable=false region=region:1 referent=11
 type 32 function binders=0 parameters=[31] result=25 unsafe=false
+type 33 reference mutable=false region=region:2 referent=11
 def 13 type=11 name="N" source=0:2
 def 15 type=21 name="Self" source=0:13
 def 16 type=24 name="f" source=0:12
@@ -67,5 +68,7 @@ predicate owner=14 source=0:13 subject=21 bound=trait:14 arguments=[]
 impl owner=17 source=0:29 subject=11 bound=trait:14 arguments=[]
 impl-method owner=17 declaration=16 selected=18 default=false
 region-var region:1 body=0:27 source=0:26 origin=expression-borrow pending
-region-coercion body=0:27 source=0:27 actual=31 expected=25 kind=same-shape pending
+region-var region:2 body=0:27 source=0:26 origin=inference pending
+region-coercion body=0:27 source=0:26 actual=31 expected=25 kind=reborrow pending
+region-coercion body=0:27 source=0:26 actual=33 expected=25 kind=same-shape pending
 eof owners=2 members=2 parameters=1 predicates=1 impls=1 calls=0 paths=0 impl-uses=0

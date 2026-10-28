@@ -8,7 +8,7 @@ use crate::{
     sema::{
         closures::captures::{Mode, PathId, Plan},
         closures::{AccessKind, AdjustedAccess},
-        model::{AdjustmentKind, ReferenceConversion},
+        model::ReferenceConversion,
         scalar,
     },
     support::call_traits::CallTrait,
@@ -69,6 +69,7 @@ impl Checker<'_> {
         let Kind::Closure { moving, .. } = self.kind(source) else {
             return Err(self.error(source, "missing closure capture owner"));
         };
+        let reference_uses = receivers::reference_uses(self, source)?;
         let mut collector = Collector {
             children,
             nested_accesses: HashMap::default(),
@@ -102,35 +103,8 @@ impl Checker<'_> {
                         .map(|_| *node)
                 })
                 .collect(),
-            references: self
-                .state
-                .adjustments
-                .iter()
-                .enumerate()
-                .filter_map(|(index, adjustment)| {
-                    self.state
-                        .reference_adjustments
-                        .get(&index)
-                        .map(|&reference| (adjustment.node, reference))
-                })
-                .collect(),
-            adjusted: self
-                .state
-                .adjustments
-                .iter()
-                .filter(|adjustment| {
-                    !matches!(
-                        adjustment.kind,
-                        AdjustmentKind::Equality
-                            | AdjustmentKind::Never
-                            | AdjustmentKind::ArrayToSlice
-                            | AdjustmentKind::Unsize
-                            | AdjustmentKind::Pointer
-                            | AdjustmentKind::FunctionPointer
-                    )
-                })
-                .map(|adjustment| adjustment.node)
-                .collect(),
+            references: reference_uses.references,
+            adjusted: reference_uses.adjusted,
             adjusted_accesses: HashMap::default(),
             kind: CallKind::Shared,
             moving,

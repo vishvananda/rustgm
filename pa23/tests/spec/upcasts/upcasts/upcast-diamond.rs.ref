@@ -37,7 +37,7 @@ function @rg.31() -> void {
   slot $s4 : obj<16x8>
   slot $s5 : i1
   slot $s6 : i1
-  slot $s7 : obj<16x8>
+  slot $s7 : ptr
   slot $s8 : obj<16x8>
   slot $s9 : obj<16x8>
   slot $s10 : obj<16x8>
@@ -47,120 +47,138 @@ function @rg.31() -> void {
   slot $s14 : obj<16x8>
   slot $s15 : obj<16x8>
   slot $s16 : obj<16x8>
+  slot $s17 : obj<16x8>
   block ^b0:
     store u8 7, $s0
     %t0 = addr $s0
-    %t1 = addr @rg.vtable.0
     store ptr %t0, $s7
-    %t2 = addr $s7
-    %t3 = index u8 %t2, 8
-    store ptr %t1, %t3
-    %t4 = addr $s7
-    %t5 = addr $s1
-    copyobj 16x8 %t4, %t5
+    %t1 = load ptr $s7
+    %t2 = addr @rg.vtable.0
+    store ptr %t1, $s8
+    %t3 = addr $s8
+    %t4 = index u8 %t3, 8
+    store ptr %t2, %t4
+    %t5 = addr $s8
     %t6 = addr $s1
-    %t7 = addr $s8
-    copyobj 16x8 %t6, %t7
-    %t8 = load ptr $s8
-    %t9 = addr $s8
-    %t10 = index u8 %t9, 8
-    %t11 = load ptr %t10
-    %t12 = index u8 %t11, 48
-    %t13 = load ptr %t12
-    store ptr %t8, $s9
+    copyobj 16x8 %t5, %t6
+    %t7 = load ptr $s1
+    %t8 = addr $s1
+    %t9 = index u8 %t8, 8
+    %t10 = load ptr %t9
+    store ptr %t7, $s9
+    %t11 = addr $s9
+    %t12 = index u8 %t11, 8
+    store ptr %t10, %t12
+    %t13 = load ptr $s9
     %t14 = addr $s9
     %t15 = index u8 %t14, 8
-    store ptr %t13, %t15
-    %t16 = addr $s9
-    %t17 = addr $s2
-    copyobj 16x8 %t16, %t17
-    %t18 = addr $s1
+    %t16 = load ptr %t15
+    %t17 = index u8 %t16, 48
+    %t18 = load ptr %t17
+    store ptr %t13, $s10
     %t19 = addr $s10
-    copyobj 16x8 %t18, %t19
-    %t20 = load ptr $s10
+    %t20 = index u8 %t19, 8
+    store ptr %t18, %t20
     %t21 = addr $s10
-    %t22 = index u8 %t21, 8
-    %t23 = load ptr %t22
-    %t24 = index u8 %t23, 56
-    %t25 = load ptr %t24
-    store ptr %t20, $s11
-    %t26 = addr $s11
-    %t27 = index u8 %t26, 8
-    store ptr %t25, %t27
-    %t28 = addr $s11
-    %t29 = addr $s3
-    copyobj 16x8 %t28, %t29
-    %t30 = addr $s3
-    %t31 = addr $s12
-    copyobj 16x8 %t30, %t31
-    %t32 = load ptr $s12
-    %t33 = addr $s12
-    %t34 = index u8 %t33, 8
-    %t35 = load ptr %t34
-    %t36 = index u8 %t35, 40
-    %t37 = load ptr %t36
-    store ptr %t32, $s13
-    %t38 = addr $s13
-    %t39 = index u8 %t38, 8
-    store ptr %t37, %t39
-    %t40 = addr $s13
-    %t41 = addr $s4
-    copyobj 16x8 %t40, %t41
-    %t42 = load ptr $s2
-    %t43 = addr $s2
+    %t22 = addr $s2
+    copyobj 16x8 %t21, %t22
+    %t23 = load ptr $s1
+    %t24 = addr $s1
+    %t25 = index u8 %t24, 8
+    %t26 = load ptr %t25
+    store ptr %t23, $s11
+    %t27 = addr $s11
+    %t28 = index u8 %t27, 8
+    store ptr %t26, %t28
+    %t29 = load ptr $s11
+    %t30 = addr $s11
+    %t31 = index u8 %t30, 8
+    %t32 = load ptr %t31
+    %t33 = index u8 %t32, 56
+    %t34 = load ptr %t33
+    store ptr %t29, $s12
+    %t35 = addr $s12
+    %t36 = index u8 %t35, 8
+    store ptr %t34, %t36
+    %t37 = addr $s12
+    %t38 = addr $s3
+    copyobj 16x8 %t37, %t38
+    %t39 = load ptr $s3
+    %t40 = addr $s3
+    %t41 = index u8 %t40, 8
+    %t42 = load ptr %t41
+    store ptr %t39, $s13
+    %t43 = addr $s13
     %t44 = index u8 %t43, 8
-    %t45 = load ptr %t44
-    store ptr %t42, $s14
-    %t46 = addr $s14
+    store ptr %t42, %t44
+    %t45 = load ptr $s13
+    %t46 = addr $s13
     %t47 = index u8 %t46, 8
-    store ptr %t45, %t47
-    %t48 = addr $s14
-    %t49 = call u8 @rg.virtual.0.0(%t48)
-    %t50 = cmp eq u8 %t49, 2
-    %t51 = convert trunc i1 i64 %t50
-    branch %t51, ^b4, ^b5
+    %t48 = load ptr %t47
+    %t49 = index u8 %t48, 40
+    %t50 = load ptr %t49
+    store ptr %t45, $s14
+    %t51 = addr $s14
+    %t52 = index u8 %t51, 8
+    store ptr %t50, %t52
+    %t53 = addr $s14
+    %t54 = addr $s4
+    copyobj 16x8 %t53, %t54
+    %t55 = load ptr $s2
+    %t56 = addr $s2
+    %t57 = index u8 %t56, 8
+    %t58 = load ptr %t57
+    store ptr %t55, $s15
+    %t59 = addr $s15
+    %t60 = index u8 %t59, 8
+    store ptr %t58, %t60
+    %t61 = addr $s15
+    %t62 = call u8 @rg.virtual.0.0(%t61)
+    %t63 = cmp eq u8 %t62, 2
+    %t64 = convert trunc i1 i64 %t63
+    branch %t64, ^b4, ^b5
   block ^b5:
-    store i1 %t51, $s6
+    store i1 %t64, $s6
     jump ^b6
   block ^b4:
-    %t52 = load ptr $s3
-    %t53 = addr $s3
-    %t54 = index u8 %t53, 8
-    %t55 = load ptr %t54
-    store ptr %t52, $s15
-    %t56 = addr $s15
-    %t57 = index u8 %t56, 8
-    store ptr %t55, %t57
-    %t58 = addr $s15
-    %t59 = call u8 @rg.virtual.1.0(%t58)
-    %t60 = cmp eq u8 %t59, 3
-    %t61 = convert trunc i1 i64 %t60
-    store i1 %t61, $s6
+    %t65 = load ptr $s3
+    %t66 = addr $s3
+    %t67 = index u8 %t66, 8
+    %t68 = load ptr %t67
+    store ptr %t65, $s16
+    %t69 = addr $s16
+    %t70 = index u8 %t69, 8
+    store ptr %t68, %t70
+    %t71 = addr $s16
+    %t72 = call u8 @rg.virtual.1.0(%t71)
+    %t73 = cmp eq u8 %t72, 3
+    %t74 = convert trunc i1 i64 %t73
+    store i1 %t74, $s6
     jump ^b6
   block ^b6:
-    %t62 = load i1 $s6
-    branch %t62, ^b1, ^b2
+    %t75 = load i1 $s6
+    branch %t75, ^b1, ^b2
   block ^b2:
-    store i1 %t62, $s5
+    store i1 %t75, $s5
     jump ^b3
   block ^b1:
-    %t63 = load ptr $s4
-    %t64 = addr $s4
-    %t65 = index u8 %t64, 8
-    %t66 = load ptr %t65
-    store ptr %t63, $s16
-    %t67 = addr $s16
-    %t68 = index u8 %t67, 8
-    store ptr %t66, %t68
-    %t69 = addr $s16
-    %t70 = call u8 @rg.virtual.2.0(%t69)
-    %t71 = cmp eq u8 %t70, 7
-    %t72 = convert trunc i1 i64 %t71
-    store i1 %t72, $s5
+    %t76 = load ptr $s4
+    %t77 = addr $s4
+    %t78 = index u8 %t77, 8
+    %t79 = load ptr %t78
+    store ptr %t76, $s17
+    %t80 = addr $s17
+    %t81 = index u8 %t80, 8
+    store ptr %t79, %t81
+    %t82 = addr $s17
+    %t83 = call u8 @rg.virtual.2.0(%t82)
+    %t84 = cmp eq u8 %t83, 7
+    %t85 = convert trunc i1 i64 %t84
+    store i1 %t85, $s5
     jump ^b3
   block ^b3:
-    %t73 = load i1 $s5
-    call void @rg.13(%t73)
+    %t86 = load i1 $s5
+    call void @rg.13(%t86)
     return void
 }
 function @rg.virtual.0.0(%p0 : ptr) -> u8 {

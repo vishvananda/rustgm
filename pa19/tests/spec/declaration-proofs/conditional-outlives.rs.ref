@@ -3,18 +3,24 @@ global @rg.data.0 : obj<1x1> [storage=readonly] = {
 }
 function @rg.21() -> void {
   slot $s0 : u8
-  slot $s1 : obj<16x8>
+  slot $s1 : ptr
+  slot $s2 : ptr
+  slot $s3 : obj<16x8>
   block ^b0:
     store u8 11, $s0
     %t0 = addr @rg.data.0
-    %t1 = addr $s0
-    %t2 = addr $s1
-    call void @rg.19.i4(%t2, %t0, %t1)
-    %t3 = addr $s1
-    %t4 = call u8 @rg.20(%t3)
-    %t5 = cmp eq u8 %t4, 11
-    %t6 = convert trunc i1 i64 %t5
-    call void @rg.13(%t6)
+    store ptr %t0, $s1
+    %t1 = load ptr $s1
+    %t2 = addr $s0
+    store ptr %t2, $s2
+    %t3 = load ptr $s2
+    %t4 = addr $s3
+    call void @rg.19.i4(%t4, %t1, %t3)
+    %t5 = addr $s3
+    %t6 = call u8 @rg.20(%t5)
+    %t7 = cmp eq u8 %t6, 11
+    %t8 = convert trunc i1 i64 %t7
+    call void @rg.13(%t8)
     return void
 }
 function @rg.19.i4(%p0 : ptr, %p1 : ptr, %p2 : ptr) -> void {

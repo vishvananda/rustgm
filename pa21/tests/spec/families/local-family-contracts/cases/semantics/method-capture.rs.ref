@@ -52,6 +52,7 @@ type 49 aggregate def=13 regions=[region:4]
 type 50 reference mutable=false region=region:4 referent=11
 type 51 reference mutable=false region=region:3 referent=50
 type 52 function binders=0 parameters=[30] result=29 unsafe=false
+type 53 reference mutable=false region=region:2 referent=28
 def 13 type=21 name="W" source=0:5
 def 14 type=42 name="W" source=0:5
 def 16 type=22 name="Self" source=0:24
@@ -97,7 +98,9 @@ impl owner=19 source=0:58 subject=21 bound=trait:15 arguments=[]
 impl-method owner=19 declaration=18 selected=21 default=false
 impl-type owner=19 declaration=17 definition=20
 region-var region:1 body=0:56 source=0:55 origin=expression-borrow pending
-region-coercion body=0:56 source=0:56 actual=46 expected=29 kind=same-shape pending
+region-var region:2 body=0:56 source=0:55 origin=inference pending
+region-coercion body=0:56 source=0:55 actual=46 expected=29 kind=reborrow pending
+region-coercion body=0:56 source=0:55 actual=53 expected=29 kind=same-shape pending
 associated-type def=17 type=24
 result-contract def=17 projection=24
 result-bound def=17 index=0 subject=24 bound=sized

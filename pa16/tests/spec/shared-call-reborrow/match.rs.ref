@@ -1,0 +1,51 @@
+loans-crate 1
+body 0 source=0:7
+end-body
+body 1 source=0:31
+  place p0 root=l0 shared=false
+  place p1 root=l0 parent=p0 dereference mutable=false shared=true
+  point t0 block=b0 at=s0 reachable=true
+  point t1 block=b0 at=s1 reachable=true
+  point t2 block=b0 at=s2 reachable=true
+  point t3 block=b0 at=s3 reachable=true
+  point t4 block=b0 at=s4 reachable=true
+  point t5 block=b0 at=s5 reachable=true
+  point t6 block=b0 at=s6 reachable=true
+  point t7 block=b0 at=end reachable=true
+  point t8 block=b1 at=s18 reachable=true
+  point t9 block=b1 at=s19 reachable=true
+  point t10 block=b1 at=s20 reachable=true
+  point t11 block=b1 at=s21 reachable=true
+  point t12 block=b1 at=s22 reachable=true
+  point t13 block=b1 at=s23 reachable=true
+  point t14 block=b1 at=s24 reachable=true
+  point t15 block=b1 at=s25 reachable=true
+  point t16 block=b1 at=s26 reachable=true
+  point t17 block=b1 at=s27 reachable=true
+  point t18 block=b1 at=s28 reachable=true
+  point t19 block=b1 at=s29 reachable=true
+  point t20 block=b1 at=end reachable=true
+  point t21 block=b2 at=s7 reachable=true
+  point t22 block=b2 at=s8 reachable=true
+  point t23 block=b2 at=s9 reachable=true
+  point t24 block=b2 at=s10 reachable=true
+  point t25 block=b2 at=end reachable=true
+  point t26 block=b3 at=s11 reachable=true
+  point t27 block=b3 at=s12 reachable=true
+  point t28 block=b3 at=s13 reachable=true
+  point t29 block=b3 at=end reachable=true
+  point t30 block=b4 at=s14 reachable=true
+  point t31 block=b4 at=s15 reachable=true
+  point t32 block=b4 at=s16 reachable=true
+  point t33 block=b4 at=s17 reachable=true
+  point t34 block=b4 at=end reachable=true
+  point t35 block=b5 at=end reachable=true
+  live-region g0 word=0 bits=0000000fffffffff
+  live-region g2 word=0 bits=0000000fffffffff
+  live-region g3 word=0 bits=0000000603000300
+  live-region g7 word=0 bits=0000000603c00300
+  live-region g8 word=0 bits=0000000783000300
+  live-region g9 word=0 bits=0000000000008000
+  live-region g10 word=0 bits=000000000000e000
+end-body
+eof bodies=2 loans=0 places=2 points=36 region_words=7 state_words=0

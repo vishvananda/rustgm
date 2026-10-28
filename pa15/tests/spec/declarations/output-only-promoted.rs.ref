@@ -2,15 +2,21 @@ regions-crate 1
 body 0 source=0:6
   universal b0=g2
   variable r1=g3
+  variable r2=g4
   region g0 static
   region g1 local
   region g2 universal universe=0
   region g3 variable universe=0
+  region g4 variable universe=0
   require g3:g1
   require g3:g2
+  require g3:g2
+  require g3:g4
+  require g4:g1
+  require g4:g2
 end-body
 body 1 source=0:8
   region g0 static
   region g1 local
 end-body
-eof bodies=2 universals=1 variables=1 regions=6 assumptions=0 requirements=2
+eof bodies=2 universals=1 variables=2 regions=7 assumptions=0 requirements=6

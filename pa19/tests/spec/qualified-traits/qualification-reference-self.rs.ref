@@ -35,8 +35,9 @@ type 32 function-item def=19 signature=31
 type 33 function binders=0 parameters=[22] result=11 unsafe=false
 type 34 reference mutable=false region=region:1 referent=11
 type 35 function binders=0 parameters=[34] result=11 unsafe=false
-type 36 reference mutable=false region=region:2 referent=11
+type 36 reference mutable=false region=region:3 referent=11
 type 37 function-item def=15 signature=35 arguments=[type:34]
+type 38 reference mutable=false region=region:2 referent=11
 def 14 type=21 name="Self" source=0:4
 def 15 type=25 name="f" source=0:3
 def 16 type=22 name="Self" source=0:17
@@ -75,13 +76,17 @@ predicate owner=13 source=0:4 subject=21 bound=trait:13 arguments=[]
 impl owner=16 source=0:17 subject=22 bound=trait:13 arguments=[]
 impl-method owner=16 declaration=15 selected=17 default=false
 trait-path source=0:30 method=15 trait=13 qualifier=explicit origin=ordinary subject-source=0:27
-implementation-use source=0:30 owner=16 arguments=[region:region:2]
+implementation-use source=0:30 owner=16 arguments=[region:region:3]
 region-var region:1 body=0:33 source=0:30 origin=universal-alias pending
-region-var region:2 body=0:33 source=0:30 origin=inference pending
+region-var region:2 body=0:33 source=0:31 origin=inference pending
+region-var region:3 body=0:33 source=0:30 origin=inference pending
 region-var region:1 body=0:44 source=0:42 origin=call-argument pending
 region-var region:2 body=0:44 source=0:41 origin=expression-borrow pending
-region-equal body=0:33 left=region:1 right=region:2
+region-var region:3 body=0:44 source=0:41 origin=inference pending
+region-equal body=0:33 left=region:1 right=region:3
 region-equal body=0:33 left=region:1 right=bound:0:0
-region-coercion body=0:33 source=0:31 actual=22 expected=34 kind=same-shape pending
+region-coercion body=0:33 source=0:31 actual=22 expected=34 kind=reborrow pending
+region-coercion body=0:33 source=0:31 actual=38 expected=34 kind=same-shape pending
+region-coercion body=0:44 source=0:41 actual=38 expected=34 kind=reborrow pending
 region-coercion body=0:44 source=0:41 actual=36 expected=34 kind=same-shape pending
 eof owners=2 members=2 parameters=1 predicates=1 impls=1 calls=0 paths=1 impl-uses=1

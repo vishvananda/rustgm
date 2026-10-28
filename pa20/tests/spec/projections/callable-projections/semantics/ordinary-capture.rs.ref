@@ -35,8 +35,9 @@ type 32 function binders=0 parameters=[] result=1 unsafe=false
 type 33 function-item def=17 signature=32
 type 34 reference mutable=false region=region:1 referent=11
 type 35 function binders=0 parameters=[34] result=34 unsafe=false
-type 36 function binders=0 parameters=[35,34] result=34 unsafe=false
-type 37 reference mutable=false region=region:2 referent=11
+type 36 reference mutable=false region=region:2 referent=11
+type 37 reference mutable=false region=region:3 referent=11
+type 38 function binders=0 parameters=[35,34] result=34 unsafe=false
 def 13 type=22 name="check" source=0:13
 def 14 type=24 name="fail" source=0:22
 def 15 type=29 name="apply" source=0:46
@@ -68,11 +69,17 @@ def 42 type=27 name="x" source=0:34
 def 43 type=27 name="x" source=0:48
 def 44 type=11 name="x" source=0:59
 region-var region:1 body=0:45 source=0:44 origin=universal-alias pending
+region-var region:2 body=0:45 source=0:43 origin=inference pending
+region-var region:3 body=0:45 source=0:44 origin=inference pending
 region-var region:1 body=0:73 source=0:67 origin=call-argument pending
 region-var region:2 body=0:73 source=0:66 origin=expression-borrow pending
+region-var region:3 body=0:73 source=0:66 origin=inference pending
 region-equal body=0:45 left=region:1 right=bound:0:0
-region-coercion body=0:45 source=0:43 actual=27 expected=34 kind=same-shape pending
-region-coercion body=0:45 source=0:45 actual=34 expected=27 kind=same-shape pending
+region-coercion body=0:45 source=0:43 actual=27 expected=34 kind=reborrow pending
+region-coercion body=0:45 source=0:43 actual=36 expected=34 kind=same-shape pending
+region-coercion body=0:45 source=0:44 actual=34 expected=27 kind=reborrow pending
+region-coercion body=0:45 source=0:44 actual=37 expected=27 kind=same-shape pending
 region-coercion body=0:73 source=0:64 actual=31 expected=35 kind=function-pointer pending
+region-coercion body=0:73 source=0:66 actual=36 expected=34 kind=reborrow pending
 region-coercion body=0:73 source=0:66 actual=37 expected=34 kind=same-shape pending
 eof owners=0 members=0 parameters=0 predicates=0 impls=0 calls=0 paths=0 impl-uses=0 type-members=0 constant-members=0 result-contracts=0 result-bounds=0 impl-constants=0 constant-uses=0 constant-dispatches=0 normalized-nodes=0 normalized-definitions=0

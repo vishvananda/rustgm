@@ -45,12 +45,12 @@ type 42 reference mutable=false region=region:1 referent=23
 type 43 reference mutable=false region=region:2 referent=25
 type 44 function binders=0 parameters=[42,12,43] result=12 unsafe=false
 type 45 reference mutable=false region=region:5 referent=34
-type 46 reference mutable=false region=region:4 referent=34
+type 46 reference mutable=false region=region:2 referent=34
 type 47 function binders=2 parameters=[35,11,36] result=11 unsafe=false
 type 48 function-item def=15 signature=47 arguments=[type:34,type:11,type:34]
 type 49 reference mutable=false region=region:1 referent=34
-type 50 reference mutable=false region=region:2 referent=34
-type 51 function binders=0 parameters=[49,11,50] result=11 unsafe=false
+type 50 function binders=0 parameters=[49,11,46] result=11 unsafe=false
+type 51 reference mutable=false region=region:6 referent=34
 def 14 type=21 name="Self" source=0:19
 def 15 type=28 name="f" source=0:18
 def 16 type=23 name="Self" source=0:46
@@ -109,8 +109,10 @@ region-var region:2 body=0:66 source=0:65 origin=call-argument pending
 region-var region:3 body=0:66 source=0:65 origin=universal-alias pending
 region-var region:4 body=0:66 source=0:65 origin=universal-alias pending
 region-var region:5 body=0:66 source=0:65 origin=expression-borrow pending
+region-var region:6 body=0:66 source=0:64 origin=inference pending
 region-equal body=0:66 left=region:3 right=bound:0:0
 region-equal body=0:66 left=region:4 right=bound:0:1
 region-coercion body=0:66 source=0:65 actual=45 expected=49 kind=same-shape pending
-region-coercion body=0:66 source=0:64 actual=36 expected=50 kind=same-shape pending
+region-coercion body=0:66 source=0:64 actual=36 expected=46 kind=reborrow pending
+region-coercion body=0:66 source=0:64 actual=51 expected=46 kind=same-shape pending
 eof owners=2 members=2 parameters=6 predicates=4 impls=1 calls=1 paths=0 impl-uses=1

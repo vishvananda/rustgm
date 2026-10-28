@@ -27,6 +27,7 @@ function @rg.16() -> void {
 function @rg.15.i4(%p0 : ptr) -> ptr {
   slot $s0 : obj<8x8>
   slot $s1 : obj<8x8>
+  slot $s2 : ptr
   block ^b0:
     %t0 = addr $s0
     copyobj 8x8 %p0, %t0
@@ -35,7 +36,9 @@ function @rg.15.i4(%p0 : ptr) -> ptr {
     copyobj 8x8 %t1, %t2
     %t3 = addr $s1
     %t4 = call ptr @rg.closure.adapter.FnOnce.i5(%t3)
-    return ptr %t4
+    store ptr %t4, $s2
+    %t5 = load ptr $s2
+    return ptr %t5
 }
 function @rg.13(%p0 : i1) -> void {
   slot $s0 : i1

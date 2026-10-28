@@ -58,25 +58,25 @@ type 55 reference mutable=false region=region:1 referent=11
 type 56 reference mutable=false region=region:2 referent=11
 type 57 tuple [48,49]
 type 58 function binders=0 parameters=[55,56] result=57 unsafe=false
-type 59 opaque id=0 arguments=[region:region:5,region:region:6]
+type 59 opaque id=0 arguments=[region:region:7,region:region:8]
 type 60 opaque id=0 arguments=[region:static,region:static]
-type 61 opaque id=1 arguments=[region:region:7,region:region:8]
+type 61 opaque id=1 arguments=[region:region:9,region:region:10]
 type 62 opaque id=1 arguments=[region:static,region:static]
 type 63 tuple [59,61]
 type 64 reference mutable=false region=static referent=59
 type 65 reference mutable=false region=bound:0:0 referent=59
 type 66 function binders=1 parameters=[65] result=11 unsafe=false
 type 67 function-item def=17 signature=66 arguments=[type:59]
-type 68 reference mutable=false region=region:9 referent=59
+type 68 reference mutable=false region=region:11 referent=59
 type 69 function binders=0 parameters=[68] result=11 unsafe=false
-type 70 reference mutable=false region=region:10 referent=59
+type 70 reference mutable=false region=region:12 referent=59
 type 71 reference mutable=false region=static referent=61
 type 72 reference mutable=false region=bound:0:0 referent=61
 type 73 function binders=1 parameters=[72] result=11 unsafe=false
 type 74 function-item def=17 signature=73 arguments=[type:61]
-type 75 reference mutable=false region=region:11 referent=61
+type 75 reference mutable=false region=region:13 referent=61
 type 76 function binders=0 parameters=[75] result=11 unsafe=false
-type 77 reference mutable=false region=region:12 referent=61
+type 77 reference mutable=false region=region:14 referent=61
 def 13 type=25 name="check" source=0:13
 def 14 type=27 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:28
@@ -133,15 +133,17 @@ region-var region:6 body=0:66 source=0:61 origin=inference pending
 region-var region:1 body=0:98 source=0:80 origin=call-argument pending
 region-var region:2 body=0:98 source=0:80 origin=call-argument pending
 region-var region:3 body=0:98 source=0:77 origin=expression-borrow pending
-region-var region:4 body=0:98 source=0:79 origin=expression-borrow pending
-region-var region:5 body=0:98 source=0:80 origin=inference pending
-region-var region:6 body=0:98 source=0:80 origin=inference pending
+region-var region:4 body=0:98 source=0:77 origin=inference pending
+region-var region:5 body=0:98 source=0:79 origin=expression-borrow pending
+region-var region:6 body=0:98 source=0:79 origin=inference pending
 region-var region:7 body=0:98 source=0:80 origin=inference pending
 region-var region:8 body=0:98 source=0:80 origin=inference pending
-region-var region:9 body=0:98 source=0:85 origin=call-argument pending
-region-var region:10 body=0:98 source=0:85 origin=expression-borrow pending
-region-var region:11 body=0:98 source=0:93 origin=call-argument pending
-region-var region:12 body=0:98 source=0:93 origin=expression-borrow pending
+region-var region:9 body=0:98 source=0:80 origin=inference pending
+region-var region:10 body=0:98 source=0:80 origin=inference pending
+region-var region:11 body=0:98 source=0:85 origin=call-argument pending
+region-var region:12 body=0:98 source=0:85 origin=expression-borrow pending
+region-var region:13 body=0:98 source=0:93 origin=call-argument pending
+region-var region:14 body=0:98 source=0:93 origin=expression-borrow pending
 region-equal body=0:66 left=region:3 right=region:5
 region-equal body=0:66 left=region:4 right=region:6
 region-equal body=0:66 left=region:1 right=bound:0:0
@@ -150,8 +152,10 @@ region-coercion body=0:66 source=0:63 actual=22 expected=50 kind=same-shape pend
 region-coercion body=0:66 source=0:64 actual=37 expected=51 kind=same-shape pending
 region-coercion body=0:98 source=0:85 actual=70 expected=68 kind=same-shape pending
 region-coercion body=0:98 source=0:93 actual=77 expected=75 kind=same-shape pending
-region-coercion body=0:98 source=0:77 actual=50 expected=55 kind=same-shape pending
-region-coercion body=0:98 source=0:79 actual=51 expected=56 kind=same-shape pending
+region-coercion body=0:98 source=0:77 actual=50 expected=55 kind=reborrow pending
+region-coercion body=0:98 source=0:77 actual=51 expected=55 kind=same-shape pending
+region-coercion body=0:98 source=0:79 actual=53 expected=56 kind=reborrow pending
+region-coercion body=0:98 source=0:79 actual=54 expected=56 kind=same-shape pending
 region-coercion body=0:98 source=0:80 actual=57 expected=63 kind=same-shape pending
 opaque 0 owner=20 source=0:58 application=38 hidden=- role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 subject=38 bound=trait:15 arguments=[]

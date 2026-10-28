@@ -39,6 +39,7 @@ type 36 reference mutable=false region=region:1 referent=11
 type 37 aggregate def=15 arguments=[type:36]
 type 38 function binders=0 parameters=[36] result=37 unsafe=false
 type 39 function-item def=16 signature=38 arguments=[type:36]
+type 40 reference mutable=false region=region:3 referent=11
 def 14 type=23 name="Self" source=0:0
 def 15 type=22 name="Boxed" source=0:6
 def 16 type=33 name="Boxed" source=0:6
@@ -73,11 +74,13 @@ predicate owner=15 source=0:2 subject=21 bound=trait:13 arguments=[]
 predicate owner=17 source=0:22 subject=25 bound=trait:13 arguments=[]
 region-var region:1 body=0:35 source=0:35 origin=universal-alias pending
 region-var region:2 body=0:35 source=0:35 origin=universal-alias pending
+region-var region:3 body=0:35 source=0:32 origin=inference pending
 region-equal body=0:35 left=region:1 right=bound:0:0
 region-equal body=0:35 left=region:2 right=bound:0:1
 region-equal body=0:35 left=region:1 right=region:2
 region-equal body=0:35 left=region:1 right=region:2
 region-equal body=0:35 left=region:1 right=region:2
-region-coercion body=0:35 source=0:32 actual=24 expected=36 kind=same-shape pending
+region-coercion body=0:35 source=0:32 actual=24 expected=36 kind=reborrow pending
+region-coercion body=0:35 source=0:32 actual=40 expected=36 kind=same-shape pending
 region-coercion body=0:35 source=0:33 actual=37 expected=34 kind=same-shape pending
 eof owners=1 members=0 parameters=2 predicates=3 impls=0 calls=0 paths=0 impl-uses=0

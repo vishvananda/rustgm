@@ -89,12 +89,15 @@ function @rg.13(%p0 : i1) -> void {
 }
 function @rg.closure.1(%p0 : ptr) -> u8 {
   slot $s0 : ptr
+  slot $s1 : ptr
   block ^b0:
     store ptr %p0, $s0
     %t0 = load ptr $s0
     %t1 = load ptr %t0
-    %t2 = call u8 @rg.17(%t1)
-    return u8 %t2
+    store ptr %t1, $s1
+    %t2 = load ptr $s1
+    %t3 = call u8 @rg.17(%t2)
+    return u8 %t3
 }
 function @rg.14(%p0 : u8) -> u8 {
   slot $s0 : u8

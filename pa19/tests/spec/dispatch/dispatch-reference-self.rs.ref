@@ -82,8 +82,10 @@ region-var region:2 body=0:30 source=0:28 origin=universal-alias pending
 region-var region:3 body=0:30 source=0:27 origin=inference pending
 region-var region:1 body=0:41 source=0:39 origin=call-argument pending
 region-var region:2 body=0:41 source=0:38 origin=expression-borrow pending
+region-var region:3 body=0:41 source=0:38 origin=inference pending
 region-equal body=0:30 left=region:1 right=region:3
 region-equal body=0:30 left=region:2 right=bound:0:0
 region-coercion body=0:30 source=0:28 actual=22 expected=34 kind=same-shape pending
-region-coercion body=0:41 source=0:38 actual=38 expected=34 kind=same-shape pending
+region-coercion body=0:41 source=0:38 actual=38 expected=34 kind=reborrow pending
+region-coercion body=0:41 source=0:38 actual=35 expected=34 kind=same-shape pending
 eof owners=2 members=2 parameters=1 predicates=1 impls=1 calls=0 paths=1 impl-uses=1

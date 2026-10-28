@@ -22,17 +22,20 @@ function @rg.20(%p0 : ptr, %p1 : ptr) -> void {
 function @rg.21(%p0 : ptr) -> u8 {
   slot $s0 : ptr
   slot $s1 : u8
-  slot $s2 : obj<8x8>
+  slot $s2 : ptr
+  slot $s3 : obj<8x8>
   block ^b0:
     store ptr %p0, $s0
     store u8 31, $s1
     %t0 = load ptr $s0
     %t1 = addr $s1
-    %t2 = addr $s2
-    call void %t0(%t2, %t1) as (%p0 : ptr, %p1 : ptr) -> void
-    %t3 = load ptr $s2
-    %t4 = load u8 %t3
-    return u8 %t4
+    store ptr %t1, $s2
+    %t2 = load ptr $s2
+    %t3 = addr $s3
+    call void %t0(%t3, %t2) as (%p0 : ptr, %p1 : ptr) -> void
+    %t4 = load ptr $s3
+    %t5 = load u8 %t4
+    return u8 %t5
 }
 function @rg.13(%p0 : i1) -> void {
   slot $s0 : i1

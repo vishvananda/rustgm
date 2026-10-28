@@ -61,6 +61,7 @@ function @rg.closure.0.i6(%p0 : ptr, %p1 : ptr) -> void {
   slot $s2 : u8
   slot $s3 : u8
   slot $s4 : ptr
+  slot $s5 : ptr
   block ^b0:
     store ptr %p0, $s0
     store ptr %p1, $s1
@@ -70,13 +71,15 @@ function @rg.closure.0.i6(%p0 : ptr, %p1 : ptr) -> void {
     store u8 7, $s3
     %t2 = load ptr $s1
     %t3 = addr $s3
-    %t4 = call ptr %t2(%t3) as (%p0 : ptr) -> ptr
-    store ptr %t4, $s4
-    %t5 = load ptr $s4
-    %t6 = load u8 %t5
-    %t7 = cmp eq u8 %t6, 7
-    %t8 = convert trunc i1 i64 %t7
-    call void @rg.13(%t8)
+    store ptr %t3, $s4
+    %t4 = load ptr $s4
+    %t5 = call ptr %t2(%t4) as (%p0 : ptr) -> ptr
+    store ptr %t5, $s5
+    %t6 = load ptr $s5
+    %t7 = load u8 %t6
+    %t8 = cmp eq u8 %t7, 7
+    %t9 = convert trunc i1 i64 %t8
+    call void @rg.13(%t9)
     return void
 }
 function @rg.13(%p0 : i1) -> void {

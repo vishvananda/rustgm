@@ -34,6 +34,7 @@ type 31 function-item def=23 signature=30
 type 32 reference mutable=false region=region:1 referent=11
 type 33 function binders=0 parameters=[32] result=16 unsafe=false
 type 34 reference mutable=false region=region:2 referent=11
+type 35 reference mutable=false region=region:3 referent=11
 def 13 type=24 name="check" source=0:13
 def 14 type=26 name="fail" source=0:22
 def 16 type=22 name="Self" source=0:27
@@ -82,10 +83,12 @@ region-var region:2 body=0:58 source=0:57 origin=inference pending
 region-var region:3 body=0:58 source=0:57 origin=inference pending
 region-var region:1 body=0:72 source=0:67 origin=call-argument pending
 region-var region:2 body=0:72 source=0:66 origin=expression-borrow pending
+region-var region:3 body=0:72 source=0:66 origin=inference pending
 region-equal body=0:58 left=region:1 right=region:2
 region-equal body=0:58 left=region:1 right=region:3
 region-equal body=0:58 left=region:1 right=bound:0:0
-region-coercion body=0:72 source=0:66 actual=34 expected=32 kind=same-shape pending
+region-coercion body=0:72 source=0:66 actual=34 expected=32 kind=reborrow pending
+region-coercion body=0:72 source=0:66 actual=35 expected=32 kind=same-shape pending
 region-outlives body=0:58 source=0:57 longer=region:2 shorter=region:3 pending
 associated-constant def=17 type=16
 associated-constant def=21 type=16

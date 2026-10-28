@@ -60,8 +60,9 @@ type 57 reference mutable=false region=region:2 referent=43
 type 58 function binders=0 parameters=[57,49] result=11 unsafe=false
 type 59 reference mutable=false region=region:3 referent=43
 type 60 reference mutable=false region=region:4 referent=11
-type 61 function binders=0 parameters=[40] result=11 unsafe=false
-type 62 function-item def=22 signature=61 arguments=[type:40]
+type 61 reference mutable=false region=region:5 referent=11
+type 62 function binders=0 parameters=[40] result=11 unsafe=false
+type 63 function-item def=22 signature=62 arguments=[type:40]
 def 13 type=23 name="check" source=0:13
 def 14 type=25 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:34
@@ -118,14 +119,16 @@ region-var region:1 body=0:97 source=0:96 origin=item-argument pending
 region-var region:2 body=0:97 source=0:96 origin=call-argument pending
 region-var region:3 body=0:97 source=0:96 origin=expression-borrow pending
 region-var region:4 body=0:97 source=0:95 origin=expression-borrow pending
-region-var region:5 body=0:97 source=0:96 origin=inference pending
+region-var region:5 body=0:97 source=0:95 origin=inference pending
 region-var region:6 body=0:97 source=0:96 origin=inference pending
+region-var region:7 body=0:97 source=0:96 origin=inference pending
 region-var region:1 body=0:108 source=0:100 origin=quantified-proof pending
 region-var region:2 body=0:108 source=0:100 origin=quantified-proof pending
-region-equal body=0:97 left=region:5 right=region:6
-region-equal body=0:97 left=region:1 right=region:5
+region-equal body=0:97 left=region:6 right=region:7
+region-equal body=0:97 left=region:1 right=region:6
 region-coercion body=0:97 source=0:96 actual=59 expected=57 kind=same-shape pending
-region-coercion body=0:97 source=0:95 actual=60 expected=49 kind=same-shape pending
+region-coercion body=0:97 source=0:95 actual=60 expected=49 kind=reborrow pending
+region-coercion body=0:97 source=0:95 actual=61 expected=49 kind=same-shape pending
 quantifier 0 regions=1 subject=37 bound=trait:15 arguments=[region:bound:0:0]
 quantifier 1 regions=1 subject=40 bound=trait:15 arguments=[region:bound:0:0]
 quantifier 2 regions=1 subject=43 bound=trait:15 arguments=[region:bound:0:0]

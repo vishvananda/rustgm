@@ -15,7 +15,8 @@ function @rg.17.i4() -> u8 {
   slot $s0 : obj<2x1>
   slot $s1 : i64
   slot $s2 : obj<4x2>
-  slot $s3 : obj<16x8>
+  slot $s3 : ptr
+  slot $s4 : obj<16x8>
   block ^b0:
     store i64 0, $s1
     jump ^b1
@@ -39,12 +40,14 @@ function @rg.17.i4() -> u8 {
     copyobj 2x1 %t8, %t7
     %t9 = addr @rg.data.0
     store ptr %t9, $s3
-    %t10 = addr $s3
-    %t11 = index u8 %t10, 8
-    store i64 2, %t11
-    %t12 = addr $s3
-    %t13 = call u8 @rg.16(%t12)
-    return u8 %t13
+    %t10 = load ptr $s3
+    store ptr %t10, $s4
+    %t11 = addr $s4
+    %t12 = index u8 %t11, 8
+    store i64 2, %t12
+    %t13 = addr $s4
+    %t14 = call u8 @rg.16(%t13)
+    return u8 %t14
 }
 function @rg.13(%p0 : i1) -> void {
   slot $s0 : i1

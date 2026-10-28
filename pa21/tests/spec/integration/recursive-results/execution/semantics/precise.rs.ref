@@ -51,13 +51,14 @@ type 48 reference mutable=false region=region:1 referent=22
 type 49 function binders=0 parameters=[48] result=11 unsafe=false
 type 50 function binders=0 parameters=[11,45] result=39 unsafe=false
 type 51 reference mutable=false region=region:2 referent=11
-type 52 reference mutable=false region=static referent=39
-type 53 reference mutable=false region=bound:0:0 referent=39
-type 54 function binders=1 parameters=[53] result=11 unsafe=false
-type 55 function-item def=17 signature=54 arguments=[type:39]
-type 56 reference mutable=false region=region:3 referent=39
-type 57 function binders=0 parameters=[56] result=11 unsafe=false
-type 58 reference mutable=false region=region:4 referent=39
+type 52 reference mutable=false region=region:3 referent=11
+type 53 reference mutable=false region=static referent=39
+type 54 reference mutable=false region=bound:0:0 referent=39
+type 55 function binders=1 parameters=[54] result=11 unsafe=false
+type 56 function-item def=17 signature=55 arguments=[type:39]
+type 57 reference mutable=false region=region:4 referent=39
+type 58 function binders=0 parameters=[57] result=11 unsafe=false
+type 59 reference mutable=false region=region:5 referent=39
 def 13 type=25 name="check" source=0:13
 def 14 type=27 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:28
@@ -106,19 +107,23 @@ impl owner=18 source=0:39 subject=11 bound=trait:15 arguments=[]
 impl-method owner=18 declaration=17 selected=19 default=false
 impl owner=20 source=0:54 subject=22 bound=trait:15 arguments=[]
 impl-method owner=20 declaration=17 selected=21 default=false
-method-call source=0:93 method=17 callable=55 dereferences=0 borrow=58 receiver=56 origin=lexical
+method-call source=0:93 method=17 callable=56 dereferences=0 borrow=59 receiver=57 origin=lexical
 implementation-use source=0:67 owner=18 arguments=[]
 region-var region:1 body=0:85 source=0:82 origin=call-argument pending
 region-var region:2 body=0:85 source=0:81 origin=expression-borrow pending
-region-var region:3 body=0:85 source=0:67 origin=universal-alias pending
+region-var region:3 body=0:85 source=0:81 origin=inference pending
+region-var region:4 body=0:85 source=0:67 origin=universal-alias pending
 region-var region:1 body=0:98 source=0:92 origin=call-argument pending
 region-var region:2 body=0:98 source=0:91 origin=expression-borrow pending
-region-var region:3 body=0:98 source=0:93 origin=call-argument pending
-region-var region:4 body=0:98 source=0:93 origin=expression-borrow pending
-region-equal body=0:85 left=region:3 right=bound:0:0
-region-coercion body=0:85 source=0:81 actual=51 expected=45 kind=same-shape pending
-region-coercion body=0:98 source=0:93 actual=58 expected=56 kind=same-shape pending
-region-coercion body=0:98 source=0:91 actual=51 expected=45 kind=same-shape pending
+region-var region:3 body=0:98 source=0:91 origin=inference pending
+region-var region:4 body=0:98 source=0:93 origin=call-argument pending
+region-var region:5 body=0:98 source=0:93 origin=expression-borrow pending
+region-equal body=0:85 left=region:4 right=bound:0:0
+region-coercion body=0:85 source=0:81 actual=51 expected=45 kind=reborrow pending
+region-coercion body=0:85 source=0:81 actual=52 expected=45 kind=same-shape pending
+region-coercion body=0:98 source=0:93 actual=59 expected=57 kind=same-shape pending
+region-coercion body=0:98 source=0:91 actual=51 expected=45 kind=reborrow pending
+region-coercion body=0:98 source=0:91 actual=52 expected=45 kind=same-shape pending
 opaque 0 owner=22 source=0:67 application=39 hidden=11 role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 subject=39 bound=trait:15 arguments=[]
 opaque-body-result def=22 type=11

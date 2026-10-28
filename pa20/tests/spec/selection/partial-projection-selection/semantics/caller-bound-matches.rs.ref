@@ -51,6 +51,8 @@ type 48 reference mutable=false region=region:4 referent=11
 type 49 tuple [27,45]
 type 50 function binders=0 parameters=[11] result=27 unsafe=false
 type 51 function-item def=14 signature=50 arguments=[type:11]
+type 52 reference mutable=false region=region:5 referent=11
+type 53 reference mutable=false region=region:6 referent=11
 def 13 type=22 name="W" source=0:3
 def 14 type=43 name="W" source=0:3
 def 16 type=23 name="Self" source=0:5
@@ -115,6 +117,8 @@ region-var region:1 body=0:83 source=0:83 origin=universal-alias pending
 region-var region:2 body=0:83 source=0:69 origin=inference pending
 region-var region:3 body=0:83 source=0:69 origin=inference pending
 region-var region:4 body=0:83 source=0:69 origin=inference pending
+region-var region:5 body=0:83 source=0:73 origin=inference pending
+region-var region:6 body=0:83 source=0:81 origin=inference pending
 region-equal body=0:83 left=region:1 right=region:1
 region-equal body=0:83 left=region:2 right=bound:0:0
 region-equal body=0:83 left=region:2 right=region:3
@@ -124,8 +128,10 @@ region-equal body=0:83 left=region:1 right=region:4
 region-equal body=0:83 left=region:4 right=region:1
 region-equal body=0:83 left=region:1 right=bound:0:0
 region-equal body=0:83 left=bound:0:0 right=region:1
-region-coercion body=0:83 source=0:73 actual=29 expected=45 kind=same-shape pending
-region-coercion body=0:83 source=0:81 actual=45 expected=29 kind=same-shape pending
+region-coercion body=0:83 source=0:73 actual=29 expected=45 kind=reborrow pending
+region-coercion body=0:83 source=0:73 actual=52 expected=45 kind=same-shape pending
+region-coercion body=0:83 source=0:81 actual=45 expected=29 kind=reborrow pending
+region-coercion body=0:83 source=0:81 actual=53 expected=29 kind=same-shape pending
 associated-type def=19 type=28
 result-contract def=19 projection=28
 result-bound def=19 index=0 subject=28 bound=sized

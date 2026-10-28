@@ -67,7 +67,9 @@ parameter owner=14 binding=14 argument=type:21 default=-
 predicate owner=13 source=0:2 subject=21 bound=trait:13 arguments=[region:bound:0:0]
 impl owner=16 source=0:13 subject=11 bound=trait:13 arguments=[region:bound:0:0]
 impl-type owner=16 declaration=15 definition=17
-region-coercion body=0:28 source=0:28 actual=23 expected=26 kind=same-shape pending
+region-var region:1 body=0:28 source=0:27 origin=inference pending
+region-coercion body=0:28 source=0:27 actual=23 expected=26 kind=reborrow pending
+region-coercion body=0:28 source=0:27 actual=25 expected=26 kind=same-shape pending
 associated-type def=15 type=22
 result-contract def=15 projection=22
 result-bound def=15 index=0 subject=22 bound=sized

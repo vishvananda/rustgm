@@ -2,6 +2,7 @@ function @rg.24() -> void {
   slot $s0 : obj<1x1>
   slot $s1 : obj<1x1>
   slot $s2 : ptr
+  slot $s3 : ptr
   block ^b0:
     %t0 = addr $s1
     call void @rg.19(%t0, 3)
@@ -11,10 +12,12 @@ function @rg.24() -> void {
     %t3 = addr $s0
     store ptr %t3, $s2
     %t4 = addr $s2
-    %t5 = addr @rg.22
-    %t6 = addr @rg.23
-    %t7 = call i1 @rg.21(%t4, %t5, %t6)
-    call void @rg.13(%t7)
+    store ptr %t4, $s3
+    %t5 = load ptr $s3
+    %t6 = addr @rg.22
+    %t7 = addr @rg.23
+    %t8 = call i1 @rg.21(%t5, %t6, %t7)
+    call void @rg.13(%t8)
     return void
 }
 function @rg.19(%p0 : ptr, %p1 : u8) -> void {

@@ -11,7 +11,8 @@ function @rg.19() -> void {
   slot $s1 : obj<8x8>
   slot $s2 : u16
   slot $s3 : obj<8x8>
-  slot $s4 : obj<16x8>
+  slot $s4 : ptr
+  slot $s5 : obj<16x8>
   block ^b0:
     store u16 4, $s0
     %t0 = addr $s0
@@ -20,18 +21,20 @@ function @rg.19() -> void {
     %t2 = addr $s1
     copyobj 8x8 %t1, %t2
     %t3 = addr $s1
-    %t4 = addr @rg.vtable.0
     store ptr %t3, $s4
-    %t5 = addr $s4
-    %t6 = index u8 %t5, 8
-    store ptr %t4, %t6
-    %t7 = addr $s4
-    %t8 = call u16 @rg.18.i4(%t7, 3)
-    store u16 %t8, $s2
-    %t9 = load u16 $s2
-    %t10 = cmp eq u16 %t9, 7
-    %t11 = convert trunc i1 i64 %t10
-    call void @rg.13(%t11)
+    %t4 = load ptr $s4
+    %t5 = addr @rg.vtable.0
+    store ptr %t4, $s5
+    %t6 = addr $s5
+    %t7 = index u8 %t6, 8
+    store ptr %t5, %t7
+    %t8 = addr $s5
+    %t9 = call u16 @rg.18.i4(%t8, 3)
+    store u16 %t9, $s2
+    %t10 = load u16 $s2
+    %t11 = cmp eq u16 %t10, 7
+    %t12 = convert trunc i1 i64 %t11
+    call void @rg.13(%t12)
     return void
 }
 function @rg.18.i4(%p0 : ptr, %p1 : u16) -> u16 {

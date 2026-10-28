@@ -2,7 +2,8 @@ function @rg.18() -> void {
   slot $s0 : obj<4x2>
   slot $s1 : obj<16x8>
   slot $s2 : obj<4x2>
-  slot $s3 : obj<16x8>
+  slot $s3 : ptr
+  slot $s4 : obj<16x8>
   block ^b0:
     store u16 300, $s2
     %t0 = addr $s2
@@ -12,24 +13,26 @@ function @rg.18() -> void {
     %t3 = addr $s0
     copyobj 4x2 %t2, %t3
     %t4 = addr $s0
-    %t5 = addr $s3
-    call void @rg.17(%t5, %t4)
-    %t6 = addr $s3
-    %t7 = addr $s1
-    copyobj 16x8 %t6, %t7
-    %t8 = load ptr $s1
-    %t9 = addr $s1
-    %t10 = index u8 %t9, 8
-    %t11 = load i64 %t10
-    %t12 = cmp uge i64 1, %t11
-    branch %t12, ^b1, ^b2
+    store ptr %t4, $s3
+    %t5 = load ptr $s3
+    %t6 = addr $s4
+    call void @rg.17(%t6, %t5)
+    %t7 = addr $s4
+    %t8 = addr $s1
+    copyobj 16x8 %t7, %t8
+    %t9 = load ptr $s1
+    %t10 = addr $s1
+    %t11 = index u8 %t10, 8
+    %t12 = load i64 %t11
+    %t13 = cmp uge i64 1, %t12
+    branch %t13, ^b1, ^b2
   block ^b2:
-    %t13 = binary mul i64 1, 2
-    %t14 = index u8 %t8, %t13
-    %t15 = load u16 %t14
-    %t16 = cmp eq u16 %t15, 500
-    %t17 = convert trunc i1 i64 %t16
-    call void @rg.13(%t17)
+    %t14 = binary mul i64 1, 2
+    %t15 = index u8 %t9, %t14
+    %t16 = load u16 %t15
+    %t17 = cmp eq u16 %t16, 500
+    %t18 = convert trunc i1 i64 %t17
+    call void @rg.13(%t18)
     return void
   block ^b1:
     call void @abort()

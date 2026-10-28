@@ -15,13 +15,16 @@ function @rg.14() -> void {
 }
 function @rg.closure.1(%p0 : ptr) -> u8 {
   slot $s0 : ptr
-  slot $s1 : obj<8x8>
+  slot $s1 : ptr
+  slot $s2 : obj<8x8>
   block ^b0:
     store ptr %p0, $s0
     %t0 = load ptr $s0
     %t1 = load ptr %t0
-    %t2 = addr $s1
-    call void @rg.13.i2(%t2, %t1)
+    store ptr %t1, $s1
+    %t2 = load ptr $s1
+    %t3 = addr $s2
+    call void @rg.13.i2(%t3, %t2)
     return u8 0
 }
 function @rg.13.i2(%p0 : ptr, %p1 : ptr) -> void {

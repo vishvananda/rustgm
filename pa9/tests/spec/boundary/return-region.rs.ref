@@ -24,6 +24,7 @@ type 21 reference mutable=false region=bound:0:0 referent=11
 type 22 reference mutable=false region=bound:0:1 referent=11
 type 23 function binders=2 parameters=[21,22] result=21 unsafe=false
 type 24 function-item def=13 signature=23
+type 25 reference mutable=false region=region:1 referent=11
 def 13 type=24 name="f" source=0:17
 def 14 type=2 name="bool"
 def 15 type=3 name="char"
@@ -47,7 +48,9 @@ def 32 type=20 name="f128"
 def 35 type=21 name="x" source=0:2
 def 36 type=22 name="y" source=0:7
 function def=13 source=0:17 signature=23 body=0:16
-region-coercion body=0:16 source=0:16 actual=22 expected=21 kind=same-shape pending
+region-var region:1 body=0:16 source=0:15 origin=inference pending
+region-coercion body=0:16 source=0:15 actual=22 expected=21 kind=reborrow pending
+region-coercion body=0:16 source=0:15 actual=25 expected=21 kind=same-shape pending
 node 0:2 type=21 span=12:13 binding=35
 node 0:4 type=11 span=18:20
 node 0:5 type=21 span=14:20
@@ -59,7 +62,8 @@ node 0:11 type=22 span=21:29
 node 0:13 type=11 span=36:38
 node 0:14 type=21 span=32:38
 node 0:15 type=22 span=39:40
-node 0:16 type=22 span=38:41
-adjustment 0:16 equality target=21
+adjustment 0:15 reborrow target=21
+reference-adjustment 0:15 dereferences=1 unsize=false two-phase=false borrow=25
+node 0:16 type=21 span=38:41
 node 0:17 type=24 span=0:41
-eof types=25 definitions=22 nodes=13 functions=1 initializers=0
+eof types=26 definitions=22 nodes=13 functions=1 initializers=0

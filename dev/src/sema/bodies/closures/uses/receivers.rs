@@ -1,6 +1,51 @@
 //! Selected receiver permissions and array precision reuse typed inference facts.
 use super::{AccessKind, Checker, Collector, Error, NodeId, Use, Work};
-use crate::types::infer::Constructor;
+use crate::{sema::model::AdjustmentKind, types::infer::Constructor};
+
+/// Temporary transfer of the collector's two existing selection tables.
+pub(super) struct ReferenceUses {
+    pub(super) references:
+        crate::support::hash::HashMap<NodeId, (super::ReferenceConversion, super::TermId)>,
+    pub(super) adjusted: crate::support::hash::HashSet<NodeId>,
+}
+pub(super) fn reference_uses(
+    checker: &mut Checker<'_>,
+    source: NodeId,
+) -> Result<ReferenceUses, Error> {
+    checker
+        .state
+        .infer
+        .account_work(checker.state.adjustments.len())
+        .map_err(|error| checker.error(source, error))?;
+    let mut references = crate::support::hash::HashMap::default();
+    let mut adjusted = crate::support::hash::HashSet::default();
+    for (index, adjustment) in checker.state.adjustments.iter().enumerate() {
+        // Keep resets in source order: a final contextual no-op cannot leave
+        // an earlier synthetic dereference in the capture selection.
+        if adjustment.reset {
+            references.remove(&adjustment.node);
+            adjusted.remove(&adjustment.node);
+        }
+        if let Some(&reference) = checker.state.reference_adjustments.get(&index) {
+            references.insert(adjustment.node, reference);
+        }
+        if !matches!(
+            adjustment.kind,
+            AdjustmentKind::Equality
+                | AdjustmentKind::Never
+                | AdjustmentKind::ArrayToSlice
+                | AdjustmentKind::Unsize
+                | AdjustmentKind::Pointer
+                | AdjustmentKind::FunctionPointer
+        ) {
+            adjusted.insert(adjustment.node);
+        }
+    }
+    Ok(ReferenceUses {
+        references,
+        adjusted,
+    })
+}
 
 impl Collector<'_> {
     pub(super) fn reference_use(

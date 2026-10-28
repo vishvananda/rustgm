@@ -36,6 +36,7 @@ type 33 function binders=2 parameters=[32,23] result=21 unsafe=false
 type 34 reference mutable=false region=bound:1:0 referent=11
 type 35 function binders=0 parameters=[34,27] result=25 unsafe=false
 type 36 function-item def=14 signature=33
+type 37 reference mutable=false region=region:1 referent=11
 def 13 type=21 name="S" source=0:10
 def 14 type=36 name="S" source=0:10
 def 15 type=21 name="Self" source=0:30
@@ -63,5 +64,7 @@ def 36 type=20 name="f128"
 def 41 type=22 name="self" source=0:20
 associated-owner 0 kind=inherent self-def=15 self=21 source=0:30 unsafe=false
 associated-member def=16 owner=0 receiver=22 references=1
-region-coercion body=0:28 source=0:28 actual=32 expected=23 kind=same-shape pending
+region-var region:1 body=0:28 source=0:27 origin=inference pending
+region-coercion body=0:28 source=0:27 actual=32 expected=23 kind=reborrow pending
+region-coercion body=0:28 source=0:27 actual=37 expected=23 kind=same-shape pending
 eof owners=1 members=1 parameters=0 predicates=0 impls=0 calls=0 paths=0 impl-uses=0

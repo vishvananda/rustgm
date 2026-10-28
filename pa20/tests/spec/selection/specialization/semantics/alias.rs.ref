@@ -57,6 +57,7 @@ type 54 reference mutable=false region=region:1 referent=11
 type 55 function binders=0 parameters=[54,48] result=12 unsafe=false
 type 56 function-item def=22 signature=55 regions=[region:1,region:2]
 type 57 reference mutable=false region=region:3 referent=11
+type 58 reference mutable=false region=region:5 referent=11
 def 13 type=26 name="check" source=0:13
 def 14 type=28 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:25
@@ -118,7 +119,9 @@ region-var region:6 body=0:96 source=0:93 origin=inference pending
 region-var region:1 body=0:112 source=0:102 origin=item-argument pending
 region-var region:2 body=0:112 source=0:102 origin=item-argument pending
 region-var region:3 body=0:112 source=0:104 origin=expression-borrow pending
-region-var region:4 body=0:112 source=0:106 origin=expression-borrow pending
+region-var region:4 body=0:112 source=0:104 origin=inference pending
+region-var region:5 body=0:112 source=0:106 origin=expression-borrow pending
+region-var region:6 body=0:112 source=0:106 origin=inference pending
 region-equal body=0:70 left=region:2 right=bound:0:0
 region-equal body=0:70 left=region:3 right=bound:0:0
 region-equal body=0:70 left=region:1 right=bound:0:0
@@ -126,8 +129,10 @@ region-equal body=0:96 left=region:2 right=region:6
 region-equal body=0:96 left=region:1 right=region:5
 region-equal body=0:96 left=region:1 right=bound:0:0
 region-equal body=0:96 left=region:2 right=bound:0:1
-region-coercion body=0:112 source=0:104 actual=57 expected=54 kind=same-shape pending
-region-coercion body=0:112 source=0:106 actual=50 expected=48 kind=same-shape pending
+region-coercion body=0:112 source=0:104 actual=57 expected=54 kind=reborrow pending
+region-coercion body=0:112 source=0:104 actual=50 expected=54 kind=same-shape pending
+region-coercion body=0:112 source=0:106 actual=58 expected=48 kind=reborrow pending
+region-coercion body=0:112 source=0:106 actual=52 expected=48 kind=same-shape pending
 region-outlives body=0:96 source=0:93 longer=region:6 shorter=region:5 pending
 region-outlives body=0:112 source=0:102 longer=region:2 shorter=region:1 pending
 associated-type def=17 type=24

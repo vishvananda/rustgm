@@ -34,11 +34,13 @@ type 31 opaque id=0 arguments=[region:region:1,region:region:2]
 type 32 reference mutable=false region=region:1 referent=11
 type 33 reference mutable=false region=region:2 referent=11
 type 34 function binders=0 parameters=[32,33] result=31 unsafe=false
-type 35 opaque id=0 arguments=[region:region:5,region:region:6]
+type 35 opaque id=0 arguments=[region:region:7,region:region:8]
 type 36 function binders=0 parameters=[35] result=1 unsafe=false
 type 37 function-item def=14 signature=36 arguments=[type:35]
 type 38 reference mutable=false region=region:3 referent=11
 type 39 reference mutable=false region=region:4 referent=11
+type 40 reference mutable=false region=region:5 referent=11
+type 41 reference mutable=false region=region:6 referent=11
 def 13 type=25 name="f" source=0:21
 def 14 type=28 name="take" source=0:27
 def 15 type=30 name="main" source=0:44
@@ -70,13 +72,17 @@ region-var region:2 body=0:20 source=0:20 origin=universal-alias pending
 region-var region:1 body=0:43 source=0:40 origin=call-argument pending
 region-var region:2 body=0:43 source=0:40 origin=call-argument pending
 region-var region:3 body=0:43 source=0:37 origin=expression-borrow pending
-region-var region:4 body=0:43 source=0:39 origin=expression-borrow pending
-region-var region:5 body=0:43 source=0:40 origin=inference pending
-region-var region:6 body=0:43 source=0:40 origin=inference pending
+region-var region:4 body=0:43 source=0:37 origin=inference pending
+region-var region:5 body=0:43 source=0:39 origin=expression-borrow pending
+region-var region:6 body=0:43 source=0:39 origin=inference pending
+region-var region:7 body=0:43 source=0:40 origin=inference pending
+region-var region:8 body=0:43 source=0:40 origin=inference pending
 region-equal body=0:20 left=region:1 right=bound:0:0
 region-equal body=0:20 left=region:2 right=bound:0:1
-region-coercion body=0:43 source=0:37 actual=38 expected=32 kind=same-shape pending
-region-coercion body=0:43 source=0:39 actual=39 expected=33 kind=same-shape pending
+region-coercion body=0:43 source=0:37 actual=38 expected=32 kind=reborrow pending
+region-coercion body=0:43 source=0:37 actual=39 expected=32 kind=same-shape pending
+region-coercion body=0:43 source=0:39 actual=40 expected=33 kind=reborrow pending
+region-coercion body=0:43 source=0:39 actual=41 expected=33 kind=same-shape pending
 region-coercion body=0:43 source=0:40 actual=31 expected=35 kind=same-shape pending
 type-outlives body=0:20 source=0:18 type=11 shorter=bound:0:0 pending
 type-outlives body=0:20 source=0:18 type=11 shorter=bound:0:1 pending

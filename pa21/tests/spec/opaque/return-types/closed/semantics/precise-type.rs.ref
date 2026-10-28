@@ -36,8 +36,9 @@ type 33 function binders=1 parameters=[11,22] result=32 unsafe=false
 type 34 function-item def=13 signature=33 arguments=[type:11]
 type 35 function binders=0 parameters=[11,31] result=32 unsafe=false
 type 36 reference mutable=false region=region:2 referent=11
-type 37 function binders=0 parameters=[32] result=1 unsafe=false
-type 38 function-item def=14 signature=37 arguments=[type:32]
+type 37 reference mutable=false region=region:3 referent=11
+type 38 function binders=0 parameters=[32] result=1 unsafe=false
+type 39 function-item def=14 signature=38 arguments=[type:32]
 def 13 type=25 name="make" source=0:19
 def 14 type=28 name="take" source=0:26
 def 15 type=30 name="main" source=0:47
@@ -73,7 +74,9 @@ predicate owner=13 source=0:2 subject=21 bound=copy
 predicate owner=14 source=0:22 subject=26 bound=copy
 region-var region:1 body=0:46 source=0:37 origin=call-argument pending
 region-var region:2 body=0:46 source=0:36 origin=expression-borrow pending
-region-coercion body=0:46 source=0:36 actual=36 expected=31 kind=same-shape pending
+region-var region:3 body=0:46 source=0:36 origin=inference pending
+region-coercion body=0:46 source=0:36 actual=36 expected=31 kind=reborrow pending
+region-coercion body=0:46 source=0:36 actual=37 expected=31 kind=same-shape pending
 opaque 0 owner=13 source=0:16 application=23 hidden=21 role=defining-result storage-proof=pending
 opaque-bound id=0 index=0 subject=23 bound=copy
 opaque-body-result def=13 type=21

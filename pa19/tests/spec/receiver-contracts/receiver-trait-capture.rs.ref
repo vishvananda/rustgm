@@ -40,8 +40,9 @@ type 37 function-item def=15 signature=36 regions=[region:1]
 type 38 reference mutable=false region=region:2 referent=11
 type 39 function binders=0 parameters=[11,35] result=35 unsafe=false
 type 40 function-item def=15 signature=39 arguments=[region:region:1,type:11]
-type 41 function binders=0 parameters=[35] result=35 unsafe=false
-type 42 reference mutable=false region=region:3 referent=11
+type 41 reference mutable=false region=region:3 referent=11
+type 42 reference mutable=false region=region:4 referent=11
+type 43 function binders=0 parameters=[35] result=35 unsafe=false
 def 14 type=21 name="Self" source=0:12
 def 15 type=26 name="f" source=0:11
 def 16 type=11 name="Self" source=0:32
@@ -82,17 +83,23 @@ predicate owner=13 source=0:12 subject=21 bound=trait:13 arguments=[region:bound
 impl owner=16 source=0:32 subject=11 bound=trait:13 arguments=[region:bound:0:0]
 impl-method owner=16 declaration=15 selected=17 default=false
 method-call source=0:44 method=15 callable=40 dereferences=0 borrow=- receiver=11 origin=lexical
-implementation-use source=0:44 owner=16 arguments=[region:region:3]
+implementation-use source=0:44 owner=16 arguments=[region:region:5]
 region-var region:1 body=0:45 source=0:44 origin=item-argument pending
 region-var region:2 body=0:45 source=0:44 origin=universal-alias pending
-region-var region:3 body=0:45 source=0:44 origin=inference pending
+region-var region:3 body=0:45 source=0:43 origin=inference pending
+region-var region:4 body=0:45 source=0:44 origin=inference pending
+region-var region:5 body=0:45 source=0:44 origin=inference pending
 region-var region:1 body=0:56 source=0:54 origin=call-argument pending
 region-var region:2 body=0:56 source=0:53 origin=expression-borrow pending
-region-var region:3 body=0:56 source=0:54 origin=inference pending
-region-equal body=0:45 left=region:1 right=region:3
+region-var region:3 body=0:56 source=0:53 origin=inference pending
+region-var region:4 body=0:56 source=0:54 origin=inference pending
+region-equal body=0:45 left=region:1 right=region:5
 region-equal body=0:45 left=region:2 right=bound:0:0
-region-coercion body=0:45 source=0:43 actual=22 expected=35 kind=same-shape pending
-region-coercion body=0:45 source=0:45 actual=35 expected=22 kind=same-shape pending
-region-coercion body=0:56 source=0:53 actual=38 expected=35 kind=same-shape pending
+region-coercion body=0:45 source=0:43 actual=22 expected=35 kind=reborrow pending
+region-coercion body=0:45 source=0:43 actual=41 expected=35 kind=same-shape pending
+region-coercion body=0:45 source=0:44 actual=35 expected=22 kind=reborrow pending
+region-coercion body=0:45 source=0:44 actual=42 expected=22 kind=same-shape pending
+region-coercion body=0:56 source=0:53 actual=38 expected=35 kind=reborrow pending
+region-coercion body=0:56 source=0:53 actual=41 expected=35 kind=same-shape pending
 region-coercion body=0:56 source=0:54 actual=35 expected=42 kind=same-shape pending
 eof owners=2 members=2 parameters=2 predicates=1 impls=1 calls=1 paths=0 impl-uses=1

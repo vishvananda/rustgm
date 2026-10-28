@@ -32,10 +32,12 @@ type 29 function binders=0 parameters=[] result=1 unsafe=false
 type 30 function-item def=21 signature=29
 type 31 reference mutable=false region=region:1 referent=11
 type 32 function binders=0 parameters=[31] result=2 unsafe=false
-type 33 reference mutable=false region=region:3 referent=11
+type 33 reference mutable=false region=region:4 referent=11
 type 34 function binders=0 parameters=[33] result=2 unsafe=false
 type 35 reference mutable=false region=region:2 referent=11
-type 36 reference mutable=false region=region:4 referent=11
+type 36 reference mutable=false region=region:3 referent=11
+type 37 reference mutable=false region=region:5 referent=11
+type 38 reference mutable=false region=region:6 referent=11
 def 13 type=23 name="check" source=0:13
 def 14 type=25 name="fail" source=0:22
 def 16 type=21 name="Self" source=0:30
@@ -80,11 +82,15 @@ region-var region:1 body=0:65 source=0:54 origin=universal-alias pending
 region-var region:2 body=0:65 source=0:58 origin=inference pending
 region-var region:1 body=0:81 source=0:71 origin=call-argument pending
 region-var region:2 body=0:81 source=0:70 origin=expression-borrow pending
-region-var region:3 body=0:81 source=0:78 origin=call-argument pending
-region-var region:4 body=0:81 source=0:77 origin=expression-borrow pending
+region-var region:3 body=0:81 source=0:70 origin=inference pending
+region-var region:4 body=0:81 source=0:78 origin=call-argument pending
+region-var region:5 body=0:81 source=0:77 origin=expression-borrow pending
+region-var region:6 body=0:81 source=0:77 origin=inference pending
 region-var region:1 body=0:28 source=0:28 origin=universal-alias pending
 region-var region:2 body=0:28 source=0:28 origin=expression-borrow pending
+region-var region:3 body=0:28 source=0:28 origin=inference pending
 region-var region:1 body=0:41 source=0:41 origin=expression-borrow pending
+region-var region:2 body=0:41 source=0:41 origin=inference pending
 region-var region:3 body=0:65 source=0:65 origin=inference pending
 region-var region:4 body=0:65 source=0:65 origin=inference pending
 region-equal body=0:65 left=region:1 right=region:2
@@ -92,10 +98,14 @@ region-equal body=0:65 left=region:1 right=bound:0:0
 region-equal body=0:28 left=region:1 right=bound:0:0
 region-equal body=0:65 left=region:3 right=bound:0:0
 region-equal body=0:65 left=region:1 right=region:4
-region-coercion body=0:81 source=0:70 actual=35 expected=31 kind=same-shape pending
-region-coercion body=0:81 source=0:77 actual=36 expected=33 kind=same-shape pending
-region-coercion body=0:28 source=0:28 actual=35 expected=26 kind=same-shape pending
-region-coercion body=0:41 source=0:41 actual=31 expected=26 kind=same-shape pending
+region-coercion body=0:81 source=0:70 actual=35 expected=31 kind=reborrow pending
+region-coercion body=0:81 source=0:70 actual=36 expected=31 kind=same-shape pending
+region-coercion body=0:81 source=0:77 actual=37 expected=33 kind=reborrow pending
+region-coercion body=0:81 source=0:77 actual=38 expected=33 kind=same-shape pending
+region-coercion body=0:28 source=0:28 actual=35 expected=26 kind=reborrow pending
+region-coercion body=0:28 source=0:28 actual=36 expected=26 kind=same-shape pending
+region-coercion body=0:41 source=0:41 actual=31 expected=26 kind=reborrow pending
+region-coercion body=0:41 source=0:41 actual=35 expected=26 kind=same-shape pending
 associated-constant def=17 type=26
 associated-constant def=19 type=26
 impl-constant owner=18 declaration=17 selected=19 default=false

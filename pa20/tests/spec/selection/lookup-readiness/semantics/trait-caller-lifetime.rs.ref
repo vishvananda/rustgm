@@ -52,6 +52,7 @@ type 49 reference mutable=false region=region:1 referent=11
 type 50 function binders=0 parameters=[49] result=16 unsafe=false
 type 51 function-item def=17 signature=35 arguments=[type:30]
 type 52 reference mutable=false region=region:2 referent=11
+type 53 reference mutable=false region=region:3 referent=11
 def 13 type=32 name="check" source=0:13
 def 14 type=34 name="fail" source=0:22
 def 16 type=23 name="Self" source=0:25
@@ -123,6 +124,7 @@ region-var region:2 body=0:79 source=0:78 origin=universal-alias pending
 region-var region:3 body=0:79 source=0:78 origin=inference pending
 region-var region:1 body=0:106 source=0:101 origin=call-argument pending
 region-var region:2 body=0:106 source=0:100 origin=expression-borrow pending
+region-var region:3 body=0:106 source=0:100 origin=inference pending
 region-equal body=0:36 left=static right=region:2
 region-equal body=0:36 left=region:1 right=region:2
 region-equal body=0:36 left=static right=region:3
@@ -132,7 +134,8 @@ region-equal body=0:36 left=region:1 right=region:4
 region-equal body=0:79 left=region:2 right=region:3
 region-equal body=0:79 left=region:1 right=region:3
 region-equal body=0:79 left=region:2 right=bound:0:0
-region-coercion body=0:106 source=0:100 actual=52 expected=49 kind=same-shape pending
+region-coercion body=0:106 source=0:100 actual=52 expected=49 kind=reborrow pending
+region-coercion body=0:106 source=0:100 actual=53 expected=49 kind=same-shape pending
 associated-constant def=26 type=16
 associated-constant def=28 type=16
 impl-constant owner=27 declaration=26 selected=28 default=false
