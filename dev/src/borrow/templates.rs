@@ -4,6 +4,7 @@ mod owners;
 #[path = "templates/suspended.rs"]
 mod retained;
 pub(crate) use retained::{Append, Retained};
+mod permission_sources;
 mod preconditions;
 use super::{Environment, Error, loans, regions};
 use crate::support::hash::HashMap;

@@ -66,6 +66,7 @@ impl Cleanup {
 }
 struct Context<'a> {
     premises: Premises,
+    caller: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
     cleanup: &'a mut Cleanup,
 }
 
@@ -97,6 +98,7 @@ pub fn body(
         None,
         Context {
             premises: Premises::Required,
+            caller: None,
             cleanup: &mut cleanup,
         },
     )
@@ -127,6 +129,7 @@ pub fn with_contract(
         original,
         Context {
             premises: Premises::Required,
+            caller: None,
             cleanup: &mut cleanup,
         },
     )
@@ -139,6 +142,7 @@ pub(crate) fn from_checked_caller(
     template: &Template,
     instance: Instance,
     original: &super::regions::Contract,
+    caller: Option<std::sync::Arc<crate::types::parameters::environment::Environment>>,
     cleanup: &mut Cleanup,
 ) -> Result<Materialized, &'static str> {
     with_premises(
@@ -148,6 +152,7 @@ pub(crate) fn from_checked_caller(
         original,
         Context {
             premises: Premises::Declared,
+            caller,
             cleanup,
         },
     )
@@ -225,7 +230,11 @@ fn materialize(
     comparison: Option<(crate::types::TypeId, crate::types::TypeId)>,
     context: Context<'_>,
 ) -> Result<(Body, drops::Requirements), &'static str> {
-    let Context { premises, cleanup } = context;
+    let Context {
+        premises,
+        caller,
+        cleanup,
+    } = context;
     let source = &template.body;
     assembly_instance_work(facts, source)?;
 
@@ -268,7 +277,7 @@ fn materialize(
             facts,
             definition,
             substitution,
-            None,
+            caller.as_deref(),
             contract.universals,
         )?
     {

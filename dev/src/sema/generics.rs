@@ -218,6 +218,23 @@ impl Generics {
             .get(&owner)
             .or_else(|| self.environments.get(&owner))
     }
+    /// Only a sealed/completed source caller may use this absence certificate.
+    /// Presence of any uncompleted scope row is Required, including empty rows.
+    pub(crate) fn sealed_caller_environment(
+        &self,
+        owner: DefId,
+    ) -> Result<Option<&Arc<Environment>>, &'static str> {
+        if let Some(environment) = self.body_environment(owner) {
+            return Ok(Some(environment));
+        }
+        if self.parameters.contains_key(&owner)
+            || self.predicates.contains_key(&owner)
+            || self.parents.contains_key(&owner)
+        {
+            return Err("sealed caller requires its completed declaration environment");
+        }
+        Ok(None)
+    }
     pub(super) fn bound_lifetimes(
         &self,
         types: &Store,

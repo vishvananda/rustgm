@@ -381,6 +381,7 @@ fn materialize_anonymous(
         None,
         ProofContext {
             premises: Premises::Required,
+            caller: None,
             cleanup: &mut cleanup,
         },
     )?;
