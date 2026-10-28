@@ -68,7 +68,12 @@ code, duplicated blocks, phase dependencies and misplaced environment access.
   keeps one bounded incremental cache under `obj/rust/dev-fast`; shared output
   caps include that cache. Before resource admission, fastcheck retires older
   completed incremental sessions while preserving each crate's newest warm
-  session, in-progress directories and explicit pins. It refuses active work or
+  session, in-progress directories and explicit pins. At that idle boundary it
+  also removes loose `deps/*.rcgu.o` linker scratch left by interrupted builds;
+  hardlinked incremental copies, metadata and pinned directories remain intact.
+  A known abandoned working session is retired only when its existing Rust
+  session lock is free; locked, unknown and explicitly pinned sessions remain.
+  It refuses active work or
   symlinked cache paths and records retirement under `obj/cleanup/`.
   Retire the whole cache with `make tidy-build` when obsolete.
   GitHub Actions defaults to an 8 GiB reserve. Do not lower the local reserve to
