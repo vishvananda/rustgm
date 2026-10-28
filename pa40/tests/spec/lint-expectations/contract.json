@@ -1,0 +1,640 @@
+{
+  "state": "finite unpublished protocol; predictions frozen before each independent batch",
+  "profile": {
+    "rustc": "1.98.0",
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "target": "x86_64-unknown-linux-gnu",
+    "editions": [
+      2021,
+      2024
+    ],
+    "panic": "abort",
+    "native": false
+  },
+  "cases": [
+    {
+      "name": "fulfilled",
+      "path": "pa40/tests/spec/lint-expectations/fulfilled.rs",
+      "sha256": "9788262ea0453112788501832db7fd04b7fd3cb450484d350c695d9769b78373",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": ""
+    },
+    {
+      "name": "unfulfilled",
+      "path": "pa40/tests/spec/lint-expectations/unfulfilled.rs",
+      "sha256": "a3f77802aa194209da9590672a7e4103a062e2bff49cd445a27458a49b5beabc",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": ""
+    },
+    {
+      "name": "deny-unfulfilled",
+      "path": "pa40/tests/spec/lint-expectations/deny-unfulfilled.rs",
+      "sha256": "721dbe036fbc2821040e9545ba71c35436d34ed2b26942ebb24795a5eec2924e",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 1,
+      "expected_diagnostics": {
+        "error_lint": "unfulfilled_lint_expectations"
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": ""
+    },
+    {
+      "name": "allow-unfulfilled",
+      "path": "pa40/tests/spec/lint-expectations/allow-unfulfilled.rs",
+      "sha256": "6764d664bcc0cfc511c855e10b9d91dcd359139e0976f8ed43c44ac19114142d",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": ""
+    },
+    {
+      "name": "ordinary-warning",
+      "path": "pa40/tests/spec/lint-expectations/ordinary-warning.rs",
+      "sha256": "08626c16394e76eee6b33f257e2cd5574dbb710caa56a8b6960d00ed5ba20c19",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "deprecated": 1
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": ""
+    },
+    {
+      "name": "ordinary-deny",
+      "path": "pa40/tests/spec/lint-expectations/ordinary-deny.rs",
+      "sha256": "9f151611ed473f17190dd9c51e6d8848b55abf9874298352c71d20731d12b033",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 1,
+      "expected_diagnostics": {
+        "error_lint": "deprecated"
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": ""
+    },
+    {
+      "name": "deny-overridden",
+      "path": "pa40/tests/spec/lint-expectations/deny-overridden.rs",
+      "sha256": "d5afb652ef97171f4acaba49a1ccb68aa1aa5dce5a54a6d70222b5749b999132",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": ""
+    },
+    {
+      "name": "forbid-not-overridden",
+      "path": "pa40/tests/spec/lint-expectations/forbid-not-overridden.rs",
+      "sha256": "8eb1a3765248f9cb1a97001e7e2cbbfbd91cc4ee78d7933e9e5bafd6881291e6",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 1,
+      "expected_diagnostics": {
+        "attribute_override_error": true
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": ""
+    },
+    {
+      "name": "nested-expect",
+      "path": "pa40/tests/spec/lint-expectations/nested-expect.rs",
+      "sha256": "5f1ac3c6c5ab964a1180faab7eaffcc23955307708628064fa33982edc29ec2c",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": ""
+    },
+    {
+      "name": "overridden-allow",
+      "path": "pa40/tests/spec/lint-expectations/overridden-allow.rs",
+      "sha256": "54b5fd7215c48edc38d43d2a452944af4ca827f9ebe231184299f93eb0123f36",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": ""
+    },
+    {
+      "name": "reason",
+      "path": "pa40/tests/spec/lint-expectations/reason.rs",
+      "sha256": "6224f0ba5d9801ff21819ed65ab82214f6b2607bcfb7ee7c0dc092c4fea84763",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1,
+        "reason_contains": "intentional"
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": ""
+    },
+    {
+      "name": "self-expect",
+      "path": "pa40/tests/spec/lint-expectations/self-expect.rs",
+      "sha256": "2ee41bde8d5eef919de44191a32826266b9f4837ddb4b8b34022ab97d76ce32f",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1,
+        "explanatory_note": true
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": ""
+    },
+    {
+      "name": "self-expect-allowed",
+      "path": "pa40/tests/spec/lint-expectations/self-expect-allowed.rs",
+      "sha256": "8ef217169ae69458858c9d98cb98bd4fa862c9a11ebdc8801f6d7e9f11fcf8a0",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": ""
+    },
+    {
+      "name": "cfg-disabled",
+      "path": "pa40/tests/spec/lint-expectations/cfg-disabled.rs",
+      "sha256": "66f6c7aa1225721129b0f111db74652d3bfe9145c722caad883b16954b90dfb9",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": ""
+    },
+    {
+      "name": "cfg-attr-disabled",
+      "path": "pa40/tests/spec/lint-expectations/cfg-attr-disabled.rs",
+      "sha256": "336d685171b0ebf043a23ed9bf058f1b2b76ec30251e214fa160021240acb3ea",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": ""
+    },
+    {
+      "name": "two-events-one-expect",
+      "path": "pa40/tests/spec/lint-expectations/two-events-one-expect.rs",
+      "sha256": "c5402ef72443b0112cda4b2b75b6f19adc9fead57878043de194c4ca0ae80206",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": ""
+    },
+    {
+      "name": "unknown-lint",
+      "path": "pa40/tests/spec/lint-expectations/unknown-lint.rs",
+      "sha256": "cf8449a1669757550749a0e590c0917a85ada8858e38f8deeb5feeec61ee0f75",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unknown_lints": 1
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": ""
+    },
+    {
+      "name": "macro-invocation",
+      "path": "pa40/tests/spec/lint-expectations/macro-invocation.rs",
+      "sha256": "9431eb69fecd3d9599deb2ece619e4ffcade9374b068382caa9968e7485cd009",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": ""
+    },
+    {
+      "name": "macro-reexport",
+      "path": "pa40/tests/spec/lint-expectations/macro-reexport.rs",
+      "sha256": "1dae469ee65d84f0a39946e31d18512d34243b1bcdadb0ae0a026dfb148bbae4",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "macro-reexport may expose B-owned ordinary macro_export visibility prerequisite"
+    },
+    {
+      "name": "two-entries-one-event",
+      "path": "pa40/tests/spec/lint-expectations/two-entries-one-event.rs",
+      "sha256": "b991ffdbfb700f61dff2f7af76306b5b2b056ae0fb67183b890ea9775853b7b2",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "duplicate-entries",
+      "path": "pa40/tests/spec/lint-expectations/duplicate-entries.rs",
+      "sha256": "63cda504504cbef941085fcfc76f78e31215b7cd1fbe32577e8fe382fbc34df2",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "must-use-event",
+      "path": "pa40/tests/spec/lint-expectations/must-use-event.rs",
+      "sha256": "f68ac798a301352c1b3a386616a6a640c6287c9b2bec8088abbbc11a5b2dce9e",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "unsafe-operation-event",
+      "path": "pa40/tests/spec/lint-expectations/unsafe-operation-event.rs",
+      "sha256": "45fffac037d4c39cf90a7fc897ee73206b6992fd625af6423a7e930f1c3af43c",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "unsafe-permission",
+      "path": "pa40/tests/spec/lint-expectations/unsafe-permission.rs",
+      "sha256": "db04480244c3013c34e4f01e1db2664f1fa391afe44e4df35e7aabe73f37dac9",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 1,
+      "expected_diagnostics": {
+        "E0133": 1
+      },
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "static-reference-event",
+      "path": "pa40/tests/spec/lint-expectations/static-reference-event.rs",
+      "sha256": "04f19eca7ae1e2832084b3fa43e0e9e1a105c1a70fcdd21d35c1b0cff220cc19",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "unreachable-event",
+      "path": "pa40/tests/spec/lint-expectations/unreachable-event.rs",
+      "sha256": "d8650f0d2f9816d698c1d767b7682ac3fb291ab51773d317e74a4ea33ab08ca8",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "unreachable-warning",
+      "path": "pa40/tests/spec/lint-expectations/unreachable-warning.rs",
+      "sha256": "c2dbf464c78642768f95062f82c3a573674643544b2a774c5b443cb2e2710c57",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unreachable_patterns": 1
+      },
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "same-package-import",
+      "path": "pa40/tests/spec/lint-expectations/same-package-import.rs",
+      "sha256": "bb6288696c63c88ee04f3b55dcf78fba7c008e1d76dc548a81cca3477c6be601",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "deprecated": 1
+      },
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "same-origin-module",
+      "path": "pa40/tests/spec/lint-expectations/same-origin-module.rs",
+      "sha256": "3d3ac454ad714ecc3a2291ffcf205456daa93384bb4e0fba4852a0211c185ce3",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "deprecated": 1
+      },
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "different-origin",
+      "path": "pa40/tests/spec/lint-expectations/different-origin.rs",
+      "sha256": "ca47b473b330db50a140171515a1173d111ba399d3fbc0d48d2fde304e8ef208",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "deprecated": 1
+      },
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "primary-error-no-completion",
+      "path": "pa40/tests/spec/lint-expectations/primary-error-no-completion.rs",
+      "sha256": "b20c133aca1d01443b2efddfbffa7cec11070a1f6d69dae7b889c273ff792a52",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 1,
+      "expected_diagnostics": {
+        "E0308": 1
+      },
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "warning-before-error",
+      "path": "pa40/tests/spec/lint-expectations/warning-before-error.rs",
+      "sha256": "4240482079ecbafbf79d8ad0de3ac4b4bae870c8460e6ced16144ad415e541a1",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 1,
+      "expected_diagnostics": {
+        "deprecated": 1,
+        "E0308": 1
+      },
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "nondeprecated-reexport",
+      "path": "pa40/tests/spec/lint-expectations/nondeprecated-reexport.rs",
+      "sha256": "ebb5a6182bb392d0bd78d46eab6cbf4f63f0a160b1411200fa90c8b00d44183e",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "deprecated-export",
+      "path": "pa40/tests/spec/lint-expectations/deprecated-export.rs",
+      "sha256": "62747d5925ac835ff6ae941089fdad14826b994d25b312972e114b8798a186a9",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "group-event",
+      "path": "pa40/tests/spec/lint-expectations/group-event.rs",
+      "sha256": "e3c7ab26737e5a455095837b0cda0f806afb0280086c068e406e457b5f331a1f",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "group-unfulfilled",
+      "path": "pa40/tests/spec/lint-expectations/group-unfulfilled.rs",
+      "sha256": "a430c742d1b84e6c8e6714fd60fe8c7b7fe47ee803fc6df333aebceec73b2182",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "atomic-order-event",
+      "path": "pa40/tests/spec/lint-expectations/atomic-order-event.rs",
+      "sha256": "aee209f79f386ed28df021bc03f5ff4190b609a424db3fac07f8acf744b2cf03",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "atomic-order-warning",
+      "path": "pa40/tests/spec/lint-expectations/atomic-order-warning.rs",
+      "sha256": "f6ee1a3110fd2e8ff19ac807fa94744f4d7707f77aea19a812bbc7d15d7f4b10",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "invalid_atomic_ordering": 1
+      },
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "selected-scopes",
+      "path": "pa40/tests/spec/lint-expectations/selected-scopes.rs",
+      "sha256": "59a8490dd16a274a6d78c35bf4dd6f7058d03cb913dc3772fb8bcb1033a93b99",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 2
+      },
+      "oracle_args": [
+        "--crate-type=lib"
+      ],
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "import-expect-before-error",
+      "path": "pa40/tests/spec/lint-expectations/import-expect-before-error.rs",
+      "sha256": "b030b472b50a83a37b9e2df81c5cf556ed9e6c94d47165b0820efab54e9cab8e",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 1,
+      "expected_diagnostics": {
+        "E0308": 1
+      },
+      "oracle_args": [],
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    },
+    {
+      "name": "interleaved-import",
+      "path": "pa40/tests/spec/lint-expectations/interleaved-import.rs",
+      "sha256": "12ee448499d6480cc87a788fca1be197b42b781d102f3692b502beb44d83f609",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "oracle_args": [
+        "--crate-type=lib"
+      ],
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 40
+    }
+  ],
+  "remaining": [
+    "unknown/tool lint diagnostic closure",
+    "ForceWarn and all lint inventories",
+    "complete source-free imported deprecation transport",
+    "future staged deprecation channel",
+    "complete type/member/field use consumers",
+    "all PA40 release obligations"
+  ],
+  "request_controls": [
+    "actual import fulfillment in A, independent full B request, then A header finalization retains fulfillment without checking A bodies",
+    "same producer uses per-request maps; foreign producer progress rejected",
+    "pending reader keeps one expectation owner while unrelated documented owners scale 0/128/512",
+    "fifth expectation-owner index growth fails before publication and retains paid attempted bytes/steps"
+  ]
+}

@@ -41,6 +41,7 @@ mod cfg_gates;
 mod decorated_calls;
 #[path = "expansion/unvisited_syntax.rs"]
 mod default_warnings;
+mod deprecation;
 mod derive_lists;
 mod diagnostics;
 mod eager;
@@ -681,6 +682,7 @@ impl<'a, S: Sources> Engine<'a, S> {
             self.calls[index].state = State::Waiting;
             return Ok(());
         };
+        self.deprecated_macro(index, definition)?;
         if matches!(self.calls[index].grammar, CallGrammar::Derive) {
             self.calls[index].selected = Some(definition);
             return self.completed(index);

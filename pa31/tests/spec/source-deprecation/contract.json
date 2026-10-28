@@ -1,0 +1,73 @@
+{
+  "state": "authored source-binding reducers; no claim of copied original macro body or whole-core artifact",
+  "profile": {
+    "toolchain": "1.98.0",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "source_provider": true,
+    "native": false
+  },
+  "cases": [
+    {
+      "name": "grouped-try",
+      "path": "pa31/tests/spec/source-deprecation/grouped-try.rs",
+      "sha256": "26aba174537bf760401e579cd92d202fa66281d03f401bdccf18af1c0e8a1d90",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 31,
+      "oracle_env": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "oracle_args": [
+        "--crate-type=lib"
+      ]
+    },
+    {
+      "name": "ordinary-try",
+      "path": "pa31/tests/spec/source-deprecation/ordinary-try.rs",
+      "sha256": "cbbf2c8336f8c8eaa4d1bfdb5b3ad7baccf5e86c7730cdc55d7a62617139e111",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 31,
+      "oracle_env": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "oracle_args": [
+        "--crate-type=lib"
+      ]
+    },
+    {
+      "name": "omitted-try",
+      "path": "pa31/tests/spec/source-deprecation/omitted-try.rs",
+      "sha256": "ecc51938db561cc066f6cc40254539b21f25a243395edfc3da6f4c2841e8fcb5",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "prediction frozen before independent observation",
+      "owning_assignment": 31,
+      "oracle_env": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "oracle_args": [
+        "--crate-type=lib"
+      ]
+    }
+  ]
+}

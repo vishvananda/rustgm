@@ -2,7 +2,7 @@
 use super::{Checker, Error, Kind, NodeId, Target};
 use crate::support::{atomic_ordering::Ordering, library_types::LibraryType};
 impl Checker<'_> {
-    pub(super) fn validate_atomic_orderings(&self) -> Result<(), Error> {
+    pub(super) fn validate_atomic_orderings(&mut self) -> Result<(), Error> {
         let Some(ordering) = self
             .report
             .resolution
@@ -11,9 +11,11 @@ impl Checker<'_> {
         else {
             return Ok(());
         };
-        for (node, _) in &self.state.call_types.methods {
-            let key = self.key(*node);
-            if !self.facts.safety_policies.denies_atomic_ordering(key) {
+        for index in 0..self.state.call_types.methods.len() {
+            let node = self.state.call_types.methods[index].0;
+            let key = self.key(node);
+            if self.facts.safety_policies.atomic_ordering(key) == super::super::safety::Level::Allow
+            {
                 continue;
             }
             let Some(site) = self.report.resolution.method_calls.get(&key) else {
@@ -61,7 +63,21 @@ impl Checker<'_> {
                 .ok_or_else(|| self.error(argument, "invalid canonical Ordering variant"))?;
             let valid = intrinsic.atomic_order_valid(order);
             if !valid {
-                return Err(self.error(argument, "invalid atomic ordering for this operation"));
+                self.facts.must_use_diagnostic(
+                    self.report,
+                    key,
+                    self.report
+                        .package
+                        .unit(key.file)
+                        .configured
+                        .ast
+                        .node(argument)
+                        .span
+                        .start,
+                    0,
+                    crate::support::diagnostics::WarningCode::InvalidAtomicOrdering,
+                    "invalid atomic ordering for this operation".into(),
+                )?;
             }
         }
         Ok(())

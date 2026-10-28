@@ -557,7 +557,11 @@ impl Declarations {
         for (key, warning) in report.pre_expansion_warnings()? {
             self.retain_source_warning(key, warning)?;
         }
+        for (key, warning) in report.macro_deprecation_warnings()? {
+            self.retain_source_warning(key, warning)?;
+        }
         super::must_use::collect(report, self)?;
+        super::deprecation::imports(report, self)?;
         super::inlining::collect(report, self)?;
         super::parentheses::collect(report, self)?;
         super::diagnostic_contracts::collect(report, self)?;
@@ -565,7 +569,7 @@ impl Declarations {
     }
     pub(super) fn new(report: &Report) -> Result<Self, Error> {
         let catalog = super::compiler_items::Catalog::reserve(report)?;
-        let policies = super::safety::Policies::analyze(report)?;
+        let policies = super::safety::Policies::analyze(report, None)?;
         let associated = super::associated::collect(report)?;
         let mut value = Self::initialize(report, catalog, policies, associated);
         value
@@ -780,7 +784,8 @@ impl Declarations {
                     size_of::<crate::support::hash::HashSet<DefId>>() + 2 * size_of::<usize>(),
                 ),
         )?;
-        self.safety_policies = super::safety::Policies::analyze(report)?;
+        let progress = std::mem::take(&mut self.safety_policies.progress);
+        self.safety_policies = super::safety::Policies::analyze(report, progress)?;
         self.import_resolution(report)?;
         self.collect_declaration_attributes(report)
     }

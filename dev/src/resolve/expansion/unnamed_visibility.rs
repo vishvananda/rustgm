@@ -194,6 +194,28 @@ impl<S: Sources> Engine<'_, S> {
                     .map(|policy| policy.unused_visibilities)
                     .map_err(Error::from)
             })?;
+        if level == Level::Expect {
+            let producer = self
+                .attribute_effects
+                .as_deref_mut()
+                .and_then(|effects| effects.policy.as_mut())
+                .ok_or_else(|| {
+                    Error::at(key.file, 0, "visibility expectation producer is missing")
+                })?;
+            let id = producer
+                .policy(&self.loader.package, tail, key)?
+                .expectation(crate::resolve::lint_policy::Lint::UnusedVisibilities)
+                .ok_or_else(|| {
+                    Error::at(key.file, 0, "visibility expectation identity is missing")
+                })?;
+            producer.fulfill_early(
+                &self.loader.package,
+                id,
+                key,
+                crate::resolve::lint_policy::Lint::UnusedVisibilities,
+            )?;
+            return Ok(());
+        }
         if level == Level::Allow {
             return Ok(());
         }

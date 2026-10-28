@@ -174,6 +174,20 @@ source authentication from exhausted warning budgets. Keep the optional dense
 policy table's aggregate per-node cost explicit. See the
 [unnamed-constant checkpoint](docs/unnamed-free-constants.md).
 
+Finite lint expectations belong to the same configured attribute producer, with
+owner/effect/list identities, retained reasons and authenticated fulfillment.
+Keep one-byte levels and four-byte semantic node row IDs; selected settings and
+completion scopes live in paid cold rows. Borrow rows on ordinary reads. Actual
+selected uses produce events before warning deduplication; declaring an API or
+matching its spelling cannot fulfill an expectation. Keep unsafe permission and
+API availability separate. Close expectations only at the successful request's
+completed lint boundary, retaining untouched demanded scopes as pending. Self-
+expecting unfulfilled expectations cannot suppress their own final diagnostic.
+Legacy imported admission asserts no deprecation absence, and local deprecated
+exports stay closed until explicit transport exists. The
+[finite checkpoint](docs/pa40-lint-expectations-checkpoint.md) records its scope
+and remaining producer, transport and release obligations.
+
 Unsafe-operation and mutable-static-reference warnings use that same sink and
 the actual retained lexical lint level. Explicit unsafe blocks satisfy the
 operation policy; Allow stays silent and safe contexts still require unsafe

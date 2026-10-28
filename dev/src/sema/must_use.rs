@@ -233,6 +233,10 @@ impl Declarations {
         message: (String, crate::resolve::model::ExpansionId),
     ) -> Result<(), Error> {
         let level = match code {
+            WarningCode::Deprecated => self.safety_policies.deprecated(key),
+            WarningCode::UnfulfilledLintExpectations => self.safety_policies.unfulfilled(key),
+            WarningCode::InvalidAtomicOrdering => self.safety_policies.atomic_ordering(key),
+            WarningCode::UnreachablePatterns => self.safety_policies.unreachable_patterns(key),
             WarningCode::UnusedMustUse => self.safety_policies.must_use(key),
             WarningCode::UnusedAttributes => self.safety_policies.unused_attributes(key),
             WarningCode::UnusedVisibilities => self.safety_policies.unused_visibilities(key),
@@ -255,6 +259,34 @@ impl Declarations {
             WarningCode::UnsafeOpInUnsafeFn => self.safety_policies.operation(key),
             WarningCode::StaticMutRefs => self.safety_policies.reference(key),
         };
+        if level == Level::Expect {
+            let lint = crate::resolve::lint_policy::Lint::warning(code).ok_or_else(|| {
+                Error::at(key.file, offset, "warning has no lint expectation consumer")
+            })?;
+            let id = self.safety_policies.expectation(key, lint).ok_or_else(|| {
+                Error::at(
+                    key.file,
+                    offset,
+                    "effective lint expectation identity is missing",
+                )
+            })?;
+            report
+                .lint_producer()
+                .ok_or_else(|| Error::at(key.file, offset, "lint expectation producer is missing"))?
+                .fulfill(
+                    &report.package,
+                    id,
+                    key,
+                    lint,
+                    self.safety_policies
+                        .progress
+                        .as_deref_mut()
+                        .ok_or_else(|| {
+                            Error::at(key.file, offset, "lint request progress is missing")
+                        })?,
+                )?;
+            return Ok(());
+        }
         if level == Level::Allow {
             return Ok(());
         }

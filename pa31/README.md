@@ -180,3 +180,9 @@ operator headers, defining const member requests and actual selected source
 body/Code proof. Full forwarding macro CTFE and three source/native consumers
 pass without bootstrap factories. Dynamic checked macro panic closure, broader
 const/default/imported calls and whole assignment release remain required.
+
+The [finite lint expectation prerequisite](../docs/pa40-lint-expectations-checkpoint.md)
+provides genuine deprecated macro reexport controls for the source prelude.
+The original prelude's later `hidden_glob_reexports` expectation and the other
+original source lint producers remain explicit requirements. The authored
+reducers do not establish a whole original crate build.

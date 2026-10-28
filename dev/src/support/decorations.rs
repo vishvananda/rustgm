@@ -77,7 +77,7 @@ impl Consumer {
             "rustc_no_implicit_autorefs" => Self::NoImplicitAutorefs,
             "no_mangle" | "export_name" | "link_name" => Self::Linkage,
             "target_feature" => Self::TargetFeature,
-            "allow" | "warn" | "deny" | "forbid" => Self::SafetyLint,
+            "allow" | "warn" | "deny" | "forbid" | "expect" | "deprecated" => Self::SafetyLint,
             "doc" => Self::Documentation,
             "rustc_nounwind" => Self::IntrinsicNoUnwind,
             "track_caller" => Self::CallerTracking,

@@ -14,6 +14,7 @@ use crate::{
 pub(super) fn owner(
     unit: &Unit,
     key: NodeKey,
+    tail: super::producer::Tail,
     effects: std::ops::Range<usize>,
     work: &mut Work,
 ) -> Result<Parsed, Violation> {
@@ -40,12 +41,26 @@ pub(super) fn owner(
                 trees.push((index, forest.nodes()[index as usize]));
             }
         }
+        if attribute.name(forest, unit.source.text()) == Some("deprecated") {
+            if parsed.deprecated.is_some() {
+                return Err(invalid(key, attribute, "duplicate deprecated attribute"));
+            }
+            parsed.attributes += 1;
+            work.attributes += 1;
+            parsed.deprecated = Some(Box::new(deprecation(
+                forest,
+                attribute,
+                unit.source.text(),
+                key,
+                work,
+            )?));
+        }
         if let Some(level) = covered.level {
             changes(
                 &mut parsed,
                 forest,
                 attribute,
-                level,
+                (level, tail, effect),
                 unit.source.text(),
                 key,
                 work,
@@ -128,13 +143,14 @@ pub(super) fn coverage(
         None
     };
     let level = match name {
+        Some("expect") => Some(Level::Expect),
         Some("allow") => Some(Level::Allow),
         Some("warn") => Some(Level::Warn),
         Some("deny") => Some(Level::Deny),
         Some("forbid") => Some(Level::Forbid),
         _ => None,
     };
-    let input = if level.is_some() {
+    let input = if level.is_some() || name == Some("deprecated") {
         match attribute.input {
             Input::Delimited(group) => TreeRange {
                 start: group,
@@ -170,20 +186,28 @@ fn changes(
     parsed: &mut Parsed,
     forest: &Forest,
     attribute: Attribute,
-    level: Level,
+    setting: (Level, super::producer::Tail, u32),
     source: &str,
     key: NodeKey,
     work: &mut Work,
 ) -> Result<(), Violation> {
+    let (level, tail, effect) = setting;
     parsed.attributes += 1;
     work.attributes += 1;
     let Input::Delimited(group) = attribute.input else {
-        return Ok(());
+        return Err(invalid(
+            key,
+            attribute,
+            "lint attribute requires a parenthesized lint list",
+        ));
     };
-    let Some(range) = forest.children(group) else {
-        return Ok(());
-    };
+    let range = forest
+        .children(group)
+        .ok_or_else(|| invalid(key, attribute, "invalid lint list"))?;
     let mut index = range.start;
+    let mut ordinal = 0_u32;
+    let first = parsed.expectations.len();
+    let mut reason = None;
     while index < range.end {
         let start = index;
         while index < range.end && !forest.punctuation(index, Punctuation::Comma) {
@@ -192,8 +216,50 @@ fn changes(
             parsed.entries += 1;
             work.entries += 1;
         }
-        if index == start + 1 {
-            let selected = lints(forest, source, start);
+        if forest.name(source, start) == Some("reason") {
+            if reason.is_some()
+                || index != start + 3
+                || !forest.punctuation(start + 1, Punctuation::Equal)
+            {
+                return Err(invalid(
+                    key,
+                    attribute,
+                    "lint reason requires one string literal",
+                ));
+            }
+            reason = Some(string(forest, source, start + 2, key, attribute, work)?);
+            if index < range.end && index + 1 != range.end {
+                return Err(invalid(
+                    key,
+                    attribute,
+                    "lint reason must be the last argument",
+                ));
+            }
+        } else {
+            let selected = if index == start + 1 {
+                lints(forest, source, start)
+            } else {
+                &[]
+            };
+            if selected.is_empty() && level == Level::Expect {
+                return Err(invalid(
+                    key,
+                    attribute,
+                    "unsupported lint expectation requires an implemented lint producer",
+                ));
+            }
+            let expectation = if level == Level::Expect {
+                Some(register(
+                    parsed,
+                    attribute,
+                    (tail, effect, ordinal),
+                    selected,
+                    key,
+                    work,
+                )?)
+            } else {
+                None
+            };
             parsed.entries += selected.len().saturating_sub(1);
             work.entries += selected.len().saturating_sub(1);
             for &lint in selected {
@@ -202,14 +268,167 @@ fn changes(
                     lint,
                     level,
                     offset: attribute.span.start,
+                    expectation,
                 });
             }
+            ordinal = ordinal
+                .checked_add(1)
+                .ok_or_else(|| invalid(key, attribute, "lint list ordinal overflow"))?;
         }
         if index < range.end {
             index += 1;
         }
     }
+    if let Some(reason) = reason {
+        for row in &mut parsed.expectations[first..] {
+            work.charge(key, 1 + reason.len(), reason.len())?;
+            row.reason = Some(reason.clone());
+        }
+    }
     Ok(())
+}
+fn register(
+    parsed: &mut Parsed,
+    attribute: Attribute,
+    identity: (super::producer::Tail, u32, u32),
+    selected: &[Lint],
+    key: NodeKey,
+    work: &mut Work,
+) -> Result<super::ExpectationId, Violation> {
+    let id = super::ExpectationId {
+        owner: identity.0,
+        index: u32::try_from(parsed.expectations.len())
+            .map_err(|_| invalid(key, attribute, "expectation ordinal overflow"))?,
+    };
+    let growth = crate::support::retained::Growth::vector::<super::expectations::Expectation>(
+        parsed.expectations.len(),
+        parsed.expectations.capacity(),
+        1,
+    );
+    work.charge(key, 1 + growth.work, growth.bytes)?;
+    work.expectations = work.expectations.saturating_add(1);
+    parsed.expectations.push(super::expectations::Expectation {
+        effect: identity.1,
+        ordinal: identity.2,
+        span: attribute.span,
+        lint: selected[0],
+        members: selected
+            .iter()
+            .try_fold(0_u16, |mask, lint| lint.mask().map(|member| mask | member))
+            .ok_or_else(|| invalid(key, attribute, "invalid lint expectation member"))?,
+        reason: None,
+        early: std::cell::Cell::new(false),
+    });
+    Ok(id)
+}
+fn string(
+    forest: &Forest,
+    source: &str,
+    index: u32,
+    key: NodeKey,
+    attribute: Attribute,
+    work: &mut Work,
+) -> Result<Box<str>, Violation> {
+    let token = forest
+        .token(index)
+        .ok_or_else(|| invalid(key, attribute, "attribute requires a string literal"))?;
+    work.charge(
+        key,
+        1 + (token.end - token.start) as usize,
+        2 * (token.end - token.start) as usize,
+    )?;
+    let Some(crate::literal::Value::String(bytes)) = crate::literal::interpret(source, token)
+        .map_err(|_| invalid(key, attribute, "invalid attribute string literal"))?
+    else {
+        return Err(invalid(
+            key,
+            attribute,
+            "attribute requires a string literal",
+        ));
+    };
+    String::from_utf8(bytes.into_owned())
+        .map(String::into_boxed_str)
+        .map_err(|_| invalid(key, attribute, "attribute requires UTF-8 string data"))
+}
+fn deprecation(
+    forest: &Forest,
+    attribute: Attribute,
+    source: &str,
+    key: NodeKey,
+    work: &mut Work,
+) -> Result<super::expectations::Deprecation, Violation> {
+    if attribute.unsafe_wrapper {
+        return Err(invalid(
+            key,
+            attribute,
+            "deprecated is not an unsafe attribute",
+        ));
+    }
+    work.charge(key, 1, size_of::<super::expectations::Deprecation>())?;
+    let mut result = super::expectations::Deprecation {
+        span: attribute.span,
+        note: None,
+        since: None,
+        staged_unsupported: false,
+    };
+    if attribute.input == Input::Empty {
+        return Ok(result);
+    }
+    let Input::Delimited(group) = attribute.input else {
+        return Err(invalid(
+            key,
+            attribute,
+            "deprecated requires named string arguments",
+        ));
+    };
+    let range = forest
+        .children(group)
+        .ok_or_else(|| invalid(key, attribute, "invalid deprecated arguments"))?;
+    let mut index = range.start;
+    while index < range.end {
+        work.charge(key, 1, 0)?;
+        let slot = match forest.name(source, index) {
+            Some("note") => &mut result.note,
+            Some("since") => &mut result.since,
+            _ => return Err(invalid(key, attribute, "unsupported deprecated argument")),
+        };
+        if slot.is_some()
+            || index + 2 >= range.end
+            || !forest.punctuation(index + 1, Punctuation::Equal)
+        {
+            return Err(invalid(
+                key,
+                attribute,
+                "deprecated requires unique named string arguments",
+            ));
+        }
+        *slot = Some(string(forest, source, index + 2, key, attribute, work)?);
+        index += 3;
+        if index < range.end {
+            if !forest.punctuation(index, Punctuation::Comma) {
+                return Err(invalid(
+                    key,
+                    attribute,
+                    "deprecated arguments require commas",
+                ));
+            }
+            index += 1;
+        }
+    }
+    result.staged_unsupported = result.since.as_deref().is_some_and(|since| {
+        let mut parts = since.split('.');
+        let Some(major) = parts.next().and_then(|part| part.parse::<u32>().ok()) else {
+            return true;
+        };
+        let Some(minor) = parts.next().and_then(|part| part.parse::<u32>().ok()) else {
+            return true;
+        };
+        let Some(_patch) = parts.next().and_then(|part| part.parse::<u32>().ok()) else {
+            return true;
+        };
+        parts.next().is_some() || major > 1 || (major == 1 && minor > 98)
+    });
+    Ok(result)
 }
 fn invalid(key: NodeKey, attribute: Attribute, message: &'static str) -> Violation {
     Violation {
@@ -220,6 +439,8 @@ fn invalid(key: NodeKey, attribute: Attribute, message: &'static str) -> Violati
 }
 fn lints(forest: &Forest, source: &str, index: u32) -> &'static [Lint] {
     match forest.name(source, index) {
+        Some("deprecated") => &[Lint::Deprecated],
+        Some("unfulfilled_lint_expectations") => &[Lint::UnfulfilledExpectations],
         Some("unsafe_op_in_unsafe_fn") => &[Lint::Operation],
         Some("static_mut_refs") => &[Lint::Reference],
         Some("invalid_atomic_ordering") => &[Lint::AtomicOrdering],

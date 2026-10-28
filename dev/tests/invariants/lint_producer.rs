@@ -238,3 +238,65 @@ fn failed_frame_growth_keeps_real_tail_storage_and_extent_unpublished() -> TestR
     assert_eq!(producer.frame_extent, next);
     Ok(())
 }
+
+#[test]
+fn expectation_owner_index_growth_is_paid_before_publication() -> TestResult {
+    let report = report(
+        "#[expect(deprecated)]fn f0(){}#[expect(deprecated)]fn f1(){}#[expect(deprecated)]fn f2(){}#[expect(deprecated)]fn f3(){}#[expect(deprecated)]fn f4(){}",
+    )?;
+    let source = report.lint_producer().ok_or("producer")?;
+    let root = NodeKey {
+        file: crate::resolve::unit::FileId(0),
+        node: report.package.modules[0].root,
+    };
+    let keys: Vec<_> = source
+        .expectation_owners
+        .iter()
+        .map(|tail| {
+            source
+                .record(*tail, root)
+                .map(|owner| owner.key)
+                .map_err(Error::from)
+        })
+        .collect::<Result<_, _>>()?;
+    let mut observed = Producer::new(0, 0);
+    for &key in &keys[..4] {
+        observed
+            .owner(&report.package, key, None)
+            .map_err(Error::from)?;
+    }
+    let growth = crate::support::retained::Growth::vector::<Tail>(
+        observed.expectation_owners.len(),
+        observed.expectation_owners.capacity(),
+        1,
+    );
+    assert!(growth.bytes > 0);
+    let before = observed.work().bytes;
+    observed
+        .owner(&report.package, keys[4], None)
+        .map_err(Error::from)?;
+    let delta = observed.work().bytes - before;
+    let mut limited = Producer::new(0, 0);
+    for &key in &keys[..4] {
+        limited
+            .owner(&report.package, key, None)
+            .map_err(Error::from)?;
+    }
+    limited.work.bytes = (64 * 1024 * 1024_usize)
+        .checked_sub(delta - growth.bytes)
+        .ok_or("budget extent")?;
+    let steps = limited.work().steps;
+    let error = limited
+        .owner(&report.package, keys[4], None)
+        .err()
+        .ok_or("unpaid index was published")?;
+    assert_eq!(error.message, "source lint policy storage budget exceeded");
+    assert_eq!(limited.expectation_owners.len(), 4);
+    assert_eq!(limited.owners.len(), 4);
+    assert_eq!(limited.index.len(), 4);
+    assert_eq!(limited.work().bytes, 64 * 1024 * 1024 + growth.bytes);
+    assert!(limited.work().steps > steps);
+    assert!(limited.owner(&report.package, keys[4], None).is_err());
+    assert_eq!(limited.expectation_owners.len(), 4);
+    Ok(())
+}
