@@ -113,3 +113,40 @@ fn closed_source_comparison_consts_keep_actual_selected_members()
     )?;
     Ok(())
 }
+
+#[test]
+fn full_source_comparison_opponents_reject_their_actual_missing_contract()
+-> Result<(), Box<dyn std::error::Error>> {
+    for (name, diagnostic) in [
+        ("missing-ord-impl", "can't compare"),
+        ("wrong-ordering-tag", "Ordering"),
+        ("wrong-intrinsic-copy", "Copy"),
+    ] {
+        let source = crate::test_source::fixture(&format!(
+            "pa31/tests/spec/source-comparisons/ordering/{name}-v3.rs"
+        ))?;
+        let report = crate::test_source::source_provider(&source, "comparison_opponents")?;
+        let result = (|| -> Result<(), Box<dyn std::error::Error>> {
+            let pipeline::Analysis {
+                mut facts,
+                prepared,
+            } = pipeline::analyze_source(&report)?;
+            crate::lower::instances::build_roots_prepared(
+                &report,
+                &mut facts,
+                crate::lower::Roots {
+                    entry: None,
+                    exports: &[],
+                },
+                prepared,
+            )?;
+            Ok(())
+        })();
+        let error = result
+            .err()
+            .ok_or_else(|| format!("{name} acquired comparison authority"))?;
+        let error = error.to_string();
+        assert!(error.contains(diagnostic), "{name}: {error}");
+    }
+    Ok(())
+}

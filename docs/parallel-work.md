@@ -4,8 +4,10 @@ The user has reauthorized up to two subagents. Root continues direct compiler
 implementation and integration in `rustgm-pa25-work`. One implementation worker,
 `lint_expectations`, owns LIB-058's actual local/source deprecation and lint
 expectation protocol in the existing `rustgm-pa26-work`; the second agent has completed
-read-only const-call review and now owns LIB-056's precise symbolic cleanup
-consumer in the existing `rustgm-pa27-work`. Root owns reached-call accounting
+read-only const-call review and completed LIB-056's precise symbolic cleanup
+consumer, now merged and qualified through actual comparison native execution.
+That agent now owns LIB-050's bounded typed OffsetOf source consumer in the existing
+`rustgm-pa27-work`. Root owns reached-call accounting
 and integration; coordinate the guarded heavy checks rather than creating more
 worktrees. No new worktree
 is needed. Earlier derive/comparison/panic snapshots remain preserved; their old

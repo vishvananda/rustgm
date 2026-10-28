@@ -1,5 +1,66 @@
 # LIB056 source comparison WIP
 
+## Joined executable checkpoint, 2026-10-28
+
+The actual comparison sources now pass analysis, checked LowIR generation and
+native execution through the frozen CPPGM backend. Both the full actual profile
+and the authored-override profile match their independent Rust traces. The
+closed E/N/G member constants and actual Ordering tag O also execute as `-1 1`
+under both independent Rust and the candidate's CPPGM-backed consumer.
+
+Root private receipt1793195049033919221 passes all18 selected controls and strict
+checks in38.47s on the warm unchanged source. Its preceding cold check passed
+strict checks/build but exhausted the five-minute window before execution; it
+is retained as an infrastructure failure, not a semantic pass. The joined controls
+include genuine Option matched-payload cleanup with no invented T:Destruct,
+custom Drop/other-variant/loop/cached-boolean opponents, unchanged read/move
+permissions, sparse8/32/128+noise work, and constant cleanup selection work for
+untouched wide aggregates. Both corrected original const-function carrier tests,
+concrete CTFE and instance denials, wrong-Self/wrong-Rhs applications, reached
+argument work and payment replay controls pass.
+
+Native receipts under `obj/parallel/source-comparison-integration-v1/`:
+
+- `native-observed-v1/receipt.json`: SHA256
+  `2f973af01454d379b6b1f88de407c4b6ca850019fa1685e7ce531b3ac90684b6`.
+- `const-native-observed-v1/receipt.json`: SHA256
+  `c05e5a271e548e16d21bc3fabfc57773e1562bdb96f7fed9bb87cb93603c4402`.
+- Independent const observer `const-oracle-v1/observed/receipt.json`: SHA256
+  `1f63de2463f998456c14daba1074603e76cd3b054bb133d8dae6424309d53adc`.
+
+C's qualified20e9d8c1c and originally pending fast-path repair1bff494d6 are now
+normally merged and jointly qualified by root. The latter restores the original
+fully initialized aggregate fast path by requiring both must-initialized and
+may-live interval coverage for Always; it does not widen read permission.
+Production/CLI strict checks,12 integration controls and full PA6 text pass in
+157.36s at1793195495531636536. A precise lowering control now rejects all three
+predeclared opponents at their actual missing-impl/Ordering/Copy contracts;
+its first run passed strict/build/tests but failed final16GiB resource accounting
+by49MB. After idle retirement of superseded caches, the unchanged-source warm
+replay1793196733699384870 passes all3 selected controls and the complete resource
+guard in35.92s. All260 harness tests pass, including active-work, symlink, pin,
+hardlink and pre-admission cleanup opponents. The generic `--emit-body-ir`
+view stops earlier at its existing unparameterized generic-body fence and is not
+evidence for those three individual comparison guards.
+
+A separate real CLI library export attempt retains the existing rejection
+`source stability contracts are outside this metadata profile` (LIB-059,
+PA29/PA31). Neither this failure nor the earlier incorrect library-mode prediction
+has been erased. Typed source CLI views pass; complete library export remains
+required. Root adds idle preflight retirement of superseded completed incremental
+sessions to avoid cache accumulation while preserving each newest warm session,
+in-progress directories and explicit pins. The aggregate closing receipt is
+`closing-observed-v1/receipt.json`, SHA256
+`90f913c8d6577cbeeefdd0814032c71c8adb88902f7416cff8262e2c0b439af4`;
+maintainer registration,44-stage fixture placement and upstream checks pass.
+No new whole PA release or original core/alloc/std artifact is claimed. Generic/borrowed
+callable CTFE, conditional callback payment, actual provided-default Code
+execution and wider original crate/metadata closure remain required.
+
+The earlier investigation below is historical and retains failures at their
+actual source snapshots; its pending comparison/native statements are superseded
+by this checkpoint only within the exact observed profile.
+
 ## Direct continuation checkpoint, 2026-10-28
 
 This remains unfinished development work, with no native/CTFE comparison or
