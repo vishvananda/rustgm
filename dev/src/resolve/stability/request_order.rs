@@ -24,6 +24,15 @@ fn compare(left: &str, right: &str, steps: &mut usize) -> Result<Ordering, &'sta
     Ok(left.len().cmp(&right.len()))
 }
 impl Library {
+    /// Non-type predicates use checked global requests only in ordinary crates.
+    /// A staged library must prove each requirement in its actual item scope.
+    pub(crate) fn predicate_requests(&self) -> Result<&[Box<str>], &'static str> {
+        if self.inventory.is_none() {
+            return Err("feature predicates require the completed request inventory");
+        }
+        Ok(if self.staged { &[] } else { &self.requests })
+    }
+
     /// Undefined/conflicting requests and both declaration drafts were checked
     /// in source order. Only now may the same private vector be reordered.
     pub(in crate::resolve) fn prepare_request_order(

@@ -45,6 +45,7 @@ mod offset_paths;
 mod primitive_constants;
 mod projections;
 mod receivers;
+mod required_features;
 mod self_constructors;
 mod self_schema;
 mod slice_methods;
@@ -432,6 +433,7 @@ impl Checker<'_> {
             .saturating_mul(16)
     }
     fn run(&mut self) -> Result<(), Error> {
+        self.prepare_feature_policy()?;
         self.validate_foreign_blocks()?;
         self.reserve_member_parents()?;
         self.prepare_library_types()?;
