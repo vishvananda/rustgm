@@ -279,6 +279,22 @@ impl Policies {
     ) -> Option<crate::resolve::lint_policy::ExpectationId> {
         self.at(key).expectation(lint)
     }
+    pub(super) fn expectation_ids(
+        &self,
+        key: NodeKey,
+    ) -> Result<&[Option<crate::resolve::lint_policy::ExpectationId>], Error> {
+        let policy = if let Some(files) = &self.nodes {
+            let row = files
+                .get(key.file.0 as usize)
+                .and_then(|nodes| nodes.get(key.node.get() as usize))
+                .and_then(|row| self.rows.get(*row as usize))
+                .ok_or_else(|| Error::at(key.file, 0, "lint completion lost its lexical policy"))?;
+            &row.policy
+        } else {
+            &Policy::DEFAULT
+        };
+        Ok(policy.expectation_ids())
+    }
     pub(super) fn deprecated(&self, key: NodeKey) -> Level {
         self.at(key).deprecated
     }

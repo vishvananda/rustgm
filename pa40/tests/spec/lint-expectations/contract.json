@@ -751,6 +751,36 @@
       ],
       "status": "source-derived hypothesis; not independently observed",
       "owning_assignment": 40
+    },
+    {
+      "name": "selected-nested-fulfilled",
+      "path": "pa40/tests/spec/lint-expectations/selected-nested-fulfilled.rs",
+      "sha256": "2ca7b80ff300b9fed191e6a8cf0b230e0f71c89e4982e80a4e2b53c4a6c5b70e",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "source-derived hypothesis; not independently observed",
+      "owning_assignment": 40,
+      "notes": "Full Rust checks all bodies. Selected parent-only RustGM request must retain pending expectation without typing nested; completing nested then fulfills or diagnoses the actual parent."
+    },
+    {
+      "name": "selected-nested-unfulfilled",
+      "path": "pa40/tests/spec/lint-expectations/selected-nested-unfulfilled.rs",
+      "sha256": "c1487249ffa33977fb22505edf5eb71163f323a2abce953004171b578fe82ad5",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "source-derived hypothesis; not independently observed",
+      "owning_assignment": 40,
+      "notes": "Full Rust checks all bodies. Selected parent-only RustGM request must retain pending expectation without typing nested; completing nested then fulfills or diagnoses the actual parent."
     }
   ],
   "remaining": [
@@ -765,6 +795,7 @@
     "actual import fulfillment in A, independent full B request, then A header finalization retains fulfillment without checking A bodies",
     "same producer uses per-request maps; foreign producer progress rejected",
     "pending reader keeps one expectation owner while unrelated documented owners scale 0/128/512",
-    "fifth expectation-owner index growth fails before publication and retains paid attempted bytes/steps"
+    "fifth expectation-owner index growth fails before publication and retains paid attempted bytes/steps",
+    "Nested unfinished bodies retain the actual inherited semantic expectation; one paid body census per finalization, no forced body checks or per-expectation full scan."
   ]
 }

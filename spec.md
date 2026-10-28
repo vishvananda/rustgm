@@ -183,6 +183,15 @@ matching its spelling cannot fulfill an expectation. Keep unsafe permission and
 API availability separate. Close expectations only at the successful request's
 completed lint boundary, retaining untouched demanded scopes as pending. Self-
 expecting unfulfilled expectations cannot suppress their own final diagnostic.
+Checking a parent function does not complete an expectation inherited by an
+unchecked nested body. Join unfinished bodies with their actual selected
+expectation identities once per request; unrelated bodies must not prevent a
+completed function scope from closing. Share this census with whole-source
+completion, charge temporary indexes before allocation, and publish no final
+diagnostic after a failed payment. Do not demand bodies to finish lint bookkeeping
+or scan all declarations separately for each expectation. The
+[selected-scope checkpoint](docs/pa40-selected-scope-completion.md) records the
+opposing source, work and request controls.
 Legacy imported admission asserts no deprecation absence, and local deprecated
 exports stay closed until explicit transport exists. The
 [finite checkpoint](docs/pa40-lint-expectations-checkpoint.md) records its scope

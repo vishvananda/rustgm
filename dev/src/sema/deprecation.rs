@@ -1,4 +1,5 @@
 //! Selected source identities drive deprecation; lexical policy owns diagnostics.
+mod completion;
 use crate::{
     resolve::{
         expansion::Report,
@@ -8,7 +9,6 @@ use crate::{
     },
     sema::model::Declarations,
     support::diagnostics::WarningCode,
-    syntax::item::ItemKind,
 };
 
 pub(super) fn imports(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
@@ -106,29 +106,15 @@ impl Declarations {
                 .as_deref()
                 .ok_or_else(|| Error::unlocated("lint request progress is missing"))?,
         )?;
-        let needs_whole = pending.iter().any(|row| {
-            !row.resolution_complete
-                && matches!(
-                    self.safety_policies.completion(row.owner),
-                    super::safety::Completion::Whole
-                )
-        });
-        let whole_complete = bodies && needs_whole && self.all_lint_bodies_complete(report)?;
+        let scopes = completion::Scopes::collect(report, self, &pending, bodies)?;
         for pending in pending {
             let complete = pending.resolution_complete && report.names_resolved
-                || match self.safety_policies.completion(pending.owner) {
-                    super::safety::Completion::Declaration => true,
-                    super::safety::Completion::Function(id) => {
-                        bodies && self.typed_function_bodies.contains(&id)
-                    }
-                    super::safety::Completion::Initializer(id) => {
-                        bodies
-                            && self
-                                .initializer_index(id)
-                                .is_some_and(|index| self.initializers[index].type_checked())
-                    }
-                    super::safety::Completion::Whole => bodies && whole_complete,
-                };
+                || scopes.completed(
+                    self,
+                    self.safety_policies.completion(pending.owner),
+                    pending.id,
+                    bodies,
+                );
             if !complete {
                 continue;
             }
@@ -166,45 +152,5 @@ impl Declarations {
             )?;
         }
         Ok(())
-    }
-}
-
-impl Declarations {
-    fn all_lint_bodies_complete(&self, report: &Report) -> Result<bool, Error> {
-        let Some(producer) = report.lint_producer() else {
-            return Ok(true);
-        };
-        for (index, definition) in report.resolution.definitions.iter().enumerate() {
-            let Some(key) = definition.node else {
-                continue;
-            };
-            producer.attribute_read(key, 1)?;
-            let unit = report.package.unit(key.file);
-            let crate::syntax::ast::Kind::Item(item) = unit.configured.ast.node(key.node).kind
-            else {
-                continue;
-            };
-            let id = DefId(
-                u32::try_from(index)
-                    .map_err(|_| Error::at(key.file, 0, "lint completion definition overflow"))?,
-            );
-            match unit.configured.ast.items[item as usize].kind {
-                ItemKind::Function { body: Some(_), .. }
-                    if !self.typed_function_bodies.contains(&id) =>
-                {
-                    return Ok(false);
-                }
-                ItemKind::Const { value: Some(_), .. }
-                | ItemKind::Static { value: Some(_), .. }
-                    if self
-                        .initializer_index(id)
-                        .is_none_or(|index| !self.initializers[index].type_checked()) =>
-                {
-                    return Ok(false);
-                }
-                _ => {}
-            }
-        }
-        Ok(true)
     }
 }

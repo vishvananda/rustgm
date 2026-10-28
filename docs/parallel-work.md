@@ -3,8 +3,9 @@
 The user has reauthorized up to two subagents. Root continues direct compiler
 implementation and integration in `rustgm-pa25-work`. One implementation worker,
 `lint_expectations`, completed LIB-058's source deprecation/expectation protocol
-and actual hidden-glob producer in the existing `rustgm-pa26-work`. It now owns
-the warning-contract and removed-test completion regression repair. The second
+and actual hidden-glob producer in the existing `rustgm-pa26-work`. Its warning,
+removed-test and reference repairs are integrated; it now owns the actual
+ineffective_unstable_trait_impl header producer. The second
 agent, `const_call_review`, completed LIB-056's precise cleanup consumer and
 LIB-050's actual source OffsetOf member producer, both integrated and qualified
 through native execution. It now owns LIB-059's authenticated availability

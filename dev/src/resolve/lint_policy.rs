@@ -1,7 +1,7 @@
 //! Source-owned lexical lint rules are shared by expansion diagnostics and semantics.
 mod attribute_changes;
 mod expectations;
-pub(crate) use expectations::{ExpectationId, Progress};
+pub(crate) use expectations::{ExpectationId, PendingExpectation, Progress};
 pub(crate) mod producer;
 use crate::resolve::{package::Error, unit::NodeKey};
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -184,6 +184,9 @@ impl Lint {
     }
 }
 impl Policy {
+    pub(crate) const fn expectation_ids(&self) -> &[Option<ExpectationId>] {
+        &self.expectations
+    }
     pub(crate) fn expectation(&self, lint: Lint) -> Option<ExpectationId> {
         self.expectations[lint.index()]
     }

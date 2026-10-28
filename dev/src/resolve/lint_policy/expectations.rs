@@ -1,4 +1,7 @@
 //! Cold, owner-authenticated expectation identities and declaration annotations.
+#[cfg(test)]
+#[path = "../../../tests/invariants/lint_scope_completion.rs"]
+mod completion_tests;
 use super::{
     Lint, Violation,
     producer::{Producer, Tail, invalid},
