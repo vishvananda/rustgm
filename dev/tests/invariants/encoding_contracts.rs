@@ -3,6 +3,204 @@ use super::*;
 use std::cell::Cell;
 type Result<T = ()> = std::result::Result<T, LexError>;
 #[test]
+fn complete_constructor_and_count_pairs_preserve_source_recipe_control_and_data() -> Result {
+    let pay = |_, _| Ok(());
+    let all = compile(
+        "{0}|{0:?}|{0:o}|{0:x}|{0:X}|{0:p}|{0:b}|{0:e}|{0:E}",
+        1,
+        false,
+        &pay,
+    )?;
+    assert_eq!(
+        all.arguments
+            .iter()
+            .map(|arg| arg.constructor)
+            .collect::<Vec<_>>(),
+        [
+            FormatConstructor::Display,
+            FormatConstructor::Debug,
+            FormatConstructor::Octal,
+            FormatConstructor::LowerHex,
+            FormatConstructor::UpperHex,
+            FormatConstructor::Pointer,
+            FormatConstructor::Binary,
+            FormatConstructor::LowerExp,
+            FormatConstructor::UpperExp
+        ]
+    );
+    dynamic_count_recipe()?;
+    constructor_family_layouts();
+    complete_family_scaling()?;
+    Ok(())
+}
+fn dynamic_count_recipe() -> Result {
+    let pay = |_, _| Ok(());
+    let named = compile_named("{value:width$.precision$}", 0, &[], true, false, &pay)?;
+    assert_eq!(named.captured, ["value", "precision", "width"]);
+    assert_eq!(
+        named.arguments,
+        [
+            Argument {
+                input: 0,
+                constructor: FormatConstructor::Display
+            },
+            Argument {
+                input: 2,
+                constructor: FormatConstructor::Count
+            },
+            Argument {
+                input: 1,
+                constructor: FormatConstructor::Count
+            }
+        ]
+    );
+    assert_eq!(named.bytes, b"\xf7\x20\x00\x00\x78\x01\x00\x02\x00\x00");
+    let star = compile("{:.*}|{}", 3, false, &pay)?;
+    assert_eq!(
+        star.arguments,
+        [
+            Argument {
+                input: 1,
+                constructor: FormatConstructor::Display
+            },
+            Argument {
+                input: 0,
+                constructor: FormatConstructor::Count
+            },
+            Argument {
+                input: 2,
+                constructor: FormatConstructor::Display
+            }
+        ]
+    );
+    assert_eq!(
+        star.bytes,
+        b"\xe5\x20\x00\x00\x70\x01\x00\x01|\xc8\x02\x00\x00"
+    );
+    let shared = compile("{0:0$}", 1, false, &pay)?;
+    assert_eq!(
+        shared.arguments,
+        [
+            Argument {
+                input: 0,
+                constructor: FormatConstructor::Display
+            },
+            Argument {
+                input: 0,
+                constructor: FormatConstructor::Count
+            }
+        ]
+    );
+    assert_eq!(shared.bytes, b"\xd3\x20\x00\x00\x68\x01\x00\x00");
+    let mut chars = Characters::new("0$}");
+    let (_, mut raw) = options::parse(&mut chars, &mut 0)?;
+    let mut inputs = named::Inputs::new(1, &[], false, &pay)?;
+    raw.bind(&mut inputs)?;
+    let zero = raw.encoded(|_| Ok(0))?;
+    let mut bytes = Vec::new();
+    zero.emit(0, 0, &mut bytes);
+    assert_eq!(bytes, b"\xd3\x20\x00\x00\x68\x00\x00");
+    for text in [
+        "{:*}",
+        "{:.*}",
+        "{:1$}",
+        "{:65536}",
+        "{:unknown$}",
+        "{0:0$q}",
+    ] {
+        assert!(compile(text, 1, false, &pay).is_err(), "{text}");
+    }
+    Ok(())
+}
+fn constructor_family_layouts() {
+    assert_eq!(size_of::<super::super::output::Output<'_>>(), 472);
+    assert_eq!(size_of::<Options<'_>>(), 56);
+    assert_eq!(size_of::<options::Encoded>(), 12);
+    assert_eq!(size_of::<Template<'_>>(), 72);
+    assert_eq!(size_of::<crate::support::library_types::LibraryValue>(), 12);
+    assert_eq!(size_of::<crate::syntax::ast::Kind>(), 28);
+    assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
+    assert_eq!(size_of::<crate::expand::stream::Origin>(), 32);
+    eprintln!(
+        "constructor family names={} slots={} pair={} Output={} rawOptions={} encodedOptions={} Template={} LibraryValue={}",
+        size_of::<[crate::support::names::NameId; FormatConstructor::ALL.len()]>(),
+        size_of::<[Option<u16>; FormatConstructor::PAIR_COUNT]>(),
+        size_of::<Argument>(),
+        size_of::<super::super::output::Output<'_>>(),
+        size_of::<Options<'_>>(),
+        size_of::<options::Encoded>(),
+        size_of::<Template<'_>>(),
+        size_of::<crate::support::library_types::LibraryValue>()
+    );
+}
+
+fn complete_family_scaling() -> Result {
+    let work = Cell::new(0usize);
+    let bytes = Cell::new(0usize);
+    let pay = |steps, storage| {
+        work.set(work.get() + steps);
+        bytes.set(bytes.get() + storage);
+        Ok(())
+    };
+    let mut prior = None;
+    for count in [0usize, 8, 32, 128] {
+        let mut text = String::new();
+        for n in 0..count {
+            use std::fmt::Write;
+            for suffix in ["", "?", "x", "o", "X", "p", "b", "e", "E"] {
+                write!(&mut text, "{{value{n}:value{n}${suffix}}};")
+                    .map_err(|_| error(0, "test template formatting failed"))?;
+            }
+        }
+        work.set(0);
+        bytes.set(0);
+        let actual = compile_named(&text, 0, &[], true, false, &pay)?;
+        assert_eq!(actual.captured.len(), count);
+        assert_eq!(
+            actual.arguments.len(),
+            count * FormatConstructor::PAIR_COUNT
+        );
+        assert!(actual.arguments.capacity() >= actual.arguments.len());
+        if let Some((old_work, old_bytes)) = prior {
+            assert!(work.get() <= old_work * 6);
+            assert!(bytes.get() <= old_bytes * 6);
+        }
+        if count > 0 {
+            prior = Some((work.get(), bytes.get()));
+        }
+        eprintln!(
+            "complete constructor inputs={count} work={} bytes={} pairs={} capacity={}",
+            work.get(),
+            bytes.get(),
+            actual.arguments.len(),
+            actual.arguments.capacity()
+        );
+    }
+    let calls = Cell::new(0usize);
+    compile("{0:0$}", 1, false, &|_, _| {
+        calls.set(calls.get() + 1);
+        Ok(())
+    })?;
+    for stopped in 0..calls.get() {
+        let attempted = Cell::new(0usize);
+        assert!(
+            compile("{0:0$}", 1, false, &|_, _| {
+                let current = attempted.get();
+                attempted.set(current + 1);
+                if current == stopped {
+                    Err(error(0, "frozen pair payment failure"))
+                } else {
+                    Ok(())
+                }
+            })
+            .is_err()
+        );
+        assert_eq!(attempted.get(), stopped + 1);
+    }
+    Ok(())
+}
+
+#[test]
 fn named_and_captured_inputs_keep_first_use_pairs_and_paid_scaling() -> Result {
     assert_eq!(size_of::<crate::expand::stream::Origin>(), 32);
     assert_eq!(size_of::<crate::expand::stream::OriginKind>(), 2);
@@ -243,15 +441,7 @@ fn static_options_keep_exact_flags_counts_positions_and_trait_pairs() -> Result 
         compile("{:#x?}", 1, false, &charge)?.bytes,
         b"\xc1\x20\x00\x80\x62\x00"
     );
-    for text in [
-        "{:65536x}",
-        "{:width$x}",
-        "{:0$x}",
-        "{:.*x}",
-        "{named:x}",
-        "{:X}",
-        "{:8#x}",
-    ] {
+    for text in ["{:65536x}", "{:width$x}", "{:.*x}", "{named:x}", "{:8#x}"] {
         assert!(compile(text, 1, false, &charge).is_err(), "{text}");
     }
     let mut paid = Vec::new();
@@ -269,7 +459,7 @@ fn static_options_keep_exact_flags_counts_positions_and_trait_pairs() -> Result 
     assert_eq!(paid[1] - paid[0], 1);
     eprintln!(
         "static options={} pair={} names={} Output={} LibraryValue={} Template={}",
-        size_of::<Options>(),
+        size_of::<Options<'_>>(),
         size_of::<Argument>(),
         size_of::<[crate::support::names::NameId; 4]>(),
         size_of::<super::super::output::Output<'_>>(),

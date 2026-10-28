@@ -18,7 +18,7 @@ pub(super) struct Output<'a> {
     source: String,
     sites: Vec<NodeId>,
     inputs: Vec<(NodeId, usize)>,
-    names: [NameId; 4],
+    names: [NameId; crate::support::library_types::FormatConstructor::ALL.len()],
     captured: Vec<NodeId>,
     charge: &'a Charge<'a>,
 }
@@ -26,7 +26,7 @@ impl<'a> Output<'a> {
     pub(super) fn build(
         template: Template<'_>,
         count: usize,
-        names: [NameId; 4],
+        names: [NameId; crate::support::library_types::FormatConstructor::ALL.len()],
         symbols: &mut crate::support::names::Names,
         grammar: MacroContext,
         config: &Config,
@@ -298,12 +298,7 @@ impl<'a> Output<'a> {
         slot: usize,
         constructor: FormatConstructor,
     ) -> Result<NodeId, LexError> {
-        let index = match constructor {
-            FormatConstructor::Arguments => 0,
-            FormatConstructor::Debug => 1,
-            FormatConstructor::Display => 2,
-            FormatConstructor::LowerHex => 3,
-        };
+        let index = constructor.index();
         let node = self.node(
             constructor.name(),
             Kind::LibraryValue {

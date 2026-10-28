@@ -464,3 +464,63 @@ counts and remaining formatting constructors stay required, as do the genuine
 Formatter/write/helper graph, source comparisons, PanicInfo and real handler.
 In particular Count must execute the original checked `from_usize` body and its
 overflow panic path; no scalar Count or formatting-library replacement follows.
+
+
+## Complete trait constructor and count-row recipe
+
+The same authenticated source constructor path now covers Octal, UpperHex,
+Pointer, Binary, LowerExp and UpperExp alongside Display, Debug and LowerHex.
+It also emits real `Argument::from_usize` calls for dynamic count rows. Every
+call retains ordinary source owner/header, trait, generic, effect, body,
+instance and borrow checks. Constructor recognition grants no formatting or
+panic execution permission.
+
+The [frozen family](../pa31/tests/spec/source-format-macros/constructor-family/contract.json)
+matches62 new independent pinned-Rust metadata/build/native commands in both
+editions. It covers all nine traits, named/indexed/star counts, repeated and
+shared value/count inputs, evaluation order, wrong count types, missing traits,
+and reached count overflow. Abnormal overflow termination is observed separately
+from compiler failure, without an exact-signal guarantee. The unchanged full
+[Count body](../pa31/tests/spec/source-format-macros/constructor-family/original-count.rs)
+stays required: actual comparison, `u16::MAX`, checked conversion, caller
+location and genuine panic bodies must run. Count encoding alone does not close
+that executable prerequisite.
+
+The recipe preserves three distinct orders: expressions evaluate in source
+order, implicit names resolve value→precision→width, and pair rows insert
+format→width→precision. Precision `*` consumes its implicit position before the
+value. Count is a distinct `(input, count)` row, never an integer substitution.
+Flags16/32 identify dynamic width/precision; their u16 row index remains present
+even when zero. Captures keep the same literal-origin authority, and generated
+unsafe scope still covers only the actual Arguments constructor.
+
+The real nine-constructor provider retains all six new original trait headers,
+attributes and method documentation plus their original constructor bodies.
+Its eight independent Rust metadata/object/link/native commands match. The
+remaining reduced support is labeled explicitly; the observer checks real
+formatter-method pointer identity and pair storage rather than invoking a
+replacement Formatter. The full Formatter/write/helper/PanicInfo/handler graph
+and the Count comparison/overflow path remain required.
+
+Actual transient Output440→472 grows with constructor names16→44 bytes;
+position columns12→40 bytes per demanded input. Raw options56 and encoded
+options12 are actual measurements. Template72, LibraryValue12, Kind28/Node36
+and Origin32 remain unchanged. Ten-pair workloads at N8/32/128 pay
+work11732/50576/211796 and bytes22416/93156/377052, with actual pair capacities
+128/512/2048. Empty input has zero pair capacity. Every failed payment in the
+small dynamic-count case stops without publishing a result. These are bounded
+work/allocation observations, not a timing or worst-case hashing claim.
+
+
+Private qualification retains four unchanged passing controls from the234.25s
+six-test predecessor and reruns both affected controls successfully in111.67s.
+Only two test files differ (the missing-member diagnostic assertion and measured
+layout guards); compiler bytes match. Separate production/CLI lexer10 passes
+153.11s on the identical3,002-source map. Actual production source semantic
+inspection passes2.80s. Locked CPPGM matches the independent nine-constructor
+trace in1.97s: `e1;t1;p0M7;p1D7;p2O7;p3L7;p4U7;p5P7;p6B7;p7e7;p8E7;d7;9`.
+The pinned production CLI is
+`4a46a69009d2a670696bd17aa23be1d74ce4d76337f9fc87ddf76ecfe1b31260`.
+The lint, formatting and missing-member assertion failures remain recorded;
+no passing predecessor receipt is inferred from them. Upstream source verification
+passes. Integrator combined-source/core acceptance remains separate.

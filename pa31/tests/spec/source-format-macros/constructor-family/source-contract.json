@@ -1,0 +1,165 @@
+{
+  "state": "predictions frozen before source-family observation",
+  "scope": "Nine real format_argument constructor bodies with six full original new trait headers; retained original3 reduced support and user observer. Count full body retained separately, no Count execution/Formatter write/full core claim",
+  "path": "pa31/tests/spec/source-format-macros/constructor-family/source-nine-traits.rs",
+  "sha256": "6b2ad218e3a8b4d8bed1af3dfd2d629635765674c1a483b2e31f2c87a22f2c39",
+  "expected_metadata": {
+    "2021": 0,
+    "2024": 0
+  },
+  "expected_native_stdout": "e1;t1;p0M7;p1D7;p2O7;p3L7;p4U7;p5P7;p6B7;p7e7;p8E7;d7;9\n",
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "options": [
+    "--crate-type=lib",
+    "--target=x86_64-unknown-linux-gnu",
+    "-Cpanic=abort",
+    "-Coverflow-checks=yes",
+    "--cap-lints=allow"
+  ],
+  "consumer": {
+    "path": "pa31/tests/spec/source-format-macros/constructor-family/source-consumer.c",
+    "sha256": "9be2cf234a50cbf3ccf8248de2a0240eef37144a409d9fa0141b4e78895d22ad"
+  },
+  "host": {
+    "path": "/usr/bin/x86_64-linux-gnu-gcc-15",
+    "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88",
+    "version": "x86_64-linux-gnu-gcc-15 (Ubuntu 15.2.0-16ubuntu1) 15.2.0"
+  },
+  "c_options": [
+    "-std=c11",
+    "-Wall",
+    "-Wextra",
+    "-Werror"
+  ],
+  "env": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "predecessor": {
+    "path": "pa31/tests/spec/source-format-macros/static-options/source-provider.rs",
+    "sha256": "b832c418f8d7d9e5ce6eb75e187793e0d63d97b4eb3f5c4b47a71438da248971",
+    "actual_observation": "source-oracle/observation.json both metadatafailed E0425 and E0034; no native observation"
+  },
+  "authored_setup_edits": [
+    "Add extern_types request for actual VTable owner",
+    "Append exact pinned DynMetadata/Foreign VTable declaration pair; no fields invented",
+    "Add only genuine verbatim shared-reference Copy and const Clone impls from pinned core"
+  ],
+  "unchanged_pinned_chunks_from_predecessor": true,
+  "primary_marker_rule": "compiler/rustc_trait_selection/src/traits/select/candidate_assembly.rs1154 and select/mod.rs2220; callable signature types need not Clone/Copy",
+  "added_original": {
+    "path": "library/core/src/ptr/metadata.rs",
+    "file_sha256": "90be519b27b46064f0bec607170ffce37aa9afb160a1edfab9c51641c8af15e2",
+    "byte_start": 6287,
+    "byte_end": 6691,
+    "first": 158,
+    "last": 170,
+    "sha256": "4b802bd0482e21d8a7ffa2182167a027ad5938f97eaca1e22e55d41152465794"
+  },
+  "source_pins": {
+    "new_display": {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/fmt/rt.rs",
+      "source_sha256": "7a7dd4b1640a734fcb82f178ab69868b8f2f624a8c1f5a6fcf85002f4e2e4423",
+      "start": 4183,
+      "end": 4318,
+      "chunk_sha256": "484a09a3614711fdf1054091f4f149bd6ed77fbd34d0adcc19717c499f8b7cfa"
+    },
+    "shared_copy": {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/marker.rs",
+      "source_sha256": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575",
+      "first": 487,
+      "last": 489,
+      "start": 17337,
+      "end": 17421,
+      "chunk_sha256": "e5de3fc032e9452a800ea71f308e804f14711f915bf29cbb6b9044c797938670"
+    },
+    "shared_clone": {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/clone.rs",
+      "source_sha256": "fd3467602106e2a2ec416485d8d058b6d2b434ceac7689b4e2f4c792079e500f",
+      "first": 777,
+      "last": 786,
+      "start": 29603,
+      "end": 29994,
+      "chunk_sha256": "2be75cc17df516a1c3db0b307ac7ce3db30b70dff68403495942ab5704529272"
+    },
+    "new_lower_hex": {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/fmt/rt.rs",
+      "source_sha256": "7a7dd4b1640a734fcb82f178ab69868b8f2f624a8c1f5a6fcf85002f4e2e4423",
+      "start": 4710,
+      "end": 4848,
+      "chunk_sha256": "707eebd9a879e1ad33b6561fe1dc613e145e1a5e76ff0f5237620649b0d76c66"
+    }
+  },
+  "selection_observer": "Runtime unsafe transmute of actual function pointers to usize; C compares authentic expected source method addresses. No Formatter fabricated or function called through invalid reference.",
+  "pre_observation_setup": "Only authored observer/user construction changes; original new method/header/include declaration chunks retained byte-for-byte",
+  "primary_additions": [
+    {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/fmt/mod.rs",
+      "source_sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+      "first": 1262,
+      "last": 1267,
+      "chunk_sha256": "452e5b812504ecd3e4ff75964e0956e4bc1e7c8f6626d9072246e6a1725a4fd4"
+    },
+    {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/fmt/mod.rs",
+      "source_sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+      "first": 1321,
+      "last": 1326,
+      "chunk_sha256": "8c12362c89f7963714cfb606fa265390cbfb63eab9d17f728d11e4ecb38d87bd"
+    },
+    {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/fmt/mod.rs",
+      "source_sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+      "first": 1431,
+      "last": 1436,
+      "chunk_sha256": "050f5b9dd18a82108a2ba85800bb890b098d9db21b58614d191e79b7fb05ae5e"
+    },
+    {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/fmt/mod.rs",
+      "source_sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+      "first": 1489,
+      "last": 1495,
+      "chunk_sha256": "b766201a89b7973065f27d13c02013bf1e07325667c26074f3aa389471a89c8d"
+    },
+    {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/fmt/mod.rs",
+      "source_sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+      "first": 1541,
+      "last": 1546,
+      "chunk_sha256": "8d987a073f3678fa8c59464b7dd5402ecbb619b89e79a2ebb76f147a178d3e6d"
+    },
+    {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/fmt/mod.rs",
+      "source_sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+      "first": 1592,
+      "last": 1597,
+      "chunk_sha256": "1fd252658fd646e767bd934d8f4c29e98f32f0e490c8eaa6bd92b038e4c4ee67"
+    },
+    {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/macros/mod.rs",
+      "source_sha256": "9784131e43d255fed7a07ae18cbc72748eedbebe65dfcefeee999989289df30c",
+      "first": 1315,
+      "last": 1321,
+      "chunk_sha256": "0b07dd82e8199c91e0727e6b69dff4d8727d65b95c0c7a121ec474bef7ccb5f6"
+    },
+    {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/fmt/rt.rs",
+      "source_sha256": "7a7dd4b1640a734fcb82f178ab69868b8f2f624a8c1f5a6fcf85002f4e2e4423",
+      "first": 100,
+      "last": 103,
+      "chunk_sha256": "2d2743cb7d80c06b48ba5e3d680004612438fdf66e641962bf1a5772dc4ca0db"
+    },
+    {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/fmt/rt.rs",
+      "source_sha256": "7a7dd4b1640a734fcb82f178ab69868b8f2f624a8c1f5a6fcf85002f4e2e4423",
+      "first": 108,
+      "last": 127,
+      "chunk_sha256": "c2bf982779efea94b7977547eaae0876471728a32aa0c3ea118663f7b9b32939"
+    }
+  ],
+  "auxiliary": {
+    "pa31/tests/spec/source-format-macros/constructor-family/fmt_trait_method_doc.md": "acad9eda91f220b8ed49ee4851c02446b63fb1b58c092d01e8bfd42ad6a43d97"
+  }
+}
