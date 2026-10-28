@@ -125,6 +125,8 @@ fn require_owner(
         ItemKind::Function { .. } => {
             definition.kind == DefKind::Function
                 && associated.is_none()
+                && report.resolution.scopes.get(definition.scope.0 as usize)
+                    .is_some_and(|scope| !scope.associated)
                 && !report.resolution.foreign_owners.contains_key(&owner)
         }
         ItemKind::Trait { .. } => {

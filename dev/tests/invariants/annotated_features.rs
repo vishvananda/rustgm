@@ -1,6 +1,26 @@
 //! Source feature clauses retain exact owners without publishing a body permission.
 use super::*;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
+
+#[test]
+fn staged_missing_member_inventory_cannot_classify_a_method_as_a_free_function() -> Result {
+    let report = crate::test_source::resolve("trait Tr { fn method(); } fn free() {}", true)?;
+    let mut facts = crate::sema::declarations::analyze(&report)?;
+    facts.associated = crate::sema::associated::Inventory::default();
+    let mut seen = 0;
+    for (index, definition) in report.resolution.definitions.iter().enumerate() {
+        let name = report.package.names.get(definition.name);
+        if definition.kind != DefKind::Function || !matches!(name, "method" | "free") {
+            continue;
+        }
+        let key = definition.node.ok_or("actual function source")?;
+        let result = require_owner(&report, &facts, DefId(u32::try_from(index)?), key);
+        assert_eq!(result.is_ok(), name == "free");
+        seen += 1;
+    }
+    assert_eq!(seen, 2);
+    Ok(())
+}
 const ROOT: &str =
     "#![feature(staged_api,rustc_attrs)]#![stable(feature=\"source_fixture\",since=\"1.0.0\")]";
 fn fixture(name: &str) -> Result<String> {

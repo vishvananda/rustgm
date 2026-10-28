@@ -92,6 +92,8 @@ fn feature_only_declarations_require_payment_and_reuse_completed_parent_scopes()
     let parent = Arc::clone(generics.environments.get(&owner).ok_or("completed scope")?);
     assert!(parent.assumes_feature(&types, feature, &|_, _| Ok(()))?);
     generics.parents.insert(child, owner);
+    assert!(generics.complete_environment(&mut types, child).is_err());
+    assert!(!generics.environments.contains_key(&child));
     generics.complete_environment_charged(&mut types, child, &pay)?;
     assert!(Arc::ptr_eq(
         &parent,
@@ -103,5 +105,71 @@ fn feature_only_declarations_require_payment_and_reuse_completed_parent_scopes()
             .complete_environment_charged(&mut types, owner, &pay)
             .is_err()
     );
+    Ok(())
+}
+
+#[test]
+fn rebuilding_bounds_preserves_only_the_declared_feature_prefix_and_failed_attempts() -> TestResult
+{
+    let mut types = Store::default();
+    let feature = types.intern_feature_charged("declared", &|_, _| Ok(()))?;
+    let implied = types.intern_feature_charged("not_declared", &|_, _| Ok(()))?;
+    let owner = DefId(1);
+    let source = crate::resolve::unit::NodeKey {
+        file: crate::resolve::unit::FileId(0),
+        node: crate::syntax::ast::NodeId::new(0),
+    };
+    let requirement = Predicate {
+        source,
+        value: predicates::Predicate {
+            ty: TypeId::UNIT,
+            bound: predicates::Bound::Sized,
+        }
+        .into(),
+    };
+    let mut generics = Generics::default();
+    generics.predicates.insert(
+        owner,
+        vec![
+            Predicate {
+                source,
+                value: Clause::UnstableFeature(feature),
+            },
+            requirement,
+            Predicate {
+                source,
+                value: Clause::UnstableFeature(implied),
+            },
+        ],
+    );
+    generics.declared_predicate_counts.insert(owner, 2);
+    let attempted = Cell::new(false);
+    assert!(
+        generics
+            .replace_declaration_bounds_charged(&types, owner, vec![requirement], &|_, _| {
+                attempted.set(true);
+                Err("prefix payment")
+            })
+            .is_err()
+    );
+    assert!(attempted.get());
+    assert_eq!(generics.predicates[&owner].len(), 3);
+    assert_eq!(generics.declared_predicate_counts[&owner], 2);
+    for _ in 0..3 {
+        generics.replace_declaration_bounds_charged(
+            &types,
+            owner,
+            vec![requirement],
+            &|_, _| Ok(()),
+        )?;
+        assert_eq!(
+            generics
+                .declared_predicates(owner)
+                .iter()
+                .map(|p| p.value)
+                .collect::<Vec<_>>(),
+            vec![Clause::UnstableFeature(feature), requirement.value]
+        );
+    }
     Ok(())
 }

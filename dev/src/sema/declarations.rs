@@ -46,6 +46,7 @@ mod primitive_constants;
 mod projections;
 mod receivers;
 mod required_features;
+pub(in crate::sema) use required_features::RequiredFeatures;
 mod self_constructors;
 mod self_schema;
 mod slice_methods;

@@ -630,7 +630,7 @@ impl Checker<'_> {
             // Keep complete clauses, including equalities emitted by one bound.
             family.requirements = Some(completed[..input_count].iter().map(|p| p.value).collect());
         }
-        self.facts.generics.predicates.insert(owner, completed);
+        self.replace_source_bounds(owner, completed)?;
         self.retain_alias_edges(owner, alias_edges)?;
         self.retain_raw_bounds(owner, bounds, context)?;
         Ok(())

@@ -83,7 +83,9 @@ impl super::comparisons::LibraryContracts<'_> {
                 default: None,
             }],
         );
-        self.complete_source_environment(origin, definition)?;
+        self.facts
+            .source_complete_environment(self.report, origin, definition)
+            .map_err(|e| self.error(origin, e))?;
         Ok((formal, subject))
     }
     pub(in crate::sema::declarations) fn intrinsic_signature(

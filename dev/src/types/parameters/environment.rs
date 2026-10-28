@@ -358,7 +358,7 @@ impl Environment {
                         self = self.with_feature_assumptions_charged(
                             types,
                             std::slice::from_ref(&id),
-                            &|steps, bytes| pay(steps, bytes),
+                            &pay,
                         )?;
                         continue;
                     }

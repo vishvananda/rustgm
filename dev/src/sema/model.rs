@@ -800,6 +800,7 @@ impl Declarations {
         self.collect_declaration_attributes(report)
     }
     fn import_resolution(&mut self, report: &Report) -> Result<(), Error> {
+        let mut required_features = super::declarations::RequiredFeatures::new(report)?;
         for reference in &report.resolution.references {
             if reference.namespace != Namespace::Macro {
                 let facts = self.node_mut(reference.node).ok_or_else(|| {
@@ -813,6 +814,15 @@ impl Declarations {
             }
         }
         for (index, definition) in report.resolution.definitions.iter().enumerate() {
+            if let Some(key) = definition.node
+                && required_features.has_pending()
+            {
+                let owner =
+                    DefId(u32::try_from(index).map_err(|_| {
+                        Error::unlocated("too many feature declaration identities")
+                    })?);
+                required_features.declaration(report, self, owner, key)?;
+            }
             if definition.kind == DefKind::Static
                 && let Some(key) = definition.node
                 && let Kind::Item(item) = Self::kind(report, key)
@@ -848,7 +858,7 @@ impl Declarations {
                 .ok_or_else(|| Self::error(report, key, "invalid pattern binding alias"))?
                 .binding = Some(definition);
         }
-        Ok(())
+        required_features.finish()
     }
     #[must_use]
     pub fn node(&self, key: NodeKey) -> Option<&NodeFacts> {

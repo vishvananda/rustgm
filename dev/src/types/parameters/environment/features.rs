@@ -20,6 +20,17 @@ impl Premises {
     }
 }
 impl Environment {
+    pub(crate) fn has_feature_assumptions(&self) -> bool {
+        self.traits.as_ref().is_some_and(|traits| {
+            traits
+                .mapped
+                .as_ref()
+                .map_or(traits.as_ref(), |mapped| mapped.source.as_ref())
+                .features
+                .as_ref()
+                .is_some_and(|features| !features.entries.is_empty())
+        })
+    }
     /// Add actual declared feature premises, paying cold storage before publication.
     /// # Errors
     /// Rejects foreign IDs, immutable query scopes and exhausted payments.

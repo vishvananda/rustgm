@@ -93,7 +93,9 @@ impl super::comparisons::LibraryContracts<'_> {
             .generics
             .parameters
             .insert(declaration.definition, parameters);
-        self.complete_source_environment(declaration.origin, declaration.definition)?;
+        self.facts
+            .source_complete_environment(self.report, declaration.origin, declaration.definition)
+            .map_err(|e| self.error(declaration.origin, e))?;
         Ok(arguments)
     }
     fn library_parameter(

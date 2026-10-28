@@ -207,6 +207,50 @@ impl Generics {
             .unwrap_or(predicates.len());
         &predicates[..count]
     }
+    pub(crate) fn replace_declaration_bounds_charged(
+        &mut self,
+        store: &Store,
+        owner: DefId,
+        mut completed: Vec<Predicate>,
+        pay: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        use crate::types::parameters::clauses::Clause;
+        let features = self
+            .declared_predicates(owner)
+            .iter()
+            .filter(|predicate| matches!(predicate.value, Clause::UnstableFeature(_)))
+            .count();
+        if features > 0 {
+            let growth = crate::support::retained::Growth::vector::<Predicate>(
+                completed.len(),
+                completed.capacity(),
+                features,
+            );
+            pay(
+                growth
+                    .work
+                    .saturating_add(completed.len())
+                    .saturating_add(features),
+                growth.bytes,
+            )?;
+            completed
+                .try_reserve(features)
+                .map_err(|_| "feature predicate prefix allocation failed")?;
+            for predicate in self.declared_predicates(owner) {
+                if let Clause::UnstableFeature(id) = predicate.value {
+                    pay(1, 0)?;
+                    store
+                        .feature_name(id)
+                        .ok_or("foreign declared feature requirement")?;
+                    completed.push(*predicate);
+                }
+            }
+            completed.rotate_right(features);
+        }
+        self.predicates.insert(owner, completed);
+        self.declared_predicate_counts.remove(&owner);
+        Ok(())
+    }
     #[must_use]
     pub fn has_parameters(&self, owner: DefId) -> bool {
         self.scopes(owner)
@@ -349,6 +393,9 @@ impl Generics {
             && let Some(environment) = self.environments.get(parent)
             && environment.reusable_declaration_prefix(self.projection_promises.as_ref())
         {
+            if pay.is_none() && environment.has_feature_assumptions() {
+                return Err("feature premises require charged source environment publication");
+            }
             self.prepay_environment(pay, 0)?;
             self.environments.insert(owner, Arc::clone(environment));
             return Ok(());
@@ -438,7 +485,7 @@ impl Generics {
         if features {
             let pay =
                 pay.ok_or("feature premises require charged source environment publication")?;
-            environment.with_clauses_charged(store, &predicates, &|steps, bytes| pay(steps, bytes))
+            environment.with_clauses_charged(store, &predicates, &pay)
         } else {
             environment.with_clauses(store, &predicates)
         }

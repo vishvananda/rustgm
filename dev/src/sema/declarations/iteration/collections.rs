@@ -332,7 +332,9 @@ impl super::super::comparisons::LibraryContracts<'_> {
         } else {
             None
         };
-        self.complete_source_environment(source, declaration.definition)?;
+        self.facts
+            .source_complete_environment(self.report, source, declaration.definition)
+            .map_err(|e| self.error(source, e))?;
         let signature = self.collection_method(iteration, declaration, subject, item, iterator)?;
         Ok(Original {
             declaration,
