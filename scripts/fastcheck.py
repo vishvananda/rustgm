@@ -48,7 +48,7 @@ def launch(args, started):
         raise ValueError("budget must be between 20 and 300 seconds")
     retired = retire(ROOT)
     if retired:
-        print(f"Retired {len(retired)} superseded incremental sessions; latest warm caches retained.", flush=True)
+        print(f"Retired {len(retired)} obsolete build-cache entries; latest warm caches retained.", flush=True)
     folder = ROOT / f"obj/qualification/fast/{time.time_ns()}"
     command = [sys.executable, "scripts/resources.py", "run", "--wait-seconds", "0"]
     if discover(ROOT) is not None:
