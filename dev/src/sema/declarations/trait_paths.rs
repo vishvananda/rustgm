@@ -340,10 +340,7 @@ impl Checker<'_> {
                 continue;
             };
             if let crate::sema::associated::OwnerKind::Trait { definition, .. } = owner.kind {
-                self.facts
-                    .generics
-                    .complete_environment(&mut self.facts.types, definition)
-                    .map_err(|e| self.error(owner.source, e))?;
+                self.complete_source_environment(owner.source, definition)?;
             }
         }
         Ok(())

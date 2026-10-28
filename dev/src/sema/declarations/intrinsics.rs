@@ -83,10 +83,7 @@ impl super::comparisons::LibraryContracts<'_> {
                 default: None,
             }],
         );
-        self.facts
-            .generics
-            .complete_environment(&mut self.facts.types, definition)
-            .map_err(|e| self.error(origin, e))?;
+        self.complete_source_environment(origin, definition)?;
         Ok((formal, subject))
     }
     pub(in crate::sema::declarations) fn intrinsic_signature(

@@ -4,6 +4,9 @@
 //! headers, hash control bytes and shared immutable `Arc`/`Rc` pointees are excluded;
 //! this is a deterministic work/storage policy, not a heap-size measurement.
 
+/// A cost payer supplies no semantic permission.
+pub(crate) type Payment<'a> = &'a dyn Fn(usize, usize) -> Result<(), &'static str>;
+
 pub(crate) fn vector<T>(values: &Vec<T>) -> usize {
     values.capacity().saturating_mul(size_of::<T>())
 }

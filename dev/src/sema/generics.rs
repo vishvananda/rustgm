@@ -3,6 +3,9 @@ mod builtin_formation;
 pub(super) mod captures;
 mod families;
 mod input_contracts;
+#[cfg(test)]
+#[path = "../../tests/invariants/metered_premises.rs"]
+mod metered_tests;
 mod traits;
 use crate::support::hash::HashMap;
 use crate::{
@@ -297,6 +300,22 @@ impl Generics {
         store: &mut Store,
         owner: DefId,
     ) -> Result<(), &'static str> {
+        self.complete_environment_with(store, owner, None)
+    }
+    pub(crate) fn complete_environment_charged(
+        &mut self,
+        store: &mut Store,
+        owner: DefId,
+        pay: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        self.complete_environment_with(store, owner, Some(pay))
+    }
+    fn complete_environment_with(
+        &mut self,
+        store: &mut Store,
+        owner: DefId,
+        pay: Option<crate::support::retained::Payment<'_>>,
+    ) -> Result<(), &'static str> {
         if !self
             .scopes(owner)
             .any(|id| self.parameters.contains_key(&id) || self.predicates.contains_key(&id))
@@ -313,11 +332,29 @@ impl Generics {
             && let Some(environment) = self.environments.get(parent)
             && environment.reusable_declaration_prefix(self.projection_promises.as_ref())
         {
+            self.prepay_environment(pay, 0)?;
             self.environments.insert(owner, Arc::clone(environment));
             return Ok(());
         }
-        let environment = self.elaborated_environment(store, owner)?;
+        self.elaborate_trait_bounds(store, owner)?;
+        let environment = self.parameter_environment_with(store, owner, pay)?;
+        self.prepay_environment(pay, size_of::<Environment>() + 2 * size_of::<usize>())?;
         self.environments.insert(owner, Arc::new(environment));
+        Ok(())
+    }
+    fn prepay_environment(
+        &self,
+        pay: Option<crate::support::retained::Payment<'_>>,
+        allocation: usize,
+    ) -> Result<(), &'static str> {
+        if let Some(pay) = pay {
+            let growth = crate::support::retained::Growth::map::<DefId, Arc<Environment>>(
+                self.environments.len(),
+                self.environments.capacity(),
+                1,
+            );
+            pay(growth.work, growth.bytes.saturating_add(allocation))?;
+        }
         Ok(())
     }
     pub(crate) fn elaborated_environment(
@@ -328,6 +365,15 @@ impl Generics {
         self.elaborate_trait_bounds(store, owner)?;
         self.parameter_environment(store, owner)
     }
+    pub(crate) fn elaborated_environment_charged(
+        &mut self,
+        store: &mut Store,
+        owner: DefId,
+        pay: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Environment, &'static str> {
+        self.elaborate_trait_bounds(store, owner)?;
+        self.parameter_environment_with(store, owner, Some(pay))
+    }
     /// Build assumptions from completed declaration parameters and predicates.
     /// Consumers may share this immutable environment across implicit bodies.
     /// # Errors
@@ -337,12 +383,48 @@ impl Generics {
         store: &Store,
         owner: DefId,
     ) -> Result<Environment, &'static str> {
-        let predicates = self
-            .predicates_in_scope(owner)
-            .map(|p| p.value)
-            .collect::<Vec<_>>();
-        self.parameter_scope(store, owner)?
-            .with_clauses(store, &predicates)
+        self.parameter_environment_with(store, owner, None)
+    }
+    pub(crate) fn parameter_environment_charged(
+        &self,
+        store: &Store,
+        owner: DefId,
+        pay: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Environment, &'static str> {
+        self.parameter_environment_with(store, owner, Some(pay))
+    }
+    fn parameter_environment_with(
+        &self,
+        store: &Store,
+        owner: DefId,
+        pay: Option<crate::support::retained::Payment<'_>>,
+    ) -> Result<Environment, &'static str> {
+        let mut features = false;
+        let mut predicates = Vec::new();
+        for predicate in self.predicates_in_scope(owner) {
+            features |= matches!(
+                predicate.value,
+                crate::types::parameters::clauses::Clause::UnstableFeature(_)
+            );
+            if features && pay.is_none() {
+                return Err("feature premises require charged source environment publication");
+            }
+            if let Some(pay) = pay {
+                let growth = crate::support::retained::Growth::vector::<
+                    crate::types::parameters::clauses::Clause,
+                >(predicates.len(), predicates.capacity(), 1);
+                pay(1 + growth.work, growth.bytes)?;
+            }
+            predicates.push(predicate.value);
+        }
+        let environment = self.parameter_scope(store, owner)?;
+        if features {
+            let pay =
+                pay.ok_or("feature premises require charged source environment publication")?;
+            environment.with_clauses_charged(store, &predicates, &|steps, bytes| pay(steps, bytes))
+        } else {
+            environment.with_clauses(store, &predicates)
+        }
     }
     /// Declare parameters without granting the unenforced written bounds of an alias.
     /// # Errors

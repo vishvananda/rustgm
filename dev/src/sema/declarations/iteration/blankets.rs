@@ -124,8 +124,7 @@ impl Checker<'_> {
         }
         let environment = self
             .facts
-            .generics
-            .parameter_environment(&self.facts.types, declaration.definition)
+            .source_parameter_environment(self.report, source, declaration.definition)
             .map_err(|e| self.error(source, e))?;
         self.facts
             .generics

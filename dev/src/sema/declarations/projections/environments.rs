@@ -102,10 +102,7 @@ impl Checker<'_> {
             return Ok(());
         }
         self.complete_bound_environment(owner, context)?;
-        self.facts
-            .generics
-            .complete_environment(&mut self.facts.types, owner)
-            .map_err(|e| self.error(key, e))?;
+        self.complete_source_environment(key, owner)?;
         self.projections.environments.insert(owner, State::Complete);
         Ok(())
     }
@@ -118,9 +115,6 @@ impl Checker<'_> {
         if self.projections.environments.get(&owner) == Some(&State::Complete) {
             return Ok(());
         }
-        self.facts
-            .generics
-            .complete_environment(&mut self.facts.types, owner)
-            .map_err(|e| self.error(key, e))
+        self.complete_source_environment(key, owner)
     }
 }

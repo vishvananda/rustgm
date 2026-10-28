@@ -565,8 +565,7 @@ impl Engine {
                 .map_err(|e| report.body_error(source, e))?;
             let parameters = Arc::new(
                 facts
-                    .generics
-                    .parameter_environment(&facts.types, definition)
+                    .source_parameter_environment(report, source, definition)
                     .map_err(|e| report.body_error(source, e))?,
             );
             let checked = self.prove_body(

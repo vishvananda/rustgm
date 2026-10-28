@@ -45,8 +45,7 @@ pub(crate) fn append(
         validate_default(facts, definition, default).map_err(error)?;
         let environment = Arc::new(
             facts
-                .generics
-                .parameter_environment(&facts.types, definition)
+                .source_parameter_environment(report, source, definition)
                 .map_err(error)?,
         );
         let mut contract =

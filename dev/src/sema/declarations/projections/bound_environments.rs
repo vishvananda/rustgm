@@ -234,11 +234,7 @@ impl Checker<'_> {
         };
         let roots = bounds.roots.clone();
         let key = roots[0].0;
-        let environment = self
-            .facts
-            .generics
-            .elaborated_environment(&mut self.facts.types, owner)
-            .map_err(|e| self.error(key, e))?;
+        let environment = self.elaborated_source_environment(key, owner)?;
         self.projections
             .raw_environments
             .insert(owner, Arc::new(environment));

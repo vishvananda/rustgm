@@ -306,7 +306,11 @@ impl Environment {
         types: &Store,
         predicates: &[Predicate],
     ) -> Result<Self, &'static str> {
-        self.with_requirements(types, predicates.iter().copied().map(Clause::Predicate))
+        self.with_requirements(
+            types,
+            predicates.iter().copied().map(Clause::Predicate),
+            None,
+        )
     }
 
     /// Retain whole quantified trait and builtin assumptions beside ordinary predicates.
@@ -316,13 +320,26 @@ impl Environment {
     /// Rejects unsupported quantified bounds, malformed or foreign identities,
     /// and exhausted storage or traversal limits before publishing an environment.
     pub fn with_clauses(self, types: &Store, clauses: &[Clause]) -> Result<Self, &'static str> {
-        self.with_requirements(types, clauses.iter().copied())
+        self.with_requirements(types, clauses.iter().copied(), None)
+    }
+
+    /// Retain a whole clause batch while paying actual feature-premise growth.
+    /// # Errors
+    /// Rejects invalid clauses, foreign identities and failed storage payments.
+    pub fn with_clauses_charged(
+        self,
+        types: &Store,
+        clauses: &[Clause],
+        pay: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Self, &'static str> {
+        self.with_requirements(types, clauses.iter().copied(), Some(pay))
     }
 
     fn with_requirements(
         mut self,
         types: &Store,
         clauses: impl ExactSizeIterator<Item = Clause>,
+        pay: Option<crate::support::retained::Payment<'_>>,
     ) -> Result<Self, &'static str> {
         if self.parameters.extended() {
             return Err("rigid query parameter scope is immutable");
@@ -337,6 +354,14 @@ impl Environment {
         for clause in clauses {
             match clause {
                 Clause::UnstableFeature(id) => {
+                    if let Some(pay) = pay {
+                        self = self.with_feature_assumptions_charged(
+                            types,
+                            std::slice::from_ref(&id),
+                            &|steps, bytes| pay(steps, bytes),
+                        )?;
+                        continue;
+                    }
                     types.feature_name(id).ok_or("foreign feature assumption")?;
                     Arc::make_mut(self.traits.get_or_insert_with(Default::default))
                         .insert(types, clause)?;

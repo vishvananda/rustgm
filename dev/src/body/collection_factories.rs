@@ -45,8 +45,7 @@ pub(super) fn append(
         original.validate(facts).map_err(error)?;
         let environment = Arc::new(
             facts
-                .generics
-                .parameter_environment(&facts.types, original.declaration.method)
+                .source_parameter_environment(report, source, original.declaration.method)
                 .map_err(error)?,
         );
         let mut contract = super::regions::callable(

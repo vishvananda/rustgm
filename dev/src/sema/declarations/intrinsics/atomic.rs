@@ -120,10 +120,7 @@ impl Checker<'_> {
             .parameters
             .insert(definition, Vec::new());
         self.facts.generics.parents.insert(definition, owner);
-        self.facts
-            .generics
-            .complete_environment(&mut self.facts.types, definition)
-            .map_err(|e| self.error(origin, e))?;
+        self.complete_source_environment(origin, definition)?;
         self.facts
             .associated
             .declare_language_inherent(

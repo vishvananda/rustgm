@@ -122,10 +122,7 @@ impl Checker<'_> {
             return Ok(());
         }
         self.complete_bound_environment(owner, context)?;
-        self.facts
-            .generics
-            .complete_environment(&mut self.facts.types, owner)
-            .map_err(|e| self.error(key, e))?;
+        self.complete_source_environment(key, owner)?;
         self.facts.generics.has_nominal_requirements |=
             self.facts.generics.parameters.contains_key(&owner)
                 || self.facts.generics.predicates.contains_key(&owner);

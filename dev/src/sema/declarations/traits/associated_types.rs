@@ -268,10 +268,7 @@ impl Checker<'_> {
                         "missing associated bound source",
                     )
                 })?;
-            self.facts
-                .generics
-                .complete_environment(&mut self.facts.types, id)
-                .map_err(|e| self.error(key, e))?;
+            self.complete_source_environment(key, id)?;
             self.validate_bound_projection_requirements(id, &mut steps, 1_000_000)?;
             let environment = self.facts.generics.environments.get(&id).cloned();
             let mut proof = self.declaration_proof(id, environment);

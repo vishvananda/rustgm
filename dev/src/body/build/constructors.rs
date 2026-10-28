@@ -94,8 +94,7 @@ pub fn templates(
             std::collections::hash_map::Entry::Vacant(entry) => Arc::clone(
                 entry.insert(Arc::new(
                     facts
-                        .generics
-                        .parameter_environment(&facts.types, owner)
+                        .source_parameter_environment(report, source, owner)
                         .map_err(error)?,
                 )),
             ),

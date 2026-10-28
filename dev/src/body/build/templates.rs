@@ -537,8 +537,7 @@ fn environment(
         Ok(Arc::clone(environment))
     } else {
         facts
-            .generics
-            .parameter_environment(&facts.types, owner)
+            .source_parameter_environment(report, source, owner)
             .map(Arc::new)
             .map_err(|e| report.body_error(source, e))
     }

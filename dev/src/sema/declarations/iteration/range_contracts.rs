@@ -304,10 +304,7 @@ impl super::super::comparisons::LibraryContracts<'_> {
                 },
             )
             .map_err(|e| self.error(source, e))?;
-        self.facts
-            .generics
-            .complete_environment(&mut self.facts.types, declaration.definition)
-            .map_err(|e| self.error(source, e))?;
+        self.complete_source_environment(source, declaration.definition)?;
         Ok(predicate)
     }
 }
