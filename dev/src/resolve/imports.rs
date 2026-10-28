@@ -1,4 +1,5 @@
 //! Import dependencies and glob deltas wake only the scopes and paths they affect.
+mod lineage;
 mod trees;
 use super::{
     index::{PRIMITIVES, Resolver},
@@ -20,6 +21,8 @@ pub(crate) enum TextualSource {
     Found(Binding),
 }
 pub(crate) struct Work {
+    lineage: Option<Box<lineage::Lineage>>,
+    pub(super) lineage_budget: super::lint_policy::producer::Work,
     queue: VecDeque<usize>,
     queued: Vec<bool>,
     waiting: HashMap<BindingKey, HashSet<usize>>,
@@ -35,7 +38,7 @@ pub(crate) struct Work {
     snapshot: super::table::Snapshot,
     cursors: Vec<usize>,
     errors: Vec<Option<Error>>,
-    candidates: HashMap<BindingKey, Vec<Binding>>,
+    pub(super) candidates: HashMap<BindingKey, Vec<Binding>>,
     provided: Vec<HashSet<Key>>,
     textual: HashMap<usize, TextualSource>,
     attempts: usize,
@@ -50,6 +53,8 @@ impl Work {
     pub fn new(facts: &super::model::Resolution) -> Self {
         let count = facts.imports.len();
         Self {
+            lineage: None,
+            lineage_budget: super::lint_policy::producer::Work::default(),
             queue: (0..count).collect(),
             queued: vec![true; count],
             waiting: HashMap::default(),
@@ -205,23 +210,24 @@ impl Resolver<'_> {
         }
         let mut work = Work::new(self.facts);
         self.drive_imports(&mut work)?;
-        self.diagnose_imports(work)
+        self.diagnose_imports(&mut work)
     }
     /// Finish the expansion phase's import worklist instead of re-queueing
     /// every import: only imports woken by later declarations run again.
-    pub fn finish_imports(&mut self, mut work: Work) -> Result<(), Error> {
+    pub fn finish_imports(&mut self, mut work: Work) -> Result<Work, Error> {
         work.observe = false;
         work.extend(self.facts);
         for index in std::mem::take(&mut work.primitive_paths) {
             work.wake(index);
         }
         self.drive_imports(&mut work)?;
-        self.diagnose_imports(work)
+        self.diagnose_imports(&mut work)?;
+        Ok(work)
     }
     /// Report the first failed or unresolved import, in import order.
-    fn diagnose_imports(&self, work: Work) -> Result<(), Error> {
-        for (index, error) in work.errors.into_iter().enumerate() {
-            if let Some(error) = error {
+    fn diagnose_imports(&self, work: &mut Work) -> Result<(), Error> {
+        for (index, error) in work.errors.iter_mut().enumerate() {
+            if let Some(error) = error.take() {
                 return Err(error);
             }
             if !work.resolved[index] {
@@ -313,7 +319,7 @@ impl Resolver<'_> {
         path: crate::resolve::paths::Identified<'_>,
         ns: Namespace,
         work: &mut Work,
-    ) -> Result<(Lookup, super::package::ModuleId), Error> {
+    ) -> Result<(Lookup, super::package::ModuleId, Option<Selection>), Error> {
         if ns == Namespace::Macro
             && path.len() == 1
             && let Some(binding) = work.textual.get(&index).copied()
@@ -346,7 +352,11 @@ impl Resolver<'_> {
                 }
                 TextualSource::Missing | TextualSource::Pending => Lookup::Missing,
             };
-            return Ok((found, self.facts.scopes[import.scope.0 as usize].module));
+            return Ok((
+                found,
+                self.facts.scopes[import.scope.0 as usize].module,
+                None,
+            ));
         }
         let c = self.context(
             self.facts.scopes[import.scope.0 as usize].module,
@@ -376,6 +386,8 @@ impl Resolver<'_> {
             .unwrap_or(crate::expand::marks::ExpansionId(0));
         let ambiguous = work.ambiguous_early_path(self.facts, &observed, introduction);
         let privacy = observed.privacy.unwrap_or(c.module);
+        let terminal = observed.selected.as_mut().and_then(Vec::pop)
+            .filter(|selection| matches!(&result, Ok(Lookup::Found(binding)) if *binding == selection.binding));
         if let Some(mut selections) = observed.selected.take() {
             selections.clear();
             work.selections = selections;
@@ -394,7 +406,7 @@ impl Resolver<'_> {
         if ambiguous {
             return Err(self.import_error(import, "ambiguous import path binding"));
         }
-        result.map(|found| (found, privacy))
+        result.map(|found| (found, privacy, terminal))
     }
     fn single_import(
         &mut self,
@@ -426,7 +438,7 @@ impl Resolver<'_> {
                 continue;
             }
             let key = (import.scope, name, ns, context);
-            let (found, privacy) = self.import_lookup(index, import, path, ns, work)?;
+            let (found, privacy, source) = self.import_lookup(index, import, path, ns, work)?;
             match found {
                 Lookup::Found(binding) => {
                     if !self.visible(binding.access, privacy)
@@ -464,6 +476,7 @@ impl Resolver<'_> {
                             ),
                         ));
                     }
+                    work.record_source(import.node, key, index, binding, source)?;
                     self.publish(
                         key,
                         Some(Binding {
@@ -493,6 +506,11 @@ impl Resolver<'_> {
         origin: Origin,
         work: &mut Work,
     ) -> Result<(), Error> {
+        let index = match origin {
+            Origin::Import(index) | Origin::Glob(index) => index,
+            Origin::Direct => return Ok(()),
+        };
+        work.remove_source(self.facts.imports[index as usize].node, key, origin)?;
         if self
             .facts
             .bindings
@@ -505,32 +523,15 @@ impl Resolver<'_> {
         Ok(())
     }
     fn glob(&mut self, index: usize, import: &Import, work: &mut Work) -> Result<(), Error> {
-        let (found, privacy) = self.import_lookup(
+        let (found, privacy, _) = self.import_lookup(
             index,
             import,
             super::paths::Identified::imported(import),
             Namespace::Type,
             work,
         )?;
-        let source = match found {
-            Lookup::Found(binding) => {
-                if !self.visible(binding.access, privacy) {
-                    return Err(self.import_error(import, "private glob target"));
-                }
-                let definition = &self.facts.definitions[binding.target.0 as usize];
-                if !matches!(definition.kind, DefKind::Module | DefKind::Enum) {
-                    return Err(self.import_error(import, "glob target is not a module or enum"));
-                }
-                definition
-                    .members
-                    .ok_or_else(|| self.import_error(import, "missing glob scope"))?
-            }
-            Lookup::Missing => {
-                return self.disconnect_glob(index, import, work);
-            }
-            Lookup::Associated(..) | Lookup::Member(..) | Lookup::SelfConstructor(..) => {
-                return Err(self.import_error(import, "glob target is not a module or enum"));
-            }
+        let Some(source) = self.glob_source(import, &found, privacy)? else {
+            return self.disconnect_glob(index, import, work);
         };
         if source == import.scope {
             return Err(self.import_error(import, "cannot glob-import a scope into itself"));
@@ -585,6 +586,20 @@ impl Resolver<'_> {
                 .get_key((source, key.0, key.1, key.2))
                 .copied()
                 .filter(|b| self.visible(b.access, privacy));
+            let destination = (import.scope, key.0, key.1, adjusted.context);
+            if let Some(binding) = binding {
+                work.record_source(
+                    import.node,
+                    destination,
+                    index,
+                    binding,
+                    Some(Selection {
+                        key: (source, key.0, key.1, key.2),
+                        binding,
+                        lexical: false,
+                    }),
+                )?;
+            }
             let binding = binding.map(|binding| Binding {
                 access: if self.can_reexport(binding.access, import.access) {
                     import.access
@@ -594,15 +609,36 @@ impl Resolver<'_> {
                 origin: Origin::Glob(u32::try_from(index).unwrap_or(u32::MAX)),
                 ..binding
             });
-            self.contribute(
-                index,
-                (import.scope, key.0, key.1, adjusted.context),
-                binding,
-                work,
-            )?;
+            self.contribute(index, destination, binding, work)?;
         }
         work.cursors[index] = end;
         Ok(())
+    }
+    fn glob_source(
+        &self,
+        import: &Import,
+        found: &Lookup,
+        privacy: super::package::ModuleId,
+    ) -> Result<Option<ScopeId>, Error> {
+        match found {
+            Lookup::Found(binding) => {
+                if !self.visible(binding.access, privacy) {
+                    return Err(self.import_error(import, "private glob target"));
+                }
+                let definition = &self.facts.definitions[binding.target.0 as usize];
+                if !matches!(definition.kind, DefKind::Module | DefKind::Enum) {
+                    return Err(self.import_error(import, "glob target is not a module or enum"));
+                }
+                definition
+                    .members
+                    .map(Some)
+                    .ok_or_else(|| self.import_error(import, "missing glob scope"))
+            }
+            Lookup::Missing => Ok(None),
+            Lookup::Associated(..) | Lookup::Member(..) | Lookup::SelfConstructor(..) => {
+                Err(self.import_error(import, "glob target is not a module or enum"))
+            }
+        }
     }
     fn disconnect_glob(
         &mut self,
@@ -633,6 +669,9 @@ impl Resolver<'_> {
         work: &mut Work,
     ) -> Result<(), Error> {
         let origin = Origin::Glob(u32::try_from(index).unwrap_or(u32::MAX));
+        if binding.is_none() {
+            work.remove_source(self.facts.imports[index].node, key, origin)?;
+        }
         let candidates = work.candidates.entry(key).or_default();
         let previous = candidates.iter().find(|b| b.origin == origin).copied();
         if let Some(position) = candidates.iter().position(|b| b.origin == origin) {

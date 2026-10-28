@@ -93,7 +93,7 @@ impl Work {
             (true, true) => Some("source lint policy work and storage budgets exceeded"),
         }
     }
-    pub(super) fn charge(
+    pub(in crate::resolve) fn charge(
         &mut self,
         key: NodeKey,
         steps: usize,
@@ -126,6 +126,11 @@ pub(crate) struct Producer {
     pub(super) domain: Option<Arc<super::expectations::Domain>>,
     pub(super) expectation_owners: Vec<Tail>,
     pub(super) early: Vec<super::expectations::Early>,
+    #[expect(
+        clippy::box_collection,
+        reason = "a cold optional pointer keeps ordinary producer records compact"
+    )]
+    pub(in crate::resolve) hidden_globs: Option<Box<Vec<crate::resolve::hidden_globs::Cause>>>,
 }
 impl Producer {
     pub(crate) fn new(frames: u32, calls: u32) -> Self {
@@ -144,6 +149,7 @@ impl Producer {
             domain: None,
             expectation_owners: Vec::new(),
             early: Vec::new(),
+            hidden_globs: None,
         }
     }
     pub(crate) fn work(&self) -> Work {

@@ -59,3 +59,7 @@ connects genuine local deprecation events to owner/list identities, effective
 expectations and completed request scopes. Its source contracts include
 independent positive and opposing controls; full lint/edition and release
 requirements remain open.
+
+The unpublished [hidden glob reexport checkpoint](../docs/pa40-hidden-glob-reexports-checkpoint.md)
+adds completed resolver events, exact public import chains and namespace-sensitive
+expectations, with the next unchanged original-core boundary recorded explicitly.

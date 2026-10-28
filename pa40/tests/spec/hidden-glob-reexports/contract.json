@@ -1,0 +1,386 @@
+{
+  "state": "finite unpublished protocol; predictions frozen before independent observations",
+  "profile": {
+    "rustc": "1.98.0",
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "target": "x86_64-unknown-linux-gnu",
+    "editions": [
+      2021,
+      2024
+    ],
+    "panic": "abort",
+    "native": false,
+    "bootstrap": true
+  },
+  "cases": [
+    {
+      "name": "warning",
+      "path": "pa40/tests/spec/hidden-glob-reexports/warning.rs",
+      "sha256": "6396859aefef960445a74633cd06135be59defc7bffe3aa797001a08445f6b72",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "hidden_glob_reexports": 2
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "Type and value constructor namespaces independently shadowed."
+    },
+    {
+      "name": "expect",
+      "path": "pa40/tests/spec/hidden-glob-reexports/expect.rs",
+      "sha256": "c145762efe17ba613802ad6c5540dc7399d9ab37ef642278c45d8a240c6d5c91",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "One genuine type namespace event fulfills actual private declaration expectation."
+    },
+    {
+      "name": "deny",
+      "path": "pa40/tests/spec/hidden-glob-reexports/deny.rs",
+      "sha256": "3acbe0787ef3c76456c5786d08acf1cae8f2fb4c0797cc6374231ad793815ddf",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 1,
+      "expected_diagnostics": {
+        "hidden_glob_reexports": 1
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "Deny diagnoses actual private winner."
+    },
+    {
+      "name": "no-glob",
+      "path": "pa40/tests/spec/hidden-glob-reexports/no-glob.rs",
+      "sha256": "05f296ab66688c90d82f9a4fd812cb840af4f2d663fb029a52b31bd6a4074693",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "Private declaration alone produces no event."
+    },
+    {
+      "name": "private-glob",
+      "path": "pa40/tests/spec/hidden-glob-reexports/private-glob.rs",
+      "sha256": "f67a0cd69a799d8c103127300e243c1a8a75d751cd4bbcc9575358c5248906ea",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "Private glob is no public reexport."
+    },
+    {
+      "name": "public-local",
+      "path": "pa40/tests/spec/hidden-glob-reexports/public-local.rs",
+      "sha256": "936fc069f109937ec5170285c77c5f6370b7dc71e6b7fd09bf6020dc0f39f891",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "Public winner does not hide a public name."
+    },
+    {
+      "name": "macro-only",
+      "path": "pa40/tests/spec/hidden-glob-reexports/macro-only.rs",
+      "sha256": "0697a85c602e257efbd5751011835d5437193101d23ed9c9cce756eb61e17c86",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "Macro candidate cannot fulfill type-namespace private module expectation."
+    },
+    {
+      "name": "private-container",
+      "path": "pa40/tests/spec/hidden-glob-reexports/private-container.rs",
+      "sha256": "c3d025387df9bff63439c5171d567589b2bb1fe52ec3228ea320ab8220b078a2",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "An unexported public glob in a private container does not warn."
+    },
+    {
+      "name": "exposed-container",
+      "path": "pa40/tests/spec/hidden-glob-reexports/exposed-container.rs",
+      "sha256": "6dbcd6cfe9a853ae2e3392d5097ddc98b5a43595a3b03c136985e457e9f1a177",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 1,
+      "expected_diagnostics": {
+        "E0365": 1
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "Private container cannot itself be widened by a public module alias."
+    },
+    {
+      "name": "exposed-import",
+      "path": "pa40/tests/spec/hidden-glob-reexports/exposed-import.rs",
+      "sha256": "1cd1c2182c5f70822b423ee1dd6cafae9f04586974ac41fc8c9818b3dd2b605f",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "Actual exported alias chain makes glob import exported despite private containing module."
+    },
+    {
+      "name": "unrelated-export",
+      "path": "pa40/tests/spec/hidden-glob-reexports/unrelated-export.rs",
+      "sha256": "3b0cdd3984f1778a3b448bf393a6fed0889e89757acc635f8c3a1de41e48cc65",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "Exporting same ultimate target through another path does not export hidden glob import."
+    },
+    {
+      "name": "single-import",
+      "path": "pa40/tests/spec/hidden-glob-reexports/single-import.rs",
+      "sha256": "74ad668a2d43811e5b2cee5e125540de10af719a488a472df7d22887ede3f374",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "Expectation belongs to private import site, not imported target."
+    },
+    {
+      "name": "same-target",
+      "path": "pa40/tests/spec/hidden-glob-reexports/same-target.rs",
+      "sha256": "d33014b6f7ba7584de1ce9476e9a6129abfe1c8a6df3887ea7afae2f699fd296",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "Private explicit import hides public glob even for same ultimate declaration."
+    },
+    {
+      "name": "wrong-owner",
+      "path": "pa40/tests/spec/hidden-glob-reexports/wrong-owner.rs",
+      "sha256": "6b48d2577ad31871b9f3bbdc7ae4fd662de30a2804eafddccb5d6b352dc98d0a",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "hidden_glob_reexports": 1,
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "Target declaration expectation cannot consume import-site event."
+    },
+    {
+      "name": "overridden-allow",
+      "path": "pa40/tests/spec/hidden-glob-reexports/overridden-allow.rs",
+      "sha256": "0f29f51d14350f7a693b61ced927f864ea6344afd7c0429f8e30ba7d12d29b4a",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "Only effective setting fulfills."
+    },
+    {
+      "name": "forbid",
+      "path": "pa40/tests/spec/hidden-glob-reexports/forbid.rs",
+      "sha256": "1976f4e7ecc9db6e65a4213d66e1ad98b5bb04d91fcac542ba4ecc850926d229",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 1,
+      "expected_diagnostics": {
+        "E0453": 1
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "Forbid cannot be weakened by expectation."
+    },
+    {
+      "name": "early-declaration",
+      "path": "pa40/tests/spec/hidden-glob-reexports/early-declaration.rs",
+      "sha256": "d2b3ed8ce81bf2bd2f58e4733e3a972463bf6498d862eff9e806c7e13e6bdd07",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 1,
+      "expected_diagnostics": {
+        "E0308": 1
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "Completed name-resolution event exists before unrelated body type error."
+    },
+    {
+      "name": "original-namespaces",
+      "path": "pa40/tests/spec/hidden-glob-reexports/original-namespaces.rs",
+      "sha256": "658f2bcb3ca060bc211f7934fc3be8e5f6e152ef19d2ead65847b7eb5d92f8f0",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "Authored original-core shape: env is macro-only, panic also has type namespace."
+    },
+    {
+      "name": "no-type-counterpart",
+      "path": "pa40/tests/spec/hidden-glob-reexports/no-type-counterpart.rs",
+      "sha256": "5e46bca0d4c270cd9773281a9f130962f95f12d8c69e8d56258cd7b5324b5e00",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "Removing actual panic type counterpart leaves expectation unfulfilled."
+    },
+    {
+      "name": "chain",
+      "path": "pa40/tests/spec/hidden-glob-reexports/chain.rs",
+      "sha256": "4904359e520bcf2ea211862a6dff20121f06e5b0103ff55f56715383fdd9d64b",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "More than one private-module single-import link reaches actual public glob."
+    },
+    {
+      "name": "all-shadow-warning",
+      "path": "pa40/tests/spec/hidden-glob-reexports/all-shadow-warning.rs",
+      "sha256": "7511c2060d1d9198cd8fa08788629053a36bbce638d7253b8fad2dfc67984653",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "All glob names are shadowed: no surviving exported chain marks this glob import public."
+    },
+    {
+      "name": "all-shadow-expect",
+      "path": "pa40/tests/spec/hidden-glob-reexports/all-shadow-expect.rs",
+      "sha256": "7e36658209df1449b11ed24fbc243195e342133f3bf06ac4d28c1b67bf1531d8",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "All glob names are shadowed: no surviving exported chain marks this glob import public."
+    },
+    {
+      "name": "all-shadow-deny",
+      "path": "pa40/tests/spec/hidden-glob-reexports/all-shadow-deny.rs",
+      "sha256": "d50cacc614d2885122b48a1679c378a9eff63f2df8dd7647f5be17d523d6e3bf",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "All glob names are shadowed: no surviving exported chain marks this glob import public."
+    },
+    {
+      "name": "all-shadow-import",
+      "path": "pa40/tests/spec/hidden-glob-reexports/all-shadow-import.rs",
+      "sha256": "edab4c74e6b474ca329fd63e8434e7f1be2618ac127cc00b97395449eba8a6f7",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "unfulfilled_lint_expectations": 1
+      },
+      "status": "primary-derived hypothesis; NOT independently observed",
+      "owning_assignment": 40,
+      "notes": "All glob names are shadowed: no surviving exported chain marks this glob import public."
+    }
+  ]
+}

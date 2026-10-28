@@ -107,26 +107,28 @@ impl Declarations {
                 .ok_or_else(|| Error::unlocated("lint request progress is missing"))?,
         )?;
         let needs_whole = pending.iter().any(|row| {
-            matches!(
-                self.safety_policies.completion(row.owner),
-                super::safety::Completion::Whole
-            )
+            !row.resolution_complete
+                && matches!(
+                    self.safety_policies.completion(row.owner),
+                    super::safety::Completion::Whole
+                )
         });
         let whole_complete = bodies && needs_whole && self.all_lint_bodies_complete(report)?;
         for pending in pending {
-            let complete = match self.safety_policies.completion(pending.owner) {
-                super::safety::Completion::Declaration => true,
-                super::safety::Completion::Function(id) => {
-                    bodies && self.typed_function_bodies.contains(&id)
-                }
-                super::safety::Completion::Initializer(id) => {
-                    bodies
-                        && self
-                            .initializer_index(id)
-                            .is_some_and(|index| self.initializers[index].type_checked())
-                }
-                super::safety::Completion::Whole => bodies && whole_complete,
-            };
+            let complete = pending.resolution_complete && report.names_resolved
+                || match self.safety_policies.completion(pending.owner) {
+                    super::safety::Completion::Declaration => true,
+                    super::safety::Completion::Function(id) => {
+                        bodies && self.typed_function_bodies.contains(&id)
+                    }
+                    super::safety::Completion::Initializer(id) => {
+                        bodies
+                            && self
+                                .initializer_index(id)
+                                .is_some_and(|index| self.initializers[index].type_checked())
+                    }
+                    super::safety::Completion::Whole => bodies && whole_complete,
+                };
             if !complete {
                 continue;
             }

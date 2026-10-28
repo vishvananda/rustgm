@@ -31,7 +31,8 @@ pub(crate) struct Policy {
     pub(crate) diagnostic_attributes: [Level; 3],
     pub(crate) deprecated: Level,
     pub(crate) unfulfilled: Level,
-    expectations: [Option<ExpectationId>; 14],
+    pub(crate) hidden_glob_reexports: Level,
+    expectations: [Option<ExpectationId>; 15],
     pub(crate) deprecated_origin: Option<producer::Tail>,
     pub(crate) deprecation_explicit: bool,
 }
@@ -49,7 +50,8 @@ impl Policy {
         diagnostic_attributes: [Level::Warn; 3],
         deprecated: Level::Warn,
         unfulfilled: Level::Warn,
-        expectations: [None; 14],
+        hidden_glob_reexports: Level::Warn,
+        expectations: [None; 15],
         deprecated_origin: None,
         deprecation_explicit: false,
     };
@@ -73,6 +75,7 @@ pub(crate) enum Lint {
     DiagnosticAttributes(u8),
     Deprecated,
     UnfulfilledExpectations,
+    HiddenGlobReexports,
 }
 pub(crate) struct Change {
     pub(crate) lint: Lint,
@@ -99,6 +102,7 @@ impl Policy {
         }
         let level = match change.lint {
             Lint::Deprecated => &mut self.deprecated,
+            Lint::HiddenGlobReexports => &mut self.hidden_glob_reexports,
             Lint::UnfulfilledExpectations => &mut self.unfulfilled,
             Lint::Operation => &mut self.operation,
             Lint::Reference => &mut self.reference,
@@ -120,6 +124,9 @@ impl Policy {
                     offset: change.offset,
                     message: match change.lint {
                         Lint::Deprecated => "forbidden deprecated lint cannot be weakened",
+                        Lint::HiddenGlobReexports => {
+                            "forbidden hidden_glob_reexports lint cannot be weakened"
+                        }
                         Lint::UnfulfilledExpectations => {
                             "forbidden unfulfilled_lint_expectations lint cannot be weakened"
                         }
@@ -172,6 +179,7 @@ impl Lint {
             Self::DiagnosticAttributes(index) => 9 + index as usize,
             Self::Deprecated => 12,
             Self::UnfulfilledExpectations => 13,
+            Self::HiddenGlobReexports => 14,
         }
     }
 }
@@ -186,6 +194,7 @@ impl Lint {
         use crate::support::diagnostics::WarningCode as W;
         Some(match code {
             W::Deprecated => Self::Deprecated,
+            W::HiddenGlobReexports => Self::HiddenGlobReexports,
             W::UnfulfilledLintExpectations => Self::UnfulfilledExpectations,
             W::InvalidAtomicOrdering => Self::AtomicOrdering,
             W::UnreachablePatterns => Self::UnreachablePatterns,

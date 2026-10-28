@@ -10,3 +10,7 @@ Declare independent outcomes before creating text references. Register every
 input in a nonempty `manifest.json` when the stage is ready for activation;
 no undiscovered fixtures or empty-suite success. Preserve upstream checksums,
 configuration/build provenance and linked native output evidence.
+
+Unpublished source predictions for the finite hidden-glob slice are enumerated
+in [its contract](spec/hidden-glob-reexports/contract.json). They do not activate
+this assignment or provide a released reference suite.
