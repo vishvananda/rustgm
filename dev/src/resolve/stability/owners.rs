@@ -1,4 +1,5 @@
 //! Scope and import ownership comes from the resolved graph, never name spelling.
+mod availability_variants;
 use super::{
     Draft, PolicyId,
     constness::{ConstPolicies, Frame, Role},
@@ -162,6 +163,9 @@ fn definition_scopes(
         let Some(key) = definition.node else {
             continue;
         };
+        if availability_variants::consume(package, facts, definition, draft, used)? {
+            continue;
+        }
         let Some(scope) = declaration_scope(package, facts, definition) else {
             continue;
         };

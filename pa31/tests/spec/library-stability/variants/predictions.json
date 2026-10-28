@@ -1,0 +1,33 @@
+{
+  "state": "independent metadata hypotheses frozen before owner edit; forged detached/wrongkind/policy-current-source controls are typed-state opponents in the owning private suite",
+  "cases": [
+    {
+      "name": "regular",
+      "path": "pa31/tests/spec/library-stability/variants/regular.rs",
+      "accepted": true,
+      "candidate_supported": true,
+      "sha256": "48ec408ec78ba7e5dd593ab604de7881290c1ee6a0143ebb8777b19225d5fb18"
+    },
+    {
+      "name": "alias",
+      "path": "pa31/tests/spec/library-stability/variants/alias.rs",
+      "accepted": true,
+      "candidate_supported": true,
+      "sha256": "c921ff81613a78cb8c3327e5820cb7bbc1172ae368909a9350f430122cb49a03"
+    },
+    {
+      "name": "const-variant",
+      "path": "pa31/tests/spec/library-stability/variants/const-variant.rs",
+      "accepted": false,
+      "candidate_supported": false,
+      "sha256": "bdde571b24357bb75f9bce8473c49887a9164abd2d0ec2f6cd0f04fa554f367a"
+    },
+    {
+      "name": "wrong-owner",
+      "path": "pa31/tests/spec/library-stability/variants/wrong-owner.rs",
+      "accepted": false,
+      "candidate_supported": false,
+      "sha256": "140bbd523de4776114190e468b5fb736c3526410ca3fe9e007a10b5573927fab"
+    }
+  ]
+}
