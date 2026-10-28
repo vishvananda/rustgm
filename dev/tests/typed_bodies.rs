@@ -198,8 +198,13 @@ fn region_conversions_remain_explicit_obligations() -> Result<(), String> {
     let (_, facts, program) = analyze("fn f<'a,'b>(x:&'a u8,y:&'b u8)->&'a u8{y}")?;
     assert!(program.region_equalities.is_empty());
     assert!(facts.region_equalities.is_empty());
-    assert_eq!(program.coercions.len(), 1);
-    assert_eq!(facts.coercions.len(), 1);
+    assert_eq!(program.coercions.len(), 2);
+    assert_eq!(facts.coercions.len(), 2);
+    let conversion = &facts.coercions[0];
+    assert!(conversion.reference.is_some());
+    assert_eq!(facts.coercions[1].expected, conversion.expected);
+    assert!(facts.coercions[1].reference.is_none());
+    assert_ne!(facts.coercions[1].actual, conversion.actual);
     let body = &program.bodies[0];
     let conversion = body
         .values

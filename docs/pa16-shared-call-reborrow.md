@@ -7,7 +7,7 @@ annotations and contextual groups/blocks/branches/loops. Generic referents,
 aliases, nested mutable references and wide slice/str heads retain ordinary type
 and loan proof. Contextual unsizing reborrows before the existing conversion.
 
-The compiler change is confined to `sema/bodies/references.rs`. Its existing
+The initial selection change is in `sema/bodies/references.rs`. Its existing
 `identity_reborrow` witness is passed into reference selection; type joins pass
 false. An unknown generic argument or inferred binding cannot acquire a reborrow
 retrospectively. Existing place construction, fresh inferred regions, source
@@ -18,6 +18,53 @@ converted reference view. Existing selection must prove the actual source impl
 and its Unsize/formation premises; the original place conversion still proves
 lifetimes and loans. No source reference Copy/Clone impl, bootstrap
 permission, role, retained field/cache, wire or backend operation is added.
+
+## Constant slice metadata and CI follow-up
+
+Full CI40637336885 exposed a real constant-query omission: direct array-to-slice
+metadata recognized the older ArrayToSlice adjustment but omitted the same
+conversion carried by a checked Reborrow. The query now consumes the existing
+one-dereference, unsizing reference selection and validates the actual array and
+slice element identities before attaching the array's length. It allocates no
+owner or cache and adds only an indexed lookup on that selected constant path.
+The borrow/capture algorithm and source Copy requirements remain unchanged.
+
+The new PA31 constant-slice fixture retains the actual source CoerceUnsized and
+Unsize foundation, with no shared-reference Copy implementation. Its array
+constant and explicit wide reborrow complete whole-source and demanded
+original/instance lowering; independent Rust1.98 metadata accepts it in both
+editions. This does not claim a native source-library artifact.
+
+Five other CI failures were structural assertions assuming one physical borrow,
+only input coercions, or exactly three temporaries. They now account for the
+actual checked reborrow selections and fresh region bridges. The let-else test
+selects the actual function and still requires its complete initializer range
+to end, preserving the outer temporary. Unreachable source borrows must produce
+no CFG evaluation. The original call-count, no-referent-read, loan and storage
+checks remain in place.
+
+The seven CI controls pass across the retained focused observations: five
+unchanged cases in1793166795626980384, with its unreachable-count failure retained;
+the corrected reachable-count and input-region controls pass in
+1793167292906402115 alongside four private controls, production/private strict
+Clippy, format/audit, the CLI and PA6. That final gate takes42.35 seconds and its
+receipt SHA-256 is
+`02b607de90502b47c7164469500eb60528ea6df07ed81b1293c1f20097c74ea8`.
+
+The immutable CLI72f06237b16ad92a00267bdc0d458d6714d8184c74360cd972a83589ad9b89d6
+passes both affected native suites, all8605 active text cases unchanged,
+harness253, registration and upstream verification. This89.37-second observation
+is `obj/parallel/reference-ci-repair-v1/observed/receipt.json`, SHA-256
+`912f9ac85b63fd50f3bac88092e0354619176f8b7093544266332661368fa78f`.
+The original-core probe still preserves722 pins and opens374 files before the
+same expect(deprecated) failure; it produces no artifact. Full CI is rerun after
+publication. No text oracles changed in this repair.
+
+The abandoned intrinsic-Copy shortcut, its output-cap interruption and subsequent
+cleanup remain recorded. Five obsolete candidate pins, disposable historical
+outputs and interrupted/obsolete incremental scratch were retired with source,
+raw receipts and current pins preserved. The16GiB output cap,150GiB disk reserve
+and two-thread validation limits were unchanged.
 
 The original `source-format-macros/display/source-mixed.rs` is unchanged at
 SHA256 `a21e9e3546226c831113cc7b4a9bf2337555911697395ba4ccc65c46296208a8`.

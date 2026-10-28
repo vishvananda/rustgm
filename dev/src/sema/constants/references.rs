@@ -256,10 +256,16 @@ impl Queries<'_> {
         let Some(fact) = self.typing.facts.node(key) else {
             return Ok(None);
         };
-        let Some(adjustment) = fact
-            .adjustment
-            .filter(|a| a.kind == crate::sema::model::AdjustmentKind::ArrayToSlice)
-        else {
+        let Some(adjustment) = fact.adjustment.filter(|a| {
+            a.kind == crate::sema::model::AdjustmentKind::ArrayToSlice
+                || a.kind == crate::sema::model::AdjustmentKind::Reborrow
+                    && self
+                        .typing
+                        .facts
+                        .reference_adjustments
+                        .get(&key)
+                        .is_some_and(|r| r.conversion.unsize && r.conversion.dereferences == 1)
+        }) else {
             return Ok(None);
         };
         let source = fact
