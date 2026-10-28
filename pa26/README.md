@@ -421,3 +421,9 @@ the original captured IndexMut program through actual receiver selection and
 ordinary closure/place proof. Adjusted array/slice and overloaded receivers share
 the existing sparse capture-prefix owner. Remaining operator-kernel gaps and
 assignment publication stay separate requirements.
+
+The [genuine source Add/Sub join](../docs/pa31-source-add-sub.md) now qualifies
+the local source role declarations and actual implementation bodies, including
+full reference-forwarding macro CTFE. This closes the earlier source role debt
+for that supported profile; full checked macro panic closure and broader
+source/default/imported execution remain required.

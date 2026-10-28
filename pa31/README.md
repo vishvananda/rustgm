@@ -173,3 +173,9 @@ const-callable execution requirement; PA31 remains planned.
 The [runtime callback checkpoint](../docs/pa31-runtime-const-select.md) records
 actual evaluated G selection, owned tuple transfer, constrained value origins
 and the separately retained CTFE/full-staged-provider boundaries.
+
+The [source Add/Sub checkpoint](../docs/pa31-source-add-sub.md) joins genuine
+operator headers, defining const member requests and actual selected source
+body/Code proof. Full forwarding macro CTFE and three source/native consumers
+pass without bootstrap factories. Dynamic checked macro panic closure, broader
+const/default/imported calls and whole assignment release remain required.

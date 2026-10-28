@@ -197,12 +197,9 @@ fn eligibility_counted(
             }
             Rvalue::Call { .. } => match function_call(facts, body, value.kind) {
                 CallPermission::Allowed => None,
-                CallPermission::Member if function => {
+                CallPermission::Member => {
                     members += 1;
                     None
-                }
-                CallPermission::Member => {
-                    Some("source const-trait member execution is not implemented")
                 }
                 CallPermission::NonConst => Some(if function {
                     "non-const calls are not allowed in const functions"
@@ -229,7 +226,7 @@ fn eligibility_counted(
         }
     }
     if operators != 0 || members != 0 {
-        invocations::check_calls(facts, body, (operators, members), work)
+        invocations::check_calls(Some(report), facts, body, (operators, members), work)
             .map_err(|e| report.diagnostic(report.body_error(body.source, e)))?;
     }
     Ok(())

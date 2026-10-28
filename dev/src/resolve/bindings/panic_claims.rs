@@ -97,6 +97,8 @@ pub(super) fn validate(
         | LangItem::Send
         | LangItem::DispatchFromDyn
         | LangItem::Shl
+        | LangItem::Add
+        | LangItem::Sub
         | LangItem::BitOr => false,
         LangItem::Panic
         | LangItem::PanicFmt

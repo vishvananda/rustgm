@@ -1,0 +1,18 @@
+{
+  "status": "declared before first candidate layout observation",
+  "roles": {
+    "AllocLayout": 61,
+    "Add": 62,
+    "Sub": 63,
+    "count": 64
+  },
+  "mask_bytes": 8,
+  "Reservations_bytes": 2152,
+  "reason": "B measured62-role Reservations2120; two existing16-byte optional declaration slots add32; no new owner/cache/body field",
+  "hot_layouts_unchanged": {
+    "Body": 456,
+    "Operation": 16,
+    "BuiltinTraits": 168,
+    "Resolution": 2032
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "state": "additional predictions frozen before followup observation; original missing-panic_location disagreement retained",
+  "pin_files": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/arith.rs": "a495c8c9838be09ce2c239462153a6221b6f471aa2efe43ce437e83581636c91",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/internal_macros.rs": "a4400b86ffb19c885fadb13dd864118cd951cf3c8e55313db278e16e11eb215b",
+    "/home/vishvananda/rustgm-pa27-work/pa31/tests/spec/source-location/caller-location.rs": "932880e0177a64ee3f51bdfb58c795022a9ef4e7eb64b0b5dbc820e4e7258665"
+  },
+  "original_prediction_sha256": "625474466f485537938c2a6ba6832c04791115cec10d0ccd6267bcee47c84cb0",
+  "cases": [
+    {
+      "name": "macro-const-scalar",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen-followup/macro-const-scalar.rs",
+      "sha256": "7cd525c60c90bcdc29627e07c00ac1047b027662150f84c963844d65f0b6c2e7",
+      "accepted": true,
+      "profile": "Genuine macro bodies/attributes retained; only scalar syntax calls, without explicit tracked reference call"
+    },
+    {
+      "name": "macro-const-with-location",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen-followup/macro-const-with-location.rs",
+      "sha256": "64e6e654f1f106c4403d7b2b0388e0c350f4332a3b04fb2b3e75501e781c2a50",
+      "accepted": true,
+      "profile": "Joins full already-qualified actual Location/NonNull/PhantomData/derive/intrinsic source foundation unchanged; actual forward_ref_binop track_caller preserved"
+    }
+  ]
+}

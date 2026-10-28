@@ -195,3 +195,6 @@ fn provided_function_ctfe_root_rejects_fresh_and_warm_code_even_with_forged_cons
     }
     Ok(())
 }
+
+#[path = "initializer_members.rs"]
+mod initializer;

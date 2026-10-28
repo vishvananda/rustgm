@@ -198,26 +198,11 @@ fn repeated_static_shared_instances_reuse_two_paid_factories() -> Result {
 }
 #[test]
 fn source_owned_methods_execute_without_bootstrap_factory_evidence() -> Result {
-    for name in ["source-owned", "source-absent"] {
-        let text = crate::test_source::fixture(&format!(
-            "pa31/tests/spec/shared-value-operands/{name}.rs"
-        ))?;
-        let error = crate::test_source::source_provider(&text, "actual_shared_source_lang")
-            .and_then(|report| {
-                crate::pipeline::analyze_source(&report)
-                    .map(|_| ())
-                    .map_err(|error| error.to_string())
-            })
-            .err()
-            .ok_or("unsupported actual source role acquired bootstrap permission")?;
-        assert!(
-            error.contains("unsupported source language item"),
-            "{error}"
-        );
-    }
     let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../obj/parallel/pa26/shared-primitive-operands-v1/source-runtime");
     for (name, accepted) in [
+        ("source-absent", false),
+        ("source-owned", true),
         ("source-ordinary-absent", false),
         ("source-ordinary-owned", true),
     ] {
@@ -259,9 +244,11 @@ fn source_owned_methods_execute_without_bootstrap_factory_evidence() -> Result {
         assert!(facts.primitive_methods.is_none());
         let mut bytes = Vec::new();
         crate::lowir::writer::write(&program, &mut bytes)?;
-        std::fs::create_dir_all(&folder)?;
-        std::fs::write(folder.join("program.lowir"), bytes)?;
-        std::fs::write(folder.join("source.rs"), text)?;
+        if name == "source-ordinary-owned" {
+            std::fs::create_dir_all(&folder)?;
+            std::fs::write(folder.join("program.lowir"), bytes)?;
+            std::fs::write(folder.join("source.rs"), text)?;
+        }
     }
     Ok(())
 }

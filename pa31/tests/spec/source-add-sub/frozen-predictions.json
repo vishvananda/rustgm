@@ -1,0 +1,183 @@
+{
+  "state": "predictions frozen before independent observation; candidate/compiler edits prohibited until integrated base",
+  "pin_files": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/arith.rs": "a495c8c9838be09ce2c239462153a6221b6f471aa2efe43ce437e83581636c91",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/internal_macros.rs": "a4400b86ffb19c885fadb13dd864118cd951cf3c8e55313db278e16e11eb215b"
+  },
+  "exact_source_parts": {
+    "actual-add-trait.rs": "823f3c42f76a235109c16f253e3be7240d6b3d96738dee0b8678bf827290082a",
+    "actual-sub-trait.rs": "c9fe36806070ff6c2cca53df9f831ecd5b825361465f58e5e8fa2bd19452de54",
+    "actual-add-impl-macro.rs": "41f4dd3c3bd9af1b3bca2bf9bc05e149f1629a988e4ebc7d77c946091baa286a",
+    "actual-sub-impl-macro.rs": "e74ea130effccc5cbb1f2aa6d49b157075b0a0b22b656b48f294723b21dac55d",
+    "actual-forward-ref-binop.rs": "9dad5f57360bef1bfabdad5c6aa1e11f906497c3432dbf8220824633e0f9c0a6",
+    "foundation.rs": "c74c0e8efac909b85160c0113d8c9276fbb5278d371e43e285da27563c290d3b"
+  },
+  "cases": [
+    {
+      "name": "actual-macros",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen/actual-macros.rs",
+      "sha256": "8961f441bfe85a38157b46ade584d881f8e9361e16d6815cdfdc64ddaa886163",
+      "accepted": true,
+      "profile": "required source/runtime/CTFE",
+      "native_prediction": {
+        "arguments": [
+          9,
+          2
+        ],
+        "results": [
+          11,
+          7,
+          11,
+          7
+        ]
+      }
+    },
+    {
+      "name": "actual-macro-const",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen/actual-macro-const.rs",
+      "sha256": "04ab79474ddac1c2b5a048314fd7c88ee7dd3a1850f11dd992df3621e1fddd4f",
+      "accepted": true,
+      "profile": "required source/runtime/CTFE"
+    },
+    {
+      "name": "authored-bodies",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen/authored-bodies.rs",
+      "sha256": "1049d122680abc7835ba5537374e5a4fe359a9ba0d95bf2e80505a9acf0c6430",
+      "accepted": true,
+      "profile": "required source/runtime/CTFE",
+      "native_prediction": {
+        "arguments": [
+          9,
+          2
+        ],
+        "results": [
+          19,
+          23,
+          11,
+          7,
+          29,
+          31
+        ]
+      }
+    },
+    {
+      "name": "nominal-generic",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen/nominal-generic.rs",
+      "sha256": "2729795504c72cec204fbe558bb0a77bd02e988a73f2cd5088b5b1e2c8d49b17",
+      "accepted": true,
+      "profile": "required source/runtime/CTFE",
+      "native_prediction": {
+        "results": [
+          41,
+          43
+        ]
+      }
+    },
+    {
+      "name": "primitive-const",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen/primitive-const.rs",
+      "sha256": "02e7806820ab2da6d49f10e5aa939a3146b25a9be7052e78564d644a5dfd64b5",
+      "accepted": true,
+      "profile": "required source/runtime/CTFE"
+    },
+    {
+      "name": "missing-add-impl",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen/missing-add-impl.rs",
+      "sha256": "a6d749b9604b3fc52df56628438f708943ca1da0b52065e80deee2510be140c9",
+      "accepted": false,
+      "profile": "required source/runtime/CTFE"
+    },
+    {
+      "name": "missing-sub-impl",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen/missing-sub-impl.rs",
+      "sha256": "88c60dc508646b24c5bfe6e52e6011a36a7e6d2eb623aff6f801d9882f3d5b50",
+      "accepted": false,
+      "profile": "required source/runtime/CTFE"
+    },
+    {
+      "name": "same-name-no-role",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen/same-name-no-role.rs",
+      "sha256": "7c13fddb6b0df6be61075dcb1b1139871e1037ee6f449a9378eb5c04acf0850e",
+      "accepted": false,
+      "profile": "required source/runtime/CTFE"
+    },
+    {
+      "name": "wrong-output",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen/wrong-output.rs",
+      "sha256": "70c6b2f435c56586bab52f38729d87099c9e997af6c9c99d848a5266b874a510",
+      "accepted": false,
+      "profile": "required source/runtime/CTFE"
+    },
+    {
+      "name": "wrong-rhs",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen/wrong-rhs.rs",
+      "sha256": "70c69bfe0c8ecb3480b653e1fb9dd949fbfda2af923abab215f2cdab14a9fcc7",
+      "accepted": false,
+      "profile": "required source/runtime/CTFE"
+    },
+    {
+      "name": "nonconst-primitive",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen/nonconst-primitive.rs",
+      "sha256": "34d3857fc6320afa36148baa931a71b35c5516ccc98f796390a32af3f5d1ed63",
+      "accepted": false,
+      "profile": "required source/runtime/CTFE"
+    },
+    {
+      "name": "nonconst-explicit",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen/nonconst-explicit.rs",
+      "sha256": "f6ace72b8f30f4bd2baa9314b00b94b721601a7be4924859b7eb893ae3116e24",
+      "accepted": false,
+      "profile": "required source/runtime/CTFE"
+    },
+    {
+      "name": "nonconst-overload",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen/nonconst-overload.rs",
+      "sha256": "0a79c695c129ad2b5ac279bbad77ea09e685ac85c3e781da870f93b106c67506",
+      "accepted": false,
+      "profile": "required source/runtime/CTFE"
+    },
+    {
+      "name": "overflow-add",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen/overflow-add.rs",
+      "sha256": "af8cd5fd5d3c9a03bea6b14b01fe13efd97d30fefb18c1f8f67f3fea963eb280",
+      "accepted": false,
+      "profile": "required source/runtime/CTFE"
+    },
+    {
+      "name": "overflow-sub",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen/overflow-sub.rs",
+      "sha256": "139d9cc0ffea1312645be3d5d275265a9bf4c3821a430f421717985049a2ebb2",
+      "accepted": false,
+      "profile": "required source/runtime/CTFE"
+    },
+    {
+      "name": "role-wrong-target",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen/role-wrong-target.rs",
+      "sha256": "8dfa51bb34e53318fa97f27e48087a3a8475df2165c3aa3f884210261b3d079e",
+      "accepted": false,
+      "profile": "required source/runtime/CTFE"
+    },
+    {
+      "name": "header-reference-self",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen/header-reference-self.rs",
+      "sha256": "35fef8affeb163bed249b8e64d48af62ba403ab4d804f356b22d56a30550ae74",
+      "accepted": true,
+      "profile": "Rust header positive; direct demanded source-profile contract opponent, not language-negative"
+    },
+    {
+      "name": "header-wrong-default",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen/header-wrong-default.rs",
+      "sha256": "689670377cfc345a9526f8da60e23414ad26ba91c1f99fd0b77652d78af8953c",
+      "accepted": true,
+      "profile": "Rust header positive; direct demanded source-profile contract opponent, not language-negative"
+    }
+  ],
+  "retained_prior_observations": "The previous32 metadata observations and genuine language-role debt remain immutable; no duplicate commands.",
+  "implementation_policy": "actual source declarations/impl bodies, source proof before scalar erasure, no SourceCore bootstrap registry grants",
+  "private_opponents": [
+    "canonical header/method/Output owner and exact default/receiver/signature",
+    "replayed source image or imported Unknown fails actual provider/header query",
+    "wrong method signature or stale complete header cannot authorize erasure",
+    "ordinary same-name lexical traits cannot supply language-role authority"
+  ]
+}

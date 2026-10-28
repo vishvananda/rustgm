@@ -78,9 +78,11 @@ pub enum LangItem {
     OptionNone,
     SliceLen,
     AllocLayout,
+    Add,
+    Sub,
 }
 impl LangItem {
-    pub const ALL: [Self; 62] = [
+    pub const ALL: [Self; 64] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -143,6 +145,8 @@ impl LangItem {
         Self::OptionNone,
         Self::SliceLen,
         Self::AllocLayout,
+        Self::Add,
+        Self::Sub,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -209,6 +213,8 @@ impl LangItem {
             Self::OptionNone => 59,
             Self::SliceLen => 60,
             Self::AllocLayout => 61,
+            Self::Add => 62,
+            Self::Sub => 63,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -276,6 +282,8 @@ impl LangItem {
             "None" => Some(Self::OptionNone),
             "slice_len_fn" => Some(Self::SliceLen),
             "alloc_layout" => Some(Self::AllocLayout),
+            "add" => Some(Self::Add),
+            "sub" => Some(Self::Sub),
             _ => None,
         }
     }

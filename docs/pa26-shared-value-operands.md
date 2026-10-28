@@ -88,3 +88,9 @@ files. Native executables and failed generated binaries are retired; input,
 output, diagnostics, timings and hashes remain. The handoff authenticates the
 committed source tree, all receipts, independent observations and source-native
 producer/consumer hashes under `qualified-v1/`.
+
+The later [genuine source join](pa31-source-add-sub.md) closes the retained local
+Add/Sub language-role consumer through actual headers, selected impl bodies and
+const/Code proof. Its separate full-macro CTFE/native evidence supplements this
+historical bootstrap checkpoint. Broader calls and the complete checked panic
+graph remain required; the original pending observations above are retained.

@@ -1,0 +1,16 @@
+{
+  "state": "followup predicted before observation; original missing const API marker disagreement retained",
+  "pin_files": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/arith.rs": "a495c8c9838be09ce2c239462153a6221b6f471aa2efe43ce437e83581636c91",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/internal_macros.rs": "a4400b86ffb19c885fadb13dd864118cd951cf3c8e55313db278e16e11eb215b"
+  },
+  "cases": [
+    {
+      "name": "conditional-unstable",
+      "path": "obj/parallel/pa31/source-add-sub-v1/frozen-conditional-followup/conditional-unstable.rs",
+      "sha256": "364882284986e8940095d92a7f88004da2647a4617119592778d57c7eafa6a83",
+      "accepted": true,
+      "profile": "actual declared const_unstable defining function and constimpl, genuine const_ops API allowance through existing owner"
+    }
+  ]
+}

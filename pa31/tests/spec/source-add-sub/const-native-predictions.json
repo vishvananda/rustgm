@@ -1,0 +1,17 @@
+{
+  "state": "frozen before new source/native observation and candidate use",
+  "source": "obj/parallel/pa31/source-add-sub-v1/frozen-const-native/macro-const-observed.rs",
+  "source_sha256": "cb2a3cb232ecc27888906eeaf767410c886462493b95b82b042be0c3efb8d614",
+  "consumer": "obj/parallel/pa31/source-add-sub-v1/frozen-const-native/consumer.c",
+  "consumer_sha256": "5a99f990c214c18ffcbba2bf2ca91317b9b20c6a2903110733f6aed5bb363f1f",
+  "prefix": "obj/parallel/pa31/source-add-sub-v1/frozen-followup/macro-const-with-location.rs",
+  "prefix_sha256": "64e6e654f1f106c4403d7b2b0388e0c350f4332a3b04fb2b3e75501e781c2a50",
+  "prediction": {
+    "object": 0,
+    "link": 0,
+    "execute": 0,
+    "stdout": "7 7 7\n",
+    "stderr": ""
+  },
+  "scope": "Genuine full macro const operations and shared-reference forwarding with existing actual Location foundation; authored read-only value export bridges, no dynamic checked arithmetic export or panic stub"
+}
