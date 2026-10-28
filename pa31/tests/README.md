@@ -413,3 +413,11 @@ and locked native observations without invoking a fabricated Formatter. The
 same anchored Captured origin retains caller context and grants no feature or
 transport permission. Dynamic counts, remaining constructors and actual
 Formatter/write/PanicInfo/handler execution remain required.
+
+
+`spec/source-format-macros/constructor-family/` retains the complete nine-trait
+constructor/Count recipe packet and a real six-new-trait source provider.
+Independent scalar-count/evaluation/overflow observations remain separate from
+candidate Count execution. The full checked original `from_usize` body and real
+comparison/panic dependencies are retained, with no scalar Count shortcut or
+claim of full Formatter/handler execution.
