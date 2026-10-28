@@ -2,6 +2,7 @@
 #[cfg(test)]
 #[path = "../../../tests/invariants/exposure_stages.rs"]
 mod exposure_stages;
+mod forwarding;
 #[cfg(test)]
 mod tests;
 use crate::{
@@ -27,6 +28,7 @@ pub(super) struct Builder {
     recipes: Option<glue::Cache>,
     dependencies: Dependencies,
     adapters: bool,
+    forwarding: crate::support::hash::HashMap<usize, forwarding::Bridge>,
     original_regions: Option<crate::support::hash::HashMap<crate::body::ir::BodyKey, RegionProof>>,
 }
 enum RegionProof {
@@ -181,6 +183,7 @@ impl Builder {
                 recipes,
                 dependencies: Dependencies::default(),
                 adapters: false,
+                forwarding: crate::support::hash::HashMap::default(),
                 original_regions: None,
             },
             ordinary,
@@ -430,6 +433,7 @@ impl Builder {
         selected: crate::sema::primitive_methods::Selected,
         body: Body,
         input: &Contract,
+        budget: &mut usize,
     ) -> Result<usize, borrow::Error> {
         let permit = crate::body::primitive_methods::validate(facts, selected, &body, input)
             .map_err(|message| borrow::Error {
@@ -450,14 +454,18 @@ impl Builder {
                     message: message.into(),
                 }
             })?;
-        self.push_inner(
+        self.prepay_forwarding(facts, budget, body.source)?;
+        let index = self.push_inner(
             facts,
             templates,
             body,
             input,
             Some(requirements),
             Original::Factory(permit),
-        )
+        )?;
+        self.forwarding
+            .insert(index, forwarding::Bridge::Factory(permit));
+        Ok(index)
     }
     pub(super) fn push_adapter(
         &mut self,
@@ -466,6 +474,7 @@ impl Builder {
         templates: &templates::Checked<'_>,
         source: usize,
         mut prepared: crate::body::adapters::Prepared,
+        budget: &mut usize,
     ) -> Result<usize, borrow::Error> {
         let error = |message: &str| borrow::Error {
             node: Some(prepared.body.source.into()),
@@ -501,14 +510,18 @@ impl Builder {
                 message: error.to_string(),
             },
         )?;
-        self.push_inner(
+        self.prepay_forwarding(facts, budget, prepared.body.source)?;
+        let index = self.push_inner(
             facts,
             templates,
             prepared.body,
             &prepared.input,
             Some(requirements),
             Original::Adapter(source, &prepared.template),
-        )
+        )?;
+        self.forwarding
+            .insert(index, forwarding::Bridge::Adapter(source));
+        Ok(index)
     }
     fn push_inner(
         &mut self,

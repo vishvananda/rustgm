@@ -34,6 +34,13 @@ fn translated_environment(
         return Ok(s::EnvironmentOrigin::Contract);
     }
     validate_environment(facts, definition, environment)?;
+    // A completed body cache does not turn a contract-derived scope into a
+    // declaration environment. Feature premises still require explicit rows.
+    if !facts.generics.environments.contains_key(&definition)
+        && !environment.has_feature_assumptions()
+    {
+        return Ok(s::EnvironmentOrigin::Contract);
+    }
     let member = stage.declaration(definition)?;
     if let Some(owner) = facts
         .associated

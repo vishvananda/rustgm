@@ -56,6 +56,9 @@ impl Caller {
         if body.source.root_site() != source {
             return Err("sealed caller changed its actual root provenance");
         }
+        let Some(body) = program.caller_body(&facts.types, (self.0 - 1) as usize)? else {
+            return Ok(None);
+        };
         if let Some(environment) = templates.environment_for_body(body)? {
             return Ok(Some(Arc::clone(environment)));
         }

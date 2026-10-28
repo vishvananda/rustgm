@@ -216,7 +216,7 @@ impl Budget {
         self.enter(family, &prepared.body, &prepared.input)
             .map_err(|e| diagnostic(report, Some(prepared.body.source.into()), e.into()))?;
         let index = program
-            .push_adapter(report, facts, templates, source, prepared)
+            .push_adapter(report, facts, templates, source, prepared, &mut self.bytes)
             .map_err(|e| diagnostic(report, e.node, e.message))?;
         Ok(Some((index, family)))
     }
@@ -244,7 +244,7 @@ impl Budget {
         self.enter(family, &body, &input)
             .map_err(|e| diagnostic(report, Some(body.source.into()), e.into()))?;
         let index = program
-            .push_factory(facts, templates, selected, body, &input)
+            .push_factory(facts, templates, selected, body, &input, &mut self.bytes)
             .map_err(|e| diagnostic(report, e.node, e.message))?;
         Ok((index, family))
     }
