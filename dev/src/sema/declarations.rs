@@ -784,6 +784,7 @@ impl Checker<'_> {
                 | Kind::Closure { .. }
                 | Kind::Let { .. }
                 | Kind::Cast { .. }
+                | Kind::OffsetOf { .. }
         ) && self.facts.node(key).is_none_or(|f| f.reference.is_none())
         {
             return Ok(());
@@ -817,7 +818,10 @@ impl Checker<'_> {
             self.drain(steps, limit)?;
             return Ok(());
         }
-        let (Kind::Let { ty: Some(ty), .. } | Kind::Cast { ty, .. }) = kind else {
+        let (Kind::Let { ty: Some(ty), .. }
+        | Kind::Cast { ty, .. }
+        | Kind::OffsetOf { container: ty, .. }) = kind
+        else {
             return Ok(());
         };
         // Holes stay in the owning body, while the ordinary elaborator

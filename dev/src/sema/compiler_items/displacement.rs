@@ -130,6 +130,43 @@ fn constraint(
 }
 
 impl Catalog {
+    pub(crate) fn require_offset_callable(
+        &self,
+        report: &crate::resolve::expansion::Report,
+        facts: &Declarations,
+        callable: TypeId,
+        container: TypeId,
+    ) -> Result<(), &'static str> {
+        crate::sema::header_attributes::charge_source_contract_query(facts, 8)
+            .map_err(|_| "offset callable contract budget exhausted")?;
+        let Some(Kind::FunctionItem {
+            item,
+            signature,
+            arguments,
+        }) = facts.types.kind(callable)
+        else {
+            return Err("offset plan requires its actual source function item");
+        };
+        let definition = DefId(item.0);
+        let function = facts
+            .function_indices
+            .get(&definition)
+            .and_then(|&i| facts.functions.get(i))
+            .ok_or("offset callable has no completed header")?;
+        validate(facts, *function)?;
+        self.require_offset_report(report, facts, definition)?;
+        let mut actual = facts
+            .types
+            .arguments(arguments)
+            .ok_or("offset callable arguments disappeared")?;
+        if signature != function.signature
+            || actual.len() != 1
+            || actual.next() != Some(Argument::Type(container))
+        {
+            return Err("offset callable changed its actual container or signature");
+        }
+        Ok(())
+    }
     pub(crate) fn require_offset_report(
         &self,
         report: &crate::resolve::expansion::Report,

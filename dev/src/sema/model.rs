@@ -95,6 +95,9 @@ pub enum Operation {
     Try {
         plan: super::bodies::TryPlanId,
     },
+    OffsetOf {
+        plan: super::bodies::OffsetPlanId,
+    },
     Call {
         signature: TypeId,
         source_use: Option<SourceCallUse>,

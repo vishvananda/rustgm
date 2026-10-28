@@ -271,7 +271,9 @@ impl Checker<'_> {
                 Kind::Closure { .. } => {
                     self.work.push(Work::ClosureAnnotation(key, context, None));
                 }
-                Kind::Cast { ty, .. } | Kind::Let { ty: Some(ty), .. } => {
+                Kind::Cast { ty, .. }
+                | Kind::Let { ty: Some(ty), .. }
+                | Kind::OffsetOf { container: ty, .. } => {
                     self.node_work(key.file, ty, context);
                 }
                 Kind::InferType => {

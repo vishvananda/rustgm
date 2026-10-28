@@ -20,6 +20,7 @@ mod inline_roots;
 use initializers::body as initializer_body;
 mod intrinsics;
 mod invocations;
+mod layout_offsets;
 mod matches;
 mod methods;
 mod operators;
@@ -1629,6 +1630,7 @@ impl<'a> Builder<'a> {
                 self.aggregate_elements(node, elements)?
             }
             Kind::InlineAssembly(args) => self.assembly_value(node, args)?,
+            Kind::OffsetOf { .. } => self.offset_value(node)?,
             Kind::LibraryValue { value, .. } => self.library_value(node, value)?,
             Kind::Array(elements) => self.aggregate_elements(node, elements)?,
             Kind::Repeat { value, .. } => self.repeat(node, value)?,

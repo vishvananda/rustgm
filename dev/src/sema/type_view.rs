@@ -620,6 +620,7 @@ fn operation(value: Operation, out: &mut impl Write) -> io::Result<()> {
             target,
         } => write!(out, "cast {kind:?} source={} target={}", source.0, target.0),
         Operation::Try { plan } => write!(out, "try plan={}", plan.index()),
+        Operation::OffsetOf { plan } => write!(out, "offset-of plan={}", plan.index()),
         Operation::Call { signature, .. } => write!(out, "call signature={}", signature.0),
         Operation::Assign {
             target,

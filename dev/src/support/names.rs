@@ -52,6 +52,75 @@ impl Names {
         let spelling = spelling.strip_prefix("r#").unwrap_or(spelling);
         self.intern_plain(spelling)
     }
+    /// Normalize only this requested name, paying transient Unicode scratch before allocation.
+    pub(crate) fn intern_paid(
+        &mut self,
+        spelling: &str,
+        pay: &mut impl FnMut(crate::support::retained::Growth) -> Result<(), &'static str>,
+    ) -> Result<NameId, &'static str> {
+        let spelling = spelling.strip_prefix('\'').unwrap_or(spelling);
+        let spelling = spelling.strip_prefix("r#").unwrap_or(spelling);
+        pay(crate::support::retained::Growth {
+            work: spelling.len().saturating_add(1),
+            bytes: 0,
+        })?;
+        if spelling.is_ascii() {
+            return self.intern_exact_paid(spelling, pay);
+        }
+        let normalized = Self::normalize_paid(spelling, pay)?;
+        self.intern_exact_paid(&normalized, pay)
+    }
+    pub(crate) fn normalize_paid(
+        spelling: &str,
+        pay: &mut impl FnMut(crate::support::retained::Growth) -> Result<(), &'static str>,
+    ) -> Result<String, &'static str> {
+        // Unicode canonical decomposition has at most eighteen scalars per input
+        // scalar. Byte length bounds that count; four bytes bound each output.
+        let bound = spelling
+            .len()
+            .checked_mul(18 * size_of::<char>())
+            .ok_or("name normalization storage overflow")?;
+        pay(crate::support::retained::Growth {
+            work: bound.saturating_mul(spelling.len().max(1).ilog2() as usize + 2),
+            // Own output, decomposition/reordering scratch and allocation growth.
+            bytes: bound.saturating_mul(4),
+        })?;
+        let mut normalized = String::new();
+        normalized
+            .try_reserve_exact(bound)
+            .map_err(|_| "name normalization allocation failed")?;
+        if normalized.capacity() > bound {
+            return Err("name normalization allocation exceeds prepaid storage");
+        }
+        normalized.extend(spelling.nfc());
+        Ok(normalized)
+    }
+    /// Resolve a retained source spelling without inserting a new lexical name.
+    pub(crate) fn lookup_paid(
+        &self,
+        spelling: &str,
+        pay: &mut impl FnMut(crate::support::retained::Growth) -> Result<(), &'static str>,
+    ) -> Result<Option<NameId>, &'static str> {
+        let spelling = spelling.strip_prefix('\'').unwrap_or(spelling);
+        let spelling = spelling.strip_prefix("r#").unwrap_or(spelling);
+        pay(crate::support::retained::Growth {
+            work: spelling.len().saturating_add(1),
+            bytes: 0,
+        })?;
+        let normalized;
+        let spelling = if spelling.is_ascii() {
+            spelling
+        } else {
+            normalized = Self::normalize_paid(spelling, pay)?;
+            &normalized
+        };
+        pay(crate::support::retained::Growth {
+            work: spelling.len().saturating_add(1),
+            bytes: 0,
+        })?;
+        let hash = self.hash.hash_one(spelling);
+        self.find(spelling, hash, pay).map(|(_, name)| name)
+    }
     /// Intern a spelling that has no raw prefix or lifetime quote.
     ///
     /// # Errors

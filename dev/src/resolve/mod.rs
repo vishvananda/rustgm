@@ -36,6 +36,7 @@ mod patterns;
 pub(crate) mod specialization_authority;
 mod table;
 mod try_blocks;
+pub(crate) use compiler_syntax::require_offset;
 pub(crate) use try_blocks::require as require_try_block;
 mod compiler_syntax;
 pub mod unit;
