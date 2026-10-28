@@ -7,6 +7,7 @@ mod dependencies;
 mod observed_constants;
 pub(in crate::sema) use observed_constants::{ConstantDecision, ConstantProof};
 mod implementation;
+mod non_type_callers;
 mod objects;
 mod reservations;
 mod tables;

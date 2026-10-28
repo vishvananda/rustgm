@@ -85,8 +85,10 @@ pub(super) fn prepare<'a>(
     } else {
         None
     };
-    let dispatcher = Dispatcher::new(
-        contract.universals,
+    let dispatcher = super::non_type_enclosing::prepare(
+        facts,
+        body,
+        contract,
         first_region(facts, contract, source_path)?,
     )?;
     Ok((caller, dispatcher))

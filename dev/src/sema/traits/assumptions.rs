@@ -209,6 +209,18 @@ impl Assumptions {
             .flatten();
         Ok(Self { index })
     }
+    pub(crate) fn feature_environment_charged(
+        store: &Store,
+        environment: &Environment,
+        pay: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Self, &'static str> {
+        let index = environment
+            .trait_index_charged(store, pay)?
+            .map(|index| index.feature_only_charged(store, pay))
+            .transpose()?
+            .flatten();
+        Ok(Self { index })
+    }
 
     fn candidates(
         &self,
