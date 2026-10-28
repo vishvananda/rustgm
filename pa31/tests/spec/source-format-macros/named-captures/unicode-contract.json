@@ -1,0 +1,48 @@
+{
+  "state": "new Unicode normalization predictions frozen before observations",
+  "scope": "New ordinary std-backed named/capture semantics and hygiene; not actual RustGM source provider or formatter-runtime proof",
+  "tool": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+  "tool_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "editions": [
+    2021,
+    2024
+  ],
+  "options": [
+    "-Awarnings"
+  ],
+  "primary": {
+    "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_builtin_macros/src/format.rs",
+    "sha256": "3cad2b16e6c83190cb747e2542adf09a26ab75c9e5c60301a4e60450db1fe900",
+    "parse_args": "50-157 top-level named grammar and direct literal eligibility",
+    "capture_lookup": "395-454 explicit name priority and literal-context capture"
+  },
+  "cases": [
+    {
+      "name": "capture-non-nfc",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/capture-non-nfc.rs",
+      "sha256": "806898e4e90380271414cf76b01d27ef81532d4747688fbc43966190f0e709fd",
+      "metadata": 1,
+      "stdout": null
+    },
+    {
+      "name": "explicit-nfc",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/explicit-nfc.rs",
+      "sha256": "2de9b3b804ec5d8ef5d0c2a44f5a81f3715d806a4f31fea417d278bfebf0b29a",
+      "metadata": 0,
+      "stdout": null
+    },
+    {
+      "name": "duplicate-nfc",
+      "path": "pa31/tests/spec/source-format-macros/named-captures/duplicate-nfc.rs",
+      "sha256": "e5010e9163e5a0c7d79b3c92288e14c8aafb88bb0eeb4d903f2bfc5c0383e941",
+      "metadata": 1,
+      "stdout": null
+    }
+  ],
+  "candidate_requirements": [
+    "Actual source role/header constructor and captured source/root identity",
+    "Each explicit RHS adopted once in order; captures appended once by name; (input,trait) first use retained",
+    "Ordinary borrow/safety/const/body proof; only constructor unsafe block",
+    "Dynamic counts remain separate required profile"
+  ]
+}
