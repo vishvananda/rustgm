@@ -311,8 +311,10 @@ fn closed_member(facts: &Declarations, call: Call, work: &mut Work) -> Result<De
     let header = facts
         .function_header(definition)?
         .ok_or("const member header is pending")?;
+    if header.body.is_some() {
+        return Err("source provided const member execution is not implemented");
+    }
     if header.declaration.source().is_none()
-        || header.body.is_some()
         || facts
             .associated
             .trait_owner(definition)

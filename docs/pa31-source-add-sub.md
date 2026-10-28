@@ -125,3 +125,13 @@ then stops at the same captured-format-input boundary in field.rs51 in8.36s.
 It produces no core artifact. The allocation-identity guard now checks its
 actual stable ALL index61 rather than assuming a total62 roles; declaration
 recognition still grants no completed allocation/layout or wire permission.
+
+Full CI40611149753 passed all2028 private tests, then found one frontend
+diagnostic regression: a valid-but-unsupported provided const member reported
+a required-declaration error. The source call still rejects; its explicit
+"not implemented" boundary is restored before the required-member check.
+The exact failed frontend case, two runtime/destructor opposites and all473
+PA24 text cases pass on the isolated main snapshot in225.97s, including
+production/CLI strict Clippy, formatting and the full architecture audit.
+Receipt: `obj/qualification/fast/1793150528579440298/receipt.json`.
+This repair grants no default-body, abstract const or imported execution.
