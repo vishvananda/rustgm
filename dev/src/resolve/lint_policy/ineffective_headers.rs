@@ -28,8 +28,14 @@ pub(super) struct Annotation {
     node: Node,
     item: Item,
     unstable: Option<u32>,
-    bound: Option<u32>,
+    bound: Vec<BoundEffect>,
     bounds: Vec<Box<str>>,
+}
+#[derive(Clone, Copy)]
+struct BoundEffect {
+    effect: u32,
+    start: u32,
+    end: u32,
 }
 #[derive(Clone, Copy)]
 pub(crate) struct DeclarationAnnotation<'a> {
@@ -76,7 +82,7 @@ pub(super) fn capture(
             )
         });
     let mut unstable = None;
-    let mut bound = None;
+    let mut bound = Vec::new();
     let mut bounds = Vec::new();
     for witness in &parsed.witnesses {
         work.charge(key, 1, 0)?;
@@ -86,12 +92,6 @@ pub(super) fn capture(
         match attribute.name(forest, unit.source.text()) {
             Some("unstable") if accepts_bound => unstable = Some(witness.effect),
             Some("unstable_feature_bound") => {
-                if bound.replace(witness.effect).is_some() {
-                    return Err(invalid(
-                        key,
-                        "repeated unstable_feature_bound attributes require a wider source profile",
-                    ));
-                }
                 if !accepts_bound {
                     return Err(Violation {
                         key,
@@ -99,12 +99,12 @@ pub(super) fn capture(
                         message: "unstable_feature_bound requires an actual trait, function or trait impl declaration",
                     });
                 }
-                feature_bounds(unit, key, attribute, forest, &mut bounds, work)?;
+                capture_bound(unit, key, witness, &mut bound, &mut bounds, work)?;
             }
             _ => {}
         }
     }
-    if bound.is_none() && (!is_impl || unstable.is_none()) {
+    if bound.is_empty() && (!is_impl || unstable.is_none()) {
         return Ok(None);
     }
     Ok(Some(Annotation {
@@ -116,6 +116,29 @@ pub(super) fn capture(
         bound,
         bounds,
     }))
+}
+fn capture_bound(
+    unit: &Unit,
+    key: NodeKey,
+    witness: &super::producer::Witness,
+    effects: &mut Vec<BoundEffect>,
+    names: &mut Vec<Box<str>>,
+    work: &mut Work,
+) -> Result<(), Violation> {
+    let growth = Growth::vector::<BoundEffect>(effects.len(), effects.capacity(), 1);
+    work.charge(key, 1 + growth.work, growth.bytes)?;
+    let start = u32::try_from(names.len())
+        .map_err(|_| invalid(key, "feature name coordinates exceed their arena"))?;
+    let forest = &unit.configured.ast.attributes[witness.capture as usize].forest;
+    feature_bounds(unit, key, witness.attribute, forest, names, work)?;
+    let end = u32::try_from(names.len())
+        .map_err(|_| invalid(key, "feature name coordinates exceed their arena"))?;
+    effects.push(BoundEffect {
+        effect: witness.effect,
+        start,
+        end,
+    });
+    Ok(())
 }
 fn feature_bounds(
     unit: &Unit,
@@ -215,7 +238,7 @@ impl Producer {
             .as_ref()
             .map(|column| column.rows.iter())
             .unwrap_or_default()
-            .filter_map(|(&key, row)| row.bound.is_some().then_some(key))
+            .filter_map(|(&key, row)| (!row.bound.is_empty()).then_some(key))
     }
     pub(crate) fn has_impl_annotations(&self) -> bool {
         self.ineffective_headers.is_some()
@@ -283,10 +306,7 @@ impl Producer {
                 .unstable
                 .map(|effect| attribute(self, unit, owner, effect, "unstable"))
                 .transpose()?,
-            bound: row
-                .bound
-                .map(|effect| attribute(self, unit, owner, effect, "unstable_feature_bound"))
-                .transpose()?,
+            bound: bound_attributes(self, unit, owner, row)?,
             bounds: &row.bounds,
         }))
     }
@@ -294,7 +314,7 @@ impl Producer {
         if let Some(column) = &self.ineffective_headers {
             for (&key, row) in &column.rows {
                 self.attribute_read(key, 1)?;
-                if row.bound.is_some() {
+                if !row.bound.is_empty() {
                     self.declaration_annotation(package, key)?;
                     return Err(invalid(
                         key,
@@ -305,6 +325,71 @@ impl Producer {
         }
         Ok(())
     }
+}
+fn bound_attributes(
+    producer: &Producer,
+    unit: &Unit,
+    owner: &super::producer::Owner,
+    row: &Annotation,
+) -> Result<Option<Attribute>, Violation> {
+    // Parsed witnesses already fix the list profile and source payload. Match
+    // every retained effect once; never parse feature names again at a query.
+    producer.attribute_read(
+        owner.key,
+        owner
+            .parsed
+            .witnesses
+            .len()
+            .saturating_mul(25)
+            .saturating_add(1),
+    )?;
+    let mut effects = row.bound.iter();
+    let mut next = effects.next();
+    let mut end = 0;
+    let mut first = None;
+    for witness in &owner.parsed.witnesses {
+        let forest = &unit.configured.ast.attributes[witness.capture as usize].forest;
+        if witness.attribute.name(forest, unit.source.text()) != Some("unstable_feature_bound") {
+            continue;
+        }
+        let effect =
+            next.ok_or_else(|| invalid(owner.key, "feature annotation lost an actual effect"))?;
+        let Input::Delimited(group) = witness.attribute.input else {
+            return Err(invalid(
+                owner.key,
+                "feature annotation lost its validated list",
+            ));
+        };
+        let range = forest
+            .children(group)
+            .ok_or_else(|| invalid(owner.key, "feature annotation lost its list coordinates"))?;
+        // The captured plain-list profile has one name token and at most one
+        // comma per name. Coordinates prove its count without a token walk.
+        let count = range
+            .end
+            .checked_sub(range.start)
+            .ok_or_else(|| invalid(owner.key, "feature annotation list coordinates changed"))?
+            .div_ceil(2);
+        if effect.effect != witness.effect
+            || effect.start != end
+            || effect.end.checked_sub(effect.start) != Some(count)
+        {
+            return Err(invalid(
+                owner.key,
+                "feature annotation changed its effect/name partition",
+            ));
+        }
+        first.get_or_insert(witness.attribute);
+        end = effect.end;
+        next = effects.next();
+    }
+    if next.is_some() || usize::try_from(end).ok() != Some(row.bounds.len()) {
+        return Err(invalid(
+            owner.key,
+            "feature annotation has incomplete effect/name coverage",
+        ));
+    }
+    Ok(first)
 }
 fn attribute(
     producer: &Producer,
