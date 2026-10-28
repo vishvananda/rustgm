@@ -1,38 +1,34 @@
 # Parallel library bootstrap implementation
 
-The user has reauthorized up to two subagents. Root continues direct compiler
-implementation and integration in `rustgm-pa25-work`. Worker `lint_expectations`
-completed the bounded lint cap, now integrated and qualified. It owns the typed
-sealed native caller port in `rustgm-pa26-work`; its typed predicate core is
-integrated and qualified. Broader
-diagnostic parity is deferred unless it blocks actual compilation. Worker
-`const_call_review` completed availability v3 transport in `rustgm-pa27-work`,
-now integrated and qualified. Its genuine selected source handler passes normal/
-drop and handler/abort native execution. It now owns authentic Trait/Fn/trait-impl
-capture and the paid typed source clause API; Root owns predicate preservation,
-charged environments and publication. Root also owns
-strict/capped observation and the actual trait feature-bound contract at the
-new strict core boundary. Keep default strict qualification separate from
-explicit capped bring-up and retain every mandatory language/assignment gate.
-Coordinate guarded heavy checks; at most two heavy commands may be active even
-though the controller permits three. No additional worktree is needed.
+The user has reauthorized up to two existing subagents. Root owns direct
+implementation, combined qualification and public main integration in
+`rustgm-pa25-work`. Worker `lint_expectations` in `rustgm-pa26-work` owns the
+actual concrete Dispatcher caller-feature port. Its typed core, source caller
+materialization and completed-environment cache are integrated. Worker
+`const_call_review` in `rustgm-pa27-work` owns authentic source `prelude_import`
+selection and lookup; its source attribute capture and repeated-effect
+validation are integrated. Broader advisory lint producers are deferred unless
+needed for compilation. Preserve `allow`, `deny`, `forbid`, `expect` and separate
+strict evidence from explicit capped bring-up. At most two heavy commands may
+be active even though the controller permits three. No new worktree is needed.
 
 Use [the live library blocker tracker](library-build-blockers.md#current-execution-queue)
 for current assignments and the [execution plan](library-bootstrap-acceleration.md)
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The current CLI8f0caee9 has explicit separate strict/Allow profiles. Both reach
-original mem/transmutability.rs86,
-`#[unstable_feature_bound(transmutability)]` on the actual unsafe trait. All722
-source pins and effective target arguments remain unchanged;60 sources open
-before the current impl-only capture rejects. No original artifact exists.
-Opened-source counts are not compilation progress. The earlier constructor-family
-checkpoint passes all nine formatting selectors. Source/native
-validation and exact scope are in the [constructor checkpoint](pa31-constructor-family-integration.md).
-The [actual source offset macro](pa31-offset-members-checkpoint.md) now reaches
-the kernel and matches Rust's native output. Nested/DST/external source/layout
-and metadata closure remain required.
+The qualified CLI `3c1978d9` passes the former trait-owned feature-attribute
+boundary. Both original-core observations verify all722 pinned source hashes
+and unchanged effective target arguments. Strict opens68 sources and stops at
+`expect(implicit_provenance_casts)` in `ptr/const_ptr.rs186`; this additional
+advisory producer is deferred. Explicit Allow opens374 and stops at the actual
+`prelude_import` in `lib.rs196`. These are loading observations, not compiled
+files or an original artifact. [Joined source qualification](pa31-source-feature-integration.md)
+records private32, all26 local feature outcomes, production/CLI lexer10+PA6 and
+the genuine pending native-dispatch/metadata boundaries. The
+[constructor checkpoint](pa31-constructor-family-integration.md) and
+[actual source offset macro](pa31-offset-members-checkpoint.md) retain their
+finite native proof and broader source/layout requirements.
 
 The actual65-role/two-word completion set, physical source Option profile and
 old-wire denials remain qualified. Complete known-role reservations are still a
@@ -48,9 +44,9 @@ proposal and confer no source body/runtime/metadata authority.
   consumers. That saved snapshot is historical, not the current execution queue.
 - Read-only offset/lint expectation/release proposals remain evidence, with no
   new compiler or publication authority.
-- The integrator is qualifying combined offset/lint regression repairs and the
-  next original-core observer. Genuine panic/formatting, PA25 generic/const,
-  PA29 transport and original crate artifacts remain required.
+- The integrator is qualifying the concrete caller-feature native port and
+  publishing the joined source checkpoint. Genuine panic/formatting, PA25
+  generic/const, PA29 transport and original crate artifacts remain required.
 
 Keep one heavy job in the integrator's active worktree, two Cargo/test/native
 threads, a16GiB absolute output cap and the unchanged150GiB disk reserve.
@@ -68,17 +64,13 @@ Keep one executable exit per lane. Shared-interface preparation is work within
 that task, not an endlessly expanding replacement milestone. At consumer exits,
 reconcile the owning PA's remaining implementation and release checklist.
 
-Keep at most one qualified handoff queued per worker; the integrator takes shared
-bases before adding an unrelated implementation task. Combined Thin/PhantomData/
-final-method/helper-declaration/try-grammar integration advances original core;
-C takes actual pointer metadata after Try and builtin-kind qualification;
-the integrator qualifies the combined compiler and advances the original-core
-observer. A's disjoint Provided codec remains
-queued with its exact wire rows in the existing milestone, while A retains
-member/body semantics. The integrator
-protects integration/observation time rather
-than opening a fourth long compiler workstream. Keep three workers; shared
-TypeKind/ABI/proof edits are not an opportunity for more concurrent owners.
+Keep at most one qualified handoff queued per worker. Take shared interfaces
+before opening unrelated compiler work, and protect integration/observation time.
+The current exits are concrete caller-feature native execution (B), original
+source prelude lookup (C), and joined qualification/publication (Root). Metadata
+feature transport and original crate artifacts remain required after these exits.
+Use at most two existing subagents; shared type/ABI/proof edits require explicit
+ownership coordination, not another concurrent owner.
 
 Development validation uses `make fastcheck` with exact affected controls and
 captured outputs within five minutes. A new private binary does not require a

@@ -192,6 +192,15 @@ diagnostic after a failed payment. Do not demand bodies to finish lint bookkeepi
 or scan all declarations separately for each expectation. The
 [selected-scope checkpoint](docs/pa40-selected-scope-completion.md) records the
 opposing source, work and request controls.
+
+During library bring-up, preserve `allow`, `deny`, `forbid` and `expect` policy,
+but prioritize compiler behavior needed by actual source consumers over adding
+advisory lint producers. An explicit `--cap-lints=allow` observation may defer
+those producers without fabricating fulfillment. Keep that evidence separate
+from strict qualification; the cap grants no syntax, feature, type, unsafe,
+API, CTFE or metadata permission. Deferred producers remain named assignment
+requirements and strict failures remain visible.
+
 Legacy imported admission asserts no deprecation absence, and local deprecated
 exports stay closed until explicit transport exists. The
 [finite checkpoint](docs/pa40-lint-expectations-checkpoint.md) records its scope
