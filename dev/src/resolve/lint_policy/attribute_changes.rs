@@ -373,6 +373,7 @@ fn deprecation(
         span: attribute.span,
         note: None,
         since: None,
+        suggestion: None,
         staged_unsupported: false,
     };
     if attribute.input == Input::Empty {
@@ -391,14 +392,14 @@ fn deprecation(
     let mut index = range.start;
     while index < range.end {
         work.charge(key, 1, 0)?;
-        let slot = match forest.name(source, index) {
-            Some("note") => &mut result.note,
-            Some("since") => &mut result.since,
+        let name = forest.name(source, index);
+        let occupied = match name {
+            Some("note") => result.note.is_some(),
+            Some("since") => result.since.is_some(),
+            Some("suggestion") => result.suggestion.is_some(),
             _ => return Err(invalid(key, attribute, "unsupported deprecated argument")),
         };
-        if slot.is_some()
-            || index + 2 >= range.end
-            || !forest.punctuation(index + 1, Punctuation::Equal)
+        if occupied || index + 2 >= range.end || !forest.punctuation(index + 1, Punctuation::Equal)
         {
             return Err(invalid(
                 key,
@@ -406,7 +407,26 @@ fn deprecation(
                 "deprecated requires unique named string arguments",
             ));
         }
-        *slot = Some(string(forest, source, index + 2, key, attribute, work)?);
+        let value = string(forest, source, index + 2, key, attribute, work)?;
+        match name {
+            Some("note") => result.note = Some(value),
+            Some("since") => result.since = Some(value),
+            _ => {
+                let span = crate::syntax::token_tree::Span {
+                    start: forest
+                        .tree(index)
+                        .ok_or_else(|| invalid(key, attribute, "missing suggestion name"))?
+                        .span
+                        .start,
+                    end: forest
+                        .tree(index + 2)
+                        .ok_or_else(|| invalid(key, attribute, "missing suggestion value"))?
+                        .span
+                        .end,
+                };
+                result.suggestion = Some((value, span));
+            }
+        }
         index += 3;
         if index < range.end {
             if !forest.punctuation(index, Punctuation::Comma) {

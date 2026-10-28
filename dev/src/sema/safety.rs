@@ -68,7 +68,9 @@ impl Policies {
         let mut policies = Self::default();
         let producer = report.lint_producer();
         let (attributes, entries, has_changes) = if let Some(producer) = producer {
-            producer.validate(&report.package)?
+            let summary = producer.validate(&report.package)?;
+            producer.validate_suggestions(report)?;
+            summary
         } else {
             for (file, unit) in report.package.units.iter().enumerate() {
                 if unit.include_context.is_some() {

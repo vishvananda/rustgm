@@ -2,6 +2,7 @@
 mod attribute_changes;
 mod expectations;
 mod ineffective_headers;
+mod suggestions;
 pub(crate) use expectations::{ExpectationId, PendingExpectation, Progress};
 pub(crate) use ineffective_headers::ImplAnnotation;
 pub(crate) mod producer;

@@ -121,6 +121,7 @@ pub(crate) struct Producer {
     call_extent: u32,
     composed: HashMap<Tail, Result<Policy, Violation>>,
     sealed: bool,
+    pub(super) has_suggestions: bool,
     work: Work,
     pub(super) reads: Cell<Work>,
     pub(super) domain: Option<Arc<super::expectations::Domain>>,
@@ -145,6 +146,7 @@ impl Producer {
             call_extent: calls,
             composed: HashMap::default(),
             sealed: false,
+            has_suggestions: false,
             work: Work::default(),
             reads: Cell::default(),
             domain: None,
@@ -294,6 +296,7 @@ impl Producer {
             ));
         };
         self.publish_expectation_owner(key, tail, &parsed)?;
+        self.has_suggestions |= parsed.has_suggestion();
         self.owners.push(Owner {
             key,
             header: (attributes, value, node.span),
@@ -638,6 +641,11 @@ pub(super) fn invalid(key: NodeKey, message: &'static str) -> Violation {
 }
 
 impl Parsed {
+    fn has_suggestion(&self) -> bool {
+        self.deprecated
+            .as_ref()
+            .is_some_and(|deprecation| deprecation.suggestion.is_some())
+    }
     pub(super) fn has_policy(&self) -> bool {
         !self.changes.is_empty() || self.deprecated.is_some()
     }

@@ -64,6 +64,7 @@ pub(in crate::resolve) enum Feature {
     CfgSanitize = 47,
     BuiltinSyntax = 48,
     OffsetOfEnum = 49,
+    DeprecatedSuggestion = 50,
 }
 
 impl Feature {
@@ -116,6 +117,7 @@ impl Request {
             "cfg_sanitize" => Self::Capability(Feature::CfgSanitize),
             "builtin_syntax" => Self::Capability(Feature::BuiltinSyntax),
             "offset_of_enum" => Self::Capability(Feature::OffsetOfEnum),
+            "deprecated_suggestion" => Self::Capability(Feature::DeprecatedSuggestion),
             "f16" => Self::Capability(Feature::F16),
             "f128" => Self::Capability(Feature::F128),
             "impl_restriction" => Self::Capability(Feature::ImplRestriction),
@@ -147,6 +149,32 @@ impl Request {
 impl Features {
     pub(in crate::resolve) fn has(&self, feature: Feature) -> bool {
         self.0 & (1_u64 << feature as u8) != 0
+    }
+    fn needs_local_owner(&self) -> bool {
+        self.has(Feature::InternalMacroAllowance)
+            || crate::support::cpu_features::Gate::ALL
+                .into_iter()
+                .any(|gate| self.has(Feature::cpu_gate(gate)))
+            || self.has(Feature::ReprSimd)
+            || self.has(Feature::SimdFfi)
+            || self.has(Feature::CfgTargetHasAtomic)
+            || self.has(Feature::CfgSanitize)
+            || self.has(Feature::BuiltinSyntax)
+            || self.has(Feature::OffsetOfEnum)
+            || self.has(Feature::DeprecatedSuggestion)
+            || self.has(Feature::ImplRestriction)
+            || self.has(Feature::MinSpecialization)
+            || self.has(Feature::Specialization)
+            || self.has(Feature::TraitAlias)
+            || self.has(Feature::PatternTypeMacro)
+            || self.has(Feature::PatternTypes)
+            || self.has(Feature::ExternTypes)
+            || self.has(Feature::FinalAssociatedFunctions)
+            || self.has(Feature::MarkerTraitAttr)
+            || self.has(Feature::TryBlocks)
+            || self.has(Feature::ConstClosures)
+            || self.has(Feature::MetavariableConcat)
+            || self.has(Feature::MetavariableExpressions)
     }
     fn insert(&mut self, feature: Feature) {
         self.0 |= 1_u64 << feature as u8;
@@ -254,30 +282,7 @@ pub(in crate::resolve) fn prepare_with_admission(
             ));
         }
         return Ok(Prepared {
-            source: if features.has(Feature::InternalMacroAllowance)
-                || crate::support::cpu_features::Gate::ALL
-                    .into_iter()
-                    .any(|gate| features.has(Feature::cpu_gate(gate)))
-                || features.has(Feature::ReprSimd)
-                || features.has(Feature::SimdFfi)
-                || features.has(Feature::CfgTargetHasAtomic)
-                || features.has(Feature::CfgSanitize)
-                || features.has(Feature::BuiltinSyntax)
-                || features.has(Feature::OffsetOfEnum)
-                || features.has(Feature::ImplRestriction)
-                || features.has(Feature::MinSpecialization)
-                || features.has(Feature::Specialization)
-                || features.has(Feature::TraitAlias)
-                || features.has(Feature::PatternTypeMacro)
-                || features.has(Feature::PatternTypes)
-                || features.has(Feature::ExternTypes)
-                || features.has(Feature::FinalAssociatedFunctions)
-                || features.has(Feature::MarkerTraitAttr)
-                || features.has(Feature::TryBlocks)
-                || features.has(Feature::ConstClosures)
-                || features.has(Feature::MetavariableConcat)
-                || features.has(Feature::MetavariableExpressions)
-            {
+            source: if features.needs_local_owner() {
                 Some(Box::new(Source::LocalMacros(super::LocalMacros::new(
                     unit, features,
                 )?)))

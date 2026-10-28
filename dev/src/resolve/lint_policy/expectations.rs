@@ -31,6 +31,7 @@ pub(super) struct Deprecation {
     pub span: Span,
     pub note: Option<Box<str>>,
     pub since: Option<Box<str>>,
+    pub suggestion: Option<(Box<str>, Span)>,
     pub staged_unsupported: bool,
 }
 pub(crate) struct PendingExpectation<'a> {

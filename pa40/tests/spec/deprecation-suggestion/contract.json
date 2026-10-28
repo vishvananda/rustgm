@@ -1,0 +1,87 @@
+{
+  "profile": {
+    "rustc": "1.98.0",
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "bootstrap": true,
+    "target": "x86_64-unknown-linux-gnu",
+    "emit": "metadata"
+  },
+  "state": "predictions frozen before independent observation",
+  "scope": "Parse and retain actual replacement suggestion; validate feature/strings/source macro permission; fix-it rendering remains deferred",
+  "cases": [
+    {
+      "name": "accepted",
+      "path": "pa40/tests/spec/deprecation-suggestion/accepted.rs",
+      "sha256": "f35af07574243f5ad15eb00bff28c5f3cfc23b8b245c114b3a09c3fb0fff457b",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "owning_assignment": 40
+    },
+    {
+      "name": "used",
+      "path": "pa40/tests/spec/deprecation-suggestion/used.rs",
+      "sha256": "e31628885df2f8dc8e52e6207b11eb288179e07f6c3ab7732f11fd5c6e29a939",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {
+        "deprecated": 1
+      },
+      "owning_assignment": 40
+    },
+    {
+      "name": "missing-feature",
+      "path": "pa40/tests/spec/deprecation-suggestion/missing-feature.rs",
+      "sha256": "8e411441773794ccd2c316f7412b8c0fb9b8d3c2bd68e7d9810eef0c2b531a74",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 1,
+      "expected_diagnostics": {},
+      "owning_assignment": 40
+    },
+    {
+      "name": "wrong-value",
+      "path": "pa40/tests/spec/deprecation-suggestion/wrong-value.rs",
+      "sha256": "3cb0740d935e7b739b557f212ed053ba17394047981bb234e16acf1bb259e26a",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 1,
+      "expected_diagnostics": {},
+      "owning_assignment": 40
+    },
+    {
+      "name": "duplicate",
+      "path": "pa40/tests/spec/deprecation-suggestion/duplicate.rs",
+      "sha256": "31f5e27b9d51686ea7b8efed984a02b1d0e94c150f8080b22ac5dfac5598a373",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 1,
+      "expected_diagnostics": {},
+      "owning_assignment": 40
+    },
+    {
+      "name": "macro-allowance",
+      "path": "pa40/tests/spec/deprecation-suggestion/macro-allowance.rs",
+      "sha256": "e86fee3e97546e07eb6959ce916d1eed314648faecc2d0e5e0d508c75f8e7a56",
+      "editions": [
+        2021,
+        2024
+      ],
+      "expected_status": 0,
+      "expected_diagnostics": {},
+      "owning_assignment": 40
+    }
+  ]
+}
