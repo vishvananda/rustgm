@@ -3,6 +3,105 @@ use super::*;
 use std::cell::Cell;
 type Result<T = ()> = std::result::Result<T, LexError>;
 #[test]
+fn named_and_captured_inputs_keep_first_use_pairs_and_paid_scaling() -> Result {
+    assert_eq!(size_of::<crate::expand::stream::Origin>(), 32);
+    assert_eq!(size_of::<crate::expand::stream::OriginKind>(), 2);
+    assert_eq!(size_of::<crate::syntax::ast::Kind>(), 28);
+    assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
+    assert_eq!(size_of::<crate::support::library_types::LibraryValue>(), 12);
+    eprintln!(
+        "named format owners Output={} Draft={} Template={} Characters={}",
+        size_of::<super::super::output::Output<'_>>(),
+        size_of::<super::super::Draft>(),
+        size_of::<Template<'_>>(),
+        size_of::<Characters<'_>>()
+    );
+    let work = Cell::new(0usize);
+    let bytes = Cell::new(0usize);
+    let pay = |steps, storage| {
+        work.set(work.get() + steps);
+        bytes.set(bytes.get() + storage);
+        Ok(())
+    };
+    let named = compile_named(
+        "FieldId({right:#034x})|{left:?}|{right:x}|{right}|{left:?}",
+        2,
+        &[Some("left"), Some("right")],
+        false,
+        false,
+        &pay,
+    )?;
+    let positional = compile("FieldId({1:#034x})|{0:?}|{1:x}|{1}|{0:?}", 2, false, &pay)?;
+    assert_eq!(named.bytes, positional.bytes);
+    assert_eq!(named.arguments, positional.arguments);
+    let captured = compile_named(
+        "FieldId({right:#034x})|{left:?}|{right:x}|{right}|{left:?}",
+        0,
+        &[],
+        true,
+        false,
+        &pay,
+    )?;
+    assert_eq!(captured.captured, ["right", "left"]);
+    assert_eq!(captured.bytes, positional.bytes);
+    assert_eq!(
+        captured
+            .arguments
+            .iter()
+            .map(|arg| arg.input)
+            .collect::<Vec<_>>(),
+        [0, 1, 0]
+    );
+    for (text, names, capture) in [
+        ("{missing}", vec![], false),
+        ("literal", vec![Some("unused")], true),
+        ("{same}", vec![Some("same"), Some("same")], true),
+        ("{same} {}", vec![Some("same"), None], true),
+        ("{0}", vec![], true),
+        ("{1name}", vec![None], true),
+        ("{r#type}", vec![], true),
+    ] {
+        assert!(
+            compile_named(text, names.len(), &names, capture, false, &pay).is_err(),
+            "{text}"
+        );
+    }
+    let mut prior = None;
+    for count in [8usize, 32, 128] {
+        let mut text = String::new();
+        for n in 0..count {
+            use std::fmt::Write;
+            write!(&mut text, "{{value{n}}}|{{value{n}:?}}|{{value{n}:#034x}};").map_err(|_| {
+                crate::syntax::token_tree::error(0, "test template formatting failed")
+            })?;
+        }
+        work.set(0);
+        bytes.set(0);
+        let output = compile_named(&text, 0, &[], true, false, &pay)?;
+        assert_eq!(output.captured.len(), count);
+        assert_eq!(output.arguments.len(), count * 3);
+        if let Some((old_work, old_bytes)) = prior {
+            assert!(work.get() <= old_work * 6);
+            assert!(bytes.get() <= old_bytes * 6);
+        }
+        eprintln!(
+            "named capture count={count} work={} bytes={} Template={} Inputs={}",
+            work.get(),
+            bytes.get(),
+            size_of::<Template<'_>>(),
+            size_of::<named::Inputs<'_, '_>>()
+        );
+        prior = Some((work.get(), bytes.get()));
+    }
+    assert!(
+        compile_named("{value}", 0, &[], true, false, &|_, _| Err(
+            crate::syntax::token_tree::error(0, "payment stopped")
+        ))
+        .is_err()
+    );
+    Ok(())
+}
+#[test]
 fn default_debug_templates_preserve_first_use_repeats_utf8_and_paid_failures() -> Result {
     let work = Cell::new(0usize);
     let bytes = Cell::new(0usize);
@@ -78,7 +177,7 @@ fn default_debug_templates_preserve_first_use_repeats_utf8_and_paid_failures() -
         size_of::<[crate::support::names::NameId; 4]>(),
         size_of::<crate::support::library_types::LibraryValue>(),
         size_of::<super::super::output::Output<'_>>(),
-        size_of::<Template>()
+        size_of::<Template<'_>>()
     );
     let text = format!("{}{{:?}}", "é".repeat(40_000));
     let actual = compile(&text, 1, false, &charge)?;
@@ -175,7 +274,7 @@ fn static_options_keep_exact_flags_counts_positions_and_trait_pairs() -> Result 
         size_of::<[crate::support::names::NameId; 4]>(),
         size_of::<super::super::output::Output<'_>>(),
         size_of::<crate::support::library_types::LibraryValue>(),
-        size_of::<Template>()
+        size_of::<Template<'_>>()
     );
     Ok(())
 }

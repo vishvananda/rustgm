@@ -179,6 +179,12 @@ impl Output<'_> {
                     )
                 })?;
             match origin.kind {
+                OriginKind::Captured(_) => {
+                    return Err(error(
+                        self.site.original.start,
+                        "formatting captures cannot authorize derived vocabulary",
+                    ));
+                }
                 OriginKind::Copied => {
                     (self.charge)(generated.len(), 0)?;
                     if origin.context.is_some()

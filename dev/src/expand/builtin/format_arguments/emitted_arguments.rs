@@ -19,17 +19,21 @@ pub(super) struct Output<'a> {
     sites: Vec<NodeId>,
     inputs: Vec<(NodeId, usize)>,
     names: [NameId; 4],
+    captured: Vec<NodeId>,
     charge: &'a Charge<'a>,
 }
 impl<'a> Output<'a> {
     pub(super) fn build(
-        template: Template,
+        template: Template<'_>,
         count: usize,
         names: [NameId; 4],
+        symbols: &mut crate::support::names::Names,
         grammar: MacroContext,
         config: &Config,
         charge: &'a Charge<'a>,
     ) -> Result<Draft, LexError> {
+        let explicit = count;
+        let count = count.saturating_add(template.captured.len());
         let constructor_count = template.arguments.len();
         let site_count = count.saturating_add(constructor_count).saturating_add(3);
         charge(
@@ -49,9 +53,10 @@ impl<'a> Output<'a> {
             sites: vec![NodeId::new(0); site_count],
             inputs: Vec::with_capacity(count),
             names,
+            captured: Vec::new(),
             charge,
         };
-        let first = output.input_tuple(count, constructor_count)?;
+        let first = output.input_tuple(explicit, &template.captured, constructor_count, symbols)?;
         let second = output.argument_array(&template.arguments)?;
         charge(1, size_of::<Value<'_>>())?;
         output
@@ -120,21 +125,49 @@ impl<'a> Output<'a> {
                 syntax,
             },
             inputs: output.inputs,
+            captured: output.captured,
         })
     }
-    fn input_tuple(&mut self, count: usize, constructors: usize) -> Result<NodeId, LexError> {
+    fn input_tuple(
+        &mut self,
+        explicit: usize,
+        captures: &[&str],
+        constructors: usize,
+        symbols: &mut crate::support::names::Names,
+    ) -> Result<NodeId, LexError> {
+        let count = explicit.saturating_add(captures.len());
+        (self.charge)(
+            captures.len(),
+            captures.len().saturating_mul(size_of::<NodeId>()),
+        )?;
+        self.captured = Vec::with_capacity(captures.len());
         let mut values = Vec::with_capacity(count);
         for index in 0..count {
             let slot = Self::index(3 + constructors + index)?;
-            let input = self.node(
-                "input",
-                Kind::LibraryValue {
-                    kind: LibraryValue::FormatInput { slot },
-                    value: None,
-                },
-            )?;
+            let input = if index < explicit {
+                self.node(
+                    "input",
+                    Kind::LibraryValue {
+                        kind: LibraryValue::FormatInput { slot },
+                        value: None,
+                    },
+                )?
+            } else {
+                let spelling = captures[index - explicit];
+                let symbol = symbols
+                    .intern_exact_paid(spelling, &mut |growth| {
+                        (self.charge)(growth.work, growth.bytes).map_err(|error| error.message)
+                    })
+                    .map_err(|message| error(0, message))?;
+                let span = self.text(spelling)?;
+                let identifier = self.at(span, Kind::Name(span, Some(symbol)))?;
+                self.captured.push(identifier);
+                self.node("input", Kind::Group(identifier))?
+            };
             self.sites[slot as usize] = input;
-            self.inputs.push((input, index));
+            if index < explicit {
+                self.inputs.push((input, index));
+            }
             values.push(self.node(
                 "&",
                 Kind::Unary {

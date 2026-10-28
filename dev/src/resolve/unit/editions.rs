@@ -51,6 +51,17 @@ pub(crate) fn at<'a>(
     unit: impl Fn(FileId) -> Option<&'a Unit>,
 ) -> Result<Edition, LexError> {
     let offset = location.span.start;
+    let mut captured = None;
+    let finish = |actual, claimed: Option<Edition>| {
+        if claimed.is_none_or(|expected| expected == actual) {
+            Ok(actual)
+        } else {
+            Err(error(
+                offset,
+                "formatting capture changed its literal edition",
+            ))
+        }
+    };
     for _ in 0..4096 {
         let source =
             unit(location.file).ok_or_else(|| error(offset, "missing token edition source"))?;
@@ -65,17 +76,17 @@ pub(crate) fn at<'a>(
             return Err(error(offset, "invalid token edition span"));
         }
         if span.end as usize <= source.source.physical_len() {
-            return Ok(source.edition);
+            return finish(source.edition, captured);
         }
         let origin =
             covering(&source.origins, span).map_err(|failure| LexError { offset, ..failure })?;
-        if let OriginKind::Synthetic(edition) = origin.kind {
+        if let OriginKind::Synthetic(edition) | OriginKind::Captured(edition) = origin.kind {
             let anchor = unit(origin.original.file)
                 .ok_or_else(|| error(offset, "missing synthetic edition anchor source"))?;
             if origin.introduction.0 == 0
-                || origin
-                    .context
-                    .is_none_or(|c| c == crate::expand::marks::SyntaxContextId::ROOT)
+                || origin.context.is_none()
+                || matches!(origin.kind, OriginKind::Synthetic(_))
+                    && origin.context == Some(crate::expand::marks::SyntaxContextId::ROOT)
                 || origin.original.span.start >= origin.original.span.end
                 || anchor
                     .source
@@ -90,7 +101,18 @@ pub(crate) fn at<'a>(
             {
                 return Err(error(offset, "invalid synthetic token edition origin"));
             }
-            return Ok(edition);
+            if matches!(origin.kind, OriginKind::Captured(_)) {
+                if captured.is_some_and(|expected| expected != edition) {
+                    return Err(error(
+                        offset,
+                        "formatting capture changed its literal edition",
+                    ));
+                }
+                captured = Some(edition);
+                location = origin.original;
+                continue;
+            }
+            return finish(edition, captured);
         }
         location = copied(origin, span).map_err(|failure| LexError { offset, ..failure })?;
     }

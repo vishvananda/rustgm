@@ -128,3 +128,28 @@ fn original_lower_hex_constructor_keeps_static_options_and_shared_pair_lifetimes
     )?;
     Ok(())
 }
+
+#[test]
+fn captured_and_named_constructors_preserve_real_inputs_hygiene_and_drop_endpoints() -> Result {
+    for name in [
+        "source-captured",
+        "source-explicit",
+        "source-forward-literal",
+        "source-forward-expr",
+    ] {
+        let input = test_source::fixture(&format!(
+            "pa31/tests/spec/source-format-macros/named-captures/{name}.rs"
+        ))?;
+        let program = prepare(&input).map_err(|error| format!("{name}: {error}"))?;
+        let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
+            "../obj/parallel/pa31/format-named-captures-v1/native/{name}"
+        ));
+        std::fs::create_dir_all(&folder)?;
+        std::fs::write(folder.join("provider.rs"), input)?;
+        crate::lowir::writer::write(
+            &program,
+            &mut std::fs::File::create(folder.join("provider.lowir"))?,
+        )?;
+    }
+    Ok(())
+}

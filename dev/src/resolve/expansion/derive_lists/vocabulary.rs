@@ -52,6 +52,7 @@ pub(super) fn require(
             .get(origin.generated.start as usize..origin.generated.end as usize)
             .ok_or_else(failure)?;
         match origin.kind {
+            OriginKind::Captured(_) => return Err(failure()),
             OriginKind::Copied => {
                 source
                     .macros

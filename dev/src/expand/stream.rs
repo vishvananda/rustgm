@@ -28,6 +28,9 @@ pub struct Location {
 pub enum OriginKind {
     Copied,
     Synthetic(Edition),
+    /// A format capture retains the exact literal caller context. This is
+    /// anchored generated spelling, not copied bytes or a feature allowance.
+    Captured(Edition),
 }
 #[derive(Clone, Copy, Debug)]
 pub struct Origin {

@@ -46,6 +46,10 @@ mod diagnostics;
 mod eager;
 pub(crate) mod removed_functions;
 use application_kind::CallGrammar;
+#[path = "expansion/placeholder_bindings.rs"]
+mod argument_bindings;
+#[path = "expansion/identifier_ancestry.rs"]
+mod captured_origins;
 mod format_inputs;
 mod format_sites;
 mod format_values;

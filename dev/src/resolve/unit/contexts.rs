@@ -45,13 +45,25 @@ pub(crate) fn at_counted(
     mut offset: u32,
     mut charge: impl FnMut(usize, usize, usize) -> Result<(), &'static str>,
 ) -> Result<SyntaxContextId, Error> {
+    let mut captured = None;
+    let finish = |actual, claimed: Option<SyntaxContextId>, source_file, source_offset| {
+        if claimed.is_none_or(|expected| expected == actual) {
+            Ok(actual)
+        } else {
+            Err(Error::at(
+                source_file,
+                source_offset,
+                "formatting capture changed its literal context",
+            ))
+        }
+    };
     for _ in 0..4096 {
         charge(1, 0, 0).map_err(|message| Error::at(file, offset, message))?;
         let unit = units
             .get(file.0 as usize)
             .ok_or_else(|| Error::at(file, offset, "missing token context source"))?;
         if (offset as usize) < unit.source.physical_len() {
-            return Ok(SyntaxContextId::ROOT);
+            return finish(SyntaxContextId::ROOT, captured, file, offset);
         }
         let origins = &unit.origins;
         charge(
@@ -69,12 +81,39 @@ pub(crate) fn at_counted(
         else {
             // Physical EOF is a legitimate location for empty captures.
             if offset as usize == unit.source.physical_len() {
-                return Ok(SyntaxContextId::ROOT);
+                return finish(SyntaxContextId::ROOT, captured, file, offset);
             }
             return Err(Error::at(file, offset, "missing retained token context"));
         };
+        if matches!(origin.kind, crate::expand::stream::OriginKind::Captured(_)) {
+            let context = origin.context.ok_or_else(|| {
+                Error::at(file, offset, "formatting capture has no literal context")
+            })?;
+            let anchor = units
+                .get(origin.original.file.0 as usize)
+                .ok_or_else(|| Error::at(file, offset, "missing formatting capture source"))?;
+            if origin.introduction.0 == 0
+                || origin.original.span.start >= origin.original.span.end
+                || anchor
+                    .source
+                    .text()
+                    .get(origin.original.span.start as usize..origin.original.span.end as usize)
+                    .is_none()
+                || captured.is_some_and(|expected| expected != context)
+            {
+                return Err(Error::at(
+                    file,
+                    offset,
+                    "formatting capture changed its source context",
+                ));
+            }
+            captured = Some(context);
+            file = origin.original.file;
+            offset = origin.original.span.start;
+            continue;
+        }
         if let Some(context) = origin.context {
-            return Ok(context);
+            return finish(context, captured, file, offset);
         }
         charge(1, 1, 0).map_err(|message| Error::at(file, offset, message))?;
         let length = origin

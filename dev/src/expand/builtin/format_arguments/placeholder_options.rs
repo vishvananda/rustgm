@@ -2,8 +2,26 @@
 use crate::{
     lex::token::LexError, support::library_types::FormatConstructor, syntax::token_tree::error,
 };
-use std::{iter::Peekable, str::Chars};
-type Characters<'a> = Peekable<Chars<'a>>;
+#[derive(Clone, Copy)]
+pub(super) struct Characters<'a> {
+    remaining: &'a str,
+}
+impl<'a> Characters<'a> {
+    pub(super) const fn new(text: &'a str) -> Self {
+        Self { remaining: text }
+    }
+    pub(super) const fn remaining(&self) -> &'a str {
+        self.remaining
+    }
+    pub(super) fn peek(&self) -> Option<char> {
+        self.remaining.chars().next()
+    }
+    pub(super) fn next(&mut self) -> Option<char> {
+        let character = self.peek()?;
+        self.remaining = &self.remaining[character.len_utf8()..];
+        Some(character)
+    }
+}
 const DEFAULT_FLAGS: u32 = 0x6000_0020;
 #[derive(Clone, Copy)]
 pub(super) struct Options {
@@ -51,7 +69,7 @@ pub(super) fn parse(chars: &mut Characters<'_>) -> Result<(FormatConstructor, Op
     if consume(chars, '}') {
         return Ok((FormatConstructor::Display, options));
     }
-    let mut look = chars.clone();
+    let mut look = *chars;
     let first = look.next();
     let second = look.next();
     if let Some((fill, align)) = first.zip(second.and_then(alignment)) {
@@ -124,7 +142,7 @@ fn count(chars: &mut Characters<'_>) -> Result<Option<u16>, LexError> {
                 .ok_or_else(|| error(0, "formatting count exceeds its u16 encoding"))?,
         );
     }
-    if chars.peek() == Some(&'$') {
+    if chars.peek() == Some('$') {
         return Err(wider());
     }
     Ok(result)
@@ -138,7 +156,7 @@ fn alignment(character: char) -> Option<u32> {
     }
 }
 fn consume(chars: &mut Characters<'_>, wanted: char) -> bool {
-    if chars.peek() == Some(&wanted) {
+    if chars.peek() == Some(wanted) {
         chars.next();
         true
     } else {
