@@ -163,5 +163,11 @@
       "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-native/consumer.c",
       "sha256": "11ca6f054cb0fc76a0ade736cc1c4a2dac4de42d572a174e5180ca717641c9ee"
     }
-  ]
+  ],
+  "returned_reference_native": {
+    "sha256": "fa395cfdc2389d07246709e9f166b488d8518fa65555f190f6a5256017d1ee87",
+    "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-native-returned/ordinary.rs",
+    "plan_sha256": "e10bb8176599a75136b45deca77d4c5fb436c5331bc5a466f40cd57737e044eb",
+    "stdout": "1:9;2:9;5:9;6:9;3:13;4:13;7\n"
+  }
 }

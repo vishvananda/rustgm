@@ -26,6 +26,13 @@ participate in the same proof. Disjoint fields and selected pattern slices may
 be borrowed separately; arbitrary runtime indices remain conservative. Empty
 and zero-sized selections still require valid storage and permissions.
 
+An established shared-reference parameter or annotation also reborrows its
+source place. This works without a source Copy/Clone impl for shared references;
+ordinary generic value arguments and inferred bindings still move. Preserve
+source-time context through groups, branches and tails, including unsizing, and
+prove the fresh borrow's lifetime and loans normally. See the
+[shared call checkpoint](../docs/pa16-shared-call-reborrow.md).
+
 Implicit mutable call-argument reborrows can reserve a loan before evaluating
 later arguments and activate it at the consuming call. Explicit `&mut` borrows
 are immediately exclusive. A reservation permits intervening shared reads but
@@ -121,7 +128,10 @@ Runtime regions cap retained sparse words/pending deltas at 500,000. Optional
 inspection snapshots cap at 2,000,000 nonzero words (48 MB). Executable
 verification runs the same proof without allocating inspection traces.
 
-The release suite declares 308 cases, including 122 LowIR executions. It covers
+The manifest declares 329 cases, including 123 native executions and two library
+object producers. Six additional LowIR inputs are declared rejections. The
+integrator reviews and publishes the new shared-call text oracles after focused
+qualification. The suite covers
 last-use and conflicting access, reborrows/two-phase activation, disjoint fields
 and patterns, loops, guards, temporary extension, promotion, thin/wide reference
 execution and persistent backing. Outcomes are declared before oracle generation

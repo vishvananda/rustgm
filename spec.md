@@ -2934,6 +2934,20 @@ through a block tail or nested tuple. A reference consumed before that context
 exists remains a move; independent type holes do not acquire a shared context.
 Array elements retain their common-type join before final element coercions.
 
+Shared references also reborrow through an established reference expectation,
+including ordinary call arguments, annotations and contextual branch/tail
+propagation. Reuse the selected source-place conversion, fresh inferred region,
+ordinary ancestry/loan checks and instance proof; reference kind supplies no
+source Copy/Clone implementation. An unknown generic value expectation or an
+inferred binding remains a move even if later equality discovers a reference.
+Shared contextual unsizing starts from the same reborrow before the existing
+metadata conversion. When source unsizing is selected, authenticate the current
+CoerceUnsized header and prove its actual implementation and Unsize/formation
+premises through ordinary trait obligations on that reference view. Classification
+alone grants no conversion, Copy, imported-body or backend permission. Joining
+types alone does not create this source context.
+See [the shared call reborrow checkpoint](docs/pa16-shared-call-reborrow.md).
+
 Caller-bound trait goals participate in the same inference graph as call arguments.
 Import each probe with one shared mapping across Self and all type/const roots.
 Index assumptions by trait identity and the rigid outer subject shape; do not scan

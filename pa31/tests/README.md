@@ -380,8 +380,10 @@ maintainer protocol fixtures do not activate the planned assignment.
 `spec/source-format-macros/display/` freezes default Display/Debug pair identity,
 first-use/evaluation order and trait-negative independent controls. Real source
 constructor/native observations use genuine pinned shared-reference Copy/Clone
-impls; the original Rust-positive no-Copy source remains a known call-reborrow
-frontier (PA16 semantics/PA31 source profile), not a language rejection. Full
+impls. The original Rust-positive no-Copy source now also reaches genuine
+constructor/native execution through ordinary PA16 shared call reborrowing;
+its original failure remains historical evidence. See the
+[shared call checkpoint](../../docs/pa16-shared-call-reborrow.md). Full
 Formatter/write/PanicInfo/handler execution remains required.
 
 `spec/source-offset-of/` retains 57 independently qualified full requirement
@@ -403,3 +405,8 @@ constructor and static option recipe. Independent options/trait-negative and
 real source template/pair-storage native observations are distinct from full
 Formatter/write invocation. Dynamic counts, other constructors and named inputs
 remain required; no scalar-formatting factory is substituted.
+
+`spec/shared-call-reborrow/` retains source-owned sizing/Copy/Clone declarations
+with no reference impls, independent positive and move/loan opponents, typed
+unsizing foundations and two thin native profiles. Ordinary counterparts belong
+to PA16. Generic value moves remain separate from contextual reference reborrows.
