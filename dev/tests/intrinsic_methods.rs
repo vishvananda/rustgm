@@ -2,6 +2,7 @@
 use crate::native_references as native;
 use crate::semantic;
 use crate::source_cases as source;
+use rustgm::support::diagnostics::WarningCode;
 const CASES: &[(&str, bool)] = &[
     ("load-store", true),
     ("variable-order", true),
@@ -44,7 +45,16 @@ fn ordering_and_atomic_source_contracts() -> Result<(), Box<dyn std::error::Erro
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join(format!("../pa28/tests/spec/atomic-methods/{name}.rs"));
         let text = std::fs::read_to_string(path)?;
-        source::check("parallel/pa28/atomic-methods", &[(name, accepted, &text)])?;
+        let warning = (name == "warn-invalid-order").then_some(source::WarningCase {
+            name,
+            stderr: "warning[invalid_atomic_ordering]: file 0: 108: invalid atomic ordering for this operation\n",
+            codes: &[(WarningCode::InvalidAtomicOrdering, 1)],
+        });
+        source::check_with_warnings(
+            "parallel/pa28/atomic-methods",
+            &[(name, accepted, &text)],
+            warning.as_slice(),
+        )?;
     }
     Ok(())
 }
@@ -247,9 +257,24 @@ fn unreachable_arm_policy_uses_its_owning_source_lanes() -> Result<(), Box<dyn s
                 .join("..")
                 .join(path),
         )?;
-        source::check(
+        let stderr = match name {
+            "unreachable-default" => {
+                Some("warning[unreachable_patterns]: file 0: 25: unreachable pattern\n")
+            }
+            "unreachable-inner-warn" => {
+                Some("warning[unreachable_patterns]: file 0: 83: unreachable pattern\n")
+            }
+            _ => None,
+        };
+        let warning = stderr.map(|stderr| source::WarningCase {
+            name,
+            stderr,
+            codes: &[(WarningCode::UnreachablePatterns, 1)],
+        });
+        source::check_with_warnings(
             "parallel/pa28/shared-pattern-policy",
             &[(name, accepted, &text)],
+            warning.as_slice(),
         )?;
     }
     Ok(())
