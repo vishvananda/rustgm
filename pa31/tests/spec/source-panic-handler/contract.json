@@ -1,0 +1,55 @@
+{
+  "state": "new finite panic/handler execution predictions frozen before observation",
+  "scope": "Independent no_std adapter uses pinned toolchain core; candidate must execute genuine retained original source bodies separately. Shared user handler/entry bytes and observable semantics; no exact source-crate parity or complete Assert/Formatter claim",
+  "inputs": {
+    "pa31/tests/spec/source-panic-handler/observer.c": "033575a160332eee766911d74d22a7851926c1baa75aa40183ebcfe95e5b8cc1",
+    "pa31/tests/spec/source-panic-handler/independent.rs": "6ad9c6438aa9d7ca7fccb905aa16cfb20676b37d5aede99d77a14f94a3b71fd8",
+    "pa31/tests/spec/source-panic-handler/handler-user.rs": "5620daf131c37576e5b9696886edaa571ff4f7b5403f485b1f8b10b35c917739"
+  },
+  "tool": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+  },
+  "host": {
+    "path": "/usr/bin/x86_64-linux-gnu-gcc-15",
+    "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88"
+  },
+  "core": {
+    "path": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcore-a6075fd9c05de416.rlib",
+    "sha256": "37559e4d9488546d92cb19b74bcee17f7396c10a2a781c8a24e7464f836e7e51"
+  },
+  "editions": [
+    2021,
+    2024
+  ],
+  "options": [
+    "--crate-type=staticlib",
+    "-Cpanic=abort",
+    "-Coverflow-checks=yes",
+    "--target=x86_64-unknown-linux-gnu",
+    "--cap-lints=allow"
+  ],
+  "env": {
+    "RUSTC_BOOTSTRAP": "1"
+  },
+  "true": {
+    "status": 0,
+    "stdout": "returned7\n",
+    "stderr": "E1;D;"
+  },
+  "false": {
+    "status": "abnormal nonzero except86, no exact-signal promise",
+    "stdout": "",
+    "stderr": "E0;H22:5:1:0;"
+  },
+  "link": [
+    "-std=c11",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-Wl,--gc-sections",
+    "-ldl",
+    "-lpthread",
+    "-lm"
+  ]
+}

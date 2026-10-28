@@ -18,6 +18,7 @@ impl Source {
             };
             require_defaultness_transport(report, declaration)?;
             facts.reject_specialization_transport(report, definition)?;
+            facts.reject_function_advisory_transport(report, definition)?;
             self.stage.charge(2).map_err(Error::unlocated)?;
             if let Some(contract) = facts.must_use_contract(report, definition)? {
                 let source = contract.origin.source().ok_or_else(|| {

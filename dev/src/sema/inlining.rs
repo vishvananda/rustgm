@@ -146,6 +146,33 @@ impl Declarations {
             .map_or(Ok(None), |node| self.inline_hint(report, node))
     }
 }
+/// The cold word remains independent advisory data; no optimization or effect
+/// promise is inferred. Wider Rust targets require their own retained producer.
+pub(in crate::sema) fn consume_cold(
+    report: &Report,
+    facts: &mut Declarations,
+    declaration: NodeKey,
+    attribute: Attribute,
+) -> Result<(), Error> {
+    facts.reserve_must_use_source(declaration, attribute.span)?;
+    let error = |message| Error::at(declaration.file, attribute.span.start, message);
+    if attribute.unsafe_wrapper || attribute.input != Input::Empty {
+        return Err(error("cold requires a plain word attribute"));
+    }
+    let ast = &report.package.unit(declaration.file).configured.ast;
+    if !matches!(ast.node(declaration.node).kind,Kind::Item(index)
+        if matches!(ast.items[index as usize].kind,ItemKind::Function{body:Some(_),..}))
+    {
+        return Err(error(
+            "cold function-body profile is not implemented for this wider Rust target",
+        ));
+    }
+    Ok(())
+}
+#[cfg(test)]
+#[path = "../../tests/invariants/cold_annotations.rs"]
+mod cold_tests;
+
 pub(super) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     for (file, unit) in report.package.units.iter().enumerate() {
         if unit.include_context.is_some() {

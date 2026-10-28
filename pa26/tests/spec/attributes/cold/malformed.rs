@@ -1,0 +1,2 @@
+#[cold(value)]
+fn observed(){}

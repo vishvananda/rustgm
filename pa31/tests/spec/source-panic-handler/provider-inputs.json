@@ -1,0 +1,744 @@
+{
+  "state": "unobserved composition; full source bytes and all intervals frozen",
+  "source_sha256": "2acc51da638608c1244e98449c1f716dfef36ee7fa537d012d820043f469ae3d",
+  "records": [
+    {
+      "start": 0,
+      "end": 98,
+      "sha256": "2a417bf635ef749574b2d55c3bee02a5cb61b760df37d79331ce4eb142c295b3",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 98,
+      "end": 5241,
+      "sha256": "a493df711fe56d7eec46e395c0eee124193d129a5ec86d701f635ef7361252be",
+      "kind": "retained qualified fixture",
+      "path": "pa31/tests/spec/source-format-macros/constructor-family/source-nine-traits.rs",
+      "file_sha256": "6b2ad218e3a8b4d8bed1af3dfd2d629635765674c1a483b2e31f2c87a22f2c39",
+      "first": 1,
+      "last": 148
+    },
+    {
+      "start": 5241,
+      "end": 5242,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 5242,
+      "end": 5685,
+      "sha256": "d01e872569ade0099fc0fccc3ced1defda4f0cb69e0584ded40d526c2e6fbbe8",
+      "kind": "retained qualified fixture",
+      "path": "pa31/tests/spec/source-location/caller-location.rs",
+      "file_sha256": "932880e0177a64ee3f51bdfb58c795022a9ef4e7eb64b0b5dbc820e4e7258665",
+      "first": 147,
+      "last": 157
+    },
+    {
+      "start": 5685,
+      "end": 5686,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 5686,
+      "end": 5717,
+      "sha256": "19dd4615bfd0f73a6d0182ccc3acdbdcbf27035aa32d534b7b00377fc5c8246f",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 5717,
+      "end": 5775,
+      "sha256": "6595aa6f2576511ebe5ed5ebe64c58fdd09cc18f87121cbef971ee12ebfa5887",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/intrinsics/mod.rs",
+      "file_sha256": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+      "first": 369,
+      "last": 371
+    },
+    {
+      "start": 5775,
+      "end": 5776,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 5776,
+      "end": 6007,
+      "sha256": "52d46e5d882558af72139905ca986bad83599c0bf3d322b232d96cbd9d7a210a",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/intrinsics/mod.rs",
+      "file_sha256": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+      "first": 3028,
+      "last": 3032
+    },
+    {
+      "start": 6007,
+      "end": 6008,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 6008,
+      "end": 12688,
+      "sha256": "604ea6430a685ecef33029852867acbdd18edc6c1241d115f0e843f4274a0eaf",
+      "kind": "retained qualified fixture",
+      "path": "pa31/tests/spec/source-format-macros/constructor-family/source-nine-traits.rs",
+      "file_sha256": "6b2ad218e3a8b4d8bed1af3dfd2d629635765674c1a483b2e31f2c87a22f2c39",
+      "first": 149,
+      "last": 308
+    },
+    {
+      "start": 12688,
+      "end": 12689,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 12689,
+      "end": 14319,
+      "sha256": "2a8498d1366109e474e7440a61628c79aafff17e40e171749611609c451f9690",
+      "kind": "retained qualified fixture",
+      "path": "pa31/tests/spec/source-comparisons/native/actual-profile.rs",
+      "file_sha256": "3fd191c23bbbc1bd1173b3fe058802950e7da1264437b8b0c6887b34f43d598a",
+      "first": 69,
+      "last": 125
+    },
+    {
+      "start": 14319,
+      "end": 14320,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 14320,
+      "end": 14462,
+      "sha256": "cb6427ed396db7bd96544aa239903671f18620bb2a88aeea8d51250e22ae7085",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 14462,
+      "end": 16011,
+      "sha256": "8e6566847f93491095d27bb5709de19c1f000453c696754e54b3b231a457c963",
+      "kind": "retained qualified fixture",
+      "path": "pa31/tests/spec/source-shift-or/primitive-const.rs",
+      "file_sha256": "6f8c59ff36e8a53aa5b44f7b801a9b81dcff0e9194ad098a335cb0cc2d65bbae",
+      "first": 65,
+      "last": 117
+    },
+    {
+      "start": 16011,
+      "end": 16012,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 16012,
+      "end": 16139,
+      "sha256": "0d2ac875864cbc39b95bbe9121706d2315e49bd953d7d80e8366c6392b8e896a",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/bit.rs",
+      "file_sha256": "4f0dab1c9c85c900d231e29d3f0c5e55c7b1fe87a762e48c4988d64bd1955d57",
+      "first": 481,
+      "last": 482
+    },
+    {
+      "start": 16139,
+      "end": 16140,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 16140,
+      "end": 16228,
+      "sha256": "bbf037911c4f1e48545d0736670197706856554c3c8308427c9c0b29e7c04383",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 16228,
+      "end": 16355,
+      "sha256": "0d2ac875864cbc39b95bbe9121706d2315e49bd953d7d80e8366c6392b8e896a",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/bit.rs",
+      "file_sha256": "4f0dab1c9c85c900d231e29d3f0c5e55c7b1fe87a762e48c4988d64bd1955d57",
+      "first": 276,
+      "last": 277
+    },
+    {
+      "start": 16355,
+      "end": 16356,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 16356,
+      "end": 16444,
+      "sha256": "dd14795a4a3da068e7cbeacb1a2e4ef2fadc30ca55ea917660dc8c082a212a1a",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 16444,
+      "end": 16531,
+      "sha256": "c1cc066f4abf8568c66e82432117842b7fb01966b416895d53513b67e9617477",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 16531,
+      "end": 17651,
+      "sha256": "1aed8536d502ebc5ba4759fef11a9ff7d6a8f64cabe98db2039309c70e0e700a",
+      "kind": "retained qualified fixture",
+      "path": "pa31/tests/spec/source-format-macros/constructor-family/source-nine-traits.rs",
+      "file_sha256": "6b2ad218e3a8b4d8bed1af3dfd2d629635765674c1a483b2e31f2c87a22f2c39",
+      "first": 309,
+      "last": 338
+    },
+    {
+      "start": 17651,
+      "end": 17652,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 17652,
+      "end": 17677,
+      "sha256": "df5a0d5c1b92321d2988574c21fe45df48f65d5b71a222008011f3de49b335e4",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 17677,
+      "end": 18170,
+      "sha256": "4fb45c32f7dae62e94884c1424e829431eb389aef0e90467e270b4c389d0f516",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/fmt/mod.rs",
+      "file_sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+      "first": 812,
+      "last": 823
+    },
+    {
+      "start": 18170,
+      "end": 18171,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 18171,
+      "end": 18199,
+      "sha256": "a3e4316386cc06526551ce5ced8e7bdc9cea0d98bf9cc1658f2770ea6e0cebb3",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 18199,
+      "end": 19425,
+      "sha256": "d069da72fcfcd0a04b256e362e0bc207e0bdf6188c31771e2aac98d89be809ef",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/fmt/rt.rs",
+      "file_sha256": "7a7dd4b1640a734fcb82f178ab69868b8f2f624a8c1f5a6fcf85002f4e2e4423",
+      "first": 13,
+      "last": 40
+    },
+    {
+      "start": 19425,
+      "end": 19426,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 19426,
+      "end": 19430,
+      "sha256": "285577568ac35d60830cf925beb22babfffdf80c35bfd45a12e88fdba305694d",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 19430,
+      "end": 19467,
+      "sha256": "9b28fddace862d49e7a2fb64ecb815e74d1fb71e0bfe85ff713440ae9c5aeffc",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 19467,
+      "end": 19522,
+      "sha256": "b622a8ab68011b661e288c89c4ae5cb455a6a34e69594b778a49c13df08b876d",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ptr/mod.rs",
+      "file_sha256": "f7b3e71d9e9246762c38641c6c1a49079265782aab6deaa537b43665b418f029",
+      "first": 418,
+      "last": 418
+    },
+    {
+      "start": 19522,
+      "end": 19523,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 19523,
+      "end": 19566,
+      "sha256": "c77505d33b76698cd9d99d436ee1c4fba2ce4d9703fba880b285112eb1a8d51c",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 19566,
+      "end": 19622,
+      "sha256": "14dc638a2e16aacde2f46129bd6dd9ca09a152141c4462806d25d133f37b707d",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ptr/metadata.rs",
+      "file_sha256": "90be519b27b46064f0bec607170ffce37aa9afb160a1edfab9c51641c8af15e2",
+      "first": 1,
+      "last": 1
+    },
+    {
+      "start": 19622,
+      "end": 19623,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 19623,
+      "end": 19683,
+      "sha256": "d041f2714c25396aa2ebfd3e46f578b9c2fafdb1c4034e68bd176e9291752163",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 19683,
+      "end": 19801,
+      "sha256": "2f42781552cca9a84142b52212bf62c17d498865919a688697b7c484d2c85001",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ptr/metadata.rs",
+      "file_sha256": "90be519b27b46064f0bec607170ffce37aa9afb160a1edfab9c51641c8af15e2",
+      "first": 99,
+      "last": 102
+    },
+    {
+      "start": 19801,
+      "end": 19802,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 19802,
+      "end": 19806,
+      "sha256": "285577568ac35d60830cf925beb22babfffdf80c35bfd45a12e88fdba305694d",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 19806,
+      "end": 19820,
+      "sha256": "3ca343bfedd77f6280bce9cb8c54e44a388c23f59848fefbe55da4523bd9184a",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 19820,
+      "end": 20121,
+      "sha256": "bf8477df54896f39bd14ddd221a56ef09a11af6be39cace09ca985a972fcaeb7",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/slice/mod.rs",
+      "file_sha256": "453bfd6e0fc09e06ac1793ccb03e2e2f04fae149db6a079256097c8fad510669",
+      "first": 109,
+      "last": 118
+    },
+    {
+      "start": 20121,
+      "end": 20122,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 20122,
+      "end": 20124,
+      "sha256": "412ca345ccf75bf9c0806bce695be8de808b79984251a7a54d202cf6101dd451",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 20124,
+      "end": 20135,
+      "sha256": "9dc04278f7999164883714f47822350741cb4bc8fef824aac72c6b6a8ccfb22a",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 20135,
+      "end": 20436,
+      "sha256": "eb2a8aa2aca0dd61dd84ae242108824d097493135d1614957a5515a28a72fdf8",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/str/mod.rs",
+      "file_sha256": "ad5d6274b831db659a5ea8a36462e8e7f59d4a89b4c22375c1938da776f3c6ed",
+      "first": 148,
+      "last": 156
+    },
+    {
+      "start": 20436,
+      "end": 20437,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 20437,
+      "end": 20812,
+      "sha256": "d9661220273061a79a7024ecf0c100c06a90ec1b1e0623c8c7718031469c11f0",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/str/mod.rs",
+      "file_sha256": "ad5d6274b831db659a5ea8a36462e8e7f59d4a89b4c22375c1938da776f3c6ed",
+      "first": 507,
+      "last": 516
+    },
+    {
+      "start": 20812,
+      "end": 20813,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 20813,
+      "end": 21190,
+      "sha256": "60288ea506a141998e94ff6428385a70f708e209dd1c28a0a42e86aca2cd605a",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/str/mod.rs",
+      "file_sha256": "ad5d6274b831db659a5ea8a36462e8e7f59d4a89b4c22375c1938da776f3c6ed",
+      "first": 580,
+      "last": 591
+    },
+    {
+      "start": 21190,
+      "end": 21191,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 21191,
+      "end": 21193,
+      "sha256": "412ca345ccf75bf9c0806bce695be8de808b79984251a7a54d202cf6101dd451",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 21193,
+      "end": 23386,
+      "sha256": "ddb0ac4892841b5875c8b6f42ea5ae22d001adecb5571b848bcae3a492dc90cd",
+      "kind": "retained qualified fixture",
+      "path": "pa31/tests/spec/source-location/caller-location.rs",
+      "file_sha256": "932880e0177a64ee3f51bdfb58c795022a9ef4e7eb64b0b5dbc820e4e7258665",
+      "first": 268,
+      "last": 318
+    },
+    {
+      "start": 23386,
+      "end": 23387,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 23387,
+      "end": 23474,
+      "sha256": "18245f144ab7460feb18fd573526d66a4e2fc870a4d743c05472fadfbc908cba",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 23474,
+      "end": 24241,
+      "sha256": "720bc9ce4df179215d6a2b0f37a77069b86b8d3067cf00743f81a0c9198b579e",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/panic.rs",
+      "file_sha256": "5dce27e26015feb5cc74f8452fd661a68f65a7d21f5f768ea743051b1beb9101",
+      "first": 46,
+      "last": 64
+    },
+    {
+      "start": 24241,
+      "end": 24242,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 24242,
+      "end": 24244,
+      "sha256": "412ca345ccf75bf9c0806bce695be8de808b79984251a7a54d202cf6101dd451",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 24244,
+      "end": 24586,
+      "sha256": "371b52de601feade70afa187ea481a4e27eed6f02fc85279efe3e538bc52f7a2",
+      "kind": "retained qualified fixture",
+      "path": "pa31/tests/spec/source-location/caller-location.rs",
+      "file_sha256": "932880e0177a64ee3f51bdfb58c795022a9ef4e7eb64b0b5dbc820e4e7258665",
+      "first": 324,
+      "last": 333
+    },
+    {
+      "start": 24586,
+      "end": 24587,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 24587,
+      "end": 24688,
+      "sha256": "34d6ab1dcdd78209fe5813b892dc2694b168c29022fea7deeaa08b869bdf4af6",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 24688,
+      "end": 24941,
+      "sha256": "1106236cac54adfce351a9b2cc1e0b3aa1922fbb31ced2873a42baed3128c031",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/panic/panic_info.rs",
+      "file_sha256": "44cb027d931fe0bc87f004adb57d2b18598559eeb6973d02c3fbb3f6f92231fb",
+      "first": 11,
+      "last": 19
+    },
+    {
+      "start": 24941,
+      "end": 24942,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 24942,
+      "end": 24966,
+      "sha256": "a52e9081da4426230c94ac390e512d9bef720d99f4c520422b954e57b66f4ed8",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 24966,
+      "end": 25244,
+      "sha256": "6e9ce4a3fd2dbc80f3d23d17d7d6d8e86762def650c10fc5111ed3f985e5a24d",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/panic/panic_info.rs",
+      "file_sha256": "44cb027d931fe0bc87f004adb57d2b18598559eeb6973d02c3fbb3f6f92231fb",
+      "first": 33,
+      "last": 41
+    },
+    {
+      "start": 25244,
+      "end": 25245,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 25245,
+      "end": 25576,
+      "sha256": "0d4666627e94a133a8451d8dd97bdd954ac675d7b502ad0873abd4eae0ad9c81",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/panic/panic_info.rs",
+      "file_sha256": "44cb027d931fe0bc87f004adb57d2b18598559eeb6973d02c3fbb3f6f92231fb",
+      "first": 89,
+      "last": 95
+    },
+    {
+      "start": 25576,
+      "end": 25577,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 25577,
+      "end": 25725,
+      "sha256": "eed5a920f367754371175a070dd1a2a2d97832c511c20f8350a24a1b2819e7cc",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/panic/panic_info.rs",
+      "file_sha256": "44cb027d931fe0bc87f004adb57d2b18598559eeb6973d02c3fbb3f6f92231fb",
+      "first": 125,
+      "last": 129
+    },
+    {
+      "start": 25725,
+      "end": 25726,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 25726,
+      "end": 26021,
+      "sha256": "9ec1522569a6a4578674cd11300da7cfead1f2b0b3ac23e5f3f2037b945c767d",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/panic/panic_info.rs",
+      "file_sha256": "44cb027d931fe0bc87f004adb57d2b18598559eeb6973d02c3fbb3f6f92231fb",
+      "first": 131,
+      "last": 140
+    },
+    {
+      "start": 26021,
+      "end": 26022,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 26022,
+      "end": 26026,
+      "sha256": "285577568ac35d60830cf925beb22babfffdf80c35bfd45a12e88fdba305694d",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 26026,
+      "end": 26226,
+      "sha256": "18188cf3860a5d828ecf715da7c88716ef28e8ec773f1211b477980505d915ba",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/macros/mod.rs",
+      "file_sha256": "9784131e43d255fed7a07ae18cbc72748eedbebe65dfcefeee999989289df30c",
+      "first": 1413,
+      "last": 1420
+    },
+    {
+      "start": 26226,
+      "end": 26227,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 26227,
+      "end": 26292,
+      "sha256": "ab79a16495b4e3c8a49fc31bc9677198d2f07a4f9a9c5892097a464dad05ce80",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 26292,
+      "end": 27344,
+      "sha256": "52455a007c9f1205d82914fcea1d721e41c87959afe8f170aa26f27920353d72",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/panicking.rs",
+      "file_sha256": "805a33d479ebcdf2c640f43fb01b7a6707038bc248b4830d15f30a8a60d40303",
+      "first": 53,
+      "last": 81
+    },
+    {
+      "start": 27344,
+      "end": 27345,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 27345,
+      "end": 28752,
+      "sha256": "a02c27ef5cb7194ac6b76c4e4377369e88aa33e875d42e8d486a88ec6318ca11",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/panicking.rs",
+      "file_sha256": "805a33d479ebcdf2c640f43fb01b7a6707038bc248b4830d15f30a8a60d40303",
+      "first": 130,
+      "last": 151
+    },
+    {
+      "start": 28752,
+      "end": 28753,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 28753,
+      "end": 28755,
+      "sha256": "412ca345ccf75bf9c0806bce695be8de808b79984251a7a54d202cf6101dd451",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 28755,
+      "end": 28857,
+      "sha256": "df9af5ed7b53aa172501aaa6b0ee777f06cb0f8ec4a47e425032d04e644e0fae",
+      "kind": "retained qualified fixture",
+      "path": "pa31/tests/spec/source-comparisons/native/actual-profile.rs",
+      "file_sha256": "3fd191c23bbbc1bd1173b3fe058802950e7da1264437b8b0c6887b34f43d598a",
+      "first": 174,
+      "last": 175
+    },
+    {
+      "start": 28857,
+      "end": 28858,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 28858,
+      "end": 28892,
+      "sha256": "f13ad3dba0de5c29918e30a7653ee791e410cfdca170699f1e0925d0a1952271",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 28892,
+      "end": 29048,
+      "sha256": "d01171839646dae41e5939c0ad0b8e76bdda6b251f1214cc0d8bec8c12f01dc5",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/drop.rs",
+      "file_sha256": "1d91c5e4e5868e8d2e6860da6fb5353f69172623a8ea7b9d7969e1ebd0fe7055",
+      "first": 206,
+      "last": 209
+    },
+    {
+      "start": 29048,
+      "end": 29049,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 29049,
+      "end": 29099,
+      "sha256": "c95c13c44fbb4ea83dde1eb7ab4cb330e4755abe46994f286932ba3bc98a6f11",
+      "kind": "pinned source",
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/drop.rs",
+      "file_sha256": "1d91c5e4e5868e8d2e6860da6fb5353f69172623a8ea7b9d7969e1ebd0fe7055",
+      "first": 241,
+      "last": 241
+    },
+    {
+      "start": 29099,
+      "end": 29100,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 29100,
+      "end": 29122,
+      "sha256": "c9ddf8346771aa7b3e33cf0b5f4e6eaeb483a15736a4a39f691671e3acba7583",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 29122,
+      "end": 29356,
+      "sha256": "3527f8676132b8b32ea6f71507694902ba3c26a87b81ade314db76efe9bf9333",
+      "kind": "retained qualified fixture",
+      "path": "pa31/tests/spec/formatter-derives/source-macros.rs",
+      "file_sha256": "a4f2d7208a728538cdd3e15417752554a4d8e2acd955708ac146a571bece229b",
+      "first": 23,
+      "last": 28
+    },
+    {
+      "start": 29356,
+      "end": 29357,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 29357,
+      "end": 29801,
+      "sha256": "4cf68e52240dc5f48301c0c2a23a794bd64b8bdf7a61bada22ffc6348b71db6e",
+      "kind": "retained qualified fixture",
+      "path": "pa31/tests/spec/formatter-derives/assert-declaration.rs",
+      "file_sha256": "ef662f2e93ed85ed9e865206b765687f11bdebc27e47370f807a05ec3a870aa2",
+      "first": 2,
+      "last": 17
+    },
+    {
+      "start": 29801,
+      "end": 29802,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 29802,
+      "end": 30147,
+      "sha256": "17023a30034815c74796428f44171dffee41ebcb8805eb23465148d988aefa5f",
+      "kind": "retained qualified fixture",
+      "path": "pa31/tests/spec/source-format-macros/declaration-original-const-format-args.rs",
+      "file_sha256": "7aa25b8e164a5e1cbbac78a30be9f7ba7d4c9150bc41019cd6c18db6f622d273",
+      "first": 10,
+      "last": 17
+    },
+    {
+      "start": 30147,
+      "end": 30148,
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "kind": "authored support/module glue"
+    },
+    {
+      "start": 30148,
+      "end": 30214,
+      "sha256": "be968b3269ccbe67a381bfbf5d9bc7865a95a810ef4ba0b6fd431b639540212e",
+      "kind": "authored support/module glue"
+    }
+  ]
+}

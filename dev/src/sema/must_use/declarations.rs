@@ -19,6 +19,7 @@ use crate::{
 pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     crate::sema::specialization::prepare(report, facts)?;
     let mut by_source = HashMap::default();
+    let mut pointer_markers = HashMap::default();
     let mut allowances = report.macro_allowances();
     for (file, unit) in report.package.units.iter().enumerate() {
         if unit.include_context.is_some() {
@@ -58,6 +59,9 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                     &mut allowances,
                     &mut covered,
                 )? {
+                    if attribute.name(forest, unit.source.text()) == Some("rustc_as_ptr") {
+                        retain_pointer_marker(facts, key, &mut pointer_markers)?;
+                    }
                     continue;
                 }
                 facts.reserve_must_use_source(owner_key, attribute.span)?;
@@ -100,7 +104,7 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
             }
         }
     }
-    bind_definitions(report, facts, &by_source)?;
+    bind_definitions(report, facts, &by_source, &mut pointer_markers)?;
     crate::sema::specialization::finish(facts)?;
     complete_imports(report, facts)
 }
@@ -156,6 +160,19 @@ fn consume_annotation(
         .name(forest, report.package.unit(declaration.file).source.text())
         .and_then(Consumer::named);
     match consumer {
+        Some(Consumer::ColdAdvisory) => {
+            crate::sema::inlining::consume_cold(report, facts, declaration, attribute)?;
+        }
+        Some(Consumer::PointerLintMarker) => {
+            crate::sema::header_attributes::consume_pointer_lint(
+                report,
+                facts,
+                declaration,
+                attribute,
+                forest,
+                allowances,
+            )?;
+        }
         Some(Consumer::NoImplicitAutorefs) => {
             crate::sema::header_attributes::consume_no_implicit_autorefs(
                 report,
@@ -270,12 +287,108 @@ fn consume_other(
     }
     Ok(true)
 }
+/// One sparse draft is consumed by the existing definition walk, including
+/// repeated physical source rows. Every actual foreign owner is checked.
+fn retain_pointer_marker(
+    facts: &mut Declarations,
+    source: NodeKey,
+    markers: &mut HashMap<NodeKey, bool>,
+) -> Result<(), Error> {
+    use crate::support::retained::Growth;
+    crate::sema::header_attributes::reserve_source_contracts(facts, 1, 0)?;
+    if markers.contains_key(&source) {
+        return Ok(());
+    }
+    let growth = Growth::map::<NodeKey, bool>(markers.len(), markers.capacity(), 1);
+    crate::sema::header_attributes::reserve_source_contracts(facts, growth.work, growth.bytes)?;
+    markers
+        .try_reserve(1)
+        .map_err(|_| Error::unlocated("pointer marker draft allocation failed"))?;
+    markers.insert(source, false);
+    Ok(())
+}
+fn bind_pointer_marker(
+    report: &Report,
+    index: usize,
+    definition: &crate::resolve::model::Definition,
+    markers: &mut HashMap<NodeKey, bool>,
+) -> Result<(), Error> {
+    let Some(key) = definition.node else {
+        return Ok(());
+    };
+    let Some(bound) = markers.get_mut(&key) else {
+        return Ok(());
+    };
+    let id = DefId(
+        u32::try_from(index).map_err(|_| Error::unlocated("too many pointer marker owners"))?,
+    );
+    if definition.kind != crate::resolve::model::DefKind::Function
+        || definition.namespace != Namespace::Value
+        || report.resolution.foreign_owners.contains_key(&id)
+    {
+        return Err(Error::at(
+            key.file,
+            0,
+            "rustc_as_ptr requires its actual non-foreign function or method owner",
+        ));
+    }
+    *bound = true;
+    Ok(())
+}
+
+fn bind_macro_helpers(
+    report: &Report,
+    facts: &mut Declarations,
+    index: usize,
+    definition: &crate::resolve::model::Definition,
+) -> Result<(), Error> {
+    if definition.kind == crate::resolve::model::DefKind::Macro && definition.node.is_some() {
+        report.visit_builtin_helpers(
+            DefId(
+                u32::try_from(index)
+                    .map_err(|_| Error::unlocated("too many source macro definitions"))?,
+            ),
+            |owner, name, span, introduction| {
+                if crate::support::helper_collisions::helper_collision(name) {
+                    facts.reserve_must_use_source(owner, span)?;
+                    facts.must_use_diagnostic_in(
+                        report,
+                        owner,
+                        span.start,
+                        0,
+                        WarningCode::AmbiguousDeriveHelpers,
+                        (
+                            "there exists a built-in attribute with the same name".into(),
+                            introduction,
+                        ),
+                    )?;
+                }
+                Ok(())
+            },
+        )?;
+    }
+    Ok(())
+}
+
 fn bind_definitions(
     report: &Report,
     facts: &mut Declarations,
     by_source: &HashMap<NodeKey, usize>,
+    pointer_markers: &mut HashMap<NodeKey, bool>,
 ) -> Result<(), Error> {
+    if !pointer_markers.is_empty() {
+        crate::sema::header_attributes::reserve_source_contracts(
+            facts,
+            report
+                .resolution
+                .definitions
+                .len()
+                .saturating_add(pointer_markers.len()),
+            0,
+        )?;
+    }
     if !by_source.is_empty()
+        || !pointer_markers.is_empty()
         || report.package.source_core().is_some()
         || facts
             .must_use_contracts
@@ -283,32 +396,8 @@ fn bind_definitions(
             .is_some_and(|owner| owner.specialization.is_some())
     {
         for (index, definition) in report.resolution.definitions.iter().enumerate() {
-            if definition.kind == crate::resolve::model::DefKind::Macro && definition.node.is_some()
-            {
-                report.visit_builtin_helpers(
-                    DefId(
-                        u32::try_from(index)
-                            .map_err(|_| Error::unlocated("too many source macro definitions"))?,
-                    ),
-                    |owner, name, span, introduction| {
-                        if crate::support::helper_collisions::helper_collision(name) {
-                            facts.reserve_must_use_source(owner, span)?;
-                            facts.must_use_diagnostic_in(
-                                report,
-                                owner,
-                                span.start,
-                                0,
-                                WarningCode::AmbiguousDeriveHelpers,
-                                (
-                                    "there exists a built-in attribute with the same name".into(),
-                                    introduction,
-                                ),
-                            )?;
-                        }
-                        Ok(())
-                    },
-                )?;
-            }
+            bind_pointer_marker(report, index, definition, pointer_markers)?;
+            bind_macro_helpers(report, facts, index, definition)?;
             if let Some(key) = definition.node {
                 crate::sema::header_attributes::bind_definition(
                     report,
@@ -361,6 +450,11 @@ fn bind_definitions(
             contracts.definitions.insert(definition, contract);
             contracts.work.declarations += 1;
         }
+    }
+    if pointer_markers.values().any(|bound| !bound) {
+        return Err(Error::unlocated(
+            "pointer lint marker lacks its actual function definition",
+        ));
     }
     Ok(())
 }

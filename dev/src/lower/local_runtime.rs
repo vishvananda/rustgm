@@ -56,7 +56,7 @@ impl LocalAnalysis<'_> {
         let program = super::instances::build_local_prepared(
             self.report,
             &mut self.facts,
-            entry,
+            Some(entry),
             self.prepared,
         )?;
         #[cfg(test)]

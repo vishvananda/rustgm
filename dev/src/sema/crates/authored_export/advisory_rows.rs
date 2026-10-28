@@ -95,6 +95,7 @@ impl Stage {
             }
             let row = self.definitions[index]
                 .ok_or_else(|| Error::unlocated("selected attribute declaration disappeared"))?;
+            facts.reject_function_advisory_transport(report, definition)?;
             let view = facts.publication_header_contracts(report, definition)?;
             if view
                 .origin

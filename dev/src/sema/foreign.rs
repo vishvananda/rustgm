@@ -1,4 +1,5 @@
 //! Canonical foreign records keep storage, bodies and const permissions separate.
+mod handler_linkage;
 use crate::support::hash::HashMap;
 use crate::{
     resolve::model::DefId,

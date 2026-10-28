@@ -81,6 +81,11 @@ pub fn analyze_source(report: &Report) -> Result<Analysis, Error> {
         &mut analysis.facts,
         &mut analysis.prepared,
     )?;
+    sema::compiler_items::complete_panic_handler(report, &mut analysis.facts).map_err(|error| {
+        analysis
+            .facts
+            .retain_error_warnings(report.diagnostic(error))
+    })?;
     analysis
         .facts
         .finalize_lints(report, true)
@@ -103,6 +108,8 @@ pub(crate) fn prepare_local_runtime(
         crate::sema::declarations::analyze_local_roots(report, roots, context.executor())?;
     let mut prepared = Prepared::default();
     complete_constants(report, &context, &mut facts, &mut prepared)?;
+    sema::compiler_items::complete_panic_handler(report, &mut facts)
+        .map_err(|error| facts.retain_error_warnings(report.diagnostic(error)))?;
     facts
         .finalize_lints(report, true)
         .map_err(|error| facts.retain_error_warnings(report.diagnostic(error)))?;
