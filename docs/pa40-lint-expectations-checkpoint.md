@@ -1,8 +1,34 @@
 # Finite source deprecation and lint expectations
 
-This unpublished PA40 prerequisite supplies PA31's ordinary source macro reexport
+This finite PA40 prerequisite supplies PA31's ordinary source macro reexport
 protocol. PA31 and PA40 remain planned. No original core crate artifact, full lint
 inventory, or assignment release is claimed.
+
+
+Root's joined comparison/lint gate passes17 exact private controls at
+1793197572610713858 in36.25s; production/CLI, imported policy/legacy admission,
+export closure and warning channel checks plus PA6 pass at1793197731792924901
+in198.16s. A separate CI repair passes all three stale assertion controls and
+an ordinary full comparison producer at1793198607753903131 in134.01s. Rejections
+now check exact actual trait/implementation authority; the cold cleanup proof
+state seals function context/const flag at104bytes while Body456/Contract184 and
+existing scaling/noise limits remain unchanged.
+
+Joined immutable CLI `73f019958adc1b6ed0d38d60b50386e85c70a113330929c0fe2337d577aabd35`
+passes all nine diagnostic controls and one unchanged722-input/config core
+observation. Its first error is prelude/v1.rs74 `expect(hidden_glob_reexports)`
+(file2:2805). Only3 files open before owner production rejects the unknown lint;
+this is an earlier phase boundary, not a compiled percentage or proof the
+original deprecated reexport event has executed. The reduced genuine reexports
+retain independent event/identity evidence. The joined comparison LowIR is
+byte-identical to its three previously native-qualified consumers.
+
+The aggregate root receipt `obj/parallel/lib058-integration-v1/cli-core/receipt.json`
+has SHA256 `1710f914479fe7e4a12a2c4e98ff15632517189bc576afdbe8acfe8f0c83ca7e`.
+All registration, placement and upstream checks pass. Full CI40704354997 on the
+preceding comparison checkpoint exposed the three stale assertions above; its
+native/debug/independent stages were skipped. The current finite qualification
+does not claim those skipped stages or close either assignment.
 
 The existing configured attribute producer parses `expect` and `deprecated`
 from retained token trees. Each expectation belongs to its actual owner, effect

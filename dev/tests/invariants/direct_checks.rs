@@ -153,6 +153,9 @@ fn direct_defining_member_rejects_foreign_trait_and_incomplete_receiver() -> Res
     )
     .err()
     .ok_or("foreign trait accepted")?;
-    assert!(error.contains("another actual trait member"), "{error}");
+    assert_eq!(
+        error,
+        "abstract const call changed its defining Self or trait application"
+    );
     Ok(())
 }

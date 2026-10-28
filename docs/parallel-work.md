@@ -2,8 +2,9 @@
 
 The user has reauthorized up to two subagents. Root continues direct compiler
 implementation and integration in `rustgm-pa25-work`. One implementation worker,
-`lint_expectations`, owns LIB-058's actual local/source deprecation and lint
-expectation protocol in the existing `rustgm-pa26-work`; the second agent has completed
+`lint_expectations`, completed LIB-058's actual local/source deprecation and lint
+expectation protocol, now root-qualified, and owns the next actual
+hidden_glob_reexports producer in the existing `rustgm-pa26-work`; the second agent has completed
 read-only const-call review and completed LIB-056's precise symbolic cleanup
 consumer, now merged and qualified through actual comparison native execution.
 That agent now owns LIB-050's bounded typed OffsetOf source consumer in the existing
@@ -19,9 +20,11 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The qualified constructor-family CLIc8b8615b passes all nine formatting selectors
-and reaches original prelude/v1.rs62 `#[expect(deprecated)]`. All722 source pins
-remain unchanged;374 files open in12.54s, without a crate artifact. Source/native
+The joined deprecation/expectation CLI73f01995 now reaches original
+prelude/v1.rs74 `#[expect(hidden_glob_reexports)]`. All722 source pins/config remain
+unchanged; eager owner validation rejects after3 source opens, without an artifact.
+Opened-source counts are not compilation progress. The earlier constructor-family
+checkpoint passes all nine formatting selectors. Source/native
 validation and exact scope are in the [constructor checkpoint](pa31-constructor-family-integration.md).
 The earlier reached offset kernel still matches Rust; its original builtin
 field/generic/DST semantics remain required.
