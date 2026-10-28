@@ -1,0 +1,77 @@
+{
+  "state": "independent full comparison source composition hypotheses frozen before observations/compiler edits; support declarations explicitly authored, no provided/macro algorithm body replaced",
+  "cases": [
+    {
+      "name": "actual-source-comparisons",
+      "path": "pa31/tests/spec/source-comparisons/ordering/actual-source-comparisons.rs",
+      "accepted": true,
+      "sha256": "6c03979aad8557d3922a696100d5d8f09d5e0b6aab5b100b3a1a10c8f6b51a1a",
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-ordering-foundation4/actual-source-comparisons.rs",
+      "rust_observed_accepts": true,
+      "candidate_supported": true
+    },
+    {
+      "name": "missing-ord-impl",
+      "path": "pa31/tests/spec/source-comparisons/ordering/missing-ord-impl.rs",
+      "accepted": false,
+      "sha256": "c8c27ca4e556558bae7c28e4f2fcfe42c2bcc513fc752e6751dada4a714736e5",
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-ordering-foundation4/missing-ord-impl.rs",
+      "rust_observed_accepts": false,
+      "candidate_supported": false
+    },
+    {
+      "name": "wrong-ordering-tag",
+      "path": "pa31/tests/spec/source-comparisons/ordering/wrong-ordering-tag.rs",
+      "accepted": false,
+      "sha256": "d9e26fe905aa1794d525fde476cfcee514733685a39a7b66b98bdf092b64b6bd",
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-ordering-foundation4/wrong-ordering-tag.rs",
+      "rust_observed_accepts": true,
+      "candidate_supported": false
+    },
+    {
+      "name": "wrong-intrinsic-copy",
+      "path": "pa31/tests/spec/source-comparisons/ordering/wrong-intrinsic-copy.rs",
+      "accepted": false,
+      "sha256": "a1fb98a78a7bb180c5aa149b935c45e3cf82ac56e146fe8b98532770cc5925f0",
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-ordering-foundation4/wrong-intrinsic-copy.rs",
+      "rust_observed_accepts": true,
+      "candidate_supported": false
+    },
+    {
+      "name": "const-source-comparisons",
+      "path": "pa31/tests/spec/source-comparisons/ordering/const-source-comparisons.rs",
+      "accepted": true,
+      "sha256": "08d51ae181e7ffc722f35b0d4252767abd50176d4a3cc4b0f1a7f7b68c3b6745",
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-ordering-foundation4/const-source-comparisons.rs",
+      "rust_observed_accepts": true,
+      "candidate_supported": true
+    }
+  ],
+  "chunks": {
+    "actual-ordering-role.rs": {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/cmp.rs",
+      "file_sha256": "0a9b8c3a2f7b80447703e5cdc224d059465a90fb9203e0ab4b0182af17494cac",
+      "start": 14677,
+      "end": 15126,
+      "sha256": "5d534a471c816eda9a83fe6559249234fe5e21f4a122fc4fef6376ffc63f1bac"
+    },
+    "actual-ordering-helpers.rs": {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/cmp.rs",
+      "file_sha256": "0a9b8c3a2f7b80447703e5cdc224d059465a90fb9203e0ab4b0182af17494cac",
+      "start": 15127,
+      "end": 19003,
+      "sha256": "ee84852af3ed92cc5f3d9cf59ad6f3b29f21bde0f9578ee95ba633c048b32d45"
+    },
+    "actual-is-some-and.rs": {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/option.rs",
+      "file_sha256": "fc70106a756f98208e6a6a3e428310bdfa3531877cf6c6a99f39fffa26ab2c40",
+      "start": 25990,
+      "end": 26345,
+      "sha256": "3fe926fdb6eb19e93399cd2262f29b55c5fe8740654e6865579e9440df08b3c5"
+    }
+  },
+  "preserved_support_scope": "actual Ordering lang/repr/variant declaration chunk; full original derive attributes retained in pin, manual Copy/Clone support impls do not claim complete Ordering derives. Minimal Option/ControlFlow/Fn/Discriminant declarations isolate comparison consumers; full unrelated source closure stays pending. Actual provided defaults/helper algorithm bodies retained.",
+  "integer_probe": "authored macro wrapper instantiates unchanged actual PartialOrd block of pinned ord_impl; complete original macro retained separately, no Ord/clamp algorithm substitute",
+  "count": "actual full body preserved as source data; count_condition is explicitly an authored threshold probe, not full panic/Count execution",
+  "foundation_correction": "Freeze, upstream const_precise_live_drops, actual Neg source macro, const feature identities, ControlFlow imports; actual source bodies unchanged; prior failed observations retained."
+}

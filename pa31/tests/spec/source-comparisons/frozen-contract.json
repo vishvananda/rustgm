@@ -1,0 +1,139 @@
+{
+  "state": "declared before compiler implementation; independent original and foundation-correction observations retained in obj",
+  "cases": [
+    {
+      "name": "actual-equality",
+      "path": "pa31/tests/spec/source-comparisons/equality/actual-equality.rs",
+      "sha256": "82fe3e7b1acb35fe39ef66004cb9c79035b9a9df1772389b8e96cdb94ba0af2d",
+      "accepted": true,
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-equality-foundation4/actual-equality.rs",
+      "rust_observed_accepts": true,
+      "candidate_supported": true
+    },
+    {
+      "name": "wrong-rhs",
+      "path": "pa31/tests/spec/source-comparisons/equality/wrong-rhs.rs",
+      "sha256": "dd68dce4c6ba23a8069af930c54516720914fcbcca5c432b0fb7bd4387f49687",
+      "accepted": false,
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-equality-foundation4/wrong-rhs.rs",
+      "rust_observed_accepts": false,
+      "candidate_supported": false
+    },
+    {
+      "name": "missing-impl",
+      "path": "pa31/tests/spec/source-comparisons/equality/missing-impl.rs",
+      "sha256": "f62a4d60b3ed632d943e2ad402dd3cbb4622123012ec0c1d2db6422460a57ebd",
+      "accepted": false,
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-equality-foundation4/missing-impl.rs",
+      "rust_observed_accepts": false,
+      "candidate_supported": false
+    },
+    {
+      "name": "wrong-actual-default",
+      "path": "pa31/tests/spec/source-comparisons/equality/wrong-actual-default.rs",
+      "sha256": "6364ca0909aa8c78ff1eaeeb9f336367b7b473787cbeb5c23de4018131cefe2a",
+      "accepted": false,
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-equality-foundation4/wrong-actual-default.rs",
+      "rust_observed_accepts": false,
+      "candidate_supported": false
+    },
+    {
+      "name": "alias",
+      "path": "pa31/tests/spec/source-comparisons/equality/alias.rs",
+      "sha256": "a90ab47abd3b29bf00c4479c4cb3904ad698de6c8b077caad7b4cde394298a2a",
+      "accepted": true,
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-equality-foundation4/alias.rs",
+      "rust_observed_accepts": true,
+      "candidate_supported": true
+    },
+    {
+      "name": "lexical-shadow",
+      "path": "pa31/tests/spec/source-comparisons/equality/lexical-shadow.rs",
+      "sha256": "1d5960fd7d291aa913e4712c02c3e120c28f6b698446dae4c519e670c9b4c213",
+      "accepted": true,
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-equality-foundation4/lexical-shadow.rs",
+      "rust_observed_accepts": true,
+      "candidate_supported": true
+    },
+    {
+      "name": "copy-bound",
+      "path": "pa31/tests/spec/source-comparisons/equality/copy-bound.rs",
+      "sha256": "03aeb239bce239c01bab942b71148e758877b392c8c31b556e4071b13efb452c",
+      "accepted": false,
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-equality-foundation4/copy-bound.rs",
+      "rust_observed_accepts": false,
+      "candidate_supported": false
+    },
+    {
+      "name": "borrow-conflict",
+      "path": "pa31/tests/spec/source-comparisons/equality/borrow-conflict.rs",
+      "sha256": "e79dd02362b4a8d440cc13ee80059271d2e4e558b57f4db0387205881811ef65",
+      "accepted": false,
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-equality-foundation4/borrow-conflict.rs",
+      "rust_observed_accepts": false,
+      "candidate_supported": false
+    },
+    {
+      "name": "actual-equality-const",
+      "path": "pa31/tests/spec/source-comparisons/equality/actual-equality-const.rs",
+      "sha256": "1a2a43cbec888058f7f53db2e9abdc182063aa5739bc7f63ae762fe89a8d84cf",
+      "accepted": true,
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-equality-foundation4/actual-equality-const.rs",
+      "rust_observed_accepts": true,
+      "candidate_supported": true
+    },
+    {
+      "name": "actual-source-comparisons",
+      "path": "pa31/tests/spec/source-comparisons/ordering/actual-source-comparisons.rs",
+      "accepted": true,
+      "sha256": "6c03979aad8557d3922a696100d5d8f09d5e0b6aab5b100b3a1a10c8f6b51a1a",
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-ordering-foundation4/actual-source-comparisons.rs",
+      "rust_observed_accepts": true,
+      "candidate_supported": true
+    },
+    {
+      "name": "missing-ord-impl",
+      "path": "pa31/tests/spec/source-comparisons/ordering/missing-ord-impl.rs",
+      "accepted": false,
+      "sha256": "c8c27ca4e556558bae7c28e4f2fcfe42c2bcc513fc752e6751dada4a714736e5",
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-ordering-foundation4/missing-ord-impl.rs",
+      "rust_observed_accepts": false,
+      "candidate_supported": false
+    },
+    {
+      "name": "wrong-ordering-tag",
+      "path": "pa31/tests/spec/source-comparisons/ordering/wrong-ordering-tag.rs",
+      "accepted": false,
+      "sha256": "d9e26fe905aa1794d525fde476cfcee514733685a39a7b66b98bdf092b64b6bd",
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-ordering-foundation4/wrong-ordering-tag.rs",
+      "rust_observed_accepts": true,
+      "candidate_supported": false
+    },
+    {
+      "name": "wrong-intrinsic-copy",
+      "path": "pa31/tests/spec/source-comparisons/ordering/wrong-intrinsic-copy.rs",
+      "accepted": false,
+      "sha256": "a1fb98a78a7bb180c5aa149b935c45e3cf82ac56e146fe8b98532770cc5925f0",
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-ordering-foundation4/wrong-intrinsic-copy.rs",
+      "rust_observed_accepts": true,
+      "candidate_supported": false
+    },
+    {
+      "name": "const-source-comparisons",
+      "path": "pa31/tests/spec/source-comparisons/ordering/const-source-comparisons.rs",
+      "accepted": true,
+      "sha256": "08d51ae181e7ffc722f35b0d4252767abd50176d4a3cc4b0f1a7f7b68c3b6745",
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-ordering-foundation4/const-source-comparisons.rs",
+      "rust_observed_accepts": true,
+      "candidate_supported": true
+    }
+  ],
+  "semantics": [
+    "six source scalar comparison operators require actual source role/header/impl proof before erasure",
+    "explicit UFCS executes actual selected impl bodies, including real integer partial_cmp and three_way_compare",
+    "two accepted-Rust changed-header opponents stay explicit unsupported source contract profiles",
+    "full actual PartialOrd9 methods and default_chaining source bodies retained; unused demands remain fenced",
+    "Count condition uses real comparison dependency; full Count/panic/helper closure separately B-owned"
+  ],
+  "native_prediction": "six operators and six UFCS overrides agree on equal/less/greater and extrema; actual partial_cmp/intrinsic return -1,0,1 at signed/unsigned widths; constant values equal runtime; scalar arguments evaluated once in source order"
+}
