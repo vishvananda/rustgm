@@ -273,29 +273,65 @@ fn place_needs(
     value.copied().ok_or("invalid destruction place")
 }
 
+/// Cold cleanup coordinate requests borrow actual member identities.
+#[derive(Clone, Copy)]
+pub enum MemberQuery {
+    Field(super::ir::Selection),
+    Variant(super::ir::VariantId),
+}
+#[derive(Clone, Copy)]
+pub enum MemberPosition {
+    Field { variant: u32, field: u32 },
+    Variant(u32),
+}
+
 pub(crate) fn nominal_position(
     facts: &Declarations,
     ty: TypeId,
-    field: super::ir::Selection,
-) -> Result<(u32, u32), &'static str> {
-    let (Some(Kind::Adt(item, _)), super::ir::Selection::Nominal(field)) =
-        (facts.types.kind(ty), field)
-    else {
-        return Err("invalid instance cleanup field selection");
+    query: MemberQuery,
+) -> Result<MemberPosition, &'static str> {
+    member_position(&facts.types, &facts.aggregates, &facts.members, ty, query)
+}
+
+pub(crate) fn member_position(
+    types: &crate::types::Store,
+    definitions: &crate::types::aggregate::Definitions,
+    members: &crate::sema::members::Members,
+    ty: TypeId,
+    query: MemberQuery,
+) -> Result<MemberPosition, &'static str> {
+    let Some(Kind::Adt(item, _)) = types.kind(ty) else {
+        return Err("invalid instance cleanup nominal owner");
     };
-    let variant = facts
-        .members
-        .variant(field)
-        .and_then(|id| facts.members.variants.get(id.0 as usize))
+    if matches!(query, MemberQuery::Variant(_))
+        && definitions
+            .get(item)
+            .is_none_or(|d| d.kind != crate::types::aggregate::Kind::Enum)
+    {
+        return Err("cleanup variant requires its actual enum owner");
+    }
+    let id = match query {
+        MemberQuery::Field(super::ir::Selection::Nominal(field)) => members
+            .variant(field)
+            .ok_or("missing instance cleanup variant")?,
+        MemberQuery::Variant(variant) => variant,
+        MemberQuery::Field(_) => return Err("invalid instance cleanup field selection"),
+    };
+    let variant = members
+        .variants
+        .get(id.0 as usize)
         .ok_or("missing instance cleanup variant")?;
     if variant.owner != item {
-        return Err("instance cleanup field belongs to another type");
+        return Err("instance cleanup member belongs to another type");
     }
-    Ok((
-        variant.ordinal,
-        facts
-            .members
-            .ordinal(field)
-            .ok_or("missing instance cleanup field")?,
-    ))
+    match query {
+        MemberQuery::Field(super::ir::Selection::Nominal(field)) => Ok(MemberPosition::Field {
+            variant: variant.ordinal,
+            field: members
+                .ordinal(field)
+                .ok_or("missing instance cleanup field")?,
+        }),
+        MemberQuery::Variant(_) => Ok(MemberPosition::Variant(variant.ordinal)),
+        MemberQuery::Field(_) => Err("invalid instance cleanup field selection"),
+    }
 }

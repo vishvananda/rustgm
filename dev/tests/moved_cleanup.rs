@@ -29,7 +29,7 @@ fn moved_values_demand_no_recursive_cleanup_properties() -> Result<(), Box<dyn s
             let templates = body::templates::build(&report, &facts)?;
             let template = templates.bodies.first().ok_or("missing probe")?;
             let mut copies = Copies::in_environment(Arc::clone(&template.environment));
-            let initialized = initialization::analyze(
+            let mut initialized = initialization::analyze(
                 &facts.types,
                 &facts.aggregates,
                 &facts.derives,
@@ -42,7 +42,7 @@ fn moved_values_demand_no_recursive_cleanup_properties() -> Result<(), Box<dyn s
                 &facts.types,
                 &facts.aggregates,
                 &mut needed,
-                &initialized,
+                &mut initialized,
                 |_| false,
                 |_, _| Err("unexpected field move"),
             )

@@ -94,6 +94,26 @@ impl<I: Maybe> State<I> {
         });
         Ok(())
     }
+    /// Exclude inactive payloads from possible destruction, preserving read permission.
+    pub(super) fn exclude(&mut self, start: u32, end: u32) -> Result<(), &'static str> {
+        if start > end {
+            return Err("invalid cleanup refinement interval");
+        }
+        let mut bit = start;
+        while bit < end {
+            self.charge(1)?;
+            let offset = bit % 64;
+            let width = (end - bit).min(64 - offset);
+            let mask = (u64::MAX >> (64 - width)) << offset;
+            self.words
+                .get_mut(bit as usize / 64)
+                .ok_or("invalid cleanup refinement bit")?
+                .initialized
+                .assign(mask, false);
+            bit += width;
+        }
+        Ok(())
+    }
     pub(super) fn initialized(&mut self, path: &Path) -> Result<bool, &'static str> {
         if path.start == path.end {
             return Ok(true);
@@ -136,6 +156,7 @@ pub(super) fn verify<I: Maybe>(
     types: &crate::types::Store,
     flow: Option<&Flow<'_>>,
     order: Option<&crate::borrow::order::Order>,
+    refinements: Option<&super::variant_liveness::Refinements>,
 ) -> Result<Vec<Word<I>>, Error> {
     let flow = if I::TRACK_VALUES { flow } else { None };
     let error = |message| Error {
@@ -158,11 +179,18 @@ pub(super) fn verify<I: Maybe>(
         computed.as_ref()
     };
     if let Some(order) = order.filter(|order| order.acyclic)
-        && let Ok(incoming) = verify_acyclic(body, facts, types, flow, (words, size), order)
+        && let Ok(incoming) = verify_acyclic(
+            body,
+            facts,
+            types,
+            flow,
+            (words, size),
+            (order, refinements),
+        )
     {
         return Ok(incoming);
     }
-    verify_iterative(body, facts, types, flow, (words, size))
+    verify_iterative(body, facts, types, flow, (words, size), refinements)
 }
 /// Canonical fixed point followed by one inspection pass in block order.
 fn verify_iterative<I: Maybe>(
@@ -171,6 +199,7 @@ fn verify_iterative<I: Maybe>(
     types: &crate::types::Store,
     flow: Option<&Flow<'_>>,
     (words, size): (usize, usize),
+    refinements: Option<&super::variant_liveness::Refinements>,
 ) -> Result<Vec<Word<I>>, Error> {
     let error = |message| Error {
         node: body.source.into(),
@@ -204,27 +233,21 @@ fn verify_iterative<I: Maybe>(
             transfer_plain(body, facts, &mut state, index, None)?;
         }
         let edges = flow.filter(|f| f.storage.has_edge_ends(index));
-        if edges.is_some() {
+        let refined = refinements.is_some_and(|r| r.has(index));
+        if edges.is_some() || refined {
             state.charge(words).map_err(error)?;
             outgoing.copy_from_slice(&state.words);
         }
         for target in successors(block.terminator).into_iter().flatten() {
-            if let Some(flow) = edges {
-                state.charge(words).map_err(error)?;
-                state.words.copy_from_slice(&outgoing);
-                flow.edge(
-                    &facts.paths,
-                    &mut state,
-                    Location::Edge {
-                        block: BlockId(
-                            u32::try_from(index).map_err(|_| error("too many ownership blocks"))?,
-                        ),
-                        target,
-                    },
-                    |_, _| Ok(()),
-                )
-                .map_err(error)?;
-            }
+            transfer_edge(
+                facts,
+                &mut state,
+                (index, target),
+                (edges.is_some() || refined).then_some(outgoing.as_slice()),
+                edges,
+                refinements,
+            )
+            .map_err(error)?;
             let next = target.0 as usize;
             let target = &mut incoming[next * words..(next + 1) * words];
             let mut changed = !reached[next];
@@ -280,7 +303,10 @@ fn verify_acyclic<I: Maybe>(
     types: &crate::types::Store,
     flow: Option<&Flow<'_>>,
     (words, size): (usize, usize),
-    order: &crate::borrow::order::Order,
+    (order, refinements): (
+        &crate::borrow::order::Order,
+        Option<&super::variant_liveness::Refinements>,
+    ),
 ) -> Result<Vec<Word<I>>, Error> {
     let error = |message| Error {
         node: body.source.into(),
@@ -310,27 +336,21 @@ fn verify_acyclic<I: Maybe>(
             transfer_plain(body, facts, &mut state, index, Some(types))?;
         }
         let edges = flow.filter(|f| f.storage.has_edge_ends(index));
-        if edges.is_some() {
+        let refined = refinements.is_some_and(|r| r.has(index));
+        if edges.is_some() || refined {
             state.charge(words).map_err(error)?;
             outgoing.copy_from_slice(&state.words);
         }
         for target in successors(block.terminator).into_iter().flatten() {
-            if let Some(flow) = edges {
-                state.charge(words).map_err(error)?;
-                state.words.copy_from_slice(&outgoing);
-                flow.edge(
-                    &facts.paths,
-                    &mut state,
-                    Location::Edge {
-                        block: BlockId(
-                            u32::try_from(index).map_err(|_| error("too many ownership blocks"))?,
-                        ),
-                        target,
-                    },
-                    |_, _| Ok(()),
-                )
-                .map_err(error)?;
-            }
+            transfer_edge(
+                facts,
+                &mut state,
+                (index, target),
+                (edges.is_some() || refined).then_some(outgoing.as_slice()),
+                edges,
+                refinements,
+            )
+            .map_err(error)?;
             let next = target.0 as usize;
             let target = &mut incoming[next * words..(next + 1) * words];
             if reached[next] {
@@ -351,6 +371,35 @@ fn verify_acyclic<I: Maybe>(
     Ok(incoming)
 }
 
+/// Each successor starts from the same outgoing initialization image.
+fn transfer_edge<I: Maybe>(
+    facts: &BodyFacts,
+    state: &mut State<I>,
+    (index, target): (usize, BlockId),
+    outgoing: Option<&[Word<I>]>,
+    flow: Option<&Flow<'_>>,
+    refinements: Option<&super::variant_liveness::Refinements>,
+) -> Result<(), &'static str> {
+    if let Some(outgoing) = outgoing {
+        state.charge(outgoing.len())?;
+        state.words.copy_from_slice(outgoing);
+    }
+    if let Some(refinements) = refinements {
+        refinements.apply(&facts.paths, index, target, state)?;
+    }
+    if let Some(flow) = flow {
+        flow.edge(
+            &facts.paths,
+            state,
+            Location::Edge {
+                block: BlockId(u32::try_from(index).map_err(|_| "too many ownership blocks")?),
+                target,
+            },
+            |_, _| Ok(()),
+        )?;
+    }
+    Ok(())
+}
 /// The transfer of a block without cleanup flow, optionally inspecting each
 /// statement against its incoming state first.
 fn transfer_plain<I: Maybe>(
@@ -445,12 +494,12 @@ pub(super) fn status(words: &[Word<u64>], path: &Path) -> Status {
         must &= words[index].must & mask == mask;
         may |= words[index].initialized & mask != 0;
     });
-    if must {
-        Status::Always
-    } else if may {
-        Status::Conditional
-    } else {
+    if !may {
         Status::Never
+    } else if must {
+        Status::Always
+    } else {
+        Status::Conditional
     }
 }
 
@@ -472,12 +521,12 @@ pub(super) fn bit_status(words: &[Word<u64>], bit: u32) -> Result<Status, &'stat
         .get(bit as usize / 64)
         .ok_or("invalid initialization bit")?;
     let mask = 1_u64 << (bit % 64);
-    Ok(if word.must & mask != 0 {
-        Status::Always
-    } else if word.initialized & mask != 0 {
-        Status::Conditional
-    } else {
+    Ok(if word.initialized & mask == 0 {
         Status::Never
+    } else if word.must & mask != 0 {
+        Status::Always
+    } else {
+        Status::Conditional
     })
 }
 
@@ -487,6 +536,7 @@ pub(super) fn replay(
     flow: &Flow<'_>,
     incoming: &[Word<u64>],
     words: usize,
+    refinements: Option<&super::variant_liveness::Refinements>,
     mut visitor: impl FnMut(Transition, &mut State<u64>) -> Result<(), &'static str>,
 ) -> Result<(), &'static str> {
     let mut state = State {
@@ -533,6 +583,9 @@ pub(super) fn replay(
             for target in successors(block.terminator).into_iter().flatten() {
                 state.charge(words)?;
                 state.words.copy_from_slice(&outgoing);
+                if let Some(refinements) = refinements {
+                    refinements.apply(&facts.paths, index, target, &mut state)?;
+                }
                 flow.edge(
                     &facts.paths,
                     &mut state,

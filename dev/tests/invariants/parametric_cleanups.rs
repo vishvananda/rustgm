@@ -124,7 +124,7 @@ fn symbolic_const_cleanup_cannot_authorize_concrete_glue_or_an_instance() -> Res
     let body = &template.body;
     let mut copies = Copies::in_environment(Arc::clone(&template.environment));
     let mut view = CopyView::checked(&mut copies, body, &proof, facts.uses_source_copy())?;
-    let init = initialization::analyze_ordered(
+    let mut init = initialization::analyze_ordered(
         &facts.types,
         &facts.aggregates,
         &facts.derives,
@@ -138,7 +138,7 @@ fn symbolic_const_cleanup_cannot_authorize_concrete_glue_or_an_instance() -> Res
         &facts.types,
         &facts.aggregates,
         &mut needed,
-        &init,
+        &mut init,
         |_| false,
         |_, _| Err("no nominal field projection in this source"),
     )

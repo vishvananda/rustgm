@@ -9,7 +9,7 @@ use super::{Environment, Error, loans, regions};
 use crate::support::hash::HashMap;
 use crate::{
     body::{
-        ir::{BodyKey, Owner, Selection},
+        ir::{BodyKey, Owner},
         regions::{Contract, Contracts},
         templates::{Template, Templates},
     },
@@ -202,7 +202,10 @@ pub fn verify<'a, S: BuildHasher>(
     contracts: &Contracts<'_>,
     templates: &'a Templates,
     custom: &[ItemId],
-    position: impl Fn(TypeId, Selection) -> Result<(u32, u32), &'static str>,
+    position: impl Fn(
+        TypeId,
+        crate::body::drops::MemberQuery,
+    ) -> Result<crate::body::drops::MemberPosition, &'static str>,
 ) -> Result<Checked<'a>, Error> {
     let owners::Indices {
         functions: index,

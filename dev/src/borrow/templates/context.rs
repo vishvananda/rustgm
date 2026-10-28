@@ -28,7 +28,10 @@ pub(crate) fn verify<'a, S: BuildHasher>(
     templates: &'a Templates,
     context: &'a Contexts,
     custom: &[ItemId],
-    position: impl Fn(TypeId, crate::body::ir::Selection) -> Result<(u32, u32), &'static str>,
+    position: impl Fn(
+        TypeId,
+        crate::body::drops::MemberQuery,
+    ) -> Result<crate::body::drops::MemberPosition, &'static str>,
 ) -> Result<Checked<'a>, Error> {
     if context.bodies.bodies.is_empty() && context.source.is_empty() && context.imported.is_none() {
         return super::verify(

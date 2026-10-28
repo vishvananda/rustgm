@@ -29,8 +29,8 @@ pub fn verify<S: std::hash::BuildHasher>(
     custom: &[crate::types::ItemId],
     position: impl Fn(
         crate::types::TypeId,
-        crate::body::ir::Selection,
-    ) -> Result<(u32, u32), &'static str>,
+        crate::body::drops::MemberQuery,
+    ) -> Result<crate::body::drops::MemberPosition, &'static str>,
 ) -> Result<Vec<Analysis>, Error> {
     verify_iter(
         environment,
@@ -51,8 +51,8 @@ pub(crate) fn verify_iter<'a, S: std::hash::BuildHasher>(
     custom: &[crate::types::ItemId],
     position: impl Fn(
         crate::types::TypeId,
-        crate::body::ir::Selection,
-    ) -> Result<(u32, u32), &'static str>,
+        crate::body::drops::MemberQuery,
+    ) -> Result<crate::body::drops::MemberPosition, &'static str>,
 ) -> Result<Vec<Analysis>, Error> {
     let error = |message: &str| Error {
         node: None,
@@ -126,8 +126,8 @@ impl Verifier {
         contract: &regions::Body,
         position: &impl Fn(
             crate::types::TypeId,
-            crate::body::ir::Selection,
-        ) -> Result<(u32, u32), &'static str>,
+            crate::body::drops::MemberQuery,
+        ) -> Result<crate::body::drops::MemberPosition, &'static str>,
     ) -> Result<Analysis, Error> {
         let mut defining = crate::body::defining_cleanups::Work::new(1_000_000);
         if let Some(state) = contract.builtins.as_deref().and_then(|r| r.defining()) {
@@ -152,7 +152,7 @@ impl Verifier {
             message: message.into(),
         })?;
         let order = crate::borrow::order::Order::new(body);
-        let facts = initialization::analyze_ordered(
+        let mut facts = initialization::analyze_ordered(
             environment.types,
             environment.definitions,
             environment.derives,
@@ -188,7 +188,7 @@ impl Verifier {
                 environment.types,
                 environment.definitions,
                 &mut needed,
-                &facts,
+                &mut facts,
                 |item| self.custom.contains(&item),
                 position,
             )

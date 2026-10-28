@@ -26,18 +26,7 @@ fn verify(
         &contracts,
         templates,
         &[],
-        |ty, field| {
-            let (Some(types::Kind::Adt(owner, _)), body::ir::Selection::Nominal(field)) =
-                (types.kind(ty), field)
-            else {
-                return Err("invalid provided field selection");
-            };
-            let identity = members.identity(field).ok_or("missing provided field")?;
-            if owner.0 != identity.owner.0 {
-                return Err("provided field belongs to different owner");
-            }
-            Ok((identity.variant, identity.field))
-        },
+        |ty, query| body::drops::member_position(types, &facts.aggregates, members, ty, query),
     )?;
     for template in &templates.bodies {
         let body = &template.body;

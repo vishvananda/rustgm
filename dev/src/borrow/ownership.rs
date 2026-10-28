@@ -7,6 +7,7 @@ pub mod initialization;
 mod paths;
 mod state;
 pub mod templates;
+mod variant_liveness;
 pub mod view;
 pub struct Error {
     pub node: crate::body::ir::ProofSite,
@@ -182,7 +183,7 @@ pub(crate) fn analyze_body_ordered<S: BuildHasher>(
         }
     }
     let mut facts = prepare(types, definitions, derives, copies, body, false)?;
-    state::verify::<()>(body, &mut facts, types, None, order)?;
+    state::verify::<()>(body, &mut facts, types, None, order, None)?;
     guards::verify(body, &facts, types)?;
     Ok(facts)
 }
