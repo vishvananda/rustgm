@@ -204,6 +204,11 @@ impl Stage {
         identity: &CrateIdentity,
         mode: ExportMode,
     ) -> Result<Self, &'static str> {
+        if let Some(producer) = report.lint_producer() {
+            producer
+                .require_deprecation_transport(&report.package)
+                .map_err(|error| error.message)?;
+        }
         let provider = report
             .package
             .source_core()

@@ -309,12 +309,13 @@ fn helper_payloads_warm_failed_work_and_existing_cold_and_dense_costs_are_measur
     let affected = crate::pipeline::analyze_source(&affected)?;
     let (nodes, capacity, outer) = affected.facts.retained_policy_storage();
     assert!(nodes > 0);
-    assert_eq!(size_of::<resolve::lint_policy::Policy>(), 12);
+    assert_eq!(size_of::<resolve::lint_policy::Level>(), 1);
+    let (rows, row_capacity, row_size) = affected.facts.retained_policy_rows();
     println!(
-        "helper policy nodes={nodes} capacity={capacity} payload={} previous11bytepayload={} latest-increase={} outer={outer}",
-        capacity * size_of::<resolve::lint_policy::Policy>(),
-        capacity * 11,
-        capacity
+        "lint policy nodes={nodes} capacity={capacity} dense_bytes={} cold_rows={rows} cold_bytes={} prior_dense_bytes={} outer_bytes={outer}",
+        capacity * size_of::<u32>(),
+        row_capacity * row_size,
+        capacity * 12
     );
     println!(
         "helper layouts Declaration={} HeaderData={} Helper={} SourceCore={} Session={} Policy={} ResultPolicy={} CompositionRow={} Effects={} Producer={} Item={} Node={} Scope={} Definition={} MacroBody={} MacroDefinition={} Report={}",

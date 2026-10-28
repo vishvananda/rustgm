@@ -31,6 +31,11 @@ pub(crate) struct Site {
     pub scope: ScopeId,
     pub scope_parent: Option<ScopeId>,
 }
+pub(crate) struct Changes<'a> {
+    pub entries: &'a [Change],
+    pub tail: Option<Tail>,
+    pub deprecated: Option<Tail>,
+}
 struct Call {
     site: Site,
     tail: Option<Tail>,
@@ -47,22 +52,30 @@ pub(super) struct Witness {
 }
 #[derive(Default)]
 pub(super) struct Parsed {
+    pub expectations: Vec<super::expectations::Expectation>,
+    pub deprecated: Option<Box<super::expectations::Deprecation>>,
     pub changes: Vec<Change>,
     pub witnesses: Box<[Witness]>,
     pub trees: Box<[(u32, crate::syntax::token_tree::Tree)]>,
     pub attributes: usize,
     pub entries: usize,
 }
-struct Owner {
-    key: NodeKey,
+pub(super) struct Owner {
+    pub(super) key: NodeKey,
     effects: std::ops::Range<usize>,
     image: Arc<OriginalImage>,
     parent: Option<Tail>,
-    parsed: Parsed,
+    header: (
+        crate::syntax::item::AttributeRange,
+        crate::syntax::ast::NodeId,
+        crate::syntax::token_tree::Span,
+    ),
+    pub(super) parsed: Parsed,
 }
 #[derive(Clone, Copy, Default)]
 pub(crate) struct Work {
     pub attributes: usize,
+    pub expectations: usize,
     pub entries: usize,
     pub owners: usize,
     pub frames: usize,
@@ -99,8 +112,8 @@ impl Work {
     }
 }
 pub(crate) struct Producer {
-    owners: Vec<Owner>,
-    index: HashMap<NodeKey, Tail>,
+    pub(super) owners: Vec<Owner>,
+    pub(super) index: HashMap<NodeKey, Tail>,
     frames: Vec<Frame>,
     frame_extent: u32,
     calls: Vec<Call>,
@@ -109,7 +122,10 @@ pub(crate) struct Producer {
     composed: HashMap<Tail, Result<Policy, Violation>>,
     sealed: bool,
     work: Work,
-    reads: Cell<Work>,
+    pub(super) reads: Cell<Work>,
+    pub(super) domain: Option<Arc<super::expectations::Domain>>,
+    pub(super) expectation_owners: Vec<Tail>,
+    pub(super) early: Vec<super::expectations::Early>,
 }
 impl Producer {
     pub(crate) fn new(frames: u32, calls: u32) -> Self {
@@ -125,6 +141,9 @@ impl Producer {
             sealed: false,
             work: Work::default(),
             reads: Cell::default(),
+            domain: None,
+            expectation_owners: Vec::new(),
+            early: Vec::new(),
         }
     }
     pub(crate) fn work(&self) -> Work {
@@ -212,10 +231,10 @@ impl Producer {
             if owner.parent != parent {
                 return Err(invalid(key, "source lint owner parent tail changed"));
             }
-            return Ok(if owner.parsed.changes.is_empty() {
-                parent
-            } else {
+            return Ok(if owner.parsed.has_policy() {
                 Some(tail)
+            } else {
+                parent
             });
         }
         if self.sealed {
@@ -230,8 +249,7 @@ impl Producer {
             1,
             4 * size_of::<Owner>() + crate::support::retained::new_map::<NodeKey, Tail>(1),
         )?;
-        let parsed =
-            attribute_changes::owner(package.unit(key.file), key, effects.clone(), &mut self.work)?;
+
         let value = self
             .owners
             .len()
@@ -240,21 +258,87 @@ impl Producer {
             .and_then(NonZeroU32::new)
             .ok_or_else(|| invalid(key, "source lint owner identities exceed 32 bits"))?;
         let tail = Tail(value);
-        let next = if parsed.changes.is_empty() {
-            parent
-        } else {
+        let parsed = attribute_changes::owner(
+            package.unit(key.file),
+            key,
+            tail,
+            effects.clone(),
+            &mut self.work,
+        )?;
+        let next = if parsed.has_policy() {
             Some(tail)
+        } else {
+            parent
         };
+        let node = package.unit(key.file).configured.ast.node(key.node);
+        let crate::syntax::ast::Kind::Attributed { attributes, value } = node.kind else {
+            return Err(invalid(
+                key,
+                "lint source header lost its attributed syntax",
+            ));
+        };
+        self.publish_expectation_owner(key, tail, &parsed)?;
         self.owners.push(Owner {
             key,
+            header: (attributes, value, node.span),
             effects,
             image: Arc::clone(package.unit(key.file).source.original_image()),
             parent,
             parsed,
         });
         self.index.insert(key, tail);
+        if self
+            .owners
+            .last()
+            .is_some_and(|owner| owner.parsed.deprecated.is_some())
+        {
+            let unit = package.unit(key.file);
+            let mut declaration = key;
+            while let crate::syntax::ast::Kind::Attributed { value, .. } =
+                unit.configured.ast.node(declaration.node).kind
+            {
+                self.work.charge(key, 1, 0)?;
+                declaration.node = value;
+            }
+            self.work.charge(
+                key,
+                1,
+                crate::support::retained::new_map::<NodeKey, Tail>(1),
+            )?;
+            self.index.insert(declaration, tail);
+        }
+
         self.work.owners += 1;
         Ok(next)
+    }
+    fn publish_expectation_owner(
+        &mut self,
+        key: NodeKey,
+        tail: Tail,
+        parsed: &Parsed,
+    ) -> Result<(), Violation> {
+        if parsed.expectations.is_empty() {
+            return Ok(());
+        }
+        let growth = crate::support::retained::Growth::vector::<Tail>(
+            self.expectation_owners.len(),
+            self.expectation_owners.capacity(),
+            1,
+        );
+        self.work.charge(
+            key,
+            1 + growth.work,
+            growth.bytes.saturating_add(if self.domain.is_none() {
+                2 * size_of::<usize>()
+            } else {
+                0
+            }),
+        )?;
+        if self.domain.is_none() {
+            self.domain = Some(Arc::new(super::expectations::Domain));
+        }
+        self.expectation_owners.push(tail);
+        Ok(())
     }
     fn require_tail(&self, tail: Option<Tail>, key: NodeKey) -> Result<(), Violation> {
         if let Some(tail) = tail {
@@ -262,7 +346,7 @@ impl Producer {
         }
         Ok(())
     }
-    fn record(&self, tail: Tail, key: NodeKey) -> Result<&Owner, Violation> {
+    pub(super) fn record(&self, tail: Tail, key: NodeKey) -> Result<&Owner, Violation> {
         self.charge_read(key, 1)?;
         self.owners
             .get(tail.0.get() as usize - 1)
@@ -427,6 +511,9 @@ impl Producer {
             for change in &owner.parsed.changes {
                 policy.apply(owner.key, change)?;
             }
+            if owner.parsed.deprecated.is_some() {
+                policy.deprecated_origin = Some(tail);
+            }
         }
         Ok(policy)
     }
@@ -451,7 +538,7 @@ impl Producer {
         package: &Package,
         key: NodeKey,
         parent: Option<Tail>,
-    ) -> Result<(&[Change], Option<Tail>), Violation> {
+    ) -> Result<Changes<'_>, Violation> {
         self.charge_read(key, 1)?;
         let Some(unit) = package.units.get(key.file.0 as usize) else {
             return Err(invalid(key, "foreign lint policy source file"));
@@ -462,7 +549,11 @@ impl Producer {
             .copied()
             .flatten()
         else {
-            return Ok((&[], parent));
+            return Ok(Changes {
+                entries: &[],
+                tail: parent,
+                deprecated: None,
+            });
         };
         let owner = unit
             .configured
@@ -470,7 +561,11 @@ impl Producer {
             .get(index.get() as usize - 1)
             .ok_or_else(|| invalid(key, "lint owner index is malformed"))?;
         if owner.attributes.is_empty() {
-            return Ok((&[], parent));
+            return Ok(Changes {
+                entries: &[],
+                tail: parent,
+                deprecated: None,
+            });
         }
         let tail = self
             .index
@@ -485,14 +580,15 @@ impl Producer {
                 "semantic lint owner has another actual ancestor tail",
             ));
         }
-        Ok((
-            &record.parsed.changes,
-            if record.parsed.changes.is_empty() {
-                parent
-            } else {
+        Ok(Changes {
+            entries: &record.parsed.changes,
+            tail: if record.parsed.has_policy() {
                 Some(tail)
+            } else {
+                parent
             },
-        ))
+            deprecated: record.parsed.deprecated.as_ref().map(|_| tail),
+        })
     }
     pub(crate) fn validate(&self, package: &Package) -> Result<(usize, usize, bool), Violation> {
         let work = self.work();
@@ -522,5 +618,11 @@ pub(super) fn invalid(key: NodeKey, message: &'static str) -> Violation {
         key,
         offset: 0,
         message,
+    }
+}
+
+impl Parsed {
+    pub(super) fn has_policy(&self) -> bool {
+        !self.changes.is_empty() || self.deprecated.is_some()
     }
 }

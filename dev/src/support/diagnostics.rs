@@ -1,6 +1,10 @@
 //! Phase-neutral warning identities have no printing or semantic permission.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum WarningCode {
+    Deprecated,
+    UnfulfilledLintExpectations,
+    InvalidAtomicOrdering,
+    UnreachablePatterns,
     UnusedMustUse,
     UnusedAttributes,
     UnusedVisibilities,
@@ -17,6 +21,10 @@ impl WarningCode {
     #[must_use]
     pub const fn name(self) -> &'static str {
         match self {
+            Self::Deprecated => "deprecated",
+            Self::UnfulfilledLintExpectations => "unfulfilled_lint_expectations",
+            Self::InvalidAtomicOrdering => "invalid_atomic_ordering",
+            Self::UnreachablePatterns => "unreachable_patterns",
             Self::UnusedMustUse => "unused_must_use",
             Self::UnusedAttributes => "unused_attributes",
             Self::UnusedVisibilities => "unused_visibilities",

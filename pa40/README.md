@@ -53,3 +53,9 @@ run the required coherent checkpoint checks from
 suites, strict Clippy, file/architecture audits, harness checks and affected
 performance measurements. Use the resource/storage guards and scoped cleanup.
 Do not activate a stage merely because a reduced example or an empty suite passes.
+
+The unpublished [finite lint expectation checkpoint](../docs/pa40-lint-expectations-checkpoint.md)
+connects genuine local deprecation events to owner/list identities, effective
+expectations and completed request scopes. Its source contracts include
+independent positive and opposing controls; full lint/edition and release
+requirements remain open.

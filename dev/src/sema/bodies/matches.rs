@@ -343,24 +343,34 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    fn check_unreachable_arms(&self, id: u32) -> Result<(), Error> {
+    fn check_unreachable_arms(&mut self, id: u32) -> Result<(), Error> {
         if !self.facts.safety_policies.has_unreachable_denials() {
             return Ok(());
         }
         let decision = &self.facts.patterns.decisions[id as usize];
-        if !decision.uninhabited {
-            for arm in &self.facts.patterns.arms[decision.start as usize..decision.end as usize] {
-                if !arm.useful
-                    && self
-                        .facts
-                        .safety_policies
-                        .denies_unreachable_patterns(arm.source)
-                {
-                    return Err(crate::sema::model::Declarations::error(
+        let (start, end, uninhabited) = (decision.start, decision.end, decision.uninhabited);
+        if !uninhabited {
+            for index in start..end {
+                let arm = &self.facts.patterns.arms[index as usize];
+                if !arm.useful {
+                    let key = arm.source;
+                    let offset = self
+                        .report
+                        .package
+                        .unit(key.file)
+                        .configured
+                        .ast
+                        .node(key.node)
+                        .span
+                        .start;
+                    self.facts.must_use_diagnostic(
                         self.report,
-                        arm.source,
-                        "unreachable pattern",
-                    ));
+                        key,
+                        offset,
+                        0,
+                        crate::support::diagnostics::WarningCode::UnreachablePatterns,
+                        "unreachable pattern".into(),
+                    )?;
                 }
             }
         }

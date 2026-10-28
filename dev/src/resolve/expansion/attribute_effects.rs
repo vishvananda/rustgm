@@ -208,3 +208,23 @@ impl<S: Sources> Engine<'_, S> {
         })
     }
 }
+
+impl<S: Sources> Engine<'_, S> {
+    pub(super) fn lint_fulfill_call(
+        &mut self,
+        index: usize,
+        lint: crate::resolve::lint_policy::Lint,
+    ) -> Result<(), Error> {
+        let policy = self.lint_call_policy(index)?;
+        let key = self.lint_site(index)?.owner;
+        let id = policy
+            .expectation(lint)
+            .ok_or_else(|| Error::at(key.file, 0, "call expectation identity is missing"))?;
+        self.attribute_effects
+            .as_deref()
+            .and_then(|effects| effects.policy.as_ref())
+            .ok_or_else(|| Error::at(key.file, 0, "call expectation producer is missing"))?
+            .fulfill_early(&self.loader.package, id, key, lint)
+            .map_err(Error::from)
+    }
+}

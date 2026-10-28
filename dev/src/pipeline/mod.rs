@@ -81,6 +81,14 @@ pub fn analyze_source(report: &Report) -> Result<Analysis, Error> {
         &mut analysis.facts,
         &mut analysis.prepared,
     )?;
+    analysis
+        .facts
+        .finalize_lints(report, true)
+        .map_err(|error| {
+            analysis
+                .facts
+                .retain_error_warnings(report.diagnostic(error))
+        })?;
     analysis.prepared.constants = Some(context);
     Ok(analysis)
 }
@@ -95,6 +103,9 @@ pub(crate) fn prepare_local_runtime(
         crate::sema::declarations::analyze_local_roots(report, roots, context.executor())?;
     let mut prepared = Prepared::default();
     complete_constants(report, &context, &mut facts, &mut prepared)?;
+    facts
+        .finalize_lints(report, true)
+        .map_err(|error| facts.retain_error_warnings(report.diagnostic(error)))?;
     prepared.constants = Some(context);
     Ok((facts, prepared))
 }

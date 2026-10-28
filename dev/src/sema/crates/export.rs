@@ -149,6 +149,9 @@ fn validate_profile(
     facts: &Declarations,
     identity: &CrateIdentity,
 ) -> Result<(), Error> {
+    if let Some(producer) = report.lint_producer() {
+        producer.require_deprecation_transport(&report.package)?;
+    }
     if facts.members.has_contextual_fields() {
         return Err(error(
             "contextual aggregate field metadata is not implemented",

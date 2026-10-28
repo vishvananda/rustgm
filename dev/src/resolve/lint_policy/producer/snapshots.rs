@@ -47,15 +47,21 @@ pub(super) fn configured(
     Ok(owner)
 }
 impl Owner {
-    pub(super) fn validate(&self, package: &Package, work: &Cell<Work>) -> Result<(), Violation> {
+    pub(in crate::resolve::lint_policy) fn validate(
+        &self,
+        package: &Package,
+        work: &Cell<Work>,
+    ) -> Result<(), Violation> {
         let mut charged = work.get();
         let result = charged.charge(self.key, 1 + self.effects.len(), 0);
         work.set(charged);
         result?;
         let owner = configured(package, self.key)?;
         let unit = package.unit(self.key.file);
+        let node = unit.configured.ast.node(self.key.node);
         if owner.attributes != self.effects
             || !Arc::ptr_eq(&self.image, unit.source.original_image())
+            || !matches!(node.kind, crate::syntax::ast::Kind::Attributed {attributes,value} if (attributes,value,node.span) == self.header)
         {
             return Err(invalid(
                 self.key,
@@ -155,7 +161,7 @@ pub(super) fn validate(
             record.validate(package, &producer.reads)?;
             attributes += record.parsed.attributes;
             entries += record.parsed.entries;
-            changes |= !record.parsed.changes.is_empty();
+            changes |= record.parsed.has_policy();
         }
     }
     Ok((attributes, entries, changes))

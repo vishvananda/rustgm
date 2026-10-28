@@ -1513,6 +1513,7 @@ impl Checker<'_> {
                 if let Some(term) = self.state.locals[id.0 as usize] {
                     return Ok(term);
                 }
+                super::deprecation::check(self.report, self.facts, self.key(node), id)?;
                 let definition = &self.report.resolution.definitions[id.0 as usize];
                 if !matches!(
                     definition.kind,

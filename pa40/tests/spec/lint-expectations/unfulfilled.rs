@@ -1,0 +1,1 @@
+#[expect(deprecated)] fn main(){}

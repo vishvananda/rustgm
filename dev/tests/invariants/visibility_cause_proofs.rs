@@ -1,6 +1,6 @@
 //! Source authentication, charged failed reads and cold layout costs stay explicit.
 use super::*;
-use crate::resolve::{lint_policy::Policy, package::ErrorData, unit::FileId};
+use crate::resolve::{package::ErrorData, unit::FileId};
 #[test]
 fn visibility_source_failures_keep_primary_errors_and_policy_costs_are_measured() -> TestResult {
     let source = fixture(25, "visibility-warn")?;
@@ -48,12 +48,13 @@ fn visibility_source_failures_keep_primary_errors_and_policy_costs_are_measured(
     let (nodes, capacity, outer) = affected.facts.retained_policy_storage();
     assert_eq!(nodes, affected.facts.safety_work().retained_nodes);
     assert!(nodes > 0 && capacity >= nodes);
-    assert_eq!(size_of::<Policy>(), 12);
+    assert_eq!(size_of::<crate::resolve::lint_policy::Level>(), 1);
+    let (rows, row_capacity, row_size) = affected.facts.retained_policy_rows();
     println!(
-        "unused visibility policy nodes={nodes} capacity={capacity} payload={} prior11bytepayload={} aggregateincrease={} outerbytes={outer}",
-        capacity * size_of::<Policy>(),
-        capacity * 11,
-        capacity
+        "lint policy nodes={nodes} capacity={capacity} dense_bytes={} cold_rows={rows} cold_bytes={} prior_dense_bytes={} outer_bytes={outer}",
+        capacity * size_of::<u32>(),
+        row_capacity * row_size,
+        capacity * 12
     );
     println!(
         "unused visibility cold Effects={} Causes={} Record={} ErrorData={} RetentionNote={} Report={} Engine={} Node={} NodeFacts={} Scope={} ResolutionDefinition={} MacroBody={} MacroDefinition={}",

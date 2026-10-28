@@ -304,6 +304,13 @@ impl<S: Sources> Engine<'_, S> {
         let file = call.file;
         let level = self.lint_call_policy(index)?.duplicate_macro_attributes;
         let result = match level {
+            crate::resolve::lint_policy::Level::Expect => {
+                self.lint_fulfill_call(
+                    index,
+                    crate::resolve::lint_policy::Lint::DuplicateMacroAttributes,
+                )?;
+                primary
+            }
             crate::resolve::lint_policy::Level::Allow => primary,
             crate::resolve::lint_policy::Level::Warn => {
                 primary.retain_warnings(vec![self.lint_warning(index, offset)?])

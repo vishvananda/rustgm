@@ -221,3 +221,27 @@ fn graph_validation_is_bounded_and_rejects_missing_duplicate_and_cyclic_artifact
     }
     Ok(())
 }
+
+#[test]
+fn explicit_foreign_deprecation_policy_requires_transport_without_changing_legacy_admission()
+-> Result<(), Box<dyn std::error::Error>> {
+    let legacy = resolve(
+        "fn main(){let _=left::math::value(7);}",
+        dependencies(false)?,
+    )?;
+    assert!(rustgm::pipeline::analyze_source(&legacy).is_ok());
+    for policy in ["expect", "deny", "warn"] {
+        let source = format!("#[{policy}(deprecated)]fn main(){{let _=left::math::value(7);}}");
+        let report = resolve(&source, dependencies(false)?)?;
+        let Err(error) = rustgm::pipeline::analyze_source(&report) else {
+            return Err(format!("foreign {policy} policy inferred absence").into());
+        };
+        assert!(
+            error
+                .to_string()
+                .contains("imported deprecation contract transport is not implemented"),
+            "{error}"
+        );
+    }
+    Ok(())
+}

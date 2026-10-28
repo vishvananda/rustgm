@@ -163,7 +163,7 @@ impl Checker<'_> {
                         .is_some_and(|target| matches!(target,
                             crate::resolve::model::Target::Definition(id) if self.mutable_static(id)))
                     {
-                        if level == Level::Warn {
+                        if matches!(level, Level::Warn | Level::Expect) {
                             return self.safety_warning(
                                 source,
                                 WarningCode::StaticMutRefs,
@@ -212,7 +212,7 @@ impl Checker<'_> {
         } else if self.state.safety.function {
             match self.facts.safety_policies.operation(self.key(node)) {
                 Level::Allow => Ok(()),
-                Level::Warn => self.safety_warning(
+                Level::Warn | Level::Expect => self.safety_warning(
                     node,
                     WarningCode::UnsafeOpInUnsafeFn,
                     "unsafe operation in unsafe function requires an explicit unsafe block",

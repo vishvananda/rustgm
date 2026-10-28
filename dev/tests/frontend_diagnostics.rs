@@ -52,6 +52,10 @@ fn declared_successful_warnings_preserve_the_strict_compiler_boundary() {
 #[test]
 fn declared_attribute_warning_codes_do_not_relax_byte_comparison() {
     for code in [
+        "deprecated",
+        "unfulfilled_lint_expectations",
+        "invalid_atomic_ordering",
+        "unreachable_patterns",
         "malformed_diagnostic_attributes",
         "malformed_diagnostic_format_literals",
         "misplaced_diagnostic_attributes",

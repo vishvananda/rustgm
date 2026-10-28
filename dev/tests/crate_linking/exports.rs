@@ -243,3 +243,23 @@ fn non_scalar_constant_exports_are_explicit_boundaries() -> Result<(), Box<dyn s
     }
     Ok(())
 }
+
+#[test]
+fn deprecated_declarations_cannot_be_silently_exported_without_their_contract()
+-> Result<(), Box<dyn std::error::Error>> {
+    let source = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../pa40/tests/spec/lint-expectations/deprecated-export.rs"),
+    )?;
+    let Err(error) = compile(&source, "deprecated") else {
+        return Err("deprecated declaration exported without contract".into());
+    };
+    assert!(
+        error
+            .to_string()
+            .contains("deprecation declaration transport is not implemented"),
+        "{error}"
+    );
+    assert!(compile("pub fn current(n:u32)->u32{n}", "current").is_ok());
+    Ok(())
+}

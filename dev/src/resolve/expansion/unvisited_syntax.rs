@@ -183,6 +183,20 @@ impl Report {
         self.default_warnings().map_err(Failure::error)
     }
     pub(crate) fn retain_expansion_warnings(&self, primary: Error) -> Error {
+        let primary = match self.macro_deprecation_warnings() {
+            Ok(rows) => {
+                primary.retain_warnings(rows.into_iter().map(|(_, warning)| warning).collect())
+            }
+            Err(_) => primary.warning_retention_failed(
+                if self.lint_producer().is_some_and(
+                    crate::resolve::lint_policy::producer::Producer::diagnostic_budget_exhausted,
+                ) {
+                    RetentionNote::Budget
+                } else {
+                    RetentionNote::UnavailableOrigin
+                },
+            ),
+        };
         join(
             self.retain_visibility_warnings(primary),
             self.default_warnings(),
@@ -191,6 +205,34 @@ impl Report {
 }
 impl<S: Sources> Engine<'_, S> {
     pub(super) fn retain_expansion_warnings(&self, primary: Error) -> Error {
+        let primary = match self
+            .attribute_effects
+            .as_deref()
+            .and_then(|effects| effects.policy.as_ref())
+            .map(|producer| {
+                producer.early_warnings(&self.loader.package, |error| self.diagnostic(error))
+            })
+            .transpose()
+        {
+            Ok(rows) => primary.retain_warnings(
+                rows.into_iter()
+                    .flatten()
+                    .map(|(_, warning)| warning)
+                    .collect(),
+            ),
+            Err(_) => primary.warning_retention_failed(
+                if self
+                    .attribute_effects
+                    .as_deref()
+                    .and_then(|effects| effects.policy.as_ref())
+                    .is_some_and(crate::resolve::lint_policy::producer::Producer::diagnostic_budget_exhausted)
+                {
+                    RetentionNote::Budget
+                } else {
+                    RetentionNote::UnavailableOrigin
+                },
+            ),
+        };
         let mut memo = None;
         let mut query = Query {
             view: FrameView {

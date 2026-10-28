@@ -246,6 +246,14 @@ pub fn analyze(report: &Report) -> Result<Declarations, Error> {
             .facts
             .retain_error_warnings(report.diagnostic(error))
     })?;
+    checker
+        .facts
+        .finalize_lints(report, false)
+        .map_err(|error| {
+            checker
+                .facts
+                .retain_error_warnings(report.diagnostic(error))
+        })?;
     Ok(checker.facts)
 }
 /// Resolve declarations with the executable pipeline's checked constant service.

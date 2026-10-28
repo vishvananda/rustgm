@@ -1,0 +1,126 @@
+# Finite source deprecation and lint expectations
+
+This unpublished PA40 prerequisite supplies PA31's ordinary source macro reexport
+protocol. PA31 and PA40 remain planned. No original core crate artifact, full lint
+inventory, or assignment release is claimed.
+
+The existing configured attribute producer parses `expect` and `deprecated`
+from retained token trees. Each expectation belongs to its actual owner, effect
+and lint-list ordinal. A group gets one identity shared by its implemented
+members. Reasons are decoded once. Disabled configuration rows do not register.
+Unknown expectation producers reject explicitly; `expect` is never an `allow`
+setting. Direct forbid precedence and the self-expect exception follow the pinned
+Rust 1.98 rules. Active self-expectations remain unfulfilled and use the ordinary
+effective `unfulfilled_lint_expectations` policy.
+
+Selected local free-function uses, actual selected macro calls, and resolved
+same-package imports/reexports produce deprecation events. Lexical inherited
+origins suppress only uses sharing the same deprecation origin. A declaration or
+familiar spelling cannot fulfill an expectation. Existing must-use, safety,
+attribute, atomic-order and unreachable-pattern consumers use the same selected
+expectation identity before warning deduplication. Unsafe permission, ordinary
+typing and loan obligations remain independent.
+
+`Level` remains one byte. The semantic node table holds four-byte cold-policy row
+IDs. Cold rows retain the selected expectation identities and actual completion
+scope; ordinary getters borrow these rows. The same producer retains paid
+expectation cells and authenticates their source witnesses before fulfillment.
+An event must belong to the expectation's member mask. A paid cold index lists
+only actual expectation-bearing owners; pending queries visit that list rather
+than the full attributed-owner census. Expansion events remain
+source-owned; semantic fulfillment and finalization live in a paid sparse map owned by each
+request's existing semantic policy owner. A cold producer identity binds that
+map to the actual source producer. Interleaved requests cannot overwrite or
+reuse one another's completion. Vector growth, reason storage, dense
+node allocation and failed attempts use the existing work/storage limits.
+This representation trades cold row/owner storage against dense node storage;
+it does not assert that every attribute distribution uses less total memory.
+
+Finalization follows a successful request. The declaration-only entry closes
+completed import owners. Full source and selected local runtime entries finalize
+after their constant service completes. Function and initializer expectations
+require their actual checked owner; a whole-source expectation requires the
+actual source body inventory to be complete. Untouched demanded bodies stay
+pending. A later primary error retains genuine earlier warnings without
+manufacturing unfulfilled warnings from an aborted request.
+
+Source-free imports retain their existing legacy admission without acquiring
+`KnownAbsent` deprecation knowledge. An effective foreign warn, deny, forbid or expect directive requires
+unsupported transport and rejects; allow still suppresses without asserting
+absence. Current ordinary and
+source export entry points reject local deprecated declarations until an
+explicit metadata profile transports the contract. Complete cross-crate
+transport remains a PA29/PA40 requirement.
+
+The contracts in [PA40](../pa40/tests/spec/lint-expectations/contract.json) and
+[PA31](../pa31/tests/spec/source-deprecation/contract.json) freeze source hashes and
+independent predictions. The PA31 reducers are authored identity controls, not
+copies of the original macro body. Independent Rust 1.98 metadata observations
+cover both editions with abort panic and checked overflow. Raw diagnostics,
+commands, input hashes, failures and review receipts live under
+`obj/parallel/lib058-lint-expectations-v1/` in the worker checkout. The initial
+verifier's self-expect note check required “cannot”; the pinned note says
+“can't”. Its exact explanation was independently reviewed, with raw results
+preserved.
+
+The original pinned prelude also contains `expect(hidden_glob_reexports)` at
+line 74. Other original sources require `implicit_provenance_casts`,
+`ptr_to_integer_transmute_in_consts`, `missing_debug_implementations`,
+`unreachable_pub`, `ineffective_unstable_trait_impl` and `unreachable_code`.
+These producers remain unsupported. Passing the deprecated attribute's parse
+boundary cannot prove fulfillment in the original full graph before those
+remaining requirements complete.
+
+Remaining requirements include complete unknown/tool lint diagnostics and group
+inventories, ForceWarn and CLI lint policy, removed/test-owner timing, full type,
+field and method deprecation use consumers, staged future/nonnumeric deprecation
+policy, complete cross-crate transport, mixed-origin expansion release coverage,
+full edition closure and all parent release gates. No references are blessed or
+assignment activation changed by this checkpoint.
+
+## Qualified local evidence
+
+The final per-request implementation passed eleven exact private controls in
+`obj/qualification/fast/1793195420110123688/receipt.json` (263.70 seconds),
+including the actual A → full B → A import-fulfillment opponent. A's bodies remain
+unchecked. Six exact production/import/export/harness/provenance controls and
+both strict compilation modes passed in
+`obj/qualification/fast/1793195733161966296/receipt.json` (206.92 seconds).
+The CLI subsequently passed nine explicit diagnostic controls.
+
+Measured layouts are one byte for Level, four bytes per dense node row ID,
+132 bytes per cold Policy, 140 bytes per semantic policy row, 160 bytes per
+attribute owner, 40 bytes per expectation and 40 bytes per request Progress
+before its sparse map allocation. At widths 1/8/32/128, retained policy row
+counts are 3/10/34/130, charged work is 177/1168/4602/18314 and charged bytes are
+3306/20580/81204/319956. With one expectation owner and 0/128/512 unrelated
+attributed owners, pending queries cost eleven steps at every width. Cold/warm
+composition and invalidated/failed-budget controls retain their actual attempted
+work. Raw measurements and immutable binary hashes are in
+`obj/parallel/lib058-lint-expectations-v1/postcheck/`.
+
+The independent profile has 88 source/edition observations, including actual
+import fulfillment and no premature unfulfilled warning before a later type
+error. Earlier observations and their manifests remain archived; the final
+additional interleaving source has its own frozen prediction and oracle.
+`make test-upstream`'s verifier passed in the same guarded postcheck.
+
+The frozen CLI SHA-256 is
+`2ee65013745ac514ab59b89ca11008cb26937b7916a0347cf77107946562dacc`.
+Its producer binding is
+`8ab8b5e8c9f31fec98f887fbfad4fc46a358a30ed33e47a1c40e2d55b8e907a2`.
+The single unchanged original-core observation verifies all 722 source pins and
+the same configuration. It rejects the actual
+`prelude/v1.rs:74` `expect(hidden_glob_reexports)` at byte 2805. The compiler
+opens three source files: the real unsupported lint now fails during attribute
+owner production, earlier in the pipeline than the former delayed
+unknown-attribute expansion failure. Open counts are not a compiled percentage.
+No artifact or fulfillment of the deprecated expectation in the original full
+graph is claimed. The complete observation is in
+`obj/parallel/lib058-lint-expectations-v1/cli-core/core/`.
+
+The guarded harness check also passed all 253 Python tests, all 383 registered
+maintainer roots in thirteen binaries and the 44-stage active-fixture layout
+check. Broad periodic release/native suites and full edition/lint release
+qualification remain pending. The compiler-source fingerprint for the frozen
+CLI is `61e22594e48b1089951e5e5e2fece44f55f0f87a222644ef3165c7c1b4eada47`.
