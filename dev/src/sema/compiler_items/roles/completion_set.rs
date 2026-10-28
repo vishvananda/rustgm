@@ -11,12 +11,12 @@ impl RoleSet {
     pub(in crate::sema::compiler_items) const EMPTY: Self = Self([0; WORDS]);
 
     pub(in crate::sema::compiler_items) fn contains(self, role: LangItem) -> bool {
-        let index = role.index() as usize;
+        let index = role.index();
         self.0[index / BITS] & (1_u64 << (index % BITS)) != 0
     }
 
     pub(in crate::sema::compiler_items) fn insert(&mut self, role: LangItem) {
-        let index = role.index() as usize;
+        let index = role.index();
         self.0[index / BITS] |= 1_u64 << (index % BITS);
     }
 
@@ -36,7 +36,7 @@ impl RoleSet {
 
     #[cfg(test)]
     pub(in crate::sema::compiler_items) fn remove(&mut self, role: LangItem) {
-        let index = role.index() as usize;
+        let index = role.index();
         self.0[index / BITS] &= !(1_u64 << (index % BITS));
     }
 }

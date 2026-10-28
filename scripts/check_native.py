@@ -10,6 +10,8 @@ import shutil
 import signal
 import subprocess
 import sys
+import time
+import reference_batches
 
 from backend import digest, emit_object, load_tools, verify_object
 from course import ROOT, case_environment, library_arguments, load_cases, run_case
@@ -128,10 +130,18 @@ def accepted_frontend(actual, expected_stderr=b"", declared_codes=()):
             raise ValueError("successful frontend warning code was not reviewed")
 
 
-def check(app, jobs, stage="pa11", *, unit=None):
+def native_selection(manifest, cases, case_paths, stage):
+    eligible = native_cases(manifest, cases)
+    selected = reference_batches.select(eligible, case_paths, stage)
+    return selected, {"scope": "complete" if case_paths is None else "selected",
+                      "eligible_cases": len(eligible),
+                      "selected_paths": [case["path"] for case in selected]}
+
+
+def check(app, jobs, stage="pa11", *, unit=None, case_paths=None):
     paths = suite_paths(ROOT, stage, unit)
     manifest, cases = load_cases(ROOT, stage, unit=unit)
-    cases = native_cases(manifest, cases)
+    cases, selection = native_selection(manifest, cases, case_paths, stage)
     version = subprocess.check_output(["rustc", "--version"], text=True)
     if not version.startswith("rustc 1.98.0 "):
         raise ValueError(f"expected pinned rustc 1.98.0: {version.strip()}")
@@ -141,6 +151,8 @@ def check(app, jobs, stage="pa11", *, unit=None):
         required.add("cppgm++")
     tools = load_tools(tuple(sorted(required)))  # Hash each required immutable tool once.
     directory = ROOT / "obj/native" / paths.evidence
+    if case_paths is not None:
+        directory = directory / "selected" / str(time.time_ns())
     directory.mkdir(parents=True, exist_ok=True)
 
     def worker(case):
@@ -224,7 +236,7 @@ def check(app, jobs, stage="pa11", *, unit=None):
     if digest(app) != candidate_hash:
         raise ValueError("candidate bytes changed during the independent run")
     (directory / "evidence.json").write_text(json.dumps({"rustc": version.strip(), "candidate_sha256": candidate_hash,
-        **paths.identity, "manifest_sha256": digest(paths.manifest),
+        **paths.identity, "manifest_sha256": digest(paths.manifest), "selection": selection,
         "backend": json.loads((ROOT / "backend.lock.json").read_text()), "cases": results}, indent=2) + "\n")
     failures = [item for item in results if not item["passed"]]
     for item in failures:
@@ -234,7 +246,9 @@ def check(app, jobs, stage="pa11", *, unit=None):
     accepted = [c["native"] for c in cases if "native" in c]
     compiled = sum(n.get("kind", "execute") == "codegen" for n in accepted)
     objects = sum(n.get("kind") == "object" for n in accepted)
-    print(f"PASS: {stage.upper()}: {len(cases)} independent checks; {len(accepted) - compiled - objects} executable comparisons; {compiled} codegen-only comparisons; {objects} object comparisons")
+    scope = f" selected {len(cases)}/{selection['eligible_cases']}" if case_paths is not None else ""
+    print(f"PASS: {stage.upper()}{scope}: {len(cases)} independent checks; {len(accepted) - compiled - objects} executable comparisons; {compiled} codegen-only comparisons; {objects} object comparisons")
+    print(f"Evidence: {directory.relative_to(ROOT)}")
     differences = sum(c.get("native", {}).get("rustc_outcome", c.get("native", {}).get("outcome"))
                       != c.get("native", {}).get("outcome") for c in cases)
     if differences:
@@ -246,17 +260,18 @@ def main():
     parser.add_argument("stage", nargs="?")
     parser.add_argument("--released-units", action="store_true")
     parser.add_argument("--unit", help="exact declared component owned by this assignment")
+    parser.add_argument("--case", dest="case_paths", action="append", help="one exact LowIR manifest path; repeat for a scoped native batch")
     parser.add_argument("--app", type=Path, default=ROOT / "dev/rustgm")
     parser.add_argument("--jobs", type=int, choices=range(1, 9),
                         default=int(os.environ.get("RUSTGM_TEST_JOBS", "4")))
     args = parser.parse_args()
-    if args.released_units and (args.stage or args.unit):
+    if args.released_units and (args.stage or args.unit or args.case_paths):
         parser.error("released-unit scheduling cannot select a stage or draft unit")
     try:
         if args.released_units:
             run_released(ROOT, lambda stage, unit: check(args.app.resolve(), args.jobs, stage, unit=unit))
         else:
-            check(args.app.resolve(), args.jobs, args.stage or "pa11", unit=args.unit)
+            check(args.app.resolve(), args.jobs, args.stage or "pa11", unit=args.unit, case_paths=args.case_paths)
         return 0
     except (ValueError, OSError, subprocess.SubprocessError) as error:
         print(f"native check failed: {error}", file=sys.stderr)

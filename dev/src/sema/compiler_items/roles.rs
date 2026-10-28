@@ -169,19 +169,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         glue::validate(report, facts, catalog, declaration, complete.roles)?;
         complete.roles.insert(LangItem::DropGlue);
     }
-    validate_owned_members(report, catalog, complete.roles)?;
-    if completion_set::WORDS > 1 {
-        crate::sema::header_attributes::charge_source_contract_query(
-            facts,
-            completion_set::WORDS - 1,
-        )?;
-    }
-    if complete.roles.is_empty() {
-        return Ok(());
-    }
-    require_distinct_pointee(report, facts, catalog, complete.roles)?;
-    let output = catalog.language(LangItem::FnOnceOutput);
-    publish(facts, complete, &callables, output)
+    publish(report, facts, complete, &callables)
 }
 
 /// Early metadata and later callable/marker completion share one owner, but
@@ -232,11 +220,27 @@ fn require_distinct_pointee(
 
 /// Publish only a fully checked role ledger and its actual callable members.
 fn publish(
+    report: &Report,
     facts: &mut Declarations,
     complete: Validated,
     callables: &[(Declaration, CallTrait, DefId)],
-    output: Option<Declaration>,
 ) -> Result<(), Error> {
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or_else(|| Error::unlocated("source role catalog disappeared before publication"))?;
+    validate_owned_members(report, catalog, complete.roles)?;
+    if completion_set::WORDS > 1 {
+        crate::sema::header_attributes::charge_source_contract_query(
+            facts,
+            completion_set::WORDS - 1,
+        )?;
+    }
+    if complete.roles.is_empty() {
+        return Ok(());
+    }
+    require_distinct_pointee(report, facts, catalog, complete.roles)?;
+    let output = catalog.language(LangItem::FnOnceOutput);
     let fresh = facts
         .source_bindings
         .as_deref()

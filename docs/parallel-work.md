@@ -22,6 +22,12 @@ CLI strict, native16 and full PA6/PA9 pass. Root owns the remaining
 format-option/source-constructor requirement alongside genuine Formatter/write.
 No zero-offset shim or Instance-only field-result cache is permitted.
 
+The [typed completion-set integration](source-role-completion-set.md) adds genuine
+AllocLayout61 recognition and removes the fixed completion-mask ceiling in the
+same cold ledger. Current62-role storage and old-wire denial are qualified;
+C's actual Add62/Sub63 and root OffsetOf65 remain separate source/runtime work.
+The PA24 canonical-AddAssign oracle correction is independently native-qualified.
+
 - A: bounded read-only source/handoff reviews and component release census.
   No compiler edits or heavy jobs.
 - B: Debug and mixed Display/Debug construction are integrated. Complete genuine

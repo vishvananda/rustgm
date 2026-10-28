@@ -1074,3 +1074,15 @@ here with unchanged source bytes. One PA21 quantified forwarding proof now
 uses the resumable canonical proof representation; its source, result and
 LowIR behavior remain unchanged. The release evidence documents both changes.
 Root source/native targets include PA23. See `docs/pa23-release.md`.
+
+Focused native case selection uses the same exact manifest paths as text checks:
+
+```sh
+python3 scripts/resources.py run --max-output-gib 16 -- python3 scripts/storage.py run --prune-under obj/native/pa24/selected -- python3 scripts/check_native.py pa24 --app /immutable/qualified/rustgm --jobs 2 --case tests/spec/object-input-context/mutable.rs
+```
+
+Repeat `--case` to select related LowIR cases. Empty, unknown, duplicate and
+non-LowIR selectors fail. A selected receipt records both its paths and the full
+eligible count, under a unique `obj/native/STAGE/selected/` directory; it never
+replaces complete-suite evidence. Full assignment releases still run the complete
+native contract. `--released-units` cannot be combined with case selection.

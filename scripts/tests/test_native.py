@@ -6,10 +6,32 @@ import unittest
 
 SCRIPTS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SCRIPTS))
-from check_native import accepted_frontend, classification, execution, native_cases, run_executables
+from check_native import accepted_frontend, classification, execution, native_cases, native_selection, run_executables
 
 
 class NativeContract(unittest.TestCase):
+    def test_selected_native_receipt_retains_scope_order_and_eligible_count(self):
+        manifest = {"mode": "--emit-lowir"}
+        cases = [{"path": f"tests/{name}.rs", "exit_status": 0,
+                  "rustc": {"kind": "program", "status": 0}, "native": {"outcome": "pass"}}
+                 for name in ("a", "b", "c")]
+        chosen, receipt = native_selection(manifest, cases, ["tests/c.rs", "tests/a.rs"], "pa24")
+        self.assertEqual(chosen, [cases[0], cases[2]])
+        self.assertEqual(receipt, {"scope": "selected", "eligible_cases": 3,
+                                  "selected_paths": ["tests/a.rs", "tests/c.rs"]})
+        all_cases, complete = native_selection(manifest, cases, None, "pa24")
+        self.assertEqual(all_cases, cases)
+        self.assertEqual(complete["scope"], "complete")
+
+    def test_native_subset_rejects_empty_unknown_duplicate_and_non_lowir_paths(self):
+        manifest = {"mode": "--emit-lowir", "additional_modes": ["--emit-layouts"]}
+        case = {"path": "tests/a.rs", "exit_status": 0, "rustc": {"kind": "program", "status": 0},
+                "native": {"outcome": "pass"}}
+        layout = {"path": "tests/layout.rs", "mode": "--emit-layouts", "exit_status": 0}
+        for paths in ([], ["tests/missing.rs"], ["tests/a.rs", "tests/a.rs"], ["tests/layout.rs"], ["../a.rs"]):
+            with self.subTest(paths=paths), self.assertRaises(ValueError):
+                native_selection(manifest, [case, layout], paths, "pa24")
+
     def test_libraries_require_objects_and_never_execute(self):
         case = {"exit_status": 0, "rustc": {"kind": "library", "status": 0},
                 "library": {"crate_name": "values", "disambiguator": "test"},
