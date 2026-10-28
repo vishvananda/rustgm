@@ -1,6 +1,8 @@
 //! Maintainer integration suites for frontend.
 #[path = "../../callback_provider.rs"]
 mod callback_provider;
+#[path = "../../capped_cli.rs"]
+mod capped_cli;
 #[path = "../../coercion_provider.rs"]
 mod coercion_provider;
 #[path = "../../crate_expansion.rs"]

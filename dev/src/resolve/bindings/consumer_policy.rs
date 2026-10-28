@@ -185,6 +185,7 @@ impl ProviderAdmission {
 pub(crate) struct Request<'a> {
     admission: ProviderAdmission,
     runtime_checks: RuntimeCheckConfig,
+    lint_cap: crate::support::diagnostics::LintCap,
     work: &'a mut ReservationWork,
 }
 impl<'a> Request<'a> {
@@ -196,6 +197,7 @@ impl<'a> Request<'a> {
         Self {
             admission,
             runtime_checks: config.runtime_checks(),
+            lint_cap: config.lint_cap(),
             work,
         }
     }
@@ -204,9 +206,15 @@ impl<'a> Request<'a> {
     ) -> (
         ProviderAdmission,
         RuntimeCheckConfig,
+        crate::support::diagnostics::LintCap,
         &'a mut ReservationWork,
     ) {
-        (self.admission, self.runtime_checks, self.work)
+        (
+            self.admission,
+            self.runtime_checks,
+            self.lint_cap,
+            self.work,
+        )
     }
 }
 pub(crate) struct StagedConsumer {
@@ -215,6 +223,7 @@ pub(crate) struct StagedConsumer {
     root: NodeKey,
     image: Arc<OriginalImage>,
     runtime_checks: RuntimeCheckConfig,
+    lint_cap: crate::support::diagnostics::LintCap,
     pub(super) features: Features,
 }
 impl StagedConsumer {
@@ -256,6 +265,7 @@ impl StagedConsumer {
             || !Arc::ptr_eq(&self.image, unit.source.original_image())
             || unit.configured.active.get(self.root.node.get() as usize) != Some(&true)
             || package.runtime_checks() != self.runtime_checks
+            || package.lint_cap() != self.lint_cap
         {
             return Err("private consumer changed its actual current/source/configuration binding");
         }
@@ -324,6 +334,7 @@ pub(super) fn prepare(
         },
         image: Arc::clone(unit.source.original_image()),
         runtime_checks: request.runtime_checks,
+        lint_cap: request.lint_cap,
         features,
     };
     Ok(Prepared {

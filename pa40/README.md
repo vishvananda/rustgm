@@ -67,3 +67,8 @@ expectations, with the next unchanged original-core boundary recorded explicitly
 The unpublished [ineffective unstable trait impl checkpoint](../docs/pa40-ineffective-unstable-impl-checkpoint.md)
 adds genuine resolved header events, exact unstable-attribute witnesses and
 header-only expectation completion, with imported transport remaining explicit.
+
+The unpublished [explicit Allow cap checkpoint](../docs/pa40-lint-cap-allow-checkpoint.md)
+keeps strict policy as the default while permitting an authenticated compilation
+to suppress optional diagnostics. Hard semantic checks and witnessed expectation
+debt remain separate from diagnostic suppression.

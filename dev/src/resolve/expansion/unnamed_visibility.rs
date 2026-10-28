@@ -51,6 +51,9 @@ fn collect(
     resolution: &Resolution,
     project: impl Fn(Error) -> Error,
 ) -> Result<Vec<(NodeKey, Warning)>, Failure> {
+    if package.lint_cap().suppresses_lints() {
+        return Ok(Vec::new());
+    }
     let Some(effects) = effects else {
         return Ok(Vec::new());
     };

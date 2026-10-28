@@ -115,6 +115,7 @@ pub fn analyze_with_hidden(
         crate::types::opaque::OpaqueId,
     ) -> Result<(), Error>,
 ) -> Result<Declarations, Error> {
+    facts.require_lint_context(report)?;
     super::compiler_items::pointee::authenticate(report, &facts)
         .map_err(|error| facts.retain_error_warnings(report.diagnostic(error)))?;
     super::compiler_items::discriminant::authenticate(report, &facts)

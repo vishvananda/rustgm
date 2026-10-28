@@ -72,7 +72,19 @@ fn options() -> Result<Options, String> {
             options.count = count;
             continue;
         }
+        if let Some(value) = arg.strip_prefix("--cap-lints=") {
+            options
+                .config
+                .set_lint_cap(rustgm::support::diagnostics::LintCap::parse(value)?);
+            continue;
+        }
         match arg.as_str() {
+            "--cap-lints" => {
+                let value = args.next().ok_or("--cap-lints requires a level")?;
+                options
+                    .config
+                    .set_lint_cap(rustgm::support::diagnostics::LintCap::parse(&value)?);
+            }
             "--source-core" | "--source-client" => {
                 options
                     .crates

@@ -99,6 +99,10 @@ fn check(
                 "direct unstable impl annotation lost its actual stability owner",
             )
         })?;
+    // Required attribute/owner validation above is independent of this lint walk.
+    if report.package.lint_cap().suppresses_lints() {
+        return Ok(());
+    }
     let mut visitor = Visitor {
         report,
         facts,

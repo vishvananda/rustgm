@@ -295,8 +295,8 @@ pub(in crate::resolve) fn analyze_staged(
     context: &super::bindings::Context,
     request: super::bindings::consumer_policy::Request<'_>,
 ) -> Result<(Report, Option<super::crates::ReservationSeed>), Error> {
-    let (admission, runtime_checks, work) = request.into_parts();
-    if runtime_checks != config.runtime_checks() {
+    let (admission, runtime_checks, lint_cap, work) = request.into_parts();
+    if runtime_checks != config.runtime_checks() || lint_cap != config.lint_cap() {
         return Err(Error::unlocated(
             "staged expansion changed its actual runtime configuration",
         ));

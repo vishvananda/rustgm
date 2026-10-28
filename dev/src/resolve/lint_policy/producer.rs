@@ -1,4 +1,7 @@
 //! One source owner produces lint changes; sparse traversal tails retain real ancestry.
+#[cfg(test)]
+#[path = "../../../tests/invariants/capped_storage.rs"]
+mod cap_tests;
 mod snapshots;
 #[cfg(test)]
 #[path = "../../../tests/invariants/lint_storage.rs"]
@@ -120,7 +123,7 @@ pub(crate) struct Producer {
     empty_call_prefix: u32,
     call_extent: u32,
     composed: HashMap<Tail, Result<Policy, Violation>>,
-    sealed: bool,
+    pub(super) sealed: bool,
     work: Work,
     pub(super) reads: Cell<Work>,
     pub(super) domain: Option<Arc<super::expectations::Domain>>,
@@ -160,6 +163,31 @@ impl Producer {
         work.steps = work.steps.saturating_add(reads.steps);
         work.bytes = work.bytes.saturating_add(reads.bytes);
         work
+    }
+    pub(crate) fn capped(
+        frames: u32,
+        calls: u32,
+        cap: crate::support::diagnostics::LintCap,
+        key: NodeKey,
+    ) -> Result<Self, Violation> {
+        let mut producer = Self::new(frames, calls);
+        if cap.suppresses_lints() {
+            producer.ensure_cap_domain(key, cap)?;
+        }
+        Ok(producer)
+    }
+    pub(super) fn require_cap(&self, package: &Package, key: NodeKey) -> Result<(), Violation> {
+        self.attribute_read(key, 1)?;
+        if self.cap() != package.lint_cap() {
+            return Err(invalid(
+                key,
+                "lint producer changed its actual compilation cap",
+            ));
+        }
+        Ok(())
+    }
+    pub(crate) fn validate_cap(&self, package: &Package, key: NodeKey) -> Result<(), Violation> {
+        self.require_cap(package, key)
     }
     pub(crate) fn reserve_diagnostic(
         &mut self,
@@ -228,6 +256,7 @@ impl Producer {
         parent: Option<Tail>,
     ) -> Result<Option<Tail>, Violation> {
         self.work.charge(key, 1, 0)?;
+        self.require_cap(package, key)?;
         let configured = snapshots::configured(package, key)?;
         if configured.attributes.is_empty() {
             return Ok(parent);
@@ -251,7 +280,7 @@ impl Producer {
                 "sealed lint producer cannot admit another owner",
             ));
         }
-        let effects = configured.attributes.clone();
+        let (effects, cap) = (configured.attributes.clone(), self.cap());
         self.work.charge(
             key,
             1,
@@ -266,13 +295,15 @@ impl Producer {
             .and_then(NonZeroU32::new)
             .ok_or_else(|| invalid(key, "source lint owner identities exceed 32 bits"))?;
         let tail = Tail(value);
-        let parsed = attribute_changes::owner(
+        let (parsed, deferred) = attribute_changes::owner(
             package.unit(key.file),
             key,
             tail,
             effects.clone(),
             &mut self.work,
+            cap,
         )?;
+        self.publish_deferred(key, deferred)?;
         let next = if parsed.has_policy() {
             Some(tail)
         } else {
@@ -341,18 +372,8 @@ impl Producer {
             self.expectation_owners.capacity(),
             1,
         );
-        self.work.charge(
-            key,
-            1 + growth.work,
-            growth.bytes.saturating_add(if self.domain.is_none() {
-                2 * size_of::<usize>()
-            } else {
-                0
-            }),
-        )?;
-        if self.domain.is_none() {
-            self.domain = Some(Arc::new(super::expectations::Domain));
-        }
+        self.work.charge(key, 1 + growth.work, growth.bytes)?;
+        self.ensure_domain(key)?;
         self.expectation_owners.push(tail);
         Ok(())
     }
@@ -486,9 +507,10 @@ impl Producer {
         tail: Option<Tail>,
         key: NodeKey,
     ) -> Result<Policy, Violation> {
+        self.require_cap(package, key)?;
         let Some(root) = tail else {
             self.work.charge(key, 1, 0)?;
-            return Ok(Policy::default());
+            return Ok(Policy::default().capped(self.cap()));
         };
         let mut path = Vec::new();
         let mut current = Some(root);
@@ -506,7 +528,7 @@ impl Producer {
             path.push(tail);
         }
         if let Some(&result) = self.composed.get(&root) {
-            return result;
+            return result.map(|policy| policy.capped(self.cap()));
         }
         self.work.compositions += 1;
         let result = self.compose(&path, key);
@@ -516,7 +538,7 @@ impl Producer {
             crate::support::retained::new_map::<Tail, Result<Policy, Violation>>(1),
         )?;
         self.composed.insert(root, result);
-        result
+        result.map(|policy| policy.capped(self.cap()))
     }
     fn compose(&mut self, path: &[Tail], key: NodeKey) -> Result<Policy, Violation> {
         let mut policy = Policy::default();
@@ -525,7 +547,7 @@ impl Producer {
             self.work.charge(key, count, 0)?;
             let owner = self.record(tail, key)?;
             for change in &owner.parsed.changes {
-                policy.apply(owner.key, change)?;
+                policy.apply(owner.key, change, self.cap())?;
             }
             if owner.parsed.deprecated.is_some() {
                 policy.deprecated_origin = Some(tail);
@@ -541,6 +563,7 @@ impl Producer {
     }
     /// Authenticate an already produced owner without composing ancestor policy.
     pub(crate) fn validate_owner(&self, package: &Package, key: NodeKey) -> Result<(), Violation> {
+        self.require_cap(package, key)?;
         self.charge_read(key, 1)?;
         let tail = self
             .index
@@ -607,6 +630,13 @@ impl Producer {
         })
     }
     pub(crate) fn validate(&self, package: &Package) -> Result<(usize, usize, bool), Violation> {
+        self.require_cap(
+            package,
+            NodeKey {
+                file: crate::resolve::unit::FileId(0),
+                node: package.modules[0].root,
+            },
+        )?;
         let work = self.work();
         if let Some(message) = work.exhaustion() {
             return Err(invalid(

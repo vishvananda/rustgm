@@ -27,6 +27,7 @@ pub struct Package {
     pub(super) library: Option<Box<super::stability::Library>>,
     pub(super) macro_features: super::bindings::policy::MacroFeatures,
     pub(super) runtime_checks: crate::support::runtime_checks::RuntimeCheckConfig,
+    pub(super) lint_cap: crate::support::diagnostics::LintCap,
     pub no_std: bool,
     pub units: Vec<Unit>,
     pub file_paths: Vec<std::path::PathBuf>,
@@ -221,6 +222,11 @@ impl Package {
     #[must_use]
     pub const fn runtime_checks(&self) -> crate::support::runtime_checks::RuntimeCheckConfig {
         self.runtime_checks
+    }
+    /// Immutable diagnostic input copied by the source loader once per package.
+    #[must_use]
+    pub const fn lint_cap(&self) -> crate::support::diagnostics::LintCap {
+        self.lint_cap
     }
 
     pub(crate) fn requested_internal_attributes(&self) -> bool {

@@ -94,6 +94,9 @@ fn collect(
     mut allows: impl FnMut(FileId, Site<'_>, &FeatureName<'_>) -> Result<bool, Error>,
     project: impl Fn(Error, &Declarations) -> Result<Error, Error>,
 ) -> Result<Vec<(NodeKey, Warning)>, Failure> {
+    if package.lint_cap().suppresses_lints() {
+        return Ok(Vec::new());
+    }
     let mut warnings = Vec::new();
     let mut origins = None;
     for (index, unit) in package.units.iter().enumerate() {
