@@ -196,7 +196,7 @@ fn exhausted_annotation_observation_keeps_each_failed_attempt_paid() -> TestResu
         .rows
         .get_mut(&key)
         .ok_or("row")?;
-    row.unstable = row.bound;
+    row.unstable = row.bound.first().map(|bound| bound.effect);
     let error = producer
         .impl_annotation(&report.package, key)
         .err()
@@ -264,5 +264,204 @@ fn feature_name_validation_prepays_attempted_bytes_before_retention() -> TestRes
     let before = work.steps;
     assert!(feature_bounds(unit, key, witness.attribute, forest, &mut bounds, &mut work).is_err());
     assert!(work.steps > before && bounds.is_empty());
+    Ok(())
+}
+#[test]
+fn combined_bounds_authenticate_each_effect_and_its_name_partition() -> TestResult {
+    let source =
+        crate::test_source::fixture("pa40/tests/spec/ineffective-unstable-impl/bound-combined.rs")?;
+    let mut report = crate::test_source::resolve(&source, true)?;
+    let mut producer = report
+        .attribute_effects
+        .as_deref_mut()
+        .and_then(|effects| effects.policy.take())
+        .ok_or("actual producer")?;
+    let key = *producer
+        .ineffective_headers
+        .as_ref()
+        .ok_or("annotation column")?
+        .rows
+        .keys()
+        .next()
+        .ok_or("combined row")?;
+    let row = &producer.ineffective_headers.as_ref().ok_or("column")?.rows[&key];
+    let effects = row.bound.clone();
+    let names = row.bounds.clone();
+    assert_eq!(effects.len(), 2);
+    assert_eq!(size_of::<BoundEffect>(), 12);
+    assert_eq!(
+        (
+            effects[0].start,
+            effects[0].end,
+            effects[1].start,
+            effects[1].end
+        ),
+        (0, 1, 1, 2)
+    );
+    let owner = producer
+        .record(row.tail, key)
+        .map_err(crate::resolve::package::Error::from)?;
+    let first = attribute(
+        &producer,
+        report.package.unit(key.file),
+        owner,
+        effects[0].effect,
+        "unstable_feature_bound",
+    )
+    .map_err(crate::resolve::package::Error::from)?;
+    let view = producer
+        .impl_annotation(&report.package, key)
+        .map_err(crate::resolve::package::Error::from)?
+        .ok_or("actual combined view")?;
+    assert_eq!(
+        view.bounds.iter().map(AsRef::as_ref).collect::<Vec<&str>>(),
+        vec!["other", "sample"]
+    );
+    assert_eq!(view.bound.ok_or("first bound")?.span, first.span);
+    let cold = producer.work();
+    producer
+        .declaration_annotation(&report.package, key)
+        .map_err(crate::resolve::package::Error::from)?;
+    assert!(producer.work().steps > cold.steps);
+    assert_eq!(producer.work().bytes, cold.bytes);
+    for corrupt in 0..4 {
+        let row = producer
+            .ineffective_headers
+            .as_mut()
+            .ok_or("column")?
+            .rows
+            .get_mut(&key)
+            .ok_or("actual row")?;
+        match corrupt {
+            0 => row.bound[0].effect = effects[1].effect,
+            1 => {
+                row.bound[0].end += 1;
+                row.bound[1].start += 1;
+            }
+            2 => {
+                row.bound.pop();
+                row.bounds.truncate(usize::try_from(effects[0].end)?);
+            }
+            _ => row.bound.swap(0, 1),
+        }
+        let before = producer.work();
+        assert!(
+            producer
+                .declaration_annotation(&report.package, key)
+                .is_err()
+        );
+        assert!(producer.work().steps > before.steps);
+        let row = producer
+            .ineffective_headers
+            .as_mut()
+            .ok_or("column")?
+            .rows
+            .get_mut(&key)
+            .ok_or("actual row")?;
+        row.bound.clone_from(&effects);
+        row.bounds.clone_from(&names);
+        producer
+            .declaration_annotation(&report.package, key)
+            .map_err(crate::resolve::package::Error::from)?;
+    }
+    Ok(())
+}
+#[test]
+fn effect_record_growth_is_paid_before_names_or_effects_are_retained() -> TestResult {
+    let source =
+        crate::test_source::fixture("pa40/tests/spec/ineffective-unstable-impl/bound-combined.rs")?;
+    let report = crate::test_source::resolve(&source, true)?;
+    let producer = report.lint_producer().ok_or("actual producer")?;
+    let (&key, row) = producer
+        .ineffective_headers
+        .as_ref()
+        .ok_or("column")?
+        .rows
+        .iter()
+        .next()
+        .ok_or("combined row")?;
+    let owner = producer
+        .record(row.tail, key)
+        .map_err(crate::resolve::package::Error::from)?;
+    let witness = owner
+        .parsed
+        .witnesses
+        .iter()
+        .find(|witness| witness.effect == row.bound[1].effect)
+        .ok_or("second actual effect")?;
+    let mut work = Work {
+        bytes: 64 * 1024 * 1024,
+        ..Work::default()
+    };
+    let mut effects = Vec::new();
+    let mut names = Vec::new();
+    for _ in 0..2 {
+        let before = (work.steps, work.bytes);
+        assert!(
+            capture_bound(
+                report.package.unit(key.file),
+                key,
+                witness,
+                &mut effects,
+                &mut names,
+                &mut work
+            )
+            .is_err()
+        );
+        assert!(effects.is_empty() && names.is_empty());
+        assert!(work.steps > before.0 && work.bytes > before.1);
+    }
+    Ok(())
+}
+#[test]
+fn repeated_effect_query_work_tracks_the_actual_retained_attribute_count() -> TestResult {
+    use std::fmt::Write as _;
+    let mut observations = Vec::new();
+    for width in [8, 32, 128] {
+        let mut source = String::from(
+            "#![feature(staged_api)]#![stable(feature=\"base\",since=\"1.0.0\")]#[unstable(feature=\"sample\",issue=\"none\")]",
+        );
+        for index in 0..width {
+            write!(source, "#[unstable_feature_bound(feature_{index})]")?;
+        }
+        source.push_str("fn f(){}\n");
+        let report = crate::test_source::resolve(&source, true)?;
+        let producer = report.lint_producer().ok_or("actual producer")?;
+        let (&key, row) = producer
+            .ineffective_headers
+            .as_ref()
+            .ok_or("column")?
+            .rows
+            .iter()
+            .next()
+            .ok_or("actual row")?;
+        assert_eq!(row.bound.len(), width);
+        let before = producer.work();
+        let view = producer
+            .declaration_annotation(&report.package, key)
+            .map_err(crate::resolve::package::Error::from)?
+            .ok_or("actual view")?;
+        assert_eq!(view.bounds.len(), width);
+        let cold = producer.work();
+        producer
+            .declaration_annotation(&report.package, key)
+            .map_err(crate::resolve::package::Error::from)?;
+        let warm = producer.work();
+        assert_eq!(warm.bytes, before.bytes);
+        observations.push((cold.steps - before.steps, warm.steps - cold.steps));
+    }
+    for axis in 0..2 {
+        let values: Vec<_> = observations
+            .iter()
+            .map(|&(cold, warm)| if axis == 0 { cold } else { warm })
+            .collect();
+        let first = values[1]
+            .checked_sub(values[0])
+            .ok_or("nonmonotone first interval")?;
+        let second = values[2]
+            .checked_sub(values[1])
+            .ok_or("nonmonotone second interval")?;
+        assert!(first > 0 && second <= 6 * first, "{values:?}");
+    }
     Ok(())
 }

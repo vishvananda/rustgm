@@ -157,7 +157,7 @@ fn feature_owner_validation_is_independent_of_empty_lists_and_const_policy() -> 
         .err()
         .ok_or("unstaged source formed feature clauses")?;
     assert!(error.to_string().contains("staged_api"), "{error}");
-    for source in [
+    for (index, source) in [
         format!(
             "{ROOT}#[stable(feature=\"source_fixture\",since=\"1.0.0\")]#[unstable_feature_bound(probe)]fn f(){{}}"
         ),
@@ -170,11 +170,20 @@ fn feature_owner_validation_is_independent_of_empty_lists_and_const_policy() -> 
         format!(
             "{ROOT}unsafe extern \"C\"{{#[unstable(feature=\"probe\",issue=\"none\")]#[unstable_feature_bound(probe)]fn f();}}"
         ),
-    ] {
+    ]
+    .into_iter()
+    .enumerate()
+    {
         let report = crate::test_source::resolve(&source, true)?;
-        let mut facts = crate::sema::declarations::analyze(&report)?;
-        let (owner, key) = definition(&report, "f")?;
-        assert!(declaration_clauses(&report, &mut facts, owner, key).is_err());
+        let error = crate::sema::declarations::analyze(&report)
+            .err()
+            .ok_or("invalid source owner reached completed declarations")?;
+        let expected = if index < 2 {
+            "actual regular unstable owner"
+        } else {
+            "actual free function, trait or trait impl owner"
+        };
+        assert!(error.to_string().contains(expected), "{error}");
     }
     for name in [
         "word-form",
@@ -190,7 +199,21 @@ fn feature_owner_validation_is_independent_of_empty_lists_and_const_policy() -> 
     let repeated = format!(
         "{ROOT}#[unstable(feature=\"probe\",issue=\"none\")]#[unstable_feature_bound(probe)]#[unstable_feature_bound(other)]fn f(){{}}"
     );
-    assert!(crate::test_source::resolve(&repeated, true).is_err());
+    let repeated = crate::test_source::resolve(&repeated, true)?;
+    let mut facts = crate::sema::declarations::analyze(&repeated)?;
+    let (owner, key) = definition(&repeated, "f")?;
+    let clauses =
+        declaration_clauses(&repeated, &mut facts, owner, key)?.ok_or("combined clauses")?;
+    assert_eq!(
+        clauses
+            .iter()
+            .map(|clause| match clause.value {
+                Clause::UnstableFeature(id) => facts.types.feature_name(id),
+                _ => None,
+            })
+            .collect::<Vec<_>>(),
+        vec![Some("probe"), Some("other")]
+    );
     Ok(())
 }
 #[test]
