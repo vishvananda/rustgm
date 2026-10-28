@@ -187,6 +187,12 @@ pub(super) fn closed_request(
         .source()
         .ok_or("const member has no source owner")?;
     let call = source_call(facts, body, statement, work)?;
+    work.charge(1)?;
+    if facts.types.contains_parameters(call.target) == Some(true) {
+        // The actual defining environment, rather than closed-member dispatch,
+        // must pay an abstract call's exact conditional trait premise.
+        return Ok(false);
+    }
     work.charge(5)?;
     let node = facts
         .node(call.site)
@@ -298,7 +304,6 @@ fn closed_member(facts: &Declarations, call: Call, work: &mut Work) -> Result<De
         || !matches!(
             facts.types.kind(signature),
             Some(Kind::Function {
-                bound_regions: 0,
                 unsafe_: false,
                 convention: crate::types::callable::Convention::RUST,
                 ..
@@ -307,20 +312,33 @@ fn closed_member(facts: &Declarations, call: Call, work: &mut Work) -> Result<De
     {
         return Err("const member requires its closed safe source signature");
     }
+    work.charge(1)?;
+    if !matches!(
+        facts.types.kind(call.signature),
+        Some(Kind::Function {
+            bound_regions: 0,
+            unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
+            ..
+        })
+    ) {
+        return Err("const member requires its actual opened safe call signature");
+    }
     work.charge(4)?;
     let header = facts
         .function_header(definition)?
         .ok_or("const member header is pending")?;
-    if header.body.is_some() {
-        return Err("source provided const member execution is not implemented");
-    }
+    // A default body does not prevent a concrete impl from supplying its own
+    // const override. This validates only the defining request. Ordinary
+    // dispatch must select the actual impl and prove its body before Code;
+    // check_const_member_execution still rejects executing a trait default.
     if header.declaration.source().is_none()
         || facts
             .associated
             .trait_owner(definition)
             .is_none_or(|owner| facts.associated.constant_trait(owner) != Some(true))
     {
-        return Err("const member requires its actual required source const-trait declaration");
+        return Err("const member requires its actual source const-trait declaration");
     }
     Ok(definition)
 }

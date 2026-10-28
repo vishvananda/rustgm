@@ -2,6 +2,8 @@
 use super::*;
 use crate::body::templates::Template;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
+#[path = "parametric_cleanups.rs"]
+mod functions;
 #[path = "destruct_projections.rs"]
 mod projections;
 

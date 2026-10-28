@@ -14,6 +14,16 @@ use crate::{
     },
 };
 
+/// The completed formal order includes inherited parameters independently of
+/// declaration slot numbers. Share this structural fold with const requirements;
+/// neither the fold nor its completed types supplies caller permission.
+pub(in crate::sema) fn callable_substitution(
+    facts: &Declarations,
+    instance: crate::types::instance::Instance,
+) -> Result<substitute::Bound, &'static str> {
+    Arguments::new(facts, instance.ty())?.substitution(facts)
+}
+
 pub(super) struct Arguments {
     method: DefId,
     regions: Vec<RegionId>,

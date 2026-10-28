@@ -106,6 +106,9 @@ impl Context {
                     .ok_or(Error::InvalidIdentity)?
                     .is_empty()
             }
+            Value::Construct(Constructor::FunctionItemArgs(_, args)) => {
+                self.slots(args)?.is_empty()
+            }
             Value::Construct(_) => false,
         })
     }

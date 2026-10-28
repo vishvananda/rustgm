@@ -31,7 +31,7 @@ fn subject(facts: &Declarations, template: &Template) -> Result<TypeId> {
         })
         .ok_or("actual fully live projected parameter")?)
 }
-fn regions(
+pub(super) fn regions(
     facts: &mut Declarations,
     template: &Template,
     contract: &Contract,

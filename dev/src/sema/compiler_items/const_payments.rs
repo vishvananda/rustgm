@@ -158,7 +158,7 @@ pub(crate) fn prepare(
     instance: Instance,
     budget: usize,
 ) -> Result<Arc<Requirements>, &'static str> {
-    let (definition, signature, arguments, primitive) = profile(facts, instance)?;
+    let (definition, signature, _, primitive) = profile(facts, instance)?;
     let environment = facts
         .generics
         .environments
@@ -172,11 +172,7 @@ pub(crate) fn prepare(
         .declared_predicates_in_scope(definition)
         .count();
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(count);
-    let storage =
-        size_of::<Requirements>().saturating_add(count.saturating_mul(size_of::<Clause>() * 2));
-    if storage > budget {
-        return Err("source const-call requirements exceed retained storage budget");
-    }
+    let mut fold = closed_inputs::substitution(facts, instance, count, budget)?;
     let clauses = facts
         .generics
         .declared_predicates_in_scope(definition)
@@ -204,10 +200,13 @@ pub(crate) fn prepare(
             clause,
             crate::support::constness::Constness::Const,
         )?;
-        let mapped =
-            facts
-                .generics
-                .substitute_clause(&mut facts.types, definition, arguments, copied)?;
+        let before = fold.steps;
+        let mapped = fold.clause(&mut facts.types, copied);
+        facts.body_work.canonical_steps = facts
+            .body_work
+            .canonical_steps
+            .saturating_add(fold.steps.saturating_sub(before));
+        let mapped = mapped?;
         let predicate = closed_clause(&facts.types, mapped)?;
         if !predicate.is_concrete(&facts.types)? || predicate.contains_projections(&facts.types)? {
             return Err("source const payment requires closed normalized obligations");

@@ -1,13 +1,11 @@
 //! Defining const permission consumes actual typed source facts, not signatures alone.
+mod receivers;
 use crate::{
     body::ir::{Action, Body, Owner, Rvalue},
     resolve::model::DefId,
-    sema::{
-        invocations::Invocation,
-        model::{Declarations, Operation},
-    },
+    sema::model::{Declarations, Operation},
     support::{call_traits::CallTrait, constness::Constness, hash::HashSet},
-    types::{Kind, TypeId, arguments::Argument, parameters::ParameterKind},
+    types::Kind,
 };
 pub(super) struct Work {
     pub steps: usize,
@@ -46,10 +44,13 @@ pub(super) fn check_calls(
     } else {
         Some(defining_owner(facts, body, work)?)
     };
-    if expected.0 != 0 {
+    let receivers = if let Some(definition) = definition {
         work.charge(3)?;
         crate::sema::compiler_items::callable_role(facts, CallTrait::FnOnce)?;
-    }
+        Some(receivers::Bindings::new(facts, body, definition, work)?)
+    } else {
+        None
+    };
     let mut member_context = None;
     let mut seen = HashSet::default();
     let mut members = 0;
@@ -111,7 +112,9 @@ pub(super) fn check_calls(
         check_invocation(
             facts,
             body,
-            definition.ok_or("const invocation lost its defining function")?,
+            receivers
+                .as_ref()
+                .ok_or("const invocation lost its defining function")?,
             statement,
             work,
         )?;
@@ -155,7 +158,7 @@ fn defining_owner(
 fn check_invocation(
     facts: &Declarations,
     body: &Body,
-    definition: DefId,
+    receivers: &receivers::Bindings,
     statement: &crate::body::ir::Statement,
     work: &mut Work,
 ) -> Result<(), &'static str> {
@@ -175,6 +178,65 @@ fn check_invocation(
     else {
         return Err("const invocation changed its operation");
     };
+    let original_receiver =
+        source_receiver(facts, body, statement, (kind, signature, value.ty), work)?;
+    let Some(Kind::Function {
+        parameters,
+        result,
+        bound_regions: 0,
+        unsafe_: false,
+        convention: crate::types::callable::Convention::RUST,
+    }) = facts.types.kind(signature)
+    else {
+        return Err("const invocation requires its opened safe source signature");
+    };
+    work.charge(1)?;
+    let parameters = facts
+        .types
+        .list(parameters)
+        .ok_or("invalid const invocation parameters")?;
+    work.charge(1)?;
+    let arguments = body
+        .arguments
+        .get(arguments.start as usize..arguments.end as usize)
+        .ok_or("invalid const invocation arguments")?;
+    let [receiver, operands @ ..] = arguments else {
+        return Err("const invocation requires its owned receiver");
+    };
+    if result != value.ty || operands.len() != parameters.len() {
+        return Err("const invocation changed its exact argument or result arity");
+    }
+    work.charge(1)?;
+    let actual = body
+        .values
+        .get(receiver.0 as usize)
+        .ok_or("invalid const invocation receiver")?
+        .ty;
+    if receivers.receiver(facts, original_receiver, signature, work)? != actual {
+        return Err("const invocation changed its exact instantiated receiver or argument");
+    }
+    for (&operand, &parameter) in operands.iter().zip(parameters) {
+        work.charge(1)?;
+        if body
+            .values
+            .get(operand.0 as usize)
+            .is_none_or(|v| v.ty != parameter)
+        {
+            return Err("const invocation argument differs from its exact signature");
+        }
+    }
+    Ok(())
+}
+
+/// Source-use authority is checked independently of instantiated operand shape.
+fn source_receiver(
+    facts: &Declarations,
+    body: &Body,
+    statement: &crate::body::ir::Statement,
+    call: (CallTrait, crate::types::TypeId, crate::types::TypeId),
+    work: &mut Work,
+) -> Result<crate::types::TypeId, &'static str> {
+    let (kind, signature, result) = call;
     work.charge(1)?;
     let source = body
         .source
@@ -212,109 +274,21 @@ fn check_invocation(
     if effect == Constness::Ordinary {
         return Err("const invocation has no defining conditional or const demand");
     }
-    work.charge(2)?;
-    if original != signature || !simple_signature(&facts.types, signature, value.ty) {
+    work.charge(3)?;
+    if !matches!(
+        facts.types.kind(original),
+        Some(Kind::Function {
+            bound_regions: 0,
+            unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
+            ..
+        })
+    ) || (body.instance.is_none()
+        && (original != signature || facts.node(source).and_then(|n| n.ty) != Some(result)))
+    {
         return Err("const invocation changed its retained closed signature or result");
     }
-    work.charge(1)?;
-    let arguments = body
-        .arguments
-        .get(arguments.start as usize..arguments.end as usize)
-        .ok_or("invalid const invocation arguments")?;
-    let [receiver, scalar] = arguments else {
-        return Err("const invocation requires one owned receiver and one u8 argument");
-    };
-    work.charge(1)?;
-    let actual = body
-        .values
-        .get(receiver.0 as usize)
-        .ok_or("invalid const invocation receiver")?
-        .ty;
-    work.charge(1)?;
-    if body
-        .values
-        .get(scalar.0 as usize)
-        .is_none_or(|v| v.ty != value.ty)
-        || receiver_type(facts, body, definition, *retained, work)? != actual
-    {
-        return Err("const invocation changed its exact instantiated receiver or argument");
-    }
-    Ok(())
-}
-fn simple_signature(store: &crate::types::Store, signature: TypeId, result: TypeId) -> bool {
-    let u8 = TypeId::primitive(crate::types::Primitive::U8);
-    matches!(store.kind(signature), Some(Kind::Function { parameters, result: output, bound_regions: 0,
-        unsafe_: false, convention: crate::types::callable::Convention::RUST })
-        if output == result && result == u8 && store.list(parameters) == Some(&[u8][..]))
-}
-fn receiver_type(
-    facts: &Declarations,
-    body: &Body,
-    owner: DefId,
-    retained: Invocation,
-    work: &mut Work,
-) -> Result<TypeId, &'static str> {
-    work.charge(1)?;
-    let Some(Kind::Parameter(parameter)) = facts.types.kind(retained.receiver) else {
-        return Err("const invocation currently requires a direct generic receiver parameter");
-    };
-    work.charge(2)?;
-    let parameter = facts
-        .types
-        .parameter(parameter)
-        .ok_or("const invocation has invalid receiver parameter")?;
-    let parameters = facts
-        .generics
-        .parameters
-        .get(&owner)
-        .ok_or("const invocation has no actual generic row")?;
-    work.charge(1)?;
-    if parameter.owner != crate::types::ItemId(owner.0)
-        || parameter.index != 0
-        || !matches!(parameter.kind, ParameterKind::Type { .. })
-        || parameters.len() != 1
-        || parameters[0].argument != Argument::Type(retained.receiver)
-        || facts.associated.owner(owner).is_some()
-    {
-        return Err(
-            "const invocation inherited, lifetime or composite receivers are not implemented",
-        );
-    }
-    let Some(instance) = body.instance else {
-        return Ok(retained.receiver);
-    };
-    work.charge(1)?;
-    let Some(Kind::FunctionItem {
-        item,
-        arguments,
-        signature,
-    }) = facts.types.kind(instance.ty())
-    else {
-        return Err("const invocation lost its complete function instance");
-    };
-    if item.0 != owner.0 || body.owner.signatures().map(|(public, _)| public) != Some(signature) {
-        return Err("const invocation belongs to another full callable instance");
-    }
-    work.charge(1)?;
-    let mut arguments = facts
-        .types
-        .arguments(arguments)
-        .ok_or("invalid const invocation instance arguments")?;
-    let Some(Argument::Type(actual)) = arguments.next() else {
-        return Err("const invocation lacks its exact receiver argument");
-    };
-    work.charge(3)?;
-    if arguments.next().is_some()
-        || !matches!(
-            facts.types.kind(actual),
-            Some(Kind::FunctionItem { .. } | Kind::Function { .. })
-        )
-        || facts.types.needs_region_context(actual) != Some(false)
-        || facts.types.contains_parameters(actual) != Some(false)
-    {
-        return Err("const invocation requires a complete closed function or pointer receiver");
-    }
-    Ok(actual)
+    Ok(retained.receiver)
 }
 
 #[cfg(test)]

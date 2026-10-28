@@ -1,10 +1,11 @@
 //! Defining abstract calls consume exact source facts and a local Self premise.
+mod conditional_arguments;
 use super::{Declarations, DefId, FunctionContext, NodeKey};
 use crate::{
     sema::model::Operation,
     support::constness::Constness,
     types::{
-        Kind, TypeId,
+        GenericArgs, Kind, TypeId,
         parameters::{clauses::Clause, predicates::Bound},
     },
 };
@@ -21,8 +22,15 @@ pub(crate) struct Call {
 pub(crate) struct DefiningCalls<'a> {
     facts: &'a Declarations,
     owner: NodeKey,
-    trait_definition: DefId,
-    self_type: TypeId,
+    premise: Premise<'a>,
+}
+enum Premise<'a> {
+    Trait {
+        definition: DefId,
+        subject: TypeId,
+        arguments: GenericArgs,
+    },
+    Function(&'a crate::types::parameters::environment::Environment),
 }
 impl<'a> DefiningCalls<'a> {
     pub(crate) fn new(
@@ -37,12 +45,25 @@ impl<'a> DefiningCalls<'a> {
             );
         }
         charge(5)?;
-        let FunctionContext::ConstTraitDefault { trait_definition } =
-            facts.function_context(definition, owner)?
-        else {
-            return Err(
-                "abstract const member checking outside its actual provided body is not implemented",
-            );
+        let trait_definition = match facts.function_context(definition, owner)? {
+            FunctionContext::ConstTraitDefault { trait_definition } => trait_definition,
+            FunctionContext::ConstFunction => {
+                charge(1)?;
+                let environment = facts
+                    .generics
+                    .body_environment(definition)
+                    .ok_or("const function member call has no actual defining environment")?;
+                return Ok(Self {
+                    facts,
+                    owner,
+                    premise: Premise::Function(environment),
+                });
+            }
+            FunctionContext::Runtime => {
+                return Err(
+                    "abstract const member checking outside its actual provided body is not implemented",
+                );
+            }
         };
         charge(9)?;
         let mut predicate = facts.const_self_predicate(trait_definition)?;
@@ -53,13 +74,7 @@ impl<'a> DefiningCalls<'a> {
             .types
             .trait_application(application)
             .ok_or("missing defining Self application")?;
-        if facts
-            .types
-            .arguments(application_data.arguments)
-            .is_none_or(|arguments| arguments.len() != 0)
-        {
-            return Err("generic abstract const-trait defining calls are not implemented");
-        }
+        let trait_arguments = application_data.arguments;
         predicate.bound = Bound::MaybeConstTrait(application);
         charge(1)?;
         let environment = facts
@@ -82,8 +97,11 @@ impl<'a> DefiningCalls<'a> {
         Ok(Self {
             facts,
             owner,
-            trait_definition,
-            self_type: predicate.ty,
+            premise: Premise::Trait {
+                definition: trait_definition,
+                subject: predicate.ty,
+                arguments: trait_arguments,
+            },
         })
     }
 
@@ -100,21 +118,7 @@ impl<'a> DefiningCalls<'a> {
             return Err("abstract const call lost its actual complete function item");
         };
         let definition = DefId(item.0);
-        charge(3)?;
-        let mut arguments = self
-            .facts
-            .types
-            .arguments(arguments)
-            .ok_or("abstract const call has malformed complete arguments")?;
-        if arguments.next() != Some(crate::types::arguments::Argument::Type(self.self_type))
-            || arguments.next().is_some()
-        {
-            return Err("abstract const call requires its exact original Self application");
-        }
-        charge(3)?;
-        if self.facts.associated.trait_owner(definition) != Some(self.trait_definition) {
-            return Err("abstract const call belongs to another actual trait member");
-        }
+        self.check_premise(definition, arguments, &mut charge)?;
         charge(1)?;
         let node = self
             .facts
@@ -156,6 +160,55 @@ impl<'a> DefiningCalls<'a> {
                 || invocation.borrow.is_some()
             {
                 return Err("abstract const call changed its exact UFCS callable application");
+            }
+        }
+        Ok(())
+    }
+
+    fn check_premise(
+        &self,
+        definition: DefId,
+        arguments: GenericArgs,
+        charge: &mut impl FnMut(usize) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        let predicate = conditional_arguments::select(self.facts, definition, arguments, charge)?;
+        let Bound::MaybeConstTrait(application) = predicate.bound else {
+            return Err("abstract const call lost its conditional request");
+        };
+        charge(3)?;
+        match self.premise {
+            Premise::Trait {
+                definition,
+                subject,
+                arguments,
+            } => {
+                let actual = self
+                    .facts
+                    .types
+                    .trait_application(application)
+                    .ok_or("abstract const call lost its parent application")?;
+                if predicate.ty != subject
+                    || actual.item.0 != definition.0
+                    || actual.arguments != arguments
+                {
+                    return Err(
+                        "abstract const call changed its defining Self or trait application",
+                    );
+                }
+            }
+            Premise::Function(environment) => {
+                if !environment.assumes_predicate(predicate)
+                    && !environment.assumes_predicate(
+                        crate::types::parameters::predicates::Predicate {
+                            bound: Bound::ConstTrait(application),
+                            ..predicate
+                        },
+                    )
+                {
+                    return Err(
+                        "const function member lacks its current conditional trait premise",
+                    );
+                }
             }
         }
         Ok(())

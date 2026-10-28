@@ -29,7 +29,10 @@ impl Builder<'_> {
         };
         if !matches!(
             self.facts.function_context(definition, self.source),
-            Ok(crate::sema::function_context::FunctionContext::ConstTraitDefault { .. })
+            Ok(
+                crate::sema::function_context::FunctionContext::ConstFunction
+                    | crate::sema::function_context::FunctionContext::ConstTraitDefault { .. }
+            )
         ) || self
             .facts
             .associated

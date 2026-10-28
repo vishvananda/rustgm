@@ -198,3 +198,69 @@ fn provided_function_ctfe_root_rejects_fresh_and_warm_code_even_with_forged_cons
 
 #[path = "initializer_members.rs"]
 mod initializer;
+
+#[test]
+fn actual_generic_const_helper_requires_its_complete_conditional_trait_premise() -> Result {
+    let (mut facts, template, definition) = named_original(
+        "pa31/tests/spec/source-comparisons/native/actual-profile.rs",
+        "default_chaining_impl",
+    )?;
+    let body = template.body;
+    let index = statement(&body)?;
+    let mut work = Work::new(1_000_000);
+    let call = source_call(&facts, &body, &body.statements[index], &mut work)?;
+    {
+        let context = prepare(&facts, &body, definition, &mut work)?;
+        let mut previous = None;
+        for width in [8, 32, 128] {
+            let before = work.steps;
+            for _ in 0..width {
+                context.check(call, |n| work.charge(n))?;
+            }
+            let visits = work.steps - before;
+            if let Some((old_width, old_visits)) = previous {
+                assert_eq!(visits * old_width, old_visits * width);
+            }
+            previous = Some((width, visits));
+        }
+    }
+    let Some(Kind::FunctionItem {
+        item,
+        arguments,
+        signature,
+    }) = facts.types.kind(call.target)
+    else {
+        return Err("actual generic trait member".into());
+    };
+    let mut arguments = facts
+        .types
+        .arguments(arguments)
+        .ok_or("actual complete arguments")?
+        .collect::<Vec<_>>();
+    let subject = arguments.first_mut().ok_or("actual Self")?;
+    assert!(matches!(
+        *subject,
+        crate::types::arguments::Argument::Type(_)
+    ));
+    *subject = crate::types::arguments::Argument::Type(crate::types::TypeId::UNIT);
+    let arguments = facts.types.intern_arguments(&arguments)?;
+    let wrong = facts.types.intern(Kind::FunctionItem {
+        item,
+        arguments,
+        signature,
+    })?;
+    let context = prepare(&facts, &body, definition, &mut work)?;
+    let error = context
+        .check(
+            Call {
+                target: wrong,
+                ..call
+            },
+            |n| work.charge(n),
+        )
+        .err()
+        .ok_or("foreign subject acquired a conditional trait premise")?;
+    assert!(error.contains("conditional trait premise"), "{error}");
+    context.check(call, |n| work.charge(n))?;
+    Ok(())
+}

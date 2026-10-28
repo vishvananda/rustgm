@@ -1,7 +1,7 @@
 //! Argument witnesses retain one exact typed reached direct call.
 use super::{Frame, Machine, code::Code};
 use crate::{
-    sema::model::{Declarations, Scalar},
+    sema::{model::Declarations, values::Reader},
     types::{Kind, Primitive, instance::Instance},
 };
 pub(super) fn checked_call(
@@ -50,8 +50,13 @@ pub(super) fn checked_call(
         match facts.types.kind(parameter) {
             Some(Kind::FunctionItem { .. })
                 if value.as_function() == Some(Instance::new(&facts.types, parameter)?) => {}
-            Some(Kind::Primitive(Primitive::U8)) if matches!(value.as_scalar(), Ok(Scalar::Integer(bits)) if bits <= u128::from(u8::MAX)) =>
-                {}
+            Some(Kind::Primitive(_)) => {
+                // Reuse the actual primitive codec's kind and width validity;
+                // callback inputs need not equal each other or the result type.
+                Reader::new(facts)
+                    .encode_primitive(parameter, value)
+                    .map_err(|_| "paid call scalar differs from its declared primitive type")?;
+            }
             _ => return Err("paid call value differs from its declared closed argument profile"),
         }
     }

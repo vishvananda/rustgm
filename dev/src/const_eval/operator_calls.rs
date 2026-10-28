@@ -1,9 +1,9 @@
-//! First const call-operator adapter retains the owned item and opened u8 signature.
+//! Reached owned-item calls retain their complete opened signature and operands.
 use super::{Failure, Frame, Machine, code::Code};
 use crate::{
     body::ir::{Action, ValueId, ValueList},
     support::call_traits::CallTrait,
-    types::{Kind, Primitive, TypeId, instance::Instance},
+    types::{Kind, TypeId, instance::Instance},
 };
 impl Machine<'_, '_> {
     pub(super) fn invoked_item(
@@ -38,28 +38,55 @@ impl Machine<'_, '_> {
         // These charged O(1) facts are also counted on a rejected reached use.
         self.charge(3)?;
         crate::sema::compiler_items::callable_role(self.evaluator.facts(), kind)?;
-        let u8 = TypeId::primitive(Primitive::U8);
         self.charge(3)?;
         let facts = self.evaluator.facts();
-        if !matches!(facts.types.kind(signature), Some(Kind::Function { parameters, result, bound_regions: 0,
-            unsafe_: false, convention: crate::types::callable::Convention::RUST }) if result == u8 && facts.types.list(parameters) == Some(&[u8][..]))
-            || body
-                .values
-                .get(id.0 as usize)
-                .is_none_or(|value| value.ty != u8)
+        let Some(Kind::Function {
+            parameters,
+            result,
+            bound_regions: 0,
+            unsafe_: false,
+            convention: crate::types::callable::Convention::RUST,
+        }) = facts.types.kind(signature)
+        else {
+            return Err("const Invoke requires its exact opened safe signature".into());
+        };
+        if body
+            .values
+            .get(id.0 as usize)
+            .is_none_or(|value| value.ty != result)
         {
-            return Err(
-                "const Invoke currently requires the exact closed fn(u8)->u8 signature".into(),
-            );
+            return Err("const Invoke result differs from its exact signature".into());
         }
-        self.charge(1)?;
         let operands = body
             .arguments
             .get(arguments.start as usize..arguments.end as usize)
             .ok_or("const Invoke has invalid operands")?;
-        let [receiver, scalar] = operands else {
-            return Err("const Invoke requires an owned item and one u8 operand".into());
+        let [receiver, operands @ ..] = operands else {
+            return Err("const Invoke requires its owned item receiver".into());
         };
+        // Pay before borrowing the canonical parameter list; the bytecode range
+        // is the exact maximum number of children inspected below.
+        self.charge(1 + operands.len())?;
+        let parameters = self
+            .evaluator
+            .facts()
+            .types
+            .list(parameters)
+            .ok_or("const Invoke has invalid parameters")?;
+        if parameters.len() != operands.len() {
+            return Err("const Invoke changed its complete operand arity".into());
+        }
+        // Reached work is proportional to this call's actual operands. Neither
+        // the source body nor its unrelated generic formals are walked again.
+        for (&operand, &parameter) in operands.iter().zip(parameters) {
+            if body
+                .values
+                .get(operand.0 as usize)
+                .is_none_or(|value| value.ty != parameter)
+            {
+                return Err("const Invoke operand differs from its complete signature".into());
+            }
+        }
         self.charge(1)?;
         let ty = body
             .values
@@ -74,10 +101,6 @@ impl Machine<'_, '_> {
         let facts = self.evaluator.facts();
         if target.ty() != ty
             || !matches!(facts.types.kind(ty), Some(Kind::FunctionItem { signature: public, .. }) if public == signature)
-            || body
-                .values
-                .get(scalar.0 as usize)
-                .is_none_or(|value| value.ty != u8)
             || facts.types.needs_region_context(ty) != Some(false)
         {
             return Err("const Invoke changed its full item receiver or argument".into());

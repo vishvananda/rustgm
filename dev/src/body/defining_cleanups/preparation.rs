@@ -172,6 +172,7 @@ fn counted(
     let prepared = Prepared {
         definition: actual,
         owned_signature: signature,
+        const_context: body.const_context,
         environment: Arc::clone(&environment),
         role,
         copy_role,
@@ -194,10 +195,11 @@ fn counted_definition(
     source: BodyOrigin,
     work: &mut Work,
 ) -> Result<Option<Definition>, &'static str> {
-    if facts
-        .associated
-        .trait_owner(id)
-        .is_some_and(|owner| facts.associated.constant_trait(owner) == Some(true))
+    if super::generic_const_function(facts, id)
+        || facts
+            .associated
+            .trait_owner(id)
+            .is_some_and(|owner| facts.associated.constant_trait(owner) == Some(true))
     {
         // Reserve the bounded indexed owner/function/header lookups before
         // attempting them, including missing or malformed completed rows.
@@ -213,7 +215,7 @@ fn clear_instance(
     work: &mut Work,
 ) -> Result<(), &'static str> {
     if let Some(builtins) = contract.builtins.as_mut().filter(|r| r.has_defining()) {
-        work.charge(11)?;
+        work.charge(27)?;
         let state = builtins
             .defining()
             .ok_or("missing defining cleanup instance carrier")?;
@@ -235,8 +237,7 @@ fn clear_instance(
             .ok_or("defining cleanup instance header is pending")?;
         if required.function != definition
             || required.source != body.source
-            || facts.associated.trait_owner(definition) != Some(required.trait_owner)
-            || facts.associated.constant_trait(required.trait_owner) != Some(true)
+            || super::definition(facts, definition, body.source)? != Some(required)
             || header.body != Some(required.source)
             || header.signature != required.signature
             || !matches!(facts.types.kind(instance.ty()), Some(crate::types::Kind::FunctionItem { item, signature: actual, .. })

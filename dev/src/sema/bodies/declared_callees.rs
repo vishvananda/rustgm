@@ -9,13 +9,24 @@ impl Checker<'_> {
         callee: NodeId,
         receiver: TermId,
     ) -> Result<(), Error> {
-        let Some(owner) = self.state.environment_owner else {
+        let Some(owner) = self
+            .state
+            .environment_owner
+            .filter(|_| self.facts.source_bindings.is_some())
+        else {
             return Ok(());
         };
-        let Some(trait_owner) = self.facts.associated.trait_owner(owner) else {
-            return Ok(());
-        };
-        if self.facts.associated.constant_trait(trait_owner) != Some(true) {
+        self.state
+            .infer
+            .account_work(4)
+            .map_err(|e| self.error(node, e))?;
+        if !self.facts.is_const_function(owner)
+            && self
+                .facts
+                .associated
+                .trait_owner(owner)
+                .is_none_or(|parent| self.facts.associated.constant_trait(parent) != Some(true))
+        {
             return Ok(());
         }
         self.state
@@ -36,7 +47,7 @@ impl Checker<'_> {
             self.facts
                 .function_context(owner, self.state.body)
                 .map_err(|e| self.error(node, e))?,
-            FunctionContext::ConstTraitDefault { .. }
+            FunctionContext::ConstFunction | FunctionContext::ConstTraitDefault { .. }
         ) {
             return Ok(());
         }

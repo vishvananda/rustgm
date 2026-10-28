@@ -6,6 +6,68 @@ use rustgm::types::{
 };
 
 #[test]
+fn monomorphic_function_item_identity_does_not_depend_on_materialization() -> Result<(), String> {
+    let mut store = Store::default();
+    let reference = store
+        .intern(Kind::Reference {
+            mutable: false,
+            region: RegionId::STATIC,
+            referent: TypeId::primitive(Primitive::U8),
+        })
+        .map_err(str::to_owned)?;
+    let parameters = store.intern_list(&[reference]).map_err(str::to_owned)?;
+    let signature = store
+        .intern(Kind::Function {
+            bound_regions: 0,
+            parameters,
+            result: TypeId::primitive(Primitive::Bool),
+            unsafe_: false,
+            convention: rustgm::types::callable::Convention::RUST,
+        })
+        .map_err(str::to_owned)?;
+    let canonical = store
+        .intern(Kind::FunctionItem {
+            item: ItemId(1),
+            signature,
+            arguments: GenericArgs::EMPTY,
+        })
+        .map_err(str::to_owned)?;
+    for representation in 0..3 {
+        let mut context = Context::default();
+        let mut item = context
+            .known(&store, canonical)
+            .map_err(|e| e.to_string())?;
+        if representation == 1 {
+            context.head(&store, item).map_err(|e| e.to_string())?;
+        } else if representation == 2 {
+            let signature = context
+                .known(&store, signature)
+                .map_err(|e| e.to_string())?;
+            item = context
+                .function_item(ItemId(1), signature, &[])
+                .map_err(|e| e.to_string())?;
+        }
+        let fresh = context
+            .fresh_regions(
+                &mut store,
+                &rustgm::types::callable::Templates::default(),
+                item,
+                1,
+            )
+            .map_err(|e| e.to_string())?;
+        assert_eq!(fresh.regions, 0);
+        assert!(!fresh.needs_normalization);
+        assert_eq!(
+            context
+                .resolved(&mut store, fresh.term)
+                .map_err(|e| e.to_string())?,
+            canonical
+        );
+    }
+    Ok(())
+}
+
+#[test]
 fn unused_lifetime_obligations_cannot_bypass_the_executable_proof_gate()
 -> Result<(), Box<dyn std::error::Error>> {
     use std::{

@@ -11,43 +11,51 @@ pub(crate) struct Cleanup {
 #[derive(Clone, Copy)]
 pub(crate) struct Schedule<'a> {
     pub events: &'a [Event],
-    concrete: &'a [super::Cleanup],
-    symbolic: &'a [Cleanup],
+    cleanups: Cleanups<'a>,
+}
+#[derive(Clone, Copy)]
+enum Cleanups<'a> {
+    Concrete(&'a [super::Cleanup]),
+    Symbolic(&'a [Cleanup]),
 }
 impl<'a> Schedule<'a> {
     pub(crate) fn concrete(plan: &'a Plan) -> Self {
         Self {
             events: &plan.events,
-            concrete: &plan.cleanups,
-            symbolic: &[],
+            cleanups: Cleanups::Concrete(&plan.cleanups),
         }
     }
     pub(crate) const fn symbolic(events: &'a [Event], cleanups: &'a [Cleanup]) -> Self {
         Self {
             events,
-            concrete: &[],
-            symbolic: cleanups,
+            cleanups: Cleanups::Symbolic(cleanups),
         }
     }
+    pub(crate) const fn is_symbolic(self) -> bool {
+        matches!(self.cleanups, Cleanups::Symbolic(_))
+    }
     pub(crate) fn cleanups(self) -> impl Iterator<Item = Cleanup> + 'a {
-        self.concrete
+        let (concrete, symbolic): (&[super::Cleanup], &[Cleanup]) = match self.cleanups {
+            Cleanups::Concrete(cleanups) => (cleanups, &[]),
+            Cleanups::Symbolic(cleanups) => (&[], cleanups),
+        };
+        concrete
             .iter()
             .map(|c| Cleanup {
                 candidate: c.candidate,
                 live_type: c.live_type,
                 access: c.node.is_some(),
             })
-            .chain(self.symbolic.iter().copied())
+            .chain(symbolic.iter().copied())
     }
     pub(crate) fn cleanup(self, index: usize) -> Option<Cleanup> {
-        if self.concrete.is_empty() {
-            self.symbolic.get(index).copied()
-        } else {
-            self.concrete.get(index).map(|c| Cleanup {
+        match self.cleanups {
+            Cleanups::Symbolic(cleanups) => cleanups.get(index).copied(),
+            Cleanups::Concrete(cleanups) => cleanups.get(index).map(|c| Cleanup {
                 candidate: c.candidate,
                 live_type: c.live_type,
                 access: c.node.is_some(),
-            })
+            }),
         }
     }
 }

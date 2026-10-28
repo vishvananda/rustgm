@@ -7,7 +7,7 @@ use super::{
 use crate::{
     resolve::model::DefId,
     sema::{nominals, projections::families},
-    support::{bindings::LangItem, constness::Constness, hash::HashMap},
+    support::{bindings::LangItem, hash::HashMap},
     types::{TypeId, lifetime_proof::ScopeId},
 };
 impl Frame {
@@ -54,8 +54,8 @@ impl Search<'_> {
         if frame.formation.is_some() || facts.source_bindings.is_none() {
             return Ok(false);
         }
-        // Callable markers share this formation DAG only for exact ordinary
-        // source roles. Item arguments keep their retained formation duties;
+        // Actual source marker roles share formation independently of their
+        // effect eligibility. Item arguments retain their formation duties;
         // their declaration signature was proved before forming the item.
         let source_rule = Self::source_auto_goal(facts, &frame.goal)?
             || matches!(
@@ -192,5 +192,5 @@ fn source_destruct_goal(facts: &Declarations, frame: &Frame) -> Result<bool, Str
         return Ok(false);
     }
     catalog.validated_language(LangItem::Destruct)?;
-    Ok(arguments.is_empty() && frame.goal.constness() == Some(Constness::Ordinary))
+    Ok(arguments.is_empty())
 }

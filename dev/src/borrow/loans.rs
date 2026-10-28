@@ -611,9 +611,20 @@ pub(crate) fn check_schedule(
     if contract.key != body.key() || contract.source != body.source {
         return Err(error("drop loan contract belongs to another body"));
     }
-    if body.const_context && plan.cleanups().any(|cleanup| cleanup.access) {
+    if body.const_context
+        && plan.cleanups().any(|cleanup| cleanup.access)
+        && (!plan.is_symbolic()
+            || body.instance.is_some()
+            || contract
+                .builtins
+                .as_deref()
+                .is_none_or(|requirements| requirements.defining().is_none()))
+    {
         return Err(error("constant evaluation cannot run destructors"));
     }
+    // An original symbolic body must still authenticate its exact prepared
+    // defining state and every active conditional cleanup below. Concrete
+    // schedules, including ones with a copied carrier, retain the CTFE fence.
     let defining_steps = legality::steps(types, body, contract, Some(plan)).map_err(error)?;
     let uses =
         liveness::cleanup::analyze_schedule(types, definitions, components, drops, facts, plan)

@@ -1,10 +1,6 @@
 //! Ordinary Destruct is universal only for its actual validated source identity.
 use super::{Action, Decision, Declarations, Frame, Search, inference};
-use crate::{
-    resolve::model::DefId,
-    support::{bindings::LangItem, constness::Constness},
-    types::infer,
-};
+use crate::{resolve::model::DefId, support::bindings::LangItem, types::infer};
 impl Search<'_> {
     pub(super) fn source_destruct_result(
         &mut self,
@@ -30,9 +26,6 @@ impl Search<'_> {
         if frame.deferred || frame.partial.is_some() || frame.selected.is_some() {
             return Ok(None);
         }
-        if frame.goal.constness() != Some(Constness::Ordinary) {
-            return Err("source const destruction eligibility is not implemented".into());
-        }
         let goal = match frame
             .inputs
             .context
@@ -44,6 +37,12 @@ impl Search<'_> {
             }
             Err(error) => return Err(inference(error)),
         };
+        // These values own no destructor, regardless of their pointee/signature
+        // arguments. This proves the Destruct bound, never a const call or Drop
+        // body. Nominal, aggregate and captured closure cleanup stays separate.
+        if !crate::sema::compiler_items::destruct_predicate(facts, goal)? {
+            return Err("source const destruction eligibility is not implemented".into());
+        }
         frame.require_nominal_formed(facts, goal.ty)?;
         let shape = self.query.builtins.physical_shape(facts, goal.ty)?;
         if !shape.well_formed {

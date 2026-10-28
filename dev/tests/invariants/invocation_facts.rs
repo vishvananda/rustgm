@@ -1,5 +1,6 @@
 //! Invocation facts retain the exact source owner, operator and substituted receiver.
 use super::*;
+use crate::{sema::invocations::Invocation, types::TypeId};
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 fn check(facts: &Declarations, body: &Body, expected: usize) -> Result<(), &'static str> {
     super::check(facts, body, expected, &mut Work::new(1_000_000))
@@ -183,5 +184,94 @@ fn attempted_const_operator_lookups_are_bounded_and_retained_on_failure() -> Tes
         "const operator validation: complete={visits} failed={failed} tiny={} ordinary=0",
         tiny.steps
     );
+    Ok(())
+}
+
+fn source_with_calls(calls: &str) -> TestResult<crate::resolve::expansion::Report> {
+    let source =
+        crate::test_source::fixture("pa31/tests/spec/source-const-callable/original-native29.rs")?;
+    let (declarations, _) = source
+        .split_once("const fn apply")
+        .ok_or("callable declarations")?;
+    Ok(crate::test_source::source_provider(
+        &format!("{declarations}\n{calls}"),
+        "general_const_calls",
+    )?)
+}
+
+#[test]
+fn const_operator_binds_inherited_and_own_formals_with_a_distinct_result() -> TestResult {
+    let report = source_with_calls(
+        "struct Capsule<T>{x:T}\n\
+         impl<T> Capsule<T>{const fn apply<F:[const]FnOnce(T,u8)->bool>(f:F,x:T,y:u8)->bool{f(x,y)}}\n\
+         const fn yes(_:u8,_:u8)->bool{true}\n\
+         const N:bool=Capsule::<u8>::apply(yes,29u8,3u8);\n\
+         #[unsafe(no_mangle)]pub extern \"C\" fn answer()->bool{N}",
+    )?;
+    let index = report
+        .resolution
+        .definitions
+        .iter()
+        .position(|definition| report.package.names.get(definition.name) == "apply")
+        .ok_or("apply")?;
+    let definition = DefId(u32::try_from(index)?);
+    let (facts, bodies) =
+        crate::pipeline::execution::materialized_bodies::during(&[definition], || {
+            let crate::pipeline::Analysis {
+                mut facts,
+                prepared,
+            } = crate::pipeline::analyze_source(&report)?;
+            crate::lower::instances::build_roots_prepared(
+                &report,
+                &mut facts,
+                crate::lower::Roots {
+                    entry: None,
+                    exports: &[],
+                },
+                prepared,
+            )?;
+            Ok(facts)
+        })?;
+    let body = bodies.first().ok_or("checked inherited apply instance")?;
+    check(&facts, body, 1)?;
+    let parameters = facts
+        .lifetimes
+        .callables
+        .generic_parameters(crate::types::ItemId(definition.0))
+        .ok_or("complete formal order")?;
+    assert_eq!(parameters.len(), 2);
+    let mut altered = body.clone();
+    let value = altered
+        .values
+        .iter_mut()
+        .find(|v| matches!(v.kind, Rvalue::Invoke { .. }))
+        .ok_or("invoke")?;
+    value.ty = TypeId::primitive(crate::types::Primitive::U8);
+    assert!(check(&facts, &altered, 1).is_err());
+    Ok(())
+}
+
+#[test]
+fn const_operator_executes_multiple_operands_with_a_distinct_result() -> TestResult {
+    let report = source_with_calls(
+        "const fn apply<F:[const]FnOnce(u8,u8)->bool>(f:F,x:u8,y:u8)->bool{f(x,y)}\n\
+         const fn yes(_:u8,_:u8)->bool{true}\n\
+         const N:bool=apply(yes,29u8,3u8);\n\
+         #[unsafe(no_mangle)]pub extern \"C\" fn answer()->bool{N}",
+    )?;
+    let crate::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = crate::pipeline::analyze_source(&report)?;
+    let program = crate::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        crate::lower::Roots {
+            entry: None,
+            exports: &[],
+        },
+        prepared,
+    )?;
+    assert!(!program.symbols.is_empty());
     Ok(())
 }

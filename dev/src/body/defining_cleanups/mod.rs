@@ -19,7 +19,7 @@ use std::sync::Arc;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct Definition {
     function: DefId,
-    trait_owner: DefId,
+    context: FunctionContext,
     source: BodyOrigin,
     signature: TypeId,
 }
@@ -32,6 +32,7 @@ pub(crate) enum State {
 pub(crate) struct Prepared {
     definition: Definition,
     owned_signature: TypeId,
+    const_context: bool,
     environment: Arc<Environment>,
     role: claims::Role,
     copy_role: claims::Role,
@@ -77,6 +78,7 @@ impl State {
         if body.key() != BodyKey::Declaration(prepared.definition.function)
             || body.source != prepared.definition.source
             || body.instance.is_some()
+            || body.const_context != prepared.const_context
             || body.owner.signatures()
                 != Some((prepared.definition.signature, prepared.owned_signature))
             || environment.is_none_or(|e| !Arc::ptr_eq(e, &prepared.environment))
@@ -87,6 +89,13 @@ impl State {
     }
 }
 impl Prepared {
+    pub(crate) fn checks_cleanup(&self) -> bool {
+        self.const_context
+            || matches!(
+                self.definition.context,
+                FunctionContext::ConstTraitDefault { .. }
+            )
+    }
     #[cfg(test)]
     pub(crate) fn check(
         &self,
@@ -165,29 +174,32 @@ pub(crate) fn definition(
     definition: DefId,
     source: BodyOrigin,
 ) -> Result<Option<Definition>, &'static str> {
-    let Some(trait_definition) = facts.associated.trait_owner(definition) else {
+    let default = facts
+        .associated
+        .trait_owner(definition)
+        .is_some_and(|owner| facts.associated.constant_trait(owner) == Some(true));
+    if !default && !generic_const_function(facts, definition) {
         return Ok(None);
-    };
-    if facts.associated.constant_trait(trait_definition) != Some(true) {
+    }
+    let header = facts
+        .function_header(definition)?
+        .ok_or("defining cleanup function header is pending")?;
+    if header.body.is_none() {
         return Ok(None);
     }
     let source_key = source
         .source()
         .ok_or("imported const-trait defining cleanup headers are not implemented")?;
-    if !matches!(facts.function_context(definition, source_key)?,
-        FunctionContext::ConstTraitDefault { trait_definition: actual } if actual == trait_definition)
-    {
+    let context = facts.function_context(definition, source_key)?;
+    if !context.checks_const() {
         return Err("defining cleanup requires its actual provided member owner");
     }
-    let header = facts
-        .function_header(definition)?
-        .ok_or("defining cleanup function header is pending")?;
     if header.body != Some(source) {
         return Err("defining cleanup changed its actual function source");
     }
     Ok(Some(Definition {
         function: definition,
-        trait_owner: trait_definition,
+        context,
         source,
         signature: header.signature,
     }))
@@ -200,10 +212,33 @@ pub(crate) fn needs_preparation(facts: &Declarations, body: &Body) -> bool {
     let Owner::Function { definition: id, .. } = body.owner else {
         return false;
     };
-    facts
-        .associated
-        .trait_owner(id)
-        .is_some_and(|owner| facts.associated.constant_trait(owner) == Some(true))
+    generic_const_function(facts, id)
+        || facts
+            .associated
+            .trait_owner(id)
+            .is_some_and(|owner| facts.associated.constant_trait(owner) == Some(true))
+}
+
+/// Nongeneric const bodies have no parameter cleanup promises to retain.
+/// Const trait defaults keep their separate actual Self owner above.
+fn generic_const_function(facts: &Declarations, id: DefId) -> bool {
+    facts.source_bindings.is_some()
+        && facts.is_const_function(id)
+        && facts
+            .lifetimes
+            .callables
+            .registration(crate::types::ItemId(id.0))
+            .map_or_else(
+                || {
+                    facts.generics.parameters_in_scope(id).any(|parameter| {
+                        !matches!(
+                            parameter.argument,
+                            crate::types::arguments::Argument::Lifetime(_)
+                        )
+                    })
+                },
+                |(_, formals)| !formals.is_empty(),
+            )
 }
 
 fn validate_contract(definition: Definition, contract: &Contract) -> Result<(), &'static str> {

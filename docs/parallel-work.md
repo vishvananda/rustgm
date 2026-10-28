@@ -1,11 +1,16 @@
 # Parallel library bootstrap implementation
 
-At the user's request, all subagents are stopped. The integrator continues the
-active core/alloc/std goal directly. Do not start or resume workers without a new
-explicit request. Their clean branches, WIP snapshots and qualified evidence are
-retained for integration; stopping workers does not qualify unfinished work.
-The integrator owns implementation, review, public main pushes, assignment
-activation and text-oracle publication.
+The user has reauthorized up to two subagents. Root continues direct compiler
+implementation and integration in `rustgm-pa25-work`. One implementation worker,
+`lint_expectations`, owns LIB-058's actual local/source deprecation and lint
+expectation protocol in the existing `rustgm-pa26-work`; the second agent has completed
+read-only const-call review and now owns LIB-056's precise symbolic cleanup
+consumer in the existing `rustgm-pa27-work`. Root owns reached-call accounting
+and integration; coordinate the guarded heavy checks rather than creating more
+worktrees. No new worktree
+is needed. Earlier derive/comparison/panic snapshots remain preserved; their old
+workers are stopped. Do not start additional workers beyond this authorization.
+Stopping a worker or retaining a proposal does not qualify unfinished work.
 
 Use [the live library blocker tracker](library-build-blockers.md#current-execution-queue)
 for current assignments and the [execution plan](library-bootstrap-acceleration.md)

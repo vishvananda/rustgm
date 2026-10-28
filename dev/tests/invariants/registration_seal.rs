@@ -148,14 +148,21 @@ fn ordinary_destruct_evidence_does_not_pay_const_or_conditional_goals() -> Resul
         parameters::predicates::{Bound, Predicate},
         traits::Application,
     };
-    // Reuse the already independently qualified ordinary marker header;
-    // these direct qualified-goal attempts are internal opposing proof controls.
+    // An ordinary proof for an owned nominal cannot stand in for const cleanup.
+    // Concrete builtin values have a separate no-destructor language rule.
     let source = SOURCE.replace(
         "#[lang=\"drop\"]pub const trait Drop{fn drop(&mut self);}",
         "#[lang=\"destruct\"]#[rustc_deny_explicit_impl]pub const trait Destruct:PointeeSized{}",
-    ).replace("const_trait_impl", "const_trait_impl,rustc_attrs");
+    ).replace("const_trait_impl", "const_trait_impl,rustc_attrs") + "struct Nominal(u8);";
     let modified = report_source(&source)?;
     let mut facts = sema::declarations::analyze(&modified)?;
+    let nominal = modified
+        .resolution
+        .definitions
+        .iter()
+        .position(|d| modified.package.names.get(d.name) == "Nominal")
+        .and_then(|i| facts.definitions[i])
+        .ok_or("actual nominal type")?;
     let declaration = facts
         .source_bindings
         .as_deref()
@@ -174,28 +181,18 @@ fn ordinary_destruct_evidence_does_not_pay_const_or_conditional_goals() -> Resul
         assert!(state.prove(
             &mut facts,
             Predicate {
-                ty: TypeId::primitive(crate::types::Primitive::U8),
+                ty: nominal,
                 bound: Bound::Trait(application)
             },
             false
         )?);
         assert!(!destruct_predicate(
             &facts,
-            Predicate {
-                ty: TypeId::primitive(crate::types::Primitive::U8),
-                bound
-            }
+            Predicate { ty: nominal, bound }
         )?);
         assert!(
             state
-                .prove(
-                    &mut facts,
-                    Predicate {
-                        ty: TypeId::primitive(crate::types::Primitive::U8),
-                        bound
-                    },
-                    false
-                )
+                .prove(&mut facts, Predicate { ty: nominal, bound }, false)
                 .is_err()
         );
     }

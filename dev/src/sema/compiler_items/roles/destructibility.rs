@@ -122,7 +122,7 @@ pub(crate) fn destruct_predicate(
     let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(false);
     };
-    let Some((application, Constness::Ordinary)) = predicate.bound.trait_parts() else {
+    let Some((application, effect)) = predicate.bound.trait_parts() else {
         return Ok(false);
     };
     let application = facts
@@ -136,5 +136,17 @@ pub(crate) fn destruct_predicate(
         && facts
             .types
             .arguments(application.arguments)
-            .is_some_and(|args| args.len() == 0))
+            .is_some_and(|args| args.len() == 0)
+        && (effect == Constness::Ordinary
+            || matches!(
+                facts.types.kind(predicate.ty),
+                Some(
+                    Kind::Primitive(_)
+                        | Kind::Never
+                        | Kind::Pointer { .. }
+                        | Kind::Reference { .. }
+                        | Kind::Function { .. }
+                        | Kind::FunctionItem { .. }
+                )
+            )))
 }
