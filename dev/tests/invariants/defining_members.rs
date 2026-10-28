@@ -237,6 +237,20 @@ fn actual_generic_const_helper_requires_its_complete_conditional_trait_premise()
         .arguments(arguments)
         .ok_or("actual complete arguments")?
         .collect::<Vec<_>>();
+    let parent = facts
+        .associated
+        .trait_owner(DefId(item.0))
+        .ok_or("actual trait")?;
+    let crate::types::parameters::predicates::Bound::Trait(parent) =
+        facts.const_self_predicate(parent)?.bound
+    else {
+        return Err("actual ordinary parent application".into());
+    };
+    let parent = facts
+        .types
+        .trait_application(parent)
+        .ok_or("actual trait application")?;
+    assert_eq!(arguments.len(), 2);
     // Keep Self while changing Rhs as well as the separate changed-Self case.
     // Neither the trait name nor a same-Self premise pays another application.
     for slot in 0..2 {
@@ -247,6 +261,14 @@ fn actual_generic_const_helper_requires_its_complete_conditional_trait_premise()
             crate::types::arguments::Argument::Type(_)
         ));
         *argument = crate::types::arguments::Argument::Type(crate::types::TypeId::UNIT);
+        // Ensure the opposing application exists, without adding a premise.
+        let parent_arguments = facts.types.intern_arguments(&changed[1..])?;
+        facts
+            .types
+            .intern_trait_application(crate::types::traits::Application {
+                arguments: parent_arguments,
+                ..parent
+            })?;
         let changed = facts.types.intern_arguments(&changed)?;
         let wrong = facts.types.intern(Kind::FunctionItem {
             item,

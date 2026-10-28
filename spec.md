@@ -635,9 +635,18 @@ argument-free profile. The [closed callable execution checkpoint](docs/pa31-cons
 adds a complete owned function item and a `u8` argument, with actual Invoke
 execution. Preserve empty quantified binders when copying requirements, then
 open them with the existing binder-aware fold during each fresh payment.
-Conditional callback targets need their own Invoke-bound payment; open or
-lifetime-bearing contracts, broader callable arguments, intrinsic callbacks and
-CTFE cleanup remain separate requirements.
+Closed direct-call validation consumes the actual completed signature: primitive
+scalar operands and owned safe Rust function items may have different argument
+and result types. Use the existing full callable substitution for inherited and
+own formals, indexed once per body rather than rescanning unrelated declarations.
+Precharge every attempted signature, generic argument and evaluated operand read
+against the configured cumulative interpreter budget at lookup, payment, resume
+and consumption. Warm lookup, malformed values and failed resumes retain their
+attempted work; failure clears the one-use continuation. Structural validation
+never supplies a caller proof. Conditional callback targets need their own
+Invoke-bound payment; open or lifetime-bearing contracts, aggregate/borrowed
+callable arguments, intrinsic callbacks and CTFE cleanup remain separate
+requirements.
 
 Retain each source call's defining owner and effect through a compact indexed
 handle into the current catalog. Share one immutable descriptor per semantic
@@ -4097,6 +4106,14 @@ Preserve sparse array element/gap partitions from move-path numbering when that
 analysis requests them; never reconstruct these mappings from output or expand
 unselected array elements. A whole-path mixed state can include partial moves
 and does not authorize dropping the entire object behind one flag.
+A fresh genuine enum test can exclude an inactive payload from possible symbolic
+cleanup without changing must-initialized read/move permissions. Authenticate the
+actual nominal owner and variant/field identities, require the test immediately
+before its branch, and index sparse descendant intervals once. Cached booleans,
+intervening writes and custom destructors confer no such exclusion. Preserve
+original type liveness and concrete cleanup/CTFE restrictions. Untouched fully
+initialized aggregates retain their cleanup fast path; do not replace it with a
+recursive field scan at every exit.
 
 Retained initialization also tracks destructible rvalues that never become
 places. Derive their consumption once from typed aggregate/call operands,
