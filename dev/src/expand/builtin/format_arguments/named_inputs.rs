@@ -76,6 +76,9 @@ impl<'text, 'pay> Inputs<'text, 'pay> {
         self.captured.push(name);
         Ok(index)
     }
+    pub(super) fn count(&self) -> usize {
+        self.explicit.saturating_add(self.captured.len())
+    }
     pub(super) fn positional(&self, index: usize) -> Result<usize, LexError> {
         if index < self.explicit {
             Ok(index)

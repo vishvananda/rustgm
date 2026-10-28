@@ -29,7 +29,7 @@ pub(crate) fn build(
     allow_capture: bool,
     environment: Environment<'_>,
     newline: bool,
-    names: [NameId; 4],
+    names: [NameId; crate::support::library_types::FormatConstructor::ALL.len()],
     charge: &Charge<'_>,
 ) -> Result<Draft, LexError> {
     charge(

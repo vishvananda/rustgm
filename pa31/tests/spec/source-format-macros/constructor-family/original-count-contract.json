@@ -1,0 +1,13 @@
+{
+  "state": "original source prerequisite data; not independently compiled as a crate",
+  "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/fmt/rt.rs",
+  "source_sha256": "7a7dd4b1640a734fcb82f178ab69868b8f2f624a8c1f5a6fcf85002f4e2e4423",
+  "first": 128,
+  "last": 136,
+  "sha256": "3ff357557acabed2c5e40af4bc54176cc747a6b79772886375c38b4e3c886eca",
+  "requires": [
+    "actual usize reference parameter and comparison through source PartialOrd",
+    "genuine panic expansion/body/handler on overflow",
+    "ordinary const/body/caller/instance proof, no scalar count conversion"
+  ]
+}
