@@ -198,10 +198,11 @@ belong to their later owning assignments.
 
 ## Validation
 
-The suite declares 498 fixtures: 312 accepted and 186 rejected. The manifest
+The suite declares 502 fixtures: 315 accepted and 187 rejected. The manifest
 selects 305 accepted programs for execution through both pinned rustc and the
 qualified CPPGM backend; three intentionally diverge and must only undergo code
-generation. Four accepted pattern-inspection cases do not execute. Growing-instance
+generation. Four accepted pattern inspections and three generic library object
+checks do not execute. Growing-instance
 rejections use rustc object generation: metadata-only success cannot qualify them.
 No compilation-only result counts as a runtime comparison. Native panic cases
 retain the established qualified abort contract.
@@ -214,3 +215,9 @@ all performance observations with frozen inputs/binaries, A/A calibration,
 paired ABBA runs and full/count output equality. Clippy all/pedantic and the
 syntax-aware file/architecture audit are required; blanket lint suppressions
 and source reparsing in hot paths are not acceptable shortcuts.
+
+`tests/spec/shared-call-reborrow/` retains generic referent/value, Copy-bound and
+mutable move controls through the existing library LowIR/defining-body pipeline.
+Their reference ownership behavior uses PA16's normal reborrow owner, while type-generic
+body checking belongs here. See the
+[shared call checkpoint](../docs/pa16-shared-call-reborrow.md).

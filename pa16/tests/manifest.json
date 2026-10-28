@@ -4327,6 +4327,262 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/direct.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "mode": "--emit-loans"
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/tuple.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "mode": "--emit-loans"
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/field.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "mode": "--emit-loans"
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/function-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "mode": "--emit-loans"
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "mode": "--emit-loans"
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/block.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "mode": "--emit-loans"
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/branches.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "mode": "--emit-loans"
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/match.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "mode": "--emit-loans"
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/loop.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "mode": "--emit-loans"
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/typed-let.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "mode": "--emit-loans"
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/mutable-call.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "mode": "--emit-loans"
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/shared-from-mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "mode": "--emit-loans"
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/unsize.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "mode": "--emit-loans"
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/inferred-let.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "mode": "--emit-loans"
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/shared-to-mut.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      },
+      "mode": "--emit-loans"
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/live-shared-write.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      },
+      "mode": "--emit-loans"
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/return-local.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      },
+      "mode": "--emit-loans"
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/owned-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa16.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      },
+      "mode": "--emit-loans"
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/native.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "library": {
+        "crate_name": "shared_call_reborrow",
+        "disambiguator": "pa16callrefs"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "C consumer independently observes exported ordinary/source shared calls and exact order; frozen companion trace"
+      }
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/native-returned.rs",
+      "exit_status": 0,
+      "features": [
+        "pa16.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "library": {
+        "crate_name": "shared_call_reborrow",
+        "disambiguator": "pa16callrefsreturn"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "C consumer independently observes exported ordinary/source shared calls and exact order; frozen companion trace"
+      }
     }
   ],
   "additional_modes": [

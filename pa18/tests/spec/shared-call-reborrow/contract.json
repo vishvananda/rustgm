@@ -1,0 +1,44 @@
+{
+  "state": "byte-identical relocation after owning handout review; original independent Rust metadata retained",
+  "cases": {
+    "pa16/tests/spec/shared-call-reborrow/copy-bound.rs": {
+      "path": "pa18/tests/spec/shared-call-reborrow/copy-bound.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/18-copy-bound.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/copy-bound.rs",
+      "before_sha256": "7c08438e9350a1e1b2f89919a1f28098987ea1a202cfe95905a71bf9a281cac2",
+      "sha256": "7c08438e9350a1e1b2f89919a1f28098987ea1a202cfe95905a71bf9a281cac2",
+      "status": 0,
+      "change": "byte-identical relocation"
+    },
+    "pa16/tests/spec/shared-call-reborrow/generic-referent.rs": {
+      "path": "pa18/tests/spec/shared-call-reborrow/generic-referent.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/18-generic-referent.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/generic-referent.rs",
+      "before_sha256": "79f2aefe3c8115e645bf8f6c2494b459f3dd45599437daaf59916bce78831c3f",
+      "sha256": "79f2aefe3c8115e645bf8f6c2494b459f3dd45599437daaf59916bce78831c3f",
+      "status": 0,
+      "change": "byte-identical relocation"
+    },
+    "pa16/tests/spec/shared-call-reborrow/generic-value.rs": {
+      "path": "pa18/tests/spec/shared-call-reborrow/generic-value.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/18-generic-value.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/generic-value.rs",
+      "before_sha256": "bd6488356ac6bca9bf0d9134122b9d3a21fd3624b37bd870a4ba059521bb45cb",
+      "sha256": "bd6488356ac6bca9bf0d9134122b9d3a21fd3624b37bd870a4ba059521bb45cb",
+      "status": 0,
+      "change": "byte-identical relocation"
+    },
+    "pa16/tests/spec/shared-call-reborrow/mutable-generic-move.rs": {
+      "path": "pa18/tests/spec/shared-call-reborrow/mutable-generic-move.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/18-mutable-generic-move.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/mutable-generic-move.rs",
+      "before_sha256": "ef57c061425a64425dbabf74307233bc2ad5b235f0be183e3c26cc7d11bcf44f",
+      "sha256": "ef57c061425a64425dbabf74307233bc2ad5b235f0be183e3c26cc7d11bcf44f",
+      "status": 1,
+      "change": "byte-identical relocation"
+    }
+  },
+  "mode": "--emit-lowir",
+  "inspection_boundary": "generic --emit-loans remains explicitly unsupported; use actual defining-template/LowIR proof",
+  "native_scope": "Three accepted source libraries have no exported runtime root; independent and candidate empty object evidence only, no execution claim"
+}

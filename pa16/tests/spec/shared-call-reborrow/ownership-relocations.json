@@ -1,0 +1,223 @@
+{
+  "original_freeze_commit": "7e9d35fab",
+  "original_obj_plan_sha256": "01fa9f05637ddf1e3b4aeba939e4f43e8d15ad10f1e610892abd4493ef7923e5",
+  "current_files": {
+    "pa16/tests/spec/shared-call-reborrow/block.rs": {
+      "path": "pa16/tests/spec/shared-call-reborrow/block.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/16-block.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/block.rs",
+      "before_sha256": "c31c2a3a3482bd0fdaa22e5030557f0360a09d39a2c7742f022f0c94b7952fb7",
+      "sha256": "0601887a5093af2319c3452772d0b714b21fcba93b75cd8fab1dba00babbd35e",
+      "status": 0,
+      "change": "remove unused type-generic helpers"
+    },
+    "pa16/tests/spec/shared-call-reborrow/branches.rs": {
+      "path": "pa16/tests/spec/shared-call-reborrow/branches.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/16-branches.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/branches.rs",
+      "before_sha256": "aec2c0f3bb1d1a392fb5d69529d51ab66a323c8ba27d6bf99f7425ed6fe56edb",
+      "sha256": "bddc58a96220b560381903cea0f9677a72c4d19773652074ba9e51e5a0a00303",
+      "status": 0,
+      "change": "remove unused type-generic helpers"
+    },
+    "pa16/tests/spec/shared-call-reborrow/copy-bound.rs": {
+      "path": "pa18/tests/spec/shared-call-reborrow/copy-bound.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/18-copy-bound.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/copy-bound.rs",
+      "before_sha256": "7c08438e9350a1e1b2f89919a1f28098987ea1a202cfe95905a71bf9a281cac2",
+      "sha256": "7c08438e9350a1e1b2f89919a1f28098987ea1a202cfe95905a71bf9a281cac2",
+      "status": 0,
+      "change": "byte-identical relocation"
+    },
+    "pa16/tests/spec/shared-call-reborrow/direct.rs": {
+      "path": "pa16/tests/spec/shared-call-reborrow/direct.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/16-direct.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/direct.rs",
+      "before_sha256": "357c0caec467ff72a7e95b0a513b23e84843c28f3c86021c9a91585abad354ec",
+      "sha256": "0efa694aeb846287dbe27eb9d6679d52c1ef437e91d9afc392aafeef4dccc000",
+      "status": 0,
+      "change": "remove unused type-generic helpers"
+    },
+    "pa16/tests/spec/shared-call-reborrow/field.rs": {
+      "path": "pa16/tests/spec/shared-call-reborrow/field.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/16-field.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/field.rs",
+      "before_sha256": "6e2c29b0c630144d2a6fe7328701a2fcd781458a8cd69a25aa4295fe67918a9f",
+      "sha256": "91297e4b599b6bb4b11630eeed4d80cdb9ccdc3559e53220740ca55f1b176da8",
+      "status": 0,
+      "change": "remove unused type-generic helpers"
+    },
+    "pa16/tests/spec/shared-call-reborrow/function-pointer.rs": {
+      "path": "pa16/tests/spec/shared-call-reborrow/function-pointer.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/16-function-pointer.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/function-pointer.rs",
+      "before_sha256": "ec6c2fe6b1c6fb39d14aa2c74b9aa3d71080eb8a577d5765b96ddf309de843f3",
+      "sha256": "71a981e2f52961d1f008c9c593040d56ee444c8d9bb209b0c58075515d488b8d",
+      "status": 0,
+      "change": "remove unused type-generic helpers"
+    },
+    "pa16/tests/spec/shared-call-reborrow/generic-referent.rs": {
+      "path": "pa18/tests/spec/shared-call-reborrow/generic-referent.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/18-generic-referent.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/generic-referent.rs",
+      "before_sha256": "79f2aefe3c8115e645bf8f6c2494b459f3dd45599437daaf59916bce78831c3f",
+      "sha256": "79f2aefe3c8115e645bf8f6c2494b459f3dd45599437daaf59916bce78831c3f",
+      "status": 0,
+      "change": "byte-identical relocation"
+    },
+    "pa16/tests/spec/shared-call-reborrow/generic-value.rs": {
+      "path": "pa18/tests/spec/shared-call-reborrow/generic-value.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/18-generic-value.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/generic-value.rs",
+      "before_sha256": "bd6488356ac6bca9bf0d9134122b9d3a21fd3624b37bd870a4ba059521bb45cb",
+      "sha256": "bd6488356ac6bca9bf0d9134122b9d3a21fd3624b37bd870a4ba059521bb45cb",
+      "status": 0,
+      "change": "byte-identical relocation"
+    },
+    "pa16/tests/spec/shared-call-reborrow/inferred-let.rs": {
+      "path": "pa16/tests/spec/shared-call-reborrow/inferred-let.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/16-inferred-let.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/inferred-let.rs",
+      "before_sha256": "33554a4a7240a4194c41ba51f5183e2d65a32e390b81cdb3edfcd37bd0df9ff1",
+      "sha256": "84fda8f355b5caff0b33ed2030e463d5f1c3c25967255cbbf97b04611c878acc",
+      "status": 0,
+      "change": "remove unused type-generic helpers"
+    },
+    "pa16/tests/spec/shared-call-reborrow/live-shared-write.rs": {
+      "path": "pa16/tests/spec/shared-call-reborrow/live-shared-write.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/16-live-shared-write.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/live-shared-write.rs",
+      "before_sha256": "2b0a2c0040933425971cc65dedcdde4e0f6659bbbba48bb0c4ec1047d3aa447e",
+      "sha256": "8b2014e872cf842ba33f4871f5676f2c331deda9970e8fd01662d5716225ca6f",
+      "status": 1,
+      "change": "remove unused type-generic helpers"
+    },
+    "pa16/tests/spec/shared-call-reborrow/loop.rs": {
+      "path": "pa16/tests/spec/shared-call-reborrow/loop.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/16-loop.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/loop.rs",
+      "before_sha256": "177da142d8d92cac1c1faa9db0e943c110c1340106185640672fdc6020a1c893",
+      "sha256": "32a2ef0ab0599b02186ad729d31889f3827fa99631b03ac3118e8eceb85bdc98",
+      "status": 0,
+      "change": "remove unused type-generic helpers"
+    },
+    "pa16/tests/spec/shared-call-reborrow/match.rs": {
+      "path": "pa16/tests/spec/shared-call-reborrow/match.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/16-match.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/match.rs",
+      "before_sha256": "b7957f225e7387a4bcfe721067b0e7f63ce621c4a813561f6672f97921a5886b",
+      "sha256": "7f64cf7638ff5f42b918cb73a43a76464e75019a030f1d93c748f7ead275e723",
+      "status": 0,
+      "change": "remove unused type-generic helpers"
+    },
+    "pa16/tests/spec/shared-call-reborrow/mutable-call.rs": {
+      "path": "pa16/tests/spec/shared-call-reborrow/mutable-call.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/16-mutable-call.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/mutable-call.rs",
+      "before_sha256": "05754ae2e5102817e282646ff5c24944ca4d0dfbb79288fc81767907445a9ca6",
+      "sha256": "628a389ce54673986c7399d855161bc1f70ca6eeba035c0a86db0ae21320738d",
+      "status": 0,
+      "change": "remove unused type-generic helpers"
+    },
+    "pa16/tests/spec/shared-call-reborrow/mutable-generic-move.rs": {
+      "path": "pa18/tests/spec/shared-call-reborrow/mutable-generic-move.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/18-mutable-generic-move.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/mutable-generic-move.rs",
+      "before_sha256": "ef57c061425a64425dbabf74307233bc2ad5b235f0be183e3c26cc7d11bcf44f",
+      "sha256": "ef57c061425a64425dbabf74307233bc2ad5b235f0be183e3c26cc7d11bcf44f",
+      "status": 1,
+      "change": "byte-identical relocation"
+    },
+    "pa16/tests/spec/shared-call-reborrow/native-returned.rs": {
+      "path": "pa16/tests/spec/shared-call-reborrow/native-returned.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/16-native-returned.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/native-returned.rs",
+      "before_sha256": "fa395cfdc2389d07246709e9f166b488d8518fa65555f190f6a5256017d1ee87",
+      "sha256": "fa395cfdc2389d07246709e9f166b488d8518fa65555f190f6a5256017d1ee87",
+      "status": 0,
+      "change": "remove unused type-generic helpers"
+    },
+    "pa16/tests/spec/shared-call-reborrow/native.rs": {
+      "path": "pa16/tests/spec/shared-call-reborrow/native.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/16-native.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/native.rs",
+      "before_sha256": "95eb3a0420e9423b998b4f161a114a34ab575445dd77a1cd1d6d6e4a95737aed",
+      "sha256": "95eb3a0420e9423b998b4f161a114a34ab575445dd77a1cd1d6d6e4a95737aed",
+      "status": 0,
+      "change": "remove unused type-generic helpers"
+    },
+    "pa16/tests/spec/shared-call-reborrow/nested.rs": {
+      "path": "pa16/tests/spec/shared-call-reborrow/nested.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/16-nested.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/nested.rs",
+      "before_sha256": "7cc52e60f8d64047b542fad3f7eed667f0342f490d5bd04177faa5489aaf6e36",
+      "sha256": "b3de0b9bef4eb52256489b956fbb6be12576f223e74fb843bb0516547585c1ae",
+      "status": 0,
+      "change": "remove unused type-generic helpers"
+    },
+    "pa16/tests/spec/shared-call-reborrow/owned-move.rs": {
+      "path": "pa16/tests/spec/shared-call-reborrow/owned-move.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/16-owned-move.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/owned-move.rs",
+      "before_sha256": "f4e92b1e089d5a4f15d11636dba2a58b61fa25e8ac38e6478c9b9bae0e5dd52d",
+      "sha256": "5060760b971f3e084cdc8ddee2722da39eb60c5b53cab9bf70231708ef9115b0",
+      "status": 1,
+      "change": "remove unused type-generic helpers"
+    },
+    "pa16/tests/spec/shared-call-reborrow/return-local.rs": {
+      "path": "pa16/tests/spec/shared-call-reborrow/return-local.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/16-return-local.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/return-local.rs",
+      "before_sha256": "3b7c5735e47246b39034205c021196408a404c97032114a8c575c83f19b29eaa",
+      "sha256": "c226c01c3fa64f75657ca5c6678d69e3ea0036bf6fd4c95717e0eb9044257b36",
+      "status": 1,
+      "change": "remove unused type-generic helpers"
+    },
+    "pa16/tests/spec/shared-call-reborrow/shared-from-mutable.rs": {
+      "path": "pa16/tests/spec/shared-call-reborrow/shared-from-mutable.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/16-shared-from-mutable.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/shared-from-mutable.rs",
+      "before_sha256": "86932af1ac8adef203419212c41adf50f3a85e337db89ced1d9565779a8fe0a2",
+      "sha256": "ce1e890f95b6c91d2ad3109796bca6e3641ee367b51a3019cfd2c8ab99e00a1a",
+      "status": 0,
+      "change": "remove unused type-generic helpers"
+    },
+    "pa16/tests/spec/shared-call-reborrow/shared-to-mut.rs": {
+      "path": "pa16/tests/spec/shared-call-reborrow/shared-to-mut.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/16-shared-to-mut.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/shared-to-mut.rs",
+      "before_sha256": "66de9a99e554b18d72b99fda5644cab4b6270ba4a03038ec00771e8c65c37a27",
+      "sha256": "540ace7e113af3fe0abf246ad0d17ac94fc253ae39ba6617ffcdfa013ec26b84",
+      "status": 1,
+      "change": "remove unused type-generic helpers"
+    },
+    "pa16/tests/spec/shared-call-reborrow/tuple.rs": {
+      "path": "pa16/tests/spec/shared-call-reborrow/tuple.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/16-tuple.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/tuple.rs",
+      "before_sha256": "8f697dd0f0d5e197595c685ef3ee4868e509f32afb8b47c96a522b9e02daf92f",
+      "sha256": "3210a23a4d1b23b90d9a0872078c667d33fdf9cfbc6b541f771e27ac8bf6273a",
+      "status": 0,
+      "change": "remove unused type-generic helpers"
+    },
+    "pa16/tests/spec/shared-call-reborrow/typed-let.rs": {
+      "path": "pa16/tests/spec/shared-call-reborrow/typed-let.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/16-typed-let.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/typed-let.rs",
+      "before_sha256": "19d5a23ad23c297ad998af3d4b3580dd69b0db816b3074f4023e14f629a90209",
+      "sha256": "4f8079ef496205fcc6a5775a792ab5e337cb1c58a8cca1960b9376aad20536ab",
+      "status": 0,
+      "change": "remove unused type-generic helpers"
+    },
+    "pa16/tests/spec/shared-call-reborrow/unsize.rs": {
+      "path": "pa16/tests/spec/shared-call-reborrow/unsize.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-ownership/16-unsize.rs",
+      "before_path": "pa16/tests/spec/shared-call-reborrow/unsize.rs",
+      "before_sha256": "df913a907af2148a69898b50a206def535130865dbc5ff23b064086362daa4b4",
+      "sha256": "94d6e74c984b7f139850ae6011bcbbcd708db7e28a0e6fe96708a3c0667db02f",
+      "status": 0,
+      "change": "remove unused type-generic helpers"
+    }
+  },
+  "scope": "plain reference/loan controls PA16; type-generic bodies/Copy bounds PA18; source-owned providers PA31"
+}

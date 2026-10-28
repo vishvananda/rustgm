@@ -7754,6 +7754,82 @@
         "default_lints": true
       },
       "maintainer_origin": "PA18 opaque literal/block const arguments; pinned2021/2024 source hypotheses and observations retained for original core swap_prefix"
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/generic-referent.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "library": {
+        "crate_name": "shared_call_reborrow",
+        "disambiguator": "pa18callrefs"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic defining-body proof; no exported runtime root or native execution claimed"
+      }
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/generic-value.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "library": {
+        "crate_name": "shared_call_reborrow",
+        "disambiguator": "pa18callrefs"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic defining-body proof; no exported runtime root or native execution claimed"
+      }
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/copy-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa18.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0
+      },
+      "mode": "--emit-lowir",
+      "library": {
+        "crate_name": "shared_call_reborrow",
+        "disambiguator": "pa18callrefs"
+      },
+      "native": {
+        "kind": "object",
+        "reason": "Unused generic defining-body proof; no exported runtime root or native execution claimed"
+      }
+    },
+    {
+      "path": "tests/spec/shared-call-reborrow/mutable-generic-move.rs",
+      "exit_status": 1,
+      "features": [
+        "pa18.shared-call-reborrow"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1
+      },
+      "mode": "--emit-lowir",
+      "library": {
+        "crate_name": "shared_call_reborrow",
+        "disambiguator": "pa18callrefs"
+      }
     }
   ]
 }

@@ -1,0 +1,35 @@
+{
+  "status": "explicit cast independent source outcomes and original bytes retained",
+  "cases": [
+    {
+      "path": "pa31/tests/spec/shared-call-reborrow/cast-both-noimpl.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-unsize-cast/both-noimpl.rs",
+      "sha256": "8729c566b8876ef9762cc0941c6c7813a281ccdd8226edafaa9616f3d9d6bf37",
+      "accepted": false
+    },
+    {
+      "path": "pa31/tests/spec/shared-call-reborrow/cast-complete.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-unsize-cast/complete.rs",
+      "sha256": "3d8c85b06a1fbdf193b90625c6f673eb9f7754fb470ccdd2b2e5f0be1e1e9b75",
+      "accepted": true
+    },
+    {
+      "path": "pa31/tests/spec/shared-call-reborrow/cast-missing.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-unsize-cast/missing.rs",
+      "sha256": "cfd171dfba284e63ded0544553a0c47676a149b1a2a757c6515391662dbcdac8",
+      "accepted": false
+    },
+    {
+      "path": "pa31/tests/spec/shared-call-reborrow/cast-mut-only.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-unsize-cast/mut-only.rs",
+      "sha256": "8d9173b59144dce278e14329af83d528504dc4a3dbb6de3d0c687ebe0acd0288",
+      "accepted": false
+    },
+    {
+      "path": "pa31/tests/spec/shared-call-reborrow/cast-only-unsize.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-unsize-cast/only-unsize.rs",
+      "sha256": "cb72290357943d456829e39dcbe63936df07a0c1e89be615f4e8c6400ae9860a",
+      "accepted": false
+    }
+  ]
+}

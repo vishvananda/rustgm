@@ -2,6 +2,9 @@
 use super::{Checker, Constructor, Error, Kind, NodeId, Operation, TermId, Work};
 mod operands;
 use crate::sema::model::{AdjustmentKind, BodyRegionOrigin, ReferenceConversion};
+#[cfg(test)]
+#[path = "../../../tests/invariants/shared_reborrows.rs"]
+mod tests;
 
 pub(super) enum CoercionWork {
     Enter(NodeId, TermId, bool, bool),
@@ -121,7 +124,7 @@ impl Checker<'_> {
         identity_reborrow: bool,
     ) -> Result<bool, Error> {
         let (converted, selection, mut unsizing) =
-            self.reference_conversion(node, actual, expected)?;
+            self.reference_conversion(node, actual, expected, identity_reborrow)?;
         let Some(selection) = selection else {
             return Ok(false);
         };
@@ -144,7 +147,7 @@ impl Checker<'_> {
             self.head(node, actual)?,
             Some(Constructor::Reference { mutable: false, .. })
         );
-        let kind = if shared && selection.dereferences == 1 {
+        let kind = if shared && selection.dereferences == 1 && !identity_reborrow {
             if unsizing.is_some() {
                 AdjustmentKind::Unsize
             } else {
@@ -220,7 +223,7 @@ impl Checker<'_> {
         } else {
             (b, a)
         };
-        let (converted, _, _) = self.reference_conversion(node, actual, expected)?;
+        let (converted, _, _) = self.reference_conversion(node, actual, expected, false)?;
         self.callable_shape(node, converted, expected)?;
         self.inferred_regions(node, expected)
     }
@@ -229,6 +232,7 @@ impl Checker<'_> {
         node: NodeId,
         actual: TermId,
         expected: TermId,
+        identity_reborrow: bool,
     ) -> Result<
         (
             TermId,
@@ -286,7 +290,10 @@ impl Checker<'_> {
         } else {
             None
         };
-        if !from && dereferences == 1 && !unsize && pending.is_none() {
+        // A source-time reference expectation reborrows shared references too.
+        // An inferred generic value remains a move; later equality cannot add
+        // this place access or substitute for an actual source Copy impl.
+        if !from && !identity_reborrow && dereferences == 1 && !unsize && pending.is_none() {
             return Ok((actual, None, None));
         }
         if dereferences != 1 && (unsize || pending.is_some()) {
@@ -319,6 +326,9 @@ impl Checker<'_> {
                 &[referent],
             )
             .map_err(|e| self.error(node, e))?;
+        if unsize || pending.is_some() {
+            self.source_reference_unsizing(node, source, converted)?;
+        }
         Ok((
             converted,
             Some(ReferenceConversion {
@@ -328,6 +338,49 @@ impl Checker<'_> {
             }),
             pending,
         ))
+    }
+    fn source_reference_unsizing(
+        &mut self,
+        node: NodeId,
+        referent: TermId,
+        converted: TermId,
+    ) -> Result<(), Error> {
+        let Some(catalog) = self.facts.source_bindings.as_deref() else {
+            return Ok(());
+        };
+        catalog
+            .require_provider_report(self.report)
+            .map_err(|e| self.error(node, e))?;
+        let definition = catalog
+            .validated_language(crate::support::bindings::LangItem::CoerceUnsized)
+            .map_err(|e| self.error(node, e))?
+            .ok_or_else(|| {
+                self.error(
+                    node,
+                    "reference unsizing requires its actual source CoerceUnsized declaration",
+                )
+            })?
+            .definition;
+        let Some(Constructor::Reference { mutable, region }) = self.head(node, converted)? else {
+            return Err(self.error(node, "source unsizing lost its reference view"));
+        };
+        // The conversion contract separately proves the original place and its
+        // lifetimes. This view selects the actual impl after that reborrow;
+        // role presence alone cannot prove its Unsize and formation premises.
+        let source = self
+            .state
+            .infer
+            .construct(Constructor::Reference { mutable, region }, &[referent])
+            .map_err(|e| self.error(node, e))?;
+        self.state.call_types.obligations.push((
+            node,
+            crate::types::infer::predicates::Predicate::trait_application(
+                source,
+                crate::types::ItemId(definition.0),
+                vec![crate::types::infer::arguments::Argument::Type(converted)],
+            ),
+        ));
+        Ok(())
     }
     fn reference_depth(&mut self, node: NodeId, mut term: TermId) -> Result<u32, Error> {
         let mut count = 0;

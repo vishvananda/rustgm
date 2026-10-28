@@ -1,0 +1,37 @@
+{
+  "status": "candidate rejection hypotheses declared before candidate observation; Rust source-foundation failures retained",
+  "cases": [
+    {
+      "path": "pa31/tests/spec/shared-call-reborrow/unsize-missing-roles.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/source-unsize.rs",
+      "sha256": "5ba12a6db15cea69fc979f8cb9404d9ebf0312c9ef14be40d4a27f5be8fb63d1",
+      "rust_status": 1,
+      "candidate_hypothesis_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/shared-call-reborrow/both-without-impl.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-unsize-foundation/both-without-impl.rs",
+      "sha256": "35177409154331403261e57d081f601d54472d685f4014beca55bc9bb4cefc95",
+      "rust_status": 1,
+      "candidate_hypothesis_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/shared-call-reborrow/only-unsize.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-unsize-foundation/only-unsize.rs",
+      "sha256": "bb2bce497173f96abe716ca76bea68abaf774a8e1f4dd28d2017f65f0cc5d30f",
+      "rust_status": 1,
+      "candidate_hypothesis_status": 1
+    },
+    {
+      "path": "pa31/tests/spec/shared-call-reborrow/without-shared-impl.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-unsize-foundation/without-shared-impl.rs",
+      "sha256": "7825af665d64d71e03c6c72b7da27efe44b0a999870baa78dbe8edc5f95aab39",
+      "rust_status": 1,
+      "candidate_hypothesis_status": 1
+    }
+  ],
+  "independent_summaries": [
+    "observed/summary.json",
+    "observed-unsize-foundation/summary.json"
+  ]
+}
