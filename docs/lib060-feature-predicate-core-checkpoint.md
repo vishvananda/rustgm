@@ -65,9 +65,25 @@ source/native matrix qualification remains independent.
 Production/CLI+lexer gate `1793215735989182086` fails strict Clippy in 78.55s
 because the deliberately crate-private policy publisher and its constructor have
 no production caller on this isolated base. No lexer execution occurred. The
-authenticated source publisher must make this API live in the joined compiler;
-production qualification remains pending. Visibility is not widened, no default
-policy is installed and no dead-code waiver hides this boundary.
+authenticated source publisher still had to make this API live in the joined
+compiler; production qualification at that snapshot remained pending. Visibility
+was not widened, no default policy was installed and no dead-code waiver hid
+this boundary.
+
+Root subsequently integrated the real source publisher at `270390dcb`. It reads
+only the completed checked library request inventory, interns ordinary requests
+once and publishes an empty enabling set for staged libraries. Its cold storage
+and temporary IDs use the existing attribute producer's payer. Marker-free
+ordinary crates without a library inventory allocate no policy. This source port
+resolves the isolated production dead-code failure without widening visibility.
+
+Final joined private13 passes in 122.71 seconds (`1793217226510599843`);
+production/CLI, lexer10 and PA6 pass in 97.45 seconds
+(`1793217370219235780`). The joined source handler also executes natively as
+[recorded separately](pa31-source-panic-handler-checkpoint.md). Trait/Fn source
+capture, preservation through bounds completion, charged source environments,
+the sealed native caller adapter and feature metadata remain required. These
+results do not close the independent source matrix or the original-core build.
 
 Measured x86-64 widths are FeatureId 8, Clause 12, Store 472, Environment 64 and
 NodeFacts 80 bytes. The original two-variant sum, using unchanged canonical

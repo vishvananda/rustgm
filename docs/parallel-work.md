@@ -3,12 +3,14 @@
 The user has reauthorized up to two subagents. Root continues direct compiler
 implementation and integration in `rustgm-pa25-work`. Worker `lint_expectations`
 completed the bounded lint cap, now integrated and qualified. It owns the typed
-non-type feature-predicate core/proof in `rustgm-pa26-work`; broader
+sealed native caller port in `rustgm-pa26-work`; its typed predicate core is
+integrated and qualified. Broader
 diagnostic parity is deferred unless it blocks actual compilation. Worker
 `const_call_review` completed availability v3 transport in `rustgm-pa27-work`,
-now integrated with private21 and production53/PA6 qualification. Its next exit
-is genuine source PanicInfo/Location/handler/abort execution from the preserved
-handler transaction, not signature preparation alone. Root owns publication,
+now integrated and qualified. Its genuine selected source handler passes normal/
+drop and handler/abort native execution. It now owns authentic Trait/Fn/trait-impl
+capture and the paid typed source clause API; Root owns predicate preservation,
+charged environments and publication. Root also owns
 strict/capped observation and the actual trait feature-bound contract at the
 new strict core boundary. Keep default strict qualification separate from
 explicit capped bring-up and retain every mandatory language/assignment gate.
@@ -20,7 +22,7 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The current CLI6a5c58a2 has explicit separate strict/Allow profiles. Both reach
+The current CLI8f0caee9 has explicit separate strict/Allow profiles. Both reach
 original mem/transmutability.rs86,
 `#[unstable_feature_bound(transmutability)]` on the actual unsafe trait. All722
 source pins and effective target arguments remain unchanged;60 sources open

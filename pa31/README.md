@@ -74,6 +74,12 @@ Establish the minimal panic-abort entry/runtime boundary and no_core declaration
 packages. Keep general unwinding at PA39. Host/build configuration lives outside
 the frontend library; no environment reads enter semantic hot paths.
 
+The [selected source handler checkpoint](../docs/pa31-source-panic-handler-checkpoint.md)
+executes genuine Location/PanicInfo/panic/handler bodies through LowIR and the
+native backend, with normal/drop and handler/abort traces. Its selected local
+profile does not complete full Formatter support, metadata interoperability or
+the original core/alloc/std artifact requirements.
+
 The maintainer implements compiler responsibilities in `dev/src/` and introduces
 typed interfaces before text views. Follow [spec.md](../spec.md), the pinned Rust
 Reference and CPPGM's efficient representation principles. Parse once, retain

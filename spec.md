@@ -315,6 +315,15 @@ their validation after configured expansion; unknown requests grant no capabilit
 Retain regular, const and default-body API stability as distinct declaration facts,
 separate from callable effects and each caller's proof. Compute owner inheritance
 and feature indexes once, then check actual uses without whole-crate rescanning.
+Represent required unstable features as non-type clauses with Store-owned canonical
+identities. Keep item assumptions separate from immutable crate enabling and
+regular API permission; a lint cap supplies none of these proofs. Staged libraries
+must use actual caller assumptions. Share paid cold premise/index storage, retain
+requirements before lifetime-only filtering, and authenticate the real caller
+when materializing a checked instance. Never substitute the callee's own marker
+as evidence or drop an untransported clause into an older metadata profile. The
+[typed checkpoint](docs/lib060-feature-predicate-core-checkpoint.md) records the
+implemented ports and remaining source/transport work.
 Macro-internal allowances follow exact defining/captured token provenance. The
 local header implementation combines complete identifier lists and repeated
 attributes, stores canonical NFC membership separately from exact raw source
