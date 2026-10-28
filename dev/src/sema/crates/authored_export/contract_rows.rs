@@ -22,6 +22,14 @@ pub(super) struct Index {
 }
 
 impl Stage {
+    pub(super) fn known_site(
+        &mut self,
+        owner: DeclarationRef,
+        source: NodeKey,
+    ) -> Result<Option<u32>, &'static str> {
+        self.charge(1)?;
+        Ok(self.inputs.sites.get(&(owner, source)).copied())
+    }
     pub(crate) fn site(
         &mut self,
         owner: DeclarationRef,

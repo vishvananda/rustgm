@@ -30,6 +30,8 @@ pub(crate) use original_declarations::Work as ReservationWork;
 use std::sync::Arc;
 
 pub struct Imported {
+    pub(in crate::resolve) availability:
+        Option<Box<super::stability::availability_imports::Imports>>,
     origins: super::body_origin::CatalogSlot,
     generic_work: Option<Box<original_declarations::Work>>,
     dependencies: Arc<Dependencies>,
@@ -40,6 +42,9 @@ pub struct Imported {
     statics: Vec<(DefId, usize, usize)>,
 }
 impl Imported {
+    pub(crate) fn has_availability(&self) -> bool {
+        self.availability.is_some()
+    }
     pub(crate) fn original_reservation_budget(&self) -> (usize, usize) {
         self.generic_work
             .as_deref()
@@ -47,6 +52,7 @@ impl Imported {
     }
     fn new(dependencies: Arc<Dependencies>) -> Self {
         Self {
+            availability: None,
             origins: super::body_origin::CatalogSlot::default(),
             generic_work: None,
             dependencies,
@@ -265,6 +271,11 @@ impl Resolver<'_> {
         self.bind_crate_aliases(external, &imported)?;
         self.facts.extern_scope = Some(external);
         imported.origins.freeze().map_err(error)?;
+        imported.availability = super::stability::availability_imports::prepare(
+            &imported,
+            self.facts,
+            &self.package.names,
+        )?;
         self.facts.crates = Some(Box::new(imported));
         Ok(())
     }

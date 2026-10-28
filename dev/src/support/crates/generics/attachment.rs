@@ -35,6 +35,29 @@ impl From<source::ValidatedRows> for Payload {
 }
 impl Payload {
     /// # Errors
+    /// Rejects incomplete availability or foreign source policy coordinates.
+    pub fn from_source_module_availability(
+        owner: &CrateIdentity,
+        rows: source::SourceRows,
+        attributes: source::HeaderAttributeColumns,
+        modules: source::ModuleContractRows,
+        availability: source::AvailabilityRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        let overhead = size_of::<Self>().saturating_sub(size_of::<source::ValidatedRows>());
+        source::ValidatedRows::stage_module_availability(
+            owner,
+            rows,
+            attributes,
+            modules,
+            availability,
+            base.saturating_add(overhead),
+            work,
+        )
+        .map(Self::from)
+    }
+    /// # Errors
     /// Rejects malformed legacy tables and combined resource limits.
     pub fn new(owner: &CrateIdentity, rows: Rows, work: &mut Work) -> Result<Self, &'static str> {
         Ok(Self {

@@ -82,7 +82,7 @@ pub(in crate::resolve) fn collect(
             "duplicate or conflicting library stability",
         ));
     }
-    let policy = parse(
+    let mut policy = parse(
         unit,
         key,
         attribute,
@@ -90,6 +90,11 @@ pub(in crate::resolve) fn collect(
         matches!(name, "stable" | "rustc_const_stable"),
         draft,
     )?;
+    policy.kind = if constant {
+        super::PolicyKind::Const
+    } else {
+        super::PolicyKind::Regular
+    };
     let id = NonZeroUsize::new(draft.policies.len() + 1).ok_or_else(|| {
         Error::at(
             key.file,
@@ -152,6 +157,7 @@ fn parse(
         Level::Unstable { issue, reason }
     };
     Ok(Policy {
+        kind: super::PolicyKind::Regular,
         feature,
         level,
         origin: key,

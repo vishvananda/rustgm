@@ -377,6 +377,16 @@ impl Resolver<'_> {
         let ambiguous = work.ambiguous_early_path(self.facts, &observed, introduction);
         let privacy = observed.privacy.unwrap_or(c.module);
         if let Some(mut selections) = observed.selected.take() {
+            if !ambiguous
+                && matches!(&result, Ok(Lookup::Found(_)))
+                && let Some(imports) = self
+                    .facts
+                    .crates
+                    .as_deref_mut()
+                    .and_then(|imports| imports.availability.as_deref_mut())
+            {
+                imports.record(import.node, &selections)?;
+            }
             selections.clear();
             work.selections = selections;
         }

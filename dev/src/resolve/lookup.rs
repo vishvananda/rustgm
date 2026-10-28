@@ -36,6 +36,14 @@ pub(crate) struct Observations {
     pub dependencies: Vec<BindingKey>,
     pub selected: Option<Vec<Selection>>,
     pub privacy: Option<ModuleId>,
+    pub selections_only: bool,
+}
+impl Observations {
+    pub(crate) fn dependency(&mut self, key: BindingKey) {
+        if !self.selections_only {
+            self.dependencies.push(key);
+        }
+    }
 }
 pub(crate) enum Lookup {
     Found(Binding),
@@ -242,9 +250,7 @@ impl Resolver<'_> {
         let mut scope = if absolute {
             // A later explicit extern declaration can introduce this name.
             if let Some(observed) = observed.as_mut() {
-                observed
-                    .dependencies
-                    .push((ScopeId(0), first, Namespace::Type, ItemContext::ROOT));
+                observed.dependency((ScopeId(0), first, Namespace::Type, ItemContext::ROOT));
             }
             Some(self.external_root(c, node, first)?)
         } else {

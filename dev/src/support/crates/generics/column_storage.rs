@@ -112,6 +112,11 @@ impl std::ops::Deref for ValidatedView<'_> {
     }
 }
 impl<'a> ValidatedView<'a> {
+    /// # Errors
+    /// Older source profiles retain unknown availability.
+    pub fn availability(self) -> Result<&'a super::super::AvailabilityRows, &'static str> {
+        self.source.descriptor().availability()
+    }
     pub(crate) fn declared_members(
         self,
         range: crate::support::crates::generics::Range,

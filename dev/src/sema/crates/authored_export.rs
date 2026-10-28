@@ -1,6 +1,7 @@
 //! Source headers reserve genuine declarations before any body row is published.
 mod admitted_contracts;
 mod advisory_rows;
+mod availability_rows;
 pub(crate) use admitted_contracts::HeaderCompletion;
 mod authored_functions;
 mod authored_traits;
@@ -52,6 +53,7 @@ enum ExportMode {
     Legacy,
     Namespace,
     ModuleContracts,
+    Availability,
 }
 
 pub(crate) struct Stage {
@@ -198,6 +200,13 @@ impl Stage {
     ) -> Result<Self, &'static str> {
         Self::begin_mode(report, facts, identity, ExportMode::ModuleContracts)
     }
+    pub(crate) fn begin_module_availability(
+        report: &Report,
+        facts: &mut Declarations,
+        identity: &CrateIdentity,
+    ) -> Result<Self, &'static str> {
+        Self::begin_mode(report, facts, identity, ExportMode::Availability)
+    }
     fn begin_mode(
         report: &Report,
         facts: &mut Declarations,
@@ -219,8 +228,17 @@ impl Stage {
         if facts.members.has_contextual_fields() {
             return Err("contextual aggregate field metadata is not implemented");
         }
-        if report.package.library_policy().is_some() {
+        if report.package.library_policy().is_some() && mode != ExportMode::Availability {
             return Err("source stability contracts are outside this metadata profile");
+        }
+        if mode == ExportMode::Availability
+            && report
+                .package
+                .library_policy()
+                .and_then(crate::resolve::stability::Library::staged_inventory)
+                .is_none()
+        {
+            return Err("source availability export requires its completed actual library policy");
         }
         if report.resolution.bindings.has_contextual_items()
             || report.package.marks.context_count() != 1
@@ -331,7 +349,7 @@ impl Stage {
             };
             let id =
                 DefId(u32::try_from(index).map_err(|_| "source declaration identity overflow")?);
-            if mode != ExportMode::ModuleContracts
+            if !matches!(mode, ExportMode::ModuleContracts | ExportMode::Availability)
                 && definition.kind == DefKind::Trait
                 && crate::resolve::impl_restrictions::clause(report, id)
                     .map_err(|_| "source trait implementation domain is invalid")?

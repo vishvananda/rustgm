@@ -144,7 +144,7 @@ pub(in crate::sema::crates::typed_headers) fn symbol_from(
     let id = context.catalog.declaration(definition).map_err(error)?;
     let (owner, row, _) = context.catalog.declaration_coordinate(id).map_err(error)?;
     let rows = context.descriptor.rows();
-    let path = if context.descriptor.profile() == s::Profile::Source2024ModuleContracts {
+    let path = if context.descriptor.profile().module_contracts() {
         let root = context
             .descriptor
             .module_contracts()

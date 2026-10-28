@@ -96,7 +96,8 @@ impl Context<'_> {
         }
         if !actual.profile().ordinary_functions() {
             match actual.profile() {
-                s::Profile::Source2024ModuleContracts => {
+                s::Profile::Source2024ModuleContracts
+                | s::Profile::Source2024ModuleAvailability => {
                     actual.module_contracts().map_err(error)?;
                 }
                 _ => {

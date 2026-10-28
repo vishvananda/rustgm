@@ -245,7 +245,7 @@ pub(super) fn prepare(
     imported: &Imported,
     work: &mut Work,
 ) -> Result<Pending, Error> {
-    if rows.descriptor().profile() == s::Profile::Source2024ModuleContracts {
+    if rows.descriptor().profile().module_contracts() {
         return binding_publication::prepare(resolver, artifact, rows, definitions, imported, work);
     }
     let scratch = retained::new_map::<(ScopeId, NameId, Namespace), ()>(rows.declarations.len());

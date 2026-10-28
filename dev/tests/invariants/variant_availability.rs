@@ -77,6 +77,7 @@ fn seeded() -> Result<(Report, usize, Draft)> {
     };
     let mut draft = Draft::default();
     draft.policies.push(Policy {
+        kind: policy.kind,
         feature: policy.feature.clone(),
         level: Level::Stable(since),
         origin: policy.origin,

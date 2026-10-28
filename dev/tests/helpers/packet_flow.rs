@@ -41,11 +41,28 @@ pub(crate) fn client_analysis(
     pipeline::Analysis,
     CrateIdentity,
 )> {
+    client_analysis_with(interface, Vec::new(), source)
+}
+pub(crate) fn client_analysis_with(
+    interface: crates::Interface,
+    extra: Vec<crates::Interface>,
+    source: &str,
+) -> Result<(
+    resolve::expansion::Report,
+    pipeline::Analysis,
+    CrateIdentity,
+)> {
     let provider = interface.identity().clone();
-    let dependencies = Arc::new(Dependencies::new(
-        vec![interface],
-        vec![Dependency::new("base".into(), provider.clone())?],
-    )?);
+    let mut aliases = vec![Dependency::new("base".into(), provider.clone())?];
+    for (index, artifact) in extra.iter().enumerate() {
+        aliases.push(Dependency::new(
+            format!("dependency_{index}"),
+            artifact.identity().clone(),
+        )?);
+    }
+    let mut artifacts = vec![interface];
+    artifacts.extend(extra);
+    let dependencies = Arc::new(Dependencies::new(artifacts, aliases)?);
     let current = CrateIdentity::new("client", "source_transaction")?;
     let context = resolve::bindings::Context {
         crate_name: Some("client".into()),

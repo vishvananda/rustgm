@@ -17,7 +17,13 @@ impl Checker<'_> {
         allowances: &mut MacroAllowanceSession<'_>,
     ) -> Result<(), Error> {
         let owner = self.const_library_owner(node)?;
-        if owner.is_none()
+        if self
+            .report
+            .resolution
+            .crates
+            .as_deref()
+            .is_none_or(|imports| !imports.has_availability())
+            && owner.is_none()
             && (self.facts.source_bindings.is_none()
                 || self.callee_use_effect()? == crate::support::constness::Constness::Ordinary)
         {
@@ -48,7 +54,13 @@ impl Checker<'_> {
         allowances: &mut MacroAllowanceSession<'_>,
     ) -> Result<(), Error> {
         let owner = self.const_library_owner(node)?;
-        if owner.is_none()
+        if self
+            .report
+            .resolution
+            .crates
+            .as_deref()
+            .is_none_or(|imports| !imports.has_availability())
+            && owner.is_none()
             && self.callee_use_effect()? == crate::support::constness::Constness::Ordinary
         {
             return Ok(());
@@ -119,6 +131,15 @@ impl Checker<'_> {
             };
         };
         let target = DefId(item.0);
+        crate::resolve::stability::check_imported_api(self.report, self.key(node), target, false)?;
+        if self.callee_use_effect()? != crate::support::constness::Constness::Ordinary {
+            crate::resolve::stability::check_imported_api(
+                self.report,
+                self.key(node),
+                target,
+                true,
+            )?;
+        }
         let intrinsic = self
             .facts
             .source_bindings

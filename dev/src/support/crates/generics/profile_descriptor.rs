@@ -51,8 +51,17 @@ pub enum Profile {
     Source2024ProvidedContracts,
     /// Complete ordinary module namespace, implementation domains and advisory facts.
     Source2024ModuleContracts,
+    /// Complete staged regular/const API availability, independently of body proof.
+    Source2024ModuleAvailability,
 }
 impl Profile {
+    #[must_use]
+    pub const fn module_contracts(self) -> bool {
+        matches!(
+            self,
+            Self::Source2024ModuleContracts | Self::Source2024ModuleAvailability
+        )
+    }
     #[must_use]
     pub const fn ordinary_functions(self) -> bool {
         matches!(
@@ -79,6 +88,7 @@ pub struct ValidatedRows {
     attributes: Option<Box<super::HeaderAttributeColumns>>,
     provided: Option<Box<provided_contracts::ProvidedContractColumns>>,
     modules: Option<Box<module_contracts::ModuleContractColumns>>,
+    availability: Option<Box<super::AvailabilityColumns>>,
     budget: Budget,
 }
 impl PartialEq for ValidatedRows {
@@ -89,10 +99,66 @@ impl PartialEq for ValidatedRows {
             && self.attributes == other.attributes
             && self.provided == other.provided
             && self.modules == other.modules
+            && self.availability == other.availability
     }
 }
 impl Eq for ValidatedRows {}
 impl ValidatedRows {
+    pub(crate) fn stage_module_availability(
+        owner: &CrateIdentity,
+        rows: SourceRows,
+        attributes: super::HeaderAttributeColumns,
+        modules: ModuleContractRows,
+        availability: super::AvailabilityRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        let start = work.steps;
+        let bytes = availability.storage_bytes(work)?;
+        let mut staged = Self::stage_module_contracts(
+            owner,
+            rows,
+            attributes,
+            modules,
+            base.saturating_add(bytes),
+            work,
+        )?;
+        let modules = staged
+            .modules
+            .as_deref()
+            .ok_or("availability lost its actual module columns")?
+            .view();
+        let available = availability.validate(
+            &staged.columns,
+            &staged.headers,
+            modules.rows(),
+            base.saturating_add(staged.budget.bytes),
+            work,
+        )?;
+        work.charge(available.rows().policies.len())?;
+        staged.budget.names = staged.budget.names.saturating_add(
+            available
+                .rows()
+                .policies
+                .iter()
+                .map(|policy| {
+                    policy.feature.len()
+                        + match &policy.level {
+                            super::AvailabilityLevel::Stable(_) => 0,
+                            super::AvailabilityLevel::Unstable { reason, .. } => {
+                                reason.as_ref().map_or(0, String::len)
+                            }
+                        }
+                })
+                .sum::<usize>(),
+        );
+        staged.budget.bytes = staged.budget.bytes.saturating_add(bytes);
+        staged.budget.peak = staged.budget.peak.saturating_add(bytes);
+        staged.budget.atoms = work.steps.saturating_sub(start);
+        staged.availability = Some(Box::new(available));
+        staged.profile = Profile::Source2024ModuleAvailability;
+        Ok(staged)
+    }
     /// Structural staging only. Public payload activation remains gated until
     /// source serialization, canonical remapping and fresh proof all exist.
     pub(crate) fn stage(
@@ -222,6 +288,7 @@ impl ValidatedRows {
             attributes: Some(Box::new(attributes)),
             provided: None,
             modules: Some(Box::new(modules)),
+            availability: None,
             budget,
         })
     }
@@ -279,7 +346,7 @@ impl ValidatedRows {
                 provided::validate(&rows, &indexed, work)?
             }
             Profile::Source2024 => return Err("unpublished source facade has no data profile"),
-            Profile::Source2024ModuleContracts => {
+            Profile::Source2024ModuleContracts | Profile::Source2024ModuleAvailability => {
                 return Err(
                     "module contracts require their complete namespace/domain/attribute columns",
                 );
@@ -326,6 +393,7 @@ impl ValidatedRows {
             attributes,
             provided,
             modules: None,
+            availability: None,
             budget,
         })
     }
@@ -523,7 +591,7 @@ impl<'a> Descriptor<'a> {
     /// # Errors
     /// Rejects a different profile or incomplete module/domain completion.
     pub fn module_contracts(self) -> Result<ModuleContractView<'a>, &'static str> {
-        if self.source.profile != Profile::Source2024ModuleContracts {
+        if !self.source.profile.module_contracts() {
             return Err("descriptor has no version-two module contracts");
         }
         self.source
@@ -531,6 +599,18 @@ impl<'a> Descriptor<'a> {
             .as_deref()
             .map(module_contracts::ModuleContractColumns::view)
             .ok_or("version-two module contract columns are missing")
+    }
+    /// # Errors
+    /// Older profiles have unknown availability, never checked absence.
+    pub fn availability(self) -> Result<&'a super::AvailabilityRows, &'static str> {
+        if self.source.profile != Profile::Source2024ModuleAvailability {
+            return Err("descriptor has no complete source API availability");
+        }
+        self.source
+            .availability
+            .as_deref()
+            .map(super::AvailabilityColumns::rows)
+            .ok_or("source availability completion columns are missing")
     }
     pub(crate) fn provided_contracts(self) -> Result<ProvidedContractView<'a>, &'static str> {
         if self.source.profile != Profile::Source2024ProvidedContracts {

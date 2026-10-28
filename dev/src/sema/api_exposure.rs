@@ -63,7 +63,7 @@ fn check_with_limits(
     let Some(inventory) = report
         .package
         .library_policy()
-        .and_then(crate::resolve::stability::Library::inventory)
+        .and_then(crate::resolve::stability::Library::staged_inventory)
     else {
         return Ok(Cost::default());
     };

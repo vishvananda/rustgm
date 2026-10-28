@@ -1,6 +1,8 @@
 //! Raw source contracts retain complete requests; only validation can publish data.
 #[path = "advisory_contracts.rs"]
 mod attributes;
+#[path = "availability_columns.rs"]
+mod availability;
 #[path = "operation_rows.rs"]
 mod bodies;
 #[path = "profile_descriptor.rs"]
@@ -22,6 +24,11 @@ use crate::support::{
     edition::Edition,
 };
 pub use attributes::*;
+pub(crate) use availability::{AvailabilityAncestry, AvailabilityColumns};
+pub use availability::{
+    AvailabilityKind, AvailabilityLevel, AvailabilityOrigin, AvailabilityPolicy, AvailabilityRef,
+    AvailabilityRows, AvailabilitySince, BindingAvailability, DeclarationAvailability,
+};
 pub use bodies::*;
 pub(crate) use descriptor::canonical_order;
 pub use descriptor::{

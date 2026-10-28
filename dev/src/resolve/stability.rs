@@ -1,5 +1,6 @@
 //! Local library availability is distinct from language and const-call permission.
 mod attributes;
+pub(in crate::resolve) mod availability_imports;
 mod constness;
 mod exported_scopes;
 mod inventory;
@@ -20,6 +21,11 @@ pub enum Since {
     Current,
     Version { major: u16, minor: u16, patch: u16 },
 }
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum PolicyKind {
+    Regular,
+    Const,
+}
 /// Regular API policy; const and provided-body contracts have separate consumers.
 #[derive(Debug)]
 pub enum Level {
@@ -37,6 +43,7 @@ impl Level {
 /// One parsed annotation. Shared module instances retain separate effective owners.
 #[derive(Debug)]
 pub struct Policy {
+    pub(crate) kind: PolicyKind,
     pub feature: Box<str>,
     pub level: Level,
     pub origin: NodeKey,
@@ -114,6 +121,14 @@ impl Library {
     pub const fn inventory(&self) -> Option<&Inventory> {
         self.inventory.as_ref()
     }
+    #[must_use]
+    pub(crate) const fn staged_inventory(&self) -> Option<&Inventory> {
+        if self.staged {
+            self.inventory.as_ref()
+        } else {
+            None
+        }
+    }
     pub(super) fn publish(&mut self, inventory: Inventory) {
         self.inventory = Some(inventory);
     }
@@ -127,6 +142,35 @@ pub struct Inventory {
     steps: usize,
 }
 impl Inventory {
+    pub(crate) fn policies(&self) -> &[Policy] {
+        &self.policies
+    }
+    pub(crate) fn declaration_ids(
+        &self,
+        id: DefId,
+    ) -> Result<(Option<usize>, Option<usize>), &'static str> {
+        let regular = self
+            .declarations
+            .get(id.0 as usize)
+            .ok_or("availability declaration is outside its completed inventory")?;
+        let constant = self
+            .consts
+            .as_deref()
+            .and_then(|rows| rows.declarations.get(id.0 as usize))
+            .copied()
+            .flatten();
+        Ok((
+            regular.map(|id| id.get() - 1),
+            constant.map(|id| id.get() - 1),
+        ))
+    }
+    pub(crate) fn import_id(&self, index: usize) -> Result<Option<usize>, &'static str> {
+        Ok(self
+            .imports
+            .get(index)
+            .ok_or("availability import is outside its completed inventory")?
+            .map(|id| id.get() - 1))
+    }
     #[must_use]
     pub fn declaration(&self, id: DefId) -> Option<&Policy> {
         let id = self.declarations.get(id.0 as usize).copied().flatten()?;
@@ -170,8 +214,13 @@ impl Draft {
     }
 }
 pub(super) use attributes::collect;
+pub(crate) use availability_imports::check as check_imported_api;
 pub(super) use inventory::complete;
 
 #[cfg(test)]
 #[path = "../../tests/invariants/local_availability.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../../tests/invariants/policy_transport.rs"]
+mod transport_tests;
