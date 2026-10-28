@@ -101,7 +101,7 @@ pub(super) fn units() -> TestResult {
         assert_eq!(fresh.source.text(), fresh.source.original());
     }
     assert_eq!(size_of::<crate::expand::stream::Origin>(), 32);
-    assert_eq!(size_of::<OriginKind>(), 1);
+    assert_eq!(size_of::<OriginKind>(), 2);
     assert_eq!(size_of::<Stream>(), 104);
     assert_eq!(size_of::<Unit>(), 688);
     eprintln!(

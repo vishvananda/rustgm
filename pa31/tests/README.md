@@ -408,16 +408,17 @@ body or old-profile transport permission.
 `spec/source-format-macros/static-options/` retains LIB052's original LowerHex
 constructor and static option recipe. Independent options/trait-negative and
 real source template/pair-storage native observations are distinct from full
-Formatter/write invocation. Dynamic counts, other constructors and named inputs
-remain required; no scalar-formatting factory is substituted.
+Formatter/write invocation. Named inputs and all nine constructor recipes have
+separate qualified checkpoints; dynamic count execution and full Formatter/write
+remain required, without a scalar-formatting factory.
 
 `spec/source-format-macros/named-captures/` freezes named RHS order, first-use
 capture/trait pairs, macro hygiene, exact Unicode symbols and ordinary borrow/
 unsafe failures. Four real source constructor protocols pass independent Rust
 and locked native observations without invoking a fabricated Formatter. The
 same anchored Captured origin retains caller context and grants no feature or
-transport permission. Dynamic counts, remaining constructors and actual
-Formatter/write/PanicInfo/handler execution remain required.
+transport permission. Dynamic count execution and actual Formatter/write/
+PanicInfo/handler execution remain required.
 
 
 `spec/source-format-macros/constructor-family/` retains the complete nine-trait
