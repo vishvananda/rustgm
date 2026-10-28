@@ -14,31 +14,28 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The qualified CLI28d95e83 passes captured FieldId arguments and advances original
-core to UpperHex in str/lossy.rs144. All722 pinned inputs verify;372 open in8.19s,
-with no artifact. Combined private21, production/CLI strict,13 frontend controls,
-all473 PA24 and nine native programs pass. The reached offset intrinsic matches
-Rust exactly (`1 4 8 0 0 8 16`); see the [kernel record](pa31-reached-offset-kernel.md).
-The original builtin field-selection/generic/DST exit remains required.
+The qualified constructor-family CLIc8b8615b passes all nine formatting selectors
+and reaches original prelude/v1.rs62 `#[expect(deprecated)]`. All722 source pins
+remain unchanged;374 files open in12.54s, without a crate artifact. Source/native
+validation and exact scope are in the [constructor checkpoint](pa31-constructor-family-integration.md).
+The earlier reached offset kernel still matches Rust; its original builtin
+field/generic/DST semantics remain required.
 
-The [typed completion-set integration](source-role-completion-set.md) now includes
-genuine OffsetOf64, actual65-role/two-word storage and old-wire denial. Source
-Option uses its actual declaration and the existing cold nullable table with a
-physical U8 fallback after niche selection. Broader layout debt remains explicit.
-The complete known-role reservation proposal has no execution authority and is
-not adopted merely by recognizing the65th actual role.
+The actual65-role/two-word completion set, physical source Option profile and
+old-wire denials remain qualified. Complete known-role reservations are still a
+proposal and confer no source body/runtime/metadata authority.
 
-- A: bounded read-only source/handoff reviews and component release census.
-  Authenticate the queued shared-call and constructor packets; no heavy jobs.
-- B: captured/named inputs are integrated. Integrate the qualified remaining
-  constructors, then complete actual Count/helper/Formatter/write and handler
-  closure; source Count encoding alone does not implement its checked body.
-- C: real source Add/Sub is integrated. Shared-call reborrowing and actual source
-  unsize proofs have a qualified handoff. After integration, implement actual
-  source comparisons shared by Count and formatting helpers (LIB056).
-- Integrator: `rustgm-pa25-work`, publication, queued handoff integration, current
-  unchanged-core probes and original builtin offset field/generic/layout work.
-  Retain PA25 const/generic execution and PA29 transport/artifact obligations.
+- A: bounded read-only handoff/source reviews; expectation and offset join packets
+  are ready. No heavy jobs or compiler edits.
+- B: nine source constructors are integrated. Generic payload derives are the
+  observed prerequisite of its actual panic/Arguments/PanicInfo/Location/handler
+  graph. Full Count, Formatter and source helper execution remain required.
+- C: actual source scalar comparisons and three_way_compare, preserving real
+  method/body/instance/const and Ordering proof, without bootstrap factories.
+- Integrator: shared-value/reborrow flow repair and reference publication, original
+  source probes, actual lint expectations and builtin offset field semantics.
+  C's reborrow handoff stays held until seven ordinary flow regressions are fixed;
+  existing source/native success does not override the full course failures.
 
 There are three coding lanes: root, B and C. A supplies bounded read-only review;
 do not create another worktree or enable a fourth heavy job. Root's output cap
