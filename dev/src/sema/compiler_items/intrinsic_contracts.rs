@@ -67,33 +67,25 @@ fn signature(
     function: Function,
     kind: SourceIntrinsic,
 ) -> Result<(), &'static str> {
-    if kind == SourceIntrinsic::OffsetOf {
-        return super::displacement::validate(facts, function);
+    match kind {
+        SourceIntrinsic::ThreeWayCompare => super::compare_intrinsic::validate(facts, function),
+        SourceIntrinsic::OffsetOf => super::displacement::validate(facts, function),
+        SourceIntrinsic::DiscriminantValue => super::tag_intrinsic::validate(facts, function),
+        SourceIntrinsic::AggregateRawPtr => super::compose_pointer::validate(facts, function),
+        SourceIntrinsic::PtrMetadata => super::ptr_metadata::validate(facts, function).map(|_| ()),
+        SourceIntrinsic::ConstEvalSelect => super::select_contract::validate(facts, function),
+        SourceIntrinsic::UbChecks => super::runtime_checks::validate(facts, function),
+        SourceIntrinsic::Transmute => super::transmute_contract::validate(facts, function),
+        SourceIntrinsic::CallerLocation => super::caller_location::validate(facts, function),
+        SourceIntrinsic::Abort => super::abort_declaration::validate(facts, function),
+        _ => scalar_signature(facts, function, kind),
     }
-    if kind == SourceIntrinsic::DiscriminantValue {
-        return super::tag_intrinsic::validate(facts, function);
-    }
-    if kind == SourceIntrinsic::AggregateRawPtr {
-        return super::compose_pointer::validate(facts, function);
-    }
-    if kind == SourceIntrinsic::PtrMetadata {
-        return super::ptr_metadata::validate(facts, function).map(|_| ());
-    }
-    if kind == SourceIntrinsic::ConstEvalSelect {
-        return super::select_contract::validate(facts, function);
-    }
-    if kind == SourceIntrinsic::UbChecks {
-        return super::runtime_checks::validate(facts, function);
-    }
-    if kind == SourceIntrinsic::Transmute {
-        return super::transmute_contract::validate(facts, function);
-    }
-    if kind == SourceIntrinsic::CallerLocation {
-        return super::caller_location::validate(facts, function);
-    }
-    if kind == SourceIntrinsic::Abort {
-        return super::abort_declaration::validate(facts, function);
-    }
+}
+fn scalar_signature(
+    facts: &Declarations,
+    function: Function,
+    kind: SourceIntrinsic,
+) -> Result<(), &'static str> {
     let needs_drop = kind == SourceIntrinsic::NeedsDrop;
     let Some(Kind::Function {
         bound_regions: 0,
@@ -237,6 +229,7 @@ impl Catalog {
                 | SourceIntrinsic::PtrMetadata
                 | SourceIntrinsic::AggregateRawPtr
                 | SourceIntrinsic::DiscriminantValue
+                | SourceIntrinsic::ThreeWayCompare
         ) {
             // These contracts have dedicated descriptors, without a layout element.
             return Ok(None);
@@ -281,6 +274,9 @@ fn layout_element(
             SourceIntrinsic::ConstEvalSelect => {
                 "source callback selection requires its own descriptor"
             }
+            SourceIntrinsic::ThreeWayCompare => {
+                "three_way_compare requires its actual scalar comparison descriptor"
+            }
             SourceIntrinsic::DiscriminantValue => {
                 "source discriminant requires its actual reached reference-call descriptor"
             }
@@ -313,6 +309,9 @@ fn layout_element(
             }
             SourceIntrinsic::ConstEvalSelect => {
                 "source callback selection requires its own descriptor"
+            }
+            SourceIntrinsic::ThreeWayCompare => {
+                "three_way_compare requires its actual scalar comparison descriptor"
             }
             SourceIntrinsic::DiscriminantValue => {
                 "source discriminant requires its actual reached reference-call descriptor"

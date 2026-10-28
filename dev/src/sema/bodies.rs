@@ -2038,11 +2038,10 @@ impl Checker<'_> {
             Op::GreaterEqual => Some(crate::support::comparisons::Method::Ge),
             _ => None,
         };
-        if comparison.is_some() && self.report.package.uses_source_bindings() {
-            return Err(self.error(
-                node,
-                "source comparison operator execution is not implemented",
-            ));
+        if let Some(method) = comparison
+            && self.report.package.uses_source_bindings()
+        {
+            return self.source_comparison_operator(node, method, left, right);
         }
         if let Some(method) = comparison
             && self.uses_comparison(node, method, left, right)?

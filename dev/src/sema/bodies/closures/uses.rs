@@ -96,10 +96,12 @@ impl Checker<'_> {
                 .methods
                 .iter()
                 .filter_map(|(node, pending)| {
-                    self.facts
-                        .associated
-                        .comparison_method(pending.method())
-                        .map(|_| *node)
+                    crate::sema::compiler_items::comparison_member(
+                        self.report,
+                        self.facts,
+                        pending.method(),
+                    )
+                    .map(|_| *node)
                 })
                 .collect(),
             references: self

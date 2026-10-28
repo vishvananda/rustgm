@@ -1,0 +1,50 @@
+{
+  "cases": [
+    {
+      "name": "actual-source-comparisons",
+      "path": "pa31/tests/spec/source-comparisons/ordering/actual-source-comparisons-v2.rs",
+      "sha256": "35ca88a43f0a901f30ef83f95134f55bca86884f529c74602d6ccc619c97dd89",
+      "original_path": "pa31/tests/spec/source-comparisons/ordering/actual-source-comparisons.rs",
+      "candidate_supported": true,
+      "accepted": true,
+      "original_byte_boundary": "only authored u16 MAX stability attribute corrected; source algorithm chunks unchanged"
+    },
+    {
+      "name": "const-source-comparisons",
+      "path": "pa31/tests/spec/source-comparisons/ordering/const-source-comparisons-v2.rs",
+      "sha256": "35c9cbae1d818dd529e5c83aee5467e65081dc39d095cbae40a4624a2afc5428",
+      "original_path": "pa31/tests/spec/source-comparisons/ordering/const-source-comparisons.rs",
+      "candidate_supported": true,
+      "accepted": true,
+      "original_byte_boundary": "only authored u16 MAX stability attribute corrected; source algorithm chunks unchanged"
+    },
+    {
+      "name": "missing-ord-impl",
+      "path": "pa31/tests/spec/source-comparisons/ordering/missing-ord-impl-v2.rs",
+      "sha256": "bb0b0814018283299c21e3199403cd1029bd11fcdc988ea141a46f4e5b83f78d",
+      "original_path": "pa31/tests/spec/source-comparisons/ordering/missing-ord-impl.rs",
+      "candidate_supported": false,
+      "accepted": false,
+      "original_byte_boundary": "only authored u16 MAX stability attribute corrected; source algorithm chunks unchanged"
+    },
+    {
+      "name": "wrong-ordering-tag",
+      "path": "pa31/tests/spec/source-comparisons/ordering/wrong-ordering-tag-v2.rs",
+      "sha256": "64befeae7577ccdc40dd26441baca8dde0dc97f439c336f9a31277649b7c402c",
+      "original_path": "pa31/tests/spec/source-comparisons/ordering/wrong-ordering-tag.rs",
+      "candidate_supported": false,
+      "accepted": true,
+      "original_byte_boundary": "only authored u16 MAX stability attribute corrected; source algorithm chunks unchanged"
+    },
+    {
+      "name": "wrong-intrinsic-copy",
+      "path": "pa31/tests/spec/source-comparisons/ordering/wrong-intrinsic-copy-v2.rs",
+      "sha256": "6164ba9f8a6fae0dcd23684eae0da56848b4a5ffa9448dd4acbd776a9ae6d133",
+      "original_path": "pa31/tests/spec/source-comparisons/ordering/wrong-intrinsic-copy.rs",
+      "candidate_supported": false,
+      "accepted": true,
+      "original_byte_boundary": "only authored u16 MAX stability attribute corrected; source algorithm chunks unchanged"
+    }
+  ],
+  "state": "declared fixture-only stability correction before followup independent observations; two unsupported-header disagreements remain explicit"
+}

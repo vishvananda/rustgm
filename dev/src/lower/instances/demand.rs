@@ -104,6 +104,9 @@ impl Ordinary {
                         crate::support::bindings::SourceIntrinsic::Transmute => {
                             "source transmute requires its proved direct runtime operation"
                         }
+                        crate::support::bindings::SourceIntrinsic::ThreeWayCompare => {
+                            "three_way_compare requires its proved direct scalar comparison operation"
+                        }
                         crate::support::bindings::SourceIntrinsic::DiscriminantValue => {
                             "source discriminant requires its proved direct reference operation"
                         }

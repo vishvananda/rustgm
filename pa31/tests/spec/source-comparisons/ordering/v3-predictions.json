@@ -1,0 +1,55 @@
+{
+  "state": "declared authored support correction before followup observations",
+  "cases": [
+    {
+      "name": "actual-source-comparisons",
+      "path": "pa31/tests/spec/source-comparisons/ordering/actual-source-comparisons-v3.rs",
+      "sha256": "def0c8babe0ddfed26b233146ea96d038ef3d662f217fe3626a791734eb147cf",
+      "original_path": "pa31/tests/spec/source-comparisons/ordering/actual-source-comparisons.rs",
+      "candidate_supported": true,
+      "accepted": true,
+      "original_byte_boundary": "only authored u16 MAX stability attribute corrected; source algorithm chunks unchanged",
+      "foundation": "authored Option support gains actual existing Some/None variant role identities; comparison/helper algorithms unchanged"
+    },
+    {
+      "name": "const-source-comparisons",
+      "path": "pa31/tests/spec/source-comparisons/ordering/const-source-comparisons-v3.rs",
+      "sha256": "0dde501a77783e89a3fa77d9a4646b2727788cbf7277382d32b9ff14ef522c67",
+      "original_path": "pa31/tests/spec/source-comparisons/ordering/const-source-comparisons.rs",
+      "candidate_supported": true,
+      "accepted": true,
+      "original_byte_boundary": "only authored u16 MAX stability attribute corrected; source algorithm chunks unchanged",
+      "foundation": "authored Option support gains actual existing Some/None variant role identities; comparison/helper algorithms unchanged"
+    },
+    {
+      "name": "missing-ord-impl",
+      "path": "pa31/tests/spec/source-comparisons/ordering/missing-ord-impl-v3.rs",
+      "sha256": "22909941d99435d05c27516513df0e7f5cfae36b45a2ee524fae56db49f7610a",
+      "original_path": "pa31/tests/spec/source-comparisons/ordering/missing-ord-impl.rs",
+      "candidate_supported": false,
+      "accepted": false,
+      "original_byte_boundary": "only authored u16 MAX stability attribute corrected; source algorithm chunks unchanged",
+      "foundation": "authored Option support gains actual existing Some/None variant role identities; comparison/helper algorithms unchanged"
+    },
+    {
+      "name": "wrong-ordering-tag",
+      "path": "pa31/tests/spec/source-comparisons/ordering/wrong-ordering-tag-v3.rs",
+      "sha256": "f2e8e40cf1618507edfe7558b4f91cc65ed015fca17847f48d00ddfd69e45777",
+      "original_path": "pa31/tests/spec/source-comparisons/ordering/wrong-ordering-tag.rs",
+      "candidate_supported": false,
+      "accepted": true,
+      "original_byte_boundary": "only authored u16 MAX stability attribute corrected; source algorithm chunks unchanged",
+      "foundation": "authored Option support gains actual existing Some/None variant role identities; comparison/helper algorithms unchanged"
+    },
+    {
+      "name": "wrong-intrinsic-copy",
+      "path": "pa31/tests/spec/source-comparisons/ordering/wrong-intrinsic-copy-v3.rs",
+      "sha256": "04b24c260e44bea48fdd8456a75db316257b2bef844c29800929ac5f66e5351d",
+      "original_path": "pa31/tests/spec/source-comparisons/ordering/wrong-intrinsic-copy.rs",
+      "candidate_supported": false,
+      "accepted": true,
+      "original_byte_boundary": "only authored u16 MAX stability attribute corrected; source algorithm chunks unchanged",
+      "foundation": "authored Option support gains actual existing Some/None variant role identities; comparison/helper algorithms unchanged"
+    }
+  ]
+}

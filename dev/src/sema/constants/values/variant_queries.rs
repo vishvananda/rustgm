@@ -45,3 +45,41 @@ impl Evaluator<'_> {
         Ok(Some(selected))
     }
 }
+
+impl Reader<'_> {
+    pub(crate) fn source_three_way(
+        self,
+        instance: Instance,
+        origin: BodyOrigin,
+    ) -> Result<Option<crate::sema::compiler_items::ThreeWaySelection>, &'static str> {
+        let selected = self
+            .facts
+            .source_bindings
+            .as_deref()
+            .map(|c| c.three_way_selection(self.facts, instance, origin))
+            .transpose()?
+            .flatten();
+        if let Some(selection) = &selected
+            && selection.pending_tag(self.facts)?.is_some()
+        {
+            return Err("three_way_compare actual Ordering discriminants remain pending");
+        }
+        Ok(selected)
+    }
+}
+impl Evaluator<'_> {
+    pub(crate) fn checked_source_three_way(
+        &self,
+        instance: Instance,
+        origin: BodyOrigin,
+    ) -> Result<Option<crate::sema::compiler_items::ThreeWaySelection>, Failure> {
+        let Some(catalog) = self.facts().source_bindings.as_deref() else {
+            return Ok(None);
+        };
+        let Some(selected) = catalog.three_way_selection(self.facts(), instance, origin)? else {
+            return Ok(None);
+        };
+        catalog.require_three_way_report(self.queries.report, self.facts(), &selected)?;
+        Ok(Some(selected))
+    }
+}

@@ -320,6 +320,7 @@ impl Checker<'_> {
             let expected = solved.types[pending.expected.0 as usize];
             if self.source_scalar_unary_type(*node, actual)
                 || self.source_scalar_binary_solved(*node, actual, solved)?
+                || self.source_scalar_comparison_solved(*node, solved)?
             {
                 // Its actual source clauses were checked by the ordinary solver;
                 // emitting the primitive operation must not call its own body.
