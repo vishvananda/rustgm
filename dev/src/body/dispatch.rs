@@ -10,6 +10,7 @@ use crate::{
     types::{Kind as Type, RegionId, substitute::Bound},
 };
 mod callers;
+mod non_type_enclosing;
 mod originals;
 pub(crate) use originals::{anonymous as original_anonymous, initializer as original_initializer};
 

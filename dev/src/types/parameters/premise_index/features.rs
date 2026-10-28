@@ -10,6 +10,25 @@ pub(in crate::types::parameters) struct Set {
     pub(super) values: HashSet<FeatureId>,
 }
 impl ClauseIndex {
+    /// Concrete callers retain non-type membership without symbolic trait evidence.
+    pub(crate) fn feature_only_charged(
+        &self,
+        types: &Store,
+        pay: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Option<Arc<Self>>, &'static str> {
+        pay(1, 0)?;
+        let Some(features) = &self.features else {
+            return Ok(None);
+        };
+        if !types.has_identity(&features.arena) {
+            return Err("feature index belongs to a different type arena");
+        }
+        pay(1, size_of::<Self>() + 2 * size_of::<usize>())?;
+        Ok(Some(Arc::new(Self {
+            features: Some(Arc::clone(features)),
+            ..Self::default()
+        })))
+    }
     pub(crate) fn contains_feature(
         &self,
         types: &Store,
