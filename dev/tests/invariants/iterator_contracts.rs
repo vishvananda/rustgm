@@ -30,18 +30,7 @@ fn verify(facts: &mut Declarations, templates: &Templates, contracts: Vec<Contra
         &contracts,
         templates,
         &[],
-        |ty, field| {
-            let (Some(types::Kind::Adt(owner, _)), body::ir::Selection::Nominal(field)) =
-                (types.kind(ty), field)
-            else {
-                return Err("invalid iterator field selection");
-            };
-            let identity = members.identity(field).ok_or("missing iterator field")?;
-            if owner.0 != identity.owner.0 {
-                return Err("iterator field belongs to another owner");
-            }
-            Ok((identity.variant, identity.field))
-        },
+        |ty, query| body::drops::member_position(types, &facts.aggregates, members, ty, query),
     )?;
     for template in &templates.bodies {
         let body::ir::Owner::Function { definition, .. } = template.body.owner else {

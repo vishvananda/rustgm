@@ -1,4 +1,7 @@
 //! Possible cleanup accesses under fixed assumptions, without executable recipes.
+#[cfg(test)]
+#[path = "../../../tests/invariants/matched_payloads.rs"]
+mod tests;
 use super::{
     Event,
     flags::Recorder,
@@ -51,10 +54,19 @@ pub fn select(
     types: &Store,
     definitions: &Definitions,
     needed: &mut NeedsDrop,
-    facts: &initialization::Facts<'_>,
+    facts: &mut initialization::Facts<'_>,
     custom: impl Fn(ItemId) -> bool,
-    position: impl Fn(TypeId, Selection) -> Result<(u32, u32), &'static str>,
+    position: impl Fn(
+        TypeId,
+        crate::body::drops::MemberQuery,
+    ) -> Result<crate::body::drops::MemberPosition, &'static str>,
 ) -> Result<Plan, Error> {
+    let refinement_steps = facts
+        .refine_variants(types, &position)
+        .map_err(|message| Error {
+            node: facts.body().source.into(),
+            message,
+        })?;
     facts.destructor_moves(types, &custom)?;
     let error = |message| Error {
         node: facts.body().source.into(),
@@ -71,6 +83,7 @@ pub fn select(
         plan: Plan::default(),
         retained: 0,
     };
+    builder.charge(refinement_steps).map_err(error)?;
     for (index, path) in builder.paths.entries.iter().enumerate() {
         builder.charge(1).map_err(error)?;
         if let (Some(parent), Some(Component::Field(field))) = (path.parent, path.component) {
@@ -80,7 +93,13 @@ pub fn select(
                     (0, ordinal)
                 }
                 (Some(Kind::Adt(_, _)), Selection::Nominal(_)) => {
-                    position(ty, field).map_err(error)?
+                    let crate::body::drops::MemberPosition::Field { variant, field } =
+                        position(ty, crate::body::drops::MemberQuery::Field(field))
+                            .map_err(error)?
+                    else {
+                        return Err(error("cleanup field query lost its exact coordinates"));
+                    };
+                    (variant, field)
                 }
                 _ => return Err(error("invalid abstract cleanup field owner")),
             };

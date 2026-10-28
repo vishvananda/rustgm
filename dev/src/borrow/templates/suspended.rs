@@ -96,7 +96,10 @@ impl Retained {
         checks: &mut Append<'_, '_, S, F>,
     ) -> Result<Self, Error>
     where
-        F: Fn(crate::types::TypeId, crate::body::ir::Selection) -> Result<(u32, u32), &'static str>,
+        F: Fn(
+            crate::types::TypeId,
+            crate::body::drops::MemberQuery,
+        ) -> Result<crate::body::drops::MemberPosition, &'static str>,
     {
         let templates = Rc::get_mut(&mut self.templates).ok_or_else(|| {
             error("selected original append requires its uniquely owned checked templates")

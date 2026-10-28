@@ -61,6 +61,7 @@ pub struct Facts<'a> {
     owners: Owners,
     incoming: Vec<state::Word<u64>>,
     words: usize,
+    refinements: Option<Box<super::variant_liveness::Refinements>>,
 }
 impl Facts<'_> {
     /// Check non-Copy field moves against resolved custom destructor identities.
@@ -154,6 +155,7 @@ impl Facts<'_> {
             &self.flow(),
             &self.incoming,
             self.words,
+            self.refinements.as_deref(),
             |event, state| {
                 visitor(
                     event,
@@ -165,6 +167,55 @@ impl Facts<'_> {
                 )
             },
         )
+    }
+    /// Refine possible payload cleanup without changing read or move permission.
+    pub(crate) fn refine_variants(
+        &mut self,
+        types: &Store,
+        position: &impl Fn(
+            crate::types::TypeId,
+            crate::body::drops::MemberQuery,
+        ) -> Result<crate::body::drops::MemberPosition, &'static str>,
+    ) -> Result<usize, &'static str> {
+        if self.refinements.is_some() {
+            return Err("cleanup variant refinement was repeated");
+        }
+        let occupied = self
+            .incoming
+            .capacity()
+            .saturating_add(self.words.saturating_mul(2))
+            .saturating_mul(size_of::<state::Word<u64>>());
+        let available = 64_000_000_usize.saturating_sub(occupied);
+        let refinements = super::variant_liveness::Refinements::new(
+            self.body,
+            &self.ownership.paths,
+            types,
+            position,
+            available,
+        )?;
+        if refinements.is_empty() {
+            return Ok(refinements.steps);
+        }
+        let flow = Flow {
+            body: self.body,
+            storage: &self.storage,
+            owners: &self.owners,
+            consumption: &self.consumption,
+        };
+        // Release the replaced table before computing its refined image.
+        drop(std::mem::take(&mut self.incoming));
+        self.incoming = state::verify::<u64>(
+            self.body,
+            &mut self.ownership,
+            types,
+            Some(&flow),
+            None,
+            Some(&refinements),
+        )
+        .map_err(|e| e.message)?;
+        let steps = refinements.steps;
+        self.refinements = Some(Box::new(refinements));
+        Ok(steps)
     }
     fn flow(&self) -> Flow<'_> {
         Flow {
@@ -293,7 +344,7 @@ fn analyze_with<'a, S: BuildHasher>(
         owners: &owners,
         consumption: &consumption,
     };
-    let incoming = state::verify::<u64>(body, &mut ownership, types, Some(&flow), order)?;
+    let incoming = state::verify::<u64>(body, &mut ownership, types, Some(&flow), order, None)?;
     super::guards::verify(body, &ownership, types)?;
     let words = (ownership.paths.bits as usize).div_ceil(64);
     Ok(Facts {
@@ -304,6 +355,7 @@ fn analyze_with<'a, S: BuildHasher>(
         owners,
         incoming,
         words,
+        refinements: None,
     })
 }
 
