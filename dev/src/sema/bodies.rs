@@ -19,7 +19,7 @@ mod dot_calls;
 mod effect_facts;
 mod target_permissions;
 pub(super) use effect_facts::CallContexts;
-pub use effect_facts::{SourceCallUse, TryPlanId};
+pub use effect_facts::{OffsetPlanId, SourceCallUse, TryPlanId};
 mod assembly_values;
 mod environment_values;
 mod field_storage;
@@ -47,6 +47,7 @@ mod projections;
 mod readiness;
 pub(super) use readiness::{Dependency, Requirement};
 mod addresses;
+mod displacement_inputs;
 mod intrinsic_items;
 mod pointer_casts;
 mod pointers;
@@ -940,6 +941,7 @@ impl Checker<'_> {
     fn complete_body_expression(&mut self, node: NodeId) -> Result<Option<Dependency>, Error> {
         if let Some(requirement) = self
             .formatting_readiness(node)?
+            .or(self.offset_readiness(node)?)
             .or(self.comparison_readiness(node)?)
             .or(self.assignment_readiness(node)?)
             .or_else(|| self.value_readiness(node))
@@ -1569,9 +1571,9 @@ impl Checker<'_> {
                 self.term(value)
             }
             Kind::TryBlock { body, .. } => self.finish_try_block(node, body),
-            Kind::OffsetOf { .. } => {
-                Err(self.error(node, "typed offset_of field selection is not implemented"))
-            }
+            Kind::OffsetOf {
+                container, fields, ..
+            } => self.offset_of(node, container, fields),
             Kind::Unary {
                 op: Unary::Try,
                 operand,

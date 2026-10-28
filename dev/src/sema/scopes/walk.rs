@@ -199,6 +199,7 @@ impl Walker<'_> {
                 self.expressions(fields, context)?;
             }
             Syntax::Closure { .. }
+            | Syntax::OffsetOf { .. }
             | Syntax::Literal(_)
             | Syntax::Name(..)
             | Syntax::Path { .. }

@@ -262,6 +262,12 @@ impl super::package::Package {
             "builtin-syntax client identity changed",
         )
     }
+    pub(crate) fn requested_offset_of_enum(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::OffsetOfEnum,
+            "offset-of-enum client identity changed",
+        )
+    }
     pub(crate) fn requested_metavariable_concat(&self) -> Result<bool, &'static str> {
         self.requested_expression_feature(
             policy::Feature::MetavariableConcat,

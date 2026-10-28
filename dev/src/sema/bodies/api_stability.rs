@@ -149,6 +149,9 @@ impl Checker<'_> {
                     Kind::Call { callee, .. } => ast.node(callee).span,
                     Kind::MethodCall { name, .. } => name,
                     Kind::GenericMethodCall { method, .. } => ast.node(method).span,
+                    Kind::OffsetOf { .. } => {
+                        crate::resolve::require_offset(self.report, self.key(node))?
+                    }
                     _ => ast.node(node).span,
                 };
                 if !requested && !allowances.allows_at(self.state.file, span, &feature)? {

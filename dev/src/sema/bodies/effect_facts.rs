@@ -4,7 +4,17 @@ use crate::{resolve::unit::NodeKey, support::constness::Constness, types::infer:
 use std::num::NonZeroU32;
 #[path = "effect_facts/site_locations.rs"]
 mod caller_sites;
+mod displacement_rows;
 mod protocol_rows;
+
+/// A source-node plan location; actual source, member and call checks remain separate.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct OffsetPlanId(NonZeroU32);
+impl OffsetPlanId {
+    pub(crate) const fn index(self) -> u32 {
+        self.0.get() - 1
+    }
+}
 
 /// Current-table location; it grants no call, source or const permission.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -28,6 +38,7 @@ pub(in crate::sema) struct CallContexts {
     rows: Vec<Descriptor>,
     plans: Vec<crate::sema::try_plans::Plan>,
     sites: Vec<caller_sites::Site>,
+    offsets: Option<Box<displacement_rows::Rows>>,
 }
 const MAX_ROWS: usize = 1_000_000;
 const MAX_RETAINED: usize = 16 * 1024 * 1024;
@@ -51,6 +62,12 @@ impl CallContexts {
                 )
             })
             .and_then(|bytes| bytes.checked_add(size_of::<Self>() + size_of::<Option<Box<Self>>>()))
+            .and_then(|bytes| {
+                bytes.checked_add(self.offsets.as_deref().map_or(0, |rows| {
+                    size_of::<displacement_rows::Rows>()
+                        + rows.rows.capacity() * size_of::<crate::sema::displacement_plans::Plan>()
+                }))
+            })
             .ok_or("source call context storage overflow")
     }
     fn reserve(&mut self, steps: &mut usize, limit: usize) -> Result<SourceCallUse, &'static str> {
@@ -186,6 +203,17 @@ impl Checker<'_> {
                 continue;
             }
             any = true;
+            if matches!(self.kind(node), crate::syntax::ast::Kind::OffsetOf { .. }) {
+                if let Some(source) = self.replayed_offset_context(key, operation, effect)? {
+                    if existing.is_some_and(|old| old != source) {
+                        return Err(self.error(node, "offset calls have different body contexts"));
+                    }
+                    existing = Some(source);
+                } else {
+                    unpublished = true;
+                }
+                continue;
+            }
             if self.is_try_call(node) {
                 if let Some(source) = self.replayed_try_context(key, operation, effect)? {
                     if existing.is_some_and(|old| old != source) {
@@ -358,11 +386,13 @@ impl Checker<'_> {
             }
         }
         self.publish_try_plans(solved, source_use, &mut allowances)?;
+        self.publish_displacement_plans(solved, source_use, &mut allowances)?;
         self.commit_caller_sites(&sites, warm);
         for (node, term) in &self.state.calls {
             if matches!(self.kind(*node), crate::syntax::ast::Kind::For { .. })
                 || self.erased_source_operator(*node)?
                 || self.is_try_call(*node)
+                || matches!(self.kind(*node), crate::syntax::ast::Kind::OffsetOf { .. })
             {
                 continue;
             }

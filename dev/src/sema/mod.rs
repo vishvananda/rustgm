@@ -68,4 +68,5 @@ pub mod inlining;
 pub mod non_exhaustive;
 pub mod parentheses;
 
+pub(crate) mod displacement_plans;
 pub(crate) mod try_plans;
