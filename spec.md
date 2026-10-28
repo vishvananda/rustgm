@@ -197,6 +197,14 @@ exports stay closed until explicit transport exists. The
 [finite checkpoint](docs/pa40-lint-expectations-checkpoint.md) records its scope
 and remaining producer, transport and release obligations.
 
+Retain a deprecation's decoded replacement suggestion and exact argument span
+in its existing cold annotation. The actual `deprecated_suggestion` crate feature
+is required, including for macro output; an internal macro allowance does not
+replace this gate. Preserve ordinary source feature requests without creating
+source-provider authority. A monotonic hint skips validation work for producers
+without suggestions, and an actual global request avoids an owner scan. Fix-it
+rendering is separate from this metadata prerequisite.
+
 Hidden glob reexport events consume completed namespace/context-aware resolver
 contributions and actual successful import selections. Missing imported-origin
 edges require information; only positively retained Direct selections terminate
@@ -495,6 +503,20 @@ installation use declaration facts independently of body readiness. Imported
 names alone grant no semantic or execution permission. The
 [execution plan](docs/library-bootstrap-acceleration.md) records this reviewed
 policy and the unchanged complete default/const transport requirements.
+
+The explicit source module-availability profile uses tag 10, row version 3.
+Complete declaration and binding rows retain regular/const policies, real
+declaration/site or binding/site origins, and positively checked private absence.
+An immutable imported catalog owns the canonical remap; missing legacy policy
+stays Required. Check actual target and module-prefix availability independently
+of local feature inventories. Reexport annotations retain provenance without
+erasing the target gate or introducing an extra ordinary-call requirement.
+Availability grants no body, const execution or provided-default permission.
+Build ancestry intervals once and sort source-owner candidates once; charged
+binary predecessor/containment queries replace repeated whole-candidate scans.
+Keep per-use and dense body records unchanged. The
+[transport checkpoint](docs/pa31-availability-transport.md) records genuine
+fresh-client/native evidence, counterexamples and bounded cold/warm work.
 
 The explicit source Provided-contract profile uses tag 11, row version 1. Retain
 one advisory-column owner, the complete Provided family and numbering, actual

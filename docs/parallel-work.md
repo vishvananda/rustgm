@@ -1,30 +1,28 @@
 # Parallel library bootstrap implementation
 
 The user has reauthorized up to two subagents. Root continues direct compiler
-implementation and integration in `rustgm-pa25-work`. One implementation worker,
-`lint_expectations`, completed LIB-058's source deprecation/expectation protocol
-and actual hidden-glob producer in the existing `rustgm-pa26-work`. Its warning,
-removed-test and reference repairs are integrated; it now owns the actual
-ineffective_unstable_trait_impl header producer. The second
-agent, `const_call_review`, completed LIB-056's precise cleanup consumer and
-LIB-050's actual source OffsetOf member producer, both integrated and qualified
-through native execution. It now owns LIB-059's authenticated availability
-metadata/fresh-client consumer in the existing `rustgm-pa27-work`. Root owns
-combined qualification, publication and the next actual core lint consumer.
-Coordinate guarded heavy checks; keep at most two heavy commands active even
-though the shared controller permits three. No new worktree is needed.
-Earlier derive/comparison/panic snapshots remain preserved; their old
-workers are stopped. Do not start additional workers beyond this authorization.
-Stopping a worker or retaining a proposal does not qualify unfinished work.
+implementation and integration in `rustgm-pa25-work`. Worker `lint_expectations`
+owns the bounded explicit lint-cap bring-up control in `rustgm-pa26-work`; broader
+diagnostic parity is deferred unless it blocks actual compilation. Worker
+`const_call_review` completed availability v3 transport in `rustgm-pa27-work`,
+now integrated with private21 and production53/PA6 qualification. Its next exit
+is genuine source PanicInfo/Location/handler/abort execution from the preserved
+handler transaction, not signature preparation alone. Root owns publication,
+strict/capped observation and the actual trait feature-bound contract at the
+new strict core boundary. Keep default strict qualification separate from
+explicit capped bring-up and retain every mandatory language/assignment gate.
+Coordinate guarded heavy checks; at most two heavy commands may be active even
+though the controller permits three. No additional worktree is needed.
 
 Use [the live library blocker tracker](library-build-blockers.md#current-execution-queue)
 for current assignments and the [execution plan](library-bootstrap-acceleration.md)
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The later hidden-glob CLIa0474e44 reaches original num/float_parse.rs84
-`#[expect(ineffective_unstable_trait_impl)]`. All722 source pins/config remain
-unchanged; eager owner validation rejects after41 source opens, without an artifact.
+The current strict CLIa946b4b3 reaches original mem/transmutability.rs86,
+`#[unstable_feature_bound(transmutability)]` on the actual unsafe trait. All722
+source pins and effective target arguments remain unchanged;60 sources open
+before the current impl-only capture rejects. No original artifact exists.
 Opened-source counts are not compilation progress. The earlier constructor-family
 checkpoint passes all nine formatting selectors. Source/native
 validation and exact scope are in the [constructor checkpoint](pa31-constructor-family-integration.md).

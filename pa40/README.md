@@ -67,3 +67,8 @@ expectations, with the next unchanged original-core boundary recorded explicitly
 The unpublished [ineffective unstable trait impl checkpoint](../docs/pa40-ineffective-unstable-impl-checkpoint.md)
 adds genuine resolved header events, exact unstable-attribute witnesses and
 header-only expectation completion, with imported transport remaining explicit.
+
+The unpublished [deprecation suggestion checkpoint](../docs/pa40-deprecation-suggestions-checkpoint.md)
+retains actual replacement metadata and enforces its source feature gate.
+Suggestion rendering and broader diagnostic parity are deferred while the
+immediate work prioritizes library compilation.

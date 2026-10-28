@@ -9,6 +9,12 @@ PA25–PA30 contract families, including every known missing/unsupported positiv
 The owning handouts remain the full assignment contracts. No requirement is
 deleted, converted to an expected Rust rejection or waived by this change.
 
+The 2026-10-28 compilation-first refinement defers broader PA40 diagnostic parity
+unless it blocks a real compilation path. Lint-level syntax and existing semantics
+remain required. Explicit capped bring-up and final strict qualification have
+separate evidence; the [execution plan](library-bootstrap-acceleration.md)
+records that distinction without removing assignment obligations.
+
 ## Findings and adopted phase boundaries
 
 The old cumulative chain introduced false dependencies. PA25's symbolic pointer

@@ -6,10 +6,29 @@ import tempfile
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from observe_original_core import verify_sources
+from observe_original_core import lint_profile_arguments, verify_sources
 
 
 class OriginalCoreInputs(unittest.TestCase):
+    def test_strict_observation_cannot_silently_reuse_a_capped_profile_or_producer(self):
+        for profile, producer in (({}, {}), ({"lint_cap": "uncapped"}, {"lint_cap": "uncapped"})):
+            self.assertEqual(lint_profile_arguments({"profile": profile}, producer, None), [])
+        for profile, producer in (({"lint_cap": "allow"}, {}), ({}, {"lint_cap": "allow"}),
+                                  ({"lint_cap": "allow"}, {"lint_cap": "allow"})):
+            with self.subTest(profile=profile, producer=producer), self.assertRaises(ValueError):
+                lint_profile_arguments({"profile": profile}, producer, None)
+
+    def test_capped_observation_requires_both_explicit_owners(self):
+        self.assertEqual(lint_profile_arguments(
+            {"profile": {"lint_cap": "allow"}}, {"lint_cap": "allow"}, "allow"),
+            ["--cap-lints=allow"])
+        for profile, producer in (({}, {}), ({"lint_cap": "allow"}, {}),
+                                  ({}, {"lint_cap": "allow"})):
+            with self.subTest(profile=profile, producer=producer), self.assertRaises(ValueError):
+                lint_profile_arguments({"profile": profile}, producer, "allow")
+        with self.assertRaisesRegex(ValueError, "unsupported"):
+            lint_profile_arguments({"profile": {}}, {}, "warn")
+
     def test_all_files_are_checked_even_when_the_compiler_never_opens_them(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

@@ -39,6 +39,17 @@ def write(out, name, value):
     (out / name).write_text(json.dumps(value, indent=2) + "\n")
 
 
+def lint_profile_arguments(manifest, binding, cap):
+    """Capped bring-up requires an explicit matching manifest and producer."""
+    if cap not in (None, "allow"):
+        raise ValueError("unsupported original-core lint cap")
+    effective = cap or "uncapped"
+    if (manifest["profile"].get("lint_cap", "uncapped") != effective
+            or binding.get("lint_cap", "uncapped") != effective):
+        raise ValueError("explicit lint cap, source profile and producer binding differ")
+    return ["--cap-lints=allow"] if cap else []
+
+
 class Download:
     """Hash compressed bytes without retaining the archive or its member list."""
     def __init__(self, stream, deadline):
@@ -182,6 +193,9 @@ def worker(args):
         manifest = json.loads(manifest_path.read_text())
         cli, producer = args.cli.resolve(strict=True), args.producer_binding.resolve(strict=True)
         binding = json.loads(producer.read_text())
+        lint_args = lint_profile_arguments(manifest, binding, args.cap_lints)
+        lint_cap = args.cap_lints or "uncapped"
+        result["lint_cap"] = lint_cap
         expected_cli = args.expected_cli_sha256 or manifest["expected_cli_sha256"]
         expectation_source = "explicit caller input" if args.expected_cli_sha256 else "pinned manifest default"
         result.update(expected_cli_sha256=expected_cli, expected_cli_source=expectation_source)
@@ -203,13 +217,13 @@ def worker(args):
             archive = {"source": "existing pinned tree", "root": str(source)}
         verify_sources(manifest, source)
         command = [strace, "-f", "-qq", "-yy", "-s", "4096", "-e", "trace=openat", "-o",
-                   str(out / "whole-core.openat"), str(cli), "--emit-types", "--edition=2024",
+                   str(out / "whole-core.openat"), str(cli), *lint_args, "--emit-types", "--edition=2024",
                    "--crate-name", "core", "--crate-disambiguator", "core_1_98_88d9",
                    "--source-core", "core@core_1_98_88d9", str(source / "library/core/src/lib.rs")]
         immutable = {str(path): sha(path) for path in (cli, producer, Path(strace), manifest_path, Path(__file__))}
         write(out, "binding.json", {"command": command, "immutable": immutable, "archive": archive,
               "expected_cli_sha256": expected_cli, "expected_cli_source": expectation_source,
-              "profile": manifest["profile"], "source_files": len(manifest["files"]),
+              "profile": manifest["profile"], "lint_cap": lint_cap, "source_files": len(manifest["files"]),
               "core_files": sum(row["path"].startswith("library/core/") for row in manifest["files"]),
               "producer": binding, "path_adaptation": {"source_root": str(source),
               "old_source_root": "/home/vishvananda/rustgm-sources/rust-1.98.0-" + manifest["revision"]},
@@ -250,6 +264,8 @@ def main():
                         help="declared source/profile manifest; retain changed compiler identities explicitly")
     parser.add_argument("--source-root", type=Path,
                         help="reuse an existing pinned tree after checking every manifest file")
+    parser.add_argument("--cap-lints", choices=("allow",),
+                        help="explicit bring-up cap; requires separate matching profile and producer binding")
     parser.add_argument("--max-output-gib", type=float,
                         help="absolute local resource cap including retained output")
     parser.add_argument("--worker", action="store_true", help="caller already holds storage guard and hard190s timeout")

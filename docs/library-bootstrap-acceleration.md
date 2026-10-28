@@ -4,6 +4,17 @@
 
 # Library bootstrap execution plan, 2026-10-26
 
+Compilation-first priority, updated 2026-10-28: keep Rust's `allow`, `deny`,
+`forbid` and `expect` controls, but prioritize diagnostic work only when it
+unblocks actual compilation. Wider lint parity remains required in PA40 and
+is deferred from the immediate implementation queue. The standard explicit
+`--cap-lints=allow` bring-up option is being implemented with a separate
+authenticated observation profile. Default behavior remains strict. A capped
+build is useful compilation evidence, but cannot close strict qualification
+or any remaining assignment requirement. Syntax, typing, unsafe permission,
+API availability, constant evaluation and language feature checks remain
+independent of diagnostic levels.
+
 The objective remains every assignment requirement needed to compile original
 pinned core, alloc and std and execute their consumers. This revises execution
 order and internal preparation policy. Source pins, Rust semantics, assignment
