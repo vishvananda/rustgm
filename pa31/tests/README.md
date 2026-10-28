@@ -398,3 +398,10 @@ feature/capture opponents and DST cases stay required. Syntax controls isolate
 root API-inventory setup; their expansion-only observations do not grant layout,
 constant execution or std macro availability. See the directory contract and
 README for retained prediction disagreements and upstream runtime-intrinsic ICEs.
+
+
+`spec/source-format-macros/static-options/` retains LIB052's original LowerHex
+constructor and static option recipe. Independent options/trait-negative and
+real source template/pair-storage native observations are distinct from full
+Formatter/write invocation. Dynamic counts, other constructors and named inputs
+remain required; no scalar-formatting factory is substituted.

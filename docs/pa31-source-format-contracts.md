@@ -347,3 +347,57 @@ Actual `Arguments::as_str`/`fmt::write` still require source comparison, BitAnd/
 pointer read/offset and the genuine UB/panic helper graph. LIB052 additionally
 retains core's `{:#034x}` LowerHex/options constructor frontier. None is replaced
 by a compiler formatting algorithm or counted complete by this identity step.
+
+
+## Static options and LowerHex construction
+
+LIB052 is the unchanged original `mem/type_info.rs572` call
+`write!(f, "FieldId({:#034x})", self.frt_type_id.as_u128())`. The typed producer
+now selects the real `Argument::new_lower_hex<T: LowerHex>` beside Display and
+Debug. Static fill/alignment, sign, alternate, zero-pad, width and precision use
+one borrowed option parse and the pinned byte recipe. Debug `x?`/`X?` retain the
+Debug constructor with their actual option flags. Other constructors, dynamic
+counts and named/captured inputs remain explicitly required wider profiles.
+No numeric formatting algorithm is implemented in the compiler.
+
+Pair identity remains `(input, formatting trait)`. Options belong to each
+placeholder, so distinct widths for one LowerHex input reuse one real argument
+slot. The third fixed transient slot per input keeps lookup bounded; only real
+pairs enter the argument array. Exact root/site/member/immutable-name checks,
+actual generic/trait/method/body/instance proof, ordinary input loans and the
+narrow generated unsafe scope remain mandatory.
+
+The [frozen controls](../pa31/tests/spec/source-format-macros/static-options/contract.json)
+match24 new pinned-Rust metadata/build/native observations across2021/2024.
+The separate [real-source provider](../pa31/tests/spec/source-format-macros/static-options/source-qualified-contract.json)
+retains the exact new_lower_hex/argument_new/Arguments constructor bodies over
+the clearly reduced support foundation. Its Rust and locked CPPGM native trace
+is exactly `e1;e2;t1;p0L9;p1D7;p2M9;d9;d7;3`. This observes template bits,
+method-pointer identity, single input evaluation and reverse destruction; it
+does not fabricate or invoke a Formatter. Full source write/handler execution
+remains pending. Original missing-Ok/cascading inherent-method ambiguity setup,
+the pre-rustc harness KeyError and first private-test Clippy failure remain.
+The setup successor only qualifies Result::Ok in an authored user impl.
+
+`{:#034x}` emits controlC3, flags69800020 little-endian and width0022
+little-endian. Static zero counts keep their flags but omit a zero payload,
+matching the real decoder default. Integer overflow, dynamic counts and changed
+constructor spelling have explicit opponents. The failed unused-input/newline
+path also prepays the extra literal byte before any String allocation; a
+paired failed-input control measures that exact additional payment.
+
+The six selected private controls pass in257.55s. Actual transient Options12,
+pair16 and name array12→16 coexist with unchanged Output416/Template48,
+LibraryValue12, Kind28/Node36 and existing call owners. A three-trait repeated
+options workload at N8/32/128 pays work5216/20306/81638 and
+bytes46403/178877/708777; every root query remains22 work/no new allocation.
+Preparation is O(inputs + literal bytes + emitted pairs), with actual static
+option/name/string/AST/vector storage prepaid. No timing-speedup claim follows.
+
+
+Separate production/CLI lexer10 passes167.86s on the identical2,999-source map
+as private6. The actual production source semantic inspection and upstream
+verification pass. The pinned CLI is4f9fecd133a4f319b8c6636e993e2ed30567a0e629f9e15c6112b098983aaa1f;
+the locked native receipt iscbcf40ab807bc93359ceb262b03a0b27f7c99b21a0c16c78868dba6b93a96955.
+This qualification does not repeat or claim a whole original-core observation;
+the integrator owns that next probe with the exact binary.

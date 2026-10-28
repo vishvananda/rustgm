@@ -1,0 +1,1 @@
+use std::fmt;struct Probe;impl fmt::LowerHex for Probe{fn fmt(&self,f:&mut fmt::Formatter<'_>)->fmt::Result{write!(f,"{}:{}:{}:{:?}:{:?}",f.alternate() as u8,f.sign_aware_zero_pad() as u8,f.sign_plus() as u8,f.width(),f.precision())}}fn main(){let p=Probe;println!("{:#034x}|{:+.0x}",p,p);}

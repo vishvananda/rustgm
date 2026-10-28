@@ -130,11 +130,12 @@ impl<S: Sources> Engine<'_, S> {
                 .charge(steps, bytes)
                 .map_err(|message| error(original.start, message))
         };
-        let mut names = [crate::support::names::NameId(0); 3];
+        let mut names = [crate::support::names::NameId(0); 4];
         for (slot, constructor) in [
             FormatConstructor::Arguments,
             FormatConstructor::Debug,
             FormatConstructor::Display,
+            FormatConstructor::LowerHex,
         ]
         .into_iter()
         .enumerate()
@@ -269,7 +270,9 @@ fn draft_input_sites(
     let base = sites
         .len()
         .checked_sub(count)
-        .filter(|base| *base >= 3 + count && *base <= 3 + count.saturating_mul(2))
+        .filter(|base| {
+            *base >= 3 + count && *base <= 3 + count.saturating_mul(FormatConstructor::FORMAT_COUNT)
+        })
         .ok_or("formatting draft pair cardinality changed")?;
     Ok((base, &sites[base..]))
 }

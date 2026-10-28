@@ -18,14 +18,14 @@ pub(super) struct Output<'a> {
     source: String,
     sites: Vec<NodeId>,
     inputs: Vec<(NodeId, usize)>,
-    names: [NameId; 3],
+    names: [NameId; 4],
     charge: &'a Charge<'a>,
 }
 impl<'a> Output<'a> {
     pub(super) fn build(
         template: Template,
         count: usize,
-        names: [NameId; 3],
+        names: [NameId; 4],
         grammar: MacroContext,
         config: &Config,
         charge: &'a Charge<'a>,
@@ -269,6 +269,7 @@ impl<'a> Output<'a> {
             FormatConstructor::Arguments => 0,
             FormatConstructor::Debug => 1,
             FormatConstructor::Display => 2,
+            FormatConstructor::LowerHex => 3,
         };
         let node = self.node(
             constructor.name(),

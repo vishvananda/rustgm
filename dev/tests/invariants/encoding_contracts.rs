@@ -74,8 +74,8 @@ fn default_debug_templates_preserve_first_use_repeats_utf8_and_paid_failures() -
     eprintln!(
         "format pair layouts Argument={} name_arrays={}/{} LibraryValue={} Output={} Template={}",
         size_of::<Argument>(),
-        size_of::<[crate::support::names::NameId; 2]>(),
         size_of::<[crate::support::names::NameId; 3]>(),
+        size_of::<[crate::support::names::NameId; 4]>(),
         size_of::<crate::support::library_types::LibraryValue>(),
         size_of::<super::super::output::Output<'_>>(),
         size_of::<Template>()
@@ -102,5 +102,80 @@ fn default_debug_templates_preserve_first_use_repeats_utf8_and_paid_failures() -
         .is_err()
     );
     assert_eq!(attempts.get(), 1);
+    Ok(())
+}
+
+#[test]
+fn static_options_keep_exact_flags_counts_positions_and_trait_pairs() -> Result {
+    let charge = |_, _| Ok(());
+    assert_eq!(compile("{:}>", 1, false, &charge)?.bytes, b"\xc0\x01>\x00");
+    let actual = compile("FieldId({:#034x})", 1, false, &charge)?;
+    assert_eq!(
+        actual.bytes,
+        b"\x08FieldId(\xc3\x20\x00\x80\x69\x22\x00\x01)\x00"
+    );
+    assert_eq!(
+        actual.arguments,
+        [Argument {
+            input: 0,
+            constructor: FormatConstructor::LowerHex
+        }]
+    );
+    let actual = compile("{0:#034x}|{0:x}|{0:?}|{0}", 1, false, &charge)?;
+    assert_eq!(actual.arguments.len(), 3);
+    assert_eq!(
+        actual.bytes,
+        b"\xc3\x20\x00\x80\x69\x22\x00\x01|\xc8\x00\x00\x01|\xc0\x01|\xc0\x00"
+    );
+    assert_eq!(
+        compile("{:00x}", 1, false, &charge)?.bytes,
+        b"\xc1\x20\x00\x00\x69\x00"
+    );
+    assert_eq!(compile("{:.x}", 1, false, &charge)?.bytes, b"\xc0\x00");
+    assert_eq!(
+        compile("{:*>8.3}", 1, false, &charge)?.bytes,
+        b"\xc7\x2a\x00\x00\x38\x08\x00\x03\x00\x00"
+    );
+    assert_eq!(
+        compile("{:🦀^7}", 1, false, &charge)?.bytes,
+        b"\xc3\x80\xf9\x01\x48\x07\x00\x00"
+    );
+    assert_eq!(
+        compile("{:#x?}", 1, false, &charge)?.bytes,
+        b"\xc1\x20\x00\x80\x62\x00"
+    );
+    for text in [
+        "{:65536x}",
+        "{:width$x}",
+        "{:0$x}",
+        "{:.*x}",
+        "{named:x}",
+        "{:X}",
+        "{:8#x}",
+    ] {
+        assert!(compile(text, 1, false, &charge).is_err(), "{text}");
+    }
+    let mut paid = Vec::new();
+    for newline in [false, true] {
+        let storage = Cell::new(0);
+        let error = compile("unused", 1, newline, &|_, bytes| {
+            storage.set(storage.get() + bytes);
+            Ok(())
+        })
+        .err()
+        .ok_or_else(|| error(0, "unused input accepted"))?;
+        assert!(error.message.contains("unused argument"));
+        paid.push(storage.get());
+    }
+    assert_eq!(paid[1] - paid[0], 1);
+    eprintln!(
+        "static options={} pair={} names={} Output={} LibraryValue={} Template={}",
+        size_of::<Options>(),
+        size_of::<Argument>(),
+        size_of::<[crate::support::names::NameId; 4]>(),
+        size_of::<super::super::output::Output<'_>>(),
+        size_of::<crate::support::library_types::LibraryValue>(),
+        size_of::<Template>()
+    );
     Ok(())
 }

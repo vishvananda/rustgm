@@ -34,21 +34,26 @@ pub enum FormatConstructor {
     Arguments,
     Debug,
     Display,
+    LowerHex,
 }
 impl FormatConstructor {
+    pub const FORMAT_COUNT: usize = 3;
     #[must_use]
     pub const fn name(self) -> &'static str {
         match self {
             Self::Arguments => "new",
             Self::Debug => "new_debug",
             Self::Display => "new_display",
+            Self::LowerHex => "new_lower_hex",
         }
     }
     #[must_use]
     pub const fn owner(self) -> crate::support::bindings::LangItem {
         match self {
             Self::Arguments => crate::support::bindings::LangItem::FormatArguments,
-            Self::Debug | Self::Display => crate::support::bindings::LangItem::FormatArgument,
+            Self::Debug | Self::Display | Self::LowerHex => {
+                crate::support::bindings::LangItem::FormatArgument
+            }
         }
     }
 }

@@ -185,7 +185,7 @@ fn shape(
         .filter(|count| *count > 0);
     if inputs.zip(count).is_none_or(|(inputs, count)| {
         count < inputs
-            || count > inputs.saturating_mul(2)
+            || count > inputs.saturating_mul(3)
             || sites.end.checked_sub(sites.start)
                 != inputs.checked_add(count).and_then(|n| n.checked_add(3))
     }) {
@@ -227,9 +227,10 @@ impl OutputShape {
                 }
                 call
             }
-            (slot, FormatConstructor::Debug | FormatConstructor::Display)
-                if slot >= 3 && (slot as usize) < 3 + self.count =>
-            {
+            (
+                slot,
+                FormatConstructor::Debug | FormatConstructor::Display | FormatConstructor::LowerHex,
+            ) if slot >= 3 && (slot as usize) < 3 + self.count => {
                 at(self.arguments, slot as usize - 3)?
             }
             _ => {

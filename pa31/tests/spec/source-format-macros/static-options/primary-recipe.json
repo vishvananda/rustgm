@@ -1,0 +1,54 @@
+{
+  "scope": "Static option encoding and actual LowerHex constructor selection; numeric formatting stays ordinary source code",
+  "sources": {
+    "lower_hex": {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/fmt/mod.rs",
+      "source_sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+      "first": 1376,
+      "last": 1381,
+      "start": 53131,
+      "end": 53369,
+      "sha256": "2377d804ff480573544411b3472a9fac5e65653d621c1ee8162f488f9f428837"
+    },
+    "encoding": {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_ast_lowering/src/format.rs",
+      "source_sha256": "4292f5bacd885c1acd9d396e04427a215cfbfcf956dfb12380c3cd377149e914",
+      "first": 359,
+      "last": 418,
+      "start": 14039,
+      "end": 16956,
+      "sha256": "e61d7c0daf0b5d3c1a818f250ad31042af5089a88ba5208319d5602d4f8a6697"
+    },
+    "option_parser": {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_parse_format/src/lib.rs",
+      "source_sha256": "1eb3706b9bfcd19e8b9e3a4132e8d9bb741b09992fa6c7443e4dd8469c62cc49",
+      "first": 618,
+      "last": 716,
+      "start": 24709,
+      "end": 28416,
+      "sha256": "cdcae70f9a23f61cf4090d5188b3fa2aacc4ec0c78f95667c5e3d79de9135ada"
+    },
+    "library_flags": {
+      "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/fmt/mod.rs",
+      "source_sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+      "first": 318,
+      "last": 332,
+      "start": 12021,
+      "end": 12719,
+      "sha256": "fb3a05abbf085c21e7a8ecb0291200707b2bbe2d838b7143801b712e7c3705d6"
+    }
+  },
+  "field_id_flags": "0x69800020",
+  "field_id_control": "0xc3",
+  "static_count_bits": 16,
+  "pair_identity": [
+    "input",
+    "formatting_trait"
+  ],
+  "retained_unimplemented": [
+    "dynamic width/precision/count arguments",
+    "named/captured inputs",
+    "other formatting constructors",
+    "full Formatter/write/PanicInfo/handler pipeline"
+  ]
+}
