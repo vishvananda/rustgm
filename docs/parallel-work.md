@@ -23,9 +23,10 @@ The actual65-role/two-word completion set, physical source Option profile and
 old-wire denials remain qualified. Complete known-role reservations are still a
 proposal and confer no source body/runtime/metadata authority.
 
-- The stopped derive lane has a qualified finite prerequisite at
-  `7afd78f25321fb5c2de86c6601f5b3c0096fa039`; its separate unqualified handler
-  snapshot is `d2ad7f8d5c28716cc47f7477ef3c86edb7d04da2`.
+- The stopped derive lane's finite prerequisite at
+  `7afd78f25321fb5c2de86c6601f5b3c0096fa039` is now integrated and
+  [qualified by root](pa31-generic-payload-derive-checkpoint.md). Its separate
+  unqualified handler snapshot is `d2ad7f8d5c28716cc47f7477ef3c86edb7d04da2`.
 - The stopped comparison lane is saved at
   `2e095472bebcc392bd03fe1797baa5cfbddebcd0`. The actual full comparison/native
   candidate is unfinished; variant regular-stability controls are a narrower
