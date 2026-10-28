@@ -1,0 +1,167 @@
+{
+  "status": "independent source/ordinary outcomes declared before compiler edits",
+  "original_plan_sha256": "01fa9f05637ddf1e3b4aeba939e4f43e8d15ad10f1e610892abd4493ef7923e5",
+  "original_metadata_summary": {
+    "commands": 45,
+    "disagreements": [
+      {
+        "name": "source-unsize",
+        "command": [
+          "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+          "--edition=2024",
+          "--target=x86_64-unknown-linux-gnu",
+          "--crate-type=lib",
+          "--emit=metadata",
+          "--crate-name=shared_call_reborrow",
+          "--cap-lints=allow",
+          "-Cpanic=abort",
+          "-Coverflow-checks=on",
+          "-Cdebug-assertions=off",
+          "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa16/shared-call-reborrow-v1/source-unsize.rs",
+          "-o",
+          "/home/vishvananda/rustgm-pa27-work/obj/parallel/pa16/shared-call-reborrow-v1/observed/source-unsize.rmeta"
+        ],
+        "status": 1,
+        "prediction": 0,
+        "matches": false,
+        "infrastructure": false,
+        "stderr_sha256": "bf69c1135ba10b556edfe36d17484ce768b0bd01ae37add7f9caaf4ffa16de2d"
+      }
+    ],
+    "infrastructure": 0,
+    "binding_sha256": "c1f69f755e35f9e341b680998edc8f39626be2824673a2fd773ba91075d322ea",
+    "results_sha256": "addcae120fb7d448a990dc4067d614afe5412937269d351ec216b75584492a82"
+  },
+  "followup_summary": {
+    "commands": 8,
+    "disagreements": [],
+    "infrastructure": 0,
+    "binding_sha256": "d26b0a11c433dc4f250f13834b2685a324e87c3ec29aff15abd6fa48555e50b9",
+    "results_sha256": "1fd1c21a6cb18e2b18b8f7094eea645d1f71533815a244db13caf0953f9a17b3"
+  },
+  "native_stdout": "1:9;2:9;3:13;4:13;7\n",
+  "generic_move_rule": "source references have no Copy/Clone impl; generic-value and inferred-let consume, explicit shared heads reborrow",
+  "source_mixed_sha256": "a21e9e3546226c831113cc7b4a9bf2337555911697395ba4ccc65c46296208a8",
+  "files": [
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/block.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-block.rs",
+      "sha256": "c31c2a3a3482bd0fdaa22e5030557f0360a09d39a2c7742f022f0c94b7952fb7"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/branches.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-branches.rs",
+      "sha256": "aec2c0f3bb1d1a392fb5d69529d51ab66a323c8ba27d6bf99f7425ed6fe56edb"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/copy-bound.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-copy-bound.rs",
+      "sha256": "7c08438e9350a1e1b2f89919a1f28098987ea1a202cfe95905a71bf9a281cac2"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/direct.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-direct.rs",
+      "sha256": "357c0caec467ff72a7e95b0a513b23e84843c28f3c86021c9a91585abad354ec"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/field.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-field.rs",
+      "sha256": "6e2c29b0c630144d2a6fe7328701a2fcd781458a8cd69a25aa4295fe67918a9f"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/function-pointer.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-function-pointer.rs",
+      "sha256": "ec6c2fe6b1c6fb39d14aa2c74b9aa3d71080eb8a577d5765b96ddf309de843f3"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/generic-referent.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-generic-referent.rs",
+      "sha256": "79f2aefe3c8115e645bf8f6c2494b459f3dd45599437daaf59916bce78831c3f"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/generic-value.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-generic-value.rs",
+      "sha256": "bd6488356ac6bca9bf0d9134122b9d3a21fd3624b37bd870a4ba059521bb45cb"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/inferred-let.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-inferred-let.rs",
+      "sha256": "33554a4a7240a4194c41ba51f5183e2d65a32e390b81cdb3edfcd37bd0df9ff1"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/live-shared-write.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-live-shared-write.rs",
+      "sha256": "2b0a2c0040933425971cc65dedcdde4e0f6659bbbba48bb0c4ec1047d3aa447e"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/loop.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-loop.rs",
+      "sha256": "177da142d8d92cac1c1faa9db0e943c110c1340106185640672fdc6020a1c893"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/match.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-match.rs",
+      "sha256": "b7957f225e7387a4bcfe721067b0e7f63ce621c4a813561f6672f97921a5886b"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/mutable-call.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-mutable-call.rs",
+      "sha256": "05754ae2e5102817e282646ff5c24944ca4d0dfbb79288fc81767907445a9ca6"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/mutable-generic-move.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-mutable-generic-move.rs",
+      "sha256": "ef57c061425a64425dbabf74307233bc2ad5b235f0be183e3c26cc7d11bcf44f"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/nested.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-nested.rs",
+      "sha256": "7cc52e60f8d64047b542fad3f7eed667f0342f490d5bd04177faa5489aaf6e36"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/owned-move.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-owned-move.rs",
+      "sha256": "f4e92b1e089d5a4f15d11636dba2a58b61fa25e8ac38e6478c9b9bae0e5dd52d"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/return-local.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-return-local.rs",
+      "sha256": "3b7c5735e47246b39034205c021196408a404c97032114a8c575c83f19b29eaa"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/shared-from-mutable.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-shared-from-mutable.rs",
+      "sha256": "86932af1ac8adef203419212c41adf50f3a85e337db89ced1d9565779a8fe0a2"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/shared-to-mut.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-shared-to-mut.rs",
+      "sha256": "66de9a99e554b18d72b99fda5644cab4b6270ba4a03038ec00771e8c65c37a27"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/tuple.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-tuple.rs",
+      "sha256": "8f697dd0f0d5e197595c685ef3ee4868e509f32afb8b47c96a522b9e02daf92f"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/typed-let.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-typed-let.rs",
+      "sha256": "19d5a23ad23c297ad998af3d4b3580dd69b0db816b3074f4023e14f629a90209"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/unsize.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/ordinary-unsize.rs",
+      "sha256": "df913a907af2148a69898b50a206def535130865dbc5ff23b064086362daa4b4"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/native.rs",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-native/ordinary.rs",
+      "sha256": "95eb3a0420e9423b998b4f161a114a34ab575445dd77a1cd1d6d6e4a95737aed"
+    },
+    {
+      "path": "pa16/tests/spec/shared-call-reborrow/consumer.c",
+      "frozen": "obj/parallel/pa16/shared-call-reborrow-v1/frozen-native/consumer.c",
+      "sha256": "11ca6f054cb0fc76a0ade736cc1c4a2dac4de42d572a174e5180ca717641c9ee"
+    }
+  ]
+}
