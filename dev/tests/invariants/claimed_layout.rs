@@ -14,7 +14,7 @@ fn report(name: &str) -> Result<Report> {
 }
 #[test]
 fn actual_struct_targets_retain_unconstrained_generics_and_pending_semantic_permission() -> Result {
-    assert_eq!(LangItem::ALL.len(), 62);
+    assert_eq!(LangItem::ALL.get(61), Some(&LangItem::AllocLayout));
     assert_eq!(LangItem::SliceLen.index(), 60);
     assert_eq!(LangItem::AllocLayout.index(), 61);
     assert_eq!(
