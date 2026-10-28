@@ -135,7 +135,9 @@ impl Request {
             "pattern_type_macro" => Self::Library(Feature::PatternTypeMacro),
             "pattern_types" => Self::Capability(Feature::PatternTypes),
             // Requests do not authorize the unsupported live const-drop operation.
-            "const_destruct" | "asm_experimental_arch" => Self::NoCapability,
+            "const_destruct" | "const_precise_live_drops" | "asm_experimental_arch" => {
+                Self::NoCapability
+            }
             _ => Self::Capability(Feature::cpu_gate(
                 crate::support::cpu_features::Gate::named(name)?,
             )),

@@ -6,6 +6,7 @@ mod callback_dispatch;
 #[path = "function/tracked_locations.rs"]
 mod caller_location;
 mod cleanup;
+mod compare_values;
 mod intrinsics;
 mod invocations;
 mod logical_values;
@@ -877,6 +878,9 @@ impl Lower<'_, '_, '_> {
                     return Ok(value);
                 }
                 if let Some(value) = self.tracked_call(id)? {
+                    return Ok(value);
+                }
+                if let Some(value) = self.source_three_way(id)? {
                     return Ok(value);
                 }
                 if let Some(value) = self.source_discriminant(id)? {

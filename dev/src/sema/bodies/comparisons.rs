@@ -215,6 +215,61 @@ impl Checker<'_> {
             }
         }
     }
+    pub(super) fn source_comparison_operator(
+        &mut self,
+        node: NodeId,
+        method: Method,
+        left: NodeId,
+        right: NodeId,
+    ) -> Result<TermId, Error> {
+        let selected = crate::sema::compiler_items::source_comparison(
+            self.report,
+            self.facts,
+            self.key(node),
+            method,
+        )?;
+        let subject = self.term(left)?;
+        let right_type = self.term(right)?;
+        self.state.call_types.obligations.push((
+            node,
+            Predicate::trait_application(
+                subject,
+                ItemId(selected.definition.0),
+                vec![Argument::Type(right_type)],
+            ),
+        ));
+        self.complete_method_arguments(node, selected.method)?;
+        let ty = self.facts.definitions[selected.method.0 as usize]
+            .ok_or_else(|| self.error(node, "source comparison lost its actual callable"))?;
+        if !matches!(self.facts.types.kind(ty), Some(Type::FunctionItem {item, signature, ..})
+            if item.0 == selected.method.0 && signature == selected.signature)
+        {
+            return Err(self.error(
+                node,
+                "source comparison callable differs from its current header",
+            ));
+        }
+        let callable = self.generic_function(node, selected.method, ty)?;
+        let signature = self.child(node, callable, 0)?;
+        let signature = self.call_signature(node, signature)?;
+        let receiver = self.child(node, signature, 0)?;
+        let actual = self.comparison_borrow(node, subject, receiver)?;
+        let pending =
+            self.retain_language_borrow(node, left, selected.method, callable, subject, actual);
+        self.state.call_types.methods[pending]
+            .1
+            .expect_receiver(receiver);
+        let expected = self.child(node, signature, 1)?;
+        let actual = self.comparison_borrow(node, right_type, expected)?;
+        self.state.call_types.field_receivers.push(right_type);
+        self.state
+            .call_types
+            .comparison_borrows
+            .push((node, actual, expected));
+        self.state.alignment.borrows.push((node, right));
+        self.state.calls.push((node, signature));
+        self.child(node, signature, 2)
+    }
     fn comparison_borrow(
         &mut self,
         node: NodeId,

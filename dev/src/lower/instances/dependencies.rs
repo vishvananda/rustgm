@@ -1,4 +1,5 @@
 //! Callable demands come from executable uses and typed constant storage graphs.
+mod compare_dependencies;
 use crate::support::hash::HashSet;
 use crate::{
     abi::layout::Layouts,
@@ -69,6 +70,10 @@ fn source_call(
     };
     match catalog.intrinsic_kind(crate::resolve::model::DefId(item.0))? {
         Some(SourceIntrinsic::ConstEvalSelect) => Ok(Some(SourceIntrinsic::ConstEvalSelect)),
+        Some(SourceIntrinsic::ThreeWayCompare) => {
+            compare_dependencies::require(report, facts, body, value, ty)
+                .map(|()| Some(SourceIntrinsic::ThreeWayCompare))
+        }
         Some(SourceIntrinsic::DiscriminantValue) => {
             tag_dependencies::require(report, facts, body, value, ty)
                 .map(|()| Some(SourceIntrinsic::DiscriminantValue))
@@ -77,20 +82,7 @@ fn source_call(
             ptr_values::require_operation(report, facts, body, value, ty, kind).map(|()| Some(kind))
         }
         Some(SourceIntrinsic::UbChecks) => {
-            let instance = Instance::new(&facts.types, ty)?;
-            let (selection, _, _) = Reader::new(facts)
-                .source_runtime_check(instance, body.source)?
-                .ok_or("source ub_checks lost its dependency descriptor")?;
-            if signature != selection.signature
-                || value.ty != TypeId::primitive(crate::types::Primitive::Bool)
-                || !body
-                    .arguments
-                    .get(arguments.start as usize..arguments.end as usize)
-                    .is_some_and(<[crate::body::ir::ValueId]>::is_empty)
-            {
-                return Err("source ub_checks dependency differs from its exact direct Call");
-            }
-            Ok(Some(SourceIntrinsic::UbChecks))
+            runtime_check(facts, body, value, ty, signature, arguments)
         }
         Some(SourceIntrinsic::Transmute) => {
             let selected = Reader::new(facts)
@@ -154,6 +146,31 @@ fn source_call(
     }
 }
 
+fn runtime_check(
+    facts: &Declarations,
+    body: &Body,
+    value: &crate::body::ir::Value,
+    ty: TypeId,
+    signature: TypeId,
+    arguments: crate::body::ir::ValueList,
+) -> Result<Option<crate::support::bindings::SourceIntrinsic>, &'static str> {
+    use crate::support::bindings::SourceIntrinsic;
+    let instance = Instance::new(&facts.types, ty)?;
+    let (selection, _, _) = Reader::new(facts)
+        .source_runtime_check(instance, body.source)?
+        .ok_or("source ub_checks lost its dependency descriptor")?;
+    if signature != selection.signature
+        || value.ty != TypeId::primitive(crate::types::Primitive::Bool)
+        || !body
+            .arguments
+            .get(arguments.start as usize..arguments.end as usize)
+            .is_some_and(<[crate::body::ir::ValueId]>::is_empty)
+    {
+        return Err("source ub_checks dependency differs from its exact direct Call");
+    }
+    Ok(Some(SourceIntrinsic::UbChecks))
+}
+
 impl Discovered {
     fn callable_operand(
         &mut self,
@@ -178,7 +195,8 @@ impl Discovered {
                 | SourceIntrinsic::CallerLocation
                 | SourceIntrinsic::PtrMetadata
                 | SourceIntrinsic::AggregateRawPtr
-                | SourceIntrinsic::DiscriminantValue,
+                | SourceIntrinsic::DiscriminantValue
+                | SourceIntrinsic::ThreeWayCompare,
             ) => {
                 // Only this authenticated direct Call omits callable-body demand.
                 // Lowering still proves and consumes its reached operation.

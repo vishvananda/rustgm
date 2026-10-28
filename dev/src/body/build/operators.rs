@@ -122,10 +122,12 @@ impl Builder<'_> {
                 ..self.source
             })
             .is_some_and(|selected| {
-                self.facts
-                    .associated
-                    .comparison_method(selected.method)
-                    .is_some()
+                crate::sema::compiler_items::comparison_member(
+                    self.report,
+                    self.facts,
+                    selected.method,
+                )
+                .is_some()
             })
     }
     pub(super) fn comparison_argument(&mut self, node: NodeId) -> Result<(), Error> {

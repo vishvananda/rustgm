@@ -1,0 +1,87 @@
+{
+  "state": "setup followup; actual source chunks unchanged, only authored feature request and safe concatenation separator corrected; original hypotheses retained",
+  "cases": [
+    {
+      "name": "actual-equality",
+      "path": "pa31/tests/spec/source-comparisons/equality/actual-equality.rs",
+      "sha256": "82fe3e7b1acb35fe39ef66004cb9c79035b9a9df1772389b8e96cdb94ba0af2d",
+      "accepted": true,
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-equality-foundation4/actual-equality.rs",
+      "rust_observed_accepts": true,
+      "candidate_supported": true
+    },
+    {
+      "name": "wrong-rhs",
+      "path": "pa31/tests/spec/source-comparisons/equality/wrong-rhs.rs",
+      "sha256": "dd68dce4c6ba23a8069af930c54516720914fcbcca5c432b0fb7bd4387f49687",
+      "accepted": false,
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-equality-foundation4/wrong-rhs.rs",
+      "rust_observed_accepts": false,
+      "candidate_supported": false
+    },
+    {
+      "name": "missing-impl",
+      "path": "pa31/tests/spec/source-comparisons/equality/missing-impl.rs",
+      "sha256": "f62a4d60b3ed632d943e2ad402dd3cbb4622123012ec0c1d2db6422460a57ebd",
+      "accepted": false,
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-equality-foundation4/missing-impl.rs",
+      "rust_observed_accepts": false,
+      "candidate_supported": false
+    },
+    {
+      "name": "wrong-actual-default",
+      "path": "pa31/tests/spec/source-comparisons/equality/wrong-actual-default.rs",
+      "sha256": "6364ca0909aa8c78ff1eaeeb9f336367b7b473787cbeb5c23de4018131cefe2a",
+      "accepted": false,
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-equality-foundation4/wrong-actual-default.rs",
+      "rust_observed_accepts": false,
+      "candidate_supported": false
+    },
+    {
+      "name": "alias",
+      "path": "pa31/tests/spec/source-comparisons/equality/alias.rs",
+      "sha256": "a90ab47abd3b29bf00c4479c4cb3904ad698de6c8b077caad7b4cde394298a2a",
+      "accepted": true,
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-equality-foundation4/alias.rs",
+      "rust_observed_accepts": true,
+      "candidate_supported": true
+    },
+    {
+      "name": "lexical-shadow",
+      "path": "pa31/tests/spec/source-comparisons/equality/lexical-shadow.rs",
+      "sha256": "1d5960fd7d291aa913e4712c02c3e120c28f6b698446dae4c519e670c9b4c213",
+      "accepted": true,
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-equality-foundation4/lexical-shadow.rs",
+      "rust_observed_accepts": true,
+      "candidate_supported": true
+    },
+    {
+      "name": "copy-bound",
+      "path": "pa31/tests/spec/source-comparisons/equality/copy-bound.rs",
+      "sha256": "03aeb239bce239c01bab942b71148e758877b392c8c31b556e4071b13efb452c",
+      "accepted": false,
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-equality-foundation4/copy-bound.rs",
+      "rust_observed_accepts": false,
+      "candidate_supported": false
+    },
+    {
+      "name": "borrow-conflict",
+      "path": "pa31/tests/spec/source-comparisons/equality/borrow-conflict.rs",
+      "sha256": "e79dd02362b4a8d440cc13ee80059271d2e4e558b57f4db0387205881811ef65",
+      "accepted": false,
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-equality-foundation4/borrow-conflict.rs",
+      "rust_observed_accepts": false,
+      "candidate_supported": false
+    },
+    {
+      "name": "actual-equality-const",
+      "path": "pa31/tests/spec/source-comparisons/equality/actual-equality-const.rs",
+      "sha256": "1a2a43cbec888058f7f53db2e9abdc182063aa5739bc7f63ae762fe89a8d84cf",
+      "accepted": true,
+      "original_path": "obj/parallel/pa31/source-comparisons-v1/frozen-equality-foundation4/actual-equality-const.rs",
+      "rust_observed_accepts": true,
+      "candidate_supported": true
+    }
+  ],
+  "foundation_correction": "Freeze, upstream const_precise_live_drops, actual Neg source macro, const feature identities, ControlFlow imports; actual source bodies unchanged; prior failed observations retained."
+}

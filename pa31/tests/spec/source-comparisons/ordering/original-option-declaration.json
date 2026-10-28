@@ -1,0 +1,9 @@
+{
+  "source_data_only": true,
+  "scope": "complete original Option declaration incl derives/variant+payload attrs retained; compiled support remains explicitly authored minimal declaration",
+  "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/option.rs",
+  "sha256": "fc70106a756f98208e6a6a3e428310bdfa3531877cf6c6a99f39fffa26ab2c40",
+  "start": 23824,
+  "end": 24375,
+  "chunk_sha256": "e8f6a46f199f6cd9381b0345aa25012841da793bed781f5db6b1b805391a9570"
+}

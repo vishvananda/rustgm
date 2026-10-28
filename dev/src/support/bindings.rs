@@ -325,12 +325,15 @@ pub enum SourceIntrinsic {
     DiscriminantValue,
     AggregateRawPtr,
     OffsetOf,
+    ThreeWayCompare,
 }
 impl SourceIntrinsic {
     /// Declaration attribute decoding only; consumers retain the actual `DefId`.
     #[must_use]
     pub fn from_name(name: &str) -> Option<Self> {
-        if name == "offset_of" {
+        if name == "three_way_compare" {
+            Some(Self::ThreeWayCompare)
+        } else if name == "offset_of" {
             Some(Self::OffsetOf)
         } else if name == "aggregate_raw_ptr" {
             Some(Self::AggregateRawPtr)

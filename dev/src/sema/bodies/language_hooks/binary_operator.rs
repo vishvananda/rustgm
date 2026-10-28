@@ -105,6 +105,59 @@ impl Checker<'_> {
         Ok(true)
     }
 
+    pub(in crate::sema::bodies) fn source_scalar_comparison_solved(
+        &self,
+        node: NodeId,
+        solved: &Solved,
+    ) -> Result<bool, Error> {
+        if self.facts.source_bindings.is_none() {
+            return Ok(false);
+        }
+        let Kind::Binary { op, left, right } = self.kind(node) else {
+            return Ok(false);
+        };
+        if !matches!(
+            op,
+            Punctuation::EqualEqual
+                | Punctuation::BangEqual
+                | Punctuation::Less
+                | Punctuation::LessEqual
+                | Punctuation::Greater
+                | Punctuation::GreaterEqual
+        ) {
+            return Ok(false);
+        }
+        self.source_scalar_comparison(
+            node,
+            op,
+            solved.types[self.term(left)?.0 as usize],
+            solved.types[self.term(right)?.0 as usize],
+            solved.types[self.term(node)?.0 as usize],
+        )
+    }
+    fn source_scalar_comparison(
+        &self,
+        node: NodeId,
+        op: Punctuation,
+        left: TypeId,
+        right: TypeId,
+        result: TypeId,
+    ) -> Result<bool, Error> {
+        let (Some(Type::Primitive(a)), Some(Type::Primitive(b))) =
+            (self.facts.types.kind(left), self.facts.types.kind(right))
+        else {
+            return Ok(false);
+        };
+        if !super::super::scalar::binary(op, a, b)
+            || self.facts.types.kind(result) != Some(Type::Primitive(crate::types::Primitive::Bool))
+        {
+            return Err(self.error(
+                node,
+                "source comparison operands/result require unsupported scalar representation",
+            ));
+        }
+        Ok(true)
+    }
     pub(in crate::sema::bodies) fn erased_source_operator(
         &self,
         node: NodeId,
@@ -114,6 +167,25 @@ impl Checker<'_> {
         }
         if self.facts.source_bindings.is_none() {
             return Ok(false);
+        }
+        if let Kind::Binary { op, left, right } = self.kind(node)
+            && matches!(
+                op,
+                Punctuation::EqualEqual
+                    | Punctuation::BangEqual
+                    | Punctuation::Less
+                    | Punctuation::LessEqual
+                    | Punctuation::Greater
+                    | Punctuation::GreaterEqual
+            )
+        {
+            return self.source_scalar_comparison(
+                node,
+                op,
+                self.ty(left)?,
+                self.ty(right)?,
+                self.ty(node)?,
+            );
         }
         let Kind::Binary {
             op: Punctuation::ShiftLeft | Punctuation::Or | Punctuation::Plus | Punctuation::Minus,
