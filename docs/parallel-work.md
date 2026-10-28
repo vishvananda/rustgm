@@ -6,9 +6,9 @@ implementation, combined qualification and public main integration in
 genuine feature-predicate metadata v4 port. Its concrete Dispatcher caller-feature
 port, source caller materialization and completed-environment cache are integrated
 and locally/native qualified. Worker
-`const_call_review` in `rustgm-pa27-work` owns authentic source `prelude_import`
-selection and lookup; its source attribute capture and repeated-effect
-validation are integrated. Broader advisory lint producers are deferred unless
+`const_call_review` in `rustgm-pa27-work` owns block-local source Copy/Clone/Default
+derives. Its authentic source `prelude_import` selection/lookup and previous
+source attribute capture/repeated-effect validation are integrated and qualified. Broader advisory lint producers are deferred unless
 needed for compilation. Preserve `allow`, `deny`, `forbid`, `expect` and separate
 strict evidence from explicit capped bring-up. At most two heavy commands may
 be active even though the controller permits three. No new worktree is needed.
@@ -18,18 +18,17 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The qualified CLI `8a2cb4fe` passes the former trait-owned feature-attribute
-boundary. Both original-core observations verify all722 pinned source hashes
-and unchanged effective target arguments. Strict opens68 sources and stops at
-`expect(implicit_provenance_casts)` in `ptr/const_ptr.rs186`; this additional
-advisory producer is deferred. Explicit Allow opens374 and stops at the actual
-`prelude_import` in `lib.rs196`. These are loading observations, not compiled
-files or an original artifact. [Joined source qualification](pa31-source-feature-integration.md)
-records private36, all26 local feature outcomes, production/CLI lexer10+PA6, both
-unchanged feature native7 fixtures and genuine pending metadata/artifact boundaries. The
-[constructor checkpoint](pa31-constructor-family-integration.md) and
-[actual source offset macro](pa31-offset-members-checkpoint.md) retain their
-finite native proof and broader source/layout requirements.
+The qualified CLI `a3857798` has separate strict and explicit-Allow original-core
+observations with all722 source pins and effective target arguments unchanged.
+Strict opens68 sources and stops at the deferred advisory expectation in
+`ptr/const_ptr.rs186`. Allow opens372 and reports the actual block-local
+`derive(Copy, Clone, Default)` in `net/ip_addr.rs2146`. This replaces the earlier
+first prelude diagnostic; loading order/count is not a monotonic compilation
+metric. [Joined prelude qualification](pa31-source-prelude-integration.md) records
+private44+lexer10+PA6 in219.52s, five independently matched prelude native programs,
+two feature native controls, the handler baseline and explicit remaining scope.
+No original artifact exists. The [feature checkpoint](pa31-source-feature-integration.md)
+retains local26 metadata proof and cross-crate requirements.
 
 The actual65-role/two-word completion set, physical source Option profile and
 old-wire denials remain qualified. Complete known-role reservations are still a
@@ -46,7 +45,7 @@ proposal and confer no source body/runtime/metadata authority.
 - Read-only offset/lint expectation/release proposals remain evidence, with no
   new compiler or publication authority.
 - The integrator is publishing the qualified caller-feature native/source
-  checkpoint and integrating the next source-prelude exit. Genuine panic/formatting, PA25
+  checkpoint and integrating the actual block-owned derive exit. Genuine panic/formatting, PA25
   generic/const, PA29 transport and original crate artifacts remain required.
 
 Keep one heavy job in the integrator's active worktree, two Cargo/test/native
@@ -67,9 +66,10 @@ reconcile the owning PA's remaining implementation and release checklist.
 
 Keep at most one qualified handoff queued per worker. Take shared interfaces
 before opening unrelated compiler work, and protect integration/observation time.
-The current exits are genuine feature-predicate metadata v4 (B), original source
-prelude lookup (C), and joined qualification/publication (Root). Actual nominal
-provider/export transport and original crate artifacts remain required.
+The current exits are genuine feature-predicate metadata v4 and imported call
+proof (B), actual block-local source derives (C), and joined qualification, source
+scalar/callable transport and publication (Root). Actual nominal provider and
+original crate artifacts remain required.
 Use at most two existing subagents; shared type/ABI/proof edits require explicit
 ownership coordination, not another concurrent owner.
 

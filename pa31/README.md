@@ -31,10 +31,18 @@ and atomic aliases use `Atomic<T: AtomicPrimitive>`; test the real protocols.
 Authenticate builtin declarations separately from invocation availability. An
 unused known declaration retains its actual macro kind without granting an
 unimplemented expansion permission. Unknown claims and wrong-kind invocations
-still fail. The [current unchanged-core observation](../docs/pa31-constructor-family-integration.md)
-passes all nine formatting selectors and reaches `#[expect(deprecated)]` in the
-prelude. Complete actual deprecation/expectation policy alongside the retained
-source runtime, builtin field-selection and crate artifact requirements.
+still fail. The [live original-library tracker](../docs/library-build-blockers.md)
+records current hard source boundaries and qualified checkpoint scope. Preserve
+real diagnostic policy while using explicit capped observations to prioritize
+compilation; deferred advisory producers and strict qualification remain required.
+
+An authored `prelude_import` requires its distinct crate feature and actual use
+owner. Select the genuine module separately from ordinary lexical globs; preserve
+lookup precedence, private binding lineage, hygiene and `no_implicit_prelude`,
+including actual trait-method discovery. Compiler builtins require authenticated
+identity. The [source prelude checkpoint](../docs/pa31-source-prelude-integration.md)
+records the finite local/native profile. PA34 owns automatic edition-specific
+core/std prelude injection; explicit authored paths are not rewritten by edition.
 
 Library feature requests also depend on enabled local/dependency stability
 declarations. Implement their inventory, regular/const API checks and macro
