@@ -215,9 +215,12 @@ fn mutable_iteration_keeps_ordinary_record_sizes_and_records_lazy_catalog_cost()
         size_of::<types::infer::Context>(),
         size_of::<types::Store>()
     );
-    // Contextual-field and source-attribute handles each add one cold pointer
-    // to the measured 7032-byte baseline.
-    assert_eq!(size_of::<Declarations>(), 7032 + 2 * size_of::<usize>());
+    // The prior 7048-byte crate owner gains an interned-policy Vec and one
+    // optional per-request progress pointer; dense lint nodes shrink to u32.
+    assert_eq!(
+        size_of::<Declarations>(),
+        7048 + size_of::<Vec<()>>() + size_of::<usize>()
+    );
     assert_eq!(size_of::<types::Kind>(), 24);
     assert_eq!(size_of::<types::infer::Context>(), 400);
     assert_eq!(size_of::<types::Store>(), 472);

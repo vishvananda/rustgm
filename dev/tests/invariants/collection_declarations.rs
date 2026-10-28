@@ -305,11 +305,11 @@ fn collection_layout_preserves_scalar_owners_and_padded_derive_entries() {
         size_of::<Properties>(),
         size_of::<(ItemId, Declaration)>()
     );
-    // Contextual-field and source-attribute handles each add one cold pointer
-    // to the measured 7032-byte baseline.
+    // The prior 7048-byte crate owner gains an interned-policy Vec and one
+    // optional per-request progress pointer; dense lint nodes shrink to u32.
     assert_eq!(
         size_of::<crate::sema::model::Declarations>(),
-        7032 + 2 * size_of::<usize>()
+        7048 + size_of::<Vec<()>>() + size_of::<usize>()
     );
     assert_eq!(size_of::<Type>(), 24);
     assert_eq!(

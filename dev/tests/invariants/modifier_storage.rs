@@ -155,9 +155,12 @@ fn cold_storage_and_enclosing_layouts() -> TestResult {
     assert_eq!(size_of::<crate::resolve::model::Scope>(), 32);
     assert_eq!(size_of::<crate::resolve::model::Definition>(), 36);
     assert_eq!(size_of::<crate::sema::model::NodeFacts>(), 80);
-    assert_eq!(size_of::<crate::resolve::lint_policy::Policy>(), 12);
-    assert_eq!(size_of::<Report>(), 3016);
-    assert_eq!(size_of::<Engine<'_, NoFiles>>(), 4064);
+    // Full policies now live in interned cold rows, reached through dense u32 IDs.
+    assert_eq!(size_of::<crate::resolve::lint_policy::Level>(), 1);
+    assert_eq!(size_of::<crate::resolve::lint_policy::Policy>(), 140);
+    // One cold lineage pointer and its nine-counter budget belong to import Work.
+    assert_eq!(size_of::<Report>(), 3096);
+    assert_eq!(size_of::<Engine<'_, NoFiles>>(), 4144);
     assert_eq!(size_of::<crate::resolve::expansion::Body>(), 96);
     assert_eq!(size_of::<crate::resolve::expansion::Definition>(), 136);
     assert_eq!(size_of::<crate::resolve::package::ErrorData>(), 128);
