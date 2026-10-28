@@ -66,7 +66,11 @@ code, duplicated blocks, phase dependencies and misplaced environment access.
   Use `--no-prune` before `--` for other build-only commands. The wrapper reserves
   40 GiB locally and disables incremental caches outside `dev-fast`. Fastcheck
   keeps one bounded incremental cache under `obj/rust/dev-fast`; shared output
-  caps include that cache. Retire it with `make tidy-build` when obsolete.
+  caps include that cache. Before resource admission, fastcheck retires older
+  completed incremental sessions while preserving each crate's newest warm
+  session, in-progress directories and explicit pins. It refuses active work or
+  symlinked cache paths and records retirement under `obj/cleanup/`.
+  Retire the whole cache with `make tidy-build` when obsolete.
   GitHub Actions defaults to an 8 GiB reserve. Do not lower the local reserve to
   work around exhaustion: clean generated output first.
 - Successful wrapped runs remove generated executables, object/metadata files

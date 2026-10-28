@@ -10,6 +10,7 @@ import sys
 import time
 
 from resource_policy import discover
+from storage_incremental import retire
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -45,6 +46,9 @@ def terminate(process):
 def launch(args, started):
     if not 20 <= args.seconds <= 300:
         raise ValueError("budget must be between 20 and 300 seconds")
+    retired = retire(ROOT)
+    if retired:
+        print(f"Retired {len(retired)} superseded incremental sessions; latest warm caches retained.", flush=True)
     folder = ROOT / f"obj/qualification/fast/{time.time_ns()}"
     command = [sys.executable, "scripts/resources.py", "run", "--wait-seconds", "0"]
     if discover(ROOT) is not None:

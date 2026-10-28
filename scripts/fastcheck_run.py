@@ -18,7 +18,7 @@ def fingerprint(root):
     paths += [root / path for path in ("dev/Cargo.toml", "dev/Cargo.lock",
               "scripts/fastcheck.py", "scripts/fastcheck_run.py", "scripts/rust_audit.py",
               "scripts/rust-module-roles.json", "scripts/maintainer_batch.py",
-              "scripts/maintainer_suites.py", "scripts/storage.py", "scripts/resource_runner.py",
+              "scripts/maintainer_suites.py", "scripts/storage.py", "scripts/storage_incremental.py", "scripts/resource_runner.py",
               "scripts/resource_policy.py", "scripts/resource_locks.py")]
     paths += [root / path for path in ("assignments.json", "assignment-plan.json",
               "docs/assignment-requirements.json", "Makefile", "scripts/assignment_metadata.py", "scripts/assignment_plan.py",
