@@ -136,7 +136,6 @@ fn checked(
         },
         1,
     )?;
-    header.canonical_inputs(facts)?;
     let [parameter] = header.parameters else {
         return Err("source comparison requires its Rhs formal".into());
     };
@@ -271,7 +270,9 @@ fn premises(
         .definition;
     let equality = catalog.language(LangItem::PartialEq).map(|d| d.definition);
     let mut found = [false; 3];
-    for input in header.inputs.iter() {
+    // The canonical producer precedes supertrait elaboration. Its actual inputs
+    // describe this declaration, rather than consequences copied from PartialEq.
+    for input in header.canonical_inputs(facts)?.iter() {
         let Clause::Predicate(predicate) = input.value else {
             return Err("source comparison has unsupported quantified premises");
         };

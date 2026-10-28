@@ -1,5 +1,25 @@
 # LIB056 source comparison WIP
 
+Root continuation: the worker is stopped and has not been resumed. Root
+authenticated all45074 tracked files,400 raw comparison streams and184 fast
+streams, then normally merged the saved branch. The test now selects v3 and the
+exact independently qualified native-v4 inputs/bridge are committed under
+`pa31/tests/spec/source-comparisons/native`. A full source/lowering producer and
+an exported const-member control are added; neither currently passes.
+
+Root receipt1793165606061771964 passed strict checks but exposed a declaration
+validator reading elaborated supertrait consequences. The validator now borrows
+the existing canonical header inputs. Follow-up1793165895436732855 passes strict
+checks and source equality, advances ordering to offset15662, then fails
+`invalid inference identity` in all three ordering controls. These are retained
+failures, not qualified native/const support. No oracles were changed.
+
+Full public CI40637336885 meanwhile exposed ordinary reference regressions and
+structural test assumptions in the preceding reborrow change. Root saved this
+comparison checkpoint to repair those independently on the public base first.
+Resume the comparison tests after integrating that repair; preserve the genuine
+source algorithms and all existing inherited/default const execution fences.
+
 Stopped at the user's subagent shutdown request. This is an unfinished local
 checkpoint, not a qualified compiler handoff. Base is a1da9ba298dde9f33961e1462d3d581a02dd5d27;
 branch is pa31-source-comparisons-v1. No active C guard remains.
