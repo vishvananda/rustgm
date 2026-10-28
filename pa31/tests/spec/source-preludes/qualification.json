@@ -1,0 +1,301 @@
+{
+  "state": "bounded local source selector candidate, independent metadata/native observations joined; no assignment activation",
+  "profile": {
+    "rustc": "1.98.0",
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": true,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "lint_cap": "uncapped"
+  },
+  "metadata": [
+    {
+      "case": "constructor-method",
+      "path": "pa31/tests/spec/source-preludes/constructor-method.rs",
+      "sha256": "71a312a0503d79a490b92bfaf700dedd954628460c752795b6cae9714f60ceaa",
+      "status": 0,
+      "qualified": true,
+      "oracle": "v1",
+      "observation": "constructor-method-metadata"
+    },
+    {
+      "case": "no-implicit-explicit",
+      "path": "pa31/tests/spec/source-preludes/no-implicit-explicit.rs",
+      "sha256": "42c7b4713a246cec9f1aeb5efd01467b2d3d88bc8b27986932c03ed45a93b0f0",
+      "status": 0,
+      "qualified": true,
+      "oracle": "v1",
+      "observation": "no-implicit-explicit-metadata"
+    },
+    {
+      "case": "local-shadow",
+      "path": "pa31/tests/spec/source-preludes/local-shadow.rs",
+      "sha256": "74b44457ad58ba47d0602554c22ed190874473f0241166fd7599814e7a88d896",
+      "status": 0,
+      "qualified": true,
+      "oracle": "v1",
+      "observation": "local-shadow-metadata"
+    },
+    {
+      "case": "glob-shadow",
+      "path": "pa31/tests/spec/source-preludes/glob-shadow.rs",
+      "sha256": "5107c8fe05e1c9b0e074650464296c549d533b65f5fc103274dc0d059592d739",
+      "status": 0,
+      "qualified": true,
+      "oracle": "v1",
+      "observation": "glob-shadow-metadata"
+    },
+    {
+      "case": "opaque-module",
+      "path": "pa31/tests/spec/source-preludes/opaque-module.rs",
+      "sha256": "3e66b32e321c68f92d6faf60b56295676b5693eea17f8600940e83c71c761e31",
+      "status": 1,
+      "qualified": false,
+      "oracle": "v1",
+      "observation": "opaque-module-metadata"
+    },
+    {
+      "case": "missing-gate",
+      "path": "pa31/tests/spec/source-preludes/missing-gate.rs",
+      "sha256": "baece6862e9884454cf0cfef42be308eb1396e3537d49a3d4e615965e25301cb",
+      "status": 1,
+      "qualified": true,
+      "oracle": "v1",
+      "observation": "missing-gate-metadata"
+    },
+    {
+      "case": "no-implicit-name",
+      "path": "pa31/tests/spec/source-preludes/no-implicit-name.rs",
+      "sha256": "7428694f3d003ea58042a78e3af6491ebd1bcf150c7ab73b401e8a639300367b",
+      "status": 1,
+      "qualified": true,
+      "oracle": "v1",
+      "observation": "no-implicit-name-metadata"
+    },
+    {
+      "case": "no-implicit-method",
+      "path": "pa31/tests/spec/source-preludes/no-implicit-method.rs",
+      "sha256": "eaa960a7396da6409a8845735f9c4d246b4e0b83535261ea47ecf6b7a1fae86b",
+      "status": 1,
+      "qualified": true,
+      "oracle": "v1",
+      "observation": "no-implicit-method-metadata"
+    },
+    {
+      "case": "wrong-owner",
+      "path": "pa31/tests/spec/source-preludes/wrong-owner.rs",
+      "sha256": "fe3bb752ebff2c487f0d8bcd50827a69a95f2f181e88049a3ff44ac21c1ce14f",
+      "status": 1,
+      "qualified": true,
+      "oracle": "v1",
+      "observation": "wrong-owner-metadata"
+    },
+    {
+      "case": "payload",
+      "path": "pa31/tests/spec/source-preludes/payload.rs",
+      "sha256": "68f5b05f8005a3794dcfe23539759b0b9c75e3096a544750c3bac0e2574942c2",
+      "status": 1,
+      "qualified": true,
+      "oracle": "v1",
+      "observation": "payload-metadata"
+    },
+    {
+      "case": "unsafe-wrapper",
+      "path": "pa31/tests/spec/source-preludes/unsafe-wrapper.rs",
+      "sha256": "cd0ef88d70aaf9018f391148d9e364927f8bbe234c7e4ec3e42ff9ca0e680da1",
+      "status": 1,
+      "qualified": true,
+      "oracle": "v1",
+      "observation": "unsafe-wrapper-metadata"
+    },
+    {
+      "case": "missing-target",
+      "path": "pa31/tests/spec/source-preludes/missing-target.rs",
+      "sha256": "fbe27993a15b71641a5b9028ffbb01be4029566383eb73c05d034e293909f075",
+      "status": 1,
+      "qualified": true,
+      "oracle": "v1",
+      "observation": "missing-target-metadata"
+    },
+    {
+      "case": "non-glob",
+      "path": "pa31/tests/spec/source-preludes/non-glob.rs",
+      "sha256": "d736dd7f78820bbcd66f7dd48fedd9c68953b8eafa930e2b528776dc44cb9edd",
+      "status": 1,
+      "qualified": false,
+      "oracle": "v1",
+      "observation": "non-glob-metadata"
+    },
+    {
+      "case": "multiple",
+      "path": "pa31/tests/spec/source-preludes/multiple.rs",
+      "sha256": "6482cf907d39e0acf865f4312f63f308cd54f8b8294afa5b439254664a887d6b",
+      "status": 0,
+      "qualified": true,
+      "oracle": "v1",
+      "observation": "multiple-metadata"
+    },
+    {
+      "case": "forward-selector",
+      "path": "pa31/tests/spec/source-preludes/forward-selector.rs",
+      "sha256": "f81922462f18ee18eb4f32c16a679af6fcb597ddee6376d91d138393c4471d71",
+      "status": 1,
+      "qualified": true,
+      "oracle": "v1",
+      "observation": "forward-selector-metadata"
+    },
+    {
+      "case": "opaque-captured",
+      "path": "pa31/tests/spec/source-preludes/opaque-captured.rs",
+      "sha256": "228cfd8a487d41c117e026423d8433d1155257f782beb2fd4492288e2193572c",
+      "status": 1,
+      "qualified": false,
+      "oracle": "v2",
+      "observation": "opaque-captured-metadata"
+    },
+    {
+      "case": "non-glob-root",
+      "path": "pa31/tests/spec/source-preludes/non-glob-root.rs",
+      "sha256": "96cbc8b5514071f8876e40ed5cbb69f39cce5113c4858ad6205a95042cdf708d",
+      "status": 0,
+      "qualified": true,
+      "oracle": "v2",
+      "observation": "non-glob-root-metadata"
+    },
+    {
+      "case": "private-member",
+      "path": "pa31/tests/spec/source-preludes/private-member.rs",
+      "sha256": "d9402c8b47f3d410043b429c21f0ea56a797837f379cba456c6d28e604230c51",
+      "status": 1,
+      "qualified": true,
+      "oracle": "v2",
+      "observation": "private-member-metadata"
+    },
+    {
+      "case": "no-bootstrap-fallback",
+      "path": "pa31/tests/spec/source-preludes/no-bootstrap-fallback.rs",
+      "sha256": "8c7fe4d937e1ea49ad389ae0800f86e0e8f18ffca29783827027867424f91257",
+      "status": 1,
+      "qualified": true,
+      "oracle": "v2",
+      "observation": "no-bootstrap-fallback-metadata"
+    },
+    {
+      "case": "builtin-no-implicit",
+      "path": "pa31/tests/spec/source-preludes/builtin-no-implicit.rs",
+      "sha256": "366bdaf01c13b18ad1e5d535fa69277388e66b06374688dc6cbe190c1ec850f0",
+      "status": 1,
+      "qualified": false,
+      "oracle": "v2",
+      "observation": "builtin-no-implicit-metadata"
+    },
+    {
+      "case": "opaque-names",
+      "path": "pa31/tests/spec/source-preludes/opaque-names.rs",
+      "sha256": "7c31c7e0c3f8319f45da81c5954a305243f3174ac9ab2dd8b3033adf8f743058",
+      "status": 0,
+      "qualified": true,
+      "oracle": "v3",
+      "observation": "opaque-names-metadata"
+    },
+    {
+      "case": "builtin-sized",
+      "path": "pa31/tests/spec/source-preludes/builtin-sized.rs",
+      "sha256": "6ad9cab3f6921341cc012f9061baa2877cb5bd12a2326595313c90774b8434a6",
+      "status": 0,
+      "qualified": true,
+      "oracle": "v3",
+      "observation": "builtin-sized-metadata"
+    }
+  ],
+  "native": [
+    {
+      "case": "constructor-method",
+      "input_sha256": "71a312a0503d79a490b92bfaf700dedd954628460c752795b6cae9714f60ceaa",
+      "status": 0,
+      "stdout": "7\n",
+      "stderr": "",
+      "oracle": "v1",
+      "observation": "constructor-method-run"
+    },
+    {
+      "case": "no-implicit-explicit",
+      "input_sha256": "42c7b4713a246cec9f1aeb5efd01467b2d3d88bc8b27986932c03ed45a93b0f0",
+      "status": 0,
+      "stdout": "7\n",
+      "stderr": "",
+      "oracle": "v1",
+      "observation": "no-implicit-explicit-run"
+    },
+    {
+      "case": "local-shadow",
+      "input_sha256": "74b44457ad58ba47d0602554c22ed190874473f0241166fd7599814e7a88d896",
+      "status": 0,
+      "stdout": "11\n",
+      "stderr": "",
+      "oracle": "v1",
+      "observation": "local-shadow-run"
+    },
+    {
+      "case": "glob-shadow",
+      "input_sha256": "5107c8fe05e1c9b0e074650464296c549d533b65f5fc103274dc0d059592d739",
+      "status": 0,
+      "stdout": "11\n",
+      "stderr": "",
+      "oracle": "v1",
+      "observation": "glob-shadow-run"
+    },
+    {
+      "case": "opaque-names",
+      "input_sha256": "7c31c7e0c3f8319f45da81c5954a305243f3174ac9ab2dd8b3033adf8f743058",
+      "status": 0,
+      "stdout": "7\n",
+      "stderr": "",
+      "oracle": "v3",
+      "observation": "opaque-names-run"
+    }
+  ],
+  "oracle_receipts": {
+    "v1": {
+      "path": "obj/parallel/source-prelude-v1/oracle-v1/receipt.json",
+      "sha256": "8efb5bc8069c8271bb0dc68dd86203ad6e9c013f4bcbad9e87a04d65291ff7be",
+      "state": "disagreed"
+    },
+    "v2": {
+      "path": "obj/parallel/source-prelude-v1/oracle-v2/receipt.json",
+      "sha256": "c434673860427c5c395b92e899e847c366062a6dc2d41b1c7d85fde9c82d343d",
+      "state": "disagreed"
+    },
+    "v3": {
+      "path": "obj/parallel/source-prelude-v1/oracle-v3/receipt.json",
+      "sha256": "b72c66a561f0c9413f857c4626e7f2cc87b0cbab620e615e78d5fcc7962a1f33",
+      "state": "passed"
+    }
+  },
+  "excluded_predecessors": [
+    "builtin-no-implicit",
+    "non-glob",
+    "opaque-captured",
+    "opaque-module"
+  ],
+  "qualified_metadata_count": 18,
+  "native_programs": 5,
+  "candidate": {
+    "receipt": "obj/qualification/fast/1793227302088053033/receipt.json",
+    "sha256": "96c8b2699982acd206f14d4072950ad2b73bb197e848b97df9291b750d48168d",
+    "state": "passed",
+    "exact_private_tests": 8,
+    "seconds": 136.84,
+    "scope": "Five positive source programs reach genuine checked local LowIR, real negatives/unsupported shapes, owner/effect/tree/scope/module/repeat guards, actual failed growth and warm payment, source builtin identity, existing layout/foreign-prelude opponents"
+  },
+  "pending": [
+    "Root production/CLI qualification and fresh CPPGM native join",
+    "Original core strict/Allow observation",
+    "PA34 automatic per-crate std/core/edition injection",
+    "Selector artifact transport and unsupported SourceClient/staged consumer profiles without a local request owner",
+    "Valid non-glob and multiple selector support; no fabricated Rust negatives"
+  ]
+}

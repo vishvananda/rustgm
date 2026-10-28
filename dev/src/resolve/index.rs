@@ -435,6 +435,9 @@ impl Resolver<'_> {
             return Ok(());
         }
         let owner = matches!(self.kind(c, node), Kind::Attributed { .. }).then_some(node);
+        if let Some(owner) = owner {
+            super::prelude_scope::claim_plain(self.package, self.facts, c, owner)?;
+        }
         // Attributed nodes have exactly one semantic child. Consume that chain
         // once, in the same order as the prior worklist, retaining its owner.
         let limit = self.package.unit(c.file).configured.ast.nodes.len();

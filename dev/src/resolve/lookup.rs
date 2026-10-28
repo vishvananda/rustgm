@@ -158,6 +158,12 @@ impl Resolver<'_> {
             let found = hygiene
                 .lookup(self.facts, &self.package.marks, &mut query)
                 .map_err(|e| Error::at(c.file, offset, e))?;
+            let found = match found {
+                Some(found) => Some(found),
+                None => self
+                    .source_prelude_selection(c, name, namespace, item, None)
+                    .map_err(|e| Error::at(c.file, offset, e))?,
+            };
             return Ok(found.or_else(|| {
                 self.lexical_prelude(query.privacy, name, namespace)
                     .map(|(scope, binding)| super::contextual_lookup::Selected {

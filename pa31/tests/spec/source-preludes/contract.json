@@ -1,0 +1,138 @@
+{
+  "state": "frozen before independent or candidate observations",
+  "owner": "PA31 source declaration selector; PA12 namespaces/privacy; PA34 edition/automatic injection remains separate",
+  "profile": {
+    "rustc": "1.98.0",
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": true,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false,
+    "lint_cap": "uncapped"
+  },
+  "cases": [
+    {
+      "name": "constructor-method",
+      "path": "pa31/tests/spec/source-preludes/constructor-method.rs",
+      "sha256": "71a312a0503d79a490b92bfaf700dedd954628460c752795b6cae9714f60ceaa",
+      "rustc_status": 0,
+      "native_stdout": "7\n",
+      "candidate": "supported"
+    },
+    {
+      "name": "no-implicit-explicit",
+      "path": "pa31/tests/spec/source-preludes/no-implicit-explicit.rs",
+      "sha256": "42c7b4713a246cec9f1aeb5efd01467b2d3d88bc8b27986932c03ed45a93b0f0",
+      "rustc_status": 0,
+      "native_stdout": "7\n",
+      "candidate": "supported"
+    },
+    {
+      "name": "local-shadow",
+      "path": "pa31/tests/spec/source-preludes/local-shadow.rs",
+      "sha256": "74b44457ad58ba47d0602554c22ed190874473f0241166fd7599814e7a88d896",
+      "rustc_status": 0,
+      "native_stdout": "11\n",
+      "candidate": "supported"
+    },
+    {
+      "name": "glob-shadow",
+      "path": "pa31/tests/spec/source-preludes/glob-shadow.rs",
+      "sha256": "5107c8fe05e1c9b0e074650464296c549d533b65f5fc103274dc0d059592d739",
+      "rustc_status": 0,
+      "native_stdout": "11\n",
+      "candidate": "supported"
+    },
+    {
+      "name": "opaque-module",
+      "path": "pa31/tests/spec/source-preludes/opaque-module.rs",
+      "sha256": "3e66b32e321c68f92d6faf60b56295676b5693eea17f8600940e83c71c761e31",
+      "rustc_status": 0,
+      "native_stdout": "7\n",
+      "candidate": "supported"
+    },
+    {
+      "name": "missing-gate",
+      "path": "pa31/tests/spec/source-preludes/missing-gate.rs",
+      "sha256": "baece6862e9884454cf0cfef42be308eb1396e3537d49a3d4e615965e25301cb",
+      "rustc_status": 1,
+      "native_stdout": null,
+      "candidate": "reject"
+    },
+    {
+      "name": "no-implicit-name",
+      "path": "pa31/tests/spec/source-preludes/no-implicit-name.rs",
+      "sha256": "7428694f3d003ea58042a78e3af6491ebd1bcf150c7ab73b401e8a639300367b",
+      "rustc_status": 1,
+      "native_stdout": null,
+      "candidate": "reject"
+    },
+    {
+      "name": "no-implicit-method",
+      "path": "pa31/tests/spec/source-preludes/no-implicit-method.rs",
+      "sha256": "eaa960a7396da6409a8845735f9c4d246b4e0b83535261ea47ecf6b7a1fae86b",
+      "rustc_status": 1,
+      "native_stdout": null,
+      "candidate": "reject"
+    },
+    {
+      "name": "wrong-owner",
+      "path": "pa31/tests/spec/source-preludes/wrong-owner.rs",
+      "sha256": "fe3bb752ebff2c487f0d8bcd50827a69a95f2f181e88049a3ff44ac21c1ce14f",
+      "rustc_status": 1,
+      "native_stdout": null,
+      "candidate": "reject"
+    },
+    {
+      "name": "payload",
+      "path": "pa31/tests/spec/source-preludes/payload.rs",
+      "sha256": "68f5b05f8005a3794dcfe23539759b0b9c75e3096a544750c3bac0e2574942c2",
+      "rustc_status": 1,
+      "native_stdout": null,
+      "candidate": "reject"
+    },
+    {
+      "name": "unsafe-wrapper",
+      "path": "pa31/tests/spec/source-preludes/unsafe-wrapper.rs",
+      "sha256": "cd0ef88d70aaf9018f391148d9e364927f8bbe234c7e4ec3e42ff9ca0e680da1",
+      "rustc_status": 1,
+      "native_stdout": null,
+      "candidate": "reject"
+    },
+    {
+      "name": "missing-target",
+      "path": "pa31/tests/spec/source-preludes/missing-target.rs",
+      "sha256": "fbe27993a15b71641a5b9028ffbb01be4029566383eb73c05d034e293909f075",
+      "rustc_status": 1,
+      "native_stdout": null,
+      "candidate": "reject"
+    },
+    {
+      "name": "non-glob",
+      "path": "pa31/tests/spec/source-preludes/non-glob.rs",
+      "sha256": "d736dd7f78820bbcd66f7dd48fedd9c68953b8eafa930e2b528776dc44cb9edd",
+      "rustc_status": 0,
+      "native_stdout": "7\n",
+      "candidate": "explicit unsupported-positive boundary"
+    },
+    {
+      "name": "multiple",
+      "path": "pa31/tests/spec/source-preludes/multiple.rs",
+      "sha256": "6482cf907d39e0acf865f4312f63f308cd54f8b8294afa5b439254664a887d6b",
+      "rustc_status": 0,
+      "native_stdout": "7\n",
+      "candidate": "explicit unsupported-positive boundary"
+    },
+    {
+      "name": "forward-selector",
+      "path": "pa31/tests/spec/source-preludes/forward-selector.rs",
+      "sha256": "f81922462f18ee18eb4f32c16a679af6fcb597ddee6376d91d138393c4471d71",
+      "rustc_status": 1,
+      "native_stdout": null,
+      "candidate": "reject"
+    }
+  ],
+  "boundary_notes": "Non-glob and multiple selectors are predicted valid Rust and remain explicit unsupported candidate positives. Early forward module prediction is tentative and retained if Rust disagrees. No artifact transport or automatic crate injection."
+}
