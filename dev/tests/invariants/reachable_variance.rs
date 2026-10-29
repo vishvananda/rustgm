@@ -1,8 +1,18 @@
 //! Reached variance shares completed dependencies without importing caller proof.
 use super::*;
 use crate::{resolve::model::DefKind, sema::model::Declarations};
-use std::{cell::Cell, fmt::Write};
+use std::{
+    cell::{Cell, RefCell},
+    fmt::Write,
+};
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
+type PreviousSolver = (
+    Vec<Variance>,
+    crate::support::hash::HashMap<(Term, Term), Term>,
+    Vec<usize>,
+    Vec<Term>,
+    usize,
+);
 
 fn item(report: &crate::resolve::expansion::Report, name: &str) -> TestResult<ItemId> {
     let index = report
@@ -121,6 +131,131 @@ fn shared_wide_dependencies_are_solved_once_and_warm_queries_retain_no_storage()
             append(&mut values, &facts, owner, &pay)?;
         }
         assert_eq!(paid.get(), (before.0 + width, before.1));
+    }
+    Ok(())
+}
+
+fn refused_attempt(
+    facts: &Declarations,
+    owner: ItemId,
+    expected: &Variances,
+    report: &crate::resolve::expansion::Report,
+    failure: usize,
+) -> TestResult {
+    let mut attempted = Variances::default();
+    let calls = Cell::new(0_usize);
+    let work = Cell::new(0_usize);
+    let bytes = Cell::new(0_usize);
+    let denied = Cell::new(false);
+    let pay = |steps, storage| {
+        let index = calls.get();
+        calls.set(index + 1);
+        work.set(work.get().saturating_add(steps));
+        bytes.set(bytes.get().saturating_add(storage));
+        if denied.get() || index == failure {
+            denied.set(true);
+            Err("test sticky variance payment refused")
+        } else {
+            Ok(())
+        }
+    };
+    assert!(
+        append(&mut attempted, facts, owner, &pay).is_err(),
+        "failure {failure}"
+    );
+    assert!(attempted.ranges.is_empty() && attempted.values.is_empty());
+    assert_eq!(attempted.steps, 0);
+    let first = (work.get(), bytes.get());
+    assert!(append(&mut attempted, facts, owner, &pay).is_err());
+    assert_eq!((work.get(), bytes.get()), (first.0 + 1, first.1));
+    append(&mut attempted, facts, owner, &|_, _| Ok(()))?;
+    for name in ["A", "B"] {
+        assert_eq!(
+            attempted.get(item(report, name)?),
+            expected.get(item(report, name)?)
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn every_scratch_growth_is_paid_before_publication_and_failed_attempts_can_resume() -> TestResult {
+    let report = crate::test_source::resolve(
+        "struct A<'a>{f:fn(B<'a>)}struct B<'a>{next:*const A<'a>,r:&'a u8}",
+        true,
+    )?;
+    let facts = crate::sema::declarations::analyze(&report)?;
+    let owner = item(&report, "A")?;
+    let trace = RefCell::new(Vec::new());
+    let mut expected = Variances::default();
+    append(&mut expected, &facts, owner, &|work, bytes| {
+        trace.borrow_mut().push((work, bytes));
+        Ok(())
+    })?;
+    assert_eq!(expected.get(owner), facts.lifetimes.variances.get(owner));
+    assert!(
+        trace
+            .borrow()
+            .iter()
+            .filter(|(_, bytes)| *bytes != 0)
+            .count()
+            >= 12
+    );
+    for failure in 0..trace.borrow().len() {
+        refused_attempt(&facts, owner, &expected, &report, failure)?;
+    }
+    assert_eq!(
+        size_of::<super::super::Solver<'_>>(),
+        size_of::<PreviousSolver>() + size_of::<Option<Payment<'_>>>()
+    );
+    println!(
+        "variance Graph={} Solver={} previousSolver={} Variances={}",
+        size_of::<Graph<'_>>(),
+        size_of::<super::super::Solver<'_>>(),
+        size_of::<PreviousSolver>(),
+        size_of::<Variances>()
+    );
+    assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
+    assert_eq!(size_of::<crate::body::ir::Body>(), 456);
+    Ok(())
+}
+#[test]
+fn zero_scratch_storage_and_small_work_budgets_fail_before_cached_rows_change() -> TestResult {
+    let report = crate::test_source::resolve(
+        "struct Leaf<'a>{r:&'a u8}struct Wrap<'a>{leaf:Leaf<'a>}",
+        true,
+    )?;
+    let facts = crate::sema::declarations::analyze(&report)?;
+    let leaf = item(&report, "Leaf")?;
+    let wrapper = item(&report, "Wrap")?;
+    for (work_limit, byte_limit) in [
+        (usize::MAX, 0),
+        (0, usize::MAX),
+        (8, usize::MAX),
+        (usize::MAX, 128),
+    ] {
+        let mut values = Variances::default();
+        append(&mut values, &facts, leaf, &|_, _| Ok(()))?;
+        let before = (values.steps, values.ranges.clone(), values.values.clone());
+        let attempted = Cell::new((0_usize, 0_usize));
+        let pay = |work, bytes| {
+            let old = attempted.get();
+            let next = (old.0.saturating_add(work), old.1.saturating_add(bytes));
+            attempted.set(next);
+            if next.0 > work_limit || next.1 > byte_limit {
+                Err("test variance budget exceeded")
+            } else {
+                Ok(())
+            }
+        };
+        assert!(append(&mut values, &facts, wrapper, &pay).is_err());
+        assert_eq!(
+            (values.steps, &values.ranges, &values.values),
+            (before.0, &before.1, &before.2)
+        );
+        assert!(attempted.get().0 > work_limit || attempted.get().1 > byte_limit);
+        append(&mut values, &facts, wrapper, &|_, _| Ok(()))?;
+        assert_eq!(values.get(wrapper), facts.lifetimes.variances.get(wrapper));
     }
     Ok(())
 }

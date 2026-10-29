@@ -24,21 +24,16 @@ impl Variances {
         if self.get(item).is_some() {
             return Ok(());
         }
-        let mut graph = Graph {
-            known: Some(self),
-            declarations: Some(declarations),
-            ..Graph::default()
-        };
-        let result = graph.reached_fields(types, definitions, item, &mut fields);
-        // The shared solver bounds scratch work itself. Count even failed cold
-        // attempts against the caller before any persistent row is published.
-        pay(graph.solver.steps, 0)?;
-        result?;
-        graph.result.values = graph
-            .variables
-            .iter()
-            .map(|&id| graph.solver.value(id))
-            .collect();
+        let mut graph = Graph::paid(self, declarations, pay)?;
+        graph.reached_fields(types, definitions, item, &mut fields)?;
+        graph.solver.pay(graph.variables.len(), 0)?;
+        graph
+            .solver
+            .vector(&mut graph.result.values, graph.variables.len())?;
+        graph
+            .result
+            .values
+            .extend(graph.variables.iter().map(|&id| graph.solver.value(id)));
         let inferred = graph.result;
         let steps = self
             .steps
@@ -56,7 +51,10 @@ impl Variances {
             inferred.values.len(),
         ));
         pay(
-            growth.work.saturating_add(inferred.ranges.len()),
+            growth
+                .work
+                .saturating_add(inferred.ranges.len())
+                .saturating_add(inferred.values.len()),
             growth.bytes,
         )?;
         let base = self.values.len();
@@ -82,6 +80,7 @@ impl Graph<'_> {
             let definition = definitions
                 .get(owner)
                 .ok_or("reached variance requires completed nominal fields")?;
+            self.solver.pay(self.seen.capacity(), 0)?;
             self.seen.clear();
             if definition.kind == crate::types::aggregate::Kind::PhantomData {
                 let arguments = declaration(
@@ -126,6 +125,7 @@ impl Graph<'_> {
             .ok_or("missing reached nominal declarations")?;
         let arguments = declaration(types, declarations, item)?;
         self.declaration(types, item, arguments)?;
+        self.solver.vector(&mut self.pending, 1)?;
         self.pending.push(item);
         Ok(())
     }
