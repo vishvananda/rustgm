@@ -11,6 +11,7 @@ mod receipt;
 #[cfg(test)]
 #[path = "../../../tests/invariants/derived_locations.rs"]
 mod tests;
+mod variant_defaults;
 mod vocabulary;
 use super::{
     Body, Builtin, Call, CallGrammar, Engine, Error, ExpansionId, Invocation, NodeKey, Sources,
@@ -34,6 +35,7 @@ pub(super) struct Transactions {
     index: HashMap<(FileId, usize), usize>,
 }
 struct Transaction {
+    enum_default: Option<variant_defaults::Choice>,
     outer: usize,
     placement: Placement,
     owner: NodeKey,
@@ -207,6 +209,7 @@ impl<S: Sources> Engine<'_, S> {
             )
             .map_err(|message| call.diagnostic(message))?;
         Ok(Transaction {
+            enum_default: None,
             outer: index,
             placement: Placement::capture(&self.loader.package, &self.paths.state.facts, call)?,
             owner: NodeKey { file, node: owner },

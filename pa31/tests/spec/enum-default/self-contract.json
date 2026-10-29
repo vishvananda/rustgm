@@ -1,0 +1,64 @@
+{
+  "state": "frozen before independent or candidate Self-constructor observation",
+  "base_contract_sha256": "95e7153533339981dce773baed44114e14d28e599ffcefa4a0a5c8fa19ae5576",
+  "cases": [
+    {
+      "file": "self-source.rs",
+      "metadata": 0,
+      "sha256": "1db14af69e28329a255dfde2aa8e1e60b6a0661691e4bab82df01d90ae4abe99"
+    },
+    {
+      "file": "self-missing.rs",
+      "metadata": 1,
+      "sha256": "51f8c9f0c6d87af67a3c9c95382544b0b143cd21bc93d0e05c3cf11cdde07181"
+    },
+    {
+      "file": "self-wrong-owner.rs",
+      "metadata": 1,
+      "sha256": "0146059c0f17d8d24599e3d5615fea670192c0fe26d8ca6d8345381a0123807a"
+    },
+    {
+      "file": "self-nonunit.rs",
+      "metadata": 1,
+      "sha256": "0b79bf68c6c22d7580f3062b778eb93c5b2fff21bd46e9b56e32f27417af0e51"
+    },
+    {
+      "file": "self-wrong-argument.rs",
+      "metadata": 1,
+      "sha256": "650f5bea52e2787d08834cd09ed72c0f75aefcbf1668eccf715b4d1569e68118"
+    },
+    {
+      "file": "self-suffix-argument.rs",
+      "metadata": 1,
+      "sha256": "2cc0604dbad04d42e4bcb4d18a333d5537868c494559b205f6fa941317479c13"
+    },
+    {
+      "file": "self-prefix-argument.rs",
+      "metadata": 1,
+      "sha256": "7ea8ea27425cd5daa2423580747e50fcdeb934167a2c6299dc7a63fa2ee62067"
+    },
+    {
+      "file": "self-abstract.rs",
+      "metadata": 1,
+      "sha256": "5e137e41ff0770e86bbde0dfbc0e764e1ce5345b378c720babbc9a5fd37a36ee"
+    },
+    {
+      "file": "self-nonenum.rs",
+      "metadata": 1,
+      "sha256": "64aacf09b3b9ca1a308b9eda722847b7e2ee022b6ed81b9c6d1a0ed781bcf23d"
+    },
+    {
+      "file": "self-associated.rs",
+      "metadata": 0,
+      "sha256": "907d2bd4e16e3375524973c914d641c8247cebeb8e279418db151e691098a1e5"
+    }
+  ],
+  "native": {
+    "source": "self-source.rs",
+    "observer": "observer.c",
+    "status": 0,
+    "stdout": "7\n",
+    "stderr": ""
+  },
+  "law": "actual resolved SelfType whose completed type is an enum ADT reuses the existing alias/constructor prefix kernel, preserving real generic/lifetime/const application, owner, privacy, associated const/method and abstract Self boundaries; no new dense fields or owner map"
+}

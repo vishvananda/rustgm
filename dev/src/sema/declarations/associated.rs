@@ -31,7 +31,10 @@ impl Checker<'_> {
         let Some(Target::Associated(owner)) = self.facts.node(key).and_then(|f| f.reference) else {
             return Ok(false);
         };
-        if self.report.resolution.definitions[owner.0 as usize].kind != DefKind::TypeAlias {
+        if !matches!(
+            self.report.resolution.definitions[owner.0 as usize].kind,
+            DefKind::TypeAlias | DefKind::SelfType
+        ) {
             return Ok(false);
         }
         let Some(Type::Adt(item, _)) =

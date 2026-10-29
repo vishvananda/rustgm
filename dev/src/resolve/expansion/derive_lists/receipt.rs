@@ -73,6 +73,11 @@ pub(super) fn current(
     {
         return Err(failure());
     }
+    if let Some(choice) = entry.enum_default
+        && super::variant_defaults::select(package, entry.owner)? != Some(choice)
+    {
+        return Err(failure());
+    }
     Ok(())
 }
 impl Report {
@@ -157,6 +162,9 @@ impl Report {
                 || !view.executed(member.context, definition)
             {
                 return Err(failure());
+            }
+            if role == Builtin::Default {
+                super::variant_defaults::replay(self, entry, definition)?;
             }
             // No non-Bang allowance frame or feature grant is created here.
         }

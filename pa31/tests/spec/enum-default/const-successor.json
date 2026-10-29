@@ -1,0 +1,10 @@
+{
+  "state": "frozen before corrected pair observation; predecessor unchanged",
+  "predecessor_contract_sha256": "95e7153533339981dce773baed44114e14d28e599ffcefa4a0a5c8fa19ae5576",
+  "predecessor_receipt_sha256": "8a26230c6cebd18a0dae92d79e59cb4dc801a8a41b75437a89673d4ab6612b98",
+  "source": "const-enabled-rust.rs",
+  "sha256": "43acbc63d26bfbea2ac7c8510e7aa078de034cd29f57613484be2d9ffed36806",
+  "metadata": 0,
+  "expanded": 0,
+  "reason": "Explicit actual const_default library request is independent of derive_const language/derive invocation permission. Original failed metadata prediction remains retained."
+}

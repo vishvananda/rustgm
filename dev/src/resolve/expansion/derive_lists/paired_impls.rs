@@ -44,7 +44,14 @@ impl<S: Sources> Engine<'_, S> {
         let selected = self.derive_selection(children)?;
         let start = self.invocations.len();
         let contexts = self.derive_contexts(index, selected, parent)?;
-        let generated = self.derive_generated(index, contexts, selected)?;
+        let choice = selected[3]
+            .map(|(_, definition)| self.selected_default(index, definition))
+            .transpose()?
+            .flatten();
+        if let Some(choice) = choice {
+            self.reserve_default_helper(index, choice)?;
+        }
+        let generated = self.derive_generated(index, contexts, selected, choice)?;
         let (span, root) = self.loader.package.units[file.0 as usize]
             .append_derived(
                 &generated.stream.source,
@@ -66,13 +73,23 @@ impl<S: Sources> Engine<'_, S> {
             .entries[position];
         entry.contexts = start..self.invocations.len();
         entry.output = Some(root);
+        entry.enum_default = choice;
+        let invocation = entry.invocation;
+        if let Some(choice) = choice {
+            self.attribute_effects
+                .as_deref_mut()
+                .and_then(|effects| effects.derives.as_deref_mut())
+                .ok_or_else(|| Error::unlocated("Default helper transaction disappeared"))?
+                .index
+                .insert((file, choice.effect), position);
+        }
         self.loader.package.units[file.0 as usize]
             .configured
             .effects[effect]
             .attribute
             .effect = Effect::ExpandedDerive;
-        self.invocations[entry.invocation].generated = span;
-        self.invocations[entry.invocation].parser_calls = 1;
+        self.invocations[invocation].generated = span;
+        self.invocations[invocation].parser_calls = 1;
         self.resume_derived_owner(index, root, parent)
     }
     fn derive_selection(&self, children: Range<usize>) -> Result<Selected, Error> {
@@ -137,6 +154,7 @@ impl<S: Sources> Engine<'_, S> {
         index: usize,
         contexts: [(SyntaxContextId, ExpansionId); MEMBERS.len()],
         selected: Selected,
+        choice: Option<super::variant_defaults::Choice>,
     ) -> Result<crate::expand::builtin::delegation::Delegated, Error> {
         let entry = self.derive_entry(index)?;
         let (file, owner, effect) = (entry.owner.file, entry.owner.node, entry.effect);
@@ -183,6 +201,7 @@ impl<S: Sources> Engine<'_, S> {
                     Body::Builtin(Builtin::DeriveConst)
                 ),
                 prior_copy: self.completed_copy(index)?,
+                enum_default: choice.map(|choice| choice.variant),
             },
             self.config,
             &charge,
