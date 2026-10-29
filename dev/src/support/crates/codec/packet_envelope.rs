@@ -152,21 +152,15 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
         ..Work::default()
     };
     let payload = if let Some(availability) = availability {
-        let publish = if version == COMPATIBILITY_VERSION {
-            Payload::from_source_module_compatibility
-        } else if version == DEFINITIONS_VERSION {
-            Payload::from_source_module_definitions
-        } else if version == FEATURE_PREDICATE_VERSION {
-            Payload::from_source_module_feature_predicates
-        } else {
-            Payload::from_source_module_availability
-        };
-        publish(
+        publish_availability(
             interface.identity(),
-            rows,
-            attributes.ok_or("availability advisory columns missing")?,
-            modules.ok_or("availability namespace columns missing")?,
-            availability,
+            version,
+            ordinary_columns::AvailabilityPacket {
+                rows,
+                attributes: attributes.ok_or("availability advisory columns missing")?,
+                modules: modules.ok_or("availability namespace columns missing")?,
+                availability,
+            },
             base,
             &mut work,
         )?
@@ -198,6 +192,31 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
         Payload::from_source(interface.identity(), rows, base, &mut work)?
     };
     interface.with_generic_payload(payload)
+}
+
+fn publish_availability(
+    identity: &crate::support::crates::CrateIdentity,
+    version: u16,
+    packet: ordinary_columns::AvailabilityPacket,
+    base: usize,
+    work: &mut Work,
+) -> Result<Payload, &'static str> {
+    let publish = match version {
+        COMPATIBILITY_VERSION => Payload::from_source_module_compatibility,
+        DEFINITIONS_VERSION => Payload::from_source_module_definitions,
+        FEATURE_PREDICATE_VERSION => Payload::from_source_module_feature_predicates,
+        AVAILABILITY_VERSION => Payload::from_source_module_availability,
+        _ => return Err("availability publication requires its actual supported row version"),
+    };
+    publish(
+        identity,
+        packet.rows,
+        packet.attributes,
+        packet.modules,
+        packet.availability,
+        base,
+        work,
+    )
 }
 
 fn availability_packet(
