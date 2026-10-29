@@ -11,7 +11,7 @@ mod local;
 pub(in crate::sema) use incarnations::SourceImage;
 pub(in crate::sema) use local::{
     consume_const_panic, consume_inherited_overflow, consume_no_implicit_autorefs,
-    consume_pointer_lint, consume_tracking, inherit_tracking, marker_trait,
+    consume_pointer_lint, consume_promotable, consume_tracking, inherit_tracking, marker_trait,
 };
 #[cfg(test)]
 #[path = "../../tests/invariants/nodeless_owners.rs"]
@@ -120,6 +120,27 @@ pub(in crate::sema) struct Ledger {
     imported: Option<Box<imported::Headers>>,
 }
 impl Declarations {
+    /// Promotion eligibility is separate from const execution and API permission.
+    /// Legacy imported contracts do not authenticate this new declaration fact.
+    pub(crate) fn promotable_contract(
+        &self,
+        report: &Report,
+        definition: DefId,
+    ) -> Result<ContractKnowledge<SourceContractSite>, Error> {
+        let actual = report
+            .resolution
+            .definitions
+            .get(definition.0 as usize)
+            .ok_or_else(|| Error::unlocated("unknown promotion declaration"))?;
+        if actual.kind != crate::resolve::model::DefKind::Function {
+            return Ok(ContractKnowledge::Unknown);
+        }
+        let view = self.header_attribute_contracts(report, definition)?;
+        if actual.node.is_none() || matches!(view.must_use, ContractKnowledge::Unknown) {
+            return Ok(ContractKnowledge::Unknown);
+        }
+        local::query_promotable(self, report, definition)
+    }
     /// Complete header facts require positive producer state. Legacy imported
     /// rows and missing producers remain Unknown rather than checked absence.
     /// # Errors

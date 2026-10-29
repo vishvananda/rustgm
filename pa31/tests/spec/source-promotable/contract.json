@@ -1,0 +1,24 @@
+{
+  "state": "predictions frozen before candidate observations",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "metadata_predictions": {
+    "source-runtime": 0,
+    "borrow-required": 0,
+    "unsafe-call": 1,
+    "missing-pair": 1,
+    "nonconst": 1
+  },
+  "candidate_borrow": "Required: genuine function-call promotion evaluation is not yet implemented",
+  "native_stdout": "7 8 9\n",
+  "source_scope": "actual ordinary const function bodies and source header witness; no replacement for original size_of/SIZE body",
+  "files": {
+    "missing-pair.rs": "bef32f1e6c3987871af61b0b6ee64ec3ec2baba5ebbb9b0bb0d99672e33d98f6",
+    "expected.stdout": "b3f1eb525a817dd2dc29c538aaab2fc61c4b83c82d44b96adcf2f1e59c22109d",
+    "README.md": "1085c18b28aa1e4ec2d2aec942eb8cdd9e16690e1583e06f5fcbe11be2eea007",
+    "observer.c": "62fcaa1c4ec14105be1bb064a491f8f2d2e47b81ae7e5f051b6490c1e089a189",
+    "unsafe-call.rs": "a8bbb8767d18729855e3f3fb5d407f7bd11de4c573649d700e3ad60ef80ccce4",
+    "borrow-required.rs": "248206fd6e43713ddbbafd683fa0008e5e8550c4594a6a105094be9bb9164e15",
+    "source-runtime.rs": "62f707824a3b4bef223273103b2962c8dee23db2b1db7440d33916162e8d5e5b",
+    "nonconst.rs": "63507023d446633cc750a6f2ff8699fdff0fccf06ad0ec133732fc3847565ff4"
+  }
+}

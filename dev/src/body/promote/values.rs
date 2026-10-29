@@ -12,6 +12,24 @@ use crate::{
     syntax::ast::Unary,
 };
 impl Engine<'_, '_> {
+    pub(super) fn require_call_promotion_profile(&self, callee: ValueId) -> Result<(), Error> {
+        let Some(Type::FunctionItem { item, .. }) =
+            self.evaluator.facts().types.kind(self.value(callee)?.ty)
+        else {
+            return Ok(());
+        };
+        if matches!(
+            self.evaluator
+                .promotable_contract(DefId(item.0))
+                .map_err(Error::Constant)?,
+            crate::sema::header_attributes::ContractKnowledge::KnownPresent(_)
+        ) {
+            return Err(
+                "marked function-call promotion requires its actual evaluation profile".into(),
+            );
+        }
+        Ok(())
+    }
     pub(super) fn constructor(&self, callee: ValueId) -> Result<Option<(DefId, VariantId)>, Error> {
         let Some(Type::FunctionItem { item, .. }) =
             self.evaluator.facts().types.kind(self.value(callee)?.ty)
