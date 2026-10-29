@@ -169,9 +169,11 @@ Private selections compile the library harness once with `cargo test --lib
 and `CLIPPY_ARGS=-Dwarnings`. This checks `cfg(test)` with strict Clippy and
 links the executable in the same compilation. Cargo builds actual dependency
 libraries and reports the exact test executable; the runner does not infer an
-executable from check-mode metadata or search old cache outputs. The pinned
-Clippy driver tracks its arguments for Cargo cache invalidation. Normal host
-compiler flags remain intact. A separate `cargo clippy --lib` excludes private
+executable from check-mode metadata or search old cache outputs. The
+[pinned Clippy driver](https://github.com/rust-lang/rust-clippy/blob/rust-1.98.0/src/driver.rs)
+tracks its arguments for Cargo cache invalidation. Cargo
+[workspace wrappers](https://doc.rust-lang.org/cargo/reference/config.html#buildrustc-workspace-wrapper)
+preserve normal host compiler flags. A separate `cargo clippy --lib` excludes private
 tests, while Cargo's `--tests` would select unrelated integration targets.
 The harness has a stable build cache under `obj/rust/private-lint` so it cannot
 evict ordinary Clippy results. Idle retirement also bounds this cache while
