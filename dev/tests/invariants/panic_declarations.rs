@@ -188,7 +188,8 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
     assert!(report.resolution.intrinsics.get(Intrinsic::Abort).is_none());
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
-    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 2224);
+    // The three appended range-member roles extend only this cold table.
+    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 2288);
     assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 184);
     assert_eq!(size_of::<Declaration>(), 20);
     assert_eq!(size_of::<Option<Declaration>>(), 20);
