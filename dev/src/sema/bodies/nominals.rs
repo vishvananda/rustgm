@@ -2,7 +2,7 @@
 #[cfg(test)]
 #[path = "../../../tests/invariants/returned_fields.rs"]
 mod tests;
-use super::{Checker, Constructor, DefId, Error, NodeId, TermId, Type, TypeId};
+use super::{Checker, Constructor, DefId, DefKind, Error, NodeId, TermId, Type, TypeId};
 use crate::{
     sema::{
         generics::SourceArgument,
@@ -19,6 +19,40 @@ use crate::{
 
 pub(super) use crate::sema::annotations::Fields;
 impl Checker<'_> {
+    /// Resolve constructor paths whose lexical application is already known.
+    fn constructor_application(
+        &mut self,
+        node: NodeId,
+        path: NodeId,
+    ) -> Result<Option<TermId>, Error> {
+        if let Some(&use_) = self.facts.generics.constructor_uses.get(&self.key(path)) {
+            return match use_ {
+                crate::sema::generics::ConstructorUse::Prefix(prefix) => {
+                    self.annotation(prefix.node)
+                }
+                crate::sema::generics::ConstructorUse::SelfType(ty) => self.known(node, ty),
+            }
+            .map(Some);
+        }
+        if let Some(super::Target::Definition(id)) =
+            self.facts.node(self.key(path)).and_then(|f| f.reference)
+            && matches!(
+                self.report.resolution.definitions[id.0 as usize].kind,
+                DefKind::TypeAlias | DefKind::SelfType
+            )
+        {
+            if self.report.resolution.definitions[id.0 as usize].kind == DefKind::SelfType
+                && crate::sema::lifetimes::arguments(self.report, self.key(path), false)?.is_some()
+            {
+                return Err(self.error(path, "Self cannot take generic arguments"));
+            }
+            // Both paths already carry their lexical application, including
+            // reordered impl parameters and captured lifetime/const arguments.
+            return self.annotation(path).map(Some);
+        }
+        Ok(None)
+    }
+
     pub(super) fn nominal_term(
         &mut self,
         node: NodeId,
@@ -26,20 +60,8 @@ impl Checker<'_> {
         owner: ItemId,
         expected: Option<TermId>,
     ) -> Result<TermId, Error> {
-        if let Some(&use_) = self.facts.generics.constructor_uses.get(&self.key(path)) {
-            return match use_ {
-                crate::sema::generics::ConstructorUse::Prefix(prefix) => {
-                    self.annotation(prefix.node)
-                }
-                crate::sema::generics::ConstructorUse::SelfType(ty) => self.known(node, ty),
-            };
-        }
-        if let Some(super::Target::Definition(id)) =
-            self.facts.node(self.key(path)).and_then(|f| f.reference)
-            && self.report.resolution.definitions[id.0 as usize].kind
-                == crate::resolve::model::DefKind::TypeAlias
-        {
-            return self.annotation(path);
+        if let Some(term) = self.constructor_application(node, path)? {
+            return Ok(term);
         }
         let Some(parameters) = self.facts.generics.parameters.get(&DefId(owner.0)).cloned() else {
             let ty = self.nominal_type(node, path, owner)?;

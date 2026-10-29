@@ -6,8 +6,9 @@ implementation, combined qualification and public main integration in
 genuine feature-predicate metadata v4 port. Its concrete Dispatcher caller-feature
 port, source caller materialization and completed-environment cache are integrated
 and locally/native qualified. Worker
-`const_call_review` in `rustgm-pa27-work` owns the actual unsupported source derive on SimdAlign. Its block-local
-Copy/Clone/Default derive exit is qualified. Its authentic source `prelude_import` selection/lookup and previous
+`const_call_review` in `rustgm-pa27-work` owns the next actual bounded derive
+header on `ManuallyDrop<T: ?Sized>` (LIB-070). Its ConstParamTy and tuple/record
+Default source/native exits are integrated and qualified. Its authentic source `prelude_import` selection/lookup and previous
 source attribute capture/repeated-effect validation are integrated and qualified. Broader advisory lint producers are deferred unless
 needed for compilation. Preserve `allow`, `deny`, `forbid`, `expect` and separate
 strict evidence from explicit capped bring-up. At most two heavy commands may
@@ -18,18 +19,18 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The qualified CLI `41d3842a` retains separate strict/explicit-Allow observations
+The qualified CLI `34e7c52f` retains separate strict/explicit-Allow observations
 with all722 source pins and target args unchanged. Strict opens68 at the deferred
-pointer-cast lint expectation; Allow opens372 at actual SimdAlign builtin derive
-execution (`intrinsics/simd/mod.rs407`). [Block-owned source derives](pa31-block-owned-derive-checkpoint.md)
+pointer-cast lint expectation; Allow passes the original Saturating tuple Default
+boundary and opens373 at bounded `ManuallyDrop<T: ?Sized>` derive formals
+(`mem/manually_drop.rs158`). [Tuple Default and lexical Self](pa31-tuple-default-checkpoint.md)
+pass15 exact controls in127.83s, including both strict modes and three actual CI
+contract repairs; genuine ordered native defaults match Rust. [Block-owned source derives](pa31-block-owned-derive-checkpoint.md)
 and [source prelude](pa31-source-prelude-integration.md) have real independently
-matched native exits. Joined private17+lexer10+4CIintegration controls+PA6 pass
-in190.20s, plus native/core/harness/upstream post40.42s. The initial larger cold
-join hit its fixed build budget; its unchanged warm retry passes without an
-extended deadline. Loading counts are not monotonic compilation progress.
+matched native exits. Loading counts are not monotonic compilation progress.
 No original artifact or whole assignment exists.
 
-The actual65-role/two-word completion set, physical source Option profile and
+The actual66-role/two-word completion set, physical source Option profile and
 old-wire denials remain qualified. Complete known-role reservations are still a
 proposal and confer no source body/runtime/metadata authority.
 

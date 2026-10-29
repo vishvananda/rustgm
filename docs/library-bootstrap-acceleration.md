@@ -4,7 +4,7 @@
 
 # Library bootstrap execution plan, 2026-10-26
 
-Compilation-first priority, updated 2026-10-28: keep Rust's `allow`, `deny`,
+Compilation-first priority, reaffirmed 2026-10-29: keep Rust's `allow`, `deny`,
 `forbid` and `expect` controls, but prioritize diagnostic work only when it
 unblocks actual compilation. Wider lint parity remains required in PA40 and
 is deferred from the immediate implementation queue. The standard explicit

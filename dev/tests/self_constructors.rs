@@ -33,6 +33,21 @@ const ACCEPTED: &[(&str, &str, bool)] = &[
         false,
     ),
     (
+        "self-constructor-record-reordered",
+        "struct S<A,B>{a:A,b:B}impl<A,B>S<B,A>{fn make(a:B,b:A)->Self{Self{a,b}}fn take(self)->B{let Self{a,b:_}=self;a}}fn main(){check(S::make(517u16,7u8).take()==517);check(S::make(7u8,517u16).take()==7);}",
+        false,
+    ),
+    (
+        "self-constructor-record-const",
+        "struct S<const N:usize>{x:[u8;N]}impl<const N:usize>S<N>{fn make(x:[u8;N])->Self{Self{x}}}fn main(){check(S::make([3,7]).x[1]==7);}",
+        false,
+    ),
+    (
+        "self-constructor-record-lifetime",
+        "struct S<'a,T>{x:&'a T}impl<'a,T>S<'a,T>{fn make(x:&'a T)->Self{Self{x}}}fn main(){let n=7u8;check(*S::make(&n).x==7);}",
+        false,
+    ),
+    (
         "self-constructor-pointer",
         "struct S<T>(T);impl<T>S<T>{fn factory()->fn(T)->Self{Self}}fn main(){check(S::<u16>::factory()(517).0==517);}",
         false,
@@ -103,6 +118,30 @@ const REJECTED: &[(&str, &str)] = &[
     (
         "self-constructor-generic-barrier",
         "struct S<T>(T);impl<T>S<T>{fn bad(x:T)->Self{fn inner()->S<u8>{Self(7)}inner()}}fn main(){}",
+    ),
+    (
+        "self-constructor-record-wrong-type",
+        "struct S<T>{x:T}impl<T>S<T>{fn bad()->Self{Self{x:7u8}}}fn main(){}",
+    ),
+    (
+        "self-constructor-record-generic-barrier",
+        "struct S<T>{x:T}impl<T>S<T>{fn bad()->Self{fn inner()->S<u8>{Self{x:7}}inner()}}fn main(){}",
+    ),
+    (
+        "self-constructor-record-private-fields",
+        "mod m{pub struct S<T>{x:T}}impl<T>m::S<T>{fn bad(x:T)->Self{Self{x}}}fn main(){}",
+    ),
+    (
+        "self-constructor-record-trait-default",
+        "trait Make:Sized{fn bad()->Self{Self{x:7}}}fn main(){}",
+    ),
+    (
+        "self-constructor-record-extra-arguments",
+        "struct S<T>{x:T}impl<T>S<T>{fn bad(x:T)->Self{Self::<T>{x}}}fn main(){}",
+    ),
+    (
+        "self-constructor-record-escaped-borrow",
+        "struct S<'a,T>{x:&'a T}impl<'a>S<'a,u8>{fn bad()->Self{let n=7;Self{x:&n}}}fn main(){}",
     ),
 ];
 
