@@ -1,0 +1,17 @@
+{
+  "scope": "Full original v7 callable provider, unchanged prefix, plus authored public Always declaration; independently valid Rust source must retain metadata transport fence",
+  "origin": "pa31/tests/spec/source-callable-effects/combined-provider.rs",
+  "origin_sha256": "ee9cbc3d3b8d7b035ab0b6a75638843f71e35c361da22e98ddba2c7481d581fd",
+  "path": "pa31/tests/spec/source-comptime/exported-full-provider.rs",
+  "source_sha256": "94c137af34f5a7d04e449ea4de5a7b43147365f36d0f674b53732c606add743e",
+  "rustc": {
+    "metadata": 0,
+    "object": 0
+  },
+  "candidate": {
+    "source_analysis": 0,
+    "module-callables-v7_export": 1,
+    "diagnostic_contains": "always-comptime source contracts require a wider transport profile"
+  },
+  "required": "Actual Always body/effect/API transport remains unimplemented; this fixture does not replace it."
+}

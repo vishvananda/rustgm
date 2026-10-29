@@ -1,4 +1,6 @@
 //! Source Always context is distinct from ordinary const-fn and erased pointers.
+#[path = "always_exports.rs"]
+mod exports;
 use super::*;
 use crate::{pipeline, support::diagnostics::LintCap, test_source};
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
