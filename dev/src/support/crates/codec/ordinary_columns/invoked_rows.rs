@@ -47,7 +47,7 @@ pub(super) fn read(input: &mut Input<'_, '_>) -> Result<s::CallRequest, &'static
             input,
             "source call effect requires its wider profile",
         )?,
-        safety: if input.safety {
+        safety: if input.profile.call_safety() {
             match input.reader.u8()? {
                 0 => s::CallSafety::Safe,
                 1 => s::CallSafety::ExplicitUnsafeBlock,

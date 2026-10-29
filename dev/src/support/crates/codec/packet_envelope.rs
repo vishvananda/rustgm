@@ -108,15 +108,8 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
         return Err("source envelope base exceeds retained storage budget");
     }
     let (rows, attributes, modules, contracts, availability) = if !provided
-        && matches!(
-            version,
-            AVAILABILITY_VERSION
-                | FEATURE_PREDICATE_VERSION
-                | DEFINITIONS_VERSION
-                | COMPATIBILITY_VERSION
-                | CALLABLE_VERSION
-                | SAFETY_VERSION
-        ) {
+        && availability_version(version)
+    {
         let packet = availability_packet(input, base, version)?;
         (
             packet.rows,
@@ -202,6 +195,17 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
     interface.with_generic_payload(payload)
 }
 
+fn availability_version(version: u16) -> bool {
+    matches!(
+        version,
+        AVAILABILITY_VERSION
+            | FEATURE_PREDICATE_VERSION
+            | DEFINITIONS_VERSION
+            | COMPATIBILITY_VERSION
+            | CALLABLE_VERSION
+            | SAFETY_VERSION
+    )
+}
 fn publish_availability(
     identity: &crate::support::crates::CrateIdentity,
     version: u16,

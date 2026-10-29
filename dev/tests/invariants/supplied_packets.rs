@@ -278,10 +278,7 @@ fn denied(
         reader: &mut reader,
         bytes: 0,
         base: 0,
-        provided: false,
-        callables: false,
-        safety: false,
-        features: false,
+        profile: s::Profile::Source2024Functions,
     };
     assert!(check(&mut input).is_err());
     assert_eq!(
@@ -384,10 +381,7 @@ fn source_safety_byte_is_versioned_and_unknown_or_truncated_tags_reject() -> Res
             reader: &mut reader,
             bytes: 0,
             base: 0,
-            provided: false,
-            features: true,
-            callables: true,
-            safety: true,
+            profile: s::Profile::Source2024ModuleSafety,
         };
         assert_eq!(invoked_rows::read(&mut input)?, row);
         assert_eq!(reader.remaining(), 0);
@@ -407,10 +401,7 @@ fn source_safety_byte_is_versioned_and_unknown_or_truncated_tags_reject() -> Res
             reader: &mut reader,
             bytes: 0,
             base: 0,
-            provided: false,
-            features: true,
-            callables: true,
-            safety: true,
+            profile: s::Profile::Source2024ModuleSafety,
         };
         assert!(invoked_rows::read(&mut input).is_err());
     }

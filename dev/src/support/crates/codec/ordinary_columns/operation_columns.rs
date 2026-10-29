@@ -49,7 +49,7 @@ pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'s
     let sites = read.id()?;
     let context = match read.reader.u8()? {
         0 => s::CallContext::Runtime,
-        1 if read.callables => s::CallContext::ConstDefinition,
+        1 if read.profile.unconditional_callables() => s::CallContext::ConstDefinition,
         tag => {
             read.require_provided("source defining context requires a wider source profile")?;
             match tag {
@@ -166,7 +166,7 @@ fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static str> {
     let kind = match read.reader.u8()? {
         0 => s::ValueKind::Unit,
         6 => {
-            if !read.features {
+            if !read.profile.feature_predicates() {
                 return Err("source scalar operation requires its explicit v4 ordinary profile");
             }
             s::ValueKind::Scalar(read.reader.u128()?.to_le_bytes())

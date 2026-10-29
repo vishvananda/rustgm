@@ -17,16 +17,16 @@ pub(super) fn check(
         return Ok(());
     }
     work.charge(1)?;
-    let caller = facts
+    let defining_header = facts
         .function_header(view.definition())?
         .ok_or("source call safety lost its actual installed caller header")?;
-    if caller.signature != view.signature() || caller.body != Some(body.source) {
+    if defining_header.signature != view.signature() || defining_header.body != Some(body.source) {
         return Err("source call safety changed its actual defining body/header");
     }
     let Some(Kind::Function {
         unsafe_: caller_unsafe,
         ..
-    }) = facts.types.kind(caller.signature)
+    }) = facts.types.kind(defining_header.signature)
     else {
         return Err("source call safety caller signature is not a function");
     };

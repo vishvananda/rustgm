@@ -72,7 +72,11 @@ impl CallContexts {
                 }))
             })
             .and_then(|bytes| {
-                bytes.checked_add(self.safety.as_deref().map_or(0, |rows| rows.bytes()))
+                bytes.checked_add(
+                    self.safety
+                        .as_deref()
+                        .map_or(0, discharged_sites::Rows::bytes),
+                )
             })
             .ok_or("source call context storage overflow")
     }

@@ -143,7 +143,7 @@ fn missing_or_forged(rows: &mut s::SourceRows, mutation: usize) -> Result {
         5 => {
             rows.function_applications[request.target.0 as usize]
                 .declaration
-                .artifact = s::ArtifactRef(1)
+                .artifact = s::ArtifactRef(1);
         }
         _ => {
             let safe = rows
