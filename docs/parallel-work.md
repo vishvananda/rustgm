@@ -1,7 +1,20 @@
 # Parallel library bootstrap implementation
 
 Root owns compiler integration, current-source CLI/original-core observations and
-publication in `rustgm-pa25-work`. Ordinary source nounwind fdf2fedd8 consumes
+publication in `rustgm-pa25-work`. Source subtraction7ca5df00c has actual
+private33/native18 qualification; Root reuses it only after matching all3167
+compiler/test/harness hashes and52 source/fixture hashes. Root production/CLI3
+passes168.73s and evidence/harness/upstream/probe batch passes39.74s. CLI42f10af2
+still reaches file45:6972's open/exclusive/alternative profile in12.33s,374 opens,
+all722 hashes fixed. No original artifact is implied. Root next owns actual-demand
+caller-location readiness in the existing declaration/body-publication
+continuations. C's saved endpoint WIP b1ae2d145 has5/8 real private passes and a
+confirmed Location readiness dependency; it is not a qualified native consumer.
+C now owns only targeted genuine Location/Phantom completion and revalidation.
+B owns complete zero-excluded unsigned scalar niche layout, CTFE bytes and native
+ABI transport (LIB-087), preserving actual scalar types and measured hot widths.
+No layout-only acceptance or Ptr encoding of integers is permitted. Ordinary
+source nounwind fdf2fedd8 consumes
 the fixed abort target/supported ABI guarantee without granting intrinsic,
 const or unsafe permission. Root private6 passes113.55s,CLI3 100.26s, actual
 native0 1 0 1 0 1 matches pinned Rust; harness272/upstream/probes pass34.51s.
@@ -11,15 +24,13 @@ in10.93s,374 opens,all722 original hashes unchanged. These adjacent prerequisite
 do not move that parser frontier. This is an expansion/image offset, not an
 asserted physical source byte. Receipt257231cf2ecf3c9efffda86a9afb258324ddbcff17a27922fced3edf800046bc.
 Strict separately retains deferred expectation68; no original artifact is implied.
-B (`lint_expectations`) completed LIB-083's source-only declaration contracts and
-now owns LIB-084's genuine unchecked_sub/sub_with_overflow and ColdPath fallback
-execution. C (`const_call_review`) owns LIB-082's
-next open/exclusive/signed-alternative consumer after its qualified closed-range
-exit. Genuine helper bodies, typed continuations and internal desugaring
-authority require a coordinated interface before shared edits. B does not
-edit central TypePattern/Work/evaluation. Its one call_traits signature-queue
-hunk is agreed; source/body/desugaring permission stays consumer-owned. C has
-merged the disjoint Macro copier. No new advisory lint producer,
+B (`lint_expectations`) completed LIB-083/084's declaration and execution
+checkpoints. C (`const_call_review`) completed the closed-range consumer;
+its next generated-endpoint consumer awaits Root's readiness join. Genuine helper
+bodies, typed continuations and internal desugaring authority require a
+coordinated interface before shared edits. B does not edit central
+TypePattern/Work/evaluation. C does not edit Root's body/declaration scheduling.
+No new advisory lint producer,
 worker or worktree is queued. Root owns observer/configuration, integration and
 publication; ordinary nounwind's fixed abort/ABI consumer is qualified. Central
 interface changes require explicit coordination. Never strip the original

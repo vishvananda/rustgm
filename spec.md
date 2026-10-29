@@ -830,6 +830,18 @@ PA39 still requires actual unwind boundaries, cleanup and transport. The
 [ordinary nounwind checkpoint](docs/pa31-ordinary-nounwind-checkpoint.md) retains
 the original unlikely source and the separate real ColdPath dependency.
 
+Source unchecked_sub/sub_with_overflow use their actual generic Copy declaration
+and checked caller/instance, with integer kernels selected only after concrete
+substitution. Keep ordinary lookalikes ordinary. Runtime unchecked subtraction
+does not compute an unused overflow flag; CTFE still diagnoses unchecked overflow.
+The overflowing tuple uses the shared checked-arithmetic kernel and exact tuple
+ABI. Convert a LowIR machine predicate to the Rust bool carrier before storing it;
+the enclosing field layout does not change a Value's actual width. ColdPath
+executes its genuine source fallback under the authenticated retained marker and
+normal original/body/const permissions. See the
+[subtraction checkpoint](docs/pa28-source-subtraction-checkpoint.md), including
+the real native width failure that structural checks alone did not catch.
+
 Source Debug derives use the pinned small-field helpers through five fields,
 then real field-name and typed `&[&dyn Debug]` arrays with the larger helpers.
 Preserve source labels, field order, enum binding provenance and the extra
