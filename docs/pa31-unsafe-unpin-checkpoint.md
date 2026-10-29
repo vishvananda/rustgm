@@ -1,59 +1,66 @@
-# Source UnsafeUnpin checkpoint (partial)
+# Source UnsafeUnpin identity and proof checkpoint
 
-The source role port appends `LangItem::UnsafeUnpin` at index66, preserving every
+The source role appends `LangItem::UnsafeUnpin` at index66, preserving every
 existing0–65 ordinal. Its source-only `AutoTrait` follows Freeze; the five-entry
 bootstrap `AutoTrait::ALL` is unchanged. Actual role headers require their exact
-unsafe auto trait, no type/lifetime formals, no members, bounds or where clause.
-The existing source auto-trait selector keeps each child bound on that actual
-ordinary TraitApplication, explicit impl identity and current caller scope. Raw
-internal marker goals cannot replace a source trait. The existing nominal
-formation, coinduction, private lifetime debt and work-budget paths are reused.
+unsafe auto trait, no type/lifetime formals, members, bounds or where clause.
+Structural children retain that actual ordinary TraitApplication, explicit impl
+identity and current caller scope. Raw internal marker goals cannot replace it.
+No ordinary library method or optional noalias optimization is added.
 
-The exact original trait and negative UnsafePinned impl are retained under
+The original trait and negative UnsafePinned impl are retained under
 `pa31/tests/spec/source-unsafe-unpin/`, with pinned byte intervals and hashes in
-`contract.json`. The original UnsafePinned type has its separate `unsafe_pinned`
-language role and remains Required. The finite reducer has a clearly authored
-generic payload type; it grants no original cell/pin or aliasing semantics.
-Pointer/reference/PhantomData exceptions use explicit source impls, not a default
-Unpin exemption. No ordinary library method or optional noalias optimization is
-added. Existing metadata profiles retain their role whitelist/IDs; an explicit
-new-role export fence prevents silently dropping this source contract.
+`contract.json`. The original UnsafePinned type has its distinct `unsafe_pinned`
+language role and remains Required. The structural reducer has a clearly
+attributed authored generic payload type; it grants no original cell/pin or
+aliasing contract. The exact negative source impl supplies its behavior.
+Pointer/reference/PhantomData exceptions come from explicit source impls; an
+Unpin-style pointer exemption is not substituted. Existing metadata profile
+role IDs and whitelists are unchanged; explicit new-role export fencing prevents
+silently dropping this source contract.
 
-Pinned Rust1.98, edition2024, Linux x86-64 accepts actual/renamed source roles and
-the structural caller producer, and rejects the intended negative payload,
-zero-length array, missing pointer impl, unpaid caller/formation and malformed
-header/unsafe impl controls. A custom unmarked auto trait is a valid Rust
-positive with an explicitly unsupported candidate profile. The authored const
-Clone foundation initially missed const stability after staged_api was enabled;
-that failed v1 observation is retained. Corrected independent13-case receipt
-`obj/parallel/unsafe-unpin-v1/oracle-v2/receipt.json` SHA-256 is
+Pinned Rust1.98, edition2024, Linux x86-64 independently accepts actual/renamed
+source roles and the caller producer, and rejects the intended payload,
+zero-array, missing pointer impl, unpaid caller/formation and header/unsafe impl
+controls. A custom unmarked auto trait is a valid Rust positive with an explicit
+candidate profile boundary. Corrected13-case independent receipt
+`obj/parallel/unsafe-unpin-v1/oracle-v2/receipt.json` has SHA-256
 `f1dfdbb069ffd985ef03c5732d201a257df6110951722d5f6491e9d256cb85ab`.
+The initial authored const Clone foundation's missing const stability remains
+preserved in v1; original trait/type/negative intervals were never rewritten.
 
-This is not completed UnsafeUnpin qualification. Candidate receipt
-`obj/qualification/fast/1793248611560166786/receipt.json` passes formatting,
-architecture, strict private Clippy and build, then executes six controls.
-Existing source Freeze nominal formation and captured-negative debt pass; header
-and negative errors are observed. All three new positive/direct-query controls
-fail during declaration formation of the authored `UnsafePinned<T:PointeeSized>`
-negative impl, before reaching the actual auto goal, with “invalid or exhausted
-canonical trait selection” at file0:1088. The shared prerequisite also masks
-payload/caller negatives; their denial is not yet proof of the intended reason.
-The exact underlying canonical goal must be isolated without weakening bounds.
+The first real positive exposed an existing source sizing bug: implicit Self
+`MetaSized` was added to auto traits, forcing an unproved metadata tail while
+forming the genuine negative impl. Pinned
+`compiler/rustc_hir_analysis/src/hir_ty_lowering/bounds.rs169–177` explicitly skips
+that default on auto traits because the added supertrait could not be relaxed.
+The correction excludes parsed auto traits from that implicit insertion. It
+preserves all written bounds and the existing defaults on ordinary traits,
+parameters and aliases. The exact failed predicate/type/application and underlying
+“source sizing requires a proved metadata tail” are retained in diagnostic
+receipt1793249654211747633. All temporary source observations were removed.
 
-The same compiled source passes the existing ordinary-no-catalog control and
-measures cold Catalog1528 and Reservations2224 bytes. The known old width seals
-are updated only from those actual values. The other named storage/sizing and
-arithmetic occurrences are diagnostic prints. Measurement receipt
-`obj/parallel/unsafe-unpin-v1/cold-measured-v1/receipt.json` SHA-256 is
+Final receipt `obj/qualification/fast/1793250151664957828/receipt.json`, SHA-256
+`dbeff02e84a9be8bf62d8eae28e74d76e6e13d6c6214a3cb37835ba6f24891c9`,
+passes formatting, architecture, strict private Clippy, build and10 exact tests
+in125.46 seconds. Actual/renamed source callers reach checked LowIR; the negative
+payload, zero-array, missing pointer impl and unpaid caller fail real trait
+obligations. The unpaid nominal fails its formation prerequisite. Malformed
+headers and unsafe impls reject at their own checks. Captured-negative lifetime
+debt cannot be discarded, a good source cycle proves, and its negative sibling
+prevents a false positive. Raw marker and exhausted-work controls reject.
+Existing Freeze formation/debt, ordinary source, alias sizing and cold-width
+controls pass. This supersedes the retained partial common-prerequisite failures.
+
+At8/32/128 nested nominals, charged query work is871/3415/13591 and retained edges
+90/354/1410. Cold Catalog1528 and Reservations2224 are measured; six old exact size
+seals were updated from those values. Ordinary sources still allocate no source
+catalog. Syntax Node36 and Body IR456 are unchanged. The separate ordinary cold
+measurement receipt SHA-256 is
 `25674b2eb1cc74aa319eacf6df7926c7852ceb515b5ab2205fbdf604c550fcd3`.
-Ordinary sources still allocate no source catalog; no hot record field is added.
-The final cold assertion edits await joined qualification.
 
-Two static-only Clippy attempts and the corrected exact-selector failure are
-retained. The last unchanged-source six-test run uses real inventory paths;
-there is no empty-selection or timeout pass. Root can integrate this partial
-role prerequisite to expose independent Debug runtime consumers, while C retains
-source trait/nominal proof isolation. Body/inference/array/lowering work remains
-Root-owned. Actual source role positives, negative/caller/formational debt and
-coinduction/payment controls remain mandatory before a complete role claim;
-imported transport and the full original UnsafePinned type stay Required.
+Root owns joined production/CLI, genuine source Debug runtime/native and unchanged
+original-core observations. This finite role/trait proof checkpoint does not
+claim that those consumers or original core already pass. Imported UnsafeUnpin
+transport, the full original UnsafePinned type/cell/pin contract and optional
+noalias optimization remain Required. Other unknown language roles stay closed.

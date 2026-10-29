@@ -94,7 +94,9 @@ impl Checker<'_> {
             } else {
                 self.relaxed.remove(&binding);
             }
-        } else if matches!(self.item(key)?.kind, ItemKind::Trait { .. }) && owner != pointee {
+        } else if matches!(self.item(key)?.kind, ItemKind::Trait { auto_: false, .. })
+            && owner != pointee
+        {
             let binding = self
                 .facts
                 .associated
