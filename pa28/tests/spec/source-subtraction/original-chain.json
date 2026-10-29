@@ -21,8 +21,8 @@
     {
       "path": "library/core/src/num/int_macros.rs",
       "sha256": "9d722f3d3fc792d2070b573e32e5745d016d0f3bdb3276e8f7ec1d3187804a60",
-      "start": 118249,
-      "end": 118732,
+      "start": 118252,
+      "end": 118735,
       "interval_sha256": "2b39a0cba942319dc223de26f9ac5cb8f0a4dff5f223ea67b147af67a6946903",
       "fixture": "original/signed-overflowing.rs"
     },

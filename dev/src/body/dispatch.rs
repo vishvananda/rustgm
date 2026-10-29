@@ -193,6 +193,10 @@ fn rewrite(
     contract: &mut Contract,
     fold: &mut Bound,
 ) -> Result<(), &'static str> {
+    if !body.caller_sites().is_empty() {
+        facts.charge_caller_inputs(body.caller_sites().len(), 0)?;
+        body.validate_caller_sites()?;
+    }
     if let super::ir::Owner::Function {
         execution: Some(signature),
         ..
@@ -234,6 +238,7 @@ fn rewrite(
         }
         facts.aggregates.prepare(&mut facts.types, value.ty)?;
     }
+    body.rewrite_caller_inputs(facts, fold)?;
     for obligation in &mut contract.obligations {
         match &mut obligation.kind {
             Kind::Coercion {

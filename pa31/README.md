@@ -69,6 +69,12 @@ preserve partial-family pending state and source/Store incarnation checks.
 Declaration knowledge grants no selected implementation, body, API or const
 permission. Source helper execution and metadata transport remain required.
 
+The [source endpoint execution checkpoint](../docs/pa31-source-endpoint-execution-checkpoint.md)
+qualifies authored MIN/MAX/Sub dispatch through typed declaration continuations,
+genuine caller-location data and actual method/constant conformance. Its native
+observer matches pinned Rust; original integer/char/panic helper bodies, generic
+endpoints and metadata remain required.
+
 An authored `prelude_import` requires its distinct crate feature and actual use
 owner. Select the genuine module separately from ordinary lexical globs; preserve
 lookup precedence, private binding lineage, hygiene and `no_implicit_prelude`,

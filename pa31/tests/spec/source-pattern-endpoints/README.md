@@ -11,12 +11,14 @@ refinement validity and ordinary-only const dispatch. Disconnected-positive is
 a Rust positive retained as an explicit unsupported finite-profile boundary.
 All compiler-derived expression nodes need the real builtin/source seal.
 
-This checkpoint is partial. The candidate private selection executed eight
-controls: five passed; source execution and reached-negative controls stopped
-on actual PanicLocation declaration readiness during tracked Sub publication.
-The third failure was a guessed generated-node census, now replaced by actual
-owner/root/edge relationships; that correction has not been executed yet.
-Candidate native execution is pending. The independent pinned Rust native
-stream is `7 3 7 -2 7\n`; its predecessor batch retains one separately corrected
-disconnected-positive fixture mismatch. Original helper body execution, char
-panic boundaries, generic endpoints, niches and metadata remain required.
+This finite authored checkpoint now passes42 focused controls, including actual
+endpoint execution, const-implementation/feature opponents, caller identity
+checks, nominal reentry, generic defaults and per-owner conformance. Its native
+C observer matches pinned Rust: `7 3 7 -2 7\n`. The independent predecessor
+batch retains its separately corrected disconnected-positive mismatch; only its
+successful unchanged positive rows are reused. See
+[the qualification checkpoint](../../../../docs/pa31-source-endpoint-execution-checkpoint.md).
+
+Production/CLI and unchanged-original-core observation remain pending for the
+joined compiler. Original helper bodies, char panic boundaries, generic and
+disconnected endpoints, broader niches and metadata remain required.

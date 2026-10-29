@@ -817,6 +817,18 @@ narrow Clippy expectation requires the measured layout and a specific reason.
 The identity query supplies no selected implementation, API, const, body or
 desugaring permission. Old wire profiles remain fenced until genuine transport.
 
+Anonymous declaration-time source calls retain their actual caller identity and
+Const effect. Demand caller-location data only from solved tracked calls and
+validate genuine Location/Phantom fields before publication. Resume selected
+implementation conformance with a retained touched-obligation cursor and actual
+per-owner method/constant kernels; no all-implementation scan or descriptor
+proof substitutes for conformance. Source binary default readiness yields the
+exact parsed binding through existing default work, preserving strict operator
+validation. During dispatch, validate sealed CallerSite identities before and
+after transporting callable types through the same proved Bound as operands;
+source owner, value and location remain fixed. Empty-site bodies remain sparse.
+See the [endpoint checkpoint](docs/pa31-source-endpoint-execution-checkpoint.md).
+
 Ordinary `rustc_nounwind` functions consume the checked current target and their
 actual calling convention. C is non-unwinding; Rust and rust-call require the
 fixed target's abort policy. Read that immutable fact from the same configuration

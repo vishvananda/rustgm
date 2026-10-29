@@ -62,6 +62,14 @@ Strict retains the deferred expectation at68 opens; SHA256
 `e004229a6145b11769aab1e5e9e536598493cb1dec35e684f0d4d5d85192d2fe`.
 This is no original crate artifact or speedup measurement.
 
+The signed overflowing method's provenance sidecar had a three-byte offset
+error. Rechecking the immutable pinned file places the unchanged483-byte source
+at118252..118735; its SHA256 remains
+`2b39a0cba942319dc223de26f9ac5cb8f0a4dff5f223ea67b147af67a6946903`.
+Only the interval metadata and containing contract hash change. Historical
+execution receipts retain their actual original input hashes; this correction
+does not claim another compiler or native run.
+
 The [actual source chain](pa28-range-sub-intrinsics-plan.md) retains every original
 checked_sub/RangeSub/char/panic dependency. The endpoint consumer's inherited
 tracking requires real caller-location data during declaration CTFE; that shared

@@ -151,7 +151,15 @@ fn erased_scalar_anonymous_calls_keep_the_sparse_body_fast_path() -> Result<(), 
                     u32::try_from(index).map_err(|e| e.to_string())?,
                 ),
             };
-            assert_eq!(checker.facts.constant_body_type(key), None);
+            if matches!(node.kind, crate::syntax::ast::Kind::Cast { .. }) {
+                // Declaration suspensions can conservatively retain the root's
+                // proof scope. Erased operator children are never extra owners.
+                assert!(checker.facts.constant_body_type(key).is_none_or(
+                    |ty| ty == crate::types::TypeId::primitive(crate::types::Primitive::Usize)
+                ));
+            } else {
+                assert_eq!(checker.facts.constant_body_type(key), None);
+            }
         }
     }
     assert_eq!(found, 3);

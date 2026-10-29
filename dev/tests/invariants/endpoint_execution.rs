@@ -58,7 +58,12 @@ fn reached_endpoints_keep_const_impl_validity_and_feature_requirements() -> Test
         ("outside-authored-max", "scalar pattern"),
         ("outside-authored-min", "scalar pattern"),
         ("zero-signed", "scalar pattern"),
-        ("ordinary-implementation", "const"),
+        // RangePattern's source on_unimplemented message replaces the generic
+        // const-trait diagnostic; the ordinary implementation still rejects.
+        (
+            "ordinary-implementation",
+            "not a valid base type for range patterns",
+        ),
         ("missing-request", "pattern_types"),
         ("disconnected-positive", "wider"),
     ] {
