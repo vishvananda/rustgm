@@ -852,6 +852,29 @@ after transporting callable types through the same proved Bound as operands;
 source owner, value and location remain fixed. Empty-site bodies remain sparse.
 See the [endpoint checkpoint](docs/pa31-source-endpoint-execution-checkpoint.md).
 
+A demanded associated constant needs its actual initializer body checked as well
+as its declared type. Resume the existing initializer-body request for the
+selected provided definition; declaration readiness alone cannot satisfy an
+execution request. Preserve its real substitution, defining context and API,
+const, unsafe and storage proofs.
+
+Exact canonical Self receiver proof can publish after the real function's
+signature, captured lifetimes and environment complete. Receivers with different
+nominal arguments still require the full directed proof and completed nominal
+facts. Retain a cold candidate iterator across declaration waits; do not rebuild
+and scan each growing ready prefix. This continuation must preserve ordinary
+body/work record widths and the original receiver inference graph.
+
+Before an early body borrow proof consumes a nominal, prepare its genuine
+variance and outlives dependencies. Reuse the existing field-template solvers,
+including original fields, explicit declaration bounds and cyclic propagation.
+Solve only new dependencies and use completed rows as immutable inputs; repeated
+wrappers around a shared dependency must not rescan that dependency. Source
+producer payments cover attempted scratch work/growth and persistent publication,
+including failed paths; warm queries retain no storage. A missing row supplies no
+invariant assumption or empty lifetime contract. Final whole-declaration checks
+remain required independently of these early producers.
+
 Ordinary `rustc_nounwind` functions consume the checked current target and their
 actual calling convention. C is non-unwinding; Rust and rust-call require the
 fixed target's abort policy. Read that immutable fact from the same configuration
