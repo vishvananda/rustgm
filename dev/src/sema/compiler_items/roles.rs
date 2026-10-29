@@ -427,6 +427,39 @@ fn validate_marker(
     Ok(())
 }
 
+/// A paid readiness query for the three existing nominal roles and exact owner.
+/// Callers must revalidate current nominal data before using it for reentry.
+pub(super) fn nominal_completed(
+    report: &Report,
+    facts: &Declarations,
+    role: LangItem,
+    declaration: Declaration,
+) -> Result<bool, Error> {
+    crate::sema::header_attributes::charge_source_contract_query(facts, 1)?;
+    if !matches!(
+        role,
+        LangItem::PhantomData | LangItem::PanicLocation | LangItem::PanicInfo
+    ) {
+        return Err(Error::unlocated("invalid completed nominal readiness role"));
+    }
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or_else(|| Error::unlocated("source nominal catalog disappeared"))?;
+    catalog
+        .require_provider_report(report)
+        .map_err(Error::unlocated)?;
+    if catalog.language(role) != Some(declaration) {
+        return Err(Error::unlocated(
+            "completed nominal readiness belongs to another declaration",
+        ));
+    }
+    Ok(catalog
+        .traits
+        .as_deref()
+        .is_some_and(|ledger| ledger.roles.contains(role)))
+}
+
 /// Append only checked nominal declaration facts to the existing cold ledger.
 /// This records no callable, intrinsic, constructor or field-access permission.
 pub(super) fn complete_nominal(
