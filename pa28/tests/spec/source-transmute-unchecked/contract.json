@@ -1,0 +1,68 @@
+{
+  "state": "FROZEN_BEFORE_OBSERVATION",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "diagnostic_cap": "allow",
+  "nonzero": {
+    "metadata": 0,
+    "object": 0,
+    "native_status": 0,
+    "stdout": "0 1 255 0 1 255 255\n",
+    "some_zero": {
+      "metadata": 1,
+      "category": "reached invalid zero NonZero value; no runtime UB execution"
+    }
+  },
+  "intrinsic": {
+    "generic": {
+      "metadata": 0,
+      "object": 0,
+      "note": "Generic and unequal bodies type; unequal is never executed. Runtime unsupported finite profile remains explicit."
+    },
+    "invalid-bool": {
+      "metadata": 1,
+      "category": "const destination validity"
+    },
+    "unequal-const": {
+      "metadata": 1,
+      "category": "executed const size mismatch UB"
+    },
+    "missing-unsafe": {
+      "metadata": 1,
+      "category": "unsafe call"
+    },
+    "lookalike": {
+      "metadata": 0,
+      "object": 0,
+      "native_stdout": "7\n"
+    },
+    "wrong-signature": {
+      "metadata": 1,
+      "category": "intrinsic signature"
+    },
+    "missing-const": {
+      "metadata": 0,
+      "profile": "Rust positive retained as explicit original-const-header profile boundary; no language rejection claimed"
+    },
+    "missing-gate": {
+      "metadata": 1,
+      "category": "actual intrinsics declaration gate"
+    },
+    "const-use-nonconst": {
+      "metadata": 1,
+      "category": "actual non-const invocation in constant initializer"
+    }
+  },
+  "required": [
+    "Original open inner range/helper execution, all primitive implementations/full NonZero method graph",
+    "Signed/char/partial nullable carriers and ZST/unequal runtime reinterpretation",
+    "Intrinsic pointer reification/indirect execution and metadata transport",
+    "Full core/alloc/std artifacts; no source library method factories"
+  ],
+  "successor": "v2 adds the real derive import to the authored closed inner module; original NonZero/trait/method intervals unchanged. First Rust failure and source preserved under oracle-v1/frozen-inputs.",
+  "predecessor_contract_sha256": "0e3f9a93e45ef875c359e3abb445adc18c6b1bfd9d173e2d3b32607071283628",
+  "errata": [
+    "v2 observed non-const declaration with runtime-only callers is a Rust positive; v3 demands an actual const invocation rather than inventing a declaration rule."
+  ]
+}

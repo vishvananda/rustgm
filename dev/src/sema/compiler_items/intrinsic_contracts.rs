@@ -121,7 +121,9 @@ fn signature(
         SourceIntrinsic::PtrMetadata => super::ptr_metadata::validate(facts, function).map(|_| ()),
         SourceIntrinsic::ConstEvalSelect => super::select_contract::validate(facts, function),
         SourceIntrinsic::UbChecks => super::runtime_checks::validate(facts, function),
-        SourceIntrinsic::Transmute => super::transmute_contract::validate(facts, function),
+        SourceIntrinsic::Transmute | SourceIntrinsic::TransmuteUnchecked => {
+            super::transmute_contract::validate(facts, function)
+        }
         SourceIntrinsic::CallerLocation => super::caller_location::validate(facts, function),
         SourceIntrinsic::Abort => super::abort_declaration::validate(facts, function),
         _ => scalar_signature(facts, function, kind),
@@ -275,6 +277,7 @@ impl Catalog {
                 | SourceIntrinsic::UbChecks
                 | SourceIntrinsic::Abort
                 | SourceIntrinsic::Transmute
+                | SourceIntrinsic::TransmuteUnchecked
                 | SourceIntrinsic::CallerLocation
                 | SourceIntrinsic::PtrMetadata
                 | SourceIntrinsic::AggregateRawPtr

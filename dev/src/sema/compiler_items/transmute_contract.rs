@@ -117,6 +117,21 @@ impl Catalog {
         instance: Instance,
         origin: BodyOrigin,
     ) -> Result<Option<TransmuteSelection>, &'static str> {
+        if let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(instance.ty())
+            && self.intrinsic_kind(DefId(item.0))? == Some(SourceIntrinsic::TransmuteUnchecked)
+        {
+            // Unchecked reinterpretation has no declaration-time size premise.
+            return Ok(None);
+        }
+        self.reinterpretation_selection(facts, instance, origin)
+    }
+
+    pub(crate) fn reinterpretation_selection(
+        &self,
+        facts: &Declarations,
+        instance: Instance,
+        origin: BodyOrigin,
+    ) -> Result<Option<TransmuteSelection>, &'static str> {
         let Some(Kind::FunctionItem {
             item,
             arguments,
@@ -129,7 +144,10 @@ impl Catalog {
         let Some((declaration, kind, original)) = self.intrinsic_record(definition)? else {
             return Ok(None);
         };
-        if kind != SourceIntrinsic::Transmute {
+        if !matches!(
+            kind,
+            SourceIntrinsic::Transmute | SourceIntrinsic::TransmuteUnchecked
+        ) {
             return Ok(None);
         }
         if origin.source().is_none()
@@ -196,8 +214,11 @@ impl Catalog {
         selected: &TransmuteSelection,
     ) -> Result<(), &'static str> {
         self.require_provider_report(report)?;
-        let Some((declaration, SourceIntrinsic::Transmute, _)) =
-            self.intrinsic_record(selected.definition)?
+        let Some((
+            declaration,
+            SourceIntrinsic::Transmute | SourceIntrinsic::TransmuteUnchecked,
+            _,
+        )) = self.intrinsic_record(selected.definition)?
         else {
             return Err("source transmute lost its attributed declaration");
         };
@@ -270,3 +291,7 @@ impl Catalog {
 #[cfg(test)]
 #[path = "../../../tests/invariants/callee_regions.rs"]
 mod borrowed_tests;
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/unchecked_transmute.rs"]
+mod unchecked_tests;

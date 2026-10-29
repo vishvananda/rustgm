@@ -107,7 +107,8 @@ impl Ordinary {
                         crate::support::bindings::SourceIntrinsic::ArithOffset => {
                             "source arith_offset requires an authenticated direct call"
                         }
-                        crate::support::bindings::SourceIntrinsic::Transmute => {
+                        crate::support::bindings::SourceIntrinsic::Transmute
+                        | crate::support::bindings::SourceIntrinsic::TransmuteUnchecked => {
                             "source transmute requires its proved direct runtime operation"
                         }
                         crate::support::bindings::SourceIntrinsic::ThreeWayCompare => {

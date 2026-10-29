@@ -25,7 +25,9 @@ impl Machine<'_, '_> {
         let a = self.footprint(source)?;
         let b = self.footprint(destination)?;
         if a.size != b.size {
-            return Err("source transmute sizes changed before execution".into());
+            return Err(
+                "constant reinterpretation requires equal source and destination sizes".into(),
+            );
         }
         if a.size == 0 {
             return Err("zero-sized transmute values require a supported validity profile".into());

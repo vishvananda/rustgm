@@ -63,7 +63,9 @@ impl Lower<'_, '_, '_> {
         let source = self.context.layout(selected.source)?;
         let destination = self.context.layout(selected.destination)?;
         if source.size != destination.size {
-            return Err("source transmute runtime size relation changed");
+            return Err(
+                "unequal-size runtime reinterpretation requires its explicit execution profile",
+            );
         }
         if source.size == 0 {
             return Err("zero-sized transmute requires a supported runtime validity profile");

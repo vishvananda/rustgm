@@ -93,6 +93,7 @@ impl Stage {
                             | crate::support::bindings::SourceIntrinsic::UncheckedSub
                             | crate::support::bindings::SourceIntrinsic::SubWithOverflow
                             | crate::support::bindings::SourceIntrinsic::ColdPath
+                            | crate::support::bindings::SourceIntrinsic::TransmuteUnchecked
                     )
                 })
             {

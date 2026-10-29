@@ -350,12 +350,15 @@ pub enum SourceIntrinsic {
     UncheckedSub,
     SubWithOverflow,
     ColdPath,
+    TransmuteUnchecked,
 }
 impl SourceIntrinsic {
     /// Declaration attribute decoding only; consumers retain the actual `DefId`.
     #[must_use]
     pub fn from_name(name: &str) -> Option<Self> {
-        if name == "unchecked_sub" {
+        if name == "transmute_unchecked" {
+            Some(Self::TransmuteUnchecked)
+        } else if name == "unchecked_sub" {
             Some(Self::UncheckedSub)
         } else if name == "sub_with_overflow" {
             Some(Self::SubWithOverflow)

@@ -1,0 +1,83 @@
+{
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "originals": [
+    {
+      "file": "original/intrinsic.rs",
+      "source": "intrinsics/mod.rs",
+      "source_sha256": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+      "start": 35363,
+      "end": 35508,
+      "sha256": "11f16bfc610f4981892f8c6036b6265159303688ac4ddb321f0e37bc0bb22e8d",
+      "file_sha256": "d4ef8dd79f3f509f917d7a6a4597525da102ec9a6b0f307fdc458aa01ec06f2a"
+    },
+    {
+      "file": "original/zeroable.rs",
+      "source": "num/nonzero.rs",
+      "source_sha256": "9fee2d234130bf627fd3ec16cdebe8911653886d54c34dcb0601f7dfc2fb9de3",
+      "start": 1110,
+      "end": 1428,
+      "sha256": "608249acd58200c10853e990704eb13c8f698b1cebe8f50ee73bac3f9f62bcb4",
+      "file_sha256": "68c196d2382f719473a0a39bbac1320fe3b8ca054736983512e055059c6069f9"
+    },
+    {
+      "file": "original/primitive-impl.rs",
+      "source": "num/nonzero.rs",
+      "source_sha256": "9fee2d234130bf627fd3ec16cdebe8911653886d54c34dcb0601f7dfc2fb9de3",
+      "start": 1430,
+      "end": 1918,
+      "sha256": "54c2bbd16a08bd328c1794156203e84f4e675f5cd56041572ccdafc6f388cd75",
+      "file_sha256": "28208513d6722bca438512c8d88d34785556ce32694ae9412f1cd3d8228a4c7f"
+    },
+    {
+      "file": "original/nonzero.rs",
+      "source": "num/nonzero.rs",
+      "source_sha256": "9fee2d234130bf627fd3ec16cdebe8911653886d54c34dcb0601f7dfc2fb9de3",
+      "start": 3717,
+      "end": 3931,
+      "sha256": "33f416653328b4b98f9f67bbf8f6e314a8395de8c734bcb67fcf4e9361ff3648",
+      "file_sha256": "bb2b420ef84dd10613cc4869d914f8c5e8b35c811cdc6c073a2231d7377bd05d"
+    },
+    {
+      "file": "original/new.rs",
+      "source": "num/nonzero.rs",
+      "source_sha256": "9fee2d234130bf627fd3ec16cdebe8911653886d54c34dcb0601f7dfc2fb9de3",
+      "start": 11706,
+      "end": 12145,
+      "sha256": "494d32cf18810dd1510a9970041cf9ebb7d5a6dfceff7041a951c6deec8fae01",
+      "file_sha256": "601f9639c0d1cf22111e323dbc5b38622b371511fff903b2d3411e6468bc5a4a"
+    },
+    {
+      "file": "original/get.rs",
+      "source": "num/nonzero.rs",
+      "source_sha256": "9fee2d234130bf627fd3ec16cdebe8911653886d54c34dcb0601f7dfc2fb9de3",
+      "start": 14767,
+      "end": 16092,
+      "sha256": "2f353d00097674a4b63fd549e692b9fefa5700b8f19a4ad9f6d178a8bd485d9b",
+      "file_sha256": "8cac930b1073450aec91534a40724b2d1144c3d20c67d7a9f7919abc7ce7e6c2"
+    }
+  ],
+  "foundation": {
+    "path": "pa31/tests/spec/source-integer-niches/foundation.rs",
+    "sha256": "dd43c3301b768ae307c1ece669b4e9cc2b907d8c2b578d08d3f624d4fa4d5922",
+    "adaptations": [
+      "Qualified foundation prefix before its inner declaration macro.",
+      "Exact original core_intrinsics module policy and transmute_unchecked declaration inserted before existing intrinsic headers.",
+      "Authored closed u8 inner carrier, explicit source module wiring and selected original impl macro invocation.",
+      "Original generic outer NonZero declaration, ZeroablePrimitive and new/get attributes+bodies remain unchanged.",
+      "Import actual derive macro into the authored inner carrier module, retaining its genuine selected Copy/Clone bodies."
+    ]
+  },
+  "files": {
+    "expected.stdout": "42cc6f42fa5e68ca998b93b208de6a00fe504ff011fd6c5b5fb13a3776a8e246",
+    "observer.c": "3ad0aab9c82e4e55440bea558c720bf9fd7403120ddaa6a5e27d39d0557822cf",
+    "some-zero.rs": "2372c19f810337b8fbd68424a5ba18017d7575701c5a317eabe3daf1b14f9bd1",
+    "contract.json": "03f7ec5dee751fa309db03694fe275a4869c8ac430ef682173ca7ee76f2dc07b",
+    "source-runtime.rs": "4987a3ebf21ab2658a730ff595ee8441d01f523fdf7cdb4dde675e8f421f69fa",
+    "original/get.rs": "8cac930b1073450aec91534a40724b2d1144c3d20c67d7a9f7919abc7ce7e6c2",
+    "original/primitive-impl.rs": "28208513d6722bca438512c8d88d34785556ce32694ae9412f1cd3d8228a4c7f",
+    "original/zeroable.rs": "68c196d2382f719473a0a39bbac1320fe3b8ca054736983512e055059c6069f9",
+    "original/new.rs": "601f9639c0d1cf22111e323dbc5b38622b371511fff903b2d3411e6468bc5a4a",
+    "original/intrinsic.rs": "d4ef8dd79f3f509f917d7a6a4597525da102ec9a6b0f307fdc458aa01ec06f2a",
+    "original/nonzero.rs": "bb2b420ef84dd10613cc4869d914f8c5e8b35c811cdc6c073a2231d7377bd05d"
+  }
+}

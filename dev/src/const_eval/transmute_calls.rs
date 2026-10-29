@@ -83,7 +83,7 @@ impl State {
         let Some(source) = facts.source_bindings.as_deref() else {
             return Ok(None);
         };
-        let Some(selected) = source.transmute_selection(facts, target, body.source)? else {
+        let Some(selected) = source.reinterpretation_selection(facts, target, body.source)? else {
             return Ok(None);
         };
         source.require_transmute_report(report, facts, &selected)?;

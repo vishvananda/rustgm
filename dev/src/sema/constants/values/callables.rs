@@ -11,7 +11,7 @@ impl Reader<'_> {
         self.facts
             .source_bindings
             .as_deref()
-            .map(|catalog| catalog.transmute_selection(self.facts, instance, origin))
+            .map(|catalog| catalog.reinterpretation_selection(self.facts, instance, origin))
             .transpose()
             .map(Option::flatten)
     }
@@ -83,7 +83,8 @@ impl Evaluator<'_> {
         let Some(catalog) = self.facts().source_bindings.as_deref() else {
             return Ok(None);
         };
-        let Some(selected) = catalog.transmute_selection(self.facts(), instance, origin)? else {
+        let Some(selected) = catalog.reinterpretation_selection(self.facts(), instance, origin)?
+        else {
             return Ok(None);
         };
         catalog.require_transmute_report(self.queries.report, self.facts(), &selected)?;

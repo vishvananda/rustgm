@@ -93,7 +93,7 @@ fn source_call(
         Some(SourceIntrinsic::UbChecks) => {
             runtime_check(facts, body, value, ty, signature, arguments)
         }
-        Some(SourceIntrinsic::Transmute) => {
+        Some(kind @ (SourceIntrinsic::Transmute | SourceIntrinsic::TransmuteUnchecked)) => {
             let selected = Reader::new(facts)
                 .source_transmute(Instance::new(&facts.types, ty)?, body.source)?
                 .ok_or("source transmute lost its dependency descriptor")?;
@@ -114,7 +114,7 @@ fn source_call(
             {
                 return Err("source transmute dependency differs from its complete direct Call");
             }
-            Ok(Some(SourceIntrinsic::Transmute))
+            Ok(Some(kind))
         }
         Some(SourceIntrinsic::CallerLocation) => {
             let selected = Reader::new(facts)
@@ -201,6 +201,7 @@ impl Discovered {
                 SourceIntrinsic::UbChecks
                 | SourceIntrinsic::Abort
                 | SourceIntrinsic::Transmute
+                | SourceIntrinsic::TransmuteUnchecked
                 | SourceIntrinsic::CallerLocation
                 | SourceIntrinsic::PtrMetadata
                 | SourceIntrinsic::AggregateRawPtr
