@@ -6,7 +6,7 @@ use super::{
 pub(super) trait Demand {
     fn require(
         &mut self,
-        scan: &mut Scan,
+        scan: &mut Scan<'_>,
         types: &Store,
         ty: TypeId,
         shorter: RegionId,
@@ -16,7 +16,7 @@ pub(super) trait Demand {
 
     fn projection(
         &mut self,
-        scan: &mut Scan,
+        scan: &mut Scan<'_>,
         types: &Store,
         projection: Projection,
         shorter: RegionId,
@@ -27,7 +27,7 @@ pub(super) struct Ordinary;
 impl Demand for Ordinary {
     fn require(
         &mut self,
-        scan: &mut Scan,
+        scan: &mut Scan<'_>,
         types: &Store,
         ty: TypeId,
         shorter: RegionId,
@@ -39,7 +39,7 @@ impl Demand for Ordinary {
 
     fn projection(
         &mut self,
-        scan: &mut Scan,
+        scan: &mut Scan<'_>,
         _: &Store,
         projection: Projection,
         shorter: RegionId,
@@ -52,7 +52,7 @@ impl Demand for Ordinary {
     }
 }
 
-impl Scan {
+impl Scan<'_> {
     pub(super) fn demands(
         &mut self,
         types: &Store,
@@ -84,7 +84,7 @@ impl Scan {
             for pair in pairs {
                 self.budget.charge()?;
                 if let Some(pair) = contracts::instantiate(types, use_, *pair)? {
-                    self.record(pair);
+                    self.record(pair)?;
                 }
             }
             if !use_.callable {

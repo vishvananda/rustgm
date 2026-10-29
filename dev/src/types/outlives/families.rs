@@ -37,7 +37,7 @@ pub(crate) struct Families {
     templates: HashMap<ItemId, Template>,
     instances: HashMap<Application, Conditions>,
     implied: Implied,
-    budget: Budget,
+    budget: Budget<'static>,
 }
 impl Families {
     pub(crate) fn insert(
@@ -95,7 +95,7 @@ impl Families {
         &mut self,
         types: &mut Store,
         application: Application,
-        budget: &mut Budget,
+        budget: &mut Budget<'_>,
     ) -> Result<(), &'static str> {
         if self.instances.contains_key(&application) {
             return Ok(());
@@ -162,7 +162,7 @@ impl Families {
     }
 }
 
-impl Scan {
+impl Scan<'_> {
     pub(super) fn family_demands(
         &mut self,
         types: &Store,
@@ -205,7 +205,7 @@ impl Scan {
             for &(a, b) in &conditions.regions {
                 self.budget.charge()?;
                 if let Some(pair) = free(a, depth)?.zip(free(b, depth)?) {
-                    self.record(pair);
+                    self.record(pair)?;
                 }
             }
         }

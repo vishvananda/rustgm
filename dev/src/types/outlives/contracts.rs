@@ -11,6 +11,8 @@ use crate::types::{
         predicates::{Bound, Predicate},
     },
 };
+#[path = "outliving_inference.rs"]
+mod demanded_bounds;
 
 pub(super) fn region(
     types: &Store,
@@ -39,7 +41,7 @@ pub(super) fn instantiate(
 ) -> Result<Option<Pair>, &'static str> {
     Ok(region(types, use_, pair.0)?.zip(region(types, use_, pair.1)?))
 }
-impl Scan {
+impl Scan<'_> {
     fn type_bound(
         &mut self,
         types: &Store,
@@ -64,22 +66,22 @@ impl Scan {
         for &longer in parts.scalars.regions {
             self.budget.charge()?;
             let pair = (longer, shorter);
-            if useful(pair) && self.unique.insert(pair) {
-                self.pairs.push(pair);
+            if useful(pair) && self.budget.insert(&mut self.unique, pair)? {
+                self.budget.push(&mut self.pairs, pair)?;
             }
         }
         for &id in parts.scalars.parameters {
             self.budget.charge()?;
             let pair = (id, shorter);
-            if self.unique_parameters.insert(pair) {
-                self.parameter_pairs.push(pair);
+            if self.budget.insert(&mut self.unique_parameters, pair)? {
+                self.budget.push(&mut self.parameter_pairs, pair)?;
             }
         }
         for &projection in parts.projections {
             self.budget.charge()?;
             let pair = (projection, shorter);
-            if self.unique_projections.insert(pair) {
-                self.projection_pairs.push(pair);
+            if self.budget.insert(&mut self.unique_projections, pair)? {
+                self.budget.push(&mut self.projection_pairs, pair)?;
             }
         }
         Ok(())
@@ -252,8 +254,8 @@ impl Bounds {
             inference.fields(types, definitions, definition)?;
         }
         for &(item, pair) in explicit {
-            inference.scan.clear();
-            inference.scan.record(pair);
+            inference.scan.clear()?;
+            inference.scan.record(pair)?;
             inference.enqueue(types, item)?;
         }
         let mut clauses = super::clauses::Declarations::default();
@@ -264,7 +266,7 @@ impl Bounds {
                 continue;
             };
             if let Bound::Outlives(shorter) = predicate.bound {
-                inference.scan.clear();
+                inference.scan.clear()?;
                 inference.scan.type_bound(types, predicate.ty, shorter, 0)?;
                 inference.enqueue(types, item)?;
             }
@@ -281,30 +283,34 @@ impl Bounds {
     }
 }
 #[derive(Default)]
-struct Inference {
+struct Inference<'a> {
     result: Bounds,
     unique: HashSet<(ItemId, Requirement)>,
     work: Vec<(ItemId, Requirement)>,
     reverse: HashMap<ItemId, Vec<(ItemId, Use)>>,
-    scan: Scan,
+    scan: Scan<'a>,
     projected: Option<Box<super::instances::Mapping>>,
 }
-impl Inference {
+impl Inference<'_> {
     fn fields(
         &mut self,
         types: &mut Store,
         definitions: &Definitions,
         definition: &crate::types::aggregate::Definition,
     ) -> Result<(), &'static str> {
+        self.scan.budget.map(&mut self.result.items, 1)?;
         self.result
             .items
             .insert(definition.item, Inferred::default());
-        self.scan.clear();
+        self.scan.clear()?;
         for variant in definitions.variants(definition) {
             for &ty in types
                 .list(variant.fields)
                 .ok_or("missing outlives field templates")?
             {
+                if self.scan.budget.1.is_some() && types.contains_projections(ty) != Some(false) {
+                    return Err("demanded projected nominal outlives contracts require completion");
+                }
                 self.scan.visit(types, ty)?;
             }
         }
@@ -316,14 +322,20 @@ impl Inference {
             if use_.callable {
                 return Err("nominal field template contains an unnameable function item");
             }
-            self.reverse
-                .entry(use_.item)
-                .or_default()
-                .push((definition.item, use_));
+            if !self.reverse.contains_key(&use_.item) {
+                self.scan.budget.map(&mut self.reverse, 1)?;
+            }
+            self.scan.budget.push(
+                self.reverse.entry(use_.item).or_default(),
+                (definition.item, use_),
+            )?;
         }
         Ok(())
     }
     fn enqueue(&mut self, types: &mut Store, owner: ItemId) -> Result<(), &'static str> {
+        if self.scan.budget.1.is_some() && !self.scan.projection_pairs.is_empty() {
+            return Err("demanded projected nominal outlives contracts require completion");
+        }
         for index in 0..self.scan.projection_pairs.len() {
             let (projection, shorter) = self.scan.projection_pairs[index];
             // Predicates mentioning a surrounding callable local remain deferred.
@@ -349,11 +361,17 @@ impl Inference {
     }
     fn push(&mut self, owner: ItemId, requirement: Requirement) -> Result<(), &'static str> {
         self.scan.budget.charge()?;
-        if self.unique.insert((owner, requirement)) {
+        if self
+            .scan
+            .budget
+            .insert(&mut self.unique, (owner, requirement))?
+        {
             self.scan
                 .budget
                 .pending(self.work.len().saturating_add(1))?;
-            self.work.push((owner, requirement));
+            self.scan
+                .budget
+                .push(&mut self.work, (owner, requirement))?;
         }
         Ok(())
     }
@@ -366,8 +384,10 @@ impl Inference {
                 .get_mut(&item)
                 .ok_or("missing outlives nominal definition")?;
             match requirement {
-                Requirement::Region(pair) => output.regions.push(pair),
-                Requirement::Parameter(pair) => output.parameters.push(pair),
+                Requirement::Region(pair) => self.scan.budget.push(&mut output.regions, pair)?,
+                Requirement::Parameter(pair) => {
+                    self.scan.budget.push(&mut output.parameters, pair)?;
+                }
                 Requirement::Projection(pair) => self
                     .result
                     .projected
@@ -380,11 +400,11 @@ impl Inference {
             for index in 0..self.reverse.get(&item).map_or(0, Vec::len) {
                 let (owner, use_) = self.reverse[&item][index];
                 self.scan.budget.charge()?;
-                self.scan.clear();
+                self.scan.clear()?;
                 match requirement {
                     Requirement::Region(pair) => {
                         if let Some(pair) = instantiate(types, use_, pair)? {
-                            self.scan.record(pair);
+                            self.scan.record(pair)?;
                         }
                     }
                     Requirement::Parameter(pair) => self.scan.apply_parameter(types, use_, pair)?,

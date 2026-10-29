@@ -16,7 +16,7 @@ impl Mapping {
         &mut self,
         types: &mut Store,
         projection: Projection,
-        budget: &mut Budget,
+        budget: &mut Budget<'_>,
     ) -> Result<Option<Projection>, &'static str> {
         if projection.depth == 0 {
             return Ok(Some(projection));
@@ -44,7 +44,7 @@ impl Mapping {
         types: &mut Store,
         use_: Use,
         projection: Projection,
-        budget: &mut Budget,
+        budget: &mut Budget<'_>,
     ) -> Result<Projection, &'static str> {
         if projection.depth != 0 {
             return Err("nominal projected requirement was not lifted");
@@ -78,7 +78,7 @@ pub(super) struct Projected {
     instances: HashMap<(ItemId, GenericArgs), Vec<ProjectionPair>>,
     prepared: HashSet<TypeId>,
     mapping: Mapping,
-    scan: Scan,
+    scan: Scan<'static>,
     work: Vec<(TypeId, bool)>,
     pub families: Option<Box<super::families::Families>>,
 }
