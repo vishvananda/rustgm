@@ -11,7 +11,6 @@ use crate::{
 
 pub(super) struct Marker {
     owner_slot: usize,
-    const_owner_slot: Option<usize>,
     effect: usize,
     attribute: Attribute,
     flags: FunctionFlags,
@@ -85,7 +84,6 @@ pub(in crate::sema) fn consume(
     if !present {
         actual.promotable = Some(Box::new(Marker {
             owner_slot: slot,
-            const_owner_slot: None,
             effect,
             attribute,
             flags,
@@ -95,16 +93,22 @@ pub(in crate::sema) fn consume(
 }
 pub(super) fn bind(
     report: &Report,
-    facts: &mut Declarations,
+    facts: &Declarations,
     definition: DefId,
     key: NodeKey,
 ) -> Result<(), Error> {
-    let Some(actual) = header(facts, key) else {
+    let Some(marker) = header(facts, key).and_then(|header| header.promotable.as_deref()) else {
         return Ok(());
     };
-    let Some(marker) = actual.promotable.as_deref() else {
-        return Ok(());
-    };
+    super::charge_source_contract_query(facts, 2)?;
+    direct_const_policy(report, definition, key, marker.attribute.span)
+}
+fn direct_const_policy(
+    report: &Report,
+    definition: DefId,
+    key: NodeKey,
+    span: crate::syntax::token_tree::Span,
+) -> Result<(), Error> {
     let policy = report
         .package
         .library_policy()
@@ -113,33 +117,20 @@ pub(super) fn bind(
         .ok_or_else(|| {
             Error::at(
                 key.file,
-                marker.attribute.span.start,
+                span.start,
                 "rustc_promotable requires explicit const stability on its actual function",
             )
         })?;
-    let count = actual.owners.len();
-    super::charge_source_contract_query(facts, count)?;
-    let slot = actual
-        .owners
-        .iter()
-        .position(|owner| owner.key == policy.origin)
-        .ok_or_else(|| {
-            Error::at(
-                key.file,
-                marker.attribute.span.start,
-                "promotable const stability belongs to another declaration",
-            )
-        })?;
-    let actual = ledger(facts, 0)?
-        .local
-        .declarations
-        .get_mut(&key)
-        .ok_or_else(|| Error::unlocated("promotable header disappeared"))?;
-    let marker = actual
-        .promotable
-        .as_deref_mut()
-        .ok_or_else(|| Error::unlocated("promotable marker disappeared"))?;
-    marker.const_owner_slot = Some(slot);
+    // Stability collection keys the underlying item, while Header.owners keys
+    // configured attributed wrappers. Compare the two canonical declarations;
+    // the marker's own attributed effect witness is validated independently.
+    if policy.origin != key || policy.kind != crate::resolve::stability::PolicyKind::Const {
+        return Err(Error::at(
+            key.file,
+            span.start,
+            "promotable const stability belongs to another declaration",
+        ));
+    }
     Ok(())
 }
 pub(in crate::sema) fn query(
@@ -182,19 +173,7 @@ pub(in crate::sema) fn query(
     {
         return Err(error("promotable source function or attribute changed"));
     }
-    let policy = report
-        .package
-        .library_policy()
-        .and_then(crate::resolve::stability::Library::inventory)
-        .and_then(|inventory| inventory.const_declaration(definition))
-        .ok_or_else(|| error("promotable const policy disappeared"))?;
-    if marker
-        .const_owner_slot
-        .and_then(|index| actual.owners.get(index))
-        .is_none_or(|row| row.key != policy.origin)
-    {
-        return Err(error("promotable const policy owner changed"));
-    }
+    direct_const_policy(report, definition, key, marker.attribute.span)?;
     Ok(ContractKnowledge::KnownPresent(SourceContractSite {
         owner: owner.key,
         declaration: key,
