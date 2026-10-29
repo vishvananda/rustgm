@@ -13,6 +13,7 @@ pub(crate) use abstract_uses::{Call, DefiningCalls};
 pub(crate) enum FunctionContext {
     Runtime,
     ConstFunction,
+    Comptime,
     ConstTraitDefault { trait_definition: DefId },
 }
 
@@ -34,6 +35,22 @@ impl Declarations {
         body: NodeKey,
     ) -> Result<FunctionContext, &'static str> {
         let context = self.function_context(definition, body)?;
+        if matches!(
+            context,
+            FunctionContext::Comptime | FunctionContext::ConstFunction
+        ) {
+            match (context, self.source_comptime_contract(report, definition)) {
+                (
+                    FunctionContext::Comptime,
+                    Ok(super::header_attributes::ContractKnowledge::KnownPresent(_)),
+                )
+                | (
+                    FunctionContext::ConstFunction,
+                    Ok(super::header_attributes::ContractKnowledge::KnownAbsent),
+                ) => {}
+                _ => return Err("const defining body lost its actual source declaration contract"),
+            }
+        }
         Ok(
             if super::compiler_items::runtime_panic_body(report, self, definition, body)? {
                 FunctionContext::Runtime
@@ -193,7 +210,9 @@ impl Declarations {
                 return Ok(FunctionContext::ConstTraitDefault { trait_definition });
             }
         }
-        Ok(if self.is_const_function(definition) {
+        Ok(if self.is_comptime_function(definition) {
+            FunctionContext::Comptime
+        } else if self.is_const_function(definition) {
             FunctionContext::ConstFunction
         } else {
             FunctionContext::Runtime

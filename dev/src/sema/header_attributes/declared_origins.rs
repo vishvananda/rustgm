@@ -20,7 +20,9 @@ mod internal_constness;
 pub(in crate::sema) use internal_constness::{consume_const_panic, consume_inherited_overflow};
 mod implicit_receivers;
 pub(in crate::sema) use implicit_receivers::{consume_no_implicit_autorefs, consume_pointer_lint};
+mod comptime;
 mod promotability;
+pub(in crate::sema) use comptime::consume as consume_comptime;
 pub(in crate::sema) use promotability::consume as consume_promotable;
 pub(super) use promotability::query as query_promotable;
 
@@ -28,7 +30,12 @@ struct Header {
     tracking: tracking::Tracking,
     source: SourceImage,
     owners: Vec<Owner>,
-    promotable: Option<Box<promotability::Marker>>,
+    promises: Option<Box<Promises>>,
+}
+#[derive(Default)]
+struct Promises {
+    promotable: Option<promotability::Marker>,
+    comptime: Option<comptime::Marker>,
 }
 struct Owner {
     key: NodeKey,
@@ -40,8 +47,17 @@ pub(super) struct Headers {
     declarations: HashMap<NodeKey, Header>,
     definitions: HashMap<DefId, NodeKey>,
     complete: bool,
+    comptime_complete: bool,
+    has_comptime: bool,
     bytes: Cell<usize>,
     pub(super) steps: Cell<usize>,
+}
+pub(in crate::sema) fn has_comptime_headers(facts: &Declarations) -> bool {
+    facts
+        .must_use_contracts
+        .as_deref()
+        .and_then(|owner| owner.headers.as_deref())
+        .is_some_and(|headers| !headers.local.declarations.is_empty())
 }
 fn ledger(facts: &mut Declarations, bytes: usize) -> Result<&mut Ledger, Error> {
     let ledger = facts
@@ -72,7 +88,16 @@ pub(in crate::sema) fn observe_owner(
     owner: NodeKey,
     declaration: NodeKey,
 ) -> Result<(), Error> {
-    if report.package.source_core().is_none() {
+    observe_selected_owner(report, facts, owner, declaration, false)
+}
+fn observe_selected_owner(
+    report: &Report,
+    facts: &mut Declarations,
+    owner: NodeKey,
+    declaration: NodeKey,
+    force: bool,
+) -> Result<(), Error> {
+    if report.package.source_core().is_none() && !force {
         return Ok(());
     }
     if !admitted(report, declaration) {
@@ -92,7 +117,7 @@ pub(in crate::sema) fn observe_owner(
             tracking: tracking::Tracking::Untracked,
             source: SourceImage::capture(unit, declaration.node),
             owners: Vec::new(),
-            promotable: None,
+            promises: None,
         });
     let index = unit
         .owner_indices
@@ -114,7 +139,14 @@ pub(in crate::sema) fn bind_definition(
     definition: DefId,
     declaration: NodeKey,
 ) -> Result<(), Error> {
-    if report.package.source_core().is_none() || !admitted(report, declaration) {
+    if !admitted(report, declaration)
+        || (report.package.source_core().is_none()
+            && !facts
+                .must_use_contracts
+                .as_deref()
+                .and_then(|owner| owner.headers.as_deref())
+                .is_some_and(|ledger| ledger.local.declarations.contains_key(&declaration)))
+    {
         return Ok(());
     }
     let bytes = retained::new_map::<DefId, NodeKey>(1)
@@ -129,7 +161,7 @@ pub(in crate::sema) fn bind_definition(
             tracking: tracking::Tracking::Untracked,
             source: SourceImage::capture(unit, declaration.node),
             owners: Vec::new(),
-            promotable: None,
+            promises: None,
         });
     if headers
         .definitions
@@ -144,11 +176,18 @@ pub(in crate::sema) fn bind_definition(
     }
     tracking::validate_intrinsic_annotations(report, facts, definition, declaration)?;
     promotability::bind(report, facts, definition, declaration)?;
-    Ok(())
+    comptime::bind(report, facts, definition, declaration)
 }
 pub(in crate::sema) fn finish(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     if report.package.source_core().is_some() {
         ledger(facts, 0)?.local.complete = true;
+    }
+    if let Some(headers) = facts
+        .must_use_contracts
+        .as_deref_mut()
+        .and_then(|owner| owner.headers.as_deref_mut())
+    {
+        headers.local.comptime_complete = true;
     }
     Ok(())
 }

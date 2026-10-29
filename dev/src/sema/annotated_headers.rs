@@ -9,9 +9,11 @@ mod incarnations;
 #[path = "header_attributes/declared_origins.rs"]
 mod local;
 pub(in crate::sema) use incarnations::SourceImage;
+pub(in crate::sema) use local::has_comptime_headers;
 pub(in crate::sema) use local::{
-    consume_const_panic, consume_inherited_overflow, consume_no_implicit_autorefs,
-    consume_pointer_lint, consume_promotable, consume_tracking, inherit_tracking, marker_trait,
+    consume_comptime, consume_const_panic, consume_inherited_overflow,
+    consume_no_implicit_autorefs, consume_pointer_lint, consume_promotable, consume_tracking,
+    inherit_tracking, marker_trait,
 };
 #[cfg(test)]
 #[path = "../../tests/invariants/nodeless_owners.rs"]

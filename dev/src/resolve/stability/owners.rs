@@ -25,6 +25,7 @@ pub(super) fn collect(
     facts: &Resolution,
     draft: &mut Draft,
 ) -> Result<Owners, Error> {
+    draft.finish_comptime()?;
     let count = facts
         .scopes
         .len()
@@ -174,7 +175,10 @@ fn definition_scopes(
             continue;
         };
         let item = unit.configured.ast.items[index as usize];
-        let role = Role::of(item.kind);
+        let mut role = Role::of(item.kind);
+        if matches!(role, Role::Function(false)) && draft.is_comptime(key)? {
+            role = Role::Function(true);
+        }
         let explicit = draft.const_attributes.get(&key).copied();
         let parent = facts.scopes[scope.0 as usize]
             .parent
@@ -374,7 +378,7 @@ pub(super) fn reachable(
     draft: &mut Draft,
 ) -> Result<(), Error> {
     use crate::resolve::model::Access;
-    let seen = super::visit_public_bindings(facts, draft, |target, _| {
+    let seen = super::visit_public_bindings(facts, draft, |target, draft| {
         let definition = &facts.definitions[target.0 as usize];
         let Some(key) = definition.node else {
             return Ok(());
@@ -387,8 +391,15 @@ pub(super) fn reachable(
             ));
         }
         let unit = package.unit(key.file);
-        if matches!(unit.configured.ast.node(key.node).kind, Kind::Item(index) if matches!(unit.configured.ast.items[index as usize].kind,
-                ItemKind::Function { flags: crate::syntax::item::FunctionFlags { constant: true, .. }, .. } | ItemKind::Trait { constant: true, .. }))
+        let needs_const = match unit.configured.ast.node(key.node).kind {
+            Kind::Item(index) => match unit.configured.ast.items[index as usize].kind {
+                ItemKind::Function { flags, .. } => flags.constant || draft.is_comptime(key)?,
+                ItemKind::Trait { constant, .. } => constant,
+                _ => false,
+            },
+            _ => false,
+        };
+        if needs_const
             && owners
                 .consts
                 .as_deref()

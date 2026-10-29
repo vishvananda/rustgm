@@ -29,7 +29,10 @@ impl Checker<'_> {
         let ItemKind::Function { body, flags, .. } = self.item(key)?.kind else {
             return Err(self.error(key, "invalid function owner"));
         };
-        if flags.constant || self.const_impl_member(id) {
+        if self.facts.is_comptime_function(id) {
+            self.facts.validate_comptime_parameters(self.report, id)?;
+        }
+        if flags.constant || self.const_impl_member(id) || self.facts.is_comptime_function(id) {
             self.facts.constant_functions.insert(id);
         }
         self.register_foreign_function(id, key, ty, flags.safety)?;

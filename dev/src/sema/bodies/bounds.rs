@@ -487,30 +487,56 @@ impl Checker<'_> {
 
     pub(super) fn callee_use_effect(&self) -> Result<crate::support::constness::Constness, Error> {
         use crate::support::constness::Constness;
+        if self.actual_const_value_context()? {
+            return Ok(Constness::Const);
+        }
         if self.runtime_callee_context()? {
             return Ok(Constness::Ordinary);
         }
-        // Array lengths and type-pattern endpoints are actual constant demands.
-        // Inline children have Ordinary completion and retain their enclosing
-        // conditional premises independently of these anonymous value roots.
-        if matches!(
-            self.state.completion,
-            super::readiness::Completion::Anonymous { .. }
-        ) {
-            return Ok(Constness::Const);
-        }
-        // Only this actual closed initializer has unconditional const demand.
-        // Defining generic const bodies and inline children retain Conditional.
-        if let super::readiness::Completion::Initializer(index) = self.state.completion
-            && !self.state.in_function
-            && self.state.body_binders == 0
-            && let Some(initializer) = self.facts.initializers.get(index)
-            && initializer.value == self.state.body
-            && !self.facts.generics.has_parameters(initializer.definition)
+        if let Some(owner) = self.state.environment_owner
+            && self
+                .facts
+                .function_indices
+                .get(&owner)
+                .and_then(|&index| self.facts.functions.get(index))
+                .is_some_and(|function| function.body == Some(self.state.body))
+            && self.facts.is_comptime_function(owner)
         {
             return Ok(Constness::Const);
         }
         Ok(Constness::Conditional)
+    }
+
+    pub(super) fn actual_const_value_context(&self) -> Result<bool, Error> {
+        if matches!(
+            self.state.completion,
+            super::readiness::Completion::Anonymous { .. }
+        ) {
+            return Ok(true);
+        }
+        if matches!(
+            self.kind(self.state.body.node),
+            crate::syntax::ast::Kind::Block {
+                flavor: crate::syntax::ast::BlockFlavor::Const,
+                ..
+            }
+        ) {
+            return Ok(true);
+        }
+        if let super::readiness::Completion::Initializer(index) = self.state.completion {
+            return self
+                .facts
+                .initializers
+                .get(index)
+                .map(|initializer| initializer.value == self.state.body && !self.state.in_function)
+                .ok_or_else(|| {
+                    self.error(
+                        self.state.body.node,
+                        "const body initializer identity is missing",
+                    )
+                });
+        }
+        Ok(false)
     }
 
     fn runtime_callee_context(&self) -> Result<bool, Error> {

@@ -300,6 +300,28 @@ impl Prepared {
         facts: &Declarations,
         function: &crate::sema::model::Function,
     ) -> Result<Template, Error> {
+        self.function_recorded(report, facts, function, &mut 0)
+    }
+    /// Defining-body providers retain successful and failed eligibility work.
+    pub(crate) fn function_charged(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        function: &crate::sema::model::Function,
+    ) -> Result<Template, Error> {
+        facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
+        let mut attempted = 0;
+        let result = self.function_recorded(report, facts, function, &mut attempted);
+        facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(attempted);
+        result
+    }
+    fn function_recorded(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        function: &crate::sema::model::Function,
+        attempted: &mut usize,
+    ) -> Result<Template, Error> {
         if let Some(template) = self.bodies.remove(&function.definition) {
             self.reused += 1;
             return Ok(template);
@@ -313,7 +335,7 @@ impl Prepared {
             .scratch
             .get_or_insert_with(|| Box::new(Scratch::new(facts)));
         let body = function_body(report, facts, scratch, function, Some(&mut scoped))?;
-        crate::body::constants::eligibility(report, facts, &body)?;
+        crate::body::constants::eligibility_recorded(report, facts, &body, attempted)?;
         let destruction = crate::body::drops::requirements(facts, &body, &mut scoped)
             .map_err(|message| report.body_error(body.source, message))?;
         self.built += 1;
@@ -323,7 +345,6 @@ impl Prepared {
             environment,
         })
     }
-
     pub(crate) fn retain_component(
         &mut self,
         templates: Vec<Template>,

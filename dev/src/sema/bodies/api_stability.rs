@@ -16,6 +16,13 @@ impl Checker<'_> {
         solved: &Solved,
         allowances: &mut MacroAllowanceSession<'_>,
     ) -> Result<(), Error> {
+        let comptime_callable = if self.facts.comptime_calls_need_checking() {
+            let callable = self.source_call_callable(node, solved)?;
+            self.check_comptime_callable(node, callable)?;
+            Some(callable)
+        } else {
+            None
+        };
         let owner = self.const_library_owner(node)?;
         if self
             .report
@@ -29,21 +36,30 @@ impl Checker<'_> {
         {
             return Ok(());
         }
-        let callable = if let Some(method) = self.facts.methods.calls.get(&self.key(node)) {
-            method.callable
-        } else if let Kind::Call { callee, .. } = self.kind(node) {
-            let term = self.term(callee)?;
-            *solved
-                .types
-                .get(term.0 as usize)
-                .ok_or_else(|| self.error(node, "const API call lost its solved callee"))?
-        } else {
-            return Err(self.error(
-                node,
-                "const-stable generated call API policy is not implemented",
-            ));
+        let callable = match comptime_callable {
+            Some(callable) => callable,
+            None => self.source_call_callable(node, solved)?,
         };
         self.check_const_library_target(node, owner, callable, allowances)
+    }
+
+    fn source_call_callable(&mut self, node: NodeId, solved: &Solved) -> Result<TypeId, Error> {
+        Ok(
+            if let Some(method) = self.facts.methods.calls.get(&self.key(node)) {
+                method.callable
+            } else if let Kind::Call { callee, .. } = self.kind(node) {
+                let term = self.term(callee)?;
+                *solved
+                    .types
+                    .get(term.0 as usize)
+                    .ok_or_else(|| self.error(node, "const API call lost its solved callee"))?
+            } else {
+                return Err(self.error(
+                    node,
+                    "const-stable generated call API policy is not implemented",
+                ));
+            },
+        )
     }
 
     /// Generated protocol calls retain their actual callable independently.
@@ -53,6 +69,7 @@ impl Checker<'_> {
         callable: TypeId,
         allowances: &mut MacroAllowanceSession<'_>,
     ) -> Result<(), Error> {
+        self.check_comptime_callable(node, callable)?;
         let owner = self.const_library_owner(node)?;
         if self
             .report
@@ -98,11 +115,14 @@ impl Checker<'_> {
         if function.body != Some(self.state.body) {
             return Ok(None);
         }
-        if !self
+        let context = self
             .facts
             .source_function_context(report, owner, self.state.body)
-            .map_err(|error| self.error(node, error))?
-            .checks_const()
+            .map_err(|error| self.error(node, error))?;
+        // Always bodies are actual Const contexts, including when their API is
+        // const-stable. Recursive ConstFn API restrictions do not apply there.
+        if !context.checks_const()
+            || context == crate::sema::function_context::FunctionContext::Comptime
         {
             return Ok(None);
         }
