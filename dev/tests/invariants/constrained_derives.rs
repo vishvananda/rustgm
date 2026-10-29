@@ -1,5 +1,7 @@
 //! Parsed generic constraints survive source-owned derive headers and real bodies.
 use super::*;
+#[path = "equal_headers.rs"]
+mod associated_equalities;
 use crate::syntax::{ast::Kind, item::GenericFlavor};
 const FIXTURES: &str = "pa31/tests/spec/bounded-derive/";
 fn fixture(name: &str) -> TestResult<String> {

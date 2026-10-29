@@ -9,6 +9,9 @@ use crate::{
         token_tree::error,
     },
 };
+#[cfg(test)]
+#[path = "../../../tests/invariants/constraint_images.rs"]
+mod tests;
 
 pub(super) fn field(
     source: &Syntax<StoredValue>,
@@ -62,6 +65,17 @@ fn node(
             }
         }
         Kind::FunctionType(index) => *index = callable(source, *index, target, charge, depth + 1)?,
+        Kind::Constraint {
+            target: binding,
+            value,
+            bounds,
+        } => {
+            *binding = node(source, *binding, target, charge, depth + 1)?;
+            if let Some(value) = value {
+                *value = node(source, *value, target, charge, depth + 1)?;
+            }
+            *bounds = list(source, *bounds, target, charge, depth + 1)?;
+        }
         Kind::FieldDefinition {
             visibility: crate::syntax::item::Visibility::Private,
             ty,
