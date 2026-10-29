@@ -115,6 +115,12 @@ Establish the minimal panic-abort entry/runtime boundary and no_core declaration
 packages. Keep general unwinding at PA39. Host/build configuration lives outside
 the frontend library; no environment reads enter semantic hot paths.
 
+Ordinary `rustc_nounwind` functions use their real source bodies and the checked
+abort/non-unwinding ABI profile. Preserve actual word/internal-feature, const
+and unsafe checks; the marker grants no intrinsic or callable permission. The
+[finite checkpoint](../docs/pa31-ordinary-nounwind-checkpoint.md) leaves PA39's
+unwind boundaries and the original unlikely/ColdPath graph explicit.
+
 The [selected source handler checkpoint](../docs/pa31-source-panic-handler-checkpoint.md)
 executes genuine Location/PanicInfo/panic/handler bodies through LowIR and the
 native backend, with normal/drop and handler/abort traces. Its selected local
