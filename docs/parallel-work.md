@@ -1,15 +1,15 @@
 # Parallel library bootstrap implementation
 
 Root owns compiler integration, current-source CLI/original-core observations and
-publication in `rustgm-pa25-work`. Source range declaration28cce and closed scalar
-consumer929b90e28 are integrated with six measured cold-layout control updates.
-Root joined20 passes201.09s on the unchanged warm retry; the actual cold build
-timeout/no-tests receipt is retained. Production/CLI3 passes111.13s; authenticated
-fixtures, fresh LowIR/native-input equality,harness272/upstream and probes39.51s.
-CLI50557aed still reaches the open/exclusive/alternative profile at file45:6972
-in14.97s,374 opens,all722 original hashes unchanged. Declarations alone do not
-move that parser frontier. This is an expansion/image offset, not an asserted
-physical source byte. Receipt81d06de6bbd72e2621a633bd4bc7f48d1b278dd5fb19bd73f1ecbbce6c688b36.
+publication in `rustgm-pa25-work`. Ordinary source nounwind fdf2fedd8 consumes
+the fixed abort target/supported ABI guarantee without granting intrinsic,
+const or unsafe permission. Root private6 passes113.55s,CLI3 100.26s, actual
+native0 1 0 1 0 1 matches pinned Rust; harness272/upstream/probes pass34.51s.
+CI's remaining cold alias expectation is corrected to measured Reservations2288.
+CLIf36deced still reaches the open/exclusive/alternative profile at file45:6972
+in10.93s,374 opens,all722 original hashes unchanged. These adjacent prerequisites
+do not move that parser frontier. This is an expansion/image offset, not an
+asserted physical source byte. Receipt257231cf2ecf3c9efffda86a9afb258324ddbcff17a27922fced3edf800046bc.
 Strict separately retains deferred expectation68; no original artifact is implied.
 B (`lint_expectations`) completed LIB-083's source-only declaration contracts and
 now owns LIB-084's genuine unchecked_sub/sub_with_overflow and ColdPath fallback
@@ -20,12 +20,13 @@ authority require a coordinated interface before shared edits. B does not
 edit central TypePattern/Work/evaluation. Its one call_traits signature-queue
 hunk is agreed; source/body/desugaring permission stays consumer-owned. C has
 merged the disjoint Macro copier. No new advisory lint producer,
-worker or worktree is queued. Root owns observer/configuration, integration,
-publication and the actual ordinary unlikely nounwind investigation; central
+worker or worktree is queued. Root owns observer/configuration, integration and
+publication; ordinary nounwind's fixed abort/ABI consumer is qualified. Central
 interface changes require explicit coordination. Never strip the original
 checked_sub, char conversion, panic or nounwind contracts to create a success.
 
-Both workers take Roota52cfb162's same source base before qualification. Include
+Both workers take qualified Rootfdf2fedd8 at an idle boundary before final
+qualification (it includes a52 and the extra CI alias correction). Include
 the affected joined20 controls with new targeted controls in one private binary;
 runtime is cheap compared with compiling it. Exact full fingerprint and fixture
 equality can then reuse actual worker evidence at Root without another cold
@@ -75,8 +76,10 @@ for scheduling and imported-demand policy. Historical checkpoint documents retai
 their evidence, not authority to replace this queue with old remaining tasks.
 
 Public8051a1355 full CI40852257802,55dcc81d3 full CI40855585622 and73c48dc21
-full CI40860205926 all pass every lane. The new declaration integration's full
-CI is pending. Earlier full CI40843890477 has2226 private
+full CI40860205926 all pass every lane. Declaration7dd full CI40866229757
+passes2244 private controls and fails only one aliased cold-table assertion;
+3a7dc1026 corrects it and private6 executes that exact control. New full CI will
+include that correction and ordinary nounwind. Earlier full CI40843890477 has2226 private
 passes and only one stale cold Source size assertion (184 versus192); Root's
 correction now passes in joined12. Its metadata fixes all3 earlier failures from
 40835039063 without a regenerated golden or false source premise. Full CI will

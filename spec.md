@@ -817,6 +817,19 @@ narrow Clippy expectation requires the measured layout and a specific reason.
 The identity query supplies no selected implementation, API, const, body or
 desugaring permission. Old wire profiles remain fenced until genuine transport.
 
+Ordinary `rustc_nounwind` functions consume the checked current target and their
+actual calling convention. C is non-unwinding; Rust and rust-call require the
+fixed target's abort policy. Read that immutable fact from the same configuration
+owner as cfg, never from a user-defined option or environment. Match supported
+ABIs exhaustively so a future unwind ABI needs an explicit boundary rule.
+Preserve the source function/word/internal-feature checks and execute the real
+ordinary body. The marker grants no intrinsic identity, const eligibility or
+unsafe permission, and does not change an ordinary function-pointer type. No
+extra body/node field or per-call scan is needed in the current abort profile.
+PA39 still requires actual unwind boundaries, cleanup and transport. The
+[ordinary nounwind checkpoint](docs/pa31-ordinary-nounwind-checkpoint.md) retains
+the original unlikely source and the separate real ColdPath dependency.
+
 Source Debug derives use the pinned small-field helpers through five fields,
 then real field-name and typed `&[&dyn Debug]` arrays with the larger helpers.
 Preserve source labels, field order, enum binding provenance and the extra
