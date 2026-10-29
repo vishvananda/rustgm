@@ -175,7 +175,7 @@ impl Imports {
             .ok_or_else(|| Error::unlocated("availability path range changed"))?;
         for entry in entries {
             self.charge(1, 0)?;
-            if facts.bindings.get_key(entry.key) != Some(entry.selected)
+            if facts.bindings.get_key(entry.key) != Some(&entry.selected)
                 || entry.selected.target != entry.binding.target
             {
                 return Err(Error::unlocated(
