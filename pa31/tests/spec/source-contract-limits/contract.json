@@ -1,0 +1,47 @@
+{
+  "state": "successor frozen after retained standalone-view test prediction mismatch, before Resolver-view candidate observation",
+  "scope": "LIB079 explicit source-contract resource policy, no default increases or semantic permissions",
+  "defaults": {
+    "work_limit": 1000000,
+    "attempted_bytes": 67108864,
+    "retained_bytes": 67108864
+  },
+  "finite_range": "u32; zero is a real limit; u32MAX remains finite",
+  "cli": [
+    "--source-contract-work-limit",
+    "--source-contract-attempted-bytes",
+    "--source-contract-retained-bytes"
+  ],
+  "cases": [
+    {
+      "file": "ordinary.rs",
+      "sha256": "c1ca85d1f6f3355d4dbccd36c026def5faf39ec5a3b480b0f5eab9b808743657",
+      "rust_metadata": 0
+    },
+    {
+      "file": "source.rs",
+      "sha256": "8c8801da5a729b8eb3e356d5cdf58e0b059cb6f98ec0871976ce6004fa578db7",
+      "rust_metadata": 0
+    },
+    {
+      "file": "hard-type.rs",
+      "sha256": "6b6fb53f139c8839ff2b17c275bb17629fb249a053ffd667798d67ed9054ab17",
+      "rust_metadata": 1
+    }
+  ],
+  "predictions": {
+    "source_and_local_constructor_snapshot": true,
+    "ample_resource_output_equals_defaults": true,
+    "zero_work_attempted_retained_reject_actual_contracts": true,
+    "first_failure_sticky_and_later_attempts_count": true,
+    "plain_ordinary_without_contracts_all_zero_accepts": true,
+    "wrong_source_role_unsafe_and_type_debt_stay_required": true,
+    "strict_decimal_missing_duplicate_overflow_reject": true
+  },
+  "required": [
+    "whole core/alloc/std artifact qualification under separately bound finite host requests",
+    "existing language/API/unsafe/const and metadata/source ownership proofs"
+  ],
+  "candidate_view": "--emit-names: actual Resolver entry constructs SourceCore or LocalMacros",
+  "standalone_view": "--emit-expanded does not enter Resolver owner contracts; selecting limits creates no owner"
+}

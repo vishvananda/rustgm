@@ -171,12 +171,12 @@ impl<'a, S: Sources> Loader<'a, S> {
         let no_std = unit
             .word_attribute(Some(root_node), "no_std")
             .map_err(|e| Error::at(FileId(0), e.offset, e.message))?;
-        let prepared = match admission {
-            Some(request) => {
-                super::bindings::policy::prepare_with_admission(&unit, context, Some(request))?
-            }
-            None => super::bindings::policy::prepare(&unit, context)?,
-        };
+        let prepared = super::bindings::policy::prepare_with_admission(
+            &unit,
+            context,
+            admission,
+            config.source_contract_limits(),
+        )?;
         let source = prepared.source;
         let library = prepared.library;
         let implicit_prelude = !unit

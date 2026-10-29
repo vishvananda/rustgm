@@ -38,8 +38,8 @@ fn source_auto_and_refutation_layouts_are_measured() {
     assert_eq!(size_of::<crate::syntax::item::Item>(), 64);
     assert_eq!(size_of::<crate::sema::associated::OwnerKind>(), 20);
     assert_eq!(size_of::<crate::sema::associated::Owner>(), 32);
-    // The cold provider adds 104 bytes of macro-contract state to its 72-byte base.
-    assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 176);
+    // The cold provider adds 112 bytes of macro-contract state to its 72-byte base.
+    assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 184);
     assert_eq!(size_of::<Option<usize>>(), size_of::<Option<Choice>>());
     assert_eq!(
         size_of::<Option<usize>>(),

@@ -27,7 +27,7 @@ fn caps_preserve_retained_attribute_debt_and_compact_records() -> Result {
         )
     );
     assert_eq!(size_of::<crate::support::diagnostics::LintCap>(), 1);
-    assert_eq!(size_of::<Config>(), 72);
+    assert_eq!(size_of::<Config>(), 80);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     assert_eq!(size_of::<crate::resolve::expansion::Report>(), 3096);
     assert_eq!(size_of::<Producer>(), 368);

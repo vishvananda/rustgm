@@ -10,6 +10,8 @@ use crate::{
 };
 use std::borrow::Cow;
 mod predicates;
+mod resource_limits;
+pub use resource_limits::SourceContractLimits;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CfgGate {
@@ -61,6 +63,7 @@ pub(crate) fn target_features() -> impl Iterator<Item = &'static str> {
 
 #[derive(Default, Debug)]
 pub struct Config {
+    source_contract_limits: SourceContractLimits,
     edition: crate::support::edition::Edition,
     runtime_checks: crate::support::runtime_checks::RuntimeCheckConfig,
     lint_cap: crate::support::diagnostics::LintCap,
@@ -69,6 +72,15 @@ pub struct Config {
 }
 
 impl Config {
+    #[must_use]
+    pub const fn source_contract_limits(&self) -> SourceContractLimits {
+        self.source_contract_limits
+    }
+    /// Fix contract resource policy before loading this compilation's source.
+    pub fn set_source_contract_limits(&mut self, limits: SourceContractLimits) {
+        self.source_contract_limits = limits;
+    }
+
     #[must_use]
     pub const fn lint_cap(&self) -> crate::support::diagnostics::LintCap {
         self.lint_cap

@@ -1,3 +1,4 @@
+mod budget_options;
 mod crates;
 mod modules;
 use rustgm::{
@@ -16,6 +17,7 @@ use std::{
     process::ExitCode,
 };
 
+#[derive(Default)]
 struct Options {
     input: Option<String>,
     output: Option<String>,
@@ -57,16 +59,13 @@ fn selected_view(arg: &str) -> Option<(&str, bool)> {
 }
 
 fn options() -> Result<Options, String> {
-    let mut options = Options {
-        input: None,
-        output: None,
-        count: false,
-        mode: String::new(),
-        config: Config::default(),
-        crates: crates::Options::default(),
-    };
+    let mut options = Options::default();
+    let mut budgets = budget_options::Options::default();
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
+        if budgets.consume(&arg, &mut args, &mut options.config)? {
+            continue;
+        }
         if let Some((name, count)) = selected_view(&arg) {
             options.mode = format!("--emit-{name}");
             options.count = count;

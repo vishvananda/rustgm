@@ -20,8 +20,12 @@ pub(in crate::resolve) struct LocalMacros {
     contracts: panic_contracts::Contracts,
 }
 impl LocalMacros {
-    pub(super) fn new(unit: &Unit, features: policy::Features) -> Result<Self, Error> {
-        let contracts = panic_contracts::Contracts::default();
+    pub(super) fn new(
+        unit: &Unit,
+        features: policy::Features,
+        limits: crate::expand::config::SourceContractLimits,
+    ) -> Result<Self, Error> {
+        let contracts = panic_contracts::Contracts::new(limits);
         contracts
             .charge(1, 4 * size_of::<Source>())
             .map_err(|message| Error::at(FileId(0), 0, message))?;

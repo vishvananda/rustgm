@@ -73,6 +73,8 @@ mod pattern_editions;
 mod provider_traits;
 #[path = "../../helpers/qualify.rs"]
 pub(crate) mod qualify;
+#[path = "../../quota_options.rs"]
+mod quota_options;
 #[path = "../../resolution.rs"]
 mod resolution;
 #[path = "../../selected_references.rs"]
