@@ -160,7 +160,9 @@ fn blanket_constant_all_type_formals_require_real_trait_obligations() -> Result 
         .err()
         .ok_or("trait requirement incorrectly became an implementation premise")?;
     assert!(
-        error.message.contains("not satisfy") || error.message.contains("not satisfied"),
+        error.message.contains(
+            "trait obligation requires an unambiguous matching assumption or implementation"
+        ),
         "{error}"
     );
     Ok(())

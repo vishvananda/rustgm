@@ -315,14 +315,17 @@ impl Checker<'_> {
                 let selected = source
                     .resolve(&mut self.facts, result)
                     .map_err(|e| self.error(original, e))?;
-                self.require_initializer_readiness(original, selected.selected.definition)?;
+                self.work.push(Work::Execution(
+                    Request::Constant(Requirement::InitializerBody(selected.selected.definition)),
+                    Phase::Begin,
+                ));
                 return Ok(None);
             }
             Requirement::AssociatedBody { instance, .. } => {
-                let source = self.report.resolution.definitions[instance.definition.0 as usize]
-                    .node
-                    .ok_or_else(|| Error::at(FileId(0), 0, "missing associated constant source"))?;
-                self.require_initializer_readiness(source, instance.definition)?;
+                self.work.push(Work::Execution(
+                    Request::Constant(Requirement::InitializerBody(instance.definition)),
+                    Phase::Begin,
+                ));
                 return Ok(None);
             }
         };
