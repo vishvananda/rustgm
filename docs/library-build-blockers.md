@@ -24,6 +24,18 @@ x86-64 Linux, panic abort. Use the existing immutable shared source tree and
 record target configuration, compiler identity and opened-file hashes on each
 whole-crate attempt. Never patch upstream source to move a blocker.
 
+Full qualification40946428326 for public67626c474 passed all2338 regular
+private controls but exposed three integration regressions. The repair preserves
+unknown promotion facts for authenticated bootstrap methods and reconciles the
+unchanged generic Clone prerequisite as a genuine positive. Its focused six-case
+check passes187.15s (receipt16aa7b26421b1c677c6bc39d860792b82c326bd315315984456277fac417176f).
+Reusing that exact checked executable, CLI3 and fourteen early-copy native
+programs pass, alongside fresh pinned Rust metadata/object/native7/7 for the
+generic input (34c01e43d325520e077d41d639736f5121c020c4b16a1238fcfad627a4498ead).
+This is a CI repair, not additional assignment or original-crate completion.
+The latest actual original-core observation remains the a7ca7055 result below;
+the newly qualified bootstrap-repair CLI is f3484f4c.
+
 ## Observable crate milestones
 
 | Milestone | Current result | Next acceptance evidence |

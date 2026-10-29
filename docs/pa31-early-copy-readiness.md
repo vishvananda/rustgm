@@ -1,5 +1,14 @@
 # LIB-004: early source implementation readiness
 
+Current reconciliation: generic owned-type conformance now accepts the unchanged
+`generic-clone-prerequisite.rs` using its authentic defining environment. It is
+part of the positive lowering/native matrix, rather than an expected unsupported
+case. The focused CI repair passes the existing negative controls, both ordinary
+iterator/comparison matrices, fourteen early-read native programs and independent
+Rust metadata/object/native `7 7` for that generic input. This does not close the
+remaining const/lifetime/nominal owner families or PA31. The original bounded
+profile and its earlier limits below remain historical checkpoint evidence.
+
 The bounded early-readiness component has passed focused qualification. It makes
 actual closed source Copy implementations available before constant body proof,
 through normal conformance and retained dependency queries. No source header is

@@ -189,8 +189,9 @@ from these independent observations and from complete scoped invocation support.
 
 `spec/early-copy-readiness/` declares LIB-004's unchanged early selector source,
 fifteen additive source cases and native observers. Its contract distinguishes
-pending implementation validation from absent Copy, and retains valid generic
-prerequisites outside the bounded early scalar profile. See the
+pending implementation validation from absent Copy. The generic Clone
+prerequisite now uses its real defining environment and is a required positive;
+other unsupported const/lifetime/nominal owner families remain explicit. See the
 [readiness review](../../docs/pa31-early-copy-readiness.md). Independent outcomes
 are separate from the pending compiler qualification; PA31 remains planned.
 
