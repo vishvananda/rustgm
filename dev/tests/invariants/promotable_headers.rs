@@ -13,7 +13,8 @@ fn input(name: &str) -> TestResult<String> {
 fn report(source: &str, tag: &str) -> TestResult<Report> {
     let mut config = crate::expand::config::Config::default();
     config.set_lint_cap(LintCap::Allow);
-    Ok(test_source::source_provider_config(source, tag, &config)?)
+    let tag = tag.replace('-', "_");
+    Ok(test_source::source_provider_config(source, &tag, &config)?)
 }
 fn function(report: &Report, name: &str) -> TestResult<DefId> {
     let index = report
