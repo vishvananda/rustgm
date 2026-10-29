@@ -11,7 +11,7 @@ fn suspended_candidate_headers_keep_linear_work_and_existing_hot_widths() -> Tes
         for index in 0..width {
             write!(source, "fn candidate_{index}()->u32{{7}}")?;
         }
-        let report = crate::test_source::resolve(&source, false)?;
+        let report = crate::test_source::resolve(&source, true)?;
         let mut facts = crate::sema::declarations::analyze(&report)?;
         let definitions: Vec<_> = facts
             .functions
