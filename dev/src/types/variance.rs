@@ -1,4 +1,5 @@
 //! Variance of lifetime/type parameters from completed nominal field templates.
+mod payments;
 mod reachable;
 mod rigidity;
 mod solver;
@@ -133,7 +134,6 @@ impl Variances {
             let definition = definitions
                 .get(item)
                 .ok_or("missing variance aggregate definition")?;
-            graph.seen.clear();
             if definition.kind == super::aggregate::Kind::PhantomData {
                 let target = definitions.phantom_argument_from(types, item, arguments)?;
                 graph.visit(types, item, target)?;
@@ -183,9 +183,9 @@ struct Graph<'a> {
     result: Variances,
     slots: Vec<Slot>,
     variables: Vec<Term>,
-    solver: Solver,
+    solver: Solver<'a>,
     work: Vec<(TypeId, Term, u16)>,
-    seen: HashSet<(TypeId, Term, u16)>,
+    seen: HashSet<(ItemId, TypeId, Term, u16)>,
 }
 impl Graph<'_> {
     fn declaration(
@@ -235,6 +235,8 @@ impl Graph<'_> {
                     return Err("variance parameter outside its declaration");
                 }
             }
+            self.solver.vector(&mut self.slots, 1)?;
+            self.solver.vector(&mut self.variables, 1)?;
             self.slots.push(slot);
             self.variables
                 .push(self.solver.variable(if matches!(slot, Slot::Const(_)) {
@@ -243,6 +245,7 @@ impl Graph<'_> {
                     Variance::Bivariant
                 })?);
         }
+        self.solver.map(&mut self.result.ranges, 1)?;
         if self
             .result
             .ranges
@@ -302,6 +305,7 @@ impl Graph<'_> {
     }
     fn queue_type(&mut self, ty: TypeId, position: Term, depth: u16) -> Result<(), &'static str> {
         self.solver.charge()?;
+        self.solver.vector(&mut self.work, 1)?;
         self.work.push((ty, position, depth));
         Ok(())
     }
@@ -332,7 +336,9 @@ impl Graph<'_> {
                 && !types
                     .contains_parameters(ty)
                     .ok_or("invalid variance type")?)
-                || !self.seen.insert((ty, position, depth))
+                || !self
+                    .solver
+                    .insert(&mut self.seen, (owner, ty, position, depth))?
             {
                 continue;
             }
