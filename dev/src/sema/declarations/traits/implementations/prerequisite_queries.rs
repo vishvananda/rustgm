@@ -75,7 +75,8 @@ impl Attempt {
                     &mut self.context,
                     goal,
                     selection::OwnedCaller {
-                        assumptions: Arc::new(Assumptions::default()),
+                        assumptions: self.plan.assumptions.clone()
+                            .unwrap_or_else(|| Arc::new(Assumptions::default())),
                         environment,
                         first_region: 1,
                         retain_sized: false,
