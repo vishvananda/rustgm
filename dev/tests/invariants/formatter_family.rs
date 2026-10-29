@@ -330,7 +330,14 @@ fn generic_variant_work_scales_with_actual_emitted_members_and_storage() -> Test
         "#[derive(Clone)]struct Array<T,const N:usize>([T;N]);",
         "#[derive(Clone)]struct Where<T>(T)where T:Clone;",
     ] {
-        assert!(expanded_provider(&(family_prefix()? + declaration), "wider_generic").is_err());
+        let report = expanded_provider(&(family_prefix()? + declaration), "preserved_generic")?;
+        let entry = &report
+            .attribute_effects
+            .as_deref()
+            .and_then(|effects| effects.derives.as_deref())
+            .ok_or("actual generic derive")?
+            .entries[0];
+        report.expanded_derive(entry.owner, entry.effect)?;
     }
     // Closed paired Clone remains separate from the generic fieldwise recipe.
     expanded_provider(
