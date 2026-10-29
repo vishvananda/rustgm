@@ -1,0 +1,237 @@
+{
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "state": "frozen independent Rust predictions; candidate source consumer and complete Formatter runtime pending",
+  "rust_release": "1.98.0",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "overflow_checks": true,
+  "lint_cap": "allow",
+  "bootstrap": "1 (unstable unpretty observer only; no compiler implementation)",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "expansion_mode": "-Zunpretty=expanded; separate metadata checking required",
+  "inputs": [
+    {
+      "file": "record-5.rs",
+      "expand_status": 0,
+      "metadata_status": 0,
+      "shape": "record",
+      "fields": 5,
+      "helper_family": "specialized",
+      "record_helpers": 1,
+      "tuple_helpers": 0,
+      "last_field_extra_reference": true,
+      "sha256": "0fdbefb2d65475f76efa066fa79b5fa1204f902141f6e02c911465b87fadd675"
+    },
+    {
+      "file": "record-6.rs",
+      "expand_status": 0,
+      "metadata_status": 0,
+      "shape": "record",
+      "fields": 6,
+      "helper_family": "array",
+      "record_helpers": 1,
+      "tuple_helpers": 0,
+      "last_field_extra_reference": true,
+      "sha256": "0a643e6fc94c73988a0004c8cee4c4e3ff00a73ac94083014807397f65e3fba0"
+    },
+    {
+      "file": "record-7.rs",
+      "expand_status": 0,
+      "metadata_status": 0,
+      "shape": "record",
+      "fields": 7,
+      "helper_family": "array",
+      "record_helpers": 1,
+      "tuple_helpers": 0,
+      "last_field_extra_reference": true,
+      "sha256": "7e06b26d99eb79740dfd079e224990ab3f320aad8703b6057d7777afbefc7c98"
+    },
+    {
+      "file": "tuple-5.rs",
+      "expand_status": 0,
+      "metadata_status": 0,
+      "shape": "tuple",
+      "fields": 5,
+      "helper_family": "specialized",
+      "record_helpers": 0,
+      "tuple_helpers": 1,
+      "last_field_extra_reference": true,
+      "sha256": "784657101d0e95841b6180777bf73a6db8c6d6fa165d3d5a010db6e9361a6a94"
+    },
+    {
+      "file": "tuple-6.rs",
+      "expand_status": 0,
+      "metadata_status": 0,
+      "shape": "tuple",
+      "fields": 6,
+      "helper_family": "array",
+      "record_helpers": 0,
+      "tuple_helpers": 1,
+      "last_field_extra_reference": true,
+      "sha256": "5d15562b557741d69ad9db952bcd80efc1da8b38f88458b2aa38f14914146a6b"
+    },
+    {
+      "file": "tuple-7.rs",
+      "expand_status": 0,
+      "metadata_status": 0,
+      "shape": "tuple",
+      "fields": 7,
+      "helper_family": "array",
+      "record_helpers": 0,
+      "tuple_helpers": 1,
+      "last_field_extra_reference": true,
+      "sha256": "209083b940c8ed694e03d1656be17141ea8a57eeefa1d629f9ed7cfd507331bc"
+    },
+    {
+      "file": "enum-5.rs",
+      "expand_status": 0,
+      "metadata_status": 0,
+      "shape": "enum",
+      "fields": 5,
+      "helper_family": "specialized",
+      "record_helpers": 1,
+      "tuple_helpers": 1,
+      "last_field_extra_reference": true,
+      "sha256": "81b184d6411bd68b23dfa379adc12342509721169021f6bb85ee30d3a27fbc21"
+    },
+    {
+      "file": "enum-6.rs",
+      "expand_status": 0,
+      "metadata_status": 0,
+      "shape": "enum",
+      "fields": 6,
+      "helper_family": "array",
+      "record_helpers": 1,
+      "tuple_helpers": 1,
+      "last_field_extra_reference": true,
+      "sha256": "88921fcc058ae5a345bde93abab31858fd5e177b2d2baa541d596465fbe396ef"
+    },
+    {
+      "file": "enum-7.rs",
+      "expand_status": 0,
+      "metadata_status": 0,
+      "shape": "enum",
+      "fields": 7,
+      "helper_family": "array",
+      "record_helpers": 1,
+      "tuple_helpers": 1,
+      "last_field_extra_reference": true,
+      "sha256": "02965b6c602974cc553a0c3af5ecc38821f87ca9abf1142e0249571e9663bba6"
+    },
+    {
+      "file": "unsized-tail.rs",
+      "expand_status": 0,
+      "metadata_status": 0,
+      "shape": "record",
+      "fields": 7,
+      "helper_family": "array",
+      "record_helpers": 1,
+      "tuple_helpers": 0,
+      "last_field_extra_reference": true,
+      "semantic_requirement": "Tail<[u8]> implements Debug without Sized on T",
+      "sha256": "917b0a3806b4db27b97104bf0c91039dbfe41f5949991609c9a107aa56d98371"
+    },
+    {
+      "file": "labels.rs",
+      "expand_status": 0,
+      "metadata_status": 0,
+      "shape": "record",
+      "fields": 6,
+      "helper_family": "array",
+      "record_helpers": 1,
+      "tuple_helpers": 0,
+      "last_field_extra_reference": true,
+      "labels": [
+        "type",
+        "café",
+        "δ",
+        "fourth",
+        "fifth",
+        "sixth"
+      ],
+      "sha256": "ba12fc614b17676bc373f6cc8013756eca6ddfd2be190e677aa80eca56d15c46"
+    },
+    {
+      "file": "missing-debug.rs",
+      "expand_status": 0,
+      "metadata_status": 1,
+      "error_codes": [
+        "E0277"
+      ],
+      "shape": "record",
+      "fields": 6,
+      "helper_family": "array",
+      "record_helpers": 1,
+      "tuple_helpers": 0,
+      "last_field_extra_reference": true,
+      "sha256": "d957657eb58af12cc5a68554f4df336aae48656e372a312ed28e7623f5188829"
+    }
+  ],
+  "files": [
+    {
+      "file": "upstream-fn-ptr.rs",
+      "sha256": "b563b8fa22f2f0f454154369b98db82f2eda112bb633c15164078eae33075502",
+      "primary": "library/core/src/mem/type_info.rs",
+      "primary_sha256": "dd7fcb15962357e28657486c56931c3a088ece3da545092787ac3949ab312423",
+      "byte_start": 9098,
+      "byte_end": 10003,
+      "first_line": 327,
+      "last_line": 354,
+      "kind": "exact unchanged upstream source interval; not a standalone program"
+    },
+    {
+      "file": "upstream-struct-helper.rs",
+      "sha256": "f0514d784918931a41b8fe7b9f31ce75cd7819b5c23408260758bb0ef83989cf",
+      "primary": "library/core/src/fmt/mod.rs",
+      "primary_sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+      "byte_start": 92273,
+      "byte_end": 92925,
+      "first_line": 2562,
+      "last_line": 2579,
+      "kind": "exact unchanged upstream source interval; not a standalone program"
+    },
+    {
+      "file": "upstream-tuple-helper.rs",
+      "sha256": "f6d843b943e1da1f2672cbbf4d537e88e905bfc29fea21ec28e3ec89b39a71ec",
+      "primary": "library/core/src/fmt/mod.rs",
+      "primary_sha256": "67c9bacb0202a1d75bb1332f9146a904a117fde03e05c6951919d14414196fd2",
+      "byte_start": 97082,
+      "byte_end": 97628,
+      "first_line": 2702,
+      "last_line": 2717,
+      "kind": "exact unchanged upstream source interval; not a standalone program"
+    },
+    {
+      "file": "upstream-recipe.rs",
+      "sha256": "e0db4c2e58497e7e0708ce8472a32d1608db99875fb1d2debe610f6392436100",
+      "primary": "compiler/rustc_builtin_macros/src/deriving/debug.rs",
+      "primary_sha256": "54a980d860f798afd0040ad29a64ea094ef5ed9a6f429c272ade34b56e4a85d8",
+      "byte_start": 3430,
+      "byte_end": 7959,
+      "first_line": 91,
+      "last_line": 211,
+      "kind": "exact unchanged upstream source interval; not a standalone program"
+    }
+  ],
+  "native": {
+    "file": "native-rust.rs",
+    "sha256": "66245fa3a8a33d50c16e63433bc3811f565d7866d5d10785bcf2a2bb65c5ea0d",
+    "build_status": 0,
+    "run_status": 0,
+    "stdout": "R7 { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7 }\nT7(1, 2, 3, 4, 5, 6, 7)\nRecord { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, g: 7 }\nTuple(1, 2, 3, 4, 5, 6, 7)\nTail { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6, tail: [7, 8] }\nLabels { type: 0, café: 1, δ: 2, fourth: 3, fifth: 4, sixth: 5 }\n",
+    "scope": "ordinary std-backed independent Rust only, not source-provider execution"
+  },
+  "source_payload": {
+    "file": "source-payloads.rs",
+    "sha256": "f2091f944bba06f6ee33788ccb964bc565497a40ab3c5a7186418f52c7d421fd",
+    "scope": "authored seven-field inputs for actual source Debug provider; no library stand-ins; consumer pending"
+  },
+  "required": [
+    "authentic source Debug and exact array-helper selection",
+    "array/slice/dyn-Debug coercion and final possibly-unsized field proof",
+    "actual Formatter/helper/runtime bodies and native consumer",
+    "failed-payment/scaling/source provenance controls",
+    "unchanged original FnPtr full-module/core artifact"
+  ]
+}
