@@ -1,0 +1,134 @@
+{
+  "state": "successor frozen before candidate after retained independent generic-bound-order counterexample",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "owning": "PA26 source derive recipe + PA31 actual declaration/proof/native consumer",
+  "original": {
+    "path": "library/core/src/escape.rs",
+    "sha256": "adf592864bf3e50f756ccc082f361b97a755a88e301dda47c93931424b6cb25e",
+    "start": 5219,
+    "end": 5350,
+    "interval_sha256": "0eb75b1e3a828e33f71a7c3f2f16497b7ba889e6c7ac954d7157eafa62fd6f3d"
+  },
+  "copy_helper": {
+    "path": "library/core/src/clone.rs",
+    "sha256": "fd3467602106e2a2ec416485d8d058b6d2b434ceac7689b4e2f4c792079e500f",
+    "start": 17246,
+    "end": 17531,
+    "interval_sha256": "61453149ba6521cbf7e1103126bf51aa0ddae399720526979a66326788a70cd4"
+  },
+  "files": {
+    "upstream-escape.rs": "9afdffb9e9237764bc8dd8cec2bf37e2fa61de9ec8b43bdf9283e8480768113b",
+    "header-expansion.rs": "6530e34d7159ee43190b1e4d92412fe8236835694251d8bc9e53dcbed6d11fce",
+    "original-rust.rs": "29b22a1e988a2ea534d7efa2029dce5cb79af6fdfb2b8d6b0e4224522167db4f",
+    "source-wrong-helper.rs": "57269f326b22f19e1718e92f1fc48d8aea350f3df8deb5cec3470ab65cf39351",
+    "original-expansion.rs": "e73444e8d340189645c9eaa28e110505e3842e1ccaa2dadfda4c575e3a0279c8",
+    "observer.c": "72391cbacbc1996c9665a06af0b9533b78f23c8ab2ee3586843888b09e2eac76",
+    "noncopy-parameter-rust.rs": "ad9fc0b1fcae079fbcfc2829449a4d8f7118b9c1bb937e44787a8062b43794a5",
+    "missing-copy-rust.rs": "fbdfff6960cd05b4afe6b5c9cf3bb215002fe0edd7788905c89df8ca11cc261d",
+    "source-copy-lookalike.rs": "83b629d00851b4b7ce0c5dc5c5834493256b39ddf8c5a862995cfd6395a51130",
+    "source-missing-copy.rs": "65e2d58b5b7f974e69048a03f5d665fa7e93765c3549d02ebd69c154c785a184",
+    "debug-rust.rs": "5f47605a17abc3f7cb8d5a9e114c3dba1533efab7c214a426a1d5a56d727fb91",
+    "copy-lookalike-rust.rs": "497856aabc82b0b880b858421a61201904c2fa2962c8d99af16fc368494a23db",
+    "source-runtime.rs": "c29e9545b3a11e7379fcfbd28bb1b0db1a8c1868564d6e40d6ffaa69d24813bb",
+    "upstream-copy-assert.rs": "5f6d34ea5e9e1b16c81126fe682fe5e4b6b89d84a0de2a9a54bd7dde4927ff52",
+    "generic-rust.rs": "9cadaf34305086bc0b1c3e281ff1170b383da30aff68b2502ddeabf123414d0d",
+    "payment-source.rs": "b05faeba29f3469edbc3976a1f0af2a7eb71d324ec07e28a0a7e3f19efa8292c"
+  },
+  "rust_cases": [
+    {
+      "file": "original-rust.rs",
+      "metadata": 0,
+      "expanded": 0
+    },
+    {
+      "file": "generic-rust.rs",
+      "metadata": 0,
+      "expanded": 0
+    },
+    {
+      "file": "source-runtime.rs",
+      "metadata": 0,
+      "expanded": 0
+    },
+    {
+      "file": "missing-copy-rust.rs",
+      "metadata": 1,
+      "expanded": null
+    },
+    {
+      "file": "noncopy-parameter-rust.rs",
+      "metadata": 1,
+      "expanded": null
+    },
+    {
+      "file": "copy-lookalike-rust.rs",
+      "metadata": 1,
+      "expanded": null
+    },
+    {
+      "file": "debug-rust.rs",
+      "metadata": 1,
+      "expanded": null
+    },
+    {
+      "file": "source-missing-copy.rs",
+      "metadata": 1,
+      "expanded": null
+    },
+    {
+      "file": "source-wrong-helper.rs",
+      "metadata": 1,
+      "expanded": null
+    },
+    {
+      "file": "source-copy-lookalike.rs",
+      "metadata": 1,
+      "expanded": null
+    }
+  ],
+  "recipe": {
+    "union_always_simple": true,
+    "unsafe_TrivialClone_generated": true,
+    "Clone_type_bound_order": [
+      "Copy",
+      "Clone",
+      "written bounds"
+    ],
+    "TrivialClone_type_bound_order": [
+      "Copy",
+      "TrivialClone",
+      "written bounds"
+    ],
+    "self_assertion": "crate::clone::AssertParamIsCopy<Self>",
+    "no_field_clone_assertions": true,
+    "no_field_reads": true,
+    "body": "*self",
+    "headers": "preserve actual lifetime/const/default-stripping/where nodes"
+  },
+  "native": {
+    "source": "source-runtime.rs",
+    "observer": "observer.c",
+    "status": 0,
+    "stdout": "11223344:11223344:11223344;a:12345678:89abcdef;u;7\n",
+    "stderr": ""
+  },
+  "candidate_cases": {
+    "original-expansion.rs": "exact original union positive; actual ascii::Char runtime remains required",
+    "header-expansion.rs": "typed lifetime/type/const/where positive",
+    "source-runtime.rs": "actual source -> LowIR -> native positive",
+    "source-missing-copy.rs": "reject actual selected body, no generic budget/unsupported excuse",
+    "source-wrong-helper.rs": "counterfeit helper cannot grant Copy",
+    "source-copy-lookalike.rs": "wrong trait identity cannot grant Copy",
+    "payment-source.rs": "actual engine failure before publication; resource-only producer control, no language/runtime claim"
+  },
+  "required": [
+    "full original escape/ascii::Char runtime and core/alloc/std artifacts",
+    "unrelated union derives remain rejected/required as Rust/protocol dictates",
+    "metadata profile migration and broader native shapes"
+  ],
+  "independent_order_review": {
+    "predecessor_recipe_order": "role before Copy predicted; actual pinned expansion prepends Copy",
+    "receipt_sha256": "b9cb935b86c55b5a8715d1820126af36e94b0c43719222672160bce870bcb2f7",
+    "source_case_bytes_unchanged": true
+  }
+}

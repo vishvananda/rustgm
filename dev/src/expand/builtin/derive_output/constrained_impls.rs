@@ -33,7 +33,20 @@ impl Output<'_> {
                     && !(path == "crate::default::Default"
                         && matches!(self.site.item.kind, ItemKind::Enum { .. }));
                 let bounded = parameter.bounds.start != parameter.bounds.end;
-                if bounded || added {
+                if added
+                    && matches!(self.site.item.kind, ItemKind::Union { .. })
+                    && matches!(path, "crate::clone::Clone" | "crate::clone::TrivialClone")
+                {
+                    self.text(":crate::marker::Copy+")?;
+                    if self.site.const_ {
+                        self.text("[const]")?;
+                    }
+                    self.text(path)?;
+                    if bounded {
+                        self.text("+")?;
+                        self.bounds(parameter.bounds)?;
+                    }
+                } else if bounded || added {
                     self.text(":")?;
                     self.bounds(parameter.bounds)?;
                     if added {

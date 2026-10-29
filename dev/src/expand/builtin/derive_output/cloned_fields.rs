@@ -22,13 +22,16 @@ impl Output<'_> {
             };
             type_parameters |= self.site.ast.generics[index as usize].flavor == GenericFlavor::Type;
         }
-        if copy && !type_parameters {
+        let union = matches!(self.site.item.kind, ItemKind::Union { .. });
+        if union || (copy && !type_parameters) {
             self.header("crate::clone::TrivialClone", true)?;
             self.text("{}")?;
         }
         self.header("crate::clone::Clone", false)?;
         self.text("{ #[inline] fn clone(&self)->Self{")?;
-        if copy && !type_parameters {
+        if union {
+            self.text("let _:crate::clone::AssertParamIsCopy<Self>;*self")?;
+        } else if copy && !type_parameters {
             for &field in fields {
                 let (_, ty) = self.actual_field(field)?;
                 self.text("let _:crate::clone::AssertParamIsClone<")?;
