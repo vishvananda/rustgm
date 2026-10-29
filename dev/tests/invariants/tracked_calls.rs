@@ -5,7 +5,7 @@ use crate::{
     sema, test_source,
     types::{TypeId, instance::Instance},
 };
-type TestResult = Result<(), Box<dyn std::error::Error>>;
+type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 const PROVIDER: &str = "pa31/tests/spec/source-location/caller-location.rs";
 
 #[test]
@@ -197,5 +197,199 @@ fn intrinsic_const_policy_and_track_caller_opponents_remain_actual_source_checks
             .ok_or_else(|| format!("{label} was accepted"))?;
         assert!(error.contains(expected), "{label}: {error}");
     }
+    Ok(())
+}
+
+fn selected_export(
+    report: &crate::resolve::expansion::Report,
+    name: &str,
+) -> TestResult<crate::resolve::model::DefId> {
+    report
+        .resolution
+        .definitions
+        .iter()
+        .enumerate()
+        .find(|(_, definition)| {
+            definition.kind == crate::resolve::model::DefKind::Function
+                && report.package.names.get(definition.name) == name
+        })
+        .map(|(index, _)| u32::try_from(index).map(crate::resolve::model::DefId))
+        .transpose()?
+        .ok_or_else(|| format!("actual {name}").into())
+}
+fn selected_call(
+    report: &crate::resolve::expansion::Report,
+    facts: &sema::model::Declarations,
+    definition: crate::resolve::model::DefId,
+) -> TestResult<(
+    crate::resolve::unit::NodeKey,
+    crate::resolve::unit::NodeKey,
+    TypeId,
+)> {
+    use crate::syntax::ast::Kind;
+    let owner = facts
+        .functions
+        .iter()
+        .find(|function| function.definition == definition)
+        .and_then(|function| function.body)
+        .ok_or("actual selected caller body")?;
+    let ast = &report.package.unit(owner.file).configured.ast;
+    let Kind::Block {
+        tail: Some(call), ..
+    } = ast.nodes[owner.node.get() as usize].kind
+    else {
+        return Err("actual call tail".into());
+    };
+    let Kind::Call { callee, .. } = ast.nodes[call.get() as usize].kind else {
+        return Err("actual UFCS Call".into());
+    };
+    let callable = facts
+        .node(crate::resolve::unit::NodeKey {
+            node: callee,
+            ..owner
+        })
+        .and_then(|node| node.ty)
+        .ok_or("actual solved callee")?;
+    Ok((
+        owner,
+        crate::resolve::unit::NodeKey {
+            node: call,
+            ..owner
+        },
+        callable,
+    ))
+}
+fn checked_selected_site(
+    report: &crate::resolve::expansion::Report,
+    facts: &mut sema::model::Declarations,
+    definition: crate::resolve::model::DefId,
+    tracked: bool,
+) -> TestResult<(crate::resolve::unit::NodeKey, TypeId)> {
+    let (owner, call, callable) = selected_call(report, facts, definition)?;
+    let Some(sema::model::Operation::Call {
+        source_use: Some(source_use),
+        ..
+    }) = facts.node(call).and_then(|node| node.operation)
+    else {
+        return Err("actual source call use".into());
+    };
+    assert_eq!(
+        source_use
+            .caller_site(facts, owner, call.node, callable)?
+            .is_some(),
+        tracked
+    );
+    let ast = &report.package.unit(call.file).configured.ast;
+    let crate::syntax::ast::Kind::Call { callee, .. } = ast.nodes[call.node.get() as usize].kind
+    else {
+        return Err("actual Call".into());
+    };
+    let key = crate::resolve::unit::NodeKey {
+        node: callee,
+        ..call
+    };
+    let selected = sema::dispatch::selected_definition(facts, key, callable)?
+        .ok_or("actual selected target")?;
+    assert_eq!(facts.checked_caller_tracking(report, selected)?, tracked);
+    Ok((key, callable))
+}
+fn wrong_selection(
+    facts: &mut sema::model::Declarations,
+    source: crate::resolve::unit::NodeKey,
+    other: crate::resolve::unit::NodeKey,
+    callable: TypeId,
+) -> TestResult {
+    let copied = facts
+        .generics
+        .trait_selections
+        .get(&source)
+        .ok_or("actual source selections")?
+        .iter()
+        .map(|selection| sema::generics::ImplementationSelection {
+            owner: selection.owner,
+            arguments: selection.arguments,
+        })
+        .collect();
+    let old = facts.generics.trait_selections.insert(other, copied);
+    assert!(sema::dispatch::selected_definition(facts, other, callable)?.is_none());
+    facts
+        .generics
+        .trait_selections
+        .insert(other, old.ok_or("actual prior selections")?);
+    Ok(())
+}
+#[test]
+fn selected_impl_tracking_uses_exact_self_rhs_and_prepares_real_runtime_and_const_sites()
+-> TestResult {
+    let source = test_source::fixture("pa31/tests/spec/source-location/selected-tracking.rs")?;
+    let report = test_source::source_provider(&source, "selected_tracking")?;
+    let crate::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = crate::pipeline::analyze_source(&report)?;
+    assert!(facts.array_lengths.values().any(|&bound| bound == 375));
+    let roots = [
+        "selected_runtime_line",
+        "selected_constant_line",
+        "untracked_rhs",
+        "untracked_self",
+    ]
+    .iter()
+    .map(|name| selected_export(&report, name))
+    .collect::<TestResult<Vec<_>>>()?;
+    let (key, _) = checked_selected_site(&report, &mut facts, roots[0], true)?;
+    for &definition in &roots[2..] {
+        let (other, callable) = checked_selected_site(&report, &mut facts, definition, false)?;
+        wrong_selection(&mut facts, key, other, callable)?;
+    }
+    let program = crate::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        crate::lower::Roots {
+            entry: None,
+            exports: &roots,
+        },
+        prepared,
+    )?;
+    let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../obj/parallel/source-div-v1/candidate/selected-tracking");
+    std::fs::create_dir_all(&folder)?;
+    std::fs::write(folder.join("source.rs"), source)?;
+    crate::lowir::writer::write(
+        &program,
+        &mut std::fs::File::create(folder.join("provider.lowir"))?,
+    )?;
+    Ok(())
+}
+#[test]
+fn untracked_selected_impls_keep_actual_const_calls_without_any_location_provider() -> TestResult {
+    let source = test_source::fixture("pa31/tests/spec/source-location/untracked-selection.rs")?;
+    let report = test_source::source_provider(&source, "untracked_selection")?;
+    let crate::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = crate::pipeline::analyze_source(&report)?;
+    assert!(
+        facts
+            .source_bindings
+            .as_deref()
+            .ok_or("actual source catalog")?
+            .language(crate::support::bindings::LangItem::PanicLocation)
+            .is_none()
+    );
+    assert!(facts.array_lengths.values().any(|&bound| bound == 73));
+    let roots = [
+        selected_export(&report, "untracked_no_location")?,
+        selected_export(&report, "untracked_no_location_const")?,
+    ];
+    crate::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        crate::lower::Roots {
+            entry: None,
+            exports: &roots,
+        },
+        prepared,
+    )?;
     Ok(())
 }
