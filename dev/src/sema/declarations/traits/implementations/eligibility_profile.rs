@@ -186,7 +186,8 @@ impl Checker<'_> {
             .facts
             .associated
             .owner(owner)
-            .and_then(|id| self.facts.associated.get(id));
+            .and_then(|id| self.facts.associated.get(id))
+            .copied();
         if actual.is_none_or(|actual| {
             actual.self_definition != owner
                 || actual.source != Some(source)
@@ -224,7 +225,7 @@ impl Checker<'_> {
             return Ok(Eligibility::Unsupported(Unsupported::SourceOwner));
         };
         let owners = [
-            *actual.ok_or_else(|| self.error(source, "source owner disappeared"))?,
+            actual.ok_or_else(|| self.error(source, "source owner disappeared"))?,
             trait_owner,
         ];
         let members =
