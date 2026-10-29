@@ -1,5 +1,5 @@
 //! Impl formals preserve parsed constraints; nominal applications carry names only.
-use super::{GenericFlavor, Kind, LexError, NodeId, Output, error};
+use super::{GenericFlavor, ItemKind, Kind, LexError, NodeId, Output, error};
 use crate::{support::constness::Constness, syntax::ast::List};
 impl Output<'_> {
     pub(super) fn generics(&mut self, implementation: Option<&str>) -> Result<(), LexError> {
@@ -29,7 +29,9 @@ impl Output<'_> {
                     })?)?;
                 }
                 let added = parameter.flavor == GenericFlavor::Type
-                    && path != "crate::marker::StructuralPartialEq";
+                    && path != "crate::marker::StructuralPartialEq"
+                    && !(path == "crate::default::Default"
+                        && matches!(self.site.item.kind, ItemKind::Enum { .. }));
                 let bounded = parameter.bounds.start != parameter.bounds.end;
                 if bounded || added {
                     self.text(":")?;

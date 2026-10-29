@@ -41,6 +41,7 @@ pub(crate) struct Site<'a> {
     pub members: [Option<MemberContext>; MEMBERS.len()],
     pub const_: bool,
     pub prior_copy: bool,
+    pub enum_default: Option<NodeId>,
 }
 struct Field {
     parsed: ParsedSyntax,

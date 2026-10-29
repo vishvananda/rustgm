@@ -1,5 +1,7 @@
 //! Tuple and record constructors call each field's actual source `Default`.
 use super::*;
+#[path = "elected_defaults.rs"]
+mod enum_defaults;
 const FIXTURES: &str = "pa31/tests/spec/tuple-default/";
 fn fixture(name: &str) -> TestResult<String> {
     Ok(test_source::fixture(&format!("{FIXTURES}{name}.rs"))?)
@@ -112,14 +114,10 @@ fn generic_noncopy_tuple_and_record_defaults_reach_actual_ordered_native_bodies(
 }
 
 #[test]
-fn missing_field_defaults_and_wrong_values_fail_without_granting_enum_support() -> TestResult {
+fn missing_field_defaults_and_wrong_values_fail_without_granting_field_proof() -> TestResult {
     for (name, expected) in [
         ("missing-default", "trait obligation"),
         ("wrong-field-type", "type"),
-        (
-            "enum-required",
-            "source Default requires its supported struct owner",
-        ),
     ] {
         let result =
             test_source::source_provider(&fixture(name)?, "default_opponent").and_then(|report| {

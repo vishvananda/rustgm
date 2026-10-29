@@ -9,8 +9,9 @@ The unchanged eight-member Saturating declaration is expansion-only here.
 `generic-source.rs` calls real authored non-Copy field Default bodies, including
 nonzero values and tuple/record order. `observer.c` expects
 `d7;d9;p7:9;d9;d7;r9:7;7\n`. Missing Default and wrong field type are real negative
-controls. The enum is a valid Rust positive with an explicitly unsupported
-candidate profile. Maintainer exact tests are registered through the existing
+controls. The enum was a valid Rust positive outside that checkpoint's candidate profile.
+The later [enum Default checkpoint](../enum-default/README.md) admits its actual
+unit-helper recipe and preserves that earlier independent evidence. Maintainer exact tests are registered through the existing
 source derive suite (`derived_locations.rs` / `constructed_defaults.rs`).
 
 See docs/pa31-tuple-default-checkpoint.md for retained partial candidate evidence.

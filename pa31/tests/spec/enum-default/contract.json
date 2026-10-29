@@ -1,0 +1,171 @@
+{
+  "state": "frozen before independent/candidate observations",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "owning": "PA26 Default recipe + PA31 actual source macro/trait ownership",
+  "profile": {
+    "rustc": "1.98.0",
+    "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": true,
+    "lint_cap": "allow",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false
+  },
+  "recipe": {
+    "path": "compiler/rustc_builtin_macros/src/deriving/default.rs",
+    "sha256": "96a7af1c5af9047e1160fe4c1fd2785b12cf2199ca47c8cc502071447c0b5446",
+    "law": "one active unit default variant, one word marker, selected variant not non_exhaustive; enum itself may be non_exhaustive; no generated type Default bounds; preserve explicit constraints/const"
+  },
+  "original": {
+    "file": "upstream-abi.rs",
+    "sha256": "fd94323ec4cc8615b608c21a29a6d87d79bee23cddad53becdd342350214e435",
+    "path": "library/core/src/mem/type_info.rs",
+    "primary_sha256": "dd7fcb15962357e28657486c56931c3a088ece3da545092787ac3949ab312423",
+    "byte_start": 10239,
+    "byte_end": 10543
+  },
+  "candidate_expansion": {
+    "file": "abi-expansion.rs",
+    "sha256": "ddad5fbf9bf142ca12c043f84b16fc6ae99f8496ab5d7c0e65313603ea6eafcf",
+    "expected_members": [
+      "Debug",
+      "Default"
+    ],
+    "selected_variant": "ExternRust"
+  },
+  "foundation": {
+    "path": "pa31/tests/spec/tuple-default/generic-source.rs",
+    "prefix_sha256": "4404a34f7259b22b9fb1cc585412f1eccafa50d905bf2f04617fb1ac1641dcc2",
+    "scope": "existing genuine source roles/Default trait and declaration foundation; NoDefault has no Default implementation"
+  },
+  "cases": [
+    {
+      "file": "missing-rust.rs",
+      "sha256": "3de377e84cbe2bd1b74b69dd7e98c3cbe0a248ac77f44ab3f83ddd22c74e0dd3",
+      "metadata": 1,
+      "candidate": "reject actual malformed/unsupported owner, selection or hard feature gate"
+    },
+    {
+      "file": "multiple-rust.rs",
+      "sha256": "9211181b6b6aa40b9cf692d245136c21537ef244f3f316a24f863a2737d3c3e8",
+      "metadata": 1,
+      "candidate": "reject actual malformed/unsupported owner, selection or hard feature gate"
+    },
+    {
+      "file": "duplicate-rust.rs",
+      "sha256": "f49f96e858cfa3b9fb08a2f8166f99c58706218fc778c4a31619bb4ff74bec7e",
+      "metadata": 1,
+      "candidate": "reject actual malformed/unsupported owner, selection or hard feature gate"
+    },
+    {
+      "file": "arguments-rust.rs",
+      "sha256": "6a67954c4c646aa4aaa6e04918152ed023730334cb9ee346276dbae4f4ef3d3b",
+      "metadata": 1,
+      "candidate": "reject actual malformed/unsupported owner, selection or hard feature gate"
+    },
+    {
+      "file": "equals-rust.rs",
+      "sha256": "5678c7852d388ad573c3fb02be456aa5611a5fae4afe0a4a9bac86ff22686180",
+      "metadata": 1,
+      "candidate": "reject actual malformed/unsupported owner, selection or hard feature gate"
+    },
+    {
+      "file": "nonunit-tuple-rust.rs",
+      "sha256": "f28faea07a3b5c7c01aba98ccd20127c265690078a0515a9074f1bb75bb1a30f",
+      "metadata": 1,
+      "candidate": "reject actual malformed/unsupported owner, selection or hard feature gate"
+    },
+    {
+      "file": "nonunit-record-rust.rs",
+      "sha256": "6ba2b7f81641f3bf23ed5e13880cc2cb07c8178a1abb39597f3d2f1b988029c7",
+      "metadata": 1,
+      "candidate": "reject actual malformed/unsupported owner, selection or hard feature gate"
+    },
+    {
+      "file": "empty-tuple-rust.rs",
+      "sha256": "13077e5fb5b7a0238fd202713bfdb45c5f75f51bc3224035c3117d0de0bf1aa6",
+      "metadata": 1,
+      "candidate": "reject actual malformed/unsupported owner, selection or hard feature gate"
+    },
+    {
+      "file": "empty-record-rust.rs",
+      "sha256": "5cca6b11e595e85119cab0bdd0ce98f93d43d4b8a813774c5808ac3da3dc11ef",
+      "metadata": 1,
+      "candidate": "reject actual malformed/unsupported owner, selection or hard feature gate"
+    },
+    {
+      "file": "non-exhaustive-variant-rust.rs",
+      "sha256": "f25525d58eb0f3561657a52ab3007124e9ab1ec7675225c8e5975c52ab76be7d",
+      "metadata": 1,
+      "candidate": "reject actual malformed/unsupported owner, selection or hard feature gate"
+    },
+    {
+      "file": "misplaced-item-rust.rs",
+      "sha256": "58c555e0deee235a2c53e36b11a84a49b33f429c03dbf3497f31821bb6517f4d",
+      "metadata": 1,
+      "candidate": "reject actual malformed/unsupported owner, selection or hard feature gate"
+    },
+    {
+      "file": "misplaced-field-rust.rs",
+      "sha256": "d65d7970aea821904bbc565163a1430d22d8be7474ee994fca1c1be2dc883ef4",
+      "metadata": 1,
+      "candidate": "reject actual malformed/unsupported owner, selection or hard feature gate"
+    },
+    {
+      "file": "cfg-missing-rust.rs",
+      "sha256": "0e28db5f0e03c223f7d2756f5baca6cb91a92307fa87ea231cba99e2c331f045",
+      "metadata": 1,
+      "candidate": "reject actual malformed/unsupported owner, selection or hard feature gate"
+    },
+    {
+      "file": "wrong-helper-rust.rs",
+      "sha256": "9750b5633ae2400bbc3d255faa8d6ca8cbeb9cf39897d49428f1b00f9ff7748c",
+      "metadata": 1,
+      "candidate": "reject actual malformed/unsupported owner, selection or hard feature gate"
+    },
+    {
+      "file": "const-gate-rust.rs",
+      "sha256": "be03055c14c6e0a2ea7d83ad5b2247feb308d97988c37d5db3dd9636a17a32f8",
+      "metadata": 1,
+      "candidate": "reject actual malformed/unsupported owner, selection or hard feature gate"
+    },
+    {
+      "file": "generic-source.rs",
+      "sha256": "518d886c644ced44eda1363fa91f823000a6ff819e4921981a97bc32340e0b33",
+      "metadata": 0,
+      "candidate": "source semantic/native7; preserve lifetime/type/const formals, explicit where and absence of synthesized T:Default"
+    },
+    {
+      "file": "const-rust.rs",
+      "sha256": "7f5b25eb2682f97ae71655f4d9a78ae808a909e409fd623d2d77a298d500f5fd",
+      "metadata": 0,
+      "expanded": 0,
+      "candidate": "const enum header without synthesized Default bounds"
+    },
+    {
+      "file": "abi-rust.rs",
+      "sha256": "97f1f005efeddda7f0b2e17b6e5e006c737c80d406830dbb1cda356fe36c7d0e",
+      "expanded": 0,
+      "metadata": 0,
+      "candidate": "exact original Abi is a distinct two-member expansion/provenance control; whole fmt runtime not claimed"
+    }
+  ],
+  "native": {
+    "source": "generic-source.rs",
+    "observer": "observer.c",
+    "observer_sha256": "3b29faf3ba01868a0b5b00a62e4a74345ca729aee9f7b734d2c1ee78afceea67",
+    "metadata": 0,
+    "object": 0,
+    "link": 0,
+    "status": 0,
+    "stdout": "7\n",
+    "stderr": ""
+  },
+  "required": [
+    "default_field_values nonunit record forms remain wider explicit requirement, not language rejection when enabled",
+    "whole original Abi Debug/runtime/core artifact",
+    "full generic const/where/metadata and parent PA release gates"
+  ]
+}

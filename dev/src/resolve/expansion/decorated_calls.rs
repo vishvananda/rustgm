@@ -168,11 +168,7 @@ impl<S: Sources> Engine<'_, S> {
                     "source tool registration is not implemented",
                 ));
             }
-            if matches!(attribute.input, Input::Doc(_))
-                || name.and_then(Consumer::named).is_some()
-                    && !(matches!(name, Some("derive" | "derive_const"))
-                        && self.loader.package.source_core().is_some())
-            {
+            if self.non_macro_attribute(key, index, name, attribute.input)? {
                 continue;
             }
             let path = attribute.path;
@@ -198,6 +194,20 @@ impl<S: Sources> Engine<'_, S> {
             return Ok(Some((index, attribute.span.start)));
         }
         Ok(None)
+    }
+
+    fn non_macro_attribute(
+        &self,
+        owner: super::NodeKey,
+        effect: usize,
+        name: Option<&str>,
+        input: Input,
+    ) -> Result<bool, Error> {
+        Ok(matches!(input, Input::Doc(_))
+            || name == Some("default") && self.default_helper(owner, effect)?
+            || name.and_then(Consumer::named).is_some()
+                && !(matches!(name, Some("derive" | "derive_const"))
+                    && self.loader.package.source_core().is_some()))
     }
 }
 
