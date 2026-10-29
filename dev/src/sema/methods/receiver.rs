@@ -69,8 +69,8 @@ pub(in crate::sema) fn choose(
         .map_err(error)?;
     let inherent = inherent_candidates(report, facts, source, (term, base), head, site, identifier)
         .map_err(error)?;
-    if let Some(definition) = pending_definition(facts, source, &inherent.members, caller.availability)
-        .map_err(error)?
+    if let Some(definition) =
+        pending_definition(facts, source, &inherent.members, caller.availability).map_err(error)?
     {
         return Ok(Progress::Prepare(definition));
     }
@@ -150,12 +150,19 @@ fn pending_definition(
     members: &[DefId],
     availability: crate::sema::traits::implementations::Availability,
 ) -> Result<Option<DefId>, &'static str> {
-    if matches!(availability, crate::sema::traits::implementations::Availability::Validated) {
+    if matches!(
+        availability,
+        crate::sema::traits::implementations::Availability::Validated
+    ) {
         return Ok(None);
     }
     for &method in members {
         source.account_work(1).map_err(inference)?;
-        if facts.definitions.get(method.0 as usize).is_some_and(Option::is_none) {
+        if facts
+            .definitions
+            .get(method.0 as usize)
+            .is_some_and(Option::is_none)
+        {
             return Ok(Some(method));
         }
     }

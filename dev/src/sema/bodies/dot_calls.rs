@@ -41,7 +41,10 @@ impl Pending {
 }
 
 impl Checker<'_> {
-    pub(super) fn method_arguments(&mut self, node: NodeId) -> Result<Option<super::Dependency>, Error> {
+    pub(super) fn method_arguments(
+        &mut self,
+        node: NodeId,
+    ) -> Result<Option<super::Dependency>, Error> {
         let site = self
             .report
             .resolution

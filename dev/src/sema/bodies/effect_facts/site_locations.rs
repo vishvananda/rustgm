@@ -86,19 +86,27 @@ struct Request {
 }
 impl Checker<'_> {
     pub(in crate::sema::bodies) fn caller_data_deferred(&self) -> Result<bool, Error> {
-        if !matches!(self.state.completion, super::super::readiness::Completion::Ordinary)
-            || !matches!(self.availability, crate::sema::traits::implementations::Availability::Validated)
-            || self.report.package.source_core().is_none()
+        if !matches!(
+            self.state.completion,
+            super::super::readiness::Completion::Ordinary
+        ) || !matches!(
+            self.availability,
+            crate::sema::traits::implementations::Availability::Validated
+        ) || self.report.package.source_core().is_none()
         {
             return Ok(false);
         }
         let Some(catalog) = self.facts.source_bindings.as_deref() else {
             return Ok(false);
         };
-        if catalog.language(crate::support::bindings::LangItem::PanicLocation).is_some() {
+        if catalog
+            .language(crate::support::bindings::LangItem::PanicLocation)
+            .is_some()
+        {
             return Ok(false);
         }
-        catalog.require_provider_report(self.report)
+        catalog
+            .require_provider_report(self.report)
             .map_err(|error| self.error(self.state.body.node, error))?;
         Ok(true)
     }

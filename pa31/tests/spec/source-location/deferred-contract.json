@@ -1,0 +1,27 @@
+{
+  "state": "FROZEN_BEFORE_OBSERVATION",
+  "source": "pa31/tests/spec/source-location/deferred-tracking.rs",
+  "source_sha256": "0ff79e6ce52faa09428f917cec1af96361cc7f56f51bd058a7f86074f716b849",
+  "rustc": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+  "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "panic": "abort",
+  "expected": {
+    "metadata": 0,
+    "object": "boundary: missing genuine panic_location provider expected; do not infer invalid Rust",
+    "native": "only if actual object succeeds; stdout73 newline/status0"
+  },
+  "candidate": {
+    "metadata": 0,
+    "reached": "must reject missing genuine Location data; no fabricated caller seal"
+  },
+  "observed": {
+    "metadata_status": 0,
+    "object_status": 1,
+    "object_error": "requires `panic_location` lang_item",
+    "native": "not reached; actual missing genuine data provider boundary"
+  },
+  "oracle_result_sha256": "5c0648d258e0570372597bfc97f92f2a87f57c03a6d74bd559a7eafe1beb8988",
+  "scope": "Real source runtime-only tracked implementation. Metadata typing does not grant reached caller data; no Location substitute."
+}
