@@ -95,7 +95,8 @@ impl Checker<'_> {
             .map_err(|e| self.error(key, e))?;
         constraints.coerce(base, target, false, 0).map_err(error)?;
         constraints.coerce(target, base, false, 0).map_err(error)?;
-        constraints.solve().map_err(error)
+        constraints.solve().map_err(error)?;
+        Ok(())
     }
     pub(super) fn prepare_inherent_owners(
         &mut self,

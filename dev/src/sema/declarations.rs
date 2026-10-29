@@ -61,7 +61,7 @@ pub(in crate::sema) use traits::validate_impl_requirements_prepared;
 mod unreduced;
 mod validation;
 use super::{
-    model::{Declarations, Function, Initializer, InitializerKind},
+    model::{Declarations, Initializer, InitializerKind},
     regions::{self, BinderId, Position, Regions},
 };
 use crate::{
