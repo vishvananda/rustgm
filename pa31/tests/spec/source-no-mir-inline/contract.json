@@ -173,6 +173,7 @@
     "rust_object": 0,
     "candidate_v7_export": 0,
     "fresh_client_inline_hint": "Always",
-    "scope": "Unchanged actual v7 provider prefix plus authored marker-bearing function; no current MIR inlining consumer or optimization permission from absent wire data. Independent supplemental observation pending."
+    "scope": "Unchanged actual v7 provider prefix plus authored marker-bearing function; actual independent metadata/object both0. No current MIR inlining consumer or optimization permission from absent wire data.",
+    "independent_receipt_sha256": "4780d1fab15644afaddc9003e2adef1875b11e927ede2e924e224c5442eca6e2"
   }
 }

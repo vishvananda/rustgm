@@ -1,6 +1,7 @@
 //! MIR-only prohibition validates source contracts without changing other hints.
 use super::*;
 use crate::{pipeline, sema::header_attributes, test_source};
+use std::fmt::Write as _;
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 fn input(name: &str) -> TestResult<String> {
     Ok(test_source::fixture(&format!(
@@ -205,7 +206,7 @@ fn transient_owner_work_is_linear_and_existing_hot_widths_do_not_grow() -> TestR
     for width in [8, 32, 128] {
         let mut source = "#![feature(rustc_attrs)]\n".to_owned();
         for index in 0..width {
-            source.push_str(&format!("#[rustc_no_mir_inline]fn f{index}()->u8{{7}}\n"));
+            writeln!(source, "#[rustc_no_mir_inline]fn f{index}()->u8{{7}}")?;
         }
         let report = test_source::resolve(&source, true)?;
         let analysis = pipeline::analyze_source(&report)?;
