@@ -1636,7 +1636,7 @@ impl Checker<'_> {
                     self.facts
                         .function_indices
                         .insert(id, self.facts.functions.len());
-                    self.facts.functions.push(Function {
+                    let function = Function {
                         definition: id,
                         node: key,
                         signature: ty,
@@ -1645,7 +1645,9 @@ impl Checker<'_> {
                             file: key.file,
                             node,
                         }),
-                    });
+                    };
+                    self.publish_exact_method_receiver(&function)?;
+                    self.facts.functions.push(function);
                     self.validate_published_intrinsic(key)?;
                     let item = self.intern(
                         key,

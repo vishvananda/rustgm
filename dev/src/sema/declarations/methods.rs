@@ -3,38 +3,60 @@ use super::{BinderId, Checker, DefId, Error, NodeKey, Type, TypeId, regions};
 use crate::{resolve::model::DefKind, sema::associated::OwnerKind};
 
 impl Checker<'_> {
-    pub(super) fn validate_method_receiver(
-        &mut self,
+    fn actual_method_receiver(
+        &self,
         function: &crate::sema::model::Function,
-    ) -> Result<(), Error> {
-        let Some(schema) = self.facts.associated.schema(function.definition) else {
-            return Ok(());
-        };
+    ) -> Option<(NodeKey, crate::sema::associated::Receiver, TypeId)> {
+        let target = self.facts.associated.schema(function.definition)?.self_type;
         let unit = self.report.package.unit(function.node.file);
-        let Some(node) = unit
+        let node = unit
             .configured
             .ast
             .list(function.parameters)
             .iter()
             .copied()
-            .find(|node| unit.configured.active[node.get() as usize])
-        else {
-            return Ok(());
-        };
+            .find(|node| unit.configured.active[node.get() as usize])?;
         let key = self.unattributed(NodeKey {
             node,
             ..function.node
         });
-        let Some(receiver) = self.facts.receivers.get(&key) else {
+        Some((key, *self.facts.receivers.get(&key)?, target))
+    }
+    pub(super) fn publish_exact_method_receiver(
+        &mut self,
+        function: &crate::sema::model::Function,
+    ) -> Result<(), Error> {
+        if self
+            .actual_method_receiver(function)
+            .is_some_and(|(_, receiver, target)| receiver.base == target)
+        {
+            self.validate_method_receiver(function)?;
+        }
+        Ok(())
+    }
+    pub(super) fn validate_method_receiver(
+        &mut self,
+        function: &crate::sema::model::Function,
+    ) -> Result<(), Error> {
+        let Some((key, receiver, target)) = self.actual_method_receiver(function) else {
             return Ok(());
         };
+        if receiver.base != target {
+            self.validate_distinct_receiver(function, key, receiver.base, target)?;
+        }
         self.facts
             .methods
             .receivers
             .insert(function.definition, (receiver.ty, receiver.references));
-        if receiver.base == schema.self_type {
-            return Ok(());
-        }
+        Ok(())
+    }
+    fn validate_distinct_receiver(
+        &self,
+        function: &crate::sema::model::Function,
+        key: NodeKey,
+        base: TypeId,
+        target: TypeId,
+    ) -> Result<(), Error> {
         let error = |e| self.error(key, format!("receiver type does not match Self: {e}"));
         let lifetimes = self.facts.lifetimes.functions.get(&function.definition);
         let mut constraints = crate::types::relations::Constraints::new(
@@ -72,13 +94,12 @@ impl Checker<'_> {
             )
             .map_err(|e| self.error(key, e))?;
         constraints
-            .coerce(receiver.base, schema.self_type, false, 0)
+            .coerce(base, target, false, 0)
             .map_err(error)?;
         constraints
-            .coerce(schema.self_type, receiver.base, false, 0)
+            .coerce(target, base, false, 0)
             .map_err(error)?;
-        constraints.solve().map_err(error)?;
-        Ok(())
+        constraints.solve().map_err(error)
     }
     pub(super) fn prepare_inherent_owners(
         &mut self,
@@ -169,5 +190,52 @@ impl Checker<'_> {
             .schema(id)
             .ok_or_else(|| self.error(key, "missing associated Self type"))?;
         self.lexical_self_type(key, id, context, schema.self_type, schema.captures)
+    }
+}
+
+#[cfg(test)]
+mod receiver_tests {
+    use super::*;
+
+    #[test]
+    fn exact_source_self_publishes_only_after_receiver_proof_and_keeps_distinct_arguments_pending()
+    -> Result<(), Box<dyn std::error::Error>> {
+        let source = crate::test_source::fixture("pa31/tests/spec/source-location/caller-location.rs")?;
+        let report = crate::test_source::source_provider(&source, "receiver_publication")?;
+        let mut checker = Checker::new(&report)?;
+        checker.run()?;
+        let function = checker.facts.functions.iter().copied().find(|function| {
+            report.package.names.get(report.resolution.definitions[function.definition.0 as usize].name) == "line"
+        }).ok_or("actual Location line method")?;
+        let (key, original, target) = checker.actual_method_receiver(&function)
+            .ok_or("actual typed receiver")?;
+        assert_eq!(original.base, target);
+        checker.facts.methods.receivers.remove(&function.definition);
+        checker.publish_exact_method_receiver(&function)?;
+        assert_eq!(checker.facts.methods.receivers.get(&function.definition),
+            Some(&(original.ty, original.references)));
+        let Some(Type::Adt(item, _)) = checker.facts.types.kind(target) else {
+            return Err("actual nominal Self".into());
+        };
+        let arguments = checker.facts.types.intern_arguments(&[
+            crate::types::arguments::Argument::Lifetime(crate::types::RegionId::STATIC)])?;
+        let distinct = checker.facts.types.intern(Type::Adt(item, arguments))?;
+        assert_ne!(distinct, target);
+        checker.facts.methods.receivers.remove(&function.definition);
+        checker.facts.receivers.insert(key, crate::sema::associated::Receiver {
+            base: distinct, ..original
+        });
+        checker.publish_exact_method_receiver(&function)?;
+        assert!(!checker.facts.methods.receivers.contains_key(&function.definition));
+        checker.facts.receivers.insert(key, crate::sema::associated::Receiver {
+            base: TypeId::primitive(crate::types::Primitive::U8), ..original
+        });
+        assert!(checker.validate_method_receiver(&function).is_err());
+        assert!(!checker.facts.methods.receivers.contains_key(&function.definition));
+        checker.facts.receivers.insert(key, original);
+        checker.validate_method_receiver(&function)?;
+        assert_eq!(checker.facts.methods.receivers.get(&function.definition),
+            Some(&(original.ty, original.references)));
+        Ok(())
     }
 }
