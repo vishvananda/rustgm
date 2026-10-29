@@ -1,0 +1,141 @@
+{
+  "state": "frozen before independent/candidate observation",
+  "owning": "PA31 authenticated internal source annotations + PA12 transparent representation; PA29 transport remains Required",
+  "profile": {
+    "rustc": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": true,
+    "panic": "abort"
+  },
+  "primary": [
+    "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_passes/src/check_attr.rs#L1479",
+    "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir_analysis/src/check/check.rs#L1682"
+  ],
+  "cases": [
+    {
+      "source": "record.rs",
+      "rust_status": 0,
+      "candidate": "accept"
+    },
+    {
+      "source": "tuple-enum.rs",
+      "rust_status": 0,
+      "candidate": "accept"
+    },
+    {
+      "source": "generated.rs",
+      "rust_status": 0,
+      "candidate": "accept"
+    },
+    {
+      "source": "inactive.rs",
+      "rust_status": 0,
+      "candidate": "accept"
+    },
+    {
+      "source": "missing-gate.rs",
+      "rust_status": 1,
+      "candidate": "reject"
+    },
+    {
+      "source": "missing-repr.rs",
+      "rust_status": 1,
+      "candidate": "reject"
+    },
+    {
+      "source": "repr-c.rs",
+      "rust_status": 1,
+      "candidate": "reject"
+    },
+    {
+      "source": "function.rs",
+      "rust_status": 1,
+      "candidate": "reject"
+    },
+    {
+      "source": "field.rs",
+      "rust_status": 1,
+      "candidate": "reject"
+    },
+    {
+      "source": "crate.rs",
+      "rust_status": 1,
+      "candidate": "reject"
+    },
+    {
+      "source": "arguments.rs",
+      "rust_status": 1,
+      "candidate": "reject"
+    },
+    {
+      "source": "empty-arguments.rs",
+      "rust_status": 1,
+      "candidate": "reject"
+    },
+    {
+      "source": "value-argument.rs",
+      "rust_status": 1,
+      "candidate": "reject"
+    },
+    {
+      "source": "unsafe-wrapper.rs",
+      "rust_status": 1,
+      "candidate": "reject"
+    },
+    {
+      "source": "two-fields.rs",
+      "rust_status": 1,
+      "candidate": "reject"
+    },
+    {
+      "source": "private-field.rs",
+      "rust_status": 1,
+      "candidate": "reject"
+    },
+    {
+      "source": "two-variants.rs",
+      "rust_status": 1,
+      "candidate": "reject"
+    },
+    {
+      "source": "duplicates.rs",
+      "rust_status": 1,
+      "candidate": "reject"
+    }
+  ],
+  "native": {
+    "source": "record.rs",
+    "observer": "observer.c",
+    "status": 0,
+    "stdout": "7\n",
+    "stderr": ""
+  },
+  "required": [
+    "transparent record metadata retaining external private-field eligibility",
+    "rustdoc public transparency rendering",
+    "broader repr_transparent_external_private_fields advisory parity"
+  ],
+  "files": {
+    "arguments.rs": "ef64fa3551184968e6bb0406212bb6f78daaffa5250c70554933079c15c58301",
+    "crate.rs": "6a5574f1d7d3ce30a24ad1b5c8f0089ca40b367b31d77f2db8b80f6a0fb28c51",
+    "empty-arguments.rs": "54f32d29281eee954d0a08200f4d804d875f650f8ab8e6fe551624c2cbc40649",
+    "field.rs": "92bca5a1c6e29536e532e20913d6553cbfe6793591252982c8b72ec50733b607",
+    "function.rs": "50426bed183cf73c9c367717aa008129eed34c5cd381960d951a91828e32894c",
+    "generated.rs": "279e37e187eb6f4efacd2876036ade7fe97f0dabdfd5ac4bc22f3ef971117e51",
+    "inactive.rs": "caf63858ef0169d877c933287a74982d09fc9752ab96dd4ac8f762ecffa7b68e",
+    "missing-gate.rs": "3ace0dc2df952fe03cdbe394ee6818f8776a98657afc96e13b4276d7e390a119",
+    "missing-repr.rs": "7187b16d3eb3b65f5f48afcc45a2a11e17bc2bbb6daefc61cf755f85e2e7309f",
+    "observer.c": "dc114c458cbf1b8333b8522a120c4553b4bf34c192488afcea4d706f30dfd63a",
+    "private-field.rs": "f57e75b6ba0d8a5c459df833ed1d58e6933927b1c4da90cf40ed5aed93219e14",
+    "record.rs": "d6bf9f8674f1d3a312f70fbb7828dd29d77037077e8d440b31aa495dfd66c817",
+    "repr-c.rs": "011c258876cd3c7e85ee638c47c80597b5f86764b275a7903b6e8222cef44996",
+    "tuple-enum.rs": "caa7d8bb5b17d86e0beff35ade7edc8e1b7f4a692cb3e2174caf7dad6c8a478a",
+    "two-fields.rs": "9de88c37789a9fb4fa0b0ad2ce6549bd030d8c1a7f48fdc3b3bc718208f91c96",
+    "two-variants.rs": "03414663680e08f350bc9fec3b4399d10eb8ac55681e9c76852139da9cd852bd",
+    "unsafe-wrapper.rs": "2fdd2ab2a9b8e63af3485621908105cec8e0acc4381db5fa444107b83a6642c2",
+    "value-argument.rs": "d2cc26392833d2e0bb36571c94abc7119c3602cd96f547e452f7a4e1ad5b21e8",
+    "duplicates.rs": "6d5c522efbdc24db8e15f2d1feda006117be8c1711a9d64f9493a07afa1f62cb"
+  },
+  "successor": "v2 adds independently observed hard duplicate rejection; original17/raworacle retained under oracle-v1/frozen"
+}

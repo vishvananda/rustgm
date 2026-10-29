@@ -1,4 +1,8 @@
 //! Interpret retained nominal attributes without reparsing item source.
+#[cfg(test)]
+#[path = "../../tests/invariants/transparency_claims.rs"]
+mod tests;
+mod transparency_promises;
 use super::model::Declarations;
 use crate::{
     lex::token::Punctuation,
@@ -47,15 +51,24 @@ pub(super) fn analyze(
             while let Kind::Attributed { value, .. } = unit.configured.ast.node(node).kind {
                 node = value;
             }
-            let Kind::Item(item) = unit.configured.ast.node(node).kind else {
-                continue;
-            };
-            if matches!(
-                unit.configured.ast.items[item as usize].kind,
+            let key = NodeKey { file, node };
+            let attributes = if matches!(unit.configured.ast.node(node).kind,
+                Kind::Item(item) if matches!(unit.configured.ast.items[item as usize].kind,
                 ItemKind::Struct { .. } | ItemKind::Enum { .. } | ItemKind::Union { .. }
-            ) {
-                let key = NodeKey { file, node };
-                representations.insert(key, parse(report, key, index, &mut allowances)?);
+            )) {
+                Some(parse(report, key, index, &mut allowances)?)
+            } else {
+                None
+            };
+            transparency_promises::validate(
+                report,
+                key,
+                index,
+                attributes.map(|attributes| attributes.repr),
+                &mut allowances,
+            )?;
+            if let Some(attributes) = attributes {
+                representations.insert(key, attributes);
             }
         }
     }

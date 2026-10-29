@@ -2,12 +2,12 @@
 
 The user has reauthorized up to two existing subagents. Root owns direct
 implementation, combined qualification and public main integration in
-`rustgm-pa25-work`. Worker `lint_expectations` in `rustgm-pa26-work` owns the
-genuine feature-predicate metadata v4 port. Its concrete Dispatcher caller-feature
-port, source caller materialization and completed-environment cache are integrated
-and locally/native qualified. Worker
-`const_call_review` in `rustgm-pa27-work` owns the next actual bounded derive
-header on `ManuallyDrop<T: ?Sized>` (LIB-070). Its ConstParamTy and tuple/record
+`rustgm-pa25-work`. Worker `lint_expectations` in `rustgm-pa26-work` has handed
+off exact source C linkage profile5, with private7 and separate provider/client
+native qualification; Root owns combined production/CLI integration. Shared
+schema/profile/ABI ownership is released for that join and nominal transport.
+Worker `const_call_review` in `rustgm-pa27-work` owns the next actual union Copy
+derive on `MaybeUninit<T>` (LIB-072). Its bounded headers, ConstParamTy and tuple/record
 Default source/native exits are integrated and qualified. Its authentic source `prelude_import` selection/lookup and previous
 source attribute capture/repeated-effect validation are integrated and qualified. Broader advisory lint producers are deferred unless
 needed for compilation. Preserve `allow`, `deny`, `forbid`, `expect` and separate
@@ -19,13 +19,14 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The qualified CLI `34e7c52f` retains separate strict/explicit-Allow observations
+The qualified CLI `048223c6` retains separate strict/explicit-Allow observations
 with all722 source pins and target args unchanged. Strict opens68 at the deferred
-pointer-cast lint expectation; Allow passes the original Saturating tuple Default
-boundary and opens373 at bounded `ManuallyDrop<T: ?Sized>` derive formals
-(`mem/manually_drop.rs158`). [Tuple Default and lexical Self](pa31-tuple-default-checkpoint.md)
-pass15 exact controls in127.83s, including both strict modes and three actual CI
-contract repairs; genuine ordered native defaults match Rust. [Block-owned source derives](pa31-block-owned-derive-checkpoint.md)
+pointer-cast lint expectation; Allow passes bounded ManuallyDrop headers and
+opens373 at Copy derivation on the actual MaybeUninit union
+(`mem/maybe_uninit.rs353`). [Bounded headers/public transparency](pa31-bounded-derive-transparency.md)
+pass15 exact controls in156.66s, including both strict modes; genuine ordered
+native defaults and the public-transparent record match Rust. Full CI40805449339
+on the preceding fdb checkpoint is green. [Block-owned source derives](pa31-block-owned-derive-checkpoint.md)
 and [source prelude](pa31-source-prelude-integration.md) have real independently
 matched native exits. Loading counts are not monotonic compilation progress.
 No original artifact or whole assignment exists.

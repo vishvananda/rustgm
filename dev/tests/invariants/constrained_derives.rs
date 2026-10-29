@@ -65,7 +65,7 @@ fn original_manually_drop_preserves_four_members_and_relaxed_bound() -> TestResu
 fn bounded_type_const_defaults_and_where_calls_reach_ordered_native_bodies() -> TestResult {
     let input = fixture("generic-source")?;
     let report = test_source::source_provider(&input, "bounded_derive")?;
-    check_actual_headers(&report, input.len())?;
+    check_actual_headers(&report)?;
     let crate::pipeline::Analysis {
         mut facts,
         prepared,
@@ -95,10 +95,45 @@ fn bounded_type_const_defaults_and_where_calls_reach_ordered_native_bodies() -> 
     )?;
     Ok(())
 }
-fn check_actual_headers(report: &super::super::super::Report, original: usize) -> TestResult {
+fn tested_expansions(
+    report: &super::super::super::Report,
+) -> TestResult<Vec<crate::syntax::token_tree::Span>> {
+    let unit = &report.package.units[0];
+    let ast = &unit.configured.ast;
+    let entries = &report
+        .attribute_effects
+        .as_deref()
+        .and_then(|effects| effects.derives.as_deref())
+        .ok_or("actual constrained derives")?
+        .entries;
+    let mut ranges = Vec::new();
+    for entry in entries {
+        assert_eq!(entry.owner.file.0, 0);
+        let mut node = entry.owner.node;
+        while let Kind::Attributed { value, .. } = ast.node(node).kind {
+            node = value;
+        }
+        let Kind::Item(index) = ast.node(node).kind else {
+            return Err("actual derive declaration".into());
+        };
+        let name = ast.items[index as usize]
+            .name
+            .ok_or("actual derived name")?;
+        let name = &unit.source.text()[name.start as usize..name.end as usize];
+        if matches!(name, "Bounded" | "ConstHolder" | "Unsized" | "Borrowed") {
+            report.expanded_derive(entry.owner, entry.effect)?;
+            ranges.push(report.invocations[entry.invocation].generated);
+        }
+    }
+    assert_eq!(ranges.len(), 4);
+    Ok(ranges)
+}
+
+fn check_actual_headers(report: &super::super::super::Report) -> TestResult {
     use crate::syntax::item::ItemKind;
     let unit = &report.package.units[0];
     let ast = &unit.configured.ast;
+    let ranges = tested_expansions(report)?;
     let mut count = 0;
     for node in &ast.nodes {
         let Kind::Item(index) = node.kind else {
@@ -108,7 +143,11 @@ fn check_actual_headers(report: &super::super::super::Report, original: usize) -
         let ItemKind::Impl { ty, .. } = item.kind else {
             continue;
         };
-        if (node.span.start as usize) < original || ast.list(item.generics).is_empty() {
+        if !ranges
+            .iter()
+            .any(|range| range.start <= node.span.start && node.span.end <= range.end)
+            || ast.list(item.generics).is_empty()
+        {
             continue;
         }
         let application = if let Kind::Path { segments, .. } = ast.node(ty).kind {

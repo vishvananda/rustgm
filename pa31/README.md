@@ -36,6 +36,15 @@ records current hard source boundaries and qualified checkpoint scope. Preserve
 real diagnostic policy while using explicit capped observations to prioritize
 compilation; deferred advisory producers and strict qualification remain required.
 
+Source-derived impl headers preserve parsed type/lifetime/const formals and
+where constraints, omitting declaration defaults from impl parameters. The
+[bounded derive checkpoint](../docs/pa31-bounded-derive-transparency.md) retains
+the real ManuallyDrop source and its remaining full-runtime requirements.
+`rustc_pub_transparent` requires authenticated internal-attribute permission,
+word form, a unique active owner marker and checked `repr(transparent)`; it does
+not expose fields. Its external private-field eligibility must survive metadata
+before transparent source types can cross that boundary.
+
 An authored `prelude_import` requires its distinct crate feature and actual use
 owner. Select the genuine module separately from ordinary lexical globs; preserve
 lookup precedence, private binding lineage, hygiene and `no_implicit_prelude`,
