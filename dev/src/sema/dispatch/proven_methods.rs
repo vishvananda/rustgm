@@ -76,6 +76,7 @@ pub(in crate::sema) fn selected_definition(
         let header = registry
             .header(implementation)
             .ok_or("caller selection lost its implementation header")?;
+        facts.charge_caller_inputs(header.methods.len().max(1).ilog2() as usize + 1, 0)?;
         if header
             .methods
             .binary_search_by_key(&declaration.0, |(member, _)| member.0)
