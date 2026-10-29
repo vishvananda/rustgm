@@ -3,11 +3,13 @@
 Root owns compiler integration, current-source CLI/original-core observations and
 publication in `rustgm-pa25-work`. B (`lint_expectations`) has completed
 qualified09aa611d associated-equality and af21533d image-accounting handoffs; both
-are integrated. It is investigating the next exact counter after StepBy still
-hits the unchanged macro budget. C's model became unavailable and was interrupted. Root completed
-its exact item/opened-call repair directly in `rustgm-pa27-work`, qualified9
-controls and native const1, committed3afc71e6 and integrated it. Do not restart C
-or edit that tree concurrently without a new ownership handoff.
+are integrated. Its next diagnosis isolates genuine work exhaustion at StepBy;
+it now owns explicit finite resource inputs in Config/State/Loader/driver.
+Private8 passes61.77s; CLI qualification is pending. Root completed the earlier
+interrupted item/opened-call repair directly in `rustgm-pa27-work`, qualified9
+controls and native const1, and integrated3afc71e6. That tree has now been handed
+back to C (`const_call_review`) for the narrow auto-trait metadata migration
+described in the live queue. Root must not edit C's metadata files concurrently.
 
 The joined45 consumer gate passes149.22s, including the real Debug array
 consumer. Its seven source-native programs match the pinned Rust observations,
@@ -15,15 +17,17 @@ and upstream/registration/layout pass; receipt e7e17d565c057982e5bb0ea10a58871c5
 The later capacity-accounting integration passes joined48 in148.85s and
 production/CLI2 in109.78s. All7 native inputs are byte-identical to the qualified
 programs; equality receipt23cb88d09d859c515bb57180827030917a1f050ea147d9aa8756269726ff7eef.
-New CLI8ee48985 still hits a source budget at StepBy (file154:512), so the next
-exhausted counter and true whole-crate costs remain to diagnose. Do not claim a new whole
-library artifact from these finite controls.
+CLI8ee48985 hits work1,000,004 >1,000,000 at StepBy (file154:512), with attempted
+storage60,099,511 <64MiB. The next observer will bind an explicit work14,500,624
+allowance, preserving64MiB attempted/retained limits and all original sources
+and target flags. This is a changed resource profile, not a speedup or an
+unchanged-default result. Do not claim a whole library artifact from these controls.
 
 Keep at most two heavy jobs globally, one per worktree, two Cargo/test threads,
-16GiB absolute output caps and150GiB free reserve. Root qualification and both original probes are terminal. B is preparing
-the next counter observation; coordinate its live job before Root admission. Preserve warm caches/current pins and scoped cleanup.
-No new workers or worktrees are needed. Use existing B for the current macro-budget diagnosis and next distinct
-actual core blocker. Report actual terminal before
+16GiB absolute output caps and150GiB free reserve. B owns resource-input qualification;
+C owns the metadata repair; Root owns observer profiles, integration and publication.
+Coordinate actual live jobs before admission. Preserve warm caches/current pins
+and scoped cleanup. No new workers or worktrees are needed. Report actual terminal before
 reusing a slot; neither an observation timeout nor a stale session alias is one.
 
 Compilation has priority over advisory lint parity. Preserve real `allow`,
@@ -36,7 +40,11 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-Public0fa08bc full CI40815003815 remains green. The qualified pre-capacity CLI
+Public8dc4091eb fast CI40834845453 passes. Full CI40835039063 fails three
+auto-trait source-inventory/legacy-encoding checks; architecture, harness and
+the independent host graph pass. C owns the explicit semantic migration; no
+golden will be regenerated or false source premise restored. The earlier
+public0fa08bc full CI40815003815 is green. The qualified pre-capacity CLI
 1b626052 passes MaybeUninit, FnPtr Debug7, Abi enum Default and DecodeUtf16's
 associated equality. Next it stops the source expansion accounting budget at
 iter/sources/from_coroutine.rs1098. All722 original hashes/effective target flags

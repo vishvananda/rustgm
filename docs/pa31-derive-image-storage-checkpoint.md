@@ -69,5 +69,22 @@ in109.78s. All7 source-native program inputs are byte-identical to their passing
 native observations. The resulting CLI8ee48985 preserves original722 hashes,
 target flags and all limits, but reports another source work/storage boundary at
 StepBy, iter/adapters/step_by.rs512. This observation does not establish that the
-whole original macro budget is now sufficient. The exact next counter/caller and
-genuine whole-crate costs remain to diagnose before any further policy change.
+whole original macro budget is now sufficient.
+
+The next diagnosis isolates work: 1,000,004 attempted steps exceed the unchanged
+1,000,000 limit. Attempted storage is 60,099,511 bytes, below 64 MiB; retained
+storage has not failed. The failing seven-step charge scans StepBy's Debug
+header. The measured work is 532,351 for generation, 225,626 for panic delegation
+and 242,027 for other header/provenance/receipt work. Actual copying, capacity
+relocation, token initialization, lexing and parsing remain distinct linear
+costs; this diagnosis does not establish another duplicate charge to remove.
+Raw diagnosis is B's `obj/parallel/source-macro-budget-v2/diagnosis.json`
+(SHA256 `74f1557864d4be8d3c1d3ccdfac0237c375c3d0e940323924bc5410bd113470d`).
+
+The next compilation experiment uses explicit finite resource inputs, retaining
+the old defaults and charging every attempted operation. The selected work
+ceiling is 14,500,624, equal to the physical bytes of the 373 source files opened
+by the predecessor. This is an input-derived experimental allowance, not the
+measured total work of a completed crate. Attempted and retained limits stay at
+64 MiB. Bind all three effective limits in the manifest, producer and result;
+never compare this changed-resource observation as an unchanged-default speedup.
