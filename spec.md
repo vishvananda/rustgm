@@ -774,6 +774,13 @@ whole-union copying never selects or reads an active payload field. See the
 [union checkpoint](docs/pa31-source-union-copy-checkpoint.md) for source/native
 and opposing field, privacy, safety and identity controls.
 
+Source union Clone emits the genuine TrivialClone marker and Clone impls, with
+Copy plus the relevant trait before the written bounds on each type formal.
+Retain lifetime/const/default/where syntax through the existing typed header
+walker. Its ordinary AssertParamIsCopy<Self> type check and `*self` body require
+real Copy evidence; helper spelling grants none. Generate no field reads, retain
+ordinary struct/enum rules and keep the output independent of union field count.
+
 Source Debug derives use the pinned small-field helpers through five fields,
 then real field-name and typed `&[&dyn Debug]` arrays with the larger helpers.
 Preserve source labels, field order, enum binding provenance and the extra

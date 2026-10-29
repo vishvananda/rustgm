@@ -14,6 +14,8 @@ pub(in crate::resolve) mod panic_contracts;
 mod pointee_claims;
 pub(super) mod policy;
 mod positions;
+#[path = "bindings/boundary_claims.rs"]
+mod range_claims;
 mod reservations;
 mod role_attributes;
 pub(crate) mod root_options;

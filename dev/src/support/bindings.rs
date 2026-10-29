@@ -83,9 +83,12 @@ pub enum LangItem {
     OffsetOf,
     ConstParamTy,
     UnsafeUnpin,
+    RangeMin,
+    RangeMax,
+    RangeSub,
 }
 impl LangItem {
-    pub const ALL: [Self; 67] = [
+    pub const ALL: [Self; 70] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -153,6 +156,9 @@ impl LangItem {
         Self::OffsetOf,
         Self::ConstParamTy,
         Self::UnsafeUnpin,
+        Self::RangeMin,
+        Self::RangeMax,
+        Self::RangeSub,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -224,12 +230,18 @@ impl LangItem {
             Self::OffsetOf => 64,
             Self::ConstParamTy => 65,
             Self::UnsafeUnpin => 66,
+            Self::RangeMin => 67,
+            Self::RangeMax => 68,
+            Self::RangeSub => 69,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
     #[must_use]
     pub fn from_name(name: &str) -> Option<Self> {
         match name {
+            "RangeMin" => Some(Self::RangeMin),
+            "RangeMax" => Some(Self::RangeMax),
+            "RangeSub" => Some(Self::RangeSub),
             "const_param_ty" => Some(Self::ConstParamTy),
             "sized" => Some(Self::Sized),
             "meta_sized" => Some(Self::MetaSized),

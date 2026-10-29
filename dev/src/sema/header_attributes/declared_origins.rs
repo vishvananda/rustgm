@@ -455,6 +455,8 @@ fn retained_role_site(report: &Report, key: NodeKey) -> bool {
                 LangItem::DynMetadata,
                 LangItem::ControlFlowContinue,
                 LangItem::ControlFlowBreak,
+                LangItem::RangeMin,
+                LangItem::RangeMax,
             ]
             .into_iter()
             .any(|role| {
@@ -487,6 +489,8 @@ pub(in crate::sema) fn pointee_source_image(
                 (LangItem::DiscriminantKind, DefKind::Trait),
                 (LangItem::DiscriminantType, DefKind::TypeAlias),
                 (LangItem::DynMetadata, DefKind::Struct),
+                (LangItem::RangeMin, DefKind::Const),
+                (LangItem::RangeMax, DefKind::Const),
             ]
             .into_iter()
             .any(|(role, kind)| reserved.language(role) == Some(declaration) && actual.kind == kind)

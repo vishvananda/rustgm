@@ -32,7 +32,7 @@ impl Checker<'_> {
         let Some(catalog) = self.facts.source_bindings.as_deref() else {
             return Ok(());
         };
-        let mut methods = Vec::new();
+        let mut declarations = Vec::new();
         for role in [
             crate::support::bindings::LangItem::Clone,
             crate::support::bindings::LangItem::FnOnce,
@@ -58,7 +58,7 @@ impl Checker<'_> {
                 .associated
                 .owner_members(owner)
                 .ok_or_else(|| self.error(declaration.origin, "source role has no members"))?;
-            methods.extend(
+            declarations.extend(
                 members
                     .iter()
                     .filter(|m| {
@@ -68,11 +68,20 @@ impl Checker<'_> {
                     .copied(),
             );
         }
-        if let Some(declaration) = catalog.language(crate::support::bindings::LangItem::DropGlue) {
-            methods.push(declaration.definition);
+        for role in [
+            crate::support::bindings::LangItem::RangeMin,
+            crate::support::bindings::LangItem::RangeMax,
+            crate::support::bindings::LangItem::RangeSub,
+        ] {
+            if let Some(declaration) = catalog.language(role) {
+                declarations.push(declaration.definition);
+            }
         }
-        for method in methods {
-            self.work.push(super::Work::Definition(method, false));
+        if let Some(declaration) = catalog.language(crate::support::bindings::LangItem::DropGlue) {
+            declarations.push(declaration.definition);
+        }
+        for declaration in declarations {
+            self.work.push(super::Work::Definition(declaration, false));
             self.drain(steps, limit)?;
         }
         crate::sema::compiler_items::validate_traits(self.report, &mut self.facts)

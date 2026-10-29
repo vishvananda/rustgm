@@ -2,6 +2,8 @@
 mod completion_set;
 mod copying;
 mod parameter_types;
+#[path = "roles/interval_members.rs"]
+pub(in crate::sema::compiler_items) mod range_members;
 pub(super) use completion_set::RoleSet;
 mod destructibility;
 mod freezing;
@@ -33,6 +35,7 @@ pub(super) struct Validated {
     pub(super) methods: [Option<DefId>; 3],
     pub(super) pointee: Option<std::rc::Rc<super::pointee::Contracts>>,
     pub(super) discriminant: Option<std::rc::Rc<super::discriminant::Contracts>>,
+    pub(super) range: Option<Box<range_members::Contracts>>,
 }
 impl Catalog {
     /// The declaration-validation ledger is complete and its retained catalog
@@ -121,6 +124,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         methods: [None; 3],
         pointee: None,
         discriminant: None,
+        range: None,
     };
     let mut callables = Vec::new();
     for role in TRAIT_ROLES {
@@ -182,6 +186,12 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         glue::validate(report, facts, catalog, declaration, complete.roles)?;
         complete.roles.insert(LangItem::DropGlue);
     }
+    complete.range = range_members::prepare(report, facts)?;
+    if complete.range.is_some() {
+        for role in range_members::ROLES {
+            complete.roles.insert(role);
+        }
+    }
     publish(report, facts, complete, &callables)
 }
 
@@ -219,6 +229,7 @@ fn require_distinct_pointee(
         || prior.roles != expected
         || prior.roles.intersects(roles)
         || prior.methods != [None; 3]
+        || prior.range.is_some()
     {
         return Err(Error::unlocated("source roles were validated twice"));
     }
@@ -277,6 +288,7 @@ fn publish(
     if let Some(prior) = catalog.traits.as_deref_mut() {
         prior.roles.extend(complete.roles);
         prior.methods = complete.methods;
+        prior.range = complete.range;
     } else {
         catalog.traits = Some(Box::new(complete));
     }
@@ -453,6 +465,7 @@ pub(super) fn complete_nominal(
             methods: [None; 3],
             pointee: None,
             discriminant: None,
+            range: None,
         })
     });
     if ledger.roles.contains(role) {

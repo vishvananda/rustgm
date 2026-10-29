@@ -94,6 +94,7 @@ pub(in crate::sema) fn selected_copying(
             methods: [None; 3],
             pointee: None,
             discriminant: None,
+            range: None,
         }));
     }
     Ok(())
@@ -176,6 +177,7 @@ pub(in crate::sema::compiler_items) fn traits(
         methods: [None; 3],
         pointee: None,
         discriminant: None,
+        range: None,
     }));
     Ok(())
 }

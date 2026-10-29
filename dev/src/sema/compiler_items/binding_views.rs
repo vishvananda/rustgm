@@ -27,6 +27,10 @@ impl From<Declaration> for Role {
         }
     }
 }
+#[expect(
+    clippy::large_enum_variant,
+    reason = "Both fixed source/import role tables are cold and comparably sized; inline storage avoids another allocation"
+)]
 pub(super) enum Bindings {
     Provider([Option<Declaration>; LangItem::ALL.len()]),
     Imported(Imported),
@@ -359,7 +363,8 @@ fn charge(work: &mut usize, count: usize) -> Result<(), &'static str> {
 }
 fn role_kind(role: LangItem) -> DefKind {
     match role {
-        LangItem::CloneFn
+        LangItem::RangeSub
+        | LangItem::CloneFn
         | LangItem::DropGlue
         | LangItem::Panic
         | LangItem::PanicFmt
@@ -386,7 +391,10 @@ fn role_kind(role: LangItem) -> DefKind {
         | LangItem::PanicLocation
         | LangItem::PanicInfo
         | LangItem::AllocLayout => DefKind::Struct,
-        LangItem::MemSizeConst | LangItem::MemAlignConst => DefKind::Const,
+        LangItem::MemSizeConst
+        | LangItem::MemAlignConst
+        | LangItem::RangeMin
+        | LangItem::RangeMax => DefKind::Const,
         LangItem::FnOnceOutput | LangItem::MetadataType | LangItem::DiscriminantType => {
             DefKind::TypeAlias
         }
