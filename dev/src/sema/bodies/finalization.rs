@@ -133,11 +133,9 @@ impl Checker<'_> {
         &mut self,
         publication: &mut Publication,
     ) -> Result<Option<Dependency>, Error> {
+        // Declarations also types a genuinely demanded const-function body.
+        // The ordinary whole-body pass uses Validated and stays outside here.
         if !matches!(
-            self.state.completion,
-            super::readiness::Completion::Anonymous { .. }
-                | super::readiness::Completion::Initializer(_)
-        ) || !matches!(
             self.availability,
             crate::sema::traits::implementations::Availability::Declarations
         ) || self.facts.source_bindings.is_none()
