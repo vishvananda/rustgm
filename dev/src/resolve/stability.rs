@@ -151,6 +151,21 @@ impl Library {
     pub(super) fn publish(&mut self, inventory: Inventory) {
         self.inventory = Some(inventory);
     }
+    /// Imported feature requests affect this caller, not its exported API policy.
+    pub(crate) fn require_plain_metadata(&self) -> Result<(), &'static str> {
+        let inventory = self
+            .inventory
+            .as_ref()
+            .ok_or("library stability inventory is incomplete")?;
+        if self.staged
+            || !inventory.policies.is_empty()
+            || !inventory.implications.is_empty()
+            || inventory.consts.is_some()
+        {
+            return Err("library stability metadata export is not implemented");
+        }
+        Ok(())
+    }
 }
 /// Completed declaration policies. Numerical IDs belong to this resolved package.
 pub struct Inventory {

@@ -158,10 +158,8 @@ fn validate_profile(
             "contextual aggregate field metadata is not implemented",
         ));
     }
-    if report.package.library_policy().is_some() {
-        return Err(error(
-            "library stability metadata export is not implemented",
-        ));
+    if let Some(library) = report.package.library_policy() {
+        library.require_plain_metadata().map_err(error)?;
     }
     if facts
         .crates
