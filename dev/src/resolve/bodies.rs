@@ -569,7 +569,11 @@ impl Resolver<'_> {
         if let Lookup::Associated(owner, start) | Lookup::Member(_, owner, start) = found {
             self.associated_path(c, node, start, &path, ns, owner)?;
         }
-        self.record_availability(NodeKey { file: c.file, node }, availability.as_ref())?;
+        self.record_availability(
+            NodeKey { file: c.file, node },
+            availability.as_ref(),
+            target,
+        )?;
         self.recycle_path(path);
         self.facts.references.push(Reference {
             scope: c.scope,

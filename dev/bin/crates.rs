@@ -21,6 +21,10 @@ impl Options {
             return Err("duplicate --source-profile".into());
         }
         match value {
+            Some("module-compatibility-v6") => {
+                self.source_profile =
+                    Some(rustgm::lower::instances::SourcePublication::ModuleCompatibility);
+            }
             Some("module-definitions-v5") => {
                 self.source_profile =
                     Some(rustgm::lower::instances::SourcePublication::ModuleDefinitions);
@@ -39,7 +43,7 @@ impl Options {
             }
             _ => {
                 return Err(
-                    "--source-profile requires module-contracts-v2, module-availability-v3, module-definitions-v5 or provided-contracts-v1".into(),
+                    "--source-profile requires module-contracts-v2, module-availability-v3, module-definitions-v5, module-compatibility-v6 or provided-contracts-v1".into(),
                 );
             }
         }

@@ -12,3 +12,10 @@ borrow-promotion exit remains explicitly Required in the initial RustGM source-h
 checkpoint; no permanent storage or fake promotion is granted. The missing-pair,
 nonconst and unsafe-call controls remain language failures. Other const-policy owners
 and foreign promotion transport retain their existing explicit unsupported boundaries.
+
+`borrow-required.rs` exercises a runtime `&word()` return, rather than a const
+initializer. The marked form is Rust-positive; `borrow-unmarked.rs` retains the
+explicit const initializer but removes only the actual `word` marker and fails
+E0515. Candidate tests must demand the `borrowed` function body through lowering;
+header/source analysis alone is not a promotion observation. Genuine marked
+function-call promotion remains an explicit consumer requirement.

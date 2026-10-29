@@ -277,6 +277,7 @@ pub enum SourcePublication {
     ModuleAvailability,
     ModuleFeaturePredicates,
     ModuleDefinitions,
+    ModuleCompatibility,
     ProvidedContracts,
 }
 
@@ -358,7 +359,8 @@ pub fn build_source_library_profile(
                 SourcePublication::ModuleContracts
                 | SourcePublication::ModuleAvailability
                 | SourcePublication::ModuleFeaturePredicates
-                | SourcePublication::ModuleDefinitions => source.complete_module_policy_payload(
+                | SourcePublication::ModuleDefinitions
+                | SourcePublication::ModuleCompatibility => source.complete_module_policy_payload(
                     modules.ok_or_else(|| {
                         diagnostic(
                             report,

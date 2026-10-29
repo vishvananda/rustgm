@@ -1,6 +1,7 @@
 //! Local library availability is distinct from language and const-call permission.
 mod attributes;
 pub(in crate::resolve) mod availability_imports;
+mod compatibility_notes;
 mod constness;
 mod exported_scopes;
 mod implications;
@@ -31,10 +32,20 @@ pub(crate) enum PolicyKind {
 #[derive(Debug)]
 pub enum Level {
     Stable(Since),
+    StableWithCompatibility {
+        since: Since,
+        note: Box<ModuleCompatibility>,
+    },
     Unstable {
         issue: Option<NonZeroU32>,
         reason: Option<Box<str>>,
     },
+}
+/// The message is opaque user-facing guidance, never an enabling feature or path.
+#[derive(Debug)]
+pub struct ModuleCompatibility {
+    pub message: Box<str>,
+    pub span: crate::syntax::token_tree::Span,
 }
 impl Level {
     fn unstable(&self) -> bool {
@@ -113,6 +124,9 @@ impl Library {
         for policy in &inventory.policies {
             let reason = match &policy.level {
                 Level::Stable(_) => 0,
+                Level::StableWithCompatibility { note, .. } => {
+                    size_of::<ModuleCompatibility>().saturating_add(note.message.len())
+                }
                 Level::Unstable { reason, .. } => reason.as_deref().map_or(0, str::len),
             };
             budget.charge(0, policy.feature.len().saturating_add(reason))?;
@@ -234,7 +248,13 @@ impl Draft {
     }
 }
 pub(super) use attributes::collect;
-pub(crate) use availability_imports::check as check_imported_api;
+pub(crate) use availability_imports::{
+    check as check_imported_api, declaration_deprecation_absent,
+    visit_warnings as visit_compatibility_warnings,
+};
+pub(in crate::resolve) use compatibility_notes::{
+    collect as collect_compatibility, finish as finish_compatibility,
+};
 pub(super) use inventory::complete;
 
 #[cfg(test)]

@@ -1219,6 +1219,7 @@ impl Checker<'_> {
         else {
             return Err(self.error(key, "type path needs a resolved declaration"));
         };
+        super::deprecation::compatibility(self.report, &mut self.facts, Some((key, id)))?;
         let kind = self.report.resolution.definitions[id.0 as usize].kind;
         if kind == DefKind::TypeAlias && self.facts.associated.owner(id).is_some() {
             return Err(self.error(

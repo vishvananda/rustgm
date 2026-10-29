@@ -476,86 +476,115 @@ fn claims(
                 .map_err(|_| Error::at(FileId(0), 0, "source file space exhausted"))?,
         );
         for owner in unit.configured.owners.iter().filter(|o| o.enabled) {
-            let mut node = owner.node;
-            while let Kind::Attributed { value, .. } = unit.configured.ast.node(node).kind {
-                node = value;
-            }
-            let header = super::panic_contracts::checked(
-                package,
-                NodeKey {
-                    file,
-                    node: owner.node,
-                },
-            )?;
-            let contract = header
-                .as_ref()
-                .map(super::panic_contracts::CheckedHeader::summary);
-            if let Some(role) = contract.and_then(|contract| contract.builtin) {
-                result
-                    .entry(NodeKey { file, node })
-                    .or_default()
-                    .push(Claim::BuiltinMacro(role));
-            }
-            let mut transparency = false;
-            let mut diagnostic_seen = false;
-            for (index, attribute, forest) in
-                unit.retained_indexed_attributes(owner.attributes.clone())
-            {
-                if crate::resolve::index::unavailable_macros::collect_transparency(
-                    package,
-                    unit,
-                    NodeKey { file, node },
-                    attribute,
-                    forest,
-                    &mut transparency,
-                )? {
-                    continue;
-                }
-                let allowance = header
-                    .as_ref()
-                    .map(|header| header.allowance_at(index, attribute))
-                    .transpose()?
-                    .flatten();
-                if crate::resolve::stability::collect(
-                    package.library.as_deref(),
-                    library,
-                    unit,
-                    NodeKey { file, node },
-                    attribute,
-                    forest,
-                    allowance,
-                )? {
-                    continue;
-                }
-                if attribute.name(forest, unit.source.text()) == Some("rustc_diagnostic_item") {
-                    if diagnostic_seen {
-                        return Err(Error::at(
-                            file,
-                            attribute.span.start,
-                            "multiple diagnostic item attributes",
-                        ));
-                    }
-                    diagnostic_seen = true;
-                    if let Some(known) =
-                        extra.collect(package, facts, NodeKey { file, node }, attribute, forest)?
-                    {
-                        result
-                            .entry(NodeKey { file, node })
-                            .or_default()
-                            .push(Claim::DiagnosticItem(known));
-                    }
-                    continue;
-                }
-                if let Some(claim) = attribute_claim(unit, file, attribute, forest)? {
-                    result
-                        .entry(NodeKey { file, node })
-                        .or_default()
-                        .push(claim);
-                }
-            }
+            owner_claims(package, facts, library, extra, file, owner, &mut result)?;
         }
     }
     Ok(result)
+}
+
+fn owner_claims(
+    package: &Package,
+    facts: &Resolution,
+    library: &mut Option<crate::resolve::stability::Draft>,
+    extra: &mut super::diagnostic_extras::Draft,
+    file: FileId,
+    owner: &crate::expand::crate_syntax::Owner,
+    result: &mut HashMap<NodeKey, Vec<Claim>>,
+) -> Result<(), Error> {
+    let unit = package.unit(file);
+    let mut node = owner.node;
+    while let Kind::Attributed { value, .. } = unit.configured.ast.node(node).kind {
+        node = value;
+    }
+    let key = NodeKey { file, node };
+    let header = super::panic_contracts::checked(
+        package,
+        NodeKey {
+            file,
+            node: owner.node,
+        },
+    )?;
+    let contract = header
+        .as_ref()
+        .map(super::panic_contracts::CheckedHeader::summary);
+    record_builtin_claim(result, key, contract.and_then(|c| c.builtin));
+    let mut transparency = false;
+    let mut diagnostic_seen = false;
+    let mut compatibility = None;
+    for (index, attribute, forest) in unit.retained_indexed_attributes(owner.attributes.clone()) {
+        if crate::resolve::index::unavailable_macros::collect_transparency(
+            package,
+            unit,
+            key,
+            attribute,
+            forest,
+            &mut transparency,
+        )? {
+            continue;
+        }
+        let allowance = header
+            .as_ref()
+            .map(|header| header.allowance_at(index, attribute))
+            .transpose()?
+            .flatten();
+        if crate::resolve::stability::collect_compatibility(
+            package.library.as_deref(),
+            library,
+            unit,
+            key,
+            attribute,
+            forest,
+            &mut compatibility,
+        )? {
+            continue;
+        }
+        if crate::resolve::stability::collect(
+            package.library.as_deref(),
+            library,
+            unit,
+            key,
+            attribute,
+            forest,
+            allowance,
+        )? {
+            continue;
+        }
+        if attribute.name(forest, unit.source.text()) == Some("rustc_diagnostic_item") {
+            if diagnostic_seen {
+                return Err(Error::at(
+                    file,
+                    attribute.span.start,
+                    "multiple diagnostic item attributes",
+                ));
+            }
+            diagnostic_seen = true;
+            if let Some(known) = extra.collect(package, facts, key, attribute, forest)? {
+                result
+                    .entry(key)
+                    .or_default()
+                    .push(Claim::DiagnosticItem(known));
+            }
+            continue;
+        }
+        if let Some(claim) = attribute_claim(unit, file, attribute, forest)? {
+            result.entry(key).or_default().push(claim);
+        }
+    }
+    crate::resolve::stability::finish_compatibility(library, key, compatibility)?;
+    Ok(())
+}
+
+fn record_builtin_claim(
+    claims: &mut HashMap<NodeKey, Vec<Claim>>,
+    key: NodeKey,
+    builtin: Option<crate::expand::builtin::Builtin>,
+) {
+    if let Some(role) = builtin {
+        claims
+            .entry(key)
+            .or_default()
+            .push(Claim::BuiltinMacro(role));
+    }
 }
 
 /// Decode one declaration claim after its complete macro/stability header was checked.

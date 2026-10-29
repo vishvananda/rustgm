@@ -1,4 +1,5 @@
 //! One imported owner maps immutable availability; each source use retains its binding route.
+mod path_compatibility;
 use crate::{
     expand::marks::ItemContext,
     resolve::{
@@ -19,6 +20,8 @@ use crate::{
         retained,
     },
 };
+pub(in crate::resolve) use path_compatibility::PathKind;
+pub(crate) use path_compatibility::visit_warnings;
 use std::{cell::Cell, rc::Rc, sync::Arc};
 
 impl crate::resolve::index::Resolver<'_> {
@@ -37,15 +40,30 @@ impl crate::resolve::index::Resolver<'_> {
         &mut self,
         site: NodeKey,
         trace: Option<&Observations>,
+        target: Target,
     ) -> Result<(), Error> {
-        if let Some(selected) = trace.and_then(|trace| trace.selected.as_deref())
+        let selected_target = match target {
+            Target::Definition(id) => Some((id, PathKind::Body(self.facts.references.len()))),
+            Target::Associated(id) => Some((id, PathKind::Associated(self.facts.references.len()))),
+            _ => None,
+        };
+        self.record_path_availability(site, trace, selected_target)
+    }
+    pub(in crate::resolve) fn record_path_availability(
+        &mut self,
+        site: NodeKey,
+        trace: Option<&Observations>,
+        target: Option<(DefId, PathKind)>,
+    ) -> Result<(), Error> {
+        if let Some((terminal, kind)) = target
+            && let Some(selected) = trace.and_then(|trace| trace.selected.as_deref())
             && let Some(imports) = self
                 .facts
                 .crates
                 .as_deref_mut()
                 .and_then(|imports| imports.availability.as_deref_mut())
         {
-            imports.record(site, selected)?;
+            imports.record(site, terminal, kind, selected)?;
         }
         Ok(())
     }
@@ -66,8 +84,8 @@ struct Binding {
     source: s::BindingSource,
 }
 #[derive(Clone, Copy)]
-struct Use {
-    site: NodeKey,
+struct PathEntry {
+    selected: crate::resolve::model::Binding,
     key: BindingKey,
     binding: Binding,
 }
@@ -94,7 +112,9 @@ pub(in crate::resolve) struct Imports {
     declarations: HashMap<DefId, Option<Declaration>>,
     bindings: HashMap<BindingKey, Binding>,
     features: HashSet<String>,
-    uses: Vec<Use>,
+    entries: Vec<PathEntry>,
+    paths: Vec<path_compatibility::PathUse>,
+    paths_complete: bool,
     budget: Cell<Budget>,
 }
 impl Imports {
@@ -133,15 +153,15 @@ impl Imports {
         self.charge(name.len().saturating_add(1), 0)?;
         Ok(self.features.contains(name))
     }
-    fn policy(
+    fn policy_allowed(
         &self,
         package: &Package,
-        site: NodeKey,
+        _site: NodeKey,
         artifact: usize,
         reference: Option<s::AvailabilityRef>,
-    ) -> Result<(), Error> {
+    ) -> Result<bool, Error> {
         let Some(reference) = reference else {
-            return Ok(());
+            return Ok(true);
         };
         let policy = self
             .rows(artifact)?
@@ -149,8 +169,11 @@ impl Imports {
             .get(reference.0 as usize)
             .ok_or_else(|| Error::unlocated("availability use has a foreign policy index"))?;
         self.charge(policy.feature.len().saturating_mul(4).saturating_add(1), 0)?;
-        if matches!(policy.level, s::AvailabilityLevel::Stable(_)) {
-            return Ok(());
+        if matches!(
+            policy.level,
+            s::AvailabilityLevel::Stable(_) | s::AvailabilityLevel::StableWithCompatibility { .. }
+        ) {
+            return Ok(true);
         }
         let normalized;
         let spelling = if policy.feature.is_ascii() {
@@ -174,23 +197,32 @@ impl Imports {
         } else {
             false
         };
-        if !requested {
-            return Err(Error::at(
-                site.file,
-                package
-                    .unit(site.file)
-                    .configured
-                    .ast
-                    .node(site.node)
-                    .span
-                    .start,
-                format!(
-                    "use of unstable library API requires feature `{}`",
-                    feature.spelling()
-                ),
-            ));
+        Ok(requested)
+    }
+    fn policy(
+        &self,
+        package: &Package,
+        site: NodeKey,
+        artifact: usize,
+        reference: Option<s::AvailabilityRef>,
+    ) -> Result<(), Error> {
+        if self.policy_allowed(package, site, artifact, reference)? {
+            return Ok(());
         }
-        Ok(())
+        let reference =
+            reference.ok_or_else(|| Error::unlocated("denied policy has no actual row"))?;
+        let feature = &self.rows(artifact)?.policies[reference.0 as usize].feature;
+        Err(Error::at(
+            site.file,
+            package
+                .unit(site.file)
+                .configured
+                .ast
+                .node(site.node)
+                .span
+                .start,
+            format!("use of unstable library API requires feature `{feature}`"),
+        ))
     }
     pub(in crate::resolve) fn declaration(
         &self,
@@ -255,81 +287,9 @@ impl Imports {
             ..Observations::default()
         })
     }
-    pub(in crate::resolve) fn record(
-        &mut self,
-        site: NodeKey,
-        selected: &[Selection],
-    ) -> Result<(), Error> {
-        self.charge(selected.len(), 0)?;
-        for selection in selected {
-            let Some(binding) = self.bindings.get(&selection.key).copied() else {
-                continue;
-            };
-            if selection.binding.target != binding.target {
-                return Err(Error::unlocated(
-                    "availability path changed its actual selected target",
-                ));
-            }
-            let growth = retained::Growth::vector::<Use>(self.uses.len(), self.uses.capacity(), 1);
-            self.charge(growth.work.saturating_add(1), growth.bytes)?;
-            self.uses
-                .try_reserve(1)
-                .map_err(|_| Error::unlocated("availability use allocation failed"))?;
-            self.uses.push(Use {
-                site,
-                key: selection.key,
-                binding,
-            });
-        }
-        Ok(())
-    }
-    pub(in crate::resolve) fn check_uses(
-        &self,
-        package: &Package,
-        facts: &Resolution,
-    ) -> Result<(), Error> {
-        for use_ in &self.uses {
-            self.charge(1, 0)?;
-            if facts
-                .bindings
-                .get_key(use_.key)
-                .is_none_or(|binding| binding.target != use_.binding.target)
-            {
-                return Err(Error::unlocated(
-                    "availability selected namespace changed after resolution",
-                ));
-            }
-            let binding = self
-                .rows(use_.binding.artifact)?
-                .bindings
-                .get(use_.binding.index)
-                .ok_or_else(|| Error::unlocated("availability binding coverage is missing"))?;
-            if use_.binding.source == s::BindingSource::Declaration {
-                self.policy(package, use_.site, use_.binding.artifact, binding.regular)?;
-            }
-            self.declaration(package, use_.site, use_.binding.target, false)?;
-        }
-        for reference in &facts.references {
-            self.charge(1, 0)?;
-            if let Target::Definition(definition) | Target::Associated(definition) =
-                reference.target
-            {
-                self.declaration(package, reference.node, definition, false)?;
-            }
-        }
-        Ok(())
-    }
     fn features(&mut self, policies: &[s::AvailabilityPolicy]) -> Result<(), Error> {
         for policy in policies {
-            let growth = retained::Growth::map::<String, ()>(
-                self.features.len(),
-                self.features.capacity(),
-                1,
-            );
-            self.charge(
-                growth.work.saturating_add(policy.feature.len()),
-                growth.bytes.saturating_add(policy.feature.len()),
-            )?;
+            self.charge(policy.feature.len().saturating_add(1), 0)?;
             let normalized;
             let spelling = if policy.feature.is_ascii() {
                 policy.feature.as_str()
@@ -343,6 +303,18 @@ impl Imports {
             };
             let feature =
                 crate::resolve::bindings::FeatureName::new(spelling).map_err(Error::unlocated)?;
+            if self.features.contains(feature.spelling()) {
+                continue;
+            }
+            let growth = retained::Growth::map::<String, ()>(
+                self.features.len(),
+                self.features.capacity(),
+                1,
+            );
+            self.charge(
+                growth.work.saturating_add(feature.spelling().len()),
+                growth.bytes.saturating_add(feature.spelling().len()),
+            )?;
             self.features.insert(feature.spelling().to_owned());
         }
         Ok(())
@@ -390,7 +362,9 @@ pub(in crate::resolve) fn prepare(
         declarations: HashMap::default(),
         bindings: HashMap::default(),
         features: HashSet::default(),
-        uses: Vec::new(),
+        entries: Vec::new(),
+        paths: Vec::new(),
+        paths_complete: false,
         budget: Cell::new(budget),
     };
     result.charge(0, size_of::<Imports>())?;
@@ -552,7 +526,17 @@ pub(crate) fn check(
     };
     availability.declaration(&report.package, site, definition, constant)
 }
-pub(in crate::resolve) fn check_all(package: &Package, facts: &Resolution) -> Result<(), Error> {
+pub(in crate::resolve) fn check_all(
+    package: &Package,
+    facts: &mut Resolution,
+) -> Result<(), Error> {
+    if let Some(imports) = facts
+        .crates
+        .as_deref_mut()
+        .and_then(|i| i.availability.as_deref_mut())
+    {
+        imports.complete_paths()?;
+    }
     let Some(availability) = owner(package, facts.crates.as_deref())? else {
         return Ok(());
     };
@@ -581,4 +565,16 @@ fn owner<'a>(
         availability.same_owner(imported)?;
     }
     Ok(availability)
+}
+
+/// Only the explicit v6 source contract excludes deprecated declaration rows.
+/// Missing/legacy origin profiles retain unknown knowledge, even through aliases.
+pub(crate) fn declaration_deprecation_absent(
+    report: &crate::resolve::expansion::Report,
+    definition: DefId,
+) -> Result<bool, Error> {
+    let Some(imports) = owner(&report.package, report.resolution.crates.as_deref())? else {
+        return Ok(false);
+    };
+    imports.declaration_deprecation_absent(definition)
 }
