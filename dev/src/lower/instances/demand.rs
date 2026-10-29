@@ -89,6 +89,7 @@ impl Ordinary {
                     .map(|c| c.intrinsic_kind(DefId(item.0)))
                     .transpose()?
                     .flatten()
+                    && kind != crate::support::bindings::SourceIntrinsic::ColdPath
                 {
                     return Err(match kind {
                         crate::support::bindings::SourceIntrinsic::Layout(_) => {
@@ -129,6 +130,13 @@ impl Ordinary {
                         }
                         crate::support::bindings::SourceIntrinsic::UbChecks => {
                             "source ub_checks requires its proved direct runtime operation"
+                        }
+                        crate::support::bindings::SourceIntrinsic::UncheckedSub
+                        | crate::support::bindings::SourceIntrinsic::SubWithOverflow => {
+                            "source subtraction requires its actual checked direct operation"
+                        }
+                        crate::support::bindings::SourceIntrinsic::ColdPath => {
+                            "source cold_path requires its genuine source fallback"
                         }
                     });
                 }

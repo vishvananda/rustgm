@@ -96,7 +96,7 @@ pub(super) fn validate(facts: &Declarations, function: Function) -> Result<(), &
         .ok_or("three_way_compare lacks its source catalog")?;
     copy_premise(facts, function.definition, input, catalog)
 }
-fn copy_premise(
+pub(super) fn copy_premise(
     facts: &Declarations,
     definition: DefId,
     input: TypeId,

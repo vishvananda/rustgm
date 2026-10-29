@@ -365,6 +365,57 @@ fn charge_query(headers: &Headers, steps: usize) -> Result<(), Error> {
     Ok(())
 }
 
+/// Read this actual source declaration's retained tool metadata at intrinsic completion.
+/// This is neither absent attribute knowledge nor any API/const/body permission.
+pub(in crate::sema) fn intrinsic_fallback_is_spec(
+    facts: &Declarations,
+    report: &Report,
+    definition: DefId,
+) -> Result<bool, Error> {
+    charge_source_contract_query(facts, 1)?;
+    let declaration = report
+        .resolution
+        .definitions
+        .get(definition.0 as usize)
+        .filter(|d| d.kind == DefKind::Function)
+        .and_then(|d| d.node)
+        .ok_or_else(|| {
+            Error::unlocated("intrinsic fallback requires its actual source function")
+        })?;
+    let header = facts
+        .must_use_contracts
+        .as_deref()
+        .and_then(|c| c.headers.as_deref())
+        .and_then(|l| l.local.declarations.get(&declaration))
+        .ok_or_else(|| {
+            Error::unlocated("intrinsic fallback lacks its retained declaration owner")
+        })?;
+    validate_source(facts, report, declaration, header)?;
+    let unit = report.package.unit(declaration.file);
+    let mut found = false;
+    for owner in &header.owners {
+        charge_source_contract_query(facts, owner.effects.len())?;
+        for (attribute, forest) in unit.retained_attributes(owner.effects.clone()) {
+            let start = attribute.path.start;
+            if attribute.path.end == start + 3
+                && forest.name(unit.source.text(), start) == Some("miri")
+                && forest.punctuation(start + 1, crate::lex::token::Punctuation::ColonColon)
+                && forest.name(unit.source.text(), start + 2) == Some("intrinsic_fallback_is_spec")
+                && (attribute.input != crate::syntax::attribute::Input::Empty
+                    || attribute.unsafe_wrapper
+                    || std::mem::replace(&mut found, true))
+            {
+                return Err(Error::at(
+                    declaration.file,
+                    attribute.span.start,
+                    "duplicate or malformed intrinsic fallback specification",
+                ));
+            }
+        }
+    }
+    Ok(found)
+}
+
 /// Reuse the genuine completed header's image witness without widening admission.
 pub(in crate::sema) fn completed_source_image(
     facts: &Declarations,
