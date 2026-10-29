@@ -34,7 +34,7 @@ fn direct_compatibility_notes_keep_last_empty_owner_and_gate_semantics() -> Test
         ("decl-empty", ""),
         ("decl-stable-struct", "note"),
     ] {
-        let report = test_source::source_provider(&fixture(name)?, name)?;
+        let report = test_source::source_provider(&fixture(name)?, &name.replace('-', "_"))?;
         let inventory = report
             .package
             .library_policy()
@@ -65,7 +65,7 @@ fn direct_compatibility_notes_keep_last_empty_owner_and_gate_semantics() -> Test
         "wrong-target",
     ] {
         assert!(
-            test_source::source_provider(&fixture(&format!("decl-{name}"))?, name).is_err(),
+            test_source::source_provider(&fixture(&format!("decl-{name}"))?, &name.replace('-', "_")).is_err(),
             "{name}"
         );
     }
