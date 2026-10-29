@@ -101,7 +101,7 @@ fn source_call(
             else {
                 return Err("source transmute requires one direct value argument");
             };
-            if signature != selected.signature
+            if !selected.opened_signature_matches(&facts.types, signature)
                 || value.ty != selected.destination
                 || body
                     .values

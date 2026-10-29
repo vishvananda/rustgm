@@ -24,6 +24,22 @@ pub(crate) struct TransmuteSelection {
     pub source: TypeId,
     pub destination: TypeId,
 }
+impl TransmuteSelection {
+    pub(crate) fn opened_signature_matches(
+        &self,
+        store: &crate::types::Store,
+        signature: TypeId,
+    ) -> bool {
+        super::intrinsic_contracts::opened_signature_matches(
+            store,
+            signature,
+            &[self.source],
+            self.destination,
+            true,
+            Convention::RUST,
+        )
+    }
+}
 
 pub(super) fn validate(facts: &Declarations, function: Function) -> Result<(), &'static str> {
     let Some(Kind::Function {
@@ -75,6 +91,23 @@ pub(super) fn validate(facts: &Declarations, function: Function) -> Result<(), &
         return Err("source transmute requires exactly Src by value and Dst result");
     }
     Ok(())
+}
+
+/// Arguments inhabit the caller; signature roots inhabit one further function
+/// binder, including signatures with no own late regions. Nested locals remain
+/// local. Canonical lookup cannot manufacture a type or a caller permission.
+fn instance_types_match(
+    store: &crate::types::Store,
+    parameters: crate::types::ListId,
+    result: TypeId,
+    expected: [TypeId; 2],
+    mut charge: impl FnMut(usize) -> Result<(), &'static str>,
+) -> Result<bool, &'static str> {
+    let Some(&[input]) = store.list(parameters) else {
+        charge(1)?;
+        return Err("source transmute requires its complete one-input signature");
+    };
+    Ok(super::intrinsic_contracts::item_roots(store, [input, result], charge)? == Some(expected))
 }
 
 impl Catalog {
@@ -136,7 +169,16 @@ impl Catalog {
         else {
             return Err("selected transmute changed its unsafe Rust signature");
         };
-        if facts.types.list(parameters) != Some([source].as_ref()) || result != destination {
+        if !instance_types_match(
+            &facts.types,
+            parameters,
+            result,
+            [source, destination],
+            |steps| {
+                crate::sema::header_attributes::charge_source_contract_query(facts, steps)
+                    .map_err(|_| "source transmute instance query work exhausted")
+            },
+        )? {
             return Err("selected transmute signature differs from its complete instance");
         }
         Ok(Some(TransmuteSelection {
@@ -224,3 +266,7 @@ impl Catalog {
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/callee_regions.rs"]
+mod borrowed_tests;

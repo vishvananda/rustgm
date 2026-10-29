@@ -28,13 +28,16 @@ fn validate(
     target: Instance,
     selected: TransmuteSelection,
 ) -> Result<Call, &'static str> {
-    let arguments = super::reached_layout::checked_call_arguments(
+    let arguments = super::reached_layout::checked_call_arguments_with_signature(
         facts,
         body,
         frame,
         position,
         target,
         (selected.definition, selected.destination),
+        |actual, public| {
+            public == selected.signature && selected.opened_signature_matches(&facts.types, actual)
+        },
     )?;
     facts
         .source_bindings

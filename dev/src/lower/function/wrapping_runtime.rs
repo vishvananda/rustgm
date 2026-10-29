@@ -45,7 +45,7 @@ impl Lower<'_, '_, '_> {
         else {
             return Err("source arith_offset requires two evaluated runtime inputs");
         };
-        if signature != selected.signature()
+        if !selected.opened_signature_matches(self.context.types, signature)
             || value.ty != selected.pointer()
             || [pointer, count]
                 .into_iter()
