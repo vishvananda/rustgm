@@ -251,14 +251,21 @@ pub(in crate::resolve) struct Prepared {
     pub macros: MacroFeatures,
 }
 
+#[cfg(test)]
 pub(in crate::resolve) fn prepare(unit: &Unit, context: &Context) -> Result<Prepared, Error> {
-    prepare_with_admission(unit, context, None)
+    prepare_with_admission(
+        unit,
+        context,
+        None,
+        crate::expand::config::SourceContractLimits::default(),
+    )
 }
 
 pub(in crate::resolve) fn prepare_with_admission(
     unit: &Unit,
     context: &Context,
     admission: Option<super::consumer_policy::Request<'_>>,
+    limits: crate::expand::config::SourceContractLimits,
 ) -> Result<Prepared, Error> {
     let root = unit.configured.ast.root;
     let no_core = unit
@@ -290,7 +297,7 @@ pub(in crate::resolve) fn prepare_with_admission(
         return Ok(Prepared {
             source: if features.needs_local_owner() {
                 Some(Box::new(Source::LocalMacros(super::LocalMacros::new(
-                    unit, features,
+                    unit, features, limits,
                 )?)))
             } else {
                 None
@@ -332,7 +339,7 @@ pub(in crate::resolve) fn prepare_with_admission(
             current: current.clone(),
             provider: provider.clone(),
             features,
-            macros: super::panic_contracts::Contracts::default(),
+            macros: super::panic_contracts::Contracts::new(limits),
         }))),
         library,
         macros,

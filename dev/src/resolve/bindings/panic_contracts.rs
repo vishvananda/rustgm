@@ -2,10 +2,13 @@
 use super::KnownFeature;
 mod grants;
 mod helpers;
+#[cfg(test)]
+#[path = "../../../tests/invariants/exhaustion_limits.rs"]
+mod limit_tests;
 mod lists;
 mod witness;
 use crate::{
-    expand::{builtin::Builtin, marks::ExpansionId},
+    expand::{builtin::Builtin, config::SourceContractLimits, marks::ExpansionId},
     resolve::{
         package::{Error, ModuleId, Package},
         unit::{NodeKey, Unit},
@@ -60,16 +63,42 @@ struct State {
     editions: HashMap<ExpansionId, (Frame, Edition)>,
     steps: usize,
     bytes: usize,
-    failed: bool,
+    failed: Option<Exhaustion>,
+    limits: SourceContractLimits,
     witness_bytes: usize,
+}
+#[derive(Clone, Copy)]
+enum Exhaustion {
+    Work,
+    Attempted,
+    Retained,
+}
+impl Exhaustion {
+    const fn message(self) -> &'static str {
+        match self {
+            Self::Work => "source macro contracts exceed their work budget",
+            Self::Attempted => "source macro contracts exceed their attempted storage budget",
+            Self::Retained => "source macro contracts exceed their retained storage budget",
+        }
+    }
 }
 impl State {
     fn charge(&mut self, steps: usize, bytes: usize) -> Result<(), &'static str> {
+        let work_overflow = self.steps.checked_add(steps).is_none();
+        let storage_overflow = self.bytes.checked_add(bytes).is_none();
         self.steps = self.steps.saturating_add(steps);
         self.bytes = self.bytes.saturating_add(bytes);
-        self.failed |= self.steps > 1_000_000 || self.bytes > 64 * 1024 * 1024;
-        if self.failed {
-            return Err("source macro contracts exceed their work or storage budget");
+        if self.failed.is_none() {
+            self.failed = if work_overflow || self.steps > self.limits.work_limit() as usize {
+                Some(Exhaustion::Work)
+            } else if storage_overflow || self.bytes > self.limits.attempted_bytes() as usize {
+                Some(Exhaustion::Attempted)
+            } else {
+                None
+            };
+        }
+        if let Some(failure) = self.failed {
+            return Err(failure.message());
         }
         Ok(())
     }
@@ -78,15 +107,20 @@ impl State {
         let bytes = self
             .declarations
             .capacity()
-            .saturating_mul(size_of::<(NodeKey, Entry)>())
-            .saturating_add(
+            .checked_mul(size_of::<(NodeKey, Entry)>())
+            .and_then(|bytes| {
                 self.editions
                     .capacity()
-                    .saturating_mul(size_of::<(ExpansionId, (Frame, Edition))>()),
-            )
-            .saturating_add(self.witness_bytes)
-            .saturating_add(extra);
-        self.failed |= bytes > 64 * 1024 * 1024;
+                    .checked_mul(size_of::<(ExpansionId, (Frame, Edition))>())
+                    .and_then(|editions| bytes.checked_add(editions))
+            })
+            .and_then(|bytes| bytes.checked_add(self.witness_bytes))
+            .and_then(|bytes| bytes.checked_add(extra));
+        if self.failed.is_none()
+            && bytes.is_none_or(|bytes| bytes > self.limits.retained_bytes() as usize)
+        {
+            self.failed = Some(Exhaustion::Retained);
+        }
         self.charge(0, 0)
     }
 }
@@ -326,6 +360,12 @@ fn is_macro(unit: &Unit, key: NodeKey) -> bool {
     )
 }
 impl Contracts {
+    pub(in crate::resolve) fn new(limits: SourceContractLimits) -> Self {
+        Self(RefCell::new(State {
+            limits,
+            ..State::default()
+        }))
+    }
     #[cfg(test)]
     pub(in crate::resolve) fn usage(&self) -> (usize, usize, usize) {
         let state = self.0.borrow();
