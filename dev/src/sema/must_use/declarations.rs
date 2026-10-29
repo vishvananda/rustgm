@@ -245,6 +245,16 @@ fn consume_other(
     consumer: Option<Consumer>,
 ) -> Result<bool, Error> {
     match consumer {
+        Some(Consumer::Promotion) => {
+            crate::sema::header_attributes::consume_promotable(
+                report,
+                facts,
+                owner,
+                declaration,
+                attribute,
+                effect,
+            )?;
+        }
         Some(Consumer::ConstPanicPolicy) => {
             crate::sema::header_attributes::consume_const_panic(
                 report,

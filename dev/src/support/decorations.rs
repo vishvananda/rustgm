@@ -34,6 +34,7 @@ pub(crate) enum Consumer {
     ColdAdvisory,
     PreludeImport,
     PublicTransparency,
+    Promotion,
 }
 impl Consumer {
     pub(crate) fn tool_member(tool: &str, name: &str) -> Option<Self> {
@@ -84,6 +85,7 @@ impl Consumer {
             "cold" => Self::ColdAdvisory,
             "prelude_import" => Self::PreludeImport,
             "rustc_pub_transparent" => Self::PublicTransparency,
+            "rustc_promotable" => Self::Promotion,
             "no_mangle" | "export_name" | "link_name" => Self::Linkage,
             "target_feature" => Self::TargetFeature,
             "allow" | "warn" | "deny" | "forbid" | "expect" | "deprecated" => Self::SafetyLint,

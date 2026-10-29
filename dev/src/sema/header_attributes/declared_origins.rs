@@ -20,11 +20,15 @@ mod internal_constness;
 pub(in crate::sema) use internal_constness::{consume_const_panic, consume_inherited_overflow};
 mod implicit_receivers;
 pub(in crate::sema) use implicit_receivers::{consume_no_implicit_autorefs, consume_pointer_lint};
+mod promotability;
+pub(in crate::sema) use promotability::consume as consume_promotable;
+pub(super) use promotability::query as query_promotable;
 
 struct Header {
     tracking: tracking::Tracking,
     source: SourceImage,
     owners: Vec<Owner>,
+    promotable: Option<Box<promotability::Marker>>,
 }
 struct Owner {
     key: NodeKey,
@@ -88,6 +92,7 @@ pub(in crate::sema) fn observe_owner(
             tracking: tracking::Tracking::Untracked,
             source: SourceImage::capture(unit, declaration.node),
             owners: Vec::new(),
+            promotable: None,
         });
     let index = unit
         .owner_indices
@@ -124,6 +129,7 @@ pub(in crate::sema) fn bind_definition(
             tracking: tracking::Tracking::Untracked,
             source: SourceImage::capture(unit, declaration.node),
             owners: Vec::new(),
+            promotable: None,
         });
     if headers
         .definitions
@@ -137,6 +143,7 @@ pub(in crate::sema) fn bind_definition(
         ));
     }
     tracking::validate_intrinsic_annotations(report, facts, definition, declaration)?;
+    promotability::bind(report, facts, definition, declaration)?;
     Ok(())
 }
 pub(in crate::sema) fn finish(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
