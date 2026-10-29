@@ -120,6 +120,21 @@ impl Graph {
         self.implementation(store, owner, predicate)?;
         Ok(predicate)
     }
+    /// Header classification only; this neither checks nor completes conformance.
+    pub(in crate::sema) fn feature_trait_implementation(
+        &self,
+        store: &crate::types::Store,
+        owner: Owner,
+    ) -> Result<Option<crate::types::parameters::predicates::Predicate>, &'static str> {
+        self.require_store(store)?;
+        self.owner(owner)?;
+        if self.descriptor(&self.origins)?.profile()
+            != s::Profile::Source2024ModuleFeaturePredicates
+        {
+            return Ok(None);
+        }
+        self.implementation_request(store, owner).map(Some)
+    }
     pub(in crate::sema) fn associated_count(&self) -> Result<usize, &'static str> {
         let rows = self.descriptor(&self.origins)?.rows();
         Ok(rows.traits.len().saturating_add(rows.implementations.len()))

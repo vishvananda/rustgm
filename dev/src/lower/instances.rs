@@ -604,11 +604,6 @@ fn inspect_staged<S, R>(
         collector: &mut collect,
         preparation: construction.preparation(),
     };
-    #[cfg(test)]
-    eprintln!(
-        "selected-dispatch context={}",
-        std::mem::size_of_val(&originals)
-    );
     let program = if originals.preparation.is_some() {
         let (program, ordinary) = demand::prepare_ordinary(
             report,

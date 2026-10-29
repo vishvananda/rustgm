@@ -163,10 +163,25 @@ impl Checker<'_> {
                 }
                 OwnerKind::Impl { .. } => {}
                 OwnerKind::ImportedImpl(_) => {
+                    self.facts.body_work.canonical_steps =
+                        self.facts.body_work.canonical_steps.saturating_add(8);
                     self.facts
                         .associated
                         .require_imported(*owner)
                         .map_err(Error::unlocated)?;
+                    if let Some(crate::sema::crates::ImportedOwners::Ordinary(graph)) =
+                        self.facts.associated.imported_owner()
+                    {
+                        // A real trait impl is not an inherent lookup candidate.
+                        // Its complete member conformance remains pending.
+                        if graph
+                            .feature_trait_implementation(&self.facts.types, *owner)
+                            .map_err(Error::unlocated)?
+                            .is_some()
+                        {
+                            continue;
+                        }
+                    }
                     return Err(Error::unlocated(
                         "imported inherent/member lookup requires its wider profile",
                     ));

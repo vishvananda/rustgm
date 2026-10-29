@@ -37,18 +37,21 @@ regional, default, inherent, unsafe and const method shapes outside this finite
 profile remain explicitly unsupported. No whole-PA, strict-core or release
 completion is claimed.
 
-The fully merged `ba3c80371` snapshot passed format, architecture, private strict
-Clippy and harness build in receipt `1793232504005511056` (257.52 seconds).
-Five of seven selected controls passed: actual Fn/API/predicate fresh clients,
-malformed/legacy rejection, paid name scaling, v0/v1 golden/domain controls and
-the unchanged v3 provider/client path. Both method controls remain blocked at
-`sema/declarations/inherent_headers.rs:171`: imported impl members currently
-hit the wider inherent/member lookup fence. Fresh method conformance, private
-symbol opponent and native/LowIR method completion are therefore unqualified.
-Production Clippy/CLI and native execution are pending. All thirteen frozen
-pinned Rust metadata observations matched their predictions.
+The first fully merged `ba3c80371` checkpoint passed five of seven controls;
+receipt `1793232504005511056` retains the actual member-lookup failure. The
+follow-up receipt `1793233319623474921` passed all seven exact controls in
+195.34 seconds, including genuine primitive-method source through fresh
+metadata, method conformance, fresh dispatch and the LowIR writer. The private
+symbol/cross-catalog opponent also passed. Format, architecture, private strict
+Clippy and harness build passed on that identical source. Production Clippy/CLI
+and native execution remain pending. All thirteen frozen pinned Rust metadata
+observations matched their predictions.
+
+The follow-up distinguishes authenticated v4 trait impl members from inherent
+lookup candidates without granting conformance; old/provided/inherent unknown
+paths retain their explicit fences. The old test-only context-size debug output
+was removed; paid planner/cold-storage observations remain available.
 
 Historical receipts and frozen plans remain under
 `obj/parallel/feature-predicate-metadata-v4/`; failed observations are not passes.
-This is a compilation checkpoint for continued member/scalar work, not an
-activation or release claim.
+This is a compilation checkpoint, not an activation or release claim.
