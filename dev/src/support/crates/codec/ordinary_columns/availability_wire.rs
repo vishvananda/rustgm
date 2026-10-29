@@ -11,9 +11,13 @@ pub(super) fn encode(
     compatibility: bool,
 ) -> Result<(), &'static str> {
     if compatibility {
-        write(out, &rows.policies, |out, policy| policy_write(out, policy, true))?;
+        write(out, &rows.policies, |out, policy| {
+            policy_write(out, policy, true)
+        })?;
     } else {
-        write(out, &rows.policies, |out, policy| policy_write(out, policy, false))?;
+        write(out, &rows.policies, |out, policy| {
+            policy_write(out, policy, false)
+        })?;
     }
     write(out, &rows.declarations, |out, row| {
         id(out, row.declaration.0)?;
