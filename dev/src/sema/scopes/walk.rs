@@ -204,6 +204,7 @@ impl Walker<'_> {
             | Syntax::Name(..)
             | Syntax::Path { .. }
             | Syntax::Qualified { .. }
+            | Syntax::PatternEndpoint { .. }
             | Syntax::Continue(_)
             | Syntax::EmptyStatement
             | Syntax::Item(_) => {}

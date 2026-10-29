@@ -45,6 +45,92 @@ fn repeated_demand_cannot_replay_prepared_function_annotations() -> Result<(), S
 }
 
 #[test]
+fn completed_source_callers_retain_identity_without_retaining_plain_literals() -> Result<(), String>
+{
+    let mut source = crate::test_source::fixture(
+        "pa31/tests/spec/source-functions-transport/minimal-provider.rs",
+    )
+    .map_err(|e| e.to_string())?;
+    source.push_str("const fn plain_bound()->usize{3}type Called=[u8;plain_bound()];");
+    let literal_start = u32::try_from(source.len()).map_err(|e| e.to_string())?;
+    source.push_str("type Literal=[u8;3];");
+    let report = crate::test_source::source_provider(&source, "plain_annotation")?;
+    let mut checker = Checker::new(&report).map_err(|e| e.to_string())?;
+    checker
+        .facts
+        .set_constant_executor(crate::pipeline::execution::Context::default().executor());
+    checker.run().map_err(|e| e.to_string())?;
+    let ast = &report.package.unit(FileId(0)).configured.ast;
+    let mut found = 0;
+    for (index, node) in ast.nodes.iter().enumerate() {
+        let key = crate::resolve::unit::NodeKey {
+            file: FileId(0),
+            node: crate::syntax::ast::NodeId::new(u32::try_from(index).map_err(|e| e.to_string())?),
+        };
+        if matches!(node.kind, crate::syntax::ast::Kind::Call { .. }) {
+            found += 1;
+            assert_eq!(
+                checker.facts.constant_body_type(key),
+                Some(crate::types::TypeId::primitive(
+                    crate::types::Primitive::Usize
+                )),
+            );
+        } else if matches!(node.kind, crate::syntax::ast::Kind::Literal(_))
+            && node.span.start >= literal_start
+        {
+            found += 1;
+            assert_eq!(checker.facts.constant_body_type(key), None);
+        }
+    }
+    assert_eq!(found, 2);
+    Ok(())
+}
+
+#[test]
+fn erased_scalar_anonymous_calls_keep_the_sparse_body_fast_path() -> Result<(), String> {
+    let mut source =
+        crate::test_source::fixture("pa31/tests/spec/source-scalar-patterns/source-runtime.rs")
+            .map_err(|e| e.to_string())?;
+    source.truncate(source.find("pub mod niche").ok_or("niche module")?);
+    let start = u32::try_from(source.len()).map_err(|e| e.to_string())?;
+    source.push_str("type Arithmetic=[u8;(-(-3i8)) as usize];");
+    let report = crate::test_source::source_provider(&source, "erased_annotation")?;
+    let mut checker = Checker::new(&report).map_err(|e| e.to_string())?;
+    checker
+        .facts
+        .set_constant_executor(crate::pipeline::execution::Context::default().executor());
+    checker.run().map_err(|e| e.to_string())?;
+    let mut found = 0;
+    for (index, node) in report
+        .package
+        .unit(FileId(0))
+        .configured
+        .ast
+        .nodes
+        .iter()
+        .enumerate()
+    {
+        if node.span.start >= start
+            && matches!(
+                node.kind,
+                crate::syntax::ast::Kind::Unary { .. } | crate::syntax::ast::Kind::Cast { .. }
+            )
+        {
+            found += 1;
+            let key = crate::resolve::unit::NodeKey {
+                file: FileId(0),
+                node: crate::syntax::ast::NodeId::new(
+                    u32::try_from(index).map_err(|e| e.to_string())?,
+                ),
+            };
+            assert_eq!(checker.facts.constant_body_type(key), None);
+        }
+    }
+    assert_eq!(found, 3);
+    Ok(())
+}
+
+#[test]
 fn tracked_annotation_calls_prepare_only_actual_location_data_and_resume() -> Result<(), String> {
     let mut source =
         crate::test_source::fixture("pa31/tests/spec/source-location/caller-location.rs")

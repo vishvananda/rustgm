@@ -22,6 +22,7 @@ pub(super) struct Publication {
     arguments: Vec<GenericArgs>,
     evidence: HashMap<usize, Source>,
     storage: Option<Batch>,
+    implementation_cursor: usize,
 }
 impl Checker<'_> {
     pub(super) fn finish(&mut self, body: NodeId) -> Result<Option<Dependency>, Error> {
@@ -85,6 +86,7 @@ impl Checker<'_> {
             arguments,
             evidence,
             storage,
+            implementation_cursor: 0,
         })
     }
     pub(super) fn resume_finalization(
@@ -113,8 +115,12 @@ impl Checker<'_> {
     }
     fn prepare_publication(
         &mut self,
-        publication: Publication,
+        mut publication: Publication,
     ) -> Result<Option<Dependency>, Error> {
+        if let Some(dependency) = self.advance_implementation_proofs(&mut publication)? {
+            self.state.finalization = Some(Box::new(Finalization::Caller(Box::new(publication))));
+            return Ok(Some(dependency));
+        }
         if let Some(dependency) = self.caller_location_dependency(&publication.solved)? {
             self.state.finalization = Some(Box::new(Finalization::Caller(Box::new(publication))));
             return Ok(Some(dependency));
@@ -122,6 +128,59 @@ impl Checker<'_> {
         // Solved calls do not change while storage dependencies are prepared.
         // Keep this completed phase out of every later storage resumption.
         self.advance_publication(publication)
+    }
+    fn advance_implementation_proofs(
+        &mut self,
+        publication: &mut Publication,
+    ) -> Result<Option<Dependency>, Error> {
+        if !matches!(
+            self.state.completion,
+            super::readiness::Completion::Anonymous { .. }
+        ) || !matches!(
+            self.availability,
+            crate::sema::traits::implementations::Availability::Declarations
+        ) || self.facts.source_bindings.is_none()
+        {
+            return Ok(None);
+        }
+        while publication.implementation_cursor < self.state.call_types.obligations.len() {
+            let index = publication.implementation_cursor;
+            let node = self.state.call_types.obligations[index].0;
+            self.state.steps = self.state.steps.saturating_add(1);
+            if self.state.steps > 1_000_000 {
+                return Err(self.error(node, "body type work budget exceeded"));
+            }
+            if let Some(Source::Implementation { owner, .. }) = publication.evidence.get(&index)
+                && !self.erased_solved_call(node, &publication.solved)?
+                && !self
+                    .facts
+                    .generics
+                    .implementations
+                    .as_ref()
+                    .is_some_and(|registry| registry.is_validated(*owner))
+            {
+                return Ok(Some(Dependency {
+                    requirement: super::Requirement::ImplementationValidated(*owner),
+                    source: self.key(node),
+                }));
+            }
+            publication.implementation_cursor += 1;
+        }
+        Ok(None)
+    }
+    fn erased_solved_call(&self, node: NodeId, solved: &Solved) -> Result<bool, Error> {
+        match self.kind(node) {
+            crate::syntax::ast::Kind::Unary { operand, .. } => {
+                let actual = solved.types[self.term(operand)?.0 as usize];
+                Ok(self.source_scalar_unary_type(node, actual))
+            }
+            crate::syntax::ast::Kind::Binary { left, .. } => {
+                let actual = solved.types[self.term(left)?.0 as usize];
+                Ok(self.source_scalar_binary_solved(node, actual, solved)?
+                    || self.source_scalar_comparison_solved(node, solved)?)
+            }
+            _ => Ok(false),
+        }
     }
     fn advance_publication(
         &mut self,
@@ -157,8 +216,8 @@ impl Checker<'_> {
         if let Some(context) = self.state.canonical_trait_inference.take() {
             self.facts.body_work.canonical_steps += context.steps;
         }
+        self.complete_body()?;
         self.clear_body_inference();
-        self.complete_body();
         Ok(None)
     }
     fn publish_solved_body(&mut self, publication: Publication) -> Result<HiddenResults, Error> {

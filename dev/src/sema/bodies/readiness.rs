@@ -194,7 +194,8 @@ impl Checker<'_> {
         }
         Ok(())
     }
-    pub(super) fn complete_body(&mut self) {
+    pub(super) fn complete_body(&mut self) -> Result<(), Error> {
+        let source_calls = self.completed_source_calls()?;
         self.facts.body_work.steps += self.state.steps;
         match self.state.completion {
             Completion::Ordinary | Completion::Inactive => {}
@@ -203,7 +204,10 @@ impl Checker<'_> {
                     .facts
                     .constant_annotation_bodies
                     .remove(&self.state.body);
-                if self.facts.lifetime_fact_count() != before || annotations {
+                // Source const-call legality authenticates its completed caller
+                // even when the result carries no lifetime debt. Retain only
+                // actual call bodies; scalar literals keep the sparse fast path.
+                if self.facts.lifetime_fact_count() != before || annotations || source_calls {
                     self.facts
                         .anonymous_constants
                         .insert(self.state.body, self.state.result);
@@ -217,6 +221,38 @@ impl Checker<'_> {
             }
         }
         self.state.completion = Completion::Inactive;
+        Ok(())
+    }
+    fn completed_source_calls(&mut self) -> Result<bool, Error> {
+        if !matches!(self.state.completion, Completion::Anonymous { .. })
+            || self.facts.source_bindings.is_none()
+        {
+            return Ok(false);
+        }
+        for &(node, _) in &self.state.calls {
+            self.state.steps = self.state.steps.saturating_add(1);
+            if self.state.steps > 1_000_000 {
+                return Err(self.error(node, "body type work budget exceeded"));
+            }
+            let fact = self.facts.node(self.key(node)).ok_or_else(|| {
+                self.error(
+                    node,
+                    "completed anonymous caller lost its actual call facts",
+                )
+            })?;
+            if matches!(
+                fact.operation,
+                Some(
+                    crate::sema::model::Operation::Call {
+                        source_use: Some(_),
+                        ..
+                    } | crate::sema::model::Operation::Try { .. }
+                )
+            ) {
+                return Ok(true);
+            }
+        }
+        Ok(false)
     }
 }
 
