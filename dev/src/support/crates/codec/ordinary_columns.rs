@@ -126,13 +126,15 @@ fn decode_availability_profile(
     profile: s::Profile,
 ) -> Result<AvailabilityPacket, &'static str> {
     let features = profile.feature_predicates();
-    let (mut rows, bytes) = decode_profile_with(reader, base, false, features)?;
+    let callables = profile.unconditional_callables();
+    let (mut rows, bytes) = decode_profile_with(reader, base, false, features, callables)?;
     let mut read = Input {
         reader,
         bytes,
         base,
         provided: false,
         features,
+        callables,
     };
     let attributes = header_facts::decode(&mut read)?;
     let modules = namespace_rows::decode(&mut read)?;
@@ -242,6 +244,7 @@ pub(super) fn decode_provided_contracts(
         base,
         provided: true,
         features: false,
+        callables: false,
     };
     let attributes = header_facts::decode(&mut read)?;
     let contracts = provided_extensions::decode(&mut read)?;
@@ -258,6 +261,7 @@ pub(super) fn decode_contracts(
         base,
         provided: false,
         features: false,
+        callables: false,
     })?;
     Ok((rows, attributes))
 }
@@ -279,6 +283,7 @@ pub(super) fn decode_module_contracts(
         base,
         provided: false,
         features: false,
+        callables: false,
     };
     let attributes = header_facts::decode(&mut read)?;
     let modules = namespace_rows::decode(&mut read)?;
@@ -289,13 +294,14 @@ fn decode_profile(
     base: usize,
     provided: bool,
 ) -> Result<(s::SourceRows, usize), &'static str> {
-    decode_profile_with(reader, base, provided, false)
+    decode_profile_with(reader, base, provided, false, false)
 }
 fn decode_profile_with(
     reader: &mut Reader<'_>,
     base: usize,
     provided: bool,
     features: bool,
+    callables: bool,
 ) -> Result<(s::SourceRows, usize), &'static str> {
     let mut read = Input {
         reader,
@@ -303,6 +309,7 @@ fn decode_profile_with(
         base,
         provided,
         features,
+        callables,
     };
     let rows = s::SourceRows {
         exact_callables: Vec::new(),
@@ -362,6 +369,7 @@ struct Input<'a, 'b> {
     base: usize,
     provided: bool,
     features: bool,
+    callables: bool,
 }
 impl Input<'_, '_> {
     fn require_provided(&self, message: &'static str) -> Result<(), &'static str> {

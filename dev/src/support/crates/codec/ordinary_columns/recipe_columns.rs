@@ -286,6 +286,22 @@ pub(super) fn effect_read(
         _ => Err("unknown source constness effect"),
     }
 }
+/// Function and call rows carry only unconditional effects in version seven.
+/// Trait predicates keep their distinct Provided-only conditional reader.
+pub(super) fn callable_effect_read(
+    read: &mut Input<'_, '_>,
+    unsupported: &'static str,
+) -> Result<Constness, &'static str> {
+    if !read.callables {
+        return effect_read(read, unsupported);
+    }
+    match read.reader.u8()? {
+        0 => Ok(Constness::Ordinary),
+        1 => Ok(Constness::Const),
+        2 => Err("source conditional callable effect requires its wider profile"),
+        _ => Err("unknown source constness effect"),
+    }
+}
 pub(super) fn bound_write(out: &mut Writer, row: s::RegionBound) -> Result<(), &'static str> {
     id(out, row.longer.0)?;
     id(out, row.shorter.0)
