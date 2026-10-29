@@ -480,7 +480,7 @@ pub(super) fn prepare_functions(
             u32::try_from(index).map_err(|_| error("source type recipe ordinal overflow"))?,
         );
         if let Some(mapped) =
-            primitive_calls::prepare(&mut port, &mut facts.types, &cursor, root, budget)?
+            primitive_calls::prepare(&mut port, &mut facts.types, &mut cursor, root, budget)?
         {
             cursor.nodes.publish(index, mapped)?;
             continue;

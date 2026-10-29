@@ -2,11 +2,13 @@
 use super::super::predicate_remap::translation::feature_names::paid;
 use super::{Argument, Error, Headers, Kind, Ordinary, Port, Store, TypeId, Worklist, error, g, s};
 use crate::types::ItemId;
+#[path = "free_applications.rs"]
+mod free;
 
 pub(super) fn prepare(
     port: &mut Ordinary<'_, '_>,
     store: &mut Store,
-    cursor: &Worklist<Vec<Option<TypeId>>>,
+    cursor: &mut Worklist<Vec<Option<TypeId>>>,
     root: g::TypeRef,
     budget: &mut Headers,
 ) -> Result<Option<TypeId>, Error> {
@@ -36,6 +38,12 @@ pub(super) fn prepare(
         .arguments
         .slice(&rows.arguments)
         .map_err(error)?;
+    if rows.descriptor().profile().unconditional_callables()
+        && function.parent.is_none()
+        && !actuals.is_empty()
+    {
+        return free::prepare(port, store, cursor, row, *function, actuals, budget).map(Some);
+    }
     let expected = if let Some(parent) = function.parent {
         match rows.header(parent).map_err(error)? {
             Some(s::HeaderRef::Trait(index)) => {

@@ -143,6 +143,7 @@ fn nonconst_target(rows: &mut s::SourceRows) -> Result {
     let request = rows
         .originals
         .iter()
+        .filter(|body| body.context == s::CallContext::ConstDefinition)
         .find_map(|body| body.calls.first())
         .ok_or("actual forwarding call")?;
     let declaration = rows
@@ -156,11 +157,48 @@ fn nonconst_target(rows: &mut s::SourceRows) -> Result {
         .iter_mut()
         .find(|f| f.declaration == declaration.declaration)
         .ok_or("actual target header")?;
+    assert_eq!(header.constness, Constness::Const);
     header.constness = Constness::Ordinary;
     let s::FunctionBody::Original(body) = header.body else {
         return Err("actual target original".into());
     };
     rows.originals[body.0 as usize].context = s::CallContext::Runtime;
+    Ok(())
+}
+
+fn malformed_generic_application(rows: &mut s::SourceRows, mutation: usize) -> Result {
+    let caller = rows
+        .originals
+        .iter()
+        .find(|body| body.context == s::CallContext::ConstDefinition && !body.calls.is_empty())
+        .ok_or("actual const-definition call")?;
+    let reference = caller.calls[0].target;
+    let application = rows.function_applications[reference.0 as usize];
+    assert!(!application.arguments.slice(&rows.arguments)?.is_empty());
+    match mutation {
+        8 => {
+            rows.function_applications[reference.0 as usize]
+                .declaration
+                .artifact = s::ArtifactRef(1);
+        }
+        9 => {
+            rows.function_applications[reference.0 as usize]
+                .arguments
+                .end = application.arguments.start;
+        }
+        10 => {
+            rows.arguments[application.arguments.start as usize] =
+                s::Argument::Region(s::RegionRef(u32::MAX));
+        }
+        _ => {
+            let slot = rows
+                .slots
+                .iter_mut()
+                .find(|slot| slot.owner == application.declaration.declaration)
+                .ok_or("actual generic declaration slot")?;
+            slot.owner = caller.declaration;
+        }
+    }
     Ok(())
 }
 
@@ -178,7 +216,7 @@ fn defining_const_context_and_actual_safety_cannot_be_mutated_or_unpaid() -> Res
         .iter()
         .position(|f| f.original.unsafe_)
         .ok_or("actual unsafe function")?;
-    for mutation in 0..8 {
+    for mutation in 0..12 {
         let mut rows = original.clone();
         let function = rows.functions[constant];
         let s::FunctionBody::Original(body) = function.body else {
@@ -194,16 +232,18 @@ fn defining_const_context_and_actual_safety_cannot_be_mutated_or_unpaid() -> Res
             6 => {
                 rows.originals
                     .iter_mut()
+                    .filter(|body| body.context == s::CallContext::ConstDefinition)
                     .find_map(|body| body.calls.first_mut())
                     .ok_or("actual constant forwarding request")?
                     .effect = Constness::Const;
             }
-            _ => nonconst_target(&mut rows)?,
+            7 => nonconst_target(&mut rows)?,
+            _ => malformed_generic_application(&mut rows, mutation)?,
         }
         let mut work = g::Work::default();
         let error = stage(&artifact, rows, 0, &mut work)
             .err()
-            .ok_or("forged source effect was accepted")?
+            .ok_or_else(|| format!("forged source effect accepted at mutation{mutation}"))?
             .to_string();
         if mutation == 7 {
             assert!(error.contains("actual const target"), "{error}");
@@ -288,6 +328,20 @@ fn reconstructed_const_mode_is_revalidated_without_claiming_a_checked_body() -> 
     let mut work = super::ImportedOriginals::default();
     let view = crate::sema::crates::source_original(&analysis.facts, definition, &mut work.steps)?
         .ok_or("actual source original")?;
+    let (_, foreign, _) = source_packets::client_analysis(
+        crates::decode(&bytes()?)?,
+        &fixture("unsafe-fnptr-allowed")?,
+    )?;
+    assert!(
+        view.sizing_requirement(&foreign.facts, &mut work.steps)
+            .is_err()
+    );
+    let mut denied = crate::support::crates::MAX_COMPONENTS;
+    assert!(
+        view.sizing_requirement(&analysis.facts, &mut denied)
+            .is_err()
+    );
+    assert!(denied > crate::support::crates::MAX_COMPONENTS);
     let mut body = super::build(&view, &mut work)?;
     assert!(body.const_context);
     super::validate(&view, &body, &mut work.steps)?;
