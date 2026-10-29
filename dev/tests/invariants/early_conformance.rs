@@ -12,6 +12,8 @@ use crate::{
 use std::sync::Arc;
 #[path = "matched_values.rs"]
 mod constant_members;
+#[path = "matched_outputs.rs"]
+mod type_members;
 #[path = "early_unavailable.rs"]
 mod unavailable;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;

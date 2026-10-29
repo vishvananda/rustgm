@@ -20,6 +20,7 @@ pub(in crate::sema::declarations) struct Pending {
     pub(super) members: HashMap<DefId, Vec<DefId>>,
     pub(super) methods: super::methods::Members,
     pub(super) constants: super::constants::Members,
+    pub(super) types: super::super::associated_types::Members,
     pub(super) pairs: super::implementation_pairs::Pairs,
     pub(super) overlap_steps: usize,
     pub(super) work: usize,
@@ -165,17 +166,31 @@ impl Checker<'_> {
         }
         owners.sort_unstable_by_key(|owner| owner.0);
         self.append_implementation_pairs(&mut pending)?;
-        crate::sema::header_attributes::charge_source_retention(
-            &self.facts,
-            1,
-            size_of::<super::constants::Members>(),
-        )?;
-        self.early_implementations = Some(Box::new(pending));
+        self.early_implementations = Some(self.source_implementation_context(pending)?);
         for owner in owners {
             self.work.push(Work::ValidateImpl(owner, Phase::Try));
             self.drain(steps, limit)?;
         }
         Ok(())
+    }
+    fn source_implementation_context(&self, pending: Pending) -> Result<Box<Pending>, Error> {
+        if self.report.package.source_core().is_none() {
+            return Err(Error::unlocated(
+                "implementation validation has no source scheduling context",
+            ));
+        }
+        self.facts
+            .source_bindings
+            .as_deref()
+            .ok_or_else(|| Error::unlocated("source implementation scheduling has no catalog"))?
+            .require_provider_report(self.report)
+            .map_err(Error::unlocated)?;
+        crate::sema::header_attributes::charge_source_retention(
+            &self.facts,
+            1,
+            size_of::<Pending>(),
+        )?;
+        Ok(Box::new(pending))
     }
     pub(super) fn ensure_scalar_plan(
         &mut self,
@@ -253,9 +268,11 @@ impl Checker<'_> {
         {
             return Ok(());
         }
-        let mut pending = self.early_implementations.take().ok_or_else(|| {
-            Error::unlocated("implementation validation has no source scheduling context")
-        })?;
+        let mut pending = if let Some(pending) = self.early_implementations.take() {
+            pending
+        } else {
+            self.source_implementation_context(Pending::default())?
+        };
         let result = self.advance_scalar_impl(owner, phase, &mut pending);
         self.early_implementations = Some(pending);
         result
@@ -397,7 +414,22 @@ impl Checker<'_> {
         pending
             .charge(&mut self.facts, plan.member_check_work())
             .map_err(|e| self.error(plan.source, e))?;
-        let inputs = if plan.has_constants() {
+        let inputs = if plan.has_types() {
+            for source_owner in plan
+                .require_complete(&self.facts, owner)
+                .map_err(|e| self.error(plan.source, e))?
+            {
+                pending
+                    .types
+                    .prepare_source_owner(self.report, &self.facts, source_owner)
+                    .map_err(|e| self.error(plan.source, e))?;
+            }
+            super::validation::Conformance::Complete {
+                methods: &pending.methods,
+                types: &pending.types,
+                constants: &mut pending.constants,
+            }
+        } else if plan.has_constants() {
             super::validation::Conformance::MethodsAndConstants {
                 methods: &pending.methods,
                 constants: &mut pending.constants,
