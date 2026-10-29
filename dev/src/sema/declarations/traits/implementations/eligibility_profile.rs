@@ -31,13 +31,21 @@ pub(super) enum Eligibility {
 }
 pub(super) struct Plan {
     arena: crate::types::arena::Identity,
-    no_associated: NoAssociatedMembers,
+    member_profile: MemberProfile,
     owner_kind: OwnerKind,
     pub source: NodeKey,
     pub predicate: Predicate,
     pub requirements: Vec<Predicate>,
     pub members: Vec<DefId>,
     pub environment: Option<Arc<Environment>>,
+}
+enum MemberProfile {
+    FunctionsOnly(NoAssociatedMembers),
+    MethodsAndConstants(NoAssociatedTypes),
+}
+struct NoAssociatedTypes {
+    owners: [Owner; 2],
+    counts: [usize; 2],
 }
 struct NoAssociatedMembers {
     owners: [Owner; 2],
@@ -52,14 +60,34 @@ impl Plan {
         facts: &Declarations,
         owner: DefId,
     ) -> Result<(), &'static str> {
+        let MemberProfile::FunctionsOnly(seal) = &self.member_profile else {
+            return Err("functions-only conformance requires its original member seal");
+        };
+        self.require_members(facts, owner, seal.owners, seal.counts)
+    }
+    pub(super) fn has_constants(&self) -> bool {
+        matches!(self.member_profile, MemberProfile::MethodsAndConstants(_))
+    }
+    pub(super) fn require_constants(
+        &self,
+        facts: &Declarations,
+        owner: DefId,
+    ) -> Result<(), &'static str> {
+        let MemberProfile::MethodsAndConstants(seal) = &self.member_profile else {
+            return Err("constant conformance requires its actual member seal");
+        };
+        self.require_members(facts, owner, seal.owners, seal.counts)
+    }
+    fn require_members(
+        &self,
+        facts: &Declarations,
+        owner: DefId,
+        owners: [Owner; 2],
+        counts: [usize; 2],
+    ) -> Result<(), &'static str> {
         self.require_current(facts, owner)?;
         let mut offset = 0;
-        for (expected, count) in self
-            .no_associated
-            .owners
-            .iter()
-            .zip(self.no_associated.counts)
-        {
+        for (expected, count) in owners.iter().zip(counts) {
             let id = facts
                 .associated
                 .owner(expected.self_definition)
@@ -194,10 +222,41 @@ impl Checker<'_> {
         pending
             .charge(&mut self.facts, members.len().saturating_add(4))
             .map_err(|e| self.error(source, e))?;
-        if members.iter().any(|member| {
-            self.report.resolution.definitions[member.0 as usize].kind != DefKind::Function
-        }) {
+        let Some(member_profile) = self.scalar_member_profile(source, owners, &members)? else {
             return Ok(Eligibility::Unsupported(Unsupported::Members));
+        };
+        let requirements = self.scalar_requirements(source, predicate, pending)?;
+        let Some(requirements) = requirements else {
+            return Ok(Eligibility::Unsupported(Unsupported::Requirements));
+        };
+        let arena = pending
+            .arena_for(&mut self.facts)
+            .map_err(|e| self.error(source, e))?;
+        Ok(Eligibility::Ready(Plan {
+            arena,
+            member_profile,
+            owner_kind,
+            source,
+            predicate,
+            requirements,
+            members,
+            environment: self.facts.generics.environments.get(&owner).cloned(),
+        }))
+    }
+
+    fn scalar_member_profile(
+        &self,
+        source: NodeKey,
+        owners: [Owner; 2],
+        members: &[DefId],
+    ) -> Result<Option<MemberProfile>, Error> {
+        let mut constants = false;
+        for member in members {
+            match self.report.resolution.definitions[member.0 as usize].kind {
+                DefKind::Function => {}
+                DefKind::Const => constants = true,
+                _ => return Ok(None),
+            }
         }
         let mut counts = [0; 2];
         for (slot, actual) in counts.iter_mut().zip(owners) {
@@ -213,22 +272,10 @@ impl Checker<'_> {
                 .ok_or_else(|| self.error(source, "source member bucket disappeared"))?
                 .len();
         }
-        let requirements = self.scalar_requirements(source, predicate, pending)?;
-        let Some(requirements) = requirements else {
-            return Ok(Eligibility::Unsupported(Unsupported::Requirements));
-        };
-        let arena = pending
-            .arena_for(&mut self.facts)
-            .map_err(|e| self.error(source, e))?;
-        Ok(Eligibility::Ready(Plan {
-            arena,
-            no_associated: NoAssociatedMembers { owners, counts },
-            owner_kind,
-            source,
-            predicate,
-            requirements,
-            members,
-            environment: self.facts.generics.environments.get(&owner).cloned(),
+        Ok(Some(if constants {
+            MemberProfile::MethodsAndConstants(NoAssociatedTypes { owners, counts })
+        } else {
+            MemberProfile::FunctionsOnly(NoAssociatedMembers { owners, counts })
         }))
     }
 

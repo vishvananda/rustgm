@@ -1,4 +1,5 @@
 //! Retain normalized member shapes and discharge their contracts during impl validation.
+mod bucket_index;
 use super::{Checker, DefId, Error, NodeKey};
 use crate::support::hash::HashMap;
 use crate::{
@@ -27,7 +28,7 @@ pub(super) struct Members {
 impl Members {
     pub(super) fn selected(
         &mut self,
-        facts: &Declarations,
+        facts: &mut Declarations,
         report: &Report,
         owner: DefId,
         declaration: DefId,
@@ -43,9 +44,18 @@ impl Members {
     fn prepare(
         &mut self,
         report: &Report,
-        facts: &Declarations,
+        facts: &mut Declarations,
         owner: DefId,
     ) -> Result<(), (DefId, &'static str)> {
+        if report.package.source_core().is_some() {
+            crate::sema::header_attributes::charge_source_contract_query(facts, 1)
+                .map_err(|_| (owner, "source constant query work exhausted"))?;
+        }
+        if let Some(catalog) = facts.source_bindings.as_deref() {
+            catalog
+                .require_provider_report(report)
+                .map_err(|e| (owner, e))?;
+        }
         if self.matches.contains_key(&owner) {
             return Ok(());
         }
@@ -65,6 +75,9 @@ impl Members {
             .trait_application(application)
             .ok_or((owner, "missing constant implementation trait application"))?
             .item;
+        if report.package.source_core().is_some() {
+            self.prepare_source_pair(report, facts, owner, DefId(trait_item.0))?;
+        }
         let impl_owner = facts
             .associated
             .declaration_owner(owner)
@@ -114,7 +127,7 @@ impl Checker<'_> {
             .declaration_owner(DefId(app.item.0))
             .ok_or_else(|| self.error(source, "missing constant trait owner"))?;
         members
-            .prepare(self.report, &self.facts, owner)
+            .prepare(self.report, &mut self.facts, owner)
             .map_err(|(member, error)| {
                 self.error(
                     self.report.resolution.definitions[member.0 as usize]

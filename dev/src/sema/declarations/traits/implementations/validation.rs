@@ -18,6 +18,11 @@ pub(super) enum Conformance<'a> {
         types: &'a super::super::associated_types::Members,
         constants: &'a mut super::constants::Members,
     },
+    MethodsAndConstants {
+        methods: &'a Members,
+        constants: &'a mut super::constants::Members,
+        plan: &'a super::eligibility_profile::Plan,
+    },
     FunctionsOnly {
         methods: &'a Members,
         plan: &'a super::eligibility_profile::Plan,
@@ -166,6 +171,22 @@ impl Checker<'_> {
                 let constants =
                     self.trait_impl_constants(owner, source, predicate, constants, &definitions)?;
                 (methods, types, constants)
+            }
+            Conformance::MethodsAndConstants {
+                methods,
+                constants,
+                plan,
+            } => {
+                plan.require_constants(&self.facts, owner)
+                    .map_err(|e| self.error(source, e))?;
+                let definitions =
+                    crate::sema::traits::conformance::Definitions::new(&self.facts, predicate, &[])
+                        .map_err(|e| self.error(source, e))?;
+                let methods =
+                    self.trait_impl_methods(owner, source, predicate, methods, &definitions)?;
+                let constants =
+                    self.trait_impl_constants(owner, source, predicate, constants, &definitions)?;
+                (methods, Vec::new(), constants)
             }
             Conformance::FunctionsOnly { methods, plan } => {
                 plan.require_no_associated(&self.facts, owner)
