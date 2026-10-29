@@ -42,6 +42,10 @@ fn actual_promotable_forms_keep_required_ctfe_and_ordinary_source_calls() -> Tes
         else {
             return Err("actual marker missing".into());
         };
+        assert_ne!(
+            site.owner, site.declaration,
+            "attributed owner must stay distinct from canonical item"
+        );
         assert_eq!(
             site.declaration,
             report.resolution.definitions[definition.0 as usize]
@@ -72,11 +76,24 @@ fn actual_promotable_forms_keep_required_ctfe_and_ordinary_source_calls() -> Tes
 }
 #[test]
 fn source_marker_keeps_const_unsafe_and_promotion_boundaries_distinct() -> TestResult {
-    for name in ["missing-pair", "nonconst", "unsafe-call"] {
+    for name in [
+        "missing-pair",
+        "nonconst",
+        "unsafe-call",
+        "parent-policy",
+        "regular-fallback",
+    ] {
         let source = input(name)?;
         let outcome = report(&source, name)
             .and_then(|r| pipeline::analyze_source(&r).map(|_| ()).map_err(Into::into));
         assert!(outcome.is_err(), "{name}");
+        if matches!(name, "parent-policy" | "regular-fallback") {
+            let message = outcome.err().ok_or("wrong owner was accepted")?.to_string();
+            assert!(
+                message.contains("promotable const stability belongs to another declaration"),
+                "{name}: {message}"
+            );
+        }
     }
     let source = input("borrow-required")?;
     let report = report(&source, "promotable_borrow")?;
