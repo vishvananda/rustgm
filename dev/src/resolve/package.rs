@@ -205,6 +205,9 @@ impl Package {
     pub(crate) fn target_features() -> impl Iterator<Item = &'static str> {
         crate::expand::config::target_features()
     }
+    pub(crate) fn target_aborts_panics() -> bool {
+        crate::expand::config::target_aborts_panics()
+    }
     pub(crate) fn requested_wide_float(&self, half: bool) -> bool {
         self.macro_features.wide_float(half)
     }

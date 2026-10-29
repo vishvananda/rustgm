@@ -1,24 +1,36 @@
 # Parallel library bootstrap implementation
 
 Root owns compiler integration, current-source CLI/original-core observations and
-publication in `rustgm-pa25-work`. Closed scalar consumer929b90e28 is integrated;
-all3155 compiler/harness hashes exactly match its passed private8/native source.
-Root production/CLI3 passes231.05s; authenticated fixture/proof reuse,harness272
-and upstream pass20.58s. CLI1e9301db passes original closed-range expansion and
-reaches the open/exclusive/alternative profile at file45:6972 in11.36s,374 opens,
-all722 original hashes unchanged. This is an expansion/image offset, not an
-asserted physical source byte. Receipt14ea7a04abafba720f68c1108449eb7d8115b9ff9d361d42dca67c32bc8a8ac0.
+publication in `rustgm-pa25-work`. Source range declaration28cce and closed scalar
+consumer929b90e28 are integrated with six measured cold-layout control updates.
+Root joined20 passes201.09s on the unchanged warm retry; the actual cold build
+timeout/no-tests receipt is retained. Production/CLI3 passes111.13s; authenticated
+fixtures, fresh LowIR/native-input equality,harness272/upstream and probes39.51s.
+CLI50557aed still reaches the open/exclusive/alternative profile at file45:6972
+in14.97s,374 opens,all722 original hashes unchanged. Declarations alone do not
+move that parser frontier. This is an expansion/image offset, not an asserted
+physical source byte. Receipt81d06de6bbd72e2621a633bd4bc7f48d1b278dd5fb19bd73f1ecbbce6c688b36.
 Strict separately retains deferred expectation68; no original artifact is implied.
-B (`lint_expectations`) now owns LIB-083's source-only RangeMin/Max/Sub role,
-header and identity-query work. C (`const_call_review`) owns LIB-082's
+B (`lint_expectations`) completed LIB-083's source-only declaration contracts and
+now owns LIB-084's genuine unchecked_sub/sub_with_overflow and ColdPath fallback
+execution. C (`const_call_review`) owns LIB-082's
 next open/exclusive/signed-alternative consumer after its qualified closed-range
 exit. Genuine helper bodies, typed continuations and internal desugaring
 authority require a coordinated interface before shared edits. B does not
 edit central TypePattern/Work/evaluation. Its one call_traits signature-queue
 hunk is agreed; source/body/desugaring permission stays consumer-owned. C has
 merged the disjoint Macro copier. No new advisory lint producer,
-worker or worktree is queued. Root owns observer/configuration, integration and
-publication; central interface changes require explicit coordination.
+worker or worktree is queued. Root owns observer/configuration, integration,
+publication and the actual ordinary unlikely nounwind investigation; central
+interface changes require explicit coordination. Never strip the original
+checked_sub, char conversion, panic or nounwind contracts to create a success.
+
+Both workers take Roota52cfb162's same source base before qualification. Include
+the affected joined20 controls with new targeted controls in one private binary;
+runtime is cheap compared with compiling it. Exact full fingerprint and fixture
+equality can then reuse actual worker evidence at Root without another cold
+private rebuild. Never infer equality from entry counts or substitute a failed
+gate for an executed test. Root owns the remaining production/CLI qualification.
 
 The joined45 consumer gate passes149.22s, including the real Debug array
 consumer. Its seven source-native programs match the pinned Rust observations,
@@ -62,8 +74,9 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-Public8051a1355 full CI40852257802 and55dcc81d3 full CI40855585622 both pass
-every lane. The newly integrated scalar consumer's full CI is pending. Earlier full CI40843890477 has2226 private
+Public8051a1355 full CI40852257802,55dcc81d3 full CI40855585622 and73c48dc21
+full CI40860205926 all pass every lane. The new declaration integration's full
+CI is pending. Earlier full CI40843890477 has2226 private
 passes and only one stale cold Source size assertion (184 versus192); Root's
 correction now passes in joined12. Its metadata fixes all3 earlier failures from
 40835039063 without a regenerated golden or false source premise. Full CI will

@@ -62,6 +62,13 @@ selected source constants/bodies and authenticated internal desugaring allowance
 Generic endpoints, scalar enum niches, refinement metadata and complete original
 methods remain requirements of the owning assignments.
 
+The [source range member checkpoint](../docs/pa31-source-range-members-checkpoint.md)
+registers actual associated identities and completes their shared const-trait
+declaration contract. Prepare genuine MIN/MAX types and Sub signature first;
+preserve partial-family pending state and source/Store incarnation checks.
+Declaration knowledge grants no selected implementation, body, API or const
+permission. Source helper execution and metadata transport remain required.
+
 An authored `prelude_import` requires its distinct crate feature and actual use
 owner. Select the genuine module separately from ordinary lexical globs; preserve
 lookup precedence, private binding lineage, hygiene and `no_implicit_prelude`,
