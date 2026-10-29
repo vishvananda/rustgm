@@ -1625,30 +1625,7 @@ impl Checker<'_> {
                             .bindings(binder)
                             .map_err(|e| self.error(key, e))?,
                     );
-                    let ItemKind::Function { body, flags, .. } = self.item(key)?.kind else {
-                        return Err(self.error(key, "invalid function owner"));
-                    };
-                    if flags.constant || self.const_impl_member(id) {
-                        self.facts.constant_functions.insert(id);
-                    }
-                    self.register_foreign_function(id, key, ty, flags.safety)?;
-                    self.register_function_call_traits(key, id)?;
-                    self.facts
-                        .function_indices
-                        .insert(id, self.facts.functions.len());
-                    let function = Function {
-                        definition: id,
-                        node: key,
-                        signature: ty,
-                        parameters: signature.parameters,
-                        body: body.map(|node| NodeKey {
-                            file: key.file,
-                            node,
-                        }),
-                    };
-                    self.publish_exact_method_receiver(&function)?;
-                    self.facts.functions.push(function);
-                    self.validate_published_intrinsic(key)?;
+                    self.publish_source_function(key, id, ty, signature.parameters)?;
                     let item = self.intern(
                         key,
                         Type::FunctionItem {

@@ -8,7 +8,7 @@ use crate::{
     types::infer::Solved,
 };
 #[cfg(test)]
-#[path = "../../../tests/invariants/receiver_frontier.rs"]
+#[path = "../../../tests/invariants/waiting_headers.rs"]
 mod header_tests;
 
 /// One real receiver adjustment also owns its single unsized conversion.

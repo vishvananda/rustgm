@@ -4,7 +4,11 @@ use super::{
     BinderId, Checker, DefId, Error, Kind, List, NodeKey, RegionId, Type, TypeId, regions,
 };
 use crate::support::hash::HashSet;
-use crate::{sema::lifetimes::FunctionRegions, types::bound_uses::Uses};
+use crate::{
+    sema::{lifetimes::FunctionRegions, model::Function},
+    syntax::item::ItemKind,
+    types::bound_uses::Uses,
+};
 pub(super) use empty_schemes::CompletedEmpty;
 
 #[derive(Clone, Copy)]
@@ -14,6 +18,40 @@ pub(super) struct SignatureTypes {
 }
 
 impl Checker<'_> {
+    /// Publish one real signature together with its receiver and call policy.
+    pub(super) fn publish_source_function(
+        &mut self,
+        key: NodeKey,
+        id: DefId,
+        ty: TypeId,
+        parameters: List,
+    ) -> Result<(), Error> {
+        let ItemKind::Function { body, flags, .. } = self.item(key)?.kind else {
+            return Err(self.error(key, "invalid function owner"));
+        };
+        if flags.constant || self.const_impl_member(id) {
+            self.facts.constant_functions.insert(id);
+        }
+        self.register_foreign_function(id, key, ty, flags.safety)?;
+        self.register_function_call_traits(key, id)?;
+        self.facts
+            .function_indices
+            .insert(id, self.facts.functions.len());
+        let function = Function {
+            definition: id,
+            node: key,
+            signature: ty,
+            parameters,
+            body: body.map(|node| NodeKey {
+                file: key.file,
+                node,
+            }),
+        };
+        self.publish_exact_method_receiver(&function)?;
+        self.facts.functions.push(function);
+        self.validate_published_intrinsic(key)?;
+        Ok(())
+    }
     pub(super) fn validate_published_intrinsic(&mut self, key: NodeKey) -> Result<(), Error> {
         let function = *self
             .facts
