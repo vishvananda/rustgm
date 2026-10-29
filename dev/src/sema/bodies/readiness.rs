@@ -21,6 +21,7 @@ pub(in crate::sema) enum Requirement {
     Fields(ItemId),
     Opaque(crate::types::opaque::OpaqueId),
     SourceResultContracts(DefId),
+    CallerLocation(DefId),
 }
 impl From<crate::sema::traits::selection::Dependency> for Requirement {
     fn from(dependency: crate::sema::traits::selection::Dependency) -> Self {
@@ -187,6 +188,7 @@ impl Checker<'_> {
                 Requirement::Fields(_) => "missing nominal field declarations",
                 Requirement::Opaque(_) => "missing completed opaque hidden type",
                 Requirement::SourceResultContracts(_) => "missing checked source Pointee contracts",
+                Requirement::CallerLocation(_) => "missing checked source caller-location data",
             };
             return Err(self.error(dependency.source.node, message));
         }

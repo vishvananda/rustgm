@@ -45,6 +45,60 @@ fn repeated_demand_cannot_replay_prepared_function_annotations() -> Result<(), S
 }
 
 #[test]
+fn tracked_annotation_calls_prepare_only_actual_location_data_and_resume() -> Result<(), String> {
+    let mut source =
+        crate::test_source::fixture("pa31/tests/spec/source-location/caller-location.rs")
+            .map_err(|e| e.to_string())?;
+    source.push_str(
+        "#[track_caller]const fn demanded_bound()->usize{3}\n\
+         fn dormant_body()->u8{false}\n\
+         type FirstBound=[u8;demanded_bound()];\n\
+         type SecondBound=[u8;demanded_bound()];",
+    );
+    let report = crate::test_source::source_provider(&source, "tracked_annotation")?;
+    let mut checker = Checker::new(&report).map_err(|e| e.to_string())?;
+    checker
+        .facts
+        .set_constant_executor(crate::pipeline::execution::Context::default().executor());
+    checker.run().map_err(|e| e.to_string())?;
+    let mut found = 0;
+    for (index, definition) in report.resolution.definitions.iter().enumerate() {
+        let name = report.package.names.get(definition.name);
+        if matches!(name, "FirstBound" | "SecondBound") {
+            found += 1;
+            let ty = checker.facts.definitions[index].ok_or("array declaration")?;
+            assert!(matches!(
+                checker.facts.types.kind(ty),
+                Some(Kind::Array { length: 3, .. })
+            ));
+        } else if matches!(name, "demanded_bound" | "dormant_body") {
+            found += 1;
+            let id = DefId(u32::try_from(index).map_err(|e| e.to_string())?);
+            assert_eq!(
+                checker.facts.typed_function_bodies.contains(&id),
+                name == "demanded_bound",
+            );
+        }
+    }
+    assert_eq!(found, 4);
+    assert!(checker.facts.body_work.suspensions > 0);
+    assert_eq!(
+        crate::sema::compiler_items::site_records::requested_location(&report, &checker.facts)
+            .map_err(|e| e.to_string())?,
+        None,
+    );
+    assert!(
+        checker
+            .facts
+            .source_bindings
+            .as_deref()
+            .and_then(|c| c.language(crate::support::bindings::LangItem::PanicInfo))
+            .is_none()
+    );
+    Ok(())
+}
+
+#[test]
 fn prepared_and_resume_states_require_their_exact_pending_owner() -> Result<(), String> {
     let report = crate::test_source::resolve("const fn value()->usize{4}", true)?;
     let mut checker = Checker::new(&report).map_err(|e| e.to_string())?;

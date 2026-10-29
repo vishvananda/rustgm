@@ -12,6 +12,7 @@ use crate::{
 pub(super) enum Finalization {
     Closures(HashMap<usize, Source>),
     Storage(Box<Publication>),
+    Caller(Box<Publication>),
     Requirements(HiddenResults),
 }
 pub(super) struct Publication {
@@ -77,7 +78,7 @@ impl Checker<'_> {
         self.publish_nested_body(&solved)?;
         let hidden = self.check_opaque_results(&solved)?;
         let storage = self.body_storage(&solved)?;
-        self.advance_publication(Publication {
+        self.prepare_publication(Publication {
             hidden,
             solved,
             predicates,
@@ -106,8 +107,21 @@ impl Checker<'_> {
         match finalization {
             Finalization::Closures(evidence) => self.finish_nested(evidence),
             Finalization::Storage(publication) => self.advance_publication(*publication),
+            Finalization::Caller(publication) => self.prepare_publication(*publication),
             Finalization::Requirements(hidden) => self.complete_requirements(hidden),
         }
+    }
+    fn prepare_publication(
+        &mut self,
+        publication: Publication,
+    ) -> Result<Option<Dependency>, Error> {
+        if let Some(dependency) = self.caller_location_dependency(&publication.solved)? {
+            self.state.finalization = Some(Box::new(Finalization::Caller(Box::new(publication))));
+            return Ok(Some(dependency));
+        }
+        // Solved calls do not change while storage dependencies are prepared.
+        // Keep this completed phase out of every later storage resumption.
+        self.advance_publication(publication)
     }
     fn advance_publication(
         &mut self,
