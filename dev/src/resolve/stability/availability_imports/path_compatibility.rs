@@ -299,7 +299,7 @@ impl Imports {
         Ok(self.inventory.artifacts()[mapped.artifact]
             .source_descriptor()
             .is_some_and(|descriptor| {
-                descriptor.profile() == s::Profile::Source2024ModuleCompatibility
+                descriptor.profile().module_compatibility()
             }))
     }
 }

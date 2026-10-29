@@ -114,6 +114,9 @@ pub(super) fn decode_module_compatibility(
 ) -> Result<AvailabilityPacket, &'static str> {
     decode_availability_profile(reader, base, s::Profile::Source2024ModuleCompatibility)
 }
+pub(super) fn decode_module_callables(reader: &mut Reader<'_>, base:usize)->Result<AvailabilityPacket,&'static str>{
+    decode_availability_profile(reader,base,s::Profile::Source2024ModuleCallables)
+}
 fn decode_availability_profile(
     reader: &mut Reader<'_>,
     base: usize,

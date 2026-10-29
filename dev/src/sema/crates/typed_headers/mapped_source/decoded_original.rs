@@ -14,6 +14,8 @@ use std::sync::Arc;
 
 #[path = "admitted_original.rs"]
 mod selected;
+#[path = "defining_constants.rs"]
+mod constant_policies;
 use selected::Mapping;
 
 /// Borrowed reconstruction inputs, not a checked body, permission or executable.
@@ -78,13 +80,16 @@ impl Graph {
             .get(reference.0 as usize)
             .filter(|input| input.body == reference)
             .ok_or("source provided body omitted its actual raw input row")?;
+        let constant = function.constness == crate::support::constness::Constness::Const;
+        let context = if constant { s::CallContext::ConstDefinition } else { s::CallContext::Runtime };
         if catalog.origin(body)? != origin
             || inputs.frame != function.original.binder
-            || header.constant
+            || header.constant != constant
+            || (constant && (!descriptor.profile().unconditional_callables() || function.parent.is_some()))
             || header.universals != 0
             || (function.parent.is_some() && !descriptor.profile().feature_predicates())
             || header.signature != header.callable
-            || raw.context != s::CallContext::Runtime
+            || raw.context != context
         {
             return Err(
                 "source original requires its complete supported ordinary signature/context",
@@ -114,6 +119,10 @@ impl Graph {
 impl Original<'_> {
     pub(crate) fn numbered(&self) -> bool {
         matches!(&self.mapping, Mapping::Selected { .. })
+    }
+    /// Defining checking mode only; current body proof and execution remain separate.
+    pub(crate) const fn const_context(&self) -> bool {
+        self.header.constant
     }
     pub(crate) const fn universals(&self) -> u32 {
         self.header.universals

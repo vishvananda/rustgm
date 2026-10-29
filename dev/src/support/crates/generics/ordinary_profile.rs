@@ -3,6 +3,8 @@ use super::super::{
     Action, EnvironmentOrigin, FunctionBody, InputKind, Place, TraitFlags, ValueKind,
 };
 use super::super::{HeaderIndex, SourceRows};
+#[path = "callable_traits.rs"]
+mod callable_traits;
 use crate::support::crates::generics::Convention;
 use crate::support::{
     bindings::LangItem, constness::Constness, crates::generics::Work, edition::Edition,
@@ -30,6 +32,7 @@ enum NamespaceProfile {
     Contracts,
     FeaturePredicates,
     Definitions,
+    Callables,
 }
 pub(super) fn validate_module_contracts(
     rows: &SourceRows,
@@ -52,6 +55,9 @@ pub(super) fn validate_module_definitions(
 ) -> Result<(), &'static str> {
     validate_mode(rows, headers, work, NamespaceProfile::Definitions)
 }
+pub(super) fn validate_module_callables(rows:&SourceRows,headers:&HeaderIndex<'_>,work:&mut Work)->Result<(),&'static str>{
+    validate_mode(rows,headers,work,NamespaceProfile::Callables)
+}
 fn validate_mode(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
@@ -65,21 +71,30 @@ fn validate_mode(
     if rows.policy.edition != Edition::Rust2024 || rows.policy.provider.0 != 0 {
         return Err("ordinary source functions require their own Rust2024 provider profile");
     }
-    let sizing = bindings(rows, headers, work, false)?;
+    let roles = bindings(rows, headers, work, if profile==NamespaceProfile::Callables { BindingProfile::Callables } else { BindingProfile::Ordinary })?;
+    let sizing = roles.sizing;
     let features = matches!(
         profile,
-        NamespaceProfile::FeaturePredicates | NamespaceProfile::Definitions
+        NamespaceProfile::FeaturePredicates | NamespaceProfile::Definitions | NamespaceProfile::Callables
     );
     recipes(rows, work, features)?;
     for header in &rows.traits {
         work.charge(1)?;
         let flags = header.flags.bits();
+        if roles.destruct == Some(header.declaration) {
+            callable_traits::destruct(rows,headers,header,sizing[2].ok_or("source Destruct lacks its actual PointeeSized role")?,work)?;
+            continue;
+        }
+        if roles.freeze == Some(header.declaration) {
+            callable_traits::freeze(rows,headers,header,work)?;
+            continue;
+        }
         if flags & TraitFlags::RESTRICTED_IMPL != 0
             && !matches!(
                 profile,
                 NamespaceProfile::Contracts
                     | NamespaceProfile::FeaturePredicates
-                    | NamespaceProfile::Definitions
+                    | NamespaceProfile::Definitions | NamespaceProfile::Callables
             )
         {
             return Err(
@@ -120,7 +135,7 @@ fn validate_mode(
         work.charge(1)?;
         ordinary(&clause.requirement)?;
     }
-    originals(rows, work, features)
+    originals(rows, headers, work, features, profile == NamespaceProfile::Callables)
 }
 fn functions(
     rows: &SourceRows,
@@ -139,8 +154,10 @@ fn functions(
     }
     for header in &rows.functions {
         work.charge(1 + 2 * rows.exact_callables.len().checked_ilog2().unwrap_or(0) as usize)?;
-        if header.constness != Constness::Ordinary
-            || header.original.unsafe_
+        let free_effects = profile == NamespaceProfile::Callables && header.parent.is_none();
+        if (!free_effects && header.constness != Constness::Ordinary)
+            || header.constness == Constness::Conditional
+            || (!free_effects && header.original.unsafe_)
             || header.original.variadic
             || !admitted_convention(
                 rows,
@@ -148,7 +165,7 @@ fn functions(
                 header.original.convention,
                 profile,
             )
-            || header.callable.unsafe_
+            || (!free_effects && header.callable.unsafe_)
             || header.callable.variadic
             || !admitted_convention(
                 rows,
@@ -161,9 +178,12 @@ fn functions(
                 "source nonordinary callable effect/safety/convention requires a wider profile",
             );
         }
+        if free_effects && (header.original.unsafe_ != header.callable.unsafe_ || header.original.convention != header.callable.convention) {
+            return Err("source free callable changed its actual original/public safety or convention");
+        }
         let primitive_method = matches!(
             profile,
-            NamespaceProfile::FeaturePredicates | NamespaceProfile::Definitions
+            NamespaceProfile::FeaturePredicates | NamespaceProfile::Definitions | NamespaceProfile::Callables
         ) && primitive_method(rows, headers, header, work)?;
         if matches!(header.body, FunctionBody::Original(_))
             && header.parent.is_some()
@@ -260,10 +280,15 @@ fn primitive_method(
     }
     Ok(true)
 }
-fn originals(rows: &SourceRows, work: &mut Work, features: bool) -> Result<(), &'static str> {
+fn originals(rows: &SourceRows, headers:&HeaderIndex<'_>, work: &mut Work, features: bool, callables:bool) -> Result<(), &'static str> {
     for original in &rows.originals {
         work.charge(1)?;
-        if original.context != super::super::CallContext::Runtime
+        let expected = if callables {
+            let Some(super::super::HeaderRef::Function(index)) = headers.header(original.declaration,work)? else { return Err("source original has no actual callable header"); };
+            let header = rows.functions[index as usize];
+            if header.parent.is_none() && header.constness == Constness::Const { super::super::CallContext::ConstDefinition } else { super::super::CallContext::Runtime }
+        } else { super::super::CallContext::Runtime };
+        if original.context != expected
             || !original.variables.is_empty()
             || !original.projections.is_empty()
             || !features && (!original.calls.is_empty() || !original.arguments.is_empty())
@@ -388,12 +413,15 @@ fn ordinary(request: &super::super::Requirement) -> Result<(), &'static str> {
     }
     Ok(())
 }
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) enum BindingProfile { Ordinary, Provided, Callables }
+pub(super) struct Bindings { sizing: [Option<crate::support::crates::owner_catalog::DeclarationRef>;3], destruct:Option<crate::support::crates::owner_catalog::DeclarationRef>, freeze:Option<crate::support::crates::owner_catalog::DeclarationRef> }
 pub(super) fn bindings(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     work: &mut Work,
-    provided: bool,
-) -> Result<[Option<crate::support::crates::owner_catalog::DeclarationRef>; 3], &'static str> {
+    profile: BindingProfile,
+) -> Result<Bindings, &'static str> {
     work.charge(1)?;
     if rows.policy.roles.start != 0 || rows.policy.roles.end as usize != rows.roles.len() {
         return Err("source role policy omits part of its exact binding inventory");
@@ -410,7 +438,8 @@ pub(super) fn bindings(
                 | LangItem::Clone
                 | LangItem::CloneFn
                 | LangItem::Copy
-        ) || provided && matches!(role.role, LangItem::Destruct | LangItem::Freeze);
+        ) || (profile == BindingProfile::Provided && matches!(role.role, LangItem::Destruct | LangItem::Freeze))
+            || (profile == BindingProfile::Callables && matches!(role.role,LangItem::Destruct | LangItem::Freeze));
         if !allowed {
             return Err("source role requires a wider explicit source profile");
         }
@@ -465,7 +494,7 @@ pub(super) fn bindings(
             return Err("source sized formal names a foreign or different actual Sized role");
         }
     }
-    Ok(sizing)
+    Ok(Bindings { sizing, destruct: if profile==BindingProfile::Callables { declarations[LangItem::Destruct.index()] } else { None }, freeze: if profile==BindingProfile::Callables {declarations[LangItem::Freeze.index()]} else {None} })
 }
 
 fn admitted_convention(
@@ -475,7 +504,7 @@ fn admitted_convention(
     profile: NamespaceProfile,
 ) -> bool {
     convention == Convention::Rust
-        || (profile == NamespaceProfile::Definitions
+        || (matches!(profile, NamespaceProfile::Definitions | NamespaceProfile::Callables)
             && convention == Convention::C
             && rows
                 .exact_callables

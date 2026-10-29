@@ -19,6 +19,7 @@ const AVAILABILITY_VERSION: u16 = 3;
 const FEATURE_PREDICATE_VERSION: u16 = 4;
 const DEFINITIONS_VERSION: u16 = 5;
 const COMPATIBILITY_VERSION: u16 = 6;
+const CALLABLE_VERSION: u16 = 7;
 const DEFINING_RUST2024: u8 = 0;
 
 pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
@@ -35,7 +36,7 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
         | Profile::Source2024ModuleAvailability
         | Profile::Source2024ModuleFeaturePredicates
         | Profile::Source2024ModuleDefinitions
-        | Profile::Source2024ModuleCompatibility => TAG,
+        | Profile::Source2024ModuleCompatibility | Profile::Source2024ModuleCallables => TAG,
         Profile::Source2024Provided
         | Profile::Source2024ProvidedContracts
         | Profile::Source2024ProvidedCurrent => PROVIDED_TAG,
@@ -58,6 +59,7 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
         Profile::Source2024ModuleFeaturePredicates => FEATURE_PREDICATE_VERSION,
         Profile::Source2024ModuleDefinitions => DEFINITIONS_VERSION,
         Profile::Source2024ModuleCompatibility => COMPATIBILITY_VERSION,
+        Profile::Source2024ModuleCallables => CALLABLE_VERSION,
         Profile::Source2024ModuleAvailability => AVAILABILITY_VERSION,
         Profile::Source2024ModuleContracts => MODULE_CONTRACT_VERSION,
         Profile::Source2024FunctionContracts | Profile::Source2024ProvidedContracts => {
@@ -107,7 +109,7 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
             AVAILABILITY_VERSION
                 | FEATURE_PREDICATE_VERSION
                 | DEFINITIONS_VERSION
-                | COMPATIBILITY_VERSION
+                | COMPATIBILITY_VERSION | CALLABLE_VERSION
         ) {
         let packet = availability_packet(input, base, version)?;
         (
@@ -203,6 +205,7 @@ fn publish_availability(
 ) -> Result<Payload, &'static str> {
     let publish = match version {
         COMPATIBILITY_VERSION => Payload::from_source_module_compatibility,
+        CALLABLE_VERSION => Payload::from_source_module_callables,
         DEFINITIONS_VERSION => Payload::from_source_module_definitions,
         FEATURE_PREDICATE_VERSION => Payload::from_source_module_feature_predicates,
         AVAILABILITY_VERSION => Payload::from_source_module_availability,
@@ -226,6 +229,7 @@ fn availability_packet(
 ) -> Result<ordinary_columns::AvailabilityPacket, &'static str> {
     match version {
         COMPATIBILITY_VERSION => ordinary_columns::decode_module_compatibility(input, base),
+        CALLABLE_VERSION => ordinary_columns::decode_module_callables(input, base),
         DEFINITIONS_VERSION => ordinary_columns::decode_module_definitions(input, base),
         FEATURE_PREDICATE_VERSION => {
             ordinary_columns::decode_module_feature_predicates(input, base)
@@ -251,7 +255,7 @@ fn defining_version(input: &mut Reader<'_>, provided: bool) -> Result<u16, &'sta
                     | AVAILABILITY_VERSION
                     | FEATURE_PREDICATE_VERSION
                     | DEFINITIONS_VERSION
-                    | COMPATIBILITY_VERSION
+                    | COMPATIBILITY_VERSION | CALLABLE_VERSION
             ))
         || input.u8()? != DEFINING_RUST2024
     {

@@ -60,19 +60,20 @@ enum ExportMode {
     FeaturePredicates,
     Definitions,
     Compatibility,
+    Callables,
 }
 
 impl ExportMode {
     fn feature_predicates(self) -> bool {
         matches!(
             self,
-            Self::FeaturePredicates | Self::Definitions | Self::Compatibility
+            Self::FeaturePredicates | Self::Definitions | Self::Compatibility | Self::Callables
         )
     }
     fn availability(self) -> bool {
         matches!(
             self,
-            Self::Availability | Self::FeaturePredicates | Self::Definitions | Self::Compatibility
+            Self::Availability | Self::FeaturePredicates | Self::Definitions | Self::Compatibility | Self::Callables
         )
     }
     fn module_contracts(self) -> bool {
@@ -82,11 +83,11 @@ impl ExportMode {
                 | Self::Availability
                 | Self::FeaturePredicates
                 | Self::Definitions
-                | Self::Compatibility
+                | Self::Compatibility | Self::Callables
         )
     }
     fn exact(self) -> bool {
-        matches!(self, Self::Definitions | Self::Compatibility)
+        matches!(self, Self::Definitions | Self::Compatibility | Self::Callables)
     }
 }
 
@@ -102,6 +103,9 @@ pub(crate) struct Stage {
     role_installation_steps: usize,
 }
 impl Stage {
+    pub(crate) fn callable_effects(&self) -> bool {
+        self.functions.callable_effects
+    }
     pub(crate) fn exact_linkage(&self) -> bool {
         self.functions.exact
     }
@@ -274,6 +278,9 @@ impl Stage {
     ) -> Result<Self, &'static str> {
         Self::begin_mode(report, facts, identity, ExportMode::Compatibility)
     }
+    pub(crate) fn begin_module_callables(report:&Report,facts:&mut Declarations,identity:&CrateIdentity)->Result<Self,&'static str>{
+        Self::begin_mode(report,facts,identity,ExportMode::Callables)
+    }
     fn begin_mode(
         report: &Report,
         facts: &mut Declarations,
@@ -353,6 +360,7 @@ impl Stage {
             stage.inputs.selected_methods = Some(Box::default());
         }
         stage.functions.exact = mode.exact();
+        stage.functions.callable_effects = mode == ExportMode::Callables;
         stage.reserve(count.saturating_mul(size_of::<Option<DeclarationRef>>()))?;
         stage.definitions.resize(count, None);
         stage.declarations(report, facts, mode)?;
