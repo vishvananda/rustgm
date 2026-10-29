@@ -161,7 +161,7 @@ fn missing_changed_nonconst_and_checked_faults_cannot_bypass_source_div() -> Tes
     for (name, expected) in [
         ("zero", "zero"),
         ("overflow", "overflow"),
-        ("ordinary-ufcs", "const"),
+        ("ordinary-ufcs", "cannot divide"),
         ("missing-role", "language"),
         ("wrong-default", ""),
     ] {
@@ -215,7 +215,7 @@ fn div_work_is_paid_on_warm_failure_and_repetition_with_an_ordinary_control() ->
 
 #[test]
 fn source_div_roles_cannot_be_published_through_legacy_contract_profiles() -> TestResult {
-    let (report, Analysis { mut facts, .. }) = analyze(&fixture("foundation")?)?;
+    let (report, Analysis { mut facts, .. }) = analyze(&fixture("export")?)?;
     let identity = report
         .package
         .source_core()

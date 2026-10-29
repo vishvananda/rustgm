@@ -472,4 +472,4 @@ const VALUE:usize=<usize as Div>::div(9,2);
 #[unsafe(no_mangle)]pub extern "C" fn syntax(a:usize,b:usize)->usize{a/b}
 #[unsafe(no_mangle)]pub extern "C" fn explicit(a:usize,b:usize)->usize{<usize as Div>::div(a,b)}
 #[unsafe(no_mangle)]pub extern "C" fn constant()->usize{VALUE}
-const CHECK:[u8;9]=[0;VALUE];
+const CHECK:[u8;VALUE]=[0;9];
