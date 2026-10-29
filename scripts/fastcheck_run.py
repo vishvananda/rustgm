@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -96,13 +97,25 @@ def execute(root, args, steps):
     common = ["--manifest-path", "dev/Cargo.toml", "--locked", "--profile", "dev-fast"]
     if set(groups) != {"lib"} or args.pa:
         steps.run("clippy", ["cargo", "clippy", *common, *targets, "--bin", "rustgm", "--", "-D", "warnings"])
+    binaries = {}
     if "lib" in groups:
-        # --lib alone does not lint cfg(test). Ask rustc for the library harness
-        # without Cargo's --tests, which selects every integration target too.
-        steps.run("clippy-private", ["cargo", "clippy", *common, "--lib", "--", "--test", "-D", "warnings"],
-                  overrides={"CARGO_TARGET_DIR": str(root / "obj/rust/private-lint")})
-    built = steps.run("build", ["cargo", "test", *common, *targets, "--no-run", "--message-format=json"])
-    binaries = artifacts(built, groups)
+        # Compile cfg(test) with strict Clippy and link in that same pass. Cargo
+        # owns the complete build graph: cargo clippy would check dependencies
+        # as metadata only, which cannot link their actual library code.
+        driver = shutil.which("clippy-driver")
+        if driver is None:
+            raise ValueError("private checks require the installed clippy-driver")
+        linked = steps.run("clippy-private", ["cargo", "test", *common, "--lib", "--no-run", "--message-format=json"],
+                           overrides={"CARGO_TARGET_DIR": str(root / "obj/rust/private-lint"),
+                                      "RUSTC_WORKSPACE_WRAPPER": driver, "CLIPPY_ARGS": "-Dwarnings"})
+        binaries.update(artifacts(linked, {"lib": groups["lib"]}))
+        steps.receipt["private_harness_producer"] = "clippy-private"
+    remaining = {name: cases for name, cases in groups.items() if name != "lib"}
+    if remaining:
+        build_targets = [flag for name in remaining for flag in ("--test", name)]
+        built = steps.run("build", ["cargo", "test", *common, *build_targets,
+                                   "--no-run", "--message-format=json"])
+        binaries.update(artifacts(built, remaining))
     selected = {}
     flags = ["--ignored"] if args.ignored else []
     for group, binary in binaries.items():
