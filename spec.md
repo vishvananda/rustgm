@@ -840,8 +840,8 @@ narrow Clippy expectation requires the measured layout and a specific reason.
 The identity query supplies no selected implementation, API, const, body or
 desugaring permission. Old wire profiles remain fenced until genuine transport.
 
-Anonymous declaration-time source calls retain their actual caller identity and
-Const effect. Demand caller-location data only from solved tracked calls and
+Anonymous constants and named declaration-time initializers retain their actual
+caller identity and Const effect. Demand caller-location data only from solved tracked calls and
 validate genuine Location/Phantom fields before publication. Resume selected
 implementation conformance with a retained touched-obligation cursor and actual
 per-owner method/constant kernels; no all-implementation scan or descriptor
