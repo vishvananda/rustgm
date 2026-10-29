@@ -997,6 +997,17 @@ budget and cannot borrow a missing local source-header producer. Actual new
 site data retains its source-owner prepayment. Unknown policy remains an error.
 Keep the source signature unchanged and distinguish tracked native signatures
 explicitly.
+For a trait callable, its symbolic declaration alone cannot determine whether
+the selected implementation needs caller data. Borrow the completed selection
+at the actual callee use, match its substituted subject and complete trait
+application, and query the same direct/inherited/default member resolver as
+dispatch. Preserve the implementation's separate captured lifetime prefix and
+named generic arguments with the shared implementation mapping. This header
+lookup supplies no new trait, API, const, lifetime or body permission. Charge
+the touched evidence and member searches; do not repeat selection or scan all
+implementations. Retain the original symbolic callable in the prepared site
+until dispatch rewrites both the operand and sealed site through its proved
+substitution. Ordinary nontrait calls retain their existing fast path.
 Runtime forwarding and CTFE frames consume the same prepared static Location
 values. Store immutable snapshot site data once as a typed footer after legacy
 prepared operands, with indexed queries rather than per-call scans. Count its
