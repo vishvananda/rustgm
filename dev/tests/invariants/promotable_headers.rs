@@ -95,7 +95,7 @@ fn marker_queries_reject_foreign_images_changed_flags_and_sticky_exhaustion() ->
     let report = report(&source, "promotable_queries")?;
     let mut facts = pipeline::analyze_source(&report)?.facts;
     let word = function(&report, "word")?;
-    let foreign = crate::test_source::source_provider(&source, "promotable_queries")?;
+    let foreign = self::report(&source, "promotable_queries")?;
     assert!(facts.promotable_contract(&foreign, word).is_err());
     let ContractKnowledge::KnownPresent(site) = facts.promotable_contract(&report, word)? else {
         return Err("marker".into());
