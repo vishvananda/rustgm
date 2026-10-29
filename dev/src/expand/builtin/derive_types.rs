@@ -10,6 +10,9 @@ use crate::{
     },
 };
 #[cfg(test)]
+#[path = "../../../tests/invariants/invoked_fields.rs"]
+mod call_tests;
+#[cfg(test)]
 #[path = "../../../tests/invariants/embedded_counts.rs"]
 mod constant_tests;
 #[cfg(test)]
@@ -72,6 +75,10 @@ pub(super) fn node(
             if let Some(output) = output {
                 *output = node(source, *output, target, charge, depth + 1)?;
             }
+        }
+        Kind::Call { callee, arguments } => {
+            *callee = node(source, *callee, target, charge, depth + 1)?;
+            *arguments = list(source, *arguments, target, charge, depth + 1)?;
         }
         Kind::Macro {
             path,
