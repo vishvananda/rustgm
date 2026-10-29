@@ -19,10 +19,19 @@ def scope_command(command, unit, policy):
 def stop(process, unit):
     # The scope includes descendants that change process groups or orphan themselves.
     try:
-        subprocess.run(["systemctl", "--user", "stop", unit], stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL, timeout=10, check=False)
+        stopped = subprocess.run(["systemctl", "--user", "stop", unit], stdout=subprocess.DEVNULL,
+                                 stderr=subprocess.DEVNULL, timeout=5, check=False).returncode == 0
     except (OSError, subprocess.TimeoutExpired):
-        pass
+        stopped = False
+    if not stopped:
+        # Killing the systemctl client does not cancel its pending stop job.
+        # A scope's default stop timeout can outlive our launcher and lease.
+        try:
+            subprocess.run(["systemctl", "--user", "kill", "--kill-whom=all",
+                            "--signal=SIGKILL", unit], stdout=subprocess.DEVNULL,
+                           stderr=subprocess.DEVNULL, timeout=5, check=False)
+        except (OSError, subprocess.TimeoutExpired):
+            pass
     if process.poll() is None:
         try:
             os.killpg(process.pid, signal.SIGTERM)
