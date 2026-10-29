@@ -201,28 +201,17 @@ impl Checker<'_> {
         let owner_kind = actual
             .ok_or_else(|| self.error(source, "source owner disappeared"))?
             .kind;
-        if !matches!(
-            self.facts.types.kind(predicate.ty),
-            Some(Kind::Primitive(_))
-        ) || predicate
-            .contains_parameters(&self.facts.types)
-            .map_err(|e| self.error(source, e))?
+        if !self.early_source_subject(owner, predicate.ty, pending)?
+            || (matches!(
+                self.facts.types.kind(predicate.ty),
+                Some(Kind::Primitive(_))
+            ) && predicate
+                .contains_parameters(&self.facts.types)
+                .map_err(|e| self.error(source, e))?)
             || predicate
                 .has_free_regions(&self.facts.types)
                 .map_err(|e| self.error(source, e))?
             || self.trait_region_count(owner) != 0
-            || !self
-                .facts
-                .generics
-                .parameter_ids(&self.facts.types, owner)
-                .map_err(|e| self.error(source, e))?
-                .is_empty()
-            || self
-                .facts
-                .generics
-                .declared_predicates_in_scope(owner)
-                .next()
-                .is_some()
         {
             return Ok(Eligibility::Unsupported(Unsupported::OpenSubject));
         }
@@ -244,7 +233,7 @@ impl Checker<'_> {
         let Some(member_profile) = self.scalar_member_profile(source, owners, &members)? else {
             return Ok(Eligibility::Unsupported(Unsupported::Members));
         };
-        let requirements = self.scalar_requirements(source, predicate, pending)?;
+        let requirements = self.scalar_requirements(owner, source, predicate, pending)?;
         let Some(requirements) = requirements else {
             return Ok(Eligibility::Unsupported(Unsupported::Requirements));
         };
@@ -261,6 +250,60 @@ impl Checker<'_> {
             members,
             environment: self.facts.generics.environments.get(&owner).cloned(),
         }))
+    }
+
+    fn early_source_subject(
+        &mut self,
+        owner: DefId,
+        subject: crate::types::TypeId,
+        pending: &mut Pending,
+    ) -> Result<bool, Error> {
+        let count = self
+            .facts
+            .generics
+            .parameters
+            .get(&owner)
+            .map_or(0, Vec::len);
+        pending
+            .charge(&mut self.facts, count.saturating_add(1))
+            .map_err(Error::unlocated)?;
+        match self.facts.types.kind(subject) {
+            Some(Kind::Primitive(_)) => Ok(self
+                .facts
+                .generics
+                .parameters
+                .get(&owner)
+                .is_none_or(Vec::is_empty)
+                && self
+                    .facts
+                    .generics
+                    .declared_predicates_in_scope(owner)
+                    .next()
+                    .is_none()),
+            Some(Kind::Parameter(id)) => {
+                if self
+                    .facts
+                    .types
+                    .parameter(id)
+                    .is_none_or(|p| p.owner.0 != owner.0)
+                {
+                    return Ok(false);
+                }
+                let Some(environment) = self.facts.generics.environments.get(&owner) else {
+                    return Ok(false);
+                };
+                Ok(self.facts.generics.parameters.get(&owner).is_some_and(|parameters| {
+                    parameters.iter().any(|p| p.argument == crate::types::arguments::Argument::Type(subject))
+                    && parameters.iter().enumerate().all(|(index, parameter)| {
+                        matches!(parameter.argument, crate::types::arguments::Argument::Type(ty)
+                            if matches!(self.facts.types.kind(ty), Some(Kind::Parameter(id))
+                                if self.facts.types.parameter(id).is_some_and(|p| p.owner.0 == owner.0 && p.index as usize == index)
+                                    && environment.abilities(id).is_some()))
+                    })
+                }))
+            }
+            _ => Ok(false),
+        }
     }
 
     fn scalar_member_profile(
@@ -381,6 +424,7 @@ impl Checker<'_> {
 
     fn scalar_requirements(
         &mut self,
+        owner: DefId,
         source: NodeKey,
         predicate: Predicate,
         pending: &mut Pending,
@@ -397,7 +441,10 @@ impl Checker<'_> {
             pending
                 .charge(&mut self.facts, 1)
                 .map_err(|e| self.error(source, e))?;
-            if !matches!(self.facts.types.kind(ty), Some(Kind::Primitive(_))) {
+            if !matches!(self.facts.types.kind(ty), Some(Kind::Primitive(_)))
+                && !matches!(self.facts.types.kind(ty), Some(Kind::Parameter(id))
+                    if self.facts.types.parameter(id).is_some_and(|p| p.owner.0 == owner.0))
+            {
                 return Ok(None);
             }
         }
@@ -416,11 +463,8 @@ impl Checker<'_> {
                     | Bound::ConstTrait(_)
                     | Bound::MaybeConstTrait(_)
             ) || value
-                .contains_parameters(&self.facts.types)
+                .has_free_regions(&self.facts.types)
                 .map_err(|e| self.error(source, e))?
-                || value
-                    .has_free_regions(&self.facts.types)
-                    .map_err(|e| self.error(source, e))?
             {
                 return Ok(None);
             }

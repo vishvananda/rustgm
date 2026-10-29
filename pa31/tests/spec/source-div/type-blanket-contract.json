@@ -1,0 +1,31 @@
+{
+  "scope": "Authored generic-owner conformance: all2 ownedtypeformals, genuine associatedconstant and traitrequirement negative; original SIZE source separate and unchanged.",
+  "inputs": {
+    "pa31/tests/spec/source-div/type-blanket.rs": "4d9c5366c07cab8cf9da572bfcda92b1232bb5fb0e460df043675bead81f8569",
+    "pa31/tests/spec/source-div/blanket-observer.c": "ffad23bfbc8f31814d111e7a46f985d856c2ff7bdc2fb4fff1f228099d60ecb3"
+  },
+  "profile": {
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort"
+  },
+  "expected": {
+    "metadata": 0,
+    "object": 0,
+    "native_status": 0,
+    "native_stdout": "7\n",
+    "bound": 7,
+    "missing_requirement": {
+      "metadata": 1,
+      "error": "E0277 T:Extra unsatisfied"
+    }
+  },
+  "evidence": {
+    "positive": "47175f88d8e1992b49bd513efd79abe62e8dc51207b120c1a24c2763168c3057",
+    "negative": "d6b44c3848ffd44e19316cf602e9e0c34697ec6702b9f340c52a8ce9e5fb248d"
+  },
+  "required": [
+    "Nominal subjects, const/lifetime owner formals and nontrivial proof debts remain outside this early profile.",
+    "Full pinned SizedTypeProperties trait beyond retained SIZE/ALIGN subset and complete TypeId graph remain required."
+  ]
+}
