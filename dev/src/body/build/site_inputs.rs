@@ -31,7 +31,8 @@ impl Builder<'_> {
                 )
                 .map_err(|error| self.error(node, error))?;
         }
-        if !tracked && intrinsic != Some(SourceIntrinsic::CallerLocation) {
+        let required = tracked || intrinsic == Some(SourceIntrinsic::CallerLocation);
+        if !required && self.facts.associated.trait_owner(definition).is_none() {
             return Ok(());
         }
         let source_use = match self.fact(node)?.operation {
@@ -63,6 +64,7 @@ impl Builder<'_> {
                 }
                 plan.source_use
             }
+            _ if !required => return Ok(()),
             _ => {
                 return Err(self.error(
                     node,
@@ -72,13 +74,19 @@ impl Builder<'_> {
         };
         let location = source_use
             .caller_site(self.facts, self.source, node, callable)
-            .map_err(|error| self.error(node, error))?
-            .ok_or_else(|| {
-                self.error(
+            .map_err(|error| self.error(node, error))?;
+        // A symbolic untracked trait member may select a tracked implementation.
+        // Its authenticated semantic producer prepared the same original callable;
+        // concrete dispatch rewrites that identity with the actual operand later.
+        let Some(location) = location else {
+            if required {
+                return Err(self.error(
                     node,
                     "tracked call lacks its prepared actual caller location",
-                )
-            })?;
+                ));
+            }
+            return Ok(());
+        };
         crate::sema::values::Reader::new(self.facts)
             .caller_location_value(location)
             .map_err(|error| self.error(node, error))?;

@@ -2,6 +2,7 @@
 mod builtin_formation;
 pub(super) mod captures;
 mod families;
+mod impl_arguments;
 mod input_contracts;
 #[cfg(test)]
 #[path = "../../tests/invariants/metered_premises.rs"]

@@ -86,7 +86,7 @@ struct Request {
 }
 impl Checker<'_> {
     pub(in crate::sema::bodies) fn requires_caller_site(
-        &self,
+        &mut self,
         node: NodeId,
         callable: TypeId,
     ) -> Result<bool, Error> {
@@ -104,7 +104,26 @@ impl Checker<'_> {
             .ok_or_else(|| self.error(node, "caller site lost its source catalog"))?
             .intrinsic_kind(definition)
             .map_err(|error| self.error(node, error))?;
-        Ok(tracked || intrinsic == Some(SourceIntrinsic::CallerLocation))
+        if tracked || intrinsic == Some(SourceIntrinsic::CallerLocation) {
+            return Ok(true);
+        }
+        // Current foreign profiles explicitly exclude tracked headers. They have
+        // no local source ledger to borrow for a selected implementation query.
+        if self.report.package.source_core().is_none() {
+            return Ok(false);
+        }
+        let source = if let Syntax::Call { callee, .. } = self.kind(node) {
+            self.key(callee)
+        } else {
+            self.key(node)
+        };
+        let Some(selected) =
+            crate::sema::dispatch::selected_definition(self.facts, source, callable)
+                .map_err(|error| self.error(node, error))?
+        else {
+            return Ok(false);
+        };
+        self.facts.checked_caller_tracking(self.report, selected)
     }
     fn retain_site_request(
         &mut self,
