@@ -41,7 +41,10 @@ impl Pending {
 }
 
 impl Checker<'_> {
-    pub(super) fn method_arguments(&mut self, node: NodeId) -> Result<(), Error> {
+    pub(super) fn method_arguments(
+        &mut self,
+        node: NodeId,
+    ) -> Result<Option<super::Dependency>, Error> {
         let site = self
             .report
             .resolution
@@ -53,7 +56,7 @@ impl Checker<'_> {
         let environment = self.trait_query_environment(node)?;
         let traits = self.trait_assumptions(node)?;
         let key = self.key(node);
-        let selected = receiver::choose(
+        let progress = receiver::choose(
             self.report,
             self.facts,
             &mut self.state.infer,
@@ -66,6 +69,16 @@ impl Checker<'_> {
                 traits: traits.as_deref(),
             },
         )?;
+        let selected = match progress {
+            receiver::Progress::Ready(selected) => selected,
+            receiver::Progress::Prepare(definition) => {
+                self.state.work.push(super::Work::MethodArguments(node));
+                return Ok(Some(super::Dependency {
+                    requirement: super::Requirement::Definition(definition),
+                    source: key,
+                }));
+            }
+        };
         if selected.from_bound {
             self.facts.methods.bound_uses.insert(key);
         }
@@ -114,7 +127,8 @@ impl Checker<'_> {
         ));
         let target_function = self.selected_target_function(node, callable)?;
         self.retain_active_call(node, signature, target_function)?;
-        self.schedule_call_arguments(node, signature, site.arguments, 1)
+        self.schedule_call_arguments(node, signature, site.arguments, 1)?;
+        Ok(None)
     }
 
     /// This slice supports safe-reference source methods, not the still-required

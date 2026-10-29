@@ -475,7 +475,6 @@ impl OutputBound for u8{}
 #[rustc_const_unstable(feature="early_outputs",issue="none")]
 pub const trait Produced{type Output:OutputBound;const TAG:Self::Output;fn value()->Self::Output;}
 #[unstable(feature="early_outputs",issue="none")]
-#[rustc_const_unstable(feature="early_outputs",issue="none")]
 impl Produced for u8{type Output=u8;const TAG:u8=9;fn value()->u8{7}}
 const NAMED:u8=<u8 as Produced>::value();
 type Checked=[u8;NAMED as usize];

@@ -888,7 +888,11 @@ impl Checker<'_> {
                     }
                 }
                 Work::CallArguments(node, expected) => self.call_arguments(node, expected)?,
-                Work::MethodArguments(node) => self.method_arguments(node)?,
+                Work::MethodArguments(node) => {
+                    if let Some(dependency) = self.method_arguments(node)? {
+                        return Ok(Some(dependency));
+                    }
+                }
                 Work::ForIterator(node) => {
                     if let Some(dependency) = self.for_iterator_work(node)? {
                         return Ok(Some(dependency));

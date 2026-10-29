@@ -10,6 +10,9 @@ impl Checker<'_> {
         &mut self,
         solved: &Solved,
     ) -> Result<Option<Dependency>, Error> {
+        if self.caller_data_deferred()? {
+            return Ok(None);
+        }
         let Some(catalog) = self.facts.source_bindings.as_deref() else {
             return Ok(None);
         };

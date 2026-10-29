@@ -85,6 +85,31 @@ struct Request {
     callable: TypeId,
 }
 impl Checker<'_> {
+    pub(in crate::sema::bodies) fn caller_data_deferred(&self) -> Result<bool, Error> {
+        if !matches!(
+            self.state.completion,
+            super::super::readiness::Completion::Ordinary
+        ) || !matches!(
+            self.availability,
+            crate::sema::traits::implementations::Availability::Validated
+        ) || self.report.package.source_core().is_none()
+        {
+            return Ok(false);
+        }
+        let Some(catalog) = self.facts.source_bindings.as_deref() else {
+            return Ok(false);
+        };
+        if catalog
+            .language(crate::support::bindings::LangItem::PanicLocation)
+            .is_some()
+        {
+            return Ok(false);
+        }
+        catalog
+            .require_provider_report(self.report)
+            .map_err(|error| self.error(self.state.body.node, error))?;
+        Ok(true)
+    }
     pub(in crate::sema::bodies) fn requires_caller_site(
         &mut self,
         node: NodeId,
@@ -190,6 +215,12 @@ impl Checker<'_> {
         context: Option<SourceCallUse>,
         warm: bool,
     ) -> Result<Vec<Site>, Error> {
+        // Ordinary typing may check an unused forwarding body without a Location
+        // provider. It grants no sealed site: reached CTFE/native calls still
+        // require their actual data through declaration/executable preparation.
+        if self.caller_data_deferred()? {
+            return Ok(Vec::new());
+        }
         let mut requests = Vec::new();
         self.ordinary_site_requests(solved, &mut requests)?;
         for index in 0..self.state.call_types.try_plans.len() {

@@ -23,6 +23,10 @@ pub(in crate::sema) struct Selected {
     pub unsize: bool,
     pub from_bound: bool,
 }
+pub(in crate::sema) enum Progress {
+    Ready(Selected),
+    Prepare(DefId),
+}
 #[derive(Clone, Copy)]
 enum Lane {
     Inherent,
@@ -52,7 +56,7 @@ pub(in crate::sema) fn choose(
     mut term: TermId,
     site: MethodCall,
     caller: Caller<'_>,
-) -> Result<Selected, Error> {
+) -> Result<Progress, Error> {
     let error = |message: &str| Declarations::error(report, key, message);
     let identifier = super::names::Use::receiver(report, key, site)?;
     let (base, depth) = source
@@ -65,6 +69,11 @@ pub(in crate::sema) fn choose(
         .map_err(error)?;
     let inherent = inherent_candidates(report, facts, source, (term, base), head, site, identifier)
         .map_err(error)?;
+    if let Some(definition) =
+        pending_definition(facts, source, &inherent.members, caller.availability).map_err(error)?
+    {
+        return Ok(Progress::Prepare(definition));
+    }
     let has_traits = facts.methods.trait_names.contains(&site.name);
     let library = library_method(report, head, site.name);
     if inherent.members.is_empty() && !has_traits && library.is_none() {
@@ -104,7 +113,7 @@ pub(in crate::sema) fn choose(
     };
     for dereferences in 0..=depth {
         if let Some(selected) = search.at(term, dereferences, false).map_err(error)? {
-            return Ok(selected);
+            return Ok(Progress::Ready(selected));
         }
         if dereferences < depth {
             term = search
@@ -126,7 +135,7 @@ pub(in crate::sema) fn choose(
             .map_err(inference)
             .map_err(error)?;
         if let Some(selected) = search.at(slice, depth, true).map_err(error)? {
-            return Ok(selected);
+            return Ok(Progress::Ready(selected));
         }
     }
     Err(error(if has_traits {
@@ -134,6 +143,30 @@ pub(in crate::sema) fn choose(
     } else {
         "no applicable inherent method for this receiver"
     }))
+}
+fn pending_definition(
+    facts: &Declarations,
+    source: &mut Context,
+    members: &[DefId],
+    availability: crate::sema::traits::implementations::Availability,
+) -> Result<Option<DefId>, &'static str> {
+    if matches!(
+        availability,
+        crate::sema::traits::implementations::Availability::Validated
+    ) {
+        return Ok(None);
+    }
+    for &method in members {
+        source.account_work(1).map_err(inference)?;
+        if facts
+            .definitions
+            .get(method.0 as usize)
+            .is_some_and(Option::is_none)
+        {
+            return Ok(Some(method));
+        }
+    }
+    Ok(None)
 }
 fn inherent_candidates(
     report: &Report,

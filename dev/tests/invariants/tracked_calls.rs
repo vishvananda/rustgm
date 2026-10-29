@@ -396,3 +396,40 @@ fn untracked_selected_impls_keep_actual_const_calls_without_any_location_provide
     )?;
     Ok(())
 }
+
+#[test]
+fn unused_tracked_calls_type_without_location_but_reached_calls_require_actual_data() -> TestResult
+{
+    let source = test_source::fixture("pa31/tests/spec/source-location/deferred-tracking.rs")?;
+    let report = test_source::source_provider(&source, "deferred_tracking")?;
+    let crate::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = crate::pipeline::analyze_source(&report)?;
+    assert!(
+        facts
+            .source_bindings
+            .as_deref()
+            .ok_or("actual source catalog")?
+            .language(crate::support::bindings::LangItem::PanicLocation)
+            .is_none()
+    );
+    let root = selected_export(&report, "tracked_without_location")?;
+    let error = crate::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        crate::lower::Roots {
+            entry: None,
+            exports: &[root],
+        },
+        prepared,
+    )
+    .err()
+    .ok_or("reached tracked call accepted without actual caller data")?;
+    let message = error.to_string();
+    assert!(
+        message.contains("tracked call lacks its actual sealed caller site"),
+        "{message}"
+    );
+    Ok(())
+}

@@ -5,7 +5,7 @@
     "wrong-bound.rs": "bc0e509f073f4bf210aa256cfd9e9140fb04ad1663b8992c9301bc2f66535372",
     "wrong-method.rs": "1a9172a06624bc5931264b2c58c78c8d64823d17b5d7159333290a9024a3768f",
     "source.rs": "c8dc76b5c54ec3e0ca297624fe9abb89b93312e40175e212d239063d28b4c3ae",
-    "ordinary.rs": "f8c1a61bd5f04bc1b9b4dbbbbe55eb6468ba4758ccf0c7de11eb319d594c404b",
+    "ordinary.rs": "f93c2313e5d8d23cf450817bd435be2ea86dc8cdb4ae0379cb77a0e800674cff",
     "missing-type.rs": "664f9a1a72d157cd50aa3dd67bc2e73a7435e7365f1659a1ff3e2c34b373a001",
     "extra-type.rs": "573e05005b89d5de7b651952339fb958c19d7907b9240ccdfa1a9252cc3c37d0"
   },
@@ -40,5 +40,7 @@
     "all original crate artifacts",
     "open/generic early implementation profiles use their existing boundaries",
     "no metadata profile widening"
-  ]
+  ],
+  "predecessor": "f88dcc6d78727577d52b210ea1945c4967be26ddbeca5ef6d92efb2f655ff9b4",
+  "correction": "Ordinary impl omits only its authored conststability annotation (which requires aconstowner); original consttraitpolicy andallmethod/type/constant bodies unchanged. Retain firstsource+earlyowner rejection; now independent failure mustreach actual nonconsttrait implementation use."
 }
