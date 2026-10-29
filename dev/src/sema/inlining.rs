@@ -1,4 +1,5 @@
 //! Inline attributes are checked advisory data, independent of execution permission.
+mod mir_boundaries;
 use crate::support::hash::HashMap;
 use crate::{
     resolve::{
@@ -16,6 +17,7 @@ use crate::{
         token_tree::{Delimiter, Forest, TreeKind},
     },
 };
+pub(in crate::sema) use mir_boundaries::Draft as MirBoundaries;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Hint {
     Hint,

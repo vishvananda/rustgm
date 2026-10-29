@@ -1,0 +1,178 @@
+{
+  "profile": "Rust1.98.0/edition2024/Linuxx86-64",
+  "oracle_plan_sha256": "e0e33d8032fd7122f12db8453b1c15900a0d10a7238185cf62b67de8ce7dd59c",
+  "oracle_receipt_sha256": "f9fe73e30cb1f1909b46264a86211b3bedb627d3258f9ecf4e3cec04bb42912d",
+  "original": {
+    "file": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ptr/mod.rs",
+    "file_sha256": "f7b3e71d9e9246762c38641c6c1a49079265782aab6deaa537b43665b418f029",
+    "byte_start": 65937,
+    "byte_end": 66205,
+    "fragment_sha256": "d98bbbb709f9a0587913f3827d33fd78b3e77f09222be969c61790fd733307a5",
+    "scope": "Exact original declaration and body, genuine std core MaybeUninit for Rust-only metadata/object qualification; no candidate original runtime claim."
+  },
+  "cases": {
+    "word.rs": {
+      "rust_metadata": 0,
+      "sha256": "852db7062830efd0914cac8bc9c3d8a62e59f148ac7915edc7716ac15a17dd32",
+      "candidate": 0
+    },
+    "with-inline.rs": {
+      "rust_metadata": 0,
+      "sha256": "b5435ed0db19bced808ca96cd5b6180095ff1d2e6a3870cf68b5cd7293a0dbc5",
+      "candidate": 0
+    },
+    "with-always.rs": {
+      "rust_metadata": 0,
+      "sha256": "5327b21ee8be5af18d5ce344e4224a5fb1814d43d7d2f22b6a22344225bc6dfa",
+      "candidate": 0
+    },
+    "with-never.rs": {
+      "rust_metadata": 0,
+      "sha256": "e63fb8c4f79ac7189e7397f79f3eb830d79c181785d9f73600a7cd67de3631ca",
+      "candidate": 0
+    },
+    "const.rs": {
+      "rust_metadata": 0,
+      "sha256": "2bd8c273bf3ff28cc173f8bfed6a939ee19cd659964b0f1d78c0e9b1bf7b65af",
+      "candidate": 0
+    },
+    "unsafe.rs": {
+      "rust_metadata": 0,
+      "sha256": "3872e7b3d669cb8bd0a30ea194d512b3bca394215e5657351b22760bf7cecb14",
+      "candidate": 0
+    },
+    "unsafe-denied.rs": {
+      "rust_metadata": 1,
+      "sha256": "692a6b68507f400d92f0680cbef549f2b3ada2808d711ad4ddea8d3ea6fa9982",
+      "candidate": 1
+    },
+    "nonconst-denied.rs": {
+      "rust_metadata": 1,
+      "sha256": "75a3574ceeaf69704b81a67d972d8fc50ee5a2b701645b97ba404e5553312682",
+      "candidate": 1
+    },
+    "inherent.rs": {
+      "rust_metadata": 0,
+      "sha256": "a888b4e79d87cde008b70b90cfe9df7200c42c1fc7bf7ebd7bb8c570420bfe22",
+      "candidate": 0
+    },
+    "required.rs": {
+      "rust_metadata": 0,
+      "sha256": "5f70963fa1d45723f26bbafa25e327754d384c06aec2dec7cab0f88679a398f2",
+      "candidate": 0
+    },
+    "default.rs": {
+      "rust_metadata": 0,
+      "sha256": "b559f3da851cfb2cd1384e2dfa34c937b8f5f620af6a1d75e452e2717784b87a",
+      "candidate": 0
+    },
+    "implementation.rs": {
+      "rust_metadata": 0,
+      "sha256": "d036818068df71c35753bfc18685d996a44cc7d9e78f3ab0efc5b3e18418b624",
+      "candidate": 0
+    },
+    "foreign.rs": {
+      "rust_metadata": 1,
+      "sha256": "cc6b2cb7afc9152604775a6a60d6f4f5788576cc1f59aea954bbde823d81d9ed",
+      "candidate": 1
+    },
+    "extern-body.rs": {
+      "rust_metadata": 0,
+      "sha256": "b7ca535b232c10422efbf9656627d796448228248d2899c3726a2d37bfba3528",
+      "candidate": 0
+    },
+    "closure.rs": {
+      "rust_metadata": 1,
+      "sha256": "e5f7a05d75475b33c62d281f71ace6e43291879d3199a1c3373411fe416b6b35",
+      "candidate": 1
+    },
+    "struct.rs": {
+      "rust_metadata": 1,
+      "sha256": "9c119b9e0c1f5868568cc45abde3f4ea7ed23214fbe4260415dadfdb9bde1a63",
+      "candidate": 1
+    },
+    "constant.rs": {
+      "rust_metadata": 1,
+      "sha256": "5d4b237f3eeac418259a1cc6d436be7b221f9dbe848f2e5a0a05fdc499e8f434",
+      "candidate": 1
+    },
+    "missing-gate.rs": {
+      "rust_metadata": 1,
+      "sha256": "f30eb45ff8dbc4e1e76379a5296c0049ad1f42e789627ca1600dca75b7147511",
+      "candidate": 1
+    },
+    "duplicate.rs": {
+      "rust_metadata": 1,
+      "sha256": "21c5688e19337ba2100a5e9fc9f151bda629af8901fe20a62a078e1bc5a98620",
+      "candidate": 1
+    },
+    "duplicate-allowed.rs": {
+      "rust_metadata": 1,
+      "sha256": "2fef8eb5e6fb274469c0bf7b7512052eb5e5d08120b69959f1df0fd53905b986",
+      "candidate": 1
+    },
+    "empty-list.rs": {
+      "rust_metadata": 1,
+      "sha256": "f47960d6d2228f339bcacdce0d220dbdc1803dac12b38590ef0ebacc2101ee81",
+      "candidate": 1
+    },
+    "list.rs": {
+      "rust_metadata": 1,
+      "sha256": "2377f6865a7ded7bf51d108116793a9e2c984019eeadd01ff9ca89fb31113715",
+      "candidate": 1
+    },
+    "value.rs": {
+      "rust_metadata": 1,
+      "sha256": "e3760e90a0dbb41cea25d3169efb3293976c1dc762034a4a51d852d82218881e",
+      "candidate": 1
+    },
+    "unsafe-wrapper.rs": {
+      "rust_metadata": 1,
+      "sha256": "a773bd98d2ca4740416a813a20c0c25d4ef474414ca005083454286ea2b9d0eb",
+      "candidate": 1
+    },
+    "deny-unused.rs": {
+      "rust_metadata": 0,
+      "sha256": "36ecb9a49ccdc607d9289b4efb5cc8f91aca7dd26a50fb42ca47c744841e2415",
+      "candidate": 0
+    },
+    "cfg-removed-duplicate.rs": {
+      "rust_metadata": 0,
+      "sha256": "5f12dd3bec92d7416b3f48111df43230e9e8573ba494c31fe70c368c6acba36e",
+      "candidate": 0
+    },
+    "cfg-removed-bad-target.rs": {
+      "rust_metadata": 0,
+      "sha256": "7b7b00ec635505e0fa87261535c629dba2a13f972b6535989fb15a5dba8226ad",
+      "candidate": 0
+    },
+    "macro-allowance.rs": {
+      "rust_metadata": 0,
+      "sha256": "1faf5de6766d89502f5187182fe05074d60d2779bfb472f430d1b2f8854ea5b6",
+      "candidate": 0
+    },
+    "same-owner-distinct.rs": {
+      "rust_metadata": 0,
+      "sha256": "3a6655e3e3fc31b3da0d594f26abe8bb9918ebbd61569059ae07383afdb698d8",
+      "candidate": 0
+    },
+    "original-swap-chunk.rs": {
+      "rust_metadata": 0,
+      "sha256": "a0b3e141d6c6288e3263c191262cb407e200b4a676b3227add4b083542243018",
+      "candidate": "Rust-only original full-body dependency scope"
+    }
+  },
+  "transport": "No current MIR-inlining consumer before/after import; native hints unchanged. Future pass requires a real transported contract. No absence permission query.",
+  "predecessor_receipt_sha256": "b8576f886d53934a1973dff05005c4130585254427c0b410de3f5446dd5c0953",
+  "module_provider": {
+    "path": "pa31/tests/spec/source-no-mir-inline/module-provider.rs",
+    "sha256": "d94638abb2bb05a3ba8944f40d5fd96a8738670f487005f6eaf3a8dcbca5ea5c",
+    "origin": "pa31/tests/spec/source-callable-effects/combined-provider.rs",
+    "origin_sha256": "ee9cbc3d3b8d7b035ab0b6a75638843f71e35c361da22e98ddba2c7481d581fd",
+    "rust_metadata": 0,
+    "rust_object": 0,
+    "candidate_v7_export": 0,
+    "fresh_client_inline_hint": "Always",
+    "scope": "Unchanged actual v7 provider prefix plus authored marker-bearing function; no current MIR inlining consumer or optimization permission from absent wire data. Independent supplemental observation pending."
+  }
+}

@@ -20,6 +20,7 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
     crate::sema::specialization::prepare(report, facts)?;
     let mut by_source = HashMap::default();
     let mut pointer_markers = HashMap::default();
+    let mut mir_boundaries = crate::sema::inlining::MirBoundaries::default();
     let mut allowances = report.macro_allowances();
     for (file, unit) in report.package.units.iter().enumerate() {
         if unit.include_context.is_some() {
@@ -50,6 +51,17 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                     report.expanded_derive(owner_key, effect)?;
                     continue;
                 }
+                if attribute.name(forest, unit.source.text()) == Some("rustc_no_mir_inline") {
+                    mir_boundaries.consume(
+                        report,
+                        facts,
+                        (owner_key, key),
+                        (attribute, effect),
+                        forest,
+                        &mut allowances,
+                    )?;
+                    continue;
+                }
                 if consume_annotation(
                     report,
                     facts,
@@ -64,49 +76,70 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                     }
                     continue;
                 }
-                facts.reserve_must_use_source(owner_key, attribute.span)?;
-                let reason = reason(unit.source.text(), forest, attribute)
-                    .map_err(|message| Error::at(file, attribute.span.start, message))?;
-                if !supported {
-                    facts.must_use_diagnostic(
-                        report,
-                        owner_key,
-                        attribute.span.start,
-                        0,
-                        WarningCode::UnusedAttributes,
-                        "must_use attribute requires a function, nominal type or trait".into(),
-                    )?;
-                    continue;
-                }
-                if by_source.contains_key(&key) {
-                    facts.must_use_diagnostic(
-                        report,
-                        owner_key,
-                        attribute.span.start,
-                        0,
-                        WarningCode::UnusedAttributes,
-                        "duplicate must_use attribute".into(),
-                    )?;
-                    continue;
-                }
-                let index = retain(
+                consume_must_use(
+                    report,
                     facts,
-                    Contract {
-                        image: std::sync::Arc::clone(unit.source.original_image()),
-                        owner: owner_key,
-                        declaration: key,
-                        span: attribute.span,
-                        effect,
-                        reason,
-                    },
+                    (owner_key, key, supported),
+                    (attribute, effect),
+                    forest,
+                    &mut by_source,
                 )?;
-                by_source.insert(key, index);
             }
         }
     }
-    bind_definitions(report, facts, &by_source, &mut pointer_markers)?;
+    bind_definitions(
+        report,
+        facts,
+        &by_source,
+        &mut pointer_markers,
+        &mut mir_boundaries,
+    )?;
     crate::sema::specialization::finish(facts)?;
     complete_imports(report, facts)
+}
+fn consume_must_use(
+    report: &Report,
+    facts: &mut Declarations,
+    (owner, declaration, supported): (NodeKey, NodeKey, bool),
+    (attribute, effect): (Attribute, usize),
+    forest: &Forest,
+    by_source: &mut HashMap<NodeKey, usize>,
+) -> Result<(), Error> {
+    facts.reserve_must_use_source(owner, attribute.span)?;
+    let unit = report.package.unit(declaration.file);
+    let reason = reason(unit.source.text(), forest, attribute)
+        .map_err(|message| Error::at(declaration.file, attribute.span.start, message))?;
+    let message = if !supported {
+        Some("must_use attribute requires a function, nominal type or trait")
+    } else if by_source.contains_key(&declaration) {
+        Some("duplicate must_use attribute")
+    } else {
+        None
+    };
+    if let Some(message) = message {
+        facts.must_use_diagnostic(
+            report,
+            owner,
+            attribute.span.start,
+            0,
+            WarningCode::UnusedAttributes,
+            message.into(),
+        )?;
+        return Ok(());
+    }
+    let index = retain(
+        facts,
+        Contract {
+            image: std::sync::Arc::clone(unit.source.original_image()),
+            owner,
+            declaration,
+            span: attribute.span,
+            effect,
+            reason,
+        },
+    )?;
+    by_source.insert(declaration, index);
+    Ok(())
 }
 fn retain(facts: &mut Declarations, contract: Contract) -> Result<usize, Error> {
     let contracts = facts.must_use_contracts.get_or_insert_default();
@@ -395,7 +428,9 @@ fn bind_definitions(
     facts: &mut Declarations,
     by_source: &HashMap<NodeKey, usize>,
     pointer_markers: &mut HashMap<NodeKey, bool>,
+    mir_boundaries: &mut crate::sema::inlining::MirBoundaries,
 ) -> Result<(), Error> {
+    mir_boundaries.prepare_binding(report, facts)?;
     if !pointer_markers.is_empty() {
         crate::sema::header_attributes::reserve_source_contracts(
             facts,
@@ -409,6 +444,7 @@ fn bind_definitions(
     }
     if !by_source.is_empty()
         || !pointer_markers.is_empty()
+        || !mir_boundaries.is_empty()
         || report.package.source_core().is_some()
         || crate::sema::header_attributes::has_comptime_headers(facts)
         || facts
@@ -418,6 +454,7 @@ fn bind_definitions(
     {
         for (index, definition) in report.resolution.definitions.iter().enumerate() {
             bind_pointer_marker(report, index, definition, pointer_markers)?;
+            mir_boundaries.bind(report, index, definition)?;
             bind_macro_helpers(report, facts, index, definition)?;
             if let Some(key) = definition.node {
                 crate::sema::header_attributes::bind_definition(
@@ -477,6 +514,7 @@ fn bind_definitions(
             "pointer lint marker lacks its actual function definition",
         ));
     }
+    mir_boundaries.finish()?;
     Ok(())
 }
 
