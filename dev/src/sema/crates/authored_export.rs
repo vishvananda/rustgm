@@ -296,6 +296,7 @@ impl Stage {
             .as_deref()
             .ok_or("source export has no actual role catalog")?
             .require_provider_report(report)?;
+        authored_traits::require_range_transport(facts)?;
         let unit = report
             .package
             .units

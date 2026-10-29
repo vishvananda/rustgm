@@ -1,0 +1,68 @@
+{
+  "state": "successor frozen before candidate after two retained independent prediction disagreements",
+  "owning": "PA31 actual compiler role declarations and ordinary source proof; PA18 associated-member contracts",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "original": {
+    "path": "library/core/src/pat.rs",
+    "sha256": "0e620c6d485f27b0dd9fd64b93d13326ea83545155e86d3479a1bfae2541c796",
+    "start": 693,
+    "end": 1385,
+    "interval_sha256": "28dfbc49b7eb37d8278ff20c572215cea2150712d8919c2920116f138aaf87bf"
+  },
+  "files": {
+    "default-method.rs": "dc60a03939e82e5fab8f86ef898e86fa93585398ba295f9e5df1c89e8a140635",
+    "unsafe.rs": "fb06bde60ebe64d065cab4de7d8a7a9d3af0a77f70bb74af067749dd0b4f7923",
+    "wrong-self.rs": "5538370dd1ff9b14ba2eda059d8653b9a40c6b8dae66221daac797bc37a06b36",
+    "partial.rs": "cc33b7d9e189e09fd11966cfcca0f220b2e22c5317f24c6ff6be5eb114aa132d",
+    "source-declarations.rs": "a0221a357e9f73fe76fa95f8a5a220413db3a7807bd964c4cd0db6d4c33523a5",
+    "upstream-trait.rs": "c45fe32bda8a541d2926a1ecc75311f35a56a96a01c506ee5b5b952267379215",
+    "ordinary.rs": "9b2a92f3b44623005b915be3a4a01b6f1b3d61fe5e67d2c10bbdf7f2a27fcb24",
+    "generic.rs": "7e8970f3e62e26fd0748deae9255da8a6e6d2c999e731c35e1a2d6deb54596a4",
+    "wrong-arity.rs": "968b7ba45a6920b271edf222d0950d4f279d7d0afbac19be15b4841cea468ebd",
+    "missing-implementation.rs": "800bbfa89f63aac79c783eb4b293f4a3b28bd11baaeba89a6906080d0c549bc6",
+    "wrong-kind.rs": "193549efe5946fc78a9f132f192b90cc37d23b82fae66a2753a16b89e65a7bfa",
+    "wrong-abi.rs": "d86a700fccfe39930c2f144548cedf451d664f4b496bf7e15abac346f0a869d8",
+    "duplicate.rs": "3f482f3ea17b067bf37f89f2fbe623c9f58da0d19da14522be83a1160cf6f8e5",
+    "nonconst.rs": "20906fee28f4cabb2a8060a58978dc790766c5e7d931283f2b7994f912460e2f"
+  },
+  "rust_metadata_predictions": {
+    "source-declarations": 0,
+    "partial": 0,
+    "ordinary": 0,
+    "wrong-self": 0,
+    "wrong-abi": 1,
+    "wrong-arity": 0,
+    "unsafe": 0,
+    "nonconst": 0,
+    "generic": 1,
+    "default-method": 1,
+    "duplicate": 1,
+    "wrong-kind": 1,
+    "missing-implementation": 1
+  },
+  "candidate_protocol": {
+    "source-declarations": "complete source header/query identity only, no implementation or execution permission",
+    "partial": "valid unused partial family remains pending and cannot satisfy query",
+    "ordinary": "same-spelling trait/members grant no role; no range seal allocation",
+    "wrong-self": "unsupported pinned header, not assumed invalid Rust declaration",
+    "wrong-abi": "unsupported pinned header, not assumed invalid Rust declaration",
+    "wrong-arity": "unsupported pinned header, not assumed invalid Rust declaration",
+    "unsafe": "unsupported pinned header, not assumed invalid Rust declaration",
+    "nonconst": "unsupported required const-trait profile; no invented const permission",
+    "generic": "actual required method own-generic count rejected",
+    "default-method": "required method target forbids a default body",
+    "duplicate": "duplicate role rejected by reservation",
+    "wrong-kind": "module constant cannot claim associated role",
+    "missing-implementation": "actual ordinary trait dispatch must reject; language member identity is no implementation proof"
+  },
+  "required": [
+    "genuine PatTyRange source/desugaring API authority and open/exclusive typed consumer (C ownership)",
+    "full actual RangePattern integer/char source impl and selected MIN/MAX/Sub body execution, including real checked_sub/unchecked_sub, Option and panic prerequisites",
+    "signed OR and character-domain range publication where not yet supported",
+    "range helper metadata/body transport and full core/alloc/std artifacts"
+  ],
+  "retained_prediction_disagreements": {
+    "wrong-abi": "RustE0737: original track_caller forbids extern C ABI, observed1 instead of0",
+    "nonconst": "Rust accepts this unused declaration, observed0 instead of1; candidate const-parent restriction is finite source profile, not language rejection"
+  }
+}

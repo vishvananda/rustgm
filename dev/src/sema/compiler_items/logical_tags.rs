@@ -213,6 +213,7 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
             methods: [None; 3],
             pointee: None,
             discriminant: None,
+            range: None,
         })
     });
     if ledger.discriminant.is_some() {

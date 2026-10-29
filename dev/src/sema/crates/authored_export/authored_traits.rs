@@ -10,6 +10,21 @@ use crate::{
     types::{ItemId, Kind},
 };
 
+/// Admission precedes any declaration/constant row serialization.
+pub(super) fn require_range_transport(facts: &Declarations) -> Result<(), &'static str> {
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("source header graph has no role catalog")?;
+    if [LangItem::RangeMin, LangItem::RangeMax, LangItem::RangeSub]
+        .into_iter()
+        .any(|role| catalog.language(role).is_some())
+    {
+        return Err("source range helper contract transport is not implemented");
+    }
+    Ok(())
+}
+
 impl Stage {
     pub(super) fn traits(
         &mut self,
