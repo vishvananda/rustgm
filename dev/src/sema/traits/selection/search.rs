@@ -13,6 +13,9 @@ mod coinduction;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/fn_copying.rs"]
 mod fn_copying_tests;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/relaxed_pinning.rs"]
+mod pinning_tests;
 mod pointee;
 mod refined_markers;
 #[cfg(test)]

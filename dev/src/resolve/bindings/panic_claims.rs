@@ -85,29 +85,8 @@ pub(super) fn validate(
         }
         return Ok(());
     }
-    let function = match role {
-        LangItem::Not
-        | LangItem::Neg
-        | LangItem::Sync
-        | LangItem::Unpin
-        | LangItem::TrivialClone
-        | LangItem::PartialEq
-        | LangItem::StructuralPartialEq
-        | LangItem::ConstParamTy
-        | LangItem::PartialOrd
-        | LangItem::Send
-        | LangItem::DispatchFromDyn
-        | LangItem::Shl
-        | LangItem::Add
-        | LangItem::Sub
-        | LangItem::BitOr => false,
-        LangItem::Panic
-        | LangItem::PanicFmt
-        | LangItem::PanicImpl
-        | LangItem::PanicDisplay
-        | LangItem::OffsetOf
-        | LangItem::ConstPanicFmt => true,
-        _ => return Ok(()),
+    let Some(function) = function_role(role) else {
+        return Ok(());
     };
     let unit = package.unit(declaration.origin.file);
     let Kind::Item(index) = unit.configured.ast.node(declaration.origin.node).kind else {
@@ -134,6 +113,34 @@ pub(super) fn validate(
         ));
     }
     Ok(())
+}
+
+const fn function_role(role: LangItem) -> Option<bool> {
+    Some(match role {
+        LangItem::Not
+        | LangItem::Neg
+        | LangItem::Sync
+        | LangItem::Unpin
+        | LangItem::UnsafeUnpin
+        | LangItem::TrivialClone
+        | LangItem::PartialEq
+        | LangItem::StructuralPartialEq
+        | LangItem::ConstParamTy
+        | LangItem::PartialOrd
+        | LangItem::Send
+        | LangItem::DispatchFromDyn
+        | LangItem::Shl
+        | LangItem::Add
+        | LangItem::Sub
+        | LangItem::BitOr => false,
+        LangItem::Panic
+        | LangItem::PanicFmt
+        | LangItem::PanicImpl
+        | LangItem::PanicDisplay
+        | LangItem::OffsetOf
+        | LangItem::ConstPanicFmt => true,
+        _ => return None,
+    })
 }
 
 #[cfg(test)]

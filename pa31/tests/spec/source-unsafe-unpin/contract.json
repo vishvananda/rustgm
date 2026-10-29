@@ -1,0 +1,103 @@
+{
+  "state": "frozen before independent/candidate observation",
+  "owning": "PA31 actual source UnsafeUnpin declaration and ordinary auto-trait proof; optional noalias optimization separate",
+  "profile": {
+    "rustc": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": true,
+    "panic": "abort"
+  },
+  "original": {
+    "marker.rs": {
+      "start": 34771,
+      "end": 35003,
+      "sha256": "fabedeb0ee2b37d859ddfa1a1372f677a25b81c88c90fc079352c984bef38602"
+    },
+    "unsafe_pinned.rs": {
+      "start": 1305,
+      "end": 1473,
+      "scope": "exact unchanged separate unsafe_pinned role remains Required; authored payload reducer grants no role/aliasing contract"
+    }
+  },
+  "cases": [
+    {
+      "source": "positive.rs",
+      "metadata": 0
+    },
+    {
+      "source": "negative-payload.rs",
+      "metadata": 1
+    },
+    {
+      "source": "negative-zero-array.rs",
+      "metadata": 1
+    },
+    {
+      "source": "generic-unpaid.rs",
+      "metadata": 1
+    },
+    {
+      "source": "missing-pointer-impl.rs",
+      "metadata": 1
+    },
+    {
+      "source": "unsafe-impl-required.rs",
+      "metadata": 1
+    },
+    {
+      "source": "header-safe.rs",
+      "metadata": 1
+    },
+    {
+      "source": "header-no-auto.rs",
+      "metadata": 1
+    },
+    {
+      "source": "header-generic.rs",
+      "metadata": 1
+    },
+    {
+      "source": "header-member.rs",
+      "metadata": 1
+    },
+    {
+      "source": "lookalike.rs",
+      "metadata": 0
+    },
+    {
+      "source": "formation-unpaid.rs",
+      "metadata": 1
+    },
+    {
+      "source": "renamed.rs",
+      "metadata": 0
+    }
+  ],
+  "candidate_lookalike": "explicit unsupported custom auto-trait profile; never grants UnsafeUnpin role",
+  "required": [
+    "unsafe_pinned original type language role and full cell/pin methods",
+    "optional noalias optimization",
+    "imported UnsafeUnpin metadata transport",
+    "pattern-pointer exception support where existing pattern type prerequisites intervene"
+  ],
+  "files": {
+    "formation-unpaid.rs": "94d7e8cc69d38af632783656823bc74be2dcf4a3524e3b6ef599de9961f6ce60",
+    "generic-unpaid.rs": "f6b56bcb51902be25dfa4e5b6881cc38cc81ffffbb1811fd05b5a6b60b60f0ae",
+    "header-generic.rs": "ae79b6bc711996b1a44e91a29e03676e971babcde9b5d37982674110ba8fe642",
+    "header-member.rs": "b1f858b9dfca27270ca052fc7ca2ec8d21967d59365e234601fb3ca68abb8bc6",
+    "header-no-auto.rs": "4444ae136a36269405f4f7dc4820b94d91a44fcec6aebe2377a16c67ac2828ea",
+    "header-safe.rs": "7b260147b47f31777c69ae62f3a831fa77f62ec72a73d4fa6f1eb82840932e45",
+    "lookalike.rs": "7eb172501bab51c8a6396a34113d1640b21a77a4ccc6dbfcda15f3474fc5f417",
+    "missing-pointer-impl.rs": "044497486fb7a37369df24a392615affd0625fcba943aaff3329077e9058750b",
+    "negative-payload.rs": "503613febd01cf6bf44281819953aadbce9f9573a32bc4693f51d100adf6a2fe",
+    "negative-zero-array.rs": "1f1231037a26ebff922d314b6bbb8f6232a97702dc078e637286869b18f398e4",
+    "nominal-query.rs": "8515cd2adb178cbc5c1310b238ab0f95d26d310cc23422b527b5ee171a070ebc",
+    "original-trait-negative.rs": "fabedeb0ee2b37d859ddfa1a1372f677a25b81c88c90fc079352c984bef38602",
+    "original-unsafe-pinned-required.rs": "8b10cb932cfa46623e98cad4e6974ec75bf459ebf997993aa89b328d81f24b89",
+    "positive.rs": "61c11b8fde5d7093bbfb72b31c9dc7db317c8d0131441ab4c3be3debddfbe2c6",
+    "renamed.rs": "20590d62c240f59516bb7156c4057509922b5ab0277d60005228f52db06275a5",
+    "unsafe-impl-required.rs": "3b08381647649310a53a9396227d9784e8db2bbc40d768137ef52d15decba8e9"
+  },
+  "successor": "v2 adds genuine const_clone stability to the authored source foundation and a renamed-role positive; original UnsafeUnpin/negative/type intervals unchanged; v1 prerequisite failure retained"
+}

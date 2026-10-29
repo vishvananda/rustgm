@@ -26,8 +26,15 @@ impl Search<'_> {
             }
             Err(error) => return Err(inference(error)),
         };
-        if goal.bound == Bound::Auto(crate::types::auto_traits::AutoTrait::Freeze) {
-            return Err("internal Freeze rule requires an actual source trait application".into());
+        if let Bound::Auto(
+            marker @ (crate::types::auto_traits::AutoTrait::Freeze
+            | crate::types::auto_traits::AutoTrait::UnsafeUnpin),
+        ) = goal.bound
+        {
+            return Err(format!(
+                "internal {} rule requires an actual source trait application",
+                marker.name()
+            ));
         }
         let mut type_outlives = Vec::new();
         let mut sized = Vec::new();

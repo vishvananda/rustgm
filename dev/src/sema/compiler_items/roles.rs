@@ -75,6 +75,28 @@ impl Catalog {
     }
 }
 
+const TRAIT_ROLES: [LangItem; 19] = [
+    LangItem::Clone,
+    LangItem::Copy,
+    LangItem::LegacyReceiver,
+    LangItem::TrivialClone,
+    LangItem::Tuple,
+    LangItem::FnOnce,
+    LangItem::FnMut,
+    LangItem::Fn,
+    LangItem::Drop,
+    LangItem::Destruct,
+    LangItem::Freeze,
+    LangItem::Unsize,
+    LangItem::CoerceUnsized,
+    LangItem::DispatchFromDyn,
+    LangItem::Send,
+    LangItem::Sync,
+    LangItem::Unpin,
+    LangItem::UnsafeUnpin,
+    LangItem::ConstParamTy,
+];
+
 pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     if report.package.source_client().is_some() {
         return admitted_headers::traits(report, facts);
@@ -101,26 +123,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         discriminant: None,
     };
     let mut callables = Vec::new();
-    for role in [
-        LangItem::Clone,
-        LangItem::Copy,
-        LangItem::LegacyReceiver,
-        LangItem::TrivialClone,
-        LangItem::Tuple,
-        LangItem::FnOnce,
-        LangItem::FnMut,
-        LangItem::Fn,
-        LangItem::Drop,
-        LangItem::Destruct,
-        LangItem::Freeze,
-        LangItem::Unsize,
-        LangItem::CoerceUnsized,
-        LangItem::DispatchFromDyn,
-        LangItem::Send,
-        LangItem::Sync,
-        LangItem::Unpin,
-        LangItem::ConstParamTy,
-    ] {
+    for role in TRAIT_ROLES {
         let Some(declaration) = catalog.language(role) else {
             continue;
         };
@@ -147,7 +150,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
             LangItem::TrivialClone => copying::validate_trivial(facts, catalog, &header)
                 .map_err(|message| Declarations::error(report, declaration.origin, message))?,
             LangItem::Tuple => validate_marker(report, facts, declaration)?,
-            LangItem::Freeze | LangItem::Send | LangItem::Sync | LangItem::Unpin => {
+            role if freezing::accepts(role) => {
                 freezing::validate(report, facts, declaration, role)?;
             }
             LangItem::Unsize | LangItem::CoerceUnsized | LangItem::DispatchFromDyn => {
@@ -333,12 +336,20 @@ fn header<'a>(
             super::headers::Flags {
                 unsafe_: matches!(
                     role,
-                    LangItem::Freeze | LangItem::TrivialClone | LangItem::Send | LangItem::Sync
+                    LangItem::Freeze
+                        | LangItem::TrivialClone
+                        | LangItem::Send
+                        | LangItem::Sync
+                        | LangItem::UnsafeUnpin
                 ),
                 constant,
                 auto_: matches!(
                     role,
-                    LangItem::Freeze | LangItem::Send | LangItem::Sync | LangItem::Unpin
+                    LangItem::Freeze
+                        | LangItem::Send
+                        | LangItem::Sync
+                        | LangItem::Unpin
+                        | LangItem::UnsafeUnpin
                 ),
             },
             expected,

@@ -211,6 +211,7 @@ impl Pending {
                 | crate::types::auto_traits::AutoTrait::Send
                 | crate::types::auto_traits::AutoTrait::Sync
                 | crate::types::auto_traits::AutoTrait::Unpin
+                | crate::types::auto_traits::AutoTrait::UnsafeUnpin
         )
     }
     pub(super) fn revealing(&self) -> bool {

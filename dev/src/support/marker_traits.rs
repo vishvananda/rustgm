@@ -9,6 +9,8 @@ pub enum AutoTrait {
     RefUnwindSafe,
     /// Internal structural rule; actual source Freeze retains its Trait application.
     Freeze,
+    /// Source-only structural rule; actual `UnsafeUnpin` remains a Trait application.
+    UnsafeUnpin,
 }
 impl AutoTrait {
     pub const ALL: [Self; 5] = [
@@ -28,6 +30,7 @@ impl AutoTrait {
             Self::UnwindSafe => "UnwindSafe",
             Self::RefUnwindSafe => "RefUnwindSafe",
             Self::Freeze => "Freeze",
+            Self::UnsafeUnpin => "UnsafeUnpin",
         }
     }
 }
