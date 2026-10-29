@@ -220,7 +220,10 @@ fn const_api_axis_requires_the_actual_always_function_and_stays_distinct() -> Te
     let constant = inventory.const_declaration(id).ok_or("const API")?;
     assert_eq!(regular.kind, crate::resolve::stability::PolicyKind::Regular);
     assert_eq!(constant.kind, crate::resolve::stability::PolicyKind::Const);
-    assert_ne!(regular.feature_name()?.spelling(), constant.feature_name()?.spelling());
+    assert_ne!(
+        regular.feature_name()?.spelling(),
+        constant.feature_name()?.spelling()
+    );
     assert!(
         facts
             .reject_function_advisory_transport(&report, id)
