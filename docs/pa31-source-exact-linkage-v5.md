@@ -5,7 +5,7 @@ standalone source packet tag10, row version5, selected with
 `--source-profile module-definitions-v5`. It inherits version4's complete
 module domains, advisories, API availability, feature requirements and admitted
 primitive bodies. Source versions0–4 and Provided profiles retain their bytes
-and reject nonempty exact-callable columns. Version5 is still unpublished.
+and reject nonempty exact-callable columns. Version5 is integrated as a finite development checkpoint.
 
 One cold `ExactCallableExport` row owns an actual declaration, original BodyRef
 and exact symbol bytes. The existing function producer consumes the checked
@@ -50,10 +50,26 @@ binds that private receipt/source fingerprint and the independent `rust-v1`
 receipt. Earlier static failures, cold build timeout and the corrected
 source-provider boundary assertion remain retained.
 
-Production/CLI qualification is explicitly pending Root's combined gate. Its
-new selector is
-`crate_linking::versioned_clients::cli_version_five_keeps_exact_c_publication_and_source_provider_boundaries`.
-No separate production build was run in this worker.
+Root joined production/CLI qualification passes the actual selector
+`crate_linking::versioned_clients::cli_version_five_keeps_exact_c_publication_and_source_provider_boundaries`,
+both strict/capped CLI controls and ordinary union reference regression. The
+same source passes28 private controls, including genuine v5 provider/client
+replay and the existing v4/old-profile boundaries. Receipts are
+`1793245621390756234` (private,135.13s) and `1793245760390592131`
+(production/CLI,179.11s). Both include strict Clippy and global format/audit.
+The [union checkpoint](pa31-source-union-copy-checkpoint.md) records hashes.
+
+Root also fixed quadratic storage charging across many small imports: prepare
+pays for actual geometric registry capacity growth and rehash work, preserving
+inert-name payment and atomic callable publication. An8/32/128 singleton-batch
+control with prewarmed storage bounds cumulative bytes and work linearly;
+existing capacity is not repaid for every provider. No registry clone or census
+is introduced. Joined source/native observation repeats separate provider/client
+objects, exact symbol ownership and duplicate-provider link rejection. Its
+subreceipt SHA-256 is
+`058fca6c0be3073c91aa5ebc18ab07e6100a54afc09735bd3f79c89edb1575ea`;
+upstream, registration and layout checks also pass. No duplicate worker
+production build was needed.
 
 The unchanged original feature-bound nominal7 inputs remain Required. The
 unchanged original first reaches the real SourceCore `no_core` admission

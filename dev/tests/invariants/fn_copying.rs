@@ -127,17 +127,17 @@ fn pending_projection_is_not_a_callable_shape_and_invalid_inputs_still_fail() ->
                 .head(&facts.types, frame.goal.subject()),
             Err(crate::types::infer::Error::Normalization),
         );
-        assert!(!Search::source_callable_marker_goal(&facts, &mut frame)?);
+        assert!(!Search::source_builtin_marker_goal(&facts, &mut frame)?);
         let assumptions = Assumptions::default();
         let mut search = Search::new(tests::caller(&assumptions, None), Availability::Validated);
         assert!(
             search
-                .source_callable_marker_result(&mut facts, &mut frame)?
+                .source_builtin_marker_result(&mut facts, &mut frame)?
                 .is_none()
         );
         frame.inputs.context = crate::types::infer::Context::default();
         assert_eq!(
-            Search::source_callable_marker_goal(&facts, &mut frame),
+            Search::source_builtin_marker_goal(&facts, &mut frame),
             Err("invalid inference identity".into()),
         );
         let (mut context, goal) = tests::instantiate(&mut facts, requirement)?;
@@ -154,7 +154,7 @@ fn pending_projection_is_not_a_callable_shape_and_invalid_inputs_still_fail() ->
         exhausted.inputs.context = context;
         exhausted.inputs.context.steps = 1_000_000;
         assert_eq!(
-            Search::source_callable_marker_goal(&facts, &mut exhausted),
+            Search::source_builtin_marker_goal(&facts, &mut exhausted),
             Err("type constraint work budget exceeded".into()),
         );
     }
@@ -169,20 +169,20 @@ fn callable_marker_rule_requires_actual_empty_ordinary_roles_and_keeps_precedenc
         let ordinary = predicate(&mut facts, role, item)?;
         let (mut context, goal) = tests::instantiate(&mut facts, ordinary)?;
         let mut frame = Frame::new(&facts, &mut context, &goal, 1)?;
-        assert!(Search::source_callable_marker_goal(&facts, &mut frame)?);
+        assert!(Search::source_builtin_marker_goal(&facts, &mut frame)?);
         let assumptions = Assumptions::default();
         let mut search = Search::new(tests::caller(&assumptions, None), Availability::Validated);
         frame.deferred = true;
         assert!(
             search
-                .source_callable_marker_result(&mut facts, &mut frame)?
+                .source_builtin_marker_result(&mut facts, &mut frame)?
                 .is_none()
         );
         frame.deferred = false;
         frame.selected = Some(super::frames::Chosen::Positive(0));
         assert!(
             search
-                .source_callable_marker_result(&mut facts, &mut frame)?
+                .source_builtin_marker_result(&mut facts, &mut frame)?
                 .is_none()
         );
         let Bound::Trait(app) = ordinary.bound else {
@@ -196,7 +196,7 @@ fn callable_marker_rule_requires_actual_empty_ordinary_roles_and_keeps_precedenc
             let (mut context, goal) = tests::instantiate(&mut facts, changed)?;
             let mut frame = Frame::new(&facts, &mut context, &goal, 1)?;
             // This rule is unrelated; nonordinary Clone is not a language-negative claim.
-            assert!(!Search::source_callable_marker_goal(&facts, &mut frame)?);
+            assert!(!Search::source_builtin_marker_goal(&facts, &mut frame)?);
         }
         let application = facts.types.trait_application(app).ok_or("application")?;
         let args = facts
@@ -211,7 +211,7 @@ fn callable_marker_rule_requires_actual_empty_ordinary_roles_and_keeps_precedenc
         let (mut context, goal) = tests::instantiate(&mut facts, changed)?;
         let mut frame = Frame::new(&facts, &mut context, &goal, 1)?;
         assert_eq!(
-            Search::source_callable_marker_goal(&facts, &mut frame),
+            Search::source_builtin_marker_goal(&facts, &mut frame),
             Err("source callable copying role has unexpected arguments".into())
         );
     }
@@ -223,7 +223,7 @@ fn callable_marker_rule_requires_actual_empty_ordinary_roles_and_keeps_precedenc
     )?;
     let (mut context, goal) = tests::instantiate(&mut facts, changed)?;
     let mut frame = Frame::new(&facts, &mut context, &goal, 1)?;
-    assert!(!Search::source_callable_marker_goal(&facts, &mut frame)?);
+    assert!(!Search::source_builtin_marker_goal(&facts, &mut frame)?);
     Ok(())
 }
 
@@ -266,7 +266,7 @@ fn callable_copying_cannot_cache_an_unpaid_nominal_signature() -> TestResult {
         let mut search = Search::new(tests::caller(&assumptions, None), Availability::Validated);
         assert_eq!(
             search
-                .source_callable_marker_result(&mut facts, &mut frame)
+                .source_builtin_marker_result(&mut facts, &mut frame)
                 .err(),
             Some("source structural rule requires completed nominal formation".into())
         );
@@ -391,11 +391,11 @@ fn callable_marker_requires_completed_source_roles_before_formation() -> TestRes
     let completed = facts.source_bindings.take().ok_or("completed catalog")?;
     facts.source_bindings = crate::sema::compiler_items::Catalog::reserve(&report)?;
     assert_eq!(
-        Search::source_callable_marker_goal(&facts, &mut frame),
+        Search::source_builtin_marker_goal(&facts, &mut frame),
         Err("source trait role requires completed declaration validation".into())
     );
     facts.source_bindings = Some(completed);
-    assert!(Search::source_callable_marker_goal(&facts, &mut frame)?);
+    assert!(Search::source_builtin_marker_goal(&facts, &mut frame)?);
     Ok(())
 }
 
@@ -427,5 +427,42 @@ fn other_copy_subjects_do_not_allocate_callable_formation() -> TestResult {
             assert!(search.query.families.is_empty());
         }
     }
+    Ok(())
+}
+
+#[test]
+fn unit_copy_and_clone_use_actual_roles_without_granting_nonempty_tuple_evidence() -> TestResult {
+    let (report, mut facts) = declarations("trait PretendCopy{}struct NoCopy(u8);")?;
+    let nominal =
+        facts.definitions[tests::definition(&report, "NoCopy")?.0 as usize].ok_or("nominal")?;
+    let list = facts.types.intern_list(&[nominal])?;
+    let tuple = facts.types.intern(Kind::Tuple(list))?;
+    for role in [LangItem::Copy, LangItem::Clone] {
+        let mut reuse = Reuse::default();
+        let goal = predicate(&mut facts, role, TypeId::UNIT)?;
+        for _ in 0..2 {
+            let selection::Selection::Proven(evidence) = select(&mut facts, goal, &mut reuse)?
+            else {
+                return Err("unit needs its real builtin marker proof".into());
+            };
+            assert!(matches!(evidence.source, Source::Builtin));
+            assert!(evidence.proof.is_empty() && evidence.sized.is_empty());
+        }
+        let goal = predicate(&mut facts, role, tuple)?;
+        assert!(matches!(
+            select(&mut facts, goal, &mut reuse)?,
+            selection::Selection::Absent
+        ));
+    }
+    let pretend = tests::predicate(
+        &mut facts,
+        tests::definition(&report, "PretendCopy")?,
+        TypeId::UNIT,
+        GenericArgs::EMPTY,
+    )?;
+    assert!(matches!(
+        select(&mut facts, pretend, &mut Reuse::default())?,
+        selection::Selection::Absent
+    ));
     Ok(())
 }

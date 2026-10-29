@@ -5,8 +5,9 @@ use crate::{
     sema::{members::Field, nominals::Proof},
     support::library_types::LibraryType,
     types::{
-        Kind, TypeId,
+        GenericArgs, Kind, TypeId,
         parameters::predicates::{Bound, Predicate},
+        traits::Application,
     },
 };
 
@@ -34,6 +35,7 @@ impl Checker<'_> {
             .get(LibraryType::ManuallyDrop)
             .map(|nominal| nominal.definition);
         self.facts.union_work.fields += 1;
+        let mut copy_bound = None;
         scratch.work.push(field.ty);
         while let Some(ty) = scratch.work.pop() {
             self.facts.union_work.steps = self
@@ -70,14 +72,15 @@ impl Checker<'_> {
                     scratch.work.push(element);
                 }
                 _ => {
+                    let bound = if let Some(bound) = copy_bound {
+                        bound
+                    } else {
+                        let bound = self.union_copy_bound(source)?;
+                        copy_bound = Some(bound);
+                        bound
+                    };
                     if !proof
-                        .prove(
-                            &mut self.facts,
-                            Predicate {
-                                ty,
-                                bound: Bound::Copy,
-                            },
-                        )
+                        .prove(&mut self.facts, Predicate { ty, bound })
                         .map_err(|e| self.error(source, e))?
                     {
                         return Err(self.error(source, "union fields require Copy, references, ManuallyDrop, or allowed tuples and arrays"));
@@ -86,6 +89,22 @@ impl Checker<'_> {
             }
         }
         Ok(())
+    }
+    fn union_copy_bound(&mut self, source: NodeKey) -> Result<Bound, Error> {
+        if !self.facts.uses_source_copy() {
+            return Ok(Bound::Copy);
+        }
+        let declaration = crate::sema::compiler_items::copy_declaration(&mut self.facts)
+            .map_err(|error| self.error(source, error))?
+            .ok_or_else(|| self.error(source, "union field requires actual source Copy"))?;
+        self.facts
+            .types
+            .intern_trait_application(Application {
+                item: ItemId(declaration.0),
+                arguments: GenericArgs::EMPTY,
+            })
+            .map(Bound::Trait)
+            .map_err(|error| self.error(source, error))
     }
     pub(super) fn register_union(&mut self, item: ItemId, key: NodeKey) -> Result<(), Error> {
         let definition = self

@@ -63,7 +63,7 @@ impl Search<'_> {
                 Some(LangItem::Sized | LangItem::MetaSized | LangItem::PointeeSized)
             )
             || source_destruct_goal(facts, frame)?
-            || Self::source_callable_marker_goal(facts, frame)?
+            || Self::source_builtin_marker_goal(facts, frame)?
             || Self::source_refinement_marker_goal(facts, frame)?;
         if !source_rule {
             return Ok(false);

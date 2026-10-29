@@ -49,10 +49,12 @@ impl Registry {
             }
         }
         if additional != 0 {
-            pay(
-                1,
-                retained::new_map::<DefId, Item>(self.items.len().saturating_add(additional)),
-            )?;
+            let growth = retained::Growth::map::<DefId, Item>(
+                self.items.len(),
+                self.items.capacity(),
+                additional,
+            );
+            pay(growth.work.saturating_add(1), growth.bytes)?;
             self.items.reserve(additional);
         }
         let mut rows = Vec::with_capacity(inputs.len());
@@ -105,6 +107,51 @@ impl PreparedFunctions {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn small_import_batches_do_not_repay_existing_registry_capacity()
+    -> Result<(), Box<dyn std::error::Error>> {
+        use std::cell::Cell;
+        for count in [8_u32, 32, 128] {
+            let mut registry = Registry::default();
+            registry.items.reserve(count as usize);
+            let names = (0..count)
+                .map(|index| format!("symbol_{index}"))
+                .collect::<Vec<_>>();
+            for name in &names {
+                registry.names.intern(name)?;
+            }
+            let bytes = Cell::new(0_usize);
+            let work = Cell::new(0_usize);
+            let pay = |steps, growth| {
+                work.set(work.get().saturating_add(steps));
+                bytes.set(bytes.get().saturating_add(growth));
+                if bytes.get() > count as usize * 256 {
+                    Err("small imports repaid unrelated registry storage")
+                } else {
+                    Ok(())
+                }
+            };
+            for (index, name) in names.iter().enumerate() {
+                let definition = DefId(u32::try_from(index)?);
+                let plan = registry.prepare_source_functions(
+                    &[(definition, TypeId::UNIT, Safety::Default, name.as_str())],
+                    &pay,
+                )?;
+                plan.require(&registry)?;
+                plan.install(&mut registry);
+                assert!(registry.function(definition).is_some());
+            }
+            assert_eq!(registry.items.len(), count as usize);
+            assert!(work.get() < count as usize * 128);
+            eprintln!(
+                "small exact imports={count} work={} bytes={}",
+                work.get(),
+                bytes.get()
+            );
+        }
+        Ok(())
+    }
+
     #[test]
     fn paid_names_fail_without_callable_publication_and_warm_growth_is_bounded()
     -> Result<(), Box<dyn std::error::Error>> {

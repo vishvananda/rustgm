@@ -1,35 +1,34 @@
 # Parallel library bootstrap implementation
 
-The user has reauthorized up to two existing subagents. Root owns direct
-implementation, combined qualification and public main integration in
-`rustgm-pa25-work`. Worker `lint_expectations` in `rustgm-pa26-work` has handed
-off exact source C linkage profile5, with private7 and separate provider/client
-native qualification; Root owns combined production/CLI integration. Shared
-schema/profile/ABI ownership is released for that join and nominal transport.
-Worker `const_call_review` in `rustgm-pa27-work` owns the next actual union Copy
-derive on `MaybeUninit<T>` (LIB-072). Its bounded headers, ConstParamTy and tuple/record
-Default source/native exits are integrated and qualified. Its authentic source `prelude_import` selection/lookup and previous
-source attribute capture/repeated-effect validation are integrated and qualified. Broader advisory lint producers are deferred unless
-needed for compilation. Preserve `allow`, `deny`, `forbid`, `expect` and separate
-strict evidence from explicit capped bring-up. At most two heavy commands may
-be active even though the controller permits three. No new worktree is needed.
+The user has reauthorized up to two existing subagents. Both are currently idle
+after their finite handoffs. Root owns direct implementation, combined
+qualification and public main integration in `rustgm-pa25-work`. Worker
+`lint_expectations` handed off exact source C linkage profile5; worker
+`const_call_review` handed off source union Copy. Both are integrated and joined
+through production/private/CLI/native qualification. Root owns shared
+schema/profile/ABI and nominal transport. Do not start another worker build for
+these completed handoffs. At most two heavy commands may run globally, one per
+worktree; no new worktree is needed.
+
+Compilation has priority over advisory lint parity. Preserve real `allow`,
+`deny`, `forbid`, `expect` and fulfillment accounting. Broader lint producers
+remain deferred unless they are necessary for compilation; explicit capped
+bring-up and strict debt evidence stay separate.
 
 Use [the live library blocker tracker](library-build-blockers.md#current-execution-queue)
 for current assignments and the [execution plan](library-bootstrap-acceleration.md)
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-The qualified CLI `048223c6` retains separate strict/explicit-Allow observations
-with all722 source pins and target args unchanged. Strict opens68 at the deferred
-pointer-cast lint expectation; Allow passes bounded ManuallyDrop headers and
-opens373 at Copy derivation on the actual MaybeUninit union
-(`mem/maybe_uninit.rs353`). [Bounded headers/public transparency](pa31-bounded-derive-transparency.md)
-pass15 exact controls in156.66s, including both strict modes; genuine ordered
-native defaults and the public-transparent record match Rust. Full CI40805449339
-on the preceding fdb checkpoint is green. [Block-owned source derives](pa31-block-owned-derive-checkpoint.md)
-and [source prelude](pa31-source-prelude-integration.md) have real independently
-matched native exits. Loading counts are not monotonic compilation progress.
-No original artifact or whole assignment exists.
+Qualified CLIdb367fb1 preserves all722 pinned inputs and both strict/explicit-Allow
+observations. Allow passes actual MaybeUninit union Copy expansion and reaches
+the seven-field FnPtr Debug derive in `mem/type_info.rs327` (LIB-073), with373
+opened sources. Strict remains68 at the deferred pointer-cast lint expectation.
+Joined private28 passes135.13s; production/CLI4 passes179.11s; separate native
+union and exact C provider/client observers plus upstream/registration/layout
+pass10.67s. Prior main75a CI40811273094 is green. Root next owns the actual Debug
+field-array recipe. Genuine nominal/provider and original artifact requirements
+remain open. Loading counts never count as compiled files or artifacts.
 
 The actual66-role/two-word completion set, physical source Option profile and
 old-wire denials remain qualified. Complete known-role reservations are still a
@@ -45,9 +44,9 @@ proposal and confer no source body/runtime/metadata authority.
   consumers. That saved snapshot is historical, not the current execution queue.
 - Read-only offset/lint expectation/release proposals remain evidence, with no
   new compiler or publication authority.
-- The integrator is publishing the qualified caller-feature native/source
-  checkpoint and integrating the next actual source-derived contract. Genuine panic/formatting, PA25
-  generic/const, PA29 transport and original crate artifacts remain required.
+- Earlier caller-feature and selected handler checkpoints are integrated.
+  Genuine full formatting/panic, PA25 generic/const, PA29 transport and original
+  crate artifacts remain required; the current queue selects the next consumer.
 
 Keep one heavy job in the integrator's active worktree, two Cargo/test/native
 threads, a16GiB absolute output cap and the unchanged150GiB disk reserve.
@@ -67,10 +66,10 @@ reconcile the owning PA's remaining implementation and release checklist.
 
 Keep at most one qualified handoff queued per worker. Take shared interfaces
 before opening unrelated compiler work, and protect integration/observation time.
-The current exits are genuine feature-predicate metadata v4 and imported call
-proof (B), the actual unsupported SimdAlign source derive (C), and joined qualification, source
-scalar/callable transport and publication (Root). Actual nominal provider and
-original crate artifacts remain required.
+Current handoffs are joined and no worker task is active. Root publishes the
+qualified source union/exact C checkpoint, then implements the original FnPtr
+Debug field-array recipe (LIB-073). Actual nominal providers and original crate
+artifacts remain required; use the live queue before reassigning a worker.
 Use at most two existing subagents; shared type/ABI/proof edits require explicit
 ownership coordination, not another concurrent owner.
 
@@ -89,9 +88,10 @@ Use [assignment-order.md](assignment-order.md) and the validated
 The historical ownership table below identifies existing worktrees, not a
 requirement to finish all earlier-numbered features before a coherent consumer.
 Root integrated the LIB-046 repair, PA6/19 primitive fallback and typed target
-features. B owns the genuine formatting/panic consumer; C owns the real
-aggregate-raw-pointer/slice consumer. A supplies bounded read-only reviews. Root also
-owns shared unit-publication tooling for the finite unsafe-places release.
+features. The review originally split formatting/panic, raw-pointer/slice and
+read-only work across workers. Those historical lane assignments do not reserve
+current interfaces. Root owns the live compiler and shared unit-publication
+work; consult the current execution queue before starting parallel work.
 See [combined evidence](source-lookup-target-integration.md). No new worktree is needed.
 
 Track implementation and publication independently. Publish finite unsafe/place,
@@ -100,7 +100,7 @@ evidence plus missing release gates. Keep every residual requirement and whole-P
 release gate. Preserve the three-job controller,150GiB reserve, root16/B16/C16
 GiB caps, two Cargo/test threads and five-minute development budget.
 
-## Assignment ownership
+## Historical assignment ownership
 
 | Lane | First assignment | Next assignment after integration | Contract |
 | --- | --- | --- | --- |

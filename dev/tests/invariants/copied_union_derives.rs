@@ -105,9 +105,40 @@ fn actual_copy_clone_field_type_privacy_and_unsafe_obligations_remain_required()
     ] {
         let error = test_source::source_provider(&fixture(name)?, "union_opponent")
             .and_then(|report| {
-                crate::pipeline::analyze_source(&report)
-                    .map(|_| ())
-                    .map_err(|e| e.to_string())
+                let crate::pipeline::Analysis {
+                    mut facts,
+                    prepared,
+                } = crate::pipeline::analyze_source(&report).map_err(|e| e.to_string())?;
+                // The privacy opponent has an ordinary Rust body rather than a
+                // native export. Demand it explicitly; latent acceptance is not
+                // evidence that the private field can be accessed.
+                let exports = if name == "private-field" {
+                    let definition = report
+                        .resolution
+                        .definitions
+                        .iter()
+                        .position(|definition| {
+                            definition.kind == crate::resolve::model::DefKind::Function
+                                && report.package.names.get(definition.name) == "read"
+                        })
+                        .ok_or("missing actual privacy opponent body")?;
+                    vec![crate::resolve::model::DefId(
+                        u32::try_from(definition).map_err(|e| e.to_string())?,
+                    )]
+                } else {
+                    Vec::new()
+                };
+                crate::lower::instances::build_roots_prepared(
+                    &report,
+                    &mut facts,
+                    crate::lower::Roots {
+                        entry: None,
+                        exports: &exports,
+                    },
+                    prepared,
+                )
+                .map(|_| ())
+                .map_err(|e| e.to_string())
             })
             .err()
             .ok_or_else(|| format!("accepted {name}"))?;

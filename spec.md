@@ -552,6 +552,17 @@ their boundaries. Nominal bodies, promotions, exact C linkage and const executio
 remain separate requirements. See the
 [v4 checkpoint](docs/lib060-feature-predicate-metadata-v4-checkpoint.md).
 
+The ordinary source module-definitions profile5 adds cold exact-callable rows
+bound to actual declarations, root originals and exact symbol bytes. Reuse the
+checked foreign registry for C signatures and linkage. Fresh clients import
+those symbols; they do not define provider bodies again. Prepare names and
+callable records before the existing infallible publication boundary. Charge
+registry storage and rehash work only for actual capacity growth: repeatedly
+paying the entire existing map for each small provider is quadratic even when
+no allocation occurs. Keep old source/Provided wire bytes and fences intact;
+nominal, receiver, generic/const and ordinary-provider extensions require their
+complete consumers. See the [v5 checkpoint](docs/pa31-source-exact-linkage-v5.md).
+
 Local staged `implied_by` relationships belong to exact policy IDs, including
 independent regular/const annotations. Retain them in one paid cold inventory
 vector; reuse the completed library-feature definition index for target
@@ -701,7 +712,9 @@ cycle checks, binder-local deferral and complete child obligations. See the
 depth, width, unrelated-node and cold/warm controls.
 
 Actual source Copy and Clone have ordinary compiler-defined marker rules for
-function items and function pointers. Match the completed registered trait and
+unit, function items and function pointers. Unit has no child obligations;
+nonempty tuples need their own complete child proofs and receive no evidence
+from the zero-child rule. Match the completed registered trait and
 empty arguments; keep explicit, pending and partial candidates authoritative.
 Reuse the same caller-local formation DAG for nominal types in the callable
 signature or item arguments, preserving lifetime and declaration obligations.
@@ -709,6 +722,15 @@ Signature parameters and results need not implement Copy. Marker evidence grants
 neither an executable Clone body nor const-call permission, and it cannot enter
 the sizing-only reuse cache. Ownership consumes the resulting exact body-local
 Copy decision through its existing checked interface, without a physical fallback.
+
+Union field eligibility consumes the actual source Copy trait application when
+source language items are selected, preserving generic premises under that same
+identity. Keep the canonical builtin bound for the bootstrap profile. The
+physical-field Copy implementation proof and Clone supertrait remain independent
+requirements. A source union Copy derive emits only its real empty marker impl;
+whole-union copying never selects or reads an active payload field. See the
+[union checkpoint](docs/pa31-source-union-copy-checkpoint.md) for source/native
+and opposing field, privacy, safety and identity controls.
 
 Share completed ordinary source MetaSized/PointeeSized answers across nominal
 roots in one immutable caller. Eligibility comes from the checked actual sizing

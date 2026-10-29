@@ -43,7 +43,7 @@ pub(super) fn source_copying_role(facts: &Declarations, goal: &Goal) -> Result<b
 }
 
 impl Search<'_> {
-    pub(super) fn source_callable_marker_goal(
+    pub(super) fn source_builtin_marker_goal(
         facts: &Declarations,
         frame: &mut Frame,
     ) -> Result<bool, String> {
@@ -56,24 +56,30 @@ impl Search<'_> {
             .head(&facts.types, frame.goal.subject())
         {
             Ok(head) => head,
-            // This classifier contributes only a callable structural rule.
+            // This classifier contributes only an unconditional structural rule.
             // Projection normalization and its proof remain with the caller.
             Err(infer::Error::Normalization) => return Ok(false),
             Err(error) => return Err(inference(error)),
         };
-        Ok(matches!(
-            head,
+        match head {
             Some(
                 infer::Constructor::Function { .. }
-                    | infer::Constructor::FunctionItem(..)
-                    | infer::Constructor::FunctionItemArgs(..)
-            )
-        ))
+                | infer::Constructor::FunctionItem(..)
+                | infer::Constructor::FunctionItemArgs(..),
+            ) => Ok(true),
+            Some(infer::Constructor::Tuple) => frame
+                .inputs
+                .context
+                .arity(&facts.types, frame.goal.subject())
+                .map(|arity| arity == Some(0))
+                .map_err(inference),
+            _ => Ok(false),
+        }
     }
 
-    /// Compiler-defined Copy/Clone markers for actual function items/pointers.
-    /// Input formation remains independent; signature inputs/results need not Copy.
-    pub(super) fn source_callable_marker_result(
+    /// Compiler-defined Copy/Clone markers for unit and actual function items/pointers.
+    /// Nonempty tuples require child proofs; signature inputs/results need not Copy.
+    pub(super) fn source_builtin_marker_result(
         &mut self,
         facts: &mut Declarations,
         frame: &mut Frame,
@@ -81,7 +87,7 @@ impl Search<'_> {
         if frame.selected.is_some()
             || frame.deferred
             || frame.partial.is_some()
-            || !Self::source_callable_marker_goal(facts, frame)?
+            || !Self::source_builtin_marker_goal(facts, frame)?
         {
             return Ok(None);
         }

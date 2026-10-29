@@ -45,6 +45,14 @@ word form, a unique active owner marker and checked `repr(transparent)`; it does
 not expose fields. Its external private-field eligibility must survive metadata
 before transparent source types can cross that boundary.
 
+The [source union Copy checkpoint](../docs/pa31-source-union-copy-checkpoint.md)
+reuses genuine generic headers, source Copy premises and unit marker proof.
+Physical field and Clone checks remain required; the generated empty Copy impl
+never reads a payload. Original MaybeUninit expansion and independent native
+copies pass, while whole original runtime/validity/metadata and the separate
+source union Clone recipe remain required. The next original expansion blocker
+is the Debug field-array helper recipe for the seven-field FnPtr.
+
 An authored `prelude_import` requires its distinct crate feature and actual use
 owner. Select the genuine module separately from ordinary lexical globs; preserve
 lookup precedence, private binding lineage, hygiene and `no_implicit_prelude`,
@@ -216,6 +224,6 @@ source/profile metadata outcomes. Typed proof, source production, transport and
 native implementation remain required; diagnostic caps grant no feature permission.
 
 The [finite source exact-C linkage checkpoint](../docs/pa31-source-exact-linkage-v5.md)
-adds an unpublished version5 source profile with paid exact symbol transport and
+adds the explicit version5 source profile with paid exact symbol transport and
 separate provider/client native objects. Original nominal source transport,
 ordinary-provider publication and whole assignment/library artifacts remain required.
