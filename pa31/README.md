@@ -53,6 +53,15 @@ copies pass, while whole original runtime/validity/metadata and the separate
 source union Clone recipe remain required. The next original expansion blocker
 is the Debug field-array helper recipe for the seven-field FnPtr.
 
+The [closed scalar-pattern checkpoint](../docs/pa31-closed-scalar-patterns-checkpoint.md)
+qualifies actual range formation, named typed constants, validity and source
+Clone/Copy/native execution for the Nanoseconds profile. Retain the actual base
+representation and complete source constraints. Open/exclusive and signed
+alternative forms require the real RangeMin/RangeMax/RangeSub declarations,
+selected source constants/bodies and authenticated internal desugaring allowance.
+Generic endpoints, scalar enum niches, refinement metadata and complete original
+methods remain requirements of the owning assignments.
+
 An authored `prelude_import` requires its distinct crate feature and actual use
 owner. Select the genuine module separately from ordinary lexical globs; preserve
 lookup precedence, private binding lineage, hygiene and `no_implicit_prelude`,
