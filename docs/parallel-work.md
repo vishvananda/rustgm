@@ -3,8 +3,8 @@
 Root owns compiler integration, current-source CLI/original-core observations and
 publication in `rustgm-pa25-work`. B's finite resource API5c2bace0 is integrated
 and its Root joined11 passes193.73s. C's metadata migration e204150bb is now
-integrated locally; C exact12 passes141.42s, while Root joined qualification and
-production/full CI are pending. C is idle and Root owns these integrated files.
+integrated and Root joined20 passes150.67s, CLI3 passes109.42s and harness272/
+upstream pass. Full CI remains pending. C is idle and Root owns these files.
 B (`lint_expectations`) now owns LIB-080's actual generic union Clone recipe in
 its existing tree. It must coordinate shared proof/interface changes before
 editing metadata or Root's observer/configuration code. No new advisory lint
@@ -25,7 +25,10 @@ escape.rs161 in10.85s. All722 original hashes and target flags stay unchanged.
 Receipt2da97d75af6b4c4b51f9a7b701d6bd61249f0787044ef809fc998917c2174899
 binds that observation. These are changed resource profiles, not speedups or
 unchanged-default results. Current post-migration binaries require fresh bindings.
-Do not claim a whole library artifact from these controls.
+Current CLI216f8644 confirms the same union Clone blocker in10.58s; receipt
+23e8d6b7846996670660c54a0e2a8d6a3bf323dea753d8bc5c5e5a5647d3e3a5.
+Strict8947e74ab0348663b9c03d5c7f0729e7fb5a143b32ed85a37f0cbd8fc4e9297d
+retains the deferred expectation at68 opens. Do not claim a library artifact.
 
 Keep at most two heavy jobs globally, one per worktree, two Cargo/test threads,
 16GiB absolute output caps and150GiB free reserve. B owns union Clone;
@@ -48,7 +51,7 @@ Public8dc4091eb fast CI40834845453 passes. Full CI40835039063 fails three
 auto-trait source-inventory/legacy-encoding checks; architecture, harness and
 the independent host graph pass. The explicit semantic migration fixes all3
 focused cases without regenerating a golden or restoring a false source premise;
-joined full CI remains pending. The earlier
+joined source/CLI qualification passes and full CI remains pending. The earlier
 public0fa08bc full CI40815003815 is green. The qualified pre-capacity CLI
 1b626052 passes MaybeUninit, FnPtr Debug7, Abi enum Default and DecodeUtf16's
 associated equality. Next it stops the source expansion accounting budget at

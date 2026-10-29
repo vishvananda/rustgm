@@ -35,5 +35,12 @@ graph replay, new role map, dense record field or synthetic source bound is adde
 
 The focused migration controls cover the three original CI failures, historical
 bytes, current rows, changed provenance, foreign-role absence, codec and combined
-budgets, and actual unpaid signature readiness/failure. Broader release CI and
-joined production qualification remain integration checks.
+budgets, and actual unpaid signature readiness/failure. Broader release CI
+remains a separate gate; subsequent joined qualification is recorded below.
+
+Root's joined integration passes20 private controls in150.67s and3 production/
+CLI controls in109.42s, including all three original CI failures. Both strict
+Clippy modes, formatting, architecture,272 harness controls and pinned upstream
+verification pass. The current source-bound core attempt retains the unrelated
+union Clone recipe blocker. Full release/native/independent CI remains pending;
+no original library artifact or whole assignment release is implied.

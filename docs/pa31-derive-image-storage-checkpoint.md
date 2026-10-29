@@ -107,3 +107,14 @@ still do not establish semantic completion or an original artifact. Both use
 the same immutable compiler and retain their distinct resource bindings. No
 default or accounting charge was removed. These are pre-metadata-migration
 observations; subsequent compiler checkpoints need their own source binding.
+
+After the metadata migration, joined20 passes150.67s (receipt1793262559257998869)
+and production/CLI3 passes109.42s (1793262744831573567). Harness272 and upstream
+checks pass. Current immutable CLI216f86449c7983ff9a9d6bf7e83b638c3774656e55da21ddf752a50bfb779b63
+repeats the same explicit1GiB profile and union Clone blocker in10.58s, with all
+722 hashes unchanged. Receipt SHA256 is
+`23e8d6b7846996670660c54a0e2a8d6a3bf323dea753d8bc5c5e5a5647d3e3a5`.
+The separately bound strict observation still reports the deferred expectation
+at68 opens; its SHA256 is
+`8947e74ab0348663b9c03d5c7f0729e7fb5a143b32ed85a37f0cbd8fc4e9297d`.
+Full CI and every original artifact/assignment release remain separate gates.
