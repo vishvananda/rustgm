@@ -102,6 +102,16 @@ impl Stage {
                 );
             }
             let declaration = self.declaration(definition)?;
+            if matches!(
+                facts
+                    .promotable_contract(report, definition)
+                    .map_err(|_| "source promotion header validation failed")?,
+                crate::sema::header_attributes::ContractKnowledge::KnownPresent(_)
+            ) {
+                return Err(
+                    "source promotable declaration transport requires its wider metadata profile",
+                );
+            }
             self.prepare_signature_arena(facts, function.signature)?;
             self.function(report, facts, &function, declaration)?;
             self.exact_callable(facts, &function, declaration)?;

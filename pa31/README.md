@@ -36,6 +36,15 @@ records current hard source boundaries and qualified checkpoint scope. Preserve
 real diagnostic policy while using explicit capped observations to prioritize
 compilation; deferred advisory producers and strict qualification remain required.
 
+The source `rustc_promotable` declaration checkpoint retains its actual attribute,
+configured owner and direct const-stability witness. Word, list and value forms
+follow the pinned parser's marker semantics. This header promise grants neither
+const/unsafe permission nor permanent storage: marked call borrow promotion and
+foreign marker transport remain explicit required work. Required CTFE and ordinary
+calls continue through their real source bodies. The
+[`source-promotable` contract](tests/spec/source-promotable/README.md) keeps these
+boundaries separate.
+
 Source-derived impl headers preserve parsed type/lifetime/const formals and
 where constraints, omitting declaration defaults from impl parameters. The
 [bounded derive checkpoint](../docs/pa31-bounded-derive-transparency.md) retains

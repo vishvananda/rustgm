@@ -98,6 +98,7 @@ impl Engine<'_, '_> {
                     callee, arguments, ..
                 } => {
                     if self.constructor(callee)?.is_none() {
+                        self.require_call_promotion_profile(callee)?;
                         return Ok(false);
                     }
                     self.push(Key::Value(callee))?;

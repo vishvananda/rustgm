@@ -101,7 +101,8 @@ impl Context<'_> {
                 s::Profile::Source2024ModuleContracts
                 | s::Profile::Source2024ModuleAvailability
                 | s::Profile::Source2024ModuleFeaturePredicates
-                | s::Profile::Source2024ModuleDefinitions => {
+                | s::Profile::Source2024ModuleDefinitions
+                | s::Profile::Source2024ModuleCompatibility => {
                     actual.module_contracts().map_err(error)?;
                 }
                 _ => {
