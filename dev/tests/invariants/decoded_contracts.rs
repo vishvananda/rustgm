@@ -122,6 +122,20 @@ fn ordering_accounting(artifact: &crates::Interface) -> Result {
                 <= crates::MAX_BYTES
         );
     }
+    // The sealed cost includes the legacy predicate preflight, and excludes
+    // only work paid by the caller before this particular publication began.
+    let mut seeded_work = g::Work {
+        steps: 37,
+        ..g::Work::default()
+    };
+    let seeded = check(
+        artifact,
+        |_, _, _| {},
+        artifact.base_retained_bytes(),
+        &mut seeded_work,
+    )?;
+    assert_eq!(seeded.budget().0, seeded_work.steps - 37);
+    assert_eq!(seeded, canonical);
     eprintln!(
         "namespace canonical/reordered actual work={}/{} retained={}/{} peak={}/{}",
         canonical_work.steps,

@@ -318,10 +318,10 @@ impl ValidatedRows {
         work: &mut Work,
         features: bool,
     ) -> Result<Self, &'static str> {
+        let start = work.steps;
         if !features {
             predicate_contracts::legacy(&rows, work)?;
         }
-        let start = work.steps;
         let attribute_bytes = attributes.validate(&rows, base, work)?;
         let module_bytes = modules.storage_bytes(rows.declarations.len(), work)?;
         let extension = attribute_bytes.saturating_add(module_bytes);
@@ -402,8 +402,8 @@ impl ValidatedRows {
         observe: &mut impl FnMut(usize, usize),
         extension: Option<(super::HeaderAttributeColumns, ProvidedContractRows)>,
     ) -> Result<Self, &'static str> {
-        predicate_contracts::legacy(&rows, work)?;
         let start = work.steps;
+        predicate_contracts::legacy(&rows, work)?;
         if extension.is_some() != (profile == Profile::Source2024ProvidedContracts) {
             return Err(
                 "provided contracts require their complete namespace/modifier/advisory data",

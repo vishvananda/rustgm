@@ -85,3 +85,29 @@ finite fieldless marker/equality exit, not full Debug/Formatter execution,
 payload/generic markers, nominal const arguments, original crate artifacts or
 complete assignments. The earlier candidate failures above remain failures;
 Root's combined source tests and native receipt supersede their blocked exit.
+
+The unchanged original-core Allow probe now gets past the former ConstParamTy
+failure. It opens373 sources and reports the next actual producer boundary:
+`num/saturating.rs`, the generic tuple `Saturating<T>` with the unchanged eight
+members PartialEq/Eq/PartialOrd/Ord/Clone/Copy/Default/Hash. Default currently
+requires a record constructor. The discovery receipt SHA-256 is
+`f7921dc55072652d59a8e668aa296e7ba55d85bce723cdabbe17ce605b65ceff`.
+Strict discovery remains at68 sources and the real deferred lint expectation,
+receipt `b7f5ce15cc92784bab9241a305884c5b1a57179689a6b5af560dff41724619b6`.
+Both probes retain all722 original source hashes and identical effective target
+arguments, apart from their explicit separate lint cap. These are discovery
+failures, not original crate artifacts or counts of compiled files.
+
+Full CI40796052462 found one later v4 integration regression: the new legacy
+predicate preflight was charged before the sealed payload's work-start snapshot.
+Its returned cost omitted34 actual operations in the complete Provided control.
+Both source publication entry points now capture their start before preflight;
+seeded-caller coverage checks the per-invocation delta without losing initial
+caller work. The original CI control and six affected metadata/source controls
+pass in167.62s, including production/private strict Clippy and global checks,
+receipt `1793237369822055250`, SHA-256
+`69129a3405d1715b5b32c802edbd8e07c48255bf822bdfa3b7e857acf129404b`.
+No metadata bytes, admission condition or reference was relaxed. Newly emitted
+SimdAlign LowIR and scalar metadata/LowIR remain byte-equal to independently
+native-qualified inputs, equality receipt SHA-256
+`e82ef6fb75b2bd83cc6961676b132d7566d851b2791cf2802be9396ce0a9f4d0`.
