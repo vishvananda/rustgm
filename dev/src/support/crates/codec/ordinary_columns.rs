@@ -19,6 +19,7 @@ mod supplied_tests;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/packet_roundtrip.rs"]
 mod tests;
+mod verbatim_exports;
 use super::{Reader, Writer};
 use crate::support::{
     crates::{
@@ -73,7 +74,11 @@ pub(super) fn encode_module_availability(
     rows: s::ValidatedView<'_>,
 ) -> Result<(), &'static str> {
     encode_module_contracts(out, rows)?;
-    availability_wire::encode(out, rows.availability()?)
+    availability_wire::encode(out, rows.availability()?)?;
+    if rows.descriptor().profile() == s::Profile::Source2024ModuleDefinitions {
+        verbatim_exports::encode(out, &rows.exact_callables)?;
+    }
+    Ok(())
 }
 pub(super) struct AvailabilityPacket {
     pub rows: s::SourceRows,
@@ -85,20 +90,27 @@ pub(super) fn decode_module_availability(
     reader: &mut Reader<'_>,
     base: usize,
 ) -> Result<AvailabilityPacket, &'static str> {
-    decode_availability_profile(reader, base, false)
+    decode_availability_profile(reader, base, false, false)
 }
 pub(super) fn decode_module_feature_predicates(
     reader: &mut Reader<'_>,
     base: usize,
 ) -> Result<AvailabilityPacket, &'static str> {
-    decode_availability_profile(reader, base, true)
+    decode_availability_profile(reader, base, true, false)
+}
+pub(super) fn decode_module_definitions(
+    reader: &mut Reader<'_>,
+    base: usize,
+) -> Result<AvailabilityPacket, &'static str> {
+    decode_availability_profile(reader, base, true, true)
 }
 fn decode_availability_profile(
     reader: &mut Reader<'_>,
     base: usize,
     features: bool,
+    definitions: bool,
 ) -> Result<AvailabilityPacket, &'static str> {
-    let (rows, bytes) = decode_profile_with(reader, base, false, features)?;
+    let (mut rows, bytes) = decode_profile_with(reader, base, false, features)?;
     let mut read = Input {
         reader,
         bytes,
@@ -109,6 +121,9 @@ fn decode_availability_profile(
     let attributes = header_facts::decode(&mut read)?;
     let modules = namespace_rows::decode(&mut read)?;
     let availability = availability_wire::decode(&mut read)?;
+    if definitions {
+        rows.exact_callables = verbatim_exports::decode(&mut read)?;
+    }
     Ok(AvailabilityPacket {
         rows,
         attributes,
@@ -274,6 +289,7 @@ fn decode_profile_with(
         features,
     };
     let rows = s::SourceRows {
+        exact_callables: Vec::new(),
         policy: s::Policy {
             edition: Edition::Rust2024,
             provider: s::ArtifactRef(read.id()?),

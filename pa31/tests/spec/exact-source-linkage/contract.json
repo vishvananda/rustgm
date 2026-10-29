@@ -1,0 +1,39 @@
+{
+  "state": "frozen before independent or candidate observation",
+  "owning": [
+    29,
+    30,
+    31
+  ],
+  "profile": "ordinary source packet tag10/version5, defining Rust2024/x86_64, lint_cap allow in Rust oracle; strict candidate default",
+  "scope": "seven actual closed primitive literal bodies and fixed exact C exports derived from existing scalar-body-values provider; separate provider object and fresh independent client object; original nominal7 remains Required",
+  "source_base_sha256": "989fae9fac09c8981b40f5a4968c5aafa20a304442b5c587ad154b206dac4027",
+  "inputs": {
+    "provider.rs": "6f7e4547a1dcae6ab119d25a38e799efb5412373a2c2ea295ec41c3e7f7215a9",
+    "observer.c": "a3779d5c7ede3a1d0749c621dbb3a027167dbfd841510856403b9495380e88bb",
+    "consumer.rs": "df2da94d95d642c2b2c745a5cf456e3832401cb647ba19bac8afa75f5b1b1760"
+  },
+  "expected_status": {
+    "provider": 0,
+    "client": 0,
+    "link": 0,
+    "native": 0
+  },
+  "expected_stdout": "7;ffffffffffffffffffffffffffffffff;7fffffffffffffffffffffffffffffff;1;129408;3fc00000;3ff8000000000000\n",
+  "opponents": [
+    "wrong/foreign/missing body or declaration",
+    "duplicate/reordered exact rows or same-provider symbol",
+    "empty, NUL, >4096 bytes, backend-only unsupported bytes",
+    "old0-4 and Provided profile extension rejection",
+    "C/Rust pointer mismatch and complete signature equality",
+    "private exact native export has no public Rust alias",
+    "distinct providers same exact symbol must not merge identities; duplicate object link fails",
+    "failed payment publishes no callable records; cold/warm bounded name lookup",
+    "unchanged Value nominal7 remains unsupported, not replaced by scalar7"
+  ],
+  "retained_requirements": [
+    "full nominal declaration/type/layout/constructor transport LIB063",
+    "generic/associated/variadic/unsafe/target-feature exact callable extension",
+    "original nominal7 native exit"
+  ]
+}

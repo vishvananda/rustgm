@@ -23,6 +23,7 @@ impl Stage {
         ))?;
         let (callables, functions) =
             super::template_ports::prepare(context, facts, &self.scopes, budget)?;
+        let exact = super::verbatim_exports::prepare(context, facts, &functions, budget)?;
         let cells = super::definition_cells::prepare(
             context,
             &self.graph,
@@ -61,6 +62,7 @@ impl Stage {
         // This shared work count is checked inside the owner installer BEFORE
         // its first write; failure cannot leave a partially installed owner.
         let mut work = budget.work.get();
+        let exact = super::verbatim_exports::destination(exact, facts.foreign.as_deref_mut())?;
         let installed = facts.associated.install_imported(
             &facts.types,
             crate::sema::crates::ImportedOwners::Ordinary(Rc::clone(&self.graph)),
@@ -99,7 +101,12 @@ impl Stage {
         }
         let linkage = facts.crates.get_or_insert_default();
         for function in functions {
-            linkage.symbols.insert(function.definition, function.symbol);
+            if let Some(symbol) = function.symbol {
+                linkage.symbols.insert(function.definition, symbol);
+            }
+        }
+        if let Some((plan, registry)) = exact {
+            plan.install(registry);
         }
         facts.generics.traits = Some(Box::new(contracts));
         facts.generics.trait_self_bounds.extend(self_bounds);

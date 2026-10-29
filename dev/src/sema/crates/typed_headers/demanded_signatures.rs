@@ -13,7 +13,7 @@ pub(super) fn check(
     expected: Option<(DeclarationRef, s::BinderKind)>,
     raw: g::Signature,
 ) -> Result<u32, Error> {
-    if expected.is_none() && (raw.convention != g::Convention::Rust || raw.variadic) {
+    if expected.is_none() && !admitted(rows, raw) {
         return Err(error(
             "source callable convention/variadic form needs a wider profile",
         ));
@@ -30,7 +30,7 @@ pub(super) fn check(
             "source signature changed its exact declaration/binder kind",
         ));
     }
-    if raw.convention != g::Convention::Rust || raw.variadic {
+    if !admitted(rows, raw) {
         return Err(error(
             "source signature convention requires its wider explicit profile",
         ));
@@ -51,7 +51,7 @@ pub(super) fn intern(
             parameters,
             result,
             unsafe_: raw.unsafe_,
-            convention: Convention::RUST,
+            convention: convention(raw).map_err(error)?,
         })
         .map_err(error)
 }
@@ -93,8 +93,8 @@ pub(super) fn require(
         || bound_regions != frame.count
         || unsafe_ != raw.unsafe_
         || raw.variadic
-        || raw.convention != g::Convention::Rust
-        || convention != Convention::RUST
+        || !admitted(rows, raw)
+        || convention != self::convention(raw)?
         || mapped(raw.result).map_err(|_| "missing actual source result type")? != result
     {
         return Err("imported callable changed its full actual binder/signature contract");
@@ -113,4 +113,24 @@ pub(super) fn require(
         }
     }
     Ok(())
+}
+
+fn admitted(rows: s::ValidatedView<'_>, raw: g::Signature) -> bool {
+    !raw.variadic
+        && (raw.convention == g::Convention::Rust
+            || (raw.convention == g::Convention::C
+                && rows.descriptor().profile() == s::Profile::Source2024ModuleDefinitions))
+}
+/// Shape conversion only. Callers authenticate profile/owner before interning.
+pub(super) fn convention(raw: g::Signature) -> Result<Convention, &'static str> {
+    if raw.variadic {
+        return Err("source variadic callable requires its wider explicit profile");
+    }
+    match raw.convention {
+        g::Convention::Rust => Ok(Convention::RUST),
+        g::Convention::C => Ok(Convention::C),
+        g::Convention::RustCall => {
+            Err("source rust-call convention requires its wider explicit profile")
+        }
+    }
 }

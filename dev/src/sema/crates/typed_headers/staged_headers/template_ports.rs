@@ -9,7 +9,7 @@ use crate::{
 pub(super) struct Callable {
     pub definition: DefId,
     pub ty: TypeId,
-    pub symbol: String,
+    pub symbol: Option<String>,
 }
 struct Active {
     owner: DefId,
@@ -131,10 +131,29 @@ fn symbol(
     context: &mapped_source::Context<'_>,
     definition: DefId,
     budget: &mut Headers,
-) -> Result<String, Error> {
+) -> Result<Option<String>, Error> {
+    let id = context.catalog.declaration(definition).map_err(error)?;
+    let (_, declaration, _) = context.catalog.declaration_coordinate(id).map_err(error)?;
+    budget.charge(
+        2 + context
+            .descriptor
+            .rows()
+            .exact_callables
+            .len()
+            .checked_ilog2()
+            .unwrap_or(0) as usize,
+    )?;
+    if context
+        .descriptor
+        .rows()
+        .exact_callable(declaration)
+        .is_some()
+    {
+        return Ok(None);
+    }
     let symbol = symbol_from(context, definition, budget)?;
     budget.observed.add(symbol.capacity());
-    Ok(symbol)
+    Ok(Some(symbol))
 }
 pub(in crate::sema::crates::typed_headers) fn symbol_from(
     context: &mapped_source::Context<'_>,
@@ -144,7 +163,7 @@ pub(in crate::sema::crates::typed_headers) fn symbol_from(
     let id = context.catalog.declaration(definition).map_err(error)?;
     let (owner, row, _) = context.catalog.declaration_coordinate(id).map_err(error)?;
     let rows = context.descriptor.rows();
-    if context.descriptor.profile() == s::Profile::Source2024ModuleFeaturePredicates
+    if context.descriptor.profile().feature_predicates()
         && let Some(s::HeaderRef::Function(index)) = rows.header(row).map_err(error)?
         && rows.functions[index as usize].parent.is_some_and(|parent| {
             matches!(

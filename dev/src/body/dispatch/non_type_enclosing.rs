@@ -111,8 +111,7 @@ fn imported(facts: &mut Declarations, body: &Body) -> Result<Option<Arc<Environm
         };
         let original = crate::sema::crates::source_original(facts, definition, &mut steps)?
             .ok_or("imported feature dispatch requires its actual source original")?;
-        if original.rows().descriptor().profile()
-            != crate::support::crates::generics::source::Profile::Source2024ModuleFeaturePredicates
+        if !original.rows().descriptor().profile().feature_predicates()
             || original.definition() != definition
             || original.signature() != signature
             || original.source()? != body.source

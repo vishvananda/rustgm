@@ -231,8 +231,8 @@ fn malformed_non_type_rows_and_legacy_profiles_cannot_drop_or_invent_debt() -> R
     let mut failed = g::Work::default();
     assert!(changed(&artifact, |_| {}, crates::MAX_BYTES, &mut failed).is_err());
     assert!(failed.steps > 0);
-    assert_eq!(size_of::<s::SourceRows>(), 616);
-    assert_eq!(size_of::<s::Columns>(), 592);
+    assert_eq!(size_of::<s::SourceRows>(), 640);
+    assert_eq!(size_of::<s::Columns>(), 616);
     assert_eq!(size_of::<crate::types::parameters::clauses::Clause>(), 12);
     println!(
         "v4 cold requirement={} clause={} located={} dense={}",

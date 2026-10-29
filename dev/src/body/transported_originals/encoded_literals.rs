@@ -29,7 +29,7 @@ pub(super) fn allocate(
     Ok(())
 }
 fn value(view: &SourceOriginal<'_>, row: s::Value) -> Result<Scalar, &'static str> {
-    if view.rows().descriptor().profile() != s::Profile::Source2024ModuleFeaturePredicates {
+    if !view.rows().descriptor().profile().feature_predicates() {
         return Err("source scalar reconstruction requires its explicit v4 ordinary profile");
     }
     crate::sema::crates::import_scalar_value(row.scalar_value(&view.rows().types)?)

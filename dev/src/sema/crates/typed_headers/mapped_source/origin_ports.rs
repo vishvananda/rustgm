@@ -80,7 +80,8 @@ impl Graph {
             match descriptor.profile() {
                 s::Profile::Source2024ModuleContracts
                 | s::Profile::Source2024ModuleAvailability
-                | s::Profile::Source2024ModuleFeaturePredicates => {
+                | s::Profile::Source2024ModuleFeaturePredicates
+                | s::Profile::Source2024ModuleDefinitions => {
                     descriptor.module_contracts()?;
                 }
                 _ => return Err("source header profile is unsupported"),

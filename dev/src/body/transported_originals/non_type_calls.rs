@@ -2,7 +2,7 @@
 use crate::{
     body::ir::{Body, Rvalue},
     sema::{crates::SourceOriginal, declaration_inputs, model::Declarations},
-    support::crates::{MAX_COMPONENTS, generics::source as s},
+    support::crates::MAX_COMPONENTS,
     types::{Kind, parameters::clauses::Clause},
 };
 use std::cell::Cell;
@@ -12,7 +12,7 @@ pub(super) fn check(
     body: &Body,
     steps: &mut usize,
 ) -> Result<(), &'static str> {
-    if view.rows().descriptor().profile() != s::Profile::Source2024ModuleFeaturePredicates {
+    if !view.rows().descriptor().profile().feature_predicates() {
         return Ok(());
     }
     for value in &body.values {

@@ -301,6 +301,13 @@ pub struct RegionScheme {
     pub late: Range,
     pub bounds: Range,
 }
+/// Exact native definition identity; neither visibility nor body permission.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ExactCallableExport {
+    pub declaration: DeclarationRef,
+    pub body: BodyRef,
+    pub symbol: Box<str>,
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct FunctionHeader {
     pub declaration: DeclarationRef,
@@ -362,5 +369,6 @@ pub struct Rows {
     pub originals: Vec<Original>,
     pub body_inputs: Vec<BodyInputs>,
     pub body_units: Vec<BodyUnit>,
+    pub exact_callables: Vec<ExactCallableExport>,
 }
 pub type SourceRows = Rows;

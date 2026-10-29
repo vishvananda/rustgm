@@ -36,6 +36,7 @@ pub struct Columns {
     pub originals: Vec<Original>,
     pub body_inputs: Vec<BodyInputs>,
     pub body_units: Vec<BodyUnit>,
+    pub exact_callables: Vec<super::super::ExactCallableExport>,
 }
 impl Columns {
     pub(super) fn take(rows: SourceRows) -> (Vec<BodyOwner>, Self) {
@@ -66,6 +67,7 @@ impl Columns {
             originals,
             body_inputs,
             body_units,
+            exact_callables,
         } = rows;
         (
             body_owners,
@@ -95,6 +97,7 @@ impl Columns {
                 originals,
                 body_inputs,
                 body_units,
+                exact_callables,
             },
         )
     }
@@ -112,6 +115,15 @@ impl std::ops::Deref for ValidatedView<'_> {
     }
 }
 impl<'a> ValidatedView<'a> {
+    pub(crate) fn exact_callable(
+        self,
+        declaration: DeclarationRef,
+    ) -> Option<&'a super::super::ExactCallableExport> {
+        let rows = &self.source.columns.exact_callables;
+        rows.binary_search_by_key(&declaration.0, |row| row.declaration.0)
+            .ok()
+            .map(move |index| &rows[index])
+    }
     /// # Errors
     /// Older source profiles retain unknown availability.
     pub fn availability(self) -> Result<&'a super::super::AvailabilityRows, &'static str> {

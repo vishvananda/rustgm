@@ -144,6 +144,19 @@ impl Source {
             modules,
         ))
     }
+    pub(super) fn begin_module_definitions(
+        report: &Report,
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+        identity: &CrateIdentity,
+    ) -> Result<(Self, s::ModuleContractRows), &'static str> {
+        let mut stage = Stage::begin_module_definitions(report, facts, identity)?;
+        let modules = stage.module_contract_rows(report, facts)?;
+        Ok((
+            Self::begin_stage(facts, checked, stage, false, None)?,
+            modules,
+        ))
+    }
     pub(super) fn begin_publication(
         report: &Report,
         facts: &mut Declarations,
@@ -172,6 +185,12 @@ impl Source {
             super::instances::SourcePublication::ModuleFeaturePredicates => {
                 let (source, modules) =
                     Self::begin_module_feature_predicates(report, facts, checked, identity)
+                        .map_err(legacy_error)?;
+                Ok((source, Some(modules)))
+            }
+            super::instances::SourcePublication::ModuleDefinitions => {
+                let (source, modules) =
+                    Self::begin_module_definitions(report, facts, checked, identity)
                         .map_err(legacy_error)?;
                 Ok((source, Some(modules)))
             }
@@ -437,6 +456,7 @@ impl Source {
             profile,
             super::instances::SourcePublication::ModuleAvailability
                 | super::instances::SourcePublication::ModuleFeaturePredicates
+                | super::instances::SourcePublication::ModuleDefinitions
         ) {
             Some(
                 self.stage
@@ -469,8 +489,9 @@ impl Source {
             ..g::Work::default()
         };
         let payload = if let Some(availability) = availability {
-            let publish = if profile == super::instances::SourcePublication::ModuleFeaturePredicates
-            {
+            let publish = if profile == super::instances::SourcePublication::ModuleDefinitions {
+                g::Payload::from_source_module_definitions
+            } else if profile == super::instances::SourcePublication::ModuleFeaturePredicates {
                 g::Payload::from_source_module_feature_predicates
             } else {
                 g::Payload::from_source_module_availability

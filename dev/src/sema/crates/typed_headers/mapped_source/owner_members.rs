@@ -24,7 +24,8 @@ impl Graph {
             }
             s::Profile::Source2024ModuleContracts
             | s::Profile::Source2024ModuleAvailability
-            | s::Profile::Source2024ModuleFeaturePredicates => {
+            | s::Profile::Source2024ModuleFeaturePredicates
+            | s::Profile::Source2024ModuleDefinitions => {
                 let domain = descriptor
                     .module_contracts()?
                     .trait_domain(index as usize, row)?;
@@ -64,7 +65,8 @@ impl Graph {
             }
             s::Profile::Source2024ModuleContracts
             | s::Profile::Source2024ModuleAvailability
-            | s::Profile::Source2024ModuleFeaturePredicates => {}
+            | s::Profile::Source2024ModuleFeaturePredicates
+            | s::Profile::Source2024ModuleDefinitions => {}
             _ => return Err("imported conformance has no complete admitted source profile"),
         }
         descriptor
@@ -128,8 +130,10 @@ impl Graph {
     ) -> Result<Option<crate::types::parameters::predicates::Predicate>, &'static str> {
         self.require_store(store)?;
         self.owner(owner)?;
-        if self.descriptor(&self.origins)?.profile()
-            != s::Profile::Source2024ModuleFeaturePredicates
+        if !self
+            .descriptor(&self.origins)?
+            .profile()
+            .feature_predicates()
         {
             return Ok(None);
         }

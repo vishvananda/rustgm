@@ -15,6 +15,7 @@ pub(super) struct Index {
     pub(super) contexts: Vec<Context>,
     pub(super) originals: Vec<Option<(s::Original, s::BodyInputs)>>,
     headers: HashMap<crate::types::ItemId, u32>,
+    pub(super) exact: bool,
 }
 
 impl Stage {
@@ -65,14 +66,15 @@ impl Stage {
                 return Err("source function header index names another declaration");
             }
             if facts.target_feature_functions.contains_key(&definition)
-                || facts
-                    .foreign
-                    .as_deref()
-                    .and_then(|registry| registry.function(definition))
-                    .is_some_and(|function| {
-                        function.naming != crate::support::linkage::Naming::Rust
-                            || function.linkage != crate::support::linkage::Linkage::Internal
-                    })
+                || !self.exact_linkage()
+                    && facts
+                        .foreign
+                        .as_deref()
+                        .and_then(|registry| registry.function(definition))
+                        .is_some_and(|function| {
+                            function.naming != crate::support::linkage::Naming::Rust
+                                || function.linkage != crate::support::linkage::Linkage::Internal
+                        })
             {
                 return Err(
                     "source named/foreign/target-feature function metadata requires its wider profile",
@@ -81,6 +83,7 @@ impl Stage {
             let declaration = self.declaration(definition)?;
             self.prepare_signature_arena(facts, function.signature)?;
             self.function(report, facts, &function, declaration)?;
+            self.exact_callable(facts, &function, declaration)?;
             count = count
                 .checked_add(1)
                 .ok_or("source function count overflow")?;

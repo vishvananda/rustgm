@@ -79,7 +79,7 @@ pub(super) fn prepare(
         });
     }
     for header in &rows.functions {
-        if rows.descriptor().profile() == s::Profile::Source2024ModuleFeaturePredicates {
+        if rows.descriptor().profile().feature_predicates() {
             work.charge(1)?;
             if header.parent.is_some_and(|parent| {
                 matches!(

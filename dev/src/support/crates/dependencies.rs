@@ -66,7 +66,8 @@ impl Dependencies {
             match descriptor.profile() {
                 super::generics::source::Profile::Source2024ModuleContracts
                 | super::generics::source::Profile::Source2024ModuleAvailability
-                | super::generics::source::Profile::Source2024ModuleFeaturePredicates => {
+                | super::generics::source::Profile::Source2024ModuleFeaturePredicates
+                | super::generics::source::Profile::Source2024ModuleDefinitions => {
                     descriptor.module_contracts()?;
                 }
                 _ => return Err("source client provider profile is unsupported"),

@@ -17,6 +17,7 @@ mod namespace_emission;
 mod non_type_sources;
 mod scoped_parameters;
 mod self_requests;
+mod verbatim_exports;
 use crate::{
     resolve::{
         expansion::Report,
@@ -57,6 +58,7 @@ enum ExportMode {
     ModuleContracts,
     Availability,
     FeaturePredicates,
+    Definitions,
 }
 
 pub(crate) struct Stage {
@@ -71,6 +73,9 @@ pub(crate) struct Stage {
     role_installation_steps: usize,
 }
 impl Stage {
+    pub(crate) fn exact_linkage(&self) -> bool {
+        self.functions.exact
+    }
     pub(crate) fn feature_predicates(&self) -> bool {
         self.inputs.selected_methods.is_some()
     }
@@ -173,6 +178,12 @@ impl Stage {
                 "source metadata is missing an actual provided original or its complete inputs",
             );
         }
+        self.charge(self.rows.exact_callables.len().saturating_mul(
+            self.rows.exact_callables.len().checked_ilog2().unwrap_or(0) as usize + 1,
+        ))?;
+        self.rows
+            .exact_callables
+            .sort_unstable_by_key(|row| row.declaration.0);
         let work = self.work();
         for slot in self.functions.originals {
             let (body, inputs) =
@@ -220,6 +231,13 @@ impl Stage {
     ) -> Result<Self, &'static str> {
         Self::begin_mode(report, facts, identity, ExportMode::FeaturePredicates)
     }
+    pub(crate) fn begin_module_definitions(
+        report: &Report,
+        facts: &mut Declarations,
+        identity: &CrateIdentity,
+    ) -> Result<Self, &'static str> {
+        Self::begin_mode(report, facts, identity, ExportMode::Definitions)
+    }
     fn begin_mode(
         report: &Report,
         facts: &mut Declarations,
@@ -230,7 +248,10 @@ impl Stage {
             producer
                 .require_deprecation_transport(&report.package)
                 .map_err(|error| error.message)?;
-            if mode != ExportMode::FeaturePredicates {
+            if !matches!(
+                mode,
+                ExportMode::FeaturePredicates | ExportMode::Definitions
+            ) {
                 producer
                     .require_impl_bound_transport(&report.package)
                     .map_err(|error| error.message)?;
@@ -249,14 +270,14 @@ impl Stage {
         if report.package.library_policy().is_some()
             && !matches!(
                 mode,
-                ExportMode::Availability | ExportMode::FeaturePredicates
+                ExportMode::Availability | ExportMode::FeaturePredicates | ExportMode::Definitions
             )
         {
             return Err("source stability contracts are outside this metadata profile");
         }
         if matches!(
             mode,
-            ExportMode::Availability | ExportMode::FeaturePredicates
+            ExportMode::Availability | ExportMode::FeaturePredicates | ExportMode::Definitions
         ) && report
             .package
             .library_policy()
@@ -298,12 +319,16 @@ impl Stage {
                 .as_deref()
                 .map_or(0, crate::sema::compiler_items::Catalog::binding_work),
         };
-        if mode == ExportMode::FeaturePredicates {
+        if matches!(
+            mode,
+            ExportMode::FeaturePredicates | ExportMode::Definitions
+        ) {
             stage.reserve(size_of::<
                 crate::support::hash::HashMap<DefId, s::TraitApplicationRef>,
             >())?;
             stage.inputs.selected_methods = Some(Box::default());
         }
+        stage.functions.exact = mode == ExportMode::Definitions;
         stage.reserve(count.saturating_mul(size_of::<Option<DeclarationRef>>()))?;
         stage.definitions.resize(count, None);
         stage.declarations(report, facts, mode)?;
@@ -356,8 +381,14 @@ impl Stage {
         facts: &mut Declarations,
         mode: ExportMode,
     ) -> Result<(), &'static str> {
-        let mut features =
-            non_type_sources::Coverage::new(report, self, mode == ExportMode::FeaturePredicates)?;
+        let mut features = non_type_sources::Coverage::new(
+            report,
+            self,
+            matches!(
+                mode,
+                ExportMode::FeaturePredicates | ExportMode::Definitions
+            ),
+        )?;
         let mut owners = scope_owners(report, facts, self)?;
         let root = report
             .resolution
@@ -389,6 +420,7 @@ impl Stage {
                 ExportMode::ModuleContracts
                     | ExportMode::Availability
                     | ExportMode::FeaturePredicates
+                    | ExportMode::Definitions
             ) && definition.kind == DefKind::Trait
                 && crate::resolve::impl_restrictions::clause(report, id)
                     .map_err(|_| "source trait implementation domain is invalid")?
@@ -604,5 +636,6 @@ fn rows(edition: crate::support::edition::Edition) -> s::SourceRows {
         originals: Vec::new(),
         body_inputs: Vec::new(),
         body_units: Vec::new(),
+        exact_callables: Vec::new(),
     }
 }

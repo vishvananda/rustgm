@@ -462,5 +462,5 @@ fn same_temporary(a: &crate::body::ir::Temporary, b: &crate::body::ir::Temporary
 }
 
 fn v4(view: &SourceOriginal<'_>) -> bool {
-    view.rows().descriptor().profile() == s::Profile::Source2024ModuleFeaturePredicates
+    view.rows().descriptor().profile().feature_predicates()
 }

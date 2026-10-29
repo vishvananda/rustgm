@@ -72,9 +72,7 @@ fn receiver_owner(
     raw: &s::ImplHeader,
     budget: &mut Headers,
 ) -> Result<ImportedOwner, Error> {
-    if raw.members.start != raw.members.end
-        && context.descriptor.profile() != s::Profile::Source2024ModuleFeaturePredicates
-    {
+    if raw.members.start != raw.members.end && !context.descriptor.profile().feature_predicates() {
         return Err(error(
             "imported impl members require their wider exact conformance profile",
         ));
