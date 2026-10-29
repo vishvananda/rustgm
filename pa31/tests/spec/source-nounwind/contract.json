@@ -1,0 +1,85 @@
+{
+  "schema": 1,
+  "state": "frozen v2 before independent observations; genuine LegacyReceiver foundation required by bool Clone receiver",
+  "profile": {
+    "rust_commit": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "rust_release": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "bootstrap": true
+  },
+  "scope": "Authored ordinary nounwind bodies in the fixed abort/non-unwinding ABI profile, real const/runtime/function-pointer calls. No intrinsic identity or const/unsafe permission from the marker. Actual original unlikely retained as source context; its genuine ColdPath dependency remains separate.",
+  "cases": {
+    "source-runtime.rs": {
+      "sha256": "94f6db11c60d941c07ae1c7aaa13d91c3c757d0f2a735a4321104b5bdc2b62e2",
+      "rust_metadata_status": 0,
+      "classification": "positive"
+    },
+    "ordinary-control.rs": {
+      "sha256": "8447a67c539db40661eece8c8ce090ee15ef7eeae83148d0287f1c14d4d3159b",
+      "rust_metadata_status": 0,
+      "classification": "positive"
+    },
+    "missing-feature.rs": {
+      "sha256": "b1bd96ec508c057b07723c2579b6b3a3b747990a4fc323de83c546bbebd50d84",
+      "rust_metadata_status": 1,
+      "classification": "language-negative"
+    },
+    "argument.rs": {
+      "sha256": "ba33d1ceb4d6e5c6c796c9c0943659d65b4caec262968822e486ba4513588e0a",
+      "rust_metadata_status": 1,
+      "classification": "language-negative"
+    },
+    "unsafe-wrapper.rs": {
+      "sha256": "b3858d69e0488022a72ef82851e91b4daeff1d9edf69645e4629380850c53247",
+      "rust_metadata_status": 1,
+      "classification": "language-negative"
+    },
+    "non-function.rs": {
+      "sha256": "983c45ebeeae2285a74490c866154af34fdae035428c92836220db3f80a74e64",
+      "rust_metadata_status": 1,
+      "classification": "language-negative"
+    },
+    "non-const.rs": {
+      "sha256": "d4881de4a9ce31e7db5f78f8e23e418c3f8fd5b03a5ab9e25debeecbb1c9ac09",
+      "rust_metadata_status": 1,
+      "classification": "language-negative"
+    },
+    "unsafe-call.rs": {
+      "sha256": "759654bb5c75bfe96f0bc614262d4dfc4a661c9847d191b221dc00aa3e7fc161",
+      "rust_metadata_status": 1,
+      "classification": "language-negative"
+    },
+    "unwind-abi.rs": {
+      "sha256": "0d9feabf7f935abf3a6e52a355c026f4849bec1a67a87100b6cd88c5aba3b638",
+      "rust_metadata_status": 0,
+      "classification": "required-unsupported-positive"
+    }
+  },
+  "native": {
+    "source": "source-runtime.rs",
+    "control": "ordinary-control.rs",
+    "observer": "observer.c",
+    "observer_sha256": "8ef585c7a50e3b0f39e190dcf0fbc85551aa93391db5b9633e5bc183d408f589",
+    "stdout": "0 1 0 1 0 1\n",
+    "stderr": "",
+    "status": 0
+  },
+  "original_context": {
+    "path": "library/core/src/intrinsics/mod.rs",
+    "sha256": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+    "start": 18639,
+    "end": 18852,
+    "selected": "upstream-unlikely.rs",
+    "selected_sha256": "bdf33e17e4a3d62dfd9ac252136129b610ca61b68ffa6e757044f856a9cd3fd0",
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea"
+  },
+  "required": [
+    "panic-unwind and C-unwind semantics/boundary enforcement/transport in PA39",
+    "original unlikely with genuine ColdPath body and full RangeSub source graph",
+    "all original core/alloc/std artifacts"
+  ],
+  "predecessor_sha256": "f48243610b92607827f0ecf7a2d8add66a115630f880eed6de93ce577e1431ae"
+}

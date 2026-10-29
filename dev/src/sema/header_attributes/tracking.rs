@@ -50,6 +50,15 @@ pub(in crate::sema) fn consume_tracking(
     if flags.asynchronous {
         return Err(error("async caller tracking is not implemented"));
     }
+    if policy == Consumer::IntrinsicNoUnwind
+        && !aborting_abi(
+            crate::sema::declarations::callable_convention(report, declaration, abi)?.abi,
+        )
+    {
+        return Err(error(
+            "source nounwind requires its checked abort or non-unwinding ABI",
+        ));
+    }
     if report.package.source_core().is_none() {
         return Err(error(
             "ordinary caller tracking requires a checked source header",
@@ -71,6 +80,18 @@ pub(in crate::sema) fn consume_tracking(
     header.tracking = Tracking::Explicit;
     Ok(())
 }
+
+fn aborting_abi(abi: crate::types::callable::Abi) -> bool {
+    use crate::types::callable::Abi;
+    match abi {
+        Abi::C => true,
+        Abi::Rust | Abi::RustCall => crate::resolve::package::Package::target_aborts_panics(),
+    }
+}
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/aborting_source.rs"]
+mod abort_tests;
 
 impl Declarations {
     pub(crate) fn charge_caller_inputs(
@@ -313,20 +334,6 @@ pub(super) fn validate_intrinsic_annotations(
                         declaration.file,
                         attribute.span.start,
                         "intrinsic const policy requires a free function",
-                    ));
-                }
-                Some("rustc_nounwind")
-                    if report
-                        .resolution
-                        .source_bindings
-                        .as_deref()
-                        .and_then(|reserved| reserved.intrinsic(definition))
-                        .is_none_or(|reserved| reserved.declaration.origin != declaration) =>
-                {
-                    return Err(Error::at(
-                        declaration.file,
-                        attribute.span.start,
-                        "ordinary source nounwind callable execution is not implemented",
                     ));
                 }
                 _ => {}
