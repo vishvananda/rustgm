@@ -800,7 +800,10 @@ handles, copy an unrelated source arena or reparse rendered field spelling.
 See the [typed macro checkpoint](docs/pa31-derive-type-macros-checkpoint.md).
 
 Derived field constants copy selected typed children and rebase selected inline
-literal IDs into the destination pool, with prepaid growth. Deferred token
+literal IDs into the destination pool, with prepaid growth. Calls retain the
+actual callee and ordered argument list through the existing checked walker;
+Path/Applied/Qualified nodes preserve real generic types and spans. This syntax
+transfer grants no callable or const-execution permission. Deferred token
 literals keep real tokens and new pending-materialization IDs. Include pending
 owner/literal slices in O(1) payload accounting; do not scan or copy an unrelated
 source pool. Byte-backed values require their actual owner, never a shallow

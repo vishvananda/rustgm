@@ -1,28 +1,25 @@
 # Parallel library bootstrap implementation
 
 Root owns integration, original-core observations and public main publication.
-Joined93e84a642 passes87 exact private controls168.32s and productionCLI3
-146.36s, full format/architecture and strict Clippy. All3186 source entries and
-134 fixture hashes match Root, so no integrator private rebuild. Actual ordinary
-array5/7/11, C128 vector-copy and original NonZero0/1/255 source native programs
-match pinned Rust. The first SIMD attempt used the wrong course validator;
-corrected native-v2 uses the existing reviewed host-object reader, preserving
-that failure and all backend pins. Harness272, registrations385, layout/upstream
-pass. Full prior public0d4dde55a CI40893498057 and push40893343278 pass every lane.
+The Call-copy join passes91 private controls132.64s, productionCLI3 98.71s,
+new source const-fn native5/7/11, exact-TypeId/scaling controls and Root endpoint
+native5. All3187 source entries/146 fixture hashes match Root; no integrator
+private rebuild. Helper51.84s passes harness272/registrations385/layout/upstream.
+See the [call-copy checkpoint](pa8-derived-calls-checkpoint.md).
 
-Current CLI813a611c clears stdarch lane-count copying and stops at file97:24211,
-original any.rs730 TypeId.data's16 / size_of::<*const ()>() call subtree, in11.18s.
-Same374 loading count/all722 hashes/target flags, explicit work14,500,624/
-attempted1GiB/retained64MiB. Strict separately retains the expectation68. No
-original artifact/additional PA release. See the
-[derived-field checkpoint](pa8-derived-constants-checkpoint.md) and
-[unchecked source checkpoint](pa28-source-unchecked-transmute-checkpoint.md).
-B now owns LIB-094 selected Call transfer/ordinary const-call controls. C traces
-the genuine size_of/SizedTypeProperties/usize Div source path read-only first;
-old primitive division exists but source role/header/default/erasure joins are
-missing. Preserve original helper/Formatter/metadata/all-artifact requirements.
-No new advisory lint producer is queued. Keep2heavyglobally/16GiB/150reserve,
-existingtwo workers/trees only and source-frozen actual terminal handoffs.
+Current CLIcf74502a clears TypeId field syntax and stops at file47:34595,
+intrinsics/mod.rs838 rustc_allowed_through_unstable_modules on transmute.
+375loadingopens/all722 hashes/target flags/work14,500,624/attempted1GiB/
+retained64MiB stay fixed; strict separately retains expectation68. This is a
+source frontier, not an artifact or measured speedup. Public729 fullCI40905161888
+and push40905100591 are separate; do not duplicate an active full run.
+B investigates LIB-095's real attribute/stability semantics read-only first.
+C implements genuine SourceDiv role/default/header/erasure using existing HookDiv
+and actual SIZE/default/layout field dependency; missing real NoCore panic
+providers stay explicit and no stub or stripped checks may replace them.
+Preserve all full TypeId/Formatter/original helper/metadata/artifact requirements.
+Keep2heavyglobally/16GiB/150reserve, existingtwo workers/trees only, sourcefrozen
+actual terminal handoffs. No new advisory lint producer is queued.
 
 B owns complete zero-excluded unsigned scalar niche layout, CTFE bytes and native
 ABI transport (LIB-087), preserving actual scalar types and measured hot widths.
