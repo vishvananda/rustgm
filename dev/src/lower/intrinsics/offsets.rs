@@ -41,18 +41,29 @@ impl Context<'_> {
             ty: Type::Ptr,
             operand: Operand::Parameter(0),
         };
-        let result = if size == 0 {
-            base
-        } else {
-            let stride = builder.integer(Type::I64, u128::from(size))?;
-            let count = Value {
-                ty: Type::I64,
-                operand: Operand::Parameter(1),
-            };
-            let displacement = builder.binary(Binary::Mul, count, stride)?;
-            builder.index(Type::U8, base, displacement)?
+        let count = Value {
+            ty: Type::I64,
+            operand: Operand::Parameter(1),
         };
+        let result = Self::wrapping_offset_value(&mut builder, base, count, size)?;
         builder.terminate(Terminator::Return(Some(result)))?;
         builder.finish()
+    }
+    /// `LowIR` integer multiply and byte indexing preserve the complete signed word.
+    pub(in crate::lower) fn wrapping_offset_value(
+        builder: &mut Builder,
+        base: Value,
+        count: Value,
+        size: u64,
+    ) -> Result<Value, &'static str> {
+        if base.ty != Type::Ptr || count.ty != Type::I64 {
+            return Err("pointer byte index requires a pointer and a signed machine word");
+        }
+        if size == 0 {
+            return Ok(base);
+        }
+        let stride = builder.integer(Type::I64, u128::from(size))?;
+        let displacement = builder.binary(Binary::Mul, count, stride)?;
+        builder.index(Type::U8, base, displacement)
     }
 }

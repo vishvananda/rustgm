@@ -7,9 +7,9 @@ use crate::types::TypeId;
 /// No caller can construct a root/offset pointer: this records existing ancestry only.
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) struct WordAddress {
-    root: LocationId,
-    offset: u64,
-    write: WritePermission,
+    pub(super) root: LocationId,
+    pub(super) offset: u64,
+    pub(super) write: WritePermission,
 }
 impl WordAddress {
     pub(crate) const fn root(self) -> LocationId {
@@ -59,6 +59,16 @@ impl Evaluator<'_> {
         value: Constant,
         limit: usize,
     ) -> Result<(WordAddress, usize), Failure> {
+        let mut work = 0;
+        let address = self.word_address_charged(value, limit, &mut work)?;
+        Ok((address, work))
+    }
+    pub(super) fn word_address_charged(
+        &mut self,
+        value: Constant,
+        limit: usize,
+        work: &mut usize,
+    ) -> Result<WordAddress, Failure> {
         let Value::Reference(pointer) = value.0 else {
             return Err("symbolic data word requires existing pointer provenance".into());
         };
@@ -67,12 +77,11 @@ impl Evaluator<'_> {
         }
         let mut root = LocationId(pointer.place);
         let mut offset = 0u64;
-        let mut work = 0usize;
         loop {
-            work = work
-                .checked_add(1)
-                .filter(|n| *n <= limit)
-                .ok_or("symbolic address ancestry work budget exceeded")?;
+            *work = work.saturating_add(1);
+            if *work > limit {
+                return Err("symbolic address ancestry work budget exceeded".into());
+            }
             let place = Reader::new(self.facts()).location(root)?;
             if let Origin::ByteOffset {
                 base,
@@ -92,8 +101,8 @@ impl Evaluator<'_> {
                 Origin::ByteOffset { .. } => return Err("symbolic byte ancestry changed".into()),
             };
             let parent = Reader::new(self.facts()).location(base)?;
-            let (_, added) = self.storage_layout(parent.ty, limit.saturating_sub(work))?;
-            work = work
+            let (_, added) = self.storage_layout(parent.ty, limit.saturating_sub(*work))?;
+            *work = work
                 .checked_add(added)
                 .filter(|n| *n <= limit)
                 .ok_or("symbolic address layout work budget exceeded")?;
@@ -118,14 +127,11 @@ impl Evaluator<'_> {
                 .ok_or("symbolic address offset overflow")?;
             root = base;
         }
-        Ok((
-            WordAddress {
-                root,
-                offset,
-                write: pointer.write,
-            },
-            work,
-        ))
+        Ok(WordAddress {
+            root,
+            offset,
+            write: pointer.write,
+        })
     }
     /// Select bytes relative to existing symbolic provenance, never a numeric address.
     pub(crate) fn byte_projection(

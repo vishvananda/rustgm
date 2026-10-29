@@ -80,6 +80,18 @@ impl Stage {
                     "source named/foreign/target-feature function metadata requires its wider profile",
                 );
             }
+            if facts
+                .source_bindings
+                .as_deref()
+                .map(|c| c.intrinsic_kind(definition))
+                .transpose()?
+                .flatten()
+                == Some(crate::support::bindings::SourceIntrinsic::ArithOffset)
+            {
+                return Err(
+                    "source arith_offset declaration semantics require a wider metadata profile",
+                );
+            }
             let declaration = self.declaration(definition)?;
             self.prepare_signature_arena(facts, function.signature)?;
             self.function(report, facts, &function, declaration)?;
