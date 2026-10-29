@@ -7,6 +7,7 @@ import multiprocessing
 import os
 from pathlib import Path
 import queue
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -193,9 +194,27 @@ class OutputCapTests(unittest.TestCase):
         process = Mock()
         process.poll.return_value = 0
         with patch('resource_runner.subprocess.run') as systemctl:
+            systemctl.return_value.returncode = 0
             stop(process, 'scope-with-descendants.scope')
+        self.assertEqual(systemctl.call_count, 1)
         self.assertEqual(systemctl.call_args.args[0],
                          ['systemctl', '--user', 'stop', 'scope-with-descendants.scope'])
+
+    def test_timed_out_or_failed_scope_stop_kills_orphans_after_launcher_exit(self):
+        unit = 'scope-with-descendants.scope'
+        for failure in (subprocess.TimeoutExpired('systemctl', 5), OSError('unavailable'),
+                        Mock(returncode=1)):
+            with self.subTest(failure=failure):
+                process = Mock()
+                process.poll.return_value = 0
+                with patch('resource_runner.subprocess.run',
+                           side_effect=[failure, Mock(returncode=0)]) as systemctl:
+                    stop(process, unit)
+                self.assertEqual(systemctl.call_count, 2)
+                self.assertEqual(systemctl.call_args.args[0],
+                                 ['systemctl', '--user', 'kill', '--kill-whom=all',
+                                  '--signal=SIGKILL', unit])
+                process.wait.assert_not_called()
 
     def test_final_accounting_records_actual_output_under_the_same_cap(self):
         with tempfile.TemporaryDirectory() as folder:
