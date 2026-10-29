@@ -18,14 +18,21 @@
     "missing_requirement": {
       "metadata": 1,
       "error": "E0277 T:Extra unsatisfied"
+    },
+    "declared_premise": {
+      "metadata": 0,
+      "object": 0,
+      "scope": "actual T:Extra declaration conformance only; no closed dependent-instance execution claim"
     }
   },
   "evidence": {
     "positive": "47175f88d8e1992b49bd513efd79abe62e8dc51207b120c1a24c2763168c3057",
-    "negative": "d6b44c3848ffd44e19316cf602e9e0c34697ec6702b9f340c52a8ce9e5fb248d"
+    "negative": "d6b44c3848ffd44e19316cf602e9e0c34697ec6702b9f340c52a8ce9e5fb248d",
+    "declared_premise": "4c85441db2b72ebd48ba6061468aaf2e00c3ca2add6ea16b1c47a625eba75d96"
   },
   "required": [
     "Nominal subjects, const/lifetime owner formals and nontrivial proof debts remain outside this early profile.",
     "Full pinned SizedTypeProperties trait beyond retained SIZE/ALIGN subset and complete TypeId graph remain required."
-  ]
+  ],
+  "declared_premise_input_sha256": "04d4b9a77c15188bd21dc87bfa38c98ced465ff7b98bb2e5e494c8b0e7c5223d"
 }

@@ -243,7 +243,8 @@ impl Checker<'_> {
             .arena_for(&mut self.facts)
             .map_err(|e| self.error(source, e))?;
         let environment = self.facts.generics.environments.get(&owner).cloned();
-        let assumptions = self.early_source_assumptions(source, predicate.ty, environment.as_deref())?;
+        let assumptions =
+            self.early_source_assumptions(source, predicate.ty, environment.as_deref())?;
         Ok(Eligibility::Ready(Plan {
             arena,
             member_profile,
@@ -263,17 +264,26 @@ impl Checker<'_> {
         subject: crate::types::TypeId,
         environment: Option<&Environment>,
     ) -> Result<Option<Arc<Assumptions>>, Error> {
-        let producer = self.report.lint_producer()
-            .ok_or_else(|| self.error(source, "generic conformance requires its actual source payer"))?;
-        let pay = |work, bytes| producer.diagnostic_payload(source, work, bytes).map_err(|e| e.message);
+        let producer = self.report.lint_producer().ok_or_else(|| {
+            self.error(
+                source,
+                "generic conformance requires its actual source payer",
+            )
+        })?;
+        let pay = |work, bytes| {
+            producer
+                .diagnostic_payload(source, work, bytes)
+                .map_err(|e| e.message)
+        };
         pay(1, size_of::<Option<Arc<Assumptions>>>()).map_err(|e| self.error(source, e))?;
         if !matches!(self.facts.types.kind(subject), Some(Kind::Parameter(_))) {
             return Ok(None);
         }
         pay(1, size_of::<Assumptions>() + 2 * size_of::<usize>())
             .map_err(|e| self.error(source, e))?;
-        let assumptions = Assumptions::from_environment_charged(&self.facts.types, environment, &pay)
-            .map_err(|e| self.error(source, e))?;
+        let assumptions =
+            Assumptions::from_environment_charged(&self.facts.types, environment, &pay)
+                .map_err(|e| self.error(source, e))?;
         Ok(Some(Arc::new(assumptions)))
     }
 

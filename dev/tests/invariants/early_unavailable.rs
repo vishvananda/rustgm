@@ -169,18 +169,35 @@ fn blanket_constant_all_type_formals_require_real_trait_obligations() -> Result 
 #[test]
 fn declared_blanket_bounds_supply_only_the_actual_prerequisite_environment() -> Result {
     let source = crate::test_source::fixture("pa31/tests/spec/source-div/type-blanket.rs")?;
-    let source = source.split("const VALUE:u8=<").next().ok_or("actual declaration prefix")?
-        .replace("pub trait PairValue<Rhs>{", "pub trait PairValue<Rhs>: Extra{")
-        .replace("impl<T,U>", "impl<T:Extra,U>") + "\npub trait Extra{}\n";
+    let source = source
+        .split("const VALUE:u8=<")
+        .next()
+        .ok_or("actual declaration prefix")?
+        .replace(
+            "pub trait PairValue<Rhs>{",
+            "pub trait PairValue<Rhs>: Extra{",
+        )
+        .replace("impl<T,U>", "impl<T:Extra,U>")
+        + "\npub trait Extra{}\n";
     let report = crate::test_source::source_provider(&source, "declared_premise")?;
     let mut checker = Checker::new(&report)?;
     checker.run()?;
-    let owner = *owners(&checker, "PairValue")?.first().ok_or("actual blanket owner")?;
+    let owner = *owners(&checker, "PairValue")?
+        .first()
+        .ok_or("actual blanket owner")?;
     let mut pending = Pending::default();
     let actual = plan(&mut checker, &mut pending, owner)?;
-    assert!(actual.assumptions.as_ref().is_some_and(|assumptions| !assumptions.is_empty()));
+    assert!(
+        actual
+            .assumptions
+            .as_ref()
+            .is_some_and(|assumptions| !assumptions.is_empty())
+    );
     let mut attempt = Attempt::new(actual);
-    assert!(matches!(attempt.advance(&mut checker.facts, owner)?, Step::Complete));
+    assert!(matches!(
+        attempt.advance(&mut checker.facts, owner)?,
+        Step::Complete
+    ));
     assert!(attempt.context.steps > 0);
     Ok(())
 }
