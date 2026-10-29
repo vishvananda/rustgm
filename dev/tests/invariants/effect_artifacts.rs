@@ -249,12 +249,8 @@ fn reconstructed_const_mode_is_revalidated_without_claiming_a_checked_body() -> 
         .transpose()?
         .ok_or("installed canonical const declaration")?;
     let mut work = super::ImportedOriginals::default();
-    let view = crate::sema::crates::typed_headers::source_original(
-        &analysis.facts,
-        definition,
-        &mut work.steps,
-    )?
-    .ok_or("actual source original")?;
+    let view = crate::sema::crates::source_original(&analysis.facts, definition, &mut work.steps)?
+        .ok_or("actual source original")?;
     let mut body = super::build(&view, &mut work)?;
     assert!(body.const_context);
     super::validate(&view, &body, &mut work.steps)?;
@@ -269,7 +265,7 @@ fn independently_added_const_bodies_keep_linear_validation_work_and_hot_widths()
     for width in [8, 32, 128] {
         let mut source = fixture("provider")?;
         for index in 0..width {
-            source.push_str(&format!("\n#[stable(feature=\"callable_batch\",since=\"1.0.0\")]pub const fn added_{index}()->u8{{7}}\n"));
+            source.push_str(&format!("\n#[stable(feature=\"callable_batch\",since=\"1.0.0\")]#[rustc_const_stable(feature=\"callable_batch\",since=\"1.0.0\")]pub const fn added_{index}()->u8{{7}}\n"));
         }
         let artifact = module_packets::exported_profile(
             &source,
