@@ -10,6 +10,11 @@ pub(super) trait Folder {
     fn arguments(&mut self, args: GenericArgs, depth: u16) -> Result<GenericArgs, Self::Error>;
     fn application(&mut self, id: ApplicationId, depth: u16) -> Result<ApplicationId, Self::Error>;
     fn constant(&mut self, id: ConstId) -> Result<ConstId, Self::Error>;
+    fn constraint(
+        &mut self,
+        constraint: crate::types::Constraint,
+        base: TypeId,
+    ) -> Result<crate::types::Constraint, Self::Error>;
     fn bound_regions(&self, count: u32) -> u32;
 }
 
@@ -58,10 +63,13 @@ pub(super) fn rebuild<F: Folder>(folder: &mut F, kind: Kind, depth: u16) -> Resu
             element: folder.child(element, depth)?,
             length: folder.constant(length)?,
         },
-        Kind::Pattern { base, constraint } => Kind::Pattern {
-            base: folder.child(base, depth)?,
-            constraint,
-        },
+        Kind::Pattern { base, constraint } => {
+            let base = folder.child(base, depth)?;
+            Kind::Pattern {
+                base,
+                constraint: folder.constraint(constraint, base)?,
+            }
+        }
         Kind::Slice(element) => Kind::Slice(folder.child(element, depth)?),
         Kind::Reference {
             mutable,
@@ -149,6 +157,35 @@ impl<F: Fn(usize, usize) -> Result<(), &'static str>, const CHARGED: bool> Folde
     }
     fn constant(&mut self, id: ConstId) -> Result<ConstId, Self::Error> {
         self.bound.constant(self.store, id)
+    }
+    fn constraint(
+        &mut self,
+        constraint: crate::types::Constraint,
+        base: TypeId,
+    ) -> Result<crate::types::Constraint, Self::Error> {
+        let crate::types::Constraint::ScalarRange(id) = constraint else {
+            return Ok(constraint);
+        };
+        let range = self
+            .store
+            .scalar_range(id)
+            .ok_or("unknown substituted scalar range")?;
+        self.bound.account_arguments(1)?;
+        let attempted = std::cell::Cell::new(0_usize);
+        let result = self.store.intern_scalar_range(
+            crate::types::ScalarRange { base, ..range },
+            &|work, bytes| {
+                attempted.set(attempted.get().saturating_add(work));
+                if CHARGED {
+                    (self.charge)(work, bytes)
+                } else {
+                    Ok(())
+                }
+            },
+        );
+        self.bound.account_arguments(attempted.get())?;
+        let id = result?;
+        Ok(crate::types::Constraint::ScalarRange(id))
     }
     fn bound_regions(&self, count: u32) -> u32 {
         if matches!(self.bound.action, Action::Shape { .. }) {

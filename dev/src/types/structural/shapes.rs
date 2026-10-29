@@ -131,6 +131,7 @@ impl Shapes {
         std::mem::discriminant(&key).hash(&mut hash);
         match key {
             Key::Type(ty) => self.ty::<CHARGED, E>(
+                types,
                 types.kind(ty).ok_or(Error::Identity)?,
                 finish,
                 &mut hash,
@@ -174,6 +175,7 @@ impl Shapes {
     }
     fn ty<const CHARGED: bool, E: From<Error>>(
         &mut self,
+        types: &Store,
         kind: Kind,
         finish: bool,
         hash: &mut FxHasher,
@@ -200,7 +202,12 @@ impl Shapes {
                 self.child::<CHARGED, E>(Key::Type(pointee), finish, hash, charge)?;
             }
             Kind::Pattern { base, constraint } => {
-                constraint.hash(hash);
+                std::mem::discriminant(&constraint).hash(hash);
+                if let crate::types::Constraint::ScalarRange(id) = constraint {
+                    self.account::<CHARGED, E>(5, charge)?;
+                    let range = types.scalar_range(id).ok_or(Error::Identity)?;
+                    (range.start, range.end).hash(hash);
+                }
                 self.child::<CHARGED, E>(Key::Type(base), finish, hash, charge)?;
             }
             Kind::Slice(element) => {

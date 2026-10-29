@@ -47,6 +47,7 @@ mod projections;
 mod receivers;
 mod required_features;
 pub(in crate::sema) use required_features::RequiredFeatures;
+mod refined_annotations;
 mod self_constructors;
 mod self_schema;
 mod slice_methods;
@@ -139,6 +140,7 @@ enum Work {
     PathArguments(NodeKey, DefId, regions::Context),
     Definition(DefId, bool),
     Node(NodeKey, bool, regions::Context),
+    ScalarPattern(NodeKey, regions::Context),
     Reference(NodeKey, RegionId),
     Parameter(BinderId, bool),
     Signature(NodeKey, Option<DefId>, SignaturePhase),
@@ -569,6 +571,7 @@ impl Checker<'_> {
                 ));
             }
             match work {
+                Work::ScalarPattern(key, context) => self.scalar_pattern_inputs(key, context)?,
                 Work::Execution(requirement, phase) => self.execution_body(requirement, phase)?,
                 Work::ClosureAnnotation(key, context, first) => {
                     self.closure_annotation(key, context, first, steps, limit, &mut scan)?;
@@ -1196,24 +1199,7 @@ impl Checker<'_> {
                 }
                 ty
             }
-            Kind::TypePattern {
-                base,
-                constraint: crate::syntax::ast::TypeConstraint::NonNull,
-            } => {
-                let base = self.ty(NodeKey { node: base, ..key })?;
-                if !matches!(self.facts.types.kind(base), Some(Type::Pointer { .. })) {
-                    return Err(
-                        self.error(key, "non-pointer pattern types require their wider profile")
-                    );
-                }
-                self.facts
-                    .types
-                    .intern(Type::Pattern {
-                        base,
-                        constraint: crate::types::Constraint::NonNull,
-                    })
-                    .map_err(|message| self.error(key, message))?
-            }
+            Kind::TypePattern { base, constraint } => self.pattern_type(key, base, constraint)?,
             Kind::Type { flavor, elements } => self.compound(key, flavor, elements)?,
             _ => return Err(self.error(key, "invalid completed annotation")),
         };

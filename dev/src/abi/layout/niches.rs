@@ -129,12 +129,20 @@ impl Niches {
                 .get(ty)
                 .ok_or("nullable carrier lacks its completed layout")?;
             match types.kind(ty).ok_or("missing nullable carrier type")? {
-                Kind::Pattern { .. }
-                    if matches!(layout.shape, Shape::Scalar | Shape::WidePointer)
-                        && matches!(layout.size, 8 | 16)
-                        && layout.align == 8 =>
+                Kind::Pattern {
+                    constraint: crate::types::Constraint::NonNull,
+                    ..
+                } if matches!(layout.shape, Shape::Scalar | Shape::WidePointer)
+                    && matches!(layout.size, 8 | 16)
+                    && layout.align == 8 =>
                 {
                     break Some(ty);
+                }
+                Kind::Pattern {
+                    constraint: crate::types::Constraint::ScalarRange(_),
+                    ..
+                } => {
+                    return Err("scalar pattern enum niches require their complete ABI profile");
                 }
                 Kind::Reference { .. } | Kind::Function { .. }
                     if matches!(layout.shape, Shape::Scalar)

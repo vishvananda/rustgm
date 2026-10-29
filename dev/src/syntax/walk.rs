@@ -79,8 +79,13 @@ impl<L> Syntax<L> {
             | Kind::Type { elements: list, .. }
             | Kind::TraitType { bounds: list, .. }
             | Kind::Path { segments: list, .. } => self.children(list, visit)?,
+            Kind::TypePattern { base, constraint } => {
+                visit(base)?;
+                if let crate::syntax::ast::TypeConstraint::Pattern(pattern) = constraint {
+                    visit(pattern)?;
+                }
+            }
             Kind::Attributed { value, .. }
-            | Kind::TypePattern { base: value, .. }
             | Kind::Group(value)
             | Kind::TryBlock { body: value, .. }
             | Kind::ConstClosure { closure: value, .. }

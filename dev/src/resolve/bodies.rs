@@ -189,7 +189,13 @@ impl Resolver<'_> {
                 self.visit(c, value, Namespace::Value)?;
                 self.visit(c, ty, Namespace::Type)
             }
-            Kind::TypePattern { base, .. } => self.visit(c, base, Namespace::Type),
+            Kind::TypePattern { base, constraint } => {
+                self.visit(c, base, Namespace::Type)?;
+                if let crate::syntax::ast::TypeConstraint::Pattern(pattern) = constraint {
+                    self.visit(c, pattern, Namespace::Value)?;
+                }
+                Ok(())
+            }
             Kind::Type { flavor, elements } => {
                 for offset in elements.start..elements.end {
                     let child = self.package.unit(c.file).configured.ast.edges[offset as usize];

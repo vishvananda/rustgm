@@ -224,6 +224,31 @@ impl rewrite::Folder for Read<'_> {
     fn constant(&mut self, id: ConstId) -> Result<ConstId, Error> {
         Ok(id)
     }
+    fn constraint(
+        &mut self,
+        constraint: crate::types::Constraint,
+        base: TypeId,
+    ) -> Result<crate::types::Constraint, Error> {
+        let crate::types::Constraint::ScalarRange(id) = constraint else {
+            return Ok(constraint);
+        };
+        let range = self
+            .store
+            .scalar_range(id)
+            .ok_or("unknown scalar range lookup")?;
+        self.lookup.bound.account_arguments(1)?;
+        let attempted = std::cell::Cell::new(0_usize);
+        let result = self.store.find_scalar_range(
+            crate::types::ScalarRange { base, ..range },
+            &|work, _| {
+                attempted.set(attempted.get().saturating_add(work));
+                Ok(())
+            },
+        );
+        self.lookup.bound.account_arguments(attempted.get())?;
+        let id = result?.ok_or(Error::Absent)?;
+        Ok(crate::types::Constraint::ScalarRange(id))
+    }
     fn bound_regions(&self, count: u32) -> u32 {
         count
     }

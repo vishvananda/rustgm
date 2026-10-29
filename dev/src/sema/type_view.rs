@@ -425,7 +425,21 @@ fn ty(store: &Store, id: TypeId, out: &mut impl Write) -> io::Result<()> {
                 element.0, parameter.owner.0, parameter.index
             )
         }
-        Kind::Pattern { base, .. } => write!(out, "pattern base={} constraint=nonnull", base.0),
+        Kind::Pattern { base, constraint } => match constraint {
+            crate::types::Constraint::NonNull => {
+                write!(out, "pattern base={} constraint=nonnull", base.0)
+            }
+            crate::types::Constraint::ScalarRange(id) => {
+                let range = store.scalar_range(id).ok_or_else(|| {
+                    io::Error::new(io::ErrorKind::InvalidData, "missing scalar range")
+                })?;
+                write!(
+                    out,
+                    "pattern base={} constraint=range start={} end={}",
+                    base.0, range.start, range.end
+                )
+            }
+        },
         Kind::Slice(element) => write!(out, "slice element={}", element.0),
         Kind::Pointer { mutable, pointee } => {
             write!(out, "pointer mutable={mutable} pointee={}", pointee.0)
