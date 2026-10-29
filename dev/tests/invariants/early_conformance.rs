@@ -290,10 +290,17 @@ fn functions_only_witness_authenticates_both_actual_complete_buckets() -> Result
         );
         let selected = actual.early_impl_plan(owner, source, predicate, &mut Pending::default())?;
         if trait_name == "AssociatedType" {
-            assert!(matches!(
-                selected,
-                Eligibility::Unsupported(Unsupported::Members)
-            ));
+            let Eligibility::Ready(selected) = selected else {
+                return Err("actual complete type member profile was not retained".into());
+            };
+            assert!(selected.has_types());
+            assert!(
+                selected
+                    .require_no_associated(&actual.facts, owner)
+                    .is_err()
+            );
+            assert!(selected.require_constants(&actual.facts, owner).is_err());
+            selected.require_complete(&actual.facts, owner)?;
         } else {
             let Eligibility::Ready(selected) = selected else {
                 return Err("actual constant member profile was not retained".into());
