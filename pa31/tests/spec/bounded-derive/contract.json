@@ -1,0 +1,78 @@
+{
+  "state": "frozen before independent or candidate observation",
+  "owning": "PA26/31 parsed source derive formals and ordinary obligations; PA12/25 predicates/const args retained separately",
+  "profile": {
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "rustc": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "bootstrap": true,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false
+  },
+  "original": {
+    "path": "library/core/src/mem/manually_drop.rs",
+    "start": 5644,
+    "end": 5878,
+    "sha256": "495080dcc2216436307c478c05b40861abd34495f3c166b86b16ece7dd75832f",
+    "members": [
+      "Copy",
+      "Clone",
+      "Debug",
+      "Default"
+    ],
+    "scope": "unchanged4-member expansion and receipt only; actual MaybeDangling and full Debug/Formatter runtime required"
+  },
+  "cases": [
+    {
+      "source": "generic-source.rs",
+      "metadata": 0
+    },
+    {
+      "source": "missing-owner-bound.rs",
+      "metadata": 1
+    },
+    {
+      "source": "missing-where-bound.rs",
+      "metadata": 1
+    },
+    {
+      "source": "missing-default.rs",
+      "metadata": 1
+    },
+    {
+      "source": "wrong-const-type.rs",
+      "metadata": 1
+    },
+    {
+      "source": "unsized-debug-rust.rs",
+      "metadata": 0
+    }
+  ],
+  "native": {
+    "source": "generic-source.rs",
+    "observer": "observer.c",
+    "status": 0,
+    "stdout": "d7;d9;p7:9;d7;r7:5;7\n",
+    "stderr": ""
+  },
+  "required": [
+    "full unchanged original ManuallyDrop4-trait MaybeDangling/Debug/Formatter runtime",
+    "higher-ranked bounds and predicates",
+    "precise-capture or unsupported parsed field-transfer forms",
+    "artifact transport"
+  ],
+  "files": {
+    "generic-source.rs": "c7c88b43d366d5a9117ffd650144f2e20a17664082a6b1489d28b35785d92df6",
+    "manually-drop-expansion.rs": "818daf8fd71a0c5d3799b2b23898b437338e3ad2c7d1e2ef2093b54c6624e404",
+    "manually-drop-original.rs": "495080dcc2216436307c478c05b40861abd34495f3c166b86b16ece7dd75832f",
+    "manually-drop-rust.rs": "572ae5c97898850201d511897b7b5894645b26aadd4d8f95dd4abcb6dfa9df2c",
+    "missing-default.rs": "d3f27c43c87b40dc54387bf865f90a8872078ffbbdc51177461f13f6a9579f8a",
+    "missing-owner-bound.rs": "3de1515e6d842b44cdf9a4eed0775ff6f39696a77f36d4a0b0e8a3516b05b5d8",
+    "missing-where-bound.rs": "9cf0c700c86caaeec2c62297e84bb3bc24ce0cf6004f4345aaf4ea6338e323c0",
+    "observer.c": "6273bdc3edb1468c8f651512fb7ad36921244e78bb125ead389a3291ba83bdc4",
+    "unsized-debug-rust.rs": "87bdf90a2c0d73ececbed11733719cd89958f97d07eb804b8de74b916fed43d0",
+    "wrong-const-type.rs": "12a5f389266631cd6ee3a0444c0c3293186d3bad5509d5ba369b14d3f6132115"
+  },
+  "successor": "v2 freezes real MaybeDangling import/feature, qualified source Clone macro, corrected fixture lifetime carrier and unsized Debug borrow; rejected v1 retained under obj/oracle-v1"
+}

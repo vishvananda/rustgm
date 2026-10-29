@@ -2,6 +2,7 @@
 mod active_members;
 mod cloned_fields;
 mod comparisons;
+mod constrained_impls;
 mod debug_format;
 mod derivation_contexts;
 mod initialized_fields;
@@ -64,12 +65,6 @@ pub(crate) fn build(
     let fields = &inventory.fields;
     let copy = site.members[0].is_some();
     let clone = site.members[1].is_some();
-    if site.item.where_clause.start != site.item.where_clause.end {
-        return Err(error(
-            site.original.start,
-            "source derive where clauses require a wider profile",
-        ));
-    }
     let mut output = Output {
         site,
         stream: Stream::default(),
@@ -101,7 +96,13 @@ impl Output<'_> {
             .iter()
             .map(|field| Splice {
                 fragment: Nonterminal::Syntax {
-                    kind: FragmentKind::Type,
+                    kind: match field.parsed.ast.node(field.parsed.ast.root).kind {
+                        Kind::Name(..)
+                        | Kind::Path { .. }
+                        | Kind::Applied { .. }
+                        | Kind::Qualified { .. } => FragmentKind::Path,
+                        _ => FragmentKind::Type,
+                    },
                     parsed: &field.parsed,
                 },
                 original_source: self.site.source,
@@ -285,45 +286,8 @@ impl Output<'_> {
             .name
             .ok_or_else(|| error(self.site.original.start, "derived struct has no name"))?;
         self.spelling(name, false)?;
-        self.generics(None)
-    }
-    fn generics(&mut self, implementation: Option<&str>) -> Result<(), LexError> {
-        let parameters = self.site.ast.list(self.site.item.generics);
-        if parameters.is_empty() {
-            return Ok(());
-        }
-        self.text("<")?;
-        for &node in parameters {
-            (self.charge)(1, 0)?;
-            let Kind::Generic(index) = self.site.ast.node(node).kind else {
-                return Err(error(
-                    self.site.original.start,
-                    "derive lost an actual generic parameter",
-                ));
-            };
-            let parameter = self.site.ast.generics[index as usize];
-            if parameter.flavor == GenericFlavor::Const
-                || parameter.bounds.start != parameter.bounds.end
-            {
-                return Err(error(
-                    parameter.name.start,
-                    "this source derive requires unbounded type or lifetime formals",
-                ));
-            }
-            self.spelling(parameter.name, parameter.flavor == GenericFlavor::Lifetime)?;
-            if parameter.flavor == GenericFlavor::Type
-                && let Some(path) = implementation
-                && path != "crate::marker::StructuralPartialEq"
-            {
-                self.text(":")?;
-                if self.site.const_ {
-                    self.text("[const]")?;
-                }
-                self.text(path)?;
-            }
-            self.text(",")?;
-        }
-        self.text(">")
+        self.generics(None)?;
+        self.where_predicates()
     }
     fn field(&mut self, ty: NodeId) -> Result<(), LexError> {
         (self.charge)(1, 4 * size_of::<Field>())?;

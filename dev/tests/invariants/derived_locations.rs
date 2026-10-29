@@ -2,6 +2,8 @@
 use super::*;
 use crate::{support::bindings::LangItem, test_source};
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
+#[path = "constrained_derives.rs"]
+mod bounded_headers;
 #[path = "debug_fields.rs"]
 mod debug_fields;
 #[path = "formatter_family.rs"]
