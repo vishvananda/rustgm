@@ -3,6 +3,16 @@ use super::*;
 
 #[test]
 fn module_callables_preserve_always_contract_fence() -> TestResult {
+    let missing = input("exported-missing-const-policy")?;
+    let error = report(&missing, "always_missing_policy")
+        .and_then(|report| {
+            pipeline::analyze_source(&report)
+                .map(|_| ())
+                .map_err(Into::into)
+        })
+        .err()
+        .ok_or("public Always declaration lost its required const API policy")?;
+    assert!(error.to_string().contains("missing const"), "{error}");
     let source = input("exported-full-provider")?;
     let report = report(&source, "always_export")?;
     let identity = report

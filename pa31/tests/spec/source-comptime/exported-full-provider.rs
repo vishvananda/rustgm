@@ -98,4 +98,5 @@ pub const fn const_identity<T>(value:T)->T{value}
 pub const fn const_forward(value:u8)->u8{const_identity(value)}
 
 #[stable(feature="availability_provider",since="1.0.0")]
+#[rustc_const_stable(feature="availability_provider",since="1.0.0")]
 #[rustc_comptime]pub fn always_exported(x:u8)->u8{x}

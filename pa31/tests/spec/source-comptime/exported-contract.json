@@ -3,7 +3,7 @@
   "origin": "pa31/tests/spec/source-callable-effects/combined-provider.rs",
   "origin_sha256": "ee9cbc3d3b8d7b035ab0b6a75638843f71e35c361da22e98ddba2c7481d581fd",
   "path": "pa31/tests/spec/source-comptime/exported-full-provider.rs",
-  "source_sha256": "94c137af34f5a7d04e449ea4de5a7b43147365f36d0f674b53732c606add743e",
+  "source_sha256": "9d79730c432f8d66ce663be773c394f5f50a5dda1df70a77875893a4abe2bdb7",
   "rustc": {
     "metadata": 0,
     "object": 0
@@ -13,5 +13,21 @@
     "module-callables-v7_export": 1,
     "diagnostic_contains": "always-comptime source contracts require a wider transport profile"
   },
-  "required": "Actual Always body/effect/API transport remains unimplemented; this fixture does not replace it."
+  "required": "Actual Always body/effect/API transport remains unimplemented; valid successor carries genuine required const API policy.",
+  "predecessor": {
+    "path": "pa31/tests/spec/source-comptime/exported-missing-const-policy.rs",
+    "source_sha256": "94c137af34f5a7d04e449ea4de5a7b43147365f36d0f674b53732c606add743e",
+    "original_prediction": {
+      "metadata": 0,
+      "object": 0
+    },
+    "authoritative_rust_observation": "function has missing const stability attribute",
+    "retained_receipt_sha256": "9e2718113e8ac5eba4a1347770e243d4064da7aa97cdbf8c1904a896f9ab55c4",
+    "successor_expected": {
+      "metadata": 1,
+      "object": 1,
+      "candidate_source_analysis": 1
+    },
+    "diagnostic_contains": "missing const"
+  }
 }
