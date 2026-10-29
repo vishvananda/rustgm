@@ -18,6 +18,125 @@ pub(in super::super) struct Members {
     owners: HashMap<DefId, Vec<DefId>>,
 }
 impl Members {
+    pub(in crate::sema::declarations::traits) fn prepare_source_owner(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        owner: DefId,
+    ) -> Result<(), &'static str> {
+        use crate::{sema::associated::OwnerKind, support::retained};
+        crate::sema::header_attributes::charge_source_contract_query(facts, 1)
+            .map_err(|_| "source associated type query work exhausted")?;
+        facts
+            .source_bindings
+            .as_deref()
+            .ok_or("source type index has no provider")?
+            .require_provider_report(report)?;
+        let id = facts
+            .associated
+            .owner(owner)
+            .ok_or("source type owner is missing")?;
+        let actual = facts
+            .associated
+            .get(id)
+            .ok_or("source type owner disappeared")?;
+        if actual.self_definition != owner
+            || !matches!(
+                actual.kind,
+                OwnerKind::Trait { .. } | OwnerKind::Impl { .. }
+            )
+        {
+            return Err("type member index requires an actual source owner");
+        }
+        actual.source_owner()?;
+        let members = facts
+            .associated
+            .owner_members(id)
+            .ok_or("source type members are missing")?;
+        if let Some(cached) = self.owners.get(&owner) {
+            crate::sema::header_attributes::charge_source_contract_query(
+                facts,
+                members.len().saturating_add(1),
+            )
+            .map_err(|_| "source associated type query work exhausted")?;
+            return Self::require_source_members(report, facts, id, members, cached);
+        }
+        let growth = retained::Growth::map::<DefId, Vec<DefId>>(
+            self.owners.len(),
+            self.owners.capacity(),
+            1,
+        );
+        crate::sema::header_attributes::charge_source_retention(
+            facts,
+            members.len().saturating_add(growth.work).saturating_add(1),
+            growth
+                .bytes
+                .saturating_add(members.len().saturating_mul(size_of::<DefId>())),
+        )
+        .map_err(|_| "source associated type storage or work exhausted")?;
+        let mut types = Vec::new();
+        types
+            .try_reserve_exact(members.len())
+            .map_err(|_| "source type member allocation failed")?;
+        for &member in members {
+            if facts.associated.owner(member) != Some(id) {
+                return Err("source type member belongs to another owner");
+            }
+            if report
+                .resolution
+                .definitions
+                .get(member.0 as usize)
+                .ok_or("source type member definition is missing")?
+                .kind
+                == DefKind::TypeAlias
+            {
+                types.push(member);
+            }
+        }
+        self.owners.insert(owner, types);
+        Ok(())
+    }
+    fn require_source_members(
+        report: &Report,
+        facts: &Declarations,
+        owner: crate::sema::associated::OwnerId,
+        members: &[DefId],
+        cached: &[DefId],
+    ) -> Result<(), &'static str> {
+        let mut expected = cached.iter();
+        for member in members {
+            if facts.associated.owner(*member) != Some(owner) {
+                return Err("source type member belongs to another owner");
+            }
+            if report
+                .resolution
+                .definitions
+                .get(member.0 as usize)
+                .ok_or("source type member definition is missing")?
+                .kind
+                == DefKind::TypeAlias
+                && expected.next() != Some(member)
+            {
+                return Err("source type member index changed its complete bucket");
+            }
+        }
+        if expected.next().is_some() {
+            return Err("source type member index contains foreign declarations");
+        }
+        Ok(())
+    }
+    #[cfg(test)]
+    pub(in crate::sema::declarations::traits) fn indexed_storage(&self) -> (usize, usize) {
+        (
+            self.owners.len(),
+            crate::support::retained::map(&self.owners)
+                + self
+                    .owners
+                    .values()
+                    .map(crate::support::retained::vector)
+                    .sum::<usize>(),
+        )
+    }
     pub(in super::super) fn new(report: &Report, facts: &Declarations) -> Self {
         let mut result = Self::default();
         for (member, owner) in facts.associated.declaration_members() {

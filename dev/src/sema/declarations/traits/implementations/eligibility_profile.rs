@@ -42,6 +42,11 @@ pub(super) struct Plan {
 enum MemberProfile {
     FunctionsOnly(NoAssociatedMembers),
     MethodsAndConstants(NoAssociatedTypes),
+    Complete(CompleteMembers),
+}
+struct CompleteMembers {
+    owners: [Owner; 2],
+    counts: [usize; 2],
 }
 struct NoAssociatedTypes {
     owners: [Owner; 2],
@@ -77,6 +82,20 @@ impl Plan {
             return Err("constant conformance requires its actual member seal");
         };
         self.require_members(facts, owner, seal.owners, seal.counts)
+    }
+    pub(super) fn has_types(&self) -> bool {
+        matches!(self.member_profile, MemberProfile::Complete(_))
+    }
+    pub(super) fn require_complete(
+        &self,
+        facts: &Declarations,
+        owner: DefId,
+    ) -> Result<[DefId; 2], &'static str> {
+        let MemberProfile::Complete(seal) = &self.member_profile else {
+            return Err("complete conformance requires its actual member seal");
+        };
+        self.require_members(facts, owner, seal.owners, seal.counts)?;
+        Ok(seal.owners.map(|owner| owner.self_definition))
     }
     fn require_members(
         &self,
@@ -251,10 +270,12 @@ impl Checker<'_> {
         members: &[DefId],
     ) -> Result<Option<MemberProfile>, Error> {
         let mut constants = false;
+        let mut types = false;
         for member in members {
             match self.report.resolution.definitions[member.0 as usize].kind {
                 DefKind::Function => {}
                 DefKind::Const => constants = true,
+                DefKind::TypeAlias => types = true,
                 _ => return Ok(None),
             }
         }
@@ -272,7 +293,9 @@ impl Checker<'_> {
                 .ok_or_else(|| self.error(source, "source member bucket disappeared"))?
                 .len();
         }
-        Ok(Some(if constants {
+        Ok(Some(if types {
+            MemberProfile::Complete(CompleteMembers { owners, counts })
+        } else if constants {
             MemberProfile::MethodsAndConstants(NoAssociatedTypes { owners, counts })
         } else {
             MemberProfile::FunctionsOnly(NoAssociatedMembers { owners, counts })

@@ -6,7 +6,9 @@
     "borrow-required": 0,
     "unsafe-call": 1,
     "missing-pair": 1,
-    "nonconst": 1
+    "nonconst": 1,
+    "parent-policy": 1,
+    "regular-fallback": 1
   },
   "candidate_borrow": "Required: genuine function-call promotion evaluation is not yet implemented",
   "native_stdout": "7 8 9\n",
@@ -19,6 +21,9 @@
     "unsafe-call.rs": "a8bbb8767d18729855e3f3fb5d407f7bd11de4c573649d700e3ad60ef80ccce4",
     "borrow-required.rs": "248206fd6e43713ddbbafd683fa0008e5e8550c4594a6a105094be9bb9164e15",
     "source-runtime.rs": "62f707824a3b4bef223273103b2962c8dee23db2b1db7440d33916162e8d5e5b",
-    "nonconst.rs": "63507023d446633cc750a6f2ff8699fdff0fccf06ad0ec133732fc3847565ff4"
-  }
+    "nonconst.rs": "63507023d446633cc750a6f2ff8699fdff0fccf06ad0ec133732fc3847565ff4",
+    "parent-policy.rs": "949bb028d5a373c387e875187b8fa1fa7270615f5006590a6de25b683520af2c",
+    "regular-fallback.rs": "c198f1069a34a4a4f655c4f6ed2c33810974c3877e68ea4802b6415964e91c0e"
+  },
+  "canonical_owner_rule": "Actual attributed marker owner stays distinct from underlying Item key; const policy must be Const and originate at that exact canonical Item, never parent/inherited or regular fallback"
 }
