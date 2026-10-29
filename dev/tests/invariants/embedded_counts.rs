@@ -10,7 +10,13 @@ use crate::{
 };
 use std::cell::Cell;
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
-fn selected(source: &str) -> TestResult<(crate::resolve::unit::Unit, NodeId)> {
+pub(super) fn selected(source: &str) -> TestResult<(crate::resolve::unit::Unit, NodeId)> {
+    typed(source, TypeFlavor::Tuple)
+}
+pub(super) fn typed(
+    source: &str,
+    flavor: TypeFlavor,
+) -> TestResult<(crate::resolve::unit::Unit, NodeId)> {
     let unit = crate::resolve::unit::Unit::parse(
         crate::support::source::SourceFile::new(source.as_bytes().to_vec())?,
         &Config::default(),
@@ -28,13 +34,13 @@ fn selected(source: &str) -> TestResult<(crate::resolve::unit::Unit, NodeId)> {
             matches!(
                 n.kind,
                 Kind::Type {
-                    flavor: TypeFlavor::Tuple,
+                    flavor: actual,
                     ..
-                }
+                } if actual == flavor
             )
             .then(|| NodeId::new(u32::try_from(i).unwrap_or(u32::MAX)))
         })
-        .ok_or("tuple field type")?;
+        .ok_or("selected field type")?;
     Ok((unit, root))
 }
 #[test]

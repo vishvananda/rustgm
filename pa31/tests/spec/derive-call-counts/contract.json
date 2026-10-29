@@ -1,0 +1,29 @@
+{
+  "state": "predictions frozen before observation",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "target": "x86_64-unknown-linux-gnu",
+  "edition": "2024",
+  "lint_cap": "allow (diagnostics only)",
+  "metadata_predictions": {
+    "source-runtime": 0
+  },
+  "native_stdout": "5 7 11\n",
+  "original_type_id": {
+    "path": "library/core/src/any.rs",
+    "source_sha256": "9a69bf8a203943c2d3e326b862f5b59f8287907e38a34f724c24ccbed4b30296",
+    "byte_interval": [
+      23639,
+      24232
+    ],
+    "first_line": 720,
+    "snippet_sha256": "e107e4234f88541f7fb9d7c60d6d781a95e721b4d22251daac9c4876f1610c1f",
+    "profile": "unchanged declaration syntax observer, no standalone lang-item/runtime provider claim"
+  },
+  "scope": "Source const_fn and generic/multi-argument call counts, real Clone/Copy and CTFE. No authored replacement for size_of, Div, TypeId identity or their actual source bodies.",
+  "files": {
+    "expected.stdout": "48598032fd688defb1e8802aafdcb797ae24f935f4f516d0de7f79d74c8fce03",
+    "observer.c": "eb28342986d53ac83f3c84b8c8598311a289af5d670e2ddceb6cb8b0c3867171",
+    "original-type-id.rs": "e107e4234f88541f7fb9d7c60d6d781a95e721b4d22251daac9c4876f1610c1f",
+    "source-runtime.rs": "b4d2fe716f0b61084ad2c5eb8181dd8fa87c8dd95c00e9d51a8a3c48dc1dfe8c"
+  }
+}
