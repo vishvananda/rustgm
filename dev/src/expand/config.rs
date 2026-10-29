@@ -61,6 +61,11 @@ pub(crate) fn target_features() -> impl Iterator<Item = &'static str> {
         .filter_map(|&(name, value)| (name == "target_feature").then_some(value))
 }
 
+/// The fixed target owns panic policy; custom cfg cannot replace this fact.
+pub(crate) fn target_aborts_panics() -> bool {
+    TARGET_VALUES.contains(&("panic", "abort"))
+}
+
 #[derive(Default, Debug)]
 pub struct Config {
     source_contract_limits: SourceContractLimits,

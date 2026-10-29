@@ -86,10 +86,18 @@ impl Stage {
                 .map(|c| c.intrinsic_kind(definition))
                 .transpose()?
                 .flatten()
-                == Some(crate::support::bindings::SourceIntrinsic::ArithOffset)
+                .is_some_and(|kind| {
+                    matches!(
+                        kind,
+                        crate::support::bindings::SourceIntrinsic::ArithOffset
+                            | crate::support::bindings::SourceIntrinsic::UncheckedSub
+                            | crate::support::bindings::SourceIntrinsic::SubWithOverflow
+                            | crate::support::bindings::SourceIntrinsic::ColdPath
+                    )
+                })
             {
                 return Err(
-                    "source arith_offset declaration semantics require a wider metadata profile",
+                    "source intrinsic declaration semantics require a wider metadata profile",
                 );
             }
             let declaration = self.declaration(definition)?;

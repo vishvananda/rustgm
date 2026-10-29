@@ -347,12 +347,21 @@ pub enum SourceIntrinsic {
     OffsetOf,
     ThreeWayCompare,
     ArithOffset,
+    UncheckedSub,
+    SubWithOverflow,
+    ColdPath,
 }
 impl SourceIntrinsic {
     /// Declaration attribute decoding only; consumers retain the actual `DefId`.
     #[must_use]
     pub fn from_name(name: &str) -> Option<Self> {
-        if name == "arith_offset" {
+        if name == "unchecked_sub" {
+            Some(Self::UncheckedSub)
+        } else if name == "sub_with_overflow" {
+            Some(Self::SubWithOverflow)
+        } else if name == "cold_path" {
+            Some(Self::ColdPath)
+        } else if name == "arith_offset" {
             Some(Self::ArithOffset)
         } else if name == "three_way_compare" {
             Some(Self::ThreeWayCompare)

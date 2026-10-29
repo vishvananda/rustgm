@@ -234,7 +234,32 @@ impl Arithmetic<'_> {
             self.builder.enter(done)?;
             return Ok(result);
         }
-        let fault = if signed {
+        let fault = self.overflow_flag(op, signed, left, right, result)?;
+        self.guard(fault)?;
+        Ok(result)
+    }
+    /// Same target-width result/overflow kernel as ordinary checked arithmetic.
+    /// The flag is the backend's i64 predicate carrier, suitable for branch guards.
+    /// Rust bool values must truncate it to I1 before storage or value publication.
+    pub(super) fn subtract_overflow(
+        &mut self,
+        signed: bool,
+        left: Value,
+        right: Value,
+    ) -> Result<(Value, Value), &'static str> {
+        let result = self.builder.binary(Binary::Sub, left, right)?;
+        let overflow = self.overflow_flag(Binary::Sub, signed, left, right, result)?;
+        Ok((result, overflow))
+    }
+    fn overflow_flag(
+        &mut self,
+        op: Binary,
+        signed: bool,
+        left: Value,
+        right: Value,
+        result: Value,
+    ) -> Result<Value, &'static str> {
+        if signed {
             let a = self.builder.binary(Binary::Xor, left, result)?;
             let b = self.builder.binary(
                 Binary::Xor,
@@ -247,13 +272,11 @@ impl Arithmetic<'_> {
             )?;
             let sign = self.builder.binary(Binary::And, a, b)?;
             let zero = self.builder.integer(sign.ty, 0)?;
-            self.builder.compare(Predicate::Lt, sign, zero)?
+            self.builder.compare(Predicate::Lt, sign, zero)
         } else if matches!(op, Binary::Add) {
-            self.builder.compare(Predicate::Ult, result, left)?
+            self.builder.compare(Predicate::Ult, result, left)
         } else {
-            self.builder.compare(Predicate::Ult, left, right)?
-        };
-        self.guard(fault)?;
-        Ok(result)
+            self.builder.compare(Predicate::Ult, left, right)
+        }
     }
 }

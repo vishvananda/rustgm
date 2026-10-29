@@ -1,0 +1,141 @@
+{
+  "state": "successor v2 frozen before observation; v1 complete disagreements retained",
+  "owning": "PA28 numeric source intrinsic binding/runtime; PA25 CTFE; PA31 authenticated declaration/API",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "original": {
+    "path": "library/core/src/intrinsics/mod.rs",
+    "sha256": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+    "intervals": {
+      "sub_with_overflow": {
+        "start": 72152,
+        "end": 72295,
+        "sha256": "554a7a5dc622cb468450bb61810917336a7f0a2f3ae4027e8dfc131ff65a6fa4"
+      },
+      "unchecked_sub": {
+        "start": 76637,
+        "end": 76775,
+        "sha256": "c046f7d2359c679364c8a6629ba82ed1735e7816adec83d8b85bbd10fda26efb"
+      },
+      "cold_path": {
+        "start": 17417,
+        "end": 17525,
+        "sha256": "2a1474846e0ce4103d6d46e9bdc3aff61b3d94df7f8956456e66e1d3ecaa24a7"
+      }
+    }
+  },
+  "foundation": "Exact already-qualified sizing/Clone/Copy declaration intervals reused from pa31 union-clone source-runtime. Primitive implementations are authored source; arithmetic bodies are never supplied.",
+  "rust_metadata_predictions": {
+    "source-runtime": 0,
+    "ordinary-lookalike": 0,
+    "unsafe-call": 1,
+    "const-unsigned-overflow": 1,
+    "const-signed-overflow": 1,
+    "invalid-type": 0,
+    "nonconst": 1,
+    "wrong-signature": 1,
+    "missing-copy": 0,
+    "wrong-safety": 1,
+    "wrong-result": 1,
+    "wrong-cold-body": 0,
+    "generic-forward": 0,
+    "noncopy-argument": 1
+  },
+  "candidate_profile": {
+    "wrong-cold-body": "finite unsupported genuine-empty fallback requirement; Rust acceptance is not denied",
+    "ordinary-lookalike": "actual ordinary source x/(y,false) bodies, distinct from intrinsic arithmetic; not used as positive arithmetic evidence",
+    "missing-copy": "Valid Rust declaration; finite pinned source contract requires own actual Copy premise",
+    "invalid-type": "Metadata accepts bool declaration/call; independent object/codegen outcome predicts invalid arithmetic instantiation"
+  },
+  "native": {
+    "source": "source-runtime.rs",
+    "observer": "observer.c",
+    "expected": "expected.stdout",
+    "status": 0,
+    "separate_objects": true,
+    "types": [
+      "u8",
+      "u16",
+      "u32",
+      "u64",
+      "u128",
+      "usize",
+      "i8",
+      "i16",
+      "i32",
+      "i64",
+      "i128",
+      "isize"
+    ],
+    "signed_boundaries": "Both MIN-1 and MAX-(-1) overflow directions plus valid negative unchecked(-5,3)=-8; frozen successor observer before candidate/native observation"
+  },
+  "required": [
+    "Actual unchanged RangePattern and checked_sub/char/panic source graphs (C ownership)",
+    "Wider numeric intrinsics and source metadata transport",
+    "Full original core/alloc/std artifacts"
+  ],
+  "files": {
+    "invalid-type.rs": "d5a1eedd3f981f4935db2d004d1425a3dff6488480a29a1e965089a9536e45fe",
+    "foundation.rs": "7e427444d80d6fb8e7e3fb3aa66f50e5ef0923142a0f74ef4ca6eddc3d828507",
+    "generic-forward.rs": "4342d64b7a1af82ddf029f5fce199f6ddd39ed9d07b067a3146692bd548ca9f1",
+    "ordinary.stdout": "d4e96602716c55314d7e67ff785731f740520856da3253e053ed5d7d17d57279",
+    "expected.stdout": "95071480423b95aa97cdea31f5c6c18310b4db30898663962f0afb15a53e7579",
+    "unchecked_sub.rs": "8fd6affe3b6cd8e397f0d6841e6ae616fdd2ab65910b3ba5632bea0c8bdb63b1",
+    "cold_path.rs": "ddd8af0d5ba5d2e574b967519b2e5381ca2a0cc147bf709f35a2199dba1bfddf",
+    "observer.c": "f9d5a9ad98c3f9110dddf1f43e8488673032dc0ffec388a400cf1256a90eaa75",
+    "const-unsigned-overflow.rs": "cf696859db4e74771a0ca661feccc4fd97d45c8874c6639a85b276ab490b196a",
+    "wrong-signature.rs": "702da77e048c84732ce1363d6074d753d99794056f519b0ef9a1f4414b382b30",
+    "unsafe-call.rs": "8bedb64f5df01c1f627e1bc9a15cac6f752b01174536ee83018ed7060ca52058",
+    "wrong-safety.rs": "3e4c7c1b311153695090eb88cffd2220e7b88c4c1ab86aedd7e633d7d51ea808",
+    "missing-copy.rs": "d090a4feb8dea146fa982ce0cef3a8e164e4e2e02b8604c454aa97dc1266b39a",
+    "original-chain.json": "c7ad63f9a427d37f51c1101c84da38d3e862f9890a6fd2efcf47c5cf37a90cc3",
+    "ordinary-observer.c": "42e1d72204ca8d15844a9e2022e367aa01a4a7dfb4f866760075be00b58eac8b",
+    "wrong-result.rs": "e4ff7b05507637f55e84535565e67adf7647fe938757040a3a0ede6c7ecb11c7",
+    "const-signed-overflow.rs": "1cdf6a5164782ac7e49aa61891fea289d590f4518a3ea237d50b4a21fc37e828",
+    "noncopy-argument.rs": "2fe2400d34dcfdbd84d5673257eadd830ac524b2041aeca060436b6a14a4eec9",
+    "ordinary-lookalike.rs": "d4a2939a8f278e6826b64fae88f5739c227da0af397b03bbc5a74a2b8440f039",
+    "sub_with_overflow.rs": "952405c3a30c24b02a8a4683975df883b13ae3184723accf8fa02901c03e5bd8",
+    "wrong-cold-body.rs": "680e2da9954b777612fc8e26cc1e01e7e23a2a3aae07b492b4df360841b5c5db",
+    "source-runtime.rs": "36c95239010f519e2438b655492c71cc974d4171c04a23800f2728f85c57893f",
+    "nonconst.rs": "8688aca265f3071d6b8ca6b25115ea5397b41ce6e563c160fa3e3318124ef0e7",
+    "original/pat.rs": "0e620c6d485f27b0dd9fd64b93d13326ea83545155e86d3479a1bfae2541c796",
+    "original/signed-checked.rs": "1322b7683c8e61fa3cdad6e729ccb982b3a5233e3638dab146fe982b7078e7b8",
+    "original/unsigned-checked.rs": "aeb3b6dfbd6fbb6a7ea1f1550f49276c5350abbde77b3dfc5115ff4886b47f10",
+    "original/signed-overflowing.rs": "2b39a0cba942319dc223de26f9ac5cb8f0a4dff5f223ea67b147af67a6946903",
+    "original/unlikely.rs": "bdf33e17e4a3d62dfd9ac252136129b610ca61b68ffa6e757044f856a9cd3fd0"
+  },
+  "original_graph": "original-chain.json",
+  "rust_object_predictions": {
+    "invalid-type": 1
+  },
+  "retained_v1": {
+    "path": "obj/parallel/source-subtraction-v1/rust-v1/receipt.json",
+    "sha256": "90f96936a4230d3dd24eca4d707acfb8fc4ad31788a61d039719ee20d8db0a03",
+    "issues": [
+      "Actual own const feature not requested",
+      "NoCore negative literal requires genuine Neg trait; v2 uses explicit unsigned target bits cast",
+      "WrongCold body accidentally called nonconst ordinary function; v2 retains ordinary const call",
+      "Rust metadata accepts missing Copy and bool; record profile/phase honestly"
+    ]
+  },
+  "extra_native": [
+    {
+      "source": "generic-forward.rs",
+      "observer": "observer.c",
+      "expected": "expected.stdout",
+      "status": 0
+    },
+    {
+      "source": "ordinary-lookalike.rs",
+      "observer": "ordinary-observer.c",
+      "expected": "ordinary.stdout",
+      "status": 0
+    }
+  ],
+  "observed_v2": {
+    "receipt": "obj/parallel/source-subtraction-v1/rust-v2/receipt.json",
+    "sha256": "24022a7f096d8fe336b58f819762c49a4c64e36ca424218b64107112e19e9072",
+    "metadata_predictions": "all12 match",
+    "genuine_native": "provider object/separate C object/link/native allpass12 integer widths andcold7",
+    "invalid-type-object": "rustc ICE101 (Cannot SubUnchecked non-integer type bool), infrastructure/compiler failure, NEVER Rust language rejection"
+  }
+}

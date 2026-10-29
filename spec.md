@@ -803,6 +803,20 @@ source helpers and complete const/API/desugaring authority. Generic endpoints,
 integer enum niches and refinement metadata stay explicit requirements. See the
 [closed-range checkpoint](docs/pa31-closed-scalar-patterns-checkpoint.md).
 
+RangeMin, RangeMax and RangeSub identify genuine associated declarations of one
+const-trait owner; the trait's spelling grants no authority. Prepare their actual
+declaration types and method signature before completing the shared contract,
+without demanding an initializer or body. Unused partial families remain pending.
+Associated constants reuse their actual retained owner/image witnesses; they do
+not enter the function/trait attribute API or acquire invented KnownAbsent facts.
+The paid cold contract authenticates its original Store and four source images;
+warm queries allocate nothing and inspect a fixed set of actual identities.
+Keep comparably sized cold provider/import arrays inline rather than adding heap
+allocation and a new budget owner just to satisfy an enum size threshold. Any
+narrow Clippy expectation requires the measured layout and a specific reason.
+The identity query supplies no selected implementation, API, const, body or
+desugaring permission. Old wire profiles remain fenced until genuine transport.
+
 Source Debug derives use the pinned small-field helpers through five fields,
 then real field-name and typed `&[&dyn Debug]` arrays with the larger helpers.
 Preserve source labels, field order, enum binding provenance and the extra

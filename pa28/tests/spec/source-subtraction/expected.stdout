@@ -1,0 +1,13 @@
+u8 5 wrapped 1 0 const5 const1
+u16 5 wrapped 1 0 const5 const1
+u32 5 wrapped 1 0 const5 const1
+u64 5 wrapped 1 0 const5 const1
+u128 5 wrapped 1 0 const5 const1
+usize 5 wrapped 1 0 const5 const1
+i8 5 wrapped 1 0 const5 const1
+i16 5 wrapped 1 0 const5 const1
+i32 5 wrapped 1 0 const5 const1
+i64 5 wrapped 1 0 const5 const1
+i128 5 wrapped 1 0 const5 const1
+isize 5 wrapped 1 0 const5 const1
+cold 7

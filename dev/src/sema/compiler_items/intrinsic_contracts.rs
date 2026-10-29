@@ -90,7 +90,11 @@ pub(in crate::sema) fn validate(
     {
         return Err(error("source intrinsic declaration identity changed"));
     }
-    signature(facts, function, entry.kind).map_err(error)?;
+    if entry.kind == SourceIntrinsic::ColdPath {
+        super::cold_fallback::validate(report, facts, function).map_err(error)?;
+    } else {
+        signature(facts, function, entry.kind).map_err(error)?;
+    }
     facts
         .source_bindings
         .as_deref_mut()
@@ -106,6 +110,9 @@ fn signature(
     kind: SourceIntrinsic,
 ) -> Result<(), &'static str> {
     match kind {
+        SourceIntrinsic::UncheckedSub | SourceIntrinsic::SubWithOverflow => {
+            super::subtraction_contract::validate(facts, function, kind)
+        }
         SourceIntrinsic::ArithOffset => super::wrapping_contract::validate(facts, function),
         SourceIntrinsic::ThreeWayCompare => super::compare_intrinsic::validate(facts, function),
         SourceIntrinsic::OffsetOf => super::displacement::validate(facts, function),
@@ -261,6 +268,9 @@ impl Catalog {
         if matches!(
             entry.kind,
             SourceIntrinsic::ArithOffset
+                | SourceIntrinsic::UncheckedSub
+                | SourceIntrinsic::SubWithOverflow
+                | SourceIntrinsic::ColdPath
                 | SourceIntrinsic::ConstEvalSelect
                 | SourceIntrinsic::UbChecks
                 | SourceIntrinsic::Abort
@@ -302,81 +312,28 @@ fn layout_element(
     arguments: crate::types::GenericArgs,
     kind: SourceIntrinsic,
 ) -> Result<TypeId, &'static str> {
+    let (missing, incomplete) = match kind {
+        SourceIntrinsic::Layout(_) | SourceIntrinsic::OffsetOf => (
+            "selected source layout intrinsic lacks its type argument",
+            "source layout intrinsic requires a complete closed type argument",
+        ),
+        SourceIntrinsic::NeedsDrop => (
+            "selected source needs_drop lacks its type argument",
+            "source needs_drop requires a complete closed type argument",
+        ),
+        _ => return Err("source intrinsic requires its own checked execution descriptor"),
+    };
     let mut arguments = types
         .arguments(arguments)
         .ok_or("invalid source intrinsic arguments")?;
     let Some(Argument::Type(element)) = arguments.next() else {
-        return Err(match kind {
-            SourceIntrinsic::Layout(_) | SourceIntrinsic::OffsetOf => {
-                "selected source layout intrinsic lacks its type argument"
-            }
-            SourceIntrinsic::NeedsDrop => "selected source needs_drop lacks its type argument",
-            SourceIntrinsic::ConstEvalSelect => {
-                "source callback selection requires its own descriptor"
-            }
-            SourceIntrinsic::ThreeWayCompare => {
-                "three_way_compare requires its actual scalar comparison descriptor"
-            }
-            SourceIntrinsic::DiscriminantValue => {
-                "source discriminant requires its actual reached reference-call descriptor"
-            }
-            SourceIntrinsic::AggregateRawPtr => {
-                "source aggregate_raw_ptr requires its actual composition-call descriptor"
-            }
-            SourceIntrinsic::PtrMetadata => {
-                "source ptr_metadata requires its actual pointer-call descriptor"
-            }
-            SourceIntrinsic::CallerLocation => {
-                "source caller location requires its exact caller descriptor"
-            }
-            SourceIntrinsic::UbChecks => "source UB check requires its own descriptor",
-            SourceIntrinsic::Abort => "source abort requires its own reached-call descriptor",
-            SourceIntrinsic::ArithOffset => {
-                "source arith_offset requires its actual wrapping descriptor"
-            }
-            SourceIntrinsic::Transmute => {
-                "source transmute requires its own checked call descriptor"
-            }
-        });
+        return Err(missing);
     };
     if arguments.next().is_some()
         || types.contains_parameters(element) != Some(false)
         || types.contains_projections(element) != Some(false)
     {
-        return Err(match kind {
-            SourceIntrinsic::Layout(_) | SourceIntrinsic::OffsetOf => {
-                "source layout intrinsic requires a complete closed type argument"
-            }
-            SourceIntrinsic::NeedsDrop => {
-                "source needs_drop requires a complete closed type argument"
-            }
-            SourceIntrinsic::ConstEvalSelect => {
-                "source callback selection requires its own descriptor"
-            }
-            SourceIntrinsic::ThreeWayCompare => {
-                "three_way_compare requires its actual scalar comparison descriptor"
-            }
-            SourceIntrinsic::DiscriminantValue => {
-                "source discriminant requires its actual reached reference-call descriptor"
-            }
-            SourceIntrinsic::AggregateRawPtr => {
-                "source aggregate_raw_ptr requires its actual composition-call descriptor"
-            }
-            SourceIntrinsic::PtrMetadata => {
-                "source ptr_metadata requires its actual pointer-call descriptor"
-            }
-            SourceIntrinsic::CallerLocation => {
-                "source caller location requires its exact caller descriptor"
-            }
-            SourceIntrinsic::UbChecks => "source UB check requires its own descriptor",
-            SourceIntrinsic::Abort => "source abort requires its own reached-call descriptor",
-            SourceIntrinsic::ArithOffset => {
-                "source arith_offset requires its actual wrapping descriptor"
-            }
-            SourceIntrinsic::Transmute => {
-                "source transmute requires its own checked call descriptor"
-            }
-        });
+        return Err(incomplete);
     }
     Ok(element)
 }
