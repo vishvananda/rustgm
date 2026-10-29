@@ -2,6 +2,9 @@
 mod literal_grants;
 mod paired_impls;
 mod placed_owner;
+#[cfg(test)]
+#[path = "../../../tests/invariants/emitted_storage.rs"]
+mod storage_tests;
 use placed_owner::Placement;
 #[cfg(test)]
 #[path = "../../../tests/invariants/parameter_derivations.rs"]
