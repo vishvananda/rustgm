@@ -498,6 +498,7 @@ fn claims(
             }
             let mut transparency = false;
             let mut diagnostic_seen = false;
+            let mut compatibility = None;
             for (index, attribute, forest) in
                 unit.retained_indexed_attributes(owner.attributes.clone())
             {
@@ -516,6 +517,17 @@ fn claims(
                     .map(|header| header.allowance_at(index, attribute))
                     .transpose()?
                     .flatten();
+                if crate::resolve::stability::collect_compatibility(
+                    package.library.as_deref(),
+                    library,
+                    unit,
+                    NodeKey { file, node },
+                    attribute,
+                    forest,
+                    &mut compatibility,
+                )? {
+                    continue;
+                }
                 if crate::resolve::stability::collect(
                     package.library.as_deref(),
                     library,
@@ -553,6 +565,11 @@ fn claims(
                         .push(claim);
                 }
             }
+            crate::resolve::stability::finish_compatibility(
+                library,
+                NodeKey { file, node },
+                compatibility,
+            )?;
         }
     }
     Ok(result)

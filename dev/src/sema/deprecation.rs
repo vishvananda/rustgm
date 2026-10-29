@@ -12,6 +12,7 @@ use crate::{
 };
 
 pub(super) fn imports(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
+    compatibility(report, facts, None)?;
     for (_, _, binding) in report.resolution.bindings.all_bindings() {
         let Origin::Import(index) = binding.origin else {
             continue;
@@ -30,12 +31,44 @@ pub(super) fn imports(report: &Report, facts: &mut Declarations) -> Result<(), E
     }
     Ok(())
 }
+pub(in crate::sema) fn compatibility(
+    report: &Report,
+    facts: &mut Declarations,
+    site: Option<(NodeKey, DefId)>,
+) -> Result<(), Error> {
+    facts.require_lint_context(report)?;
+    crate::resolve::stability::visit_compatibility_warnings(report, site, |warning| {
+        if let Some(producer) = report.lint_producer() {
+            producer.diagnostic_read(warning.site, warning.message.len().saturating_add(40))?;
+        }
+        let offset = report
+            .package
+            .unit(warning.site.file)
+            .configured
+            .ast
+            .node(warning.site.node)
+            .span
+            .start;
+        facts.must_use_diagnostic(
+            report,
+            warning.site,
+            offset,
+            warning.prefix.0,
+            WarningCode::Deprecated,
+            format!(
+                "use of stable declaration through an unstable module: {}",
+                warning.message
+            ),
+        )
+    })
+}
 pub(super) fn check(
     report: &Report,
     facts: &mut Declarations,
     site: NodeKey,
     target: DefId,
 ) -> Result<(), Error> {
+    compatibility(report, facts, Some((site, target)))?;
     let declared = report
         .resolution
         .definitions
@@ -48,6 +81,9 @@ pub(super) fn check(
         if !facts.safety_policies.explicit_deprecation(site)
             || facts.safety_policies.deprecated(site) == super::safety::Level::Allow
         {
+            return Ok(());
+        }
+        if crate::resolve::stability::declaration_deprecation_absent(report, target)? {
             return Ok(());
         }
         if super::header_attributes::bootstrap_owner(report, target)? {
@@ -158,3 +194,7 @@ impl Declarations {
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/compatibility_paths.rs"]
+mod compatibility_tests;

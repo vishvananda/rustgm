@@ -338,18 +338,15 @@ impl Stage {
         self.charge(growth.work.saturating_add(policy.feature.len()))?;
         self.reserve(growth.bytes.saturating_add(policy.feature.len()))?;
         let level = match &policy.level {
-            Level::Stable(since) => s::AvailabilityLevel::Stable(match since {
-                Since::Current => s::AvailabilitySince::Current,
-                Since::Version {
-                    major,
-                    minor,
-                    patch,
-                } => s::AvailabilitySince::Version {
-                    major: *major,
-                    minor: *minor,
-                    patch: *patch,
-                },
-            }),
+            Level::Stable(since) => s::AvailabilityLevel::Stable(since_value(*since)),
+            Level::StableWithCompatibility { since, note } => {
+                self.charge(note.message.len())?;
+                self.reserve(note.message.len())?;
+                s::AvailabilityLevel::StableWithCompatibility {
+                    since: since_value(*since),
+                    message: note.message.to_string(),
+                }
+            }
             Level::Unstable { issue, reason } => {
                 self.charge(reason.as_deref().map_or(0, str::len))?;
                 self.reserve(reason.as_deref().map_or(0, str::len))?;
@@ -487,4 +484,19 @@ fn actual_import(
         return Err("availability import changed its actual leaf site");
     }
     Ok(index)
+}
+
+fn since_value(since: Since) -> s::AvailabilitySince {
+    match since {
+        Since::Current => s::AvailabilitySince::Current,
+        Since::Version {
+            major,
+            minor,
+            patch,
+        } => s::AvailabilitySince::Version {
+            major,
+            minor,
+            patch,
+        },
+    }
 }

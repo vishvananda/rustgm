@@ -59,6 +59,7 @@ enum ExportMode {
     Availability,
     FeaturePredicates,
     Definitions,
+    Compatibility,
 }
 
 pub(crate) struct Stage {
@@ -238,6 +239,13 @@ impl Stage {
     ) -> Result<Self, &'static str> {
         Self::begin_mode(report, facts, identity, ExportMode::Definitions)
     }
+    pub(crate) fn begin_module_compatibility(
+        report: &Report,
+        facts: &mut Declarations,
+        identity: &CrateIdentity,
+    ) -> Result<Self, &'static str> {
+        Self::begin_mode(report, facts, identity, ExportMode::Compatibility)
+    }
     fn begin_mode(
         report: &Report,
         facts: &mut Declarations,
@@ -250,7 +258,7 @@ impl Stage {
                 .map_err(|error| error.message)?;
             if !matches!(
                 mode,
-                ExportMode::FeaturePredicates | ExportMode::Definitions
+                ExportMode::FeaturePredicates | ExportMode::Definitions | ExportMode::Compatibility
             ) {
                 producer
                     .require_impl_bound_transport(&report.package)
@@ -270,14 +278,20 @@ impl Stage {
         if report.package.library_policy().is_some()
             && !matches!(
                 mode,
-                ExportMode::Availability | ExportMode::FeaturePredicates | ExportMode::Definitions
+                ExportMode::Availability
+                    | ExportMode::FeaturePredicates
+                    | ExportMode::Definitions
+                    | ExportMode::Compatibility
             )
         {
             return Err("source stability contracts are outside this metadata profile");
         }
         if matches!(
             mode,
-            ExportMode::Availability | ExportMode::FeaturePredicates | ExportMode::Definitions
+            ExportMode::Availability
+                | ExportMode::FeaturePredicates
+                | ExportMode::Definitions
+                | ExportMode::Compatibility
         ) && report
             .package
             .library_policy()
@@ -322,14 +336,14 @@ impl Stage {
         };
         if matches!(
             mode,
-            ExportMode::FeaturePredicates | ExportMode::Definitions
+            ExportMode::FeaturePredicates | ExportMode::Definitions | ExportMode::Compatibility
         ) {
             stage.reserve(size_of::<
                 crate::support::hash::HashMap<DefId, s::TraitApplicationRef>,
             >())?;
             stage.inputs.selected_methods = Some(Box::default());
         }
-        stage.functions.exact = mode == ExportMode::Definitions;
+        stage.functions.exact = matches!(mode, ExportMode::Definitions | ExportMode::Compatibility);
         stage.reserve(count.saturating_mul(size_of::<Option<DeclarationRef>>()))?;
         stage.definitions.resize(count, None);
         stage.declarations(report, facts, mode)?;
@@ -387,7 +401,7 @@ impl Stage {
             self,
             matches!(
                 mode,
-                ExportMode::FeaturePredicates | ExportMode::Definitions
+                ExportMode::FeaturePredicates | ExportMode::Definitions | ExportMode::Compatibility
             ),
         )?;
         let mut owners = scope_owners(report, facts, self)?;
@@ -422,6 +436,7 @@ impl Stage {
                     | ExportMode::Availability
                     | ExportMode::FeaturePredicates
                     | ExportMode::Definitions
+                    | ExportMode::Compatibility
             ) && definition.kind == DefKind::Trait
                 && crate::resolve::impl_restrictions::clause(report, id)
                     .map_err(|_| "source trait implementation domain is invalid")?
