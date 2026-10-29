@@ -170,3 +170,26 @@ class IncrementalRetirement(unittest.TestCase):
             self.assertEqual(storage_incremental.retire(self.root), [])
         self.assertTrue(working.is_dir())
         self.assertTrue(unknown.is_dir())
+
+    def test_linked_clippy_cache_retires_only_superseded_sessions_too(self):
+        ordinary = self.session("s-ordinary-current", 1)
+        self.crate = self.root / "obj/rust/private-lint/dev-fast/incremental/example"
+        self.crate.mkdir(parents=True)
+        old = self.session("s-old-complete", 1)
+        current = self.session("s-current-complete", 2)
+        with mock.patch.object(storage_incremental, "active_artifacts", return_value=[]):
+            rows = storage_incremental.retire(self.root)
+        self.assertEqual([row["path"] for row in rows], [str(old.relative_to(self.root))])
+        self.assertTrue(ordinary.is_dir())
+        self.assertTrue(current.is_dir())
+
+    def test_private_profile_symlink_is_rejected_before_ordinary_retirement(self):
+        old = self.session("s-ordinary-old", 1)
+        self.session("s-ordinary-current", 2)
+        outside = self.root / "outside"
+        outside.mkdir()
+        (self.root / "obj/rust/private-lint").symlink_to(outside, target_is_directory=True)
+        with mock.patch.object(storage_incremental, "active_artifacts", return_value=[]):
+            with self.assertRaisesRegex(ValueError, "symlinked cache"):
+                storage_incremental.retire(self.root)
+        self.assertTrue(old.is_dir())

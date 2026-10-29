@@ -15,7 +15,7 @@ pub(crate) struct Formation<'a> {
     types: &'a Store,
     bounds: &'a Bounds,
     callables: &'a Templates,
-    scan: Scan,
+    scan: Scan<'static>,
     slots: Slots,
     demand: Deferred,
 }
@@ -88,14 +88,14 @@ impl Default for Deferred {
 }
 impl Deferred {
     fn record(
-        scan: &mut Scan,
+        scan: &mut Scan<'_>,
         shorter: RegionId,
         atoms: impl Iterator<Item = Atom>,
     ) -> Result<(), &'static str> {
         for atom in atoms {
             scan.budget.charge()?;
             match atom {
-                Atom::Region(longer) => scan.record((longer, shorter)),
+                Atom::Region(longer) => scan.record((longer, shorter))?,
                 Atom::Parameter(parameter) => {
                     let pair = (parameter, shorter);
                     if scan.unique_parameters.insert(pair) {
@@ -116,7 +116,7 @@ impl Deferred {
 impl Demand for Deferred {
     fn require(
         &mut self,
-        scan: &mut Scan,
+        scan: &mut Scan<'_>,
         types: &Store,
         ty: TypeId,
         shorter: RegionId,
@@ -163,7 +163,7 @@ impl Demand for Deferred {
     }
     fn projection(
         &mut self,
-        scan: &mut Scan,
+        scan: &mut Scan<'_>,
         types: &Store,
         projection: Projection,
         shorter: RegionId,

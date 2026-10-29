@@ -61,42 +61,47 @@ def retire(root):
     with exclusive(root):
         if active_artifacts(root):
             raise ValueError("Incremental retirement refused: compiler/test is active")
-        folder = root / "obj/rust/dev-fast/incremental"
-        objects = folder.parent / "deps"
-        for ancestor in (root / "obj", root / "obj/rust", folder.parent, folder, objects):
-            if ancestor.is_symlink():
-                raise ValueError("Incremental retirement refuses a symlinked cache")
-        if any((ancestor / ".keep-artifacts").exists()
-               for ancestor in (root / "obj", root / "obj/rust", folder.parent, folder)):
-            return []
-        rows = retire_codegen_objects(root, objects)
-        for crate in sorted(folder.iterdir()) if folder.exists() else ():
-            if crate.is_symlink():
-                raise ValueError("Incremental retirement refuses a symlinked crate cache")
-            if not crate.is_dir() or (crate / ".keep-artifacts").exists():
+        profiles = [root / "obj/rust/dev-fast", root / "obj/rust/private-lint/dev-fast"]
+        # Validate every profile before mutating either cache.
+        for profile in profiles:
+            for path in (root / "obj", root / "obj/rust", profile.parent, profile,
+                         profile / "incremental", profile / "deps"):
+                if path.is_symlink():
+                    raise ValueError("Incremental retirement refuses a symlinked cache")
+        rows = []
+        for profile in profiles:
+            folder, objects = profile / "incremental", profile / "deps"
+            if any((path / ".keep-artifacts").exists()
+                   for path in (root / "obj", root / "obj/rust", profile.parent, profile, folder)):
                 continue
-            sessions = []
-            for session in crate.iterdir():
-                if session.is_symlink():
-                    raise ValueError("Incremental retirement refuses a symlinked session")
-                if session.is_dir() and session.name.startswith("s-"):
-                    abandoned = retire_abandoned_session(root, session)
-                    if abandoned is not None:
-                        rows.append(abandoned)
-                        continue
-                if (session.is_dir() and session.name.startswith("s-")
-                        and not session.name.endswith("-working")
-                        and (session / "work-products.bin").is_file()
-                        and not any(session.rglob(".keep-artifacts"))):
-                    sessions.append(session)
-            sessions.sort(key=lambda p: (p.stat().st_mtime_ns, p.name))
-            for session in sessions[:-1]:
-                if any(session.rglob(".keep-artifacts")):
+            rows.extend(retire_codegen_objects(root, objects))
+            for crate in sorted(folder.iterdir()) if folder.exists() else ():
+                if crate.is_symlink():
+                    raise ValueError("Incremental retirement refuses a symlinked crate cache")
+                if not crate.is_dir() or (crate / ".keep-artifacts").exists():
                     continue
-                rows.append(remove_session(root, session))
+                sessions = []
+                for session in crate.iterdir():
+                    if session.is_symlink():
+                        raise ValueError("Incremental retirement refuses a symlinked session")
+                    if session.is_dir() and session.name.startswith("s-"):
+                        abandoned = retire_abandoned_session(root, session)
+                        if abandoned is not None:
+                            rows.append(abandoned)
+                            continue
+                    if (session.is_dir() and session.name.startswith("s-")
+                            and not session.name.endswith("-working")
+                            and (session / "work-products.bin").is_file()
+                            and not any(session.rglob(".keep-artifacts"))):
+                        sessions.append(session)
+                sessions.sort(key=lambda p: (p.stat().st_mtime_ns, p.name))
+                for session in sessions[:-1]:
+                    if any(session.rglob(".keep-artifacts")):
+                        continue
+                    rows.append(remove_session(root, session))
         if rows:
             record = root / "obj/cleanup" / f"incremental-{time.time_ns()}.json"
             record.parent.mkdir(parents=True, exist_ok=True)
-            record.write_text(json.dumps({"reason": "idle codegen scratch and superseded dev-fast sessions",
+            record.write_text(json.dumps({"reason": "idle codegen scratch and superseded dev-fast/private-lint sessions",
                                           "retired": rows}, indent=2) + "\n")
         return rows

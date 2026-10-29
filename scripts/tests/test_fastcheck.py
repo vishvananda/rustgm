@@ -1,5 +1,6 @@
 """Fast feedback must fail on expired budgets and unsafe native output scopes."""
 from argparse import Namespace
+import json
 from pathlib import Path
 import sys
 import tempfile
@@ -58,3 +59,63 @@ class FastcheckBudget(unittest.TestCase):
                     mock.patch.object(fastcheck.subprocess, "Popen", side_effect=lambda *a, **k: (events.append("admit"), process)[1]):
                 self.assertEqual(fastcheck.launch(args, time.monotonic()), 0)
             self.assertEqual(events, ["retire", "admit"])
+
+
+class LinkedPrivateHarness(unittest.TestCase):
+    def fixture(self, root):
+        (root / "dev/src").mkdir(parents=True)
+        (root / "dev/Cargo.toml").write_text('[package]\nname="rustgm"\nversion="1.0.0"\n')
+        source = root / "dev/src/lib.rs"
+        source.write_text("// test input\n")
+        folder = root / "obj/rust/private-lint/dev-fast/deps"
+        folder.mkdir(parents=True)
+        binary = folder / ("rustgm-abcd.exe" if sys.platform == "win32" else "rustgm-abcd")
+        binary.write_bytes(b"linked harness")
+        binary.chmod(0o755)
+        record = {"reason": "compiler-artifact", "manifest_path": str(root / "dev/Cargo.toml"),
+                  "target": {"kind": ["lib"], "name": "rustgm", "src_path": str(source)},
+                  "profile": {"test": True}, "executable": str(binary), "fresh": False}
+        return record, binary
+
+    def test_private_only_links_once_and_mixed_selection_builds_only_remaining_target(self):
+        for mixed in (False, True):
+            with self.subTest(mixed=mixed), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                record, binary = self.fixture(root)
+                audit = root / "obj/audit-venv/bin/python"
+                audit.parent.mkdir(parents=True)
+                audit.touch()
+                commands = []
+                steps = mock.Mock()
+                steps.receipt = {}
+
+                def run(name, command, **_):
+                    commands.append((name, command))
+                    if name == "clippy-private":
+                        self.assertEqual(command[:2], ["cargo", "test"])
+                        self.assertIn("--lib", command)
+                        self.assertIn("--no-run", command)
+                        self.assertEqual(_["overrides"]["RUSTC_WORKSPACE_WRAPPER"], "test-clippy-driver")
+                        self.assertEqual(_["overrides"]["CLIPPY_ARGS"], "-Dwarnings")
+                        self.assertNotIn("RUSTFLAGS", _["overrides"])
+                        return json.dumps(record)
+                    if name == "build":
+                        self.assertNotIn("--lib", command)
+                        return json.dumps({"reason": "compiler-artifact", "executable": str(binary),
+                                           "profile": {"test": True},
+                                           "target": {"kind": ["test"], "name": "suite_frontend"}})
+                    if name.endswith("-inventory"):
+                        return "sample::case: test\n" if name == "lib-inventory" else "lexer::valid: test\n"
+                    if name in ("lib", "suite_frontend"):
+                        return "test result: ok. 1 passed; 0 failed; 0 ignored;\n"
+                    return ""
+
+                steps.run.side_effect = run
+                args = Namespace(suites=["lexer::valid"] if mixed else [], lib_case=["sample::case"],
+                                 ignored=False, prune_under=[], pa=[])
+                with mock.patch.object(fastcheck_run, "discover", return_value={"lexer": "suite_frontend"}), \
+                        mock.patch.object(fastcheck_run.shutil, "which", return_value="test-clippy-driver"), \
+                        mock.patch.object(fastcheck_run, "fingerprint", return_value={}):
+                    fastcheck_run.execute(root, args, steps)
+                self.assertEqual(sum(name == "build" for name, _ in commands), int(mixed))
+                self.assertEqual(steps.receipt["private_harness_producer"], "clippy-private")

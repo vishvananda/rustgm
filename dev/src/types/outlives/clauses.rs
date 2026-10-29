@@ -19,7 +19,7 @@ mod tests;
 pub(crate) struct Implied {
     declarations: Declarations,
     scopes: HashMap<u16, Scope>,
-    budget: Budget,
+    budget: Budget<'static>,
 }
 struct Scope {
     captures: Captures,
@@ -37,7 +37,7 @@ impl Scope {
         &mut self,
         types: &mut Store,
         predicate: Predicate,
-        budget: &mut Budget,
+        budget: &mut Budget<'_>,
     ) -> Result<Option<Predicate>, &'static str> {
         let before = self.captures.steps;
         let captured = self.captures.predicate(types, predicate);
@@ -96,7 +96,7 @@ impl Declarations {
         &mut self,
         types: &mut Store,
         clause: Clause,
-        budget: &mut Budget,
+        budget: &mut Budget<'_>,
     ) -> Result<Option<Predicate>, &'static str> {
         let id = match clause {
             Clause::UnstableFeature(_) => return Ok(None),
@@ -135,7 +135,7 @@ impl Scoped {
         types: &mut Store,
         id: QuantifiedId,
         predicate: Predicate,
-        budget: &mut Budget,
+        budget: &mut Budget<'_>,
     ) -> Result<Option<Predicate>, &'static str> {
         if let Some(&result) = self.completed.get(&id) {
             return Ok(result);

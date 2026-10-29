@@ -28,7 +28,9 @@ RustGM owns both the full maintainer frontend and its assignments. Read
   Use `make fastcheck FAST_ARGS='SUITE --lib-case full::test::path'`: cached
   unoptimized builds without debug symbols, exact affected regressions, full
   formatting, content-cached architecture audit and strict Clippy for selected
-  targets (including the CLI for integration/text selections). Unknown/empty
+  targets (including the CLI for integration/text selections). Private selections
+  lint and link the unit-test harness in one Cargo build using `clippy-driver`;
+  do not repeat that compilation with a separate `cargo test --lib`. Unknown/empty
   selections and timeouts fail. Do not run a
   release build, all-target compilation, full private inventory, broad native
   sweep or performance matrix for each edit/new binary. Do not duplicate Clippy
@@ -65,8 +67,9 @@ code, duplicated blocks, phase dependencies and misplaced environment access.
   Cargo/test/measurement commands; `make fastcheck` supplies its own guards.
   Use `--no-prune` before `--` for other build-only commands. The wrapper reserves
   40 GiB locally and disables incremental caches outside `dev-fast`. Fastcheck
-  keeps one bounded incremental cache under `obj/rust/dev-fast`; shared output
-  caps include that cache. Before resource admission, fastcheck retires older
+  keeps bounded incremental caches under `obj/rust/dev-fast` and
+  `obj/rust/private-lint/dev-fast`; shared output caps include both caches.
+  Before resource admission, fastcheck retires older
   completed incremental sessions while preserving each crate's newest warm
   session, in-progress directories and explicit pins. At that idle boundary it
   also removes loose `deps/*.rcgu.o` linker scratch left by interrupted builds;

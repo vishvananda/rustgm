@@ -155,8 +155,8 @@ five-minute deadline or silently omit tests to turn a timeout into success.
 Partition unrelated target groups or investigate a slow build instead.
 
 The `dev-fast` Cargo profile keeps assertions and overflow checks, disables
-optimization and debug symbols, and enables one incremental cache under
-`obj/rust/dev-fast`. It does not rebuild release artifacts. Formatting covers
+optimization and debug symbols, and enables bounded incremental caches under
+`obj/rust/dev-fast` and `obj/rust/private-lint/dev-fast`. It does not rebuild release artifacts. Formatting covers
 all implementation/test modules. The architecture audit reads content hashes,
 reuses unchanged per-file syntax results, then reruns global duplicate,
 filename-stem and ownership checks over the complete current file set. Audit
@@ -164,12 +164,18 @@ implementation, parser versions and role-table changes invalidate that cache.
 Strict Clippy covers selected test targets and their library; integration/text
 selections also check the CLI. It is not
 followed by a redundant `cargo check`. Only selected test binaries are compiled.
-Private selections additionally lint the library in test-harness mode: ordinary
-`clippy --lib` excludes `cfg(test)`, while Cargo's `--tests` would select every
-integration target. The explicit harness mode catches lints in private tests
-without compiling unrelated integration binaries.
-Harness-mode Clippy has a stable metadata cache under `obj/rust/private-lint`
-so its different compiler arguments cannot evict ordinary Clippy results.
+Private selections compile the library harness once with `cargo test --lib
+--no-run`, setting `RUSTC_WORKSPACE_WRAPPER` to the installed `clippy-driver`
+and `CLIPPY_ARGS=-Dwarnings`. This checks `cfg(test)` with strict Clippy and
+links the executable in the same compilation. Cargo builds actual dependency
+libraries and reports the exact test executable; the runner does not infer an
+executable from check-mode metadata or search old cache outputs. The pinned
+Clippy driver tracks its arguments for Cargo cache invalidation. Normal host
+compiler flags remain intact. A separate `cargo clippy --lib` excludes private
+tests, while Cargo's `--tests` would select unrelated integration targets.
+The harness has a stable build cache under `obj/rust/private-lint` so it cannot
+evict ordinary Clippy results. Idle retirement also bounds this cache while
+preserving each crate's newest warm session and explicit pins.
 Bootstrap cold worktrees one target group at a time; combine related groups
 after their caches are warm. Keep each command within the same deadline.
 Private tests use complete names, integration suites retain exact outer-module
