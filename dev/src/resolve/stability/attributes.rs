@@ -23,6 +23,9 @@ pub(in crate::resolve) fn collect(
     allowance: Option<crate::resolve::bindings::panic_contracts::Allowance>,
 ) -> Result<bool, Error> {
     let name = attribute.name(forest, unit.source.text()).unwrap_or("");
+    if record_comptime(library, draft, unit, key, attribute, name)? {
+        return Ok(false);
+    }
     let extended = matches!(
         name,
         "rustc_default_body_unstable"
@@ -82,7 +85,7 @@ pub(in crate::resolve) fn collect(
             "duplicate or conflicting library stability",
         ));
     }
-    let (mut policy, implied_by) = parse(
+    let (policy, implied_by) = parse(
         unit,
         key,
         attribute,
@@ -90,18 +93,26 @@ pub(in crate::resolve) fn collect(
         matches!(name, "stable" | "rustc_const_stable"),
         draft,
     )?;
+    publish_policy(draft, key, attribute.span, policy, implied_by, constant)?;
+    Ok(true)
+}
+
+/// Publish the policy and its optional implication as one prepaid transaction.
+fn publish_policy(
+    draft: &mut Draft,
+    key: NodeKey,
+    span: crate::syntax::token_tree::Span,
+    mut policy: Policy,
+    implied_by: Option<Box<str>>,
+    constant: bool,
+) -> Result<(), Error> {
     policy.kind = if constant {
         super::PolicyKind::Const
     } else {
         super::PolicyKind::Regular
     };
-    let id = NonZeroUsize::new(draft.policies.len() + 1).ok_or_else(|| {
-        Error::at(
-            key.file,
-            attribute.span.start,
-            "library policy space exhausted",
-        )
-    })?;
+    let id = NonZeroUsize::new(draft.policies.len() + 1)
+        .ok_or_else(|| Error::at(key.file, span.start, "library policy space exhausted"))?;
     // Conservative geometric slot charges, including replacement storage.
     draft.charge(
         1,
@@ -121,6 +132,29 @@ pub(in crate::resolve) fn collect(
     } else {
         draft.attributes.insert(key, id);
     }
+    Ok(())
+}
+
+/// API placement records a declaration, without granting const-call permission.
+fn record_comptime(
+    library: Option<&Library>,
+    draft: &mut Option<Draft>,
+    unit: &Unit,
+    key: NodeKey,
+    attribute: Attribute,
+    name: &str,
+) -> Result<bool, Error> {
+    if name != "rustc_comptime"
+        || !library.is_some_and(|library| library.staged)
+        || unit.include_context.is_some()
+        || attribute.input != Input::Empty
+        || attribute.unsafe_wrapper
+    {
+        return Ok(false);
+    }
+    draft
+        .get_or_insert_with(Draft::default)
+        .record_comptime(key)?;
     Ok(true)
 }
 

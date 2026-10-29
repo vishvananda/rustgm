@@ -1,6 +1,7 @@
 //! Scalar body constraints consume resolved identities; fallback occurs once per body.
 mod aggregates;
 mod alignment;
+mod always_calls;
 mod annotations;
 mod api_stability;
 mod atomic_ordering;

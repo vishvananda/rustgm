@@ -71,10 +71,14 @@ pub(in crate::sema) fn consume(
         .iter()
         .position(|row| row.key == owner && row.effects.contains(&effect))
         .ok_or_else(|| error("promotable attribute belongs to another source owner"))?;
-    let present = actual.promotable.is_some();
+    let present = actual.promises.is_some();
     // The pinned parser accepts all parsed forms; their syntax stays in this
     // real effect/attribute witness. Repeated markers coalesce, including unsafe fns.
-    let bytes = if present { 0 } else { size_of::<Marker>() };
+    let bytes = if present {
+        0
+    } else {
+        size_of::<super::Promises>()
+    };
     ledger(facts, bytes)?;
     let headers = &mut ledger(facts, 0)?.local;
     let actual = headers
@@ -82,12 +86,19 @@ pub(in crate::sema) fn consume(
         .get_mut(&declaration)
         .ok_or_else(|| error("promotable source header disappeared"))?;
     if !present {
-        actual.promotable = Some(Box::new(Marker {
+        actual.promises = Some(Box::default());
+    }
+    let promises = actual
+        .promises
+        .as_deref_mut()
+        .ok_or_else(|| error("source function promises disappeared"))?;
+    if promises.promotable.is_none() {
+        promises.promotable = Some(Marker {
             owner_slot: slot,
             effect,
             attribute,
             flags,
-        }));
+        });
     }
     Ok(())
 }
@@ -97,7 +108,12 @@ pub(super) fn bind(
     definition: DefId,
     key: NodeKey,
 ) -> Result<(), Error> {
-    let Some(marker) = header(facts, key).and_then(|header| header.promotable.as_deref()) else {
+    let Some(marker) = header(facts, key).and_then(|header| {
+        header
+            .promises
+            .as_deref()
+            .and_then(|promises| promises.promotable.as_ref())
+    }) else {
         return Ok(());
     };
     super::charge_source_contract_query(facts, 2)?;
@@ -147,7 +163,11 @@ pub(in crate::sema) fn query(
         .ok_or_else(|| Error::unlocated("promotable query lacks its actual source declaration"))?;
     let actual = header(facts, key)
         .ok_or_else(|| Error::unlocated("promotable query lacks its completed header"))?;
-    let Some(marker) = actual.promotable.as_deref() else {
+    let Some(marker) = actual
+        .promises
+        .as_deref()
+        .and_then(|promises| promises.promotable.as_ref())
+    else {
         return Ok(ContractKnowledge::KnownAbsent);
     };
     let owner = actual

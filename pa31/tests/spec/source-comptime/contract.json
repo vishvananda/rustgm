@@ -1,0 +1,257 @@
+{
+  "state": "frozen-from-independent-observations-before-candidate",
+  "profile": {
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort"
+  },
+  "rust_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "cases": {
+    "const-own": {
+      "rust_metadata_status": 0,
+      "candidate_status": 0,
+      "source_sha256": "1764ad158fe4d2d432040d32b48007610f6f33c68634f061105357f72ef032f4",
+      "native_status": 0,
+      "native_stdout": "7\n"
+    },
+    "inline-const": {
+      "rust_metadata_status": 0,
+      "candidate_status": 0,
+      "source_sha256": "32698490de919377e42b5f7177b73667f39700ddf67f6c6df3abf8ae1bc79603",
+      "native_status": 0,
+      "native_stdout": "7\n"
+    },
+    "item-alias-const": {
+      "rust_metadata_status": 0,
+      "candidate_status": 0,
+      "source_sha256": "060221a6e7405204154c599d3c378eb232aef8cdb32ba806783757a1a07df3ad",
+      "native_status": 0,
+      "native_stdout": "7\n"
+    },
+    "inherent-const": {
+      "rust_metadata_status": 0,
+      "candidate_status": 0,
+      "source_sha256": "0b7d3ba59e8ab8bfa0efb41e53bf4c6768144191bc0137cffd5fcfa09dac2815",
+      "native_status": 0,
+      "native_stdout": "7\n"
+    },
+    "unsafe-const": {
+      "rust_metadata_status": 0,
+      "candidate_status": 0,
+      "source_sha256": "33331291497fa70de619249123f35b4c385671bd461ce0a7951b6d8fb70c42fb",
+      "native_status": 0,
+      "native_stdout": "7\n"
+    },
+    "runtime-literal": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "5f42383f71e5edf71f51b504088af7c13235a8b69c89a94e347297680a43717c"
+    },
+    "runtime-argument": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "f0193d7a12824151e6e1b6c708b3f48439cb264c8fb623adc8858f830e23d971"
+    },
+    "runtime-alias": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "3bc31908f859b9d9edee2b42c68d361cd973b66f193db91f82de92e006e4ac2e"
+    },
+    "ordinary-const-fn": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "7239fc69ba94eb81fbc6ecabfeb626400d68f015cfa6fef43adaa91472c9a003"
+    },
+    "marked-nonconst-callee": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "411105743359b767adeb36e5a90f2ae14f8fdab15bdefb294718e801fb087596"
+    },
+    "unsafe-missing": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "8bc2d1a2b85bdf5d0b16d3dc3f714d78019d3f041c28b71073e4a5c6e6e79201"
+    },
+    "explicit-const": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "61c3b98dbffbbdca3e7c712f3685953781f00eb56155801b2c7f29c4d5c53f0d"
+    },
+    "duplicate": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "02e7e65b4590b390b0f5dc338eae53db213d511d4836ce4d15d4b57af39b3041"
+    },
+    "list-form": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "d5f40c428cbc4dd95242dac35c6e2d6bafdaf68cbfbb225db1dfcc05844258c0"
+    },
+    "value-form": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "11644e6bd153d0cdc5ddad25e23a0b202477da74ad79968a3acf7e6528982a7f"
+    },
+    "unsafe-wrapper": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "542720710650e6938217d728c60a966c6157fcea66835bfc735e6fa6e0f34277"
+    },
+    "trait-method": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "161ccde1225b64ebecb9205c3be8fca058340b47e04849c6a40811c852d8f6a7"
+    },
+    "trait-impl": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "e9c940961ee8eb8f19fb56e1696ce0a36972a7d789193cd980fce9c67c685085"
+    },
+    "wrong-owner": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "2b42fcdf2f39835fa039016c20eaa1f9ff156469297283226f7697e18ea41bb6"
+    },
+    "missing-gate": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "6f00953dc04bf75dc6b7865a082e4c5f8b7d0d997cedc145d1ac23e48132fd47"
+    },
+    "function-pointer": {
+      "rust_metadata_status": 0,
+      "candidate_status": 0,
+      "source_sha256": "57f022e51baeb1e37a1384eba05799bdf6c388f9b6b66da72d62ada10d13f96d",
+      "native_status": 0,
+      "native_stdout": "7\n"
+    },
+    "ordinary-const": {
+      "rust_metadata_status": 0,
+      "candidate_status": 0,
+      "source_sha256": "748f993a901c56dec0fa0e827b83d98090e1e4b8d5e85e1dfa4c25581e88afbb",
+      "native_status": 0,
+      "native_stdout": "7\n"
+    },
+    "ordinary-runtime": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "36c92c379781ef3c321a6c9bfc4dd7e5ec9b036658073985bded706b6477654c"
+    },
+    "generic-const-bound": {
+      "rust_metadata_status": 0,
+      "candidate_status": 0,
+      "source_sha256": "eb3c74bd38ca155cce904d0b5493eee559a28bca8cdfbce4f9bb044edabb7e4b",
+      "native_status": 0,
+      "native_stdout": "7\n"
+    },
+    "conditional-bound": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "118ef634783ddf90e64a3e7867b22d99691d2d2b16a4b1d3c981ab0c3e632a43"
+    },
+    "nonconst-bound": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "3506333350978575bea5ea18d0b2880f770056b5939671499511929bd6c69a10"
+    },
+    "foreign-prototype": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "8ecfb70750ad95ac240f8d2c18972cfbd4016bf1d6e0895aec28aa6a0557ea97"
+    },
+    "generic-identity": {
+      "rust_metadata_status": 0,
+      "candidate_status": 0,
+      "source_sha256": "6012e768d35440b820e98ec3cf9e16ab1f48331a42bb653ce48e01cbbe27def3",
+      "native_status": 0,
+      "native_stdout": "7\n"
+    },
+    "closure-in-const": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "fedfefc8037fd8502b1862e541af9344a0fe288711591d0193e0d6889af4f9d8"
+    },
+    "inline-in-closure": {
+      "rust_metadata_status": 0,
+      "candidate_status": 0,
+      "source_sha256": "c8b28abe67fa93fa7b502c1cc463ce8dd17f1fd325e06ea82bfe5e4c05072fba",
+      "native_status": 0,
+      "native_stdout": "7\n"
+    },
+    "constructed-const": {
+      "rust_metadata_status": 0,
+      "candidate_status": 0,
+      "source_sha256": "ec31799e60e1feb5774acdc05a4fd621a0e4baf8a01f7cfde4365a9a1500e16e",
+      "native_status": 0,
+      "native_stdout": "7\n"
+    },
+    "macro-allowance": {
+      "rust_metadata_status": 0,
+      "candidate_status": 0,
+      "source_sha256": "3285dba229f1cf195af833c19fd89932507403ae569d782b3c5c5386ae633d00",
+      "native_status": 0,
+      "native_stdout": "7\n"
+    },
+    "generic-fn-item": {
+      "rust_metadata_status": 0,
+      "candidate_status": 0,
+      "source_sha256": "8ac0785e72ce6e6c12edbf06669a9185eb0356a99919ae938fd8274d1ca219ed",
+      "native_status": 0,
+      "native_stdout": "7\n"
+    },
+    "fn-pointer-parameter": {
+      "rust_metadata_status": 0,
+      "candidate_status": 0,
+      "source_sha256": "35d36348d918ccd0fa2b9a5fa2412c74c59686060c38d8ae8fcb2941eaf35b69",
+      "native_status": 0,
+      "native_stdout": "7\n"
+    },
+    "const-api-marker": {
+      "rust_metadata_status": 0,
+      "candidate_status": 0,
+      "source_sha256": "9c5ff15a9f663a3601501acc0c1064cbb6be69954390ca6ab5ee3953089ea606",
+      "native_status": 0,
+      "native_stdout": "7\n"
+    },
+    "const-api-unmarked": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "fc3b83f2ab70fe07e59745d1c060d999ce36ae2cf731c7c8bfea38a74b7e36b7"
+    },
+    "fn-pointer-call-body": {
+      "rust_metadata_status": 0,
+      "candidate_status": 0,
+      "source_sha256": "9dcf4dd55889c096fe63cfeb41aa0c70873f07855d456dbbdf27c9f410970bb1",
+      "native_status": 0,
+      "native_stdout": "7\n"
+    }
+  },
+  "oracle_v2_sha256": "b5fb6f147094350dd75f55a4fc942f09b08dc2da0143c0f5cac580e461b10046",
+  "fnptr_correction_v3_sha256": "5e208e41496c42acb2d33c90092620c360bc1575155b0ac19ee8d9edc997111c",
+  "notes": [
+    "V1 missing Copy foundation and v2 rejected-fnptr hypothesis are retained counterexamples. V2 five native positives and genuine negative rows qualify individually; v3 independently corrects only fnptr expected acceptance.",
+    "Real existing NoCore sizing/receiver/Clone/Copy/Destruct source foundations; no frontend delegation, intrinsic replacement or automatic fold.",
+    "Actual upstream type_id_implements header is a compilation consumer; its type-info intrinsic/backend execution remains separately Required.",
+    "Ordinary rustc_attrs owner/gate support, unsafe separation and all old metadata transport fences remain required."
+  ],
+  "supplemental": {
+    "v4_receipt_sha256": "ff754107af6de300db744e0feb905924167410441e997a35cf74da8e7605cde6",
+    "v4_boundary": "generic identity missing actual Freeze; original failure retained, other rows individually match",
+    "v5_receipt_sha256": "e1df1c76c72d044373fc945e115ebb92186c5607c949b71259d31694bb47a6f8",
+    "v6_receipt_sha256": "1292eb7d57317052c70a62f77c71db4e85f40f27450640a3ac9e84d835558e72",
+    "v7_receipt_sha256": "ac87ff60a242798a12c8c34c3c6092e944142d13d2649d3de7a03acbdcf6f387",
+    "v7_boundary": "Const API rows match; helper-call fnptr object requires actual std panic-overflow dependency at link, unmodified source retained.",
+    "v8_receipt_sha256": "07898ecce5cda84819ad008e2115cad0b21b1e6ecc07c510028694476b41d8b7",
+    "v8_link": "Unchanged fn-pointer-call-body source, pinned Rust staticlib plus host C -ldl -lpthread -lm, native7."
+  },
+  "original_core": {
+    "path": "library/core/src/intrinsics/mod.rs",
+    "source_sha256": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+    "byte_range": [
+      112130,
+      112724
+    ],
+    "fragment_sha256": "4b1e3d0b384565af2c6230717801dd223ee4380b390e6693deb8950ae026a75b",
+    "function": "type_id_vtable",
+    "execution": "Required: original type-info intrinsic/panic body graph remains separate; this contract implements authentic Always source policy"
+  }
+}

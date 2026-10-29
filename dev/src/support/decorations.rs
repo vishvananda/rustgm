@@ -35,6 +35,7 @@ pub(crate) enum Consumer {
     PreludeImport,
     PublicTransparency,
     Promotion,
+    Comptime,
 }
 impl Consumer {
     pub(crate) fn tool_member(tool: &str, name: &str) -> Option<Self> {
@@ -87,6 +88,7 @@ impl Consumer {
             "prelude_import" => Self::PreludeImport,
             "rustc_pub_transparent" => Self::PublicTransparency,
             "rustc_promotable" => Self::Promotion,
+            "rustc_comptime" => Self::Comptime,
             "no_mangle" | "export_name" | "link_name" => Self::Linkage,
             "target_feature" => Self::TargetFeature,
             "allow" | "warn" | "deny" | "forbid" | "expect" | "deprecated" => Self::SafetyLint,

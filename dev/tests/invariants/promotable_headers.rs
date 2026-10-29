@@ -154,7 +154,8 @@ fn marker_queries_reject_foreign_images_changed_flags_and_sticky_exhaustion() ->
         .as_deref_mut()
         .and_then(|c| c.headers.as_deref_mut())
         .and_then(|l| l.local.declarations.get_mut(&key))
-        .and_then(|h| h.promotable.as_deref_mut())
+        .and_then(|h| h.promises.as_deref_mut())
+        .and_then(|p| p.promotable.as_mut())
         .ok_or("stored marker")?;
     let saved = marker.effect;
     marker.effect = usize::MAX - 1;
@@ -164,7 +165,8 @@ fn marker_queries_reject_foreign_images_changed_flags_and_sticky_exhaustion() ->
         .as_deref_mut()
         .and_then(|c| c.headers.as_deref_mut())
         .and_then(|l| l.local.declarations.get_mut(&key))
-        .and_then(|h| h.promotable.as_deref_mut())
+        .and_then(|h| h.promises.as_deref_mut())
+        .and_then(|p| p.promotable.as_mut())
         .ok_or("stored marker")?;
     marker.effect = saved;
     assert!(facts.promotable_contract(&report, word).is_ok());

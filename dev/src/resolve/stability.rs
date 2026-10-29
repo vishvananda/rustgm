@@ -227,10 +227,44 @@ pub(super) struct Draft {
     attributes: HashMap<NodeKey, PolicyId>,
     import_attributes: HashMap<NodeKey, PolicyId>,
     const_attributes: HashMap<NodeKey, PolicyId>,
+    comptime: Vec<NodeKey>,
     steps: usize,
     bytes: usize,
 }
 impl Draft {
+    fn record_comptime(&mut self, key: NodeKey) -> Result<(), Error> {
+        let growth = crate::support::retained::Growth::vector::<NodeKey>(
+            self.comptime.len(),
+            self.comptime.capacity(),
+            1,
+        );
+        self.charge(growth.work.saturating_add(1), growth.bytes)?;
+        self.comptime
+            .try_reserve(1)
+            .map_err(|_| Error::unlocated("comptime API owner allocation failed"))?;
+        self.comptime.push(key);
+        Ok(())
+    }
+    fn finish_comptime(&mut self) -> Result<(), Error> {
+        let count = self.comptime.len();
+        let depth = usize::try_from(usize::BITS - count.leading_zeros()).unwrap_or(usize::MAX);
+        self.charge(count.saturating_mul(depth.saturating_add(1)), 0)?;
+        self.comptime
+            .sort_unstable_by_key(|key| (key.file.0, key.node.get()));
+        self.comptime.dedup();
+        Ok(())
+    }
+    fn is_comptime(&mut self, key: NodeKey) -> Result<bool, Error> {
+        let depth = usize::try_from(usize::BITS - self.comptime.len().leading_zeros())
+            .unwrap_or(usize::MAX);
+        self.charge(depth.saturating_add(1), 0)?;
+        Ok(self
+            .comptime
+            .binary_search_by_key(&(key.file.0, key.node.get()), |key| {
+                (key.file.0, key.node.get())
+            })
+            .is_ok())
+    }
     fn charge(&mut self, steps: usize, bytes: usize) -> Result<(), Error> {
         self.steps = self.steps.saturating_add(steps);
         self.bytes = self.bytes.saturating_add(bytes);

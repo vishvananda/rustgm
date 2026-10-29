@@ -47,7 +47,7 @@ impl<'a> DefiningCalls<'a> {
         charge(5)?;
         let trait_definition = match facts.function_context(definition, owner)? {
             FunctionContext::ConstTraitDefault { trait_definition } => trait_definition,
-            FunctionContext::ConstFunction => {
+            FunctionContext::ConstFunction | FunctionContext::Comptime => {
                 charge(1)?;
                 let environment = facts
                     .generics

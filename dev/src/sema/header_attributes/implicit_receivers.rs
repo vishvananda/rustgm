@@ -185,6 +185,14 @@ impl Declarations {
         if actual.kind != DefKind::Function {
             return Ok(());
         }
+        if matches!(
+            self.source_comptime_contract(report, definition)?,
+            ContractKnowledge::KnownPresent(_)
+        ) {
+            return Err(Error::unlocated(
+                "always-comptime source contracts require a wider transport profile",
+            ));
+        }
         let mut required = None;
         if !visit_words(self, report, definition, |name| {
             let message = match name {
