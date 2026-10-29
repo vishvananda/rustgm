@@ -117,6 +117,7 @@ pub enum MacroContext {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum TypeConstraint {
     NonNull,
+    Pattern(NodeId),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

@@ -69,6 +69,7 @@ pub(super) struct Storage {
     mixed: Slices<Argument>,
     constants: Vec<ConstKind>,
     constant_index: HashMap<ConstKind, ConstId>,
+    pub(super) ranges: Option<Box<Slices<super::ScalarRange>>>,
 }
 impl Store {
     pub(crate) fn find_mixed_arguments_charged(
@@ -90,7 +91,12 @@ impl Store {
         self.arguments
             .as_ref()
             .map_or(0, |storage| {
-                size_of::<Storage>().saturating_add(storage.mixed.allocation().bytes)
+                size_of::<Storage>()
+                    .saturating_add(storage.mixed.allocation().bytes)
+                    .saturating_add(storage.ranges.as_deref().map_or(0, |ranges| {
+                        size_of::<Slices<super::ScalarRange>>()
+                            .saturating_add(ranges.allocation().bytes)
+                    }))
             })
             .saturating_add(self.trait_tables_bytes())
     }
@@ -141,6 +147,7 @@ impl Store {
                 .mixed
                 .edge_count()
                 .saturating_add(storage.constants.len())
+                .saturating_add(storage.ranges.as_deref().map_or(0, Slices::edge_count))
         })
     }
     pub(crate) fn find_regions(&self, values: &[RegionId]) -> Option<GenericArgs> {
@@ -283,7 +290,7 @@ impl Store {
         storage.constant_index.insert(kind, id);
         Ok(id)
     }
-    fn valid_constant(&self, value: Constant) -> bool {
+    pub(super) fn valid_constant(&self, value: Constant) -> bool {
         match self.kind(value.ty) {
             Some(Kind::Primitive(Primitive::Bool)) => value.bits <= 1,
             Some(Kind::Primitive(Primitive::Char)) => u32::try_from(value.bits)
