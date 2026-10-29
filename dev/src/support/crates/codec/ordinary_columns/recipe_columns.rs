@@ -286,9 +286,9 @@ pub(super) fn effect_read(
         _ => Err("unknown source constness effect"),
     }
 }
-/// Function and call rows carry only unconditional effects in version seven.
-/// Trait predicates keep their distinct Provided-only conditional reader.
-pub(super) fn callable_effect_read(
+/// Function declaration eligibility is unconditional in version seven.
+/// Trait predicates keep their distinct Provided-only qualified reader.
+pub(super) fn function_effect_read(
     read: &mut Input<'_, '_>,
     unsupported: &'static str,
 ) -> Result<Constness, &'static str> {
@@ -299,6 +299,22 @@ pub(super) fn callable_effect_read(
         0 => Ok(Constness::Ordinary),
         1 => Ok(Constness::Const),
         2 => Err("source conditional callable effect requires its wider profile"),
+        _ => Err("unknown source constness effect"),
+    }
+}
+/// A const definition is usable at runtime or CTFE; its call use is Conditional.
+/// Exact original-context equality and genuine const targets are still required.
+pub(super) fn call_effect_read(
+    read: &mut Input<'_, '_>,
+    unsupported: &'static str,
+) -> Result<Constness, &'static str> {
+    if !read.callables {
+        return effect_read(read, unsupported);
+    }
+    match read.reader.u8()? {
+        0 => Ok(Constness::Ordinary),
+        2 => Ok(Constness::Conditional),
+        1 => Err("source closed-const call requires its wider profile"),
         _ => Err("unknown source constness effect"),
     }
 }

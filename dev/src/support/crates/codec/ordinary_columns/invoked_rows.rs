@@ -29,7 +29,7 @@ pub(super) fn read(input: &mut Input<'_, '_>) -> Result<s::CallRequest, &'static
         } else {
             None
         },
-        effect: recipe_columns::callable_effect_read(
+        effect: recipe_columns::call_effect_read(
             input,
             "source call effect requires its wider profile",
         )?,

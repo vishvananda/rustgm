@@ -139,9 +139,34 @@ fn older_profiles_keep_effect_denials_and_cannot_decode_a_downgraded_body() -> R
     Ok(())
 }
 
+fn nonconst_target(rows: &mut s::SourceRows) -> Result {
+    let request = rows
+        .originals
+        .iter()
+        .find_map(|body| body.calls.first())
+        .ok_or("actual forwarding call")?;
+    let declaration = rows
+        .function_applications
+        .get(request.target.0 as usize)
+        .ok_or("actual target application")?
+        .declaration;
+    assert_eq!(declaration.artifact, s::ArtifactRef(0));
+    let header = rows
+        .functions
+        .iter_mut()
+        .find(|f| f.declaration == declaration.declaration)
+        .ok_or("actual target header")?;
+    header.constness = Constness::Ordinary;
+    let s::FunctionBody::Original(body) = header.body else {
+        return Err("actual target original".into());
+    };
+    rows.originals[body.0 as usize].context = s::CallContext::Runtime;
+    Ok(())
+}
+
 #[test]
 fn defining_const_context_and_actual_safety_cannot_be_mutated_or_unpaid() -> Result {
-    let artifact = provider("provider")?;
+    let artifact = provider("combined-provider")?;
     let (original, _, _) = module_packets::raw(&artifact)?;
     let constant = original
         .functions
@@ -153,7 +178,7 @@ fn defining_const_context_and_actual_safety_cannot_be_mutated_or_unpaid() -> Res
         .iter()
         .position(|f| f.original.unsafe_)
         .ok_or("actual unsafe function")?;
-    for mutation in 0..6 {
+    for mutation in 0..8 {
         let mut rows = original.clone();
         let function = rows.functions[constant];
         let s::FunctionBody::Original(body) = function.body else {
@@ -165,13 +190,24 @@ fn defining_const_context_and_actual_safety_cannot_be_mutated_or_unpaid() -> Res
             2 => rows.functions[constant].body = s::FunctionBody::Absent,
             3 => rows.functions[unsafe_].callable.unsafe_ = false,
             4 => rows.functions[constant].declaration.0 = u32::MAX,
-            _ => rows.body_owners[body.0 as usize].declaration.0 = u32::MAX,
+            5 => rows.body_owners[body.0 as usize].declaration.0 = u32::MAX,
+            6 => {
+                rows.originals
+                    .iter_mut()
+                    .find_map(|body| body.calls.first_mut())
+                    .ok_or("actual constant forwarding request")?
+                    .effect = Constness::Const;
+            }
+            _ => nonconst_target(&mut rows)?,
         }
         let mut work = g::Work::default();
-        assert!(
-            stage(&artifact, rows, 0, &mut work).is_err(),
-            "mutation{mutation}"
-        );
+        let error = stage(&artifact, rows, 0, &mut work)
+            .err()
+            .ok_or("forged source effect was accepted")?
+            .to_string();
+        if mutation == 7 {
+            assert!(error.contains("actual const target"), "{error}");
+        }
         assert!(work.steps > 0);
     }
     let mut work = g::Work {

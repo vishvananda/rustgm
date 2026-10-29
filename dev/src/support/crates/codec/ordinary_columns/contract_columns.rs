@@ -142,7 +142,7 @@ pub(super) fn function_read(read: &mut Input<'_, '_>) -> Result<s::FunctionHeade
     } else {
         None
     };
-    let constness = super::recipe_columns::callable_effect_read(
+    let constness = super::recipe_columns::function_effect_read(
         read,
         "source callable effect requires a wider source profile",
     )?;

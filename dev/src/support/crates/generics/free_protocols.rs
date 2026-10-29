@@ -1,4 +1,4 @@
-//! V7 admits only the genuine declaration-only Destruct/Freeze protocols, never const calls.
+//! Genuine marker declarations and indexed const-call eligibility remain separate.
 use super::{HeaderIndex, SourceRows};
 use crate::support::{
     constness::Constness,
@@ -111,6 +111,53 @@ pub(super) fn freeze(
         || !matches!(slot.kind, s::ParameterKind::Type { sized: None })
     {
         return Err("source Freeze changed its unsized, unqualified Self parameter");
+    }
+    Ok(())
+}
+
+/// Exact defining mode is checked against its canonical function declaration.
+pub(super) fn original_context(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    body: &s::Original,
+    work: &mut Work,
+) -> Result<s::CallContext, &'static str> {
+    let Some(s::HeaderRef::Function(index)) = headers.header(body.declaration, work)? else {
+        return Err("source original has no actual callable header");
+    };
+    let header = rows.functions[index as usize];
+    if header.parent.is_none() && header.constness == Constness::Const {
+        constant_calls(rows, headers, body, work)?;
+        Ok(s::CallContext::ConstDefinition)
+    } else {
+        Ok(s::CallContext::Runtime)
+    }
+}
+
+/// Declared constness is data, never permission to call an ordinary target.
+fn constant_calls(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    body: &s::Original,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    for request in &body.calls {
+        work.charge(3)?;
+        let application = rows
+            .function_applications
+            .get(request.target.0 as usize)
+            .ok_or("source const call target application is absent")?;
+        if application.declaration.artifact != s::ArtifactRef(0) {
+            return Err("source const call requires its complete defining target artifact");
+        }
+        let Some(s::HeaderRef::Function(index)) =
+            headers.header(application.declaration.declaration, work)?
+        else {
+            return Err("source const call target header is absent");
+        };
+        if rows.functions[index as usize].constness != Constness::Const {
+            return Err("source const-definition call requires its actual const target");
+        }
     }
     Ok(())
 }

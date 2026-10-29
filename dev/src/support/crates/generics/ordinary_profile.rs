@@ -325,17 +325,7 @@ fn originals(
     for original in &rows.originals {
         work.charge(1)?;
         let expected = if callables {
-            let Some(super::super::HeaderRef::Function(index)) =
-                headers.header(original.declaration, work)?
-            else {
-                return Err("source original has no actual callable header");
-            };
-            let header = rows.functions[index as usize];
-            if header.parent.is_none() && header.constness == Constness::Const {
-                super::super::CallContext::ConstDefinition
-            } else {
-                super::super::CallContext::Runtime
-            }
+            callable_traits::original_context(rows, headers, original, work)?
         } else {
             super::super::CallContext::Runtime
         };

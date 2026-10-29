@@ -208,6 +208,7 @@ impl Stage {
             formals,
             receiver,
             constness: if self.callable_effects() {
+                self.charge(4)?;
                 written_constness(report, facts, function)?
             } else if facts.is_const_function(function.definition) {
                 Constness::Const
