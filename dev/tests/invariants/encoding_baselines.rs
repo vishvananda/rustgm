@@ -1,4 +1,4 @@
-//! First producer encodings bind the old profile bytes before a new profile exists.
+//! Frozen historical bytes survive an explicit corrected-Provided semantic revision.
 use super::*;
 use crate::lower::instances::SourcePublication;
 
@@ -57,6 +57,10 @@ fn existing_profiles_capture_first_bytes_before_provided_contracts() -> Result {
     let source = crate::test_source::fixture(
         "pa31/tests/spec/source-header-transport/semantic-provider-qualified.rs",
     )?;
+    migrate_provided(&folder, &source)
+}
+
+fn migrate_provided(folder: &std::path::Path, source: &str) -> Result {
     let (owner, rows) = actual(true)?;
     let interface = interface(owner, rows)?;
     assert_eq!(
@@ -64,9 +68,41 @@ fn existing_profiles_capture_first_bytes_before_provided_contracts() -> Result {
             .source_descriptor()
             .ok_or("Provided v0 descriptor")?
             .profile(),
+        s::Profile::Source2024ProvidedCurrent
+    );
+    // Current source facts must be encoded before looking at historical bytes.
+    let current = codec::encode(&interface)?;
+    assert_eq!(&current[12..16], &[11, 2, 0, 0]);
+    assert_eq!(codec::decode(&current)?, interface);
+    let descriptor = interface.source_descriptor().ok_or("current descriptor")?;
+    let rows = descriptor.rows();
+    let freeze = rows
+        .roles
+        .iter()
+        .find(|role| role.role == crate::support::bindings::LangItem::Freeze)
+        .ok_or("actual Freeze role")?
+        .declaration
+        .declaration;
+    let header = rows
+        .traits
+        .iter()
+        .find(|header| header.declaration == freeze)
+        .ok_or("current Freeze header")?;
+    assert_eq!(header.canonical_inputs, 0);
+    assert_eq!(header.declared_inputs, 1);
+    let historical =
+        crate::module_packets::hex("pa31/tests/spec/provided-contracts-v1/provided-v0.hex")?;
+    let old = codec::decode(&historical)?;
+    assert_eq!(
+        old.source_descriptor()
+            .ok_or("historical descriptor")?
+            .profile(),
         s::Profile::Source2024Provided
     );
-    capture(&folder, "provided-v0", &source, &interface)?;
+    assert_eq!(codec::encode(&old)?, historical);
+    assert_ne!(current, historical);
+    std::fs::write(folder.join("provided-current-v2.rgcrate"), current)?;
+    std::fs::write(folder.join("provided-current-v2.rs"), source)?;
     Ok(())
 }
 

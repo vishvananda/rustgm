@@ -195,7 +195,9 @@ impl<'a> ValidatedView<'a> {
         work.charge(1)?;
         if !matches!(
             self.source.profile,
-            super::Profile::Source2024Provided | super::Profile::Source2024ProvidedContracts
+            super::Profile::Source2024Provided
+                | super::Profile::Source2024ProvidedContracts
+                | super::Profile::Source2024ProvidedCurrent
         ) || live_base < self.source.budget.bytes
         {
             return Err("frozen allocation inverse requires its actual Provided live owner");

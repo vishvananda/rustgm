@@ -256,7 +256,7 @@ fn supertrait_inputs(rows: &s::SourceRows) -> Result {
     let meta = role(rows, LangItem::MetaSized)?;
     for (kind, literal, count) in [
         (LangItem::Clone, 1, 2),
-        (LangItem::Freeze, 0, 1),
+        (LangItem::Freeze, 0, 0),
         (LangItem::Copy, 1, 2),
     ] {
         let declaration = role(rows, kind)?;
@@ -286,8 +286,9 @@ fn supertrait_inputs(rows: &s::SourceRows) -> Result {
                 .iter()
                 .all(|clause| clause.self_subject.is_none())
         );
-        assert!(inputs[..count as usize].iter().any(|clause| matches!(clause.requirement,
-            s::Requirement::Trait { application, .. } if rows.trait_applications[application.0 as usize].declaration.declaration == meta)));
+        let has_meta = inputs[..count as usize].iter().any(|clause| matches!(clause.requirement,
+            s::Requirement::Trait { application, .. } if rows.trait_applications[application.0 as usize].declaration.declaration == meta));
+        assert_eq!(has_meta, kind != LangItem::Freeze);
         let s::Requirement::Trait { application, .. } = inputs[count as usize].requirement else {
             return Err("implicit own-trait input lost its kind".into());
         };

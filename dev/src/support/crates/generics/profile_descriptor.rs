@@ -60,6 +60,8 @@ pub enum Profile {
     Source2024ModuleFeaturePredicates,
     /// Version-five exact native definitions; nominal transport remains unsupported.
     Source2024ModuleDefinitions,
+    /// Current unpaid provided rows; auto traits have no implicit Self sizing.
+    Source2024ProvidedCurrent,
 }
 impl Profile {
     #[must_use]
@@ -269,6 +271,14 @@ impl ValidatedRows {
         base: usize,
         work: &mut Work,
     ) -> Result<Self, &'static str> {
+        Self::stage_profile(owner, rows, base, work, Profile::Source2024ProvidedCurrent)
+    }
+    pub(crate) fn stage_legacy_provided(
+        owner: &CrateIdentity,
+        rows: SourceRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
         Self::stage_profile(owner, rows, base, work, Profile::Source2024Provided)
     }
     /// Cost observation cannot alter metadata validation or grant permission.
@@ -284,7 +294,7 @@ impl ValidatedRows {
             rows,
             base,
             work,
-            Profile::Source2024Provided,
+            Profile::Source2024ProvidedCurrent,
             observe,
         )
     }
@@ -472,9 +482,9 @@ impl ValidatedRows {
                 functions::validate(&rows, &indexed, work)?;
                 0
             }
-            Profile::Source2024Provided | Profile::Source2024ProvidedContracts => {
-                provided::validate(&rows, &indexed, work)?
-            }
+            Profile::Source2024Provided
+            | Profile::Source2024ProvidedContracts
+            | Profile::Source2024ProvidedCurrent => provided::validate(&rows, &indexed, work)?,
             Profile::Source2024 => return Err("unpublished source facade has no data profile"),
             Profile::Source2024ModuleContracts
             | Profile::Source2024ModuleAvailability

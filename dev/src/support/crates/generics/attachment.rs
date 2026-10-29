@@ -154,6 +154,22 @@ impl Payload {
         )?;
         Ok(Self::from(staged))
     }
+    /// Historical bytes remain structural data, never current semantic inputs.
+    pub(crate) fn from_legacy_source_provided(
+        owner: &CrateIdentity,
+        rows: source::SourceRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        let overhead = size_of::<Self>().saturating_sub(size_of::<source::ValidatedRows>());
+        source::ValidatedRows::stage_legacy_provided(
+            owner,
+            rows,
+            base.saturating_add(overhead),
+            work,
+        )
+        .map(Self::from)
+    }
     pub(crate) fn from_source_provided_contracts(
         owner: &CrateIdentity,
         rows: source::SourceRows,

@@ -1,6 +1,7 @@
 //! Canonical imported headers retain actual catalog ownership and declared inputs.
 mod applications;
 mod consumer_sessions;
+mod epoch_fences;
 pub(crate) use consumer_sessions::ProofSession;
 #[cfg(test)]
 pub(crate) const fn provided_layouts() -> [usize; 6] {

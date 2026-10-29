@@ -78,7 +78,9 @@ impl<'rows, 'memo, 'work> Borrowed<'rows, 'memo, 'work> {
             || descriptor.edition() != edition
             || !matches!(
                 descriptor.profile(),
-                s::Profile::Source2024Provided | s::Profile::Source2024ProvidedContracts
+                s::Profile::Source2024Provided
+                    | s::Profile::Source2024ProvidedContracts
+                    | s::Profile::Source2024ProvidedCurrent
             )
             || catalog.definition_at(provider, row).map_err(error)? != definition
             || descriptor

@@ -81,6 +81,7 @@ impl State {
         work: &mut ReservationWork,
     ) -> Result<Self, Error> {
         let rows = view.rows()?;
+        super::super::epoch_fences::require(rows, |steps| work.charge(steps))?;
         work.charge(
             rows.types
                 .len()

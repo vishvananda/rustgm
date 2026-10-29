@@ -192,7 +192,9 @@ impl ProvidedOwners {
         let (provider, row, edition) = self.catalog.declaration_coordinate(self.root)?;
         if !matches!(
             descriptor.profile(),
-            s::Profile::Source2024Provided | s::Profile::Source2024ProvidedContracts
+            s::Profile::Source2024Provided
+                | s::Profile::Source2024ProvidedContracts
+                | s::Profile::Source2024ProvidedCurrent
         ) || descriptor.identity() != provider
             || descriptor.edition() != edition
             || self.catalog.definition_at(provider, row)? != definition

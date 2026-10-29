@@ -284,9 +284,12 @@ impl ConsumerReservation {
             .ok_or_else(|| error("retained header owner lost its actual descriptor"))?;
         if provider != descriptor.identity()
             || edition != descriptor.edition()
-            || !matches!(descriptor.profile(),
+            || !matches!(
+                descriptor.profile(),
                 crate::support::crates::generics::source::Profile::Source2024Provided
-                | crate::support::crates::generics::source::Profile::Source2024ProvidedContracts)
+                    | crate::support::crates::generics::source::Profile::Source2024ProvidedContracts
+                    | crate::support::crates::generics::source::Profile::Source2024ProvidedCurrent
+            )
             || self.catalog.definition_at(provider, row).map_err(error)? != definition
             || descriptor
                 .rows()

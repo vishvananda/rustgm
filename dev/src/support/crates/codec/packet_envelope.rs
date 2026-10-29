@@ -13,6 +13,7 @@ pub(super) const TAG: u8 = 10;
 pub(super) const PROVIDED_TAG: u8 = 11;
 const ROW_VERSION: u16 = 0;
 const CONTRACT_VERSION: u16 = 1;
+const CURRENT_PROVIDED_VERSION: u16 = 2;
 const MODULE_CONTRACT_VERSION: u16 = 2;
 const AVAILABILITY_VERSION: u16 = 3;
 const FEATURE_PREDICATE_VERSION: u16 = 4;
@@ -33,7 +34,9 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
         | Profile::Source2024ModuleAvailability
         | Profile::Source2024ModuleFeaturePredicates
         | Profile::Source2024ModuleDefinitions => TAG,
-        Profile::Source2024Provided | Profile::Source2024ProvidedContracts => PROVIDED_TAG,
+        Profile::Source2024Provided
+        | Profile::Source2024ProvidedContracts
+        | Profile::Source2024ProvidedCurrent => PROVIDED_TAG,
         Profile::Source2024 => return Err("unpublished source facade has no wire profile"),
     };
     if descriptor.edition() != Edition::Rust2024 || descriptor.identity() != interface.identity() {
@@ -49,6 +52,7 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     out.bytes(&PROFILE[..2])?;
     out.u8(tag)?;
     out.u16(match descriptor.profile() {
+        Profile::Source2024ProvidedCurrent => CURRENT_PROVIDED_VERSION,
         Profile::Source2024ModuleFeaturePredicates => FEATURE_PREDICATE_VERSION,
         Profile::Source2024ModuleDefinitions => DEFINITIONS_VERSION,
         Profile::Source2024ModuleAvailability => AVAILABILITY_VERSION,
@@ -167,8 +171,10 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
             base,
             &mut work,
         )?
-    } else if provided {
+    } else if provided && version == CURRENT_PROVIDED_VERSION {
         Payload::from_source_provided(interface.identity(), rows, base, &mut work)?
+    } else if provided {
+        Payload::from_legacy_source_provided(interface.identity(), rows, base, &mut work)?
     } else if let Some(modules) = modules {
         Payload::from_source_module_contracts(
             interface.identity(),
@@ -203,7 +209,11 @@ fn availability_packet(
 
 fn defining_version(input: &mut Reader<'_>, provided: bool) -> Result<u16, &'static str> {
     let version = input.u16()?;
-    if (provided && !matches!(version, ROW_VERSION | CONTRACT_VERSION)
+    if (provided
+        && !matches!(
+            version,
+            ROW_VERSION | CONTRACT_VERSION | CURRENT_PROVIDED_VERSION
+        )
         || !provided
             && !matches!(
                 version,
