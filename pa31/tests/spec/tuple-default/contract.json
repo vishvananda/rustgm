@@ -1,0 +1,88 @@
+{
+  "state": "frozen before independent/candidate observation",
+  "owning": "PA26/31 source-owned derives and ordinary trait/body/constructor proof",
+  "profile": {
+    "rustc": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": true,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false
+  },
+  "original": {
+    "path": "library/core/src/num/saturating.rs",
+    "start": 1121,
+    "end": 1407,
+    "sha256": "c70b2d9e76a53f2f88e79fcaafc372449b05d86c4c167e356f32d1e0ff768d28",
+    "members": [
+      "PartialEq",
+      "Eq",
+      "PartialOrd",
+      "Ord",
+      "Clone",
+      "Copy",
+      "Default",
+      "Hash"
+    ],
+    "candidate_source": {
+      "path": "saturating-expansion.rs",
+      "sha256": "87cd99bbda07444f2323fc0eee9a2a41f77845cb2307f738cbc4cd4285c17439",
+      "phase": "actual8-member expansion/receipts only; no whole8-trait runtime claim"
+    },
+    "rust_source": {
+      "path": "saturating-rust.rs",
+      "sha256": "c9c97099885142f9eb97f4efb6a2acbe50fca7ff8ca9dedde6cf314e3fb67653",
+      "phase": "pinned Rust -Zunpretty=expanded; expected0, no metadata/runtime claim"
+    }
+  },
+  "foundation": {
+    "path": "pa31/tests/spec/block-derives/span-source.rs",
+    "prefix_sha256": "37eb09b3a950bd04c2442d29c62a777e8b7ced1bddfafe6542c2e993c6c75f40",
+    "scope": "exact qualified foundation prefix including original Default trait/macro/usize impl; authored First/Second source Default bodies exercise nonzero calls"
+  },
+  "cases": [
+    {
+      "name": "generic-source",
+      "source": "generic-source.rs",
+      "sha256": "7350543ff9d35e2fa137f863c8a956fc7863f413134abc6adf988204f2a70022",
+      "rust_metadata": 0,
+      "candidate": "accept actual generic non-Copy nonzero tuple and record Default calls in order"
+    },
+    {
+      "name": "missing-default",
+      "source": "missing-default.rs",
+      "sha256": "3e3f58b34b2ba5a4c8be655ef6fe92c73c2a5673af77b7ee5f09d88ffb94d6d6",
+      "rust_metadata": 1,
+      "candidate": "reject real missing field Default obligation"
+    },
+    {
+      "name": "wrong-field-type",
+      "source": "wrong-field-type.rs",
+      "sha256": "49cd12e9838eebc509fd95c4f2bd6b3645f59fbcc7c38491a37377b6910481c4",
+      "rust_metadata": 1,
+      "candidate": "reject real wrong return type of field Default body"
+    },
+    {
+      "name": "enum-required",
+      "source": "enum-required.rs",
+      "sha256": "a962193c9cef5824cea8bbacb8c6bf9c79e97997228111a0631f18cff4244849",
+      "rust_metadata": 0,
+      "candidate": "explicit unsupported-positive enum profile; never admit a fabricated default variant"
+    }
+  ],
+  "native": {
+    "source": "generic-source.rs",
+    "observer": "observer.c",
+    "observer_sha256": "6273bdc3edb1468c8f651512fb7ad36921244e78bb125ead389a3291ba83bdc4",
+    "status": 0,
+    "stdout": "d7;d9;p7:9;d9;d7;r9:7;7\n",
+    "stderr": ""
+  },
+  "required": [
+    "actual original Saturating8-trait Default instantiation/runtime if real Ord/Hash prerequisites intervene",
+    "full enum Default choice semantics",
+    "wider existing generic where/const profiles and metadata transport",
+    "fresh unchanged original-core observation by Root"
+  ]
+}

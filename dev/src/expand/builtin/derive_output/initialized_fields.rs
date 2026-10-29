@@ -12,23 +12,35 @@ impl Output<'_> {
                 "source Default requires its supported struct owner",
             ));
         };
-        if !fields.is_empty() && shape != Shape::Record {
-            return Err(error(
-                self.site.original.start,
-                "source Default tuple fields require a wider profile",
-            ));
-        }
         self.header("crate::default::Default", false)?;
-        self.text("{ #[inline] fn default()->Self{Self{")?;
+        self.text("{ #[inline] fn default()->Self{Self")?;
+        self.text(if shape == Shape::Tuple { "(" } else { "{" })?;
         for &field in fields {
             (self.charge)(1, 0)?;
             let (name, _) = self.actual_field(field)?;
-            self.spelling(
-                name.ok_or_else(|| error(self.site.original.start, "Default field lost its name"))?,
-                false,
-            )?;
-            self.text(":crate::default::Default::default(),")?;
+            if shape == Shape::Record {
+                self.spelling(
+                    name.ok_or_else(|| {
+                        error(
+                            self.site.original.start,
+                            "Default record field lost its name",
+                        )
+                    })?,
+                    false,
+                )?;
+                self.text(":")?;
+            } else if name.is_some() || shape == Shape::Unit {
+                return Err(error(
+                    self.site.original.start,
+                    "Default field has a different actual constructor shape",
+                ));
+            }
+            self.text("crate::default::Default::default(),")?;
         }
-        self.text("}} }")
+        self.text(if shape == Shape::Tuple {
+            ")} }"
+        } else {
+            "}} }"
+        })
     }
 }

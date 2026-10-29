@@ -8,6 +8,8 @@ mod debug_fields;
 mod formatter_family;
 #[path = "synthetic_ancestry.rs"]
 mod synthetic_ancestry;
+#[path = "constructed_defaults.rs"]
+mod tuple_defaults;
 const PROVIDER: &str = "pa31/tests/spec/source-location/location-copy-clone.rs";
 
 #[test]
