@@ -12,5 +12,6 @@ The matrix includes a renamed actual role, real pointer/reference/PhantomData
 impl exceptions, negative payload/zero-array and unpaid caller/formation proofs.
 A valid Rust unmarked custom auto trait remains an explicit candidate profile
 boundary. Source-only role acceptance supplies no imported or optional noalias
-permission. Candidate positives currently expose a shared canonical formation
-prerequisite; see docs/pa31-unsafe-unpin-checkpoint.md for honest partial evidence.
+permission. The qualified candidate preserves real caller/negative/formation debts and
+coinductive siblings after correcting an implicit auto-trait Self sizing bug;
+see docs/pa31-unsafe-unpin-checkpoint.md for exact evidence and consumer limits.
