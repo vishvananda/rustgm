@@ -16,7 +16,7 @@ impl Checker<'_> {
         solved: &Solved,
         allowances: &mut MacroAllowanceSession<'_>,
     ) -> Result<(), Error> {
-        let comptime_callable = if self.facts.has_comptime_function_contracts() {
+        let comptime_callable = if self.facts.comptime_calls_need_checking() {
             let callable = self.source_call_callable(node, solved)?;
             self.check_comptime_callable(node, callable)?;
             Some(callable)
@@ -115,11 +115,14 @@ impl Checker<'_> {
         if function.body != Some(self.state.body) {
             return Ok(None);
         }
-        if !self
+        let context = self
             .facts
             .source_function_context(report, owner, self.state.body)
-            .map_err(|error| self.error(node, error))?
-            .checks_const()
+            .map_err(|error| self.error(node, error))?;
+        // Always bodies are actual Const contexts, including when their API is
+        // const-stable. Recursive ConstFn API restrictions do not apply there.
+        if !context.checks_const()
+            || context == crate::sema::function_context::FunctionContext::Comptime
         {
             return Ok(None);
         }

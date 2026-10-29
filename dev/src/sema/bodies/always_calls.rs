@@ -11,7 +11,7 @@ impl Checker<'_> {
         node: NodeId,
         mut callable: TypeId,
     ) -> Result<(), Error> {
-        if !self.facts.has_comptime_function_contracts() {
+        if !self.facts.comptime_calls_need_checking() {
             return Ok(());
         }
         let definition = loop {

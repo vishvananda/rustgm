@@ -30,7 +30,10 @@ enum Premise<'a> {
         subject: TypeId,
         arguments: GenericArgs,
     },
-    Function(&'a crate::types::parameters::environment::Environment),
+    Function {
+        environment: &'a crate::types::parameters::environment::Environment,
+        effect: Constness,
+    },
 }
 impl<'a> DefiningCalls<'a> {
     pub(crate) fn new(
@@ -45,7 +48,8 @@ impl<'a> DefiningCalls<'a> {
             );
         }
         charge(5)?;
-        let trait_definition = match facts.function_context(definition, owner)? {
+        let context = facts.function_context(definition, owner)?;
+        let trait_definition = match context {
             FunctionContext::ConstTraitDefault { trait_definition } => trait_definition,
             FunctionContext::ConstFunction | FunctionContext::Comptime => {
                 charge(1)?;
@@ -56,7 +60,14 @@ impl<'a> DefiningCalls<'a> {
                 return Ok(Self {
                     facts,
                     owner,
-                    premise: Premise::Function(environment),
+                    premise: Premise::Function {
+                        environment,
+                        effect: if context == FunctionContext::Comptime {
+                            Constness::Const
+                        } else {
+                            Constness::Conditional
+                        },
+                    },
                 });
             }
             FunctionContext::Runtime => {
@@ -135,12 +146,20 @@ impl<'a> DefiningCalls<'a> {
             return Err("abstract const call changed its opened signature or result");
         }
         charge(1)?;
+        let effect = match self.premise {
+            Premise::Function { effect, .. } => effect,
+            Premise::Trait { .. } => Constness::Conditional,
+        };
         if source_use
             .ok_or("abstract const call has no defining source-use fact")?
             .effect_for(self.facts, self.owner)?
-            != Constness::Conditional
+            != effect
         {
-            return Err("abstract const call changed its defining conditional demand");
+            return Err(if effect == Constness::Conditional {
+                "abstract const call changed its defining conditional demand"
+            } else {
+                "abstract const call changed its defining unconditional const demand"
+            });
         }
         charge(1)?;
         if let Some(method) = self.facts.methods.calls.get(&call.site) {
@@ -196,14 +215,18 @@ impl<'a> DefiningCalls<'a> {
                     );
                 }
             }
-            Premise::Function(environment) => {
-                if !environment.assumes_predicate(predicate)
-                    && !environment.assumes_predicate(
-                        crate::types::parameters::predicates::Predicate {
-                            bound: Bound::ConstTrait(application),
-                            ..predicate
-                        },
-                    )
+            Premise::Function {
+                environment,
+                effect,
+            } => {
+                let unconditional = environment.assumes_predicate(
+                    crate::types::parameters::predicates::Predicate {
+                        bound: Bound::ConstTrait(application),
+                        ..predicate
+                    },
+                );
+                if !unconditional
+                    && (effect == Constness::Const || !environment.assumes_predicate(predicate))
                 {
                     return Err(
                         "const function member lacks its current conditional trait premise",

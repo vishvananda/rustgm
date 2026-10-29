@@ -223,6 +223,18 @@
       "source_sha256": "9dcf4dd55889c096fe63cfeb41aa0c70873f07855d456dbbdf27c9f410970bb1",
       "native_status": 0,
       "native_stdout": "7\n"
+    },
+    "marked-stable-body": {
+      "rust_metadata_status": 0,
+      "candidate_status": 0,
+      "source_sha256": "4137117c9124185114a851ab3a21bb60737d8886f5ff138f8f23d8e2854135f8",
+      "native_status": 0,
+      "native_stdout": "7\n"
+    },
+    "written-stable-body": {
+      "rust_metadata_status": 1,
+      "candidate_status": 1,
+      "source_sha256": "bdec14a9d8cf9cb3133dc298a60a3ced10b0059f0bbddcc8d3c2311a81ebc284"
     }
   },
   "oracle_v2_sha256": "b5fb6f147094350dd75f55a4fc942f09b08dc2da0143c0f5cac580e461b10046",
@@ -241,7 +253,9 @@
     "v7_receipt_sha256": "ac87ff60a242798a12c8c34c3c6092e944142d13d2649d3de7a03acbdcf6f387",
     "v7_boundary": "Const API rows match; helper-call fnptr object requires actual std panic-overflow dependency at link, unmodified source retained.",
     "v8_receipt_sha256": "07898ecce5cda84819ad008e2115cad0b21b1e6ecc07c510028694476b41d8b7",
-    "v8_link": "Unchanged fn-pointer-call-body source, pinned Rust staticlib plus host C -ldl -lpthread -lm, native7."
+    "v8_link": "Unchanged fn-pointer-call-body source, pinned Rust staticlib plus host C -ldl -lpthread -lm, native7.",
+    "v9_receipt_sha256": "4290b6a0030de00d86ef5b96a09f0f6facc4486a8629df795ab04fd4c7b0fd01",
+    "v9_scope": "Actual Const versus ConstFn body context even with explicit stable const API: marked helper call accepted7, written stable const fn rejects genuine unstable const helper. Same helper retained."
   },
   "original_core": {
     "path": "library/core/src/intrinsics/mod.rs",

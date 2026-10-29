@@ -165,6 +165,7 @@ fn ordinary_macro_closure_and_generic_callers_keep_actual_source_contexts() -> T
         "fn-pointer-parameter",
         "fn-pointer-call-body",
         "const-api-marker",
+        "marked-stable-body",
     ] {
         let source = input(name)?;
         let report = test_source::resolve(&source, true)?;
@@ -263,7 +264,7 @@ fn headers_mut(facts: &mut Declarations) -> TestResult<&mut super::super::Header
 fn authentic_marker_queries_reject_foreign_changed_owner_effect_flags_and_exhaustion() -> TestResult
 {
     let source = input("const-own")?;
-    let report = report(&source, "queries")?;
+    let mut report = report(&source, "queries")?;
     let mut facts = pipeline::analyze_source(&report)?.facts;
     let id = function(&report, "id")?;
     let foreign = self::report(&source, "queries")?;
@@ -284,6 +285,16 @@ fn authentic_marker_queries_reject_foreign_changed_owner_effect_flags_and_exhaus
     assert!(facts.source_comptime_contract(&report, id).is_err());
     marker_mut(&mut facts, key)?.flags.constant = false;
     assert!(facts.source_comptime_contract(&report, id).is_ok());
+    report.resolution.foreign_owners.insert(id, key);
+    let error = facts
+        .source_comptime_contract(&report, id)
+        .err()
+        .ok_or("foreign owner acquired Always authority")?;
+    assert!(
+        error.to_string().contains("not a trait or foreign member"),
+        "{error}"
+    );
+    report.resolution.foreign_owners.remove(&id);
     let headers = &facts
         .must_use_contracts
         .as_deref()
@@ -358,6 +369,115 @@ fn pending_or_missing_canonical_witness_is_not_authenticated_absence() -> TestRe
         .ok_or("header")?
         .promises = promises;
     assert!(facts.source_comptime_contract(&report, id).is_ok());
+    let headers = facts
+        .must_use_contracts
+        .as_deref_mut()
+        .ok_or("contracts")?
+        .headers
+        .take();
+    assert!(facts.comptime_calls_need_checking());
+    assert!(facts.source_comptime_contract(&report, id).is_err());
+    facts
+        .must_use_contracts
+        .as_deref_mut()
+        .ok_or("contracts")?
+        .headers = headers;
+    let contracts = facts.must_use_contracts.take();
+    assert!(facts.comptime_calls_need_checking());
+    assert!(facts.source_comptime_contract(&report, id).is_err());
+    facts.must_use_contracts = contracts;
+    assert!(facts.source_comptime_contract(&report, id).is_ok());
+    Ok(())
+}
+#[test]
+fn ordinary_const_functions_need_no_marker_ledger_or_added_call_authority() -> TestResult {
+    let report = test_source::resolve(
+        "const fn ordinary(x:u32)->u32{x} fn caller()->u32{ordinary(7)}",
+        true,
+    )?;
+    let facts = pipeline::analyze_source(&report)?.facts;
+    let id = function(&report, "ordinary")?;
+    assert!(facts.comptime_calls_need_checking());
+    assert!(
+        facts
+            .must_use_contracts
+            .as_deref()
+            .and_then(|owner| owner.headers.as_deref())
+            .is_none()
+    );
+    assert!(matches!(
+        facts.source_comptime_contract(&report, id)?,
+        ContractKnowledge::KnownAbsent
+    ));
+    let report = test_source::resolve(
+        "fn ordinary(x:u32)->u32{x} fn caller()->u32{ordinary(7)}",
+        true,
+    )?;
+    let facts = pipeline::analyze_source(&report)?.facts;
+    assert!(!facts.comptime_calls_need_checking());
+    assert!(
+        facts
+            .must_use_contracts
+            .as_deref()
+            .and_then(|owner| owner.headers.as_deref())
+            .is_none()
+    );
+    let source = input("written-stable-body")?;
+    let report = test_source::resolve(&source, true)?;
+    let error = pipeline::analyze_source(&report)
+        .err()
+        .ok_or("written stable const fn lost recursive API restriction")?;
+    assert!(
+        error
+            .to_string()
+            .contains("const-stable body calls a function without const-stable API policy"),
+        "{error}"
+    );
+    Ok(())
+}
+#[test]
+fn failed_cold_promise_payment_never_publishes_a_marker() -> TestResult {
+    let source = input("const-own")?;
+    let report = report(&source, "failed_storage")?;
+    let mut facts = pipeline::analyze_source(&report)?.facts;
+    let id = function(&report, "id")?;
+    let ContractKnowledge::KnownPresent(site) = facts.source_comptime_contract(&report, id)? else {
+        return Err("marker".into());
+    };
+    let (attribute, effect) = {
+        let marker = marker_mut(&mut facts, site.declaration)?;
+        (marker.attribute, marker.effect)
+    };
+    headers_mut(&mut facts)?
+        .declarations
+        .get_mut(&site.declaration)
+        .ok_or("header")?
+        .promises = None;
+    headers_mut(&mut facts)?
+        .bytes
+        .set(crate::support::crates::MAX_BYTES);
+    for _ in 0..2 {
+        assert!(
+            consume(
+                &report,
+                &mut facts,
+                site.owner,
+                site.declaration,
+                attribute,
+                effect
+            )
+            .is_err()
+        );
+        assert!(
+            headers_mut(&mut facts)?
+                .declarations
+                .get(&site.declaration)
+                .ok_or("header")?
+                .promises
+                .is_none()
+        );
+    }
+    assert!(headers_mut(&mut facts)?.bytes.get() > crate::support::crates::MAX_BYTES);
     Ok(())
 }
 #[test]

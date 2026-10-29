@@ -82,6 +82,9 @@ fn validate_marker(
         .ok_or_else(|| Error::unlocated("comptime owner slot changed"))?;
     let unit = report.package.unit(key.file);
     let error = |message| Error::at(key.file, marker.attribute.span.start, message);
+    if !owner.effects.contains(&marker.effect) {
+        return Err(error("comptime effect belongs to another owner"));
+    }
     let (attribute, forest) = unit
         .retained_attributes(marker.effect..marker.effect + 1)
         .next()
@@ -89,8 +92,7 @@ fn validate_marker(
     let Kind::Item(index) = unit.configured.ast.node(key.node).kind else {
         return Err(error("comptime owner changed"));
     };
-    if !owner.effects.contains(&marker.effect)
-        || attribute != marker.attribute
+    if attribute != marker.attribute
         || attribute.name(forest, unit.source.text()) != Some("rustc_comptime")
         || !matches!(unit.configured.ast.items[index as usize].kind,ItemKind::Function{flags,..} if flags==marker.flags && !flags.constant)
     {
@@ -261,11 +263,14 @@ impl Declarations {
         }
         Ok(())
     }
-    pub(in crate::sema) fn has_comptime_function_contracts(&self) -> bool {
-        self.must_use_contracts
-            .as_deref()
-            .and_then(|owner| owner.headers.as_deref())
-            .is_some_and(|ledger| ledger.local.has_comptime)
+    /// Existing effective constness also survives loss of optional marker data.
+    pub(in crate::sema) fn comptime_calls_need_checking(&self) -> bool {
+        !self.constant_functions.is_empty()
+            || self
+                .must_use_contracts
+                .as_deref()
+                .and_then(|owner| owner.headers.as_deref())
+                .is_some_and(|ledger| ledger.local.has_comptime)
     }
     /// Classification from an already bound declaration; never a call permission.
     pub(crate) fn is_comptime_function(&self, definition: DefId) -> bool {
@@ -348,6 +353,7 @@ impl Declarations {
             validate_absence(self, report, definition, key)?;
             return Ok(ContractKnowledge::KnownAbsent);
         };
+        bind(report, self, definition, key)?;
         Ok(ContractKnowledge::KnownPresent(validate_marker(
             report, key, header, marker,
         )?))
