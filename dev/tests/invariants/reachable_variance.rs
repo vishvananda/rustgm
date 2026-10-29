@@ -288,7 +288,7 @@ fn one_wide_dependency_closure_retains_owner_visits_with_near_linear_work() -> T
             .iter()
             .position(|&item| item == leaf)
             .ok_or("wide leaf was not reached")?;
-        assert!(leaf_position <= 2 && order.len() - leaf_position - 1 >= width - 1);
+        assert!(leaf_position <= 2 && order.len() - leaf_position >= width);
         assert_eq!(values.ranges.len(), width + 2);
         for index in 0..width {
             let wrapper = item(&report, &format!("Wrap{index}"))?;
