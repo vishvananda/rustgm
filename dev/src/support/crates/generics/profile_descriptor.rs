@@ -5,6 +5,8 @@ pub(crate) use binding_order::sort as canonical_order;
 mod callable_paths;
 #[path = "column_storage.rs"]
 mod columns;
+#[path = "verbatim_exports.rs"]
+mod exact_exports;
 #[path = "ordinary_profile.rs"]
 mod functions;
 #[path = "implementation_domains.rs"]
@@ -56,8 +58,17 @@ pub enum Profile {
     Source2024ModuleAvailability,
     /// Complete version-three data plus real non-type feature requirements.
     Source2024ModuleFeaturePredicates,
+    /// Version-five exact native definitions; nominal transport remains unsupported.
+    Source2024ModuleDefinitions,
 }
 impl Profile {
+    #[must_use]
+    pub const fn feature_predicates(self) -> bool {
+        matches!(
+            self,
+            Self::Source2024ModuleFeaturePredicates | Self::Source2024ModuleDefinitions
+        )
+    }
     #[must_use]
     pub const fn module_contracts(self) -> bool {
         matches!(
@@ -65,6 +76,7 @@ impl Profile {
             Self::Source2024ModuleContracts
                 | Self::Source2024ModuleAvailability
                 | Self::Source2024ModuleFeaturePredicates
+                | Self::Source2024ModuleDefinitions
         )
     }
     #[must_use]
@@ -78,7 +90,9 @@ impl Profile {
     pub const fn availability(self) -> bool {
         matches!(
             self,
-            Self::Source2024ModuleAvailability | Self::Source2024ModuleFeaturePredicates
+            Self::Source2024ModuleAvailability
+                | Self::Source2024ModuleFeaturePredicates
+                | Self::Source2024ModuleDefinitions
         )
     }
 }
@@ -130,7 +144,7 @@ impl ValidatedRows {
             rows,
             attributes,
             modules,
-            (availability, false),
+            (availability, Profile::Source2024ModuleAvailability),
             base,
             work,
         )
@@ -149,7 +163,26 @@ impl ValidatedRows {
             rows,
             attributes,
             modules,
-            (availability, true),
+            (availability, Profile::Source2024ModuleFeaturePredicates),
+            base,
+            work,
+        )
+    }
+    pub(crate) fn stage_module_definitions(
+        owner: &CrateIdentity,
+        rows: SourceRows,
+        attributes: super::HeaderAttributeColumns,
+        modules: ModuleContractRows,
+        availability: super::AvailabilityRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        Self::stage_module_availability_with(
+            owner,
+            rows,
+            attributes,
+            modules,
+            (availability, Profile::Source2024ModuleDefinitions),
             base,
             work,
         )
@@ -159,11 +192,12 @@ impl ValidatedRows {
         rows: SourceRows,
         attributes: super::HeaderAttributeColumns,
         modules: ModuleContractRows,
-        available: (super::AvailabilityRows, bool),
+        available: (super::AvailabilityRows, Profile),
         base: usize,
         work: &mut Work,
     ) -> Result<Self, &'static str> {
-        let (availability, features) = available;
+        let (availability, profile) = available;
+        let features = profile.feature_predicates();
         let start = work.steps;
         let bytes = availability.storage_bytes(work)?;
         let mut staged = Self::stage_module_contracts_with(
@@ -173,7 +207,7 @@ impl ValidatedRows {
             modules,
             base.saturating_add(bytes),
             work,
-            features,
+            profile,
         )?;
         let modules = staged
             .modules
@@ -216,11 +250,7 @@ impl ValidatedRows {
         staged.budget.peak = staged.budget.peak.saturating_add(bytes);
         staged.budget.atoms = work.steps.saturating_sub(start);
         staged.availability = Some(Box::new(available));
-        staged.profile = if features {
-            Profile::Source2024ModuleFeaturePredicates
-        } else {
-            Profile::Source2024ModuleAvailability
-        };
+        staged.profile = profile;
         Ok(staged)
     }
     /// Structural staging only. Public payload activation remains gated until
@@ -307,7 +337,15 @@ impl ValidatedRows {
         base: usize,
         work: &mut Work,
     ) -> Result<Self, &'static str> {
-        Self::stage_module_contracts_with(owner, rows, attributes, modules, base, work, false)
+        Self::stage_module_contracts_with(
+            owner,
+            rows,
+            attributes,
+            modules,
+            base,
+            work,
+            Profile::Source2024ModuleContracts,
+        )
     }
     fn stage_module_contracts_with(
         owner: &CrateIdentity,
@@ -316,9 +354,13 @@ impl ValidatedRows {
         modules: ModuleContractRows,
         base: usize,
         work: &mut Work,
-        features: bool,
+        profile: Profile,
     ) -> Result<Self, &'static str> {
         let start = work.steps;
+        let features = profile.feature_predicates();
+        if profile != Profile::Source2024ModuleDefinitions {
+            exact_exports::legacy(&rows, work)?;
+        }
         if !features {
             predicate_contracts::legacy(&rows, work)?;
         }
@@ -327,7 +369,10 @@ impl ValidatedRows {
         let extension = attribute_bytes.saturating_add(module_bytes);
         let extended_base = base.saturating_add(extension);
         let indexed = HeaderIndex::new(&rows, extended_base, work)?;
-        if features {
+        if profile == Profile::Source2024ModuleDefinitions {
+            exact_exports::validate(&rows, &indexed, work)?;
+            functions::validate_module_definitions(&rows, &indexed, work)?;
+        } else if features {
             functions::validate_module_feature_predicates(&rows, &indexed, work)?;
         } else {
             functions::validate_module_contracts(&rows, &indexed, work)?;
@@ -403,6 +448,7 @@ impl ValidatedRows {
         extension: Option<(super::HeaderAttributeColumns, ProvidedContractRows)>,
     ) -> Result<Self, &'static str> {
         let start = work.steps;
+        exact_exports::legacy(&rows, work)?;
         predicate_contracts::legacy(&rows, work)?;
         if extension.is_some() != (profile == Profile::Source2024ProvidedContracts) {
             return Err(
@@ -432,7 +478,8 @@ impl ValidatedRows {
             Profile::Source2024 => return Err("unpublished source facade has no data profile"),
             Profile::Source2024ModuleContracts
             | Profile::Source2024ModuleAvailability
-            | Profile::Source2024ModuleFeaturePredicates => {
+            | Profile::Source2024ModuleFeaturePredicates
+            | Profile::Source2024ModuleDefinitions => {
                 return Err(
                     "module contracts require their complete namespace/domain/attribute columns",
                 );
@@ -565,7 +612,11 @@ fn freeze_columns_observed(
         observe,
     )?;
     let mut kinds = Vec::with_capacity(rows.declarations.len());
-    let mut names = 0_usize;
+    let mut names = rows
+        .exact_callables
+        .iter()
+        .map(|row| row.symbol.len())
+        .sum::<usize>();
     for declaration in &rows.declarations {
         work.charge(1)?;
         names = names.saturating_add(declaration.name.as_ref().map_or(0, String::len));

@@ -15,7 +15,7 @@ pub(super) fn prepare(
     let (s::Type::FunctionItem(reference) | s::Type::ApplicationSignature(reference)) = row else {
         return Ok(None);
     };
-    if rows.descriptor().profile() != s::Profile::Source2024ModuleFeaturePredicates {
+    if !rows.descriptor().profile().feature_predicates() {
         return Ok(None);
     }
     budget.charge(8)?;
@@ -131,7 +131,7 @@ fn signature(
                 parameters,
                 result,
                 unsafe_: signature.unsafe_,
-                convention: crate::types::callable::Convention::RUST,
+                convention: super::signature_shapes::convention(signature)?,
             },
             &pay,
         )

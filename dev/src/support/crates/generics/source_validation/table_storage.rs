@@ -45,6 +45,12 @@ pub(super) fn preflight(
     };
     columns(rows, &mut count, work)?;
     let mut names = 0_usize;
+    count.vector(&rows.exact_callables, work)?;
+    for row in &rows.exact_callables {
+        work.charge(row.symbol.len().saturating_add(1))?;
+        names = names.saturating_add(row.symbol.len());
+        count.bytes = count.bytes.saturating_add(row.symbol.len());
+    }
     for row in &rows.declarations {
         work.charge(1)?;
         if let Some(name) = &row.name {

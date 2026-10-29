@@ -77,7 +77,7 @@ impl<'rows> Mapping<'rows, Headers> for Ordinary<'rows> {
         budget: &mut Headers,
     ) -> Result<crate::types::parameters::features::FeatureId, Error> {
         self.graph.require_store(store).map_err(error)?;
-        if self.descriptor.profile() != s::Profile::Source2024ModuleFeaturePredicates {
+        if !self.descriptor.profile().feature_predicates() {
             return Err(error(
                 "non-type feature import requires source metadata version four",
             ));

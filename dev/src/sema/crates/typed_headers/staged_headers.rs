@@ -10,6 +10,7 @@ mod owner_packets;
 pub(super) mod rebuilt_environments;
 pub(super) mod scheme_ports;
 pub(super) mod template_ports;
+mod verbatim_exports;
 use super::{Declarations, Error, Header, Headers, error, mapped_source, predicate_remap};
 use crate::{
     resolve::model::DefId,

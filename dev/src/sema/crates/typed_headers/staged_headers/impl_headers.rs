@@ -33,7 +33,7 @@ pub(super) fn prepare(
         || raw.unsafe_
         || raw.negative
         || (raw.members.start != raw.members.end
-            && context.descriptor.profile() != s::Profile::Source2024ModuleFeaturePredicates)
+            && !context.descriptor.profile().feature_predicates())
     {
         return Err(error(
             "source impl requires its wider conformance/effect profile",

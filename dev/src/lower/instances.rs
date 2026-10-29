@@ -276,6 +276,7 @@ pub enum SourcePublication {
     ModuleContracts,
     ModuleAvailability,
     ModuleFeaturePredicates,
+    ModuleDefinitions,
     ProvidedContracts,
 }
 
@@ -356,20 +357,20 @@ pub fn build_source_library_profile(
                 }
                 SourcePublication::ModuleContracts
                 | SourcePublication::ModuleAvailability
-                | SourcePublication::ModuleFeaturePredicates => source
-                    .complete_module_policy_payload(
-                        modules.ok_or_else(|| {
-                            diagnostic(
-                                report,
-                                None,
-                                "module namespace/domain collection is absent".into(),
-                            )
-                        })?,
-                        report,
-                        facts,
-                        base,
-                        profile,
-                    ),
+                | SourcePublication::ModuleFeaturePredicates
+                | SourcePublication::ModuleDefinitions => source.complete_module_policy_payload(
+                    modules.ok_or_else(|| {
+                        diagnostic(
+                            report,
+                            None,
+                            "module namespace/domain collection is absent".into(),
+                        )
+                    })?,
+                    report,
+                    facts,
+                    base,
+                    profile,
+                ),
             }
             .map_err(|error| facts.retain_error_warnings(error))?;
             Ok((program, interface))

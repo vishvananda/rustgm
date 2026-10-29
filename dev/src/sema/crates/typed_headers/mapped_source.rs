@@ -100,7 +100,8 @@ impl Context<'_> {
             match actual.profile() {
                 s::Profile::Source2024ModuleContracts
                 | s::Profile::Source2024ModuleAvailability
-                | s::Profile::Source2024ModuleFeaturePredicates => {
+                | s::Profile::Source2024ModuleFeaturePredicates
+                | s::Profile::Source2024ModuleDefinitions => {
                     actual.module_contracts().map_err(error)?;
                 }
                 _ => {

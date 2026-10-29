@@ -39,6 +39,9 @@ mod test_source;
 #[cfg(test)]
 #[path = "../tests/helpers/held_sessions.rs"]
 mod unpaid_cases;
+#[cfg(test)]
+#[path = "../tests/invariants/verbatim_links.rs"]
+mod verbatim_links;
 
 #[cfg(test)]
 #[path = "../tests/helpers/locations.rs"]

@@ -100,5 +100,6 @@ pub(crate) fn raw_rows(view: s::ValidatedView<'_>) -> s::SourceRows {
         originals: c.originals,
         body_inputs: c.body_inputs,
         body_units: c.body_units,
+        exact_callables: c.exact_callables,
     }
 }

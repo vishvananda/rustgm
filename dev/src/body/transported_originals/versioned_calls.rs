@@ -44,7 +44,7 @@ impl<'a> Index<'a> {
             members: HashMap::default(),
             bytes: 0,
         };
-        if rows.descriptor().profile() != s::Profile::Source2024ModuleFeaturePredicates {
+        if !rows.descriptor().profile().feature_predicates() {
             return Ok(result);
         }
         let growth = retained::new_map::<DeclarationRef, Member>(rows.member_links.len());

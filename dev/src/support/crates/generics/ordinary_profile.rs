@@ -29,6 +29,7 @@ enum NamespaceProfile {
     Inspection,
     Contracts,
     FeaturePredicates,
+    Definitions,
 }
 pub(super) fn validate_module_contracts(
     rows: &SourceRows,
@@ -44,6 +45,13 @@ pub(super) fn validate_module_feature_predicates(
 ) -> Result<(), &'static str> {
     validate_mode(rows, headers, work, NamespaceProfile::FeaturePredicates)
 }
+pub(super) fn validate_module_definitions(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    validate_mode(rows, headers, work, NamespaceProfile::Definitions)
+}
 fn validate_mode(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
@@ -58,7 +66,10 @@ fn validate_mode(
         return Err("ordinary source functions require their own Rust2024 provider profile");
     }
     let sizing = bindings(rows, headers, work, false)?;
-    let features = profile == NamespaceProfile::FeaturePredicates;
+    let features = matches!(
+        profile,
+        NamespaceProfile::FeaturePredicates | NamespaceProfile::Definitions
+    );
     recipes(rows, work, features)?;
     for header in &rows.traits {
         work.charge(1)?;
@@ -66,7 +77,9 @@ fn validate_mode(
         if flags & TraitFlags::RESTRICTED_IMPL != 0
             && !matches!(
                 profile,
-                NamespaceProfile::Contracts | NamespaceProfile::FeaturePredicates
+                NamespaceProfile::Contracts
+                    | NamespaceProfile::FeaturePredicates
+                    | NamespaceProfile::Definitions
             )
         {
             return Err(
@@ -125,21 +138,33 @@ fn functions(
         }
     }
     for header in &rows.functions {
-        work.charge(1)?;
+        work.charge(1 + 2 * rows.exact_callables.len().checked_ilog2().unwrap_or(0) as usize)?;
         if header.constness != Constness::Ordinary
             || header.original.unsafe_
             || header.original.variadic
-            || header.original.convention != Convention::Rust
+            || !admitted_convention(
+                rows,
+                header.declaration,
+                header.original.convention,
+                profile,
+            )
             || header.callable.unsafe_
             || header.callable.variadic
-            || header.callable.convention != Convention::Rust
+            || !admitted_convention(
+                rows,
+                header.declaration,
+                header.callable.convention,
+                profile,
+            )
         {
             return Err(
                 "source nonordinary callable effect/safety/convention requires a wider profile",
             );
         }
-        let primitive_method = profile == NamespaceProfile::FeaturePredicates
-            && primitive_method(rows, headers, header, work)?;
+        let primitive_method = matches!(
+            profile,
+            NamespaceProfile::FeaturePredicates | NamespaceProfile::Definitions
+        ) && primitive_method(rows, headers, header, work)?;
         if matches!(header.body, FunctionBody::Original(_))
             && header.parent.is_some()
             && !primitive_method
@@ -441,4 +466,19 @@ pub(super) fn bindings(
         }
     }
     Ok(sizing)
+}
+
+fn admitted_convention(
+    rows: &SourceRows,
+    declaration: crate::support::crates::owner_catalog::DeclarationRef,
+    convention: Convention,
+    profile: NamespaceProfile,
+) -> bool {
+    convention == Convention::Rust
+        || (profile == NamespaceProfile::Definitions
+            && convention == Convention::C
+            && rows
+                .exact_callables
+                .binary_search_by_key(&declaration.0, |row| row.declaration.0)
+                .is_ok())
 }

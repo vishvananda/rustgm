@@ -205,3 +205,8 @@ The unpublished [feature-predicate investigation](../docs/pa31-feature-bound-pre
 records genuine trait/function/impl requirements and 78 independently joined
 source/profile metadata outcomes. Typed proof, source production, transport and
 native implementation remain required; diagnostic caps grant no feature permission.
+
+The [finite source exact-C linkage checkpoint](../docs/pa31-source-exact-linkage-v5.md)
+adds an unpublished version5 source profile with paid exact symbol transport and
+separate provider/client native objects. Original nominal source transport,
+ordinary-provider publication and whole assignment/library artifacts remain required.

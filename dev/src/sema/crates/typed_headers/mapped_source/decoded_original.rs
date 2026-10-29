@@ -82,8 +82,7 @@ impl Graph {
             || inputs.frame != function.original.binder
             || header.constant
             || header.universals != 0
-            || (function.parent.is_some()
-                && descriptor.profile() != s::Profile::Source2024ModuleFeaturePredicates)
+            || (function.parent.is_some() && !descriptor.profile().feature_predicates())
             || header.signature != header.callable
             || raw.context != s::CallContext::Runtime
         {
@@ -275,7 +274,7 @@ impl Original<'_> {
             .function_applications
             .get(reference.0 as usize)
             .ok_or("source original has an unknown actual callable application")?;
-        if self.rows.descriptor().profile() != s::Profile::Source2024ModuleFeaturePredicates
+        if !self.rows.descriptor().profile().feature_predicates()
             || row.declaration.artifact != s::ArtifactRef(0)
         {
             return Err("source call requires its actual v4 defining artifact");

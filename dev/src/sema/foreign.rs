@@ -1,5 +1,6 @@
 //! Canonical foreign records keep storage, bodies and const permissions separate.
 mod handler_linkage;
+mod prepared_functions;
 use crate::support::hash::HashMap;
 use crate::{
     resolve::model::DefId,
@@ -7,6 +8,7 @@ use crate::{
     syntax::item::Safety,
     types::TypeId,
 };
+pub(crate) use prepared_functions::PreparedFunctions;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Function {

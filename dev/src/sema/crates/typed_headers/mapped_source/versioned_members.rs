@@ -59,7 +59,7 @@ impl Graph {
         self.require_store(store).map_err(error)?;
         self.owner(owner).map_err(error)?;
         let descriptor = self.descriptor(&self.origins).map_err(error)?;
-        if descriptor.profile() != s::Profile::Source2024ModuleFeaturePredicates {
+        if !descriptor.profile().feature_predicates() {
             return Ok(None);
         }
         let id = self

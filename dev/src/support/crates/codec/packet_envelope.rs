@@ -16,6 +16,7 @@ const CONTRACT_VERSION: u16 = 1;
 const MODULE_CONTRACT_VERSION: u16 = 2;
 const AVAILABILITY_VERSION: u16 = 3;
 const FEATURE_PREDICATE_VERSION: u16 = 4;
+const DEFINITIONS_VERSION: u16 = 5;
 const DEFINING_RUST2024: u8 = 0;
 
 pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
@@ -30,7 +31,8 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
         | Profile::Source2024FunctionContracts
         | Profile::Source2024ModuleContracts
         | Profile::Source2024ModuleAvailability
-        | Profile::Source2024ModuleFeaturePredicates => TAG,
+        | Profile::Source2024ModuleFeaturePredicates
+        | Profile::Source2024ModuleDefinitions => TAG,
         Profile::Source2024Provided | Profile::Source2024ProvidedContracts => PROVIDED_TAG,
         Profile::Source2024 => return Err("unpublished source facade has no wire profile"),
     };
@@ -48,6 +50,7 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     out.u8(tag)?;
     out.u16(match descriptor.profile() {
         Profile::Source2024ModuleFeaturePredicates => FEATURE_PREDICATE_VERSION,
+        Profile::Source2024ModuleDefinitions => DEFINITIONS_VERSION,
         Profile::Source2024ModuleAvailability => AVAILABILITY_VERSION,
         Profile::Source2024ModuleContracts => MODULE_CONTRACT_VERSION,
         Profile::Source2024FunctionContracts | Profile::Source2024ProvidedContracts => {
@@ -92,13 +95,11 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
         return Err("source envelope base exceeds retained storage budget");
     }
     let (rows, attributes, modules, contracts, availability) = if !provided
-        && matches!(version, AVAILABILITY_VERSION | FEATURE_PREDICATE_VERSION)
-    {
-        let packet = if version == FEATURE_PREDICATE_VERSION {
-            ordinary_columns::decode_module_feature_predicates(input, base)?
-        } else {
-            ordinary_columns::decode_module_availability(input, base)?
-        };
+        && matches!(
+            version,
+            AVAILABILITY_VERSION | FEATURE_PREDICATE_VERSION | DEFINITIONS_VERSION
+        ) {
+        let packet = availability_packet(input, base, version)?;
         (
             packet.rows,
             Some(packet.attributes),
@@ -141,7 +142,9 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
         ..Work::default()
     };
     let payload = if let Some(availability) = availability {
-        let publish = if version == FEATURE_PREDICATE_VERSION {
+        let publish = if version == DEFINITIONS_VERSION {
+            Payload::from_source_module_definitions
+        } else if version == FEATURE_PREDICATE_VERSION {
             Payload::from_source_module_feature_predicates
         } else {
             Payload::from_source_module_availability
@@ -183,6 +186,21 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
     interface.with_generic_payload(payload)
 }
 
+fn availability_packet(
+    input: &mut Reader<'_>,
+    base: usize,
+    version: u16,
+) -> Result<ordinary_columns::AvailabilityPacket, &'static str> {
+    match version {
+        DEFINITIONS_VERSION => ordinary_columns::decode_module_definitions(input, base),
+        FEATURE_PREDICATE_VERSION => {
+            ordinary_columns::decode_module_feature_predicates(input, base)
+        }
+        AVAILABILITY_VERSION => ordinary_columns::decode_module_availability(input, base),
+        _ => Err("availability packet requires its actual supported row version"),
+    }
+}
+
 fn defining_version(input: &mut Reader<'_>, provided: bool) -> Result<u16, &'static str> {
     let version = input.u16()?;
     if (provided && !matches!(version, ROW_VERSION | CONTRACT_VERSION)
@@ -194,6 +212,7 @@ fn defining_version(input: &mut Reader<'_>, provided: bool) -> Result<u16, &'sta
                     | MODULE_CONTRACT_VERSION
                     | AVAILABILITY_VERSION
                     | FEATURE_PREDICATE_VERSION
+                    | DEFINITIONS_VERSION
             ))
         || input.u8()? != DEFINING_RUST2024
     {

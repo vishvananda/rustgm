@@ -39,8 +39,8 @@ fn complete_module_costs_prepay_sort_forest_transactions_and_enclosing_layouts()
         )
         .is_ok()
     );
-    assert_eq!(size_of::<s::SourceRows>(), 616);
-    assert_eq!(size_of::<s::Columns>(), 592);
+    assert_eq!(size_of::<s::SourceRows>(), 640);
+    assert_eq!(size_of::<s::Columns>(), 616);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     // Inline import work adds one lineage pointer and nine usize counters.
     assert_eq!(size_of::<crate::resolve::expansion::Report>(), 3096);

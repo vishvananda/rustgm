@@ -73,8 +73,7 @@ impl<'rows, P: OwnedPort<'rows>> Mapping<'rows, ReservationWork> for Adapter<'_,
         work: &mut ReservationWork,
     ) -> Result<crate::types::parameters::features::FeatureId, Error> {
         self.port.require_context(store, work)?;
-        if self.port.rows().descriptor().profile() != s::Profile::Source2024ModuleFeaturePredicates
-        {
+        if !self.port.rows().descriptor().profile().feature_predicates() {
             return Err(error(
                 "selected feature clauses require source metadata version four",
             ));
