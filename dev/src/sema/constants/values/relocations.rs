@@ -1,5 +1,6 @@
 //! Symbolic words retain provenance independently of their storage encoding.
 mod addresses;
+mod wrapping;
 use super::Constant;
 use crate::types::TypeId;
 pub(crate) use addresses::WordAddress;

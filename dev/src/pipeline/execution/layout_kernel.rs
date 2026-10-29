@@ -5,6 +5,26 @@ use crate::{
     types::instance::Instance,
 };
 impl Engine {
+    fn source_wrapping_layout(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        instance: Instance,
+        state: Option<&const_eval::State>,
+    ) -> Result<bool, Error> {
+        let Some(element) = state
+            .map(|state| {
+                state.source_wrapping_offset_element(report, facts, &self.catalog, instance)
+            })
+            .transpose()
+            .map_err(|error| Error::at(FileId(0), 0, error))?
+            .flatten()
+        else {
+            return Ok(false);
+        };
+        prepare_layout(facts, element).map_err(|error| Error::at(FileId(0), 0, error))?;
+        Ok(true)
+    }
     pub(super) fn source_layout(
         &mut self,
         report: &Report,
@@ -12,6 +32,9 @@ impl Engine {
         instance: Instance,
         state: Option<&const_eval::State>,
     ) -> Result<bool, Error> {
+        if self.source_wrapping_layout(report, facts, instance, state)? {
+            return Ok(true);
+        }
         if let Some(call) = state
             .map(|state| state.source_offset_call(facts, &self.catalog, instance))
             .transpose()

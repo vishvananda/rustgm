@@ -52,10 +52,16 @@ pub(super) fn emit(
                     .map(|c| c.intrinsic_kind(definition))
                     .transpose()?
                     .flatten()
-                    == Some(crate::support::bindings::SourceIntrinsic::UbChecks)
+                    .is_some_and(|kind| {
+                        matches!(
+                            kind,
+                            crate::support::bindings::SourceIntrinsic::UbChecks
+                                | crate::support::bindings::SourceIntrinsic::ArithOffset
+                        )
+                    })
                 {
                     return Err(
-                        "source runtime-check transport requires an explicit body policy profile",
+                        "source intrinsic transport requires an explicit body policy profile",
                     );
                 }
                 s::ValueKind::Function(stage.function_application(facts, item, arguments, context)?)

@@ -68,6 +68,7 @@ fn signature(
     kind: SourceIntrinsic,
 ) -> Result<(), &'static str> {
     match kind {
+        SourceIntrinsic::ArithOffset => super::wrapping_contract::validate(facts, function),
         SourceIntrinsic::ThreeWayCompare => super::compare_intrinsic::validate(facts, function),
         SourceIntrinsic::OffsetOf => super::displacement::validate(facts, function),
         SourceIntrinsic::DiscriminantValue => super::tag_intrinsic::validate(facts, function),
@@ -221,7 +222,8 @@ impl Catalog {
             .ok_or("source intrinsic declaration is not validated")?;
         if matches!(
             entry.kind,
-            SourceIntrinsic::ConstEvalSelect
+            SourceIntrinsic::ArithOffset
+                | SourceIntrinsic::ConstEvalSelect
                 | SourceIntrinsic::UbChecks
                 | SourceIntrinsic::Abort
                 | SourceIntrinsic::Transmute
@@ -291,6 +293,9 @@ fn layout_element(
             }
             SourceIntrinsic::UbChecks => "source UB check requires its own descriptor",
             SourceIntrinsic::Abort => "source abort requires its own reached-call descriptor",
+            SourceIntrinsic::ArithOffset => {
+                "source arith_offset requires its actual wrapping descriptor"
+            }
             SourceIntrinsic::Transmute => {
                 "source transmute requires its own checked call descriptor"
             }
@@ -327,6 +332,9 @@ fn layout_element(
             }
             SourceIntrinsic::UbChecks => "source UB check requires its own descriptor",
             SourceIntrinsic::Abort => "source abort requires its own reached-call descriptor",
+            SourceIntrinsic::ArithOffset => {
+                "source arith_offset requires its actual wrapping descriptor"
+            }
             SourceIntrinsic::Transmute => {
                 "source transmute requires its own checked call descriptor"
             }

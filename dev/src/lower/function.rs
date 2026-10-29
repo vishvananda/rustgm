@@ -20,6 +20,7 @@ mod selections;
 mod slices;
 mod termination_call;
 mod text;
+mod wrapping_runtime;
 use super::{
     Error,
     address::Address,
@@ -887,6 +888,9 @@ impl Lower<'_, '_, '_> {
                     return Ok(value);
                 }
                 if let Some(value) = self.source_raw_parts(id)? {
+                    return Ok(value);
+                }
+                if let Some(value) = self.source_wrapping_offset(id)? {
                     return Ok(value);
                 }
                 if let Some(value) = self.source_ptr_metadata(id)? {

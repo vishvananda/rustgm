@@ -103,6 +103,9 @@ impl Ordinary {
                         crate::support::bindings::SourceIntrinsic::ConstEvalSelect => {
                             "source callback selection requires its proved reached runtime operation"
                         }
+                        crate::support::bindings::SourceIntrinsic::ArithOffset => {
+                            "source arith_offset requires an authenticated direct call"
+                        }
                         crate::support::bindings::SourceIntrinsic::Transmute => {
                             "source transmute requires its proved direct runtime operation"
                         }

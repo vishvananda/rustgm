@@ -1,0 +1,120 @@
+{
+  "state": "frozen before independent or candidate observation",
+  "owning": "PA31 actual source arith_offset signature/identity; PA28 provenance/CTFE/typed memory; PA27 unsafe call and pointer access",
+  "profile": {
+    "rustc": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": true,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false
+  },
+  "original": {
+    "path": "library/core/src/intrinsics/mod.rs",
+    "start": 37329,
+    "end": 38155,
+    "sha256": "fb23f889415dd729caaef4f891ee8dc99ee50f4d67ebebbca13accd0fb192515",
+    "scope": "exact full docs/attrs/actual signature, no source library method substitute"
+  },
+  "foundation": {
+    "path": "/home/vishvananda/rustgm-pa25-work/pa31/tests/spec/debug-field-arrays-runtime/source-observer.rs",
+    "sha256": "b81b207c8d26140be3fbd566769f952042fcb3f27a443aeafe4d00f97741bf9a",
+    "prefix_length": 11006,
+    "effective_prefix_sha256": "f4231fa8dbcc5f69e3bd0041cab983e9351eabe2579cbfa043bb533bd39b2024",
+    "scope": "qualified SourceCore prefix and explicit observer primitive/reference/actual Unpin+UnsafeUnpin declarations; no Debug observer edits"
+  },
+  "cases": [
+    {
+      "source": "source-caller.rs",
+      "metadata": 0
+    },
+    {
+      "source": "unmarked-lookalike.rs",
+      "metadata": 0
+    },
+    {
+      "source": "nonconst-source-target.rs",
+      "metadata": 1
+    },
+    {
+      "source": "wrong-signature.rs",
+      "metadata": 1
+    },
+    {
+      "source": "wrong-generics.rs",
+      "metadata": 1
+    },
+    {
+      "source": "unsafe-call.rs",
+      "metadata": 1
+    },
+    {
+      "source": "reached-invalid-deref.rs",
+      "metadata": 1
+    },
+    {
+      "source": "generic-forward.rs",
+      "metadata": 0
+    }
+  ],
+  "native": [
+    {
+      "source": "source-caller.rs",
+      "status": 0,
+      "stdout": "pos=8;neg=0;back=0;wmax=fffffffffffffffc;wmin=0000000000000000;bmax=7fffffffffffffff;bmin=8000000000000000;zmax=0;zmin=0;null=0:3;raw=0000000000000fff;read=11223344;const=11223344:55667788:aabbccdd:7;constraw=3\n",
+      "stderr": ""
+    },
+    {
+      "source": "unmarked-lookalike.rs",
+      "status": 0,
+      "stdout": "pos=0;neg=8;back=0;wmax=0000000000000000;wmin=0000000000000000;bmax=0000000000000000;bmin=0000000000000000;zmax=0;zmin=0;null=0:0;raw=0000000000001000;read=11223344;const=11223344:55667788:aabbccdd:7;constraw=0\n",
+      "stderr": ""
+    },
+    {
+      "source": "generic-forward.rs",
+      "status": 0,
+      "stdout": "pos=8;neg=0;back=0;wmax=fffffffffffffffc;wmin=0000000000000000;bmax=7fffffffffffffff;bmin=8000000000000000;zmax=0;zmin=0;null=0:3;raw=0000000000000fff;read=11223344;const=11223344:55667788:aabbccdd:7;constraw=3\n",
+      "stderr": ""
+    }
+  ],
+  "semantics": [
+    "signed positive/negative and OOB-and-back preserve original allocation provenance",
+    "two-complement modulo address arithmetic for huge signed word/byte offsets, no deref of OOB/noncanonical result",
+    "zero-sized effective displacement remains zero",
+    "raw/null inputs stay raw values; no invented allocation/provenance",
+    "CTFE same-object out/back, maximal/minimal word wrapping, ZST and raw-address constants; reached OOB dereference rejected",
+    "valid unmarked ordinary source executes its distinct body without intrinsic or const permission by spelling"
+  ],
+  "required": [
+    "whole original library/runtime acceptance",
+    "metadata/ABI transport until explicitly supported",
+    "new pointer dereference/borrow permission never follows from arith_offset alone"
+  ],
+  "files": {
+    "generic-forward.rs": "f01acdf16cc9704bfe861d486ca7c8fb8b0c68f7e086456ac108652b5268e43d",
+    "nonconst-source-target.rs": "521d1805ba6637b2a1b76649cf6eeb4385fc9a5db2767d471c86d6216ecd2b9a",
+    "observer.c": "1fa35cf5bcd0cfe7aca5ac917806c6248ea8a268ea0190b524c4334f4df40819",
+    "original-declaration.rs": "fb23f889415dd729caaef4f891ee8dc99ee50f4d67ebebbca13accd0fb192515",
+    "reached-invalid-deref.rs": "96d471711fec3512a1bd3f62232c49e5d79c02201b3c1414986c0591efc7a29e",
+    "source-caller.rs": "1bbaf35671ebbd5b9fc1e69d940ef09a9e3ea9ff4fd60c292db01befd005a5ad",
+    "unmarked-lookalike.rs": "f7462ef62e17a6e8f91a1fe9d85aa6bc46331a0871f217dc8c4ec0434ddedb72",
+    "unsafe-call.rs": "a8c247a8d47ed2973fffd07391b71ceadc5348e55e644d59072fc0a60cf5543f",
+    "wrong-generics.rs": "eb2396328b6755f62a0ac7af0a5a0c01d66ad8ce1e5e43b701d548785bdc1061",
+    "wrong-signature.rs": "df8defca051cb94d324eb7d988c8b2fbf1813d18fa2fc791476a108ed57c9344"
+  },
+  "revision": "v3: actual generic at<T> forwarding successor frozen before independent/candidate observation; v1 failure and v2 passing proofs retained",
+  "binding_erratum": {
+    "predecessor": "obj/parallel/wrapping-offset-v1/oracle-v3/frozen/contract.json",
+    "predecessor_sha256": "1bd5fefa602a3385520e31d9afdb101de25decb76ec46d385b9b38ac62b93ba3",
+    "old_range": [
+      37327,
+      38152
+    ],
+    "byte_range": [
+      37329,
+      38155
+    ],
+    "reason": "The original range used Unicode text indices and omitted the final newline; exact retained fragment bytes and hash never changed. Byte slicing of the pinned original now verifies the full fragment. No Rust/C source, predicted outcome or observed artifact changed."
+  }
+}
