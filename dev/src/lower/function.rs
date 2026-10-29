@@ -18,6 +18,7 @@ mod reinterpret_calls;
 mod runtime_checks;
 mod selections;
 mod slices;
+mod subtraction_runtime;
 mod termination_call;
 mod text;
 mod wrapping_runtime;
@@ -879,6 +880,9 @@ impl Lower<'_, '_, '_> {
                     return Ok(value);
                 }
                 if let Some(value) = self.tracked_call(id)? {
+                    return Ok(value);
+                }
+                if let Some(value) = self.source_subtraction(id)? {
                     return Ok(value);
                 }
                 if let Some(value) = self.source_three_way(id)? {

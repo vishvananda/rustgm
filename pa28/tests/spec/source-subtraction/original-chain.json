@@ -1,0 +1,52 @@
+{
+  "state": "Required unchanged original graph; not claimed independently complete or compiled",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "inputs": [
+    {
+      "path": "library/core/src/num/uint_macros.rs",
+      "sha256": "32c5b549de1e056fd21ced3568e4e576b9f0ac39fe6963c2344f8a56194524de",
+      "start": 44200,
+      "end": 45098,
+      "interval_sha256": "aeb3b6dfbd6fbb6a7ea1f1550f49276c5350abbde77b3dfc5115ff4886b47f10",
+      "fixture": "original/unsigned-checked.rs"
+    },
+    {
+      "path": "library/core/src/num/int_macros.rs",
+      "sha256": "9d722f3d3fc792d2070b573e32e5745d016d0f3bdb3276e8f7ec1d3187804a60",
+      "start": 30402,
+      "end": 30877,
+      "interval_sha256": "1322b7683c8e61fa3cdad6e729ccb982b3a5233e3638dab146fe982b7078e7b8",
+      "fixture": "original/signed-checked.rs"
+    },
+    {
+      "path": "library/core/src/num/int_macros.rs",
+      "sha256": "9d722f3d3fc792d2070b573e32e5745d016d0f3bdb3276e8f7ec1d3187804a60",
+      "start": 118249,
+      "end": 118732,
+      "interval_sha256": "2b39a0cba942319dc223de26f9ac5cb8f0a4dff5f223ea67b147af67a6946903",
+      "fixture": "original/signed-overflowing.rs"
+    },
+    {
+      "path": "library/core/src/intrinsics/mod.rs",
+      "sha256": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+      "start": 18639,
+      "end": 18853,
+      "interval_sha256": "bdf33e17e4a3d62dfd9ac252136129b610ca61b68ffa6e757044f856a9cd3fd0",
+      "fixture": "original/unlikely.rs"
+    },
+    {
+      "path": "library/core/src/pat.rs",
+      "sha256": "0e620c6d485f27b0dd9fd64b93d13326ea83545155e86d3479a1bfae2541c796",
+      "start": 0,
+      "end": 2928,
+      "interval_sha256": "0e620c6d485f27b0dd9fd64b93d13326ea83545155e86d3479a1bfae2541c796",
+      "fixture": "original/pat.rs"
+    }
+  ],
+  "edges": [
+    "RangePattern unsigned sub_one\u2192actual checked_sub\u2192unchecked_sub",
+    "RangePattern signed sub_one\u2192checked_sub\u2192overflowing_sub\u2192sub_with_overflow; unlikely\u2192cold_path",
+    "RangePattern char sub_one\u2192char::from_u32 and original panic/Option bodies (wider required)"
+  ],
+  "context": "Numeric method intervals retain original macro $tokens/attributes. They are not standalone Rust negative inputs; the actual owning macro/core provider context and regular API/const/body proofs remain required."
+}

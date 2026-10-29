@@ -23,7 +23,10 @@ pub(in crate::sema) use runtime_panics::runtime_body as runtime_panic_body;
 #[path = "compiler_items/location_intrinsic.rs"]
 mod caller_location;
 pub(crate) use caller_location::CallerLocationSelection;
+mod cold_fallback;
+mod subtraction_contract;
 mod wrapping_contract;
+pub(crate) use subtraction_contract::SubtractionSelection;
 pub(crate) use wrapping_contract::WrappingOffsetSelection;
 mod transmute_contract;
 mod transmute_sizes;

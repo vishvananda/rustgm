@@ -57,6 +57,9 @@ pub(super) fn emit(
                             kind,
                             crate::support::bindings::SourceIntrinsic::UbChecks
                                 | crate::support::bindings::SourceIntrinsic::ArithOffset
+                                | crate::support::bindings::SourceIntrinsic::UncheckedSub
+                                | crate::support::bindings::SourceIntrinsic::SubWithOverflow
+                                | crate::support::bindings::SourceIntrinsic::ColdPath
                         )
                     })
                 {
