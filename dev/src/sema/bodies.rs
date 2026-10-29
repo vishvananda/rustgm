@@ -1,6 +1,7 @@
 //! Scalar body constraints consume resolved identities; fallback occurs once per body.
 mod aggregates;
 mod alignment;
+mod always_calls;
 mod annotations;
 mod api_stability;
 mod atomic_ordering;
@@ -110,12 +111,29 @@ pub fn analyze(report: &Report, facts: Declarations) -> Result<Declarations, Err
 /// Reports ordinary body errors, dependency cycles and failed hidden-type proofs.
 pub fn analyze_with_hidden(
     report: &Report,
-    mut facts: Declarations,
+    facts: Declarations,
     mut close: impl FnMut(
         &Report,
         &mut Declarations,
         crate::types::opaque::OpaqueId,
     ) -> Result<(), Error>,
+) -> Result<Declarations, Error> {
+    analyze_defining(report, facts, |report, facts, request| match request {
+        DefiningRequest::Hidden(id) => close(report, facts, id),
+        DefiningRequest::ComptimeDefinition(_) => Err(Error::unlocated(
+            "comptime defining bodies require a checked CFG provider",
+        )),
+    })
+}
+#[derive(Clone, Copy)]
+pub(crate) enum DefiningRequest {
+    Hidden(crate::types::opaque::OpaqueId),
+    ComptimeDefinition(DefId),
+}
+pub(crate) fn analyze_defining(
+    report: &Report,
+    mut facts: Declarations,
+    mut close: impl FnMut(&Report, &mut Declarations, DefiningRequest) -> Result<(), Error>,
 ) -> Result<Declarations, Error> {
     facts.require_lint_context(report)?;
     super::compiler_items::pointee::authenticate(report, &facts)

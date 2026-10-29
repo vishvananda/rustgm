@@ -1,0 +1,1 @@
+struct S;impl S{const fn get<T:Copy>(x:T)->T{x}}const fn f(x:u8)->u8{S::get(x)}fn main(){}

@@ -1,0 +1,1 @@
+struct S;impl Drop for S{fn drop(&mut self){}}const fn f(_x:S){}fn main(){}

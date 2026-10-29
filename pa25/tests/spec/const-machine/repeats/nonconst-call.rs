@@ -1,0 +1,1 @@
+fn count()->usize{3}fn main(){let _=[7u8;count()];}

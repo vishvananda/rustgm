@@ -1,0 +1,1 @@
+const fn f(x:*const u8)->*const u32{x as *const u32}fn main(){}

@@ -159,7 +159,13 @@ impl Checker<'_> {
             }
             Constructor::ArrayTerm(length)
         } else {
-            Constructor::Array(declarations::array_length(self.report, self.key(count))?)
+            let count = self.key(count);
+            let length = if let Some(&length) = self.facts.array_lengths.get(&count) {
+                length
+            } else {
+                declarations::array_length(self.report, count)?
+            };
+            Constructor::Array(length)
         };
         let element = self.variable(node, Domain::Any)?;
         self.state.type_children.clear();

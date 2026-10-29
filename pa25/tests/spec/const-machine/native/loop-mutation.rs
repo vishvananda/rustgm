@@ -1,0 +1,2 @@
+fn verify(ok:bool){if !ok{let _=fault(0);}}fn fault(x:u8)->u8{1/x}
+const fn f(n:u32)->u32{let mut i=0;let mut sum=0;while i<n{sum+=i;i+=1;}sum}const C:u32=f(10);fn main(){verify(C==45);verify(f(4)==6);}

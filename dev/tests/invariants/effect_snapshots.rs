@@ -170,7 +170,9 @@ fn semantic_body_contexts_preserve_const_definition_initializer_and_nested_ident
                 .map(|effects| (source, effects))
         })
         .ok_or("inline child")?;
-    assert_eq!(inline.1, vec![Constness::Conditional]);
+    // An inline const is its own constant root; the defining const fn above
+    // retains conditional permission instead.
+    assert_eq!(inline.1, vec![Constness::Const]);
     assert_ne!(inline.0, body(&report, &facts, "inline_child")?);
     let original = facts
         .nodes

@@ -1,0 +1,1 @@
+enum E{V(u8)}const fn f(x:u8)->E{E::V(x)}fn main(){}

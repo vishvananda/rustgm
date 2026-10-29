@@ -265,6 +265,18 @@ actual declarations. Implicit operator demand creates no lexical import or
 method-cache entry. Preserve complete family publication and cycle checks;
 see [assignment demand](docs/implicit-assignment-demand.md).
 
+Source free-callable metadata preserves written constness, actual unsafe
+signatures and defining body/context identity independently of API availability.
+Reconstruct imported cleanup obligations as unpaid requests from authenticated
+originals; never serialize prepared execution permission. Populate the existing
+cold call-effect inventory from the actual declared-input prefix, with prepaid
+growth and atomic publication. Distinguish caller feature requests from local
+API policies when exporting ordinary client libraries: only a completed,
+nonstaged inventory with no local regular/const policies or implications proves
+that no such policy needs transport. Unknown inventory is required information.
+The [source-callable checkpoint](docs/pa29-source-callable-effects.md) records
+the explicit v7 profile, native consumers, linear costs and retained families.
+
 Local structural inherent ownership consumes the actual crate policy and complete
 member inventory. Head/name/context buckets exclude unrelated work; full Self,
 const arguments, caller conditions and visibility still decide applicability.
@@ -4437,6 +4449,14 @@ query, memoizing shared shapes and errors. References do not own their referents
 zero-length arrays do not require element destruction. Array length must not
 expand query work. Programs without custom destructors need no pending-drop
 metadata in the current closed type profile.
+
+Prepare nonliteral array-repeat counts in the existing annotation traversal,
+using the exact owning generic/region context and ordinary typed usize query.
+Body inference consumes the retained source-keyed length; standalone const
+parameters retain their symbolic array form. Share the checked callee CFG across
+distinct count queries while charging and retaining each query's actual work
+and code. Do not add another source scan, infer a count from rendered text or
+use the declared array type as permission to skip the repeat expression's proof.
 
 Pending body facts retain destructor identities, type requirements and candidate
 store/storage exits. Reuse persistent live-stack ranges and existing exit IDs;

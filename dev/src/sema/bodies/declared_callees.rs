@@ -47,7 +47,9 @@ impl Checker<'_> {
             self.facts
                 .function_context(owner, self.state.body)
                 .map_err(|e| self.error(node, e))?,
-            FunctionContext::ConstFunction | FunctionContext::ConstTraitDefault { .. }
+            FunctionContext::ConstFunction
+                | FunctionContext::Comptime
+                | FunctionContext::ConstTraitDefault { .. }
         ) {
             return Ok(());
         }

@@ -1,0 +1,2 @@
+fn verify(ok:bool){if !ok{let _=fault(0);}}fn fault(x:u8)->u8{1/x}
+const fn n()->usize{3}const N:usize=n();enum E{A=3,B}const V:isize=E::B as isize;fn main(){let a:[u8;N]=[7;N];verify(a[2]==7);verify(V==4);let k=match 3usize{N=>9,_=>0};verify(k==9);}

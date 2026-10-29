@@ -138,7 +138,8 @@
         "docs/pa25-rigid-patterns.md",
         "docs/pa25-selected-initializers.md",
         "docs/pa25-source-computation.md"
-      ]
+      ],
+      "manifest": "pa25/tests/units/const-machine.json"
     },
     {
       "id": "runtime-memory",

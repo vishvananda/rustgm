@@ -1,0 +1,1 @@
+const fn f<T>(_x:T,b:bool){if b{return;}loop{}}fn main(){}

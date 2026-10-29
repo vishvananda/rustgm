@@ -1,0 +1,1 @@
+ERROR: file 0: 48: non-const calls are not allowed in const functions

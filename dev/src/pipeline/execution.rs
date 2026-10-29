@@ -1,4 +1,5 @@
 //! Checked constant execution shares demanded CFGs with ordinary compilation.
+mod always_defs;
 mod anonymous;
 mod code_inputs;
 mod component_index;
@@ -187,10 +188,30 @@ impl Engine {
                 continue;
             }
             if matches!(template.body.owner, Owner::Function { .. }) {
-                prepared
-                    .templates
-                    .retain(template.clone())
-                    .map_err(|e| report.body_error(template.body.source, e))?;
+                if body::templates::owns(facts, definition) {
+                    prepared
+                        .templates
+                        .retain(template.clone())
+                        .map_err(|e| report.body_error(template.body.source, e))?;
+                } else {
+                    let function = facts
+                        .function_indices
+                        .get(&definition)
+                        .and_then(|&index| facts.functions.get(index))
+                        .copied()
+                        .ok_or_else(|| {
+                            Error::unlocated("retained defining CFG lost its function")
+                        })?;
+                    always_defs::validate(report, facts, &function, &template.body)?;
+                    let key = BodyKey::Declaration(definition);
+                    if prepared.concrete.contains_key(&key) {
+                        return Err(report.body_error(
+                            template.body.source,
+                            "duplicate retained defining CFG owner",
+                        ));
+                    }
+                    prepared.concrete.insert(key, template.body.clone());
+                }
             } else {
                 return Err(Error::at(
                     FileId(0),

@@ -22,6 +22,11 @@ Do not introduce rendered text as transport between compiler phases.
 
 ## Tool surface
 
+The unpublished [typed constant machine component](../docs/pa25-const-machine-course.md)
+now declares its own source/inspection/native corpus independently of whole-PA
+activation. Its explicit manifest is tests/units/const-machine.json; the parent
+assignment and all remaining requirements retain their planned status.
+
 `dev/rustgm --emit-constants -o OUTPUT SOURCE` and `--count-constants` inspect
 completed values through the entry-free checked pipeline. Earlier stage views
 remain available. The implemented draft vocabulary, graph identities, ordering,

@@ -1,0 +1,1 @@
+struct S(u8);const fn f(x:u8)->S{let call:fn(u8)->S=S;call(x)}fn main(){}

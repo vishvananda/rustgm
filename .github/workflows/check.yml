@@ -63,3 +63,9 @@ jobs:
         run: make test-debug-invariants
       - name: Independent Rust qualification
         run: make test-rustc
+      - name: PA25 const-machine candidate contract
+        run: |
+          python3 scripts/check_layout.py --unit const-machine
+          python3 scripts/storage.py run -- python3 scripts/course.py pa25 --unit const-machine
+          python3 scripts/storage.py run --prune-under obj/rustc-syntax/pa25/units/const-machine -- python3 scripts/check_syntax.py pa25 --unit const-machine --jobs 2
+          python3 scripts/storage.py run --prune-under obj/native/pa25/units/const-machine -- python3 scripts/check_native.py pa25 --unit const-machine --jobs 2

@@ -1,0 +1,1 @@
+const fn f<T:Copy>(x:T){let _=x;}fn main(){}

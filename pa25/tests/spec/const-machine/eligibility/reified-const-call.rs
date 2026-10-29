@@ -1,0 +1,1 @@
+const fn g(x:u8)->u8{x}const fn f(x:u8)->u8{let call:fn(u8)->u8=g;call(x)}fn main(){}

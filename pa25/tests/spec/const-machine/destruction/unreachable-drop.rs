@@ -1,0 +1,1 @@
+struct S;impl Drop for S{fn drop(&mut self){}}#[allow(unreachable_code)]const fn f(){return;let _x=S;}fn main(){}

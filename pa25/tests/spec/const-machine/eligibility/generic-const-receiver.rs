@@ -1,0 +1,1 @@
+struct S<T>(T);impl<T:Copy>S<T>{const fn get(&self)->T{self.0}}const fn f(s:&S<u8>)->u8{s.get()}fn main(){}

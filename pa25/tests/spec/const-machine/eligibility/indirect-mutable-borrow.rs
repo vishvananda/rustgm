@@ -1,0 +1,1 @@
+const fn f(x:&mut u8){*x+=1;}fn main(){}

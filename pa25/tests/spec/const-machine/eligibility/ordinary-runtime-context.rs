@@ -1,0 +1,1 @@
+fn g(x:u8)->u8{x}fn f(x:u8)->u8{g(x)}fn addr(p:*const u8)->usize{p as usize}fn main(){}

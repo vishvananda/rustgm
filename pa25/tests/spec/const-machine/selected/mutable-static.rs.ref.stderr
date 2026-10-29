@@ -1,0 +1,1 @@
+ERROR: file 0: 71: constant execution cannot read mutable static storage

@@ -1,5 +1,5 @@
 //! Hidden-type dependencies retain callers while each defining body is typed once.
-use super::{Checker, Declarations, Error, Requirement, State};
+use super::{Checker, Declarations, DefiningRequest, Error, Requirement, State};
 use crate::support::hash::HashMap;
 use crate::{resolve::expansion::Report, types::opaque::OpaqueId};
 
@@ -8,6 +8,7 @@ enum Status {
     Unseen,
     Active,
     Complete,
+    Checked,
 }
 struct Suspended {
     index: usize,
@@ -32,13 +33,10 @@ fn initial_states(facts: &Declarations) -> Vec<Status> {
 impl Checker<'_> {
     pub(super) fn functions(
         &mut self,
-        close: &mut impl FnMut(&Report, &mut Declarations, OpaqueId) -> Result<(), Error>,
+        close: &mut impl FnMut(&Report, &mut Declarations, DefiningRequest) -> Result<(), Error>,
     ) -> Result<(), Error> {
         if self.facts.opaques.owners.is_empty() {
-            for index in 0..self.facts.functions.len() {
-                self.function(self.facts.functions[index])?;
-            }
-            return Ok(());
+            return self.plain_functions(close);
         }
         let owners: HashMap<_, _> = self
             .facts
@@ -57,12 +55,7 @@ impl Checker<'_> {
             let index = if let Some(index) = current {
                 index
             } else {
-                while states
-                    .get(cursor)
-                    .is_some_and(|state| matches!(state, Status::Complete))
-                {
-                    cursor += 1;
-                }
+                self.advance_completed(&mut cursor, &mut states, &mut patterns, close)?;
                 if cursor == states.len() {
                     break;
                 }
@@ -74,7 +67,7 @@ impl Checker<'_> {
                     self.start_function(self.facts.functions[index])?
                 }
                 Status::Active => self.advance_body()?,
-                Status::Complete => {
+                Status::Complete | Status::Checked => {
                     return Err(
                         self.error(self.state.body.node, "completed body was scheduled twice")
                     );
@@ -100,7 +93,7 @@ impl Checker<'_> {
                             "cycle in opaque hidden-type proof dependencies",
                         ));
                     }
-                    Status::Complete => {
+                    Status::Complete | Status::Checked => {
                         self.close_hidden(
                             id,
                             dependency.source.node,
@@ -111,11 +104,12 @@ impl Checker<'_> {
                     }
                 }
             } else {
-                states[index] = Status::Complete;
                 self.facts
                     .typed_function_bodies
                     .insert(self.facts.functions[index].definition);
                 patterns[index] = self.state.pending_patterns.take();
+                self.complete_comptime(self.facts.functions[index], &mut patterns[index], close)?;
+                states[index] = Status::Checked;
                 current = stack.pop().map(|saved| {
                     self.restore_body(*saved.state);
                     saved.index
@@ -130,17 +124,94 @@ impl Checker<'_> {
         }
         Ok(())
     }
+    fn plain_functions(
+        &mut self,
+        close: &mut impl FnMut(&Report, &mut Declarations, DefiningRequest) -> Result<(), Error>,
+    ) -> Result<(), Error> {
+        for index in 0..self.facts.functions.len() {
+            let function = self.facts.functions[index];
+            if self.facts.is_comptime_function(function.definition) {
+                let previous = self.state.pending_patterns.take();
+                self.function(function)?;
+                let mut pending = self.state.pending_patterns.take();
+                self.complete_comptime(function, &mut pending, close)?;
+                self.state.pending_patterns = match (previous, pending) {
+                    (Some(mut previous), Some(pending)) => {
+                        previous.append(*pending);
+                        Some(previous)
+                    }
+                    (previous, None) => previous,
+                    (None, pending) => pending,
+                };
+            } else {
+                self.function(function)?;
+                self.complete_comptime(function, &mut None, close)?;
+            }
+        }
+        Ok(())
+    }
+    fn advance_completed(
+        &mut self,
+        cursor: &mut usize,
+        states: &mut [Status],
+        patterns: &mut [Option<Box<super::pattern_constants::Pending>>],
+        close: &mut impl FnMut(&Report, &mut Declarations, DefiningRequest) -> Result<(), Error>,
+    ) -> Result<(), Error> {
+        while let Some(state) = states.get(*cursor).copied() {
+            if !matches!(state, Status::Complete | Status::Checked) {
+                break;
+            }
+            if matches!(state, Status::Complete) {
+                self.complete_comptime(
+                    self.facts.functions[*cursor],
+                    &mut patterns[*cursor],
+                    close,
+                )?;
+                states[*cursor] = Status::Checked;
+            }
+            *cursor += 1;
+        }
+        Ok(())
+    }
+    fn complete_comptime(
+        &mut self,
+        function: super::Function,
+        pending: &mut Option<Box<super::pattern_constants::Pending>>,
+        close: &mut impl FnMut(&Report, &mut Declarations, DefiningRequest) -> Result<(), Error>,
+    ) -> Result<(), Error> {
+        let Some(body) = function.body else {
+            return Ok(());
+        };
+        if !self.facts.is_const_function(function.definition) {
+            return Ok(());
+        }
+        let context = self
+            .facts
+            .source_function_context(self.report, function.definition, body)
+            .map_err(|error| Declarations::error(self.report, body, error))?;
+        if context != crate::sema::function_context::FunctionContext::Comptime {
+            return Ok(());
+        }
+        if let Some(pending) = pending.take() {
+            self.prepare_defining_patterns(pending)?;
+        }
+        close(
+            self.report,
+            self.facts,
+            DefiningRequest::ComptimeDefinition(function.definition),
+        )
+    }
     fn close_hidden(
         &mut self,
         id: OpaqueId,
         source: super::NodeId,
         patterns: &mut Option<Box<super::pattern_constants::Pending>>,
-        close: &mut impl FnMut(&Report, &mut Declarations, OpaqueId) -> Result<(), Error>,
+        close: &mut impl FnMut(&Report, &mut Declarations, DefiningRequest) -> Result<(), Error>,
     ) -> Result<(), Error> {
         if let Some(pending) = patterns.take() {
             self.prepare_defining_patterns(pending)?;
         }
-        close(self.report, self.facts, id)?;
+        close(self.report, self.facts, DefiningRequest::Hidden(id))?;
         if self
             .facts
             .opaques

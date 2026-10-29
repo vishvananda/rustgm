@@ -1,0 +1,1 @@
+const fn f<T,U>(x:(T,U))->T{x.0}fn main(){}

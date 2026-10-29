@@ -1,0 +1,1 @@
+struct S(u8);const fn f(x:u8)->S{S(x)}fn main(){}

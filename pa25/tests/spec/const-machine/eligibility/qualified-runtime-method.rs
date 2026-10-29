@@ -1,0 +1,1 @@
+struct S;impl S{fn get()->u8{1}}const fn f()->u8{S::get()}fn main(){}

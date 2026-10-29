@@ -1,5 +1,6 @@
 //! Coordinate defining-body proofs without reversing semantic phase dependencies.
 pub(crate) mod execution;
+mod marked_definitions;
 mod original_contexts;
 use crate::support::hash::HashMap;
 use crate::{
@@ -49,7 +50,6 @@ pub struct Analysis {
 #[derive(Default)]
 struct Demand {
     prepared: Prepared,
-    functions: Option<HashMap<DefId, Function>>,
     custom: Option<Vec<ItemId>>,
     copies: crate::types::copy::Copies,
 }
@@ -59,10 +59,21 @@ struct Demand {
 /// # Errors
 /// Reports semantic, lifetime, ownership and loan failures at their original source.
 pub fn analyze(report: &Report, facts: Declarations) -> Result<Analysis, Error> {
+    analyze_defining(report, facts, None)
+}
+fn analyze_defining(
+    report: &Report,
+    facts: Declarations,
+    context: Option<&execution::Context>,
+) -> Result<Analysis, Error> {
     let mut demand = Demand::default();
-    let facts = sema::bodies::analyze_with_hidden(report, facts, |report, facts, id| {
-        demand.close(report, facts, id)
-    })?;
+    let facts =
+        sema::bodies::analyze_defining(report, facts, |report, facts, request| match request {
+            sema::bodies::DefiningRequest::Hidden(id) => demand.close(report, facts, id, context),
+            sema::bodies::DefiningRequest::ComptimeDefinition(definition) => {
+                demand.complete_comptime(report, facts, definition, context)
+            }
+        })?;
     Ok(Analysis {
         facts,
         prepared: demand.prepared,
@@ -74,7 +85,7 @@ pub fn analyze(report: &Report, facts: Declarations) -> Result<Analysis, Error> 
 pub fn analyze_source(report: &Report) -> Result<Analysis, Error> {
     let context = execution::Context::default();
     let facts = sema::declarations::analyze_with_executor(report, context.executor())?;
-    let mut analysis = analyze(report, facts)?;
+    let mut analysis = analyze_defining(report, facts, Some(&context))?;
     complete_constants(
         report,
         &context,
@@ -142,6 +153,7 @@ impl Demand {
         report: &Report,
         facts: &mut Declarations,
         id: OpaqueId,
+        context: Option<&execution::Context>,
     ) -> Result<(), Error> {
         let declaration = facts.opaques.declarations.get(&id).ok_or_else(|| {
             Error::at(
@@ -152,13 +164,26 @@ impl Demand {
         })?;
         let owner = declaration.owner;
         let source = declaration.source;
-        let functions = self
-            .functions
-            .get_or_insert_with(|| facts.functions.iter().map(|f| (f.definition, *f)).collect());
-        let function = functions
-            .get(&owner)
-            .ok_or_else(|| report.body_error(source, "missing defining function"))?;
-        let mut template = self.prepared.templates.function(report, facts, function)?;
+        let function = Self::defining_function(facts, owner)?;
+        let Some(original) = self.defining_original(report, facts, &function, context)? else {
+            return if facts
+                .opaques
+                .declarations
+                .get(&id)
+                .is_some_and(|d| d.hidden.is_some())
+            {
+                Ok(())
+            } else {
+                Err(report.body_error(
+                    source,
+                    "cached defining original did not close its hidden result",
+                ))
+            };
+        };
+        let original_contexts::Original {
+            mut template,
+            contract: mut input,
+        } = original;
         body::promote::instance_reusing(
             report,
             facts,
@@ -166,13 +191,6 @@ impl Demand {
             &template.destruction,
             &mut self.prepared.promotions,
         )?;
-        let input = self
-            .prepared
-            .contracts
-            .get_or_insert_with(Collector::default)
-            .function(facts, function)
-            .map_err(|e| report.body_error(source, e))?;
-        let mut input = input.clone();
         body::copy_requirements::prepare(facts, &template.body, &mut input)
             .map_err(|e| report.body_error(source, e))?;
         input
@@ -218,10 +236,15 @@ impl Demand {
             .close_opaque_results(owner, &choices)
             .map_err(|e| report.body_error(source, e))?;
         for template in templates.bodies {
-            self.prepared
-                .templates
-                .retain(template)
-                .map_err(|e| report.body_error(source, e))?;
+            self.retain_defining_original(
+                report,
+                facts,
+                original_contexts::Original {
+                    template,
+                    contract: input.clone(),
+                },
+                context,
+            )?;
         }
         Ok(())
     }

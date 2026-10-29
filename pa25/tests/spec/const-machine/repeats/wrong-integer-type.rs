@@ -1,0 +1,1 @@
+const N:u8=3;fn main(){let _=[7u8;N];}

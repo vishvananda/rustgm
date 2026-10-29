@@ -1,0 +1,2 @@
+fn verify(ok:bool){if !ok{let _=fault(0);}}fn fault(x:u8)->u8{1/x}
+const fn even(n:u8)->bool{if n==0{true}else{odd(n-1)}}const fn odd(n:u8)->bool{if n==0{false}else{even(n-1)}}const C:bool=even(12);fn main(){verify(C);verify(odd(11));}

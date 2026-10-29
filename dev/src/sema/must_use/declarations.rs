@@ -245,6 +245,16 @@ fn consume_other(
     consumer: Option<Consumer>,
 ) -> Result<bool, Error> {
     match consumer {
+        Some(Consumer::Comptime) => {
+            crate::sema::header_attributes::consume_comptime(
+                report,
+                facts,
+                owner,
+                declaration,
+                attribute,
+                effect,
+            )?;
+        }
         Some(Consumer::Promotion) => {
             crate::sema::header_attributes::consume_promotable(
                 report,
@@ -400,6 +410,7 @@ fn bind_definitions(
     if !by_source.is_empty()
         || !pointer_markers.is_empty()
         || report.package.source_core().is_some()
+        || crate::sema::header_attributes::has_comptime_headers(facts)
         || facts
             .must_use_contracts
             .as_deref()

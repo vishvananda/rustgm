@@ -1,0 +1,1 @@
+static mut S:u8=1/0;fn main(){}

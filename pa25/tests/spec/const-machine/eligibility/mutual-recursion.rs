@@ -1,0 +1,1 @@
+const fn f(x:u32)->u32{if x==0{0}else{g(x-1)}}const fn g(x:u32)->u32{f(x)}fn main(){}

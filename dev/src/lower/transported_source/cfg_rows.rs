@@ -146,6 +146,9 @@ fn call_context(facts: &Declarations, body: &Body) -> Result<s::CallContext, &'s
         .ok_or("source defining context has no actual semantic body")?;
     Ok(match facts.function_context(definition, source)? {
         crate::sema::function_context::FunctionContext::Runtime => s::CallContext::Runtime,
+        crate::sema::function_context::FunctionContext::Comptime => {
+            return Err("always-comptime source bodies require a wider transport profile");
+        }
         crate::sema::function_context::FunctionContext::ConstFunction
         | crate::sema::function_context::FunctionContext::ConstTraitDefault { .. } => {
             s::CallContext::ConstDefinition

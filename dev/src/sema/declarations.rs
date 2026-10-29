@@ -787,6 +787,16 @@ impl Checker<'_> {
         limit: usize,
         scan: &mut Vec<NodeId>,
     ) -> Result<(), Error> {
+        if let Kind::Repeat { count, .. } = kind {
+            let count = NodeKey { node: count, ..key };
+            if !matches!(self.kind(count), Kind::Literal(_))
+                && self.const_parameter(count).is_none()
+            {
+                self.schedule_array_length(count, context)?;
+                self.drain(steps, limit)?;
+            }
+            return Ok(());
+        }
         // Method and alias paths are keyed by `Path`/`Qualified` nodes or need
         // a resolved reference; every other check below names its own kind.
         if !matches!(

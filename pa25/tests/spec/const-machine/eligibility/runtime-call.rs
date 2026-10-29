@@ -1,0 +1,1 @@
+fn g(x:u8)->u8{x}const fn f(x:u8)->u8{g(x)}fn main(){}

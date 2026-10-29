@@ -172,6 +172,67 @@ fn cli_version_seven_keeps_written_effects_and_old_profile_boundaries() -> Resul
 }
 
 #[test]
+fn cli_source_client_feature_requests_keep_plain_library_exports() -> Result {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root.join(format!(
+        "obj/parallel/source-callable-effects-v1/consumer-cli-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let fixtures = root.join("pa31/tests/spec/source-callable-effects");
+    let provider = folder.join("provider.rgcrate");
+    let output = source_export(
+        "module-callables-v7",
+        &fixtures.join("combined-provider.rs"),
+        &provider,
+        &folder.join("provider.lowir"),
+        true,
+    )
+    .output()?;
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let metadata = folder.join("client.rgcrate");
+    let output = Command::new(env!("CARGO_BIN_EXE_rustgm"))
+        .args([
+            "--emit-lowir",
+            "--crate-type=lib",
+            "--crate-name",
+            "observer",
+            "--crate-disambiguator",
+            "native",
+            "--source-client",
+            "base@exact_cli",
+            "--extern",
+        ])
+        .arg(format!("base={}", provider.display()))
+        .arg("--metadata-output")
+        .arg(&metadata)
+        .arg("-o")
+        .arg(folder.join("client.lowir"))
+        .arg(fixtures.join("native-client.rs"))
+        .output()?;
+    std::fs::write(folder.join("client.stderr"), &output.stderr)?;
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let warnings = String::from_utf8(output.stderr)?;
+    assert_eq!(warnings.matches("warning[deprecated]:").count(), 2);
+    let bytes = std::fs::read(metadata)?;
+    assert_eq!(
+        rustgm::support::crates::encode(&rustgm::support::crates::decode(&bytes)?)?,
+        bytes
+    );
+    Ok(())
+}
+
+#[test]
 fn cli_version_eight_retains_actual_unsafe_calls_and_legacy_denials() -> Result {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
