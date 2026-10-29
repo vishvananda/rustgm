@@ -428,7 +428,7 @@ fn unused_tracked_calls_type_without_location_but_reached_calls_require_actual_d
     .ok_or("reached tracked call accepted without actual caller data")?;
     let message = error.to_string();
     assert!(
-        message.contains("Location") || message.contains("caller location"),
+        message.contains("tracked call lacks its actual sealed caller site"),
         "{message}"
     );
     Ok(())
