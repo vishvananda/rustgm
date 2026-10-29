@@ -200,8 +200,8 @@ fn prefix_storage_preserves_compact_public_records() {
         size_of::<crate::sema::model::NodeFacts>()
     );
     assert_eq!(size_of::<super::super::Work>(), 40);
-    // OffsetOf adds one optional plan pointer; its payload stays boxed.
-    assert_eq!(size_of::<super::super::calls::CallTypes>(), 712);
+    // Sparse call safety adds one optional pending pointer; payloads stay boxed.
+    assert_eq!(size_of::<super::super::calls::CallTypes>(), 720);
     assert_eq!(size_of::<Inputs>(), 8);
     assert_eq!(size_of::<TypeId>(), 4);
     assert_eq!(size_of::<Kind>(), 24);

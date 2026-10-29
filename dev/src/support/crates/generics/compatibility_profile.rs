@@ -5,7 +5,14 @@ use crate::support::crates::{CrateIdentity, generics::source as s};
 impl Profile {
     #[must_use]
     pub const fn unconditional_callables(self) -> bool {
-        matches!(self, Self::Source2024ModuleCallables)
+        matches!(
+            self,
+            Self::Source2024ModuleCallables | Self::Source2024ModuleSafety
+        )
+    }
+    #[must_use]
+    pub const fn call_safety(self) -> bool {
+        matches!(self, Self::Source2024ModuleSafety)
     }
     #[must_use]
     pub const fn definitions(self) -> bool {
@@ -14,13 +21,16 @@ impl Profile {
             Self::Source2024ModuleDefinitions
                 | Self::Source2024ModuleCompatibility
                 | Self::Source2024ModuleCallables
+                | Self::Source2024ModuleSafety
         )
     }
     #[must_use]
     pub const fn module_compatibility(self) -> bool {
         matches!(
             self,
-            Self::Source2024ModuleCompatibility | Self::Source2024ModuleCallables
+            Self::Source2024ModuleCompatibility
+                | Self::Source2024ModuleCallables
+                | Self::Source2024ModuleSafety
         )
     }
 }
@@ -45,6 +55,25 @@ pub(super) fn require_profile(
 }
 
 impl ValidatedRows {
+    pub(crate) fn stage_module_safety(
+        owner: &CrateIdentity,
+        rows: SourceRows,
+        attributes: s::HeaderAttributeColumns,
+        modules: s::ModuleContractRows,
+        availability: s::AvailabilityRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        Self::stage_module_availability_with(
+            owner,
+            rows,
+            attributes,
+            modules,
+            (availability, Profile::Source2024ModuleSafety),
+            base,
+            work,
+        )
+    }
     pub(crate) fn stage_module_callables(
         owner: &CrateIdentity,
         rows: SourceRows,

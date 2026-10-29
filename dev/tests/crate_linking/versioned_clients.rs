@@ -231,3 +231,47 @@ fn cli_source_client_feature_requests_keep_plain_library_exports() -> Result {
     );
     Ok(())
 }
+
+#[test]
+fn cli_version_eight_retains_actual_unsafe_calls_and_legacy_denials() -> Result {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root.join(format!(
+        "obj/parallel/source-callable-effects-v1/safety-cli-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let fixture = root.join("pa31/tests/spec/source-call-safety/preserved-provider.rs");
+    let metadata = folder.join("provider.rgcrate");
+    let lowir = folder.join("provider.lowir");
+    let output = super::artifacts::checked(
+        "version-eight",
+        &folder,
+        &mut source_export("module-safety-v8", &fixture, &metadata, &lowir, true),
+    )?;
+    assert!(output.stderr.is_empty());
+    let bytes = std::fs::read(&metadata)?;
+    assert_eq!(bytes.get(13..15), Some([8, 0].as_slice()));
+    assert_eq!(
+        rustgm::support::crates::encode(&rustgm::support::crates::decode(&bytes)?)?,
+        bytes
+    );
+    let rejected = folder.join("older.rgcrate");
+    let output = source_export(
+        "module-callables-v7",
+        &fixture,
+        &rejected,
+        &folder.join("older.lowir"),
+        true,
+    )
+    .output()?;
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(!rejected.exists());
+    Ok(())
+}

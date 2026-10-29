@@ -97,6 +97,14 @@ pub struct Opening {
     pub binder: BinderRef,
     pub regions: Range,
 }
+/// Actual defining call context, independent of constness or a paid call proof.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum CallSafety {
+    #[default]
+    Safe,
+    ExplicitUnsafeBlock,
+    UnsafeFunction,
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct CallRequest {
     pub value: u32,
@@ -108,6 +116,7 @@ pub struct CallRequest {
     /// Defining request data. Reached instantiation still derives and proves its
     /// actual runtime/const obligations; this is never a paid call witness.
     pub effect: Constness,
+    pub safety: CallSafety,
 }
 /// Exact owned-rvalue storage inputs; ordinary destruction proof remains required.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

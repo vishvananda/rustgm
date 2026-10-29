@@ -166,13 +166,15 @@ impl Stage {
             .types
             .needs_region_context(ty)
             .ok_or("source type root is unknown")?;
-        let anonymous = facts
+        let callables = facts
             .types
-            .contains_anonymous_callables(ty)
+            .contains_callables(ty)
             .ok_or("source type root has no actual callable summary")?;
         Ok(Key {
             ty,
-            context: (contextual || anonymous).then_some(context),
+            // Application handles belong to the caller context, including named
+            // items nested in containers. Their recipe parents must share that key.
+            context: (contextual || callables).then_some(context),
             formation: Formation::Recipe,
         })
     }

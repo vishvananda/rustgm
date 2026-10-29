@@ -219,7 +219,7 @@ pub(super) fn role_read(read: &mut Input<'_, '_>) -> Result<s::RoleBinding, &'st
         5 => LangItem::CloneFn,
         6 => LangItem::Copy,
         tag @ (7 | 8) => {
-            if !read.callables {
+            if !read.profile.unconditional_callables() {
                 read.require_provided("unknown source function role ID")?;
             }
             if tag == 7 {

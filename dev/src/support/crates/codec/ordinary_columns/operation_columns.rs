@@ -5,6 +5,12 @@ use super::{
 };
 
 pub(super) fn original_write(out: &mut Writer, row: &s::Original) -> Result<(), &'static str> {
+    original_profile(out, row, false)
+}
+pub(super) fn safety_write(out: &mut Writer, row: &s::Original) -> Result<(), &'static str> {
+    original_profile(out, row, true)
+}
+fn original_profile(out: &mut Writer, row: &s::Original, safety: bool) -> Result<(), &'static str> {
     for value in [row.body.0, row.declaration.0, row.result.0, row.sites] {
         id(out, value)?;
     }
@@ -30,7 +36,11 @@ pub(super) fn original_write(out: &mut Writer, row: &s::Original) -> Result<(), 
     }
     write_copy(out, &row.arguments, index_write)?;
     write_copy(out, &row.openings, super::recipe_columns::root_region_write)?;
-    write(out, &row.calls, invoked_rows::write)
+    if safety {
+        write(out, &row.calls, invoked_rows::safety_write)
+    } else {
+        write(out, &row.calls, invoked_rows::write)
+    }
 }
 pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'static str> {
     let body = BodyRef(read.id()?);
@@ -39,7 +49,7 @@ pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'s
     let sites = read.id()?;
     let context = match read.reader.u8()? {
         0 => s::CallContext::Runtime,
-        1 if read.callables => s::CallContext::ConstDefinition,
+        1 if read.profile.unconditional_callables() => s::CallContext::ConstDefinition,
         tag => {
             read.require_provided("source defining context requires a wider source profile")?;
             match tag {
@@ -156,7 +166,7 @@ fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static str> {
     let kind = match read.reader.u8()? {
         0 => s::ValueKind::Unit,
         6 => {
-            if !read.features {
+            if !read.profile.feature_predicates() {
                 return Err("source scalar operation requires its explicit v4 ordinary profile");
             }
             s::ValueKind::Scalar(read.reader.u128()?.to_le_bytes())

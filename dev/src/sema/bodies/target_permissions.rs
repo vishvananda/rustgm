@@ -165,9 +165,7 @@ impl Checker<'_> {
         if let Some(target) = target {
             return match self.target_function_permission(node, target)? {
                 Permission::Safe => Ok(()),
-                Permission::UnsafeFunction => {
-                    self.require_unsafe(node, "call to unsafe function requires an unsafe context")
-                }
+                Permission::UnsafeFunction => self.require_unsafe_call(node),
                 Permission::MissingFeatures => self.require_unsafe(
                     node,
                     "call requires an unsafe context or the callee's target features",
@@ -175,7 +173,7 @@ impl Checker<'_> {
             };
         }
         if unsafe_ {
-            self.require_unsafe(node, "call to unsafe function requires an unsafe context")?;
+            self.require_unsafe_call(node)?;
         }
         Ok(())
     }

@@ -256,7 +256,7 @@ pub(super) fn requirement_read(read: &mut Input<'_, '_>) -> Result<s::Requiremen
         },
         2 => s::Requirement::Outlives(bound_read(read)?),
         3 => {
-            if !read.features {
+            if !read.profile.feature_predicates() {
                 return Err("feature predicates require source metadata version four");
             }
             s::Requirement::UnstableFeature(read.string()?.into_boxed_str())
@@ -292,7 +292,7 @@ pub(super) fn function_effect_read(
     read: &mut Input<'_, '_>,
     unsupported: &'static str,
 ) -> Result<Constness, &'static str> {
-    if !read.callables {
+    if !read.profile.unconditional_callables() {
         return effect_read(read, unsupported);
     }
     match read.reader.u8()? {
@@ -308,7 +308,7 @@ pub(super) fn call_effect_read(
     read: &mut Input<'_, '_>,
     unsupported: &'static str,
 ) -> Result<Constness, &'static str> {
-    if !read.callables {
+    if !read.profile.unconditional_callables() {
         return effect_read(read, unsupported);
     }
     match read.reader.u8()? {

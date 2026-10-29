@@ -183,6 +183,19 @@ impl Source {
             modules,
         ))
     }
+    fn begin_module_safety(
+        report: &Report,
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+        identity: &CrateIdentity,
+    ) -> Result<(Self, s::ModuleContractRows), &'static str> {
+        let mut stage = Stage::begin_module_safety(report, facts, identity)?;
+        let modules = stage.module_contract_rows(report, facts)?;
+        Ok((
+            Self::begin_stage(facts, checked, stage, false, None)?,
+            modules,
+        ))
+    }
     pub(super) fn begin_publication(
         report: &Report,
         facts: &mut Declarations,
@@ -230,6 +243,11 @@ impl Source {
                 let (source, modules) =
                     Self::begin_module_callables(report, facts, checked, identity)
                         .map_err(legacy_error)?;
+                Ok((source, Some(modules)))
+            }
+            super::instances::SourcePublication::ModuleSafety => {
+                let (source, modules) = Self::begin_module_safety(report, facts, checked, identity)
+                    .map_err(legacy_error)?;
                 Ok((source, Some(modules)))
             }
             super::instances::SourcePublication::LegacyFunctions
@@ -497,6 +515,7 @@ impl Source {
                 | super::instances::SourcePublication::ModuleDefinitions
                 | super::instances::SourcePublication::ModuleCompatibility
                 | super::instances::SourcePublication::ModuleCallables
+                | super::instances::SourcePublication::ModuleSafety
         ) {
             Some(
                 self.stage
@@ -529,7 +548,9 @@ impl Source {
             ..g::Work::default()
         };
         let payload = if let Some(availability) = availability {
-            let publish = if profile == super::instances::SourcePublication::ModuleCallables {
+            let publish = if profile == super::instances::SourcePublication::ModuleSafety {
+                g::Payload::from_source_module_safety
+            } else if profile == super::instances::SourcePublication::ModuleCallables {
                 g::Payload::from_source_module_callables
             } else if profile == super::instances::SourcePublication::ModuleCompatibility {
                 g::Payload::from_source_module_compatibility

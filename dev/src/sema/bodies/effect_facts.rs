@@ -4,8 +4,10 @@ use crate::{resolve::unit::NodeKey, support::constness::Constness, types::infer:
 use std::num::NonZeroU32;
 #[path = "effect_facts/site_locations.rs"]
 mod caller_sites;
+mod discharged_sites;
 mod displacement_rows;
 mod protocol_rows;
+pub(super) use discharged_sites::call_safety_scratch;
 
 /// A source-node plan location; actual source, member and call checks remain separate.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -39,6 +41,7 @@ pub(in crate::sema) struct CallContexts {
     plans: Vec<crate::sema::try_plans::Plan>,
     sites: Vec<caller_sites::Site>,
     offsets: Option<Box<displacement_rows::Rows>>,
+    safety: Option<Box<discharged_sites::Rows>>,
 }
 const MAX_ROWS: usize = 1_000_000;
 const MAX_RETAINED: usize = 16 * 1024 * 1024;
@@ -67,6 +70,13 @@ impl CallContexts {
                     size_of::<displacement_rows::Rows>()
                         + rows.rows.capacity() * size_of::<crate::sema::displacement_plans::Plan>()
                 }))
+            })
+            .and_then(|bytes| {
+                bytes.checked_add(
+                    self.safety
+                        .as_deref()
+                        .map_or(0, discharged_sites::Rows::bytes),
+                )
             })
             .ok_or("source call context storage overflow")
     }
@@ -363,6 +373,8 @@ impl Checker<'_> {
         }
         let sites = self.prepare_caller_sites(solved, source_use, warm)?;
         self.preflight_site_commit(source_use, &sites, warm)?;
+        let safety = self.prepare_safety_sites(solved, source_use)?;
+        self.preflight_safety_sites(source_use, &safety, warm)?;
         if any && !warm {
             let actual = self
                 .facts
@@ -388,6 +400,7 @@ impl Checker<'_> {
         self.publish_try_plans(solved, source_use, &mut allowances)?;
         self.publish_displacement_plans(solved, source_use, &mut allowances)?;
         self.commit_caller_sites(&sites, warm);
+        self.commit_safety_sites(&safety, warm);
         for (node, term) in &self.state.calls {
             if matches!(self.kind(*node), crate::syntax::ast::Kind::For { .. })
                 || self.erased_source_operator(*node)?

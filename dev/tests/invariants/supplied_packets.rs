@@ -278,9 +278,7 @@ fn denied(
         reader: &mut reader,
         bytes: 0,
         base: 0,
-        provided: false,
-        callables: false,
-        features: false,
+        profile: s::Profile::Source2024Functions,
     };
     assert!(check(&mut input).is_err());
     assert_eq!(
@@ -349,5 +347,63 @@ fn functions_columns_keep_their_existing_layout_without_unit_suffix() -> Result 
         codec::decode(&artifact).is_err(),
         "Functions envelope must reject even an empty extra unit column"
     );
+    Ok(())
+}
+
+#[test]
+fn source_safety_byte_is_versioned_and_unknown_or_truncated_tags_reject() -> Result {
+    let mut row = s::CallRequest {
+        value: 0,
+        site: 1,
+        target: s::FunctionApplicationRef(2),
+        method: None,
+        signature: g::TypeRef(3),
+        opening: None,
+        effect: crate::support::constness::Constness::Ordinary,
+        safety: s::CallSafety::Safe,
+    };
+    let mut legacy = Writer::default();
+    invoked_rows::write(&mut legacy, &row)?;
+    let legacy = legacy.finish();
+    for (tag, kind) in [
+        (0, s::CallSafety::Safe),
+        (1, s::CallSafety::ExplicitUnsafeBlock),
+        (2, s::CallSafety::UnsafeFunction),
+    ] {
+        row.safety = kind;
+        let mut encoded = Writer::default();
+        invoked_rows::safety_write(&mut encoded, &row)?;
+        let encoded = encoded.finish();
+        assert_eq!(&encoded[..legacy.len()], legacy);
+        assert_eq!(encoded.last(), Some(&tag));
+        let mut reader = Reader::new(&encoded);
+        let mut input = Input {
+            reader: &mut reader,
+            bytes: 0,
+            base: 0,
+            profile: s::Profile::Source2024ModuleSafety,
+        };
+        assert_eq!(invoked_rows::read(&mut input)?, row);
+        assert_eq!(reader.remaining(), 0);
+        if kind != s::CallSafety::Safe {
+            let mut denied = Writer::default();
+            assert!(invoked_rows::write(&mut denied, &row).is_err());
+            assert!(denied.finish().is_empty());
+        }
+    }
+    for tag in [None, Some(3), Some(255)] {
+        let mut encoded = legacy.clone();
+        if let Some(tag) = tag {
+            encoded.push(tag);
+        }
+        let mut reader = Reader::new(&encoded);
+        let mut input = Input {
+            reader: &mut reader,
+            bytes: 0,
+            base: 0,
+            profile: s::Profile::Source2024ModuleSafety,
+        };
+        assert!(invoked_rows::read(&mut input).is_err());
+    }
     Ok(())
 }

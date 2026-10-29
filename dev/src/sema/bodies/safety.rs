@@ -2,6 +2,11 @@
 use super::{Checker, Error, Kind, NodeId};
 use crate::syntax::ast::BlockFlavor;
 use crate::{sema::safety::Level, support::diagnostics::WarningCode};
+#[path = "safety/discharged_calls.rs"]
+mod discharged;
+pub(super) use discharged::Pending;
+#[cfg(test)]
+pub(super) use discharged::Record;
 
 /// Copy this context when parking a closure body; item bodies start a fresh one.
 #[derive(Clone, Copy, Default)]

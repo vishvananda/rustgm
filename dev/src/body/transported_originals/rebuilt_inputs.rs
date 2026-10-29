@@ -149,6 +149,7 @@ pub(super) fn build(
     work: &mut ImportedOriginals,
 ) -> Result<Contract, &'static str> {
     super::non_type_calls::check(facts, view, body, &mut work.steps)?;
+    super::safety_requests::check(facts, view, body, work)?;
     view.check_const_policies(&mut work.steps)?;
     let expected = Expected::new(view, facts, &mut work.steps)?;
     let record = view.inputs();

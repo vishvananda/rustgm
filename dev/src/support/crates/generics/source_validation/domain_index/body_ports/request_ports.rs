@@ -97,8 +97,28 @@ impl DomainIndex<'_, '_> {
             s::BinderKind::CallableType if frame.parent.is_none() => {}
             _ => return Err("source Call signature belongs to another actual original context"),
         }
-        if signature.unsafe_ || header.callable.unsafe_ {
-            return Err("source unsafe Call context transport is not implemented");
+        if signature.unsafe_ != header.callable.unsafe_ {
+            return Err("source Call changed its actual callable safety");
+        }
+        match (signature.unsafe_, request.safety) {
+            (false, s::CallSafety::Safe) => {}
+            (true, s::CallSafety::ExplicitUnsafeBlock | s::CallSafety::UnsafeFunction) => {
+                let defining = self.function(original.declaration, work)?;
+                if header.parent.is_some() || defining.parent.is_some() {
+                    return Err(
+                        "source unsafe associated Calls require their wider actual profile",
+                    );
+                }
+                if request.safety == s::CallSafety::UnsafeFunction && !defining.callable.unsafe_ {
+                    return Err(
+                        "source unsafe-function Call changed its actual caller declaration",
+                    );
+                }
+            }
+            (true, s::CallSafety::Safe) => {
+                return Err("source unsafe Call omitted its actual lexical context");
+            }
+            (false, _) => return Err("source safe Call cannot claim an unsafe obligation"),
         }
         if signature.parameters.slice(&rows.roots)?.len()
             != arguments.slice(&original.arguments)?.len()

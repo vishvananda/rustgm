@@ -103,7 +103,8 @@ impl Context<'_> {
                 | s::Profile::Source2024ModuleFeaturePredicates
                 | s::Profile::Source2024ModuleDefinitions
                 | s::Profile::Source2024ModuleCompatibility
-                | s::Profile::Source2024ModuleCallables => {
+                | s::Profile::Source2024ModuleCallables
+                | s::Profile::Source2024ModuleSafety => {
                     actual.module_contracts().map_err(error)?;
                 }
                 _ => {
