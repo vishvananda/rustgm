@@ -782,6 +782,18 @@ repeated capacity payment or speculative token estimates. The
 [image-storage checkpoint](docs/pa31-derive-image-storage-checkpoint.md) records
 the original-core diagnosis and fixed-setup-separated scaling controls.
 
+Whole-crate source-contract allowances are explicit immutable configuration.
+Keep the ordinary defaults at one million work units and 64 MiB each for
+attempted storage and retained payload. Zero is a real limit; every accepted
+numeric value is finite. Snapshot the three limits once when either source-core
+or local macro contracts are created, preserving attempted charges and the first
+sticky exhaustion cause. Configuration changes cannot reset an existing state.
+Limits grant no language, API, unsafe, const or metadata permission. Record any
+changed resource profile separately from target configuration and lint caps;
+the original-core observer requires matching manifest and producer limits and
+records the actual compiler arguments and effective values. Do not derive a
+more generous allowance silently from input size or suppress real operations.
+
 Source enum Default requires one configured unit variant whose actual helper
 is published by the selected builtin derive. Bind that choice to its owner,
 effect, capture and completed derive receipt; replay also rejects a missing

@@ -18,6 +18,12 @@ import urllib.request
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = Path(__file__).with_name("original_core_manifest.json")
 LIMIT = 64 * 1024 * 1024
+SOURCE_CONTRACT_DEFAULTS = {"work": 1_000_000, "attempted_bytes": LIMIT, "retained_bytes": LIMIT}
+SOURCE_CONTRACT_OPTIONS = {
+    "work": "--source-contract-work-limit",
+    "attempted_bytes": "--source-contract-attempted-bytes",
+    "retained_bytes": "--source-contract-retained-bytes",
+}
 
 
 def sha(path):
@@ -48,6 +54,27 @@ def lint_profile_arguments(manifest, binding, cap):
             or binding.get("lint_cap", "uncapped") != effective):
         raise ValueError("explicit lint cap, source profile and producer binding differ")
     return ["--cap-lints=allow"] if cap else []
+
+
+def source_contract_profile_arguments(manifest, binding):
+    """Bind explicit finite limits to both owners; legacy observations keep defaults."""
+    profile = manifest["profile"]
+    if not isinstance(profile, dict) or not isinstance(binding, dict):
+        raise ValueError("source contract profile and producer must be objects")
+    key = "source_contract_limits"
+    if (key in profile) != (key in binding):
+        raise ValueError("source contract limits require matching explicit profile and producer")
+    if key not in profile:
+        return [], dict(SOURCE_CONTRACT_DEFAULTS)
+    for owner in (profile, binding):
+        value = owner[key]
+        if (not isinstance(value, dict) or value.keys() != SOURCE_CONTRACT_OPTIONS.keys()
+                or any(type(n) is not int or not 0 <= n <= 0xffff_ffff for n in value.values())):
+            raise ValueError("source contract limits require all three finite decimal u32 values")
+    if profile[key] != binding[key]:
+        raise ValueError("source contract profile and producer limits differ")
+    effective = dict(profile[key])
+    return [f"{option}={effective[name]}" for name, option in SOURCE_CONTRACT_OPTIONS.items()], effective
 
 
 class Download:
@@ -193,9 +220,11 @@ def worker(args):
         manifest = json.loads(manifest_path.read_text())
         cli, producer = args.cli.resolve(strict=True), args.producer_binding.resolve(strict=True)
         binding = json.loads(producer.read_text())
+        contract_args, contract_limits = source_contract_profile_arguments(manifest, binding)
         lint_args = lint_profile_arguments(manifest, binding, args.cap_lints)
         lint_cap = args.cap_lints or "uncapped"
         result["lint_cap"] = lint_cap
+        result["source_contract_limits"] = contract_limits
         expected_cli = args.expected_cli_sha256 or manifest["expected_cli_sha256"]
         expectation_source = "explicit caller input" if args.expected_cli_sha256 else "pinned manifest default"
         result.update(expected_cli_sha256=expected_cli, expected_cli_source=expectation_source)
@@ -217,13 +246,15 @@ def worker(args):
             archive = {"source": "existing pinned tree", "root": str(source)}
         verify_sources(manifest, source)
         command = [strace, "-f", "-qq", "-yy", "-s", "4096", "-e", "trace=openat", "-o",
-                   str(out / "whole-core.openat"), str(cli), *lint_args, "--emit-types", "--edition=2024",
+                   str(out / "whole-core.openat"), str(cli), *lint_args, *contract_args,
+                   "--emit-types", "--edition=2024",
                    "--crate-name", "core", "--crate-disambiguator", "core_1_98_88d9",
                    "--source-core", "core@core_1_98_88d9", str(source / "library/core/src/lib.rs")]
         immutable = {str(path): sha(path) for path in (cli, producer, Path(strace), manifest_path, Path(__file__))}
         write(out, "binding.json", {"command": command, "immutable": immutable, "archive": archive,
               "expected_cli_sha256": expected_cli, "expected_cli_source": expectation_source,
               "profile": manifest["profile"], "lint_cap": lint_cap, "source_files": len(manifest["files"]),
+              "source_contract_limits": contract_limits,
               "core_files": sum(row["path"].startswith("library/core/") for row in manifest["files"]),
               "producer": binding, "path_adaptation": {"source_root": str(source),
               "old_source_root": "/home/vishvananda/rustgm-sources/rust-1.98.0-" + manifest["revision"]},

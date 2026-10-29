@@ -194,6 +194,17 @@ stopped. Source changes during the run invalidate its result. Keep source
 unchanged until the command finishes. The launcher reserves time for process
 cleanup within the deadline; it can stop earlier than 300 seconds.
 
+Original-core discovery may declare an explicit finite `source_contract_limits`
+object in both its manifest profile and producer binding, with `work`,
+`attempted_bytes` and `retained_bytes` as decimal u32 values. The observer rejects
+missing, mismatched or malformed declarations and emits the three corresponding
+`--source-contract-*` compiler options. An omitted object preserves the legacy
+defaults and passes no new options. Effective values are recorded in the command
+binding and result. Keep changed-resource observations separate from earlier
+default-profile receipts; a larger allowance is not evidence of less work or a
+completed original crate. Select allowances from measured workload evidence and
+retain every charge and sticky failure test.
+
 Ignored/native tests remain explicit. Select them with `--ignored` and declare
 all disposable output roots using repeated `--prune-under obj/OUTPUT` options.
 Cleanup visits only those roots after successful targets, preserving diagnostics,
