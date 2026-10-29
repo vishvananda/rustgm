@@ -64,7 +64,7 @@
     "Always-comptime, conditional/associated/provided/region body families and complete PA29/LIB095/artifacts"
   ],
   "files": {
-    "README.md": "c702af2e370ff519c25aba6e06ca23ddc0ad7cd7849b491652cc37c1a7dab962",
+    "README.md": "4b6b05e4819f920c1cc4b67151e5f7036e0564f8f2ecd9750afa1cb05b8b2027",
     "closure-block.rs": "911fe191adea147d3cab92cd163011a691cf6919d398960d92ec950e10f05505",
     "closure-function.rs": "b1a312e488d79259dcc61c23d619eac8ea26f44b853adaa5000488956746a8c8",
     "expected.stdout": "286fb5c843023ffc1f260dfb6415ef03ab48580ff778c2106b26386de83e7c2a",
@@ -128,6 +128,7 @@
     "old0_7/downgrade",
     "missing/forged-safe-target/caller/site/signature/foreign/payment",
     "actual sparse snapshots/warm replay/sticky failure",
-    "8/32/128 touched-call work and storage"
+    "8/32/128 touched-call work and storage",
+    "named-item and reference child context isolation; tuple/array/projection transport opponents; ordinary shared scalar and historical first-encoding controls"
   ]
 }

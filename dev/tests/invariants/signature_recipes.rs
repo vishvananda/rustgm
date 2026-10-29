@@ -822,3 +822,6 @@ fn anonymous_function_work_and_storage_scale_with_actual_shallow_dag() -> Result
     }
     Ok(())
 }
+
+#[path = "addressed_items.rs"]
+mod addressed;
