@@ -50,7 +50,7 @@ impl Lower<'_, '_, '_> {
             return Err("source transmute requires one evaluated runtime argument");
         };
         if value.ty != selected.destination
-            || signature != selected.signature
+            || !selected.opened_signature_matches(self.context.types, signature)
             || self
                 .body
                 .values

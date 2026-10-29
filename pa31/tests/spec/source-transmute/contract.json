@@ -1,0 +1,33 @@
+{
+  "scope": "typed function-item binder versus opened source Call, source transmute and arith_offset; no layout-based lifetime equality",
+  "files": {
+    "generic-borrowed-slice.rs": "a1af9cbf0d63d24abf222d88a26d9098aa9671212282aef0d3c37275fcb3f448",
+    "generic-borrowed-method.rs": "18bf4a86cb889a94ac201914fce1bacc97829e5a36505d8ca2ca107ca9bff7a3",
+    "generic-borrowed-const.rs": "6aa8034dfffea93bba1b6cf7523e7778357e2888c2ff3c8145033ddbbf3d9265",
+    "const-observer.c": "7628619637d0770d52d640504fa3133a8e0fce9e5ed1c7d0ed92b7bd6858f4d4"
+  },
+  "expected": {
+    "generic-borrowed-slice.rs": "Rust metadata and candidate source lowering accepted; observed returns its input byte",
+    "generic-borrowed-method.rs": "Rust metadata accepted, immutable old compiler rejects captured &str with exact nested binder difference; candidate lowering accepted",
+    "generic-borrowed-const.rs": {
+      "rust_metadata": 0,
+      "rust_native": {
+        "status": 0,
+        "stdout": "1\n",
+        "stderr": ""
+      },
+      "candidate_constant_length": 1,
+      "candidate_native": {
+        "status": 0,
+        "stdout": "1\n",
+        "stderr": ""
+      }
+    }
+  },
+  "required": [
+    "full original Formatter/Debug helpers and whole core/alloc/std artifacts",
+    "metadata transport of the source operations and all parent PA release gates"
+  ],
+  "independent_const_receipt_sha256": "9fd9734dbc03da2ea69f85a5656a2eb134c01d36fd76ba745762b0374c961492",
+  "candidate_const_receipt_sha256": "013132bf4d20414ff0c181f417a5ee16e10f2ebc062c1a061f40e9c32f68c70f"
+}

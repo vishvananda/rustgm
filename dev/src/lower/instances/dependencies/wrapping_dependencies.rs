@@ -34,7 +34,7 @@ pub(super) fn require(
     else {
         return Err("source arith_offset requires two direct inputs");
     };
-    if signature != selected.signature()
+    if !selected.opened_signature_matches(&facts.types, signature)
         || value.ty != selected.pointer()
         || [pointer, count]
             .into_iter()

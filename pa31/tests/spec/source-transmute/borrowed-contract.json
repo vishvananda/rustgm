@@ -1,0 +1,21 @@
+{
+  "state": "frozen before independent/candidate observation",
+  "profile": "Rust1.98 pinned88d9 / edition2024 / Linux x86-64 no_core SourceCore",
+  "root_source": "/home/vishvananda/rustgm-pa25-work/pa31/tests/spec/debug-field-arrays-runtime/source-observer.rs",
+  "root_source_sha256": "b81b207c8d26140be3fbd566769f952042fcb3f27a443aeafe4d00f97741bf9a",
+  "exact_accessor_fragment_sha256": "2bc3e30532851193143e85abf3b3a8e240aece98d341183f7ff11fed31ecb619",
+  "fixture": "generic-borrowed-slice.rs",
+  "fixture_sha256": "a1af9cbf0d63d24abf222d88a26d9098aa9671212282aef0d3c37275fcb3f448",
+  "expected_rust_metadata": 0,
+  "expected_candidate": "actual unchanged generic at<T> source transmute and reference return reach observed LowIR",
+  "required": "full joined Debug array observer/native remains Root-owned; temporary Root-owned reproduction files removed before final kernel gate",
+  "minimal_borrowed_method": {
+    "path": "generic-borrowed-method.rs",
+    "sha256": "18bf4a86cb889a94ac201914fce1bacc97829e5a36505d8ca2ca107ca9bff7a3",
+    "rust_metadata_expected": 0,
+    "old_candidate_expected": "exact source signature mismatch before fix",
+    "proof": "obj/parallel/transmute-regions-v1/minimal-v1/receipt.json",
+    "proof_sha256": "7a47ce10c617ba62c1ecd3a086064e963a6929aed743b19c5643579843bfec52",
+    "actual_coordinates": "Src nested &str bound(0,1), signature nested &str bound(1,1); same outer free region1; canonical lower1 maps both roots in13 steps"
+  }
+}

@@ -10,6 +10,44 @@ use crate::{
     },
 };
 
+/// A Body Call's roots are already opened into its caller, unlike an item signature.
+pub(super) fn opened_signature_matches(
+    store: &crate::types::Store,
+    signature: TypeId,
+    inputs: &[TypeId],
+    output: TypeId,
+    unsafe_: bool,
+    convention: Convention,
+) -> bool {
+    matches!(store.kind(signature), Some(Kind::Function {
+        bound_regions: 0, parameters, result, unsafe_: actual_unsafe, convention: actual_convention,
+    }) if actual_unsafe == unsafe_ && actual_convention == convention
+        && store.list(parameters) == Some(inputs) && result == output)
+}
+
+/// Remove only the item's surrounding function binder, retaining nested local binders.
+pub(super) fn item_roots<const N: usize>(
+    store: &crate::types::Store,
+    roots: [TypeId; N],
+    mut charge: impl FnMut(usize) -> Result<(), &'static str>,
+) -> Result<Option<[TypeId; N]>, &'static str> {
+    charge(1)?;
+    let mut lookup = crate::types::substitute::lookup::Lookup::new(1);
+    let result = (|| {
+        let mut opened = [TypeId::UNIT; N];
+        for (slot, root) in opened.iter_mut().zip(roots) {
+            let Some(actual) = lookup.ty(store, root)? else {
+                return Ok(None);
+            };
+            *slot = actual;
+        }
+        Ok(Some(opened))
+    })();
+    // Lookup is bounded internally; failed work and failed payment publish no answer.
+    charge(lookup.steps())?;
+    result
+}
+
 pub(super) struct Intrinsic {
     declaration: crate::resolve::bindings::Declaration,
     kind: SourceIntrinsic,

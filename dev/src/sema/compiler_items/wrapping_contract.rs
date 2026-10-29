@@ -36,6 +36,20 @@ impl WrappingOffsetSelection {
     pub(crate) fn inputs(&self) -> [TypeId; 2] {
         [self.pointer, TypeId::primitive(Primitive::Isize)]
     }
+    pub(crate) fn opened_signature_matches(
+        &self,
+        store: &crate::types::Store,
+        signature: TypeId,
+    ) -> bool {
+        super::intrinsic_contracts::opened_signature_matches(
+            store,
+            signature,
+            &self.inputs(),
+            self.pointer,
+            true,
+            Convention::RUST,
+        )
+    }
 }
 
 pub(super) fn validate(facts: &Declarations, function: Function) -> Result<(), &'static str> {
@@ -77,6 +91,9 @@ fn pointer_signature(
     signature: TypeId,
     element: TypeId,
 ) -> Result<TypeId, &'static str> {
+    pointer_types(facts, signature_parts(facts, signature)?, element)
+}
+fn signature_parts(facts: &Declarations, signature: TypeId) -> Result<[TypeId; 3], &'static str> {
     let Some(Kind::Function {
         bound_regions: 0,
         parameters,
@@ -90,6 +107,13 @@ fn pointer_signature(
     let Some(&[pointer, count]) = facts.types.list(parameters) else {
         return Err("source arith_offset requires exactly two value parameters");
     };
+    Ok([pointer, count, result])
+}
+fn pointer_types(
+    facts: &Declarations,
+    [pointer, count, result]: [TypeId; 3],
+    element: TypeId,
+) -> Result<TypeId, &'static str> {
     if facts.types.kind(pointer)
         != Some(Kind::Pointer {
             mutable: false,
@@ -156,7 +180,16 @@ impl Catalog {
         {
             return Err("source arith_offset execution requires its closed Sized element");
         }
-        let pointer = pointer_signature(facts, signature, element)?;
+        let roots = super::intrinsic_contracts::item_roots(
+            &facts.types,
+            signature_parts(facts, signature)?,
+            |steps| {
+                crate::sema::header_attributes::charge_source_contract_query(facts, steps)
+                    .map_err(|_| "source arith_offset instance query work exhausted")
+            },
+        )?
+        .ok_or("source arith_offset has no canonical caller input/result types")?;
+        let pointer = pointer_types(facts, roots, element)?;
         Ok(Some(WrappingOffsetSelection {
             definition,
             signature,

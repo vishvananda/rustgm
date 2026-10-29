@@ -22,13 +22,17 @@ fn validate(
     target: Instance,
     selection: WrappingOffsetSelection,
 ) -> Result<Call, &'static str> {
-    let arguments = super::reached_layout::checked_call_arguments(
+    let arguments = super::reached_layout::checked_call_arguments_with_signature(
         facts,
         body,
         frame,
         position,
         target,
         (selection.definition(), selection.pointer()),
+        |actual, public| {
+            public == selection.signature()
+                && selection.opened_signature_matches(&facts.types, actual)
+        },
     )?;
     facts
         .source_bindings
