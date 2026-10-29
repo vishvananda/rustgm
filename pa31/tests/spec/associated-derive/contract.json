@@ -1,0 +1,80 @@
+{
+  "state": "frozen before independent/candidate observations",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "owning": "PA18 associated predicates + PA26 typed derive headers + PA31 source binding",
+  "profile": {
+    "rustc": "1.98.0",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": true,
+    "lint_cap": "allow",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false
+  },
+  "original": {
+    "path": "library/core/src/char/decode.rs",
+    "primary_sha256": "4617c15c9d74efe7e82a9862994718dce66f6ddb8943f2583f0984477923da9a",
+    "byte_start": 357,
+    "byte_end": 533,
+    "file": "upstream-decode.rs",
+    "sha256": "6ea5182190b058ae68fc61d6dfd263a0acfb43c04119ea3149254d0f5ba6c792",
+    "constraint_start": 482,
+    "members": [
+      "Clone",
+      "Debug"
+    ]
+  },
+  "candidate_expansion": {
+    "file": "original-expansion.rs",
+    "sha256": "02e694f4695ffed63983310d6403d62424926f90bd450ccdc508201a2d973643"
+  },
+  "cases": [
+    {
+      "file": "original-rust.rs",
+      "sha256": "9f0651d4b5c37511e370fb1a66cc4021ac1dcb607949f9b90a8629420d1eba52",
+      "metadata": 0,
+      "expanded": 0
+    },
+    {
+      "file": "generic-source.rs",
+      "sha256": "c6ff651a9b599ed04a365cf32182d425dbf9a65826eaa404d2fa64a5f7f7d3b5",
+      "metadata": 0
+    },
+    {
+      "file": "nested-rust.rs",
+      "sha256": "e136ab0594bc7e40ad8a182b56ae312cb09508ebbb2e12120b8554dec4bd272f",
+      "metadata": 0,
+      "expanded": 0
+    },
+    {
+      "file": "wrong-equality.rs",
+      "sha256": "68f8dd2378dbaf171b91a0877d803f148f85fd000836adef6e1d43c3852d9a53",
+      "metadata": 1
+    },
+    {
+      "file": "wrong-associated-name.rs",
+      "sha256": "5d3d599e8dd4065d3eb756ad80449d8a05d4bcf72704f5003ca91a768c8701a1",
+      "metadata": 1
+    },
+    {
+      "file": "missing-clone.rs",
+      "sha256": "304f0249b8ace27d61471d807eb76e76ac0e4a209d8a8918fefb57b8f81dadf9",
+      "metadata": 1
+    }
+  ],
+  "native": {
+    "source": "generic-source.rs",
+    "observer": "observer.c",
+    "observer_sha256": "3b29faf3ba01868a0b5b00a62e4a74345ca729aee9f7b734d2c1ee78afceea67",
+    "status": 0,
+    "stdout": "7\n",
+    "stderr": ""
+  },
+  "scope": "unchanged original DecodeUtf16 expansion and generic Family<Item=u16> genuine source Clone/native consumer; authored Family is no replacement for original Iterator/Option/Debug runtime",
+  "required": [
+    "whole original DecodeUtf16/Iterator/Option/Debug runtime and library artifacts",
+    "associated bounds, quantified/GAT or other unsupported descendant nodes retain their actual required semantics",
+    "full PA release and wider source metadata transport"
+  ]
+}
