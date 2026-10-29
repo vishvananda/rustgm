@@ -2033,7 +2033,10 @@ impl Checker<'_> {
             return self.assignment(node, op, left, right);
         }
         if self.facts.source_bindings.is_some()
-            && matches!(op, Op::ShiftLeft | Op::Or | Op::Plus | Op::Minus)
+            && matches!(
+                op,
+                Op::ShiftLeft | Op::Or | Op::Plus | Op::Minus | Op::Slash
+            )
         {
             let hook = language_hooks::binary_hook(op)
                 .ok_or_else(|| self.error(node, "invalid source binary hook"))?;

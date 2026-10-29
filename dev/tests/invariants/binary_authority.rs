@@ -487,3 +487,6 @@ fn nested_fallback_respects_predeclared_order_and_shared_frontiers() -> TestResu
 
 #[path = "arithmetic_authority.rs"]
 mod arithmetic;
+
+#[path = "division_authority.rs"]
+mod division;
