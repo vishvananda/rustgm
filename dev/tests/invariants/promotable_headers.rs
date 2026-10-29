@@ -98,9 +98,22 @@ fn source_marker_keeps_const_unsafe_and_promotion_boundaries_distinct() -> TestR
     }
     let source = input("borrow-required")?;
     let report = report(&source, "promotable_borrow")?;
-    let error = pipeline::analyze_source(&report)
-        .err()
-        .ok_or("borrow promotion silently granted")?;
+    let pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = pipeline::analyze_source(&report)?;
+    let borrowed = function(&report, "borrowed")?;
+    let error = crate::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        crate::lower::Roots {
+            entry: None,
+            exports: &[borrowed],
+        },
+        prepared,
+    )
+    .err()
+    .ok_or("borrow promotion silently granted")?;
     assert!(
         error.to_string().contains("marked function-call promotion"),
         "{error}"

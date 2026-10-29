@@ -13,7 +13,7 @@ fn fixture(name: &str) -> TestResult<String> {
 }
 fn provider() -> TestResult<crates::Interface> {
     module_packets::exported_profile(
-        &fixture("provider")?,
+        &fixture("ordinary-provider")?,
         SourcePublication::ModuleCompatibility,
         "module_compatibility",
     )
@@ -73,8 +73,8 @@ fn direct_compatibility_notes_keep_last_empty_owner_and_gate_semantics() -> Test
             "{name}"
         );
     }
-    assert_eq!(size_of::<crate::resolve::stability::Level>(), 32);
-    assert_eq!(size_of::<crate::resolve::stability::Policy>(), 64);
+    assert_eq!(size_of::<crate::resolve::stability::Level>(), 24);
+    assert_eq!(size_of::<crate::resolve::stability::Policy>(), 56);
     Ok(())
 }
 #[test]
@@ -91,8 +91,6 @@ fn actual_v6_provider_fresh_clients_preserve_leaf_prefix_and_lint_protocols() ->
         ("stable-alias", 0, 0),
         ("local-body", 0, 0),
         ("unfulfilled-stable", 0, 1),
-        ("const-enabled-prefix-warning", 1, 0),
-        ("const-both-enabled", 0, 0),
         ("nested-warning", 2, 0),
         ("nested-partly-enabled", 1, 0),
         ("nested-enabled", 0, 0),
@@ -124,8 +122,6 @@ fn actual_v6_provider_fresh_clients_preserve_leaf_prefix_and_lint_protocols() ->
         ("marked-forbid", "use the stable alias"),
         ("plain-denied", "compat_mod"),
         ("leaf-denied", "compat_leaf_gate"),
-        ("const-denied", "compat_const"),
-        ("unsafe-denied", "unsafe"),
         ("two-import-groups", "compat_mod"),
     ] {
         let error = source_packets::client_analysis(crates::decode(&bytes)?, &fixture(name)?)
@@ -220,7 +216,20 @@ fn checked_uses_retain_pending_bodies_distinct_prefixes_and_resumed_dedup() -> T
 }
 #[test]
 fn old_origin_deprecation_stays_required_and_old_profiles_cannot_drop_notes() -> TestResult {
-    let source = fixture("provider")?;
+    let required = module_packets::exported_profile(
+        &fixture("provider")?,
+        SourcePublication::ModuleCompatibility,
+        "wider_callable_profile",
+    )
+    .err()
+    .ok_or("nonordinary source declarations silently admitted")?;
+    assert!(
+        required
+            .to_string()
+            .contains("source nonordinary callable effect/safety/convention"),
+        "{required}"
+    );
+    let source = fixture("ordinary-provider")?;
     let report = test_source::source_provider(&source, "old_note_profile")?;
     let pipeline::Analysis {
         mut facts,

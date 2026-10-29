@@ -26,3 +26,10 @@ by all four active pinned uses. Associated paths whose module decision needs an
 as-yet unselected member remain explicit Required; a trait owner's marker cannot
 stand in for its actual member. Completing that selected-leaf continuation remains
 part of LIB095, alongside the wider source metadata requirements.
+
+`ordinary-provider.rs` is the separate finite v6 producer fixture: its source
+functions retain ordinary effects and safety. The full `provider.rs` remains
+unchanged and independently Rust-positive, including its real const and unsafe
+functions. Their source body/const/safety transport remains Required behind the
+existing ordinary-profile guard. The const/unsafe clients remain owning inputs;
+they are not negative language cases or replacements for the ordinary producer.

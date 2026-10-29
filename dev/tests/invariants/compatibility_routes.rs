@@ -13,7 +13,7 @@ type LegacyImports = (
 );
 fn artifact() -> TestResult<crate::support::crates::Interface> {
     module_packets::exported_profile(
-        &test_source::fixture("pa31/tests/spec/source-module-compatibility/provider.rs")?,
+        &test_source::fixture("pa31/tests/spec/source-module-compatibility/ordinary-provider.rs")?,
         SourcePublication::ModuleCompatibility,
         "compatibility_routes",
     )
