@@ -1,0 +1,1 @@
+const C:u8=if true{7}else{1/0};fn main(){}

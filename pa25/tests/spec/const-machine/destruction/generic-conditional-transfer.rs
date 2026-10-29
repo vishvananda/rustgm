@@ -1,0 +1,1 @@
+const fn f<T>(x:T,b:bool)->T{if b{return x;}x}fn main(){}

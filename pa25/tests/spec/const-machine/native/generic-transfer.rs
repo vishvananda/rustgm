@@ -1,0 +1,2 @@
+fn verify(ok:bool){if !ok{let _=fault(0);}}fn fault(x:u8)->u8{1/x}
+const fn identity<T>(x:T)->T{x}const C:(u8,u16)=identity((3,400));fn main(){verify(C.0==3);verify(C.1==400);verify(identity((4u8,5u8)).1==5);}

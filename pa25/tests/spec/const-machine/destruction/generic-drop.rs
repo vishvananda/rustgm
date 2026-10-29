@@ -1,0 +1,1 @@
+const fn f<T>(_x:T){}fn main(){}

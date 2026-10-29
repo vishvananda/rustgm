@@ -1,0 +1,10 @@
+constants 1
+declaration def=13 kind=const type=22 const=true status=checked-value
+declaration def=14 kind=const type=23 const=true status=checked-value
+root initializer def=13 type=22 value=v0 storage=none
+root initializer def=14 type=23 value=v1 storage=none
+root promotion owner=def:13 instance=none expression=0 type=11 value=v2
+value v0 type=22 repeat length=0 element=none metadata=none
+value v1 type=23 repeat length=1000000 element=v2 metadata=none
+value v2 type=11 integer bits=00000000000000000000000000000007 metadata=none
+eof declarations=2 roots=3 values=3 allocations=0

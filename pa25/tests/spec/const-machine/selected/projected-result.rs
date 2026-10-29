@@ -1,0 +1,2 @@
+struct S<'a,'b>(&'a u8,&'b u8);trait P<'b>{type Out;}impl<'a,'b>P<'b> for &'a u8 where 'a:'b{type Out=usize;}trait A<'a,'b>{const C:usize;}impl<'a,'b>A<'a,'b> for S<'a,'b> where 'a:'b{const C:<&'a u8 as P<'b>>::Out={let n=2;n+1};}pub fn run()->bool{<S<'static,'static> as A<'static,'static>>::C==3}
+fn main(){let _=run();}

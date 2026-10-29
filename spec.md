@@ -4438,6 +4438,14 @@ zero-length arrays do not require element destruction. Array length must not
 expand query work. Programs without custom destructors need no pending-drop
 metadata in the current closed type profile.
 
+Prepare nonliteral array-repeat counts in the existing annotation traversal,
+using the exact owning generic/region context and ordinary typed usize query.
+Body inference consumes the retained source-keyed length; standalone const
+parameters retain their symbolic array form. Share the checked callee CFG across
+distinct count queries while charging and retaining each query's actual work
+and code. Do not add another source scan, infer a count from rendered text or
+use the declared array type as permission to skip the repeat expression's proof.
+
 Pending body facts retain destructor identities, type requirements and candidate
 store/storage exits. Reuse persistent live-stack ranges and existing exit IDs;
 do not copy every local at every exit. These candidates can overlap and are not

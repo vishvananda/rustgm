@@ -1,0 +1,1 @@
+const fn count(n:usize)->usize{3/n}fn main(){let _=[7u8;count(0)];}

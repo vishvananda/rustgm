@@ -1,0 +1,1 @@
+#[allow(unreachable_code)]const fn f()->u8{return 0;g()}fn g()->u8{1}fn main(){}

@@ -1,0 +1,28 @@
+function @rg.19() -> void {
+  block ^b0:
+    %t0 = call i1 @rg.18()
+    return void
+}
+function @rg.18() -> i1 {
+  slot $s0 : i1
+  block ^b0:
+    %t0 = cmp eq u8 5, 5
+    %t1 = convert trunc i1 i64 %t0
+    branch %t1, ^b1, ^b2
+  block ^b2:
+    store i1 %t1, $s0
+    jump ^b3
+  block ^b1:
+    %t2 = cmp eq u8 7, 7
+    %t3 = convert trunc i1 i64 %t2
+    store i1 %t3, $s0
+    jump ^b3
+  block ^b3:
+    %t4 = load i1 $s0
+    return i1 %t4
+}
+function @main() -> i64 [role=entry] {
+  block ^b0:
+    call void @rg.19()
+    return i64 0
+}

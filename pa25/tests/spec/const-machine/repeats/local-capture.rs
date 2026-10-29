@@ -1,0 +1,1 @@
+fn main(){let n=3usize;let _=[7u8;n];}

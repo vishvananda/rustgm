@@ -1,0 +1,1 @@
+const fn f(n:u8)->u8{1/n}fn main(){}

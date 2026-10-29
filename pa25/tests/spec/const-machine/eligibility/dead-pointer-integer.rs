@@ -1,0 +1,1 @@
+const fn f(x:*const u8)->usize{if false{x as usize}else{0}}fn main(){}

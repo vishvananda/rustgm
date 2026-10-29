@@ -1,0 +1,1 @@
+const fn f(call:fn(u8)->u8,x:u8)->u8{call(x)}fn main(){}

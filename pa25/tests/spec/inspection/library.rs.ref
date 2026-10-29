@@ -1,0 +1,14 @@
+constants 1
+declaration def=13 kind=function type=21 const=true status=checked-body
+declaration def=14 kind=const type=11 const=true status=checked-value
+declaration def=15 kind=static type=11 const=true status=checked-value
+declaration def=16 kind=const type=23 const=true status=checked-value
+declaration def=17 kind=const type=23 const=true status=checked-value
+root initializer def=14 type=11 value=v0 storage=none
+root initializer def=15 type=11 value=v0 storage=a0
+root initializer def=16 type=23 value=v1 storage=none
+root initializer def=17 type=23 value=v1 storage=none
+value v0 type=11 integer bits=00000000000000000000000000000007 metadata=none
+value v1 type=23 pointer allocation=a0 write=shared-derived metadata=none
+allocation a0 type=11 origin=static:15 contents=v0
+eof declarations=5 roots=4 values=2 allocations=1

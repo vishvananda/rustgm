@@ -1,0 +1,1 @@
+const fn f()->u8{let mut x=1;let r=&mut x;*r+=2;x}fn main(){}

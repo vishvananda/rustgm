@@ -1,0 +1,1 @@
+trait Get{fn get(&self)->u8;}const fn f<T:Get>(x:&T)->u8{x.get()}fn main(){}

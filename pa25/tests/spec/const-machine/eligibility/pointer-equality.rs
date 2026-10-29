@@ -1,0 +1,1 @@
+const fn f(x:*const u8,y:*const u8)->bool{x==y}fn main(){}

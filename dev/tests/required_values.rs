@@ -1,4 +1,6 @@
 //! Complete source constants exercise readiness, checked calls and native results.
+#[path = "required_values/repeat_lengths.rs"]
+mod repeat_lengths;
 use crate::native_references as native;
 use crate::resolve as source;
 use std::{path::Path, process::Command};

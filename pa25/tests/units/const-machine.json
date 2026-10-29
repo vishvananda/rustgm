@@ -1,0 +1,1837 @@
+{
+  "schema": 1,
+  "mode": "--emit-lowir",
+  "additional_modes": [
+    "--emit-constants"
+  ],
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "discovery": [
+    "tests/spec/const-machine",
+    "tests/spec/inspection/library.rs",
+    "tests/spec/inspection/repeats.rs",
+    "tests/spec/inspection/unused-division.rs",
+    "tests/spec/inspection/unused-uninitialized.rs",
+    "tests/spec/inspection/closures.rs"
+  ],
+  "cases": [
+    {
+      "path": "tests/spec/const-machine/eligibility/scalar.rs",
+      "source_sha256": "f7fa6f6a4f5706fb7d515dd96c40f3f96bc09d309d28b7300de99743bdc98192",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/direct-const-call.rs",
+      "source_sha256": "f2318034bb8c73c24875a0cc1d33f4b66d2a039f78b687dd3f8cb36bef6d6852",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/recursive-call.rs",
+      "source_sha256": "cad05a243b52df2a1febbcbb05fcbe62604dad482cf8eb502b5c16166a8c7343",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/mutual-recursion.rs",
+      "source_sha256": "c38df4e51ff0e094aff7bd77b7622ccfd6b4e79013eccda1370350537f4e7c7b",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/function-item-local.rs",
+      "source_sha256": "8fa9953a7447a433a94f1afaa10a0c4c1a891fbbd8b67e0d90a5a4e19648ddc6",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/nested-runtime-declaration.rs",
+      "source_sha256": "e5d31a43538f402581c8e895f8d623d8cc8f37134e89364b819f8124f7363aa2",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/mutation-and-loops.rs",
+      "source_sha256": "87c7057d8218818dc677650f615cd3069ea00d0eb39fe2946509fdbb8c000c7e",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/transient-mutable-borrow.rs",
+      "source_sha256": "c2001bd2d3f61f1e874479fd3d1a002bf0417960baef09a5a8bc7e8faaf25f98",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/indirect-mutable-borrow.rs",
+      "source_sha256": "cc508b06974b5752141a0ede18d5f1b3b46776e8b52e05370f6217451e1edf60",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/inherent-const-method.rs",
+      "source_sha256": "0e1517111218dd39b8d2e518443ae4827aecb9463dac9d0daf53d4c5bf78510c",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/generic-inherent-const.rs",
+      "source_sha256": "0dfafeb145bb9deba45aa5c3edde3b1834eb7719015764437e9d553225710595",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/generic-const-receiver.rs",
+      "source_sha256": "6c2579a95d0b882df295f2d69e71e5e77f704cd824416e0ef0a24a3d228c7288",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/constructor.rs",
+      "source_sha256": "2035099f2cc3e47134dbdc4bb8ec2dc55b75123037a67464ab90f1d4d6d92419",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/enum-constructor.rs",
+      "source_sha256": "5e5f7d7727fcce3b33984b335a765d1762157bd3745b88023a10073b38cdcf71",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/numeric-pointer.rs",
+      "source_sha256": "9d73bb79bb08fa574ee1978b1b1ba9c1df5d6b23af33c147bfad3ebd61da1c72",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/pointer-pointer.rs",
+      "source_sha256": "3d49ef8175c45eedd8d16d42045652a147a4b9e165fc212a00a6624e017e9527",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/runtime-call.rs",
+      "source_sha256": "983319c8c14266de4508549e5437fb7470da14ff84ecc68e0251fa4a6cb6eba5",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/dead-runtime-call.rs",
+      "source_sha256": "29ca20eb0618922a81790bcd1e742cf15d09cb1adaaefd275cf15fbda4172613",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/unreachable-runtime-call.rs",
+      "source_sha256": "b859e62b858c622ef2531ca47588e7f29b7f0bcff771a55df28a1d1adef93695",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/unreachable-pointer-integer.rs",
+      "source_sha256": "4ab74429220feeea61e194569767dd356985f2957c97e04574440c2092f77b34",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/function-pointer-call.rs",
+      "source_sha256": "ac56e6a81bd0d78d6b8e49e7c9b01221c2217b45d6d42bd9e370e5827955ec44",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/reified-const-call.rs",
+      "source_sha256": "b4756d6b2af574fbc6f7a76932329619f270d61da04121be7f37a35fd54d9f6d",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/reified-constructor-call.rs",
+      "source_sha256": "3af5b24e0dc941564438d5a24e2a90564d3651786650ca152877bf80ae8c505c",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/inherent-runtime-method.rs",
+      "source_sha256": "b83deb0686003e57f35045203f8ebdd7f48bc978d6f9e32953247b9887a1286b",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/trait-runtime-method.rs",
+      "source_sha256": "b40e288173e82dcd747e433f7cbdeb24ebe3cda851615d1b7857de425b68a8c8",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/qualified-runtime-method.rs",
+      "source_sha256": "21fb26266524dbca5534294a89be037e675fe4f7710bc9883901f7b9b4c4768c",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/pointer-integer.rs",
+      "source_sha256": "3635216c760ef3c98578d580d6ecb0846c6eb4f155ca3f4e75358e8bbc708f18",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/dead-pointer-integer.rs",
+      "source_sha256": "05379aa979a8baa891410861c0bee32bdd51a17dcf11d93de67dfb9df78d7ada",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/pointer-equality.rs",
+      "source_sha256": "9532dfc64880c6a1e26c91e9b1bfebfbf4f42977b2a33d7a8ec78781c70a8885",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/pointer-ordering.rs",
+      "source_sha256": "a54de3d8361e8e256cc15f7ad76856a42818b8449961903371d01d527407d877",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/eligibility/ordinary-runtime-context.rs",
+      "source_sha256": "5a94f51ae41b69f7ed6293cc2dd36d1261b6254d3c6c7b2f07d8569bc0af7048",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/destruction/returned-destructor.rs",
+      "source_sha256": "dbfc84ee1f614b3b92b2c01ffb6c02f37e16ec41cad3273c9689eba1ce9e3905",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/destruction/generic-transfer.rs",
+      "source_sha256": "00bdb6579d032f9dc971904b8c5bc4f4aefcc9ca354e493c9fce748d6e376a44",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/destruction/generic-conditional-transfer.rs",
+      "source_sha256": "d985dad76cb179a074253d30e5d73ddd5f896bcde3956c945a3c239d4720e813",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/destruction/copy-parameter.rs",
+      "source_sha256": "77f8da0b50925451720be3396402641fc7d8d5cf5147aefa86a88e131350886e",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/destruction/zero-sized-array.rs",
+      "source_sha256": "c44f66d047eeec2b2b21439696a35ab6e815154815b5579d955b05874db88f98",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/destruction/ordinary-runtime-drop.rs",
+      "source_sha256": "4d688adee07dbd7dd5eee39658125327d9ee5b46f6488ecd4274d211f99e0a6f",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/destruction/unreachable-drop.rs",
+      "source_sha256": "4ff9cd3e74d25d5151ddbcae99446c4257ab256fac0f9169853a38cdae39722e",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/destruction/local-drop.rs",
+      "source_sha256": "158935b6b236ca580817ad241549cb257e3413c2b32c1d115e9c13b5c9867215",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/destruction/argument-drop.rs",
+      "source_sha256": "b29c7678c18b42d823e65127223534fe2646f99bd2640d84f43e28e9fabe39cc",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/destruction/generic-drop.rs",
+      "source_sha256": "4cbc3a7856a83062da6520a31324bef95a9a92b5b82966b480f643ac66d4dd86",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/destruction/generic-conditional-drop.rs",
+      "source_sha256": "a893d378e6e28dc9f738b2fbac71328b47beb159592bb53a24770ba3309f0a42",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/destruction/dead-conditional-drop.rs",
+      "source_sha256": "4b01b26e677355321635560ae68eb0946fef79ed30019831bca737e4f5b12ccc",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/destruction/discarded-temporary.rs",
+      "source_sha256": "4fc971fbfea59af0b3dda4524b4ed5730010329845333a63a1bcc51330851807",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/destruction/zero-repeat-evaluates-operand.rs",
+      "source_sha256": "ead0812c0209cfd90cb4aa6c69ab86bdab027a4be179b6b36148d83dbf6446eb",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/destruction/generic-partial-transfer.rs",
+      "source_sha256": "a900bcb1473637b659ce2c22908c0675e47c5299d0b7535436395a402f9fa6b2",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/initializers/const-divide.rs",
+      "source_sha256": "5e735939f8e48287abf5ececbad16c7e77766fe7a079eb1612e95c5afa9d8419",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/initializers/static-divide.rs",
+      "source_sha256": "2ba258c821f66fe33bab6d3fff6b1a3bae364d4b05aff3397057fa07506cdaa8",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/initializers/mutable-static-divide.rs",
+      "source_sha256": "c58135c7d02e6a2810bc14a151044741a9ab05109e0e200e29cd00db72b475cb",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/initializers/overflow.rs",
+      "source_sha256": "038c412712e14e61667c8988fb39c9a60baa6de4759933d9fc5ab8433a3b6ae2",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/initializers/closed-call.rs",
+      "source_sha256": "fa340f868bff4ce0607c3d543d95a9b9c995a75a41766b433447f2f9552db847",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/initializers/unused-callee.rs",
+      "source_sha256": "4afe34eb28a03be7664962661a0e58271882f081d90a414a8305e2199019afdc",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/initializers/lazy-branch.rs",
+      "source_sha256": "8b1ac0e8d0e76512d6483c469ac2bf474732237747b31072a75def2873f17ee0",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/initializers/associated-closed.rs",
+      "source_sha256": "bc5fbbf09390d3471a1885c1999651715f8be79de61a23b8aa665f091332d099",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/initializers/associated-generic.rs",
+      "source_sha256": "5eede27f85698d97fd7d75d1354909f2f294ef473bf555bfa4e4ba678b891b81",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/selected/statements.rs",
+      "source_sha256": "1b182762cb596f9a011ad701e6331ab76a6160f172973d46de628d63b19cd140",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/selected/shared-reference.rs",
+      "source_sha256": "960e41672f5b47273f25783c862a02b7b01fa4be093425fb3d19c77357a1c7ee",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/selected/dangling.rs",
+      "source_sha256": "e4e6ee0d8a7415ca7efc3834adcaa6f33b6642e36c35bd6c1f20e2e277880fe1",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/selected/projected-result.rs",
+      "source_sha256": "e01c7b837592febfea0377297191e334c114fc01af64136aa964cd25547c7d62",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/selected/erased-type.rs",
+      "source_sha256": "be96c748c6f7d3cfd229998fc88fc4898672600b2e17da452530919b1b8d0e76",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/selected/forward-callee.rs",
+      "source_sha256": "d1026694646b89953e00c10026d44bc4381104d781f81458376f286fa97cdfb5",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/selected/const-machine.rs",
+      "source_sha256": "0dd0da86c38abbdcdedeb3742e84bac5591f3fcdf3dd1570f6678cd74fc8e236",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/selected/distinct-recursion.rs",
+      "source_sha256": "1d21fc511f63e83de506b162d6eb7057638f08b13fa43d4ec0947757be9366f3",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/selected/nested-inline.rs",
+      "source_sha256": "03d64c13da79bbcd92b94928e80cfd8866e8dc0e16e8fb06dca257a6a6f59a83",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/selected/static-suspension.rs",
+      "source_sha256": "e1c9370025cb27bdda21e06e16b855029049ab96dfcf038b0a02577474144fe1",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/selected/qualified-trait.rs",
+      "source_sha256": "a6b9c5c3e38ec968bb9b78cbd7c924e10f52120cd55a980463f0eb31f83cf1fb",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/selected/cycle.rs",
+      "source_sha256": "fb5d9450d9b155a90914645e902a9a200f0a481323f99525e567e39325464e62",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/selected/fault.rs",
+      "source_sha256": "9eb3def896cca03f43e5fc22274890d1f65fedde9c05c1f8c218ffba8cddbfc0",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/selected/unused-nonconst.rs",
+      "source_sha256": "4d428f8edbcdc0cdc27bb9ef35ac2a2ffd371d57273b9bafd2610d6b81180091",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/selected/skipped-nonconst.rs",
+      "source_sha256": "4e6482a8195b99019a0a910a09bef47a264e459ff9eaa7e6088fc50d91c9d9cf",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/selected/mutable-static.rs",
+      "source_sha256": "6fa6507c920d76ffeae44529ae41d0ac7b4a6491320ed2b4dfa496fa086b3e3e",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/selected/cross-definition.rs",
+      "source_sha256": "60d3f987af2661aff241d872fafd6c931996665835c8a3a4c4319e72db13d843",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/native/recursive-constant.rs",
+      "source_sha256": "0741205ab2f8b98eec0a3ab5bfc8a1f0519f72f4b565accea0892ac20b7cd2be",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/native/mutual-recursion.rs",
+      "source_sha256": "a389aea1be00f261aa820a54369fbaec753dca356cc75b35d016906ec45f26b9",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/native/loop-mutation.rs",
+      "source_sha256": "5c018ac0f012eb4d055415e087d02e84b9a49ce023a1f1c38bd245b61565ce5c",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/native/forward-callee.rs",
+      "source_sha256": "390a3792023887c4d926d0d2908c44133bea4a34ce147b35705ab6f9453b146f",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/native/static-initializer.rs",
+      "source_sha256": "72a1ceaa7b34c5df5bb9596b771752c8ce6926abfbf73b8afb95956a1d7ac6d8",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/native/generic-transfer.rs",
+      "source_sha256": "42a6a99dcdf78ba5b991f5d7ee5db20f47c96eddf5968a1355a205b1f350e9f0",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/native/const-method.rs",
+      "source_sha256": "1e8d5b3f32ad225d2802871f80b79ffde5d4b813bb426bc92dd470cbe0e0d2a8",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/native/typed-queries.rs",
+      "source_sha256": "3b12210b1c3da1a0fbe7f4adf3398d5b8e62bae453bafd16bd03a059d16fad3c",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/native/selected-const-arguments.rs",
+      "source_sha256": "aae5976e259a210a40360f69e3e1817126fcfbb60af63f48e848e6e3bb7f76e5",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/inspection/library.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.constants-view"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-constants",
+      "input": "file",
+      "work_units": [
+        "const-machine"
+      ],
+      "source_sha256": "fde0875f9fb3c2f1e5410f355318f6283d4445e69e96682e798825c0998da633"
+    },
+    {
+      "path": "tests/spec/inspection/repeats.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.constants-view"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-constants",
+      "input": "file",
+      "work_units": [
+        "const-machine"
+      ],
+      "source_sha256": "5daa032870f85d8672e9190c267c4ca59c8ece3cb2e00e71d9efe82d17471303"
+    },
+    {
+      "path": "tests/spec/inspection/unused-division.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.constants-view"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-constants",
+      "input": "file",
+      "work_units": [
+        "const-machine"
+      ],
+      "source_sha256": "7700f493189500748a4d6c544ca35ddbdafce69b1670eb67d620eff12af04574"
+    },
+    {
+      "path": "tests/spec/inspection/unused-uninitialized.rs",
+      "exit_status": 1,
+      "features": [
+        "pa25.constants-view"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-constants",
+      "input": "file",
+      "work_units": [
+        "const-machine"
+      ],
+      "source_sha256": "34968537ec02f207cc7a871f5b363d883146286209f74f4d32e56d45ba3a514d"
+    },
+    {
+      "path": "tests/spec/inspection/closures.rs",
+      "exit_status": 0,
+      "features": [
+        "pa25.constant-inspection",
+        "pa24.non-capturing-closures"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj",
+        "default_lints": true
+      },
+      "source_sha256": "b0dbd9860ed67614a235a0a8f7de10378d1e2f95745b34d9242ce740ced32166",
+      "mode": "--emit-constants",
+      "input": "file",
+      "work_units": [
+        "const-machine"
+      ]
+    },
+    {
+      "path": "tests/spec/const-machine/repeats/forward-call.rs",
+      "source_sha256": "288b2c6b723290f0684043e0f38cc3d79dcd0eedc151fca7e63a0324c0f0cc58",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/repeats/const-parameter.rs",
+      "source_sha256": "e9d1744ac6da783451d2576ec716a70cfee9f7146b76b7eabafd4772fa9681d2",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/repeats/closed-associated.rs",
+      "source_sha256": "227cc878609f565f3f8a651d6ef80d00839de335aae73808b3bae52586bb6c94",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/repeats/nonconst-call.rs",
+      "source_sha256": "ae72446a39c58465d7100dbbf599973337a8ae9b2892049ab9a494e52dd83b10",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/repeats/wrong-integer-type.rs",
+      "source_sha256": "1bfc67b870cccf1a804685abbc0f872e5dec5404db697286576d51cb5f3c6a3a",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/repeats/local-capture.rs",
+      "source_sha256": "08ea85447506cf3ab49c9f264cb7b872128a9d3b1a035bca0f194bdb38894349",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/repeats/reached-fault.rs",
+      "source_sha256": "e84c155ae8817d1a846f6ec50f2ea477462a13e9b840091e6016cb494deae83c",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    },
+    {
+      "path": "tests/spec/const-machine/repeats/unreachable-fault.rs",
+      "source_sha256": "0a9c6e7a8688682d2fe5a37db8b6ecac6a54866c9992971bc8be1ce4814eeb91",
+      "exit_status": 1,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      }
+    }
+  ]
+}

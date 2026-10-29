@@ -1,0 +1,1 @@
+#[allow(unreachable_code)]const fn f(x:*const u8)->usize{return 0;x as usize}fn main(){}

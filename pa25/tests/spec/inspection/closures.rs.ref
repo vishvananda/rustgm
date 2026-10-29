@@ -1,0 +1,10 @@
+constants 1
+declaration def=13 kind=const type=21 const=true status=checked-value
+declaration def=14 kind=const type=21 const=true status=checked-value
+declaration def=15 kind=const type=21 const=true status=checked-value
+root initializer def=13 type=21 value=v0 storage=none
+root initializer def=14 type=21 value=v0 storage=none
+root initializer def=15 type=21 value=v1 storage=none
+value v0 type=21 function closure=0 instance=22 signature=21 const=false metadata=none
+value v1 type=21 function closure=1 instance=23 signature=21 const=false metadata=none
+eof declarations=3 roots=3 values=2 allocations=0

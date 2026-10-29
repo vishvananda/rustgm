@@ -1,0 +1,1 @@
+fn g()->u8{1}const fn f()->u8{if false{g()}else{0}}fn main(){}
