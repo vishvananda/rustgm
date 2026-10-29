@@ -38,6 +38,9 @@ impl Carrier {
         let range = types
             .scalar_range(id)
             .ok_or("missing scalar carrier range")?;
+        if range.base != base {
+            return Err("scalar carrier range belongs to a different base");
+        }
         let Some(Kind::Primitive(primitive)) = types.kind(base) else {
             return Err("scalar carrier requires its primitive base");
         };
@@ -45,9 +48,6 @@ impl Carrier {
             return Ok(None);
         };
         let mask = u128::MAX >> (128 - bits);
-        if range.base != base {
-            return Err("scalar carrier range belongs to a different base");
-        }
         if range.start != 1 || range.end != mask || bytes != u64::from(bits / 8) {
             return Ok(None);
         }

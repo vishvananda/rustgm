@@ -68,8 +68,16 @@ aligned payload union. An integer-representation enum uses a union of per-varian
 structs with the tag first. Combined C/integer hints use C payload placement with
 the selected integer tag. The unoptimized default enum layout uses a 64-bit signed tag
 and source-order payload fields; a single default-representation variant has no
-physical tag. There is no niche optimization. Transparent ancillary zero-sized
-fields have offset zero in the course layout.
+physical tag. Source-owned nullable policies may instead use an authenticated
+non-null pointer carrier or an exact unsigned `1..=MAX` scalar carrier. The latter
+covers u8/u16/u32/u64/u128/usize, including ordinary transparent wrappers, and keeps
+zero as the empty variant without reading its inactive payload. Integer carriers
+retain integer ABI types; they grant no pointer provenance or dereference rights.
+Explicit representations and unsupported scalar ranges retain their separate
+physical profiles or explicit wider-niche requirement. General Rust niche selection
+is not implied. Transparent ancillary zero-sized fields have offset zero in the
+course layout. See the [unsigned niche checkpoint](../docs/pa12-unsigned-niche-checkpoint.md)
+for source, CTFE, ABI and native qualification boundaries.
 
 Explicit discriminants have the declared integer representation type, or isize
 without one. Evaluate typed scalar constant expressions: integer and floating

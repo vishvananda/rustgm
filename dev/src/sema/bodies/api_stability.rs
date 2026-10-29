@@ -193,6 +193,9 @@ impl Checker<'_> {
         if owner.is_none() {
             return Ok(());
         }
+        if self.const_constructor(node, target, callable)? {
+            return Ok(());
+        }
         let inventory = inventory
             .ok_or_else(|| self.error(node, "const API call lost its actual library inventory"))?;
         if inventory.checks_const_body(target)
@@ -207,5 +210,94 @@ impl Checker<'_> {
                 "const-stable body calls a function without const-stable API policy",
             ))
         }
+    }
+    // Tuple/variant construction is a language operation, not a function body
+    // whose API can be declared const-stable. Ordinary API and field/type checks
+    // remain at their existing call/constructor boundaries.
+    fn const_constructor(
+        &mut self,
+        node: NodeId,
+        target: DefId,
+        callable: TypeId,
+    ) -> Result<bool, Error> {
+        use crate::{
+            resolve::model::{DefKind, Namespace},
+            sema::members::ConstructorKind,
+        };
+        self.state
+            .infer
+            .account_work(1)
+            .map_err(|e| self.error(node, e))?;
+        let Some(constructor) = self.facts.members.constructors.get(&target) else {
+            return Ok(false);
+        };
+        if constructor.kind != ConstructorKind::Variant {
+            return Ok(false);
+        }
+        self.state
+            .infer
+            .account_work(11)
+            .map_err(|e| self.error(node, e))?;
+        let definition = self
+            .report
+            .resolution
+            .definitions
+            .get(target.0 as usize)
+            .ok_or_else(|| self.error(node, "const constructor lost its actual declaration"))?;
+        let variant = self
+            .facts
+            .members
+            .variants
+            .get(constructor.variant.0 as usize)
+            .ok_or_else(|| self.error(node, "const constructor lost its actual variant"))?;
+        if !matches!(definition.kind, DefKind::Constructor | DefKind::Variant)
+            || definition.namespace != Namespace::Value
+            || definition.node.is_none()
+            || definition.node != variant.origin.source()
+            || variant.shape != crate::syntax::item::Shape::Tuple
+            || self
+                .facts
+                .members
+                .variants(variant.owner)
+                .get(variant.ordinal as usize)
+                != Some(&constructor.variant)
+        {
+            return Err(self.error(node, "const constructor requires its actual source owner"));
+        }
+        let Some(TypeKind::FunctionItem {
+            item, signature, ..
+        }) = self.facts.types.kind(callable)
+        else {
+            return Err(self.error(node, "const constructor lost its actual callable"));
+        };
+        let Some(TypeKind::Function {
+            parameters,
+            result,
+            unsafe_: false,
+            convention,
+            ..
+        }) = self.facts.types.kind(signature)
+        else {
+            return Err(self.error(node, "const constructor lost its safe signature"));
+        };
+        let fields = variant
+            .end
+            .checked_sub(variant.start)
+            .ok_or_else(|| self.error(node, "const constructor has invalid field coordinates"))?;
+        if item.0 != target.0
+            || convention != crate::types::callable::Convention::RUST
+            || !matches!(self.facts.types.kind(result),Some(TypeKind::Adt(owner, _)) if owner==variant.owner)
+            || self
+                .facts
+                .types
+                .list(parameters)
+                .is_none_or(|parameters| parameters.len() != fields as usize)
+        {
+            return Err(self.error(
+                node,
+                "const constructor differs from its actual owner or field signature",
+            ));
+        }
+        Ok(true)
     }
 }

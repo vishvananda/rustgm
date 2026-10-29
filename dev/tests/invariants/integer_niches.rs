@@ -57,15 +57,31 @@ fn unsigned_zero_carriers_preserve_all_widths_without_pointer_permissions() -> R
         assert_eq!(layouts.steps - start, 128);
         assert_eq!(layouts.niches.as_ref().ok_or("cache")?.retained(), bytes);
         println!(
-            "{primitive:?} carrier={} niche={} retained={bytes} warm_work=128",
+            "{primitive:?} carrier={} answer={} niche={} table={} retained={bytes} warm_work=128",
             size_of::<Carrier>(),
-            size_of::<Niche>()
+            size_of::<super::super::Answer>(),
+            size_of::<Niche>(),
+            size_of::<super::super::Niches>()
         );
     }
     Ok(())
 }
 #[test]
 fn partial_ranges_and_failed_layouts_never_publish_a_nullable_encoding() -> Result<(), String> {
+    let mut foreign = Store::default();
+    let base = TypeId::primitive(Primitive::U8);
+    let id = foreign.intern_scalar_range(
+        ScalarRange {
+            base,
+            start: 1,
+            end: 255,
+        },
+        &|_, _| Ok(()),
+    )?;
+    let error = Carrier::unsigned(&foreign, base, TypeId::primitive(Primitive::Char), id, 4)
+        .err()
+        .ok_or("foreign range base accepted")?;
+    assert!(error.contains("different base"));
     for (primitive, start, end) in [
         (Primitive::U8, 3, 9),
         (Primitive::U8, 0, 254),

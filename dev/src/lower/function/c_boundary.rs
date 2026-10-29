@@ -145,7 +145,7 @@ impl Lower<'_, '_, '_> {
                         Representation::ScalarObject(storage) => {
                             retained.push(boundary::Value::Scalar(
                                 self.builder.load(storage.ty, address.operand)?,
-                            ))
+                            ));
                         }
                         Representation::Scalar(_) => {
                             return Err("C object argument lacks object storage");

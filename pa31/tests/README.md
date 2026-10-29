@@ -434,3 +434,11 @@ Independent scalar-count/evaluation/overflow observations remain separate from
 candidate Count execution. The full checked original `from_usize` body and real
 comparison/panic dependencies are retained, with no scalar Count shortcut or
 claim of full Formatter/handler execution.
+
+`spec/source-integer-niches/contract.json` freezes six unsigned widths, actual selected
+original niche constructor/accessor bodies and a separate standard NonZero layout/
+FFI observer. `cleanup/contract.json` separately freezes a non-Copy transparent
+payload and actual source destructor trace; inactive None must not run Drop.
+The exact source intervals and authored protocol boundaries are retained in
+`source-provenance.json`. These fixtures do not replace the original generic
+NonZero/ZeroablePrimitive or full Option/Drop source graphs.

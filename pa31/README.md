@@ -59,8 +59,13 @@ Clone/Copy/native execution for the Nanoseconds profile. Retain the actual base
 representation and complete source constraints. Open/exclusive and signed
 alternative forms require the real RangeMin/RangeMax/RangeSub declarations,
 selected source constants/bodies and authenticated internal desugaring allowance.
-Generic endpoints, scalar enum niches, refinement metadata and complete original
-methods remain requirements of the owning assignments.
+The [unsigned zero-niche checkpoint](../docs/pa12-unsigned-niche-checkpoint.md)
+covers the finite closed unsigned `1..=MAX` carrier through nullable layout, source
+constructors/accessors, CTFE bytes and scalar/C transport. Its authored range
+invocations and minimal Option/Drop protocols remain distinct from the complete
+original NonZero/ZeroablePrimitive/Option/Drop graphs. Generic endpoints, partial/
+signed/char niches, refinement metadata and complete original methods remain
+requirements of the owning assignments.
 
 The [source range member checkpoint](../docs/pa31-source-range-members-checkpoint.md)
 registers actual associated identities and completes their shared const-trait

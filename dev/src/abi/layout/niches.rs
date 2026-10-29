@@ -257,7 +257,7 @@ impl Layouts {
         types: &Store,
         layout: Layout,
         budget: &mut Budget,
-    ) -> Result<Option<Carrier>, &'static str> {
+    ) -> Result<Option<TypeId>, &'static str> {
         let [variant] = self.variants(&layout) else {
             return Err("transparent carrier lacks one physical variant");
         };

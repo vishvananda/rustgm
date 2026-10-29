@@ -1,0 +1,33 @@
+{
+  "state": "predictions frozen before any observation",
+  "scope": "Same unsigned zero niche with genuine non-Copy transparent source payload destructor; actual source Drop/Destruct roles, no fabricated cleanup or inactive payload read; minimal source Drop declaration protocol, NOT full original Pin/pin_drop fallback graph",
+  "metadata_status": 0,
+  "object_status": 0,
+  "link_status": 0,
+  "native_status": 0,
+  "expected_stdout": "drop.stdout",
+  "drop_source": {
+    "path": "pa31/tests/spec/source-try-blocks/source-native-drop-exit.rs",
+    "sha256": "29dabe8703ef7f0a611000f000f43e524921c9059b9ae70ffae5d8363a12baf1",
+    "start": 2986,
+    "end": 3041,
+    "selected_sha256": "467142697f14fee28477d1ac5c5218a13013a118195fc1486d8a2fe13f705fc8"
+  },
+  "foundation_sha256": "dd43c3301b768ae307c1ece669b4e9cc2b907d8c2b578d08d3f624d4fa4d5922",
+  "files": {
+    "drop-observer.c": "9a3340346804cf55f119bb15b0e21f2587df35e88a356ea8ab61f78af3f1486e",
+    "drop.stdout": "e656b239d7aeb32ca90f00f8cdf66412b9795f8bb238b270e7adaffb48ed4e27",
+    "source-drop.rs": "66b2426c5b3ac0c1a6a3d6167cbe40883bd4842c838910ef9d94bc4cd936eef3"
+  },
+  "predecessor": "rust-drop-v1 metadata failed genuine missing const stability; all bytes/raw retained",
+  "drop_header": {
+    "original_path": "library/core/src/ops/drop.rs",
+    "original_sha256": "1d91c5e4e5868e8d2e6860da6fb5353f69172623a8ea7b9d7969e1ebd0fe7055",
+    "start": 7946,
+    "end": 8079,
+    "sha256": "fb74e94cc99af806089e7ca9a727f5787d5225cb0d34cf3ef44bcc5cb96db089"
+  },
+  "required": [
+    "Full original Drop Pin/pin_drop body graph remains separate; actual observed destructor impl is authored source"
+  ]
+}

@@ -84,7 +84,11 @@ pub fn write(report: &Report, facts: &Declarations, out: &mut impl Write) -> io:
                     writeln!(
                         out,
                         " niche empty={} payload={} field={} word={} offset={}",
-                        niche.empty, niche.payload, niche.field, niche.word.0, niche.offset
+                        niche.empty,
+                        niche.payload,
+                        niche.field,
+                        niche.carrier.leaf().0,
+                        niche.offset
                     )?;
                 } else if let Shape::Aggregate { tag, .. } = layout.shape {
                     write!(out, " aggregate tag=")?;

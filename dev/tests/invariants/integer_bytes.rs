@@ -37,7 +37,7 @@ fn integer_byte_carriers_recheck_initialization_and_reject_forged_some_zero() ->
         std::iter::empty(),
         Limits::default(),
     )
-    .map_err(|e| e.message().to_owned())?;
+    .map_err(str::to_owned)?;
     let check = (|| -> Result<(), Failure> {
         machine.footprint(ty)?;
         let niche = Reader::new(machine.evaluator.facts()).enum_niche(ty)?;

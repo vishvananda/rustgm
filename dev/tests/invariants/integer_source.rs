@@ -1,6 +1,6 @@
 //! Authored closed-range source supplies the real constructors and foreign call boundaries.
 use crate::{expand::config::Config, pipeline, support::diagnostics::LintCap, test_source};
-type TestResult = Result<(), Box<dyn std::error::Error>>;
+type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 fn report(name: &str) -> Result<crate::resolve::expansion::Report, Box<dyn std::error::Error>> {
     let source = test_source::fixture(&format!("pa31/tests/spec/source-integer-niches/{name}.rs"))?;
     let mut config = Config::default();
@@ -11,14 +11,13 @@ fn report(name: &str) -> Result<crate::resolve::expansion::Report, Box<dyn std::
         &config,
     )?)
 }
-#[test]
-fn genuine_source_unsigned_niches_reach_ctfe_and_all_native_boundaries() -> TestResult {
-    let report = report("source-runtime")?;
+fn produce(name: &str) -> TestResult<crate::lowir::program::Program> {
+    let report = report(name)?;
     let pipeline::Analysis {
         mut facts,
         prepared,
     } = pipeline::analyze_source(&report)?;
-    let program = crate::lower::instances::build_roots_prepared(
+    Ok(crate::lower::instances::build_roots_prepared(
         &report,
         &mut facts,
         crate::lower::Roots {
@@ -26,7 +25,11 @@ fn genuine_source_unsigned_niches_reach_ctfe_and_all_native_boundaries() -> Test
             exports: &[],
         },
         prepared,
-    )?;
+    )?)
+}
+#[test]
+fn genuine_source_unsigned_niches_reach_ctfe_and_all_native_boundaries() -> TestResult {
+    let program = produce("source-runtime")?;
     for primitive in ["u8", "u16", "u32", "u64", "u128", "usize"] {
         for prefix in [
             "echo",
@@ -85,5 +88,33 @@ fn invalid_some_zero_and_wider_range_requirements_are_not_none_values() -> TestR
             .to_string();
         assert!(error.contains(needle), "{name}: {error}");
     }
+    Ok(())
+}
+
+#[test]
+fn actual_noncopy_source_cleanup_distinguishes_none_and_some_integer_carriers() -> TestResult {
+    let program = produce("cleanup/source-drop")?;
+    for name in ["drop_value", "drop_local_none", "drop_local_some"] {
+        assert_eq!(
+            program
+                .symbols
+                .iter()
+                .filter(|s| s.name == name && s.body.is_some())
+                .count(),
+            1,
+            "{name}"
+        );
+    }
+    let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../obj/parallel/source-integer-niches-v1/candidate/cleanup");
+    std::fs::create_dir_all(&folder)?;
+    std::fs::write(
+        folder.join("source.rs"),
+        test_source::fixture("pa31/tests/spec/source-integer-niches/cleanup/source-drop.rs")?,
+    )?;
+    crate::lowir::writer::write(
+        &program,
+        &mut std::fs::File::create(folder.join("provider.lowir"))?,
+    )?;
     Ok(())
 }

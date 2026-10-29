@@ -1,0 +1,21 @@
+{
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source": "library/core/src/num/niche_types.rs",
+  "source_sha256": "1a74080c73dd7687b08e667d5611d4068a1b7556311f0b58e44edadb17d0a160",
+  "source_interval": [
+    597,
+    1867
+  ],
+  "interval_sha256": "9f1a08c4b20ddf733b221b25c20b27af1ed9df03260c9482199a0a91d1789c68",
+  "retained_exact_methods": [
+    "new",
+    "new_unchecked",
+    "as_inner"
+  ],
+  "foundation_interval": [
+    10757,
+    12027
+  ],
+  "foundation_sha256": "dd43c3301b768ae307c1ece669b4e9cc2b907d8c2b578d08d3f624d4fa4d5922",
+  "scope": "Only declaration macro shell/invocations and minimal Option/Drop protocols are authored; constructor/accessor bodies are exact original selected bytes. Full original NonZero/ZeroablePrimitive/Option and Drop Pin/pin_drop graphs remain required."
+}
