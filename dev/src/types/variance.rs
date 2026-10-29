@@ -134,7 +134,6 @@ impl Variances {
             let definition = definitions
                 .get(item)
                 .ok_or("missing variance aggregate definition")?;
-            graph.seen.clear();
             if definition.kind == super::aggregate::Kind::PhantomData {
                 let target = definitions.phantom_argument_from(types, item, arguments)?;
                 graph.visit(types, item, target)?;
@@ -186,7 +185,7 @@ struct Graph<'a> {
     variables: Vec<Term>,
     solver: Solver<'a>,
     work: Vec<(TypeId, Term, u16)>,
-    seen: HashSet<(TypeId, Term, u16)>,
+    seen: HashSet<(ItemId, TypeId, Term, u16)>,
 }
 impl Graph<'_> {
     fn declaration(
@@ -337,7 +336,9 @@ impl Graph<'_> {
                 && !types
                     .contains_parameters(ty)
                     .ok_or("invalid variance type")?)
-                || !self.solver.insert(&mut self.seen, (ty, position, depth))?
+                || !self
+                    .solver
+                    .insert(&mut self.seen, (owner, ty, position, depth))?
             {
                 continue;
             }

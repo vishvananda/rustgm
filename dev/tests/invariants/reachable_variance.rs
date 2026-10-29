@@ -215,6 +215,12 @@ fn every_scratch_growth_is_paid_before_publication_and_failed_attempts_can_resum
         size_of::<PreviousSolver>(),
         size_of::<Variances>()
     );
+    println!(
+        "variance seenkey old={} owner_qualified={}",
+        size_of::<(TypeId, Term, u16)>(),
+        size_of::<(ItemId, TypeId, Term, u16)>()
+    );
+
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     Ok(())
@@ -258,4 +264,98 @@ fn zero_scratch_storage_and_small_work_budgets_fail_before_cached_rows_change() 
         assert_eq!(values.get(wrapper), facts.lifetimes.variances.get(wrapper));
     }
     Ok(())
+}
+
+#[test]
+fn one_wide_dependency_closure_retains_owner_visits_with_near_linear_work() -> TestResult {
+    let mut previous = None;
+    for width in [16, 64, 128] {
+        let source = shared_bundle(width)?;
+        let report = crate::test_source::resolve(&source, true)?;
+        let facts = crate::sema::declarations::analyze(&report)?;
+        let owner = item(&report, "Bundle")?;
+        let paid = Cell::new((0_usize, 0_usize));
+        let (mut values, order) = bundle_variances(&facts, owner, &|work, bytes| {
+            let before = paid.get();
+            paid.set((
+                before.0.saturating_add(work),
+                before.1.saturating_add(bytes),
+            ));
+            Ok(())
+        })?;
+        let leaf = item(&report, "Leaf")?;
+        let leaf_position = order
+            .iter()
+            .position(|&item| item == leaf)
+            .ok_or("wide leaf was not reached")?;
+        assert!(leaf_position <= 2 && order.len() - leaf_position - 1 >= width - 1);
+        assert_eq!(values.ranges.len(), width + 2);
+        for index in 0..width {
+            let wrapper = item(&report, &format!("Wrap{index}"))?;
+            assert_eq!(values.get(wrapper), facts.lifetimes.variances.get(wrapper));
+        }
+        for name in ["Leaf", "Bundle"] {
+            let owner = item(&report, name)?;
+            assert_eq!(values.get(owner), facts.lifetimes.variances.get(owner));
+            assert_eq!(values.get(owner), Some([Variance::Covariant].as_slice()));
+        }
+        let (work, bytes) = paid.get();
+        if let Some((old_width, old_work, old_bytes)) = previous {
+            assert!(
+                work * old_width < old_work * width * 3 / 2,
+                "width={width} work={work} previous={old_work}"
+            );
+            assert!(
+                bytes * old_width < old_bytes * width * 2,
+                "width={width} bytes={bytes} previous={old_bytes}"
+            );
+        }
+        previous = Some((width, work, bytes));
+        let before = paid.get();
+        append(&mut values, &facts, owner, &|work, bytes| {
+            let old = paid.get();
+            paid.set((old.0 + work, old.1 + bytes));
+            Ok(())
+        })?;
+        assert_eq!(paid.get(), (before.0 + 1, before.1));
+        println!("variance oneclosure width={width} work={work} bytes={bytes}");
+    }
+    Ok(())
+}
+fn shared_bundle(width: usize) -> TestResult<String> {
+    let mut source = String::from("struct Leaf<'a>{");
+    for index in 0..width {
+        write!(&mut source, "f{index}:[&'a u8;{}],", index + 1)?;
+    }
+    source.push('}');
+    for index in 0..width {
+        write!(&mut source, "struct Wrap{index}<'a>{{leaf:Leaf<'a>}}")?;
+    }
+    source.push_str("struct Bundle<'a>{");
+    for index in 0..width {
+        write!(&mut source, "w{index}:Wrap{index}<'a>,")?;
+    }
+    source.push('}');
+    Ok(source)
+}
+
+fn bundle_variances(
+    facts: &Declarations,
+    owner: ItemId,
+    pay: Payment<'_>,
+) -> TestResult<(Variances, Vec<ItemId>)> {
+    let mut values = Variances::default();
+    let mut order = Vec::new();
+    values.append_reached(
+        &facts.types,
+        &facts.aggregates,
+        &facts.definitions,
+        owner,
+        |owner, ordinal, storage| {
+            order.push(owner);
+            facts.unreduced.fields(owner, ordinal).unwrap_or(storage)
+        },
+        pay,
+    )?;
+    Ok((values, order))
 }

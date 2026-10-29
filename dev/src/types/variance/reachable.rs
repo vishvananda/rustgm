@@ -80,8 +80,6 @@ impl Graph<'_> {
             let definition = definitions
                 .get(owner)
                 .ok_or("reached variance requires completed nominal fields")?;
-            self.solver.pay(self.seen.capacity(), 0)?;
-            self.seen.clear();
             if definition.kind == crate::types::aggregate::Kind::PhantomData {
                 let arguments = declaration(
                     types,
