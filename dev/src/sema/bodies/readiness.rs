@@ -22,6 +22,7 @@ pub(in crate::sema) enum Requirement {
     Opaque(crate::types::opaque::OpaqueId),
     SourceResultContracts(DefId),
     CallerLocation(DefId),
+    GenericDefault(DefId),
 }
 impl From<crate::sema::traits::selection::Dependency> for Requirement {
     fn from(dependency: crate::sema::traits::selection::Dependency) -> Self {
@@ -189,6 +190,7 @@ impl Checker<'_> {
                 Requirement::Opaque(_) => "missing completed opaque hidden type",
                 Requirement::SourceResultContracts(_) => "missing checked source Pointee contracts",
                 Requirement::CallerLocation(_) => "missing checked source caller-location data",
+                Requirement::GenericDefault(_) => "missing checked generic parameter default",
             };
             return Err(self.error(dependency.source.node, message));
         }

@@ -87,6 +87,34 @@ fn completed_source_callers_retain_identity_without_retaining_plain_literals() -
 }
 
 #[test]
+fn source_binary_annotation_prepares_its_actual_default_before_operator_contract()
+-> Result<(), String> {
+    let mut source = crate::test_source::fixture(
+        "pa31/tests/spec/source-shift-or/const-followup/primitive-const-impl.rs",
+    )
+    .map_err(|e| e.to_string())?;
+    source.push_str("type Arithmetic=[u8;3usize<<1|1];");
+    let report = crate::test_source::source_provider(&source, "default_annotation")?;
+    let mut checker = Checker::new(&report).map_err(|e| e.to_string())?;
+    checker
+        .facts
+        .set_constant_executor(crate::pipeline::execution::Context::default().executor());
+    checker.run().map_err(|e| e.to_string())?;
+    let index = report
+        .resolution
+        .definitions
+        .iter()
+        .position(|definition| report.package.names.get(definition.name) == "Arithmetic")
+        .ok_or("actual alias")?;
+    let ty = checker.facts.definitions[index].ok_or("actual array")?;
+    assert!(matches!(
+        checker.facts.types.kind(ty),
+        Some(Kind::Array { length: 7, .. })
+    ));
+    Ok(())
+}
+
+#[test]
 fn erased_scalar_anonymous_calls_keep_the_sparse_body_fast_path() -> Result<(), String> {
     let mut source =
         crate::test_source::fixture("pa31/tests/spec/source-scalar-patterns/source-runtime.rs")

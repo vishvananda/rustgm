@@ -63,6 +63,46 @@ impl From<&'static str> for Failure {
     }
 }
 struct Work(usize);
+/// Query only readiness; the ordinary operator validator still checks the value.
+pub(super) fn pending_default(
+    report: &Report,
+    facts: &Declarations,
+    site: NodeKey,
+    operator: Operator,
+) -> Result<Option<DefId>, Error> {
+    crate::sema::header_attributes::charge_source_contract_query(facts, 8)?;
+    let error = |message| Declarations::error(report, site, message);
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or_else(|| error("source binary default lost its actual catalog"))?;
+    catalog.require_provider_report(report).map_err(error)?;
+    let declaration = catalog
+        .language(operator.role())
+        .ok_or_else(|| error("source binary default requires its actual trait"))?;
+    let header = headers::Trait::source(report, facts, declaration).map_err(error)?;
+    let [parameter] = header.parameters else {
+        return Ok(None);
+    };
+    if parameter.default.is_some() || parameter.anonymous {
+        return Ok(None);
+    }
+    let original = report
+        .resolution
+        .definitions
+        .get(parameter.binding.0 as usize)
+        .and_then(|definition| definition.node)
+        .ok_or_else(|| error("source binary default lost its actual parameter"))?;
+    let ast = &report.package.unit(original.file).configured.ast;
+    let Syntax::Generic(index) = ast.node(original.node).kind else {
+        return Err(error(
+            "source binary default changed its generic declaration",
+        ));
+    };
+    Ok(ast.generics[index as usize]
+        .default
+        .map(|_| parameter.binding))
+}
 impl Work {
     fn charge(&mut self, count: usize) -> Result<(), &'static str> {
         self.0 = self.0.saturating_add(count);

@@ -18,6 +18,27 @@ pub(in crate::sema) fn source_binary(
     site: NodeKey,
     hook: Hook,
 ) -> Result<SourceBinary, Error> {
+    let operator = requested_operator(report, site, hook)?;
+    let actual = operator_contract::query(report, facts, site, operator)?;
+    Ok(SourceBinary {
+        definition: actual.definition,
+        method: actual.method,
+        signature: actual.signature,
+        rhs: actual.rhs.ok_or_else(|| {
+            Declarations::error(report, site, "source binary descriptor lost its Rhs formal")
+        })?,
+    })
+}
+pub(in crate::sema) fn pending_default(
+    report: &Report,
+    facts: &Declarations,
+    site: NodeKey,
+    hook: Hook,
+) -> Result<Option<DefId>, Error> {
+    let operator = requested_operator(report, site, hook)?;
+    operator_contract::pending_default(report, facts, site, operator)
+}
+fn requested_operator(report: &Report, site: NodeKey, hook: Hook) -> Result<Operator, Error> {
     let operator = match hook {
         Hook::Shl => Operator::Shl,
         Hook::BitOr => Operator::BitOr,
@@ -31,15 +52,7 @@ pub(in crate::sema) fn source_binary(
             ));
         }
     };
-    let actual = operator_contract::query(report, facts, site, operator)?;
-    Ok(SourceBinary {
-        definition: actual.definition,
-        method: actual.method,
-        signature: actual.signature,
-        rhs: actual.rhs.ok_or_else(|| {
-            Declarations::error(report, site, "source binary descriptor lost its Rhs formal")
-        })?,
-    })
+    Ok(operator)
 }
 
 #[cfg(test)]

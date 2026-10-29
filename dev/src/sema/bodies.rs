@@ -947,6 +947,7 @@ impl Checker<'_> {
             .or(self.offset_readiness(node)?)
             .or(self.comparison_readiness(node)?)
             .or(self.assignment_readiness(node)?)
+            .or(self.binary_default_readiness(node)?)
             .or_else(|| self.value_readiness(node))
         {
             self.state.work.push(Work::Exit(node));
