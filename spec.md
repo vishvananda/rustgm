@@ -781,6 +781,13 @@ walker. Its ordinary AssertParamIsCopy<Self> type check and `*self` body require
 real Copy evidence; helper spelling grants none. Generate no field reads, retain
 ordinary struct/enum rules and keep the output independent of union field count.
 
+Derive field macros retain their actual Type grammar and selected captured
+forest through typed copying and grafting. Prepay real capture/vector/tree
+growth; preserve delimiters, contexts, origins and opaque parsed handles. The
+registry and ordinary feature checks remain authoritative. Never flatten those
+handles, copy an unrelated source arena or reparse rendered field spelling.
+See the [typed macro checkpoint](docs/pa31-derive-type-macros-checkpoint.md).
+
 Source Debug derives use the pinned small-field helpers through five fields,
 then real field-name and typed `&[&dyn Debug]` arrays with the larger helpers.
 Preserve source labels, field order, enum binding provenance and the extra

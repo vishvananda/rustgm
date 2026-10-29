@@ -1,16 +1,20 @@
 # Parallel library bootstrap implementation
 
 Root owns compiler integration, current-source CLI/original-core observations and
-publication in `rustgm-pa25-work`. Union Clone9325f84b2 and the cold Source192
-layout correction8628f7afc now pass joined12 in109.84s, CLI3 in90.95s and
-harness272/upstream. Root's LowIR is byte-identical to the passed native proof.
-The previous resource API and metadata migration remain integrated/qualified.
-B (`lint_expectations`) now owns LIB-081's selected Macro(Type) capture copying
-in derive_types and its capture helper. C (`const_call_review`) owns LIB-082's
+publication in `rustgm-pa25-work`. Typed Macro capture b3ef989e2 is integrated;
+all3151 compiler/harness hashes exactly match its passed private6/native source,
+so Root reuses that evidence and qualifies only pending production/CLI3 (111.79s).
+Frozen fixture reuse, harness272 and upstream pass. Current CLI64e2f5e6 reaches
+the real range parser (file45:3237) in15.22s,374 opens, all722 original hashes
+unchanged; ef70a04c75a1b57aefe31fb80591053073fda4e61463a0317a20bc06c8dc51c9.
+No original artifact or range semantics are implied.
+B (`lint_expectations`) now owns LIB-083's source-only RangeMin/Max/Sub role,
+header and identity-query work. C (`const_call_review`) owns LIB-082's
 first complete closed-inclusive scalar-range consumer in syntax/types/sema/CTFE/
 ABI. Their exact syntax child and transfer ownership is coordinated; B does not
-edit central TypePattern transfer, and C does not edit Macro capture copying.
-Both start from8628f7afc in their existing trees. No new advisory lint producer,
+edit central TypePattern/Work/evaluation. Its one call_traits signature-queue
+hunk is agreed; source/body/desugaring permission stays consumer-owned. C has
+merged the disjoint Macro copier. No new advisory lint producer,
 worker or worktree is queued. Root owns observer/configuration, integration and
 publication; central interface changes require explicit coordination.
 
@@ -56,11 +60,12 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-Public40791c7d3 fast CI40843868971 passes. Full CI40843890477 has2226 private
+Public8051a1355 fast CI passes; full CI40852257802 has passed release/course
+and native qualification and is still running. Earlier full CI40843890477 has2226 private
 passes and only one stale cold Source size assertion (184 versus192); Root's
 correction now passes in joined12. Its metadata fixes all3 earlier failures from
 40835039063 without a regenerated golden or false source premise. Full CI will
-be rerun after publishing this union/layout checkpoint. The earlier
+continue to be monitored; it includes that union/layout correction. The earlier
 public0fa08bc full CI40815003815 is green. The qualified pre-capacity CLI
 1b626052 passes MaybeUninit, FnPtr Debug7, Abi enum Default and DecodeUtf16's
 associated equality. Next it stops the source expansion accounting budget at

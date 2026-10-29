@@ -261,3 +261,8 @@ The [union checkpoint](../docs/pa31-source-union-copy-checkpoint.md) now include
 the real source union Clone recipe and independently matched scalar/array native
 observers. Its original escape expansion passes; typed nested field macros and
 the actual scalar ranges used by niche_types remain separate source consumers.
+
+The [typed field-macro checkpoint](../docs/pa31-derive-type-macros-checkpoint.md)
+now preserves genuine nested macro captures and reaches the actual range parser.
+Scalar pattern validity and the authentic range-helper protocol remain required;
+successful copying does not grant those semantics or source body permission.
