@@ -1,4 +1,4 @@
-//! Implementation arguments retain their separate captured lifetime prefix.
+//! Selected formals retain their separate implementation lifetime capture prefix.
 use crate::{
     resolve::model::DefId,
     sema::model::Declarations,
