@@ -22,6 +22,9 @@ impl Stage {
             .as_deref()
             .ok_or("source header graph has no role catalog")?;
         self.charge(1)?;
+        if catalog.language(LangItem::UnsafeUnpin).is_some() {
+            return Err("source UnsafeUnpin contract transport is not implemented");
+        }
         if catalog.language(LangItem::ConstParamTy).is_some() {
             return Err("source ConstParamTy contract transport is not implemented");
         }

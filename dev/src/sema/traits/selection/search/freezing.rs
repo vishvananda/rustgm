@@ -47,6 +47,7 @@ impl Search<'_> {
             AutoTrait::Send,
             AutoTrait::Sync,
             AutoTrait::Unpin,
+            AutoTrait::UnsafeUnpin,
         ] {
             let role = role(marker).ok_or("source auto trait marker is not represented")?;
             if catalog
@@ -175,6 +176,7 @@ pub(super) const fn role(marker: AutoTrait) -> Option<LangItem> {
         AutoTrait::Send => Some(LangItem::Send),
         AutoTrait::Sync => Some(LangItem::Sync),
         AutoTrait::Unpin => Some(LangItem::Unpin),
+        AutoTrait::UnsafeUnpin => Some(LangItem::UnsafeUnpin),
         _ => None,
     }
 }

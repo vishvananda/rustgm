@@ -82,9 +82,10 @@ pub enum LangItem {
     Sub,
     OffsetOf,
     ConstParamTy,
+    UnsafeUnpin,
 }
 impl LangItem {
-    pub const ALL: [Self; 66] = [
+    pub const ALL: [Self; 67] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -151,6 +152,7 @@ impl LangItem {
         Self::Sub,
         Self::OffsetOf,
         Self::ConstParamTy,
+        Self::UnsafeUnpin,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -221,6 +223,7 @@ impl LangItem {
             Self::Sub => 63,
             Self::OffsetOf => 64,
             Self::ConstParamTy => 65,
+            Self::UnsafeUnpin => 66,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -245,6 +248,7 @@ impl LangItem {
             "drop" => Some(Self::Drop),
             "destruct" => Some(Self::Destruct),
             "freeze" => Some(Self::Freeze),
+            "unsafe_unpin" => Some(Self::UnsafeUnpin),
             "drop_glue" => Some(Self::DropGlue),
             "unsize" => Some(Self::Unsize),
             "coerce_unsized" => Some(Self::CoerceUnsized),

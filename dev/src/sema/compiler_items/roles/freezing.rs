@@ -1,5 +1,16 @@
 //! A source Freeze role retains actual unsafe-auto syntax; no property is granted here.
 use super::{Declaration, Declarations, Error, ItemKind, Report, item};
+pub(super) const fn accepts(role: crate::support::bindings::LangItem) -> bool {
+    use crate::support::bindings::LangItem;
+    matches!(
+        role,
+        LangItem::Freeze
+            | LangItem::Send
+            | LangItem::Sync
+            | LangItem::Unpin
+            | LangItem::UnsafeUnpin
+    )
+}
 pub(super) fn validate(
     report: &Report,
     facts: &Declarations,
@@ -11,6 +22,7 @@ pub(super) fn validate(
         crate::support::bindings::LangItem::Send => "Send",
         crate::support::bindings::LangItem::Sync => "Sync",
         crate::support::bindings::LangItem::Unpin => "Unpin",
+        crate::support::bindings::LangItem::UnsafeUnpin => "UnsafeUnpin",
         _ => {
             return Err(Declarations::error(
                 report,
@@ -67,6 +79,7 @@ pub(crate) fn predicate(
         crate::support::bindings::LangItem::Send,
         crate::support::bindings::LangItem::Sync,
         crate::support::bindings::LangItem::Unpin,
+        crate::support::bindings::LangItem::UnsafeUnpin,
     ] {
         if catalog
             .language(role)
