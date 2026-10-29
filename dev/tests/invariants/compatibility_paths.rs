@@ -256,23 +256,19 @@ fn old_origin_deprecation_stays_required_and_old_profiles_cannot_drop_notes() ->
         SourcePublication::ModuleAvailability,
         "old_origin",
     )?;
-    for path in ["dependency_0::identity(7u8)", "legacy(7u8)"] {
+    let old_bytes = crates::encode(&old)?;
+    for path in ["base::identity(7u8)", "legacy(7u8)"] {
         let use_ = if path.starts_with("legacy") {
-            "use dependency_0::identity as legacy;"
+            "use base::identity as legacy;"
         } else {
             ""
         };
         let text = format!(
-            "#![feature(no_core)]#![no_core]extern crate base;extern crate dependency_0;{use_}#[expect(deprecated)]pub fn probe()->u8{{{path}}}"
+            "#![feature(no_core)]#![no_core]extern crate base;{use_}#[expect(deprecated)]pub fn probe()->u8{{{path}}}"
         );
-        let result = source_packets::client_analysis_with(
-            provider()?,
-            vec![crates::decode(&crates::encode(&old)?)?],
-            &text,
-        );
-        let error = result
+        let error = source_packets::client_analysis(crates::decode(&old_bytes)?, &text)
             .err()
-            .ok_or("v6 top provider cleared old leaf deprecation knowledge")?;
+            .ok_or("old leaf deprecation knowledge was cleared")?;
         assert!(
             error
                 .to_string()
@@ -280,6 +276,16 @@ fn old_origin_deprecation_stays_required_and_old_profiles_cannot_drop_notes() ->
             "{error}"
         );
     }
+    let dependency = source_packets::client_analysis_with(
+        provider()?, vec![crates::decode(&old_bytes)?],
+        "#![feature(no_core)]#![no_core]extern crate base;extern crate dependency_0;#[expect(deprecated)]pub fn probe()->u8{dependency_0::identity(7u8)}",
+    ).err().ok_or("multiple source providers were silently admitted")?;
+    assert!(
+        dependency
+            .to_string()
+            .contains("source function profile requires one complete source binding provider"),
+        "{dependency}"
+    );
     let artifact = provider()?;
     let descriptor = artifact.source_descriptor().ok_or("v6 descriptor")?;
     assert_eq!(

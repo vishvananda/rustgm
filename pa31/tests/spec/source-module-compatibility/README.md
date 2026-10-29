@@ -33,3 +33,9 @@ unchanged and independently Rust-positive, including its real const and unsafe
 functions. Their source body/const/safety transport remains Required behind the
 existing ordinary-profile guard. The const/unsafe clients remain owning inputs;
 they are not negative language cases or replacements for the ordinary producer.
+
+The actual old-profile direct leaf and local import alias retain unknown declaration
+deprecation. A v6 artifact plus a second old source artifact currently stops at the
+existing single-source-provider admission boundary. This is an explicit wider
+transport requirement; it does not qualify an executable cross-artifact reexport.
+The canonical-origin getter never borrows the top provider's v6 guarantee.
