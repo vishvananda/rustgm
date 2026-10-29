@@ -80,9 +80,13 @@ pub(super) fn header(
         return Ok(None);
     };
     let raw = &rows.functions[index as usize];
+    let constant = raw.constness == crate::support::constness::Constness::Const;
     if raw.regions.captures != 0
         || raw.regions.early.start != raw.regions.early.end
-        || raw.constness != crate::support::constness::Constness::Ordinary
+        || (raw.constness != crate::support::constness::Constness::Ordinary
+            && !(constant
+                && context.descriptor.profile().unconditional_callables()
+                && raw.parent.is_none()))
     {
         return Err(error(
             "source callable captures/effects require their wider header profile",
@@ -141,7 +145,7 @@ pub(super) fn header(
         inputs: Arc::clone(inputs),
         declared,
         universals: raw.regions.total,
-        constant: false,
+        constant,
     };
     Ok(Some(Callable {
         header,

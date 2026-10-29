@@ -76,29 +76,7 @@ impl Stage {
         for (definition, ty) in cells {
             facts.definitions[definition.0 as usize] = Some(ty);
         }
-        for scope in self.scopes {
-            if let Some(parent) = scope.parent {
-                facts.generics.parents.insert(scope.definition, parent);
-            }
-            facts
-                .generics
-                .parameters
-                .insert(scope.definition, scope.parameters);
-            facts
-                .generics
-                .environments
-                .insert(scope.definition, scope.environment);
-            if let Some(callable) = scope.function {
-                facts
-                    .lifetimes
-                    .functions
-                    .insert(scope.definition, callable.regions);
-                if let Some(receiver) = callable.receiver {
-                    facts.methods.receivers.insert(scope.definition, receiver);
-                }
-                budget.entries.insert(scope.definition, callable.header);
-            }
-        }
+        publish_scopes(self.scopes, facts, budget);
         let linkage = facts.crates.get_or_insert_default();
         for function in functions {
             if let Some(symbol) = function.symbol {
@@ -154,53 +132,11 @@ impl Stage {
                 "source canonical installation cannot replace a partial or existing header inventory",
             ));
         }
-        budget.reserve(retained::sum([
-            retained::new_map::<DefId, Vec<Parameter>>(
-                facts
-                    .generics
-                    .parameters
-                    .len()
-                    .saturating_add(rows.scopes.len()),
-            ),
-            retained::new_map::<DefId, Arc<Environment>>(
-                facts
-                    .generics
-                    .environments
-                    .len()
-                    .saturating_add(rows.scopes.len()),
-            ),
-            retained::new_map::<DefId, DefId>(
-                facts
-                    .generics
-                    .parents
-                    .len()
-                    .saturating_add(rows.scopes.len()),
-            ),
-            retained::new_map::<DefId, super::Header>(rows.functions.len()),
-            retained::new_map::<DefId, FunctionRegions>(
-                facts
-                    .lifetimes
-                    .functions
-                    .len()
-                    .saturating_add(rows.functions.len()),
-            ),
-            retained::new_map::<DefId, String>(
-                facts
-                    .crates
-                    .as_ref()
-                    .map_or(0, |l| l.symbols.len())
-                    .saturating_add(rows.functions.len()),
-            ),
-            retained::new_map::<DefId, (TypeId, u32)>(
-                facts
-                    .methods
-                    .receivers
-                    .len()
-                    .saturating_add(rows.functions.len()),
-            ),
-        ]))?;
+        prepay_tables(facts, rows.scopes.len(), rows.functions.len(), budget)?;
+        let mut constants = 0usize;
         for scope in &self.scopes {
             budget.charge(1)?;
+            constants += usize::from(scope.function.as_ref().is_some_and(|c| c.header.constant));
             let definition = scope.definition;
             if facts.generics.parameters.contains_key(&definition)
                 || facts.generics.environments.contains_key(&definition)
@@ -210,6 +146,7 @@ impl Stage {
                 || facts.lifetimes.functions.contains_key(&definition)
                 || facts.methods.receivers.contains_key(&definition)
                 || facts.function_indices.contains_key(&definition)
+                || facts.constant_functions.contains(&definition)
                 || facts
                     .crates
                     .as_ref()
@@ -220,7 +157,74 @@ impl Stage {
                 ));
             }
         }
+        let growth = retained::Growth::map::<DefId, ()>(
+            facts.constant_functions.len(),
+            facts.constant_functions.capacity(),
+            constants,
+        );
+        budget.charge(growth.work)?;
+        budget.reserve(growth.bytes)?;
         Ok(())
+    }
+}
+
+fn prepay_tables(
+    facts: &Declarations,
+    scopes: usize,
+    functions: usize,
+    budget: &mut Headers,
+) -> Result<(), Error> {
+    budget.reserve(retained::sum([
+        retained::new_map::<DefId, Vec<Parameter>>(
+            facts.generics.parameters.len().saturating_add(scopes),
+        ),
+        retained::new_map::<DefId, Arc<Environment>>(
+            facts.generics.environments.len().saturating_add(scopes),
+        ),
+        retained::new_map::<DefId, DefId>(facts.generics.parents.len().saturating_add(scopes)),
+        retained::new_map::<DefId, super::Header>(functions),
+        retained::new_map::<DefId, FunctionRegions>(
+            facts.lifetimes.functions.len().saturating_add(functions),
+        ),
+        retained::new_map::<DefId, String>(
+            facts
+                .crates
+                .as_ref()
+                .map_or(0, |l| l.symbols.len())
+                .saturating_add(functions),
+        ),
+        retained::new_map::<DefId, (TypeId, u32)>(
+            facts.methods.receivers.len().saturating_add(functions),
+        ),
+    ]))
+}
+
+fn publish_scopes(scopes: Vec<super::Scope>, facts: &mut Declarations, budget: &mut Headers) {
+    for scope in scopes {
+        if let Some(parent) = scope.parent {
+            facts.generics.parents.insert(scope.definition, parent);
+        }
+        facts
+            .generics
+            .parameters
+            .insert(scope.definition, scope.parameters);
+        facts
+            .generics
+            .environments
+            .insert(scope.definition, scope.environment);
+        if let Some(callable) = scope.function {
+            facts
+                .lifetimes
+                .functions
+                .insert(scope.definition, callable.regions);
+            if let Some(receiver) = callable.receiver {
+                facts.methods.receivers.insert(scope.definition, receiver);
+            }
+            if callable.header.constant {
+                facts.constant_functions.insert(scope.definition);
+            }
+            budget.entries.insert(scope.definition, callable.header);
+        }
     }
 }
 
@@ -232,6 +236,7 @@ fn table_allocation(facts: &Declarations, headers: &Headers) -> retained::Alloca
     result.map(&facts.generics.trait_self_bounds);
     result.map(&facts.lifetimes.functions);
     result.map(&facts.methods.receivers);
+    result.set(&facts.constant_functions);
     result.map(&headers.entries);
     if let Some(linkage) = &facts.crates {
         result.map(&linkage.symbols);
