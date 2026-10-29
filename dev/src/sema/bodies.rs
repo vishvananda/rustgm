@@ -25,6 +25,7 @@ mod environment_values;
 mod field_storage;
 mod finalization;
 mod formatting_values;
+mod generated_bounds;
 mod generics;
 mod hidden_results;
 mod inline;
@@ -1331,6 +1332,7 @@ impl Checker<'_> {
                 return self.enter_struct(node, path, fields, base, expected);
             }
             Kind::OffsetOf { .. }
+            | Kind::PatternEndpoint { .. }
             | Kind::Path { .. }
             | Kind::Name(..)
             | Kind::Qualified { .. }
@@ -1507,6 +1509,7 @@ impl Checker<'_> {
             Kind::InlineAssembly(args) => self.assembly_result(node, args),
             Kind::LibraryValue { kind, value } => self.library_value(node, kind, value),
             Kind::Literal(index) => self.literal(node, index),
+            Kind::PatternEndpoint { .. } => self.pattern_endpoint(node),
             Kind::Path { .. } | Kind::Name(..) | Kind::Qualified { .. } => {
                 let Some(Target::Definition(id)) =
                     self.facts.node(self.key(node)).and_then(|f| f.reference)

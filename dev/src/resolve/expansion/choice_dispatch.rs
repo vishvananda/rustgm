@@ -95,7 +95,7 @@ impl<S: Sources> Engine<'_, S> {
         let (unit, after) = tail
             .split_first_mut()
             .ok_or_else(|| failure("missing cfg_select unit"))?;
-        let prepared = unit
+        let mut prepared = unit
             .prepare_builtin_syntax(
                 choice::Site {
                     file,
@@ -118,7 +118,7 @@ impl<S: Sources> Engine<'_, S> {
             )
             .map_err(|error| Error::at(file, error.offset, error.message))?;
         if pattern {
-            self.check_pattern_gates(file, original)?;
+            self.check_pattern_gates(file, original, &mut prepared, context)?;
         }
         self.check_cfg_uses(file, prepared.cfg_uses())?;
         let installed = self.loader.package.units[file.0 as usize]
@@ -151,6 +151,8 @@ impl<S: Sources> Engine<'_, S> {
         &mut self,
         file: super::FileId,
         span: crate::syntax::token_tree::Span,
+        prepared: &mut crate::resolve::unit::PreparedChoice,
+        context: ExpansionId,
     ) -> Result<(), Error> {
         let package = &self.loader.package;
         let view = super::permission_frames::FrameView {
@@ -178,7 +180,9 @@ impl<S: Sources> Engine<'_, S> {
                 "pattern types require pattern_types or actual literal allowance",
             ));
         }
-        Ok(())
+        prepared
+            .stamp_pattern_endpoints(context.0)
+            .map_err(|e| Error::at(file, e.offset, e.message))
     }
 }
 

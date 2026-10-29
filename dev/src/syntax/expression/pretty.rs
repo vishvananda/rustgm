@@ -378,6 +378,7 @@ impl<'a> Writer<'a> {
             | Kind::Struct { .. }
             | Kind::FieldInit { .. }
             | Kind::TypePattern { .. }
+            | Kind::PatternEndpoint { .. }
             | Kind::Type { .. }
             | Kind::Applied { .. }
             | Kind::Qualified { .. }

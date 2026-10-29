@@ -97,5 +97,6 @@ pub(in crate::sema) fn source_range_member(
         }
     })
 }
+#[cfg(test)]
 #[path = "../../../tests/invariants/ranged_headers.rs"]
 mod tests;

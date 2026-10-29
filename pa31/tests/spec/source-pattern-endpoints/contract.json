@@ -1,0 +1,71 @@
+{
+  "state": "frozen before independent and candidate observation",
+  "edition": 2024,
+  "target": "x86_64-unknown-linux-gnu",
+  "scope": "authored implementations of exact original RangePattern declaration; deliberately noncanonical u8 endpoints and identity Sub prove actual source dispatch, not original helper behavior",
+  "foundation": {
+    "path": "pa31/tests/spec/source-scalar-patterns/source-runtime.rs",
+    "sha256": "93e5d638266e7b724665a3710a963b6f6931acd3c54f9cf1e0f04fd19cb39998",
+    "end": 11349
+  },
+  "original_trait": {
+    "path": "library/core/src/pat.rs",
+    "file_sha256": "0e620c6d485f27b0dd9fd64b93d13326ea83545155e86d3479a1bfae2541c796",
+    "start": 693,
+    "end": 1386,
+    "sha256": "c45fe32bda8a541d2926a1ecc75311f35a56a96a01c506ee5b5b952267379215"
+  },
+  "cases": {
+    "outside-authored-min.rs": {
+      "sha256": "285392909b5972d2212f67619702c469eb98bb230d0e0c101a72002583fe9efd",
+      "status": 1
+    },
+    "authored-runtime.rs": {
+      "sha256": "f24563db92c3cbea289bc284dae873820ccaa879cfddcc9535b4c63573cc7dba",
+      "status": 0
+    },
+    "disconnected-positive.rs": {
+      "sha256": "f3b0d94a39a1e1ee83342e29523d5ea4d2f946d26dcc2c38af0ba95c1d0bae1f",
+      "status": 0
+    },
+    "ordinary-implementation.rs": {
+      "sha256": "af285b881bfddc6cad616fed3323266c1d6e3c27e651da8da92ae78d5d73cd9a",
+      "status": 1
+    },
+    "outside-authored-max.rs": {
+      "sha256": "c3a8a51e5abaec1d7a3c2afcf725fbbce3c2546ffb7af8f60525524fabcf58d4",
+      "status": 1
+    },
+    "missing-request.rs": {
+      "sha256": "f249494a5cd3ecce33739c0a580fb631fe5c18bf741ea5874af48760653f5e06",
+      "status": 1
+    },
+    "zero-signed.rs": {
+      "sha256": "333f2b4e15f8a0f6ca2793472838a755c87efbc200838b954fe8e1ca54820469",
+      "status": 1
+    }
+  },
+  "native": {
+    "provider": "authored-runtime.rs",
+    "observer": "observer.c",
+    "observer_sha256": "7701080c7f7a20947eec36d6094f53c032ad11f07b9833dd6d6f63b36668345c",
+    "stdout": "7 3 7 -2 7\n",
+    "status": 0
+  },
+  "required": [
+    "original checked_sub/overflowing_sub/char from_u32/panic helper execution",
+    "disconnected Rust-positive OR shape (finite canonical profile unsupported)",
+    "generic endpoints",
+    "scalar enum niches",
+    "refinement metadata and full original core artifacts"
+  ],
+  "predecessor": "authored-oracle-v1 retained: positive Rust required panic_location from actual track_caller. Successor adds unchanged original Location declaration only, retaining requests/patterns/impl bodies/outputs.",
+  "original_location": {
+    "path": "library/core/src/panic/location.rs",
+    "file_sha256": "51efdd39fcb976a65c7377f0c2a28adc3c3f44d0a81ed8f99d5434d6081405e4",
+    "start": 1153,
+    "end": 1608,
+    "sha256": "7e9543b547cecb8e3d096be02b4ce14de8d9b4feac1fdf467d1fd6c78e043489"
+  },
+  "disconnected_erratum": "v2 shape was accepted but retained S=-2 fell outside its actual interval; corrected only this Rust-positive control S to7, preserving primary/native and every other input byte"
+}

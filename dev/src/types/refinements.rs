@@ -26,6 +26,16 @@ impl Store {
     ) -> Result<RangeId, &'static str> {
         charge(5, 0)?;
         self.require_scalar_range(range)?;
+        self.intern_canonical_scalar_range(range, charge)
+    }
+    /// Reinterns an already canonical interval; surface order belongs to its producer.
+    pub(crate) fn intern_canonical_scalar_range(
+        &mut self,
+        range: ScalarRange,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<RangeId, &'static str> {
+        charge(5, 0)?;
+        self.require_scalar_endpoints(range)?;
         let probe = std::cell::Cell::new(0_usize);
         if let Some(id) = self.find_scalar_range(range, &|steps, bytes| {
             probe.set(probe.get().saturating_add(steps));
@@ -100,7 +110,50 @@ impl Store {
             Constraint::ScalarRange(id) => self.scalar_range(id).is_some_and(|r| r.base == base),
         }
     }
+    pub(crate) fn intern_scalar_or(
+        &mut self,
+        first: ScalarRange,
+        second: ScalarRange,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<RangeId, &'static str> {
+        charge(12, 0)?;
+        self.require_scalar_range(first)?;
+        self.require_scalar_range(second)?;
+        if first.base != second.base {
+            return Err("scalar alternatives have different base types");
+        }
+        let Some(Kind::Primitive(p)) = self.kind(first.base) else {
+            return Err("scalar alternative base changed");
+        };
+        let Some((true, width)) = p.integer() else {
+            return Err("scalar alternatives require a signed integer base");
+        };
+        let bias = 1_u128 << (width - 1);
+        let maximum = bias - 1;
+        let (first, second) = if first.start == bias {
+            (first, second)
+        } else if second.start == bias {
+            (second, first)
+        } else {
+            return Err("disconnected scalar alternatives require their wider source profile");
+        };
+        if (first.end ^ bias) >= (second.start ^ bias) {
+            return Err("scalar alternatives overlap");
+        }
+        if second.end != maximum {
+            return Err("scalar alternatives must connect at signed overflow");
+        }
+        self.intern_canonical_scalar_range(
+            ScalarRange {
+                base: first.base,
+                start: second.start,
+                end: first.end,
+            },
+            charge,
+        )
+    }
     fn require_scalar_range(&self, range: ScalarRange) -> Result<(), &'static str> {
+        self.require_scalar_endpoints(range)?;
         let Some(Kind::Primitive(primitive)) = self.kind(range.base) else {
             return Err("scalar pattern requires a concrete integer or char base");
         };
@@ -111,6 +164,17 @@ impl Store {
                 .integer()
                 .ok_or("scalar pattern requires an integer or char base")?
         };
+        let bias = if signed { 1_u128 << (width - 1) } else { 0 };
+        if (range.start ^ bias) > (range.end ^ bias) {
+            return Err("scalar pattern endpoints are reversed in source value order");
+        }
+        Ok(())
+    }
+    fn require_scalar_endpoints(&self, range: ScalarRange) -> Result<(), &'static str> {
+        if !matches!(self.kind(range.base), Some(Kind::Primitive(p)) if p == Primitive::Char || p.integer().is_some())
+        {
+            return Err("scalar pattern requires an integer or char base");
+        }
         if !self.valid_constant(Constant {
             ty: range.base,
             bits: range.start,
@@ -119,10 +183,6 @@ impl Store {
             bits: range.end,
         }) {
             return Err("scalar pattern endpoint is invalid for its actual base");
-        }
-        let bias = if signed { 1_u128 << (width - 1) } else { 0 };
-        if (range.start ^ bias) > (range.end ^ bias) {
-            return Err("scalar pattern endpoints are reversed in source value order");
         }
         Ok(())
     }

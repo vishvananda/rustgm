@@ -51,6 +51,7 @@ use application_kind::CallGrammar;
 mod argument_bindings;
 #[path = "expansion/identifier_ancestry.rs"]
 mod captured_origins;
+mod endpoint_permissions;
 mod format_inputs;
 mod format_sites;
 mod format_values;
@@ -59,6 +60,7 @@ mod metavariables;
 mod panic_dispatch;
 mod permission_frames;
 mod permission_session;
+pub(crate) use endpoint_permissions::PatTyRangeSite;
 pub use permission_session::MacroAllowanceSession;
 mod choice_dispatch;
 mod paths;

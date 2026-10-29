@@ -39,6 +39,13 @@ pub(crate) fn validate<L>(
         bases.item(&mut kind, &mut span)?;
     }
     if let Some(entries) = &source.gate_sites {
+        for (ordinal, entry) in entries.bounds().iter().enumerate() {
+            entry.validate(
+                source,
+                u32::try_from(ordinal)
+                    .map_err(|_| error(0, "pattern endpoint ordinal overflow"))?,
+            )?;
+        }
         for entry in entries.entries() {
             entry.validate(source)?;
             span(entry.span)?;
