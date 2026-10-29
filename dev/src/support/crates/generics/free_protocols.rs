@@ -64,7 +64,8 @@ pub(super) fn destruct(
         .slots
         .get(slot.0 as usize)
         .ok_or("source Destruct Self slot is absent")?;
-    if slot.owner != header.declaration
+    if slot.owner != header.self_definition
+        || slot.definition != Some(header.self_definition)
         || slot.ordinal != 0
         || slot.index != 0
         || !matches!(slot.kind, s::ParameterKind::Type { sized: None })
@@ -103,7 +104,8 @@ pub(super) fn freeze(
         .slots
         .get(slot.0 as usize)
         .ok_or("source Freeze Self slot is absent")?;
-    if slot.owner != header.declaration
+    if slot.owner != header.self_definition
+        || slot.definition != Some(header.self_definition)
         || slot.ordinal != 0
         || slot.index != 0
         || !matches!(slot.kind, s::ParameterKind::Type { sized: None })

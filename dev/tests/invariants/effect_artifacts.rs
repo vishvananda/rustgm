@@ -10,6 +10,7 @@ use crate::{
         },
     },
 };
+use std::fmt::Write as _;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const BASE: &str = "pa31/tests/spec/source-callable-effects/";
 fn fixture(name: &str) -> Result<String> {
@@ -213,7 +214,7 @@ fn actual_const_marker_declarations_keep_owner_flags_and_supertrait_identity() -
             0 => rows.traits[index].flags = s::TraitFlags::from_bits(0)?,
             1 => {
                 rows.traits[index].written_supertraits.end =
-                    rows.traits[index].written_supertraits.start
+                    rows.traits[index].written_supertraits.start;
             }
             2 => rows.traits[index].self_type.0 = u32::MAX,
             _ => {
@@ -265,7 +266,10 @@ fn independently_added_const_bodies_keep_linear_validation_work_and_hot_widths()
     for width in [8, 32, 128] {
         let mut source = fixture("provider")?;
         for index in 0..width {
-            source.push_str(&format!("\n#[stable(feature=\"callable_batch\",since=\"1.0.0\")]#[rustc_const_stable(feature=\"callable_batch\",since=\"1.0.0\")]pub const fn added_{index}()->u8{{7}}\n"));
+            writeln!(
+                source,
+                "\n#[stable(feature=\"callable_batch\",since=\"1.0.0\")]#[rustc_const_stable(feature=\"callable_batch\",since=\"1.0.0\")]pub const fn added_{index}()->u8{{7}}"
+            )?;
         }
         let artifact = module_packets::exported_profile(
             &source,
