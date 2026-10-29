@@ -1,0 +1,89 @@
+{
+  "state": "frozen before independent/candidate observation",
+  "owning": "PA26/31 actual source Copy derive; PA27 actual union initialization/overlap/unsafe; PA29 transport remains Required",
+  "profile": {
+    "rustc": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": true,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false
+  },
+  "original": {
+    "path": "library/core/src/mem/maybe_uninit.rs",
+    "start": 13922,
+    "end": 14475,
+    "sha256": "ddec58eba97ebc865387751a0604206d555eb4189a7efda1d7b3ab2d02ff46c0",
+    "members": [
+      "Copy"
+    ],
+    "authored_clone": "actual original *self body retained unchanged; no generated field reads",
+    "phase": "candidate expansion/receipt only until actual source roles/ManuallyDrop/transparent-union prerequisites"
+  },
+  "cases": [
+    {
+      "source": "source-runtime.rs",
+      "metadata": 0
+    },
+    {
+      "source": "missing-clone.rs",
+      "metadata": 1
+    },
+    {
+      "source": "wrong-copy-trait.rs",
+      "metadata": 1
+    },
+    {
+      "source": "safe-field.rs",
+      "metadata": 1
+    },
+    {
+      "source": "noncopy-field.rs",
+      "metadata": 1
+    },
+    {
+      "source": "private-field.rs",
+      "metadata": 1
+    },
+    {
+      "source": "clone-positive-rust.rs",
+      "metadata": 0
+    },
+    {
+      "source": "debug-rust.rs",
+      "metadata": 1
+    }
+  ],
+  "native": {
+    "source": "source-runtime.rs",
+    "observer": "observer.c",
+    "status": 0,
+    "stdout": "11223344:11223344:11223344;u;7\n",
+    "stderr": ""
+  },
+  "required": [
+    "actual original MaybeUninit lang role/ManuallyDrop/transparent-union validity and full runtime",
+    "whole-Self source union Clone derive recipe (valid Rust positive)",
+    "other union derives, conditional/const proof profiles and metadata transport",
+    "source union Clone helper AssertParamIsCopy/TrivialClone and whole-Self recipe, not borrowed from ordinary Rust oracle"
+  ],
+  "files": {
+    "README.md": "6c41390900e2361f2cc122b98be9c3aa519b8f057257f01dbbad06633dad903b",
+    "clone-positive-rust.rs": "adda31488c7a3cf9427019a711e84daf86983cd655518a7bf378c8a9e30020c4",
+    "clone-required.rs": "1fd227a24f015d59fd8ecad19c00ddc84c12b22087937f1cb0740bc8f2059554",
+    "debug-required-expansion.rs": "c687153c92bb0b316714b41de93301a34442f74822b2e7081178a63dea407f0d",
+    "debug-rust.rs": "7ff5f395ae3a810f7c8a1506d1cfe97e117e3dad1affb5555e254e3effb5849a",
+    "maybe-uninit-expansion.rs": "1aebc83d34a6723674f06b1db49d148ede17a33af17ebd4b151b52563f04ade2",
+    "maybe-uninit-original.rs": "ddec58eba97ebc865387751a0604206d555eb4189a7efda1d7b3ab2d02ff46c0",
+    "maybe-uninit-rust.rs": "a47f9438ce9b076708dd7032ba5501e538bdc4d7f965ff2458cf2c24d329fb3e",
+    "missing-clone.rs": "4d3f63120e8e008ad1566c4089b1886aaacaf5c7cba33f6992d71759f38fb6da",
+    "noncopy-field.rs": "86879d110897d876a3e19ade9b729c1a1aa2b87f4ea7d547f9ac658b3df6b6ca",
+    "observer.c": "2cb3e3536b1eca4fd1e584d230f473989fe4ce2b6bdce1c9f034bb4800760e50",
+    "private-field.rs": "6b8ebae910ef3c27715558665a568576e6133d55ff3642a22d256417428d3ba9",
+    "safe-field.rs": "4051ed79e8b02f8fe4b6c916085821fcfcfe08a8f40f6c1715daa85b506789a7",
+    "source-runtime.rs": "d5584371261dc1af560ca517c9db37a801132c295ac698f65a13219625359f79",
+    "wrong-copy-trait.rs": "707b30ac1100cb30f4b57497bd718da75b2fd3195402c767832b1b2d847b6116"
+  },
+  "successor": "v3 retains v1/v2 receipts; only private opponent imports the real source derive macro and OtherCopy alias target becomes public so actual intended privacy/trait errors can be observed; runtime/original/other successful fixture bytes unchanged"
+}
