@@ -1,0 +1,56 @@
+{
+  "state": "successor frozen before candidate after retained authored NoCore BitXor prerequisite mismatch",
+  "owning": "PA26 parsed source derive type fragments + PA31 genuine macro expansion/proof/instance consumer",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "original": {
+    "path": "library/core/src/num/niche_types.rs",
+    "sha256": "1a74080c73dd7687b08e667d5611d4068a1b7556311f0b58e44edadb17d0a160",
+    "start": 296,
+    "end": 3256,
+    "interval_sha256": "df3a2b5bf42f7faa225d795b29acf8c7f9d51092e2478947cbf68a6a34486006"
+  },
+  "files": {
+    "original-source-frontier.rs": "f47041ca4c126bb6c09918b46ee2d64a3af731437984ad5b7dbef0168ab9513a",
+    "source-wrong-type.rs": "2a4bbe70b59dd365c98d9315eb14545067be63e8108802e0efbd0532a6b120a7",
+    "observer.c": "b1dc5a4fd97fb5bfcc3eb632662cff82f1887dc42c297ba4b06e5edc6bde72e6",
+    "source-missing-feature.rs": "144bb5fce63cfc7325fc1490f42a3879565f29beefd2da282a866da8f60822ed",
+    "original-macro.rs": "3ff8766516a3f190f8c5269516910d7912380ad092fb83afbe9ffa31ef6fa28b",
+    "source-runtime.rs": "91749352c025f4d4839499b3b56a845be273dea71c50a5b4eb99a3d276fe1b96"
+  },
+  "rust_cases": [
+    {
+      "file": "source-runtime.rs",
+      "metadata": 0
+    },
+    {
+      "file": "source-wrong-type.rs",
+      "metadata": 1
+    },
+    {
+      "file": "source-missing-feature.rs",
+      "metadata": 1
+    }
+  ],
+  "native": {
+    "source": "source-runtime.rs",
+    "observer": "observer.c",
+    "status": 0,
+    "stdout": "12345678\n",
+    "stderr": ""
+  },
+  "candidate": {
+    "source-runtime.rs": "actual opaque type input nested type macro through real Clone body to LowIR/native",
+    "source-wrong-type.rs": "hard actual type mismatch, no field-copy rejection",
+    "source-missing-feature.rs": "actual existing foundational pattern-type feature gate remains hard",
+    "original-source-frontier.rs": "exact original macro/captured inclusive range reaches existing pattern parser frontier: expected punctuation in macro pattern_type; not full original compilation"
+  },
+  "required": [
+    "closed-inclusive pattern type syntax/type/validity/CTFE/ABI consumer (separate C lane)",
+    "already expanded TypePattern and other unadmitted field descendants remain explicit",
+    "full original niche_types/runtime/core/alloc/std artifacts"
+  ],
+  "retained_disagreement": "rust-v1 observer requested u32 BitXor without its real source trait/impl; successor uses direct cloned-field result, no operator/compiler/recipe change",
+  "original_source_envelope": "actual original interval nested in module importing genuine derive/Clone/Copy/pattern_type macros; original bytes unchanged",
+  "independent_join": "Rust-v2 covers unchanged individual semantic source-runtime/wrong-type/missing-feature and observer hashes; module wrapper is candidate expansion/frontier only",
+  "retained_candidate_predecessor": "private6 predecessor passed direct copy/opaque/payment/scaling/ordinary controls and actual source runtime body; original authored module omitted derive import and failed path lookup, corrected before final qualification"
+}

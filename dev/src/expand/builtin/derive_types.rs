@@ -4,11 +4,14 @@ use crate::{
     lex::token::LexError,
     literal::storage::{Storage, StoredValue},
     syntax::{
-        ast::{Kind, List, Node, NodeId, Syntax},
+        ast::{Kind, List, MacroContext, Node, NodeId, Syntax},
         interpolation::ParsedSyntax,
-        token_tree::error,
+        token_tree::{Forest, Tree, error},
     },
 };
+#[cfg(test)]
+#[path = "../../../tests/invariants/forest_types.rs"]
+mod macro_tests;
 #[cfg(test)]
 #[path = "../../../tests/invariants/constraint_images.rs"]
 mod tests;
@@ -64,6 +67,14 @@ fn node(
                 *output = node(source, *output, target, charge, depth + 1)?;
             }
         }
+        Kind::Macro {
+            path,
+            capture,
+            context: MacroContext::Type,
+        } => {
+            *path = node(source, *path, target, charge, depth + 1)?;
+            *capture = macro_capture(source, *capture, target, charge)?;
+        }
         Kind::FunctionType(index) => *index = callable(source, *index, target, charge, depth + 1)?,
         Kind::Constraint {
             target: binding,
@@ -109,6 +120,42 @@ fn node(
     .ok_or_else(|| error(actual.span.start, "derived field node overflow"))?;
     target.nodes.push(actual);
     Ok(copied)
+}
+
+/// Copy only this occurrence's forest. Persistent opaque handles remain owned
+/// by the actual expansion registry; typed transfer maps their occurrence spans.
+fn macro_capture(
+    source: &Syntax<StoredValue>,
+    index: u32,
+    target: &mut Syntax<StoredValue>,
+    charge: &Charge<'_>,
+) -> Result<u32, LexError> {
+    let capture = source
+        .captures
+        .get(index as usize)
+        .ok_or_else(|| error(0, "derived type macro lost its parsed capture"))?;
+    let growth = crate::support::retained::Growth::vector::<Forest>(
+        target.captures.len(),
+        target.captures.capacity(),
+        1,
+    );
+    charge(
+        growth
+            .work
+            .saturating_add(capture.nodes().len())
+            .saturating_add(1),
+        growth
+            .bytes
+            .saturating_add(capture.nodes().len().saturating_mul(size_of::<Tree>())),
+    )?;
+    let result = u32::try_from(target.captures.len())
+        .map_err(|_| error(0, "derived type macro capture overflow"))?;
+    target
+        .captures
+        .try_reserve(1)
+        .map_err(|_| error(0, "derived type macro capture allocation failed"))?;
+    target.captures.push(capture.map_spans(&mut Ok)?);
+    Ok(result)
 }
 
 fn callable(
