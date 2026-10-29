@@ -77,14 +77,10 @@ fn invalid_some_zero_and_wider_range_requirements_are_not_none_values() -> TestR
         ("some-zero", "scalar pattern"),
         ("partial-range", "complete ABI profile"),
     ] {
-        let result = report(name).and_then(|report| {
-            pipeline::analyze_source(&report)
-                .map(|_| ())
-                .map_err(Into::into)
-        });
+        let result = produce(name);
         let error = result
             .err()
-            .ok_or("invalid or unsupported niche admitted")?
+            .ok_or_else(|| format!("{name}: invalid or unsupported niche admitted"))?
             .to_string();
         assert!(error.contains(needle), "{name}: {error}");
     }

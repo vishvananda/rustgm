@@ -105,7 +105,7 @@ impl Query<'_> {
             if niche.owner != ty {
                 return Err("nullable C field belongs to another type");
             }
-            return Ok(!niche.carrier.is_pointer() || layout.size == 8);
+            return Ok(true);
         }
         let Some(Type::Adt(item, _)) = self.types.kind(ty) else {
             return Ok(false);
@@ -118,9 +118,7 @@ impl Query<'_> {
             return self
                 .layouts
                 .scalar_carrier(self.types, self.definitions, ty)
-                .map(|carrier| {
-                    carrier.is_some_and(|carrier| !carrier.is_pointer() || layout.size == 8)
-                });
+                .map(|carrier| carrier.is_some());
         }
         Ok(false)
     }

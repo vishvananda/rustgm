@@ -207,3 +207,96 @@ fn actual_argument_classification_reuses_shared_graphs_without_growing_signature
     }
     Ok(())
 }
+
+#[test]
+fn retained_wide_pointer_niches_keep_the_existing_c_object_classes() -> TestResult {
+    use crate::types::{Constraint, GenericArgs, ItemId, ListId, Primitive, aggregate};
+    let mut types = Store::default();
+    let mut definitions = Definitions::default();
+    let slice = types.intern(Kind::Slice(TypeId::primitive(Primitive::U8)))?;
+    let pointer = types.intern(Kind::Pointer {
+        mutable: false,
+        pointee: slice,
+    })?;
+    let pattern = types.intern(Kind::Pattern {
+        base: pointer,
+        constraint: Constraint::NonNull,
+    })?;
+    let payload = types.intern_list(&[pattern])?;
+    definitions.insert(
+        ItemId(1),
+        aggregate::Kind::Enum,
+        aggregate::Repr::default(),
+        &[
+            aggregate::Variant {
+                fields: ListId(0),
+                discriminant: 0,
+            },
+            aggregate::Variant {
+                fields: payload,
+                discriminant: 1,
+            },
+        ],
+    )?;
+    definitions.register_nullable_enum(
+        &types,
+        ItemId(1),
+        aggregate::NullableEnum {
+            empty: 0,
+            payload: 1,
+            field: 0,
+            fallback_tag: None,
+        },
+        None,
+    )?;
+    let nullable = types.intern(Kind::Adt(ItemId(1), GenericArgs::EMPTY))?;
+    let fields = types.intern_list(&[nullable])?;
+    definitions.insert(
+        ItemId(2),
+        aggregate::Kind::Struct,
+        aggregate::Repr {
+            representation: Representation::C,
+            ..aggregate::Repr::default()
+        },
+        &[aggregate::Variant {
+            fields,
+            discriminant: 0,
+        }],
+    )?;
+    let object = types.intern(Kind::Adt(ItemId(2), GenericArgs::EMPTY))?;
+    let parameters = types.intern_list(&[object])?;
+    let signature = types.intern(Kind::Function {
+        bound_regions: 0,
+        parameters,
+        result: object,
+        unsafe_: false,
+        convention: types::callable::Convention {
+            abi: types::callable::Abi::C,
+            variadic: false,
+        },
+    })?;
+    let mut layouts = Layouts::default();
+    layouts.demand(&types, &definitions, object)?;
+    let layout = layouts.get(nullable).ok_or("nullable wide layout")?;
+    assert_eq!((layout.size, layout.align), (16, 8));
+    assert!(
+        layouts
+            .niche(layout)?
+            .ok_or("encoding")?
+            .carrier
+            .is_pointer()
+    );
+    let plan = Plans::default().demand(&types, &definitions, &mut layouts, signature)?;
+    assert_eq!(
+        plan.result,
+        Passing::Object(Object {
+            bytes: 16,
+            align: 8,
+            classes: Classes::Eightbytes {
+                first: Class::Integer,
+                second: Some(Class::Integer)
+            }
+        })
+    );
+    Ok(())
+}

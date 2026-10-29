@@ -417,3 +417,5 @@ const FROM_BITS_usize:Option<Nz_usize>=unsafe{intrinsics::transmute::<usize,Opti
 #[unsafe(no_mangle)]pub extern "C" fn packet(x:Packet)->Packet{x}
 
 const BAD:Option<Nz_u8>=Some(unsafe{Nz_u8::new_unchecked(0u8)});
+
+#[unsafe(no_mangle)]pub extern "C" fn reached_bad()->u8{get_u8(BAD)}

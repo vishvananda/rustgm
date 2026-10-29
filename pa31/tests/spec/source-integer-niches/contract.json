@@ -58,12 +58,14 @@
     "expected.stdout": "3f5c37ed70745ece23952d127c4a703600a9a74195975b56f99b97f54c676f81",
     "observer.c": "18b84316454ff441260c2799b29a54e1bb53792a2c8ecb233bc416fd04da6f57",
     "standard-reference.rs": "0fefeab71ad2627dc40659710b5bc7ea38082eabc1829e862206dfc5cc2b99f9",
-    "some-zero.rs": "551815560648387897a37c743b5c6d08e0df5856b1bd15f49f90124cd108f1c8",
+    "some-zero.rs": "9345675dfe7df31e6f1dd43216398d64a6a54ad36910ab28d76bc0b9eb8d81a5",
     "source-runtime.rs": "88bd063e0a1b09866d6fe795afb692282f38a6435fc1231e7c58d2efa87d318c",
     "original/size_of.rs": "6016a711716a107a5fae311d16b952f4fd974232f32ee7a0898c139a42507bcd",
     "original/niche_types.rs": "1a74080c73dd7687b08e667d5611d4068a1b7556311f0b58e44edadb17d0a160",
     "original/align_of.rs": "8355bae7f73784894180c842f2d6dc0f7549234bc3ff819de48d112bf5f03d08",
     "original/option-declaration.rs": "e8f6a46f199f6cd9381b0345aa25012841da793bed781f5db6b1b805391a9570",
     "original/nonzero-contract.rs": "1a714088d9e5abe8b7d8b414cbaa8034e6028910d60ea376cd6975498f8e62c3"
-  }
+  },
+  "successor": "v2 negative adds an actual exported demand of the existing invalid BAD initializer; predecessor source/contract and oracle retained; positive/native fixtures unchanged",
+  "predecessor_contract_sha256": "4170df1c5aa9f136ab63b1ced4f7d021850856ec4914b78fc1c1d882d03788a4"
 }

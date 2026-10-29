@@ -25,11 +25,36 @@ link lacked real core panic runtime; the separately retained staticlib successor
 supplies the real runtime. A cleanup successor adds the actual const-stability
 header after the preserved first prediction failure.
 
-Candidate private/source/native qualification is pending. Cold/hot widths and work
-observations will be bound to the final source receipt. Cold build timeout after
-strict checks is retained as a failure with zero runtime tests, never a pass.
+The component's private20 gate passed in 143.60 seconds, receipt
+`1793281338139080967`. Its exact source bitmap binds the generated LowIR and both
+native matrices: separate provider/C objects, links, six-width values and cleanup
+trace all pass (native plan `00a707c973043b3866b947d42154d922fd52a96d4483ac6a25f13108103a68dc`).
+Production/CLI strict checks and the final joined-source gate remain pending
+integration.
+
+Measured Carrier/Answer/Niches table widths are 8/8/56 bytes; the cold Niche record
+grows from 32 to 40. `ScalarStorage` remains 16 and `Representation` 24; Layout48,
+Shape32, Layouts152, Body456 and Node36 stay unchanged. Each unsigned case retains
+528 paid bytes and 128 warm queries cost 128 steps with no retained growth. Shared
+transparent ancestry at depths 8/32/128 costs 88/346/1378 cold steps, independent of
+1,024 unrelated types; warm work is one step per query and retained capacity stays
+fixed. Failed-payment retries and original pointer/ordinary controls pass.
+
+A genuine source prerequisite appeared at a const API call to the actual tuple
+constructor (observed DefId196/VariantId9). Constructor invocation now consumes
+its indexed typed source owner and safe Rust field signature, while ordinary
+const function/factory/API checks remain. The diagnostic-only trace is retired.
+The invalid Some0 opponent now has an explicit exported demand; the valid partial
+range opponent reaches the actual ABI demand before reporting its wider profile.
+Neither test invents a Rust rejection or forces an unrelated body sweep.
+
+Cold-build timeout after strict checks, static/selection failures and initial
+independent disagreements remain retained with exact source receipts. They are
+not qualification passes.
 
 Original open range helpers, full NonZero/ZeroablePrimitive/Option/Drop source
 contexts, signed/char/partial niches, metadata and full core/alloc/std artifacts
-remain required. This checkpoint does not close an assignment or original library
+remain required. In particular, original `NonZero::new`/`get` in `nonzero.rs`
+call actual `transmute_unchecked`, which is a separate unimplemented intrinsic
+prerequisite; this checkpoint does not replace those calls. This checkpoint does not close an assignment or original library
 artifact goal.
