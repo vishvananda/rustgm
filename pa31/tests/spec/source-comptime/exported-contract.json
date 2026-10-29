@@ -11,7 +11,8 @@
   "candidate": {
     "source_analysis": 0,
     "module-callables-v7_export": 1,
-    "diagnostic_contains": "always-comptime source contracts require a wider transport profile"
+    "diagnostic_contains": "source effective const eligibility requires its actual marker transport",
+    "authenticated_declaration_guard_contains": "always-comptime source contracts require a wider transport profile"
   },
   "required": "Actual Always body/effect/API transport remains unimplemented; valid successor carries genuine required const API policy.",
   "predecessor": {
@@ -29,5 +30,13 @@
       "candidate_source_analysis": 1
     },
     "diagnostic_contains": "missing const"
-  }
+  },
+  "diagnostic_prediction_history": [
+    {
+      "expected": "always-comptime source contracts require a wider transport profile",
+      "actual": "source effective const eligibility requires its actual marker transport",
+      "receipt": "1793313267194560211",
+      "interpretation": "Full v7 export rejects earlier at the independent written/effective eligibility marker-transport predicate. The authenticated actual Always declaration guard remains separately required; no fixture, Rust outcome, compiler or profile change."
+    }
+  ]
 }
