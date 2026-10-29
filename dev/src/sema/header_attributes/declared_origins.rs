@@ -345,6 +345,17 @@ pub(in crate::sema) fn charge_source_contract_query(
     charge_query(headers, steps)
 }
 
+#[cfg(test)]
+pub(in crate::sema) fn source_contract_costs(facts: &Declarations) -> (usize, usize) {
+    facts
+        .must_use_contracts
+        .as_deref()
+        .and_then(|owner| owner.headers.as_deref())
+        .map_or((0, 0), |ledger| {
+            (ledger.local.steps.get(), ledger.local.bytes.get())
+        })
+}
+
 /// Counted semantic producers retain against the same already authenticated
 /// local owner. This adapter cannot create a ledger or borrow imported budgets.
 pub(in crate::sema) fn charge_source_retention(
