@@ -25,6 +25,17 @@ fn module_callables_preserve_always_contract_fence() -> TestResult {
         mut facts,
         prepared,
     } = pipeline::analyze_source(&report)?;
+    let definition = function(&report, "always_exported")?;
+    let advisory = facts
+        .reject_function_advisory_transport(&report, definition)
+        .err()
+        .ok_or("actual Always declaration lost its authenticated transport fence")?;
+    assert!(
+        advisory
+            .to_string()
+            .contains("always-comptime source contracts require a wider transport profile"),
+        "{advisory}"
+    );
     let error = crate::lower::instances::build_source_library_profile(
         &report,
         &mut facts,
@@ -37,7 +48,7 @@ fn module_callables_preserve_always_contract_fence() -> TestResult {
     assert!(
         error
             .to_string()
-            .contains("always-comptime source contracts require a wider transport profile"),
+            .contains("source effective const eligibility requires its actual marker transport"),
         "{error}"
     );
     Ok(())
