@@ -37,6 +37,9 @@ pub enum RegionAllocation {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ValueKind {
     Unit,
+    /// Closed primitive bits in target little-endian order. The actual `Value.ty`
+    /// supplies their type; no provider type ID or proof travels with these bits.
+    Scalar([u8; 16]),
     Read(Place),
     /// Immediate only. The producer must reject `TwoPhase` and `UniqueImmutable`;
     /// absence of a kind field must never erase their distinct semantics.
@@ -53,6 +56,24 @@ pub enum ValueKind {
 pub struct Value {
     pub ty: TypeRef,
     pub kind: ValueKind,
+}
+impl Value {
+    pub(crate) fn scalar_value(
+        self,
+        types: &[super::Type],
+    ) -> Result<crate::support::crates::ScalarValue, &'static str> {
+        use crate::support::crates::{Scalar, ScalarValue};
+        let ValueKind::Scalar(bits) = self.kind else {
+            return Err("source scalar request belongs to another value operation");
+        };
+        let Some(&super::Type::Scalar(ty)) = types.get(self.ty.0 as usize) else {
+            return Err("source scalar value requires its actual closed primitive type");
+        };
+        if ty == Scalar::Unit {
+            return Err("source unit value requires its distinct Unit operation");
+        }
+        ScalarValue::new(ty, u128::from_le_bytes(bits))
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Action {

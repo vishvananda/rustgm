@@ -1,6 +1,6 @@
 //! Reconstruct the admitted source operation domain from its sealed current view.
 use super::{
-    ImportedOriginals,
+    ImportedOriginals, encoded_literals,
     operations::{self, lexical},
 };
 use crate::{
@@ -57,10 +57,12 @@ pub(super) fn build(
             source: view.site(local.site, &mut work.steps)?,
         })
     })?;
+    encoded_literals::allocate(record, &mut body, work)?;
     body.values = record.values.iter().map(|value| Ok(Value {
         ty: view.ty(value.ty, &mut work.steps)?,
         kind: match value.kind {
             s::ValueKind::Unit => Rvalue::Unit,
+            s::ValueKind::Scalar(_) => encoded_literals::append(view, *value, &mut body)?,
             s::ValueKind::Read(place) => Rvalue::Read(local(place)?),
             s::ValueKind::Constrain(value) => Rvalue::Constrain(ValueId(value)),
             s::ValueKind::Function(application) if v4(view) => Rvalue::Function(view.function(application, &mut work.steps)?),
@@ -150,64 +152,73 @@ fn owned(
     body.owned = Some(Box::new(owned));
     Ok(())
 }
-pub(super) fn allocation(record: &s::Original) -> usize {
+pub(super) fn allocation(
+    record: &s::Original,
+    work: &mut ImportedOriginals,
+) -> Result<usize, &'static str> {
     use crate::body::{ir, scopes, storage};
-    record
-        .locals
-        .len()
-        .saturating_mul(size_of::<ir::Local>())
-        .saturating_add(record.values.len().saturating_mul(size_of::<ir::Value>()))
+    Ok(encoded_literals::count(record, work)?
+        .saturating_mul(size_of::<crate::sema::model::Scalar>())
         .saturating_add(
             record
-                .statements
+                .locals
                 .len()
-                .saturating_mul(size_of::<ir::Statement>()),
-        )
-        .saturating_add(record.blocks.len().saturating_mul(size_of::<ir::Block>()))
-        .saturating_add(
-            record
-                .scopes
-                .len()
-                .saturating_mul(size_of::<storage::Scope>()),
-        )
-        .saturating_add(
-            record
-                .exits
-                .len()
-                .saturating_mul(size_of::<storage::Exit>()),
-        )
-        .saturating_add(
-            record
-                .temporaries
-                .len()
-                .saturating_mul(size_of::<ir::Temporary>()),
-        )
-        .saturating_add(record.owned.as_ref().map_or(0, |owned| {
-            size_of::<values::Facts>()
+                .saturating_mul(size_of::<ir::Local>())
+                .saturating_add(record.values.len().saturating_mul(size_of::<ir::Value>()))
                 .saturating_add(
-                    owned
-                        .created
+                    record
+                        .statements
+                        .len()
+                        .saturating_mul(size_of::<ir::Statement>()),
+                )
+                .saturating_add(record.blocks.len().saturating_mul(size_of::<ir::Block>()))
+                .saturating_add(
+                    record
+                        .scopes
+                        .len()
+                        .saturating_mul(size_of::<storage::Scope>()),
+                )
+                .saturating_add(
+                    record
+                        .exits
+                        .len()
+                        .saturating_mul(size_of::<storage::Exit>()),
+                )
+                .saturating_add(
+                    record
+                        .temporaries
                         .len()
                         .saturating_mul(size_of::<ir::Temporary>()),
                 )
+                .saturating_add(record.owned.as_ref().map_or(0, |owned| {
+                    size_of::<values::Facts>()
+                        .saturating_add(
+                            owned
+                                .created
+                                .len()
+                                .saturating_mul(size_of::<ir::Temporary>()),
+                        )
+                        .saturating_add(
+                            owned
+                                .returned
+                                .len()
+                                .saturating_mul(size_of::<values::Release>()),
+                        )
+                        .saturating_add(crate::support::retained::new_map::<ir::ValueId, usize>(
+                            owned.created.len(),
+                        ))
+                }))
+                // Keep alignment overhead conservative without flattening any owner graph.
                 .saturating_add(
-                    owned
-                        .returned
+                    record
+                        .arguments
                         .len()
-                        .saturating_mul(size_of::<values::Release>()),
+                        .saturating_mul(size_of::<ir::ValueId>()),
                 )
-                .saturating_add(crate::support::retained::new_map::<ir::ValueId, usize>(
-                    owned.created.len(),
-                ))
-        }))
-        // Keep alignment overhead conservative without flattening any owner graph.
-        .saturating_add(
-            record
-                .arguments
-                .len()
-                .saturating_mul(size_of::<ir::ValueId>()),
-        )
-        .saturating_add(size_of::<Body>() + size_of::<storage::Facts>() + size_of::<scopes::Id>())
+                .saturating_add(
+                    size_of::<Body>() + size_of::<storage::Facts>() + size_of::<scopes::Id>(),
+                ),
+        ))
 }
 
 pub(super) fn validate(
@@ -233,7 +244,6 @@ pub(super) fn validate(
         || !body.guards.is_empty()
         || !body.guard_places.is_empty()
         || !body.projections.is_empty()
-        || !body.scalars.is_empty()
         || body.arguments.len() != record.arguments.len()
         || body
             .arguments
@@ -310,10 +320,14 @@ fn ports(view: &SourceOriginal<'_>, body: &Body, steps: &mut usize) -> Result<()
             return Err("source original changed an actual typed local/binding/scope");
         }
     }
+    let mut scalar = 0;
     for (actual, record) in body.values.iter().zip(&record.values) {
         *steps = steps.saturating_add(1);
         let same = match (actual.kind, record.kind) {
             (Rvalue::Unit, s::ValueKind::Unit) => true,
+            (Rvalue::Scalar(id), s::ValueKind::Scalar(_)) => {
+                encoded_literals::same(view, *record, id, body, &mut scalar)?
+            }
             (Rvalue::Read(actual), s::ValueKind::Read(record)) => actual == local(record)?,
             (Rvalue::Constrain(actual), s::ValueKind::Constrain(record)) => actual.0 == record,
             (Rvalue::Function(actual), s::ValueKind::Function(raw)) if v4(view) => {
@@ -341,6 +355,9 @@ fn ports(view: &SourceOriginal<'_>, body: &Body, steps: &mut usize) -> Result<()
         if !same || actual.ty != view.ty(record.ty, steps)? {
             return Err("source original changed an actual typed value operation");
         }
+    }
+    if scalar != body.scalars.len() {
+        return Err("source original changed its complete scalar storage domain");
     }
     Ok(())
 }

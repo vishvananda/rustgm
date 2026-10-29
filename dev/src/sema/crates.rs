@@ -1,5 +1,6 @@
 //! Imported contracts are remapped once; const execution still requires checked bodies.
 pub(crate) mod authored_export;
+mod closed_values;
 mod export;
 #[path = "crates/checked_ownership.rs"]
 mod imported_owners;
@@ -19,6 +20,7 @@ use crate::{
     syntax::item::Safety,
     types::{GenericArgs, ItemId, Kind as Type, Primitive, TypeId},
 };
+pub(crate) use closed_values::{decode as import_scalar_value, encode as export_scalar_value};
 pub use export::{Exports, export};
 pub(crate) use export::{GenericRequest, export_with_originals, scalar as export_scalar};
 pub(in crate::sema) use imported_owners::ImportedOwners;

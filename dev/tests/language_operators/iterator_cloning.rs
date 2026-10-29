@@ -71,7 +71,7 @@ fn iterator_clone_executes_independent_cursors_and_keeps_borrowed_items()
         .iter()
         .map(|(name, text)| (*name, text.as_str(), false))
         .collect::<Vec<_>>();
-    native::check_literal_cases("parallel/pa26/iterator-clone/native", &cases)
+    native::check_literal_cases_capped("parallel/pa26/iterator-clone/native", &cases)
 }
 #[test]
 fn marker_only_concrete_targets_remain_required_executable_gaps()

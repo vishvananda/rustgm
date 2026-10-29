@@ -1,0 +1,41 @@
+{
+  "state": "predictions frozen before scalar candidate observations",
+  "owner": 31,
+  "profile": {
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "lint_cap": "allow",
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea"
+  },
+  "scope": "closed primitive ScalarRvalue through actual source v4 producer, canonical metadata and fresh original body/proof, into LowIR/native; no CTFE, nominal or linkage admission",
+  "inputs": {
+    "consumer.rs": "df2da94d95d642c2b2c745a5cf456e3832401cb647ba19bac8afa75f5b1b1760",
+    "provider.rs": "989fae9fac09c8981b40f5a4968c5aafa20a304442b5c587ad154b206dac4027"
+  },
+  "rust_metadata_status": {
+    "provider": 0,
+    "consumer": 0
+  },
+  "native_prediction": {
+    "byte": 7,
+    "wide": "0xffffffffffffffffffffffffffffffff",
+    "signed": "0x7fffffffffffffffffffffffffffffff",
+    "flag": true,
+    "letter": 129408,
+    "single_bits": "0x3fc00000",
+    "double_bits": "0x3ff8000000000000"
+  },
+  "representation": "16 little-endian bytes typed by the actual Value.ty scalar root, using existing ScalarValue validity; source ValueKind20/Value24 expected unchanged; ordinary body/AST unchanged",
+  "opponents": [
+    "nonprimitive or foreign value type",
+    "noncanonical bool, Unicode scalar, integer or float padding",
+    "changed imported scalar value or scalar index",
+    "extra or missing reconstructed scalar storage",
+    "old v0-3/Provided profile scalar operation admission",
+    "failed work/storage before raw values or scalar pool publication"
+  ],
+  "retained_requirements": [
+    "actual feature-gated literal7 method fixture and omitted-feature failure from feature-predicate-metadata-v4/method-contract.json",
+    "nominal/aggregate/promotion and exact C source-body linkage remain separate requirements"
+  ]
+}

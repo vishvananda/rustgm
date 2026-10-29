@@ -16,6 +16,14 @@ pub(super) fn validate(
         return Err("provided source data requires its own Rust2024 provider profile");
     }
     functions::bindings(rows, headers, work, true)?;
+    for original in &rows.originals {
+        for value in &original.values {
+            work.charge(1)?;
+            if matches!(value.kind, s::ValueKind::Scalar(_)) {
+                return Err("source scalar operation requires its explicit v4 ordinary profile");
+            }
+        }
+    }
     for header in &rows.traits {
         work.charge(1)?;
         if header.flags.bits() & s::TraitFlags::RESTRICTED_IMPL != 0 {

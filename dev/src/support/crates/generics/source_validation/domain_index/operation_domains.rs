@@ -82,6 +82,9 @@ impl DomainIndex<'_, '_> {
         self.observed.operation_ports = self.observed.operation_ports.saturating_add(1);
         self.types.root(self.headers, context, value.ty, work)?;
         match value.kind {
+            s::ValueKind::Scalar(_) => {
+                value.scalar_value(&self.headers.rows().types)?;
+            }
             s::ValueKind::Read(place) | s::ValueKind::Borrow(place) => {
                 Self::place(original, place, None, work)?;
             }

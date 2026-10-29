@@ -125,6 +125,15 @@ fn actual_primitive_identity_method_reconstructs_and_dispatches_in_imported_scop
     assert!(client(crates::decode(&bytes)?, "identity-method-api-only").is_err());
     Ok(())
 }
+#[test]
+fn actual_primitive_literal_method_reconstructs_and_dispatches_in_imported_scope() -> Result {
+    let artifact = provider("method-provider")?;
+    let bytes = crates::encode(&artifact)?;
+    let program = client(crates::decode(&bytes)?, "method-both")?;
+    save(&artifact, &program, "method-both")?;
+    assert!(client(crates::decode(&bytes)?, "method-api-only").is_err());
+    Ok(())
+}
 fn changed(
     artifact: &crates::Interface,
     mutate: impl FnOnce(&mut s::SourceRows),

@@ -252,7 +252,10 @@ fn originals(rows: &SourceRows, work: &mut Work, features: bool) -> Result<(), &
                 value.kind,
                 ValueKind::Unit | ValueKind::Read(Place::Local(_)) | ValueKind::Constrain(_)
             ) || features
-                && matches!(value.kind, ValueKind::Function(_) | ValueKind::Call { .. }))
+                && matches!(
+                    value.kind,
+                    ValueKind::Function(_) | ValueKind::Call { .. } | ValueKind::Scalar(_)
+                ))
             {
                 return Err("source value operation requires a wider explicit profile");
             }

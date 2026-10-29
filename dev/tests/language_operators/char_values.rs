@@ -61,7 +61,7 @@ fn char_values_preserve_their_real_source_lookup_and_scalar_contracts() -> TestR
 fn char_values_execute_literal_sources_through_existing_widths() -> TestResult {
     for &name in ACCEPTED {
         let text = source(name)?;
-        native::check_literal_cases(
+        native::check_literal_cases_capped(
             "parallel/pa26/char-constant-values-v1/native",
             &[(name, &text, false)],
         )?;

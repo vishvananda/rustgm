@@ -118,6 +118,10 @@ fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
     id(out, row.ty.0)?;
     match row.kind {
         s::ValueKind::Unit => out.u8(0),
+        s::ValueKind::Scalar(bits) => {
+            out.u8(6)?;
+            out.bytes(&bits)
+        }
         s::ValueKind::Read(place) => {
             out.u8(1)?;
             place_write(out, place)
@@ -150,6 +154,12 @@ fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static str> {
     let ty = g::TypeRef(read.id()?);
     let kind = match read.reader.u8()? {
         0 => s::ValueKind::Unit,
+        6 => {
+            if !read.features {
+                return Err("source scalar operation requires its explicit v4 ordinary profile");
+            }
+            s::ValueKind::Scalar(read.reader.u128()?.to_le_bytes())
+        }
         1 => s::ValueKind::Read(place_read(read)?),
         2 => s::ValueKind::Constrain(read.id()?),
         3 => {

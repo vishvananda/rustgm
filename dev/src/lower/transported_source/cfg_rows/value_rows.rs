@@ -18,6 +18,18 @@ pub(super) fn emit(
         stage.prepare_type_arena(facts, value.ty)?;
         let kind = match value.kind {
             ir::Rvalue::Unit => s::ValueKind::Unit,
+            ir::Rvalue::Scalar(id) if stage.feature_predicates() => {
+                let scalar = body
+                    .scalars
+                    .get(id.0 as usize)
+                    .copied()
+                    .ok_or("source scalar value has no actual body scalar slot")?;
+                let ty = crate::sema::crates::export_scalar(facts, value.ty).map_err(
+                    |_| "source scalar value requires a closed supported primitive type",
+                )?;
+                let value = crate::sema::crates::export_scalar_value(ty, scalar)?;
+                s::ValueKind::Scalar(value.bits().to_le_bytes())
+            }
             ir::Rvalue::Read(target) => s::ValueKind::Read(place(target)?),
             ir::Rvalue::Borrow {
                 place: target,

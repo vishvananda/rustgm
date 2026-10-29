@@ -219,7 +219,7 @@ pub(super) fn allocation<'a>(
         }
         visits = visits.saturating_add(count.saturating_mul(32));
         bytes = bytes
-            .saturating_add(rebuilt_operations::allocation(raw).saturating_mul(4))
+            .saturating_add(rebuilt_operations::allocation(raw, work)?.saturating_mul(4))
             .saturating_add(count.saturating_mul(
                 8 * (size_of::<crate::body::regions::Obligation>()
                     + size_of::<crate::body::regions::Proof>()

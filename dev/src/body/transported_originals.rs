@@ -1,5 +1,6 @@
 //! Immutable imported originals share one owner; no row is a Checked or Permit.
 mod decoded_bodies;
+mod encoded_literals;
 #[path = "transported_originals/reconstruction.rs"]
 mod selected_original;
 pub(crate) use selected_original::{demand as demand_selected, validate as validate_selected};

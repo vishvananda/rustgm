@@ -12,7 +12,7 @@ pub(super) fn emit(
     variables: Vec<s::OwnedRegion>,
     sites: &mut Sites,
 ) -> Result<s::Original, &'static str> {
-    validate(facts, body)?;
+    validate(facts, body, stage.feature_predicates())?;
     let reference = context
         .body()
         .ok_or("source CFG has no actual original body identity")?;
@@ -152,7 +152,7 @@ fn call_context(facts: &Declarations, body: &Body) -> Result<s::CallContext, &'s
         }
     })
 }
-fn validate(facts: &Declarations, body: &Body) -> Result<(), &'static str> {
+fn validate(facts: &Declarations, body: &Body, scalar_values: bool) -> Result<(), &'static str> {
     let Owner::Function { definition, .. } = body.owner else {
         return Err("source CFG has no actual function owner");
     };
@@ -162,7 +162,7 @@ fn validate(facts: &Declarations, body: &Body) -> Result<(), &'static str> {
     if !body.guards.is_empty() || !body.guard_places.is_empty() {
         return Err("source guard facts require a wider transport profile");
     }
-    if !body.scalars.is_empty() {
+    if !scalar_values && !body.scalars.is_empty() {
         return Err("source scalar pool requires a wider transport profile");
     }
     if body.closure_calls.is_some() {

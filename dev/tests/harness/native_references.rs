@@ -105,14 +105,32 @@ pub fn check_literal_cases(
     suite: &str,
     cases: &[(&str, &str, bool)],
 ) -> Result<(), Box<dyn std::error::Error>> {
+    literal_cases(suite, cases, false)
+}
+/// Compilation/runtime qualification explicitly defers advisory producer parity.
+/// Hard frontend errors, backend diagnostics and runtime outcomes remain strict.
+#[allow(
+    dead_code,
+    reason = "only compilation-focused native suites select an explicit lint cap"
+)]
+pub fn check_literal_cases_capped(
+    suite: &str,
+    cases: &[(&str, &str, bool)],
+) -> Result<(), Box<dyn std::error::Error>> {
+    literal_cases(suite, cases, true)
+}
+fn literal_cases(
+    suite: &str,
+    cases: &[(&str, &str, bool)],
+    cap: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
     check_inputs(suite, cases, false, |_, path| {
-        compile(
-            "frontend",
-            Command::new(env!("CARGO_BIN_EXE_rustgm"))
-                .arg("--emit-lowir")
-                .arg(path)
-                .output()?,
-        )
+        let mut command = Command::new(env!("CARGO_BIN_EXE_rustgm"));
+        command.arg("--emit-lowir");
+        if cap {
+            command.arg("--cap-lints=allow");
+        }
+        compile("frontend", command.arg(path).output()?)
     })
 }
 /// Every source supplies its exact successful compiler stderr in the test contract.

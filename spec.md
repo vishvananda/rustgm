@@ -536,6 +536,22 @@ Keep per-use and dense body records unchanged. The
 [transport checkpoint](docs/pa31-availability-transport.md) records genuine
 fresh-client/native evidence, counterexamples and bounded cold/warm work.
 
+The explicit module-feature-predicate profile uses tag 10, row version 4, with
+all v3 availability and namespace columns. Preserve whole non-type requirements
+as paid canonical spellings; they neither define library features nor replace
+API permission. Fresh primitive trait-method bodies retain real member links,
+unpaid formation inputs and fresh dispatch before executable publication.
+Closed scalar operations carry sixteen little-endian bytes whose kind comes
+from the actual value type. Reuse scalar width, bool and Unicode validation,
+preserving floating bits exactly. Keep these bytes inside the existing cold
+operation payload; do not enlarge dense body/node records or add a literal
+lookup table. Prepay the reconstructed scalar pool, then validate exact types,
+bits, sequential slots and complete storage against the immutable source view.
+Old v0-v3 bytes and admission rules, and the separate Provided profile, retain
+their boundaries. Nominal bodies, promotions, exact C linkage and const execution
+remain separate requirements. See the
+[v4 checkpoint](docs/lib060-feature-predicate-metadata-v4-checkpoint.md).
+
 The explicit source Provided-contract profile uses tag 11, row version 1. Retain
 one advisory-column owner, the complete Provided family and numbering, actual
 namespace bindings, and positive policy that supported headers have no written

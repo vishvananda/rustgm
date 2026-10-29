@@ -1,11 +1,7 @@
 //! Public named constants expose completed scalar bits without demanding runtime storage.
 use super::{Declarations, DefId, Error, error, scalar};
 use crate::{
-    literal::value::FloatBits,
-    sema::{
-        model::Scalar as Value,
-        values::{Reader, View},
-    },
+    sema::values::{Reader, View},
     support::crates::{Constant, ExternalDef, Scalar, ScalarValue},
 };
 
@@ -34,38 +30,17 @@ pub(super) fn export(
 }
 
 pub(super) fn value_bits(ty: Scalar, view: View) -> Result<ScalarValue, Error> {
-    let bits = match (ty, view) {
+    match (ty, view) {
         (
             Scalar::Unit,
             View::Product {
                 length: 0,
                 variant: None,
             },
-        ) => 0,
-        (Scalar::Bool, View::Scalar(Value::Boolean(value))) => u128::from(value),
-        (Scalar::Char, View::Scalar(Value::Character(value))) => u128::from(u32::from(value)),
-        (Scalar::F32, View::Scalar(Value::Float(FloatBits::F32(bits)))) => u128::from(bits),
-        (Scalar::F64, View::Scalar(Value::Float(FloatBits::F64(bits)))) => u128::from(bits),
-        (
-            Scalar::U8
-            | Scalar::U16
-            | Scalar::U32
-            | Scalar::U64
-            | Scalar::U128
-            | Scalar::Usize
-            | Scalar::I8
-            | Scalar::I16
-            | Scalar::I32
-            | Scalar::I64
-            | Scalar::I128
-            | Scalar::Isize,
-            View::Scalar(Value::Integer(bits)),
-        ) => bits,
-        _ => {
-            return Err(error(
-                "constant value disagrees with its scalar export type",
-            ));
-        }
-    };
-    ScalarValue::new(ty, bits).map_err(error)
+        ) => ScalarValue::new(ty, 0).map_err(error),
+        (_, View::Scalar(value)) => super::super::closed_values::encode(ty, value).map_err(error),
+        _ => Err(error(
+            "constant value disagrees with its scalar export type",
+        )),
+    }
 }

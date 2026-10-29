@@ -22,6 +22,9 @@ pub mod syntax;
 pub mod types;
 
 #[cfg(test)]
+#[path = "../tests/invariants/encoded_literals.rs"]
+mod encoded_literals;
+#[cfg(test)]
 #[path = "../tests/helpers/domain_cases.rs"]
 mod module_packets;
 #[cfg(test)]
