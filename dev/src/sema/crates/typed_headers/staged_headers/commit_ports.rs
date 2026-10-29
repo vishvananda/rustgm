@@ -76,15 +76,15 @@ impl Stage {
         for (definition, ty) in cells {
             facts.definitions[definition.0 as usize] = Some(ty);
         }
+        if let Some((plan, registry)) = exact {
+            plan.install(registry);
+        }
         publish_scopes(self.scopes, facts, budget);
         let linkage = facts.crates.get_or_insert_default();
         for function in functions {
             if let Some(symbol) = function.symbol {
                 linkage.symbols.insert(function.definition, symbol);
             }
-        }
-        if let Some((plan, registry)) = exact {
-            plan.install(registry);
         }
         facts.generics.traits = Some(Box::new(contracts));
         facts.generics.trait_self_bounds.extend(self_bounds);
