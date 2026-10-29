@@ -62,6 +62,34 @@ enum ExportMode {
     Compatibility,
 }
 
+impl ExportMode {
+    fn feature_predicates(self) -> bool {
+        matches!(
+            self,
+            Self::FeaturePredicates | Self::Definitions | Self::Compatibility
+        )
+    }
+    fn availability(self) -> bool {
+        matches!(
+            self,
+            Self::Availability | Self::FeaturePredicates | Self::Definitions | Self::Compatibility
+        )
+    }
+    fn module_contracts(self) -> bool {
+        matches!(
+            self,
+            Self::ModuleContracts
+                | Self::Availability
+                | Self::FeaturePredicates
+                | Self::Definitions
+                | Self::Compatibility
+        )
+    }
+    fn exact(self) -> bool {
+        matches!(self, Self::Definitions | Self::Compatibility)
+    }
+}
+
 pub(crate) struct Stage {
     pub(crate) rows: s::SourceRows,
     pub(crate) definitions: Vec<Option<DeclarationRef>>,
@@ -256,10 +284,7 @@ impl Stage {
             producer
                 .require_deprecation_transport(&report.package)
                 .map_err(|error| error.message)?;
-            if !matches!(
-                mode,
-                ExportMode::FeaturePredicates | ExportMode::Definitions | ExportMode::Compatibility
-            ) {
+            if !mode.feature_predicates() {
                 producer
                     .require_impl_bound_transport(&report.package)
                     .map_err(|error| error.message)?;
@@ -275,28 +300,15 @@ impl Stage {
         if facts.members.has_contextual_fields() {
             return Err("contextual aggregate field metadata is not implemented");
         }
-        if report.package.library_policy().is_some()
-            && !matches!(
-                mode,
-                ExportMode::Availability
-                    | ExportMode::FeaturePredicates
-                    | ExportMode::Definitions
-                    | ExportMode::Compatibility
-            )
-        {
+        if report.package.library_policy().is_some() && !mode.availability() {
             return Err("source stability contracts are outside this metadata profile");
         }
-        if matches!(
-            mode,
-            ExportMode::Availability
-                | ExportMode::FeaturePredicates
-                | ExportMode::Definitions
-                | ExportMode::Compatibility
-        ) && report
-            .package
-            .library_policy()
-            .and_then(crate::resolve::stability::Library::staged_inventory)
-            .is_none()
+        if mode.availability()
+            && report
+                .package
+                .library_policy()
+                .and_then(crate::resolve::stability::Library::staged_inventory)
+                .is_none()
         {
             return Err("source availability export requires its completed actual library policy");
         }
@@ -334,16 +346,13 @@ impl Stage {
                 .as_deref()
                 .map_or(0, crate::sema::compiler_items::Catalog::binding_work),
         };
-        if matches!(
-            mode,
-            ExportMode::FeaturePredicates | ExportMode::Definitions | ExportMode::Compatibility
-        ) {
+        if mode.feature_predicates() {
             stage.reserve(size_of::<
                 crate::support::hash::HashMap<DefId, s::TraitApplicationRef>,
             >())?;
             stage.inputs.selected_methods = Some(Box::default());
         }
-        stage.functions.exact = matches!(mode, ExportMode::Definitions | ExportMode::Compatibility);
+        stage.functions.exact = mode.exact();
         stage.reserve(count.saturating_mul(size_of::<Option<DeclarationRef>>()))?;
         stage.definitions.resize(count, None);
         stage.declarations(report, facts, mode)?;
@@ -396,14 +405,8 @@ impl Stage {
         facts: &mut Declarations,
         mode: ExportMode,
     ) -> Result<(), &'static str> {
-        let mut features = non_type_sources::Coverage::new(
-            report,
-            self,
-            matches!(
-                mode,
-                ExportMode::FeaturePredicates | ExportMode::Definitions | ExportMode::Compatibility
-            ),
-        )?;
+        let mut features =
+            non_type_sources::Coverage::new(report, self, mode.feature_predicates())?;
         let mut owners = scope_owners(report, facts, self)?;
         let root = report
             .resolution
@@ -430,14 +433,8 @@ impl Stage {
             let id =
                 DefId(u32::try_from(index).map_err(|_| "source declaration identity overflow")?);
             features.observe(report, facts, id, self)?;
-            if !matches!(
-                mode,
-                ExportMode::ModuleContracts
-                    | ExportMode::Availability
-                    | ExportMode::FeaturePredicates
-                    | ExportMode::Definitions
-                    | ExportMode::Compatibility
-            ) && definition.kind == DefKind::Trait
+            if !mode.module_contracts()
+                && definition.kind == DefKind::Trait
                 && crate::resolve::impl_restrictions::clause(report, id)
                     .map_err(|_| "source trait implementation domain is invalid")?
                     .is_some()

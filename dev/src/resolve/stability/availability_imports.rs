@@ -47,7 +47,15 @@ impl crate::resolve::index::Resolver<'_> {
             Target::Associated(id) => Some((id, PathKind::Associated(self.facts.references.len()))),
             _ => None,
         };
-        if let Some((terminal, kind)) = selected_target
+        self.record_path_availability(site, trace, selected_target)
+    }
+    pub(in crate::resolve) fn record_path_availability(
+        &mut self,
+        site: NodeKey,
+        trace: Option<&Observations>,
+        target: Option<(DefId, PathKind)>,
+    ) -> Result<(), Error> {
+        if let Some((terminal, kind)) = target
             && let Some(selected) = trace.and_then(|trace| trace.selected.as_deref())
             && let Some(imports) = self
                 .facts

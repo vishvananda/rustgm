@@ -386,20 +386,14 @@ impl Resolver<'_> {
             .unwrap_or(crate::expand::marks::ExpansionId(0));
         let ambiguous = work.ambiguous_early_path(self.facts, &observed, introduction);
         let privacy = observed.privacy.unwrap_or(c.module);
-        if !ambiguous
-            && let Ok(Lookup::Found(binding)) = &result
-            && let Some(selected) = observed.selected.as_deref()
-            && let Some(imports) = self
-                .facts
-                .crates
-                .as_deref_mut()
-                .and_then(|i| i.availability.as_deref_mut())
-        {
-            imports.record(
+        if !ambiguous && let Ok(Lookup::Found(binding)) = &result {
+            self.record_path_availability(
                 import.node,
-                binding.target,
-                super::stability::availability_imports::PathKind::Import,
-                selected,
+                Some(&observed),
+                Some((
+                    binding.target,
+                    super::stability::availability_imports::PathKind::Import,
+                )),
             )?;
         }
         let terminal = observed.selected.as_mut().and_then(Vec::pop)

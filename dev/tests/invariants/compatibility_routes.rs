@@ -2,6 +2,15 @@
 use super::*;
 use crate::{lower::instances::SourcePublication, module_packets, source_packets, test_source};
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
+type LegacyImports = (
+    std::rc::Rc<crate::resolve::body_origin::Catalog>,
+    std::sync::Arc<crate::support::crates::Dependencies>,
+    crate::support::hash::HashMap<DefId, Option<Declaration>>,
+    crate::support::hash::HashMap<super::super::BindingKey, super::super::Binding>,
+    crate::support::hash::HashSet<String>,
+    Vec<PathEntry>,
+    std::cell::Cell<super::super::Budget>,
+);
 fn artifact() -> TestResult<crate::support::crates::Interface> {
     module_packets::exported_profile(
         &test_source::fixture("pa31/tests/spec/source-module-compatibility/provider.rs")?,
@@ -136,15 +145,6 @@ fn repeated_groups_share_real_event_dedup_and_warm_lookup_has_no_retained_growth
         1
     );
     assert!(after.steps > before.steps);
-    type LegacyImports = (
-        std::rc::Rc<crate::resolve::body_origin::Catalog>,
-        std::sync::Arc<crate::support::crates::Dependencies>,
-        crate::support::hash::HashMap<DefId, Option<Declaration>>,
-        crate::support::hash::HashMap<super::super::BindingKey, super::super::Binding>,
-        crate::support::hash::HashSet<String>,
-        Vec<PathEntry>,
-        std::cell::Cell<super::super::Budget>,
-    );
     assert_eq!(size_of::<Imports>(), size_of::<LegacyImports>() + 32);
     println!(
         "compatibility Imports={} oldowner={} PathUse={} Entry={} warm128={} retainedgrowth={}",

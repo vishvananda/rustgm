@@ -490,12 +490,11 @@ fn claims(
             let contract = header
                 .as_ref()
                 .map(super::panic_contracts::CheckedHeader::summary);
-            if let Some(role) = contract.and_then(|contract| contract.builtin) {
-                result
-                    .entry(NodeKey { file, node })
-                    .or_default()
-                    .push(Claim::BuiltinMacro(role));
-            }
+            record_builtin_claim(
+                &mut result,
+                NodeKey { file, node },
+                contract.and_then(|c| c.builtin),
+            );
             let mut transparency = false;
             let mut diagnostic_seen = false;
             let mut compatibility = None;
@@ -573,6 +572,19 @@ fn claims(
         }
     }
     Ok(result)
+}
+
+fn record_builtin_claim(
+    claims: &mut HashMap<NodeKey, Vec<Claim>>,
+    key: NodeKey,
+    builtin: Option<crate::expand::builtin::Builtin>,
+) {
+    if let Some(role) = builtin {
+        claims
+            .entry(key)
+            .or_default()
+            .push(Claim::BuiltinMacro(role));
+    }
 }
 
 /// Decode one declaration claim after its complete macro/stability header was checked.

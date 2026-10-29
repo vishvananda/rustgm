@@ -69,6 +69,18 @@ fn profile_has_inventory(
     }
     Ok(true)
 }
+fn profile_has_complete_attributes(profile: s::Profile) -> bool {
+    matches!(
+        profile,
+        s::Profile::Source2024FunctionContracts
+            | s::Profile::Source2024ModuleContracts
+            | s::Profile::Source2024ModuleAvailability
+            | s::Profile::Source2024ModuleFeaturePredicates
+            | s::Profile::Source2024ModuleDefinitions
+            | s::Profile::Source2024ModuleCompatibility
+            | s::Profile::Source2024ProvidedContracts
+    )
+}
 pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     let Some(imported) = &report.resolution.crates else {
         return Ok(());
@@ -146,18 +158,7 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
         };
         let contracts = headers.inventory.artifacts()[header.artifact]
             .source_descriptor()
-            .is_some_and(|descriptor| {
-                matches!(
-                    descriptor.profile(),
-                    s::Profile::Source2024FunctionContracts
-                        | s::Profile::Source2024ModuleContracts
-                        | s::Profile::Source2024ModuleAvailability
-                        | s::Profile::Source2024ModuleFeaturePredicates
-                        | s::Profile::Source2024ModuleDefinitions
-                        | s::Profile::Source2024ModuleCompatibility
-                        | s::Profile::Source2024ProvidedContracts
-                )
-            });
+            .is_some_and(|descriptor| profile_has_complete_attributes(descriptor.profile()));
         if contracts {
             // ExternalDef clones only shared Arc handles. Its already retained
             // immutable path/identity pointees are not copied into this ledger.
