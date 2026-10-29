@@ -222,7 +222,7 @@ enum Work {
         argument: NodeId,
         parameter: u32,
     },
-    MethodArguments(NodeId),
+    MethodArguments(NodeId, Option<Box<std::vec::IntoIter<DefId>>>),
     AssignmentValue(NodeId),
     ForIterator(NodeId),
     ForPattern(NodeId, TermId),
@@ -888,8 +888,8 @@ impl Checker<'_> {
                     }
                 }
                 Work::CallArguments(node, expected) => self.call_arguments(node, expected)?,
-                Work::MethodArguments(node) => {
-                    if let Some(dependency) = self.method_arguments(node)? {
+                Work::MethodArguments(node, headers) => {
+                    if let Some(dependency) = self.method_arguments(node, headers)? {
                         return Ok(Some(dependency));
                     }
                 }
@@ -1455,7 +1455,7 @@ impl Checker<'_> {
             }
             Kind::MethodCall { receiver, .. } | Kind::GenericMethodCall { receiver, .. } => {
                 self.prepare_language_receiver(receiver)?;
-                self.state.work.push(Work::MethodArguments(node));
+                self.state.work.push(Work::MethodArguments(node, None));
                 self.state.work.push(Work::Enter(receiver, None));
                 return Ok(());
             }

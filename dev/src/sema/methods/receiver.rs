@@ -25,7 +25,7 @@ pub(in crate::sema) struct Selected {
 }
 pub(in crate::sema) enum Progress {
     Ready(Selected),
-    Prepare(DefId),
+    Prepare(std::vec::IntoIter<DefId>),
 }
 #[derive(Clone, Copy)]
 enum Lane {
@@ -69,10 +69,11 @@ pub(in crate::sema) fn choose(
         .map_err(error)?;
     let inherent = inherent_candidates(report, facts, source, (term, base), head, site, identifier)
         .map_err(error)?;
-    if let Some(definition) =
-        pending_definition(facts, source, &inherent.members, caller.availability).map_err(error)?
+    if pending_definition(facts, source, &inherent.members, caller.availability)
+        .map_err(error)?
+        .is_some()
     {
-        return Ok(Progress::Prepare(definition));
+        return Ok(Progress::Prepare(inherent.members.into_iter()));
     }
     let has_traits = facts.methods.trait_names.contains(&site.name);
     let library = library_method(report, head, site.name);

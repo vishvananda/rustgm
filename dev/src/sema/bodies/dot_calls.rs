@@ -7,6 +7,9 @@ use crate::{
     },
     types::infer::Solved,
 };
+#[cfg(test)]
+#[path = "../../../tests/invariants/receiver_frontier.rs"]
+mod header_tests;
 
 /// One real receiver adjustment also owns its single unsized conversion.
 struct Adjusted {
@@ -44,7 +47,11 @@ impl Checker<'_> {
     pub(super) fn method_arguments(
         &mut self,
         node: NodeId,
+        headers: Option<Box<std::vec::IntoIter<DefId>>>,
     ) -> Result<Option<super::Dependency>, Error> {
+        if let Some(headers) = headers {
+            return self.method_headers(node, headers);
+        }
         let site = self
             .report
             .resolution
@@ -71,12 +78,8 @@ impl Checker<'_> {
         )?;
         let selected = match progress {
             receiver::Progress::Ready(selected) => selected,
-            receiver::Progress::Prepare(definition) => {
-                self.state.work.push(super::Work::MethodArguments(node));
-                return Ok(Some(super::Dependency {
-                    requirement: super::Requirement::Definition(definition),
-                    source: key,
-                }));
+            receiver::Progress::Prepare(members) => {
+                return self.method_headers(node, Box::new(members));
             }
         };
         if selected.from_bound {
@@ -128,6 +131,39 @@ impl Checker<'_> {
         let target_function = self.selected_target_function(node, callable)?;
         self.retain_active_call(node, signature, target_function)?;
         self.schedule_call_arguments(node, signature, site.arguments, 1)?;
+        Ok(None)
+    }
+
+    /// Retain the exact candidate allocation across waits rather than probing
+    /// the growing ready prefix again after every completed declaration.
+    fn method_headers(
+        &mut self,
+        node: NodeId,
+        mut members: Box<std::vec::IntoIter<DefId>>,
+    ) -> Result<Option<super::Dependency>, Error> {
+        for definition in members.by_ref() {
+            self.state.steps = self.state.steps.saturating_add(1);
+            if self.state.steps > 1_000_000 {
+                return Err(self.error(node, "method header work budget exceeded"));
+            }
+            if self
+                .facts
+                .definitions
+                .get(definition.0 as usize)
+                .is_some_and(Option::is_none)
+            {
+                self.state
+                    .work
+                    .push(super::Work::MethodArguments(node, Some(members)));
+                return Ok(Some(super::Dependency {
+                    requirement: super::Requirement::Definition(definition),
+                    source: self.key(node),
+                }));
+            }
+        }
+        self.state
+            .work
+            .push(super::Work::MethodArguments(node, None));
         Ok(None)
     }
 
