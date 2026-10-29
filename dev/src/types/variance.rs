@@ -1,4 +1,5 @@
 //! Variance of lifetime/type parameters from completed nominal field templates.
+mod reachable;
 mod rigidity;
 mod solver;
 use super::{
@@ -173,9 +174,12 @@ enum Slot {
     Const(TypeId),
 }
 #[derive(Default)]
-struct Graph {
+struct Graph<'a> {
     skip_external_nominals: bool,
     independent: bool,
+    known: Option<&'a Variances>,
+    declarations: Option<&'a [Option<TypeId>]>,
+    pending: Vec<ItemId>,
     result: Variances,
     slots: Vec<Slot>,
     variables: Vec<Term>,
@@ -183,7 +187,7 @@ struct Graph {
     work: Vec<(TypeId, Term, u16)>,
     seen: HashSet<(TypeId, Term, u16)>,
 }
-impl Graph {
+impl Graph<'_> {
     fn declaration(
         &mut self,
         types: &Store,
@@ -468,6 +472,14 @@ impl Graph {
         position: Term,
         depth: u16,
     ) -> Result<(), &'static str> {
+        if !self.result.ranges.contains_key(&nominal.0) {
+            if let Some(values) = self.known.and_then(|known| known.get(nominal.0)) {
+                return self.completed_nominal(types, owner, nominal, position, depth, values);
+            }
+            if self.declarations.is_some() {
+                self.reserve_reached(types, nominal.0)?;
+            }
+        }
         let arguments = types
             .arguments(nominal.1)
             .ok_or("invalid variance arguments")?;

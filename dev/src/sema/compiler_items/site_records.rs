@@ -69,6 +69,7 @@ fn checked_role(report: &Report, facts: &mut Declarations, role: LangItem) -> Re
     let fields = fields(facts, claimed).map_err(error)?;
     if role == LangItem::PanicLocation {
         location(report, facts, fields).map_err(error)?;
+        location_variances(facts, claimed)?;
     } else {
         info(report, facts, fields).map_err(error)?;
     }
@@ -78,6 +79,23 @@ fn checked_role(report: &Report, facts: &mut Declarations, role: LangItem) -> Re
         return Ok(());
     }
     super::roles::complete_nominal(facts, role, claimed)
+}
+
+fn location_variances(facts: &mut Declarations, claimed: Declaration) -> Result<(), Error> {
+    let payments =
+        crate::sema::header_attributes::source_payments(facts.must_use_contracts.as_deref())?;
+    facts
+        .lifetimes
+        .variances
+        .append_reached(
+            &facts.types,
+            &facts.aggregates,
+            &facts.definitions,
+            ItemId(claimed.definition.0),
+            |owner, ordinal, storage| facts.unreduced.fields(owner, ordinal).unwrap_or(storage),
+            &|work, bytes| payments.charge(work, bytes),
+        )
+        .map_err(Error::unlocated)
 }
 fn fields(facts: &Declarations, declaration: Declaration) -> Result<&[TypeId], &'static str> {
     let item = ItemId(declaration.definition.0);
