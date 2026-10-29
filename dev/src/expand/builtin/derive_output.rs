@@ -5,6 +5,7 @@ mod comparisons;
 mod debug_format;
 mod derivation_contexts;
 mod initialized_fields;
+mod parameter_admission;
 mod payload_members;
 use super::{choice::Charge, delegation::Delegated, derive_types};
 use crate::{
@@ -88,6 +89,7 @@ pub(crate) fn build(
         output.debug(fields, &inventory.variants)?;
     }
     output.comparison_members(fields, &inventory.variants)?;
+    output.parameter_marker(fields)?;
     output.finish(config)
 }
 

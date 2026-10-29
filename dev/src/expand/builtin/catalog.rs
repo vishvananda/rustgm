@@ -252,6 +252,7 @@ impl Builtin {
                 | Self::Derive
                 | Self::DeriveConst
                 | Self::Copy
+                | Self::ConstParamTy
                 | Self::Clone
                 | Self::Debug
                 | Self::Default

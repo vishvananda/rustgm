@@ -1,5 +1,5 @@
 //! Only completed source-derived vocabulary can consume its selected header grant.
-use super::{Body, Error, Transaction};
+use super::{Body, Builtin, Error, NodeKey, Transaction};
 use crate::{
     expand::stream::{Location, OriginKind},
     resolve::{
@@ -8,6 +8,63 @@ use crate::{
     },
 };
 impl Report {
+    /// Data about an authenticated generated member, never trait/const permission.
+    pub(crate) fn derived_const_parameter_impl(&self, site: NodeKey) -> Result<bool, Error> {
+        let Some(source) = self.package.source_core() else {
+            return Ok(false);
+        };
+        let error = |message| Error::at(site.file, 0, message);
+        source.macros.charge(4, 0).map_err(error)?;
+        let unit = self
+            .package
+            .units
+            .get(site.file.0 as usize)
+            .ok_or_else(|| error("derived impl lost its actual unit"))?;
+        let node = unit
+            .configured
+            .ast
+            .nodes
+            .get(site.node.get() as usize)
+            .ok_or_else(|| error("derived impl lost its actual item"))?;
+        if (node.span.start as usize) < unit.source.original().len() {
+            return Ok(false);
+        }
+        source
+            .macros
+            .charge(
+                8 + unit.origins.len().checked_ilog2().unwrap_or(0) as usize,
+                0,
+            )
+            .map_err(error)?;
+        let Some(origin) = self.package.origin(site.file, node.span.start) else {
+            return Ok(false);
+        };
+        if !matches!(origin.kind, OriginKind::Synthetic(_)) {
+            return Ok(false);
+        }
+        let Some(index) = origin.introduction.0.checked_sub(1).map(|n| n as usize) else {
+            return Ok(false);
+        };
+        let member = self
+            .invocations
+            .get(index)
+            .ok_or_else(|| error("derived impl lost its actual invocation"))?;
+        let definition = self
+            .definitions
+            .get(member.definition)
+            .ok_or_else(|| error("derived impl lost its actual definition"))?;
+        if !matches!(definition.body, Body::Builtin(Builtin::ConstParamTy)) {
+            return Ok(false);
+        }
+        let entry = self.literal_transaction(index)?;
+        self.expanded_derive(entry.owner, entry.effect)?;
+        if node.span.start < member.generated.start || node.span.end > member.generated.end {
+            return Err(error(
+                "ConstParamTy impl escaped its actual generated member",
+            ));
+        }
+        Ok(true)
+    }
     pub(in crate::resolve::expansion) fn derived_literal_allowance(
         &self,
         site: Location,

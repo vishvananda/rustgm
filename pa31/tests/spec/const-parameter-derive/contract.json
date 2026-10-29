@@ -1,0 +1,144 @@
+{
+  "state": "frozen before independent or candidate observation",
+  "profile": {
+    "rustc": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": true,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false
+  },
+  "owning": "PA26/31 source derive producer and actual traits; PA25 nominal const values remain Required",
+  "originals": [
+    {
+      "retained": "simd-original.rs",
+      "path": "library/core/src/intrinsics/simd/mod.rs",
+      "start": 13432,
+      "end": 13923,
+      "sha256": "45e1148eb5450d814a21e1bb1d9253daeb07a7c9544cdb6db28d491a8a7d2807"
+    },
+    {
+      "retained": "marker-original.rs",
+      "path": "library/core/src/marker.rs",
+      "start": 42230,
+      "end": 43101,
+      "sha256": "3f36ef1e0747e07e0ab0a53d4e7221170b39b0572e8a11c2e335b574b0c2514d"
+    },
+    {
+      "retained": "structural-original.rs",
+      "path": "library/core/src/marker.rs",
+      "start": 9763,
+      "end": 9993,
+      "sha256": "df903ddda968686b9c20c3b2e01c552028a2c0630681bca994e47c5279549742"
+    },
+    {
+      "retained": "equality-original.rs",
+      "path": "library/core/src/cmp.rs",
+      "start": 12164,
+      "end": 13209,
+      "sha256": "22043ae27590e2d535f9994e2f435f8c395933fe82e4d9bfa98b7329d02c5c10"
+    },
+    {
+      "retained": "formatter-original.rs",
+      "path": "library/core/src/fmt/mod.rs",
+      "start": 22471,
+      "end": 22694,
+      "sha256": "c59498ca1254b670559900df0f2c85bdc0dee539b11c38042a71da99cf68c14b"
+    },
+    {
+      "retained": "write-original.rs",
+      "path": "library/core/src/fmt/mod.rs",
+      "start": 75899,
+      "end": 76044,
+      "sha256": "5c173811b889cdec245a832ef1f7cd9055860d0b87d9c791678fc965cb348462"
+    }
+  ],
+  "support": "Qualified source equality foundation + existing retained Debug schema; authored fmt Outcome/Error/Write/options support with original Formatter declaration and write_str body. No Debug/Formatter runtime or original module artifact acceptance. Actual unchanged4-member SimdAlign bytes retained. Added already-qualified original discriminant intrinsic and source DispatchFromDyn/CoerceUnsized/Unsize declarations; full Formatter runtime remains Required. Actual adt_const_params const policy anchor and explicit authored unsized_const_params const policy-inventory anchor; neither supplies an unstable_feature_bound assumption. Original core retains real impl-family ownership.",
+  "cases": [
+    {
+      "name": "actual-source",
+      "source": "actual-source.rs",
+      "sha256": "7c0900bc2833032795f4ab924daf36b4e7eb3d40b0431eea2d8d0ef42e9f5e2b",
+      "rust_metadata": 0,
+      "candidate": "accept checked source and actual marker/equality runtime"
+    },
+    {
+      "name": "missing-eq",
+      "source": "missing-eq.rs",
+      "sha256": "0894209599f4d18bfdd3bc6c1724b78e470fdcf89efb43b52083efb4f95025e1",
+      "rust_metadata": 1,
+      "candidate": "reject actual source/trait/macro error"
+    },
+    {
+      "name": "missing-structural",
+      "source": "missing-structural.rs",
+      "sha256": "83d7f14ca0535d1386f3cce28fab9cabb8683935357d19f8957c65883febee87",
+      "rust_metadata": 1,
+      "candidate": "reject actual source/trait/macro error"
+    },
+    {
+      "name": "unknown-member",
+      "source": "unknown-member.rs",
+      "sha256": "3633aabfad1e2225f6735ac5098551a4933ffea0b98986d727ba200ac921da2f",
+      "rust_metadata": 1,
+      "candidate": "reject actual source/trait/macro error"
+    },
+    {
+      "name": "same-spelling-macro",
+      "source": "same-spelling-macro.rs",
+      "sha256": "42f8e8500f83b0982657dacd51a2b822b2ec65c76ec1bc1160ba8143dba9f4a5",
+      "rust_metadata": 0,
+      "candidate": "accept genuine imported derive despite unrelated legacy bang macro; preserve actual selected source definition"
+    },
+    {
+      "name": "not-builtin",
+      "source": "not-builtin.rs",
+      "sha256": "e2b79a6603cc5e74285a54b4f1f0951bdff0b0ef68696b8e6d5c23fd45b5d9e2",
+      "rust_metadata": 1,
+      "candidate": "reject actual source/trait/macro error"
+    },
+    {
+      "name": "wider-generic",
+      "source": "wider-generic.rs",
+      "sha256": "0d7908f37f4867bde77289916a4f83ba5d74e66b4e904d7f4c13c8052d7074dc",
+      "rust_metadata": 0,
+      "candidate": "Required unsupported-positive"
+    },
+    {
+      "name": "nominal-const",
+      "source": "nominal-const.rs",
+      "sha256": "afa3ad64786bfaf7138690a442d08eb59fe9b0ac5567f0862f921e4d4d3815b4",
+      "rust_metadata": 0,
+      "candidate": "Required unsupported-positive"
+    }
+  ],
+  "native": {
+    "source": "actual-source.rs",
+    "observer": "observer.c",
+    "observer_sha256": "59aed593bb3fb07cd920c7810687ce7b153bb1e2c6f0b8e32cc215ac49d546b4",
+    "status": 0,
+    "stdout": "7\n",
+    "stderr": ""
+  },
+  "predecessor": {
+    "contract_sha256": "a73c9769f49194315c66a9a143670e6027853289bec223255c882073b9dd4b24",
+    "receipt": "obj/parallel/const-parameter-derive-v1/oracle-v1/receipt.json",
+    "state": "retained failed reducer prediction; missing actual discriminant and source dyn-dispatch dependencies/coverage request"
+  },
+  "predecessor_v2": {
+    "contract_sha256": "05318a87a2288331492162bf8b8fcf3c07ccd857d112c9a60420960e8bf0da07",
+    "receipt": "obj/parallel/const-parameter-derive-v1/oracle-v2/receipt.json",
+    "state": "retained failed reducer prediction; unused authored Ordering import and missing real isize source comparison support"
+  },
+  "predecessor_v3": {
+    "contract_sha256": "4e1f89573c7a14d0502dbf09d344c12f0758ec534f4f340e4617698442ba2ed4",
+    "receipt": "obj/parallel/const-parameter-derive-v1/oracle-v3/receipt.json",
+    "state": "retained failed reduced defining-crate policy inventory; original implied_by target definitions missing"
+  },
+  "predecessor_v4": {
+    "contract_sha256": "dcc1e58fa01cf0a474eb4db1ab980a7470c50733717e3319d797b5a357b6d9ea",
+    "receipt": "obj/parallel/const-parameter-derive-v1/oracle-v4/receipt.json",
+    "state": "retained genuine Rust prediction mismatch: legacy bang macro does not shadow imported derive namespace"
+  }
+}

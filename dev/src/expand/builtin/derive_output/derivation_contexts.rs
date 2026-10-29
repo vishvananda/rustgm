@@ -1,7 +1,7 @@
 //! Ephemeral per-member source provenance; no persistent compiler permission.
 use super::{ExpansionId, Output, SyntaxContextId};
 use crate::{expand::builtin::Builtin, support::edition::Edition};
-pub(crate) const MEMBERS: [Builtin; 9] = [
+pub(crate) const MEMBERS: [Builtin; 10] = [
     Builtin::Copy,
     Builtin::Clone,
     Builtin::Debug,
@@ -11,6 +11,7 @@ pub(crate) const MEMBERS: [Builtin; 9] = [
     Builtin::Hash,
     Builtin::Ord,
     Builtin::PartialOrd,
+    Builtin::ConstParamTy,
 ];
 #[derive(Clone, Copy)]
 pub(crate) struct MemberContext {

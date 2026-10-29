@@ -81,9 +81,10 @@ pub enum LangItem {
     Add,
     Sub,
     OffsetOf,
+    ConstParamTy,
 }
 impl LangItem {
-    pub const ALL: [Self; 65] = [
+    pub const ALL: [Self; 66] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -149,6 +150,7 @@ impl LangItem {
         Self::Add,
         Self::Sub,
         Self::OffsetOf,
+        Self::ConstParamTy,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -218,12 +220,14 @@ impl LangItem {
             Self::Add => 62,
             Self::Sub => 63,
             Self::OffsetOf => 64,
+            Self::ConstParamTy => 65,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
     #[must_use]
     pub fn from_name(name: &str) -> Option<Self> {
         match name {
+            "const_param_ty" => Some(Self::ConstParamTy),
             "sized" => Some(Self::Sized),
             "meta_sized" => Some(Self::MetaSized),
             "pointee_sized" => Some(Self::PointeeSized),

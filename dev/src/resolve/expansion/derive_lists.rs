@@ -3,6 +3,9 @@ mod literal_grants;
 mod paired_impls;
 mod placed_owner;
 use placed_owner::Placement;
+#[cfg(test)]
+#[path = "../../../tests/invariants/parameter_derivations.rs"]
+mod parameter_tests;
 mod prior_copy;
 mod receipt;
 #[cfg(test)]

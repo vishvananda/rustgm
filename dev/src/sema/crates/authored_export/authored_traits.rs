@@ -21,6 +21,10 @@ impl Stage {
             .source_bindings
             .as_deref()
             .ok_or("source header graph has no role catalog")?;
+        self.charge(1)?;
+        if catalog.language(LangItem::ConstParamTy).is_some() {
+            return Err("source ConstParamTy contract transport is not implemented");
+        }
         let reserved = report
             .resolution
             .source_bindings
