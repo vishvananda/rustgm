@@ -131,7 +131,7 @@ fn actual_v6_provider_fresh_clients_preserve_leaf_prefix_and_lint_protocols() ->
     }
     write_native_input(bytes)
 }
-fn write_native_input(bytes:Vec<u8>)->TestResult {
+fn write_native_input(bytes: Vec<u8>) -> TestResult {
     let (
         report,
         pipeline::Analysis {

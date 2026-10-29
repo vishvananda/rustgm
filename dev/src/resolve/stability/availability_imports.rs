@@ -281,15 +281,7 @@ impl Imports {
     }
     fn features(&mut self, policies: &[s::AvailabilityPolicy]) -> Result<(), Error> {
         for policy in policies {
-            let growth = retained::Growth::map::<String, ()>(
-                self.features.len(),
-                self.features.capacity(),
-                1,
-            );
-            self.charge(
-                growth.work.saturating_add(policy.feature.len()),
-                growth.bytes.saturating_add(policy.feature.len()),
-            )?;
+            self.charge(policy.feature.len().saturating_add(1), 0)?;
             let normalized;
             let spelling = if policy.feature.is_ascii() {
                 policy.feature.as_str()
@@ -303,6 +295,18 @@ impl Imports {
             };
             let feature =
                 crate::resolve::bindings::FeatureName::new(spelling).map_err(Error::unlocated)?;
+            if self.features.contains(feature.spelling()) {
+                continue;
+            }
+            let growth = retained::Growth::map::<String, ()>(
+                self.features.len(),
+                self.features.capacity(),
+                1,
+            );
+            self.charge(
+                growth.work.saturating_add(feature.spelling().len()),
+                growth.bytes.saturating_add(feature.spelling().len()),
+            )?;
             self.features.insert(feature.spelling().to_owned());
         }
         Ok(())

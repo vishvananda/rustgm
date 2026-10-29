@@ -36,6 +36,15 @@ pub(in crate::sema) fn compatibility(
     facts: &mut Declarations,
     site: Option<(NodeKey, DefId)>,
 ) -> Result<(), Error> {
+    if report.package.source_client().is_none()
+        && report
+            .resolution
+            .crates
+            .as_deref()
+            .is_none_or(|i| !i.has_availability())
+    {
+        return Ok(());
+    }
     facts.require_lint_context(report)?;
     crate::resolve::stability::visit_compatibility_warnings(report, site, |warning| {
         if let Some(producer) = report.lint_producer() {

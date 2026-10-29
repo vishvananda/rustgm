@@ -135,7 +135,7 @@
     "marked-deny.rs": "238784c1b0b421d9659efda51e4bdf03e31aa405dce4bb1455e436bbd27b4978",
     "unsafe-denied.rs": "6cea17275c51a2bd31c625b9f75036405198d01cde221be9a7be19f7a4483bde",
     "two-import-groups.rs": "1955cad1f5886a6d5e99d9de8e34e4f6670b8ab9cd288338cbced043db16e8a3",
-    "README.md": "f152092728fc1c655142c1e4f98fed08770309efb9c3291504b155156890ef71",
+    "README.md": "83a41b154020950f7555bf40e0eb9ef8a553de1c2e24db6ec9abae3453a47374",
     "decl-word.rs": "979f31d0de6ac3ebbac9a45928f67a581e902763b451f4f79819b875650ca120",
     "observer.c": "4f015035c7bf829961df1d3b107ca7c1750a01dbcfb2fb5942aaeb61f85f0575",
     "local-body.rs": "c0677504c4f38304f7fcf104f583c68b80c123c4b2adb88f00c65460e60da1ba",
@@ -167,5 +167,6 @@
     "stable-alias.rs": "37495e41a2f7da142869920fa3ae94d32a48133f303efbf3a1d0dfb4b31c2a9c",
     "duplicate-provider.rs": "5ef6bd03491893655f322084232823a3e8f47fa8097a244c03bc54dcc28add56"
   },
-  "retained_failed_v1": "obj/parallel/module-path-compat-v1/nocore-frozen-v1 and nocore-rust-v1: misplaced inner attrs and extern-C fn missing space; source protocol outcomes unchanged"
+  "retained_failed_v1": "obj/parallel/module-path-compat-v1/nocore-frozen-v1 and nocore-rust-v1: misplaced inner attrs and extern-C fn missing space; source protocol outcomes unchanged",
+  "documentation_delta": "README adds explicit pending Associated selected-leaf continuation after NoCore v2 observations; Rust/C inputs identical to frozen v2"
 }

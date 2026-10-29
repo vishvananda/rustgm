@@ -37,10 +37,17 @@ impl Imports {
         if self.paths_complete {
             return Err(Error::unlocated("availability paths are already completed"));
         }
-        let count = selected
-            .iter()
-            .filter(|selection| self.bindings.contains_key(&selection.key))
-            .count();
+        let count = selected.iter().try_fold(0usize, |count, selection| {
+            let Some(binding) = self.bindings.get(&selection.key) else {
+                return Ok(count);
+            };
+            if selection.binding.target != binding.target {
+                return Err(Error::unlocated(
+                    "availability path changed its actual selected target",
+                ));
+            }
+            Ok(count + 1)
+        })?;
         if count == 0 {
             return Ok(());
         }
@@ -66,11 +73,6 @@ impl Imports {
             let Some(binding) = self.bindings.get(&selection.key).copied() else {
                 continue;
             };
-            if selection.binding.target != binding.target {
-                return Err(Error::unlocated(
-                    "availability path changed its actual selected target",
-                ));
-            }
             self.entries.push(PathEntry {
                 selected: selection.binding,
                 key: selection.key,
@@ -180,60 +182,79 @@ impl Imports {
                     "availability selected namespace changed after resolution",
                 ));
             }
-            let binding = self
-                .rows(entry.binding.artifact)?
-                .bindings
-                .get(entry.binding.index)
-                .ok_or_else(|| Error::unlocated("availability binding coverage is missing"))?;
-            let module = facts
-                .definitions
-                .get(entry.binding.target.0 as usize)
-                .is_some_and(|d| d.kind == DefKind::Module);
-            if let Some(message) =
-                message.filter(|_| module && entry.binding.target != path.terminal)
-            {
-                let direct = entry.binding.source != s::BindingSource::Declaration
-                    || self.policy_allowed(
-                        package,
-                        path.site,
-                        entry.binding.artifact,
-                        binding.regular,
-                    )?;
-                let declared = self.declared_policy(entry.binding.target)?;
-                let allowed = match declared {
-                    Some((mapped, row)) => {
-                        self.policy_allowed(package, path.site, mapped.artifact, row.regular)?
-                    }
-                    None => true,
-                };
-                if !direct || !allowed {
-                    visit(Warning {
-                        site: path.site,
-                        prefix: entry.binding.target,
-                        message,
-                    })?;
-                }
+            let module = self
+                .declarations
+                .get(&entry.binding.target)
+                .and_then(Option::as_ref)
+                .is_some_and(|mapped| mapped.kind == DefKind::Module);
+            if !module {
+                self.require_prefix(package, path.site, entry)?;
+                continue;
+            }
+            if self.prefix_allowed(package, path.site, entry)? {
+                continue;
+            }
+            if let Some(message) = message {
+                visit(Warning {
+                    site: path.site,
+                    prefix: entry.binding.target,
+                    message,
+                })?;
+            } else if matches!(path.kind, PathKind::Associated(_)) {
+                return Err(Error::at(
+                    path.site.file,
+                    package
+                        .unit(path.site.file)
+                        .configured
+                        .ast
+                        .node(path.site.node)
+                        .span
+                        .start,
+                    "associated module compatibility requires its actual selected-leaf decision",
+                ));
             } else {
-                if module && matches!(path.kind, PathKind::Associated(_)) {
-                    let direct = entry.binding.source != s::BindingSource::Declaration
-                        || self.policy_allowed(package,path.site,entry.binding.artifact,binding.regular)?;
-                    let declared = self.declared_policy(entry.binding.target)?;
-                    let allowed = match declared {
-                        Some((mapped,row)) => self.policy_allowed(package,path.site,mapped.artifact,row.regular)?,
-                        None => true,
-                    };
-                    if !direct || !allowed {
-                        return Err(Error::at(path.site.file,package.unit(path.site.file).configured.ast.node(path.site.node).span.start,
-                            "associated module compatibility requires its actual selected-leaf decision"));
-                    }
-                }
-                if entry.binding.source == s::BindingSource::Declaration {
-                    self.policy(package, path.site, entry.binding.artifact, binding.regular)?;
-                }
-                self.declaration(package, path.site, entry.binding.target, false)?;
+                self.require_prefix(package, path.site, entry)?;
             }
         }
         Ok(())
+    }
+    fn prefix_allowed(
+        &self,
+        package: &Package,
+        site: NodeKey,
+        entry: &PathEntry,
+    ) -> Result<bool, Error> {
+        let row = self
+            .rows(entry.binding.artifact)?
+            .bindings
+            .get(entry.binding.index)
+            .ok_or_else(|| Error::unlocated("availability binding coverage is missing"))?;
+        let direct = entry.binding.source != s::BindingSource::Declaration
+            || self.policy_allowed(package, site, entry.binding.artifact, row.regular)?;
+        let declared = self.declared_policy(entry.binding.target)?;
+        let allowed = match declared {
+            Some((mapped, row)) => {
+                self.policy_allowed(package, site, mapped.artifact, row.regular)?
+            }
+            None => true,
+        };
+        Ok(direct && allowed)
+    }
+    fn require_prefix(
+        &self,
+        package: &Package,
+        site: NodeKey,
+        entry: &PathEntry,
+    ) -> Result<(), Error> {
+        let row = self
+            .rows(entry.binding.artifact)?
+            .bindings
+            .get(entry.binding.index)
+            .ok_or_else(|| Error::unlocated("availability binding coverage is missing"))?;
+        if entry.binding.source == s::BindingSource::Declaration {
+            self.policy(package, site, entry.binding.artifact, row.regular)?;
+        }
+        self.declaration(package, site, entry.binding.target, false)
     }
     pub(super) fn complete_paths(&mut self) -> Result<(), Error> {
         if self.paths_complete {
@@ -318,17 +339,24 @@ pub(crate) fn visit_warnings(
     let log = usize::BITS as usize - imports.paths.len().leading_zeros() as usize;
     imports.charge(log.saturating_mul(2).saturating_add(1), 0)?;
     for path in &imports.paths[start..end] {
-        if let Some((site,terminal))=site
-            && path.terminal!=terminal {
-            if matches!(path.kind,PathKind::Associated(_)) {
+        if let Some((site, terminal)) = site
+            && path.terminal != terminal
+        {
+            if matches!(path.kind, PathKind::Associated(_)) {
                 // Enabled prefixes retain the old ordinary member route. A denied
                 // module already requires its genuine selected-leaf consumer.
-                imports.declaration(&report.package,site,terminal,false)?;
+                imports.declaration(&report.package, site, terminal, false)?;
                 continue;
             }
-            return Err(Error::unlocated("checked availability use selected another terminal"));
+            return Err(Error::unlocated(
+                "checked availability use selected another terminal",
+            ));
         }
         imports.path(&report.package, &report.resolution, path, &mut visit)?;
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "../../../../tests/invariants/compatibility_routes.rs"]
+mod tests;
