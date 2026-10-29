@@ -93,7 +93,11 @@ fn unaligned_transfer_spans_do_not_claim_external_pointer_alignment() -> Result<
 
 #[test]
 fn nullable_memory_shims_pass_carrier_words_without_hidden_results() -> Result<(), &'static str> {
-    let representation = Representation::PointerObject(MemorySpan { bytes: 8, align: 8 });
+    let representation = Representation::ScalarObject(crate::lower::context::ScalarStorage {
+        bytes: 8,
+        align: 8,
+        ty: Type::Ptr,
+    });
     assert_eq!(representation.parameter(), Type::Ptr);
     assert_eq!(representation.result(), Type::Ptr);
     assert_eq!(size_of::<Representation>(), 24);
@@ -123,5 +127,31 @@ fn nullable_memory_shims_pass_carrier_words_without_hidden_results() -> Result<(
         write.blocks[0].terminator,
         Terminator::Return(None)
     ));
+    Ok(())
+}
+#[test]
+fn scalar_object_shims_keep_integer_widths_and_the_existing_object_density()
+-> Result<(), &'static str> {
+    use crate::lower::context::ScalarStorage;
+    assert_eq!(size_of::<ScalarStorage>(), 16);
+    assert_eq!(size_of::<Representation>(), 24);
+    for ty in [Type::U8, Type::U16, Type::U32, Type::I64, Type::I128] {
+        let storage = ScalarStorage {
+            bytes: u64::from(ty.bits() / 8),
+            align: ty.bits() / 8,
+            ty,
+        };
+        let representation = Representation::ScalarObject(storage);
+        assert_eq!(representation.parameter(), ty);
+        assert_eq!(representation.result(), ty);
+        for intrinsic in [Intrinsic::Read, Intrinsic::Write] {
+            let body = Context::memory_body(intrinsic, representation)?;
+            match body.instructions[0].operation {
+                Operation::Load { ty: actual, .. } => assert_eq!(actual, ty),
+                Operation::Store { value, .. } => assert_eq!(value.ty, ty),
+                _ => return Err("integer carrier shim changed transport operation"),
+            }
+        }
+    }
     Ok(())
 }

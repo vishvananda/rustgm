@@ -34,9 +34,11 @@ impl Lower<'_, '_, '_> {
                         operand: Operand::Parameter(parameter),
                     })
                 }
-                (Representation::PointerObject(_), boundary::Type::Scalar(Type::Ptr)) => {
+                (Representation::ScalarObject(storage), boundary::Type::Scalar(expected))
+                    if storage.ty == expected =>
+                {
                     Selected::Runtime(Value {
-                        ty: Type::Ptr,
+                        ty: storage.ty,
                         operand: Operand::Parameter(parameter),
                     })
                 }
@@ -140,9 +142,11 @@ impl Lower<'_, '_, '_> {
                     {
                         Representation::Object(span) => retained
                             .push(boundary::Value::Object(self.object_value(address, span)?)),
-                        Representation::PointerObject(_) => retained.push(boundary::Value::Scalar(
-                            self.builder.load(Type::Ptr, address.operand)?,
-                        )),
+                        Representation::ScalarObject(storage) => {
+                            retained.push(boundary::Value::Scalar(
+                                self.builder.load(storage.ty, address.operand)?,
+                            ))
+                        }
                         Representation::Scalar(_) => {
                             return Err("C object argument lacks object storage");
                         }
@@ -166,8 +170,8 @@ impl Lower<'_, '_, '_> {
             {
                 Selected::Runtime(value)
             }
-            (boundary::ResultValue::Scalar(value), Representation::PointerObject(_))
-                if value.ty == Type::Ptr =>
+            (boundary::ResultValue::Scalar(value), Representation::ScalarObject(storage))
+                if value.ty == storage.ty =>
             {
                 let destination = self
                     .allocate(result)?
@@ -201,14 +205,9 @@ impl Lower<'_, '_, '_> {
                 (Selected::Unit | Selected::Item(_), boundary::Type::Scalar(Type::Void)) => {
                     Ok(Terminator::Return(None))
                 }
-                (Selected::Object(address), boundary::Type::Scalar(Type::Ptr))
-                    if matches!(
-                        self.context.representation(self.body.result)?,
-                        Representation::PointerObject(_)
-                    ) =>
-                {
+                (Selected::Object(address), boundary::Type::Scalar(ty)) if matches!(self.context.representation(self.body.result)?, Representation::ScalarObject(storage) if storage.ty == ty) => {
                     Ok(Terminator::Return(Some(
-                        self.builder.load(Type::Ptr, address.operand)?,
+                        self.builder.load(ty, address.operand)?,
                     )))
                 }
                 (Selected::Object(address), boundary::Type::Object(object)) => {
@@ -222,12 +221,11 @@ impl Lower<'_, '_, '_> {
         Ok(Terminator::Return(match selected {
             Selected::Runtime(value) => Some(value),
             Selected::Object(address) => {
-                if matches!(
-                    self.context.representation(self.body.result)?,
-                    Representation::PointerObject(_)
-                ) {
+                if let Representation::ScalarObject(storage) =
+                    self.context.representation(self.body.result)?
+                {
                     return Ok(Terminator::Return(Some(
-                        self.builder.load(Type::Ptr, address.operand)?,
+                        self.builder.load(storage.ty, address.operand)?,
                     )));
                 }
                 let align = self.context.layout(self.body.result)?.align;

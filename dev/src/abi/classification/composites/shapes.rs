@@ -62,7 +62,7 @@ impl Query<'_> {
             } else {
                 Class::Integer
             })
-        } else if self.pointer_word(ty, layout)? {
+        } else if self.carrier_word(ty, layout)? {
             Kind::Scalar(Class::Integer)
         } else if matches!(kind, Type::Array { .. } | Type::ArrayTerm { .. }) {
             self.array(layout)?
@@ -100,12 +100,12 @@ impl Query<'_> {
             kind,
         })
     }
-    fn pointer_word(&mut self, ty: TypeId, layout: Layout) -> Result<bool, &'static str> {
+    fn carrier_word(&mut self, ty: TypeId, layout: Layout) -> Result<bool, &'static str> {
         if let Some(niche) = self.layouts.niche(&layout)? {
             if niche.owner != ty {
                 return Err("nullable C field belongs to another type");
             }
-            return Ok(true);
+            return Ok(!niche.carrier.is_pointer() || layout.size == 8);
         }
         let Some(Type::Adt(item, _)) = self.types.kind(ty) else {
             return Ok(false);
@@ -117,8 +117,10 @@ impl Query<'_> {
         {
             return self
                 .layouts
-                .pointer_carrier(self.types, self.definitions, ty)
-                .map(|carrier| carrier.is_some());
+                .scalar_carrier(self.types, self.definitions, ty)
+                .map(|carrier| {
+                    carrier.is_some_and(|carrier| !carrier.is_pointer() || layout.size == 8)
+                });
         }
         Ok(false)
     }

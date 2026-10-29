@@ -1,0 +1,69 @@
+{
+  "state": "frozen before Rust/candidate observations",
+  "owning": "PA12 scalar niches/layout/validity; PA31 actual source Option/transparent wrappers; PA25 CTFE bytes",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "effective_lint_cap": "allow (diagnostics only, all type/API/unsafe/const/validity requirements remain)",
+  "source_scope": "Authored closed unsigned pattern invocations and minimal actual Option lang-role declaration, reusing genuine source foundation and exact selected original niche constructor/accessor bodies. NOT full original NonZero/ZeroablePrimitive/open-bound graph or original Option derives.",
+  "primary": [
+    {
+      "path": "library/core/src/intrinsics/mod.rs",
+      "start": 107968,
+      "end": 108138,
+      "sha256": "51c0795fbd4f4827c3d57e2f20926ccf2766ad20f40bf9cd8455906a192b8e74"
+    },
+    {
+      "path": "library/core/src/intrinsics/mod.rs",
+      "start": 108736,
+      "end": 108907,
+      "sha256": "b9db7cffa8542a57f6b41d00a376ed21618fa8f4f20f92ee94f68e2d55465167"
+    },
+    {
+      "path": "library/core/src/num/nonzero.rs",
+      "start": 1264,
+      "end": 3932,
+      "sha256": "1a714088d9e5abe8b7d8b414cbaa8034e6028910d60ea376cd6975498f8e62c3"
+    }
+  ],
+  "original_files": {
+    "num/niche_types.rs": "1a74080c73dd7687b08e667d5611d4068a1b7556311f0b58e44edadb17d0a160",
+    "num/nonzero.rs": "9fee2d234130bf627fd3ec16cdebe8911653886d54c34dcb0601f7dfc2fb9de3",
+    "option.rs": "fc70106a756f98208e6a6a3e428310bdfa3531877cf6c6a99f39fffa26ab2c40"
+  },
+  "rust_metadata_predictions": {
+    "source-runtime": 0,
+    "standard-reference": 0,
+    "some-zero": 1,
+    "partial-range": 0
+  },
+  "native_predictions": {
+    "source-runtime": 0,
+    "standard-reference": 0,
+    "stdout": "expected.stdout",
+    "separate_objects": true,
+    "scope": "real source closed wrappers + actual standard NonZero reference; no original source graph replacement"
+  },
+  "candidate_opponents": {
+    "some-zero": "hard invalid Some payload; must not silently encode as None",
+    "partial-range": "finite unsupported zero-niche profile; NOT a Rust rejection"
+  },
+  "required": [
+    "Original open unsigned range helpers and signed OR authenticated C consumer",
+    "Full original generic NonZero/ZeroablePrimitive source associated-type projection/method graph",
+    "Partial ranges/char/signedOR/general Rust repr niches and source metadata transport",
+    "Full core/alloc/std and whole PA12/25/31 release/artifacts"
+  ],
+  "files": {
+    "foundation.rs": "dd43c3301b768ae307c1ece669b4e9cc2b907d8c2b578d08d3f624d4fa4d5922",
+    "partial-range.rs": "c7799a10d02c8035423c88259f8c57d2f1657db029bf0e39e8999b765b317f2e",
+    "expected.stdout": "3f5c37ed70745ece23952d127c4a703600a9a74195975b56f99b97f54c676f81",
+    "observer.c": "18b84316454ff441260c2799b29a54e1bb53792a2c8ecb233bc416fd04da6f57",
+    "standard-reference.rs": "0fefeab71ad2627dc40659710b5bc7ea38082eabc1829e862206dfc5cc2b99f9",
+    "some-zero.rs": "551815560648387897a37c743b5c6d08e0df5856b1bd15f49f90124cd108f1c8",
+    "source-runtime.rs": "88bd063e0a1b09866d6fe795afb692282f38a6435fc1231e7c58d2efa87d318c",
+    "original/size_of.rs": "6016a711716a107a5fae311d16b952f4fd974232f32ee7a0898c139a42507bcd",
+    "original/niche_types.rs": "1a74080c73dd7687b08e667d5611d4068a1b7556311f0b58e44edadb17d0a160",
+    "original/align_of.rs": "8355bae7f73784894180c842f2d6dc0f7549234bc3ff819de48d112bf5f03d08",
+    "original/option-declaration.rs": "e8f6a46f199f6cd9381b0345aa25012841da793bed781f5db6b1b805391a9570",
+    "original/nonzero-contract.rs": "1a714088d9e5abe8b7d8b414cbaa8034e6028910d60ea376cd6975498f8e62c3"
+  }
+}

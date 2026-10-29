@@ -179,17 +179,19 @@ impl Machine<'_, '_> {
             if id != niche.empty {
                 return Err("nullable value has a different variant identity".into());
             }
+            let width = usize::try_from(niche.encoding.carrier.bytes())
+                .map_err(|_| "nullable carrier width exceeds host size")?;
             let offset = offset
                 .checked_add(niche.encoding.offset)
                 .ok_or("nullable word offset overflow")?;
             let start =
                 usize::try_from(offset).map_err(|_| "nullable word offset exceeds host size")?;
             let end = start
-                .checked_add(8)
+                .checked_add(width)
                 .filter(|&end| end <= backing.bytes.len())
                 .ok_or("nullable word exceeds backing bounds")?;
-            self.charge(8)?;
-            self.buffer_fragments(backing, offset, 8, &[])?;
+            self.charge(width)?;
+            self.buffer_fragments(backing, offset, width as u64, &[])?;
             backing.bytes[start..end].fill(0);
             for index in start..end {
                 backing.set_initialized(index, true);

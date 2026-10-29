@@ -115,10 +115,13 @@ impl Machine<'_, '_> {
             match work {
                 Encode::Value { ty, offset, value } => {
                     let physical = Reader::new(self.evaluator.facts()).storage_type(ty)?;
-                    if let Some(Kind::Pattern { base, .. }) =
+                    if let Some(Kind::Pattern { base, constraint }) =
                         self.evaluator.facts().types.kind(physical)
                     {
                         self.footprint(ty)?;
+                        if matches!(constraint, crate::types::Constraint::ScalarRange(_)) {
+                            self.require_pattern(constraint, value)?;
+                        }
                         self.reserve_cells(pending.len().saturating_add(1).saturating_mul(4))?;
                         pending.push(Encode::Value {
                             ty: base,

@@ -145,7 +145,7 @@ fn nullable_layout_is_canonical_and_keeps_ordinary_density() -> Result<(), Strin
         (1, 0, 0)
     );
     assert_eq!(
-        (encoding.owner, encoding.word, encoding.ty),
+        (encoding.owner, encoding.carrier.leaf(), encoding.ty),
         (ty, word, word)
     );
     assert_eq!(layouts.variants(layout)[0].discriminant, 7);
@@ -307,7 +307,7 @@ fn nullable_owner_seals_and_none_inhabitedness_are_independent_of_payload() -> R
     let Shape::Niche { encoding, .. } = layout.shape else {
         return Err("niche".into());
     };
-    assert_eq!(size_of::<Niche>(), 32);
+    assert_eq!(size_of::<Niche>(), 40);
     layouts.niches.as_mut().ok_or("table")?.records[encoding.0 as usize].owner = word;
     assert!(layouts.niche(&layout).is_err());
     layouts.niches.as_mut().ok_or("table")?.records[encoding.0 as usize].owner = ty;
@@ -317,3 +317,6 @@ fn nullable_owner_seals_and_none_inhabitedness_are_independent_of_payload() -> R
     assert!(layouts.niche(&forged).is_err());
     Ok(())
 }
+
+#[path = "integer_niches.rs"]
+mod integers;

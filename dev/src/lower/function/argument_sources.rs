@@ -108,7 +108,7 @@ fn tuple_field(
     let address = lower.offset(base, offset)?;
     let selected = match representation {
         Representation::Scalar(ty) => Selected::Runtime(lower.builder.load(ty, address.operand)?),
-        Representation::Object(_) | Representation::PointerObject(_) => Selected::Object(address),
+        Representation::Object(_) | Representation::ScalarObject(_) => Selected::Object(address),
     };
     Ok((ty, selected))
 }
@@ -168,7 +168,7 @@ impl Lower<'_, '_, '_> {
         let value =
             self.builder
                 .call(signature, representation.result(), callee, &self.arguments)?;
-        if matches!(representation, Representation::PointerObject(_)) {
+        if matches!(representation, Representation::ScalarObject(_)) {
             let destination = self
                 .allocate(result)?
                 .ok_or("missing nullable result storage")?;
@@ -187,11 +187,8 @@ impl Lower<'_, '_, '_> {
         let value = match selected {
             Selected::Runtime(value) => value,
             Selected::Object(address) => {
-                if matches!(
-                    self.context.representation(ty)?,
-                    Representation::PointerObject(_)
-                ) {
-                    self.builder.load(Type::Ptr, address.operand)?
+                if let Representation::ScalarObject(storage) = self.context.representation(ty)? {
+                    self.builder.load(storage.ty, address.operand)?
                 } else {
                     self.pointer(address)?
                 }

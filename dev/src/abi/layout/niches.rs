@@ -1,5 +1,6 @@
 //! Canonical nullable carriers are physical facts, never reference permissions.
-use super::{Layout, Layouts, Range, Shape, Variant, index};
+use super::zero_carriers::Answer;
+use super::{Carrier, Layout, Layouts, Range, Shape, Variant, index};
 use crate::support::hash::HashMap;
 use crate::types::{
     Kind, Store, TypeId,
@@ -16,7 +17,7 @@ pub struct Niche {
     pub empty: u32,
     pub payload: u32,
     pub field: u32,
-    pub word: TypeId,
+    pub carrier: Carrier,
     pub ty: TypeId,
     pub offset: u64,
 }
@@ -53,7 +54,7 @@ impl Budget {
 #[derive(Default)]
 pub(super) struct Niches {
     records: Vec<Niche>,
-    carriers: HashMap<TypeId, Option<TypeId>>,
+    carriers: HashMap<TypeId, Answer>,
 }
 impl Niches {
     fn retained(&self) -> usize {
@@ -63,14 +64,14 @@ impl Niches {
             .saturating_add(
                 self.carriers
                     .capacity()
-                    .saturating_mul(4 * size_of::<(TypeId, Option<TypeId>)>()),
+                    .saturating_mul(4 * size_of::<(TypeId, Answer)>()),
             )
             .saturating_add(4 * size_of::<Self>())
     }
     fn remember(
         &mut self,
         ty: TypeId,
-        answer: Option<TypeId>,
+        answer: Answer,
         scratch: usize,
         budget: &mut Budget,
         steps: &mut usize,
@@ -83,7 +84,7 @@ impl Niches {
                 .capacity()
                 .saturating_mul(2)
                 .max(4)
-                .saturating_mul(4 * size_of::<(TypeId, Option<TypeId>)>());
+                .saturating_mul(4 * size_of::<(TypeId, Answer)>());
             budget.reserve(
                 self.retained()
                     .saturating_add(scratch)
@@ -104,7 +105,7 @@ impl Niches {
         definitions: &Definitions,
         root: TypeId,
         budget: &mut Budget,
-    ) -> Result<Option<TypeId>, &'static str> {
+    ) -> Result<Answer, &'static str> {
         let mut path = Vec::new();
         let mut ty = root;
         let answer = loop {
@@ -136,20 +137,22 @@ impl Niches {
                     && matches!(layout.size, 8 | 16)
                     && layout.align == 8 =>
                 {
-                    break Some(ty);
+                    break Answer::Carrier(Carrier::NonNullPointer { leaf: ty });
                 }
                 Kind::Pattern {
-                    constraint: crate::types::Constraint::ScalarRange(_),
+                    base,
+                    constraint: crate::types::Constraint::ScalarRange(id),
                     ..
                 } => {
-                    return Err("scalar pattern enum niches require their complete ABI profile");
+                    break Carrier::unsigned(types, ty, base, id, layout.size)?
+                        .map_or(Answer::WiderScalar, Answer::Carrier);
                 }
                 Kind::Reference { .. } | Kind::Function { .. }
                     if matches!(layout.shape, Shape::Scalar)
                         && layout.size == 8
                         && layout.align == 8 =>
                 {
-                    break Some(ty);
+                    break Answer::Carrier(Carrier::NonNullPointer { leaf: ty });
                 }
                 Kind::Adt(item, _) => {
                     let definition = definitions
@@ -159,15 +162,15 @@ impl Niches {
                         || definition.repr.representation != Representation::Transparent
                         || definitions.shared_mutation(item) != Some(SharedMutation::Ordinary)
                     {
-                        break None;
+                        break Answer::Absent;
                     }
                     let Some(child) = layouts.transparent_carrier_child(types, *layout, budget)?
                     else {
-                        break None;
+                        break Answer::Absent;
                     };
                     ty = child;
                 }
-                _ => break None,
+                _ => break Answer::Absent,
             }
         };
         let scratch = path.capacity().saturating_mul(size_of::<TypeId>());
@@ -205,17 +208,36 @@ impl Layouts {
         Ok(Some(niche))
     }
     // Absence is not a proof of ineligibility; this facade returns only positive witnesses.
-    pub(crate) fn retained_pointer_carrier(&self, ty: TypeId) -> Option<TypeId> {
-        self.niches.as_ref()?.carriers.get(&ty).copied().flatten()
+    pub(crate) fn retained_carrier(&self, ty: TypeId) -> Option<Carrier> {
+        self.niches.as_ref()?.carriers.get(&ty).copied()?.carrier()
     }
+    pub(crate) fn retained_pointer_carrier(&self, ty: TypeId) -> Option<TypeId> {
+        self.retained_carrier(ty)
+            .filter(|carrier| carrier.is_pointer())
+            .map(Carrier::leaf)
+    }
+    pub(crate) fn scalar_carrier(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        ty: TypeId,
+    ) -> Result<Option<Carrier>, &'static str> {
+        let mut budget = Budget::new(1_000_000);
+        self.nullable_carrier(types, definitions, ty, &mut budget)
+            .map(Answer::carrier)
+    }
+    #[cfg(test)]
     pub(crate) fn pointer_carrier(
         &mut self,
         types: &Store,
         definitions: &Definitions,
         ty: TypeId,
     ) -> Result<Option<TypeId>, &'static str> {
-        let mut budget = Budget::new(1_000_000);
-        self.nullable_carrier(types, definitions, ty, &mut budget)
+        self.scalar_carrier(types, definitions, ty).map(|answer| {
+            answer
+                .filter(|carrier| carrier.is_pointer())
+                .map(Carrier::leaf)
+        })
     }
     fn nullable_carrier(
         &mut self,
@@ -223,7 +245,7 @@ impl Layouts {
         definitions: &Definitions,
         ty: TypeId,
         budget: &mut Budget,
-    ) -> Result<Option<TypeId>, &'static str> {
+    ) -> Result<Answer, &'static str> {
         budget.reserve(4 * size_of::<Niches>())?;
         let mut cache = self.niches.take().unwrap_or_default();
         let answer = cache.carrier(self, types, definitions, ty, budget);
@@ -235,7 +257,7 @@ impl Layouts {
         types: &Store,
         layout: Layout,
         budget: &mut Budget,
-    ) -> Result<Option<TypeId>, &'static str> {
+    ) -> Result<Option<Carrier>, &'static str> {
         let [variant] = self.variants(&layout) else {
             return Err("transparent carrier lacks one physical variant");
         };
@@ -287,11 +309,18 @@ impl Layouts {
         else {
             return Err("nullable payload differs from canonical field count");
         };
-        let Some(word) = self.nullable_carrier(types, definitions, *ty, budget)? else {
-            return Ok(None);
+        let carrier = match self.nullable_carrier(types, definitions, *ty, budget)? {
+            Answer::Carrier(carrier) => carrier,
+            Answer::Absent => return Ok(None),
+            Answer::WiderScalar => {
+                return Err("scalar pattern enum niches require their complete ABI profile");
+            }
         };
         let layout = *self.get(*ty).ok_or("missing nullable payload storage")?;
-        if !matches!(layout.size, 8 | 16) || layout.align != 8 {
+        if (carrier.is_pointer() && (!matches!(layout.size, 8 | 16) || layout.align != 8))
+            || (!carrier.is_pointer()
+                && (layout.size != carrier.bytes() || u64::from(layout.align) != carrier.bytes()))
+        {
             return Err("nullable payload differs from pointer storage");
         }
         let variants = Range {
@@ -340,7 +369,7 @@ impl Layouts {
             empty: policy.empty,
             payload: policy.payload,
             field: policy.field,
-            word,
+            carrier,
             ty: *ty,
             offset: 0,
         });

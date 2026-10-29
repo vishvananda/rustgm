@@ -12,17 +12,25 @@ use crate::{
 };
 
 impl Lower<'_, '_, '_> {
+    fn niche_zero(&mut self, ty: Type) -> Result<Value, &'static str> {
+        if ty == Type::Ptr {
+            self.builder
+                .literal(ty, crate::lowir::program::Literal::Null)
+        } else {
+            self.builder.integer(ty, 0)
+        }
+    }
+
     pub(super) fn niche_test(
         &mut self,
         base: Address,
-        offset: u64,
+        niche: crate::abi::layout::Niche,
         predicate: Predicate,
     ) -> Result<Value, &'static str> {
-        let address = self.offset(base, offset)?;
-        let input = self.builder.load(Type::Ptr, address.operand)?;
-        let null = self
-            .builder
-            .literal(Type::Ptr, crate::lowir::program::Literal::Null)?;
+        let address = self.offset(base, niche.offset)?;
+        let ty = super::super::context::representation(self.context.types, niche.carrier.leaf())?;
+        let input = self.builder.load(ty, address.operand)?;
+        let null = self.niche_zero(ty)?;
         self.builder.compare(predicate, input, null)
     }
 
@@ -56,7 +64,7 @@ impl Lower<'_, '_, '_> {
             };
             let base = self.place(place)?.ok_or("nullable test has no storage")?;
             return self
-                .niche_test(base, niche.offset, predicate)
+                .niche_test(base, niche, predicate)
                 .map(Selected::Runtime);
         }
         let Shape::Aggregate { tag: Some(tag), .. } = layout.shape else {
@@ -152,8 +160,9 @@ impl Lower<'_, '_, '_> {
         let (slot, align) = match self.context.representation(ty)? {
             Representation::Scalar(Type::Void) => return Ok(None),
             Representation::Scalar(ty) => (self.builder.slot(ty)?, ty.bits() / 8),
-            Representation::Object(span) | Representation::PointerObject(span) => {
-                (self.builder.object_slot(span)?, span.align)
+            Representation::Object(span) => (self.builder.object_slot(span)?, span.align),
+            Representation::ScalarObject(storage) => {
+                (self.builder.object_slot(storage.span())?, storage.align)
             }
         };
         Ok(Some(Address {
@@ -177,11 +186,11 @@ impl Lower<'_, '_, '_> {
                 .store(value, destination.ok_or("missing scalar storage")?.operand),
             Selected::Object(source) => {
                 let destination = destination.ok_or("missing object storage")?;
-                let (Representation::Object(span) | Representation::PointerObject(span)) =
-                    self.context.representation(ty)?
-                else {
-                    return Err("object value has no object representation");
-                };
+                let span = self
+                    .context
+                    .representation(ty)?
+                    .span()
+                    .ok_or("object value has no object representation")?;
                 let span = MemorySpan {
                     bytes: span.bytes,
                     align: source.align.min(destination.align),
@@ -454,9 +463,11 @@ impl Lower<'_, '_, '_> {
         if let Some(niche) = self.context.layouts.niche(&layout)?.copied() {
             let count = self.body.arguments(fields).len();
             if ordinal == niche.empty && count == 0 {
-                let null = self
-                    .builder
-                    .literal(Type::Ptr, crate::lowir::program::Literal::Null)?;
+                let ty = super::super::context::representation(
+                    self.context.types,
+                    niche.carrier.leaf(),
+                )?;
+                let null = self.niche_zero(ty)?;
                 let destination = self.offset(address, niche.offset)?;
                 self.builder.store(null, destination.operand)?;
             } else if ordinal != niche.payload || count != 1 {

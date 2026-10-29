@@ -391,8 +391,8 @@ impl Lower<'_, '_, '_> {
             {
                 let value = match self.context.representation(local.ty)? {
                     Representation::Scalar(Type::Void) => continue,
-                    Representation::PointerObject(_) => Selected::Runtime(Value {
-                        ty: Type::Ptr,
+                    Representation::ScalarObject(storage) => Selected::Runtime(Value {
+                        ty: storage.ty,
                         operand: Operand::Parameter(parameter),
                     }),
                     Representation::Scalar(ty) => Selected::Runtime(Value {
@@ -676,7 +676,7 @@ impl Lower<'_, '_, '_> {
                 if let Some(address) = self.place(place)? {
                     if matches!(
                         representation,
-                        Representation::Object(_) | Representation::PointerObject(_)
+                        Representation::Object(_) | Representation::ScalarObject(_)
                     ) {
                         let destination = self
                             .allocate(value.ty)?

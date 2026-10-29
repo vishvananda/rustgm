@@ -145,7 +145,7 @@ impl Context<'_> {
                     if ordinal == niche.empty as usize && length == 0 {
                         init.work.push(Work::Bits {
                             offset: offset + niche.offset,
-                            bytes: 8,
+                            bytes: niche.carrier.bytes(),
                             bits: 0,
                         });
                     } else if ordinal != niche.payload as usize || length != 1 {

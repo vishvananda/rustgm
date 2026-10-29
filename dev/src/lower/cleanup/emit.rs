@@ -316,7 +316,9 @@ impl Emitter<'_, '_> {
             Some(self.builder.load(ty, address.operand)?)
         } else if let Some(niche) = self.context.layouts.niche(&layout)? {
             let address = sequence.base.offset(self.builder, niche.offset)?;
-            Some(self.builder.load(Type::Ptr, address.operand)?)
+            let ty =
+                super::super::context::representation(self.context.types, niche.carrier.leaf())?;
+            Some(self.builder.load(ty, address.operand)?)
         } else {
             None
         };
@@ -387,8 +389,12 @@ impl Emitter<'_, '_> {
                     return Err("invalid nullable cleanup variant");
                 };
                 (
-                    self.builder
-                        .literal(Type::Ptr, crate::lowir::program::Literal::Null)?,
+                    if tag.ty == Type::Ptr {
+                        self.builder
+                            .literal(Type::Ptr, crate::lowir::program::Literal::Null)?
+                    } else {
+                        self.builder.integer(tag.ty, 0)?
+                    },
                     predicate,
                 )
             } else {

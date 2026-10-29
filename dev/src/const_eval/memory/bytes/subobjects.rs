@@ -278,7 +278,8 @@ impl Machine<'_, '_> {
             }
             StoredShape::Niche => {
                 let niche = Reader::new(self.evaluator.facts()).enum_niche(ty)?;
-                Ok(if offset < 8 || (zero && offset == 8) {
+                let width = niche.encoding.carrier.bytes();
+                Ok(if offset < width || (zero && offset == width) {
                     vec![u64::from(niche.encoding.field)]
                 } else {
                     Vec::new()

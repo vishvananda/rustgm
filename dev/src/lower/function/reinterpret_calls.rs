@@ -85,7 +85,7 @@ impl Lower<'_, '_, '_> {
             Representation::Scalar(ty) => {
                 Selected::Runtime(self.builder.load(ty, backing.operand)?)
             }
-            Representation::Object(_) | Representation::PointerObject(_) => {
+            Representation::Object(_) | Representation::ScalarObject(_) => {
                 Selected::Object(backing)
             }
         };

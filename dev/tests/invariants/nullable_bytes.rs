@@ -204,3 +204,5 @@ fn nullable_encoding_rejects_wrong_variant_counts_and_retains_physical_field_add
         Ok(())
     })
 }
+#[path = "integer_bytes.rs"]
+mod integers;

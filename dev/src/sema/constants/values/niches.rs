@@ -38,9 +38,15 @@ impl<'a> Reader<'a> {
             || encoding.payload != policy.payload
             || encoding.field != policy.field
             || encoding.offset != 0
-            || !matches!(layout.size, 8 | 16)
-            || layout.align != 8
-            || self.facts.layouts.retained_pointer_carrier(encoding.ty) != Some(encoding.word)
+            || (encoding.carrier.is_pointer()
+                && self.facts.layouts.retained_pointer_carrier(encoding.ty)
+                    != Some(encoding.carrier.leaf()))
+            || self.facts.layouts.retained_carrier(encoding.ty) != Some(encoding.carrier)
+            || self
+                .facts
+                .layouts
+                .get(encoding.ty)
+                .is_none_or(|payload| payload.size != layout.size || payload.align != layout.align)
         {
             return Err("nullable storage differs from its canonical policy or carrier");
         }

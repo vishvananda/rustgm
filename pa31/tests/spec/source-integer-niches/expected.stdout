@@ -1,0 +1,7 @@
+u8 none0 some1 max round size align
+u16 none0 some1 max round size align
+u32 none0 some1 max round size align
+u64 none0 some1 max round size align
+u128 none0 some1 max round size align
+usize none0 some1 max round size align
+nested mixed packet 7 1234567

@@ -152,11 +152,11 @@ impl Plans {
         if let Some(passing) = nullable_scalar(layouts, &layout, head)? {
             return Ok(passing);
         }
-        if layout.size == 8
-            && definition.repr.representation == Representation::Transparent
-            && let Some(carrier) = layouts.pointer_carrier(types, definitions, head)?
+        if definition.repr.representation == Representation::Transparent
+            && let Some(carrier) = layouts.scalar_carrier(types, definitions, head)?
+            && (!carrier.is_pointer() || layout.size == 8)
         {
-            return Ok(Passing::Scalar(carrier));
+            return Ok(Passing::Scalar(carrier.leaf()));
         }
         if definition.kind != types::aggregate::Kind::Struct
             || definition.repr.representation != Representation::C
@@ -295,8 +295,8 @@ fn nullable_scalar(
     if niche.owner != owner {
         return Err("nullable C ABI encoding belongs to another type");
     }
-    if layout.size != 8 {
+    if niche.carrier.is_pointer() && layout.size != 8 {
         return Err("wide nullable C ABI requires its explicit aggregate profile");
     }
-    Ok(Some(Passing::Scalar(niche.word)))
+    Ok(Some(Passing::Scalar(niche.carrier.leaf())))
 }

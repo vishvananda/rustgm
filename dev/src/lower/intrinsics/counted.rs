@@ -30,7 +30,8 @@ impl Context<'_> {
         builder.enter(entry)?;
         let bytes = match representation {
             Representation::Scalar(ty) => u64::from(ty.bits() / 8),
-            Representation::Object(span) | Representation::PointerObject(span) => span.bytes,
+            Representation::Object(span) => span.bytes,
+            Representation::ScalarObject(storage) => storage.bytes,
         };
         if bytes == 0 {
             builder.terminate(Terminator::Return(None))?;
@@ -79,7 +80,10 @@ impl Context<'_> {
                 let value = builder.load(ty, source.operand)?;
                 builder.store(value, destination.operand)?;
             }
-            Representation::Object(span) | Representation::PointerObject(span) => {
+            representation @ (Representation::Object(_) | Representation::ScalarObject(_)) => {
+                let span = representation
+                    .span()
+                    .ok_or("missing intrinsic object span")?;
                 builder.copy_object(span, source, destination)?;
             }
         }

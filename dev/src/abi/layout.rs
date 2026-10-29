@@ -7,8 +7,10 @@ use crate::types::{
 mod niches;
 mod physical_ready;
 mod simd;
+mod zero_carriers;
 use niches::Budget;
 pub use niches::{Niche, NicheId};
+pub use zero_carriers::Carrier;
 
 pub(super) const MAX_SIZE: u64 = i64::MAX as u64;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

@@ -5,14 +5,22 @@ use crate::{
     types::{Kind, TypeId, aggregate::Representation},
 };
 impl Context<'_> {
-    pub(super) fn pointer_object(
+    pub(super) fn carrier_type(
+        &self,
+        carrier: crate::abi::layout::Carrier,
+        bytes: u64,
+    ) -> Result<Option<crate::lowir::vocabulary::Type>, &'static str> {
+        if carrier.is_pointer() && bytes != 8 {
+            return Ok(None);
+        }
+        super::representation(self.types, carrier.leaf()).map(Some)
+    }
+
+    pub(super) fn scalar_object(
         &mut self,
         ty: TypeId,
         layout: &Layout,
-    ) -> Result<bool, &'static str> {
-        if layout.size != 8 {
-            return Ok(false);
-        }
+    ) -> Result<Option<crate::lowir::vocabulary::Type>, &'static str> {
         if matches!(layout.shape, Shape::Niche { .. }) {
             let encoding = self
                 .layouts
@@ -21,10 +29,10 @@ impl Context<'_> {
             if encoding.owner != ty {
                 return Err("nullable ABI encoding belongs to another type");
             }
-            return Ok(true);
+            return self.carrier_type(encoding.carrier, layout.size);
         }
         let Some(Kind::Adt(item, _)) = self.types.kind(ty) else {
-            return Ok(false);
+            return Ok(None);
         };
         if self
             .aggregates
@@ -33,9 +41,14 @@ impl Context<'_> {
         {
             return self
                 .layouts
-                .pointer_carrier(self.types, self.aggregates, ty)
-                .map(|carrier| carrier.is_some());
+                .scalar_carrier(self.types, self.aggregates, ty)?
+                .map(|carrier| self.carrier_type(carrier, layout.size))
+                .transpose()
+                .map(Option::flatten);
         }
-        Ok(false)
+        Ok(None)
     }
 }
+#[cfg(test)]
+#[path = "../../../tests/invariants/integer_source.rs"]
+mod tests;

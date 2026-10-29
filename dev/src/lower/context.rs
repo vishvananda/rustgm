@@ -140,23 +140,45 @@ fn run(
     result
 }
 #[derive(Clone, Copy)]
+pub(super) struct ScalarStorage {
+    pub bytes: u64,
+    pub align: u32,
+    pub ty: Type,
+}
+impl ScalarStorage {
+    pub const fn span(self) -> MemorySpan {
+        MemorySpan {
+            bytes: self.bytes,
+            align: self.align,
+        }
+    }
+}
+#[derive(Clone, Copy)]
 pub(super) enum Representation {
     Scalar(Type),
     Object(MemorySpan),
-    PointerObject(MemorySpan),
+    ScalarObject(ScalarStorage),
 }
 impl Representation {
+    pub const fn span(self) -> Option<MemorySpan> {
+        match self {
+            Self::Object(span) => Some(span),
+            Self::ScalarObject(storage) => Some(storage.span()),
+            Self::Scalar(_) => None,
+        }
+    }
     pub const fn parameter(self) -> Type {
         match self {
             Self::Scalar(ty) => ty,
-            Self::Object(_) | Self::PointerObject(_) => Type::Ptr,
+            Self::Object(_) => Type::Ptr,
+            Self::ScalarObject(storage) => storage.ty,
         }
     }
     pub const fn result(self) -> Type {
         match self {
             Self::Scalar(ty) => ty,
             Self::Object(_) => Type::Void,
-            Self::PointerObject(_) => Type::Ptr,
+            Self::ScalarObject(storage) => storage.ty,
         }
     }
 }
@@ -459,7 +481,7 @@ impl<'a> Context<'a> {
         let result_type = self.representation(result)?;
         if convention.abi == crate::types::callable::Abi::C
             && (matches!(result_type, Representation::Object(_))
-                || (!matches!(result_type, Representation::PointerObject(_))
+                || (!matches!(result_type, Representation::ScalarObject(_))
                     && self.non_scalar_boundary(result)?))
         {
             return self.object_signature(ty);
@@ -475,7 +497,7 @@ impl<'a> Context<'a> {
             let representation = self.representation(*parameter)?;
             if convention.abi == crate::types::callable::Abi::C
                 && (matches!(representation, Representation::Object(_))
-                    || (!matches!(representation, Representation::PointerObject(_))
+                    || (!matches!(representation, Representation::ScalarObject(_))
                         && self.non_scalar_boundary(*parameter)?))
             {
                 return self.object_signature(ty);
@@ -549,8 +571,9 @@ impl<'a> Context<'a> {
         ) && ty != TypeId::UNIT
         {
             let layout = self.layout(ty)?;
-            if self.pointer_object(ty, &layout)? {
-                return Ok(Representation::PointerObject(MemorySpan {
+            if let Some(scalar) = self.scalar_object(ty, &layout)? {
+                return Ok(Representation::ScalarObject(ScalarStorage {
+                    ty: scalar,
                     bytes: layout.size,
                     align: layout.align,
                 }));

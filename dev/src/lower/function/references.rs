@@ -108,9 +108,11 @@ impl Lower<'_, '_, '_> {
             .representation(self.body.values[operand.0 as usize].ty)?;
         let same = match (source, target) {
             (Representation::Scalar(a), Representation::Scalar(b)) => a == b,
-            (Representation::Object(a), Representation::Object(b))
-            | (Representation::PointerObject(a), Representation::PointerObject(b)) => {
+            (Representation::Object(a), Representation::Object(b)) => {
                 a.bytes == b.bytes && a.align == b.align
+            }
+            (Representation::ScalarObject(a), Representation::ScalarObject(b)) => {
+                a.bytes == b.bytes && a.align == b.align && a.ty == b.ty
             }
             _ => false,
         };

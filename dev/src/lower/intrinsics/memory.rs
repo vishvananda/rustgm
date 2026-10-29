@@ -41,18 +41,18 @@ impl Context<'_> {
                 None
             }
             Representation::Scalar(ty) => Some(builder.load(ty, Operand::Parameter(0))?),
-            Representation::PointerObject(_) if writing => {
+            Representation::ScalarObject(storage) if writing => {
                 builder.store(
                     Value {
-                        ty: Type::Ptr,
+                        ty: storage.ty,
                         operand: Operand::Parameter(1),
                     },
                     Operand::Parameter(0),
                 )?;
                 None
             }
-            Representation::PointerObject(_) => {
-                Some(builder.load(Type::Ptr, Operand::Parameter(0))?)
+            Representation::ScalarObject(storage) => {
+                Some(builder.load(storage.ty, Operand::Parameter(0))?)
             }
             Representation::Object(span) => {
                 // The ordinary Rust ABI supplies a fresh result destination or

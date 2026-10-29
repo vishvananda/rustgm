@@ -108,7 +108,7 @@ impl Lower<'_, '_, '_> {
                 .get(niche.payload as usize)
                 .ok_or("missing payload logical variant")?
                 .discriminant;
-            let empty_test = self.niche_test(address, niche.offset, Predicate::Eq)?;
+            let empty_test = self.niche_test(address, niche, Predicate::Eq)?;
             let selected =
                 super::super::casts::integer(&mut self.builder, empty_test, target, false)?;
             let Some(Kind::Primitive(primitive)) = self.context.types.kind(output) else {
