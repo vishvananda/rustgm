@@ -156,6 +156,10 @@ fn bootstrap_case() -> Result<(Report, pipeline::Analysis, DefId, DefId, DefId)>
 fn actual_bootstrap_owners_keep_legacy_diagnostics_without_completed_source_headers() -> Result {
     let (report, analysis, method, trait_, nominal) = bootstrap_case()?;
     for definition in [method, trait_, nominal] {
+        assert!(matches!(
+            analysis.facts.promotable_contract(&report, definition)?,
+            ContractKnowledge::Unknown
+        ));
         for _ in 0..32 {
             assert!(
                 analysis
@@ -189,6 +193,7 @@ fn missing_or_changed_bootstrap_owners_cannot_waive_unknown_contracts() -> Resul
     report.resolution.definitions[method.0 as usize].kind = DefKind::Function;
     report.resolution.builtin_traits = crate::resolve::model::BuiltinTraits::default();
     rejected(&report, &analysis.facts, method);
+    assert!(analysis.facts.promotable_contract(&report, method).is_err());
     let main = report
         .resolution
         .definitions

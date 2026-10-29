@@ -121,7 +121,7 @@
       "name": "generic-clone-prerequisite",
       "source": "pa31/tests/spec/early-copy-readiness/generic-clone-prerequisite.rs",
       "sha256": "782506ea1093ee73120bcd92aa59a6b06595b07a4355d339aa832312b72622b1",
-      "profile": "Rust-positive; explicit unsupported generic early validation prerequisite retained",
+      "profile": "generic owned-type conformance uses its authentic defining environment",
       "rustc_metadata_hypothesis": 0,
       "rustc_object_hypothesis": 0,
       "client": "pa31/tests/spec/early-copy-readiness/observe.c",
