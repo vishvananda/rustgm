@@ -14,9 +14,13 @@ pub(super) fn required(
         .get_or_insert_with(Default::default)
         .function(facts, &function)?;
     let source = function.body.ok_or("actual Clone provided body")?;
-    let expected =
-        crate::body::defining_cleanups::definition(facts, function.definition, source.into())?
-            .ok_or("actual Clone defining owner")?;
+    let expected = crate::body::defining_cleanups::definition(
+        facts,
+        function.definition,
+        source.into(),
+        &mut 0,
+    )?
+    .ok_or("actual Clone defining owner")?;
     let state = input
         .builtins
         .as_deref()

@@ -65,6 +65,8 @@ pub enum Profile {
     Source2024ModuleCompatibility,
     /// Current unpaid provided rows; auto traits have no implicit Self sizing.
     Source2024ProvidedCurrent,
+    /// Version-seven unconditional const/unsafe free callable originals.
+    Source2024ModuleCallables,
 }
 impl Profile {
     #[must_use]
@@ -74,6 +76,7 @@ impl Profile {
             Self::Source2024ModuleFeaturePredicates
                 | Self::Source2024ModuleDefinitions
                 | Self::Source2024ModuleCompatibility
+                | Self::Source2024ModuleCallables
         )
     }
     #[must_use]
@@ -85,6 +88,7 @@ impl Profile {
                 | Self::Source2024ModuleFeaturePredicates
                 | Self::Source2024ModuleDefinitions
                 | Self::Source2024ModuleCompatibility
+                | Self::Source2024ModuleCallables
         )
     }
     #[must_use]
@@ -102,6 +106,7 @@ impl Profile {
                 | Self::Source2024ModuleFeaturePredicates
                 | Self::Source2024ModuleDefinitions
                 | Self::Source2024ModuleCompatibility
+                | Self::Source2024ModuleCallables
         )
     }
 }
@@ -392,7 +397,11 @@ impl ValidatedRows {
         let indexed = HeaderIndex::new(&rows, extended_base, work)?;
         if profile.definitions() {
             exact_exports::validate(&rows, &indexed, work)?;
-            functions::validate_module_definitions(&rows, &indexed, work)?;
+            if profile.unconditional_callables() {
+                functions::validate_module_callables(&rows, &indexed, work)?;
+            } else {
+                functions::validate_module_definitions(&rows, &indexed, work)?;
+            }
         } else if features {
             functions::validate_module_feature_predicates(&rows, &indexed, work)?;
         } else {
@@ -501,7 +510,8 @@ impl ValidatedRows {
             | Profile::Source2024ModuleAvailability
             | Profile::Source2024ModuleFeaturePredicates
             | Profile::Source2024ModuleDefinitions
-            | Profile::Source2024ModuleCompatibility => {
+            | Profile::Source2024ModuleCompatibility
+            | Profile::Source2024ModuleCallables => {
                 return Err(
                     "module contracts require their complete namespace/domain/attribute columns",
                 );

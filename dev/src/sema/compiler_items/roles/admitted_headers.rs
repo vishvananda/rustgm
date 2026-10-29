@@ -226,6 +226,10 @@ fn trait_headers(
                 complete.insert(role);
             }
             LangItem::CloneFn => {}
+            LangItem::Destruct | LangItem::Freeze => {
+                free_marker(report, facts, catalog, role, declaration, steps)?;
+                complete.insert(role);
+            }
             _ => return Err("imported source role requires its wider explicit header profile"),
         }
     }
@@ -233,6 +237,69 @@ fn trait_headers(
         return Err("source language member has no validated actual trait owner");
     }
     Ok(complete)
+}
+
+fn free_marker(
+    report: &Report,
+    facts: &Declarations,
+    catalog: &Catalog,
+    role: LangItem,
+    declaration: super::super::Role,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    // The existing neutral-attribute adapter visits the fixed role table.
+    *steps = steps.saturating_add(4 + LangItem::ALL.len());
+    let client = report
+        .package
+        .source_client()
+        .ok_or("free callable marker requires its actual source client")?;
+    let imported = report
+        .resolution
+        .crates
+        .as_deref()
+        .ok_or("free callable marker lacks its actual import inventory")?;
+    let index = client.require_inventory(imported.dependencies())?;
+    let descriptor = imported.dependencies().artifacts()[index as usize]
+        .source_descriptor()
+        .ok_or("free callable marker lacks its actual source descriptor")?;
+    if !descriptor.profile().unconditional_callables() {
+        return Err("free callable marker requires its explicit version-seven profile");
+    }
+    let header = Trait::current(report, facts, declaration, steps)?;
+    header.profile(
+        &facts.types,
+        Flags {
+            unsafe_: role == LangItem::Freeze,
+            constant: role == LangItem::Destruct,
+            auto_: role == LangItem::Freeze,
+        },
+        0,
+    )?;
+    *steps = steps.saturating_add(header.inputs.len());
+    if !header.members.is_empty() || header.written.parameters != 0 {
+        return Err("free callable marker changed its empty actual declaration");
+    }
+    if role == LangItem::Destruct {
+        if !facts
+            .associated
+            .imported_denies_implementation(declaration.definition)?
+            || !header
+                .attributes
+                .contains(crate::resolve::bindings::HeaderAttribute::DynIncompatible)
+        {
+            return Err("source Destruct changed its actual declaration restrictions");
+        }
+        copying::require_header_super(
+            facts,
+            catalog,
+            &header,
+            LangItem::PointeeSized,
+            Constness::Ordinary,
+        )?;
+    } else if header.written.supertraits != 0 {
+        return Err("source Freeze changed its actual empty supertrait list");
+    }
+    Ok(())
 }
 
 fn clone_member(

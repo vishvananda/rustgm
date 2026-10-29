@@ -1,0 +1,118 @@
+{
+  "state": "successor v3 frozen before observation; genuine Destruct then Freeze prerequisites retained",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "profile": "Source2024ModuleCallables,version7",
+  "old_full_provider": {
+    "path": "pa31/tests/spec/source-module-compatibility/provider.rs",
+    "sha256": "f713af4a54f1c9ef26e8146f86ec7e4a94f15cba242e729dfbc3b8a33175da36",
+    "exact_copy": "f713af4a54f1c9ef26e8146f86ec7e4a94f15cba242e729dfbc3b8a33175da36"
+  },
+  "preserved_reference": {
+    "receipt": "obj/parallel/module-path-compat-v1/nocore-rust-v2/receipt.json",
+    "sha256": "e3c148db6e9e7fae45f297e097ce469211cd5d30120f0119abcd0543ea1d12a0",
+    "scope": "unchanged original provider/clients only; exact pinned rustc/flags"
+  },
+  "provider_predictions": {
+    "combined-provider": 0,
+    "internal-unsafe-required": 0,
+    "nonconst-provider-denied": 1
+  },
+  "clients": {
+    "native-client": {
+      "status": 0,
+      "deprecated": 2
+    },
+    "nonconst-denied": {
+      "status": 1,
+      "deprecated": 0,
+      "required_codes": [
+        "E0015"
+      ]
+    },
+    "unsafe-required": {
+      "status": 1,
+      "deprecated": 0,
+      "required_codes": [
+        "E0133"
+      ]
+    },
+    "const-unsafe-required": {
+      "status": 1,
+      "deprecated": 0,
+      "required_codes": [
+        "E0133"
+      ]
+    },
+    "unsafe-fnptr-denied": {
+      "status": 1,
+      "deprecated": 0,
+      "required_codes": [
+        "E0308"
+      ]
+    },
+    "unsafe-fnptr-allowed": {
+      "status": 0,
+      "deprecated": 0
+    },
+    "fnptr-const-denied": {
+      "status": 1,
+      "deprecated": 0,
+      "message_contains": "function pointer calls are not allowed"
+    }
+  },
+  "native_stdout": "7 7 23 31 41 57\n",
+  "candidate_required": {
+    "internal-unsafe-required": "no lexical unsafe Call scope carrier; keep existing fence",
+    "conditional/associated/provided/region/always-comptime": "retain actual wider family/marker fences"
+  },
+  "files": {
+    "README.md": "ade699c16b3cd293edf24e8dcc547969adf6a09946a7b193281bed92315b7e0f",
+    "combined-provider.rs": "ee9cbc3d3b8d7b035ab0b6a75638843f71e35c361da22e98ddba2c7481d581fd",
+    "const-unsafe-required.rs": "afc0fb0246fa3230c79658f53a202c61f06623ac78438c8248ee34fee38c334b",
+    "expected.stdout": "36220309d4bf88a3bc0e70ae1404211f5b62ccec9a07cfc18a4670549a08b906",
+    "fnptr-const-denied.rs": "5d0383113c1113620a1f48563e2363a1dc5d554da257950b49a1573ae332f153",
+    "internal-unsafe-required.rs": "b9b521cd1f19fb4db42aa3126f53a849691c3e0d71b741ad943f03bca8355c1f",
+    "native-client.rs": "32f034e10fb2578d6323b08dd02ccac1d1c980a8be0e9550872451c7bb435bce",
+    "nonconst-denied.rs": "4fb135ef198daa5d94ac1cad19d670b70d41c90878c9acfd3ca264e9239a404b",
+    "nonconst-provider-denied.rs": "295fd2ad8e3e5dc6464d5de98f9a55a9e5f9cd8e4a3c122e9ceaf5615dc3d18a",
+    "observer.c": "9d8fda249e7f641df15aeff2eeef0776ac36273509fc899ca544551216d8a506",
+    "provider.rs": "f713af4a54f1c9ef26e8146f86ec7e4a94f15cba242e729dfbc3b8a33175da36",
+    "unsafe-fnptr-allowed.rs": "1f532a8de1b6750da66ec2dde93381745c7ce57bc24b60eb9ba81c810411674b",
+    "unsafe-fnptr-denied.rs": "d14d23aed8db74a598e4b450d27f8d62805ddad5f266e566813bfdc027847bbd",
+    "unsafe-required.rs": "3bb5c22f2939551da5ff2f70751622accaee84f2e4923a9f039df714f63845a1"
+  },
+  "provider_error_codes": {
+    "nonconst-provider-denied": "E0015"
+  },
+  "primary_destruct": {
+    "path": "library/core/src/marker.rs",
+    "file_sha256": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575",
+    "start": 41168,
+    "end": 41484,
+    "slice_sha256": "b5aec6c9c472c9dd8bea45191d0ce4c7c6ce4053563ecb65311316722465805a",
+    "embedded_offset": 3629,
+    "scope": "actual const marker declaration, no conditional call/impl/body grants"
+  },
+  "retained_v1": "obj/parallel/source-callable-effects-v1/rust-frozen-v1 and rust-v1: requires destruct lang_item atgenericconst declaration; cascaded missing rlib clients unqualified",
+  "reused_provider_rows": {
+    "receipt": "obj/parallel/source-callable-effects-v1/rust-v1/receipt.json",
+    "sha256": "35261ec492a1710da2c27e2f80a91bfec5fd784a78a59f96c935a6e8ce1a6d29",
+    "rows": [
+      "internal-unsafe-required",
+      "nonconst-provider-denied"
+    ],
+    "reason": "exact unchanged source/toolchain/flags, individual0/E0015 predictions matched"
+  },
+  "primary_freeze": {
+    "path": "library/core/src/marker.rs",
+    "file_sha256": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575",
+    "start": 33909,
+    "end": 34010,
+    "slice_sha256": "35b7b5b25ebd341a42c56b43dc97ef9c4049db2790762e4810bd27df89ef001b",
+    "embedded_offset": 3527,
+    "scope": "actual unsafe auto marker declaration only, no user impl/promotion grants"
+  },
+  "retained_v2": "obj/parallel/source-callable-effects-v1/rust-frozen-v2 and rust-v2: requires freeze lang_item at generic const declaration; cascaded missing rlib clients unqualified",
+  "oracle_source_contract": "obj/parallel/source-callable-effects-v1/rust-frozen-v3/contract.json",
+  "source_equivalence": "post-observation README clarification only; every Rust/C input byte equals frozen v3"
+}

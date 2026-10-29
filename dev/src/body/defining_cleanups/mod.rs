@@ -13,7 +13,9 @@ use crate::{
     sema::{function_context::FunctionContext, model::Declarations},
     types::{TypeId, parameters::environment::Environment},
 };
-pub(crate) use preparation::{begin, mark_required, prepare};
+pub(crate) use preparation::{
+    begin, mark_imported_required, mark_required, prepare, validate_imported_required,
+};
 use std::sync::Arc;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -28,6 +30,9 @@ pub(crate) struct Definition {
 pub(crate) enum State {
     Required(Definition),
     Prepared(Prepared),
+}
+pub(crate) const fn required_allocation() -> usize {
+    size_of::<State>() + 2 * size_of::<usize>()
 }
 pub(crate) struct Prepared {
     definition: Definition,
@@ -173,6 +178,7 @@ pub(crate) fn definition(
     facts: &Declarations,
     definition: DefId,
     source: BodyOrigin,
+    steps: &mut usize,
 ) -> Result<Option<Definition>, &'static str> {
     let default = facts
         .associated
@@ -187,10 +193,16 @@ pub(crate) fn definition(
     if header.body.is_none() {
         return Ok(None);
     }
-    let source_key = source
-        .source()
-        .ok_or("imported const-trait defining cleanup headers are not implemented")?;
-    let context = facts.function_context(definition, source_key)?;
+    let context = if let Some(source_key) = source.source() {
+        facts.function_context(definition, source_key)?
+    } else {
+        let view = crate::sema::crates::source_original(facts, definition, steps)?
+            .ok_or("imported defining cleanup requires its actual complete source original")?;
+        if view.source()? != source || !view.const_context() || default {
+            return Err("imported defining cleanup changed its free const original context");
+        }
+        FunctionContext::ConstFunction
+    };
     if !context.checks_const() {
         return Err("defining cleanup requires its actual provided member owner");
     }

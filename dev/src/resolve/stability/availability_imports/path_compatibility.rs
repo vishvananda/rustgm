@@ -298,9 +298,7 @@ impl Imports {
         // This guarantee belongs to the actual leaf's origin, including reexports.
         Ok(self.inventory.artifacts()[mapped.artifact]
             .source_descriptor()
-            .is_some_and(|descriptor| {
-                descriptor.profile() == s::Profile::Source2024ModuleCompatibility
-            }))
+            .is_some_and(|descriptor| descriptor.profile().module_compatibility()))
     }
 }
 pub(crate) fn visit_warnings(

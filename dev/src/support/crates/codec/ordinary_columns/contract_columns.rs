@@ -142,7 +142,7 @@ pub(super) fn function_read(read: &mut Input<'_, '_>) -> Result<s::FunctionHeade
     } else {
         None
     };
-    let constness = super::recipe_columns::effect_read(
+    let constness = super::recipe_columns::function_effect_read(
         read,
         "source callable effect requires a wider source profile",
     )?;
@@ -219,7 +219,9 @@ pub(super) fn role_read(read: &mut Input<'_, '_>) -> Result<s::RoleBinding, &'st
         5 => LangItem::CloneFn,
         6 => LangItem::Copy,
         tag @ (7 | 8) => {
-            read.require_provided("unknown source function role ID")?;
+            if !read.callables {
+                read.require_provided("unknown source function role ID")?;
+            }
             if tag == 7 {
                 LangItem::Destruct
             } else {

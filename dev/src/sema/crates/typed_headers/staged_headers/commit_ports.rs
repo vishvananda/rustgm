@@ -15,7 +15,8 @@ impl Stage {
         facts: &mut Declarations,
         budget: &mut Headers,
     ) -> Result<(), Error> {
-        self.preflight(context, facts, budget)?;
+        let constants = self.preflight(context, facts, budget)?;
+        let effects = prepare_effects(&self.scopes, facts, constants, budget)?;
         let owners = self.associated_rows(context, &facts.types, budget)?;
         budget.reserve(facts.associated.imported_allocation_bound(
             owners.len(),
@@ -63,6 +64,15 @@ impl Stage {
         // its first write; failure cannot leave a partially installed owner.
         let mut work = budget.work.get();
         let exact = super::verbatim_exports::destination(exact, facts.foreign.as_deref_mut())?;
+        let effects = effects
+            .map(|plan| {
+                facts
+                    .source_bindings
+                    .as_deref_mut()
+                    .map(|catalog| (plan, catalog))
+                    .ok_or_else(|| error("source constant effect destination disappeared"))
+            })
+            .transpose()?;
         let installed = facts.associated.install_imported(
             &facts.types,
             crate::sema::crates::ImportedOwners::Ordinary(Rc::clone(&self.graph)),
@@ -76,37 +86,18 @@ impl Stage {
         for (definition, ty) in cells {
             facts.definitions[definition.0 as usize] = Some(ty);
         }
-        for scope in self.scopes {
-            if let Some(parent) = scope.parent {
-                facts.generics.parents.insert(scope.definition, parent);
-            }
-            facts
-                .generics
-                .parameters
-                .insert(scope.definition, scope.parameters);
-            facts
-                .generics
-                .environments
-                .insert(scope.definition, scope.environment);
-            if let Some(callable) = scope.function {
-                facts
-                    .lifetimes
-                    .functions
-                    .insert(scope.definition, callable.regions);
-                if let Some(receiver) = callable.receiver {
-                    facts.methods.receivers.insert(scope.definition, receiver);
-                }
-                budget.entries.insert(scope.definition, callable.header);
-            }
+        if let Some((plan, registry)) = exact {
+            plan.install(registry);
         }
+        if let Some((plan, catalog)) = effects {
+            plan.install(catalog);
+        }
+        publish_scopes(self.scopes, facts, budget);
         let linkage = facts.crates.get_or_insert_default();
         for function in functions {
             if let Some(symbol) = function.symbol {
                 linkage.symbols.insert(function.definition, symbol);
             }
-        }
-        if let Some((plan, registry)) = exact {
-            plan.install(registry);
         }
         facts.generics.traits = Some(Box::new(contracts));
         facts.generics.trait_self_bounds.extend(self_bounds);
@@ -125,7 +116,7 @@ impl Stage {
         context: &mapped_source::Context<'_>,
         facts: &Declarations,
         budget: &mut Headers,
-    ) -> Result<(), Error> {
+    ) -> Result<usize, Error> {
         self.graph.require(
             context.imported,
             context.catalog,
@@ -154,53 +145,11 @@ impl Stage {
                 "source canonical installation cannot replace a partial or existing header inventory",
             ));
         }
-        budget.reserve(retained::sum([
-            retained::new_map::<DefId, Vec<Parameter>>(
-                facts
-                    .generics
-                    .parameters
-                    .len()
-                    .saturating_add(rows.scopes.len()),
-            ),
-            retained::new_map::<DefId, Arc<Environment>>(
-                facts
-                    .generics
-                    .environments
-                    .len()
-                    .saturating_add(rows.scopes.len()),
-            ),
-            retained::new_map::<DefId, DefId>(
-                facts
-                    .generics
-                    .parents
-                    .len()
-                    .saturating_add(rows.scopes.len()),
-            ),
-            retained::new_map::<DefId, super::Header>(rows.functions.len()),
-            retained::new_map::<DefId, FunctionRegions>(
-                facts
-                    .lifetimes
-                    .functions
-                    .len()
-                    .saturating_add(rows.functions.len()),
-            ),
-            retained::new_map::<DefId, String>(
-                facts
-                    .crates
-                    .as_ref()
-                    .map_or(0, |l| l.symbols.len())
-                    .saturating_add(rows.functions.len()),
-            ),
-            retained::new_map::<DefId, (TypeId, u32)>(
-                facts
-                    .methods
-                    .receivers
-                    .len()
-                    .saturating_add(rows.functions.len()),
-            ),
-        ]))?;
+        prepay_tables(facts, rows.scopes.len(), rows.functions.len(), budget)?;
+        let mut constants = 0usize;
         for scope in &self.scopes {
             budget.charge(1)?;
+            constants += usize::from(scope.function.as_ref().is_some_and(|c| c.header.constant));
             let definition = scope.definition;
             if facts.generics.parameters.contains_key(&definition)
                 || facts.generics.environments.contains_key(&definition)
@@ -210,6 +159,7 @@ impl Stage {
                 || facts.lifetimes.functions.contains_key(&definition)
                 || facts.methods.receivers.contains_key(&definition)
                 || facts.function_indices.contains_key(&definition)
+                || facts.constant_functions.contains(&definition)
                 || facts
                     .crates
                     .as_ref()
@@ -220,7 +170,106 @@ impl Stage {
                 ));
             }
         }
-        Ok(())
+        let growth = retained::Growth::map::<DefId, ()>(
+            facts.constant_functions.len(),
+            facts.constant_functions.capacity(),
+            constants,
+        );
+        budget.charge(growth.work)?;
+        budget.reserve(growth.bytes)?;
+        Ok(constants)
+    }
+}
+
+fn prepare_effects(
+    scopes: &[super::Scope],
+    facts: &Declarations,
+    constants: usize,
+    budget: &mut Headers,
+) -> Result<Option<crate::sema::compiler_items::ImportedCallEffects>, Error> {
+    if constants == 0 {
+        return Ok(None);
+    }
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or_else(|| error("source constant declarations lost their actual role catalog"))?;
+    let declarations = scopes.iter().filter_map(|scope| {
+        scope
+            .function
+            .as_ref()
+            .filter(|c| c.header.constant)
+            .map(|c| (scope.definition, &c.header.inputs[..c.header.declared]))
+    });
+    super::super::predicate_remap::translation::feature_names::paid(budget, |pay| {
+        crate::sema::compiler_items::ImportedCallEffects::new(
+            catalog,
+            &facts.types,
+            constants,
+            declarations,
+            pay,
+        )
+        .map(Some)
+    })
+}
+
+fn prepay_tables(
+    facts: &Declarations,
+    scopes: usize,
+    functions: usize,
+    budget: &mut Headers,
+) -> Result<(), Error> {
+    budget.reserve(retained::sum([
+        retained::new_map::<DefId, Vec<Parameter>>(
+            facts.generics.parameters.len().saturating_add(scopes),
+        ),
+        retained::new_map::<DefId, Arc<Environment>>(
+            facts.generics.environments.len().saturating_add(scopes),
+        ),
+        retained::new_map::<DefId, DefId>(facts.generics.parents.len().saturating_add(scopes)),
+        retained::new_map::<DefId, super::Header>(functions),
+        retained::new_map::<DefId, FunctionRegions>(
+            facts.lifetimes.functions.len().saturating_add(functions),
+        ),
+        retained::new_map::<DefId, String>(
+            facts
+                .crates
+                .as_ref()
+                .map_or(0, |l| l.symbols.len())
+                .saturating_add(functions),
+        ),
+        retained::new_map::<DefId, (TypeId, u32)>(
+            facts.methods.receivers.len().saturating_add(functions),
+        ),
+    ]))
+}
+
+fn publish_scopes(scopes: Vec<super::Scope>, facts: &mut Declarations, budget: &mut Headers) {
+    for scope in scopes {
+        if let Some(parent) = scope.parent {
+            facts.generics.parents.insert(scope.definition, parent);
+        }
+        facts
+            .generics
+            .parameters
+            .insert(scope.definition, scope.parameters);
+        facts
+            .generics
+            .environments
+            .insert(scope.definition, scope.environment);
+        if let Some(callable) = scope.function {
+            facts
+                .lifetimes
+                .functions
+                .insert(scope.definition, callable.regions);
+            if let Some(receiver) = callable.receiver {
+                facts.methods.receivers.insert(scope.definition, receiver);
+            }
+            if callable.header.constant {
+                facts.constant_functions.insert(scope.definition);
+            }
+            budget.entries.insert(scope.definition, callable.header);
+        }
     }
 }
 
@@ -232,6 +281,15 @@ fn table_allocation(facts: &Declarations, headers: &Headers) -> retained::Alloca
     result.map(&facts.generics.trait_self_bounds);
     result.map(&facts.lifetimes.functions);
     result.map(&facts.methods.receivers);
+    result.set(&facts.constant_functions);
+    if let Some(bytes) = facts
+        .source_bindings
+        .as_deref()
+        .map(crate::sema::compiler_items::Catalog::call_effect_bytes)
+        .filter(|bytes| *bytes != 0)
+    {
+        result.add(bytes);
+    }
     result.map(&headers.entries);
     if let Some(linkage) = &facts.crates {
         result.map(&linkage.symbols);

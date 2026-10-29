@@ -126,3 +126,47 @@ fn cli_version_five_keeps_exact_c_publication_and_source_provider_boundaries() -
     }
     Ok(())
 }
+
+#[test]
+fn cli_version_seven_keeps_written_effects_and_old_profile_boundaries() -> Result {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root.join(format!(
+        "obj/parallel/source-callable-effects-v1/cli-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&folder)?;
+    let fixture = root.join("pa31/tests/spec/source-callable-effects/provider.rs");
+    let metadata = folder.join("provider.rgcrate");
+    let lowir = folder.join("provider.lowir");
+    let output = super::artifacts::checked(
+        "version-seven",
+        &folder,
+        &mut source_export("module-callables-v7", &fixture, &metadata, &lowir, true),
+    )?;
+    assert!(output.stderr.is_empty());
+    let bytes = std::fs::read(&metadata)?;
+    assert_eq!(bytes.get(13..15), Some([7, 0].as_slice()));
+    assert_eq!(
+        rustgm::support::crates::encode(&rustgm::support::crates::decode(&bytes)?)?,
+        bytes
+    );
+    let rejected = folder.join("older.rgcrate");
+    let output = source_export(
+        "module-compatibility-v6",
+        &fixture,
+        &rejected,
+        &folder.join("older.lowir"),
+        true,
+    )
+    .output()?;
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    assert!(!rejected.exists());
+    Ok(())
+}

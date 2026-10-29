@@ -39,6 +39,7 @@ pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'s
     let sites = read.id()?;
     let context = match read.reader.u8()? {
         0 => s::CallContext::Runtime,
+        1 if read.callables => s::CallContext::ConstDefinition,
         tag => {
             read.require_provided("source defining context requires a wider source profile")?;
             match tag {

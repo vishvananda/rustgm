@@ -279,6 +279,7 @@ pub enum SourcePublication {
     ModuleDefinitions,
     ModuleCompatibility,
     ProvidedContracts,
+    ModuleCallables,
 }
 
 /// Publish only an explicitly selected ordinary source row profile.
@@ -360,7 +361,8 @@ pub fn build_source_library_profile(
                 | SourcePublication::ModuleAvailability
                 | SourcePublication::ModuleFeaturePredicates
                 | SourcePublication::ModuleDefinitions
-                | SourcePublication::ModuleCompatibility => source.complete_module_policy_payload(
+                | SourcePublication::ModuleCompatibility
+                | SourcePublication::ModuleCallables => source.complete_module_policy_payload(
                     modules.ok_or_else(|| {
                         diagnostic(
                             report,

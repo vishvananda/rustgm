@@ -15,7 +15,7 @@ pub(super) fn validate(
     if rows.policy.edition != Edition::Rust2024 || rows.policy.provider.0 != 0 {
         return Err("provided source data requires its own Rust2024 provider profile");
     }
-    functions::bindings(rows, headers, work, true)?;
+    functions::bindings(rows, headers, work, functions::BindingProfile::Provided)?;
     for original in &rows.originals {
         for value in &original.values {
             work.charge(1)?;

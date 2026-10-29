@@ -35,6 +35,29 @@ impl From<source::ValidatedRows> for Payload {
 }
 impl Payload {
     /// # Errors
+    /// Rejects incomplete version-seven free callable effects and foreign policy origins.
+    pub fn from_source_module_callables(
+        owner: &CrateIdentity,
+        rows: source::SourceRows,
+        attributes: source::HeaderAttributeColumns,
+        modules: source::ModuleContractRows,
+        availability: source::AvailabilityRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        let overhead = size_of::<Self>().saturating_sub(size_of::<source::ValidatedRows>());
+        source::ValidatedRows::stage_module_callables(
+            owner,
+            rows,
+            attributes,
+            modules,
+            availability,
+            base.saturating_add(overhead),
+            work,
+        )
+        .map(Self::from)
+    }
+    /// # Errors
     /// Rejects incomplete version-six availability and foreign policy origins.
     pub fn from_source_module_compatibility(
         owner: &CrateIdentity,

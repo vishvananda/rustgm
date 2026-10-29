@@ -149,6 +149,7 @@ pub(super) fn build(
     work: &mut ImportedOriginals,
 ) -> Result<Contract, &'static str> {
     super::non_type_calls::check(facts, view, body, &mut work.steps)?;
+    view.check_const_policies(&mut work.steps)?;
     let expected = Expected::new(view, facts, &mut work.steps)?;
     let record = view.inputs();
     let parameters = record
@@ -195,7 +196,7 @@ pub(super) fn build(
         .and_then(|b| b.source_copy.as_ref())
         .map(|record| copy_queries(view, facts, record, &mut work.steps))
         .transpose()?;
-    Ok(Contract {
+    let mut contract = Contract {
         key: body.key(),
         source: body.source,
         signature: Some(view.signature()),
@@ -212,7 +213,18 @@ pub(super) fn build(
         ))),
         output: None,
         require_result_formation: false,
-    })
+    };
+    if view.const_context() {
+        let required = crate::body::defining_cleanups::mark_imported_required(
+            facts,
+            view.definition(),
+            &mut contract,
+            &mut work.steps,
+        );
+        work.charge(0)?;
+        required?;
+    }
+    Ok(contract)
 }
 fn parameter_order(
     facts: &Declarations,
@@ -455,6 +467,16 @@ fn validate_builtins(
         .ok_or("source original omitted its unpaid builtin input block")?;
     if !builtin.is_unprepared_imported() {
         return Err("source original cannot import prepared permission");
+    }
+    if view.const_context() {
+        crate::body::defining_cleanups::validate_imported_required(
+            facts,
+            view.definition(),
+            contract,
+            steps,
+        )?;
+    } else if builtin.defining().is_some() {
+        return Err("ordinary source original cannot import defining cleanup requests");
     }
     let environment = record.builtins.as_ref().map(|b| b.environment);
     match (environment, builtin.environment.as_ref()) {

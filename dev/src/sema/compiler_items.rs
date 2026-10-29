@@ -1,6 +1,8 @@
 //! Actual source compiler declarations remain distinct from bootstrap identities.
 mod binding_views;
 mod calls;
+mod frozen_effects;
+pub(in crate::sema) use frozen_effects::Prepared as ImportedCallEffects;
 pub(in crate::sema) mod formatting;
 pub(in crate::sema) mod phantom;
 pub(in crate::sema) use binding_views::Role;

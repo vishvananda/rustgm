@@ -12,6 +12,10 @@ use crate::{
     support::crates::generics::source as s,
 };
 
+#[cfg(test)]
+#[path = "../../../tests/invariants/effect_artifacts.rs"]
+mod effect_tests;
+
 pub(super) fn build(
     view: &SourceOriginal<'_>,
     work: &mut ImportedOriginals,
@@ -47,6 +51,7 @@ pub(super) fn build(
         view.source()?,
         view.ty(record.result, &mut work.steps)?,
     );
+    body.const_context = view.const_context();
     body.locals = operations::locals(&record.locals, |local| {
         Ok(operations::LocalData {
             ty: view.ty(local.ty, &mut work.steps)?,
@@ -228,7 +233,7 @@ pub(super) fn validate(
 ) -> Result<(), &'static str> {
     let record = view.raw();
     if body.source != view.source()?
-        || body.const_context
+        || body.const_context != view.const_context()
         || body.instance.is_some()
         || !matches!(body.owner, Owner::Function { definition, signature, execution: None } if definition == view.definition() && signature == view.signature())
         || body.result != view.ty(record.result, steps)?
