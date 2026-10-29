@@ -161,3 +161,57 @@ fn contents_normalize_across_stores_and_preserve_hot_record_widths() -> TestResu
     )?;
     Ok(())
 }
+
+#[test]
+fn signed_alternatives_retain_one_interval_without_weakening_closed_order() -> TestResult {
+    let mut store = Store::default();
+    let first = interval(Primitive::I8, 128, 255);
+    let second = interval(Primitive::I8, 1, 127);
+    let id = store.intern_scalar_or(first, second, &|_, _| Ok(()))?;
+    assert_eq!(
+        store.scalar_range(id),
+        Some(interval(Primitive::I8, 1, 255))
+    );
+    for n in [1, 127, 128, 255] {
+        assert!(store.range_allows(id, n));
+    }
+    assert!(!store.range_allows(id, 0));
+    assert!(
+        store
+            .intern_scalar_range(interval(Primitive::I8, 1, 255), &|_, _| Ok(()))
+            .is_err()
+    );
+    for (a, b) in [
+        (
+            interval(Primitive::U8, 0, 2),
+            interval(Primitive::U8, 5, 255),
+        ),
+        (
+            interval(Primitive::I8, 128, 1),
+            interval(Primitive::I8, 1, 127),
+        ),
+        (
+            interval(Primitive::I8, 128, 255),
+            interval(Primitive::I8, 1, 126),
+        ),
+        (
+            interval(Primitive::I8, 246, 251),
+            interval(Primitive::I8, 255, 127),
+        ),
+    ] {
+        assert!(store.intern_scalar_or(a, b, &|_, _| Ok(())).is_err());
+    }
+    let ty = store.intern(Kind::Pattern {
+        base: first.base,
+        constraint: Constraint::ScalarRange(id),
+    })?;
+    assert_eq!(
+        super::super::substitute::Bound::shape().apply(&mut store, ty)?,
+        ty
+    );
+    assert_eq!(
+        super::super::substitute::lookup::Lookup::new(0).ty(&store, ty)?,
+        Some(ty)
+    );
+    Ok(())
+}

@@ -61,6 +61,7 @@ impl<L> Syntax<L> {
             | Kind::DeferredLiteral(_)
             | Kind::Literal(_)
             | Kind::Name(..)
+            | Kind::PatternEndpoint { .. }
             | Kind::EmptyStatement
             | Kind::Continue(_)
             | Kind::Wildcard

@@ -206,6 +206,7 @@ pub(super) fn child<L>(
         | Kind::Pattern { .. }
         | Kind::ReferencePattern { .. }
         | Kind::TypePattern { .. }
+        | Kind::PatternEndpoint { .. }
         | Kind::Type { .. }
         | Kind::InferType
         | Kind::NeverType

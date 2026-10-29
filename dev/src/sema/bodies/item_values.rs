@@ -37,6 +37,15 @@ impl Checker<'_> {
         owner: DefId,
         ty: TypeId,
     ) -> Result<TermId, Error> {
+        self.associated_constant_with_self(node, owner, ty, None)
+    }
+    pub(super) fn associated_constant_with_self(
+        &mut self,
+        node: NodeId,
+        owner: DefId,
+        ty: TypeId,
+        protocol_self: Option<(TypeId, TypeId)>,
+    ) -> Result<TermId, Error> {
         let schema = self
             .facts
             .associated
@@ -68,6 +77,9 @@ impl Checker<'_> {
             let argument = self.inferred_parameter(node, id, SourceArgument::Infer)?;
             arguments.push(argument);
             bindings.push((id, argument));
+        }
+        if let Some((rigid, base)) = protocol_self {
+            self.bind_pattern_self(node, rigid, base, &bindings)?;
         }
         self.bind_method_owner(node, &arguments, &bindings)?;
         self.bind_trait_arguments(node, &arguments, &bindings)?;

@@ -109,6 +109,10 @@ impl Bases {
                     destination.gate_extent().expressions as usize,
                     source.gate_extent().expressions as usize,
                 )?,
+                bounds: base(
+                    destination.gate_extent().bounds as usize,
+                    source.gate_extent().bounds as usize,
+                )?,
             },
             variants: base(destination.variants.len(), source.variants.len())?,
             use_trees: base(destination.use_trees.len(), source.use_trees.len())?,
@@ -235,32 +239,7 @@ impl Bases {
             self.item(&mut item.kind, span)?;
             destination.items.push(item);
         }
-        if let Some(entries) = &source.gate_sites {
-            entries
-                .charge(
-                    1 + entries.len() + entries.expressions().len(),
-                    source.gate_sites_bytes(),
-                )
-                .map_err(|message| error(0, message))?;
-            for entry in entries.entries() {
-                entry.validate(source)?;
-                destination.record_typed_gate_site(
-                    entry.item + self.items,
-                    self.rebased(entry.node),
-                    span(entry.span)?,
-                    entry.kind,
-                )?;
-            }
-            for (ordinal, entry) in entries.expressions().iter().enumerate() {
-                entry.validate(
-                    source,
-                    u32::try_from(ordinal)
-                        .map_err(|_| error(0, "expression-gate ordinal overflow"))?,
-                )?;
-                destination
-                    .record_expression_gate(self.rebased(entry.node), span(entry.keyword)?)?;
-            }
-        }
+        self.source_gates(source, destination, span)?;
         for variant in &source.variants {
             let mut variant = *variant;
             variant.name = span(variant.name)?;
@@ -305,6 +284,55 @@ impl Bases {
         }
         Ok(())
     }
+    fn source_gates<L, M>(
+        &self,
+        source: &Syntax<L>,
+        destination: &mut Syntax<M>,
+        span: &mut impl FnMut(Span) -> Result<Span, LexError>,
+    ) -> Result<(), LexError> {
+        if let Some(entries) = &source.gate_sites {
+            entries
+                .charge(
+                    1 + entries.len() + entries.expressions().len(),
+                    source.gate_sites_bytes(),
+                )
+                .map_err(|message| error(0, message))?;
+            for entry in entries.entries() {
+                entry.validate(source)?;
+                destination.record_typed_gate_site(
+                    entry.item + self.items,
+                    self.rebased(entry.node),
+                    span(entry.span)?,
+                    entry.kind,
+                )?;
+            }
+            for (ordinal, entry) in entries.bounds().iter().enumerate() {
+                entry.validate(
+                    source,
+                    u32::try_from(ordinal)
+                        .map_err(|_| error(0, "pattern endpoint ordinal overflow"))?,
+                )?;
+                let mut row = *entry;
+                self.node(&mut row.node);
+                self.node(&mut row.expression);
+                self.node(&mut row.root);
+                self.node(&mut row.range);
+                self.node(&mut row.base);
+                self.optional(&mut row.operand);
+                destination.record_endpoint(row)?;
+            }
+            for (ordinal, entry) in entries.expressions().iter().enumerate() {
+                entry.validate(
+                    source,
+                    u32::try_from(ordinal)
+                        .map_err(|_| error(0, "expression-gate ordinal overflow"))?,
+                )?;
+                destination
+                    .record_expression_gate(self.rebased(entry.node), span(entry.keyword)?)?;
+            }
+        }
+        Ok(())
+    }
     #[expect(
         clippy::too_many_lines,
         reason = "exhaustive syntax-ID and span transfer dispatch"
@@ -315,6 +343,7 @@ impl Bases {
         span: &mut impl FnMut(Span) -> Result<Span, LexError>,
     ) -> Result<(), LexError> {
         match kind {
+            Kind::PatternEndpoint { gate } => *gate += self.gate_sites.bounds,
             Kind::OffsetOf {
                 container,
                 fields,

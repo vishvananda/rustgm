@@ -15,6 +15,7 @@ use crate::{
 pub(crate) mod assembly;
 mod compiler_expr;
 mod control;
+mod expanded_ranges;
 pub mod fragment;
 #[path = "expression/restriction_clause.rs"]
 mod impl_restrictions;

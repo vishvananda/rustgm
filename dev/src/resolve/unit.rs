@@ -20,6 +20,7 @@ use crate::{
 pub(crate) mod contexts;
 pub(crate) mod editions;
 mod expansion;
+pub(crate) use expansion::PreparedChoice;
 mod original;
 pub(crate) mod retirement;
 

@@ -1,4 +1,5 @@
 //! Sparse feature sites share source identity, transfer and failed-attempt accounting.
+mod desugared_bounds;
 mod expressions;
 mod retention;
 use super::{
@@ -7,6 +8,7 @@ use super::{
     token_tree::{Span, error},
 };
 use crate::lex::token::LexError;
+pub(crate) use desugared_bounds::{Endpoint, Helper};
 pub(crate) use expressions::{Expression, ExpressionKind, Prefix};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -94,6 +96,10 @@ pub(crate) struct Declarations {
     completed: usize,
     expressions: Vec<Expression>,
     expressions_completed: usize,
+    bounds: Vec<Endpoint>,
+}
+pub(crate) const fn endpoint_overhead() -> usize {
+    size_of::<Declarations>() + 8 * size_of::<Endpoint>()
 }
 impl Declarations {
     #[cfg(test)]
@@ -156,6 +162,7 @@ impl Declarations {
             .map_err(|_| error(0, "original defaultness allocation failed"))?;
         copied.entries.extend_from_slice(entries);
         self.copy_expressions(count.expressions, &mut copied)?;
+        self.copy_bounds(count.bounds, &mut copied)?;
         Ok(Box::new(copied))
     }
 }
@@ -313,6 +320,7 @@ impl<L> Syntax<L> {
         if let Some(entries) = &mut self.gate_sites {
             if entries.entries.is_empty()
                 && entries.expressions.is_empty()
+                && entries.bounds.is_empty()
                 && !entries.witness.bound()
             {
                 // Genuine original replay may carry a prior failed transfer's debt.
@@ -343,6 +351,7 @@ impl<L> Syntax<L> {
         if let Some(entries) = &self.gate_sites {
             if entries.entries.is_empty()
                 && entries.expressions.is_empty()
+                && entries.bounds.is_empty()
                 && !entries.witness.bound()
             {
                 // This is retained failed-attempt debt, never token authority.
@@ -356,6 +365,12 @@ impl<L> Syntax<L> {
         Ok(())
     }
     pub(crate) fn move_gate_sites_root(&mut self, from: NodeId, to: NodeId) {
+        if matches!(
+            self.nodes[from.get() as usize].kind,
+            NodeKind::TypePattern { .. }
+        ) {
+            self.move_bound_root(from, to);
+        }
         if let NodeKind::TryBlock { gate, .. }
         | NodeKind::ConstClosure { gate, .. }
         | NodeKind::OffsetOf { gate, .. } = self.nodes[from.get() as usize].kind
@@ -387,6 +402,7 @@ impl<L> Syntax<L> {
             entries.entries.truncate(count.items as usize);
             entries.completed = entries.completed.min(count.items as usize);
             entries.expressions.truncate(count.expressions as usize);
+            entries.bounds.truncate(count.bounds as usize);
             entries.expressions_completed = entries
                 .expressions_completed
                 .min(count.expressions as usize);
@@ -407,6 +423,7 @@ impl<L> Syntax<L> {
             size_of::<Declarations>()
                 + entries.entries.capacity() * size_of::<Declaration>()
                 + entries.expressions.capacity() * size_of::<Expression>()
+                + entries.bounds.capacity() * size_of::<Endpoint>()
         })
     }
 }

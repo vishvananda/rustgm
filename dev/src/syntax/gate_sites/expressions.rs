@@ -7,6 +7,7 @@ use crate::lex::token::LexError;
 pub(crate) struct Prefix {
     pub(crate) items: u32,
     pub(crate) expressions: u32,
+    pub(crate) bounds: u32,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum ExpressionKind {
@@ -149,6 +150,7 @@ impl Declarations {
         Prefix {
             items: u32::try_from(self.entries.len()).unwrap_or(u32::MAX),
             expressions: u32::try_from(self.expressions.len()).unwrap_or(u32::MAX),
+            bounds: u32::try_from(self.bounds.len()).unwrap_or(u32::MAX),
         }
     }
     pub(crate) fn expressions(&self) -> &[Expression] {
