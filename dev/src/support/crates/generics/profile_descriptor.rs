@@ -1,5 +1,6 @@
 //! A descriptor borrows completed source data; it is never callable permission.
 mod binding_order;
+mod compatibility_profile;
 pub(crate) use binding_order::sort as canonical_order;
 #[path = "namespace_paths.rs"]
 mod callable_paths;
@@ -60,6 +61,8 @@ pub enum Profile {
     Source2024ModuleFeaturePredicates,
     /// Version-five exact native definitions; nominal transport remains unsupported.
     Source2024ModuleDefinitions,
+    /// Version-six stable API compatibility notes preserve ordinary path policy.
+    Source2024ModuleCompatibility,
     /// Current unpaid provided rows; auto traits have no implicit Self sizing.
     Source2024ProvidedCurrent,
 }
@@ -68,7 +71,9 @@ impl Profile {
     pub const fn feature_predicates(self) -> bool {
         matches!(
             self,
-            Self::Source2024ModuleFeaturePredicates | Self::Source2024ModuleDefinitions
+            Self::Source2024ModuleFeaturePredicates
+                | Self::Source2024ModuleDefinitions
+                | Self::Source2024ModuleCompatibility
         )
     }
     #[must_use]
@@ -79,6 +84,7 @@ impl Profile {
                 | Self::Source2024ModuleAvailability
                 | Self::Source2024ModuleFeaturePredicates
                 | Self::Source2024ModuleDefinitions
+                | Self::Source2024ModuleCompatibility
         )
     }
     #[must_use]
@@ -95,6 +101,7 @@ impl Profile {
             Self::Source2024ModuleAvailability
                 | Self::Source2024ModuleFeaturePredicates
                 | Self::Source2024ModuleDefinitions
+                | Self::Source2024ModuleCompatibility
         )
     }
 }
@@ -199,6 +206,7 @@ impl ValidatedRows {
         work: &mut Work,
     ) -> Result<Self, &'static str> {
         let (availability, profile) = available;
+        compatibility_profile::require_profile(&availability, profile, work)?;
         let features = profile.feature_predicates();
         let start = work.steps;
         let bytes = availability.storage_bytes(work)?;
@@ -241,6 +249,9 @@ impl ValidatedRows {
                     policy.feature.len()
                         + match &policy.level {
                             super::AvailabilityLevel::Stable(_) => 0,
+                            super::AvailabilityLevel::StableWithCompatibility {
+                                message, ..
+                            } => message.len(),
                             super::AvailabilityLevel::Unstable { reason, .. } => {
                                 reason.as_ref().map_or(0, String::len)
                             }
@@ -368,7 +379,7 @@ impl ValidatedRows {
     ) -> Result<Self, &'static str> {
         let start = work.steps;
         let features = profile.feature_predicates();
-        if profile != Profile::Source2024ModuleDefinitions {
+        if !profile.definitions() {
             exact_exports::legacy(&rows, work)?;
         }
         if !features {
@@ -379,7 +390,7 @@ impl ValidatedRows {
         let extension = attribute_bytes.saturating_add(module_bytes);
         let extended_base = base.saturating_add(extension);
         let indexed = HeaderIndex::new(&rows, extended_base, work)?;
-        if profile == Profile::Source2024ModuleDefinitions {
+        if profile.definitions() {
             exact_exports::validate(&rows, &indexed, work)?;
             functions::validate_module_definitions(&rows, &indexed, work)?;
         } else if features {
@@ -489,7 +500,8 @@ impl ValidatedRows {
             Profile::Source2024ModuleContracts
             | Profile::Source2024ModuleAvailability
             | Profile::Source2024ModuleFeaturePredicates
-            | Profile::Source2024ModuleDefinitions => {
+            | Profile::Source2024ModuleDefinitions
+            | Profile::Source2024ModuleCompatibility => {
                 return Err(
                     "module contracts require their complete namespace/domain/attribute columns",
                 );

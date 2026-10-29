@@ -18,6 +18,7 @@ const MODULE_CONTRACT_VERSION: u16 = 2;
 const AVAILABILITY_VERSION: u16 = 3;
 const FEATURE_PREDICATE_VERSION: u16 = 4;
 const DEFINITIONS_VERSION: u16 = 5;
+const COMPATIBILITY_VERSION: u16 = 6;
 const DEFINING_RUST2024: u8 = 0;
 
 pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
@@ -33,7 +34,8 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
         | Profile::Source2024ModuleContracts
         | Profile::Source2024ModuleAvailability
         | Profile::Source2024ModuleFeaturePredicates
-        | Profile::Source2024ModuleDefinitions => TAG,
+        | Profile::Source2024ModuleDefinitions
+        | Profile::Source2024ModuleCompatibility => TAG,
         Profile::Source2024Provided
         | Profile::Source2024ProvidedContracts
         | Profile::Source2024ProvidedCurrent => PROVIDED_TAG,
@@ -55,6 +57,7 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
         Profile::Source2024ProvidedCurrent => CURRENT_PROVIDED_VERSION,
         Profile::Source2024ModuleFeaturePredicates => FEATURE_PREDICATE_VERSION,
         Profile::Source2024ModuleDefinitions => DEFINITIONS_VERSION,
+        Profile::Source2024ModuleCompatibility => COMPATIBILITY_VERSION,
         Profile::Source2024ModuleAvailability => AVAILABILITY_VERSION,
         Profile::Source2024ModuleContracts => MODULE_CONTRACT_VERSION,
         Profile::Source2024FunctionContracts | Profile::Source2024ProvidedContracts => {
@@ -101,7 +104,10 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
     let (rows, attributes, modules, contracts, availability) = if !provided
         && matches!(
             version,
-            AVAILABILITY_VERSION | FEATURE_PREDICATE_VERSION | DEFINITIONS_VERSION
+            AVAILABILITY_VERSION
+                | FEATURE_PREDICATE_VERSION
+                | DEFINITIONS_VERSION
+                | COMPATIBILITY_VERSION
         ) {
         let packet = availability_packet(input, base, version)?;
         (
@@ -146,7 +152,9 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
         ..Work::default()
     };
     let payload = if let Some(availability) = availability {
-        let publish = if version == DEFINITIONS_VERSION {
+        let publish = if version == COMPATIBILITY_VERSION {
+            Payload::from_source_module_compatibility
+        } else if version == DEFINITIONS_VERSION {
             Payload::from_source_module_definitions
         } else if version == FEATURE_PREDICATE_VERSION {
             Payload::from_source_module_feature_predicates
@@ -198,6 +206,7 @@ fn availability_packet(
     version: u16,
 ) -> Result<ordinary_columns::AvailabilityPacket, &'static str> {
     match version {
+        COMPATIBILITY_VERSION => ordinary_columns::decode_module_compatibility(input, base),
         DEFINITIONS_VERSION => ordinary_columns::decode_module_definitions(input, base),
         FEATURE_PREDICATE_VERSION => {
             ordinary_columns::decode_module_feature_predicates(input, base)
@@ -223,6 +232,7 @@ fn defining_version(input: &mut Reader<'_>, provided: bool) -> Result<u16, &'sta
                     | AVAILABILITY_VERSION
                     | FEATURE_PREDICATE_VERSION
                     | DEFINITIONS_VERSION
+                    | COMPATIBILITY_VERSION
             ))
         || input.u8()? != DEFINING_RUST2024
     {
