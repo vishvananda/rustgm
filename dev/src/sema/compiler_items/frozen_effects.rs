@@ -39,7 +39,8 @@ impl Prepared {
                 .bytes
                 .saturating_add(size_of::<HashMap<DefId, Effect>>()),
         )?;
-        let mut entries = HashMap::with_capacity_and_hasher(count, Default::default());
+        let mut entries = HashMap::default();
+        entries.reserve(count);
         for (definition, inputs) in declarations {
             pay(1, 0)?;
             let mut effect = Effect::Ordinary;
