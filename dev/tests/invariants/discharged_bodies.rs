@@ -103,6 +103,17 @@ fn old_profiles_and_downgraded_packets_retain_their_unsafe_body_fences() -> Resu
         old[13..15].copy_from_slice(&version.to_le_bytes());
         assert!(crates::decode(&old).is_err(), "version {version}");
     }
+    let source = crate::test_source::fixture(
+        "pa31/tests/spec/source-callable-effects/combined-provider.rs",
+    )?;
+    let inherited = module_packets::exported_profile(
+        &source,
+        SourcePublication::ModuleSafety,
+        "safety_inherits",
+    )?;
+    let client =
+        crate::test_source::fixture("pa31/tests/spec/source-callable-effects/native-client.rs")?;
+    source_packets::client(crates::decode(&crates::encode(&inherited)?)?, &client)?;
     Ok(())
 }
 fn missing_or_forged(rows: &mut s::SourceRows, mutation: usize) -> Result {

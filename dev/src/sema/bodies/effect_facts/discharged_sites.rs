@@ -292,7 +292,8 @@ impl CallContexts {
         let projected = if growth.bytes == 0 {
             current
         } else {
-            current.saturating_sub(capacity.saturating_mul(size_of::<Site>()))
+            current
+                .saturating_sub(capacity.saturating_mul(size_of::<Site>()))
                 .saturating_add(growth.bytes)
         };
         if projected > MAX_RETAINED || current.saturating_add(growth.bytes) > MAX_TRANSIENT {
