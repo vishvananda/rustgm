@@ -52,9 +52,43 @@ on_unimplemented diagnostic replaces the generic const wording; its assertion
 now accepts that source-defined message. Pinned Rust independently rejects the
 same unchanged fixture with E0277. No reference output or fixture was changed.
 
-Production/CLI qualification and a fresh unchanged-original-core observation
-remain pending for this checkpoint. The unsigned-niche component must first
-join this descendant and qualify the deduplicated union. Generic endpoints,
+## Joined compiler and original-core observation
+
+Joined commit15237701b5b4c8eb1612a9ba4e00c42aa8118863 includes the unsigned-niche
+component. Its deduplicated61 private controls pass209.94s, receipt
+`1793284011578454967`, SHA-256
+`3f5b6dfe83af787d88e54762bf4eb011328808fdfbefbbcf96f7fc0558c9bc88`.
+Production/CLI3 passes36.53s with production strict Clippy, receipt
+`1793283992948983832`, SHA-256
+`cee14ffacf996bedc4de81e767f74700bab8347af4ca7da9689e93cecf779498`.
+Both launchers pass and all3182 compiler/test/harness hashes match the integrator.
+The cold private build timeout and production finalization timeout are retained
+as failures; neither substitutes for those completed successor gates.
+
+The joined endpoint native5 passes, receipt SHA-256
+`c44d74476ab35f70c681db211bd7013f809e3946732ecca13e123a6624e34a4e`.
+The scalar-niche/native cleanup matrix passes all12 operations, receipt SHA-256
+`87c62e6ad59503a1afe043ffb092a4082562a0fc0f7f3605fcdd14a253105ce4`.
+Root reuses the private binary's proof by exact source and fixture equality;
+there is no redundant integrator private rebuild.
+
+Current CLI1accafdd51e9516a62a8a2f997a57fac3e745aa70dbe6221252a9fec7261460c
+clears the original range-pattern failure and stops at file268:2225's parsed
+field-type derive boundary in12.94s. Opened-order268 is original stdarch x86
+mod.rs, at the `2` in `__m128i(2 x i64)`, whose types macro creates an array
+field. LIB-092 owns typed constant-child transfer in derives. The374 opens
+remain a loading count, not compiled artifacts. All722 pinned hashes and target
+settings are unchanged, with the same explicit work14,500,624/attempted1GiB/
+retained64MiB profile. Capped receipt SHA-256 is
+`3de3aad3d7527cd0e19291e22bc7f280499570d964a986201cf4c7c06c2e80f4`;
+strict separately retains the deferred expectation at68 opens, receipt
+`7f668ce5b0e88d078ea1b07474b55ba7523edaf91c661a33b4ab6777492c6450`.
+The53.24s helper batch also passes272 harness controls,385 registrations,
+44-stage layout and upstream verification, receipt
+`a7f66cdd3e3713271067e37efc4f723fdfee29e6b0155880dfe532062a2d202e`.
+This is a changed failure point, not a measured performance improvement.
+
+Generic endpoints,
 disconnected alternatives, original checked subtraction/char conversion/panic,
 refinement metadata, original core/alloc/std artifacts and whole-PA release
 checks remain required. No new assignment is marked implemented.

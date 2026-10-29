@@ -29,8 +29,13 @@ The component's private20 gate passed in 143.60 seconds, receipt
 `1793281338139080967`. Its exact source bitmap binds the generated LowIR and both
 native matrices: separate provider/C objects, links, six-width values and cleanup
 trace all pass (native plan `00a707c973043b3866b947d42154d922fd52a96d4483ac6a25f13108103a68dc`).
-Production/CLI strict checks and the final joined-source gate remain pending
-integration.
+The final joined15237701b source also passes61 exact private controls in209.94s,
+production/CLI3 in36.53s and all12 rebound native operations. The authenticated
+worker handoff is `obj/parallel/source-integer-niches-v1/joined-handoff.json`,
+SHA-256 `3932f27e3449c825af7cdca19adc7e68db79569ec68cc9225b61b92e812a73dd`.
+All3182 source/harness entries and87 fixture hashes matched at that checkpoint.
+Root's [endpoint checkpoint](pa31-source-endpoint-execution-checkpoint.md)
+records the actual joined CLI/original-core observation and retained timeouts.
 
 Measured Carrier/Answer/Niches table widths are 8/8/56 bytes; the cold Niche record
 grows from 32 to 40. `ScalarStorage` remains 16 and `Representation` 24; Layout48,

@@ -19,6 +19,8 @@ batch retains its separately corrected disconnected-positive mismatch; only its
 successful unchanged positive rows are reused. See
 [the qualification checkpoint](../../../../docs/pa31-source-endpoint-execution-checkpoint.md).
 
-Production/CLI and unchanged-original-core observation remain pending for the
-joined compiler. Original helper bodies, char panic boundaries, generic and
-disconnected endpoints, broader niches and metadata remain required.
+Joined61 and production/CLI3 pass; the joined native observer still matches.
+The unchanged-original-core probe clears the previous pattern failure and now
+stops on stdarch array-field derive transfer. No original library artifact is
+produced. Original helper bodies, char panic boundaries, generic and disconnected
+endpoints, broader niches and metadata remain required.

@@ -1,22 +1,29 @@
 # Parallel library bootstrap implementation
 
 Root owns integration, current-source CLI/original-core observations and main
-publication in rustgm-pa25-work. The source endpoint/readiness/conformance join
-now passes42 private controls in115.92s, full architecture/format/private Clippy
-and the actual native stream `7 3 7 -2 7`. See the
-[endpoint checkpoint](pa31-source-endpoint-execution-checkpoint.md). Production/
-CLI and fresh unchanged-original-core observations await the final niche union;
-no original artifact or additional PA release is implied. Original integer/char/
-panic bodies, generic endpoints and metadata remain required. C prepares only
-the next genuine original unsigned-helper fixture/oracle plan until this join
-is available. No new advisory lint producer is queued.
+publication in rustgm-pa25-work. Joined15237701b passes61 private controls in
+209.94s, production/CLI3 in36.53s, full format/architecture/strict Clippy and
+native endpoint5/niche12. All3182 compiler/test/harness hashes match Root;
+there is no duplicate private rebuild. Harness272, registrations385, layout and
+upstream pass. Cold private and outer finalization timeouts remain failures.
+See the [endpoint checkpoint](pa31-source-endpoint-execution-checkpoint.md).
+
+Current CLI1accafdd clears the previous range-pattern failure and stops at
+file268:2225's stdarch array-field derive transfer in12.94s. The374 opens are
+still loading/order, not artifacts; all722 original hashes/target flags and
+explicit work14,500,624/attempted1GiB/retained64MiB stay fixed. Strict separately
+retains the deferred expectation at68 opens. No original artifact/new PA release.
+B now owns LIB-092's actual parsed constant-child transfer, paid literal pool and
+ordinary/SIMD source controls. C preserves its original-u8/Formatter closure plan
+and valid pinned-core reference; whole-NoCore source remains unqualified, and C
+only reviews literal ownership for B. No new advisory lint producer is queued.
 
 B owns complete zero-excluded unsigned scalar niche layout, CTFE bytes and native
 ABI transport (LIB-087), preserving actual scalar types and measured hot widths.
 Component20 passes143.60s, including actual source/cleanup producers, reached
 Some0, wider partial-range ABI boundary and old wide-pointer/const-API controls.
 All12 scoped native operations pass, including the actual nonCopy destructor
-trace. Final merged-source union and production qualification remain pending. No layout-only
+trace. Final joined61, production/CLI3 and rebound native12 now pass; its next task is LIB-092. No layout-only
 acceptance or Ptr encoding of integers is permitted. Ordinary
 source nounwind fdf2fedd8 consumes
 the fixed abort target/supported ABI guarantee without granting intrinsic,
