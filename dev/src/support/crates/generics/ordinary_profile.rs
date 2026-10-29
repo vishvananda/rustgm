@@ -3,7 +3,7 @@ use super::super::{
     Action, EnvironmentOrigin, FunctionBody, InputKind, Place, TraitFlags, ValueKind,
 };
 use super::super::{HeaderIndex, SourceRows};
-#[path = "callable_traits.rs"]
+#[path = "free_protocols.rs"]
 mod callable_traits;
 use crate::support::crates::generics::Convention;
 use crate::support::{
@@ -55,8 +55,12 @@ pub(super) fn validate_module_definitions(
 ) -> Result<(), &'static str> {
     validate_mode(rows, headers, work, NamespaceProfile::Definitions)
 }
-pub(super) fn validate_module_callables(rows:&SourceRows,headers:&HeaderIndex<'_>,work:&mut Work)->Result<(),&'static str>{
-    validate_mode(rows,headers,work,NamespaceProfile::Callables)
+pub(super) fn validate_module_callables(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    validate_mode(rows, headers, work, NamespaceProfile::Callables)
 }
 fn validate_mode(
     rows: &SourceRows,
@@ -71,22 +75,39 @@ fn validate_mode(
     if rows.policy.edition != Edition::Rust2024 || rows.policy.provider.0 != 0 {
         return Err("ordinary source functions require their own Rust2024 provider profile");
     }
-    let roles = bindings(rows, headers, work, if profile==NamespaceProfile::Callables { BindingProfile::Callables } else { BindingProfile::Ordinary })?;
+    let roles = bindings(
+        rows,
+        headers,
+        work,
+        if profile == NamespaceProfile::Callables {
+            BindingProfile::Callables
+        } else {
+            BindingProfile::Ordinary
+        },
+    )?;
     let sizing = roles.sizing;
     let features = matches!(
         profile,
-        NamespaceProfile::FeaturePredicates | NamespaceProfile::Definitions | NamespaceProfile::Callables
+        NamespaceProfile::FeaturePredicates
+            | NamespaceProfile::Definitions
+            | NamespaceProfile::Callables
     );
     recipes(rows, work, features)?;
     for header in &rows.traits {
         work.charge(1)?;
         let flags = header.flags.bits();
         if roles.destruct == Some(header.declaration) {
-            callable_traits::destruct(rows,headers,header,sizing[2].ok_or("source Destruct lacks its actual PointeeSized role")?,work)?;
+            callable_traits::destruct(
+                rows,
+                headers,
+                header,
+                sizing[2].ok_or("source Destruct lacks its actual PointeeSized role")?,
+                work,
+            )?;
             continue;
         }
         if roles.freeze == Some(header.declaration) {
-            callable_traits::freeze(rows,headers,header,work)?;
+            callable_traits::freeze(rows, headers, header, work)?;
             continue;
         }
         if flags & TraitFlags::RESTRICTED_IMPL != 0
@@ -94,7 +115,8 @@ fn validate_mode(
                 profile,
                 NamespaceProfile::Contracts
                     | NamespaceProfile::FeaturePredicates
-                    | NamespaceProfile::Definitions | NamespaceProfile::Callables
+                    | NamespaceProfile::Definitions
+                    | NamespaceProfile::Callables
             )
         {
             return Err(
@@ -135,7 +157,13 @@ fn validate_mode(
         work.charge(1)?;
         ordinary(&clause.requirement)?;
     }
-    originals(rows, headers, work, features, profile == NamespaceProfile::Callables)
+    originals(
+        rows,
+        headers,
+        work,
+        features,
+        profile == NamespaceProfile::Callables,
+    )
 }
 fn functions(
     rows: &SourceRows,
@@ -178,12 +206,19 @@ fn functions(
                 "source nonordinary callable effect/safety/convention requires a wider profile",
             );
         }
-        if free_effects && (header.original.unsafe_ != header.callable.unsafe_ || header.original.convention != header.callable.convention) {
-            return Err("source free callable changed its actual original/public safety or convention");
+        if free_effects
+            && (header.original.unsafe_ != header.callable.unsafe_
+                || header.original.convention != header.callable.convention)
+        {
+            return Err(
+                "source free callable changed its actual original/public safety or convention",
+            );
         }
         let primitive_method = matches!(
             profile,
-            NamespaceProfile::FeaturePredicates | NamespaceProfile::Definitions | NamespaceProfile::Callables
+            NamespaceProfile::FeaturePredicates
+                | NamespaceProfile::Definitions
+                | NamespaceProfile::Callables
         ) && primitive_method(rows, headers, header, work)?;
         if matches!(header.body, FunctionBody::Original(_))
             && header.parent.is_some()
@@ -280,14 +315,30 @@ fn primitive_method(
     }
     Ok(true)
 }
-fn originals(rows: &SourceRows, headers:&HeaderIndex<'_>, work: &mut Work, features: bool, callables:bool) -> Result<(), &'static str> {
+fn originals(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+    features: bool,
+    callables: bool,
+) -> Result<(), &'static str> {
     for original in &rows.originals {
         work.charge(1)?;
         let expected = if callables {
-            let Some(super::super::HeaderRef::Function(index)) = headers.header(original.declaration,work)? else { return Err("source original has no actual callable header"); };
+            let Some(super::super::HeaderRef::Function(index)) =
+                headers.header(original.declaration, work)?
+            else {
+                return Err("source original has no actual callable header");
+            };
             let header = rows.functions[index as usize];
-            if header.parent.is_none() && header.constness == Constness::Const { super::super::CallContext::ConstDefinition } else { super::super::CallContext::Runtime }
-        } else { super::super::CallContext::Runtime };
+            if header.parent.is_none() && header.constness == Constness::Const {
+                super::super::CallContext::ConstDefinition
+            } else {
+                super::super::CallContext::Runtime
+            }
+        } else {
+            super::super::CallContext::Runtime
+        };
         if original.context != expected
             || !original.variables.is_empty()
             || !original.projections.is_empty()
@@ -414,8 +465,16 @@ fn ordinary(request: &super::super::Requirement) -> Result<(), &'static str> {
     Ok(())
 }
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub(super) enum BindingProfile { Ordinary, Provided, Callables }
-pub(super) struct Bindings { sizing: [Option<crate::support::crates::owner_catalog::DeclarationRef>;3], destruct:Option<crate::support::crates::owner_catalog::DeclarationRef>, freeze:Option<crate::support::crates::owner_catalog::DeclarationRef> }
+pub(super) enum BindingProfile {
+    Ordinary,
+    Provided,
+    Callables,
+}
+pub(super) struct Bindings {
+    sizing: [Option<crate::support::crates::owner_catalog::DeclarationRef>; 3],
+    destruct: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+    freeze: Option<crate::support::crates::owner_catalog::DeclarationRef>,
+}
 pub(super) fn bindings(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
@@ -438,8 +497,10 @@ pub(super) fn bindings(
                 | LangItem::Clone
                 | LangItem::CloneFn
                 | LangItem::Copy
-        ) || (profile == BindingProfile::Provided && matches!(role.role, LangItem::Destruct | LangItem::Freeze))
-            || (profile == BindingProfile::Callables && matches!(role.role,LangItem::Destruct | LangItem::Freeze));
+        ) || (matches!(
+            profile,
+            BindingProfile::Provided | BindingProfile::Callables
+        ) && matches!(role.role, LangItem::Destruct | LangItem::Freeze));
         if !allowed {
             return Err("source role requires a wider explicit source profile");
         }
@@ -494,7 +555,19 @@ pub(super) fn bindings(
             return Err("source sized formal names a foreign or different actual Sized role");
         }
     }
-    Ok(Bindings { sizing, destruct: if profile==BindingProfile::Callables { declarations[LangItem::Destruct.index()] } else { None }, freeze: if profile==BindingProfile::Callables {declarations[LangItem::Freeze.index()]} else {None} })
+    Ok(Bindings {
+        sizing,
+        destruct: if profile == BindingProfile::Callables {
+            declarations[LangItem::Destruct.index()]
+        } else {
+            None
+        },
+        freeze: if profile == BindingProfile::Callables {
+            declarations[LangItem::Freeze.index()]
+        } else {
+            None
+        },
+    })
 }
 
 fn admitted_convention(
@@ -504,8 +577,10 @@ fn admitted_convention(
     profile: NamespaceProfile,
 ) -> bool {
     convention == Convention::Rust
-        || (matches!(profile, NamespaceProfile::Definitions | NamespaceProfile::Callables)
-            && convention == Convention::C
+        || (matches!(
+            profile,
+            NamespaceProfile::Definitions | NamespaceProfile::Callables
+        ) && convention == Convention::C
             && rows
                 .exact_callables
                 .binary_search_by_key(&declaration.0, |row| row.declaration.0)

@@ -208,7 +208,7 @@ impl Stage {
             formals,
             receiver,
             constness: if self.callable_effects() {
-                written_constness(report,facts,function)?
+                written_constness(report, facts, function)?
             } else if facts.is_const_function(function.definition) {
                 Constness::Const
             } else {
@@ -334,14 +334,31 @@ impl Stage {
     }
 }
 
-fn written_constness(report:&Report,facts:&Declarations,function:&crate::sema::model::Function)->Result<Constness,&'static str>{
-    let ast=&report.package.unit(function.node.file).configured.ast;
-    let crate::syntax::ast::Kind::Item(index)=ast.node(function.node.node).kind else {return Err("source callable effects require their actual parsed function declaration");};
-    let crate::syntax::item::ItemKind::Function{flags,..}=ast.items.get(index as usize).ok_or("source callable declaration item is missing")?.kind else {return Err("source callable effect owner is not a function");};
+fn written_constness(
+    report: &Report,
+    facts: &Declarations,
+    function: &crate::sema::model::Function,
+) -> Result<Constness, &'static str> {
+    let ast = &report.package.unit(function.node.file).configured.ast;
+    let crate::syntax::ast::Kind::Item(index) = ast.node(function.node.node).kind else {
+        return Err("source callable effects require their actual parsed function declaration");
+    };
+    let crate::syntax::item::ItemKind::Function { flags, .. } = ast
+        .items
+        .get(index as usize)
+        .ok_or("source callable declaration item is missing")?
+        .kind
+    else {
+        return Err("source callable effect owner is not a function");
+    };
     if flags.constant != facts.is_const_function(function.definition) {
         return Err("source effective const eligibility requires its actual marker transport");
     }
-    Ok(if flags.constant {Constness::Const}else{Constness::Ordinary})
+    Ok(if flags.constant {
+        Constness::Const
+    } else {
+        Constness::Ordinary
+    })
 }
 
 #[cfg(test)]
@@ -350,15 +367,31 @@ mod effect_storage {
     fn callable_capability_occupies_existing_cold_index_padding() {
         use super::*;
         struct Previous {
-            bodies: HashMap<DefId,BodyRef>,
+            bodies: HashMap<DefId, BodyRef>,
             contexts: Vec<Context>,
-            originals: Vec<Option<(s::Original,s::BodyInputs)>>,
-            headers: HashMap<crate::types::ItemId,u32>,
+            originals: Vec<Option<(s::Original, s::BodyInputs)>>,
+            headers: HashMap<crate::types::ItemId, u32>,
             exact: bool,
         }
-        let previous=Previous{bodies:HashMap::default(),contexts:Vec::new(),originals:Vec::new(),headers:HashMap::default(),exact:false};
-        assert!(previous.bodies.is_empty() && previous.contexts.is_empty() && previous.originals.is_empty() && previous.headers.is_empty() && !previous.exact);
-        assert_eq!(size_of::<Previous>(),size_of::<Index>());
-        println!("IndexPrevious={} IndexCurrent={}",size_of::<Previous>(),size_of::<Index>());
+        let previous = Previous {
+            bodies: HashMap::default(),
+            contexts: Vec::new(),
+            originals: Vec::new(),
+            headers: HashMap::default(),
+            exact: false,
+        };
+        assert!(
+            previous.bodies.is_empty()
+                && previous.contexts.is_empty()
+                && previous.originals.is_empty()
+                && previous.headers.is_empty()
+                && !previous.exact
+        );
+        assert_eq!(size_of::<Previous>(), size_of::<Index>());
+        println!(
+            "IndexPrevious={} IndexCurrent={}",
+            size_of::<Previous>(),
+            size_of::<Index>()
+        );
     }
 }

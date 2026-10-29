@@ -22,7 +22,8 @@ impl Options {
         }
         match value {
             Some("module-callables-v7") => {
-                self.source_profile = Some(rustgm::lower::instances::SourcePublication::ModuleCallables);
+                self.source_profile =
+                    Some(rustgm::lower::instances::SourcePublication::ModuleCallables);
             }
             Some("module-compatibility-v6") => {
                 self.source_profile =

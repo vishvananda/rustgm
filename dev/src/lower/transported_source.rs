@@ -495,7 +495,8 @@ impl Source {
             super::instances::SourcePublication::ModuleAvailability
                 | super::instances::SourcePublication::ModuleFeaturePredicates
                 | super::instances::SourcePublication::ModuleDefinitions
-                | super::instances::SourcePublication::ModuleCompatibility | super::instances::SourcePublication::ModuleCallables
+                | super::instances::SourcePublication::ModuleCompatibility
+                | super::instances::SourcePublication::ModuleCallables
         ) {
             Some(
                 self.stage

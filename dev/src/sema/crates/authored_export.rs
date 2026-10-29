@@ -73,7 +73,11 @@ impl ExportMode {
     fn availability(self) -> bool {
         matches!(
             self,
-            Self::Availability | Self::FeaturePredicates | Self::Definitions | Self::Compatibility | Self::Callables
+            Self::Availability
+                | Self::FeaturePredicates
+                | Self::Definitions
+                | Self::Compatibility
+                | Self::Callables
         )
     }
     fn module_contracts(self) -> bool {
@@ -83,11 +87,15 @@ impl ExportMode {
                 | Self::Availability
                 | Self::FeaturePredicates
                 | Self::Definitions
-                | Self::Compatibility | Self::Callables
+                | Self::Compatibility
+                | Self::Callables
         )
     }
     fn exact(self) -> bool {
-        matches!(self, Self::Definitions | Self::Compatibility | Self::Callables)
+        matches!(
+            self,
+            Self::Definitions | Self::Compatibility | Self::Callables
+        )
     }
 }
 
@@ -278,8 +286,12 @@ impl Stage {
     ) -> Result<Self, &'static str> {
         Self::begin_mode(report, facts, identity, ExportMode::Compatibility)
     }
-    pub(crate) fn begin_module_callables(report:&Report,facts:&mut Declarations,identity:&CrateIdentity)->Result<Self,&'static str>{
-        Self::begin_mode(report,facts,identity,ExportMode::Callables)
+    pub(crate) fn begin_module_callables(
+        report: &Report,
+        facts: &mut Declarations,
+        identity: &CrateIdentity,
+    ) -> Result<Self, &'static str> {
+        Self::begin_mode(report, facts, identity, ExportMode::Callables)
     }
     fn begin_mode(
         report: &Report,

@@ -361,7 +361,8 @@ pub fn build_source_library_profile(
                 | SourcePublication::ModuleAvailability
                 | SourcePublication::ModuleFeaturePredicates
                 | SourcePublication::ModuleDefinitions
-                | SourcePublication::ModuleCompatibility | SourcePublication::ModuleCallables => source.complete_module_policy_payload(
+                | SourcePublication::ModuleCompatibility
+                | SourcePublication::ModuleCallables => source.complete_module_policy_payload(
                     modules.ok_or_else(|| {
                         diagnostic(
                             report,

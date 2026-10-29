@@ -36,7 +36,8 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
         | Profile::Source2024ModuleAvailability
         | Profile::Source2024ModuleFeaturePredicates
         | Profile::Source2024ModuleDefinitions
-        | Profile::Source2024ModuleCompatibility | Profile::Source2024ModuleCallables => TAG,
+        | Profile::Source2024ModuleCompatibility
+        | Profile::Source2024ModuleCallables => TAG,
         Profile::Source2024Provided
         | Profile::Source2024ProvidedContracts
         | Profile::Source2024ProvidedCurrent => PROVIDED_TAG,
@@ -109,7 +110,8 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
             AVAILABILITY_VERSION
                 | FEATURE_PREDICATE_VERSION
                 | DEFINITIONS_VERSION
-                | COMPATIBILITY_VERSION | CALLABLE_VERSION
+                | COMPATIBILITY_VERSION
+                | CALLABLE_VERSION
         ) {
         let packet = availability_packet(input, base, version)?;
         (
@@ -255,7 +257,8 @@ fn defining_version(input: &mut Reader<'_>, provided: bool) -> Result<u16, &'sta
                     | AVAILABILITY_VERSION
                     | FEATURE_PREDICATE_VERSION
                     | DEFINITIONS_VERSION
-                    | COMPATIBILITY_VERSION | CALLABLE_VERSION
+                    | COMPATIBILITY_VERSION
+                    | CALLABLE_VERSION
             ))
         || input.u8()? != DEFINING_RUST2024
     {

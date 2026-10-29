@@ -75,7 +75,8 @@ impl Profile {
             self,
             Self::Source2024ModuleFeaturePredicates
                 | Self::Source2024ModuleDefinitions
-                | Self::Source2024ModuleCompatibility | Self::Source2024ModuleCallables
+                | Self::Source2024ModuleCompatibility
+                | Self::Source2024ModuleCallables
         )
     }
     #[must_use]
@@ -86,7 +87,8 @@ impl Profile {
                 | Self::Source2024ModuleAvailability
                 | Self::Source2024ModuleFeaturePredicates
                 | Self::Source2024ModuleDefinitions
-                | Self::Source2024ModuleCompatibility | Self::Source2024ModuleCallables
+                | Self::Source2024ModuleCompatibility
+                | Self::Source2024ModuleCallables
         )
     }
     #[must_use]
@@ -103,7 +105,8 @@ impl Profile {
             Self::Source2024ModuleAvailability
                 | Self::Source2024ModuleFeaturePredicates
                 | Self::Source2024ModuleDefinitions
-                | Self::Source2024ModuleCompatibility | Self::Source2024ModuleCallables
+                | Self::Source2024ModuleCompatibility
+                | Self::Source2024ModuleCallables
         )
     }
 }
@@ -507,7 +510,8 @@ impl ValidatedRows {
             | Profile::Source2024ModuleAvailability
             | Profile::Source2024ModuleFeaturePredicates
             | Profile::Source2024ModuleDefinitions
-            | Profile::Source2024ModuleCompatibility | Profile::Source2024ModuleCallables => {
+            | Profile::Source2024ModuleCompatibility
+            | Profile::Source2024ModuleCallables => {
                 return Err(
                     "module contracts require their complete namespace/domain/attribute columns",
                 );
