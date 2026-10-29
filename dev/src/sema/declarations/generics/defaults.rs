@@ -40,6 +40,13 @@ impl Defaults {
     }
 }
 impl Checker<'_> {
+    pub(in super::super) fn demand_generic_default(&mut self, binding: DefId) -> Result<(), Error> {
+        let id = self.defaults.get(binding).ok_or_else(|| {
+            Error::unlocated("demanded generic default has no actual declaration")
+        })?;
+        self.work.push(Work::Default(id, false));
+        Ok(())
+    }
     pub(in super::super) fn generic_default(
         &mut self,
         id: DefaultId,

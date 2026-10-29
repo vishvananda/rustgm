@@ -53,6 +53,7 @@ pub(crate) struct PreparedChoice {
     source_len: usize,
     node_count: usize,
     effect_count: usize,
+    endpoint_count: u32,
     site: crate::expand::builtin::choice::Site,
     ast: Syntax<StoredValue>,
     configuration: Configuration,
@@ -62,6 +63,9 @@ pub(crate) struct PreparedChoice {
     cfg_uses: Vec<crate::expand::config::CfgUse>,
 }
 impl PreparedChoice {
+    pub(crate) fn stamp_pattern_endpoints(&mut self, context: u32) -> Result<(), LexError> {
+        self.ast.stamp_endpoints(context)
+    }
     pub(crate) fn cfg_uses(&self) -> &[crate::expand::config::CfgUse] {
         &self.cfg_uses
     }
@@ -539,6 +543,11 @@ impl Unit {
         let (ast, configuration) = Configuration::take(
             crate::expand::crate_syntax::configure_with_inputs(source, ast, config, &inputs)?,
         );
+        let growth = self
+            .configured
+            .ast
+            .endpoint_growth(ast.gate_extent().bounds as usize);
+        charge(growth.work, growth.bytes)?;
         charge(
             ast.nodes.len().saturating_add(ast.edges.len()),
             ast.nodes
@@ -572,6 +581,7 @@ impl Unit {
             source_len: source.len(),
             node_count: self.configured.ast.nodes.len(),
             effect_count: self.configured.effects.len(),
+            endpoint_count: self.configured.ast.gate_extent().bounds,
             site,
             ast,
             configuration,
@@ -603,6 +613,7 @@ impl Unit {
             || self.source.text().len() != prepared.source_len
             || self.configured.ast.nodes.len() != prepared.node_count
             || self.configured.effects.len() != prepared.effect_count
+            || self.configured.ast.gate_extent().bounds != prepared.endpoint_count
             || actual.span != site.original
             || self.configured.active.get(site.target.get() as usize) != Some(&true)
             || !matches!(actual.kind, Kind::Macro { context, .. } if context == site.grammar)

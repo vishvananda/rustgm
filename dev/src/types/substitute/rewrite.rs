@@ -172,7 +172,7 @@ impl<F: Fn(usize, usize) -> Result<(), &'static str>, const CHARGED: bool> Folde
             .ok_or("unknown substituted scalar range")?;
         self.bound.account_arguments(1)?;
         let attempted = std::cell::Cell::new(0_usize);
-        let result = self.store.intern_scalar_range(
+        let result = self.store.intern_canonical_scalar_range(
             crate::types::ScalarRange { base, ..range },
             &|work, bytes| {
                 attempted.set(attempted.get().saturating_add(work));

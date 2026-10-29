@@ -45,6 +45,182 @@ fn repeated_demand_cannot_replay_prepared_function_annotations() -> Result<(), S
 }
 
 #[test]
+fn completed_source_callers_retain_identity_without_retaining_plain_literals() -> Result<(), String>
+{
+    let mut source = crate::test_source::fixture(
+        "pa31/tests/spec/source-functions-transport/minimal-provider.rs",
+    )
+    .map_err(|e| e.to_string())?;
+    source.push_str("const fn plain_bound()->usize{3}type Called=[u8;plain_bound()];");
+    let literal_start = u32::try_from(source.len()).map_err(|e| e.to_string())?;
+    source.push_str("type Literal=[u8;3];");
+    let report = crate::test_source::source_provider(&source, "plain_annotation")?;
+    let mut checker = Checker::new(&report).map_err(|e| e.to_string())?;
+    checker
+        .facts
+        .set_constant_executor(crate::pipeline::execution::Context::default().executor());
+    checker.run().map_err(|e| e.to_string())?;
+    let ast = &report.package.unit(FileId(0)).configured.ast;
+    let mut found = 0;
+    for (index, node) in ast.nodes.iter().enumerate() {
+        let key = crate::resolve::unit::NodeKey {
+            file: FileId(0),
+            node: crate::syntax::ast::NodeId::new(u32::try_from(index).map_err(|e| e.to_string())?),
+        };
+        if matches!(node.kind, crate::syntax::ast::Kind::Call { .. }) {
+            found += 1;
+            assert_eq!(
+                checker.facts.constant_body_type(key),
+                Some(crate::types::TypeId::primitive(
+                    crate::types::Primitive::Usize
+                )),
+            );
+        } else if matches!(node.kind, crate::syntax::ast::Kind::Literal(_))
+            && node.span.start >= literal_start
+        {
+            found += 1;
+            assert_eq!(checker.facts.constant_body_type(key), None);
+        }
+    }
+    assert_eq!(found, 2);
+    Ok(())
+}
+
+#[test]
+fn source_binary_annotation_prepares_its_actual_default_before_operator_contract()
+-> Result<(), String> {
+    let mut source = crate::test_source::fixture(
+        "pa31/tests/spec/source-shift-or/const-followup/primitive-const-impl.rs",
+    )
+    .map_err(|e| e.to_string())?;
+    source.push_str("type Arithmetic=[u8;3usize<<1|1];");
+    let report = crate::test_source::source_provider(&source, "default_annotation")?;
+    let mut checker = Checker::new(&report).map_err(|e| e.to_string())?;
+    checker
+        .facts
+        .set_constant_executor(crate::pipeline::execution::Context::default().executor());
+    checker.run().map_err(|e| e.to_string())?;
+    let index = report
+        .resolution
+        .definitions
+        .iter()
+        .position(|definition| report.package.names.get(definition.name) == "Arithmetic")
+        .ok_or("actual alias")?;
+    let ty = checker.facts.definitions[index].ok_or("actual array")?;
+    assert!(matches!(
+        checker.facts.types.kind(ty),
+        Some(Kind::Array { length: 7, .. })
+    ));
+    Ok(())
+}
+
+#[test]
+fn erased_scalar_anonymous_calls_keep_the_sparse_body_fast_path() -> Result<(), String> {
+    let mut source =
+        crate::test_source::fixture("pa31/tests/spec/source-scalar-patterns/source-runtime.rs")
+            .map_err(|e| e.to_string())?;
+    source.truncate(source.find("pub mod niche").ok_or("niche module")?);
+    let start = u32::try_from(source.len()).map_err(|e| e.to_string())?;
+    source.push_str("type Arithmetic=[u8;(-(-3i8)) as usize];");
+    let report = crate::test_source::source_provider(&source, "erased_annotation")?;
+    let mut checker = Checker::new(&report).map_err(|e| e.to_string())?;
+    checker
+        .facts
+        .set_constant_executor(crate::pipeline::execution::Context::default().executor());
+    checker.run().map_err(|e| e.to_string())?;
+    let mut found = 0;
+    for (index, node) in report
+        .package
+        .unit(FileId(0))
+        .configured
+        .ast
+        .nodes
+        .iter()
+        .enumerate()
+    {
+        if node.span.start >= start
+            && matches!(
+                node.kind,
+                crate::syntax::ast::Kind::Unary { .. } | crate::syntax::ast::Kind::Cast { .. }
+            )
+        {
+            found += 1;
+            let key = crate::resolve::unit::NodeKey {
+                file: FileId(0),
+                node: crate::syntax::ast::NodeId::new(
+                    u32::try_from(index).map_err(|e| e.to_string())?,
+                ),
+            };
+            if matches!(node.kind, crate::syntax::ast::Kind::Cast { .. }) {
+                // Declaration suspensions can conservatively retain the root's
+                // proof scope. Erased operator children are never extra owners.
+                assert!(checker.facts.constant_body_type(key).is_none_or(
+                    |ty| ty == crate::types::TypeId::primitive(crate::types::Primitive::Usize)
+                ));
+            } else {
+                assert_eq!(checker.facts.constant_body_type(key), None);
+            }
+        }
+    }
+    assert_eq!(found, 3);
+    Ok(())
+}
+
+#[test]
+fn tracked_annotation_calls_prepare_only_actual_location_data_and_resume() -> Result<(), String> {
+    let mut source =
+        crate::test_source::fixture("pa31/tests/spec/source-location/caller-location.rs")
+            .map_err(|e| e.to_string())?;
+    source.push_str(
+        "#[track_caller]const fn demanded_bound()->usize{3}\n\
+         fn dormant_body()->u8{false}\n\
+         type FirstBound=[u8;demanded_bound()];\n\
+         type SecondBound=[u8;demanded_bound()];",
+    );
+    let report = crate::test_source::source_provider(&source, "tracked_annotation")?;
+    let mut checker = Checker::new(&report).map_err(|e| e.to_string())?;
+    checker
+        .facts
+        .set_constant_executor(crate::pipeline::execution::Context::default().executor());
+    checker.run().map_err(|e| e.to_string())?;
+    let mut found = 0;
+    for (index, definition) in report.resolution.definitions.iter().enumerate() {
+        let name = report.package.names.get(definition.name);
+        if matches!(name, "FirstBound" | "SecondBound") {
+            found += 1;
+            let ty = checker.facts.definitions[index].ok_or("array declaration")?;
+            assert!(matches!(
+                checker.facts.types.kind(ty),
+                Some(Kind::Array { length: 3, .. })
+            ));
+        } else if matches!(name, "demanded_bound" | "dormant_body") {
+            found += 1;
+            let id = DefId(u32::try_from(index).map_err(|e| e.to_string())?);
+            assert_eq!(
+                checker.facts.typed_function_bodies.contains(&id),
+                name == "demanded_bound",
+            );
+        }
+    }
+    assert_eq!(found, 4);
+    assert!(checker.facts.body_work.suspensions > 0);
+    assert_eq!(
+        crate::sema::compiler_items::site_records::requested_location(&report, &checker.facts)
+            .map_err(|e| e.to_string())?,
+        None,
+    );
+    assert!(
+        checker
+            .facts
+            .source_bindings
+            .as_deref()
+            .and_then(|c| c.language(crate::support::bindings::LangItem::PanicInfo))
+            .is_none()
+    );
+    Ok(())
+}
+
+#[test]
 fn prepared_and_resume_states_require_their_exact_pending_owner() -> Result<(), String> {
     let report = crate::test_source::resolve("const fn value()->usize{4}", true)?;
     let mut checker = Checker::new(&report).map_err(|e| e.to_string())?;

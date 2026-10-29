@@ -130,6 +130,9 @@ pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Re
         return Ok(());
     };
     require_completed(report, facts, claimed)?;
+    if super::roles::nominal_completed(report, facts, LangItem::PhantomData, claimed)? {
+        return Ok(());
+    }
     super::roles::complete_nominal(facts, LangItem::PhantomData, claimed)
 }
 

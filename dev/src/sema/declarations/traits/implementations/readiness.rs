@@ -19,8 +19,13 @@ impl Readiness {
         report: &crate::resolve::expansion::Report,
         facts: &crate::sema::model::Declarations,
     ) -> &mut Members {
-        self.members
-            .get_or_insert_with(|| Box::new(Members::new(report, facts)))
+        self.members.get_or_insert_with(|| {
+            Box::new(if report.package.source_core().is_some() {
+                Members::default()
+            } else {
+                Members::new(report, facts)
+            })
+        })
     }
 
     pub(super) fn take_members(
@@ -69,7 +74,12 @@ impl Checker<'_> {
         let selected = self
             .constant_members
             .members(self.report, &self.facts)
-            .selected(&self.facts, self.report, request.owner, request.declaration)
+            .selected(
+                &mut self.facts,
+                self.report,
+                request.owner,
+                request.declaration,
+            )
             .map_err(|(member, error)| {
                 self.error(
                     self.report.resolution.definitions[member.0 as usize]

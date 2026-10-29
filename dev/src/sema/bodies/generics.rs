@@ -24,12 +24,29 @@ impl Checker<'_> {
             .ok_or_else(|| self.error(node, "generic function arguments were not elaborated"))?
             .arguments
             .clone();
-        self.instantiate_function(node, owner, ty, Some(&supplied))
+        self.instantiate_function(node, owner, ty, Some(&supplied), None)
     }
     pub(super) fn implicit_source_function(
         &mut self,
         node: NodeId,
         owner: DefId,
+    ) -> Result<TermId, Error> {
+        self.source_function_template(node, owner, None)
+    }
+    pub(super) fn pattern_source_function(
+        &mut self,
+        node: NodeId,
+        owner: DefId,
+        rigid: TypeId,
+        base: TypeId,
+    ) -> Result<TermId, Error> {
+        self.source_function_template(node, owner, Some((rigid, base)))
+    }
+    fn source_function_template(
+        &mut self,
+        node: NodeId,
+        owner: DefId,
+        protocol_self: Option<(TypeId, TypeId)>,
     ) -> Result<TermId, Error> {
         let key = self.key(node);
         crate::sema::declarations::prepare_callable_template(self.report, self.facts, key, owner)?;
@@ -40,7 +57,7 @@ impl Checker<'_> {
             .copied()
             .flatten()
             .ok_or_else(|| self.error(node, "source protocol lost its actual function item"))?;
-        self.instantiate_function(node, owner, ty, None)
+        self.instantiate_function(node, owner, ty, None, protocol_self)
     }
     fn instantiate_function(
         &mut self,
@@ -48,6 +65,7 @@ impl Checker<'_> {
         owner: DefId,
         ty: TypeId,
         supplied: Option<&[SourceArgument]>,
+        protocol_self: Option<(TypeId, TypeId)>,
     ) -> Result<TermId, Error> {
         let ty = self.function_item(node, owner, ty)?;
         let Some(Type::FunctionItem {
@@ -89,6 +107,9 @@ impl Checker<'_> {
             let argument = self.inferred_parameter(node, id, supplied)?;
             arguments.push(argument);
             bindings.push((id, argument));
+        }
+        if let Some((rigid, base)) = protocol_self {
+            self.bind_pattern_self(node, rigid, base, &bindings)?;
         }
         if supplied.is_some() {
             self.bind_method_owner(node, &arguments, &bindings)?;

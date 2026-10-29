@@ -85,14 +85,13 @@ struct Request {
     callable: TypeId,
 }
 impl Checker<'_> {
-    fn retain_site_request(
-        &mut self,
-        requests: &mut Vec<Request>,
+    pub(in crate::sema::bodies) fn requires_caller_site(
+        &self,
         node: NodeId,
         callable: TypeId,
-    ) -> Result<(), Error> {
+    ) -> Result<bool, Error> {
         let Some(Kind::FunctionItem { item, .. }) = self.facts.types.kind(callable) else {
-            return Ok(());
+            return Ok(false);
         };
         let definition = crate::resolve::model::DefId(item.0);
         let tracked = self
@@ -105,7 +104,15 @@ impl Checker<'_> {
             .ok_or_else(|| self.error(node, "caller site lost its source catalog"))?
             .intrinsic_kind(definition)
             .map_err(|error| self.error(node, error))?;
-        if !tracked && intrinsic != Some(SourceIntrinsic::CallerLocation) {
+        Ok(tracked || intrinsic == Some(SourceIntrinsic::CallerLocation))
+    }
+    fn retain_site_request(
+        &mut self,
+        requests: &mut Vec<Request>,
+        node: NodeId,
+        callable: TypeId,
+    ) -> Result<(), Error> {
+        if !self.requires_caller_site(node, callable)? {
             return Ok(());
         }
         let growth = retained::Growth::vector::<Request>(requests.len(), requests.capacity(), 1);

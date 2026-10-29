@@ -185,4 +185,27 @@ impl Body {
         }
         Ok(())
     }
+    /// Dispatch transports the sealed callable through the same proved type map
+    /// as its operand. Source owner, value and immutable location stay exact.
+    pub(in crate::body) fn rewrite_caller_inputs(
+        &mut self,
+        facts: &mut crate::sema::model::Declarations,
+        fold: &mut crate::types::substitute::Bound,
+    ) -> Result<(), &'static str> {
+        let Some(inputs) = self
+            .resolved_callables
+            .as_deref_mut()
+            .filter(|inputs| !inputs.sites.is_empty())
+        else {
+            return Ok(());
+        };
+        facts.charge_caller_inputs(inputs.sites.len(), 0)?;
+        for site in &mut inputs.sites {
+            let before = fold.steps;
+            let mapped = fold.apply(&mut facts.types, site.callable);
+            facts.charge_caller_inputs(fold.steps.saturating_sub(before), 0)?;
+            site.callable = mapped?;
+        }
+        self.validate_caller_sites()
+    }
 }

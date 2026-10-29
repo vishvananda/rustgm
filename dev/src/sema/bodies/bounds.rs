@@ -490,6 +490,15 @@ impl Checker<'_> {
         if self.runtime_callee_context()? {
             return Ok(Constness::Ordinary);
         }
+        // Array lengths and type-pattern endpoints are actual constant demands.
+        // Inline children have Ordinary completion and retain their enclosing
+        // conditional premises independently of these anonymous value roots.
+        if matches!(
+            self.state.completion,
+            super::readiness::Completion::Anonymous { .. }
+        ) {
+            return Ok(Constness::Const);
+        }
         // Only this actual closed initializer has unconditional const demand.
         // Defining generic const bodies and inline children retain Conditional.
         if let super::readiness::Completion::Initializer(index) = self.state.completion

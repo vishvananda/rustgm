@@ -280,7 +280,7 @@ fn sparse_final_rows_transfer_replay_and_keep_ordinary_layouts() -> Result {
             .is_none()
     );
     assert_eq!(size_of::<gate_sites::Declaration>(), 24);
-    assert_eq!(size_of::<gate_sites::Declarations>(), 88);
+    assert_eq!(size_of::<gate_sites::Declarations>(), 112);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     println!(
         "Final layouts Item={} Function={} Syntax={} Unit={} Definition={} Scope={} Report={}",

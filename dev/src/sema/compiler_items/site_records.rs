@@ -6,47 +6,78 @@ use crate::{
     types::{ItemId, Kind, Primitive, RegionId, TypeId, arguments::Argument},
 };
 
-pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
-    for role in [LangItem::PanicLocation, LangItem::PanicInfo] {
-        let Some(claimed) = facts
-            .source_bindings
-            .as_deref()
-            .and_then(|catalog| catalog.language(role))
-        else {
-            continue;
-        };
-        let error = |message| Declarations::error(report, claimed.origin, message);
-        let catalog = facts
-            .source_bindings
-            .as_deref()
-            .ok_or_else(|| error("source panic nominal catalog disappeared"))?;
-        catalog.require_provider_report(report).map_err(error)?;
-        super::formatting::require_lifetime_nominal(report, facts, claimed).map_err(error)?;
-        let ast = &report.package.unit(claimed.origin.file).configured.ast;
-        let crate::syntax::ast::Kind::Item(index) = ast.node(claimed.origin.node).kind else {
-            return Err(error("source panic nominal lost its actual item"));
-        };
-        if !matches!(
-            ast.items[index as usize].kind,
-            crate::syntax::item::ItemKind::Struct {
-                shape: crate::syntax::item::Shape::Record,
-                ..
-            }
-        ) {
-            return Err(error(
-                "source panic nominal requires its actual record declaration",
-            ));
-        }
+/// Readiness for an actual caller-site demand; a reservation grants no data proof.
+pub(in crate::sema) fn requested_location(
+    report: &Report,
+    facts: &Declarations,
+) -> Result<Option<crate::resolve::model::DefId>, Error> {
+    crate::sema::header_attributes::charge_source_contract_query(facts, 1)?;
+    let claimed = facts
+        .source_bindings
+        .as_deref()
+        .and_then(|catalog| catalog.language(LangItem::PanicLocation))
+        .ok_or_else(|| Error::unlocated("caller location requires actual source Location"))?;
+    Ok(
+        (!super::roles::nominal_completed(report, facts, LangItem::PanicLocation, claimed)?)
+            .then_some(claimed.definition),
+    )
+}
 
-        let fields = fields(facts, claimed).map_err(error)?;
-        if role == LangItem::PanicLocation {
-            location(report, facts, fields).map_err(error)?;
-        } else {
-            info(report, facts, fields).map_err(error)?;
+pub(in crate::sema) fn complete_location(
+    report: &Report,
+    facts: &mut Declarations,
+) -> Result<(), Error> {
+    checked_role(report, facts, LangItem::PanicLocation)
+}
+
+pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
+    complete_location(report, facts)?;
+    checked_role(report, facts, LangItem::PanicInfo)
+}
+
+fn checked_role(report: &Report, facts: &mut Declarations, role: LangItem) -> Result<(), Error> {
+    let Some(claimed) = facts
+        .source_bindings
+        .as_deref()
+        .and_then(|catalog| catalog.language(role))
+    else {
+        return Ok(());
+    };
+    crate::sema::header_attributes::charge_source_contract_query(facts, 1)?;
+    let error = |message| Declarations::error(report, claimed.origin, message);
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or_else(|| error("source panic nominal catalog disappeared"))?;
+    catalog.require_provider_report(report).map_err(error)?;
+    super::formatting::require_lifetime_nominal(report, facts, claimed).map_err(error)?;
+    let ast = &report.package.unit(claimed.origin.file).configured.ast;
+    let crate::syntax::ast::Kind::Item(index) = ast.node(claimed.origin.node).kind else {
+        return Err(error("source panic nominal lost its actual item"));
+    };
+    if !matches!(
+        ast.items[index as usize].kind,
+        crate::syntax::item::ItemKind::Struct {
+            shape: crate::syntax::item::Shape::Record,
+            ..
         }
-        super::roles::complete_nominal(facts, role, claimed)?;
+    ) {
+        return Err(error(
+            "source panic nominal requires its actual record declaration",
+        ));
     }
-    Ok(())
+    let fields = fields(facts, claimed).map_err(error)?;
+    if role == LangItem::PanicLocation {
+        location(report, facts, fields).map_err(error)?;
+    } else {
+        info(report, facts, fields).map_err(error)?;
+    }
+    // Reentry must revalidate the actual declaration and all data above before
+    // consulting the cold completion ledger. Direct duplicate publication stays strict.
+    if super::roles::nominal_completed(report, facts, role, claimed)? {
+        return Ok(());
+    }
+    super::roles::complete_nominal(facts, role, claimed)
 }
 fn fields(facts: &Declarations, declaration: Declaration) -> Result<&[TypeId], &'static str> {
     let item = ItemId(declaration.definition.0);
@@ -165,3 +196,7 @@ fn argument(facts: &Declarations, ty: TypeId, owner: ItemId) -> Result<Argument,
     }
     Ok(first)
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/location_completion.rs"]
+mod tests;

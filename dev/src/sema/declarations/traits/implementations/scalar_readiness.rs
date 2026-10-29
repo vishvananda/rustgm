@@ -19,6 +19,7 @@ pub(in crate::sema::declarations) struct Pending {
     pub(super) skipped: HashMap<DefId, Unsupported>,
     pub(super) members: HashMap<DefId, Vec<DefId>>,
     pub(super) methods: super::methods::Members,
+    pub(super) constants: super::constants::Members,
     pub(super) pairs: super::implementation_pairs::Pairs,
     pub(super) overlap_steps: usize,
     pub(super) work: usize,
@@ -164,6 +165,11 @@ impl Checker<'_> {
         }
         owners.sort_unstable_by_key(|owner| owner.0);
         self.append_implementation_pairs(&mut pending)?;
+        crate::sema::header_attributes::charge_source_retention(
+            &self.facts,
+            1,
+            size_of::<super::constants::Members>(),
+        )?;
         self.early_implementations = Some(Box::new(pending));
         for owner in owners {
             self.work.push(Work::ValidateImpl(owner, Phase::Try));
@@ -391,14 +397,23 @@ impl Checker<'_> {
         pending
             .charge(&mut self.facts, plan.member_check_work())
             .map_err(|e| self.error(plan.source, e))?;
+        let inputs = if plan.has_constants() {
+            super::validation::Conformance::MethodsAndConstants {
+                methods: &pending.methods,
+                constants: &mut pending.constants,
+                plan,
+            }
+        } else {
+            super::validation::Conformance::FunctionsOnly {
+                methods: &pending.methods,
+                plan,
+            }
+        };
         let result = self.validate_impl_owner(
             owner,
             plan.source,
             plan.predicate,
-            super::validation::Conformance::FunctionsOnly {
-                methods: &pending.methods,
-                plan,
-            },
+            inputs,
             &mut pending.overlap_steps,
         );
         pending

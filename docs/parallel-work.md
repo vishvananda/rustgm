@@ -1,7 +1,24 @@
 # Parallel library bootstrap implementation
 
-Root owns compiler integration, current-source CLI/original-core observations and
-publication in `rustgm-pa25-work`. Ordinary source nounwind fdf2fedd8 consumes
+Root owns integration, current-source CLI/original-core observations and main
+publication in rustgm-pa25-work. The source endpoint/readiness/conformance join
+now passes42 private controls in115.92s, full architecture/format/private Clippy
+and the actual native stream `7 3 7 -2 7`. See the
+[endpoint checkpoint](pa31-source-endpoint-execution-checkpoint.md). Production/
+CLI and fresh unchanged-original-core observations await the final niche union;
+no original artifact or additional PA release is implied. Original integer/char/
+panic bodies, generic endpoints and metadata remain required. C prepares only
+the next genuine original unsigned-helper fixture/oracle plan until this join
+is available. No new advisory lint producer is queued.
+
+B owns complete zero-excluded unsigned scalar niche layout, CTFE bytes and native
+ABI transport (LIB-087), preserving actual scalar types and measured hot widths.
+Component20 passes143.60s, including actual source/cleanup producers, reached
+Some0, wider partial-range ABI boundary and old wide-pointer/const-API controls.
+All12 scoped native operations pass, including the actual nonCopy destructor
+trace. Final merged-source union and production qualification remain pending. No layout-only
+acceptance or Ptr encoding of integers is permitted. Ordinary
+source nounwind fdf2fedd8 consumes
 the fixed abort target/supported ABI guarantee without granting intrinsic,
 const or unsafe permission. Root private6 passes113.55s,CLI3 100.26s, actual
 native0 1 0 1 0 1 matches pinned Rust; harness272/upstream/probes pass34.51s.
@@ -11,23 +28,22 @@ in10.93s,374 opens,all722 original hashes unchanged. These adjacent prerequisite
 do not move that parser frontier. This is an expansion/image offset, not an
 asserted physical source byte. Receipt257231cf2ecf3c9efffda86a9afb258324ddbcff17a27922fced3edf800046bc.
 Strict separately retains deferred expectation68; no original artifact is implied.
-B (`lint_expectations`) completed LIB-083's source-only declaration contracts and
-now owns LIB-084's genuine unchecked_sub/sub_with_overflow and ColdPath fallback
-execution. C (`const_call_review`) owns LIB-082's
-next open/exclusive/signed-alternative consumer after its qualified closed-range
-exit. Genuine helper bodies, typed continuations and internal desugaring
-authority require a coordinated interface before shared edits. B does not
-edit central TypePattern/Work/evaluation. Its one call_traits signature-queue
-hunk is agreed; source/body/desugaring permission stays consumer-owned. C has
-merged the disjoint Macro copier. No new advisory lint producer,
+B (`lint_expectations`) completed LIB-083/084's declaration and execution
+checkpoints. C (`const_call_review`) completed the closed-range consumer;
+its next generated-endpoint consumer awaits Root's readiness join. Genuine helper
+bodies, typed continuations and internal desugaring authority require a
+coordinated interface before shared edits. B does not edit central
+TypePattern/Work/evaluation. C does not edit Root's body/declaration scheduling.
+No new advisory lint producer,
 worker or worktree is queued. Root owns observer/configuration, integration and
 publication; ordinary nounwind's fixed abort/ABI consumer is qualified. Central
 interface changes require explicit coordination. Never strip the original
 checked_sub, char conversion, panic or nounwind contracts to create a success.
 
-Both workers take qualified Rootfdf2fedd8 at an idle boundary before final
-qualification (it includes a52 and the extra CI alias correction). Include
-the affected joined20 controls with new targeted controls in one private binary;
+Both workers take the actual qualified Root descendant at an idle boundary before
+final qualification. Current Root42 is plan-v16 and actually passes; B takes its committed
+descendant for the deduplicated final union with its component20. Include affected controls with new targeted
+controls in one private binary;
 runtime is cheap compared with compiling it. Exact full fingerprint and fixture
 equality can then reuse actual worker evidence at Root without another cold
 private rebuild. Never infer equality from entry counts or substitute a failed
@@ -78,8 +94,9 @@ their evidence, not authority to replace this queue with old remaining tasks.
 Public8051a1355 full CI40852257802,55dcc81d3 full CI40855585622 and73c48dc21
 full CI40860205926 all pass every lane. Declaration7dd full CI40866229757
 passes2244 private controls and fails only one aliased cold-table assertion;
-3a7dc1026 corrects it and private6 executes that exact control. New full CI will
-include that correction and ordinary nounwind. Earlier full CI40843890477 has2226 private
+3a7dc1026 corrects it and private6 executes that exact control. Full991f86431
+CI40872540584 and full01fa2b0f8 CI40876834248 now pass every lane, including
+that correction, ordinary nounwind and source arithmetic. Earlier full CI40843890477 has2226 private
 passes and only one stale cold Source size assertion (184 versus192); Root's
 correction now passes in joined12. Its metadata fixes all3 earlier failures from
 40835039063 without a regenerated golden or false source premise. Full CI will

@@ -8,6 +8,14 @@ Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The
 
 Memory and numeric intrinsics, atomics and volatile operations.
 
+The [source subtraction checkpoint](../docs/pa28-source-subtraction-checkpoint.md)
+qualifies genuine unchecked_sub/sub_with_overflow source signatures, concrete
+runtime/CTFE kernels, symbolic forwarding and ordinary ColdPath fallback. Preserve
+separate source Copy/API/const/unsafe proof and normalize the actual Rust bool
+tuple carrier. All integer widths and ordinary lookalikes have native controls;
+retained reference ICEs supply no language rejection or same-source native proof.
+Original helper graphs, other numeric families and transport remain required.
+
 The initial capability checkpoint uses the existing pinned LowIR vocabulary and
 backend without extending either. The independent inputs in `tests/backend/`
 qualify scalar volatile loads and stores for integer widths 8 through 128,

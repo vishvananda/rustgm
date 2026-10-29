@@ -12,6 +12,31 @@ use crate::{
 };
 
 impl Checker<'_> {
+    pub(in crate::sema::bodies) fn binary_default_readiness(
+        &self,
+        node: NodeId,
+    ) -> Result<Option<super::super::Requirement>, Error> {
+        if self.facts.source_bindings.is_none()
+            || !matches!(
+                self.availability,
+                crate::sema::traits::implementations::Availability::Declarations
+            )
+        {
+            return Ok(None);
+        }
+        let Kind::Binary {
+            op:
+                op @ (Punctuation::ShiftLeft | Punctuation::Or | Punctuation::Plus | Punctuation::Minus),
+            ..
+        } = self.kind(node)
+        else {
+            return Ok(None);
+        };
+        let hook = super::binary_hook(op)
+            .ok_or_else(|| self.error(node, "source binary default lost its actual operator"))?;
+        compiler_items::binary_pending_default(self.report, self.facts, self.key(node), hook)
+            .map(|binding| binding.map(super::super::Requirement::GenericDefault))
+    }
     pub(in crate::sema::bodies) fn source_binary_operator(
         &mut self,
         node: NodeId,

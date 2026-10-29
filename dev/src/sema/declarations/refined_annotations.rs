@@ -24,12 +24,18 @@ impl Checker<'_> {
         self.pattern_charge(key, 1, 0)?;
         let base = self.ty(NodeKey { node: base, ..key })?;
         self.scalar_base(key, base)?;
-        let (start, end) = self.scalar_endpoints(NodeKey {
-            node: pattern,
-            ..key
-        })?;
-        self.schedule_typed_constant(NodeKey { node: end, ..key }, base, context)?;
-        self.schedule_typed_constant(NodeKey { node: start, ..key }, base, context)
+        for (start, end) in self
+            .scalar_arms(NodeKey {
+                node: pattern,
+                ..key
+            })?
+            .into_iter()
+            .flatten()
+        {
+            self.schedule_typed_constant(NodeKey { node: end, ..key }, base, context)?;
+            self.schedule_typed_constant(NodeKey { node: start, ..key }, base, context)?;
+        }
+        Ok(())
     }
     pub(super) fn pattern_type(
         &mut self,
@@ -49,12 +55,18 @@ impl Checker<'_> {
                 Constraint::NonNull
             }
             TypeConstraint::Pattern(pattern) => {
-                let (start, end) = self.scalar_endpoints(NodeKey {
+                let arms = self.scalar_arms(NodeKey {
                     node: pattern,
                     ..key
                 })?;
-                let start = self.pattern_endpoint(NodeKey { node: start, ..key }, base)?;
-                let end = self.pattern_endpoint(NodeKey { node: end, ..key }, base)?;
+                let mut ranges = [None, None];
+                for (slot, (start, end)) in ranges.iter_mut().zip(arms.into_iter().flatten()) {
+                    *slot = Some(ScalarRange {
+                        base,
+                        start: self.pattern_endpoint(NodeKey { node: start, ..key }, base)?,
+                        end: self.pattern_endpoint(NodeKey { node: end, ..key }, base)?,
+                    });
+                }
                 let producer = self
                     .report
                     .lint_producer()
@@ -64,11 +76,14 @@ impl Checker<'_> {
                         .diagnostic_payload(key, steps, bytes)
                         .map_err(|e| e.message)
                 };
-                let id = self
-                    .facts
-                    .types
-                    .intern_scalar_range(ScalarRange { base, start, end }, &pay)
-                    .map_err(|e| self.error(key, e))?;
+                let first = ranges[0]
+                    .ok_or_else(|| self.error(key, "scalar pattern lost its first range"))?;
+                let id = if let Some(second) = ranges[1] {
+                    self.facts.types.intern_scalar_or(first, second, &pay)
+                } else {
+                    self.facts.types.intern_scalar_range(first, &pay)
+                }
+                .map_err(|e| self.error(key, e))?;
                 return self
                     .facts
                     .types
@@ -93,6 +108,34 @@ impl Checker<'_> {
             key,
             "scalar pattern requires a concrete integer or char base",
         ))
+    }
+    fn scalar_arms(&self, key: NodeKey) -> Result<[Option<(NodeId, NodeId)>; 2], Error> {
+        if let Kind::Pattern {
+            flavor: crate::syntax::ast::PatternFlavor::Or,
+            elements,
+            ..
+        } = self.kind(key)
+        {
+            let ast = &self.report.package.unit(key.file).configured.ast;
+            let [first, second] = ast.list(elements) else {
+                return Err(self.error(
+                    key,
+                    "only two scalar range alternatives have a complete consumer",
+                ));
+            };
+            Ok([
+                Some(self.scalar_endpoints(NodeKey {
+                    node: *first,
+                    ..key
+                })?),
+                Some(self.scalar_endpoints(NodeKey {
+                    node: *second,
+                    ..key
+                })?),
+            ])
+        } else {
+            Ok([Some(self.scalar_endpoints(key)?), None])
+        }
     }
     fn scalar_endpoints(&self, key: NodeKey) -> Result<(NodeId, NodeId), Error> {
         let Kind::PatternRange {

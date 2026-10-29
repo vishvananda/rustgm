@@ -405,6 +405,10 @@ pub enum Kind {
         base: NodeId,
         constraint: TypeConstraint,
     },
+    /// A compiler-generated language-member operand with a cold source seal.
+    PatternEndpoint {
+        gate: u32,
+    },
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

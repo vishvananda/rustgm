@@ -5,6 +5,7 @@ mod annotations;
 mod associated;
 mod call_traits;
 mod calling_conventions;
+mod site_prerequisites;
 use calling_conventions::rust_abi;
 pub(super) use calling_conventions::{callable_convention, fixed_parameters, with_variadic};
 mod capture_bounds;
@@ -123,6 +124,8 @@ enum Work {
     Fields(ItemId, bool),
     OpaqueHidden(crate::types::opaque::OpaqueId),
     SourceResultContracts(DefId, traits::MetadataPhase),
+    CallerLocation(DefId, bool),
+    GenericDefault(DefId),
     Constructor(DefId),
     SelfConstructor(NodeKey, DefId, regions::Context),
     PrepareConstructor(DefId),
@@ -163,6 +166,8 @@ impl Work {
             Requirement::SourceResultContracts(id) => {
                 Self::SourceResultContracts(id, traits::MetadataPhase::Begin)
             }
+            Requirement::CallerLocation(id) => Self::CallerLocation(id, false),
+            Requirement::GenericDefault(id) => Self::GenericDefault(id),
         }
     }
     fn selection_dependency(dependency: super::traits::selection::Dependency) -> Self {
@@ -637,6 +642,8 @@ impl Checker<'_> {
                 Work::NominalContract(item, finish) => self.nominal_contract(item, finish)?,
                 Work::Fields(item, finish) => self.nominal_fields(item, finish)?,
                 Work::SourceResultContracts(id, phase) => self.pointee_member_work(id, phase)?,
+                Work::CallerLocation(id, finish) => self.caller_location_data(id, finish)?,
+                Work::GenericDefault(binding) => self.demand_generic_default(binding)?,
                 Work::OpaqueHidden(id) => {
                     let declaration = self
                         .facts

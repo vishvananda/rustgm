@@ -560,35 +560,15 @@ pub(crate) fn type_pattern_with_inputs<'s>(
         crate::syntax::ast::TypeConstraint::NonNull
     } else {
         let pattern = parser.pattern(true)?;
-        let Kind::PatternRange {
-            start: Some(first),
-            end: Some(last),
-            inclusive: true,
-        } = parser.ast.node(pattern).kind
-        else {
-            return Err(parser
-                .error("open, exclusive and alternative pattern types require a wider profile")?);
-        };
-        // Range endpoints become constant expressions, not binding patterns.
-        // This AST is the fresh splice; captured registry payloads stay immutable.
-        for endpoint in [first, last] {
-            if let Kind::Binding {
-                name,
-                symbol,
-                mutable: false,
-                by_ref: false,
-                subpattern: None,
-            } = parser.ast.node(endpoint).kind
-            {
-                parser.ast.nodes[endpoint.get() as usize].kind = Kind::Name(name, symbol);
-            }
-        }
         crate::syntax::ast::TypeConstraint::Pattern(pattern)
     };
     if parser.cursor.peek(0)?.is_some() {
         return Err(parser.error("unexpected token after pattern type")?);
     }
     let root = parser.node(start, Kind::TypePattern { base, constraint })?;
+    if let crate::syntax::ast::TypeConstraint::Pattern(pattern) = constraint {
+        parser.lower_pattern_endpoints(root, pattern)?;
+    }
     parser.ast.root = root;
     parser.ast.lookahead_high_water = parser.cursor.high_water;
     Ok(parser.ast)

@@ -87,7 +87,7 @@
     "unsafe-call.rs": "8bedb64f5df01c1f627e1bc9a15cac6f752b01174536ee83018ed7060ca52058",
     "wrong-safety.rs": "3e4c7c1b311153695090eb88cffd2220e7b88c4c1ab86aedd7e633d7d51ea808",
     "missing-copy.rs": "d090a4feb8dea146fa982ce0cef3a8e164e4e2e02b8604c454aa97dc1266b39a",
-    "original-chain.json": "c7ad63f9a427d37f51c1101c84da38d3e862f9890a6fd2efcf47c5cf37a90cc3",
+    "original-chain.json": "e970227fcf4803027340fcf134b64408e29a3a5d00206265a4fa122e73b8a320",
     "ordinary-observer.c": "42e1d72204ca8d15844a9e2022e367aa01a4a7dfb4f866760075be00b58eac8b",
     "wrong-result.rs": "e4ff7b05507637f55e84535565e67adf7647fe938757040a3a0ede6c7ecb11c7",
     "const-signed-overflow.rs": "1cdf6a5164782ac7e49aa61891fea289d590f4518a3ea237d50b4a21fc37e828",
