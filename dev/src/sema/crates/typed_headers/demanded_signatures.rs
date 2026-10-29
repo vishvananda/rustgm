@@ -118,8 +118,7 @@ pub(super) fn require(
 fn admitted(rows: s::ValidatedView<'_>, raw: g::Signature) -> bool {
     !raw.variadic
         && (raw.convention == g::Convention::Rust
-            || (raw.convention == g::Convention::C
-                && rows.descriptor().profile() == s::Profile::Source2024ModuleDefinitions))
+            || (raw.convention == g::Convention::C && rows.descriptor().profile().definitions()))
 }
 /// Shape conversion only. Callers authenticate profile/owner before interning.
 pub(super) fn convention(raw: g::Signature) -> Result<Convention, &'static str> {

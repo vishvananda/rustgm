@@ -30,59 +30,12 @@ pub(super) fn mapping(
     arguments: GenericArgs,
     budget: &Budget,
 ) -> Result<Mapping, &'static str> {
-    let schema = facts
-        .associated
-        .schema(owner)
-        .ok_or("defining implementation schema is missing")?;
-    let count = facts
-        .types
-        .arguments(arguments)
-        .ok_or("defining implementation arguments are missing")?
-        .len();
-    let captures = schema.captures as usize;
-    let parameters = facts.generics.parameters.get(&owner).map_or(0, Vec::len);
-    budget.charge(
-        1 + count + parameters,
-        count
-            .saturating_mul(4 * size_of::<Argument>())
-            .saturating_add(
-                parameters.saturating_mul(4 * size_of::<crate::types::parameters::ParameterId>()),
-            ),
-    )?;
-    let values: Vec<_> = facts
-        .types
-        .arguments(arguments)
-        .ok_or("defining arguments disappeared")?
-        .collect();
-    let ids = facts.generics.parameter_ids(&facts.types, owner)?;
-    if count != captures.saturating_add(ids.len()) {
-        return Err("defining implementation argument arity changed");
-    }
-    let regions = values[..captures]
-        .iter()
-        .map(|argument| match argument {
-            Argument::Lifetime(region) => Ok(*region),
-            _ => Err("defining capture is not a lifetime"),
-        })
-        .collect::<Result<Vec<_>, _>>()?;
-    let bindings: Vec<_> = ids
-        .iter()
-        .copied()
-        .zip(values[captures..].iter().copied())
-        .collect();
-    let fold = Counted::new(
-        substitute::Bound::parameters_captured_charged(
-            &facts.types,
-            &bindings,
-            regions,
-            &|steps, bytes| budget.charge(steps, bytes),
-        )?,
-        budget,
-    )?;
-    Ok(Mapping {
-        fold,
-        parameters: ids,
-    })
+    let (fold, parameters) =
+        facts.selected_implementation_substitution(owner, arguments, &|steps, bytes| {
+            budget.charge(steps, bytes)
+        })?;
+    let fold = Counted::new(fold, budget)?;
+    Ok(Mapping { fold, parameters })
 }
 pub(super) fn defining(
     facts: &mut Declarations,

@@ -1,0 +1,79 @@
+{
+  "scope": "New finite genuine source Div and reduced original layout dependency; no PA activation. Linux x86_64,Rust1.98.0,edition2024,checked arithmetic,panicabort.",
+  "predictions": {
+    "source-runtime": {
+      "metadata": 0,
+      "RustGM": 0,
+      "native_stdout": "source division 14 scalar families\n",
+      "same_source_rust_object": "Required genuine panic_const_div_by_zero provider"
+    },
+    "override": {
+      "metadata": 0,
+      "RustGM": 0,
+      "native": "primitive4;actualUFCS9;constant9"
+    },
+    "field": {
+      "metadata": 0,
+      "object": 0,
+      "RustGM": 0,
+      "native_stdout": "16\n"
+    },
+    "size-only": {
+      "metadata": 0,
+      "object": 0,
+      "RustGM": 0,
+      "native_stdout": "8\n"
+    },
+    "zero": {
+      "metadata": 1,
+      "RustGM": 1
+    },
+    "overflow": {
+      "metadata": 1,
+      "RustGM": 1
+    },
+    "ordinary-ufcs": {
+      "metadata": 1,
+      "RustGM": 1
+    },
+    "wrong-default": {
+      "metadata": 1,
+      "RustGM": 1
+    },
+    "missing-role": {
+      "metadata": 1,
+      "RustGM": 1
+    },
+    "export": {
+      "metadata": 0,
+      "RustGM": 0,
+      "export": "source Div transport unsupported"
+    }
+  },
+  "frozen_inputs": {
+    "foundation.rs": "a87e3222bf81b6a59a79ad2f403fef8f272a8fcb26f8d987f56fa68e1a8989c5",
+    "export.rs": "a3279def171a4909ae2cb3c32d814f3917fabeb034da252407c7ab7851d8de85",
+    "override.rs": "c66edaf7f1c45a3ae5d96a3dc906100d286ba7fa6884d7904ba7ff03924b47a2",
+    "overflow.rs": "6bbd70f0b901698c58e4514e76b08f37032d2468ece2342a0aac039a48787fc6",
+    "expected.stdout": "b4ec208fcba18cd0eec61c426c80c88fa8b2bbd5dfc3620807459d98a6052b02",
+    "README.md": "2765c4a2ef0ce4e5de3c1634853ae48197ee8acf49fd889ca0f890343fa84cc6",
+    "observer.c": "55933c856cc1d890e1fdd71555f37d9e6f584c1f8ccf1f2404cbf62681972bcd",
+    "field.rs": "b0141ff51dd3e8c19c08f5091ebdeb0c9e6ea2f102263611990f84fa207c33c8",
+    "field-observer.c": "ab2d33c01d4611fb64937f58334c087938b708b20fbb091c0424921595c9e491",
+    "source-provenance.json": "811686afee0cbef4da9cfcdf7a0d064174818d0fb5b1e371e2b11c1e86fbcb1e",
+    "wrong-default.rs": "daca9c9ca22c0e2d06ed717ca547ab054629cf8da076b65bbfd55b56e3464fb4",
+    "size-only.rs": "9ab1ab1f1f048d94d00920be73a176eacf7b4fc7ca6e425ee2a8c88e458f86c0",
+    "ordinary-ufcs.rs": "2146ff75c87b5f9cb82684400896da1b24bc4bddfbfaa83ffd00178baddc7a0b",
+    "missing-role.rs": "934104132ed7b63879dcd353ca9e80a81b091a56f92a564a590bc66d17f90df6",
+    "source-runtime.rs": "37ca47f9f7f9c5ab5b6ed528ab65883ed6e71a674a02d7a69bb81784557ce7c6",
+    "zero.rs": "555cfa7d100dbd0761f22b4fd374de0a10350c38075ca5c2a6b14f4d49eeb0fb"
+  },
+  "independent_evidence_root": "obj/parallel/source-div-v1/oracle-v1..v5",
+  "note": "v1 failed authored field import placement retained with exact input snapshots; corrected v2 independently metadata/object accepted; v3 override array equality confirms actual9. Std-linked pinned-core native14 is separate from same-source NoCore object acceptance.",
+  "predecessor": "1366fca58a99600776609bae329fc84a9e846aa4a60e3365466141ff43d59444",
+  "corrections": [
+    "Override CHECK now evaluates VALUE in annotation, not unsupported body repeat-count syntax; array equality still forces9. Independently metadata0 v4.",
+    "Plain noMacro export fixture retains actual sizing+original Div declarations; only relevant authored feature requests; independently metadata0 v5.",
+    "Ordinary const impl rejection follows genuine diagnostic::on_unimplemented text, not guessed const substring."
+  ]
+}

@@ -18,10 +18,19 @@ pub enum AvailabilitySince {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum AvailabilityLevel {
     Stable(AvailabilitySince),
+    StableWithCompatibility {
+        since: AvailabilitySince,
+        message: String,
+    },
     Unstable {
         issue: Option<std::num::NonZeroU32>,
         reason: Option<String>,
     },
+}
+impl AvailabilityLevel {
+    pub(crate) const fn stable(&self) -> bool {
+        matches!(self, Self::Stable(_) | Self::StableWithCompatibility { .. })
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct AvailabilityRef(pub u32);
@@ -96,6 +105,16 @@ impl AvailabilityRows {
                 return Err("invalid availability feature identifier");
             }
             bytes = bytes.saturating_add(policy.feature.capacity());
+            if let AvailabilityLevel::StableWithCompatibility { message, .. } = &policy.level {
+                work.charge(message.len().saturating_add(1))?;
+                if policy.kind != AvailabilityKind::Regular {
+                    return Err("module compatibility requires regular stable API policy");
+                }
+                if message.len() > super::MAX_REASON_BYTES {
+                    return Err("module compatibility message exceeds transport limit");
+                }
+                bytes = bytes.saturating_add(message.capacity());
+            }
             if let AvailabilityLevel::Unstable {
                 reason: Some(reason),
                 ..
@@ -298,7 +317,7 @@ impl AvailabilityRows {
         {
             return Err("availability inherited from a non-scope declaration");
         }
-        if origin != owner && matches!(policy.level, AvailabilityLevel::Stable(_)) {
+        if origin != owner && policy.level.stable() {
             return Err("stable declaration policy cannot be inherited");
         }
         if policy.kind == AvailabilityKind::Const && !view.constant(origin) {
@@ -353,7 +372,7 @@ impl AvailabilityRows {
                     .ok_or("binding availability origin is foreign")?;
                 let direct = binding.source == super::BindingSource::Declaration
                     && owner == binding.target.declaration;
-                if !direct && matches!(policy.level, AvailabilityLevel::Stable(_)) {
+                if !direct && policy.level.stable() {
                     return Err("stable module policy cannot supply an import policy");
                 }
                 if site >= origin.sites

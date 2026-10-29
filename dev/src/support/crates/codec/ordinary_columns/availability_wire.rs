@@ -1,9 +1,18 @@
-//! Version-three API policy columns use the same bounded source-row decoder.
+//! Stable compatibility has a new explicit tag only in version-six API columns.
 use super::{Input, Writer, id, s, write};
 use crate::support::crates::{MAX_COMPONENTS, owner_catalog::DeclarationRef};
+#[cfg(test)]
+#[path = "../../../../../tests/invariants/compatibility_packets.rs"]
+mod tests;
 
-pub(super) fn encode(out: &mut Writer, rows: &s::AvailabilityRows) -> Result<(), &'static str> {
-    write(out, &rows.policies, policy_write)?;
+pub(super) fn encode(
+    out: &mut Writer,
+    rows: &s::AvailabilityRows,
+    compatibility: bool,
+) -> Result<(), &'static str> {
+    write(out, &rows.policies, |out, policy| {
+        policy_write(out, policy, compatibility)
+    })?;
     write(out, &rows.declarations, |out, row| {
         id(out, row.declaration.0)?;
         reference(out, row.regular)?;
@@ -14,10 +23,13 @@ pub(super) fn encode(out: &mut Writer, rows: &s::AvailabilityRows) -> Result<(),
         reference(out, row.regular)
     })
 }
-pub(super) fn decode(read: &mut Input<'_, '_>) -> Result<s::AvailabilityRows, &'static str> {
+pub(super) fn decode(
+    read: &mut Input<'_, '_>,
+    compatibility: bool,
+) -> Result<s::AvailabilityRows, &'static str> {
     read.reserve(size_of::<s::AvailabilityRows>())?;
     Ok(s::AvailabilityRows {
-        policies: read.list(MAX_COMPONENTS, 13, policy_read)?,
+        policies: read.list(MAX_COMPONENTS, 13, |read| policy_read(read, compatibility))?,
         declarations: read.list(MAX_COMPONENTS, 6, |read| {
             Ok(s::DeclarationAvailability {
                 declaration: DeclarationRef(read.id()?),
@@ -40,7 +52,11 @@ fn reference(out: &mut Writer, value: Option<s::AvailabilityRef>) -> Result<(), 
     }
     Ok(())
 }
-fn policy_write(out: &mut Writer, policy: &s::AvailabilityPolicy) -> Result<(), &'static str> {
+fn policy_write(
+    out: &mut Writer,
+    policy: &s::AvailabilityPolicy,
+    compatibility: bool,
+) -> Result<(), &'static str> {
     out.u8(match policy.kind {
         s::AvailabilityKind::Regular => 0,
         s::AvailabilityKind::Const => 1,
@@ -49,19 +65,15 @@ fn policy_write(out: &mut Writer, policy: &s::AvailabilityPolicy) -> Result<(), 
     match &policy.level {
         s::AvailabilityLevel::Stable(since) => {
             out.u8(0)?;
-            match since {
-                s::AvailabilitySince::Current => out.u8(0)?,
-                s::AvailabilitySince::Version {
-                    major,
-                    minor,
-                    patch,
-                } => {
-                    out.u8(1)?;
-                    out.u16(*major)?;
-                    out.u16(*minor)?;
-                    out.u16(*patch)?;
-                }
+            since_write(out, *since)?;
+        }
+        s::AvailabilityLevel::StableWithCompatibility { since, message } => {
+            if !compatibility || policy.kind != s::AvailabilityKind::Regular {
+                return Err("stable module compatibility requires version-six regular API columns");
             }
+            out.u8(2)?;
+            since_write(out, *since)?;
+            out.string(message)?;
         }
         s::AvailabilityLevel::Unstable { issue, reason } => {
             out.u8(1)?;
@@ -89,7 +101,10 @@ fn policy_write(out: &mut Writer, policy: &s::AvailabilityPolicy) -> Result<(), 
     }
     Ok(())
 }
-fn policy_read(read: &mut Input<'_, '_>) -> Result<s::AvailabilityPolicy, &'static str> {
+fn policy_read(
+    read: &mut Input<'_, '_>,
+    compatibility: bool,
+) -> Result<s::AvailabilityPolicy, &'static str> {
     let kind = match read.reader.u8()? {
         0 => s::AvailabilityKind::Regular,
         1 => s::AvailabilityKind::Const,
@@ -97,15 +112,7 @@ fn policy_read(read: &mut Input<'_, '_>) -> Result<s::AvailabilityPolicy, &'stat
     };
     let feature = text(read)?;
     let level = match read.reader.u8()? {
-        0 => s::AvailabilityLevel::Stable(match read.reader.u8()? {
-            0 => s::AvailabilitySince::Current,
-            1 => s::AvailabilitySince::Version {
-                major: read.reader.u16()?,
-                minor: read.reader.u16()?,
-                patch: read.reader.u16()?,
-            },
-            _ => return Err("unknown API stability version kind"),
-        }),
+        0 => s::AvailabilityLevel::Stable(since_read(read)?),
         1 => {
             let issue = read
                 .option()?
@@ -119,6 +126,12 @@ fn policy_read(read: &mut Input<'_, '_>) -> Result<s::AvailabilityPolicy, &'stat
                 None
             };
             s::AvailabilityLevel::Unstable { issue, reason }
+        }
+        2 if compatibility && kind == s::AvailabilityKind::Regular => {
+            s::AvailabilityLevel::StableWithCompatibility {
+                since: since_read(read)?,
+                message: text(read)?,
+            }
         }
         _ => return Err("unknown API availability level"),
     };
@@ -139,6 +152,32 @@ fn policy_read(read: &mut Input<'_, '_>) -> Result<s::AvailabilityPolicy, &'stat
         level,
         origin,
     })
+}
+fn since_write(out: &mut Writer, since: s::AvailabilitySince) -> Result<(), &'static str> {
+    match since {
+        s::AvailabilitySince::Current => out.u8(0),
+        s::AvailabilitySince::Version {
+            major,
+            minor,
+            patch,
+        } => {
+            out.u8(1)?;
+            out.u16(major)?;
+            out.u16(minor)?;
+            out.u16(patch)
+        }
+    }
+}
+fn since_read(read: &mut Input<'_, '_>) -> Result<s::AvailabilitySince, &'static str> {
+    match read.reader.u8()? {
+        0 => Ok(s::AvailabilitySince::Current),
+        1 => Ok(s::AvailabilitySince::Version {
+            major: read.reader.u16()?,
+            minor: read.reader.u16()?,
+            patch: read.reader.u16()?,
+        }),
+        _ => Err("unknown API stability version kind"),
+    }
 }
 fn text(read: &mut Input<'_, '_>) -> Result<String, &'static str> {
     let length = read.reader.u32()?;

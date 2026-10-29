@@ -136,6 +136,7 @@ impl Checker<'_> {
         if !matches!(
             self.state.completion,
             super::readiness::Completion::Anonymous { .. }
+                | super::readiness::Completion::Initializer(_)
         ) || !matches!(
             self.availability,
             crate::sema::traits::implementations::Availability::Declarations

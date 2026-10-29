@@ -86,9 +86,10 @@ pub enum LangItem {
     RangeMin,
     RangeMax,
     RangeSub,
+    Div,
 }
 impl LangItem {
-    pub const ALL: [Self; 70] = [
+    pub const ALL: [Self; 71] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -159,6 +160,7 @@ impl LangItem {
         Self::RangeMin,
         Self::RangeMax,
         Self::RangeSub,
+        Self::Div,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -233,6 +235,7 @@ impl LangItem {
             Self::RangeMin => 67,
             Self::RangeMax => 68,
             Self::RangeSub => 69,
+            Self::Div => 70,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -307,6 +310,7 @@ impl LangItem {
             "alloc_layout" => Some(Self::AllocLayout),
             "add" => Some(Self::Add),
             "sub" => Some(Self::Sub),
+            "div" => Some(Self::Div),
             "offset_of" => Some(Self::OffsetOf),
             _ => None,
         }

@@ -26,7 +26,11 @@ impl Checker<'_> {
         }
         let Kind::Binary {
             op:
-                op @ (Punctuation::ShiftLeft | Punctuation::Or | Punctuation::Plus | Punctuation::Minus),
+                op @ (Punctuation::ShiftLeft
+                | Punctuation::Or
+                | Punctuation::Plus
+                | Punctuation::Minus
+                | Punctuation::Slash),
             ..
         } = self.kind(node)
         else {
@@ -97,7 +101,12 @@ impl Checker<'_> {
             return Ok(false);
         }
         let Kind::Binary {
-            op: Punctuation::ShiftLeft | Punctuation::Or | Punctuation::Plus | Punctuation::Minus,
+            op:
+                Punctuation::ShiftLeft
+                | Punctuation::Or
+                | Punctuation::Plus
+                | Punctuation::Minus
+                | Punctuation::Slash,
             right,
             ..
         } = self.kind(node)
@@ -213,7 +222,12 @@ impl Checker<'_> {
             );
         }
         let Kind::Binary {
-            op: Punctuation::ShiftLeft | Punctuation::Or | Punctuation::Plus | Punctuation::Minus,
+            op:
+                Punctuation::ShiftLeft
+                | Punctuation::Or
+                | Punctuation::Plus
+                | Punctuation::Minus
+                | Punctuation::Slash,
             left,
             right,
         } = self.kind(node)

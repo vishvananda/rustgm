@@ -1,22 +1,25 @@
 # Parallel library bootstrap implementation
 
-Root owns integration, current-source CLI/original-core observations and main
-publication in rustgm-pa25-work. Joined15237701b passes61 private controls in
-209.94s, production/CLI3 in36.53s, full format/architecture/strict Clippy and
-native endpoint5/niche12. All3182 compiler/test/harness hashes match Root;
-there is no duplicate private rebuild. Harness272, registrations385, layout and
-upstream pass. Cold private and outer finalization timeouts remain failures.
-See the [endpoint checkpoint](pa31-source-endpoint-execution-checkpoint.md).
+Root owns integration, original-core observations and public main publication.
+The Call-copy join passes91 private controls132.64s, productionCLI3 98.71s,
+new source const-fn native5/7/11, exact-TypeId/scaling controls and Root endpoint
+native5. All3187 source entries/146 fixture hashes match Root; no integrator
+private rebuild. Helper51.84s passes harness272/registrations385/layout/upstream.
+See the [call-copy checkpoint](pa8-derived-calls-checkpoint.md).
 
-Current CLI1accafdd clears the previous range-pattern failure and stops at
-file268:2225's stdarch array-field derive transfer in12.94s. The374 opens are
-still loading/order, not artifacts; all722 original hashes/target flags and
-explicit work14,500,624/attempted1GiB/retained64MiB stay fixed. Strict separately
-retains the deferred expectation at68 opens. No original artifact/new PA release.
-B now owns LIB-092's actual parsed constant-child transfer, paid literal pool and
-ordinary/SIMD source controls. C preserves its original-u8/Formatter closure plan
-and valid pinned-core reference; whole-NoCore source remains unqualified, and C
-only reviews literal ownership for B. No new advisory lint producer is queued.
+Current CLIcf74502a clears TypeId field syntax and stops at file47:34595,
+intrinsics/mod.rs838 rustc_allowed_through_unstable_modules on transmute.
+375loadingopens/all722 hashes/target flags/work14,500,624/attempted1GiB/
+retained64MiB stay fixed; strict separately retains expectation68. This is a
+source frontier, not an artifact or measured speedup. Public729 fullCI40905161888
+and push40905100591 are separate; do not duplicate an active full run.
+B investigates LIB-095's real attribute/stability semantics read-only first.
+C implements genuine SourceDiv role/default/header/erasure using existing HookDiv
+and actual SIZE/default/layout field dependency; missing real NoCore panic
+providers stay explicit and no stub or stripped checks may replace them.
+Preserve all full TypeId/Formatter/original helper/metadata/artifact requirements.
+Keep2heavyglobally/16GiB/150reserve, existingtwo workers/trees only, sourcefrozen
+actual terminal handoffs. No new advisory lint producer is queued.
 
 B owns complete zero-excluded unsigned scalar niche layout, CTFE bytes and native
 ABI transport (LIB-087), preserving actual scalar types and measured hot widths.

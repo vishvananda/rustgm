@@ -4,6 +4,18 @@
 
 # Library bootstrap execution plan, 2026-10-26
 
+Current execution state is maintained in the
+[live blocker queue](library-build-blockers.md#current-execution-queue) and
+[worker guide](parallel-work.md). Source frontiers, worker tasks and timings in
+the dated assessment below are historical evidence. They do not override that
+queue. Current qualification is joined87/productionCLI3 and source array/SIMD/NonZero
+native; unchanged original core now stops at LIB-094's TypeId call subtree.
+Keep at most two heavy jobs globally, one per worktree, at most the existing two
+workers,16GiB absolute output caps and150GiB free reserve. The configured
+three-slot controller does not authorize a third concurrent job. Batch source
+joins, preserve warm caches and source equality, and retain bounded timeouts as
+failures rather than extending the five-minute development deadline.
+
 Compilation-first priority, reaffirmed 2026-10-29: keep Rust's `allow`, `deny`,
 `forbid` and `expect` controls, but prioritize diagnostic work only when it
 unblocks actual compilation. Wider lint parity remains required in PA40 and
@@ -115,8 +127,8 @@ remain evidence; they do not create another scheduling queue.
    behavior, tests/oracles and publication checks; run its release gate when
    that checklist is actually empty. Avoid treating every historical checkpoint
    document's old remaining-work paragraph as a current extra obligation.
-4. Keep three workers and the existing three-heavy-job limit. Shared AST/type or
-   metadata interfaces get one owner and one coherent handoff; successors merge
+4. Keep at most the existing two workers and two heavy jobs globally. Shared
+   AST/type or metadata interfaces get one owner and one coherent handoff; successors merge
    that base rather than developing competing exhaustive walkers. Integration
    gets the next heavy slot when qualified branches are waiting. Adding workers
    before these joins close would increase build and merge contention.

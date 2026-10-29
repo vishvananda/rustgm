@@ -74,8 +74,12 @@ pub(super) fn encode_module_availability(
     rows: s::ValidatedView<'_>,
 ) -> Result<(), &'static str> {
     encode_module_contracts(out, rows)?;
-    availability_wire::encode(out, rows.availability()?)?;
-    if rows.descriptor().profile() == s::Profile::Source2024ModuleDefinitions {
+    availability_wire::encode(
+        out,
+        rows.availability()?,
+        rows.descriptor().profile().module_compatibility(),
+    )?;
+    if rows.descriptor().profile().definitions() {
         verbatim_exports::encode(out, &rows.exact_callables)?;
     }
     Ok(())
@@ -90,26 +94,32 @@ pub(super) fn decode_module_availability(
     reader: &mut Reader<'_>,
     base: usize,
 ) -> Result<AvailabilityPacket, &'static str> {
-    decode_availability_profile(reader, base, false, false)
+    decode_availability_profile(reader, base, s::Profile::Source2024ModuleAvailability)
 }
 pub(super) fn decode_module_feature_predicates(
     reader: &mut Reader<'_>,
     base: usize,
 ) -> Result<AvailabilityPacket, &'static str> {
-    decode_availability_profile(reader, base, true, false)
+    decode_availability_profile(reader, base, s::Profile::Source2024ModuleFeaturePredicates)
 }
 pub(super) fn decode_module_definitions(
     reader: &mut Reader<'_>,
     base: usize,
 ) -> Result<AvailabilityPacket, &'static str> {
-    decode_availability_profile(reader, base, true, true)
+    decode_availability_profile(reader, base, s::Profile::Source2024ModuleDefinitions)
+}
+pub(super) fn decode_module_compatibility(
+    reader: &mut Reader<'_>,
+    base: usize,
+) -> Result<AvailabilityPacket, &'static str> {
+    decode_availability_profile(reader, base, s::Profile::Source2024ModuleCompatibility)
 }
 fn decode_availability_profile(
     reader: &mut Reader<'_>,
     base: usize,
-    features: bool,
-    definitions: bool,
+    profile: s::Profile,
 ) -> Result<AvailabilityPacket, &'static str> {
+    let features = profile.feature_predicates();
     let (mut rows, bytes) = decode_profile_with(reader, base, false, features)?;
     let mut read = Input {
         reader,
@@ -120,8 +130,8 @@ fn decode_availability_profile(
     };
     let attributes = header_facts::decode(&mut read)?;
     let modules = namespace_rows::decode(&mut read)?;
-    let availability = availability_wire::decode(&mut read)?;
-    if definitions {
+    let availability = availability_wire::decode(&mut read, profile.module_compatibility())?;
+    if profile.definitions() {
         rows.exact_callables = verbatim_exports::decode(&mut read)?;
     }
     Ok(AvailabilityPacket {

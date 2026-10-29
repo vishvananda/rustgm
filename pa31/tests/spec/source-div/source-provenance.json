@@ -1,0 +1,84 @@
+{
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "originals": [
+    {
+      "file": "original/trait.rs",
+      "source": "ops/arith.rs",
+      "source_sha256": "a495c8c9838be09ce2c239462153a6221b6f471aa2efe43ce437e83581636c91",
+      "start": 12804,
+      "end": 13604,
+      "sha256": "d8c3b4b976710d9b2fece72176368d192b09307dd5e2d3ea6bc065df2ef910d5",
+      "file_sha256": "6506c327cebb8f994f78705ee7f77160da1869dd83a57db309e6ff4a1655b2a1"
+    },
+    {
+      "file": "original/integer.rs",
+      "source": "ops/arith.rs",
+      "source_sha256": "a495c8c9838be09ce2c239462153a6221b6f471aa2efe43ce437e83581636c91",
+      "start": 13604,
+      "end": 14591,
+      "sha256": "5a2ae40ddbbf857a186d51722ecbcb8c5a4d78d821b85a59a76d64ddb51d1092",
+      "file_sha256": "ab2ac127214183d12777ad2b58fa1befba415dad91f5676116d8b019e058b0b0"
+    },
+    {
+      "file": "original/float.rs",
+      "source": "ops/arith.rs",
+      "source_sha256": "a495c8c9838be09ce2c239462153a6221b6f471aa2efe43ce437e83581636c91",
+      "start": 14591,
+      "end": 15120,
+      "sha256": "faac626eb01448562f4456dc822e0348b88f49fe8cd3bc8c46df3e26f7beefda",
+      "file_sha256": "8c62086bf71caf55f442a3d4a0ed2e44613f1b79b4191520d53910980bdfba9a"
+    },
+    {
+      "file": "original/size-wrapper.rs",
+      "source": "mem/mod.rs",
+      "source_sha256": "538b04a5f1988ae5c50edc376021f6db3fe6291ebc24423ba6a747bc0d00688b",
+      "start": 13480,
+      "end": 14394,
+      "sha256": "d62d5c74d45391974ebdf9c1bf5dbd02cc73ca838980ee23836710f567bd6c32",
+      "file_sha256": "053faec0706672623ceef6bfe246da7e14baa8e1b32032b5bb2e89535cc4154c"
+    },
+    {
+      "file": "original/properties-prefix.rs",
+      "source": "mem/mod.rs",
+      "source_sha256": "538b04a5f1988ae5c50edc376021f6db3fe6291ebc24423ba6a747bc0d00688b",
+      "start": 51282,
+      "end": 51748,
+      "sha256": "63e4e72b25e0d7e6d3b0b84f1a52e79d2edbaf68b3333a2f89745fe444dcb729",
+      "file_sha256": "2a810b282b40a0f40667e7fc4497b35a62a32a97298ac14eac08af7903680597"
+    },
+    {
+      "file": "original/properties-blanket.rs",
+      "source": "mem/mod.rs",
+      "source_sha256": "538b04a5f1988ae5c50edc376021f6db3fe6291ebc24423ba6a747bc0d00688b",
+      "start": 53683,
+      "end": 53798,
+      "sha256": "5a303bb043b5b37702232703f215030c8573a6e1991d7e49d669c67b7332bcbf",
+      "file_sha256": "9c7914a8dd8a3c337380744ff183c3349a45c39298957e323550a31337b4bbe2"
+    },
+    {
+      "file": "original/size-intrinsic.rs",
+      "source": "intrinsics/mod.rs",
+      "source_sha256": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+      "start": 108028,
+      "end": 108198,
+      "sha256": "51c0795fbd4f4827c3d57e2f20926ccf2766ad20f40bf9cd8455906a192b8e74",
+      "file_sha256": "6016a711716a107a5fae311d16b952f4fd974232f32ee7a0898c139a42507bcd"
+    },
+    {
+      "file": "original/align-intrinsic.rs",
+      "source": "intrinsics/mod.rs",
+      "source_sha256": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+      "start": 108796,
+      "end": 108967,
+      "sha256": "b9db7cffa8542a57f6b41d00a376ed21618fa8f4f20f92ee94f68e2d55465167",
+      "file_sha256": "8355bae7f73784894180c842f2d6dc0f7549234bc3ff819de48d112bf5f03d08"
+    }
+  ],
+  "qualified_foundation": {
+    "path": "pa31/tests/spec/source-add-sub/macro-const-with-location.rs",
+    "sha256": "64e6e654f1f106c4403d7b2b0388e0c350f4332a3b04fb2b3e75501e781c2a50",
+    "scope": "Actual Location/NonNull/PhantomData/trait protocol plus explicit primitive Clone/Copy source support. Original formatter/panic graph not inserted."
+  },
+  "selected_float_invocation": "f32/f64 only; original integer family all12 retained",
+  "layout_scope": "SIZE and ALIGN real declarations/defaults +original blanket impl, original size_of body; full other SizedTypeProperties members remain Required. Module aliases are authored, original initializer expressions and body unchanged."
+}

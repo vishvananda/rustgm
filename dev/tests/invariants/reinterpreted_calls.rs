@@ -49,7 +49,7 @@ fn actual_source_transmute_preserves_owned_drop_and_prepares_native_roundtrips()
         &mut std::fs::File::create(folder.join("provider.lowir"))?,
     )?;
     // The cold catalog includes the three source range-member identities.
-    assert_eq!(size_of::<crate::sema::compiler_items::Catalog>(), 1584);
+    assert_eq!(size_of::<crate::sema::compiler_items::Catalog>(), 1616);
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     eprintln!(

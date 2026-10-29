@@ -22,10 +22,14 @@ pub(super) enum Operator {
     BitOr,
     Add,
     Sub,
+    Div,
 }
 impl Operator {
     const fn binary(self) -> bool {
-        matches!(self, Self::Shl | Self::BitOr | Self::Add | Self::Sub)
+        matches!(
+            self,
+            Self::Shl | Self::BitOr | Self::Add | Self::Sub | Self::Div
+        )
     }
     const fn role(self) -> LangItem {
         match self {
@@ -35,6 +39,7 @@ impl Operator {
             Self::BitOr => LangItem::BitOr,
             Self::Add => LangItem::Add,
             Self::Sub => LangItem::Sub,
+            Self::Div => LangItem::Div,
         }
     }
     const fn method(self) -> &'static str {
@@ -45,6 +50,7 @@ impl Operator {
             Self::BitOr => "bitor",
             Self::Add => "add",
             Self::Sub => "sub",
+            Self::Div => "div",
         }
     }
 }
@@ -142,7 +148,7 @@ fn checked(
     let declaration = catalog.language(operator.role()).ok_or(match operator {
         Operator::Not => "source ! requires its actual Not language declaration",
         Operator::Neg => "source - requires its actual Neg language declaration",
-        Operator::Shl | Operator::BitOr | Operator::Add | Operator::Sub => {
+        Operator::Shl | Operator::BitOr | Operator::Add | Operator::Sub | Operator::Div => {
             "source binary operator requires its actual language declaration"
         }
     })?;

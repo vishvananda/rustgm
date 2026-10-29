@@ -193,6 +193,17 @@ start beside the included file; directory ownership is restored after that
 subtree. Recursive includes use the same bounded expansion worklist. Inactive
 includes perform no reads. Source reads remain injected provider operations.
 
+The [derived constant-subtree checkpoint](../docs/pa8-derived-constants-checkpoint.md)
+records typed field copying, selected literal/pending ownership and paid growth.
+Clone/Copy and source/SIMD consumers remain in PA26/31/41; copied syntax never
+grants their semantic or runtime permissions. Wider field expressions remain
+required work.
+
+The [typed-call checkpoint](../docs/pa8-derived-calls-checkpoint.md) extends that
+selected traversal to call callees/arguments and generic types. Real const/body
+checking remains mandatory; copied function spelling is never an implementation
+of size_of or another library helper.
+
 `option_env!`, formatting/assertion facilities and other expansions that need
 library identities belong to PA26's language/library hooks. PA8 does not invent
 external core/std definitions to make those calls resolve.

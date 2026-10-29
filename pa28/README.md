@@ -16,6 +16,12 @@ tuple carrier. All integer widths and ordinary lookalikes have native controls;
 retained reference ICEs supply no language rejection or same-source native proof.
 Original helper graphs, other numeric families and transport remain required.
 
+The [unchecked reinterpretation checkpoint](../docs/pa28-source-unchecked-transmute-checkpoint.md)
+qualifies genuine TransmuteUnchecked and unchanged outer NonZero new/get in a
+finite closed-inner profile. Preserve its distinct size-typing and indirect-const
+policy, actual validity/move/provenance duties and explicit export fences. Wider
+runtime layouts, original helper graphs and full transport remain required.
+
 The initial capability checkpoint uses the existing pinned LowIR vocabulary and
 backend without extending either. The independent inputs in `tests/backend/`
 qualify scalar volatile loads and stores for integer widths 8 through 128,
