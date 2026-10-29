@@ -55,6 +55,11 @@ impl Stage {
             .library_policy()
             .and_then(crate::resolve::stability::Library::staged_inventory)
             .ok_or("availability collection requires its completed source inventory")?;
+        if inventory.has_implications() {
+            return Err(
+                "source implied feature relationships require complete wider policy transport",
+            );
+        }
         let census = self
             .rows
             .declarations

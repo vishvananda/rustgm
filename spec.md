@@ -552,6 +552,15 @@ their boundaries. Nominal bodies, promotions, exact C linkage and const executio
 remain separate requirements. See the
 [v4 checkpoint](docs/lib060-feature-predicate-metadata-v4-checkpoint.md).
 
+Local staged `implied_by` relationships belong to exact policy IDs, including
+independent regular/const annotations. Retain them in one paid cold inventory
+vector; reuse the completed library-feature definition index for target
+validation. Language-feature requests do not invent library definitions, and
+relationships do not become global or transitive predicate assumptions. Keep
+existing artifact profiles closed until their per-policy relationship columns
+and fresh permission consumers are complete. See the
+[ConstParamTy checkpoint](docs/pa31-const-parameter-derive-prerequisite.md).
+
 The explicit source Provided-contract profile uses tag 11, row version 1. Retain
 one advisory-column owner, the complete Provided family and numbering, actual
 namespace bindings, and positive policy that supported headers have no written

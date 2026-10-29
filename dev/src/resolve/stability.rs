@@ -3,6 +3,7 @@ mod attributes;
 pub(in crate::resolve) mod availability_imports;
 mod constness;
 mod exported_scopes;
+mod implications;
 mod inventory;
 mod owners;
 mod request_order;
@@ -97,6 +98,7 @@ impl Library {
                 vector(&self.requests),
                 size_of::<Inventory>(),
                 vector(&inventory.policies),
+                vector(&inventory.implications),
                 vector(&inventory.declarations),
                 vector(&inventory.imports),
                 inventory.consts.as_deref().map_or(0, |consts| {
@@ -114,6 +116,9 @@ impl Library {
                 Level::Unstable { reason, .. } => reason.as_deref().map_or(0, str::len),
             };
             budget.charge(0, policy.feature.len().saturating_add(reason))?;
+        }
+        for edge in &inventory.implications {
+            budget.charge(1, edge.by.len())?;
         }
         Ok(())
     }
@@ -136,6 +141,7 @@ impl Library {
 /// Completed declaration policies. Numerical IDs belong to this resolved package.
 pub struct Inventory {
     policies: Vec<Policy>,
+    implications: Vec<implications::Implication>,
     declarations: Vec<Option<PolicyId>>,
     imports: Vec<Option<PolicyId>>,
     consts: Option<Box<constness::ConstPolicies>>,
@@ -203,6 +209,7 @@ impl Inventory {
 #[derive(Default)]
 pub(super) struct Draft {
     policies: Vec<Policy>,
+    implications: Vec<implications::Implication>,
     attributes: HashMap<NodeKey, PolicyId>,
     import_attributes: HashMap<NodeKey, PolicyId>,
     const_attributes: HashMap<NodeKey, PolicyId>,
@@ -241,3 +248,7 @@ mod transport_tests;
 #[cfg(test)]
 #[path = "../../tests/invariants/versioned_predicates.rs"]
 mod predicate_transport_tests;
+
+#[cfg(test)]
+#[path = "../../tests/invariants/stability_implications.rs"]
+mod implication_tests;

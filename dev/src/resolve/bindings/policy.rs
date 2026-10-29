@@ -142,6 +142,9 @@ impl Request {
             "const_destruct" | "const_precise_live_drops" | "asm_experimental_arch" => {
                 Self::NoCapability
             }
+            // This pinned Rust request only enables an advisory lint. Its
+            // producer stays deferred and grants no trait/upcasting permission.
+            "multiple_supertrait_upcastable" => Self::NoCapability,
             _ => Self::Capability(Feature::cpu_gate(
                 crate::support::cpu_features::Gate::named(name)?,
             )),

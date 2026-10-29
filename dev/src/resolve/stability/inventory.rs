@@ -50,7 +50,8 @@ pub(in crate::resolve) fn complete(
                     .iter()
                     .map(|name| name.len().saturating_add(1))
                     .sum::<usize>(),
-            ),
+            )
+            .saturating_add(draft.implication_work()),
         storage,
     )?;
     let features: HashSet<_> = draft
@@ -58,6 +59,7 @@ pub(in crate::resolve) fn complete(
         .iter()
         .map(|policy| policy.feature.as_ref())
         .collect();
+    draft.validate_implications(package, &features, imported)?;
     for name in &library.requests {
         if !features.contains(name.as_ref())
             && !imported
@@ -98,6 +100,7 @@ pub(in crate::resolve) fn complete(
     validate_type_boundary(package, facts, &mut draft)?;
     Ok(Some(Inventory {
         policies: draft.policies,
+        implications: draft.implications,
         declarations: owners.declarations,
         imports: owners.imports,
         consts: owners.consts,

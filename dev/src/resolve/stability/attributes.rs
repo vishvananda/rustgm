@@ -82,7 +82,7 @@ pub(in crate::resolve) fn collect(
             "duplicate or conflicting library stability",
         ));
     }
-    let mut policy = parse(
+    let (mut policy, implied_by) = parse(
         unit,
         key,
         attribute,
@@ -107,7 +107,15 @@ pub(in crate::resolve) fn collect(
         1,
         4 * (size_of::<Policy>() + size_of::<(NodeKey, NonZeroUsize)>()),
     )?;
+    if implied_by.is_some() {
+        draft.prepay_implication()?;
+    }
     draft.policies.push(policy);
+    if let Some(by) = implied_by {
+        draft
+            .implications
+            .push(super::implications::Implication { policy: id, by });
+    }
     if constant {
         draft.const_attributes.insert(key, id);
     } else {
@@ -123,22 +131,27 @@ fn parse(
     forest: &Forest,
     stable: bool,
     work: &mut Draft,
-) -> Result<Policy, Error> {
+) -> Result<(Policy, Option<Box<str>>), Error> {
     let error = |message| Error::at(key.file, attribute.span.start, message);
     let Arguments {
         feature,
         since,
         issue,
         reason,
+        implied_by,
     } = arguments(unit, key, attribute, forest, stable, work)?;
     let feature: Box<str> = feature.ok_or_else(|| error("library stability requires feature"))?;
-    let mut chars = feature.chars();
-    if !chars
-        .next()
-        .is_some_and(|c| c == '_' || unicode_ident::is_xid_start(c))
-        || !chars.all(unicode_ident::is_xid_continue)
-    {
+    work.charge(
+        feature
+            .len()
+            .saturating_add(implied_by.as_deref().map_or(0, str::len)),
+        0,
+    )?;
+    if !identifier(&feature) {
         return Err(error("library feature must be an identifier"));
+    }
+    if implied_by.as_deref().is_some_and(|name| !identifier(name)) {
+        return Err(error("implied library feature must be an identifier"));
     }
     let level = if stable {
         let since = since.ok_or_else(|| error("stable library policy requires since"))?;
@@ -156,12 +169,15 @@ fn parse(
         };
         Level::Unstable { issue, reason }
     };
-    Ok(Policy {
-        kind: super::PolicyKind::Regular,
-        feature,
-        level,
-        origin: key,
-    })
+    Ok((
+        Policy {
+            kind: super::PolicyKind::Regular,
+            feature,
+            level,
+            origin: key,
+        },
+        implied_by,
+    ))
 }
 #[derive(Default)]
 struct Arguments {
@@ -169,6 +185,7 @@ struct Arguments {
     since: Option<Box<str>>,
     issue: Option<Box<str>>,
     reason: Option<Box<str>>,
+    implied_by: Option<Box<str>>,
 }
 fn arguments(
     unit: &Unit,
@@ -197,10 +214,9 @@ fn arguments(
             "since" if stable => &mut arguments.since,
             "issue" if !stable => &mut arguments.issue,
             "reason" if !stable => &mut arguments.reason,
-            "implied_by" | "old_name" if !stable => {
-                return Err(error(
-                    "implied and renamed library features are not implemented",
-                ));
+            "implied_by" if !stable => &mut arguments.implied_by,
+            "old_name" if !stable => {
+                return Err(error("renamed library features are not implemented"));
             }
             _ => return Err(error("unsupported library stability argument")),
         };
@@ -239,6 +255,14 @@ fn arguments(
         }
     }
     Ok(arguments)
+}
+
+fn identifier(name: &str) -> bool {
+    let mut chars = name.chars();
+    chars
+        .next()
+        .is_some_and(|c| c == '_' || unicode_ident::is_xid_start(c))
+        && chars.all(unicode_ident::is_xid_continue)
 }
 
 fn version(text: &str) -> Option<Since> {

@@ -271,8 +271,9 @@ fn const_policy_axes_validate_local_owners_and_keep_execution_distinct() -> Resu
             result.err().map(|e| e.to_string())
         );
     }
-    assert_eq!(size_of::<Library>(), 128);
-    assert_eq!(size_of::<Inventory>(), 88);
+    // The one cold inventory owns the sparse policy-implication vector.
+    assert_eq!(size_of::<Library>(), 152);
+    assert_eq!(size_of::<Inventory>(), 112);
     assert_eq!(size_of::<super::constness::ConstPolicies>(), 24);
     assert_eq!(size_of::<Policy>(), 56);
     eprintln!(

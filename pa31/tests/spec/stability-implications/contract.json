@@ -1,0 +1,98 @@
+{
+  "state": "predictions frozen before independent and candidate observations",
+  "owner": 31,
+  "profile": {
+    "rust_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "lint_cap": "allow"
+  },
+  "cases": {
+    "regular": {
+      "sha256": "95a7be9f1bd436e7759ddd12fdf6f86cd4f1a4450cdd06f83feb9e3f6c3ab2e9",
+      "rust_metadata_status": 0,
+      "candidate": "accept complete local implication inventory"
+    },
+    "unstable-parent": {
+      "sha256": "07c4bb351126b12f9feba79fd0f6afe2bf2623f3412ec3bbcb3f202032f43e08",
+      "rust_metadata_status": 0,
+      "candidate": "accept complete local implication inventory"
+    },
+    "missing-target": {
+      "sha256": "82ae248186dcd2f770dad9e3ca831e8447b5b0789a5308a120a315d22dd77a5b",
+      "rust_metadata_status": 1,
+      "candidate": "reject actual malformed/undefined policy"
+    },
+    "invalid-name": {
+      "sha256": "7652ec3b30775f4a6e1341288dc7842b017d5a0879769e894d22efdf5fdaa50e",
+      "rust_metadata_status": 1,
+      "candidate": "reject actual malformed/undefined policy"
+    },
+    "duplicate": {
+      "sha256": "991cafa3353e029705bdb25842aa7305967dc0b03d206926005acf89121be620",
+      "rust_metadata_status": 1,
+      "candidate": "reject actual malformed/undefined policy"
+    },
+    "stable-argument": {
+      "sha256": "c9d06a23ffb1026bfc0978b7067ec273f5fedf8dc0b1575030b6bd099451ca20",
+      "rust_metadata_status": 1,
+      "candidate": "reject actual malformed/undefined policy"
+    },
+    "const": {
+      "sha256": "a77b0d80ab5549502bcfd1f7e980838411c88b6478caf35a52e354ba5ee94009",
+      "rust_metadata_status": 0,
+      "candidate": "accept complete local implication inventory"
+    },
+    "self-edge": {
+      "sha256": "863d4091e86bb2bf5667b4025c44298ea484aef40552609a54828fb502a5c27a",
+      "rust_metadata_status": 0,
+      "candidate": "accept complete local implication inventory"
+    },
+    "cycle": {
+      "sha256": "4e1487ebd18c99fce2afd5d96e988fdb10d609186e632613c3b25ba06f902c86",
+      "rust_metadata_status": 0,
+      "candidate": "accept complete local implication inventory"
+    },
+    "per-policy": {
+      "sha256": "b3a79814538b39f369b5edef7ece62f0f4c04223a2e075a0c99683e3661c1f3b",
+      "rust_metadata_status": 0,
+      "candidate": "accept complete local implication inventory"
+    },
+    "language-only-target": {
+      "sha256": "3172f9b8aac4b9526d102964781f11639d1bb197c0bc26b1a0ed73ab9866bc5b",
+      "rust_metadata_status": 1,
+      "candidate": "reject actual malformed/undefined policy"
+    },
+    "renamed-required": {
+      "sha256": "ff4e721bc0ae71fc29e22e7e70664b01b53de504ad4ee8603cb79fa5475d93e5",
+      "rust_metadata_status": 0,
+      "candidate": "Required: renamed policy transport/semantics"
+    },
+    "lint-feature-request": {
+      "sha256": "31a3ca0e2fa6d6e1aa9972c84574cd82d5c2e5f12ca8f11fa07b92c486d3d7de",
+      "rust_metadata_status": 0,
+      "candidate": "known advisory flag accepted without source capability or library definition"
+    },
+    "lint-as-parent": {
+      "sha256": "4d7b14d53f3bab4604246a9ed7c0288ba48e14972202646f10c783f67fa2e094",
+      "rust_metadata_status": 1,
+      "candidate": "reject unknown library target despite enabled known advisory language feature"
+    }
+  },
+  "required": "paid sparse per-PolicyId relationship, validate actual defined feature target; no global feature-predicate grant, metadata profiles reject unsupported implication retention; ordinary policies and dense compiler nodes unchanged",
+  "sources": [
+    "https://raw.githubusercontent.com/rust-lang/rust/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_passes/src/stability.rs",
+    "https://raw.githubusercontent.com/rust-lang/rust/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_middle/src/middle/stability.rs",
+    "https://raw.githubusercontent.com/rust-lang/rust/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_feature/src/unstable.rs"
+  ],
+  "predecessor": {
+    "contract_sha256": "fa318a6ba9ae94a49252a316dc4f34b5a109d56e2d3de9c8021c7b74365d8109",
+    "receipt_sha256": "7b13f2c4fe3972f84f4c971b6f3603e8813653bb3c15db35545efaa2d402cc6a",
+    "reason": "original language-only-target loaded std, whose actual core metadata already defines min_adt_const_params; successor removes implicit std with no_core and uses a module to avoid unrelated lang-item obligations"
+  },
+  "predecessor_v2": {
+    "contract_sha256": "8bdc326d51aeab3129b6dc08af3e6ae6ed2bb895c0762a2e31ae0a84271addb3",
+    "receipt_sha256": "2a7ea61fa3fd29e3f6678767c40ff1b8386f14866eee10181c75d49b32b45857",
+    "state": "all12 unchanged cases independently qualified; two new lint-feature request cases added before observations"
+  }
+}
