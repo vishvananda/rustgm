@@ -1,0 +1,27 @@
+{
+  "scope": "Authored untracked trait with genuine tracked implementation; original qualified SourceLocation provider prefix unchanged. Actual Self/Rhs discrimination; constUFCS and annotation bound; separate untracked source has no Location declaration.",
+  "provider_prefix_sha256": "932880e0177a64ee3f51bdfb58c795022a9ef4e7eb64b0b5dbc820e4e7258665",
+  "inputs": {
+    "pa31/tests/spec/source-location/selected-tracking.rs": "e743b28b7f25639d0f6d6624d87bcf18452f828335b4c872977dbb41cb558995",
+    "pa31/tests/spec/source-location/untracked-selection.rs": "4b3859655b0ad11ba84a2881a821068f85404ea6b7d8c59890ec6bb5595f1c67",
+    "pa31/tests/spec/source-location/selected-observer.c": "570a5193f653f287f6071936d0fb0e6908d8c6f20a0971d8a3b1bb7a9bc93a54"
+  },
+  "expected": {
+    "selected-tracking": {
+      "metadata": 0,
+      "object": 0,
+      "native_status": 0,
+      "native_stdout": "372 375 73 89\n",
+      "array_bound": 375
+    },
+    "untracked-selection": {
+      "metadata": 0,
+      "object": 0,
+      "RustGM": 0,
+      "array_bound": 73,
+      "Location_role": "absent"
+    }
+  },
+  "predecessor": "c830a59853751f29d913449065121d03edeb0b3811311bcda0af2f1725c49ad8",
+  "correction": "Authentic matching regular/constunstable policies on authored impls; original Location prefix and call line numbers unchanged. First independent failure retained."
+}
