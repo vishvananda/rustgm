@@ -176,6 +176,17 @@ Private tests use complete names, integration suites retain exact outer-module
 boundaries, and every selected name/count must actually execute. A new binary
 no longer requires executing its complete private inventory.
 
+For a new source fixture, declare its expected outcome and first try the frozen
+input against an already qualified immutable development CLI. Record its hash,
+input bytes and effective flags. Input-only probes need no Cargo rebuild or
+new private harness; use the storage/resource wrapper and retain the result.
+For source-provider fixtures, preserve the actual source-core identity and crate
+arguments. A later compiler edit still requires affected current-source checks.
+If private instrumentation is necessary, capture the bounded reachable typed
+graph and exact binder coordinates together. Confirm the actual mismatch before
+changing a shared kernel; a smaller reducer that passes is a control, not proof
+of the proposed cause. Remove temporary instrumentation before qualification.
+
 Each run saves raw output, step times, source-content fingerprints, binary
 hashes and exact inventories under `obj/qualification/fast/`. A timeout is a
 failed check with retained evidence, and owned compiler/test processes are

@@ -1,14 +1,30 @@
 # Parallel library bootstrap implementation
 
-The user has reauthorized up to two existing subagents. Both are currently idle
-after their finite handoffs. Root owns direct implementation, combined
-qualification and public main integration in `rustgm-pa25-work`. Worker
-`lint_expectations` handed off exact source C linkage profile5; worker
-`const_call_review` handed off source union Copy. Both are integrated and joined
-through production/private/CLI/native qualification. Root owns shared
-schema/profile/ABI and nominal transport. Do not start another worker build for
-these completed handoffs. At most two heavy commands may run globally, one per
-worktree; no new worktree is needed.
+Root owns compiler integration, current-source CLI/original-core observations and
+publication in `rustgm-pa25-work`. B (`lint_expectations`) has completed
+qualified09aa611d associated-equality and af21533d image-accounting handoffs; both
+are integrated. It is investigating the next exact counter after StepBy still
+hits the unchanged macro budget. C's model became unavailable and was interrupted. Root completed
+its exact item/opened-call repair directly in `rustgm-pa27-work`, qualified9
+controls and native const1, committed3afc71e6 and integrated it. Do not restart C
+or edit that tree concurrently without a new ownership handoff.
+
+The joined45 consumer gate passes149.22s, including the real Debug array
+consumer. Its seven source-native programs match the pinned Rust observations,
+and upstream/registration/layout pass; receipt e7e17d565c057982e5bb0ea10a58871c56d3b60e88c42303fad8ed99d55c53ae.
+The later capacity-accounting integration passes joined48 in148.85s and
+production/CLI2 in109.78s. All7 native inputs are byte-identical to the qualified
+programs; equality receipt23cb88d09d859c515bb57180827030917a1f050ea147d9aa8756269726ff7eef.
+New CLI8ee48985 still hits a source budget at StepBy (file154:512), so the next
+exhausted counter and true whole-crate costs remain to diagnose. Do not claim a new whole
+library artifact from these finite controls.
+
+Keep at most two heavy jobs globally, one per worktree, two Cargo/test threads,
+16GiB absolute output caps and150GiB free reserve. Root qualification and both original probes are terminal. B is preparing
+the next counter observation; coordinate its live job before Root admission. Preserve warm caches/current pins and scoped cleanup.
+No new workers or worktrees are needed. Use existing B for the current macro-budget diagnosis and next distinct
+actual core blocker. Report actual terminal before
+reusing a slot; neither an observation timeout nor a stale session alias is one.
 
 Compilation has priority over advisory lint parity. Preserve real `allow`,
 `deny`, `forbid`, `expect` and fulfillment accounting. Broader lint producers
@@ -20,18 +36,28 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-Qualified CLIdb367fb1 preserves all722 pinned inputs and both strict/explicit-Allow
-observations. Allow passes actual MaybeUninit union Copy expansion and reaches
-the seven-field FnPtr Debug derive in `mem/type_info.rs327` (LIB-073), with373
-opened sources. Strict remains68 at the deferred pointer-cast lint expectation.
-Joined private28 passes135.13s; production/CLI4 passes179.11s; separate native
-union and exact C provider/client observers plus upstream/registration/layout
-pass10.67s. Prior main75a CI40811273094 is green. Root next owns the actual Debug
-field-array recipe. Genuine nominal/provider and original artifact requirements
-remain open. Loading counts never count as compiled files or artifacts.
+Public0fa08bc full CI40815003815 remains green. The qualified pre-capacity CLI
+1b626052 passes MaybeUninit, FnPtr Debug7, Abi enum Default and DecodeUtf16's
+associated equality. Next it stops the source expansion accounting budget at
+iter/sources/from_coroutine.rs1098. All722 original hashes/effective target flags
+are unchanged;373 opened sources are loading/order, not compiled files/artifacts.
+That observation receipt is396404222b5d1b031bf9a0f5c0701743f1f1c1e49a927a24ef5acf1063ca57d9.
+Strict still retains the deferred pointer-cast expectation at68 sources.
 
-The actual66-role/two-word completion set, physical source Option profile and
-old-wire denials remain qualified. Complete known-role reservations are still a
+LIB079 diagnosis isolates attempted storage67,116,347B against67,108,864B,
+with work644,164 and retained witness53,959B. Output text paid304 token-storage
+bytes per character. The integrated repair pays actual image/origin/token/field
+growth and real parser token/splice costs; all three limits and sticky failures
+are unchanged. Current combined evidence passes, while the latest unchanged-source
+observation still reports a budget boundary at StepBy. Its exact source-bound
+receipt is9aa74938c360ae0790d94f5c18a48149570e68559aedba6feffa38fc59dba9b0;
+uncapped2c0c665808df214f783cd0e25e81e81c318772e3165aacd5af6a270d025a4379
+keeps deferred lint evidence separate. No original source/target flag/limit was changed.
+Original Formatter/helper bodies, complete source transport and all original
+core/alloc/std artifacts remain required.
+
+The existing two-word completion set and appended source-only UnsafeUnpin
+role67, physical source Option profile and old-wire denials remain qualified. Complete known-role reservations are still a
 proposal and confer no source body/runtime/metadata authority.
 
 - The stopped derive lane's finite prerequisite at
@@ -66,10 +92,10 @@ reconcile the owning PA's remaining implementation and release checklist.
 
 Keep at most one qualified handoff queued per worker. Take shared interfaces
 before opening unrelated compiler work, and protect integration/observation time.
-Current handoffs are joined and no worker task is active. Root publishes the
-qualified source union/exact C checkpoint, then implements the original FnPtr
-Debug field-array recipe (LIB-073). Actual nominal providers and original crate
-artifacts remain required; use the live queue before reassigning a worker.
+The current concrete exit is the capacity-accounting/current-source core
+observation after the qualified Debug and exact borrowed-call consumers.
+Keep actual nominal providers and original artifacts as explicit requirements;
+use the live queue before reassigning a worker.
 Use at most two existing subagents; shared type/ABI/proof edits require explicit
 ownership coordination, not another concurrent owner.
 

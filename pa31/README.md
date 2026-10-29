@@ -227,3 +227,24 @@ The [finite source exact-C linkage checkpoint](../docs/pa31-source-exact-linkage
 adds the explicit version5 source profile with paid exact symbol transport and
 separate provider/client native objects. Original nominal source transport,
 ordinary-provider publication and whole assignment/library artifacts remain required.
+
+The [Debug array checkpoint](../docs/pa31-source-debug-arrays-checkpoint.md)
+retains the pinned field-helper cutoff, real arrays and final unsized indirection.
+Its independent observer is explicitly authored test code; full original
+formatter execution remains required. The actual source
+[enum Default contracts](tests/spec/enum-default/README.md) preserve unit helper
+ownership, replay and ordinary Self variant resolution without invented generic
+bounds. The [UnsafeUnpin checkpoint](../docs/pa31-unsafe-unpin-checkpoint.md)
+preserves genuine source auto-trait proof and correct implicit sizing. The
+[wrapping-offset checkpoint](../docs/pa31-source-wrapping-offset-checkpoint.md)
+records actual unsafe/const source calls, root-preserving modular arithmetic and
+distinct inbounds checks. None of these finite components activates PA31 or
+supplies a whole original library artifact.
+
+Source intrinsic item signatures and opened Body/Code Calls use distinct binder
+contexts. The [borrowed-call checkpoint](../docs/pa31-borrowed-source-calls-checkpoint.md)
+requires exact caller-root matching without lifetime erasure, including actual
+runtime and CTFE consumers. Derive storage must pay actual capacity growth and
+parser token/splice work, preserving separate attempted and retained budgets;
+see the [image accounting checkpoint](../docs/pa31-derive-image-storage-checkpoint.md).
+These finite proofs preserve every original library and parent release gate.

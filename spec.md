@@ -474,6 +474,30 @@ signature-recovery cache or synthetic trampoline. The
 [formatter checkpoint](docs/formatter-pointer-erasure-checkpoint.md) records real
 const formation, borrowed-owner runtime calls and the combined integration.
 
+Source `arith_offset` consumes its actual attributed const unsafe declaration,
+complete one-type instance and checked reached call. Runtime and CTFE evaluate
+both operands once, including zero-sized elements. Multiply the signed word by
+the selected element size modulo the target word width and preserve the pointer's
+original provenance and write restrictions. Leaving an allocation is permitted;
+accessing memory still requires the ordinary validity checks. Flatten repeated
+symbolic offsets to the original root, avoiding a growing projection chain.
+Share existing layout and byte-index kernels without weakening in-bounds offset
+semantics. Unsupported value representations and untransported source contracts
+remain explicit boundaries. See the
+[wrapping-offset checkpoint](docs/pa31-source-wrapping-offset-checkpoint.md).
+
+FunctionItem signatures retain their function binder; an opened Body or Code
+Call already stores roots in the caller. Match complete item substitutions by
+canonical readonly lowering of exactly that outer binder, preserving nested
+local binders. Validate opened Calls separately against exact caller-level
+input/result IDs, zero own binders, safety, convention and arity. Retain the raw
+item signature for actual target identity. Reuse these contracts across source
+transmute and wrapping offsets, including dependency, runtime and reached CTFE
+checks; the type comparison grants no source, unsafe or const permission.
+Charge attempted lookup work on success and failure and publish no result after
+failed payment. See the
+[borrowed-call checkpoint](docs/pa31-borrowed-source-calls-checkpoint.md).
+
 Share structural layout readiness and field instantiation across constant
 storage and source intrinsic consumers. A layout answer supplies physical data,
 not trait, source-call or memory-access permission. Authenticate the reached
@@ -711,6 +735,14 @@ cycle checks, binder-local deferral and complete child obligations. See the
 [source Freeze checkpoint](docs/pa31-source-freeze-proposal.md) for the measured
 depth, width, unrelated-node and cold/warm controls.
 
+Auto traits receive no implicit Self `MetaSized` supertrait; written bounds and
+ordinary trait, parameter and alias defaults remain authoritative. Source
+UnsafeUnpin uses its genuine unsafe auto identity and existing formation,
+negative-impl, caller and coinductive proof machinery. Append source identities
+without changing old role ordinals, bootstrap marker inventories or wire
+admission. This proof grants no optional noalias optimization. See the
+[UnsafeUnpin checkpoint](docs/pa31-unsafe-unpin-checkpoint.md).
+
 Actual source Copy and Clone have ordinary compiler-defined marker rules for
 unit, function items and function pointers. Unit has no child obligations;
 nonempty tuples need their own complete child proofs and receive no evidence
@@ -731,6 +763,35 @@ requirements. A source union Copy derive emits only its real empty marker impl;
 whole-union copying never selects or reads an active payload field. See the
 [union checkpoint](docs/pa31-source-union-copy-checkpoint.md) for source/native
 and opposing field, privacy, safety and identity controls.
+
+Source Debug derives use the pinned small-field helpers through five fields,
+then real field-name and typed `&[&dyn Debug]` arrays with the larger helpers.
+Preserve source labels, field order, enum binding provenance and the extra
+reference for a possibly-unsized final field. Share the emitter across shapes
+and charge linear output work; helper recipes grant no library-body execution.
+See the [array checkpoint](docs/pa31-source-debug-arrays-checkpoint.md).
+
+Derive emission pays for actual source, origin, token and field capacity growth,
+including copying on reallocation. Reused capacity is not a new allocation;
+characters inside one identifier are not independent token slots. Charge source
+copying, lexical scanning and each token initialization separately. Prepay parser
+scratch and syntax from actual emitted token/splice counts, preserving typed
+subtree and final owned-output charges. Keep attempted work/storage, retained
+payload and sticky failure accounting distinct. Never increase a limit to hide
+repeated capacity payment or speculative token estimates. The
+[image-storage checkpoint](docs/pa31-derive-image-storage-checkpoint.md) records
+the original-core diagnosis and fixed-setup-separated scaling controls.
+
+Source enum Default requires one configured unit variant whose actual helper
+is published by the selected builtin derive. Bind that choice to its owner,
+effect, capture and completed derive receipt; replay also rejects a missing
+choice. Keep selection and paid scratch local to the item, without a second
+catalog census or owner map. Preserve written generic/const/where requirements
+and omit invented payload Default bounds. Emit the real `Self::Variant`
+constructor. Ordinary concrete enum Self paths reuse existing associated-type,
+variant, hygiene and privacy resolution; abstract Self grants no constructor.
+The [enum contracts](pa31/tests/spec/enum-default/README.md) retain opposing
+helper, header, replay, construction and work controls.
 
 Share completed ordinary source MetaSized/PointeeSized answers across nominal
 roots in one immutable caller. Eligibility comes from the checked actual sizing

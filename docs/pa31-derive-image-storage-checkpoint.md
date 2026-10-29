@@ -63,3 +63,11 @@ Production/CLI qualification and an unchanged whole-core observation of the
 combined current compiler remain Root integration work. A legitimate next work
 or storage boundary must remain visible. Complete original coroutine/runtime,
 core/alloc/std artifacts, metadata and whole assignment releases remain required.
+
+Root integration passes48 private controls in148.85s and normal production/CLI2
+in109.78s. All7 source-native program inputs are byte-identical to their passing
+native observations. The resulting CLI8ee48985 preserves original722 hashes,
+target flags and all limits, but reports another source work/storage boundary at
+StepBy, iter/adapters/step_by.rs512. This observation does not establish that the
+whole original macro budget is now sufficient. The exact next counter/caller and
+genuine whole-crate costs remain to diagnose before any further policy change.

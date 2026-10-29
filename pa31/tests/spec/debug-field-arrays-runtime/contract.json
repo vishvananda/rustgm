@@ -1,0 +1,45 @@
+{
+  "state": "frozen before source observer or candidate observation",
+  "owning": "PA26 Debug recipe +PA23 dynamic/slice coercions +PA31 genuine source language roles; original Formatter/runtime/Result remain Required",
+  "profile": {
+    "rustc": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": true,
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false
+  },
+  "cases": [
+    {
+      "source": "source-observer.rs",
+      "metadata": 0
+    }
+  ],
+  "native": {
+    "source": "source-observer.rs",
+    "observer": "observer.c",
+    "status": 0,
+    "stdout": "Record:a:1;b:2;c:3;d:4;e:5;f:6;g:7;|Tuple:8;9;10;11;12;13;14;|Named:a:15;b:16;c:17;d:18;e:19;f:20;g:21;|Positional:22;23;24;25;26;27;28;|7\n",
+    "stderr": ""
+  },
+  "files": {
+    "source-observer.rs": "b81b207c8d26140be3fbd566769f952042fcb3f27a443aeafe4d00f97741bf9a",
+    "observer.c": "93563b71721cc8704df5a14616010f6f9ef9f50fc9708178303a911050533653"
+  },
+  "source_protocol": "authored seven-slot observers with genuine dyn Debug and slice parameters, genuine source foundation; unit Result and observer Formatter are explicitly authored tests, never an original core helper/body substitute",
+  "predecessor_contract_sha256": "bb492def3340e06934ac5286f895c2e8e30e283bbbdf0c96f47345b6b56c5278",
+  "successor": "v5 metadata passed; object requires real UnsafeUnpin auto trait, now included. Tracing observers use an ordinary checked generic accessor rather than source Index, avoiding an unrelated operator prerequisite in the test; generated Debug dyn/slice arrays, all7 positions and output predictions are unchanged. Original Index/runtime/Formatter requirements remain separate, never bypassed for core.",
+  "dyn_metadata_original": {
+    "path": "library/core/src/ptr/metadata.rs",
+    "start": 6263,
+    "end": 6415,
+    "sha256": "4b1069c61e9506116c14b624210a8708bd35dd7d309642ab99ae6ed207a6283c"
+  },
+  "retained_index_declaration": {
+    "path": "library/core/src/ops/index.rs",
+    "start": 1458,
+    "end": 2301,
+    "sha256": "3766bd874d6949a215baaac6ad3a51330f809b9dbf754fd5faa21c8e9d248b3a"
+  }
+}
