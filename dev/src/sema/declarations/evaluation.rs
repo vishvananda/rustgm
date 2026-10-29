@@ -26,6 +26,30 @@ pub(super) struct Pending {
 }
 
 impl Checker<'_> {
+    pub(super) fn schedule_typed_constant(
+        &mut self,
+        key: NodeKey,
+        ty: TypeId,
+        context: regions::Context,
+    ) -> Result<(), Error> {
+        if self.constant_evaluations.completed.contains_key(&(key, ty)) {
+            return Ok(());
+        }
+        let owner = context
+            .binder
+            .and_then(|binder| self.regions.owner(binder))
+            .unwrap_or(DefId(0));
+        self.work.push(Work::EvaluateConstant(
+            Request {
+                key,
+                ty,
+                owner,
+                array_length: false,
+            },
+            false,
+        ));
+        self.constant_dependencies(key, context)
+    }
     pub(super) fn schedule_constant_argument(
         &mut self,
         key: NodeKey,

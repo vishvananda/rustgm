@@ -781,6 +781,28 @@ walker. Its ordinary AssertParamIsCopy<Self> type check and `*self` body require
 real Copy evidence; helper spelling grants none. Generate no field reads, retain
 ordinary struct/enum rules and keep the output independent of union field count.
 
+Derive field macros retain their actual Type grammar and selected captured
+forest through typed copying and grafting. Prepay real capture/vector/tree
+growth; preserve delimiters, contexts, origins and opaque parsed handles. The
+registry and ordinary feature checks remain authoritative. Never flatten those
+handles, copy an unrelated source arena or reparse rendered field spelling.
+See the [typed macro checkpoint](docs/pa31-derive-type-macros-checkpoint.md).
+
+Scalar pattern types retain the captured pattern AST and evaluate endpoints
+through ordinary typed constant continuations. Reify a captured plain endpoint
+binding as an expression only in the fresh builtin tree, preserving its symbol,
+hygiene and span. Never reparse its spelling. Intern paid, cold canonical
+intervals by actual base and target-width endpoint bits; structural comparison
+and normalization transport contents rather than store-local range IDs. Signed
+intervals may wrap in raw bit order. Validate source ordering separately from
+base validity, and check actual initialization, provenance and char validity
+before the interval constraint. Preserve the base representation when lowering;
+an integer refinement is not a nullable pointer. Genuine NonNull retains its
+independent ABI rule. Open/exclusive/alternative forms require their actual
+source helpers and complete const/API/desugaring authority. Generic endpoints,
+integer enum niches and refinement metadata stay explicit requirements. See the
+[closed-range checkpoint](docs/pa31-closed-scalar-patterns-checkpoint.md).
+
 Source Debug derives use the pinned small-field helpers through five fields,
 then real field-name and typed `&[&dyn Debug]` arrays with the larger helpers.
 Preserve source labels, field order, enum binding provenance and the extra

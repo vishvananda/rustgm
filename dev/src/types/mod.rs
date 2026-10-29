@@ -22,7 +22,9 @@ pub mod outlives;
 pub mod parameters;
 pub mod projection;
 mod properties;
+mod refinements;
 pub mod region_graph;
+pub use refinements::{RangeId, ScalarRange};
 pub mod relations;
 pub(crate) mod shape_key;
 pub mod sizedness;
@@ -179,6 +181,7 @@ impl TypeId {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Constraint {
     NonNull,
+    ScalarRange(RangeId),
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -528,7 +531,7 @@ impl Store {
             | Kind::ArrayTerm { element, .. } => valid_type(element),
             Kind::Reference { referent, .. } => valid_type(referent),
             Kind::Pointer { pointee, .. } => valid_type(pointee),
-            Kind::Pattern { base, .. } => matches!(self.kind(base), Some(Kind::Pointer { .. })),
+            Kind::Pattern { base, constraint } => self.valid_refinement(base, constraint),
             Kind::Function {
                 parameters,
                 result,

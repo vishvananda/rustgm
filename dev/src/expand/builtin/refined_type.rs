@@ -17,7 +17,7 @@ pub(crate) fn select<'s>(
         return Err(error(start, "pattern_type requires a type context"));
     }
     charge(
-        1 + input.tokens.len(),
+        3 + input.tokens.len(),
         input.tokens.len().saturating_mul(256),
     )?;
     let ast = crate::syntax::expression::fragment::type_pattern_with_inputs(

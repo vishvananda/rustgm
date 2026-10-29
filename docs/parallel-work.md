@@ -1,16 +1,22 @@
 # Parallel library bootstrap implementation
 
 Root owns compiler integration, current-source CLI/original-core observations and
-publication in `rustgm-pa25-work`. Union Clone9325f84b2 and the cold Source192
-layout correction8628f7afc now pass joined12 in109.84s, CLI3 in90.95s and
-harness272/upstream. Root's LowIR is byte-identical to the passed native proof.
-The previous resource API and metadata migration remain integrated/qualified.
-B (`lint_expectations`) now owns LIB-081's selected Macro(Type) capture copying
-in derive_types and its capture helper. C (`const_call_review`) owns LIB-082's
-first complete closed-inclusive scalar-range consumer in syntax/types/sema/CTFE/
-ABI. Their exact syntax child and transfer ownership is coordinated; B does not
-edit central TypePattern transfer, and C does not edit Macro capture copying.
-Both start from8628f7afc in their existing trees. No new advisory lint producer,
+publication in `rustgm-pa25-work`. Closed scalar consumer929b90e28 is integrated;
+all3155 compiler/harness hashes exactly match its passed private8/native source.
+Root production/CLI3 passes231.05s; authenticated fixture/proof reuse,harness272
+and upstream pass20.58s. CLI1e9301db passes original closed-range expansion and
+reaches the open/exclusive/alternative profile at file45:6972 in11.36s,374 opens,
+all722 original hashes unchanged. This is an expansion/image offset, not an
+asserted physical source byte. Receipt14ea7a04abafba720f68c1108449eb7d8115b9ff9d361d42dca67c32bc8a8ac0.
+Strict separately retains deferred expectation68; no original artifact is implied.
+B (`lint_expectations`) now owns LIB-083's source-only RangeMin/Max/Sub role,
+header and identity-query work. C (`const_call_review`) owns LIB-082's
+next open/exclusive/signed-alternative consumer after its qualified closed-range
+exit. Genuine helper bodies, typed continuations and internal desugaring
+authority require a coordinated interface before shared edits. B does not
+edit central TypePattern/Work/evaluation. Its one call_traits signature-queue
+hunk is agreed; source/body/desugaring permission stays consumer-owned. C has
+merged the disjoint Macro copier. No new advisory lint producer,
 worker or worktree is queued. Root owns observer/configuration, integration and
 publication; central interface changes require explicit coordination.
 
@@ -56,11 +62,12 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-Public40791c7d3 fast CI40843868971 passes. Full CI40843890477 has2226 private
+Public8051a1355 full CI40852257802 and55dcc81d3 full CI40855585622 both pass
+every lane. The newly integrated scalar consumer's full CI is pending. Earlier full CI40843890477 has2226 private
 passes and only one stale cold Source size assertion (184 versus192); Root's
 correction now passes in joined12. Its metadata fixes all3 earlier failures from
 40835039063 without a regenerated golden or false source premise. Full CI will
-be rerun after publishing this union/layout checkpoint. The earlier
+continue to be monitored; it includes that union/layout correction. The earlier
 public0fa08bc full CI40815003815 is green. The qualified pre-capacity CLI
 1b626052 passes MaybeUninit, FnPtr Debug7, Abi enum Default and DecodeUtf16's
 associated equality. Next it stops the source expansion accounting budget at

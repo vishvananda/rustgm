@@ -811,7 +811,8 @@ pub(super) fn representation(types: &Store, ty: TypeId) -> Result<Type, &'static
     }
     Ok(match types.kind(ty).ok_or("missing canonical type")? {
         Kind::FunctionItem { .. } => Type::Void,
-        Kind::Pattern { .. } | Kind::Function { .. } | Kind::Pointer { .. } => Type::Ptr,
+        Kind::Pattern { base, .. } => return representation(types, base),
+        Kind::Function { .. } | Kind::Pointer { .. } => Type::Ptr,
         Kind::Primitive(p) => match p {
             Primitive::Bool => Type::I1,
             Primitive::Char | Primitive::U32 => Type::U32,

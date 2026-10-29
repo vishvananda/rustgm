@@ -21,7 +21,7 @@ enum Encode {
     },
 }
 enum Decode {
-    NonNull,
+    Refinement(crate::types::Constraint),
     Value {
         ty: TypeId,
         offset: u64,
@@ -541,9 +541,9 @@ impl Machine<'_, '_> {
                 self.reserve_cells(0)?;
                 self.charge(1)?;
                 match work {
-                    Decode::NonNull => {
+                    Decode::Refinement(constraint) => {
                         let value = *state.values.last().ok_or("missing pattern base value")?;
-                        self.require_nonnull_pattern(value)?;
+                        self.require_pattern(constraint, value)?;
                     }
                     Decode::Product { start, variant } => {
                         self.reserve_cells(state.values.len().saturating_sub(start))?;
@@ -632,9 +632,9 @@ impl Machine<'_, '_> {
         }
         let layout = self.footprint(ty)?;
         let ty = Reader::new(self.evaluator.facts()).storage_type(ty)?;
-        if let Some(Kind::Pattern { base, .. }) = self.evaluator.facts().types.kind(ty) {
+        if let Some(Kind::Pattern { base, constraint }) = self.evaluator.facts().types.kind(ty) {
             self.reserve_decode(state, 0, 2, 0)?;
-            state.pending.push(Decode::NonNull);
+            state.pending.push(Decode::Refinement(constraint));
             state.pending.push(Decode::Value { ty: base, offset });
             return Ok(());
         }

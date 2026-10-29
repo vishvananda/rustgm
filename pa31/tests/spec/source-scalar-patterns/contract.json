@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "state": "v4 frozen before observation; named constant endpoint added",
+  "profile": {
+    "rust_commit": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "rust_release": "1.98.0",
+    "edition": "2024",
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "cap_lints": "allow",
+    "bootstrap": true
+  },
+  "source_foundation": {
+    "path": "pa31/tests/spec/union-clone/source-runtime.rs",
+    "sha256": "c29e9545b3a11e7379fcfbd28bb1b0db1a8c1868564d6e40d6ffaa69d24813bb",
+    "selection": "prefix before pub mod location; real pattern_type declaration replaced with pinned core/pat.rs declaration; request pattern_type_macro added"
+  },
+  "selected_original": {
+    "path": "library/core/src/num/niche_types.rs",
+    "sha256": "1a74080c73dd7687b08e667d5611d4068a1b7556311f0b58e44edadb17d0a160",
+    "contract": "actual Nanoseconds closed-inclusive pattern and Clone+Copy derive/template; wider generated comparison/hash/formatting methods remain required"
+  },
+  "cases": {
+    "pointer-bits.rs": {
+      "sha256": "bcef3b90a990b3f490a388702ff444ca267a70b2c51fe98ec54be51db8a9413d",
+      "status": 1
+    },
+    "missing-gate.rs": {
+      "sha256": "e94fccce6161c7bd4a9342de7140e6cb38c2417fd95a888fbf46d8dfc063e2cc",
+      "status": 1
+    },
+    "outside-high.rs": {
+      "sha256": "295ceffab95be50dab3f2544eef5daf09aec9c47195006536fa7ad348a3adcd4",
+      "status": 1
+    },
+    "outside-low.rs": {
+      "sha256": "2424afe564208fccf36106c171095d574893b422b2ab73f8c81b85ba55495a37",
+      "status": 1
+    },
+    "reversed.rs": {
+      "sha256": "d309d1ba049be6ffd28dab0873fe31b315eceb75f560007e41fdd17bacbca091",
+      "status": 1
+    },
+    "char-base.rs": {
+      "sha256": "7b464bd261b9b5c11277014441b0222b79616c930f13e602b862e7a067d4033c",
+      "status": 1
+    },
+    "uninitialized.rs": {
+      "sha256": "cb016289a9e3406986b52edc2eb5433b5acfe693866ff78557d53d2134edebc6",
+      "status": 1
+    },
+    "source-runtime.rs": {
+      "sha256": "93e5d638266e7b724665a3710a963b6f6931acd3c54f9cf1e0f04fd19cb39998",
+      "status": 0
+    }
+  },
+  "native": {
+    "provider": "source-runtime.rs",
+    "observer": "observer.c",
+    "observer_sha256": "94619e0d7e932c6d3b82491d53982176403482b6b959de288d0920e9abec19fe",
+    "stdout": "0 7 999999999 -2 65\n",
+    "stderr": "",
+    "status": 0
+  },
+  "required": [
+    "open/exclusive/or constraints and real RangeMin/RangeMax/RangeSub source protocol",
+    "generic endpoints",
+    "integer-pattern enum niches",
+    "refinement metadata transport",
+    "complete original niche_types methods/runtime"
+  ],
+  "predecessor": "v3 all11operations passed, retained; v4 adds genuine module-local named endpoint with unchanged native exports/expected stream",
+  "neg_source": {
+    "path": "library/core/src/ops/arith.rs",
+    "role": "actual Neg trait and selected i8 neg_impl body",
+    "sha256": "95406f545fe7bb39d3690a6e50e90698dd8e7346fe632636d8cb5b6996a50f22"
+  }
+}

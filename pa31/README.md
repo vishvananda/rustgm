@@ -53,6 +53,15 @@ copies pass, while whole original runtime/validity/metadata and the separate
 source union Clone recipe remain required. The next original expansion blocker
 is the Debug field-array helper recipe for the seven-field FnPtr.
 
+The [closed scalar-pattern checkpoint](../docs/pa31-closed-scalar-patterns-checkpoint.md)
+qualifies actual range formation, named typed constants, validity and source
+Clone/Copy/native execution for the Nanoseconds profile. Retain the actual base
+representation and complete source constraints. Open/exclusive and signed
+alternative forms require the real RangeMin/RangeMax/RangeSub declarations,
+selected source constants/bodies and authenticated internal desugaring allowance.
+Generic endpoints, scalar enum niches, refinement metadata and complete original
+methods remain requirements of the owning assignments.
+
 An authored `prelude_import` requires its distinct crate feature and actual use
 owner. Select the genuine module separately from ordinary lexical globs; preserve
 lookup precedence, private binding lineage, hygiene and `no_implicit_prelude`,
@@ -261,3 +270,8 @@ The [union checkpoint](../docs/pa31-source-union-copy-checkpoint.md) now include
 the real source union Clone recipe and independently matched scalar/array native
 observers. Its original escape expansion passes; typed nested field macros and
 the actual scalar ranges used by niche_types remain separate source consumers.
+
+The [typed field-macro checkpoint](../docs/pa31-derive-type-macros-checkpoint.md)
+now preserves genuine nested macro captures and reaches the actual range parser.
+Scalar pattern validity and the authentic range-helper protocol remain required;
+successful copying does not grant those semantics or source body permission.

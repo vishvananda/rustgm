@@ -472,8 +472,13 @@ impl Bases {
                 self.optional(start);
                 self.optional(end);
             }
-            Kind::TypePattern { base: node, .. }
-            | Kind::Group(node)
+            Kind::TypePattern { base, constraint } => {
+                self.node(base);
+                if let crate::syntax::ast::TypeConstraint::Pattern(pattern) = constraint {
+                    self.node(pattern);
+                }
+            }
+            Kind::Group(node)
             | Kind::Statement(node)
             | Kind::Unary { operand: node, .. }
             | Kind::Loop { body: node }

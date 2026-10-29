@@ -2,6 +2,28 @@
 use super::{Constant, Failure, Machine, Reader};
 use crate::sema::values::{View, WordTarget};
 impl Machine<'_, '_> {
+    pub(super) fn require_pattern(
+        &mut self,
+        constraint: crate::types::Constraint,
+        value: Constant,
+    ) -> Result<(), Failure> {
+        let crate::types::Constraint::ScalarRange(id) = constraint else {
+            return self.require_nonnull_pattern(value);
+        };
+        self.charge(1)?;
+        let View::Scalar(value) = Reader::new(self.evaluator.facts()).view(value)? else {
+            return Err("scalar pattern requires a genuine integer value".into());
+        };
+        let bits = match value {
+            crate::sema::model::Scalar::Integer(bits) => bits,
+            crate::sema::model::Scalar::Character(value) => u128::from(value),
+            _ => return Err("scalar pattern requires an integer or char value".into()),
+        };
+        if !self.evaluator.facts().types.range_allows(id, bits) {
+            return Err("value is outside its scalar pattern range".into());
+        }
+        Ok(())
+    }
     pub(super) fn require_nonnull_pattern(&mut self, value: Constant) -> Result<(), Failure> {
         self.charge(1)?;
         if let View::Address { bits } = Reader::new(self.evaluator.facts()).view(value)? {
