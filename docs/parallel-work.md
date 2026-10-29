@@ -1,30 +1,29 @@
 # Parallel library bootstrap implementation
 
 Root owns integration, original-core observations and public main publication.
-The current qualified development checkpoint joins real source SIZE/Div,
-selected constant calls, module compatibility policy and prepaid variance/outlives
-closures. Root159 passes41.83s warm, productionCLI3 passes212.48s, and nine fresh
-native operations cover all14 scalar division families and the genuine override.
-Four additional native results are reused only after exact source/LowIR/backend
-byte equality. Harness275, registrations385,44-stage layout and pinned upstream
-checks pass. The initial cold244.81s lint/link build exhausted the300s total
-before tests completed; its failure is retained beside the identical warm pass.
+The current qualified development checkpoint is 0d8cfe3f6, joining actual
+compile-time-only source semantics and checked unsafe-call body transport.
+Private 201 passes128.96 seconds; Root production/CLI 35 passes41.61 seconds.
+Both include strict Clippy, formatting and architecture. Fresh whole v7/v8
+providers, client metadata and native observers pass with exact prior v7 bytes.
+Seventeen compile-time-only native results are reused only by current 201 emitted
+source/LowIR and exact backend/observer equality. All 39 CLI constant outcomes and
+PA25 course94 pass. Raw cold timeout and validator predecessor failures remain;
+no deadline, source input or expected outcome was relaxed.
 
-Current CLIa7ca7055 stops at original intrinsics/mod.rs2885 rustc_comptime on
-`type_id_vtable`. It clears the previous compatibility marker;375 loading opens,
-all722 hashes, target and explicit finite quotas remain fixed. Strict separately
-retains expectation68. Root's qualified observation/native receipt is
-300d2f6b41cb0a53f3961584f8ad06203057d2db610be3cae51a491bbc3ec66f.
+Current CLI 9b73af38 clears rustc_comptime/type_id_vtable and reaches
+rustc_no_mir_inline at original ptr/mod.rs1445 swap_chunk.375 loading opens,
+all722 original hashes, target and explicit finite quotas remain fixed. Strict
+separately retains expectation68. The current observation/native reuse receipt is
+d6276e501adccbf679fe412251faf64a7857b951047ec5380a438f49196a9abf.
 No original artifact or additional whole assignment is complete.
 
-B owns explicit v7 genuine const/unsafe free-function source transport, including
-real declaration-only Destruct/Freeze prerequisites for the retained generic
-input. Independent Rust/native11 passes; candidate167 is being qualified.
-C owns LIB-098 authenticated compile-time-only headers, actual const roots and
-call/body policy. Genuine erased function-pointer runtime calls remain accepted;
-ordinary runtime/direct and ordinary const-fn callers gain no implicit const
-block. No new advisory lint producer, worker or worktree is queued.
-Root owns publication, production/CLI and original-crate observations.
+C owns LIB-101 actual attribute/owner/image validation with its MIR-only meaning,
+preserving native inline hints and all source permissions. B completed v8 and
+owns a read-only cohesive inventory of likely next active compiler-attribute gaps;
+semantic solver/const/coherence markers must never be accepted inertly.
+Root owns production qualification, public main and original-crate observations.
+No new advisory lint producer, worker, worktree or target directory is queued.
 
 Private gates use tooling247de9204: normal Cargo test builds with strict
 `clippy-driver` as workspace compiler lint/link once, preserving real dependency

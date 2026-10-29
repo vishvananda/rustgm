@@ -274,8 +274,31 @@ growth and atomic publication. Distinguish caller feature requests from local
 API policies when exporting ordinary client libraries: only a completed,
 nonstaged inventory with no local regular/const policies or implications proves
 that no such policy needs transport. Unknown inventory is required information.
+The explicit version-eight source profile additionally retains each actual
+checked unsafe call context: safe, explicit unsafe block or unsafe function.
+Collect only discharged obligations in prepaid sparse body-owned storage;
+authenticate the current caller/body/node/signature when reconstructing a call.
+This context is neither a paid proof nor API, const or executable permission.
+Keep every earlier profile's bytes and admission rules unchanged. Source type
+recipe keys retain caller context whenever the existing transitive callable
+summary says they contain context-owned application handles, including named
+function items and their containers. Noncallable recipes retain shared keys;
+do not add another scan, summary or cache to recover this ownership.
 The [source-callable checkpoint](docs/pa29-source-callable-effects.md) records
-the explicit v7 profile, native consumers, linear costs and retained families.
+both profiles, native consumers, linear costs and retained families.
+
+An authenticated rustc_comptime declaration has effective compile-time
+eligibility distinct from written const syntax. Its own body and genuine
+constant roots use Const; ordinary const functions retain conditional effects,
+and ordinary runtime or closure bodies gain no implicit constant context.
+Legitimate function-pointer erasure retains its ordinary runtime behavior.
+Validate even unused marked bodies through the existing defining-body callback
+and single original-CFG owner, not a fake call or duplicate preparation cache.
+Regular/const API, unsafe permission, promotion and intrinsic execution remain
+separate contracts. Metadata profiles without this effective marker reject its
+transport, including otherwise const-capable profiles. The
+[compile-time-only checkpoint](docs/pa31-source-comptime-checkpoint.md) records
+the actual source/native opponents and remaining reflection/library work.
 
 Local structural inherent ownership consumes the actual crate policy and complete
 member inventory. Head/name/context buckets exclude unrelated work; full Self,
