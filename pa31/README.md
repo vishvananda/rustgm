@@ -80,6 +80,11 @@ genuine caller-location data and actual method/constant conformance. Its native
 observer matches pinned Rust; original integer/char/panic helper bodies, generic
 endpoints and metadata remain required.
 
+The [original NonZero method checkpoint](../docs/pa28-source-unchecked-transmute-checkpoint.md)
+executes unchanged new/get through actual ZeroablePrimitive projection and
+source TransmuteUnchecked. Its closed u8 inner foundation is explicit; original
+open helpers, full inner/library graphs and metadata remain required.
+
 An authored `prelude_import` requires its distinct crate feature and actual use
 owner. Select the genuine module separately from ordinary lexical globs; preserve
 lookup precedence, private binding lineage, hygiene and `no_implicit_prelude`,

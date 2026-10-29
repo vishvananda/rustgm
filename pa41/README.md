@@ -48,6 +48,13 @@ native emission. Complete each required boundary before claiming that consumer.
   semantics. An ordinary store, erased statement or frontend delegation cannot
   replace it. Keep unsupported backend forms distinct from Rust language errors.
 
+The [derived constant-subtree checkpoint](../docs/pa8-derived-constants-checkpoint.md)
+preserves actual stdarch array lane counts and qualifies a finite genuine
+128-bit source Clone/Copy C call/return. Use the reviewed host-object reader for
+SSEUP validation; the standalone course validator has a different dialect. The
+complete original splat/Debug/conversion graph and broader target closure remain
+required; the frozen backend is unchanged.
+
 ### Broader target closure
 
 Complete the pinned assembly operand, option, ABI-clobber and supported-target

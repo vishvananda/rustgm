@@ -92,3 +92,8 @@ Generic endpoints,
 disconnected alternatives, original checked subtraction/char conversion/panic,
 refinement metadata, original core/alloc/std artifacts and whole-PA release
 checks remain required. No new assignment is marked implemented.
+
+Full public0d4dde55a qualification CI40893498057 passes every lane: strict
+lint/architecture/harness, host build graph, release/course, native, debug and
+independent Rust. Push40893343278 also passes. This does not activate another
+assignment or produce an original library artifact.

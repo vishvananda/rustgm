@@ -1,22 +1,28 @@
 # Parallel library bootstrap implementation
 
-Root owns integration, current-source CLI/original-core observations and main
-publication in rustgm-pa25-work. Joined15237701b passes61 private controls in
-209.94s, production/CLI3 in36.53s, full format/architecture/strict Clippy and
-native endpoint5/niche12. All3182 compiler/test/harness hashes match Root;
-there is no duplicate private rebuild. Harness272, registrations385, layout and
-upstream pass. Cold private and outer finalization timeouts remain failures.
-See the [endpoint checkpoint](pa31-source-endpoint-execution-checkpoint.md).
+Root owns integration, original-core observations and public main publication.
+Joined93e84a642 passes87 exact private controls168.32s and productionCLI3
+146.36s, full format/architecture and strict Clippy. All3186 source entries and
+134 fixture hashes match Root, so no integrator private rebuild. Actual ordinary
+array5/7/11, C128 vector-copy and original NonZero0/1/255 source native programs
+match pinned Rust. The first SIMD attempt used the wrong course validator;
+corrected native-v2 uses the existing reviewed host-object reader, preserving
+that failure and all backend pins. Harness272, registrations385, layout/upstream
+pass. Full prior public0d4dde55a CI40893498057 and push40893343278 pass every lane.
 
-Current CLI1accafdd clears the previous range-pattern failure and stops at
-file268:2225's stdarch array-field derive transfer in12.94s. The374 opens are
-still loading/order, not artifacts; all722 original hashes/target flags and
-explicit work14,500,624/attempted1GiB/retained64MiB stay fixed. Strict separately
-retains the deferred expectation at68 opens. No original artifact/new PA release.
-B now owns LIB-092's actual parsed constant-child transfer, paid literal pool and
-ordinary/SIMD source controls. C preserves its original-u8/Formatter closure plan
-and valid pinned-core reference; whole-NoCore source remains unqualified, and C
-only reviews literal ownership for B. No new advisory lint producer is queued.
+Current CLI813a611c clears stdarch lane-count copying and stops at file97:24211,
+original any.rs730 TypeId.data's16 / size_of::<*const ()>() call subtree, in11.18s.
+Same374 loading count/all722 hashes/target flags, explicit work14,500,624/
+attempted1GiB/retained64MiB. Strict separately retains the expectation68. No
+original artifact/additional PA release. See the
+[derived-field checkpoint](pa8-derived-constants-checkpoint.md) and
+[unchecked source checkpoint](pa28-source-unchecked-transmute-checkpoint.md).
+B now owns LIB-094 selected Call transfer/ordinary const-call controls. C traces
+the genuine size_of/SizedTypeProperties/usize Div source path read-only first;
+old primitive division exists but source role/header/default/erasure joins are
+missing. Preserve original helper/Formatter/metadata/all-artifact requirements.
+No new advisory lint producer is queued. Keep2heavyglobally/16GiB/150reserve,
+existingtwo workers/trees only and source-frozen actual terminal handoffs.
 
 B owns complete zero-excluded unsigned scalar niche layout, CTFE bytes and native
 ABI transport (LIB-087), preserving actual scalar types and measured hot widths.

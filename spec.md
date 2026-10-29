@@ -484,6 +484,17 @@ signature-recovery cache or synthetic trampoline. The
 [formatter checkpoint](docs/formatter-pointer-erasure-checkpoint.md) records real
 const formation, borrowed-owner runtime calls and the combined integration.
 
+Source TransmuteUnchecked is a distinct attributed identity with the genuine
+indirect-const/header policy. Keep ordinary transmute's pre-monomorphization
+size relation separate from unchecked body typing. Complete call/instance,
+current source and unsafe/API/const proofs still precede shared runtime/CTFE
+reinterpretation. Reached mismatched constants fault; destination validity,
+initialization, moves and provenance are unchanged. Unsupported runtime layouts
+and old declaration/body export profiles remain explicit boundaries. Reuse
+existing descriptors and byte/layout kernels rather than adding a parallel
+operation or origin graph. The [unchecked checkpoint](docs/pa28-source-unchecked-transmute-checkpoint.md)
+qualifies genuine outer NonZero new/get with an explicitly closed inner carrier.
+
 Source `arith_offset` consumes its actual attributed const unsafe declaration,
 complete one-type instance and checked reached call. Runtime and CTFE evaluate
 both operands once, including zero-sized elements. Multiply the signed word by
@@ -787,6 +798,15 @@ growth; preserve delimiters, contexts, origins and opaque parsed handles. The
 registry and ordinary feature checks remain authoritative. Never flatten those
 handles, copy an unrelated source arena or reparse rendered field spelling.
 See the [typed macro checkpoint](docs/pa31-derive-type-macros-checkpoint.md).
+
+Derived field constants copy selected typed children and rebase selected inline
+literal IDs into the destination pool, with prepaid growth. Deferred token
+literals keep real tokens and new pending-materialization IDs. Include pending
+owner/literal slices in O(1) payload accounting; do not scan or copy an unrelated
+source pool. Byte-backed values require their actual owner, never a shallow
+stored handle. Preserve spans, parsed captures and downstream semantic/feature
+checks; copying syntax grants no callable or evaluation permission. See the
+[constant-subtree checkpoint](docs/pa8-derived-constants-checkpoint.md).
 
 Scalar pattern types retain the captured pattern AST and evaluate endpoints
 through ordinary typed constant continuations. Reify a captured plain endpoint
