@@ -61,13 +61,18 @@ enum ExportMode {
     Definitions,
     Compatibility,
     Callables,
+    Safety,
 }
 
 impl ExportMode {
     fn feature_predicates(self) -> bool {
         matches!(
             self,
-            Self::FeaturePredicates | Self::Definitions | Self::Compatibility | Self::Callables
+            Self::FeaturePredicates
+                | Self::Definitions
+                | Self::Compatibility
+                | Self::Callables
+                | Self::Safety
         )
     }
     fn availability(self) -> bool {
@@ -78,6 +83,7 @@ impl ExportMode {
                 | Self::Definitions
                 | Self::Compatibility
                 | Self::Callables
+                | Self::Safety
         )
     }
     fn module_contracts(self) -> bool {
@@ -89,12 +95,13 @@ impl ExportMode {
                 | Self::Definitions
                 | Self::Compatibility
                 | Self::Callables
+                | Self::Safety
         )
     }
     fn exact(self) -> bool {
         matches!(
             self,
-            Self::Definitions | Self::Compatibility | Self::Callables
+            Self::Definitions | Self::Compatibility | Self::Callables | Self::Safety
         )
     }
 }
@@ -293,6 +300,13 @@ impl Stage {
     ) -> Result<Self, &'static str> {
         Self::begin_mode(report, facts, identity, ExportMode::Callables)
     }
+    pub(crate) fn begin_module_safety(
+        report: &Report,
+        facts: &mut Declarations,
+        identity: &CrateIdentity,
+    ) -> Result<Self, &'static str> {
+        Self::begin_mode(report, facts, identity, ExportMode::Safety)
+    }
     fn begin_mode(
         report: &Report,
         facts: &mut Declarations,
@@ -372,7 +386,8 @@ impl Stage {
             stage.inputs.selected_methods = Some(Box::default());
         }
         stage.functions.exact = mode.exact();
-        stage.functions.callable_effects = mode == ExportMode::Callables;
+        stage.functions.callable_effects =
+            matches!(mode, ExportMode::Callables | ExportMode::Safety);
         stage.reserve(count.saturating_mul(size_of::<Option<DeclarationRef>>()))?;
         stage.definitions.resize(count, None);
         stage.declarations(report, facts, mode)?;

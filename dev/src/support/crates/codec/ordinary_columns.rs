@@ -120,6 +120,12 @@ pub(super) fn decode_module_callables(
 ) -> Result<AvailabilityPacket, &'static str> {
     decode_availability_profile(reader, base, s::Profile::Source2024ModuleCallables)
 }
+pub(super) fn decode_module_safety(
+    reader: &mut Reader<'_>,
+    base: usize,
+) -> Result<AvailabilityPacket, &'static str> {
+    decode_availability_profile(reader, base, s::Profile::Source2024ModuleSafety)
+}
 fn decode_availability_profile(
     reader: &mut Reader<'_>,
     base: usize,
@@ -127,7 +133,14 @@ fn decode_availability_profile(
 ) -> Result<AvailabilityPacket, &'static str> {
     let features = profile.feature_predicates();
     let callables = profile.unconditional_callables();
-    let (mut rows, bytes) = decode_profile_with(reader, base, false, features, callables)?;
+    let (mut rows, bytes) = decode_profile_with(
+        reader,
+        base,
+        false,
+        features,
+        callables,
+        profile.call_safety(),
+    )?;
     let mut read = Input {
         reader,
         bytes,
@@ -135,6 +148,7 @@ fn decode_availability_profile(
         provided: false,
         features,
         callables,
+        safety: profile.call_safety(),
     };
     let attributes = header_facts::decode(&mut read)?;
     let modules = namespace_rows::decode(&mut read)?;
@@ -209,7 +223,11 @@ fn encode_profile(
     write_copy(out, &rows.members, owner_rows::declaration_ref_write)?;
     write(out, &rows.member_links, contract_columns::member_write)?;
     write(out, &rows.roles, contract_columns::role_write)?;
-    write(out, &rows.originals, operation_columns::original_write)?;
+    if rows.descriptor().profile().call_safety() {
+        write(out, &rows.originals, operation_columns::safety_write)?;
+    } else {
+        write(out, &rows.originals, operation_columns::original_write)?;
+    }
     write(out, &rows.body_inputs, relation_columns::body_write)?;
     if provided {
         write(out, &rows.body_units, allocation_columns::unit_write)?;
@@ -245,6 +263,7 @@ pub(super) fn decode_provided_contracts(
         provided: true,
         features: false,
         callables: false,
+        safety: false,
     };
     let attributes = header_facts::decode(&mut read)?;
     let contracts = provided_extensions::decode(&mut read)?;
@@ -262,6 +281,7 @@ pub(super) fn decode_contracts(
         provided: false,
         features: false,
         callables: false,
+        safety: false,
     })?;
     Ok((rows, attributes))
 }
@@ -284,6 +304,7 @@ pub(super) fn decode_module_contracts(
         provided: false,
         features: false,
         callables: false,
+        safety: false,
     };
     let attributes = header_facts::decode(&mut read)?;
     let modules = namespace_rows::decode(&mut read)?;
@@ -294,7 +315,7 @@ fn decode_profile(
     base: usize,
     provided: bool,
 ) -> Result<(s::SourceRows, usize), &'static str> {
-    decode_profile_with(reader, base, provided, false, false)
+    decode_profile_with(reader, base, provided, false, false, false)
 }
 fn decode_profile_with(
     reader: &mut Reader<'_>,
@@ -302,6 +323,7 @@ fn decode_profile_with(
     provided: bool,
     features: bool,
     callables: bool,
+    safety: bool,
 ) -> Result<(s::SourceRows, usize), &'static str> {
     let mut read = Input {
         reader,
@@ -310,6 +332,7 @@ fn decode_profile_with(
         provided,
         features,
         callables,
+        safety,
     };
     let rows = s::SourceRows {
         exact_callables: Vec::new(),
@@ -370,6 +393,7 @@ struct Input<'a, 'b> {
     provided: bool,
     features: bool,
     callables: bool,
+    safety: bool,
 }
 impl Input<'_, '_> {
     fn require_provided(&self, message: &'static str) -> Result<(), &'static str> {

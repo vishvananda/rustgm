@@ -2,6 +2,20 @@
 use super::{Input, Writer, g, id, option, range, recipe_columns, s};
 
 pub(super) fn write(out: &mut Writer, row: &s::CallRequest) -> Result<(), &'static str> {
+    if row.safety != s::CallSafety::Safe {
+        return Err("source call safety requires its version-eight profile");
+    }
+    fields(out, row)
+}
+pub(super) fn safety_write(out: &mut Writer, row: &s::CallRequest) -> Result<(), &'static str> {
+    fields(out, row)?;
+    out.u8(match row.safety {
+        s::CallSafety::Safe => 0,
+        s::CallSafety::ExplicitUnsafeBlock => 1,
+        s::CallSafety::UnsafeFunction => 2,
+    })
+}
+fn fields(out: &mut Writer, row: &s::CallRequest) -> Result<(), &'static str> {
     for value in [row.value, row.site, row.target.0] {
         id(out, value)?;
     }
@@ -33,5 +47,15 @@ pub(super) fn read(input: &mut Input<'_, '_>) -> Result<s::CallRequest, &'static
             input,
             "source call effect requires its wider profile",
         )?,
+        safety: if input.safety {
+            match input.reader.u8()? {
+                0 => s::CallSafety::Safe,
+                1 => s::CallSafety::ExplicitUnsafeBlock,
+                2 => s::CallSafety::UnsafeFunction,
+                _ => return Err("unknown source call safety context"),
+            }
+        } else {
+            s::CallSafety::Safe
+        },
     })
 }

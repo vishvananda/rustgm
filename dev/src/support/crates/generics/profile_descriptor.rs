@@ -1,6 +1,7 @@
 //! A descriptor borrows completed source data; it is never callable permission.
 mod binding_order;
 mod compatibility_profile;
+mod safety_profile;
 pub(crate) use binding_order::sort as canonical_order;
 #[path = "namespace_paths.rs"]
 mod callable_paths;
@@ -67,6 +68,8 @@ pub enum Profile {
     Source2024ProvidedCurrent,
     /// Version-seven unconditional const/unsafe free callable originals.
     Source2024ModuleCallables,
+    /// Version-eight exact source call safety contexts; no implicit unsafe permission.
+    Source2024ModuleSafety,
 }
 impl Profile {
     #[must_use]
@@ -77,6 +80,7 @@ impl Profile {
                 | Self::Source2024ModuleDefinitions
                 | Self::Source2024ModuleCompatibility
                 | Self::Source2024ModuleCallables
+                | Self::Source2024ModuleSafety
         )
     }
     #[must_use]
@@ -89,6 +93,7 @@ impl Profile {
                 | Self::Source2024ModuleDefinitions
                 | Self::Source2024ModuleCompatibility
                 | Self::Source2024ModuleCallables
+                | Self::Source2024ModuleSafety
         )
     }
     #[must_use]
@@ -107,6 +112,7 @@ impl Profile {
                 | Self::Source2024ModuleDefinitions
                 | Self::Source2024ModuleCompatibility
                 | Self::Source2024ModuleCallables
+                | Self::Source2024ModuleSafety
         )
     }
 }
@@ -384,6 +390,7 @@ impl ValidatedRows {
     ) -> Result<Self, &'static str> {
         let start = work.steps;
         let features = profile.feature_predicates();
+        safety_profile::require_profile(&rows, profile, work)?;
         if !profile.definitions() {
             exact_exports::legacy(&rows, work)?;
         }
@@ -397,7 +404,9 @@ impl ValidatedRows {
         let indexed = HeaderIndex::new(&rows, extended_base, work)?;
         if profile.definitions() {
             exact_exports::validate(&rows, &indexed, work)?;
-            if profile.unconditional_callables() {
+            if profile.call_safety() {
+                functions::validate_module_safety(&rows, &indexed, work)?;
+            } else if profile.unconditional_callables() {
                 functions::validate_module_callables(&rows, &indexed, work)?;
             } else {
                 functions::validate_module_definitions(&rows, &indexed, work)?;
@@ -478,6 +487,7 @@ impl ValidatedRows {
         extension: Option<(super::HeaderAttributeColumns, ProvidedContractRows)>,
     ) -> Result<Self, &'static str> {
         let start = work.steps;
+        safety_profile::require_profile(&rows, profile, work)?;
         exact_exports::legacy(&rows, work)?;
         predicate_contracts::legacy(&rows, work)?;
         if extension.is_some() != (profile == Profile::Source2024ProvidedContracts) {
@@ -511,7 +521,8 @@ impl ValidatedRows {
             | Profile::Source2024ModuleFeaturePredicates
             | Profile::Source2024ModuleDefinitions
             | Profile::Source2024ModuleCompatibility
-            | Profile::Source2024ModuleCallables => {
+            | Profile::Source2024ModuleCallables
+            | Profile::Source2024ModuleSafety => {
                 return Err(
                     "module contracts require their complete namespace/domain/attribute columns",
                 );

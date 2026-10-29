@@ -94,6 +94,8 @@ impl Ports<'_> {
         }
         self.source.stage.charge(1)?;
         let effect = source_use.effect_for(self.facts, self.owner)?;
+        self.source.stage.charge(32)?;
+        let safety = source_use.call_safety(self.facts, self.owner, key.node, signature)?;
         if effect != self.raw.context.request() {
             return Err("source Call effect differs from its actual original defining context");
         }
@@ -147,6 +149,7 @@ impl Ports<'_> {
             signature: wire_signature,
             opening,
             effect,
+            safety,
         });
         Ok(())
     }

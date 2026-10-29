@@ -1,0 +1,133 @@
+{
+  "state": "corrected successor expectations frozen before candidate; all actual v1/v2 counterexamples retained",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc": "1.98.0",
+  "profile": "Source2024ModuleSafety,version8",
+  "old_0_7": "exact bytes and denials unchanged",
+  "preserved_provider": {
+    "path": "pa31/tests/spec/source-callable-effects/internal-unsafe-required.rs",
+    "sha256": "b9b521cd1f19fb4db42aa3126f53a849691c3e0d71b741ad943f03bca8355c1f",
+    "exact_copy": "b9b521cd1f19fb4db42aa3126f53a849691c3e0d71b741ad943f03bca8355c1f"
+  },
+  "metadata": {
+    "preserved-provider": 0,
+    "provider": 0,
+    "native-client": 0,
+    "missing-client": 1
+  },
+  "ordinary_lexical_cases": {
+    "closure-block": {
+      "status": 0,
+      "scope": "ordinary pinned Rust lexical evidence; not NoCore metadata/body proof"
+    },
+    "closure-function": {
+      "status": 0,
+      "scope": "ordinary pinned Rust lexical evidence; not NoCore metadata/body proof"
+    },
+    "nested-item": {
+      "status": 1,
+      "scope": "ordinary pinned Rust lexical evidence; not NoCore metadata/body proof",
+      "message_contains": "call to unsafe function"
+    },
+    "macro-block": {
+      "status": 0,
+      "scope": "ordinary pinned Rust lexical evidence; not NoCore metadata/body proof"
+    },
+    "macro-allowance": {
+      "status": 1,
+      "message_contains": "call to unsafe function",
+      "scope": "allow_internal_unsafe is lint metadata, not lexical permission"
+    },
+    "missing-block": {
+      "status": 1,
+      "scope": "ordinary pinned Rust lexical evidence; not NoCore metadata/body proof",
+      "message_contains": "call to unsafe function"
+    },
+    "unsafe-implicit": {
+      "status": 0,
+      "scope": "ordinary pinned Rust lexical evidence; not NoCore metadata/body proof"
+    },
+    "unsafe-deny": {
+      "status": 1,
+      "scope": "ordinary pinned Rust lexical evidence; not NoCore metadata/body proof",
+      "message_contains": "call to unsafe function"
+    },
+    "safe-call-in-block": {
+      "status": 0,
+      "scope": "ordinary pinned Rust lexical evidence; not NoCore metadata/body proof"
+    }
+  },
+  "native_stdout": "7 17 23 29 31 37\n",
+  "remaining": [
+    "closure body transport (ordinary lexical inheritance independently established)",
+    "unsafe_code diagnostic parity beyond existing implementation is deferred; allow_internal_unsafe supplies no lexical permission",
+    "Always-comptime, conditional/associated/provided/region body families and complete PA29/LIB095/artifacts"
+  ],
+  "files": {
+    "README.md": "c702af2e370ff519c25aba6e06ca23ddc0ad7cd7849b491652cc37c1a7dab962",
+    "closure-block.rs": "911fe191adea147d3cab92cd163011a691cf6919d398960d92ec950e10f05505",
+    "closure-function.rs": "b1a312e488d79259dcc61c23d619eac8ea26f44b853adaa5000488956746a8c8",
+    "expected.stdout": "286fb5c843023ffc1f260dfb6415ef03ab48580ff778c2106b26386de83e7c2a",
+    "macro-allowance.rs": "f53800ae5052587529c2e2b008ab058030ba425b9ed350a870d08908ebf9006d",
+    "macro-block.rs": "8353bcc86e89b47290b38b2dc505510d98f676d7fec838a7173790e29dfce58c",
+    "macro-marked-client.rs": "4610602fbe29464912c29b6e195b7131e70d30ebd89b8261d5449047c75870f3",
+    "macro-provider.rs": "092870b7692da7aa4258b5d660568d6517ca46367145ba417c0810db8a566203",
+    "macro-unmarked-client.rs": "115bc3a26be1bfc0d7f5548587b37e01c301a14992ff8b462f2ff9a0b7a03726",
+    "missing-block.rs": "c3ba02a26cfc9828b96273f7d8fe65bb920c0608d80fe65f54d5420b27725c5c",
+    "missing-client.rs": "8d44d6d372a830cbe9becadbdcded06a01e12b933a5daffb6c289101d0f35da1",
+    "native-client.rs": "a237a7063b314a9d392e491a14d0f454d6939a993b9656231a53ad0035e42c2b",
+    "nested-item.rs": "b3d4f5cfdbb8ad0dfe4baacdf86cb4ae09275bcad0cfe86bda45937c5cb22dc3",
+    "observer.c": "485e008d8ab26696de189bd6978a34a7cce41d4f6f8bf6c0740beaabc7cefde2",
+    "preserved-provider.rs": "b9b521cd1f19fb4db42aa3126f53a849691c3e0d71b741ad943f03bca8355c1f",
+    "provider.rs": "a9c5581a8c1912204b654ac61aeea03b3d331ea105341ca181c627c1e6f2f058",
+    "safe-call-in-block.rs": "17a5cc4dd85cfc55ea8a314861aadd10538fd217ccbcaa844d6b3a8fbee3a524",
+    "unsafe-deny.rs": "3fa70004fb06a47147bf8428df37a45322103736ba39adab753b77345ec16d22",
+    "unsafe-implicit.rs": "01ceeec647ec2d04907210868f284255371ecaf34269754d7a779bd6b10257a0"
+  },
+  "metadata_errors": {
+    "missing-client": "E0133"
+  },
+  "primary": {
+    "compiler/rustc_mir_build/src/check_unsafety.rs": {
+      "url": "https://raw.githubusercontent.com/rust-lang/rust/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_mir_build/src/check_unsafety.rs",
+      "retained": "obj/parallel/source-callable-effects-v1/safety-pinned-check-unsafety.rs",
+      "sha256": "16a6dc36cbef144a8ea364ebc7fad2b1170c76733e0265c31784fd04f5f69327"
+    },
+    "compiler/rustc_lint/src/builtin.rs": {
+      "url": "https://raw.githubusercontent.com/rust-lang/rust/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_lint/src/builtin.rs",
+      "retained": "obj/parallel/source-callable-effects-v1/safety-pinned-builtin-lints.rs",
+      "sha256": "dfb38a3a01bf871a89508e9535607753c3e88defde08421974da02eae860dc0b"
+    }
+  },
+  "macro_differential": {
+    "macro-provider": {
+      "status": 0
+    },
+    "macro-marked-client": {
+      "status": 0
+    },
+    "macro-unmarked-client": {
+      "status": 0,
+      "scope": "external macro unsafe-code lint is suppressed as independently observed; no lexical permission inferred"
+    }
+  },
+  "retained_v1": "obj/parallel/source-callable-effects-v1/safety-rust-v1/receipt.json: mainNoCore/native and other15 outcomes passed; macro no-block prediction disagreed",
+  "retained_v2": "obj/parallel/source-callable-effects-v1/safety-rust-v2/receipt.json: corrected no-block E0133 and marked0 pass, unmarked external macro also0 counterexample retained",
+  "wire": {
+    "profile": 8,
+    "tags": {
+      "Safe": 0,
+      "ExplicitUnsafeBlock": 1,
+      "UnsafeFunction": 2
+    },
+    "old0_7": "No extension bytes; non-Safe rows reject before legacy serialization",
+    "authority": "unpaid checked-source call context; actual fresh instance, API, const and body proofs still required"
+  },
+  "candidate_cases": [
+    "fresh-provider/native+required-CTFE",
+    "old0_7/downgrade",
+    "missing/forged-safe-target/caller/site/signature/foreign/payment",
+    "actual sparse snapshots/warm replay/sticky failure",
+    "8/32/128 touched-call work and storage"
+  ]
+}

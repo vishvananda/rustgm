@@ -15,6 +15,7 @@ pub(super) struct ActiveCall {
 }
 #[derive(Default)]
 pub(super) struct CallTypes {
+    pub safety: Option<Box<super::safety::Pending>>,
     pub try_plans: Vec<super::try_control::OpenPlan>,
     pub offsets: Option<Box<super::displacement_inputs::Pending>>,
     pub iteration: Option<Box<super::iteration::Pending>>,
@@ -88,6 +89,7 @@ impl CallTypes {
         self.universal_regions.clone()
     }
     pub fn clear(&mut self) {
+        self.safety = None;
         self.try_plans.clear();
         self.offsets = None;
         self.iteration = None;

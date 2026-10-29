@@ -441,3 +441,6 @@ fn context_storage_tracks_bodies_instead_of_calls_and_charges_real_ports() -> Re
     }
     Ok(())
 }
+
+#[path = "discharged_replay.rs"]
+mod discharged_tests;

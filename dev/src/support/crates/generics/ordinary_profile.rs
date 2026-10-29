@@ -33,6 +33,12 @@ enum NamespaceProfile {
     FeaturePredicates,
     Definitions,
     Callables,
+    Safety,
+}
+impl NamespaceProfile {
+    fn callables(self) -> bool {
+        matches!(self, Self::Callables | Self::Safety)
+    }
 }
 pub(super) fn validate_module_contracts(
     rows: &SourceRows,
@@ -62,6 +68,13 @@ pub(super) fn validate_module_callables(
 ) -> Result<(), &'static str> {
     validate_mode(rows, headers, work, NamespaceProfile::Callables)
 }
+pub(super) fn validate_module_safety(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    validate_mode(rows, headers, work, NamespaceProfile::Safety)
+}
 fn validate_mode(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
@@ -79,7 +92,7 @@ fn validate_mode(
         rows,
         headers,
         work,
-        if profile == NamespaceProfile::Callables {
+        if profile.callables() {
             BindingProfile::Callables
         } else {
             BindingProfile::Ordinary
@@ -91,6 +104,7 @@ fn validate_mode(
         NamespaceProfile::FeaturePredicates
             | NamespaceProfile::Definitions
             | NamespaceProfile::Callables
+            | NamespaceProfile::Safety
     );
     recipes(rows, work, features)?;
     for header in &rows.traits {
@@ -117,6 +131,7 @@ fn validate_mode(
                     | NamespaceProfile::FeaturePredicates
                     | NamespaceProfile::Definitions
                     | NamespaceProfile::Callables
+                    | NamespaceProfile::Safety
             )
         {
             return Err(
@@ -157,13 +172,7 @@ fn validate_mode(
         work.charge(1)?;
         ordinary(&clause.requirement)?;
     }
-    originals(
-        rows,
-        headers,
-        work,
-        features,
-        profile == NamespaceProfile::Callables,
-    )
+    originals(rows, headers, work, features, profile.callables())
 }
 fn functions(
     rows: &SourceRows,
@@ -182,7 +191,7 @@ fn functions(
     }
     for header in &rows.functions {
         work.charge(1 + 2 * rows.exact_callables.len().checked_ilog2().unwrap_or(0) as usize)?;
-        let free_effects = profile == NamespaceProfile::Callables && header.parent.is_none();
+        let free_effects = profile.callables() && header.parent.is_none();
         if (!free_effects && header.constness != Constness::Ordinary)
             || header.constness == Constness::Conditional
             || (!free_effects && header.original.unsafe_)
@@ -219,6 +228,7 @@ fn functions(
             NamespaceProfile::FeaturePredicates
                 | NamespaceProfile::Definitions
                 | NamespaceProfile::Callables
+                | NamespaceProfile::Safety
         ) && primitive_method(rows, headers, header, work)?;
         if matches!(header.body, FunctionBody::Original(_))
             && header.parent.is_some()
@@ -569,7 +579,7 @@ fn admitted_convention(
     convention == Convention::Rust
         || (matches!(
             profile,
-            NamespaceProfile::Definitions | NamespaceProfile::Callables
+            NamespaceProfile::Definitions | NamespaceProfile::Callables | NamespaceProfile::Safety
         ) && convention == Convention::C
             && rows
                 .exact_callables
