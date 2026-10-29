@@ -1,15 +1,18 @@
 # Parallel library bootstrap implementation
 
 Root owns compiler integration, current-source CLI/original-core observations and
-publication in `rustgm-pa25-work`. B's finite resource API5c2bace0 is integrated
-and its Root joined11 passes193.73s. C's metadata migration e204150bb is now
-integrated and Root joined20 passes150.67s, CLI3 passes109.42s and harness272/
-upstream pass. Full CI remains pending. C is idle and Root owns these files.
-B (`lint_expectations`) now owns LIB-080's actual generic union Clone recipe in
-its existing tree. It must coordinate shared proof/interface changes before
-editing metadata or Root's observer/configuration code. No new advisory lint
-producer is queued. The earlier associated equality, image accounting and
-item/opened-call handoffs remain integrated and qualified.
+publication in `rustgm-pa25-work`. Union Clone9325f84b2 and the cold Source192
+layout correction8628f7afc now pass joined12 in109.84s, CLI3 in90.95s and
+harness272/upstream. Root's LowIR is byte-identical to the passed native proof.
+The previous resource API and metadata migration remain integrated/qualified.
+B (`lint_expectations`) now owns LIB-081's selected Macro(Type) capture copying
+in derive_types and its capture helper. C (`const_call_review`) owns LIB-082's
+first complete closed-inclusive scalar-range consumer in syntax/types/sema/CTFE/
+ABI. Their exact syntax child and transfer ownership is coordinated; B does not
+edit central TypePattern transfer, and C does not edit Macro capture copying.
+Both start from8628f7afc in their existing trees. No new advisory lint producer,
+worker or worktree is queued. Root owns observer/configuration, integration and
+publication; central interface changes require explicit coordination.
 
 The joined45 consumer gate passes149.22s, including the real Debug array
 consumer. Its seven source-native programs match the pinned Rust observations,
@@ -25,13 +28,19 @@ escape.rs161 in10.85s. All722 original hashes and target flags stay unchanged.
 Receipt2da97d75af6b4c4b51f9a7b701d6bd61249f0787044ef809fc998917c2174899
 binds that observation. These are changed resource profiles, not speedups or
 unchanged-default results. Current post-migration binaries require fresh bindings.
-Current CLI216f8644 confirms the same union Clone blocker in10.58s; receipt
+Earlier CLI216f8644 confirms the union Clone blocker in10.58s; receipt
 23e8d6b7846996670660c54a0e2a8d6a3bf323dea753d8bc5c5e5a5647d3e3a5.
 Strict8947e74ab0348663b9c03d5c7f0729e7fb5a143b32ed85a37f0cbd8fc4e9297d
-retains the deferred expectation at68 opens. Do not claim a library artifact.
+retains the deferred expectation at68 opens. Current CLI67d1dd75 passes that
+union expansion and reports typed field-macro copying at niche_types.rs20 in
+10.44s (ff892a1db2d870f9c641ab34102ea9ab77076761ddd8cd7e827e876caa894e3a).
+Its fresh strict receipt7629b28fb776aa15818fc38da1c485a4012aab9641d2b0881d0afc54e348e5d3
+still retains the deferred expectation. All722 input hashes and target settings
+are unchanged. Do not claim a library artifact from373 opened sources.
 
 Keep at most two heavy jobs globally, one per worktree, two Cargo/test threads,
-16GiB absolute output caps and150GiB free reserve. B owns union Clone;
+16GiB absolute output caps and150GiB free reserve. B and C may each use one
+heavy slot while Root has none; coordinate before Root qualification/observations.
 Root owns joined qualification, observer profiles, integration and publication.
 Coordinate actual live jobs before admission. Preserve warm caches/current pins
 and scoped cleanup. No new workers or worktrees are needed. Report actual terminal before
@@ -47,11 +56,11 @@ for current assignments and the [execution plan](library-bootstrap-acceleration.
 for scheduling and imported-demand policy. Historical checkpoint documents retain
 their evidence, not authority to replace this queue with old remaining tasks.
 
-Public8dc4091eb fast CI40834845453 passes. Full CI40835039063 fails three
-auto-trait source-inventory/legacy-encoding checks; architecture, harness and
-the independent host graph pass. The explicit semantic migration fixes all3
-focused cases without regenerating a golden or restoring a false source premise;
-joined source/CLI qualification passes and full CI remains pending. The earlier
+Public40791c7d3 fast CI40843868971 passes. Full CI40843890477 has2226 private
+passes and only one stale cold Source size assertion (184 versus192); Root's
+correction now passes in joined12. Its metadata fixes all3 earlier failures from
+40835039063 without a regenerated golden or false source premise. Full CI will
+be rerun after publishing this union/layout checkpoint. The earlier
 public0fa08bc full CI40815003815 is green. The qualified pre-capacity CLI
 1b626052 passes MaybeUninit, FnPtr Debug7, Abi enum Default and DecodeUtf16's
 associated equality. Next it stops the source expansion accounting budget at

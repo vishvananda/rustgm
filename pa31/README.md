@@ -256,3 +256,8 @@ The [provided-profile migration](../docs/provided-profile-migration.md) retains
 historical bytes without restoring false auto-trait sizing premises. Corrected
 current rows have their own version; complete original source transport and
 whole assignment release remain required.
+
+The [union checkpoint](../docs/pa31-source-union-copy-checkpoint.md) now includes
+the real source union Clone recipe and independently matched scalar/array native
+observers. Its original escape expansion passes; typed nested field macros and
+the actual scalar ranges used by niche_types remain separate source consumers.

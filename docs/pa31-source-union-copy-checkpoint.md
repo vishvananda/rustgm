@@ -68,3 +68,37 @@ At8/32/128 union fields, charged work is5567/5687/6167 and bytes
 and Body456 remain unchanged. Full original runtime, source union Clone,
 nonempty tuple marker children, const/conditional proofs, metadata and every
 owning assignment/artifact release requirement remain open.
+
+The subsequent source union Clone recipe is now implemented in9325f84b2.
+Its real marker and Clone impls prepend Copy plus the appropriate trait before
+the written type-parameter bounds, retaining lifetime/const/default/where input.
+The body checks the ordinary source AssertParamIsCopy<Self> type and returns
+`*self`; it never reads a field. Missing Copy, a lookalike trait and a counterfeit
+helper remain rejected by real obligations/move rules. The old Clone-required
+fixture is now an expansion-positive control; its absent helper is not claimed
+compiled. See [the new frozen source contract](../pa31/tests/spec/union-clone/README.md).
+
+Pinned Rust16 operations and actual candidate LowIR/native match:
+`11223344:11223344:11223344;a:12345678:89abcdef;u;7`.
+Native receipt8a386644ce49dd99797d9a40e18c6856d94a3dfbc5447e06c2bbc84af079a338
+binds scalar, array and uninitialized whole-union copies. Root's emitted LowIR
+is byte-identical (SHA2567c5870873e63478b8d99af677e58300a575da2d0a56b499e694123620d2cb9c8),
+so that native proof is reused without another backend build.
+At8/32/128 fields, work14136/14256/14736 and attempted bytes
+789835/797739/829259 stay linear; generated output remains376 bytes. Warm reads
+add352 work and zero bytes. Node36/Body456 and all production record fields stay
+unchanged.
+
+Root joined12 passes109.84s (1793264956426274135), including the latest full-CI
+failure's stale cold Source footprint; CLI3 passes90.95s (1793265113343366951).
+Strict Clippy, formatting, architecture, harness272/upstream and native-input
+equality pass. Helper receipt SHA256 is
+`c7ba3afcba99aacf079f7552b3d03066164c3968c485372fef0dcd0c3284c1f5`.
+Current CLI67d1dd7539fa9c3937b48af224cc4c69ec66070dd7c1eadd33a644c1c8ce531f
+passes the unchanged original escape union expansion and reaches the typed-field
+macro frontier in niche_types.rs:20 in10.44s. The explicitly selected resources
+stay work14,500,624/attempted1GiB/retained64MiB, with all722 original hashes and
+target settings unchanged. Observation SHA256 is
+`ff892a1db2d870f9c641ab34102ea9ab77076761ddd8cd7e827e876caa894e3a`.
+Full original escape/ascii::Char runtime, range types, metadata, original
+core/alloc/std artifacts and whole parent releases remain required.
