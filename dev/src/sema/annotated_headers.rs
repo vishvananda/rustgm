@@ -137,6 +137,9 @@ impl Declarations {
         if actual.kind != crate::resolve::model::DefKind::Function {
             return Ok(ContractKnowledge::Unknown);
         }
+        if actual.node.is_none() && bootstrap_owner(report, definition)? {
+            return Ok(ContractKnowledge::Unknown);
+        }
         let view = self.header_attribute_contracts(report, definition)?;
         if actual.node.is_none() || matches!(view.must_use, ContractKnowledge::Unknown) {
             return Ok(ContractKnowledge::Unknown);

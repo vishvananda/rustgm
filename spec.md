@@ -456,6 +456,11 @@ existing fixed canonical registries, actual kind/public binding and nonimported
 identity. A missing node is insufficient. This compatibility creates no completed
 source/imported header, KnownAbsent attribute or execution permission; genuine
 source and artifact contracts keep their own producer/Unknown rules.
+An optional promotion probe reuses that authenticated bootstrap ownership and
+returns Unknown for a source-only promotable fact. It must neither demand a
+nonexistent source-header inventory nor invent checked attribute absence. Missing
+or forged registry ownership remains an error. Restrictions whose absence grants
+call permission retain their separate complete-coverage requirements.
 
 Final trait-method queries distinguish a missing source node from an authenticated
 imported required declaration. Read the actual catalog handle and matching

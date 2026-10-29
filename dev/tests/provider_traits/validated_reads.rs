@@ -8,6 +8,7 @@ const POSITIVES: &[&str] = &[
     "unused-clone-loop",
     "indexed-requirements",
     "generic-runtime-read",
+    "generic-clone-prerequisite",
     "associated-type-profile",
     "associated-constant-profile",
     "repeated-8-noise-0",
@@ -68,13 +69,6 @@ fn malformed_unused_duplicate_and_cycle_implementations_do_not_publish_permissio
             .ok_or_else(|| format!("{name}: invalid implementation accepted"))?;
         println!("early_copy_negative {name}: {error}");
     }
-    let error = lower(&fixture("generic-clone-prerequisite")?)
-        .err()
-        .ok_or("unsupported early generic prerequisite accepted")?;
-    assert!(
-        error.to_string().contains("early scalar profile"),
-        "{error}"
-    );
     Ok(())
 }
 #[test]

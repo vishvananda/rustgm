@@ -1,25 +1,36 @@
 # Parallel library bootstrap implementation
 
 Root owns integration, original-core observations and public main publication.
-The Call-copy join passes91 private controls132.64s, productionCLI3 98.71s,
-new source const-fn native5/7/11, exact-TypeId/scaling controls and Root endpoint
-native5. All3187 source entries/146 fixture hashes match Root; no integrator
-private rebuild. Helper51.84s passes harness272/registrations385/layout/upstream.
-See the [call-copy checkpoint](pa8-derived-calls-checkpoint.md).
+The current qualified development checkpoint joins real source SIZE/Div,
+selected constant calls, module compatibility policy and prepaid variance/outlives
+closures. Root159 passes41.83s warm, productionCLI3 passes212.48s, and nine fresh
+native operations cover all14 scalar division families and the genuine override.
+Four additional native results are reused only after exact source/LowIR/backend
+byte equality. Harness275, registrations385,44-stage layout and pinned upstream
+checks pass. The initial cold244.81s lint/link build exhausted the300s total
+before tests completed; its failure is retained beside the identical warm pass.
 
-Current CLIcf74502a clears TypeId field syntax and stops at file47:34595,
-intrinsics/mod.rs838 rustc_allowed_through_unstable_modules on transmute.
-375loadingopens/all722 hashes/target flags/work14,500,624/attempted1GiB/
-retained64MiB stay fixed; strict separately retains expectation68. This is a
-source frontier, not an artifact or measured speedup. Public729 fullCI40905161888
-and push40905100591 are separate; do not duplicate an active full run.
-B investigates LIB-095's real attribute/stability semantics read-only first.
-C implements genuine SourceDiv role/default/header/erasure using existing HookDiv
-and actual SIZE/default/layout field dependency; missing real NoCore panic
-providers stay explicit and no stub or stripped checks may replace them.
-Preserve all full TypeId/Formatter/original helper/metadata/artifact requirements.
-Keep2heavyglobally/16GiB/150reserve, existingtwo workers/trees only, sourcefrozen
-actual terminal handoffs. No new advisory lint producer is queued.
+Current CLIa7ca7055 stops at original intrinsics/mod.rs2885 rustc_comptime on
+`type_id_vtable`. It clears the previous compatibility marker;375 loading opens,
+all722 hashes, target and explicit finite quotas remain fixed. Strict separately
+retains expectation68. Root's qualified observation/native receipt is
+300d2f6b41cb0a53f3961584f8ad06203057d2db610be3cae51a491bbc3ec66f.
+No original artifact or additional whole assignment is complete.
+
+B owns explicit v7 genuine const/unsafe free-function source transport, including
+real declaration-only Destruct/Freeze prerequisites for the retained generic
+input. Independent Rust/native11 passes; candidate167 is being qualified.
+C owns LIB-098 authenticated compile-time-only headers, actual const roots and
+call/body policy. Genuine erased function-pointer runtime calls remain accepted;
+ordinary runtime/direct and ordinary const-fn callers gain no implicit const
+block. No new advisory lint producer, worker or worktree is queued.
+Root owns publication, production/CLI and original-crate observations.
+
+Private gates use tooling247de9204: normal Cargo test builds with strict
+`clippy-driver` as workspace compiler lint/link once, preserving real dependency
+libraries and exact artifact records. Idle retirement bounds ordinary and private
+caches while retaining warm sessions and pins. Keep2 heavy jobs globally,
+16GiB absolute worktree caps,150GiB free reserve and2 Cargo/test threads.
 
 B owns complete zero-excluded unsigned scalar niche layout, CTFE bytes and native
 ABI transport (LIB-087), preserving actual scalar types and measured hot widths.
