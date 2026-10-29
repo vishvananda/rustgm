@@ -65,7 +65,11 @@ fn direct_compatibility_notes_keep_last_empty_owner_and_gate_semantics() -> Test
         "wrong-target",
     ] {
         assert!(
-            test_source::source_provider(&fixture(&format!("decl-{name}"))?, &name.replace('-', "_")).is_err(),
+            test_source::source_provider(
+                &fixture(&format!("decl-{name}"))?,
+                &name.replace('-', "_")
+            )
+            .is_err(),
             "{name}"
         );
     }
