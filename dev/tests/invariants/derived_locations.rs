@@ -14,6 +14,8 @@ mod formatter_family;
 mod synthetic_ancestry;
 #[path = "constructed_defaults.rs"]
 mod tuple_defaults;
+#[path = "forest_consumers.rs"]
+mod type_macros;
 #[path = "copied_union_derives.rs"]
 mod union_copies;
 const PROVIDER: &str = "pa31/tests/spec/source-location/location-copy-clone.rs";
