@@ -35,13 +35,21 @@ impl Declarations {
         body: NodeKey,
     ) -> Result<FunctionContext, &'static str> {
         let context = self.function_context(definition, body)?;
-        if context == FunctionContext::Comptime
-            && !matches!(
-                self.source_comptime_contract(report, definition),
-                Ok(super::header_attributes::ContractKnowledge::KnownPresent(_))
-            )
-        {
-            return Err("comptime body lost its actual source declaration contract");
+        if matches!(
+            context,
+            FunctionContext::Comptime | FunctionContext::ConstFunction
+        ) {
+            match (context, self.source_comptime_contract(report, definition)) {
+                (
+                    FunctionContext::Comptime,
+                    Ok(super::header_attributes::ContractKnowledge::KnownPresent(_)),
+                )
+                | (
+                    FunctionContext::ConstFunction,
+                    Ok(super::header_attributes::ContractKnowledge::KnownAbsent),
+                ) => {}
+                _ => return Err("const defining body lost its actual source declaration contract"),
+            }
         }
         Ok(
             if super::compiler_items::runtime_panic_body(report, self, definition, body)? {

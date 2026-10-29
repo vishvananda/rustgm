@@ -141,7 +141,19 @@ pub(crate) fn eligibility(
     facts: &Declarations,
     body: &super::ir::Body,
 ) -> Result<(), Error> {
-    eligibility_counted(report, facts, body, &mut invocations::Work::new(1_000_000))
+    eligibility_recorded(report, facts, body, &mut 0)
+}
+/// Construction owners retain attempted work even when a defining check fails.
+pub(crate) fn eligibility_recorded(
+    report: &Report,
+    facts: &Declarations,
+    body: &super::ir::Body,
+    attempted: &mut usize,
+) -> Result<(), Error> {
+    let mut work = invocations::Work::new(1_000_000);
+    let result = eligibility_counted(report, facts, body, &mut work);
+    *attempted = attempted.saturating_add(work.steps);
+    result
 }
 /// Mutable owners retain attempted preparation work even when validation fails.
 pub(crate) fn eligibility_charged(
@@ -149,11 +161,10 @@ pub(crate) fn eligibility_charged(
     facts: &mut Declarations,
     body: &super::ir::Body,
 ) -> Result<(), Error> {
-    let mut work = invocations::Work::new(1_000_000);
-    let result = eligibility_counted(report, facts, body, &mut work);
-    if work.steps != 0 {
-        facts.body_work.canonical_steps =
-            facts.body_work.canonical_steps.saturating_add(work.steps);
+    let mut work = 0;
+    let result = eligibility_recorded(report, facts, body, &mut work);
+    if work != 0 {
+        facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
     }
     result
 }
