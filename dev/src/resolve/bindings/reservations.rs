@@ -85,6 +85,10 @@ impl Reservations {
     pub(crate) fn nonnull_declaration(&self) -> Option<Declaration> {
         self.diagnostics[super::annotations::DiagnosticItem::NonNull.index()]
     }
+    /// Reserved diagnostic identity only; callers still validate its actual header.
+    pub(crate) fn eq_declaration(&self) -> Option<Declaration> {
+        self.diagnostics[super::annotations::DiagnosticItem::Eq.index()]
+    }
     pub(crate) fn role_attributes(&self, role: LangItem) -> HeaderAttributes {
         self.header_attributes[role.index()]
     }

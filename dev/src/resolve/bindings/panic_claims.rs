@@ -93,6 +93,7 @@ pub(super) fn validate(
         | LangItem::TrivialClone
         | LangItem::PartialEq
         | LangItem::StructuralPartialEq
+        | LangItem::ConstParamTy
         | LangItem::PartialOrd
         | LangItem::Send
         | LangItem::DispatchFromDyn

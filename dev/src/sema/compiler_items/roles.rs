@@ -1,6 +1,7 @@
 //! Source roles become usable only after their actual complete headers validate.
 mod completion_set;
 mod copying;
+mod parameter_types;
 pub(super) use completion_set::RoleSet;
 mod destructibility;
 mod freezing;
@@ -118,6 +119,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         LangItem::Send,
         LangItem::Sync,
         LangItem::Unpin,
+        LangItem::ConstParamTy,
     ] {
         let Some(declaration) = catalog.language(role) else {
             continue;
@@ -125,6 +127,14 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         let header = header(report, facts, declaration, role)?;
         let self_type = header.self_type;
         match role {
+            LangItem::ConstParamTy => parameter_types::validate(
+                report,
+                facts,
+                catalog,
+                declaration,
+                &header,
+                &mut complete.roles,
+            )?,
             LangItem::Clone | LangItem::Copy | LangItem::LegacyReceiver => copying::validate(
                 report,
                 facts,

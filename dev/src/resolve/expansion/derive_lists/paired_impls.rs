@@ -8,7 +8,7 @@ use crate::{
     syntax::{ast::Kind, token_tree::error},
 };
 
-const MEMBERS: [Builtin; 9] = derive_output::MEMBERS;
+const MEMBERS: [Builtin; derive_output::MEMBERS.len()] = derive_output::MEMBERS;
 type Selected = [Option<(usize, usize)>; MEMBERS.len()];
 
 impl<S: Sources> Engine<'_, S> {
