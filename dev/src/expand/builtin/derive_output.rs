@@ -5,6 +5,7 @@ mod comparisons;
 mod constrained_impls;
 mod debug_format;
 mod derivation_contexts;
+mod image_storage;
 mod initialized_fields;
 mod parameter_admission;
 mod payload_members;
@@ -92,6 +93,7 @@ pub(crate) fn build(
 impl Output<'_> {
     fn finish(self, config: &Config) -> Result<Delegated, LexError> {
         self.validate_origins()?;
+        self.prepare_parser()?;
         let splices: Vec<_> = self
             .fields
             .iter()
@@ -206,10 +208,7 @@ impl Output<'_> {
         Ok(())
     }
     fn text(&mut self, text: &str) -> Result<(), LexError> {
-        (self.charge)(
-            text.len(),
-            text.len().saturating_mul(4 * (size_of::<Token>() + 64)),
-        )?;
+        self.prepare_image(text.len())?;
         let span = self.stream.synthetic_image(
             text,
             Location {
@@ -220,6 +219,7 @@ impl Output<'_> {
             self.context.1,
             self.edition,
         )?;
+        (self.charge)(text.len(), 0)?;
         let mut lexer = Lexer::new(text)?;
         while let Some(mut token) = lexer.next_token()? {
             if matches!(
@@ -230,7 +230,7 @@ impl Output<'_> {
             }
             token.start += span.start;
             token.end += span.start;
-            self.stream.tokens.push(token);
+            self.push_token(token)?;
         }
         Ok(())
     }
@@ -240,10 +240,7 @@ impl Output<'_> {
             .source
             .get(original.start as usize..original.end as usize)
             .ok_or_else(|| error(original.start, "derived name is outside its source"))?;
-        (self.charge)(
-            text.len(),
-            text.len().saturating_mul(4) + 4 * size_of::<Token>(),
-        )?;
+        self.prepare_image(text.len())?;
         let span = self.stream.image(
             text,
             Location {
@@ -262,11 +259,11 @@ impl Output<'_> {
             (false, true) => TokenKind::RawIdentifier,
             (false, false) => TokenKind::Identifier,
         };
-        self.stream.tokens.push(Token {
+        self.push_token(Token {
             kind,
             start: span.start,
             end: span.end,
-        });
+        })?;
         Ok(())
     }
     fn header(&mut self, path: &str, unsafe_: bool) -> Result<(), LexError> {
@@ -291,7 +288,7 @@ impl Output<'_> {
         self.where_predicates()
     }
     fn field(&mut self, ty: NodeId) -> Result<(), LexError> {
-        (self.charge)(1, 4 * size_of::<Field>())?;
+        self.prepare_field()?;
         let original = self.site.ast.node(ty).span;
         let parsed = derive_types::field(self.site.ast, ty, self.charge)?;
         crate::syntax::transfer::validate_spans(&parsed.ast, |span| {
@@ -315,7 +312,7 @@ impl Output<'_> {
             .source
             .get(original.start as usize..original.end as usize)
             .ok_or_else(|| error(original.start, "derived field type is outside its source"))?;
-        (self.charge)(spelling.len(), spelling.len().saturating_mul(4))?;
+        self.prepare_image(spelling.len())?;
         let destination = self.stream.image(
             spelling,
             Location {
@@ -327,11 +324,11 @@ impl Output<'_> {
         )?;
         let slot = u32::try_from(self.fields.len())
             .map_err(|_| error(original.start, "too many derived field types"))?;
-        self.stream.tokens.push(Token {
+        self.push_token(Token {
             kind: TokenKind::interpolated(slot)?,
             start: destination.start,
             end: destination.end,
-        });
+        })?;
         self.fields.push(Field {
             parsed,
             original,

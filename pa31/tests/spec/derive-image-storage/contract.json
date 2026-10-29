@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "scope": "LIB079 source image accounting; no budget increases or source/runtime permission changes",
+  "original": {
+    "path": "library/core/src/iter/sources/from_coroutine.rs",
+    "sha256": "796f3d76862ac45ef224e0f32d8104c1efdfba4e798f09336baccf7a2eb1156f",
+    "start": 1098,
+    "end": 1146,
+    "fragment_sha256": "c24151f1c9f9226690804414f3492cc19f9266520e7caed860bb6e7ce6a78b2c"
+  },
+  "predictions": {
+    "rust_original_clone_expands": true,
+    "candidate_original_clone_expands": true,
+    "small_derive_N": [
+      8,
+      32,
+      128
+    ],
+    "long_identifier_bytes": [
+      64,
+      256,
+      1024
+    ],
+    "setup_is_separate": true,
+    "warm_receipt_bytes_unchanged": true,
+    "growth_failure_retains_attempt_no_publication": true,
+    "limits": {
+      "steps": 1000000,
+      "attempted_bytes": 67108864,
+      "retained_bytes": 67108864
+    }
+  },
+  "required": [
+    "unchanged whole core/alloc/std artifacts",
+    "complete original FromCoroutine runtime/coroutine protocol"
+  ]
+}
