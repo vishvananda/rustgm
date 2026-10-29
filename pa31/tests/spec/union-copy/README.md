@@ -16,7 +16,11 @@ never read a union field. Expected output is
 
 Missing Clone, a different trait aliased as Copy, a non-Copy reference field,
 private access and a field read outside unsafe retain real failures. Source union
-Clone remains explicitly Required. Its incomplete NoCore helper reducer failed
+Clone was explicitly Required in this historical contract; the successor
+`../union-clone/` qualifies its actual recipe and ordinary Copy obligation.
+The unchanged `clone-required.rs` now remains a successful expansion control;
+its missing actual Copy helper prevents a full compilation claim. The original
+contract and independent receipts remain unchanged. Its incomplete NoCore helper reducer failed
 the first Rust observation; that mismatch is retained. The separately labelled
 ordinary Rust Clone positive establishes the valid language boundary without
 substituting a std implementation into the SourceCore runtime producer. Debug is

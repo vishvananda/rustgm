@@ -46,10 +46,10 @@ pub(super) fn collect(site: &Site<'_>, charge: &Charge<'_>) -> Result<Inventory,
         ItemKind::Struct { fields, .. } => append(site, fields, &mut output.fields, charge)?,
         ItemKind::Union { fields } => {
             charge(site.members.len(), 0)?;
-            if site.members.iter().skip(1).any(Option::is_some) {
+            if site.members.iter().skip(2).any(Option::is_some) {
                 return Err(error(
                     site.original.start,
-                    "source union derives other than Copy require their actual union recipe",
+                    "source union derives other than Copy or Clone require their actual union recipe",
                 ));
             }
             append(site, fields, &mut output.fields, charge)?;

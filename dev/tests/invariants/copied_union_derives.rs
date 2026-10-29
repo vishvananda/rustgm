@@ -1,6 +1,8 @@
 //! Union Copy is an ordinary marker impl; authored Clone copies the whole union.
 use super::*;
 use crate::syntax::{ast::Kind, item::ItemKind};
+#[path = "whole_union_clones.rs"]
+mod whole_clones;
 const FIXTURES: &str = "pa31/tests/spec/union-copy/";
 fn fixture(name: &str) -> TestResult<String> {
     Ok(test_source::fixture(&format!("{FIXTURES}{name}.rs"))?)
@@ -146,17 +148,21 @@ fn actual_copy_clone_field_type_privacy_and_unsafe_obligations_remain_required()
         assert!(!error.contains("wider profile"), "{name}: {error}");
         eprintln!("union Copy opponent {name}: {error}");
     }
-    for name in ["clone-required", "debug-required-expansion"] {
-        let error = expanded_provider(&fixture(name)?, "union_required")
-            .err()
-            .ok_or_else(|| format!("accepted {name}"))?
-            .to_string();
-        assert!(
-            error
-                .contains("source union derives other than Copy require their actual union recipe"),
-            "{name}: {error}"
-        );
-    }
+    let error = expanded_provider(&fixture("debug-required-expansion")?, "union_required")
+        .err()
+        .ok_or("accepted unsupported union Debug")?
+        .to_string();
+    assert!(
+        error.contains(
+            "source union derives other than Copy or Clone require their actual union recipe"
+        ),
+        "{error}"
+    );
+    let clone = expanded_provider(&fixture("clone-required")?, "legacy_union_clone")?;
+    assert!(
+        !clone.names_resolved,
+        "expansion alone does not provide its missing Copy helper"
+    );
     Ok(())
 }
 #[test]
