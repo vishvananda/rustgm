@@ -65,7 +65,7 @@ fn supplied_full_family_data_round_trips_all_columns_without_import_permission()
             .source_descriptor()
             .ok_or("actual descriptor")?
             .profile(),
-        s::Profile::Source2024Provided
+        s::Profile::Source2024ProvidedCurrent
     );
     let payload = decoded.generic_payload().ok_or("actual payload")?;
     assert!(payload.legacy_rows().is_err());
@@ -101,7 +101,7 @@ fn supplied_full_family_data_round_trips_all_columns_without_import_permission()
         descriptor.edition(),
         crate::support::edition::Edition::Rust2024
     );
-    assert_eq!(descriptor.profile(), s::Profile::Source2024Provided);
+    assert_eq!(descriptor.profile(), s::Profile::Source2024ProvidedCurrent);
     assert_eq!(
         dependencies.source_provider_index(&owner),
         Err("source client provider profile is unsupported")

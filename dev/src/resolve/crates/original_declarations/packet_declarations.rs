@@ -130,7 +130,9 @@ pub(super) fn unpaid_input(
         .ok_or_else(|| error("unpaid source descriptor is absent"))?;
     if !matches!(
         descriptor.profile(),
-        s::Profile::Source2024Provided | s::Profile::Source2024ProvidedContracts
+        s::Profile::Source2024Provided
+            | s::Profile::Source2024ProvidedContracts
+            | s::Profile::Source2024ProvidedCurrent
     ) {
         return Err(error(
             "unpaid reservations require their actual Provided descriptor",

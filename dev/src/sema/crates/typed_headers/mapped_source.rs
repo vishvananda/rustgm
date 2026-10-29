@@ -157,6 +157,7 @@ impl Graph {
             ));
         }
         let rows = context.descriptor.rows();
+        super::epoch_fences::require(rows, |steps| budget.charge(steps))?;
         budget.reserve(crate::types::arena::Identity::allocation_bytes())?;
         let store = facts.types.arena_identity();
         let mut root_row = None;

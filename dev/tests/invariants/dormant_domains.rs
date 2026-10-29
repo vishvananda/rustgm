@@ -71,7 +71,7 @@ fn unpaid_reservations_move_full_family_without_names_roles_or_import_publicatio
         descriptor.edition(),
         crate::support::edition::Edition::Rust2024
     );
-    assert_eq!(descriptor.profile(), Profile::Source2024Provided);
+    assert_eq!(descriptor.profile(), Profile::Source2024ProvidedCurrent);
     assert_eq!(
         inputs.inventory.source_provider_index(owner),
         Err("source client provider profile is unsupported")

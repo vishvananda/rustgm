@@ -77,7 +77,7 @@ fn real_generated_self_defaults_are_distinct_from_literal_supertraits() -> Resul
         .header_role(LangItem::MetaSized)?
         .ok_or("MetaSized")?
         .definition;
-    for (role, literal, requirements) in [(LangItem::Clone, 1, 2), (LangItem::Freeze, 0, 1)] {
+    for (role, literal, requirements) in [(LangItem::Clone, 1, 2), (LangItem::Freeze, 0, 0)] {
         let (header, canonical) = view(&report, &facts, role)?;
         let mut work = Visits::default();
         let prefix = authenticate(&facts, &header, canonical, |steps| work.charge(steps))?;
@@ -85,15 +85,12 @@ fn real_generated_self_defaults_are_distinct_from_literal_supertraits() -> Resul
         assert_eq!(canonical.source_inputs()?.predicates.len(), requirements);
         assert!(work.steps > requirements);
         assert!(prefix.canonical < prefix.declared);
-        assert!(
-            canonical
-                .source_inputs()?
-                .predicates
-                .iter()
-                .any(|input| matches!(input.value,
+        let has_meta = canonical.source_inputs()?.predicates.iter().any(|input| {
+            matches!(input.value,
             Clause::Predicate(predicate) if predicate.bound.trait_parts().is_some_and(|(id, _)|
-                facts.types.trait_application(id).is_some_and(|app| app.item.0 == meta.0))))
-        );
+                facts.types.trait_application(id).is_some_and(|app| app.item.0 == meta.0)))
+        });
+        assert_eq!(has_meta, role != LangItem::Freeze);
         if role == LangItem::Clone {
             assert!(
                 canonical

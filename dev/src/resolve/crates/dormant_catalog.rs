@@ -101,7 +101,9 @@ impl Inputs {
         if !report.names_resolved
             || !matches!(
                 descriptor.profile(),
-                Profile::Source2024Provided | Profile::Source2024ProvidedContracts
+                Profile::Source2024Provided
+                    | Profile::Source2024ProvidedContracts
+                    | Profile::Source2024ProvidedCurrent
             )
         {
             return Err(error(
@@ -194,7 +196,9 @@ impl Inputs {
             .filter(|descriptor| {
                 matches!(
                     descriptor.profile(),
-                    Profile::Source2024Provided | Profile::Source2024ProvidedContracts
+                    Profile::Source2024Provided
+                        | Profile::Source2024ProvidedContracts
+                        | Profile::Source2024ProvidedCurrent
                 )
             })
             .ok_or_else(|| error("unpaid inputs changed their explicit data profile"))?;

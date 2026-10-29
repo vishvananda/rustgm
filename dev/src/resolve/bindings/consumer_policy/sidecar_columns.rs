@@ -137,7 +137,12 @@ impl HeaderDataOwner {
                     .artifacts()
                     .get(index as usize)
                     .and_then(crate::support::crates::Interface::source_descriptor)
-                    .is_none_or(|descriptor| descriptor.profile() != s::Profile::Source2024Provided)
+                    .is_none_or(|descriptor| {
+                        !matches!(
+                            descriptor.profile(),
+                            s::Profile::Source2024Provided | s::Profile::Source2024ProvidedCurrent
+                        )
+                    })
                 {
                     return Err(
                         "unpaid header data requires its actual legacy Provided descriptor",
