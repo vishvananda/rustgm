@@ -1,0 +1,17 @@
+{
+  "state": "predictions frozen before observation",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "scope": "Actual NoCore source foundation and authored real array Clone/Copy impls; literal/named/cast block length source->native, not full original array specialization",
+  "metadata_predictions": {
+    "source-runtime": 0
+  },
+  "target": "x86_64-unknown-linux-gnu",
+  "edition": "2024",
+  "lint_cap": "allow (diagnostics only)",
+  "files": {
+    "foundation.rs": "faaaf98e33140656f9616ddfe54a56d873a1f81b69c87a8add36370189fd3a98",
+    "expected.stdout": "48598032fd688defb1e8802aafdcb797ae24f935f4f516d0de7f79d74c8fce03",
+    "observer.c": "eb28342986d53ac83f3c84b8c8598311a289af5d670e2ddceb6cb8b0c3867171",
+    "source-runtime.rs": "f6ee945cece4e145296192a15577a5881cc354f0c6adc7643e138cad027d27ac"
+  }
+}

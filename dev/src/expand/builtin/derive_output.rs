@@ -125,13 +125,25 @@ impl Output<'_> {
         )?;
         let configured = crate_syntax::configure(&self.stream.source, ast, config)?;
         // Configuration interprets demanded literals once in their generated image.
-        // Only the new Debug labels are strings; copied field types retain splices.
+        // Debug labels own their bytes; copied constants retain inline typed values.
         let ast: Ast<'static> = configured.ast.map_literals(|value| match value {
             crate::literal::Value::String(bytes) => {
                 (self.charge)(bytes.len().saturating_add(1), bytes.len().saturating_mul(4))?;
                 Ok(crate::literal::Value::String(bytes.into_owned().into()))
             }
             crate::literal::Value::Boolean(value) => Ok(crate::literal::Value::Boolean(value)),
+            crate::literal::Value::Integer(value) => {
+                (self.charge)(1, 0)?;
+                Ok(crate::literal::Value::Integer(value))
+            }
+            crate::literal::Value::Character(value) => {
+                (self.charge)(1, 0)?;
+                Ok(crate::literal::Value::Character(value))
+            }
+            crate::literal::Value::Byte(value) => {
+                (self.charge)(1, 0)?;
+                Ok(crate::literal::Value::Byte(value))
+            }
             _ => Err(error(
                 self.site.original.start,
                 "source derive introduced an unsupported literal",

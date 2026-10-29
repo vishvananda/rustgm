@@ -1,0 +1,18 @@
+{
+  "state": "predictions frozen before observation",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "scope": "Ordinary source derive array fields: literal, named, compound binary; no source library replacement",
+  "metadata_predictions": {
+    "ordinary-rust": 0,
+    "wrong-count-rust": 1,
+    "nonclone-rust": 1
+  },
+  "target": "x86_64-unknown-linux-gnu",
+  "edition": "2024",
+  "lint_cap": "allow (diagnostics only)",
+  "files": {
+    "ordinary-rust.rs": "ffade49db0b6a3edb4582f421e3d32bffb7afb62dfe1b9361b4dd1aacbdc46ab",
+    "nonclone-rust.rs": "d374c26083a543405662dba2572442678b92137afa43e1b1c6bd1d7ea51530da",
+    "wrong-count-rust.rs": "6f1812a48c9c50221316647b1c512cece603caed70b9c70ab6c104d0d89501b2"
+  }
+}

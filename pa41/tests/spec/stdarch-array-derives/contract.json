@@ -1,0 +1,24 @@
+{
+  "state": "predictions frozen before observation",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "scope": "Exact actual types! macro+__m128i declaration typed expansion observer; independent full macro uses actual core providers. Finite candidate header/native distinct from full original stdarch intrinsic/Debug/convert graph.",
+  "metadata_predictions": {
+    "reference-rust": 0,
+    "source-native": 0,
+    "missing-feature": 1
+  },
+  "target": "x86_64-unknown-linux-gnu",
+  "edition": "2024",
+  "lint_cap": "allow (diagnostics only)",
+  "files": {
+    "source-native.rs": "b39d5261802cdaa0e131cc3d502b6e838c430e770fe260dced58814ff677aa2d",
+    "expected.stdout": "94f6aafd730f993b4d86ba06e28417711f47d405fd2ed2e75cd46f20499d3fe6",
+    "observer.c": "f39114f025ecec0534cb73aa706416e4f4ceb6d38a21d59b28288f2705b7f73c",
+    "reference-rust.rs": "500bfc1b0eac560e22c47c1ace153a0be2b45922fbe7877209ae9f92ec97dcdc",
+    "original-debug-helper.rs": "f450ea46ba8bf61d242c2e941a5d225a2390ae26d53eab684372e2c6062fad33",
+    "macro-input.rs": "e2ce1dda204ac029091b0c50fe98defdd49599c2ec6739c1f451f4cd86f27216",
+    "original-m128i.rs": "b51e5c48f9296a27558f5b5e0663a4ba959f5082daf49ad9c7c2a178ec0e47b4",
+    "original-types-macro.rs": "58757555c92d9db809461609e849acf4ff001543634169bb6c5e931a2375bed4",
+    "missing-feature.rs": "151ecc93ae15703b765da6599a1dc2b04e989889845f96b7919387a878df8bed"
+  }
+}

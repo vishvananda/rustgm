@@ -30,9 +30,8 @@ struct Captured {
     parsed: ParsedSyntax,
     root: NodeId,
 }
-fn captured() -> TestResult<Captured> {
-    let source = input("original-macro")?;
-    let mut report = session::analyze(&source, &Config::default()).map_err(|e| e.message)?;
+pub(super) fn transcribed(source: &str) -> TestResult<(Stream, Registry, ParsedSyntax)> {
+    let mut report = session::analyze(source, &Config::default()).map_err(|e| e.message)?;
     assert_eq!(report.invocations.len(), 1);
     let mut call = report.invocations.remove(0);
     let mut stream = Stream::transcribe(
@@ -42,11 +41,11 @@ fn captured() -> TestResult<Captured> {
         &Environment {
             definition: Source {
                 file: FileId(0),
-                text: &source,
+                text: source,
             },
             invocation: Source {
                 file: FileId(0),
-                text: &source,
+                text: source,
             },
             context: SyntaxContextId::ROOT,
             introduction: ExpansionId(1),
@@ -62,7 +61,7 @@ fn captured() -> TestResult<Captured> {
             &mut stream,
             &mut call.matched,
             FileId(0),
-            &source,
+            source,
             &call.input,
         )
         .map_err(|e| e.message)?;
@@ -70,10 +69,15 @@ fn captured() -> TestResult<Captured> {
         &stream.source,
         &stream.tokens,
         MacroContext::Items(ItemContext::Module),
-        &registry.view(|file| (file == FileId(0)).then_some(source.as_str())),
+        &registry.view(|file| (file == FileId(0)).then_some(source)),
     )
     .map_err(|e| e.message)?;
     let parsed = ParsedSyntax::own(&stream.source, ast).map_err(|e| e.message)?;
+    Ok((stream, registry, parsed))
+}
+fn captured() -> TestResult<Captured> {
+    let source = input("original-macro")?;
+    let (stream, registry, parsed) = transcribed(&source)?;
     let root = parsed
         .ast
         .nodes

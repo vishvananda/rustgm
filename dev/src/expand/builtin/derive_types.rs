@@ -1,5 +1,5 @@
 //! A derive occurrence copies parsed field types, never their rendered spelling.
-use super::choice::Charge;
+use super::{choice::Charge, derive_constants};
 use crate::{
     lex::token::LexError,
     literal::storage::{Storage, StoredValue},
@@ -9,6 +9,9 @@ use crate::{
         token_tree::{Forest, Tree, error},
     },
 };
+#[cfg(test)]
+#[path = "../../../tests/invariants/embedded_counts.rs"]
+mod constant_tests;
 #[cfg(test)]
 #[path = "../../../tests/invariants/forest_types.rs"]
 mod macro_tests;
@@ -29,7 +32,7 @@ pub(super) fn field(
     })
 }
 
-fn node(
+pub(super) fn node(
     source: &Syntax<StoredValue>,
     id: NodeId,
     target: &mut Syntax<StoredValue>,
@@ -48,7 +51,10 @@ fn node(
         .get(id.get() as usize)
         .ok_or_else(|| error(0, "derived field type lost its parsed node"))?;
     match &mut actual.kind {
-        Kind::Name(..) | Kind::CrateRoot(_) | Kind::NeverType => {}
+        Kind::Name(..) | Kind::CrateRoot(_) | Kind::NeverType | Kind::DeferredLiteral(_) => {}
+        Kind::Literal(index) => {
+            *index = derive_constants::literal(source, *index, target, charge, actual.span.start)?;
+        }
         Kind::Path { segments, .. }
         | Kind::Type {
             elements: segments, ..
@@ -95,6 +101,9 @@ fn node(
             *ty = node(source, *ty, target, charge, depth + 1)?;
         }
         Kind::Group(value) => *value = node(source, *value, target, charge, depth + 1)?,
+        Kind::Unary { .. } | Kind::Binary { .. } | Kind::Cast { .. } | Kind::Block { .. } => {
+            derive_constants::children(source, &mut actual, target, charge, depth + 1)?;
+        }
         Kind::Qualified {
             ty,
             trait_path,
@@ -118,6 +127,7 @@ fn node(
             .map_err(|_| error(actual.span.start, "derived field node overflow"))?,
     )
     .ok_or_else(|| error(actual.span.start, "derived field node overflow"))?;
+    derive_constants::pending(actual, copied, target, charge)?;
     target.nodes.push(actual);
     Ok(copied)
 }

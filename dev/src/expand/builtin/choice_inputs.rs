@@ -71,6 +71,8 @@ pub(crate) fn syntax_payload<L>(ast: &Syntax<L>) -> usize {
         size_of_val(ast.attributes.as_slice()),
         size_of_val(ast.literals.as_slice()),
         size_of_val(ast.captures.as_slice()),
+        size_of_val(ast.pending.owners.as_slice()),
+        size_of_val(ast.pending.literals.as_slice()),
         ast.gate_sites.as_ref().map_or(0, |entries| {
             size_of_val(entries.as_ref()) + size_of_val(entries.entries())
         }),

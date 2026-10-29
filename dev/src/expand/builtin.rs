@@ -3,6 +3,7 @@ pub(crate) mod assertion;
 pub(crate) mod bytes_concat;
 pub(crate) mod choice;
 pub(crate) mod delegation;
+mod derive_constants;
 pub(crate) mod derive_output;
 mod derive_types;
 #[path = "builtin/placeholder_values.rs"]
