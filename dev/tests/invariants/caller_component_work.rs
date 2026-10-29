@@ -34,7 +34,7 @@ fn growing_roots_share_component_work_and_drop_only_clause_local_regions() -> Re
             roots.push(root);
         }
         let mut query = Components::default();
-        let mut budget = Budget(0);
+        let mut budget = Budget::default();
         let (regions, parameters, projections) =
             query.collect_roots(&types, &roots, 1, ComponentKind::TypeBound, &mut budget)?;
         assert_eq!(regions, [RegionId::bound(0, 0)?]);

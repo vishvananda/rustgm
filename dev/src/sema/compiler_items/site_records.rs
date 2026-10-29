@@ -5,6 +5,7 @@ use crate::{
     support::bindings::LangItem,
     types::{ItemId, Kind, Primitive, RegionId, TypeId, arguments::Argument},
 };
+mod outliving;
 
 /// Readiness for an actual caller-site demand; a reservation grants no data proof.
 pub(in crate::sema) fn requested_location(
@@ -70,6 +71,7 @@ fn checked_role(report: &Report, facts: &mut Declarations, role: LangItem) -> Re
     if role == LangItem::PanicLocation {
         location(report, facts, fields).map_err(error)?;
         location_variances(facts, claimed)?;
+        outliving::complete(facts, claimed)?;
     } else {
         info(report, facts, fields).map_err(error)?;
     }

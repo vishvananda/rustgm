@@ -7,6 +7,7 @@ mod components;
 mod contracts;
 pub(crate) mod families;
 mod instances;
+mod prepaid_storage;
 mod requirements;
 pub(crate) use clause_requirements::Formation;
 pub use components::LiveRegions;
@@ -95,10 +96,13 @@ pub struct ScalarRequirements<'a> {
 }
 const LIMIT: usize = 1_000_000;
 #[derive(Default)]
-struct Budget(usize);
-impl Budget {
+struct Budget<'a>(usize, Option<crate::support::retained::Payment<'a>>);
+impl Budget<'_> {
     fn charge(&mut self) -> Result<(), &'static str> {
         self.0 += 1;
+        if let Some(pay) = self.1 {
+            pay(1, 0)?;
+        }
         if self.0 > LIMIT {
             return Err("type outlives work budget exceeded");
         }
@@ -111,8 +115,18 @@ impl Budget {
         Ok(())
     }
     fn work(&mut self, count: usize) -> Result<(), &'static str> {
-        self.pending(count)?;
-        self.0 += count;
+        if self.1.is_none() {
+            self.pending(count)?;
+            self.0 += count;
+            return Ok(());
+        }
+        self.0 = self.0.saturating_add(count);
+        if let Some(pay) = self.1 {
+            pay(count, 0)?;
+        }
+        if self.0 > LIMIT {
+            return Err("type outlives work budget exceeded");
+        }
         Ok(())
     }
 }
@@ -133,7 +147,7 @@ fn children(
     ty: TypeId,
     depth: u16,
     work: &mut Vec<(TypeId, u16)>,
-    budget: &mut Budget,
+    budget: &mut Budget<'_>,
 ) -> Result<(), &'static str> {
     match types.kind(ty).ok_or("invalid well-formed type identity")? {
         Kind::Closure {
@@ -142,26 +156,29 @@ fn children(
             arguments,
             ..
         } => {
+            budget.vector(work, 2)?;
             work.extend([(signature, depth), (environment, depth)]);
             let arguments = types
                 .arguments(arguments)
                 .ok_or("invalid closure outlives arguments")?;
             budget.pending(work.len().saturating_add(arguments.len()))?;
+            budget.vector(work, arguments.len())?;
             work.extend(arguments.filter_map(|arg| match arg {
                 Argument::Type(ty) => Some((ty, depth)),
                 _ => None,
             }));
         }
-        Kind::Reference { referent, .. } => work.push((referent, depth)),
+        Kind::Reference { referent, .. } => budget.push(work, (referent, depth))?,
         Kind::Pattern { base: pointee, .. } | Kind::Pointer { pointee, .. } => {
-            work.push((pointee, depth));
+            budget.push(work, (pointee, depth))?;
         }
         Kind::Slice(element) | Kind::Array { element, .. } | Kind::ArrayTerm { element, .. } => {
-            work.push((element, depth));
+            budget.push(work, (element, depth))?;
         }
         Kind::Tuple(list) => {
             let children = types.list(list).ok_or("missing outlives tuple children")?;
             budget.pending(work.len().saturating_add(children.len()))?;
+            budget.vector(work, children.len())?;
             work.extend(children.iter().rev().map(|ty| (*ty, depth)));
         }
         Kind::Function {
@@ -174,7 +191,8 @@ fn children(
                 .list(parameters)
                 .ok_or("missing outlives function inputs")?;
             budget.pending(work.len().saturating_add(children.len()).saturating_add(1))?;
-            work.push((result, depth));
+            budget.vector(work, children.len().saturating_add(1))?;
+            budget.push(work, (result, depth))?;
             work.extend(children.iter().rev().map(|ty| (*ty, depth)));
         }
         Kind::FunctionItem {
@@ -182,15 +200,16 @@ fn children(
             arguments,
             ..
         } => {
-            work.push((signature, depth));
+            budget.push(work, (signature, depth))?;
             if types.region_args(arguments).is_none() {
                 let arguments = types
                     .arguments(arguments)
                     .ok_or("invalid outlives item arguments")?;
                 budget.pending(work.len().saturating_add(arguments.len()))?;
+                budget.vector(work, arguments.len())?;
                 for argument in arguments {
                     if let Argument::Type(ty) = argument {
-                        work.push((ty, depth));
+                        budget.push(work, (ty, depth))?;
                     }
                 }
             }
@@ -200,9 +219,10 @@ fn children(
                 .arguments(arguments)
                 .ok_or("invalid nominal outlives arguments")?;
             budget.pending(work.len().saturating_add(arguments.len()))?;
+            budget.vector(work, arguments.len())?;
             for argument in arguments {
                 if let Argument::Type(ty) = argument {
-                    work.push((ty, depth));
+                    budget.push(work, (ty, depth))?;
                 }
             }
         }
@@ -214,6 +234,7 @@ fn children(
                 .arguments(arguments)
                 .ok_or("invalid object outlives arguments")?;
             budget.pending(work.len().saturating_add(arguments.len()))?;
+            budget.vector(work, arguments.len())?;
             work.extend(arguments.filter_map(|arg| match arg {
                 Argument::Type(ty) => Some((ty, depth)),
                 _ => None,
@@ -234,8 +255,8 @@ struct Use {
     callable: bool,
 }
 #[derive(Default)]
-struct Scan {
-    budget: Budget,
+struct Scan<'a> {
+    budget: Budget<'a>,
     components: Components,
     work: Vec<(TypeId, u16)>,
     seen: HashSet<(TypeId, u16)>,
@@ -249,23 +270,25 @@ struct Scan {
     families: bool,
     family_uses: Vec<(super::projection::Application, u16)>,
 }
-impl Scan {
-    fn clear(&mut self) {
+impl Scan<'_> {
+    fn clear(&mut self) -> Result<(), &'static str> {
         self.work.clear();
         self.pairs.clear();
-        self.unique.clear();
+        self.budget.clear_set(&mut self.unique)?;
         self.parameter_pairs.clear();
-        self.unique_parameters.clear();
+        self.budget.clear_set(&mut self.unique_parameters)?;
         self.uses.clear();
         self.projection_pairs.clear();
-        self.unique_projections.clear();
-        self.seen.clear();
+        self.budget.clear_set(&mut self.unique_projections)?;
+        self.budget.clear_set(&mut self.seen)?;
         self.family_uses.clear();
+        Ok(())
     }
-    fn record(&mut self, pair: Pair) {
-        if useful(pair) && self.unique.insert(pair) {
-            self.pairs.push(pair);
+    fn record(&mut self, pair: Pair) -> Result<(), &'static str> {
+        if useful(pair) && self.budget.insert(&mut self.unique, pair)? {
+            self.budget.push(&mut self.pairs, pair)?;
         }
+        Ok(())
     }
     fn visit(&mut self, types: &Store, root: TypeId) -> Result<(), &'static str> {
         self.visit_with(types, root, 0, &mut requirements::Ordinary)
@@ -277,10 +300,10 @@ impl Scan {
         depth: u16,
         demand: &mut impl requirements::Demand,
     ) -> Result<(), &'static str> {
-        self.work.push((root, depth));
+        self.budget.push(&mut self.work, (root, depth))?;
         while let Some((ty, depth)) = self.work.pop() {
             self.budget.charge()?;
-            if !self.seen.insert((ty, depth))
+            if !self.budget.insert(&mut self.seen, (ty, depth))?
                 || (types.contains_regions(ty) == Some(false)
                     && types.contains_parameters(ty) == Some(false)
                     && types.contains_projections(ty) == Some(false))
@@ -290,7 +313,8 @@ impl Scan {
             match types.kind(ty).ok_or("invalid well-formedness type")? {
                 Kind::Projection(application) => {
                     if self.families {
-                        self.family_uses.push((application, depth));
+                        self.budget
+                            .push(&mut self.family_uses, (application, depth))?;
                     }
                     self.projected_inputs(types, application, depth)?;
                     continue;
@@ -313,27 +337,33 @@ impl Scan {
                     for requirement in types.dynamic_requirements(ty, depth)? {
                         self.budget.charge()?;
                         if let Some(pair) = requirement? {
-                            self.record(pair);
+                            self.record(pair)?;
                         }
                     }
                 }
                 Kind::Adt(item, arguments) if arguments != GenericArgs::EMPTY => {
-                    self.uses.push(Use {
-                        item,
-                        arguments,
-                        depth,
-                        callable: false,
-                    });
+                    self.budget.push(
+                        &mut self.uses,
+                        Use {
+                            item,
+                            arguments,
+                            depth,
+                            callable: false,
+                        },
+                    )?;
                 }
                 Kind::FunctionItem {
                     item, arguments, ..
                 } if arguments != GenericArgs::EMPTY => {
-                    self.uses.push(Use {
-                        item,
-                        arguments,
-                        depth,
-                        callable: true,
-                    });
+                    self.budget.push(
+                        &mut self.uses,
+                        Use {
+                            item,
+                            arguments,
+                            depth,
+                            callable: true,
+                        },
+                    )?;
                 }
                 _ => {}
             }
@@ -350,7 +380,8 @@ impl Scan {
     ) -> Result<(), &'static str> {
         // Formation includes input well-formedness. It does not reveal the opaque
         // result's outlives or live-value components, which remain separate queries.
-        self.work.push((application.subject, depth));
+        self.budget
+            .push(&mut self.work, (application.subject, depth))?;
         let trait_ = types
             .trait_application(application.trait_application)
             .ok_or("invalid well-formed projection trait")?;
@@ -363,7 +394,7 @@ impl Scan {
             for argument in arguments {
                 self.budget.charge()?;
                 if let Argument::Type(ty) = argument {
-                    self.work.push((ty, depth));
+                    self.budget.push(&mut self.work, (ty, depth))?;
                 }
             }
         }
@@ -382,7 +413,7 @@ pub struct Queries<'a> {
 /// declarations never publish a cache entry; completed declarations cannot change.
 #[derive(Default)]
 pub struct QueryCache {
-    scan: Scan,
+    scan: Scan<'static>,
     regions: HashMap<TypeId, Vec<Pair>>,
     parameters: HashMap<TypeId, Vec<ParameterPair>>,
     projections: HashMap<TypeId, Vec<ProjectionPair>>,
@@ -471,7 +502,7 @@ impl<'a> Queries<'a> {
     /// Rejects malformed templates, unsupported nominal fields and exhausted work.
     pub fn symbolic_requirements(&mut self, ty: TypeId) -> Result<Requirements<'_>, &'static str> {
         if !self.state.regions.contains_key(&ty) {
-            self.state.scan.clear();
+            self.state.scan.clear()?;
             self.state.scan.visit(self.types, ty)?;
             self.state.scan.demands(
                 self.types,

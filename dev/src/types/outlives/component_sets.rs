@@ -48,7 +48,7 @@ impl Sets {
         depth: u16,
         kind: ComponentKind,
         shorter: RegionId,
-        budget: &mut Budget,
+        budget: &mut Budget<'_>,
     ) -> Result<Vec<Atom>, &'static str> {
         if !matches!(kind, ComponentKind::Outlives | ComponentKind::TypeBound) {
             return Err("formation components require a type-bound policy");
@@ -82,7 +82,7 @@ impl Sets {
         &mut self,
         types: &Store,
         key: Key,
-        budget: &mut Budget,
+        budget: &mut Budget<'_>,
     ) -> Result<Id, &'static str> {
         self.work.push((key, false));
         while let Some((key, finish)) = self.work.pop() {
@@ -105,7 +105,12 @@ impl Sets {
             .ok_or("missing component set")
     }
 
-    fn child(&mut self, key: Key, finish: bool, budget: &mut Budget) -> Result<Id, &'static str> {
+    fn child(
+        &mut self,
+        key: Key,
+        finish: bool,
+        budget: &mut Budget<'_>,
+    ) -> Result<Id, &'static str> {
         budget.charge()?;
         if let Some(&found) = self.completed.get(&key) {
             return Ok(found);
@@ -127,7 +132,7 @@ impl Sets {
         types: &Store,
         key: Key,
         finish: bool,
-        budget: &mut Budget,
+        budget: &mut Budget<'_>,
     ) -> Result<Id, &'static str> {
         let ty = match key.input {
             Input::Type(ty) => ty,
@@ -238,7 +243,7 @@ impl Sets {
         kind: Kind,
         key: Key,
         finish: bool,
-        budget: &mut Budget,
+        budget: &mut Budget<'_>,
     ) -> Result<Id, &'static str> {
         let Kind::Dynamic {
             region, arguments, ..
@@ -269,7 +274,7 @@ impl Sets {
         list: ListId,
         key: Key,
         finish: bool,
-        budget: &mut Budget,
+        budget: &mut Budget<'_>,
     ) -> Result<Id, &'static str> {
         let mut set = Id::EMPTY;
         for &ty in types.list(list).ok_or("missing component type list")? {
@@ -292,7 +297,7 @@ impl Sets {
         args: GenericArgs,
         key: Key,
         finish: bool,
-        budget: &mut Budget,
+        budget: &mut Budget<'_>,
     ) -> Result<Id, &'static str> {
         let mut set = Id::EMPTY;
         for argument in types.arguments(args).ok_or("missing component arguments")? {
@@ -318,14 +323,14 @@ impl Sets {
         &mut self,
         region: RegionId,
         depth: u16,
-        budget: &mut Budget,
+        budget: &mut Budget<'_>,
     ) -> Result<Id, &'static str> {
         match free(region, depth)? {
             Some(region) if region != RegionId::STATIC => self.atom(Atom::Region(region), budget),
             _ => Ok(Id::EMPTY),
         }
     }
-    fn atom(&mut self, atom: Atom, budget: &mut Budget) -> Result<Id, &'static str> {
+    fn atom(&mut self, atom: Atom, budget: &mut Budget<'_>) -> Result<Id, &'static str> {
         let next = u32::try_from(self.atoms.len()).map_err(|_| "too many formation components")?;
         let key = *self.atoms.entry(atom).or_insert(next);
         let before = self.map.steps;
@@ -333,7 +338,7 @@ impl Sets {
         budget.work(self.map.steps.saturating_sub(before))?;
         Ok(result)
     }
-    fn merge(&mut self, a: Id, b: Id, budget: &mut Budget) -> Result<Id, &'static str> {
+    fn merge(&mut self, a: Id, b: Id, budget: &mut Budget<'_>) -> Result<Id, &'static str> {
         let before = self.map.steps;
         let result = self.map.union(a, b).map_err(map_error)?;
         budget.work(self.map.steps.saturating_sub(before))?;

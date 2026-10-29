@@ -38,7 +38,7 @@ pub(super) enum ComponentKind {
 #[derive(Default)]
 pub(crate) struct TypeComponents {
     components: Components,
-    budget: Budget,
+    budget: Budget<'static>,
 }
 impl TypeComponents {
     /// Collect independent parts of several already-normalized clause subjects.
@@ -126,7 +126,7 @@ impl TypeComponents {
 #[derive(Default)]
 pub struct LiveRegions {
     components: Components,
-    budget: Budget,
+    budget: Budget<'static>,
 }
 impl LiveRegions {
     /// Queries belong to one immutable canonical type store.
@@ -163,7 +163,7 @@ impl Components {
         root: TypeId,
         depth: u16,
         kind: ComponentKind,
-        budget: &mut Budget,
+        budget: &mut Budget<'_>,
     ) -> Result<BoundParts<'_>, &'static str> {
         if types.contains_regions(root) == Some(false)
             && types.contains_parameters(root) == Some(false)
@@ -182,10 +182,13 @@ impl Components {
             let (values, parameters, projections) =
                 self.collect(types, root, depth, kind, budget)?;
             if !projections.is_empty() {
+                budget.map(&mut self.projections, 1)?;
                 self.projections.insert(key, projections);
             }
+            budget.map(&mut self.cache, 1)?;
             self.cache.insert(key, values);
             if !parameters.is_empty() {
+                budget.map(&mut self.parameters, 1)?;
                 self.parameters.insert(key, parameters);
             }
         }
@@ -208,7 +211,7 @@ impl Components {
         root: TypeId,
         depth: u16,
         kind: ComponentKind,
-        budget: &mut Budget,
+        budget: &mut Budget<'_>,
     ) -> Result<ComponentLists, &'static str> {
         self.collect_roots(types, &[root], depth, kind, budget)
     }
@@ -218,12 +221,12 @@ impl Components {
         roots: &[TypeId],
         depth: u16,
         kind: ComponentKind,
-        budget: &mut Budget,
+        budget: &mut Budget<'_>,
     ) -> Result<ComponentLists, &'static str> {
         self.walk.work.clear();
-        self.walk.seen.clear();
-        self.walk.regions.clear();
-        self.walk.parameter_seen.clear();
+        budget.clear_set(&mut self.walk.seen)?;
+        budget.clear_set(&mut self.walk.regions)?;
+        budget.clear_set(&mut self.walk.parameter_seen)?;
         self.walk.extend(types, roots, depth, kind, budget)
     }
     pub(super) fn captures(
@@ -231,7 +234,7 @@ impl Components {
         types: &Store,
         ty: TypeId,
         depth: u16,
-        budget: &mut Budget,
+        budget: &mut Budget<'_>,
     ) -> Result<bool, &'static str> {
         if depth == 0 {
             return Ok(false);
@@ -255,48 +258,38 @@ impl Walk {
         roots: &[TypeId],
         depth: u16,
         kind: ComponentKind,
-        budget: &mut Budget,
+        budget: &mut Budget<'_>,
     ) -> Result<ComponentLists, &'static str> {
-        budget.pending(roots.len())?;
-        let expanded = if kind == ComponentKind::ProjectionInputs {
-            let [root] = roots else {
-                return Err("projection input components require one root");
-            };
-            Some(*root)
-        } else {
-            None
-        };
-        self.work.clear();
-        self.work.extend(roots.iter().map(|&root| (root, depth)));
+        let expanded = self.prepare_roots(roots, depth, kind, budget)?;
         let mut values = Vec::new();
         let mut parameters = Vec::new();
         let mut projections = Vec::new();
         while let Some((ty, depth)) = self.work.pop() {
             budget.charge()?;
-            if !self.seen.insert((ty, depth)) {
+            if !budget.insert(&mut self.seen, (ty, depth))? {
                 continue;
             }
             match types.kind(ty).ok_or("invalid outlives component type")? {
                 Kind::Parameter(id) => {
-                    if self.parameter_seen.insert(id) {
-                        parameters.push(id);
+                    if budget.insert(&mut self.parameter_seen, id)? {
+                        budget.push(&mut parameters, id)?;
                     }
                 }
                 Kind::Reference {
                     region, referent, ..
                 } => {
-                    self.record_region(region, depth, &mut values)?;
+                    self.record_region(region, depth, &mut values, budget)?;
                     // Only minimal outlives queries rely on separately proved
                     // reference well-formedness. Projection inputs retain the
                     // referent even when this region is bound by a callable.
                     if kind != ComponentKind::Outlives {
-                        self.work.push((referent, depth));
+                        budget.push(&mut self.work, (referent, depth))?;
                     }
                 }
                 Kind::Dynamic {
                     region, arguments, ..
                 } => {
-                    self.record_region(region, depth, &mut values)?;
+                    self.record_region(region, depth, &mut values, budget)?;
                     let nested = depth
                         .checked_add(1)
                         .ok_or("object component binder depth overflow")?;
@@ -309,7 +302,9 @@ impl Walk {
                         budget,
                     )?;
                 }
-                Kind::Closure { environment, .. } => self.work.push((environment, depth)),
+                Kind::Closure { environment, .. } => {
+                    budget.push(&mut self.work, (environment, depth))?;
+                }
                 Kind::Array { length: 0, .. } if kind == ComponentKind::LiveValue => {}
                 Kind::Opaque(id, args) => {
                     if matches!(kind, ComponentKind::LiveValue | ComponentKind::DropInputs) {
@@ -317,11 +312,11 @@ impl Walk {
                         let bound = types.opaque_live_bound(id, args, depth, &mut cost)?;
                         budget.work(cost)?;
                         if let Some(bound) = bound {
-                            self.record_region(bound, 0, &mut values)?;
+                            self.record_region(bound, 0, &mut values, budget)?;
                             continue;
                         }
                     } else if expanded != Some(ty) {
-                        projections.push(Projection { ty, depth });
+                        budget.push(&mut projections, Projection { ty, depth })?;
                         continue;
                     }
                     self.arguments(
@@ -344,7 +339,7 @@ impl Walk {
                 }
                 Kind::Projection(application) => {
                     if kind != ComponentKind::LiveValue && expanded != Some(ty) {
-                        projections.push(Projection { ty, depth });
+                        budget.push(&mut projections, Projection { ty, depth })?;
                         continue;
                     }
                     // Every input outliving a use is sufficient for its associated
@@ -362,17 +357,39 @@ impl Walk {
         }
         Ok((values, parameters, projections))
     }
+    fn prepare_roots(
+        &mut self,
+        roots: &[TypeId],
+        depth: u16,
+        kind: ComponentKind,
+        budget: &mut Budget<'_>,
+    ) -> Result<Option<TypeId>, &'static str> {
+        budget.pending(roots.len())?;
+        let expanded = if kind == ComponentKind::ProjectionInputs {
+            let [root] = roots else {
+                return Err("projection input components require one root");
+            };
+            Some(*root)
+        } else {
+            None
+        };
+        self.work.clear();
+        budget.vector(&mut self.work, roots.len())?;
+        self.work.extend(roots.iter().map(|&root| (root, depth)));
+        Ok(expanded)
+    }
     fn record_region(
         &mut self,
         region: RegionId,
         depth: u16,
         values: &mut Vec<RegionId>,
+        budget: &mut Budget<'_>,
     ) -> Result<(), &'static str> {
         if let Some(region) = free(region, depth)?
             && region != RegionId::STATIC
-            && self.regions.insert(region)
+            && budget.insert(&mut self.regions, region)?
         {
-            values.push(region);
+            budget.push(values, region)?;
         }
         Ok(())
     }
@@ -381,15 +398,15 @@ impl Walk {
         arguments: impl Iterator<Item = Argument>,
         depth: u16,
         values: &mut Vec<RegionId>,
-        budget: &mut Budget,
+        budget: &mut Budget<'_>,
     ) -> Result<(), &'static str> {
         for argument in arguments {
             budget.charge()?;
             match argument {
-                Argument::Lifetime(region) => self.record_region(region, depth, values)?,
+                Argument::Lifetime(region) => self.record_region(region, depth, values, budget)?,
                 Argument::Type(ty) => {
                     budget.pending(self.work.len().saturating_add(1))?;
-                    self.work.push((ty, depth));
+                    budget.push(&mut self.work, (ty, depth))?;
                 }
                 Argument::Const(_) => {}
             }
