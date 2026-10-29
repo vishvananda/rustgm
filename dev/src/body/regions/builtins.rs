@@ -52,7 +52,10 @@ impl BuiltinRequirements {
     }
 
     pub(crate) fn is_unprepared_imported(&self) -> bool {
-        self.prepared_copy.is_none() && self.defining.is_none()
+        self.prepared_copy.is_none()
+            && self.defining.as_deref().is_none_or(|state| {
+                matches!(state, super::super::defining_cleanups::State::Required(_))
+            })
     }
 
     #[cfg(test)]
@@ -78,7 +81,7 @@ impl BuiltinRequirements {
             .saturating_add(
                 self.defining
                     .as_ref()
-                    .map_or(0, |state| state.retained_bytes()),
+                    .map_or(0, |state| 2 * size_of::<usize>() + state.retained_bytes()),
             )
     }
 

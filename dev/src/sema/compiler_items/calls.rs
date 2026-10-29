@@ -109,22 +109,28 @@ fn declared_effect(facts: &mut Declarations, definition: DefId) -> Result<Effect
             .canonical_steps
             .checked_add(1)
             .ok_or("source const-call effect work exhausted")?;
-        let predicate = match clause.value {
-            Clause::UnstableFeature(_) => continue,
-            Clause::Predicate(value) => value,
-            Clause::ForAll(id) => {
-                facts
-                    .types
-                    .quantified(id)
-                    .ok_or("source const-call clause is malformed")?
-                    .predicate
-            }
-        };
-        if matches!(predicate.bound, Bound::MaybeConstTrait(_)) {
+        if conditional_clause(&facts.types, clause.value)? {
             effect = Effect::Conditional;
         }
     }
     Ok(effect)
+}
+
+pub(super) fn conditional_clause(
+    types: &crate::types::Store,
+    clause: Clause,
+) -> Result<bool, &'static str> {
+    let predicate = match clause {
+        Clause::UnstableFeature(_) => return Ok(false),
+        Clause::Predicate(value) => value,
+        Clause::ForAll(id) => {
+            types
+                .quantified(id)
+                .ok_or("source const-call clause is malformed")?
+                .predicate
+        }
+    };
+    Ok(matches!(predicate.bound, Bound::MaybeConstTrait(_)))
 }
 
 #[cfg(test)]

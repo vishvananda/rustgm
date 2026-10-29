@@ -175,6 +175,9 @@ pub(super) fn allocation<'a>(
             return Err("source original preflight omitted its actual function header");
         };
         let header = &rows.functions[index as usize];
+        if raw.context == s::CallContext::ConstDefinition && !input.parameters.is_empty() {
+            bytes = bytes.saturating_add(crate::body::defining_cleanups::required_allocation());
+        }
         let clauses = (header.inputs.end - header.inputs.start) as usize;
         bytes = bytes.saturating_add(super::versioned_calls::allocation(raw.values.len()));
         let ports = raw

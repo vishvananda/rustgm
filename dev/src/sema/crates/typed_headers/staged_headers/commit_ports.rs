@@ -15,7 +15,8 @@ impl Stage {
         facts: &mut Declarations,
         budget: &mut Headers,
     ) -> Result<(), Error> {
-        self.preflight(context, facts, budget)?;
+        let constants = self.preflight(context, facts, budget)?;
+        let effects = prepare_effects(&self.scopes, facts, constants, budget)?;
         let owners = self.associated_rows(context, &facts.types, budget)?;
         budget.reserve(facts.associated.imported_allocation_bound(
             owners.len(),
@@ -63,6 +64,15 @@ impl Stage {
         // its first write; failure cannot leave a partially installed owner.
         let mut work = budget.work.get();
         let exact = super::verbatim_exports::destination(exact, facts.foreign.as_deref_mut())?;
+        let effects = effects
+            .map(|plan| {
+                facts
+                    .source_bindings
+                    .as_deref_mut()
+                    .map(|catalog| (plan, catalog))
+                    .ok_or_else(|| error("source constant effect destination disappeared"))
+            })
+            .transpose()?;
         let installed = facts.associated.install_imported(
             &facts.types,
             crate::sema::crates::ImportedOwners::Ordinary(Rc::clone(&self.graph)),
@@ -78,6 +88,9 @@ impl Stage {
         }
         if let Some((plan, registry)) = exact {
             plan.install(registry);
+        }
+        if let Some((plan, catalog)) = effects {
+            plan.install(catalog);
         }
         publish_scopes(self.scopes, facts, budget);
         let linkage = facts.crates.get_or_insert_default();
@@ -103,7 +116,7 @@ impl Stage {
         context: &mapped_source::Context<'_>,
         facts: &Declarations,
         budget: &mut Headers,
-    ) -> Result<(), Error> {
+    ) -> Result<usize, Error> {
         self.graph.require(
             context.imported,
             context.catalog,
@@ -164,8 +177,40 @@ impl Stage {
         );
         budget.charge(growth.work)?;
         budget.reserve(growth.bytes)?;
-        Ok(())
+        Ok(constants)
     }
+}
+
+fn prepare_effects(
+    scopes: &[super::Scope],
+    facts: &Declarations,
+    constants: usize,
+    budget: &mut Headers,
+) -> Result<Option<crate::sema::compiler_items::ImportedCallEffects>, Error> {
+    if constants == 0 {
+        return Ok(None);
+    }
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or_else(|| error("source constant declarations lost their actual role catalog"))?;
+    let declarations = scopes.iter().filter_map(|scope| {
+        scope
+            .function
+            .as_ref()
+            .filter(|c| c.header.constant)
+            .map(|c| (scope.definition, &c.header.inputs[..c.header.declared]))
+    });
+    super::super::predicate_remap::translation::feature_names::paid(budget, |pay| {
+        crate::sema::compiler_items::ImportedCallEffects::new(
+            catalog,
+            &facts.types,
+            constants,
+            declarations,
+            pay,
+        )
+        .map(Some)
+    })
 }
 
 fn prepay_tables(
@@ -237,6 +282,14 @@ fn table_allocation(facts: &Declarations, headers: &Headers) -> retained::Alloca
     result.map(&facts.lifetimes.functions);
     result.map(&facts.methods.receivers);
     result.set(&facts.constant_functions);
+    if let Some(bytes) = facts
+        .source_bindings
+        .as_deref()
+        .map(crate::sema::compiler_items::Catalog::call_effect_bytes)
+        .filter(|bytes| *bytes != 0)
+    {
+        result.add(bytes);
+    }
     result.map(&headers.entries);
     if let Some(linkage) = &facts.crates {
         result.map(&linkage.symbols);

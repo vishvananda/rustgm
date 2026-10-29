@@ -10,7 +10,10 @@ pub(crate) fn mark_required(
     function: &crate::sema::model::Function,
     contract: &mut Contract,
 ) -> Result<(), &'static str> {
-    let Some(required) = definition(facts, function.definition, contract.source)? else {
+    if function.body.map(BodyOrigin::Source) != Some(contract.source) {
+        return Err("defining cleanup source function changed its actual body");
+    }
+    let Some(required) = definition(facts, function.definition, contract.source, &mut 0)? else {
         return Ok(());
     };
     validate_contract(required, contract)?;
@@ -19,6 +22,49 @@ pub(crate) fn mark_required(
         .get_or_insert_with(|| Arc::new(BuiltinRequirements::empty()));
     Arc::make_mut(builtins).set_defining(Some(Arc::new(State::Required(required))));
     Ok(())
+}
+
+/// Reconstruct an unpaid request from the actual current imported declaration.
+pub(crate) fn mark_imported_required(
+    facts: &Declarations,
+    definition: DefId,
+    contract: &mut Contract,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    *steps = steps.saturating_add(5);
+    if contract.source.source().is_some() {
+        return Err("imported defining cleanup requires its actual imported body");
+    }
+    let Some(required) = super::definition(facts, definition, contract.source, steps)? else {
+        return Ok(());
+    };
+    validate_contract(required, contract)?;
+    let builtins = contract
+        .builtins
+        .as_mut()
+        .and_then(Arc::get_mut)
+        .ok_or("imported defining cleanup requires its fresh owned request carrier")?;
+    if builtins.defining().is_some() {
+        return Err("imported defining cleanup cannot reuse a prior request or proof");
+    }
+    builtins.set_defining(Some(Arc::new(State::Required(required))));
+    Ok(())
+}
+
+pub(crate) fn validate_imported_required(
+    facts: &Declarations,
+    definition: DefId,
+    contract: &Contract,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    *steps = steps.saturating_add(3);
+    let expected = super::definition(facts, definition, contract.source, steps)?;
+    let actual = contract.builtins.as_deref().and_then(|b| b.defining());
+    match (expected, actual) {
+        (None, None) => Ok(()),
+        (Some(expected), Some(State::Required(actual))) if expected == *actual => Ok(()),
+        _ => Err("source original changed its unpaid defining cleanup request"),
+    }
 }
 
 pub(crate) fn prepare(
@@ -205,7 +251,9 @@ fn counted_definition(
         // attempting them, including missing or malformed completed rows.
         work.charge(16)?;
     }
-    definition(facts, id, source)
+    let result = definition(facts, id, source, &mut work.steps);
+    let charged = work.charge(0);
+    result.and_then(|definition| charged.map(|()| definition))
 }
 
 fn clear_instance(
@@ -237,7 +285,7 @@ fn clear_instance(
             .ok_or("defining cleanup instance header is pending")?;
         if required.function != definition
             || required.source != body.source
-            || super::definition(facts, definition, body.source)? != Some(required)
+            || counted_definition(facts, definition, body.source, work)? != Some(required)
             || header.body != Some(required.source)
             || header.signature != required.signature
             || !matches!(facts.types.kind(instance.ty()), Some(crate::types::Kind::FunctionItem { item, signature: actual, .. })

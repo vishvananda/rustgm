@@ -321,7 +321,7 @@ fn reconstructed_const_mode_is_revalidated_without_claiming_a_checked_body() -> 
         .definitions
         .iter()
         .enumerate()
-        .find(|(_, d)| d.node.is_none() && report.package.names.get(d.name) == "const_marked")
+        .find(|(_, d)| d.node.is_none() && report.package.names.get(d.name) == "const_identity")
         .map(|(index, _)| u32::try_from(index).map(crate::resolve::model::DefId))
         .transpose()?
         .ok_or("installed canonical const declaration")?;
@@ -345,6 +345,36 @@ fn reconstructed_const_mode_is_revalidated_without_claiming_a_checked_body() -> 
     let mut body = super::build(&view, &mut work)?;
     assert!(body.const_context);
     super::validate(&view, &body, &mut work.steps)?;
+    let mut contract =
+        super::super::rebuilt_inputs::build(&analysis.facts, &view, &body, &mut work)?;
+    let retained = contract.builtins.clone();
+    let builtins = contract
+        .builtins
+        .as_mut()
+        .ok_or("actual pending builtins")?;
+    assert!(matches!(
+        builtins.defining(),
+        Some(crate::body::defining_cleanups::State::Required(_))
+    ));
+    std::sync::Arc::make_mut(builtins).set_defining(None);
+    assert!(
+        super::super::rebuilt_inputs::validate(
+            &analysis.facts,
+            &view,
+            &body,
+            &contract,
+            &mut work.steps,
+        )
+        .is_err()
+    );
+    contract.builtins = retained;
+    super::super::rebuilt_inputs::validate(
+        &analysis.facts,
+        &view,
+        &body,
+        &contract,
+        &mut work.steps,
+    )?;
     body.const_context = false;
     assert!(super::validate(&view, &body, &mut work.steps).is_err());
     Ok(())
