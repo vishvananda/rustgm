@@ -52,6 +52,14 @@ pub(super) fn preflight(
             count.bytes = count.bytes.saturating_add(name.capacity());
         }
     }
+    for clause in &rows.clauses {
+        work.charge(1)?;
+        if let super::super::Requirement::UnstableFeature(name) = &clause.requirement {
+            work.charge(name.len())?;
+            names = names.saturating_add(name.len());
+            count.bytes = count.bytes.saturating_add(name.len());
+        }
+    }
     if names > crates::MAX_NAME_BYTES {
         return Err("source declaration names exceed the combined byte budget");
     }
@@ -162,6 +170,32 @@ fn inputs(
     count: &mut Count,
     work: &mut Work,
 ) -> Result<(), &'static str> {
+    let non_type = input
+        .type_assumptions
+        .iter()
+        .map(|row| &row.value)
+        .chain(
+            input
+                .builtins
+                .iter()
+                .flat_map(|builtins| builtins.predicates.iter().map(|row| &row.value)),
+        )
+        .chain(
+            input
+                .builtins
+                .iter()
+                .filter_map(|builtins| builtins.source_copy.as_ref())
+                .flat_map(|copy| &copy.goals),
+        );
+    for request in non_type {
+        work.charge(1)?;
+        if let super::super::Requirement::UnstableFeature(name) = request {
+            work.charge(name.len())?;
+            return Err(
+                "feature predicates require actual declared clause ownership, not body/type/Copy inputs",
+            );
+        }
+    }
     count.vector(&input.parameters, work)?;
     count.vector(&input.assumptions, work)?;
     count.vector(&input.type_assumptions, work)?;

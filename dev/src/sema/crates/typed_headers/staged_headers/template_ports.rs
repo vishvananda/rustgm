@@ -144,6 +144,28 @@ pub(in crate::sema::crates::typed_headers) fn symbol_from(
     let id = context.catalog.declaration(definition).map_err(error)?;
     let (owner, row, _) = context.catalog.declaration_coordinate(id).map_err(error)?;
     let rows = context.descriptor.rows();
+    if context.descriptor.profile() == s::Profile::Source2024ModuleFeaturePredicates
+        && let Some(s::HeaderRef::Function(index)) = rows.header(row).map_err(error)?
+        && rows.functions[index as usize].parent.is_some_and(|parent| {
+            matches!(
+                rows.header(parent),
+                Ok(Some(s::HeaderRef::Implementation(_)))
+            )
+        })
+    {
+        let s::FunctionBody::Original(reference) = rows.functions[index as usize].body else {
+            return Err(error("private source method omitted its actual original"));
+        };
+        let body = context.catalog.body_at(owner, reference).map_err(error)?;
+        context
+            .catalog
+            .validate_function_origin(definition, context.catalog.origin(body).map_err(error)?)
+            .map_err(error)?;
+        let growth = 4 * (owner.name().len() + owner.disambiguator().len() + 64);
+        budget.charge(growth)?;
+        budget.reserve(growth)?;
+        return Ok(owner.private_original_symbol(reference, row));
+    }
     let path = if context.descriptor.profile().module_contracts() {
         let root = context
             .descriptor

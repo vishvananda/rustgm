@@ -112,12 +112,18 @@ impl<'a, 'b> Expected<'a, 'b> {
         (0..count).map(move |mut index| {
             *steps = steps.saturating_add(1);
             if index < builtin.len() {
-                let input = builtin[index];
-                return Ok(Some((self.view.input_site(input.site, steps)?, self.view.predicate(input.value, steps)?)));
+                let input = &builtin[index];
+                return Ok(Some((self.view.input_site(input.site, steps)?, self.view.predicate(&input.value, steps)?)));
             }
             index -= builtin.len();
             if index < self.declared.len() {
                 let input = self.declared.get(index).ok_or("source original omitted its complete declaration debt")?;
+                if matches!(input.value, Clause::UnstableFeature(_)) {
+                    // Retained in the whole imported header and its environment;
+                    // callee_premises discharges it for each actual caller/instance.
+                    // It is not a builtin/type Copy query.
+                    return Ok(None);
+                }
                 let Clause::Predicate(predicate) = input.value else {
                     return Err("source quantified declaration debt requires its wider original profile");
                 };
@@ -142,6 +148,7 @@ pub(super) fn build(
     body: &Body,
     work: &mut ImportedOriginals,
 ) -> Result<Contract, &'static str> {
+    super::non_type_calls::check(facts, view, body, &mut work.steps)?;
     let expected = Expected::new(view, facts, &mut work.steps)?;
     let record = view.inputs();
     let parameters = record
@@ -161,7 +168,7 @@ pub(super) fn build(
         .map(|input| {
             view.input_site(input.site, &mut work.steps)?;
             Ok(Clause::Predicate(
-                view.predicate(input.value, &mut work.steps)?,
+                view.predicate(&input.value, &mut work.steps)?,
             ))
         })
         .collect::<Result<_, &'static str>>()?;
@@ -266,7 +273,7 @@ fn copy_queries(
     let goals = record
         .goals
         .iter()
-        .map(|&goal| {
+        .map(|goal| {
             let predicate = view.predicate(goal, steps)?;
             let Bound::Trait(id) = predicate.bound else {
                 return Err("source Copy query changed its ordinary trait effect");
@@ -406,7 +413,7 @@ pub(super) fn validate(
         .zip(&record.type_assumptions)
     {
         view.input_site(record.site, steps)?;
-        if actual != Clause::Predicate(view.predicate(record.value, steps)?) {
+        if actual != Clause::Predicate(view.predicate(&record.value, steps)?) {
             return Err("source original changed a record regional assumption");
         }
     }
@@ -483,7 +490,7 @@ fn validate_builtins(
             {
                 return Err("source original changed its active Copy query inputs");
             }
-            for (&record, &actual) in record.goals.iter().zip(&actual.goals) {
+            for (record, &actual) in record.goals.iter().zip(&actual.goals) {
                 if view.predicate(record, steps)? != actual {
                     return Err("source original changed a retained Copy query");
                 }

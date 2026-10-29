@@ -11,7 +11,7 @@ pub(super) fn prepare(
     contract: &Contract,
     first: u32,
 ) -> Result<Dispatcher, String> {
-    let environment = environment(facts, body);
+    let environment = environment(facts, body)?;
     let Some(environment) = environment.filter(|environment| environment.has_feature_assumptions())
     else {
         return Dispatcher::new(contract.universals, first).map_err(str::to_owned);
@@ -19,11 +19,14 @@ pub(super) fn prepare(
     if contract.key != body.key() || contract.source != body.source {
         return Err("feature dispatch contract belongs to another body".into());
     }
-    body.owner
-        .source_caller(facts, body.source, body.instance)?;
+    if body.source.source().is_some() {
+        body.owner
+            .source_caller(facts, body.source, body.instance)?;
+    }
     match body.owner {
         Owner::Function { definition, .. }
-            if !facts.typed_function_bodies.contains(&definition) =>
+            if body.source.source().is_some()
+                && !facts.typed_function_bodies.contains(&definition) =>
         {
             return Err("feature dispatch requires its completed source body".into());
         }
@@ -60,9 +63,10 @@ pub(super) fn prepare(
     facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work.get());
     result
 }
-fn environment(facts: &Declarations, body: &Body) -> Option<Arc<Environment>> {
-    // Imported feature conditions still require their explicit transport.
-    let source = body.source.source()?;
+fn environment(facts: &mut Declarations, body: &Body) -> Result<Option<Arc<Environment>>, String> {
+    let Some(source) = body.source.source() else {
+        return imported(facts, body);
+    };
     let owner = match body.owner {
         Owner::Function { definition, .. }
         | Owner::Initializer { definition, .. }
@@ -81,9 +85,55 @@ fn environment(facts: &Declarations, body: &Body) -> Option<Arc<Environment>> {
             .and_then(|constant| constant.declaration),
         Owner::ClosureAdapter { .. } => None,
     };
-    owner
+    Ok(owner
         .and_then(|owner| facts.generics.body_environment(owner))
-        .cloned()
+        .cloned())
+}
+fn imported(facts: &mut Declarations, body: &Body) -> Result<Option<Arc<Environment>>, String> {
+    let Owner::Function {
+        definition,
+        signature,
+        execution,
+    } = body.owner
+    else {
+        return Ok(None);
+    };
+    let mut steps = 1_usize;
+    let result = (|| {
+        let header = facts
+            .function_header(definition)?
+            .ok_or("imported dispatch omitted its actual installed function header")?;
+        let Some(environment) = header
+            .environment
+            .filter(|env| env.has_feature_assumptions())
+        else {
+            return Ok(None);
+        };
+        let original = crate::sema::crates::source_original(facts, definition, &mut steps)?
+            .ok_or("imported feature dispatch requires its actual source original")?;
+        if original.rows().descriptor().profile()
+            != crate::support::crates::generics::source::Profile::Source2024ModuleFeaturePredicates
+            || original.definition() != definition
+            || original.signature() != signature
+            || original.source()? != body.source
+            || header.body != Some(body.source)
+            || original.universals() != 0
+            || execution.is_some_and(|actual| actual != signature)
+            || !Arc::ptr_eq(environment, original.environment()?)
+            || body.instance.is_some_and(|instance| {
+                !matches!(facts.types.kind(instance.ty()),
+                Some(crate::types::Kind::FunctionItem { item, signature: actual, .. })
+                    if item.0 == definition.0 && actual == signature)
+            })
+        {
+            return Err(
+                "imported feature dispatch changed its installed body/header/instance scope",
+            );
+        }
+        Ok(Some(environment.clone()))
+    })();
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(steps);
+    result.map_err(str::to_owned)
 }
 
 #[cfg(test)]

@@ -180,7 +180,7 @@ pub(super) fn binder_read(read: &mut Input<'_, '_>) -> Result<s::Binder, &'stati
         3 => s::BinderKind::Clause,
         4 => s::BinderKind::CallableType,
         5 => {
-            read.require_provided("unsupported source binder kind")?;
+            read.require_calls("unsupported source binder kind")?;
             s::BinderKind::CallSignature {
                 body: BodyRef(read.id()?),
                 value: read.id()?,

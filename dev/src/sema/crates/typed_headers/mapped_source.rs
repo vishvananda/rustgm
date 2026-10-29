@@ -10,6 +10,8 @@ pub(in crate::sema) use ingested_readiness::Readiness;
 mod origin_ports;
 pub(in crate::sema::crates::typed_headers) use origin_ports::require_function;
 mod owner_members;
+mod versioned_members;
+pub(in crate::sema) use versioned_members::PrimitiveMethods;
 mod role_headers;
 pub(in crate::sema::crates::typed_headers) use role_headers::installed as installed_trait_header;
 mod scheme_inputs;
@@ -97,7 +99,8 @@ impl Context<'_> {
         if !actual.profile().ordinary_functions() {
             match actual.profile() {
                 s::Profile::Source2024ModuleContracts
-                | s::Profile::Source2024ModuleAvailability => {
+                | s::Profile::Source2024ModuleAvailability
+                | s::Profile::Source2024ModuleFeaturePredicates => {
                     actual.module_contracts().map_err(error)?;
                 }
                 _ => {
@@ -261,7 +264,7 @@ impl Graph {
     }
     pub(in crate::sema::crates::typed_headers) fn requirement(
         &self,
-        raw: s::Requirement,
+        raw: &s::Requirement,
     ) -> Result<Predicate, &'static str> {
         let mut mapping = self;
         original_requests::map(&mut mapping, raw)

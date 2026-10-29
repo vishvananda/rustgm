@@ -41,7 +41,7 @@ impl DomainIndex<'_, '_> {
             if matches!(input.value, s::Requirement::Trait { .. }) {
                 return Err("source regional assumptions cannot carry trait permission");
             }
-            self.requirement(context, input.value, work)?;
+            self.requirement(context, &input.value, work)?;
         }
         self.allocations(context, original, input, work)?;
         for input in &input.obligations {
@@ -61,7 +61,7 @@ impl DomainIndex<'_, '_> {
             self.environment(context, builtins.environment, work)?;
             for requirement in &builtins.predicates {
                 self.input_site(original, requirement.site, work)?;
-                self.requirement(context, requirement.value, work)?;
+                self.requirement(context, &requirement.value, work)?;
             }
             if let Some(copy) = &builtins.source_copy {
                 if let Some(declaration) = copy.declaration
@@ -73,7 +73,7 @@ impl DomainIndex<'_, '_> {
                 {
                     return Err("source Copy query has no exact supported declaration");
                 }
-                for &goal in &copy.goals {
+                for goal in &copy.goals {
                     self.requirement(context, goal, work)?;
                 }
             }

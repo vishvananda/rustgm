@@ -6,6 +6,7 @@ pub(super) fn emit(
     body: &Body,
     context: Context,
     raw: &mut s::Original,
+    sites: &mut super::super::locations::Sites,
 ) -> Result<(), &'static str> {
     stage.reserve(body.arguments.len().saturating_mul(size_of::<u32>()))?;
     for argument in &body.arguments {
@@ -66,11 +67,12 @@ pub(super) fn emit(
             },
             _ => return Err("source rvalue requires a complete wider transport row"),
         };
+        let ty = stage.ty(facts, value.ty, context)?;
+        if stage.feature_predicates() && matches!(kind, s::ValueKind::Function(_)) {
+            sites.function_formation(stage, body.source.root_body_site(), value.ty, ty)?;
+        }
         stage.reserve(4 * size_of::<s::Value>())?;
-        raw.values.push(s::Value {
-            ty: stage.ty(facts, value.ty, context)?,
-            kind,
-        });
+        raw.values.push(s::Value { ty, kind });
     }
     Ok(())
 }

@@ -1,0 +1,35 @@
+{
+  "state": "frozen before observation",
+  "owner": 31,
+  "scope": "distinct genuine primitive-u8 identity method uses existing ReadLocal/Function/Call rows",
+  "cases": {
+    "identity-method-provider": {
+      "status": 0,
+      "sha256": "83caffdd9a67d38d672779ebb51cf69fa5da88764dd764522630b229f28a9c18"
+    },
+    "identity-method-both": {
+      "status": 0,
+      "sha256": "42a97197e48ce9f566164109ea7a4e84c594503ae41a36c4a6c6e182e6d50c7f"
+    },
+    "identity-method-api-only": {
+      "status": 1,
+      "sha256": "f370f95b77465f4fcda44048e153fa405d3ba133fc35d86ba0b30ddcc29b2480"
+    }
+  },
+  "native_prediction": 7,
+  "required_unclosed": [
+    "literal7 method scalar Rvalue transport",
+    "original seven external nominal/C-provider fixtures"
+  ],
+  "opponents": [
+    "missing caller predicate",
+    "foreign store/catalog/header/body/signature",
+    "header is not executable proof"
+  ],
+  "rust_profile": {
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": 2024,
+    "bootstrap": true,
+    "lint_cap": "allow"
+  }
+}

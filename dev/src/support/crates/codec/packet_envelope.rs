@@ -15,6 +15,7 @@ const ROW_VERSION: u16 = 0;
 const CONTRACT_VERSION: u16 = 1;
 const MODULE_CONTRACT_VERSION: u16 = 2;
 const AVAILABILITY_VERSION: u16 = 3;
+const FEATURE_PREDICATE_VERSION: u16 = 4;
 const DEFINING_RUST2024: u8 = 0;
 
 pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
@@ -28,7 +29,8 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
         Profile::Source2024Functions
         | Profile::Source2024FunctionContracts
         | Profile::Source2024ModuleContracts
-        | Profile::Source2024ModuleAvailability => TAG,
+        | Profile::Source2024ModuleAvailability
+        | Profile::Source2024ModuleFeaturePredicates => TAG,
         Profile::Source2024Provided | Profile::Source2024ProvidedContracts => PROVIDED_TAG,
         Profile::Source2024 => return Err("unpublished source facade has no wire profile"),
     };
@@ -45,6 +47,7 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     out.bytes(&PROFILE[..2])?;
     out.u8(tag)?;
     out.u16(match descriptor.profile() {
+        Profile::Source2024ModuleFeaturePredicates => FEATURE_PREDICATE_VERSION,
         Profile::Source2024ModuleAvailability => AVAILABILITY_VERSION,
         Profile::Source2024ModuleContracts => MODULE_CONTRACT_VERSION,
         Profile::Source2024FunctionContracts | Profile::Source2024ProvidedContracts => {
@@ -62,7 +65,7 @@ pub(super) fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
         ordinary_columns::encode_provided_contracts(&mut out, descriptor.rows())?;
     } else if tag == PROVIDED_TAG {
         ordinary_columns::encode_provided(&mut out, descriptor.rows())?;
-    } else if descriptor.profile() == Profile::Source2024ModuleAvailability {
+    } else if descriptor.profile().availability() {
         ordinary_columns::encode_module_availability(&mut out, descriptor.rows())?;
     } else if descriptor.profile() == Profile::Source2024ModuleContracts {
         ordinary_columns::encode_module_contracts(&mut out, descriptor.rows())?;
@@ -80,17 +83,7 @@ pub(super) fn decode_provided(input: &mut Reader<'_>) -> Result<Interface, &'sta
     decode_profile(input, true)
 }
 fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &'static str> {
-    let version = input.u16()?;
-    if (provided && !matches!(version, ROW_VERSION | CONTRACT_VERSION)
-        || !provided
-            && !matches!(
-                version,
-                ROW_VERSION | CONTRACT_VERSION | MODULE_CONTRACT_VERSION | AVAILABILITY_VERSION
-            ))
-        || input.u8()? != DEFINING_RUST2024
-    {
-        return Err("unsupported source row version or defining edition");
-    }
+    let version = defining_version(input, provided)?;
     let identity = input.identity()?;
     let dependencies = decode_dependencies(input)?;
     let interface = Interface::new(identity, dependencies, Vec::new())?;
@@ -99,9 +92,13 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
         return Err("source envelope base exceeds retained storage budget");
     }
     let (rows, attributes, modules, contracts, availability) = if !provided
-        && version == AVAILABILITY_VERSION
+        && matches!(version, AVAILABILITY_VERSION | FEATURE_PREDICATE_VERSION)
     {
-        let packet = ordinary_columns::decode_module_availability(input, base)?;
+        let packet = if version == FEATURE_PREDICATE_VERSION {
+            ordinary_columns::decode_module_feature_predicates(input, base)?
+        } else {
+            ordinary_columns::decode_module_availability(input, base)?
+        };
         (
             packet.rows,
             Some(packet.attributes),
@@ -144,7 +141,12 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
         ..Work::default()
     };
     let payload = if let Some(availability) = availability {
-        Payload::from_source_module_availability(
+        let publish = if version == FEATURE_PREDICATE_VERSION {
+            Payload::from_source_module_feature_predicates
+        } else {
+            Payload::from_source_module_availability
+        };
+        publish(
             interface.identity(),
             rows,
             attributes.ok_or("availability advisory columns missing")?,
@@ -179,6 +181,25 @@ fn decode_profile(input: &mut Reader<'_>, provided: bool) -> Result<Interface, &
         Payload::from_source(interface.identity(), rows, base, &mut work)?
     };
     interface.with_generic_payload(payload)
+}
+
+fn defining_version(input: &mut Reader<'_>, provided: bool) -> Result<u16, &'static str> {
+    let version = input.u16()?;
+    if (provided && !matches!(version, ROW_VERSION | CONTRACT_VERSION)
+        || !provided
+            && !matches!(
+                version,
+                ROW_VERSION
+                    | CONTRACT_VERSION
+                    | MODULE_CONTRACT_VERSION
+                    | AVAILABILITY_VERSION
+                    | FEATURE_PREDICATE_VERSION
+            ))
+        || input.u8()? != DEFINING_RUST2024
+    {
+        return Err("unsupported source row version or defining edition");
+    }
+    Ok(version)
 }
 
 #[cfg(test)]

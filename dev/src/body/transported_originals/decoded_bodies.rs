@@ -26,6 +26,8 @@ pub(super) fn append(
 ) -> Result<(), Error> {
     preflight(rows, originals, &allowance)
         .map_err(|e| context.report.body_optional_error(None, e))?;
+    let selected = super::versioned_calls::Index::new(rows, originals, &allowance)
+        .map_err(|e| context.report.body_optional_error(None, e))?;
     for raw in &rows.originals {
         originals
             .charge(1)
@@ -34,7 +36,7 @@ pub(super) fn append(
             .imported
             .generic_definition(context.owner, raw.declaration)
             .map_err(|e| context.report.body_optional_error(None, e))?;
-        let original = build(context, facts, scratch, originals, definition)?;
+        let original = build(context, facts, scratch, originals, definition, &selected)?;
         let source = original.template.body.source;
         let retained = originals
             .retained_bytes()
@@ -54,6 +56,7 @@ pub(super) fn append(
             .retain(original)
             .map_err(|e| context.report.body_error(source, e))?;
     }
+    selected.release(originals);
     Ok(())
 }
 fn build(
@@ -62,9 +65,10 @@ fn build(
     scratch: &mut promote::Scratch,
     work: &mut ImportedOriginals,
     definition: crate::resolve::model::DefId,
+    selected: &super::versioned_calls::Index<'_>,
 ) -> Result<Original, Error> {
     let report = context.report;
-    let (body, contract, environment) = {
+    let (body, contract, environment, pending) = {
         let view = crate::sema::crates::source_original(facts, definition, &mut work.steps)
             .map_err(|e| report.body_optional_error(None, e))?
             .ok_or_else(|| {
@@ -80,6 +84,9 @@ fn build(
             rebuilt_operations::build(&view, work).map_err(|e| report.body_error(source, e))?;
         let contract = rebuilt_inputs::build(facts, &view, &body, work)
             .map_err(|e| report.body_error(source, e))?;
+        let pending = selected
+            .prepare(&view, facts, &body, work)
+            .map_err(|e| report.body_error(source, e))?;
         (
             body,
             contract,
@@ -87,8 +94,11 @@ fn build(
                 view.environment()
                     .map_err(|e| report.body_error(source, e))?,
             ),
+            pending,
         )
     };
+    super::versioned_calls::prove(facts, Arc::clone(&environment), &pending, work)
+        .map_err(|e| report.body_error(body.source, e))?;
     finish(report, facts, scratch, body, contract, environment)
 }
 pub(super) fn finish(
@@ -166,6 +176,7 @@ pub(super) fn allocation<'a>(
         };
         let header = &rows.functions[index as usize];
         let clauses = (header.inputs.end - header.inputs.start) as usize;
+        bytes = bytes.saturating_add(super::versioned_calls::allocation(raw.values.len()));
         let ports = raw
             .locals
             .len()

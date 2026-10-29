@@ -36,23 +36,28 @@ pub(super) fn prepare<'rows, P: ports::OwnedPort<'rows>>(
     )?;
     for requirement in predicates
         .iter()
-        .map(|input| input.value)
-        .chain(copies.iter().copied())
-        .chain(inputs.type_assumptions.iter().map(|input| input.value))
+        .map(|input| &input.value)
+        .chain(copies.iter())
+        .chain(inputs.type_assumptions.iter().map(|input| &input.value))
     {
         // Even a ready application is data in this exact current body/domain.
         Port::require_context(&port.port, store, work)?;
         match requirement {
             s::Requirement::Trait { application, .. } => {
-                translation::application(port, applications, application, store, work)?;
+                translation::application(port, applications, *application, store, work)?;
             }
             s::Requirement::TypeOutlives { subject, shorter } => {
-                port.ty(store, subject, work)?;
-                port.region(shorter, work)?;
+                port.ty(store, *subject, work)?;
+                port.region(*shorter, work)?;
             }
             s::Requirement::Outlives(_) => {
                 return Err(error(
                     "regional clauses require their separate header relation remap",
+                ));
+            }
+            s::Requirement::UnstableFeature(_) => {
+                return Err(error(
+                    "feature clauses cannot be reconstructed as type/Copy body requests",
                 ));
             }
         }

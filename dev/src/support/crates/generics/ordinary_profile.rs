@@ -28,6 +28,7 @@ enum NamespaceProfile {
     Root,
     Inspection,
     Contracts,
+    FeaturePredicates,
 }
 pub(super) fn validate_module_contracts(
     rows: &SourceRows,
@@ -35,6 +36,13 @@ pub(super) fn validate_module_contracts(
     work: &mut Work,
 ) -> Result<(), &'static str> {
     validate_mode(rows, headers, work, NamespaceProfile::Contracts)
+}
+pub(super) fn validate_module_feature_predicates(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+) -> Result<(), &'static str> {
+    validate_mode(rows, headers, work, NamespaceProfile::FeaturePredicates)
 }
 fn validate_mode(
     rows: &SourceRows,
@@ -50,11 +58,17 @@ fn validate_mode(
         return Err("ordinary source functions require their own Rust2024 provider profile");
     }
     let sizing = bindings(rows, headers, work, false)?;
-    recipes(rows, work)?;
+    let features = profile == NamespaceProfile::FeaturePredicates;
+    recipes(rows, work, features)?;
     for header in &rows.traits {
         work.charge(1)?;
         let flags = header.flags.bits();
-        if flags & TraitFlags::RESTRICTED_IMPL != 0 && profile != NamespaceProfile::Contracts {
+        if flags & TraitFlags::RESTRICTED_IMPL != 0
+            && !matches!(
+                profile,
+                NamespaceProfile::Contracts | NamespaceProfile::FeaturePredicates
+            )
+        {
             return Err(
                 "restricted trait requires version-two complete implementation-domain columns",
             );
@@ -80,7 +94,7 @@ fn validate_mode(
             );
         }
     }
-    functions(rows, headers, work, profile != NamespaceProfile::Root)?;
+    functions(rows, headers, work, profile)?;
     for header in &rows.implementations {
         work.charge(1)?;
         if header.constant || header.negative || header.unsafe_ {
@@ -91,19 +105,19 @@ fn validate_mode(
     }
     for clause in &rows.clauses {
         work.charge(1)?;
-        ordinary(clause.requirement)?;
+        ordinary(&clause.requirement)?;
     }
-    originals(rows, work)
+    originals(rows, work, features)
 }
 fn functions(
     rows: &SourceRows,
     headers: &HeaderIndex<'_>,
     work: &mut Work,
-    modules: bool,
+    profile: NamespaceProfile,
 ) -> Result<(), &'static str> {
     for declaration in &rows.declarations {
         work.charge(1)?;
-        if !modules
+        if profile == NamespaceProfile::Root
             && declaration.definition.kind == super::super::DefinitionKind::Module
             && declaration.definition.parent.is_some()
         {
@@ -124,7 +138,12 @@ fn functions(
                 "source nonordinary callable effect/safety/convention requires a wider profile",
             );
         }
-        if matches!(header.body, FunctionBody::Original(_)) && header.parent.is_some() {
+        let primitive_method = profile == NamespaceProfile::FeaturePredicates
+            && primitive_method(rows, headers, header, work)?;
+        if matches!(header.body, FunctionBody::Original(_))
+            && header.parent.is_some()
+            && !primitive_method
+        {
             return Err("source provided associated bodies require a wider explicit profile");
         }
         if matches!(header.body, FunctionBody::Original(_)) && header.regions.total != 0 {
@@ -144,7 +163,9 @@ fn functions(
                     "source body absence is supported only for actual required trait members",
                 );
             }
-            FunctionBody::Original(_) if parent_kind != super::super::DefinitionKind::Module => {
+            FunctionBody::Original(_)
+                if parent_kind != super::super::DefinitionKind::Module && !primitive_method =>
+            {
                 return Err("source original requires its actual supported root module owner");
             }
             _ => {}
@@ -153,24 +174,86 @@ fn functions(
     }
     Ok(())
 }
-fn originals(rows: &SourceRows, work: &mut Work) -> Result<(), &'static str> {
+fn primitive_method(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    function: &super::super::FunctionHeader,
+    work: &mut Work,
+) -> Result<bool, &'static str> {
+    let Some(parent) = function.parent else {
+        return Ok(false);
+    };
+    let Some(super::super::HeaderRef::Implementation(index)) = headers.header(parent, work)? else {
+        return Ok(false);
+    };
+    let implementation = &rows.implementations[index as usize];
+    work.charge(4)?;
+    if implementation.self_definition != parent
+        || implementation.constant
+        || implementation.negative
+        || implementation.unsafe_
+        || implementation.region_captures != 0
+        || implementation.region_bounds.start != implementation.region_bounds.end
+        || !matches!(
+            rows.types.get(implementation.self_type.0 as usize),
+            Some(super::super::Type::Scalar(_))
+        )
+        || function.receiver.is_some()
+        || function.regions.total != 0
+    {
+        return Ok(false);
+    }
+    for owner in [implementation.scope, function.scope] {
+        if headers.scopes().complete_slots(owner, work)? != 0 {
+            return Ok(false);
+        }
+    }
+    for signature in [function.original, function.callable] {
+        work.charge(1)?;
+        if rows
+            .binders
+            .get(signature.binder.0 as usize)
+            .is_none_or(|binder| binder.count != 0)
+            || !matches!(
+                rows.types.get(signature.result.0 as usize),
+                Some(super::super::Type::Scalar(_))
+            )
+        {
+            return Ok(false);
+        }
+        for parameter in
+            &rows.roots[signature.parameters.start as usize..signature.parameters.end as usize]
+        {
+            work.charge(1)?;
+            if !matches!(
+                rows.types.get(parameter.0 as usize),
+                Some(super::super::Type::Scalar(_))
+            ) {
+                return Ok(false);
+            }
+        }
+    }
+    Ok(true)
+}
+fn originals(rows: &SourceRows, work: &mut Work, features: bool) -> Result<(), &'static str> {
     for original in &rows.originals {
         work.charge(1)?;
         if original.context != super::super::CallContext::Runtime
             || !original.variables.is_empty()
             || !original.projections.is_empty()
-            || !original.calls.is_empty()
-            || !original.arguments.is_empty()
+            || !features && (!original.calls.is_empty() || !original.arguments.is_empty())
             || !original.openings.is_empty()
         {
             return Err("source contextual/borrow/call original requires a wider explicit profile");
         }
         for value in &original.values {
             work.charge(1)?;
-            if !matches!(
+            if !(matches!(
                 value.kind,
                 ValueKind::Unit | ValueKind::Read(Place::Local(_)) | ValueKind::Constrain(_)
-            ) {
+            ) || features
+                && matches!(value.kind, ValueKind::Function(_) | ValueKind::Call { .. }))
+            {
                 return Err("source value operation requires a wider explicit profile");
             }
         }
@@ -207,12 +290,12 @@ fn originals(rows: &SourceRows, work: &mut Work) -> Result<(), &'static str> {
             }
             for request in &builtins.predicates {
                 work.charge(1)?;
-                ordinary(request.value)?;
+                ordinary(&request.value)?;
             }
         }
         for request in &input.type_assumptions {
             work.charge(1)?;
-            ordinary(request.value)?;
+            ordinary(&request.value)?;
         }
         for normalization in &input.normalizations {
             work.charge(1)?;
@@ -235,23 +318,27 @@ fn originals(rows: &SourceRows, work: &mut Work) -> Result<(), &'static str> {
     }
     Ok(())
 }
-fn recipes(rows: &SourceRows, work: &mut Work) -> Result<(), &'static str> {
+fn recipes(rows: &SourceRows, work: &mut Work, features: bool) -> Result<(), &'static str> {
     work.charge(rows.function_applications.len())?;
-    if !rows.function_applications.is_empty() {
+    if !features && !rows.function_applications.is_empty() {
         return Err("source application recipes require a wider source profile");
     }
     for row in &rows.binders {
         work.charge(1)?;
-        if matches!(row.kind, super::super::BinderKind::CallSignature { .. }) {
+        if matches!(row.kind, super::super::BinderKind::CallSignature { .. })
+            && (!features || row.count != 0)
+        {
             return Err("source call binder requires a wider source profile");
         }
     }
     for row in &rows.types {
         work.charge(1)?;
-        if matches!(
-            row,
-            super::super::Type::FunctionItem(_) | super::super::Type::ApplicationSignature(_)
-        ) {
+        if !features
+            && matches!(
+                row,
+                super::super::Type::FunctionItem(_) | super::super::Type::ApplicationSignature(_)
+            )
+        {
             return Err("source application recipe requires a wider source profile");
         }
     }
@@ -263,11 +350,11 @@ fn recipes(rows: &SourceRows, work: &mut Work) -> Result<(), &'static str> {
     }
     Ok(())
 }
-fn ordinary(request: super::super::Requirement) -> Result<(), &'static str> {
+fn ordinary(request: &super::super::Requirement) -> Result<(), &'static str> {
     if matches!(request, super::super::Requirement::Outlives(_)) {
         return Err("standalone regional clauses require their explicit wider header consumer");
     }
-    if matches!(request, super::super::Requirement::Trait { effect, .. } if effect != Constness::Ordinary)
+    if matches!(request, super::super::Requirement::Trait { effect, .. } if *effect != Constness::Ordinary)
     {
         return Err("source qualified body request requires a wider source profile");
     }

@@ -97,6 +97,13 @@ pub(in crate::sema::crates::typed_headers) fn prepare_checked(
     };
     for clause in assumptions {
         budget.charge(1)?;
+        if let Clause::UnstableFeature(id) = clause {
+            facts
+                .types
+                .feature_name(*id)
+                .ok_or_else(|| error("foreign imported feature premise"))?;
+            continue;
+        }
         let Clause::Predicate(predicate) = clause else {
             return Err(error(
                 "quantified source assumptions require a wider environment profile",
@@ -135,9 +142,12 @@ pub(in crate::sema::crates::typed_headers) fn prepare_checked(
         Environment::new(&facts.types, parameters).map_err(error)?
     };
     let environment = Arc::new(
-        environment
-            .with_clauses(&facts.types, assumptions)
-            .map_err(error)?,
+        super::super::predicate_remap::translation::feature_names::with_clauses(
+            environment,
+            &facts.types,
+            assumptions,
+            budget,
+        )?,
     );
     let retained = if let Some(parent) = inherited {
         environment.retain_owned_from(parent, &mut Retained::default())

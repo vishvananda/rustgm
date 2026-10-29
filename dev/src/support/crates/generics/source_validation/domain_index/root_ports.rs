@@ -110,14 +110,14 @@ impl DomainIndex<'_, '_> {
             } else {
                 context
             };
-            self.requirement(inner, input.requirement, work)?;
+            self.requirement(inner, &input.requirement, work)?;
             if let Some(slot) = input.self_subject {
-                let subject = match input.requirement {
+                let subject = match &input.requirement {
                     s::Requirement::Trait { application, .. } => {
                         rows.trait_applications[application.0 as usize].subject
                     }
-                    s::Requirement::TypeOutlives { subject, .. } => subject,
-                    s::Requirement::Outlives(_) => {
+                    s::Requirement::TypeOutlives { subject, .. } => *subject,
+                    s::Requirement::Outlives(_) | s::Requirement::UnstableFeature(_) => {
                         return Err("source regional clause cannot claim a typed Self subject");
                     }
                 };
@@ -143,16 +143,21 @@ impl DomainIndex<'_, '_> {
     pub(super) fn requirement(
         &mut self,
         context: Context,
-        requirement: s::Requirement,
+        requirement: &s::Requirement,
         work: &mut Work,
     ) -> Result<(), &'static str> {
         match requirement {
-            s::Requirement::Trait { application, .. } => self.trait_use(context, application, work),
-            s::Requirement::TypeOutlives { subject, shorter } => {
-                self.types.root(self.headers, context, subject, work)?;
-                Types::region(self.headers, &self.binders, context, shorter, work)
+            s::Requirement::Trait { application, .. } => {
+                self.trait_use(context, *application, work)
             }
-            s::Requirement::Outlives(bound) => self.bound(context, bound, work),
+            s::Requirement::TypeOutlives { subject, shorter } => {
+                self.types.root(self.headers, context, *subject, work)?;
+                Types::region(self.headers, &self.binders, context, *shorter, work)
+            }
+            s::Requirement::Outlives(bound) => self.bound(context, *bound, work),
+            // The whole declaration/call input remains in the semantic request plan;
+            // this non-type row contributes no fictitious type root.
+            s::Requirement::UnstableFeature(name) => work.charge(name.len().saturating_add(1)),
         }
     }
     pub(super) fn bounds(

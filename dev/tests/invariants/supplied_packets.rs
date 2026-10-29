@@ -279,6 +279,7 @@ fn denied(
         bytes: 0,
         base: 0,
         provided: false,
+        features: false,
     };
     assert!(check(&mut input).is_err());
     assert_eq!(

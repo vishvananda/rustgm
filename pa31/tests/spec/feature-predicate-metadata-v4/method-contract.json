@@ -1,0 +1,36 @@
+{
+  "state": "separate method predictions frozen before observation",
+  "owner": 31,
+  "scope": "genuine ordinary Rust primitive-u8 trait/impl method; v4 existing call/application rows only",
+  "cases": {
+    "method-provider": {
+      "status": 0,
+      "sha256": "d5a2cca05faa053219940ba148e33a9e37de08ae8167e631d439160a94d508b9"
+    },
+    "method-both": {
+      "status": 0,
+      "sha256": "b72a4a3880d0cb4d5c5e24cbcfa5238f79c1498c876f51255cbca30604c5e10d"
+    },
+    "method-api-only": {
+      "status": 1,
+      "sha256": "9645672e256662bacb0d2f4744c4c17a14e7e5afde462a3a205f3aae7f4b14b0"
+    }
+  },
+  "native_prediction": "method-both answer returns7; metadata qualification first, native prediction pending until observed",
+  "candidate_positive": "actual provider\u2192v4encode/decode\u2192freshStore/client\u2192unpaid original+actual instance proof\u2192LowIR writer; feature-only imported Dispatcher scope",
+  "old_profile": "v0-3 keep call/application and semantic attribute denials unchanged; old valid source/profile bytes unchanged",
+  "opponents": [
+    "wrong installed catalog/body/header/store/signature/instance",
+    "unproved header does not become executable readiness",
+    "missing/unrelated caller predicate and global staged-only",
+    "wrong owner/site, binder/Selfsubject, malformed name, failed work/storage attempts"
+  ],
+  "rust_profile": {
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": true,
+    "emit": "metadata",
+    "lint_cap": "allow"
+  }
+}

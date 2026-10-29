@@ -336,7 +336,7 @@ impl ContractParts {
         for input in &inputs.type_assumptions {
             budget.charge(1)?;
             clauses.push(Clause::Predicate(
-                graph.requirement(input.value).map_err(error)?,
+                graph.requirement(&input.value).map_err(error)?,
             ));
         }
         // The existing estimator rejects non-leaf/region/qualified forms before

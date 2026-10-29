@@ -66,6 +66,21 @@ impl<'rows> OwnedPort<'rows> for Recorded<'rows, '_, '_> {
 }
 impl<P> translation::sealed::Sealed for Adapter<'_, P> {}
 impl<'rows, P: OwnedPort<'rows>> Mapping<'rows, ReservationWork> for Adapter<'_, P> {
+    fn feature(
+        &self,
+        store: &mut Store,
+        name: &str,
+        work: &mut ReservationWork,
+    ) -> Result<crate::types::parameters::features::FeatureId, Error> {
+        self.port.require_context(store, work)?;
+        if self.port.rows().descriptor().profile() != s::Profile::Source2024ModuleFeaturePredicates
+        {
+            return Err(error(
+                "selected feature clauses require source metadata version four",
+            ));
+        }
+        translation::feature_names::intern(store, name, work)
+    }
     fn rows(&self) -> s::ValidatedView<'rows> {
         self.port.rows()
     }

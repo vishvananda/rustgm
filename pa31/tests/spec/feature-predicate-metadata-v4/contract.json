@@ -1,0 +1,58 @@
+{
+  "state": "predictions frozen before Rust/candidate observation",
+  "owner": 31,
+  "profile": "source envelope tag10 rowv4, defining2024, canonical ASCII feature names<=256 bytes",
+  "scope": "finite primitive/Rust-linkage provider; source nominal Value and no_mangle C export required for unchanged original7 remain pending",
+  "source_predictions": {
+    "provider": {
+      "status": 0,
+      "sha256": "6f86bc3433a69cd3d6e7b899491068753815c8825be8bdbc9279c57f07708616"
+    },
+    "ordinary-both": {
+      "status": 0,
+      "sha256": "ecfa7c1a9c1f6d7de0fddc098f1507a56999a3f3e6b86f25e09ae589ac1290dd"
+    },
+    "ordinary-api-only": {
+      "status": 1,
+      "sha256": "50119064d55dda88cac5cfc8df5c999311f8b6cc2f8bc3b46697f0d040897dff"
+    },
+    "ordinary-probe-only": {
+      "status": 1,
+      "sha256": "d5250ab900a7646f5774f4b3288267e74593c25f3646393ee3c8e6c591641f1d"
+    },
+    "unknown-bound-name": {
+      "status": 1,
+      "sha256": "fe4a3a013532279ed2a73ff3d423ef61e25a1e7d50bad789e1e82b942e33d2b3"
+    },
+    "staged-scope": {
+      "status": 0,
+      "sha256": "34392cf446ce52caebb501486a259600f6ada0cddc6cd2b9c68305da34839573"
+    },
+    "staged-global-only": {
+      "status": 1,
+      "sha256": "e3f5ebffb351c64c97c1d05e5bbe64385c220d5a9a142ed1f2c9e7b56cf05823"
+    }
+  },
+  "wire_predictions": [
+    "old0-3 bytes unchanged; new feature tag denied",
+    "real Fn/Trait/implSelf owner and exact site; no binder/Selfsubject; stable/inherited/const-policy owner opponent denied",
+    "empty/nonASCII/leadingdigit/over256 spelling denied",
+    "feature body/Copy/type-only requests denied, declaration/application condition preserved",
+    "fresh Store remaps canonical spelling; foreign IDs do not alias",
+    "predicate name never becomes API feature definition or global enabling",
+    "cold/warm/failed payment and arity8/32/128 linear storage/work controls"
+  ],
+  "pending": [
+    "original seven external fixtures nominal and named C provider prerequisites",
+    "native external seven execution",
+    "original library artifacts/release"
+  ],
+  "rust_profile": {
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "bootstrap": true,
+    "emit": "metadata",
+    "lint_cap": "allow"
+  }
+}

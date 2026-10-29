@@ -21,6 +21,8 @@ use std::sync::Arc;
 #[path = "application_cells.rs"]
 pub(in crate::sema::crates::typed_headers) mod applications;
 use applications::Cache;
+#[path = "unstable_names.rs"]
+pub(in crate::sema::crates::typed_headers) mod feature_names;
 pub(in crate::sema::crates::typed_headers) type InputRows = (Arc<[Input]>, Box<[bool]>);
 
 pub(in crate::sema::crates::typed_headers) mod sealed {
@@ -30,6 +32,12 @@ pub(in crate::sema::crates::typed_headers) trait Mapping<'rows, B: Budget>:
     sealed::Sealed
 {
     fn rows(&self) -> s::ValidatedView<'rows>;
+    fn feature(
+        &self,
+        store: &mut Store,
+        name: &str,
+        budget: &mut B,
+    ) -> Result<crate::types::parameters::features::FeatureId, Error>;
     fn trait_definition(&self, row: DeclarationRef, budget: &mut B) -> Result<DefId, Error>;
     fn trait_declaration(
         &self,
@@ -62,6 +70,20 @@ pub(super) struct Ordinary<'a> {
 }
 impl sealed::Sealed for Ordinary<'_> {}
 impl<'rows> Mapping<'rows, Headers> for Ordinary<'rows> {
+    fn feature(
+        &self,
+        store: &mut Store,
+        name: &str,
+        budget: &mut Headers,
+    ) -> Result<crate::types::parameters::features::FeatureId, Error> {
+        self.graph.require_store(store).map_err(error)?;
+        if self.descriptor.profile() != s::Profile::Source2024ModuleFeaturePredicates {
+            return Err(error(
+                "non-type feature import requires source metadata version four",
+            ));
+        }
+        feature_names::intern(store, name, budget)
+    }
     fn rows(&self) -> s::ValidatedView<'rows> {
         self.descriptor.rows()
     }
@@ -181,14 +203,14 @@ pub(in crate::sema::crates::typed_headers) fn application<'rows, B: Budget>(
         ));
     }
     let definition = port.trait_definition(application.declaration.declaration, budget)?;
-    let raw = application
+    let record = application
         .arguments
         .slice(&rows.arguments)
         .map_err(error)?;
-    budget.charge(raw.len().saturating_add(1))?;
-    budget.reserve(raw.len().saturating_mul(4 * size_of::<Argument>()))?;
-    let mut arguments = Vec::with_capacity(raw.len());
-    for argument in raw {
+    budget.charge(record.len().saturating_add(1))?;
+    budget.reserve(record.len().saturating_mul(4 * size_of::<Argument>()))?;
+    let mut arguments = Vec::with_capacity(record.len());
+    for argument in record {
         arguments.push(match *argument {
             s::Argument::Type(ty) => Argument::Type(port.ty(store, ty, budget)?),
             s::Argument::Region(region) => Argument::Lifetime(port.region(region, budget)?),
@@ -214,27 +236,35 @@ pub(in crate::sema::crates::typed_headers) fn application<'rows, B: Budget>(
 fn clause<'rows, B: Budget>(
     port: &mut impl Mapping<'rows, B>,
     cache: &mut impl Cache,
-    raw: &s::Clause,
+    record: &s::Clause,
     store: &mut Store,
     budget: &mut B,
 ) -> Result<Clause, Error> {
-    let predicate = match raw.requirement {
+    let predicate = match &record.requirement {
+        s::Requirement::UnstableFeature(name) => {
+            if record.binder.is_some() || record.self_subject.is_some() {
+                return Err(error(
+                    "feature requirement cannot carry a binder or Self subject",
+                ));
+            }
+            return Ok(Clause::UnstableFeature(port.feature(store, name, budget)?));
+        }
         s::Requirement::Trait {
             application: reference,
             effect,
         } => {
-            let mut predicate = application(port, cache, reference, store, budget)?;
+            let mut predicate = application(port, cache, *reference, store, budget)?;
             let Bound::Trait(application) = predicate.bound else {
                 return Err(error(
                     "source clause remap changed its ordinary application cache",
                 ));
             };
-            predicate.bound = Bound::trait_application(application, effect);
+            predicate.bound = Bound::trait_application(application, *effect);
             predicate
         }
         s::Requirement::TypeOutlives { subject, shorter } => Predicate {
-            ty: port.ty(store, subject, budget)?,
-            bound: Bound::Outlives(port.region(shorter, budget)?),
+            ty: port.ty(store, *subject, budget)?,
+            bound: Bound::Outlives(port.region(*shorter, budget)?),
         },
         s::Requirement::Outlives(_) => {
             return Err(error(
@@ -242,13 +272,13 @@ fn clause<'rows, B: Budget>(
             ));
         }
     };
-    if let Some(reference) = raw.binder {
+    if let Some(reference) = record.binder {
         let rows = port.rows();
         let binder = rows
             .binders
             .get(reference.0 as usize)
             .ok_or_else(|| error("source clause has an unknown actual binder"))?;
-        if binder.owner != raw.owner || binder.kind != s::BinderKind::Clause {
+        if binder.owner != record.owner || binder.kind != s::BinderKind::Clause {
             return Err(error("source clause binder changed its actual owner/kind"));
         }
         Ok(Clause::ForAll(
@@ -274,35 +304,36 @@ pub(in crate::sema::crates::typed_headers) fn inputs<'rows, B: Budget>(
     budget: &mut B,
 ) -> Result<InputRows, Error> {
     let rows = port.rows();
-    let raw = range.slice(&rows.clauses).map_err(error)?;
+    let record = range.slice(&rows.clauses).map_err(error)?;
     let prefix = canonical.unwrap_or(0);
-    if prefix > raw.len() {
+    if prefix > record.len() {
         return Err(error("source trait inputs truncate their canonical prefix"));
     }
     budget.reserve(
-        raw.len()
+        record
+            .len()
             .saturating_mul(2 * size_of::<Input>())
             .saturating_add(prefix.saturating_mul(2 * size_of::<bool>()))
             .saturating_add(2 * size_of::<usize>()),
     )?;
-    let mut inputs = Vec::with_capacity(raw.len());
+    let mut inputs = Vec::with_capacity(record.len());
     let mut subjects = Vec::with_capacity(prefix);
-    for (index, raw) in raw.iter().enumerate() {
+    for (index, record) in record.iter().enumerate() {
         budget.charge(1)?;
-        if raw.owner != owner || (index >= prefix && raw.self_subject.is_some()) {
+        if record.owner != owner || (index >= prefix && record.self_subject.is_some()) {
             return Err(error(if canonical.is_some() {
                 "source trait input changed canonical owner/prefix membership"
             } else {
                 "source declaration input invents a foreign/canonical Self premise"
             }));
         }
-        let value = clause(port, cache, raw, store, budget)?;
+        let value = clause(port, cache, record, store, budget)?;
         inputs.push(Input {
-            source: port.site(owner, raw.site, budget)?,
+            source: port.site(owner, record.site, budget)?,
             value,
         });
         if index < prefix {
-            subjects.push(raw.self_subject.is_some());
+            subjects.push(record.self_subject.is_some());
         }
     }
     Ok((Arc::from(inputs), subjects.into_boxed_slice()))

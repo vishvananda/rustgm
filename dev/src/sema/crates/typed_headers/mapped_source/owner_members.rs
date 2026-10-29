@@ -22,7 +22,9 @@ impl Graph {
             s::Profile::Source2024Functions | s::Profile::Source2024FunctionContracts => {
                 Ok(s::ImplementationDomain::Unrestricted)
             }
-            s::Profile::Source2024ModuleContracts | s::Profile::Source2024ModuleAvailability => {
+            s::Profile::Source2024ModuleContracts
+            | s::Profile::Source2024ModuleAvailability
+            | s::Profile::Source2024ModuleFeaturePredicates => {
                 let domain = descriptor
                     .module_contracts()?
                     .trait_domain(index as usize, row)?;
@@ -60,7 +62,9 @@ impl Graph {
             s::Profile::Source2024Functions | s::Profile::Source2024FunctionContracts => {
                 return Ok(false);
             }
-            s::Profile::Source2024ModuleContracts | s::Profile::Source2024ModuleAvailability => {}
+            s::Profile::Source2024ModuleContracts
+            | s::Profile::Source2024ModuleAvailability
+            | s::Profile::Source2024ModuleFeaturePredicates => {}
             _ => return Err("imported conformance has no complete admitted source profile"),
         }
         descriptor

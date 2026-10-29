@@ -54,7 +54,7 @@ pub(super) fn emit(
             mutable,
         });
     }
-    value_rows::emit(stage, facts, body, context, &mut raw)?;
+    value_rows::emit(stage, facts, body, context, &mut raw, sites)?;
     for statement in &body.statements {
         stage.reserve(4 * size_of::<s::Statement>())?;
         raw.statements.push(s::Statement {

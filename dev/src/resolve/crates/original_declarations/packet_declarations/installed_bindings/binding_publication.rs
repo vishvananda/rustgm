@@ -79,6 +79,19 @@ pub(super) fn prepare(
         });
     }
     for header in &rows.functions {
+        if rows.descriptor().profile() == s::Profile::Source2024ModuleFeaturePredicates {
+            work.charge(1)?;
+            if header.parent.is_some_and(|parent| {
+                matches!(
+                    rows.header(parent),
+                    Ok(Some(s::HeaderRef::Implementation(_)))
+                )
+            }) {
+                // The validated impl keeps its real catalog/body identity and
+                // derives its private symbol from that same canonical owner.
+                continue;
+            }
+        }
         let path = s::callable_path(
             &rows.declarations,
             names.root,

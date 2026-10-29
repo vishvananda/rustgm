@@ -13,6 +13,15 @@ impl Stage {
         self.charge(1)?;
         let definition = DefId(item.0);
         let Some(owner) = facts.associated.trait_owner(definition) else {
+            if let Some(application) = self
+                .inputs
+                .selected_methods
+                .as_deref()
+                .and_then(|map| map.get(&definition))
+                .copied()
+            {
+                return Ok(Some(application));
+            }
             if facts.associated.owner(definition).is_some() {
                 return Err(
                     "source impl/inherent call requests need their exact selected trait-use producer",

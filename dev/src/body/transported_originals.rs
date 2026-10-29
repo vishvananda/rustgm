@@ -5,9 +5,11 @@ mod selected_original;
 pub(crate) use selected_original::{demand as demand_selected, validate as validate_selected};
 mod interface_goals;
 mod invocations;
+mod non_type_calls;
 mod operations;
 mod rebuilt_inputs;
 mod rebuilt_operations;
+mod versioned_calls;
 use crate::{
     body::{regions::Contract, templates::Template},
     resolve::{expansion::Report, model::DefId, package::Error},

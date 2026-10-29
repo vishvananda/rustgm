@@ -35,6 +35,29 @@ impl From<source::ValidatedRows> for Payload {
 }
 impl Payload {
     /// # Errors
+    /// Rejects missing v3 availability or unauthenticated non-type clause owners.
+    pub fn from_source_module_feature_predicates(
+        owner: &CrateIdentity,
+        rows: source::SourceRows,
+        attributes: source::HeaderAttributeColumns,
+        modules: source::ModuleContractRows,
+        availability: source::AvailabilityRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        let overhead = size_of::<Self>().saturating_sub(size_of::<source::ValidatedRows>());
+        source::ValidatedRows::stage_module_feature_predicates(
+            owner,
+            rows,
+            attributes,
+            modules,
+            availability,
+            base.saturating_add(overhead),
+            work,
+        )
+        .map(Self::from)
+    }
+    /// # Errors
     /// Rejects incomplete availability or foreign source policy coordinates.
     pub fn from_source_module_availability(
         owner: &CrateIdentity,

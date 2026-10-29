@@ -177,8 +177,10 @@ pub struct FunctionApplication {
     pub declaration: DeclarationAddress,
     pub arguments: Range,
 }
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Requirement {
+    /// Canonical spelling only; each importer owns its actual feature identity.
+    UnstableFeature(Box<str>),
     Trait {
         application: TraitApplicationRef,
         effect: Constness,
@@ -189,7 +191,7 @@ pub enum Requirement {
     },
     Outlives(RegionBound),
 }
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Clause {
     pub owner: DeclarationRef,
     pub site: u32,

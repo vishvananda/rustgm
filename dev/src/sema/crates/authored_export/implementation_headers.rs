@@ -101,25 +101,7 @@ impl Stage {
                 .map_err(|_| "source impl input table overflow")?,
         };
         let region_bounds = self.region_bounds(&schema.bounds, context)?;
-        let start = u32::try_from(self.rows.member_links.len())
-            .map_err(|_| "source impl member table overflow")?;
-        self.reserve(methods.len().saturating_mul(4 * size_of::<s::MemberLink>()))?;
-        for &(member, implementation) in methods {
-            self.charge(1)?;
-            let trait_member = Some(self.address(member)?);
-            let implementation = implementation
-                .map(|definition| self.declaration(definition))
-                .transpose()?;
-            self.rows.member_links.push(s::MemberLink {
-                trait_member,
-                implementation,
-            });
-        }
-        let members = g::Range {
-            start,
-            end: u32::try_from(self.rows.member_links.len())
-                .map_err(|_| "source impl member table overflow")?,
-        };
+        let members = self.implementation_members(methods, trait_application)?;
         self.reserve(4 * size_of::<s::ImplHeader>())?;
         self.rows.implementations.push(s::ImplHeader {
             self_definition: declaration,
@@ -142,5 +124,52 @@ impl Stage {
             members,
         });
         Ok(())
+    }
+    fn implementation_members(
+        &mut self,
+        methods: &[(DefId, Option<DefId>)],
+        trait_application: Option<s::TraitApplicationRef>,
+    ) -> Result<g::Range, &'static str> {
+        let start = u32::try_from(self.rows.member_links.len())
+            .map_err(|_| "source impl member table overflow")?;
+        self.reserve(methods.len().saturating_mul(4 * size_of::<s::MemberLink>()))?;
+        for &(member, implementation) in methods {
+            self.charge(1)?;
+            if let Some(actual) = implementation
+                && self.inputs.selected_methods.is_some()
+            {
+                self.reserve(crate::support::retained::new_map::<
+                    DefId,
+                    s::TraitApplicationRef,
+                >(1))?;
+                let map = self
+                    .inputs
+                    .selected_methods
+                    .as_mut()
+                    .ok_or("selected source map disappeared")?;
+                if map
+                    .insert(
+                        actual,
+                        trait_application.ok_or("selected method lost its trait application")?,
+                    )
+                    .is_some()
+                {
+                    return Err("selected source method belongs to multiple actual impls");
+                }
+            }
+            let trait_member = Some(self.address(member)?);
+            let implementation = implementation
+                .map(|definition| self.declaration(definition))
+                .transpose()?;
+            self.rows.member_links.push(s::MemberLink {
+                trait_member,
+                implementation,
+            });
+        }
+        Ok(g::Range {
+            start,
+            end: u32::try_from(self.rows.member_links.len())
+                .map_err(|_| "source impl member table overflow")?,
+        })
     }
 }

@@ -371,9 +371,9 @@ pub(in crate::resolve) fn prepare(
     let mut budget = Budget { steps, bytes };
     budget.charge(imported.dependencies().artifacts().len(), 0)?;
     if !imported.dependencies().artifacts().iter().any(|artifact| {
-        artifact.source_descriptor().is_some_and(|descriptor| {
-            descriptor.profile() == s::Profile::Source2024ModuleAvailability
-        })
+        artifact
+            .source_descriptor()
+            .is_some_and(|descriptor| descriptor.profile().availability())
     }) {
         return Ok(None);
     }
@@ -436,7 +436,7 @@ pub(in crate::resolve) fn prepare(
                 }),
             );
         }
-        if descriptor.profile() != s::Profile::Source2024ModuleAvailability {
+        if !descriptor.profile().availability() {
             continue;
         }
         result.features(

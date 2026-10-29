@@ -131,6 +131,19 @@ impl Source {
             modules,
         ))
     }
+    pub(super) fn begin_module_feature_predicates(
+        report: &Report,
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+        identity: &CrateIdentity,
+    ) -> Result<(Self, s::ModuleContractRows), &'static str> {
+        let mut stage = Stage::begin_module_feature_predicates(report, facts, identity)?;
+        let modules = stage.module_contract_rows(report, facts)?;
+        Ok((
+            Self::begin_stage(facts, checked, stage, false, None)?,
+            modules,
+        ))
+    }
     pub(super) fn begin_publication(
         report: &Report,
         facts: &mut Declarations,
@@ -153,6 +166,12 @@ impl Source {
             super::instances::SourcePublication::ModuleAvailability => {
                 let (source, modules) =
                     Self::begin_module_availability(report, facts, checked, identity)
+                        .map_err(legacy_error)?;
+                Ok((source, Some(modules)))
+            }
+            super::instances::SourcePublication::ModuleFeaturePredicates => {
+                let (source, modules) =
+                    Self::begin_module_feature_predicates(report, facts, checked, identity)
                         .map_err(legacy_error)?;
                 Ok((source, Some(modules)))
             }
@@ -400,7 +419,7 @@ impl Source {
         report: &Report,
         facts: &Declarations,
         base: crate::support::crates::Interface,
-        availability: bool,
+        profile: super::instances::SourcePublication,
     ) -> Result<crate::support::crates::Interface, crate::resolve::package::Error> {
         if report
             .package
@@ -414,7 +433,11 @@ impl Source {
         // Reuse the complete selected-header producer, including its final-header
         // fence when defaultness syntax is integrated. No absence is invented.
         let attributes = self.collect_header_columns(report, facts)?;
-        let availability = if availability {
+        let availability = if matches!(
+            profile,
+            super::instances::SourcePublication::ModuleAvailability
+                | super::instances::SourcePublication::ModuleFeaturePredicates
+        ) {
             Some(
                 self.stage
                     .availability_rows(report, facts, &modules)
@@ -446,7 +469,13 @@ impl Source {
             ..g::Work::default()
         };
         let payload = if let Some(availability) = availability {
-            g::Payload::from_source_module_availability(
+            let publish = if profile == super::instances::SourcePublication::ModuleFeaturePredicates
+            {
+                g::Payload::from_source_module_feature_predicates
+            } else {
+                g::Payload::from_source_module_availability
+            };
+            publish(
                 base.identity(),
                 rows,
                 attributes,

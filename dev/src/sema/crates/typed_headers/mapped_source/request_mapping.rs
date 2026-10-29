@@ -11,27 +11,30 @@ pub(super) trait Requests {
 }
 pub(super) fn map(
     mapping: &mut impl Requests,
-    raw: s::Requirement,
+    raw: &s::Requirement,
 ) -> Result<Predicate, &'static str> {
     match raw {
+        s::Requirement::UnstableFeature(_) => {
+            Err("non-type feature clause requires whole-Clause declaration translation")
+        }
         s::Requirement::Trait {
             application,
             effect,
         } => {
-            let mut predicate = mapping.application(application)?;
+            let mut predicate = mapping.application(*application)?;
             let Bound::Trait(application) = predicate.bound else {
                 return Err("source request lost its actual complete ordinary application");
             };
-            predicate.bound = Bound::trait_application(application, effect);
+            predicate.bound = Bound::trait_application(application, *effect);
             Ok(predicate)
         }
         s::Requirement::TypeOutlives { subject, shorter } => Ok(Predicate {
             ty: mapping
-                .ty(subject)
+                .ty(*subject)
                 .map_err(|_| "source request has an unknown actual type")?,
             bound: Bound::Outlives(
                 mapping
-                    .region(shorter)
+                    .region(*shorter)
                     .map_err(|_| "source request has an unknown actual region")?,
             ),
         }),

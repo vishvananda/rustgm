@@ -130,11 +130,15 @@ pub(super) fn emit(
         });
     }
     for obligation in &input.obligations {
+        if let Kind::WellFormed(ty) = obligation.kind {
+            sites.existing_formation(stage, ty)?;
+        }
         stage.reserve(4 * size_of::<s::Obligation>())?;
         let site = sites.input(stage, obligation.source)?;
         let kind = obligation_kind(stage, facts, obligation.kind, context)?;
         rows.obligations.push(s::Obligation { site, kind });
     }
+    sites.append_formations(stage, &mut rows.obligations)?;
     provenance_rows::append(stage, facts, cfg, context, sites, &mut rows.obligations)?;
     for proof in &input.proofs {
         stage.reserve(4 * size_of::<s::NormalizationInput>())?;

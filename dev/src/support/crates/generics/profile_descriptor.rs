@@ -11,6 +11,7 @@ mod functions;
 mod module_contracts;
 #[path = "module_exports.rs"]
 mod module_exports;
+mod predicate_contracts;
 #[path = "supplied_profile.rs"]
 mod provided;
 #[path = "supplied_contracts.rs"]
@@ -53,13 +54,17 @@ pub enum Profile {
     Source2024ModuleContracts,
     /// Complete staged regular/const API availability, independently of body proof.
     Source2024ModuleAvailability,
+    /// Complete version-three data plus real non-type feature requirements.
+    Source2024ModuleFeaturePredicates,
 }
 impl Profile {
     #[must_use]
     pub const fn module_contracts(self) -> bool {
         matches!(
             self,
-            Self::Source2024ModuleContracts | Self::Source2024ModuleAvailability
+            Self::Source2024ModuleContracts
+                | Self::Source2024ModuleAvailability
+                | Self::Source2024ModuleFeaturePredicates
         )
     }
     #[must_use]
@@ -67,6 +72,13 @@ impl Profile {
         matches!(
             self,
             Self::Source2024Functions | Self::Source2024FunctionContracts
+        )
+    }
+    #[must_use]
+    pub const fn availability(self) -> bool {
+        matches!(
+            self,
+            Self::Source2024ModuleAvailability | Self::Source2024ModuleFeaturePredicates
         )
     }
 }
@@ -113,15 +125,55 @@ impl ValidatedRows {
         base: usize,
         work: &mut Work,
     ) -> Result<Self, &'static str> {
+        Self::stage_module_availability_with(
+            owner,
+            rows,
+            attributes,
+            modules,
+            (availability, false),
+            base,
+            work,
+        )
+    }
+    pub(crate) fn stage_module_feature_predicates(
+        owner: &CrateIdentity,
+        rows: SourceRows,
+        attributes: super::HeaderAttributeColumns,
+        modules: ModuleContractRows,
+        availability: super::AvailabilityRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        Self::stage_module_availability_with(
+            owner,
+            rows,
+            attributes,
+            modules,
+            (availability, true),
+            base,
+            work,
+        )
+    }
+    fn stage_module_availability_with(
+        owner: &CrateIdentity,
+        rows: SourceRows,
+        attributes: super::HeaderAttributeColumns,
+        modules: ModuleContractRows,
+        available: (super::AvailabilityRows, bool),
+        base: usize,
+        work: &mut Work,
+    ) -> Result<Self, &'static str> {
+        let (availability, features) = available;
         let start = work.steps;
         let bytes = availability.storage_bytes(work)?;
-        let mut staged = Self::stage_module_contracts(
+        let mut staged = Self::stage_module_contracts_with(
             owner,
             rows,
             attributes,
             modules,
             base.saturating_add(bytes),
             work,
+            features,
         )?;
         let modules = staged
             .modules
@@ -135,6 +187,14 @@ impl ValidatedRows {
             base.saturating_add(staged.budget.bytes),
             work,
         )?;
+        if features {
+            predicate_contracts::complete(
+                &staged.columns,
+                &staged.headers,
+                available.rows(),
+                work,
+            )?;
+        }
         work.charge(available.rows().policies.len())?;
         staged.budget.names = staged.budget.names.saturating_add(
             available
@@ -156,7 +216,11 @@ impl ValidatedRows {
         staged.budget.peak = staged.budget.peak.saturating_add(bytes);
         staged.budget.atoms = work.steps.saturating_sub(start);
         staged.availability = Some(Box::new(available));
-        staged.profile = Profile::Source2024ModuleAvailability;
+        staged.profile = if features {
+            Profile::Source2024ModuleFeaturePredicates
+        } else {
+            Profile::Source2024ModuleAvailability
+        };
         Ok(staged)
     }
     /// Structural staging only. Public payload activation remains gated until
@@ -243,13 +307,31 @@ impl ValidatedRows {
         base: usize,
         work: &mut Work,
     ) -> Result<Self, &'static str> {
+        Self::stage_module_contracts_with(owner, rows, attributes, modules, base, work, false)
+    }
+    fn stage_module_contracts_with(
+        owner: &CrateIdentity,
+        rows: SourceRows,
+        attributes: super::HeaderAttributeColumns,
+        modules: ModuleContractRows,
+        base: usize,
+        work: &mut Work,
+        features: bool,
+    ) -> Result<Self, &'static str> {
+        if !features {
+            predicate_contracts::legacy(&rows, work)?;
+        }
         let start = work.steps;
         let attribute_bytes = attributes.validate(&rows, base, work)?;
         let module_bytes = modules.storage_bytes(rows.declarations.len(), work)?;
         let extension = attribute_bytes.saturating_add(module_bytes);
         let extended_base = base.saturating_add(extension);
         let indexed = HeaderIndex::new(&rows, extended_base, work)?;
-        functions::validate_module_contracts(&rows, &indexed, work)?;
+        if features {
+            functions::validate_module_feature_predicates(&rows, &indexed, work)?;
+        } else {
+            functions::validate_module_contracts(&rows, &indexed, work)?;
+        }
         let (modules, _, module_peak) = module_contracts::ModuleContractColumns::validate(
             &rows,
             &indexed,
@@ -320,6 +402,7 @@ impl ValidatedRows {
         observe: &mut impl FnMut(usize, usize),
         extension: Option<(super::HeaderAttributeColumns, ProvidedContractRows)>,
     ) -> Result<Self, &'static str> {
+        predicate_contracts::legacy(&rows, work)?;
         let start = work.steps;
         if extension.is_some() != (profile == Profile::Source2024ProvidedContracts) {
             return Err(
@@ -337,6 +420,7 @@ impl ValidatedRows {
         let extension_bytes = attribute_bytes.saturating_add(provided_bytes);
         let extended_base = base.saturating_add(extension_bytes);
         let indexed = HeaderIndex::new(&rows, extended_base, work)?;
+        predicate_contracts::legacy_calls(&rows, &indexed, work)?;
         let numbering_peak = match profile {
             Profile::Source2024Functions | Profile::Source2024FunctionContracts => {
                 functions::validate(&rows, &indexed, work)?;
@@ -346,7 +430,9 @@ impl ValidatedRows {
                 provided::validate(&rows, &indexed, work)?
             }
             Profile::Source2024 => return Err("unpublished source facade has no data profile"),
-            Profile::Source2024ModuleContracts | Profile::Source2024ModuleAvailability => {
+            Profile::Source2024ModuleContracts
+            | Profile::Source2024ModuleAvailability
+            | Profile::Source2024ModuleFeaturePredicates => {
                 return Err(
                     "module contracts require their complete namespace/domain/attribute columns",
                 );
@@ -603,7 +689,7 @@ impl<'a> Descriptor<'a> {
     /// # Errors
     /// Older profiles have unknown availability, never checked absence.
     pub fn availability(self) -> Result<&'a super::AvailabilityRows, &'static str> {
-        if self.source.profile != Profile::Source2024ModuleAvailability {
+        if !self.source.profile.availability() {
             return Err("descriptor has no complete source API availability");
         }
         self.source

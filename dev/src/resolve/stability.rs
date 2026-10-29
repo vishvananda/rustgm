@@ -237,3 +237,7 @@ mod tests;
 #[cfg(test)]
 #[path = "../../tests/invariants/policy_transport.rs"]
 mod transport_tests;
+
+#[cfg(test)]
+#[path = "../../tests/invariants/versioned_predicates.rs"]
+mod predicate_transport_tests;

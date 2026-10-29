@@ -36,10 +36,12 @@ impl Stage {
             budget.charge(1)?;
             match rows.header(raw.owner).map_err(error)? {
                 Some(s::HeaderRef::Implementation(index)) => result.push(receiver_owner(
+                    context,
                     &self.graph,
                     store,
                     scope,
                     &rows.implementations[index as usize],
+                    budget,
                 )?),
                 Some(s::HeaderRef::Trait(index)) => result.push(trait_owner(
                     context,
@@ -63,12 +65,16 @@ impl Stage {
 }
 
 fn receiver_owner(
+    context: &mapped_source::Context<'_>,
     graph: &mapped_source::Graph,
     store: &crate::types::Store,
     scope: &mut Scope,
     raw: &s::ImplHeader,
+    budget: &mut Headers,
 ) -> Result<ImportedOwner, Error> {
-    if raw.members.start != raw.members.end {
+    if raw.members.start != raw.members.end
+        && context.descriptor.profile() != s::Profile::Source2024ModuleFeaturePredicates
+    {
         return Err(error(
             "imported impl members require their wider exact conformance profile",
         ));
@@ -91,7 +97,24 @@ fn receiver_owner(
             captures: prepared.captures,
             bounds: prepared.bounds,
         },
-        members: Vec::new(),
+        members: {
+            let rows = context.descriptor.rows();
+            let links = raw.members.slice(&rows.member_links).map_err(error)?;
+            budget.reserve(
+                links
+                    .len()
+                    .saturating_mul(size_of::<crate::resolve::model::DefId>()),
+            )?;
+            let mut members = Vec::with_capacity(links.len());
+            for link in links {
+                let actual = link
+                    .implementation
+                    .ok_or_else(|| error("v4 method conformance requires its actual override"))?;
+                members.push(context.definition(actual, budget)?);
+            }
+            budget.observed.vector(&members);
+            members
+        },
     })
 }
 

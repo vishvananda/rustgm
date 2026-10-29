@@ -19,6 +19,7 @@ pub(super) struct Index {
     sites: HashMap<(DeclarationRef, NodeKey), u32>,
     applications: HashMap<(Predicate, Context), s::TraitApplicationRef>,
     pub(super) regions: HashMap<(DeclarationRef, u32), s::SlotRef>,
+    pub(super) selected_methods: Option<Box<HashMap<DefId, s::TraitApplicationRef>>>,
 }
 
 impl Stage {
@@ -67,8 +68,26 @@ impl Stage {
             .ok_or("source export input lacks actual source provenance")?;
         let site = self.site(context.owner, source)?;
         let (predicate, binder, inner) = match input.value {
-            Clause::UnstableFeature(_) => {
-                return Err("non-type feature conditions require explicit metadata transport");
+            Clause::UnstableFeature(id) => {
+                if self_subject.is_some() {
+                    return Err("feature requirement cannot claim a typed Self subject");
+                }
+                let name = facts
+                    .types
+                    .feature_name(id)
+                    .ok_or("source feature clause has a foreign canonical identity")?;
+                self.charge(name.len().saturating_add(1))?;
+                self.reserve(name.len().saturating_add(4 * size_of::<s::Clause>()))?;
+                let index = u32::try_from(self.rows.clauses.len())
+                    .map_err(|_| "source feature clause table overflow")?;
+                self.rows.clauses.push(s::Clause {
+                    owner: context.owner,
+                    site,
+                    binder: None,
+                    requirement: s::Requirement::UnstableFeature(name.into()),
+                    self_subject: None,
+                });
+                return Ok(index);
             }
             Clause::Predicate(predicate) => (predicate, None, context),
             Clause::ForAll(id) => {

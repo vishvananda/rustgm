@@ -447,6 +447,8 @@ fn next(
     })
 }
 
+#[path = "non_type_applications.rs"]
+mod primitive_calls;
 pub(super) fn prepare_functions(
     context: &Context<'_>,
     facts: &mut Declarations,
@@ -477,6 +479,12 @@ pub(super) fn prepare_functions(
         let root = g::TypeRef(
             u32::try_from(index).map_err(|_| error("source type recipe ordinal overflow"))?,
         );
+        if let Some(mapped) =
+            primitive_calls::prepare(&mut port, &mut facts.types, &cursor, root, budget)?
+        {
+            cursor.nodes.publish(index, mapped)?;
+            continue;
+        }
         if matches!(
             cursor.demand(&mut port, &mut facts.types, root, budget)?,
             Demand::Blocked(_)

@@ -85,12 +85,26 @@ pub(super) fn decode_module_availability(
     reader: &mut Reader<'_>,
     base: usize,
 ) -> Result<AvailabilityPacket, &'static str> {
-    let (rows, bytes) = decode_profile(reader, base, false)?;
+    decode_availability_profile(reader, base, false)
+}
+pub(super) fn decode_module_feature_predicates(
+    reader: &mut Reader<'_>,
+    base: usize,
+) -> Result<AvailabilityPacket, &'static str> {
+    decode_availability_profile(reader, base, true)
+}
+fn decode_availability_profile(
+    reader: &mut Reader<'_>,
+    base: usize,
+    features: bool,
+) -> Result<AvailabilityPacket, &'static str> {
+    let (rows, bytes) = decode_profile_with(reader, base, false, features)?;
     let mut read = Input {
         reader,
         bytes,
         base,
         provided: false,
+        features,
     };
     let attributes = header_facts::decode(&mut read)?;
     let modules = namespace_rows::decode(&mut read)?;
@@ -196,6 +210,7 @@ pub(super) fn decode_provided_contracts(
         bytes,
         base,
         provided: true,
+        features: false,
     };
     let attributes = header_facts::decode(&mut read)?;
     let contracts = provided_extensions::decode(&mut read)?;
@@ -211,6 +226,7 @@ pub(super) fn decode_contracts(
         bytes,
         base,
         provided: false,
+        features: false,
     })?;
     Ok((rows, attributes))
 }
@@ -231,6 +247,7 @@ pub(super) fn decode_module_contracts(
         bytes,
         base,
         provided: false,
+        features: false,
     };
     let attributes = header_facts::decode(&mut read)?;
     let modules = namespace_rows::decode(&mut read)?;
@@ -241,11 +258,20 @@ fn decode_profile(
     base: usize,
     provided: bool,
 ) -> Result<(s::SourceRows, usize), &'static str> {
+    decode_profile_with(reader, base, provided, false)
+}
+fn decode_profile_with(
+    reader: &mut Reader<'_>,
+    base: usize,
+    provided: bool,
+    features: bool,
+) -> Result<(s::SourceRows, usize), &'static str> {
     let mut read = Input {
         reader,
         bytes: size_of::<s::SourceRows>(),
         base,
         provided,
+        features,
     };
     let rows = s::SourceRows {
         policy: s::Policy {
@@ -271,7 +297,7 @@ fn decode_profile(
             20,
             recipe_columns::application_read,
         )?,
-        function_applications: read.provided_list(
+        function_applications: read.call_list(
             crates::MAX_COMPONENTS,
             16,
             recipe_columns::function_read,
@@ -303,10 +329,31 @@ struct Input<'a, 'b> {
     bytes: usize,
     base: usize,
     provided: bool,
+    features: bool,
 }
 impl Input<'_, '_> {
     fn require_provided(&self, message: &'static str) -> Result<(), &'static str> {
         if self.provided { Ok(()) } else { Err(message) }
+    }
+    fn require_calls(&self, message: &'static str) -> Result<(), &'static str> {
+        if self.provided || self.features {
+            Ok(())
+        } else {
+            Err(message)
+        }
+    }
+    fn call_list<T>(
+        &mut self,
+        limit: usize,
+        minimum: usize,
+        row: impl FnMut(&mut Self) -> Result<T, &'static str>,
+    ) -> Result<Vec<T>, &'static str> {
+        if self.provided || self.features {
+            self.list(limit, minimum, row)
+        } else {
+            self.empty()?;
+            Ok(Vec::new())
+        }
     }
     fn provided_list<T>(
         &mut self,

@@ -629,3 +629,27 @@ fn import_legacy(imported: &Imported, facts: &mut Declarations) -> Result<(), Er
     }
     Ok(())
 }
+
+pub(in crate::sema) fn primitive_method_plan(
+    facts: &mut Declarations,
+    definition: DefId,
+    predicate: crate::types::parameters::predicates::Predicate,
+) -> Result<Option<mapped_source::PrimitiveMethods>, Error> {
+    let owner = facts
+        .associated
+        .owner(definition)
+        .and_then(|id| facts.associated.get(id))
+        .copied()
+        .ok_or_else(|| error("v4 conformance lacks its actual imported owner"))?;
+    let Some(super::ImportedOwners::Ordinary(graph)) = facts.associated.imported_owner() else {
+        return Ok(None);
+    };
+    let graph = std::rc::Rc::clone(graph);
+    let headers = facts
+        .crates
+        .as_mut()
+        .and_then(|linkage| linkage.originals.as_deref_mut())
+        .ok_or_else(|| error("v4 conformance lacks its actual header budget"))?;
+    graph.primitive_methods(&facts.types, &facts.associated, owner, predicate, headers)
+}
+pub(in crate::sema) use mapped_source::PrimitiveMethods;

@@ -19,8 +19,7 @@ pub(super) fn build(
     let record = view.raw();
     if (!record.variables.is_empty() && !view.numbered())
         || !record.projections.is_empty()
-        || !record.calls.is_empty()
-        || !record.arguments.is_empty()
+        || (!v4(view) && (!record.calls.is_empty() || !record.arguments.is_empty()))
         || !record.openings.is_empty()
     {
         return Err(
@@ -64,9 +63,16 @@ pub(super) fn build(
             s::ValueKind::Unit => Rvalue::Unit,
             s::ValueKind::Read(place) => Rvalue::Read(local(place)?),
             s::ValueKind::Constrain(value) => Rvalue::Constrain(ValueId(value)),
+            s::ValueKind::Function(application) if v4(view) => Rvalue::Function(view.function(application, &mut work.steps)?),
+            s::ValueKind::Call {signature, callee, arguments} if v4(view) => Rvalue::Call {
+                signature:view.ty(signature, &mut work.steps)?, callee:ValueId(callee),
+                arguments:crate::body::ir::ValueList {start:arguments.start, end:arguments.end},
+            },
             _ => return Err("source value operation requires its wider actual reconstruction profile"),
         },
     })).collect::<Result<_, &'static str>>()?;
+    work.charge(record.arguments.len())?;
+    body.arguments = record.arguments.iter().copied().map(ValueId).collect();
     body.statements = record
         .statements
         .iter()
@@ -195,6 +201,12 @@ pub(super) fn allocation(record: &s::Original) -> usize {
                 ))
         }))
         // Keep alignment overhead conservative without flattening any owner graph.
+        .saturating_add(
+            record
+                .arguments
+                .len()
+                .saturating_mul(size_of::<ir::ValueId>()),
+        )
         .saturating_add(size_of::<Body>() + size_of::<storage::Facts>() + size_of::<scopes::Id>())
 }
 
@@ -222,7 +234,12 @@ pub(super) fn validate(
         || !body.guard_places.is_empty()
         || !body.projections.is_empty()
         || !body.scalars.is_empty()
-        || !body.arguments.is_empty()
+        || body.arguments.len() != record.arguments.len()
+        || body
+            .arguments
+            .iter()
+            .zip(&record.arguments)
+            .any(|(actual, raw)| actual.0 != *raw)
         || body
             .promotions
             .as_ref()
@@ -299,6 +316,26 @@ fn ports(view: &SourceOriginal<'_>, body: &Body, steps: &mut usize) -> Result<()
             (Rvalue::Unit, s::ValueKind::Unit) => true,
             (Rvalue::Read(actual), s::ValueKind::Read(record)) => actual == local(record)?,
             (Rvalue::Constrain(actual), s::ValueKind::Constrain(record)) => actual.0 == record,
+            (Rvalue::Function(actual), s::ValueKind::Function(raw)) if v4(view) => {
+                actual == view.function(raw, steps)?
+            }
+            (
+                Rvalue::Call {
+                    signature,
+                    callee,
+                    arguments,
+                },
+                s::ValueKind::Call {
+                    signature: raw,
+                    callee: c,
+                    arguments: a,
+                },
+            ) if v4(view) => {
+                signature == view.ty(raw, steps)?
+                    && callee.0 == c
+                    && arguments.start == a.start
+                    && arguments.end == a.end
+            }
             _ => false,
         };
         if !same || actual.ty != view.ty(record.ty, steps)? {
@@ -405,4 +442,8 @@ fn same_temporary(a: &crate::body::ir::Temporary, b: &crate::body::ir::Temporary
         && a.block == b.block
         && a.before == b.before
         && a.exits_before == b.exits_before
+}
+
+fn v4(view: &SourceOriginal<'_>) -> bool {
+    view.rows().descriptor().profile() == s::Profile::Source2024ModuleFeaturePredicates
 }

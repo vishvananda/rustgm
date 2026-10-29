@@ -150,7 +150,18 @@ impl DomainIndex<'_, '_> {
         let rows = self.headers.rows();
         match (target.parent, request.method) {
             (Some(parent), Some(method)) => {
-                let Some(HeaderRef::Trait(index)) = self.headers.header(parent, work)? else {
+                let parent_header = self.headers.header(parent, work)?;
+                if let Some(HeaderRef::Implementation(index)) = parent_header {
+                    let implementation = &rows.implementations[index as usize];
+                    if implementation.trait_application != Some(method) {
+                        return Err(
+                            "source selected method lost its exact implementation trait request",
+                        );
+                    }
+                    self.trait_use(context, method, work)?;
+                    return Ok(());
+                }
+                let Some(HeaderRef::Trait(index)) = parent_header else {
                     return Err(
                         "source selected impl/inherent requests require complete wider transport",
                     );

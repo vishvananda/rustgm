@@ -44,6 +44,22 @@ impl CrateIdentity {
     pub fn disambiguator(&self) -> &str {
         &self.disambiguator
     }
+    /// A body-owned private original has no public namespace path.
+    pub(crate) fn private_original_symbol(
+        &self,
+        body: super::owner_catalog::BodyRef,
+        declaration: super::owner_catalog::DeclarationRef,
+    ) -> String {
+        let mut out = String::with_capacity(2 * (self.name.len() + self.disambiguator.len()) + 64);
+        out.push_str("rgc$");
+        component(&mut out, &self.name);
+        component(&mut out, &self.disambiguator);
+        out.push_str("b$");
+        out.push_str(&body.0.to_string());
+        out.push_str("$d$");
+        out.push_str(&declaration.0.to_string());
+        out
+    }
     /// ASCII symbol prefix; exact foreign spelling never enters this encoder.
     #[must_use]
     pub fn symbol_prefix(&self) -> String {

@@ -92,7 +92,7 @@ pub struct CopyQueries {
     pub declaration: Option<DeclarationAddress>,
     pub goals: Vec<Requirement>,
 }
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct LocatedRequirement {
     pub site: InputSite,
     pub value: Requirement,

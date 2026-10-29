@@ -93,7 +93,7 @@ fn site_read(read: &mut Input<'_, '_>) -> Result<s::InputSite, &'static str> {
 }
 fn located_write(out: &mut Writer, row: &s::LocatedRequirement) -> Result<(), &'static str> {
     site_write(out, &row.site)?;
-    types::requirement_write(out, row.value)
+    types::requirement_write(out, &row.value)
 }
 fn located_read(read: &mut Input<'_, '_>) -> Result<s::LocatedRequirement, &'static str> {
     Ok(s::LocatedRequirement {
@@ -285,5 +285,5 @@ fn builtins_read(read: &mut Input<'_, '_>) -> Result<s::BuiltinInputs, &'static 
     })
 }
 fn requirement_write(out: &mut Writer, row: &s::Requirement) -> Result<(), &'static str> {
-    types::requirement_write(out, *row)
+    types::requirement_write(out, row)
 }

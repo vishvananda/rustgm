@@ -88,17 +88,17 @@ pub(super) fn require_leaf_inputs(
             "private leaf environment changed its complete own inputs",
         ));
     }
-    for (raw, input) in clauses.iter().zip(inputs) {
+    for (record, input) in clauses.iter().zip(inputs) {
         let s::Requirement::Trait {
             application,
             effect,
-        } = raw.requirement
+        } = &record.requirement
         else {
             return Err(error(
                 "private leaf environment requires actual trait inputs",
             ));
         };
-        if raw.owner != scope.owner || raw.binder.is_some() {
+        if record.owner != scope.owner || record.binder.is_some() {
             return Err(error(
                 "private leaf environment changed its actual scope or binder",
             ));
@@ -111,8 +111,8 @@ pub(super) fn require_leaf_inputs(
                 "private leaf environment changed its ordinary application memo",
             ));
         };
-        require_const_trait(rows, application, effect, work)?;
-        expected.bound = Bound::trait_application(actual, effect);
+        require_const_trait(rows, *application, *effect, work)?;
+        expected.bound = Bound::trait_application(actual, *effect);
         if input.value != Clause::Predicate(expected) {
             return Err(error(
                 "private leaf environment changed its actual translated effect",
@@ -131,7 +131,7 @@ fn require_const_trait(
     let actual = rows
         .trait_applications
         .get(application.0 as usize)
-        .ok_or_else(|| error("private leaf environment lost its actual raw application"))?;
+        .ok_or_else(|| error("private leaf environment lost its actual record application"))?;
     if actual.declaration.artifact != rows.policy.provider {
         return Err(error(
             "private leaf environment changed its actual trait provider",
@@ -167,7 +167,7 @@ pub(super) fn leaf_path(
             let s::Requirement::Trait {
                 application,
                 effect: crate::support::constness::Constness::Ordinary,
-            } = clause.requirement
+            } = &clause.requirement
             else {
                 return Ok(false);
             };
@@ -221,7 +221,7 @@ fn body_origin(
     let input = rows
         .body_inputs
         .get(body.0 as usize)
-        .ok_or_else(|| error("private defining environment lost its raw body inputs"))?;
+        .ok_or_else(|| error("private defining environment lost its record body inputs"))?;
     let unit = rows.body_units.get(body.0 as usize).ok_or_else(|| {
         error("private defining environment lost its complete actual numbering unit")
     })?;
@@ -514,15 +514,15 @@ impl Owner {
             .slots
             .get(reference.0 as usize)
             .ok_or_else(|| error("private original lost its actual formal row"))?;
-        let (index, raw) = prepared.scope(rows, slot.owner)?;
+        let (index, record) = prepared.scope(rows, slot.owner)?;
         let declaring = self
             .scopes
             .get(index)
             .and_then(std::cell::OnceCell::get)
             .map(Box::as_ref)
-            .filter(|actual| actual.raw == raw)
+            .filter(|actual| actual.raw == record)
             .ok_or_else(|| error("private original lost its actual declaring scope"))?;
-        let inherited = if let Some(parent) = raw.parent {
+        let inherited = if let Some(parent) = record.parent {
             let (index, parent_raw) = prepared.scope(rows, parent)?;
             self.scopes
                 .get(index)
@@ -541,11 +541,11 @@ impl Owner {
             .checked_sub(inherited)
             .ok_or_else(|| error("private original changed its complete formal ancestry"))?;
         if !matches!(slot.kind, s::ParameterKind::Type { .. })
-            || reference.0 < raw.declared.start
-            || reference.0 >= raw.declared.end
-            || slot.ordinal != reference.0 - raw.declared.start
+            || reference.0 < record.declared.start
+            || reference.0 >= record.declared.end
+            || slot.ordinal != reference.0 - record.declared.start
             || slot.index != slot.ordinal
-            || own != raw.declared.slice(&rows.slots).map_err(error)?.len()
+            || own != record.declared.slice(&rows.slots).map_err(error)?.len()
             || slot.index as usize >= own
         {
             return Err(error(

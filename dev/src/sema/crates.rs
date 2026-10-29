@@ -23,10 +23,12 @@ pub use export::{Exports, export};
 pub(crate) use export::{GenericRequest, export_with_originals, scalar as export_scalar};
 pub(in crate::sema) use imported_owners::ImportedOwners;
 pub(crate) use typed_headers::ProofSession;
-pub(in crate::sema) use typed_headers::SelectedConsumer;
 pub(in crate::sema) use typed_headers::predicate_remap::Prepared as PreparedSourceInputs;
 #[cfg(test)]
 pub(crate) use typed_headers::provided_layouts;
+pub(in crate::sema) use typed_headers::{
+    PrimitiveMethods, SelectedConsumer, primitive_method_plan,
+};
 pub(super) use typed_headers::{
     charge_source_headers, mapped_source::Readiness as ImportedReadiness, source_readiness,
     source_trait_header,

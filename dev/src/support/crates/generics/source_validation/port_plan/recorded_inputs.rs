@@ -75,7 +75,7 @@ impl Coverage {
             if copy.declaration != actual_copy {
                 return Err("source original Copy carrier changed its exact policy role binding");
             }
-            for &goal in &copy.goals {
+            for goal in &copy.goals {
                 work.charge(1)?;
                 let s::Requirement::Trait {
                     application,

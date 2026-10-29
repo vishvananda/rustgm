@@ -50,7 +50,9 @@ pub(crate) fn requirements(
     first: u32,
 ) -> Result<Option<Obligations>, &'static str> {
     let mut predicates = Vec::new();
-    for predicate in facts.generics.declared_predicates_in_scope(owner) {
+    for predicate in
+        crate::sema::declaration_inputs::declared(&facts.generics, facts.crates.as_deref(), owner)?
+    {
         facts.body_work.canonical_steps += 1;
         let body = match predicate.value {
             Clause::UnstableFeature(id) => {

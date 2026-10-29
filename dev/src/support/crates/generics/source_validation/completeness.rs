@@ -163,7 +163,7 @@ fn trait_header(
     let s::Requirement::Trait {
         application,
         effect: crate::support::constness::Constness::Ordinary,
-    } = implicit.requirement
+    } = &implicit.requirement
     else {
         return Err("source trait implicit Self input has a different qualified kind");
     };
@@ -222,6 +222,14 @@ fn inputs(
                 && canonical.is_none_or(|prefix| index >= prefix as usize)
         {
             return Err("source input lost its owner, site, unique range or canonical Self domain");
+        }
+        if matches!(input.requirement, s::Requirement::UnstableFeature(_))
+            && (input.binder.is_some()
+                || input.self_subject.is_some()
+                || index >= declared as usize
+                || canonical.is_some_and(|count| index >= count as usize))
+        {
+            return Err("feature predicate is not a genuine unquantified declared input");
         }
     }
     Ok(())

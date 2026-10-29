@@ -44,7 +44,7 @@ pub(super) fn type_read(read: &mut Input<'_, '_>) -> Result<s::Type, &'static st
         },
         3 => s::Type::Function(signature_read(read)?),
         tag @ (4 | 5) => {
-            read.require_provided("unknown source function type recipe")?;
+            read.require_calls("unknown source function type recipe")?;
             let application = s::FunctionApplicationRef(read.id()?);
             if tag == 4 {
                 s::Type::FunctionItem(application)
@@ -197,7 +197,7 @@ pub(super) fn clause_write(out: &mut Writer, row: &s::Clause) -> Result<(), &'st
     id(out, row.owner.0)?;
     id(out, row.site)?;
     option(out, row.binder.map(|r| r.0))?;
-    requirement_write(out, row.requirement)?;
+    requirement_write(out, &row.requirement)?;
     option(out, row.self_subject.map(|r| r.0))
 }
 pub(super) fn clause_read(read: &mut Input<'_, '_>) -> Result<s::Clause, &'static str> {
@@ -209,7 +209,10 @@ pub(super) fn clause_read(read: &mut Input<'_, '_>) -> Result<s::Clause, &'stati
         self_subject: read.option()?.map(s::SlotRef),
     })
 }
-pub(super) fn requirement_write(out: &mut Writer, row: s::Requirement) -> Result<(), &'static str> {
+pub(super) fn requirement_write(
+    out: &mut Writer,
+    row: &s::Requirement,
+) -> Result<(), &'static str> {
     match row {
         s::Requirement::Trait {
             application,
@@ -217,7 +220,7 @@ pub(super) fn requirement_write(out: &mut Writer, row: s::Requirement) -> Result
         } => {
             out.u8(0)?;
             id(out, application.0)?;
-            effect_write(out, effect)
+            effect_write(out, *effect)
         }
         s::Requirement::TypeOutlives { subject, shorter } => {
             out.u8(1)?;
@@ -226,7 +229,11 @@ pub(super) fn requirement_write(out: &mut Writer, row: s::Requirement) -> Result
         }
         s::Requirement::Outlives(bound) => {
             out.u8(2)?;
-            bound_write(out, bound)
+            bound_write(out, *bound)
+        }
+        s::Requirement::UnstableFeature(name) => {
+            out.u8(3)?;
+            out.string(name)
         }
     }
 }
@@ -248,6 +255,12 @@ pub(super) fn requirement_read(read: &mut Input<'_, '_>) -> Result<s::Requiremen
             shorter: s::RegionRef(read.id()?),
         },
         2 => s::Requirement::Outlives(bound_read(read)?),
+        3 => {
+            if !read.features {
+                return Err("feature predicates require source metadata version four");
+            }
+            s::Requirement::UnstableFeature(read.string()?.into_boxed_str())
+        }
         _ => return Err("unknown source function requirement"),
     })
 }

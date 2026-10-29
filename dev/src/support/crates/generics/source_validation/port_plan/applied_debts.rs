@@ -63,7 +63,7 @@ impl Arena {
                     "source quantified applied debts require their complete binder-opening profile",
                 );
             }
-            match clause.requirement {
+            match &clause.requirement {
                 s::Requirement::Trait {
                     application: goal, ..
                 } => {
@@ -83,6 +83,11 @@ impl Arena {
                     return Err(
                         "source applied lifetime debts require a complete wider opening profile",
                     );
+                }
+                // RequiredKind::Call retains this exact target header debt.
+                // It has no type/region root to rewrite in this allocation plan.
+                s::Requirement::UnstableFeature(name) => {
+                    work.charge(name.len().saturating_add(1))?;
                 }
             }
         }

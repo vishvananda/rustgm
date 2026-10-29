@@ -82,7 +82,8 @@ impl Graph {
             || inputs.frame != function.original.binder
             || header.constant
             || header.universals != 0
-            || function.parent.is_some()
+            || (function.parent.is_some()
+                && descriptor.profile() != s::Profile::Source2024ModuleFeaturePredicates)
             || header.signature != header.callable
             || raw.context != s::CallContext::Runtime
         {
@@ -184,7 +185,7 @@ impl Original<'_> {
     }
     pub(crate) fn predicate(
         &self,
-        raw: s::Requirement,
+        raw: &s::Requirement,
         steps: &mut usize,
     ) -> Result<Predicate, &'static str> {
         charge(steps)?;
@@ -261,6 +262,28 @@ impl Original<'_> {
             definition,
             slot_bindings::kind(raw.definition.kind),
         )?;
+        Ok(definition)
+    }
+    pub(crate) fn function(
+        &self,
+        reference: s::FunctionApplicationRef,
+        steps: &mut usize,
+    ) -> Result<DefId, &'static str> {
+        charge(steps)?;
+        let row = self
+            .rows
+            .function_applications
+            .get(reference.0 as usize)
+            .ok_or("source original has an unknown actual callable application")?;
+        if self.rows.descriptor().profile() != s::Profile::Source2024ModuleFeaturePredicates
+            || row.declaration.artifact != s::ArtifactRef(0)
+        {
+            return Err("source call requires its actual v4 defining artifact");
+        }
+        let definition = self.declaration(row.declaration.declaration, steps)?;
+        let declaration = self.catalog.declaration(definition)?;
+        self.catalog
+            .validate_declaration(declaration, definition, DefKind::Function)?;
         Ok(definition)
     }
     pub(crate) fn site(&self, index: u32, steps: &mut usize) -> Result<BodySite, &'static str> {

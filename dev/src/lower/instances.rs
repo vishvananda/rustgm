@@ -275,6 +275,7 @@ pub enum SourcePublication {
     FunctionContracts,
     ModuleContracts,
     ModuleAvailability,
+    ModuleFeaturePredicates,
     ProvidedContracts,
 }
 
@@ -353,8 +354,10 @@ pub fn build_source_library_profile(
                 SourcePublication::ProvidedContracts => {
                     source.complete_provided_contract_payload(report, facts, base)
                 }
-                SourcePublication::ModuleContracts | SourcePublication::ModuleAvailability => {
-                    source.complete_module_policy_payload(
+                SourcePublication::ModuleContracts
+                | SourcePublication::ModuleAvailability
+                | SourcePublication::ModuleFeaturePredicates => source
+                    .complete_module_policy_payload(
                         modules.ok_or_else(|| {
                             diagnostic(
                                 report,
@@ -365,9 +368,8 @@ pub fn build_source_library_profile(
                         report,
                         facts,
                         base,
-                        profile == SourcePublication::ModuleAvailability,
-                    )
-                }
+                        profile,
+                    ),
             }
             .map_err(|error| facts.retain_error_warnings(error))?;
             Ok((program, interface))

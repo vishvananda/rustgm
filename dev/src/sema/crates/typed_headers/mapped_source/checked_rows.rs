@@ -293,6 +293,11 @@ impl<'a> Mapping<'a> for Ordinary<'a> {
                 rows.declared_members(rows.traits[index as usize].members)?,
             )),
             s::HeaderRef::Implementation(index) => {
+                if rows.descriptor().profile() == s::Profile::Source2024ModuleFeaturePredicates {
+                    return Ok(MemberRows::Implementation(rows.implementation_members(
+                        rows.implementations[index as usize].members,
+                    )?));
+                }
                 if rows.implementations[index as usize].members.start
                     != rows.implementations[index as usize].members.end
                 {

@@ -67,13 +67,13 @@ pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'s
     } else {
         None
     };
-    let arguments = read.provided_list(crates::MAX_COMPONENTS, 4, Input::id)?;
+    let arguments = read.call_list(crates::MAX_COMPONENTS, 4, Input::id)?;
     let openings = read.provided_list(
         crates::MAX_COMPONENTS,
         4,
         super::recipe_columns::root_region_read,
     )?;
-    let calls = read.provided_list(crates::MAX_COMPONENTS, 19, invoked_rows::read)?;
+    let calls = read.call_list(crates::MAX_COMPONENTS, 19, invoked_rows::read)?;
     Ok(s::Original {
         body,
         declaration,
@@ -152,10 +152,13 @@ fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static str> {
         0 => s::ValueKind::Unit,
         1 => s::ValueKind::Read(place_read(read)?),
         2 => s::ValueKind::Constrain(read.id()?),
-        tag @ (3..=5) => {
+        3 => {
             read.require_provided("unknown source ordinary value operation")?;
+            s::ValueKind::Borrow(place_read(read)?)
+        }
+        tag @ (4 | 5) => {
+            read.require_calls("unknown source ordinary value operation")?;
             match tag {
-                3 => s::ValueKind::Borrow(place_read(read)?),
                 4 => s::ValueKind::Function(s::FunctionApplicationRef(read.id()?)),
                 _ => s::ValueKind::Call {
                     signature: g::TypeRef(read.id()?),

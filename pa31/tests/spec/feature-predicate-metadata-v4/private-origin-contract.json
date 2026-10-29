@@ -1,0 +1,15 @@
+{
+  "state": "predictions frozen before candidate observation",
+  "owner": 31,
+  "scope": "v4 private native original naming only; no public ExternalDef or C ABI admission",
+  "predictions": [
+    "two genuine providers with distinct disambiguators and equal BodyRef/DeclarationRef produce distinct private symbol names",
+    "fresh import derives the identical provider/body/declaration spelling",
+    "substituted foreign Store/catalog rejects despite equal private coordinates"
+  ],
+  "retained_required": [
+    "original7 nominal/C source artifacts",
+    "literal scalar rvalue transport",
+    "all unrelated provided/default/region profile fences"
+  ]
+}

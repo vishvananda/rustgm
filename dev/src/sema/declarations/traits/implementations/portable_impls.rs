@@ -17,6 +17,7 @@ impl Checker<'_> {
         &self,
         definition: DefId,
         predicate: Predicate,
+        methods: Option<&crate::sema::crates::PrimitiveMethods>,
     ) -> Result<std::sync::Arc<crate::types::parameters::environment::Environment>, Error> {
         let owner = self
             .facts
@@ -45,7 +46,11 @@ impl Checker<'_> {
             .trait_application(application)
             .map(|application| DefId(application.item.0))
             .ok_or_else(|| Error::unlocated("imported impl lacks its actual trait application"))?;
-        if !self
+        if let Some(methods) = methods {
+            methods
+                .require(&self.facts, definition, predicate)
+                .map_err(Error::unlocated)?;
+        } else if !self
             .facts
             .associated
             .imported_empty_module_trait(trait_definition)
@@ -110,12 +115,53 @@ impl Checker<'_> {
         Ok(())
     }
 
-    pub(super) fn validate_imported_trait_implementation(
+    fn check_imported_primitive_methods(
+        &mut self,
+        owner: DefId,
+        predicate: Predicate,
+        plan: &crate::sema::crates::PrimitiveMethods,
+    ) -> Result<(), Error> {
+        plan.require(&self.facts, owner, predicate)
+            .map_err(Error::unlocated)?;
+        let definitions =
+            crate::sema::traits::conformance::Definitions::new(&self.facts, predicate, &[])
+                .map_err(Error::unlocated)?;
+        for &(expected, actual) in plan.links() {
+            let actual = actual.ok_or_else(|| {
+                Error::unlocated("v4 defaults require their wider conformance profile")
+            })?;
+            if crate::sema::declarations::is_final_trait_method(self.report, &self.facts, expected)?
+                || self.facts.methods.receivers.contains_key(&expected)
+                    != self.facts.methods.receivers.contains_key(&actual)
+            {
+                return Err(Error::unlocated(
+                    "primitive imported method changed its final/receiver contract",
+                ));
+            }
+            let expected =
+                crate::sema::traits::conformance::Method::imported(&mut self.facts, expected)
+                    .map_err(Error::unlocated)?;
+            let actual =
+                crate::sema::traits::conformance::Method::imported(&mut self.facts, actual)
+                    .map_err(Error::unlocated)?;
+            crate::sema::traits::conformance::check_methods(
+                &mut self.facts,
+                owner,
+                predicate,
+                expected,
+                actual,
+                &definitions,
+            )
+            .map_err(Error::unlocated)?;
+        }
+        Ok(())
+    }
+    fn validate_imported_requirements(
         &mut self,
         definition: DefId,
         predicate: Predicate,
+        environment: std::sync::Arc<crate::types::parameters::environment::Environment>,
     ) -> Result<(), Error> {
-        let environment = self.imported_receiver_environment(definition, predicate)?;
         let mut proof = self.declaration_proof(definition, Some(environment));
         let requirements = super::impl_contract_obligations(&mut self.facts, predicate, &mut proof)
             .map_err(Error::unlocated)?;
@@ -158,12 +204,32 @@ impl Checker<'_> {
         constraints
             .solve()
             .map_err(|e| Error::unlocated(e.to_string()))?;
+        Ok(())
+    }
+    pub(super) fn validate_imported_trait_implementation(
+        &mut self,
+        definition: DefId,
+        predicate: Predicate,
+    ) -> Result<(), Error> {
+        let methods =
+            crate::sema::crates::primitive_method_plan(&mut self.facts, definition, predicate)?;
+        let environment =
+            self.imported_receiver_environment(definition, predicate, methods.as_ref())?;
+        if let Some(methods) = &methods {
+            self.check_imported_primitive_methods(definition, predicate, methods)?;
+        }
+        self.validate_imported_requirements(definition, predicate, environment)?;
         self.facts
             .generics
             .implementations
             .as_mut()
             .ok_or_else(|| Error::unlocated("imported conformance registry disappeared"))?
-            .complete(definition, Vec::new(), Vec::new(), Vec::new())
+            .complete(
+                definition,
+                methods.map_or_else(Vec::new, crate::sema::crates::PrimitiveMethods::into_links),
+                Vec::new(),
+                Vec::new(),
+            )
             .map_err(Error::unlocated)
     }
 }

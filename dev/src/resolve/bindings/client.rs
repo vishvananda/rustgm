@@ -36,7 +36,7 @@ impl SourceClient {
             .and_then(crate::support::crates::Interface::source_descriptor)
             .ok_or("source client availability descriptor is absent")?
             .profile()
-            == crate::support::crates::generics::source::Profile::Source2024ModuleAvailability)
+            .availability())
     }
     pub(super) fn validate_inventory(&self) -> Result<(), &'static str> {
         self.require_inventory(&self.dependencies).map(|_| ())
@@ -71,7 +71,7 @@ impl SourceClient {
         if !descriptor.profile().ordinary_functions() {
             match descriptor.profile() {
                 crate::support::crates::generics::source::Profile::Source2024ModuleContracts
-                | crate::support::crates::generics::source::Profile::Source2024ModuleAvailability =>
+                | crate::support::crates::generics::source::Profile::Source2024ModuleAvailability | crate::support::crates::generics::source::Profile::Source2024ModuleFeaturePredicates =>
                 {
                     descriptor.module_contracts()?;
                 }
