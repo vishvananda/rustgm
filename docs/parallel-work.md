@@ -1,15 +1,15 @@
 # Parallel library bootstrap implementation
 
 Root owns compiler integration, current-source CLI/original-core observations and
-publication in `rustgm-pa25-work`. B (`lint_expectations`) has completed
-qualified09aa611d associated-equality and af21533d image-accounting handoffs; both
-are integrated. Its next diagnosis isolates genuine work exhaustion at StepBy;
-it now owns explicit finite resource inputs in Config/State/Loader/driver.
-Private8 passes61.77s; CLI qualification is pending. Root completed the earlier
-interrupted item/opened-call repair directly in `rustgm-pa27-work`, qualified9
-controls and native const1, and integrated3afc71e6. That tree has now been handed
-back to C (`const_call_review`) for the narrow auto-trait metadata migration
-described in the live queue. Root must not edit C's metadata files concurrently.
+publication in `rustgm-pa25-work`. B's finite resource API5c2bace0 is integrated
+and its Root joined11 passes193.73s. C's metadata migration e204150bb is now
+integrated locally; C exact12 passes141.42s, while Root joined qualification and
+production/full CI are pending. C is idle and Root owns these integrated files.
+B (`lint_expectations`) now owns LIB-080's actual generic union Clone recipe in
+its existing tree. It must coordinate shared proof/interface changes before
+editing metadata or Root's observer/configuration code. No new advisory lint
+producer is queued. The earlier associated equality, image accounting and
+item/opened-call handoffs remain integrated and qualified.
 
 The joined45 consumer gate passes149.22s, including the real Debug array
 consumer. Its seven source-native programs match the pinned Rust observations,
@@ -18,14 +18,18 @@ The later capacity-accounting integration passes joined48 in148.85s and
 production/CLI2 in109.78s. All7 native inputs are byte-identical to the qualified
 programs; equality receipt23cb88d09d859c515bb57180827030917a1f050ea147d9aa8756269726ff7eef.
 CLI8ee48985 hits work1,000,004 >1,000,000 at StepBy (file154:512), with attempted
-storage60,099,511 <64MiB. The next observer will bind an explicit work14,500,624
-allowance, preserving64MiB attempted/retained limits and all original sources
-and target flags. This is a changed resource profile, not a speedup or an
-unchanged-default result. Do not claim a whole library artifact from these controls.
+storage60,099,511 <64MiB. Qualified pre-migration CLI213a3c57 under explicit
+work14,500,624/attempted64MiB/retained64MiB reaches SocketAddrV4 storage; its
+separate attempted1GiB profile reaches the missing union Clone recipe at
+escape.rs161 in10.85s. All722 original hashes and target flags stay unchanged.
+Receipt2da97d75af6b4c4b51f9a7b701d6bd61249f0787044ef809fc998917c2174899
+binds that observation. These are changed resource profiles, not speedups or
+unchanged-default results. Current post-migration binaries require fresh bindings.
+Do not claim a whole library artifact from these controls.
 
 Keep at most two heavy jobs globally, one per worktree, two Cargo/test threads,
-16GiB absolute output caps and150GiB free reserve. B owns resource-input qualification;
-C owns the metadata repair; Root owns observer profiles, integration and publication.
+16GiB absolute output caps and150GiB free reserve. B owns union Clone;
+Root owns joined qualification, observer profiles, integration and publication.
 Coordinate actual live jobs before admission. Preserve warm caches/current pins
 and scoped cleanup. No new workers or worktrees are needed. Report actual terminal before
 reusing a slot; neither an observation timeout nor a stale session alias is one.
@@ -42,8 +46,9 @@ their evidence, not authority to replace this queue with old remaining tasks.
 
 Public8dc4091eb fast CI40834845453 passes. Full CI40835039063 fails three
 auto-trait source-inventory/legacy-encoding checks; architecture, harness and
-the independent host graph pass. C owns the explicit semantic migration; no
-golden will be regenerated or false source premise restored. The earlier
+the independent host graph pass. The explicit semantic migration fixes all3
+focused cases without regenerating a golden or restoring a false source premise;
+joined full CI remains pending. The earlier
 public0fa08bc full CI40815003815 is green. The qualified pre-capacity CLI
 1b626052 passes MaybeUninit, FnPtr Debug7, Abi enum Default and DecodeUtf16's
 associated equality. Next it stops the source expansion accounting budget at
@@ -56,8 +61,7 @@ LIB079 diagnosis isolates attempted storage67,116,347B against67,108,864B,
 with work644,164 and retained witness53,959B. Output text paid304 token-storage
 bytes per character. The integrated repair pays actual image/origin/token/field
 growth and real parser token/splice costs; all three limits and sticky failures
-are unchanged. Current combined evidence passes, while the latest unchanged-source
-observation still reports a budget boundary at StepBy. Its exact source-bound
+are unchanged. That earlier unchanged-default observation reports StepBy; its source-bound
 receipt is9aa74938c360ae0790d94f5c18a48149570e68559aedba6feffa38fc59dba9b0;
 uncapped2c0c665808df214f783cd0e25e81e81c318772e3165aacd5af6a270d025a4379
 keeps deferred lint evidence separate. No original source/target flag/limit was changed.

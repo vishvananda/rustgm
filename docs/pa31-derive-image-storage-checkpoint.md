@@ -88,3 +88,22 @@ by the predecessor. This is an input-derived experimental allowance, not the
 measured total work of a completed crate. Attempted and retained limits stay at
 64 MiB. Bind all three effective limits in the manifest, producer and result;
 never compare this changed-resource observation as an unchanged-default speedup.
+
+The integrated resource API passes eight private and three CLI controls together
+in193.73s, with strict Clippy in both modes. Receipt1793261815925571764 qualifies
+CLI `213a3c5711dd99431e49e03236743cf1c0174f3b59afbd798da8e356a3e8ce33`.
+The work14,500,624/attempted64MiB/retained64MiB observation takes10.49s and
+stops at SocketAddrV4's derives (`core/src/net/socket_addr.rs:79`) on attempted
+storage. Its receipt SHA256 is
+`7fd06b938bffb51916a6bd35c6f68b8143357d654b98e87c8db1cc1ca073a6b6`.
+
+A separate finite attempted-volume allowance of1GiB, with the same work and
+retained limits, takes10.85s and reaches `core/src/escape.rs:161`:
+`#[derive(Clone, Copy)] union MaybeEscapedCharacter<const N: usize>` lacks its
+actual Clone recipe. Receipt SHA256 is
+`2da97d75af6b4c4b51f9a7b701d6bd61249f0787044ef809fc998917c2174899`.
+Both observations preserve all722 source hashes and target settings;373 opens
+still do not establish semantic completion or an original artifact. Both use
+the same immutable compiler and retain their distinct resource bindings. No
+default or accounting charge was removed. These are pre-metadata-migration
+observations; subsequent compiler checkpoints need their own source binding.

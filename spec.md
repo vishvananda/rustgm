@@ -151,6 +151,16 @@ grants execution or trait permission. The
 [versioned transport checkpoint](docs/source-header-contract-transport.md)
 records exact-byte, fresh-consumer, origin, budget and layout controls.
 
+Historical provided-envelope version zero retains its exact decode/encode bytes
+as opaque data. Current unpaid provided rows use the distinct version two and
+correct auto-trait Self sizing; never recreate the old implicit MetaSized premise
+to preserve an obsolete producer assertion. Before ordinary or private semantic
+materialization, validate this boundary once with paid typed role/application
+identities. Source-site equality and advisory classification cannot authorize a
+premise. Unresolved foreign canonical auto-trait Self bounds remain unsupported
+until dependency-role provenance is complete. See the
+[semantic migration](docs/provided-profile-migration.md).
+
 Unknown source diagnostic-item strings remain exact inert data in an optional
 cold column of the existing reservation owner. Preserve declaration and
 attribute identity, including empty, Unicode and NUL-containing strings, without

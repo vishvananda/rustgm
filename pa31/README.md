@@ -248,3 +248,11 @@ runtime and CTFE consumers. Derive storage must pay actual capacity growth and
 parser token/splice work, preserving separate attempted and retained budgets;
 see the [image accounting checkpoint](../docs/pa31-derive-image-storage-checkpoint.md).
 These finite proofs preserve every original library and parent release gate.
+
+Compilation resource limits are explicit finite inputs, with unchanged defaults,
+immutable owner snapshots and sticky exhaustion. The three options documented in
+[the testing guide](../TESTING_AND_REFERENCES.md) do not grant source permissions.
+The [provided-profile migration](../docs/provided-profile-migration.md) retains
+historical bytes without restoring false auto-trait sizing premises. Corrected
+current rows have their own version; complete original source transport and
+whole assignment release remain required.
