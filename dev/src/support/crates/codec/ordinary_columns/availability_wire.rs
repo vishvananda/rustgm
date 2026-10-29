@@ -10,9 +10,11 @@ pub(super) fn encode(
     rows: &s::AvailabilityRows,
     compatibility: bool,
 ) -> Result<(), &'static str> {
-    write(out, &rows.policies, |out, policy| {
-        policy_write(out, policy, compatibility)
-    })?;
+    if compatibility {
+        write(out, &rows.policies, |out, policy| policy_write(out, policy, true))?;
+    } else {
+        write(out, &rows.policies, |out, policy| policy_write(out, policy, false))?;
+    }
     write(out, &rows.declarations, |out, row| {
         id(out, row.declaration.0)?;
         reference(out, row.regular)?;
