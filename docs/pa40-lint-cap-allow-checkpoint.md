@@ -5,6 +5,71 @@ This finite frontend profile accepts `--cap-lints=allow` and
 return an explicit unsupported-profile error. PA34/PA40 remain planned; this
 checkpoint establishes neither complete lint parity nor a library artifact.
 
+## Cap-aware macro event work
+
+Source `6697b601a` authenticates the actual producer/package cap and sticky
+diagnostic budget before returning from suppressed macro deprecation production.
+Macro execution identity and owner parsing stay in their existing passes.
+Uncapped lookup, source witnesses, malformed/duplicate annotations, feature gates
+and pending expectations retain their checks. No cache, common field, quota or
+metadata permission is added.
+
+The original-core immutable debugger observation identifies the expansion call
+chain `deprecated_macro → deprecation_in → deprecation_owner` at10,000,463
+combined steps and37,128,057 charged bytes. It is a work-limit failure, not the
+earlier storage failure. Source owner/module witnesses were being checked for
+every macro invocation even though the explicit Allow cap suppresses the event.
+
+The same generated wide-header/many-call source gives these actual policy costs:
+
+| Header attributes and calls | Previous work | Current work | Current bytes |
+| ---: | ---: | ---: | ---: |
+| 8 | 351 | 127 | 3000 |
+| 32 | 3663 | 463 | 8472 |
+| 128 | Baseline assertion already failed | 1807 | 30360 |
+
+This removes Cartesian optional validation; it is a deterministic operation-count
+result, not a wall-time speedup claim. The unchanged strict/Allow macro programs
+and all three scaling sources retain byte-identical full LowIR across immutable
+previous/current binaries. All seven output comparisons pass. Independent pinned
+Rust matches26/26 metadata/object outcomes, including hard malformed-note,
+unsafe-wrapper and duplicate annotation errors under both caps.
+
+Sixteen focused private controls pass160.12s with strict Clippy, formatting and
+architecture; CLI/lexer12 and PA8 120/120 pass83.96s. The complete harness/upstream
+check passes22.32s. All3258 source/tool fingerprints match the two compiler gates.
+Current Config80/Package256/Report3096/Producer368/Owner160/NodeFacts80 widths and
+the existing cold cap/debt ownership remain unchanged.
+
+Evidence in the root-owned warm B checkout:
+
+- Private `obj/qualification/fast/1793358222194790640/receipt.json`, SHA
+  `dfc571b80ee8fa68da3c9e631bd12afb0b4166dbfd3e34abcf1225e0224080b1`.
+- Production `obj/qualification/fast/1793358534008297291/receipt.json`, SHA
+  `7e892538f1b7f58c3a48047ec80ed8db8a1c2625df6940837805e647a048ab09`.
+- Debugger `obj/parallel/lint-work-recurrence-v1/debugger-v1/receipt.json`, SHA
+  `4fb0c2d3bcd7fcb680726811ba618872721319ce0f6e36d8dc3a2baa8aac4518`.
+- Output equality `obj/parallel/lint-work-recurrence-v1/equality-v1/receipt.json`,
+  SHA `9e4630c130e6531fd5137634048ba11fea7d47a44046fe2ac2e0d8b95e42310d`.
+- Independent C-tree reference receipt SHA
+  `32f905bf94dd0c9149748ee21f60638752210eb0bb1feb26113d2812b9a995db`;
+  successful14 object/metadata artifacts are pruned, raw evidence retained.
+
+Immutable CLI
+`b84d289990b937829da0bd45a7a2fa2cf790b88bc223e93d7f53126a4f29a0f5`
+passes the earlier policy-work frontier and reaches LIB110,
+`#[rustc_confusables("swap")]`, original `library/core/src/cell.rs:508`
+byte18838. The types observation takes25.26s, with375 loading opens and all722
+source hashes unchanged. Target, explicit cap and source-contract14,500,624-work/
+1GiB-attempted/64MiB-retained limits stay fixed; policy limits remain10M/64MiB.
+The guarded harness/equality/core batch takes78.38s including admission/cleanup.
+Core receipt `obj/parallel/lint-work-recurrence-v1/core-v1/receipt.json`, SHA
+`f2a290c932fa15e03328874b2de7d36a2eaed75922ff77d2f766084c6bd5396d`.
+No original crate artifact or whole assignment release is implied. Broader
+uncapped diagnostic work and strict qualification remain required.
+
+## Initial cap protocol
+
 One typed immutable input travels through Config, Package, staged expansion
 requests and semantic request policy. Existing-facts entry and finalization
 validate the cap and authentic expectation domain in constant time. Capped facts
@@ -21,7 +86,7 @@ Known expectations retain authentic IDs and remain pending under this profile;
 suppression never claims fulfillment or strict completion. Ordinary uncapped
 allow/deny/forbid/expect behavior remains covered by the existing protocol.
 
-The [source contract](../pa40/tests/spec/lint-cap-allow/contract.json) contains
+The initial [source contract](../pa40/tests/spec/lint-cap-allow/contract.json) contains
 26 ordinary and actual source-provider inputs. The independent pinned Rust 1.98
 join contains 104 matching observations across editions 2021/2024 and uncapped/
 Allow configurations. Earlier observations retain two corrected hypotheses:
@@ -38,7 +103,7 @@ default-policy sink. Warning-only LowIR output is byte-identical with and withou
 the cap. Earlier failed receipts retain static adapter/style failures and a cold
 build timeout; the final unchanged-source warm gate passed.
 
-Measured x86-64 widths remain Config 72, Package 256, Report 3096, Producer 368,
+Initial measured x86-64 widths are Config 72, Package 256, Report 3096, Producer 368,
 source Owner 160, cold Policy 152, dense policy ID 4 and NodeFacts 80 bytes.
 The existing cold Arc domain now stores an 8-byte cap/debt payload; its complete
 24-byte allocation is charged before creation. Repeated authenticated debt reads
