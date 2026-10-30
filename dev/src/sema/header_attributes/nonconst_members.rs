@@ -42,26 +42,47 @@ pub(super) fn is_trait_member(facts: &Declarations, definition: DefId) -> bool {
 }
 /// Reuse the resolver's exact member scope and its existing source owner.
 fn validate_owner(report: &Report, facts: &Declarations, definition: DefId) -> Result<(), Error> {
-    let owner = facts.associated.owner(definition).and_then(|id| facts.associated.get(id))
+    let owner = facts
+        .associated
+        .owner(definition)
+        .and_then(|id| facts.associated.get(id))
         .ok_or_else(|| Error::unlocated("non-const member lost its associated owner"))?;
-    let OwnerKind::Trait { definition: parent, constant, .. } = owner.kind else {
-        return Err(Error::unlocated("non-const member requires its actual trait owner"));
+    let OwnerKind::Trait {
+        definition: parent,
+        constant,
+        ..
+    } = owner.kind
+    else {
+        return Err(Error::unlocated(
+            "non-const member requires its actual trait owner",
+        ));
     };
-    let member = report.resolution.definitions.get(definition.0 as usize)
+    let member = report
+        .resolution
+        .definitions
+        .get(definition.0 as usize)
         .filter(|row| row.kind == crate::resolve::model::DefKind::Function)
         .ok_or_else(|| Error::unlocated("non-const member lost its function declaration"))?;
-    let parent = report.resolution.definitions.get(parent.0 as usize)
+    let parent = report
+        .resolution
+        .definitions
+        .get(parent.0 as usize)
         .filter(|row| row.kind == crate::resolve::model::DefKind::Trait)
         .ok_or_else(|| Error::unlocated("non-const member lost its trait declaration"))?;
-    let source = owner.source.ok_or_else(|| Error::unlocated("non-const member has no actual source owner"))?;
+    let source = owner
+        .source
+        .ok_or_else(|| Error::unlocated("non-const member has no actual source owner"))?;
     let unit = report.package.unit(source.file);
-    if parent.node != Some(source) || parent.members != Some(member.scope)
+    if parent.node != Some(source)
+        || parent.members != Some(member.scope)
         || unit.configured.active.get(source.node.get() as usize) != Some(&true)
         || !matches!(unit.configured.ast.node(source.node).kind,
             Kind::Item(index) if matches!(unit.configured.ast.items[index as usize].kind,
                 ItemKind::Trait { constant: actual, .. } if actual == constant))
     {
-        return Err(Error::unlocated("non-const member changed its actual trait scope or source header"));
+        return Err(Error::unlocated(
+            "non-const member changed its actual trait scope or source header",
+        ));
     }
     Ok(())
 }
@@ -134,7 +155,9 @@ pub(in crate::sema) fn consume(
         size_of::<super::Promises>()
     };
     let headers = &mut ledger(facts, bytes)?.local;
-    let actual = headers.declarations.get_mut(&declaration)
+    let actual = headers
+        .declarations
+        .get_mut(&declaration)
         .ok_or_else(|| error("non-const member header disappeared"))?;
     actual.promises.get_or_insert_with(Default::default).member = Some(Choice::Marked(Marker {
         owner_slot: slot,

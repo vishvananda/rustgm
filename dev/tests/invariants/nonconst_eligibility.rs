@@ -297,7 +297,10 @@ fn cold_trait_choices_and_failed_warm_queries_are_paid_and_scale_linearly() -> T
             .is_err()
     );
     assert!(local(&mut facts)?.steps.get() > crate::support::crates::MAX_COMPONENTS);
-    println!("Stability Draft/Role/Frame/marker-row={:?}", crate::resolve::stability::member_marker_layouts());
+    println!(
+        "Stability Draft/Role/Frame/marker-row={:?}",
+        crate::resolve::stability::member_marker_layouts()
+    );
     println!(
         "Marker={} Choice={} Promises={} Header={} Node={} Body={}",
         size_of::<Marker>(),

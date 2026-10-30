@@ -332,5 +332,10 @@ mod implication_tests;
 
 #[cfg(test)]
 pub(crate) const fn member_marker_layouts() -> (usize, usize, usize, usize) {
-    (size_of::<Draft>(), size_of::<constness::Role>(), size_of::<constness::Frame>(), size_of::<(NodeKey, FunctionMarker)>())
+    (
+        size_of::<Draft>(),
+        size_of::<constness::Role>(),
+        size_of::<constness::Frame>(),
+        size_of::<(NodeKey, FunctionMarker)>(),
+    )
 }
