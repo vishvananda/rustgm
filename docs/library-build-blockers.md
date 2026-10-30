@@ -36,6 +36,27 @@ This is a CI repair, not additional assignment or original-crate completion.
 That bootstrap-repair checkpoint was CLI f3484f4c; its original-core
 observation is superseded by the current joined checkpoint below.
 
+Full qualification40976018856 on public788889aac is terminal FAILED:2366
+private controls passed, with one target-feature context regression and one
+integer-range integration regression. The
+[qualified repair](const-call-policy-ci-repair.md) preserves both original
+outcomes and genuine policy checks: private6 passes135.56 seconds; the exact
+47-input production range test passes100.97 seconds, with strict Clippy and
+architecture checks. It repairs completed attribute-budget lifecycle, checks
+both actual generated iterator callables and authenticates factory absence
+without inventing a source header. No whole PA or original crate is complete.
+
+Full qualification40981612452 on public827155167 passes all2373 private tests
+and all13 integration suites. Its remaining three course failures are repaired
+without changing the compiler: move the unchanged PA12 named-count input to its
+PA25 owner and regenerate the two PA18 Rust-invalid generic-repeat diagnostics.
+The declared outcomes match pinned Rust objects; the accepted input also runs
+through the locked CPPGM backend and pinned Rust with exit0. PA12 125/125,
+PA18 502/502 and PA25 const-machine95/95 pass, as do upstream/layout checks and
+all275 harness tests. The input-only gate takes29.88 seconds after admission;
+receipt02b26e12eb1a2fcb92085e70a01449328a91ec99a9954a1dca49b1087ceb1faa.
+No original-core advancement or assignment release is implied.
+
 Public85d06ebec full qualification40954355053 has passed. The subsequent
 PA25 course-corpus review exposed LIB-099, a genuine computed repeat-count gap.
 Its repair passes24 focused controls with strict Clippy/audits, plus94 independent
@@ -90,6 +111,9 @@ actual native hints and the future authenticated MIR-import obligation.
 | LIB-101 | Actual source contract qualified; original marker cleared | rustc_no_mir_inline on ptr::swap_chunk | PA31 source declarations / source-no-mir-inline fixtures and original ptr/mod.rs1445 | C; Root integration | Pinned feature/form/active-owner/duplicate/nonforeign/image checks use a prepaid transient draft in existing owner/definition walks. No persistent map or hot field. Current local/imported pipeline has no MIR inliner; native inline hints remain independent and current source metadata stays admitted. A future MIR-like consumer requires authenticated import intent. Private14/production35,29 CLI and genuine full-provider/fresh-client/native7 match pinned Rust. Current original core clears the marker; full swap_chunk/MaybeUninit/alias runtime graph and artifacts remain required. |
 | LIB-102 | Confirmed semantic inventory gap; independent oracle and implementation in progress | rustc_non_const_trait_method | PA19/25/31 method eligibility +PA29 transport / original DoubleEndedIterator methods and new owning controls | B | Pinned query makes the marked trait member effectively nonconst while trait and impl constness remain independent. Current unconditional ConstTraitDefault classification needs the actual per-method exception across defining/call/API contexts. Original source samples are lexical inventory candidates, not a new whole-core observation. Real gate/form/owner/duplicate/source/image/payment checks and retained Always/unsafe/transport opponents are required. |
 | LIB-103 | Confirmed current original-core blocker | rustc_reservation_impl | PA20/21 solver/coherence +PA31 source declaration +PA29 metadata / original convert/mod.rs801 From<!> for T | C | Current CLI49f16ba0 reports file75:30234 at the actual reservation attribute. This reserves future implementation space, not usable positive evidence. Implement genuine reservation polarity, ambiguity/coherence behavior and source/const/body checks with independent original-header/call/overlap/metadata opponents. Do not accept the attribute inertly or allow the unreachable body to manufacture an implementation proof. |
+| LIB-104 | Queued optimization-contract source gap; no implementation claim | rustc_no_writable | PA31 source declarations +PA30/34 ABI policy / original slice methods | Root, queued | Pinned function/body/closure target rules and hard form/gate/duplicate checks are required. This suppresses LLVM Writable; it grants no write, unsafe or ABI privilege. Current RustGM/locked backend emits no such assumption. Prioritize actual From binding first; preserve closure/default/required/foreign and future imported-consumer distinctions. |
+| LIB-105 | Confirmed original declaration prerequisite; implementation queued | Source From language/diagnostic roles and f32 fallback | PA31 bindings +PA9/20 numeric inference +PA29 transport / exact original convert/mod.rs From header | Root | The pinned From trait has a real language role and From/from_fn diagnostics, currently absent from the registry. Its actual compiler consumer prefers f32 only for positive unresolved From<float> obligations with self f32. Preserve the full original const/stability/Sized/from header and real solver/call evidence. No name-only privilege, fabricated body or broad known-word admission; ordinary homonyms and old metadata boundaries remain controls. |
+| LIB-106 | Focused compiler repair qualified; full CI pending | Ordinary const/factory/generated-call policy regressions | PA25 const contexts +PA26 iteration +PA31 source/factory header lifecycle / unchanged target-feature and integer-range cases | Root | Full CI exposed two actual regressions. Re-seal completed coverage after late budget creation, validate both typed For callables, and reuse authenticated factory-owner absence while rejecting forged source-to-foreign origins. Private6 and exact47-input production test pass with strict Clippy/audits; no fixture or outcome changes. See const-call-policy-ci-repair.md for receipts and honest predecessor failures. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
@@ -261,7 +285,7 @@ concrete; a private Ready state is not an executable result.
 
 | Owner | Issues and owning assignments | Next observable exit |
 | --- | --- | --- |
-| Root, direct compiler owner | Qualified LIB-098–101 and v8 publication; next original source consumer, PA25/29/31 | Public788 contains qualified Comptime/v8 and full CI40976018856 is running. NoMir passes private14, production35,29 CLI and genuine provider/client native7. Monitor full CI, retain strict debt, then integrate semantic LIB-102/103 and repeat unchanged core. No original artifact is complete. |
+| Root, direct compiler owner | Qualified LIB-098–101 and v8 publication; next original source consumer, PA25/29/31 | Public788 contains Comptime/v8; full CI40976018856 exposed two regressions, now repaired in focused6+47-input production qualification. NoMir passes private14, production35,29 CLI and genuine provider/client native7. Publish qualified CI repair, repeat full qualification, retain strict debt, then integrate semantic LIB-102/103 and repeat unchanged core. No original artifact is complete. |
 | `const_call_review`, existing C worktree | LIB-103 genuine reservation impl polarity, PA20/21/31/29 | Current original core stops on const From<!> for T reservation. Freeze pinned solver/coherence/call/const/body/metadata matrix and typed interface, then implement reservation behavior. The marker must not create an executable positive implementation or fabricate a trait proof. NoMir is qualified. |
 | `lint_expectations`, existing B worktree | LIB-102 non-const trait-member eligibility, PA19/25/31/29 | Independent required/default/ordinary/const-impl/call/unused-body/API/unsafe/Always matrix precedes implementation. Authenticate actual trait-method source owner; join effective const classification, defining context, calls, stability and honest metadata boundaries. Trait/impl constness stays separate. Inventory gaps remain semantic requirements, not inert accepted words. |
 | Root, retained formatting/panic lane | LIB-029/021/034/055/057/073/077, PA25–28/31 | Finite Debug array/native consumer and exact borrowed-call repair are qualified. Full original Count/Formatter/write/runtime parity, other derive families, metadata and original crate consumers remain required when an actual source demand reaches them. |

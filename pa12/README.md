@@ -36,7 +36,8 @@ operand and a canonical length, never one body-IR entry per repeated element.
 PA16 covers closed constant/static materialization and reference storage with
 their lifetime/loan proofs; general constant evaluation remains PA25. The earlier concrete array-length profile
 remains: lengths in annotations and repeats are usize-compatible integer literals
-or grouped literals. Nonliteral array-length queries belong to PA25.
+or grouped literals. Nonliteral array-length queries belong to PA25; their
+positive fixtures live there once the cumulative maintainer supports them.
 
 Resolve `Self` to its enclosing concrete struct/enum in field annotations and
 discriminants. It does not cross a nested item's capture barrier. Enum members

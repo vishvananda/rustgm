@@ -2,10 +2,30 @@
 
 Root owns integration, original-core observations and public main publication.
 Public788889aac contains the qualified Comptime/v8 checkpoint; its full
-CI40976018856 is running. Private201 and production35, full v7/v8 CLI/native,
+CI40976018856 is terminal failed on two later regressions, repaired as below.
+Private201 and production35, full v7/v8 CLI/native,
 39 constant outcomes and PA25 course94 pass; historical evidence remains below.
 
-The current successor additionally qualifies actual rustc_no_mir_inline source
+The current CI repair07d22ba24 passes private6 in135.56 seconds and the exact
+47-input production range outcome test in100.97 seconds, both with strict Clippy,
+formatting and architecture. Existing target-feature, missing/changed factory,
+source-origin and Always controls are preserved. No fixture is reclassified.
+See [repair evidence](const-call-policy-ci-repair.md). Private and integration
+checks use separate bounded gates; the mixed cold predecessor timed out after
+strict code generation and never qualified runtime. Full CI40981612452 on
+public827155167 passed all2373 private controls and all13 integration suites,
+then failed three PA12/PA18 course expectations. The course-only successor moves
+the unchanged named-count positive to PA25 and regenerates the two genuine
+generic-repeat rejection diagnostics. PA12 125/125, PA18 502/502 and the expanded
+PA25 const-machine95/95 pass, alongside pinned Rust object outcomes, native
+execution, upstream checks and all275 harness tests. The qualification takes
+29.88 seconds after admission, with no compiler rebuild; receipt
+02b26e12eb1a2fcb92085e70a01449328a91ec99a9954a1dca49b1087ceb1faa.
+Fresh production CLI/native20 operations match
+pinned Rust for all3 accepted programs and the exact target-feature rejection;
+see the same repair evidence.
+
+The preceding public successor qualifies actual rustc_no_mir_inline source
 contracts. C14 passes221.94 seconds; same-source Root production35 passes133.70
 seconds with strict Clippy and all static checks. All29 CLI outcomes and a fresh
 full-provider/NoCore-client metadata/native7 graph match independent pinned Rust.
@@ -95,6 +115,15 @@ union expansion and reports typed field-macro copying at niche_types.rs20 in
 Its fresh strict receipt7629b28fb776aa15818fc38da1c485a4012aab9641d2b0881d0afc54e348e5d3
 still retains the deferred expectation. All722 input hashes and target settings
 are unchanged. Do not claim a library artifact from373 opened sources.
+
+When free space is close to the reserve, an idle worker's shrinking-only cleanup
+can request a stricter absolute cap sized above its current output footprint and
+small receipt/log growth. For example, a14GiB cleanup cap may admit standard
+scoped pruning when a16GiB build reservation cannot. This raises no cap and never
+lowers the150GiB reserve. Preserve pins, current warm caches, raw evidence and
+other checkouts; use the usual16GiB cap again for compiler qualification. Do not
+run a build under an unreviewed cleanup budget or repeatedly retry admission
+while a peer is between acquired and supervised states.
 
 Keep at most two heavy jobs globally, one per worktree, two Cargo/test threads,
 16GiB absolute output caps and150GiB free reserve. B and C may each use one
