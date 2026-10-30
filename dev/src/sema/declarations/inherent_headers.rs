@@ -6,8 +6,11 @@ use crate::{
         model::{ItemContext, Namespace, Origin},
         names::NameId,
     },
-    sema::{associated::OwnerKind, methods::buckets::Bucket},
-    types::{ItemId, subject_head::Head},
+    sema::{
+        associated::OwnerKind,
+        methods::buckets::{Bucket, Target},
+    },
+    types::{ItemId, Store, subject_head::Head},
 };
 #[cfg(test)]
 #[path = "../../../tests/invariants/inherent_headers.rs"]
@@ -16,11 +19,11 @@ mod tests;
 #[derive(Default)]
 pub(super) struct Pending {
     owners: HashMap<DefId, Members>,
-    buckets: HashMap<(Option<Head>, NameId), HashSet<DefId>>,
+    buckets: HashMap<(Option<Target>, NameId), HashSet<DefId>>,
 }
 
 struct Members {
-    head: Option<Head>,
+    head: Option<Target>,
     all_marked: bool,
     declarations: Vec<(NameId, DefId)>,
 }
@@ -47,19 +50,26 @@ impl Pending {
 
     #[cfg(test)]
     fn contains(&self, nominal: ItemId, name: NameId) -> bool {
-        self.contains_head(Head::Nominal(nominal), name)
+        self.contains_target(Target::Shape(Head::Nominal(nominal)), name)
     }
 
-    pub(super) fn contains_head(&self, head: Head, name: NameId) -> bool {
-        self.buckets.contains_key(&(Some(head), name)) || self.buckets.contains_key(&(None, name))
+    pub(super) fn contains_head(&self, store: &Store, head: Head, name: NameId) -> bool {
+        Target::of(store, head).is_some_and(|target| self.contains_target(target, name))
+    }
+    fn contains_target(&self, target: Target, name: NameId) -> bool {
+        self.buckets.contains_key(&(Some(target), name)) || self.buckets.contains_key(&(None, name))
     }
 
     pub(super) fn dependencies(&self, nominal: ItemId, name: NameId) -> Vec<DefId> {
-        self.head_dependencies(Head::Nominal(nominal), name)
+        self.target_dependencies(Target::Shape(Head::Nominal(nominal)), name)
     }
 
-    pub(super) fn head_dependencies(&self, head: Head, name: NameId) -> Vec<DefId> {
-        let mut owners: Vec<_> = [Some(head), None]
+    pub(super) fn head_dependencies(&self, store: &Store, head: Head, name: NameId) -> Vec<DefId> {
+        Target::of(store, head)
+            .map_or_else(Vec::new, |target| self.target_dependencies(target, name))
+    }
+    fn target_dependencies(&self, target: Target, name: NameId) -> Vec<DefId> {
+        let mut owners: Vec<_> = [Some(target), None]
             .into_iter()
             .flat_map(|head| {
                 self.buckets
@@ -128,7 +138,10 @@ impl Checker<'_> {
                 pending.owners.insert(
                     owner.self_definition,
                     Members {
-                        head: heads.shape(target).unwrap_or_default(),
+                        head: heads
+                            .shape(target)
+                            .unwrap_or_default()
+                            .and_then(|head| Target::of(&self.facts.types, head)),
                         all_marked: true,
                         declarations: Vec::new(),
                     },
@@ -212,14 +225,16 @@ impl Checker<'_> {
             .kind(schema.self_type)
             .ok_or_else(|| self.error(source, "missing inherent target"))?;
         let head = Head::canonical(actual);
-        if members.head.is_some_and(|reserved| reserved != head) {
+        let target = Target::of(&self.facts.types, head)
+            .ok_or_else(|| self.error(source, "inherent owner has no actual principal or shape"))?;
+        if members.head.is_some_and(|reserved| reserved != target) {
             return Err(self.error(source, "inherent owner disagrees with reserved target head"));
         }
         for (name, member) in members.declarations {
             let context = self.report.definition_item_context(member)?;
-            let bucket = Bucket::declared(head, name)
+            let bucket = Bucket::declared(&self.facts.types, head, name)
                 .ok_or_else(|| Error::unlocated("invalid inherent target head"))?;
-            if matches!(bucket, Bucket::Structural(..))
+            if matches!(bucket, Bucket::Structural(Target::Shape(_), _))
                 && !self.structural_representative(owner, name, member, context)?
             {
                 continue;
