@@ -1,5 +1,5 @@
 {
-  "state": "Independent pinned Rust successor91/91PASS; candidate source checkpoint UNCOMPILED and runtime/transport incomplete",
+  "state": "Local source/typed-header/LowIR/native qualification passed; original pinned Rust91/91 plus envelope4/4 pass; external legacy transport/call protocol remains required",
   "pin": "Rust1.98.0 88d9e12ae178fab0fb5cc050a94da85685d449ea Linuxx86-64",
   "cases": {
     "local-modern.rs": {
@@ -242,6 +242,18 @@
       "rust_metadata": 0,
       "rust_object": 0,
       "candidate_fullchecked": 0
+    },
+    "macro-meta-allowance.rs": {
+      "sha256": "e3c575fc53c28229fbb45c5635a3f15abe65472c15dc6fd1b695671f5eecaee4",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "macro-item-missing-gate.rs": {
+      "sha256": "91e2553576dac3e1511e8a3bab2347c6b74de46d1277ecc872fdd8bc9b0af278",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
     }
   },
   "semantics": "Actual free-function const-generic index declaration; no same-crate rewrites or const/unsafe/API grants. Preserve duplicate and source-order index semantics, including pinned usize normalization.",
@@ -260,5 +272,10 @@
     "successor_plan_sha256": "80d15c8810bb34321bc29aeb81b372a7061e337200d74d843f831b1bc789611b",
     "successor_receipt_sha256": "4d9e486c0e5a69375047bed473195bf5de32ad64eea39cbc3da12ca047e23681",
     "successor_outcome": "91/91 PASS; reference Rust metadata/object only, actual launcher0; no RustGM or native execution claim"
+  },
+  "attribute_envelope_reference": {
+    "receipt": "obj/parallel/legacy-advisory-join-v1/envelope-oracle-v1/receipt.json",
+    "sha256": "c218bba9dd8b917c613977357d2bcd4ea29496b621611ac88294fd318ee06be4",
+    "outcomes": 4
   }
 }

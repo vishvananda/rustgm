@@ -49,14 +49,22 @@ suppresses an optional LLVM argument optimization; it grants neither write nor
 unsafe/const/ABI permission. Current local and imported executable bodies emit
 no such assumption. A future optimizer must preserve authenticated intent across
 imports or remain conservative before using the assumption. The source draft has
-independent Rust evidence; candidate qualification remains pending.
+independent Rust evidence and qualified local/native behavior. Broader imported
+optimizer intent and original library graphs remain required.
 
 The [local legacy const-generic contract](tests/spec/source-legacy-const/README.md)
 validates actual free-function generic headers and index lists. It does not
 rewrite same-crate calls or grant const/unsafe permission. Current metadata
 profiles fence the required external index/call protocol; Rust-positive external
-legacy calls remain declared requirements in PA29. Candidate qualification is
-pending for this source-only phase.
+legacy calls remain declared requirements in PA29. Local source/signature,
+same-crate modern calls and native behavior are qualified; the external protocol
+remains incomplete.
+
+The [const-item advisory contract](tests/spec/source-const-item-calls/README.md)
+validates actual inherent and trait-impl methods without changing const, unsafe
+or mutation legality. Its generated meta attribute allowance follows the real
+attribute envelope; forwarded whole items retain caller provenance. Local/native
+behavior is qualified, while the broader advisory lint producer remains deferred.
 
 The [const-item-call advisory source contract](tests/spec/source-const-item-calls/README.md)
 validates the observed Cell/LazyCell marker on actual impl methods. It grants no

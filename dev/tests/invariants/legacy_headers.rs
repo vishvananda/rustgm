@@ -60,6 +60,7 @@ fn genuine_local_headers_preserve_modern_const_and_function_item_calls() -> Test
         ("fnptr-modern", &[0][..]),
         ("unsafe-modern", &[0][..]),
         ("macro-allowance", &[0][..]),
+        ("macro-meta-allowance", &[0][..]),
     ] {
         let (report, analysis) = checked(name)?;
         let id = function(&report, "f")?;
@@ -91,6 +92,7 @@ fn invalid_header_shapes_owners_forms_and_gates_remain_hard_errors() -> TestResu
         "negative",
         "noninteger",
         "missing-gate",
+        "macro-item-missing-gate",
         "duplicate",
     ] {
         let error = checked(name)

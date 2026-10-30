@@ -14,12 +14,14 @@ fn checked(name: &str) -> TestResult<(Report, pipeline::Analysis)> {
     let analysis = pipeline::analyze_source(&report).map_err(|error| format!("{name}: {error}"))?;
     Ok((report, analysis))
 }
-fn lower((report, analysis): (Report, pipeline::Analysis)) -> TestResult {
+fn lower(
+    (report, analysis): (Report, pipeline::Analysis),
+) -> TestResult<crate::lowir::program::Program> {
     let pipeline::Analysis {
         mut facts,
         prepared,
     } = analysis;
-    crate::lower::instances::build_roots_prepared(
+    Ok(crate::lower::instances::build_roots_prepared(
         &report,
         &mut facts,
         crate::lower::Roots {
@@ -27,8 +29,7 @@ fn lower((report, analysis): (Report, pipeline::Analysis)) -> TestResult {
             exports: &[],
         },
         prepared,
-    )?;
-    Ok(())
+    )?)
 }
 fn function<'a>(report: &'a Report, name: &str) -> TestResult<(usize, &'a Definition)> {
     report
@@ -144,6 +145,33 @@ fn marker_grants_no_const_unsafe_or_shared_reference_mutation_permission() -> Te
             expected.iter().any(|word| text.contains(word)),
             "{name}: {text}"
         );
+    }
+    Ok(())
+}
+
+#[test]
+fn actual_advisory_bodies_emit_local_native_roots_without_metadata_publication() -> TestResult {
+    for (name, fixture, expression) in [
+        ("advisory-mutation", "mutation", "observe()"),
+        ("advisory-const", "const-allowed", "V"),
+        ("advisory-unsafe", "unsafe-allowed", "observe()"),
+    ] {
+        let source = format!(
+            "{}\n#[unsafe(no_mangle)]pub extern \"C\" fn native_observed()->u64{{{expression} as u64}}\n",
+            input(fixture)?
+        );
+        let report = test_source::resolve(&source, true)?;
+        let analysis = pipeline::analyze_source(&report)?;
+        let program = lower((report, analysis))?;
+        let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../obj/parallel/legacy-advisory-join-v1/candidate-native")
+            .join(name);
+        std::fs::create_dir_all(&folder)?;
+        std::fs::write(folder.join("source.rs"), source)?;
+        crate::lowir::writer::write(
+            &program,
+            &mut std::fs::File::create(folder.join("provider.lowir"))?,
+        )?;
     }
     Ok(())
 }

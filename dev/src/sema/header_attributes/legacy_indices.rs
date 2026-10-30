@@ -56,14 +56,10 @@ pub(in crate::sema) fn consume(
     facts.reserve_must_use_source(key, attribute.span)?;
     let error = |message: &str| Error::at(key.file, attribute.span.start, message);
     let unit = report.package.unit(key.file);
-    let name = forest
-        .tree(attribute.path.start)
-        .ok_or_else(|| error("legacy marker name disappeared"))?
-        .span;
     if !report.package.requested_internal_attributes()
         && !allowances.allows_at(
             key.file,
-            name,
+            attribute.span,
             &crate::resolve::bindings::FeatureName::new("rustc_attrs").map_err(error)?,
         )?
     {

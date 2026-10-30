@@ -114,6 +114,22 @@ actual parsed root request or token-origin macro allowance in every crate mode.
 The [source checkpoint](docs/pa31-advisory-source-checkpoint.md) records the
 current backend boundary and deferred advisory work.
 
+Attribute feature queries follow the pinned gate's actual construct span.
+Unstable builtin attributes use their retained `#` through `]` envelope: an
+allowing macro can generate `#[$meta]` while the captured name keeps its caller
+context. A forwarded whole item retains its original `#` and gains no allowance.
+Use the existing paid macro session and authenticate the retained attribute,
+configured owner and source image before publishing the declaration. Do not
+change general token provenance or grant a captured name a new permission.
+
+Local legacy const-generic indices belong to the actual free function. Complete
+their contract only when its owned const formals and typed signature are
+published; preserve list order, repeated indices and nested function-pointer
+lifetime binders. This never rewrites a same-crate call. External legacy calls
+require the real metadata indices and argument-extraction protocol, with the
+ordinary const, unsafe and API checks; profiles without that protocol remain
+explicitly fenced.
+
 Follow the [library bootstrap plan](docs/library-bootstrap-roadmap.md). Compile
 ordinary library definitions, generic bodies and algorithms from pinned upstream
 sources. Bootstrap declaration/body factories are temporary: a source sysroot

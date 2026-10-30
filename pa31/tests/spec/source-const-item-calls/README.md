@@ -31,4 +31,10 @@ Pinned Rust metadata/object observations matched all 76 successor outcomes. The
 first run matched 70/72: the meta-capture allowing macro was wrongly predicted
 to reject. Original source and prediction history are retained. Genuine macro
 meta emission accepts; a passthrough item and a macro without the allowance
-reject. Candidate qualification and measured transient costs remain pending.
+reject. Joined candidate qualification passes40 controls with strict Clippy and
+six affected text suites. Genuine runtime mutation, const evaluation and unsafe
+calls produce9/7/7 through local library roots and the locked backend, matching
+independent Rust. The local-root API preserves these complete source declarations
+without requesting public nominal metadata; that metadata profile remains a
+separate required gap. Width8/32/128 pays328/1026/3794 work and2080/9120/36320
+bytes, with transient Draft32/Entry24/key12 and unchanged Node36/Body456.
