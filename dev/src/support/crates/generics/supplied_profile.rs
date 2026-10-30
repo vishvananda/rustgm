@@ -16,32 +16,7 @@ pub(super) fn validate(
         return Err("provided source data requires its own Rust2024 provider profile");
     }
     functions::bindings(rows, headers, work, functions::BindingProfile::Provided)?;
-    for original in &rows.originals {
-        for projection in &original.projections {
-            work.charge(1)?;
-            if matches!(projection.base, s::Place::Temporary(_)) {
-                return Err(
-                    "source SSA projection bases require their explicit v9 ordinary profile",
-                );
-            }
-        }
-        for value in &original.values {
-            work.charge(1)?;
-            if matches!(
-                value.kind,
-                s::ValueKind::Read(s::Place::Temporary(_))
-                    | s::ValueKind::Borrow(s::Place::Temporary(_))
-            ) {
-                return Err("source SSA reads require their explicit v9 ordinary profile");
-            }
-            if matches!(value.kind, s::ValueKind::Scalar(_)) {
-                return Err("source scalar operation requires its explicit v4 ordinary profile");
-            }
-            if matches!(value.kind, s::ValueKind::ScalarCast(_)) {
-                return Err("source scalar cast requires its explicit v9 ordinary profile");
-            }
-        }
-    }
+    original_operations(rows, work)?;
     for header in &rows.traits {
         work.charge(1)?;
         if header.flags.bits() & s::TraitFlags::RESTRICTED_IMPL != 0 {
@@ -113,4 +88,35 @@ pub(super) fn validate(
         }
     }
     Ok(headers.numbering(work)?.peak_bytes())
+}
+
+/// Supplied originals cannot inherit ordinary-profile operation capabilities.
+fn original_operations(rows: &SourceRows, work: &mut Work) -> Result<(), &'static str> {
+    for original in &rows.originals {
+        for projection in &original.projections {
+            work.charge(1)?;
+            if matches!(projection.base, s::Place::Temporary(_)) {
+                return Err(
+                    "source SSA projection bases require their explicit v9 ordinary profile",
+                );
+            }
+        }
+        for value in &original.values {
+            work.charge(1)?;
+            if matches!(
+                value.kind,
+                s::ValueKind::Read(s::Place::Temporary(_))
+                    | s::ValueKind::Borrow(s::Place::Temporary(_))
+            ) {
+                return Err("source SSA reads require their explicit v9 ordinary profile");
+            }
+            if matches!(value.kind, s::ValueKind::Scalar(_)) {
+                return Err("source scalar operation requires its explicit v4 ordinary profile");
+            }
+            if matches!(value.kind, s::ValueKind::ScalarCast(_)) {
+                return Err("source scalar cast requires its explicit v9 ordinary profile");
+            }
+        }
+    }
+    Ok(())
 }
