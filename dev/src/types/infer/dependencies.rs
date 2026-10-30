@@ -1,4 +1,7 @@
 //! Resume input queries only when one of their unresolved leaves changes.
+#[cfg(test)]
+#[path = "../../../tests/invariants/float_fallback.rs"]
+mod float_tests;
 mod numeric;
 #[cfg(test)]
 #[path = "../../../tests/invariants/numeric_frontiers.rs"]
@@ -48,6 +51,7 @@ impl Visit {
 enum Fallback {
     Disabled,
     Predicate,
+    Float32(TermId),
     Projection(TermId),
 }
 impl Fallback {
@@ -63,7 +67,6 @@ struct Watch {
     blockers: usize,
     walking: usize,
     numeric_queued: bool,
-    numeric_open: bool,
     changes: bool,
     state: State,
 }
@@ -171,7 +174,6 @@ impl Storage {
             blockers: 0,
             walking: 0,
             numeric_queued: false,
-            numeric_open: false,
             changes,
             state: State::Initial,
         });

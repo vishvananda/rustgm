@@ -120,12 +120,17 @@ impl Notifications {
         store: &Store,
         index: usize,
         goal: &Predicate,
+        float_default: Option<crate::types::infer::TermId>,
     ) -> Result<(), Error> {
         let data = self.data.get_or_insert_with(Default::default);
         if let std::collections::hash_map::Entry::Vacant(entry) = data.by_goal.entry(index) {
             let watch = context.watch_predicate(goal)?;
             entry.insert(watch);
             data.by_watch.insert(watch, index);
+        }
+        if let Some(argument) = float_default {
+            let watch = *data.by_goal.get(&index).ok_or(Error::InvalidIdentity)?;
+            context.prefer_f32(watch, argument)?;
         }
         while let Some(watch) = context.ready_resolution(store)? {
             context.account_work(1)?;

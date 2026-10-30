@@ -16,6 +16,9 @@ pub(super) fn require_role_transport(facts: &Declarations) -> Result<(), &'stati
         .source_bindings
         .as_deref()
         .ok_or("source header graph has no role catalog")?;
+    if catalog.language(LangItem::From).is_some() {
+        return Err("source From contract transport is not implemented");
+    }
     if catalog.language(LangItem::Div).is_some() {
         return Err("source Div contract transport is not implemented");
     }

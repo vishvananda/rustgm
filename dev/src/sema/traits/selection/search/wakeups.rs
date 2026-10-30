@@ -42,12 +42,12 @@ impl Trial {
         index: usize,
     ) -> Result<(), String> {
         let data = self.wakeups.data.get_or_insert_with(Default::default);
+        let goal = self
+            .instance
+            .goals
+            .get(index)
+            .ok_or("missing deferred condition")?;
         if let std::collections::hash_map::Entry::Vacant(entry) = data.by_goal.entry(index) {
-            let goal = self
-                .instance
-                .goals
-                .get(index)
-                .ok_or("missing deferred condition")?;
             let watch = self
                 .inputs
                 .context
@@ -55,6 +55,15 @@ impl Trial {
                 .map_err(inference)?;
             entry.insert(watch);
             data.by_watch.insert(watch, index);
+        }
+        if let Some(argument) =
+            crate::sema::compiler_items::float_default(facts, &mut self.inputs.context, goal)?
+        {
+            let watch = *data.by_goal.get(&index).ok_or("missing condition watch")?;
+            self.inputs
+                .context
+                .prefer_f32(watch, argument)
+                .map_err(inference)?;
         }
         // This condition has consumed its current inputs, including any progress
         // it just published. Preserve notifications for its other dependencies.

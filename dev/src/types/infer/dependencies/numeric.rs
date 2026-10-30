@@ -44,13 +44,10 @@ impl Storage {
         {
             return Ok(());
         }
-        let open = self.watches[id.0 as usize].numeric_ready();
-        let was_open = std::mem::replace(&mut self.watches[id.0 as usize].numeric_open, open);
-        self.queue_numeric(context, id)?;
-        if !open || was_open {
-            return Ok(());
-        }
-        self.notify_numeric_peers(context, id)
+        // Queue this changed watch. If it can default a shared root, ordinary
+        // dependency wakeups deliver that binding to every peer. Broadcasting
+        // on each registration would visit a shared fanout quadratically.
+        self.queue_numeric(context, id)
     }
     fn notify_numeric_peers(&mut self, context: &mut Context, id: WatchId) -> Result<(), Error> {
         // A previously blocked shared numeric leaf may now be eligible. Only
@@ -80,7 +77,9 @@ impl Storage {
             .watches
             .get(id.0 as usize)
             .ok_or(Error::InvalidIdentity)?;
-        if watch.fallback.enabled() {
+        if watch.fallback.enabled() && !watch.numeric_ready() {
+            // Only a blocked watch can have kept an otherwise ready peer off
+            // the numeric queue. Ready cancellation supplies no new binding.
             self.notify_numeric_peers(context, id)?;
         }
         self.disable_fallback(id);
@@ -177,6 +176,10 @@ impl Storage {
                 if visit != Visit::Numeric {
                     continue;
                 }
+                let Dependency::Type(term) = dependency else {
+                    return Err(Error::InvalidIdentity);
+                };
+                let mut float32 = false;
                 if let Some(waiters) = self.waiting.get(&dependency) {
                     for &other in waiters {
                         context.step()?;
@@ -186,24 +189,28 @@ impl Storage {
                         {
                             blocked = true;
                         }
+                        if watch.seen.get(&dependency) == Some(&Visit::Numeric)
+                            && let Fallback::Float32(argument) = watch.fallback
+                            && context.root(argument)? == term
+                        {
+                            float32 = true;
+                        }
                     }
                 }
-                let Dependency::Type(term) = dependency else {
-                    return Err(Error::InvalidIdentity);
-                };
                 Self::prepay(
                     context,
-                    Growth::vector::<TermId>(seeds.len(), seeds.capacity(), 1),
+                    Growth::vector::<(TermId, bool)>(seeds.len(), seeds.capacity(), 1),
                 )?;
-                seeds.push(term);
+                seeds.push((term, float32));
             }
             if blocked {
                 continue;
             }
-            for term in seeds {
+            for (term, float32) in seeds {
                 let root = context.root(term)?;
                 let primitive = match context.terms[root.0 as usize].value {
                     Value::Variable(Domain::Integer) => crate::types::Primitive::I32,
+                    Value::Variable(Domain::Float) if float32 => crate::types::Primitive::F32,
                     Value::Variable(Domain::Float) => crate::types::Primitive::F64,
                     _ => return Err(Error::InvalidIdentity),
                 };
@@ -217,6 +224,27 @@ impl Storage {
     }
 }
 impl Context {
+    /// Attach a preference to this live predicate, never to a numeric root globally.
+    /// The semantic caller authenticates the source language contract first.
+    pub(crate) fn prefer_f32(&mut self, id: WatchId, argument: TermId) -> Result<(), Error> {
+        self.step()?;
+        if self.unresolved_domain(argument)? != Some(Domain::Float) {
+            return Err(Error::InvalidIdentity);
+        }
+        let watch = self
+            .dependencies
+            .as_mut()
+            .and_then(|storage| storage.watches.get_mut(id.0 as usize))
+            .ok_or(Error::InvalidIdentity)?;
+        if !matches!(watch.fallback, Fallback::Predicate | Fallback::Float32(_))
+            || watch.state == State::Cancelled
+        {
+            return Err(Error::InvalidIdentity);
+        }
+        watch.fallback = Fallback::Float32(argument);
+        Ok(())
+    }
+
     /// Observe a normalization's inputs, excluding only its own result root
     /// from input-normalization barriers. The ticket supplies no proof.
     pub(crate) fn watch_normalization(&mut self, input: TermId) -> Result<WatchId, Error> {

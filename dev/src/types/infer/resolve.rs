@@ -49,6 +49,21 @@ impl Resolution {
 }
 
 impl Context {
+    /// Inspect only the resolved root; this never normalizes or defaults inputs.
+    pub(crate) fn is_primitive(
+        &mut self,
+        term: TermId,
+        expected: super::Primitive,
+    ) -> Result<bool, Error> {
+        self.step()?;
+        let root = self.root(term)?;
+        Ok(match self.terms[root.0 as usize].value {
+            Value::Known(ty) => ty == TypeId::primitive(expected),
+            Value::Construct(super::Constructor::Primitive(found)) => found == expected,
+            _ => false,
+        })
+    }
+
     /// The unresolved variable domain restricts numeric trait candidate lookup.
     /// # Errors
     /// Rejects an invalid inference identity.

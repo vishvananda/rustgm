@@ -1,6 +1,8 @@
 //! Source roles become usable only after their actual complete headers validate.
 mod completion_set;
+mod conversion;
 mod copying;
+pub(crate) use conversion::float_default;
 mod parameter_types;
 #[path = "roles/interval_members.rs"]
 pub(in crate::sema::compiler_items) mod range_members;
@@ -78,7 +80,7 @@ impl Catalog {
     }
 }
 
-const TRAIT_ROLES: [LangItem; 19] = [
+const TRAIT_ROLES: [LangItem; 20] = [
     LangItem::Clone,
     LangItem::Copy,
     LangItem::LegacyReceiver,
@@ -98,6 +100,7 @@ const TRAIT_ROLES: [LangItem; 19] = [
     LangItem::Unpin,
     LangItem::UnsafeUnpin,
     LangItem::ConstParamTy,
+    LangItem::From,
 ];
 
 pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
@@ -134,6 +137,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         let header = header(report, facts, declaration, role)?;
         let self_type = header.self_type;
         match role {
+            LangItem::From => {}
             LangItem::ConstParamTy => parameter_types::validate(
                 report,
                 facts,
@@ -318,6 +322,14 @@ fn header<'a>(
 ) -> Result<super::headers::Trait<'a>, Error> {
     let error = |message| Declarations::error(report, declaration.origin, message);
     let header = super::headers::Trait::source(report, facts, declaration).map_err(error)?;
+    if role == LangItem::From {
+        // This role constrains the trait's target and arity, not its methods,
+        // safety or constness. Its numeric consumer supplies no trait proof.
+        header
+            .profile(&facts.types, header.flags, 1)
+            .map_err(error)?;
+        return Ok(header);
+    }
     // Clone may be an ordinary or const source trait. Preserve that actual
     // declaration fact; role admission supplies no executable const capability.
     let constant = if role == LangItem::Clone {

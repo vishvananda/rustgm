@@ -287,6 +287,12 @@ impl Checker<'_> {
         Ok(None)
     }
     fn observe_trait_goal(&mut self, node: NodeId, index: usize) -> Result<(), Error> {
+        let float_default = crate::sema::compiler_items::float_default(
+            self.facts,
+            &mut self.state.infer,
+            &self.state.call_types.obligations[index].1,
+        )
+        .map_err(|reason| self.error(node, reason))?;
         self.state
             .notifications
             .observe(
@@ -294,6 +300,7 @@ impl Checker<'_> {
                 &self.facts.types,
                 index,
                 &self.state.call_types.obligations[index].1,
+                float_default,
             )
             .map_err(|e| self.error(node, e))
     }

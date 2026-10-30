@@ -29,12 +29,12 @@ fn projection_and_trait_events_reach_their_original_owners() -> TestResult {
     let second = context.variable(Domain::Any)?;
     let a = goal(&mut context, &mut store, first)?;
     let b = goal(&mut context, &mut store, second)?;
-    events.observe(&mut context, &store, 0, &a)?;
-    events.observe(&mut context, &store, 1, &b)?;
+    events.observe(&mut context, &store, 0, &a, None)?;
+    events.observe(&mut context, &store, 1, &b, None)?;
     let unit = context.known(&store, TypeId::UNIT)?;
     context.equate(&store, projection, unit)?;
     context.equate(&store, second, unit)?;
-    events.observe(&mut context, &store, 0, &a)?;
+    events.observe(&mut context, &store, 0, &a, None)?;
     assert_eq!(
         events.next_projection(&mut context, &store)?,
         Some(projection_watch)
@@ -61,7 +61,7 @@ fn independent_pending_goals_have_linear_registration_and_delivery_work() -> Tes
         for index in 0..count {
             let input = context.variable(Domain::Any)?;
             let predicate = goal(&mut context, &mut store, input)?;
-            events.observe(&mut context, &store, index, &predicate)?;
+            events.observe(&mut context, &store, index, &predicate, None)?;
             inputs.push(input);
         }
         let registration = context.steps;
@@ -99,8 +99,8 @@ fn owned_prefix_events_do_not_consume_projection_or_foreign_goal_events() -> Tes
     let second = context.variable(Domain::Any)?;
     let first_goal = goal(&mut context, &mut store, first)?;
     let second_goal = goal(&mut context, &mut store, second)?;
-    events.observe(&mut context, &store, 0, &first_goal)?;
-    events.observe(&mut context, &store, 1, &second_goal)?;
+    events.observe(&mut context, &store, 0, &first_goal, None)?;
+    events.observe(&mut context, &store, 1, &second_goal, None)?;
     let projection = context.variable(Domain::Any)?;
     let watch = context.watch_resolution(&[projection], &[])?;
     let unit = context.known(&store, TypeId::UNIT)?;
