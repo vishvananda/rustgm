@@ -424,10 +424,11 @@ impl Checker<'_> {
         let mut allowances = self.report.macro_allowances();
         for index in 0..self.state.calls.len() {
             let (node, term) = self.state.calls[index];
-            self.check_const_library_call(node, solved, &mut allowances)?;
             if matches!(self.kind(node), crate::syntax::ast::Kind::For { .. }) {
+                // publish_for_plans checked each retained callable separately.
                 continue;
             }
+            self.check_const_library_call(node, solved, &mut allowances)?;
             let key = self.key(node);
             self.facts
                 .node_mut(key)

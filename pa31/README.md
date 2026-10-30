@@ -146,6 +146,14 @@ and unsafe checks; the marker grants no intrinsic or callable permission. The
 [finite checkpoint](../docs/pa31-ordinary-nounwind-checkpoint.md) leaves PA39's
 unwind boundaries and the original unlikely/ColdPath graph explicit.
 
+The [MIR-inline restriction](tests/spec/source-no-mir-inline/README.md)
+authenticates actual internal-feature permission and a unique active nonforeign
+function/method owner. The current frontend has no Rust MIR inliner; adjacent
+native inline hints retain their meanings. A future MIR-like pass must first
+preserve authenticated imported intent. The source marker grants no const,
+unsafe, API, layout or intrinsic capability. The complete original pointer and
+MaybeUninit body graph remains required independently of this header contract.
+
 The [selected source handler checkpoint](../docs/pa31-source-panic-handler-checkpoint.md)
 executes genuine Location/PanicInfo/panic/handler bodies through LowIR and the
 native backend, with normal/drop and handler/abort traces. Its selected local

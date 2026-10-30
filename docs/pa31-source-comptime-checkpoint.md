@@ -58,7 +58,7 @@ guard is weakened. Entry-free CLI library export retains this metadata fence;
 native reuse above is from the genuine private pipeline, not an invented CLI
 export capability. Raw predecessor validation failures remain under obj.
 
-The unchanged original core now clears type_id_vtable's marker and stops at
+At the v8 checkpoint, unchanged core clears type_id_vtable's marker and stops at
 ptr/mod.rs1445 rustc_no_mir_inline on swap_chunk. The observed CLI above opens 375
 sources from the 722-file pinned inventory in 13.62 seconds, with unchanged target
 and explicit work 14500624/attempted 1 GiB/retained 64 MiB limits. Strict mode

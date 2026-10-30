@@ -300,6 +300,17 @@ transport, including otherwise const-capable profiles. The
 [compile-time-only checkpoint](docs/pa31-source-comptime-checkpoint.md) records
 the actual source/native opponents and remaining reflection/library work.
 
+The source rustc_no_mir_inline restriction authenticates the feature, active
+function/method owner, exact effect, nonforeign definition and source image.
+Use a prepaid transient declaration draft inside the existing attribute and
+definition walks; do not add a persistent absence or permission query. There is
+currently no Rust MIR inlining pass locally or after import, so the restriction
+requires no native inline(never) mapping or new metadata fence. Existing native
+inline hints, const/API/unsafe obligations and code generation remain independent.
+A future MIR-like inliner must first retain the authenticated imported contract;
+missing encoded intent cannot become permission. See the
+[owning source contract](pa31/tests/spec/source-no-mir-inline/README.md).
+
 Local structural inherent ownership consumes the actual crate policy and complete
 member inventory. Head/name/context buckets exclude unrelated work; full Self,
 const arguments, caller conditions and visibility still decide applicability.
