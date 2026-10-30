@@ -210,7 +210,7 @@ fn malformed_recorded_inputs() -> Result {
         match opponent {
             12 => {
                 availability.declarations[0].declaration =
-                    crate::support::crates::owner_catalog::DeclarationRef(u32::MAX)
+                    crate::support::crates::owner_catalog::DeclarationRef(u32::MAX);
             }
             13 => availability.declarations[0].constant = Some(s::AvailabilityRef(0)),
             14 => availability.bindings[0].regular = Some(s::AvailabilityRef(0)),
