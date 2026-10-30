@@ -655,7 +655,6 @@ fn admitted_convention(
                 | NamespaceProfile::Callables
                 | NamespaceProfile::Safety
                 | NamespaceProfile::Conversions
-                | NamespaceProfile::Conversions
         ) && convention == Convention::C
             && rows
                 .exact_callables

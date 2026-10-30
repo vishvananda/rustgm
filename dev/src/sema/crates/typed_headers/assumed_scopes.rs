@@ -11,7 +11,7 @@ use crate::{
         crates::typed_headers::{
             error,
             predicate_remap::{self, translation},
-            recipe_cursor::{Budget, Demand, Dependency, Port, Reserved},
+            recipe_cursor::{Budget, Cursor, Demand, Dependency, Port, Recorded, Reserved},
             staged_headers::environments::{self, Accounting},
         },
         declaration_inputs::Input,
@@ -378,8 +378,8 @@ impl environments::LeafClauses for ImportedLeaves<'_> {
 mod body_requests;
 pub(in crate::sema::crates::typed_headers) fn ordinary_requests(
     body: crate::support::crates::owner_catalog::BodyRef,
-    port: super::super::recipe_cursor::Recorded<'_, '_, '_>,
-    cursor: &mut super::super::recipe_cursor::Cursor,
+    port: Recorded<'_, '_, '_>,
+    cursor: &mut Cursor,
     applications: &mut impl Cache,
     store: &mut crate::types::Store,
     work: &mut ReservationWork,

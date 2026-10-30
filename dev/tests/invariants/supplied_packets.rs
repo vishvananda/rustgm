@@ -306,8 +306,71 @@ fn functions_reader_denies_each_wider_tag_before_allocation() {
     denied(&[1], |read| operation_columns::place_read(read).map(|_| ()));
     let count = 1_u32.to_le_bytes();
     denied(&count, |read| {
-        read.provided_list::<u32>(1, 0, Input::id).map(|_| ())
+        read.regional_list::<u32>(1, 0, Input::id).map(|_| ())
     });
+}
+
+#[test]
+fn version_nine_regional_data_does_not_grant_provided_authority() -> Result {
+    let mut encoded = Vec::from(1_u32.to_le_bytes());
+    encoded.extend_from_slice(&7_u32.to_le_bytes());
+    for profile in [
+        s::Profile::Source2024Functions,
+        s::Profile::Source2024FunctionContracts,
+        s::Profile::Source2024ModuleContracts,
+        s::Profile::Source2024ModuleAvailability,
+        s::Profile::Source2024ModuleFeaturePredicates,
+        s::Profile::Source2024ModuleDefinitions,
+        s::Profile::Source2024ModuleCompatibility,
+        s::Profile::Source2024ModuleCallables,
+        s::Profile::Source2024ModuleSafety,
+    ] {
+        let mut reader = Reader::new(&encoded);
+        let mut input = Input {
+            reader: &mut reader,
+            bytes: 0,
+            base: 0,
+            profile,
+        };
+        assert!(
+            input.regional_list::<u32>(1, 0, Input::id).is_err(),
+            "{profile:?}"
+        );
+        assert_eq!(input.bytes, 0, "{profile:?} allocated regional data");
+    }
+    for profile in [
+        s::Profile::Source2024Provided,
+        s::Profile::Source2024ProvidedContracts,
+        s::Profile::Source2024ProvidedCurrent,
+        s::Profile::Source2024ModuleConversions,
+    ] {
+        let mut reader = Reader::new(&encoded);
+        let mut input = Input {
+            reader: &mut reader,
+            bytes: 0,
+            base: 0,
+            profile,
+        };
+        assert_eq!(input.regional_list::<u32>(1, 0, Input::id)?, [7]);
+        assert!(input.bytes > 0);
+        assert_eq!(
+            input.require_provided("provided only").is_ok(),
+            !profile.conversion_roles()
+        );
+        assert!(reader.done());
+    }
+    // A real defining environment, rather than the list reader's capability,
+    // is still rejected before its provided-only owner fields are decoded.
+    let mut reader = Reader::new(&[3]);
+    let mut input = Input {
+        reader: &mut reader,
+        bytes: 0,
+        base: 0,
+        profile: s::Profile::Source2024ModuleConversions,
+    };
+    assert!(relation_columns::environment_read(&mut input).is_err());
+    assert_eq!(input.bytes, 0);
+    Ok(())
 }
 
 #[test]
