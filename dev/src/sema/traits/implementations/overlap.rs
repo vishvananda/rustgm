@@ -71,3 +71,6 @@ pub(in crate::sema) fn reference_comparison(
     let possible = selection::may_overlap(facts, &mut context, &prerequisite)?;
     Ok((possible, context.steps))
 }
+
+#[cfg(test)]
+pub(in crate::sema) fn input_layout() -> usize { size_of::<inputs::Inputs>() }

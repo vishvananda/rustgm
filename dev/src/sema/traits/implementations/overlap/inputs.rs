@@ -110,7 +110,12 @@ impl Inputs {
         }
         if count != 0 {
             let growth = crate::support::retained::Growth::vector::<infer::predicates::Predicate>(self.traits.len(), self.traits.capacity(), count);
-            crate::sema::header_attributes::reserve_source_contracts(facts, growth.work.saturating_add(count), growth.bytes).map_err(|e| e.to_string())?;
+            // Ordinary PA20 crates have no source-header ledger. Do not create
+            // one after declaration completion merely to account temporary work.
+            context.account_work(growth.work.saturating_add(count).saturating_add(growth.bytes)).map_err(|e| e.to_string())?;
+            if facts.must_use_contracts.as_deref().and_then(|owner| owner.headers.as_ref()).is_some() {
+                crate::sema::header_attributes::charge_attribute_retention(facts, growth.work.saturating_add(count), growth.bytes).map_err(|e| e.to_string())?;
+            }
             self.traits.try_reserve(count).map_err(|_| "coherence trait conditions allocation failed")?;
         }
         Ok(())

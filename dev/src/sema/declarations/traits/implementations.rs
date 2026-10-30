@@ -5,6 +5,7 @@ mod copying;
 mod implementation_domains;
 mod methods;
 mod negative;
+mod reservation_rules;
 mod orphans;
 mod portable_impls;
 mod readiness;

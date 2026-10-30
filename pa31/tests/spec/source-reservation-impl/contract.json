@@ -203,5 +203,18 @@
     "oracle-v1 associated_type_probe was predicted accepted; rustc E0277 S:A rejects its actual associated type definition. Oracle-v2 retained same bytes with corrected prediction and proves independent real impl case accepted."
   ],
   "producer": "actual name-value string attribute, rustc_attrs/real macro allowance, positive trait impl owner, current annotation witness/message, typed polarity independent constness",
-  "semantics": "Use excludes reservation; compatible coherence candidate prevents closed absence, incompatible Self/arguments do not. Direct overlap allowed without specialization. Full member/body checking retained; no own Self:Trait assumption. Ordinary positive and explicit assumptions remain authoritative."
+  "semantics": "Use excludes reservation; compatible coherence candidate prevents closed absence, incompatible Self/arguments do not. Direct overlap allowed without specialization. Full member/body checking retained; no own Self:Trait assumption. Ordinary positive and explicit assumptions remain authoritative.",
+  "new_declared_cases": {
+    "module-provider": {
+      "metadata_status": 0,
+      "object_status": 0,
+      "candidate_export": "reservation implementation transport requires a wider metadata profile",
+      "sha256": "723a42c1c0e888f29e8e3ac0685e06f09cd8827ffc8605e485a6e5666e82bd5a"
+    },
+    "pa20_local_bound": {
+      "closed-local": 0,
+      "real-bound-overlap": 1,
+      "open-bound-overlap": 1
+    }
+  }
 }

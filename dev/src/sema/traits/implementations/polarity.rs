@@ -20,6 +20,7 @@ pub(super) enum Status {
     ReservationChecked,
 }
 impl Status {
+    /// Declaration conformance only; reservations never authorize selection.
     pub(super) fn validated(self) -> bool {
         matches!(
             self,

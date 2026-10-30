@@ -31,7 +31,13 @@ fn reservation_headers_keep_ordinary_assumptions_and_independent_implementations
         "coherence_incompatible_subject",
         "coherence_incompatible_arguments",
     ] {
-        checked(name)?;
+        let (report, analysis) = checked(name)?;
+        if name == "associated_with_real_impl" {
+            let function = analysis.facts.functions.iter().find(|function|
+                report.package.names.get(report.resolution.definitions[function.definition.0 as usize].name) == "call").ok_or("actual projected signature")?;
+            let Some(Kind::Function { parameters, .. }) = analysis.facts.types.kind(function.signature) else { return Err("actual function signature".into()); };
+            assert_eq!(analysis.facts.types.list(parameters), Some([crate::types::TypeId::primitive(crate::types::Primitive::U32)].as_slice()));
+        }
     }
     Ok(())
 }
@@ -49,10 +55,16 @@ fn reservation_never_supplies_call_projection_const_or_own_body_evidence() -> Te
         "wf_positive_control",
         "coherence_reserved",
     ] {
-        let outcome = test_source::resolve(&input(name)?, true)
+        let outcome: TestResult<pipeline::Analysis> = test_source::resolve(&input(name)?, true)
             .map_err(Into::into)
             .and_then(|report| pipeline::analyze_source(&report).map_err(Into::into));
-        assert!(outcome.is_err(), "{name}: accepted without genuine proof");
+        let error = outcome.err().ok_or_else(|| format!("{name}: accepted without genuine proof"))?.to_string();
+        let expected: &[&str] = match name {
+            "coherence_reserved" => &["overlap", "coherence"],
+            "const_body_restriction" => &["const"],
+            _ => &["trait", "implementation", "associated"],
+        };
+        assert!(expected.iter().any(|word| error.contains(word)), "{name}: {error}");
     }
     Ok(())
 }
@@ -72,10 +84,17 @@ fn reservation_attribute_keeps_actual_gate_owner_signature_safety_and_duplicate_
         "wrong_signature",
         "unsafe_missing",
     ] {
-        let outcome = test_source::resolve(&input(name)?, true)
+        let outcome: TestResult<pipeline::Analysis> = test_source::resolve(&input(name)?, true)
             .map_err(Into::into)
             .and_then(|report| pipeline::analyze_source(&report).map_err(Into::into));
-        assert!(outcome.is_err(), "{name}: accepted malformed declaration");
+        let error = outcome.err().ok_or_else(|| format!("{name}: accepted malformed declaration"))?.to_string();
+        let expected: &[&str] = match name {
+            "missing_method" | "wrong_signature" => &["method", "signature"],
+            "unsafe_missing" => &["safety", "unsafe"],
+            "missing_gate" => &["rustc_attrs"],
+            _ => &["reservation"],
+        };
+        assert!(expected.iter().any(|word| error.contains(word)), "{name}: {error}");
     }
     Ok(())
 }
@@ -154,6 +173,13 @@ fn reservation_source_witnesses_are_current_and_failed_queries_retain_work() -> 
             .is_err()
     );
     assert!(producer.work().steps > before.steps);
+    let warm = producer.work();
+    producer.declaration_annotation(&report.package, key).map_err(crate::resolve::package::Error::from)?;
+    assert_eq!(producer.work().bytes, warm.bytes);
+    let _ = producer.diagnostic_payload(key, 10_000_000, 0);
+    let failed = producer.work();
+    for _ in 0..2 { assert!(producer.declaration_annotation(&report.package, key).is_err()); }
+    assert!(producer.work().steps >= failed.steps + 2);
     let id = analysis.facts.associated.owner(owner).ok_or("owner")?;
     if let crate::sema::associated::OwnerKind::Impl { polarity, .. } = &mut analysis
         .facts
@@ -209,6 +235,12 @@ fn reservation_work_is_linear_and_hot_layouts_stay_fixed() -> TestResult {
         size_of::<Entry>(),
         size_of::<crate::resolve::lint_policy::DeclarationAnnotation<'_>>()
     );
+    println!("cold coherence inputs={}", overlap::input_layout());
+    assert_eq!(size_of::<Polarity>(), 1);
+    assert_eq!(size_of::<crate::sema::associated::OwnerKind>(), 20);
+    assert_eq!(size_of::<crate::sema::associated::Owner>(), 32);
+    assert_eq!(size_of::<Status>(), 1);
+    assert_eq!(size_of::<Entry>(), 136);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     Ok(())
@@ -235,5 +267,21 @@ fn actual_local_trait_bounds_distinguish_closed_absence_from_real_or_open_overla
         let outcome = pipeline::analyze_source(&report);
         assert_eq!(outcome.is_ok(), accepted, "{name}: {}", outcome.err().map_or(String::new(), |e| e.to_string()));
     }
+    Ok(())
+}
+
+#[test]
+fn failed_coherence_scratch_payment_cannot_publish_a_pair_result() -> TestResult {
+    let (_report, mut analysis) = checked("coherence_incompatible_subject")?;
+    let registry = analysis.facts.generics.implementations.as_ref().ok_or("registry")?;
+    let pair = registry.headers().filter(|header| analysis.facts.types.contains_parameters(header.predicate.ty) == Some(true))
+        .map(|header| (header.predicate, header.owner)).next().ok_or("actual blanket")?;
+    let concrete = registry.headers().find(|header| header.owner != pair.1 && header.predicate.bound == pair.0.bound)
+        .map(|header| (header.predicate, header.owner)).ok_or("actual competing header")?;
+    let _ = crate::sema::header_attributes::reserve_source_contracts(&mut analysis.facts, 0, crate::support::crates::MAX_BYTES);
+    let before = crate::sema::header_attributes::source_contract_costs(&analysis.facts);
+    assert!(overlap::possible(&mut analysis.facts, pair, concrete).is_err());
+    let after = crate::sema::header_attributes::source_contract_costs(&analysis.facts);
+    assert!(after.0 > before.0 && after.1 >= before.1);
     Ok(())
 }

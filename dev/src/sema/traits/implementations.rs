@@ -115,20 +115,20 @@ impl Implementations {
     pub(in crate::sema) fn source_auto_override(&self, item: ItemId, kind: Kind) -> (bool, usize) {
         let identity = Identity::User(item);
         let (specific, first) = self.overriding_bucket(identity, Some(Head::canonical(kind)));
+        if specific { return (true, first); }
         let (generic, second) = self.overriding_bucket(identity, None);
-        (specific || generic, first.saturating_add(second))
+        (generic, first.saturating_add(second))
     }
     fn overriding_bucket(&self, item: Identity, head: Option<Head>) -> (bool, usize) {
         let bucket = self.heads.get(&(item, head));
         // Only explicit positive/negative declarations suppress structural proof.
         // A reservation cannot silently acquire that permission from an index.
-        (
-            bucket
-                .into_iter()
-                .flatten()
-                .any(|&index| self.entries[index].status.polarity() != Polarity::Reservation),
-            1 + bucket.map_or(0, Vec::len),
-        )
+        let mut work = 1_usize;
+        for &index in bucket.into_iter().flatten() {
+            work = work.saturating_add(1);
+            if self.entries[index].status.polarity() != Polarity::Reservation { return (true, work); }
+        }
+        (false, work)
     }
 
     /// Reserve the complete source inventory before any early candidate selection.
@@ -589,6 +589,8 @@ impl Implementations {
             })
             .map(|entry| &entry.value)
     }
+    /// The actual declaration finished conformance. Selection additionally
+    /// authenticates polarity; even a checked reservation supplies no evidence.
     pub fn is_validated(&self, owner: DefId) -> bool {
         self.owners
             .get(&owner)
