@@ -21,6 +21,9 @@ PA25 const-machine95/95 pass, alongside pinned Rust object outcomes, native
 execution, upstream checks and all275 harness tests. The qualification takes
 29.88 seconds after admission, with no compiler rebuild; receipt
 02b26e12eb1a2fcb92085e70a01449328a91ec99a9954a1dca49b1087ceb1faa.
+Full CI40986047683 on public73a1f5a7c is now terminal SUCCESS: both fast and
+qualification jobs pass, including native maintainer checks, debug invariants,
+independent Rust qualification and the complete PA25 const-machine95 corpus.
 Fresh production CLI/native20 operations match
 pinned Rust for all3 accepted programs and the exact target-feature rejection;
 see the same repair evidence.

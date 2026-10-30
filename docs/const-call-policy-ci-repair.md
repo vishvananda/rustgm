@@ -92,3 +92,9 @@ The gate takes29.88 seconds after admission. Receipt:
 The storage wrapper prunes all three newly generated native/object artifacts;
 inputs, raw outputs and receipts remain. This repairs course contracts without
 a compiler change, whole-PA release or new original-core observation.
+
+Full CI40986047683 on public73a1f5a7c subsequently completed successfully.
+Both fast and qualification jobs passed, including native maintainer checks,
+debug invariants, independent Rust qualification and the complete95-case PA25
+const-machine contract. This closes the CI repair; the original core artifact
+and newer worker implementations remain separate unfinished work.

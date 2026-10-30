@@ -1,0 +1,237 @@
+{
+  "status": "required; candidate implementation pending",
+  "profile": "Rust1.98.0/edition2024/Linuxx86-64/panic-abort",
+  "owners": [
+    "PA31 source language and diagnostic identities",
+    "PA9/20 numeric fallback",
+    "PA29 defining and imported role transport"
+  ],
+  "work_units": [
+    "source-declarations",
+    "source-runtime",
+    "generic-transport"
+  ],
+  "oracle_plan_sha256": "2f1ecc3def916a4ae635aae2e13e1ada140f7bcad0b9ae6252ad22eff9984810",
+  "oracle_receipt_sha256": "5096f879c7a4b343ed55a35d7715ebbda49f63b873a00e434c2989db8757664b",
+  "scope": "Independent reference outcomes only; no candidate success, component publication or original core artifact. Every Rust-positive remains required.",
+  "original": {
+    "source": "library/core/src/convert/mod.rs",
+    "commit": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "file_sha256": "95242eb094be9ab087c2bd9673736ff2125abb3430835e6a687d4aecf21625eb",
+    "byte_start": 22640,
+    "byte_end_exclusive": 23206,
+    "fragment_sha256": "2fe2ff0ad6ed849a145447e2438db33af6f4288709e537dba270528bccbe2fbd"
+  },
+  "cases": {
+    "actual-role.rs": {
+      "sha256": "d4244642b2296a94d3433028f789a4231cdf6e26baf73a5ada258cd669e159a6",
+      "rust_object": 0,
+      "candidate_required": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "32\n",
+        "stderr": ""
+      }
+    },
+    "ordinary-lookalike.rs": {
+      "sha256": "7b73d5d1b7ddb9aada4c088c9d3194581a78ff2a1979ddc26ef666e8c8a6b80d",
+      "rust_object": 0,
+      "candidate_required": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "64\n",
+        "stderr": ""
+      }
+    },
+    "explicit-f64.rs": {
+      "sha256": "2afffa56d28946114275c6e33aade0b858e94e202936a0d2140e6d64f2f67bc4",
+      "rust_object": 0,
+      "candidate_required": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "64\n",
+        "stderr": ""
+      }
+    },
+    "explicit-f32.rs": {
+      "sha256": "d7b944195e2147d26c97c1b9c878fb1bc95d4dc4449be1e1256d377eb208060f",
+      "rust_object": 0,
+      "candidate_required": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "32\n",
+        "stderr": ""
+      }
+    },
+    "other-subject.rs": {
+      "sha256": "eccb3fda543cbce60153d512885ca29aaf56a8b8dd568e727078c2c322de59ab",
+      "rust_object": 0,
+      "candidate_required": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "64\n",
+        "stderr": ""
+      }
+    },
+    "renamed-role.rs": {
+      "sha256": "af67c49304ada8eddee0782dfd0755e959ea03302b33a2fa09738a4baa45c904",
+      "rust_object": 0,
+      "candidate_required": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "32\n",
+        "stderr": ""
+      }
+    },
+    "subject-alias.rs": {
+      "sha256": "948596040aaa28fed0e4bb85c5b014963f783a034f5e7a3eb0a735e3787f29e2",
+      "rust_object": 0,
+      "candidate_required": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "32\n",
+        "stderr": ""
+      }
+    },
+    "generic-wrapper.rs": {
+      "sha256": "b5af906393c392524b5813bc3057eef0d40030aba6d3d1f8f521aac2df8dbc77",
+      "rust_object": 0,
+      "candidate_required": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "32\n",
+        "stderr": ""
+      }
+    },
+    "shared-root.rs": {
+      "sha256": "1327de23619f034f9675744e703f9f3955f9f0b7694d6602007d39deb4df21c2",
+      "rust_object": 0,
+      "candidate_required": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "32\n",
+        "stderr": ""
+      }
+    },
+    "explicit-root.rs": {
+      "sha256": "55d9ef45ebf3f611ac5268c036216ed015186dc65de33eaa54598b3cfc34c619",
+      "rust_object": 0,
+      "candidate_required": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "64\n",
+        "stderr": ""
+      }
+    },
+    "unused-role.rs": {
+      "sha256": "dc89991127b5bd42e87894a0b980ee8f2dbba2e1d5cfbb7deb428bbe0bacd411",
+      "rust_object": 0,
+      "candidate_required": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "64\n",
+        "stderr": ""
+      }
+    },
+    "empty-role.rs": {
+      "sha256": "f1a07cb0d5d1cce0a952dd6a04169f1daa6a01752dce2527ed4844ea54f3fa80",
+      "rust_object": 0,
+      "candidate_required": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "32\n",
+        "stderr": ""
+      }
+    },
+    "wrong-arity-zero.rs": {
+      "sha256": "76e850c262e91f6fd5ad1a572e1dd5e8e43248126343e279469c31f5ef06af2c",
+      "rust_object": 1,
+      "candidate_required": 1
+    },
+    "wrong-arity-two.rs": {
+      "sha256": "f15b6621459d47d373e289bc9c60aacf06b8ee5c011ebcaa18168bfdffa7ff7d",
+      "rust_object": 1,
+      "candidate_required": 1
+    },
+    "wrong-owner.rs": {
+      "sha256": "9cfc3f0042ea33cdb0f1a3ebb9108462c746073b660cd421639e457794595349",
+      "rust_object": 1,
+      "candidate_required": 1
+    },
+    "duplicate-role.rs": {
+      "sha256": "102fddc86886e87778f49163f2319c5e9b748391ff8f7864182fa29f176c4be5",
+      "rust_object": 1,
+      "candidate_required": 1
+    },
+    "original-trait.rs": {
+      "sha256": "76359d477f0f8624d03b278d43ce39a4be1e213a066b5d5bd9a1fa565ce8e0fe",
+      "rust_object": 0,
+      "candidate_required": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "32\n",
+        "stderr": ""
+      }
+    },
+    "late-subject.rs": {
+      "sha256": "f06dc43e10b2260ed9405ea76bd6382a99227f831828faaf4101750bebc34189",
+      "rust_object": 0,
+      "candidate_required": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "32\n",
+        "stderr": ""
+      }
+    },
+    "shared-watch-forward.rs": {
+      "sha256": "61aba31834620e2a46d8b559edfa4e0be8a33e7e008cbefbe510412060efed3e",
+      "rust_object": 0,
+      "candidate_required": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "32\n",
+        "stderr": ""
+      }
+    },
+    "shared-watch-reverse.rs": {
+      "sha256": "952dd56fd83ebcee23503cf4e64c36933c44008e2a485bf6c296d967b2ccc48e",
+      "rust_object": 0,
+      "candidate_required": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "32\n",
+        "stderr": ""
+      }
+    },
+    "completed-blanket.rs": {
+      "sha256": "e990edc04e221c5ceb1e69278ccfff4e2586066b4fdb15db717cee574c6a7f35",
+      "rust_object": 0,
+      "candidate_required": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "64\n",
+        "stderr": ""
+      }
+    },
+    "diagnostic-only.rs": {
+      "sha256": "d749fd27607c5b7f9c5d8896bbc66df307719fe6596c55e62d9f5f3591306c86",
+      "rust_object": 0,
+      "candidate_required": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "64\n",
+        "stderr": ""
+      }
+    },
+    "different-diagnostic-owner.rs": {
+      "sha256": "892f463525ee1d2c72f3a4df333373a111553b5fbc7b57629b376bfb965e27aa",
+      "rust_object": 0,
+      "candidate_required": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "64\n",
+        "stderr": ""
+      }
+    }
+  }
+}

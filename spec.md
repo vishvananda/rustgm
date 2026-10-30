@@ -3260,6 +3260,18 @@ opaque-result properties and quantified premises in implementation search remain
 PA21 responsibilities. Associated constants use the retained declaration, selected
 initializer and complete-instance machinery described above.
 
+Source From support remains required under LIB-105. Its language identity must
+be separate from diagnostic identities: only an actual pending positive
+From<float> obligation with Self resolved to f32 supplies the pinned f32 fallback
+preference. Explicit types, other subjects, completed obligations and ordinary
+or diagnostic-only homonyms retain their normal behavior. Reuse the numeric
+dependency frontier and actual changed-root waiters; do not scan every pending
+goal per call or introduce another numeric cache. Preserve projection barriers,
+attempted-work payments, hot widths and unsupported metadata capabilities.
+The [source From contract](docs/pa31-source-from-plan.md) records independently
+qualified original-header, generic, alias, ordering and native controls; candidate
+implementation and imported transport remain open.
+
 Associated bindings in trait bounds retain resolved member identities separately
 from positional arguments. Complete ordinary trait headers before resolving
 header bindings through the supertrait graph, then publish all equality predicates
