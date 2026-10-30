@@ -1,5 +1,7 @@
 //! Local object ownership does not borrow foreign or compiler-marker permission.
 use super::*;
+#[path = "principal_imports.rs"]
+mod imports;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 #[test]
@@ -22,13 +24,19 @@ fn unmarked_local_objects_keep_real_self_receiver_bounds_and_virtual_bodies() ->
         ("overlap-unused", false),
         ("invalid-receiver", false),
     ] {
-        let source = crate::test_source::fixture(&format!(
-            "pa23/tests/spec/members/local-dyn-inherent/{name}.rs"
-        ))?;
-        let report = crate::test_source::resolve(&source, true)?;
-        let result = crate::pipeline::analyze_source(&report);
+        let path = if name == "foreign-principal" {
+            "pa36/tests/spec/inherent-ownership/foreign-principal.rs".to_owned()
+        } else {
+            format!("pa23/tests/spec/members/local-dyn-inherent/{name}.rs")
+        };
+        let source = crate::test_source::fixture(&path)?;
+        let result = imports::checked(&source);
+        if let Err(error) = &result {
+            println!("local-dyn-inherent {name}: {error}");
+        }
         assert_eq!(result.is_ok(), accepted, "{name}: {:?}", result.err());
     }
+    imports::foreign_trait_requires_real_imported_owner()?;
     Ok(())
 }
 

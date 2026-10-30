@@ -1,0 +1,51 @@
+{
+  "state": "Independent pinned Rust7 operations passed; candidate unexecuted",
+  "profile": "Rust1.98.0 edition2024 x86_64-unknown-linux-gnu; genuine ModuleContracts-v2 provider and SourceClient, no Has/Allow permission",
+  "cases": [
+    {
+      "name": "provider",
+      "path": "tests/spec/local-dyn-owner/provider.rs",
+      "crate": "minicore",
+      "kind": "rlib",
+      "deps": {},
+      "rustc_metadata": 0,
+      "rustc_object": 0,
+      "candidate_expected": 0,
+      "source_sha256": "617a10fffae9101ac0cfa4735eacb0c1bdb38523eb2423a43ff24da1a466797f"
+    },
+    {
+      "name": "bare-client",
+      "path": "tests/spec/local-dyn-owner/bare-client.rs",
+      "crate": "client",
+      "kind": "library",
+      "deps": {
+        "base": "provider"
+      },
+      "rustc_metadata": 0,
+      "rustc_object": 0,
+      "candidate_expected": 0,
+      "source_sha256": "4180e3643aa265cbc87badc495e9547e465afb05af7df7f024e36e6ea88abaff"
+    },
+    {
+      "name": "foreign-inherent",
+      "path": "tests/spec/local-dyn-owner/foreign-inherent.rs",
+      "crate": "client",
+      "kind": "library",
+      "deps": {
+        "base": "provider"
+      },
+      "rustc_metadata": 1,
+      "rustc_object": 1,
+      "candidate_expected": 1,
+      "source_sha256": "8e31a9680ae528b54be8b935faddaf4c2b9b47074dff144cb0ceee330260e68d"
+    }
+  ],
+  "candidate_contract": "Bare client must resolve the actual imported Open Trait DefId with node=None. Foreign inherent client must reach exact foreign object inherent permission diagnostic, never unknown name. Legacy/foreign Has permissions and transport remain Required.",
+  "source_provider_origin": "Exact pa31/tests/spec/module-contracts-v2/root-ordinary-provider.rs foundation, not a synthetic trait/body replacement.",
+  "independent_rust": {
+    "receipt_sha256": "ff35233ee15968d6cf9f7ec07be9bde52bebee4da0bc5a3cf30f410b3f682410",
+    "plan_sha256": "0ed701225416deb1abb731b18711938946afcc56e43299233373ff6ed1dfcb73",
+    "observations": 7,
+    "scope": "Actual provider metadata/object/rlib and both clients metadata/object. Genuine E0116 on foreign inherent impl."
+  }
+}

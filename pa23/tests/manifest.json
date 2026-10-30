@@ -6475,20 +6475,6 @@
       "maintainer_origin": "dev/tests/invariants/principal_owners.rs:predeclared source matrix"
     },
     {
-      "path": "tests/spec/members/local-dyn-inherent/foreign-principal.rs",
-      "exit_status": 1,
-      "features": [
-        "pa23.members",
-        "pa23.dispatch"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 1,
-        "emit": "obj"
-      },
-      "maintainer_origin": "dev/tests/invariants/principal_owners.rs:predeclared source matrix"
-    },
-    {
       "path": "tests/spec/members/local-dyn-inherent/overlap-unused.rs",
       "exit_status": 1,
       "features": [

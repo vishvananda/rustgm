@@ -359,9 +359,14 @@ fn local_inherent_inputs_keep_all_sixteen_declared_outcomes()
         ("overlap-unused", false),
         ("invalid-receiver", false),
     ] {
-        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
-            "../pa23/tests/spec/members/local-dyn-inherent/{name}.rs"
-        ));
+        let relative = if name == "foreign-principal" {
+            "pa36/tests/spec/inherent-ownership/foreign-principal.rs".to_owned()
+        } else {
+            format!("pa23/tests/spec/members/local-dyn-inherent/{name}.rs")
+        };
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("..")
+            .join(relative);
         let source = std::fs::read_to_string(path)?;
         let result = crate::foreign_frontend::checked(&source);
         assert_eq!(result.is_ok(), accepted, "{name}: {:?}", result.err());

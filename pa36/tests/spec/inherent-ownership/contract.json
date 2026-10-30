@@ -1,0 +1,16 @@
+{
+  "state": "Required full std/sysroot plus foreign inherent ownership integration; not an active PA23 oracle",
+  "path": "pa36/tests/spec/inherent-ownership/foreign-principal.rs",
+  "source_sha256": "0d12a92b62dea029ecdc3f4627543bce76a23648020ee4c796dbb83d14f7d072",
+  "original_path": "pa23/tests/spec/members/local-dyn-inherent/foreign-principal.rs",
+  "rustc_metadata": 1,
+  "rustc_object": 1,
+  "existing_independent_receipt_sha256": "d1246287a2d051b96f89dbe211ad703462702515802ef7495db8bf9abf602d9b",
+  "candidate_stage": "Earlier resolution only until real std::fmt::Debug is provided; never count unknown-name rejection as ownership proof",
+  "requirements": [
+    "PA36 std/sysroot name and type availability",
+    "PA20/23 authentic foreign principal inherent ownership",
+    "PA29 cross-crate permission/lookup transport remains independent"
+  ],
+  "related_actual_foreign_owner_graph": "pa29/tests/local-dyn-owner-outcomes.json"
+}

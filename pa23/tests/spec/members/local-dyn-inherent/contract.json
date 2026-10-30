@@ -96,11 +96,14 @@
       "candidate_required": 1
     },
     {
-      "path": "pa23/tests/spec/members/local-dyn-inherent/foreign-principal.rs",
+      "path": "pa36/tests/spec/inherent-ownership/foreign-principal.rs",
       "sha256": "0d12a92b62dea029ecdc3f4627543bce76a23648020ee4c796dbb83d14f7d072",
       "predicted_rust_metadata": 1,
       "predicted_rust_object": 1,
-      "candidate_required": 1
+      "candidate_required": "Required: std/sysroot name and foreign-owner integration (PA34/36 plus PA20/23)",
+      "original_path": "pa23/tests/spec/members/local-dyn-inherent/foreign-principal.rs",
+      "active_pa23_reference": false,
+      "candidate_category": "Earlier resolution only; never evidence of foreign-principal ownership rejection"
     },
     {
       "path": "pa23/tests/spec/members/local-dyn-inherent/overlap-unused.rs",
@@ -139,5 +142,9 @@
     "native_stdout": "7 9\n",
     "native_link_status": 0,
     "native_exit_status": 0
+  },
+  "retained_requirements": {
+    "foreign_std_principal": "See pa36/tests/spec/inherent-ownership/contract.json. Unchanged original Rust source and negative proof remain Required; current source profile does not supply std/sysroot names. PA29 graph separately exercises actual imported trait ownership.",
+    "original_rust_receipt": "d1246287a2d051b96f89dbe211ad703462702515802ef7495db8bf9abf602d9b"
   }
 }
