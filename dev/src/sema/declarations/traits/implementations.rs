@@ -8,6 +8,7 @@ mod negative;
 mod orphans;
 mod portable_impls;
 mod readiness;
+mod reservation_rules;
 mod rpit_defaults;
 pub(in crate::sema::declarations) use readiness::Readiness;
 mod coercions;

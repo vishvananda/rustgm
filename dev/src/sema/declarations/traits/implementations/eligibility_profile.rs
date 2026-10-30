@@ -194,7 +194,7 @@ impl Checker<'_> {
                 || !matches!(
                     actual.kind,
                     OwnerKind::Impl {
-                        negative: false,
+                        polarity: crate::sema::associated::ImplPolarity::Positive,
                         ..
                     }
                 )

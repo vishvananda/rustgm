@@ -300,6 +300,9 @@ impl Search<'_> {
             }
             Some(true) => {}
         }
+        if self.deferred_reservation(facts, trial)? {
+            return Ok(Some(Decision::Deferred));
+        }
         let owned_end = trial.first
             + u32::try_from(trial.instance.regions.len())
                 .map_err(|_| "impl region count overflow")?;

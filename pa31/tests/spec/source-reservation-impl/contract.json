@@ -1,0 +1,328 @@
+{
+  "state": "declared-before-candidate-execution",
+  "owning_assignments": [
+    "PA20 trait/coherence",
+    "PA21 generic environments",
+    "PA25 const execution",
+    "PA29 metadata boundary",
+    "PA31 source ownership"
+  ],
+  "cases": {
+    "unused": {
+      "rust_metadata": 0,
+      "sha256": "359c0a133b3992780bf05a7121a99b07bcc606b36a323173f193a132d2a0538a",
+      "oracle": "oracle-v1"
+    },
+    "empty_message": {
+      "rust_metadata": 0,
+      "sha256": "4bad69d16a1d66149a3de3fedd7aaeaab6f6f2ab97ab12ef568deceecede3a97",
+      "oracle": "oracle-v1"
+    },
+    "use_denied": {
+      "rust_metadata": 1,
+      "sha256": "12dd4f9feefa7f1763eb04624f9e1df598402df0ac9472e510482bf1235626da",
+      "oracle": "oracle-v1"
+    },
+    "bound_denied": {
+      "rust_metadata": 1,
+      "sha256": "97f76e3427bd4cbcacd4b362e2886cd642391f82b6573de9f6eebaf22ab8ad17",
+      "oracle": "oracle-v1"
+    },
+    "assumption": {
+      "rust_metadata": 0,
+      "sha256": "f5c6680a6b5d4da59acb1110a230a70469fd32768ebe88da182d99ff71cbbda2",
+      "oracle": "oracle-v1"
+    },
+    "real_positive": {
+      "rust_metadata": 0,
+      "sha256": "040ceb24965f33a4c478486a23461e37e7135ff82cea533fb30f6507f5ef11bb",
+      "oracle": "oracle-v1"
+    },
+    "coherence_clear": {
+      "rust_metadata": 0,
+      "sha256": "e691d2ab1832187bbdc7e4d6725980f0fb93b70da78aec413d2988890b7b384e",
+      "oracle": "oracle-v1"
+    },
+    "coherence_reserved": {
+      "rust_metadata": 1,
+      "sha256": "b3367299a6ceb09385b61870b4f9e76eeba39d7256a44f48e02ab0ef19d2721c",
+      "oracle": "oracle-v1"
+    },
+    "wf_exemption": {
+      "rust_metadata": 0,
+      "sha256": "1a6642f2b47a184b65e8a930f671b4c0c30b8100ba4b87791ab5f107a38a1248",
+      "oracle": "oracle-v1"
+    },
+    "wf_positive_control": {
+      "rust_metadata": 1,
+      "sha256": "6baf55f800705bfce29a628c06e863563a94c7afbb98fa945d88fba5f86b4bee",
+      "oracle": "oracle-v1"
+    },
+    "missing_method": {
+      "rust_metadata": 1,
+      "sha256": "605a211d482915c5e8e084606be8d7feccc7a6fa443ac883879abd96a43a45b2",
+      "oracle": "oracle-v1"
+    },
+    "wrong_signature": {
+      "rust_metadata": 1,
+      "sha256": "63c2cc534ccc1d4ec5b640178a84807206b86614d65970b828bbd46a70a6b700",
+      "oracle": "oracle-v1"
+    },
+    "duplicate": {
+      "rust_metadata": 1,
+      "sha256": "feddd978cc8e9e4005d6f73042ea5a3f0f43e5d4aebd53b25286c7bd1bd820ab",
+      "oracle": "oracle-v1"
+    },
+    "missing_gate": {
+      "rust_metadata": 1,
+      "sha256": "042e77edb1dbdf56ad9ced3315dcfe6f9efc8861ed8b1486fab58959bf04c9fd",
+      "oracle": "oracle-v1"
+    },
+    "word": {
+      "rust_metadata": 1,
+      "sha256": "bb00c33329304ecfe0d1aeeea9a6102b8a2b5c54720ff8c0eaeddd1d0374f407",
+      "oracle": "oracle-v1"
+    },
+    "number": {
+      "rust_metadata": 1,
+      "sha256": "3b86b5b40037493d0cfe1f3c9d3d78dbed82dfab20c39354b9d599903161314e",
+      "oracle": "oracle-v1"
+    },
+    "list": {
+      "rust_metadata": 1,
+      "sha256": "b5f8f5c263e2ce703bf812563409d97d35bc99d7e3840d39b04908ee484b9f6b",
+      "oracle": "oracle-v1"
+    },
+    "inherent": {
+      "rust_metadata": 1,
+      "sha256": "e0d5dcafcbfd09a3f33a7c13cbc9ecaa7495540ee9e32969a22b3bc4c5a1838c",
+      "oracle": "oracle-v1"
+    },
+    "function": {
+      "rust_metadata": 1,
+      "sha256": "bf989e5fde7f18fc8f6d5789ee7bd8841a9fad4bb826c8b9e7aa100cc6b97ef8",
+      "oracle": "oracle-v1"
+    },
+    "negative": {
+      "rust_metadata": 1,
+      "sha256": "4eff92737be253829f3ebb474c9033431e6af892dd871e010597ec63b7bb3092",
+      "oracle": "oracle-v1"
+    },
+    "unsafe_missing": {
+      "rust_metadata": 1,
+      "sha256": "2bb385d9720cf209658b344199ca841650099d3b0d1ff5291083d335d16cf461",
+      "oracle": "oracle-v1"
+    },
+    "unsafe_valid": {
+      "rust_metadata": 0,
+      "sha256": "bb543c127196c28b599c52102f5f76198f8fd16e2fab574db72c6e0e54d9409f",
+      "oracle": "oracle-v1"
+    },
+    "const_unused": {
+      "rust_metadata": 0,
+      "sha256": "0fe938f07a8ee1b9f3460610aa472cc6bd0f1ef6f89b260fe6fe868a784ed600",
+      "oracle": "oracle-v1"
+    },
+    "const_denied": {
+      "rust_metadata": 1,
+      "sha256": "a85a3eaac57aed0c03ae4c39dc8d5ba97f1e4f7722cbb9b92ce364228c0c2f75",
+      "oracle": "oracle-v1"
+    },
+    "const_real": {
+      "rust_metadata": 0,
+      "sha256": "deb1b26c46dbdb50164f515df16bce8a86a5fab9b30813531544a52d190efd19",
+      "oracle": "oracle-v1"
+    },
+    "const_body_restriction": {
+      "rust_metadata": 1,
+      "sha256": "6779835248c5db690c67ba1c2ef41dc2f421ff17995157225280457948603577",
+      "oracle": "oracle-v1"
+    },
+    "body_own_trait_probe": {
+      "rust_metadata": 1,
+      "sha256": "b92b74b4496e0e5767ebba32399ba7d7363d43a8da32e2c432961017b271f08a",
+      "oracle": "oracle-v1"
+    },
+    "associated_type_probe": {
+      "rust_metadata": 1,
+      "sha256": "0c040fa5717c7aceff929f86ee00034bc1221372d825c2e5b9d379ae75b4ba37",
+      "oracle": "oracle-v1",
+      "historical_prediction": 0
+    },
+    "projection_denied": {
+      "rust_metadata": 1,
+      "sha256": "d5820e8bb7ae62c8c3f6c9e1f287b0398f8d3673de4352369a4eaa4a27af285b",
+      "oracle": "oracle-v1"
+    },
+    "associated_type_requires_real_self_bound": {
+      "rust_metadata": 1,
+      "sha256": "0c040fa5717c7aceff929f86ee00034bc1221372d825c2e5b9d379ae75b4ba37",
+      "oracle": "oracle-v2"
+    },
+    "associated_with_real_impl": {
+      "rust_metadata": 0,
+      "sha256": "02ed7df07a093138070fa9de6577f7c175ba558b7e04058758ee6bc17d5e52c9",
+      "oracle": "oracle-v2"
+    },
+    "coherence_incompatible_subject": {
+      "rust_metadata": 0,
+      "sha256": "3fbc9c978737e2aa1a70c190adca9763aa479a2abbca9a2a7d2abfc8e5bfaef5",
+      "oracle": "oracle-v2"
+    },
+    "coherence_incompatible_arguments": {
+      "rust_metadata": 0,
+      "sha256": "9e1a94f37c4665b20e952cd7541cf08a60c37ab2ee94edec30b56d5b6bdd16b1",
+      "oracle": "oracle-v2"
+    },
+    "body_explicit_parameter_bound": {
+      "rust_metadata": 0,
+      "sha256": "0a072811b4ab0a1c18c860c30512d945581e850034f40dd2f28fd8c1a4b18e89",
+      "oracle": "oracle-v2"
+    },
+    "body_independent_real_impl": {
+      "rust_metadata": 0,
+      "sha256": "2fb409e17ca8187422666b56228947f43d8d05ebf607bf88fc9b23bf6e5d8cb5",
+      "oracle": "oracle-v2"
+    },
+    "reservation_body_direct_export": {
+      "rust_metadata": 0,
+      "sha256": "1370351022cf053fc2a134fea4635d7399250cb3fd916004a24eaf2e552dd6fc",
+      "oracle": "oracle-v2"
+    }
+  },
+  "native": {
+    "real_positive": "7\n",
+    "const_real": "7\n",
+    "reservation_body_direct_export": "7\n"
+  },
+  "boundary": {
+    "source_From": "Root LIB105 genuine lang-role/floatfallback join required; no original From qualification from authored trait reducers",
+    "transport": "v0-v8 have only bool negative; reject actual reservation headers without changing bytes or fabricating source bounds"
+  },
+  "corrections": [
+    "oracle-v1 associated_type_probe was predicted accepted; rustc E0277 S:A rejects its actual associated type definition. Oracle-v2 retained same bytes with corrected prediction and proves independent real impl case accepted.",
+    "oracle-v3 auto_structural_kept was predicted accepted; actual pinned Rust rejects E0277 because any explicit auto-impl head, including Reservation, suppresses structural default. Source unchanged; candidate keeps original O(1) override machinery and does not grant auto proof."
+  ],
+  "producer": "actual name-value string attribute, rustc_attrs/real macro allowance, positive trait impl owner, current annotation witness/message, typed polarity independent constness",
+  "semantics": "Use excludes reservation; compatible coherence candidate prevents closed absence, incompatible Self/arguments do not. Direct overlap allowed without specialization. Full member/body checking retained; no own Self:Trait assumption. Ordinary positive and explicit assumptions remain authoritative.",
+  "new_declared_cases": {
+    "module-provider": {
+      "metadata_status": 0,
+      "object_status": 0,
+      "candidate_export": "reservation implementation transport requires a wider metadata profile",
+      "sha256": "3f5a86499c9a2815fecc3758bf1bf28c2bc369efdba4f1ae3e7a35a09d702cb0"
+    },
+    "pa20_local_bound": {
+      "closed-local": 0,
+      "real-bound-overlap": 1,
+      "open-bound-overlap": 1
+    },
+    "module-provider-missing-policy": {
+      "metadata_status": 1,
+      "object_status": 1,
+      "diagnostic": "implementation has missing stability attribute",
+      "sha256": "723a42c1c0e888f29e8e3ac0685e06f09cd8827ffc8605e485a6e5666e82bd5a",
+      "predecessor": "oracle-v3/module_provider metadata+object were predicted0 but actually1; source retained byte-identical"
+    }
+  },
+  "new_observed_cases": {
+    "macro_allowance": {
+      "metadata_status": 0,
+      "sha256": "77c7931e22e186484d593e88d2a638be0155e2ae2ebacd7c416b7f6f23381c9f",
+      "reference": "oracle-v3/receipt.json actual row, overall mismatch preserved"
+    },
+    "cfg_removed": {
+      "metadata_status": 0,
+      "sha256": "31be87bdb60a8915c7c5b26fb691e5229f712f8d699a012e8a5f4a32b39492da",
+      "reference": "oracle-v3/receipt.json actual row, overall mismatch preserved"
+    },
+    "unsafe_wrapper": {
+      "metadata_status": 1,
+      "sha256": "a54f1dcee930618468e1f63a9447254c850250bac1d67859b1447e62e9bc5394",
+      "reference": "oracle-v3/receipt.json actual row, overall mismatch preserved"
+    },
+    "constant_unused": {
+      "metadata_status": 0,
+      "sha256": "c2dea40b798f47702e73cea5f20c1ee8b950e207afac9d65482b629b8131f8d8",
+      "reference": "oracle-v3/receipt.json actual row, overall mismatch preserved"
+    },
+    "constant_use_denied": {
+      "metadata_status": 1,
+      "sha256": "5d73fb625b3d193b4227bf3163167bbbe7300b4840ff3c40318961ae069e0492",
+      "reference": "oracle-v3/receipt.json actual row, overall mismatch preserved"
+    },
+    "copy_physical_ok": {
+      "metadata_status": 0,
+      "sha256": "cd4242fe64428293473ebd7f636c4c7a651ddbf1bee671aa434a643e4df5ff94",
+      "reference": "oracle-v3/receipt.json actual row, overall mismatch preserved"
+    },
+    "copy_physical_bad": {
+      "metadata_status": 1,
+      "sha256": "1fabc64fdf375a245f0893d643bd79be00df24068dc90a50f5df52fdbdb391cd",
+      "reference": "oracle-v3/receipt.json actual row, overall mismatch preserved"
+    },
+    "copy_use_denied": {
+      "metadata_status": 1,
+      "sha256": "68da3b119d651916de644626ffe7b3fd4362d7800edb0738992f7884040aca44",
+      "reference": "oracle-v3/receipt.json actual row, overall mismatch preserved"
+    },
+    "auto_structural_kept": {
+      "metadata_status": 1,
+      "sha256": "0601b7af29828ef86afdeaadec66dac8bf4a581b44edf403a1aebd3f95d31516",
+      "reference": "oracle-v3/receipt.json actual row, overall mismatch preserved"
+    }
+  },
+  "independent_receipts": {
+    "oracle-v1": "e8e171c2607fdecb7633f8bca2489b6ad2607fe7403df012c006622ac01295db",
+    "oracle-v2": "6f7c1c028d2e1392cc826a0285ce408e35265ed0a65cfc3582316ecb2e02885a",
+    "oracle-v3": "636ba16bcee3cf1550311176538e473e8942d0ff91de7a8a884526dc0ddf4e5c",
+    "oracle-v4": "6295df37b2f6f7b700b5039c44eb3e89d6b6f76e7f6efc6b48e4a17a89ad7a1c"
+  },
+  "candidate_failure_history": {
+    "receipt": "obj/qualification/fast/1793327320997065754/receipt.json",
+    "actual": "25 executed: 17 passed, 8 failed; old sixteen and closed-local coherence controls passed",
+    "marker_only": "Reservation-only rows incorrectly demanded staged stability inventory",
+    "metadata": "v7 skipped annotation fence and reached unsupported declaration-kind transport",
+    "negative_custom_auto": "negative.rs rejects at custom source auto-trait boundary, before reservation validation; retained unchanged as executed boundary control"
+  },
+  "negative_trait_successor": {
+    "source": "negative-trait.rs",
+    "source_sha256": "32d38b818e5c44eeabbf2c648c93113a7bdc0c0debf2f8edf889f11234a9cf21",
+    "predicted_rust_metadata_status": 1,
+    "predicted_candidate": "reservation impl cannot be negative",
+    "scope": "ordinary authored trait isolates reservation marker validation; original custom-auto negative remains unchanged and executed; general custom source auto-trait implementation remains Required",
+    "actual_rust_metadata_status": 1,
+    "actual_rust_diagnostic": "reservation impls can't be negative",
+    "receipt_sha256": "2f768395ca1cd3d84cfe27f83dcef3a253a427daf9e559ef7e4ab396829eaad9"
+  },
+  "associated_type_v6": {
+    "plan_sha256": "a0402afa39f10904a748ac2d96c772e53d9413e7d3dd364a4f867ee21af8be69",
+    "receipt_sha256": "61e00b22b2b62b794e4ba5d9b697186906e36f5dde90e77ccca4a1be777d2a82",
+    "whole_receipt": "mismatch retained; no observation rerun or source replacement",
+    "observations": {
+      "associated_relaxed": {
+        "predicted_metadata_status": 0,
+        "actual_metadata_status": 1,
+        "actual_diagnostic": "E0277 S:A at associated definition; relaxing Sized does not avoid actual parent trait requirement"
+      },
+      "associated_generic_assumption": {
+        "predicted_metadata_status": 0,
+        "actual_metadata_status": 0
+      },
+      "associated_const_real_ordinary": {
+        "predicted_metadata_status": 0,
+        "actual_metadata_status": 0
+      }
+    },
+    "candidate_contract": "actual reserved associated definition proves ordinary parent in genuine immutable declaration/member environment; reserved header gives no premise, real generic assumptions/independent impls remain authoritative"
+  },
+  "candidate_runtime_successor": {
+    "receipt": "obj/qualification/fast/1793330474422789139/receipt.json",
+    "actual": "21/25 PASS after strict Clippy/link; actual0.18s runtime",
+    "remaining_causes": [
+      "const_real ordinary initializer shared closed member owner path",
+      "reserved associated type falsely accepted without actual parent proof",
+      "wrong_signature correctly rejected incompatible types; stale diagnostic assertion"
+    ]
+  }
+}

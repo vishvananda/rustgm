@@ -103,10 +103,24 @@ pub(super) fn require_positive_source(
     facts: &Declarations,
     source: Option<&Source>,
 ) -> Result<(), String> {
-    if let Some(Source::Implementation { owner, .. }) = source
-        && implementation_negative(facts, *owner)?
-    {
-        return Err("negative implementation cannot become positive trait evidence".into());
+    if let Some(Source::Implementation { owner, .. }) = source {
+        match facts
+            .generics
+            .implementations
+            .as_ref()
+            .ok_or("missing positive implementation registry")?
+            .polarity(&facts.types, &facts.associated, *owner)?
+        {
+            Polarity::Positive => {}
+            Polarity::Negative => {
+                return Err("negative implementation cannot become positive trait evidence".into());
+            }
+            Polarity::Reservation => {
+                return Err(
+                    "reservation implementation cannot become positive trait evidence".into(),
+                );
+            }
+        }
     }
     if let Some(Source::Pointee(selected)) = source {
         selected.current(facts).map_err(|error| error.to_string())?;

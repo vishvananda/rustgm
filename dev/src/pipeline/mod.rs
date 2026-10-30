@@ -70,8 +70,9 @@ fn analyze_defining(
     let facts =
         sema::bodies::analyze_defining(report, facts, |report, facts, request| match request {
             sema::bodies::DefiningRequest::Hidden(id) => demand.close(report, facts, id, context),
-            sema::bodies::DefiningRequest::ComptimeDefinition(definition) => {
-                demand.complete_comptime(report, facts, definition, context)
+            sema::bodies::DefiningRequest::ComptimeDefinition(definition)
+            | sema::bodies::DefiningRequest::ConstDefinition(definition) => {
+                demand.complete_const_definition(report, facts, definition, context)
             }
         })?;
     Ok(Analysis {

@@ -141,7 +141,9 @@ impl Checker<'_> {
         {
             return Ok(());
         }
-        self.validate_reference_coherence(owner, source, predicate, steps)?;
+        if !self.reservation_impl(Some(source), owner)? {
+            self.validate_reference_coherence(owner, source, predicate, steps)?;
+        }
         let negative = self.negative_impl_contract(owner, source, predicate)?;
         if negative || matches!(predicate.bound, Bound::Auto(_)) {
             self.facts
@@ -216,6 +218,9 @@ impl Checker<'_> {
         second: (Predicate, DefId),
         steps: &mut usize,
     ) -> Result<(), Error> {
+        if self.reservation_pair(key, [first.1, second.1], steps)? {
+            return Ok(());
+        }
         if crate::sema::specialization::remembered(
             &mut self.facts,
             self.report,
@@ -333,18 +338,7 @@ impl Checker<'_> {
         source: NodeKey,
         predicate: Predicate,
     ) -> Result<(), Error> {
-        if self
-            .facts
-            .associated
-            .owner(owner)
-            .and_then(|id| self.facts.associated.get(id))
-            .is_some_and(|owner| {
-                matches!(
-                    owner.kind,
-                    crate::sema::associated::OwnerKind::Impl { constant: true, .. }
-                )
-            })
-        {
+        if self.const_impl_member(owner) {
             let (application, _) = predicate.bound.trait_parts().ok_or_else(|| {
                 self.error(source, "const implementation requires a trait application")
             })?;
@@ -356,12 +350,23 @@ impl Checker<'_> {
                 .item;
             self.require_const_trait(source, DefId(item.0))?;
         }
+        // Only the positive trait WF requirement is exempt. In particular,
+        // reservation Copy and representation impls still prove physical rules.
+        let reservation = self.reservation_impl(Some(source), owner)?;
         let environment = self.facts.generics.environments.get(&owner).cloned();
         let mut proof = self.declaration_proof(owner, environment);
-        let requirements = impl_contract_obligations(&mut self.facts, predicate, &mut proof)
-            .map_err(|e| self.error(source, e))?;
+        let requirements = if reservation {
+            None
+        } else {
+            Some(
+                impl_contract_obligations(&mut self.facts, predicate, &mut proof)
+                    .map_err(|e| self.error(source, e))?,
+            )
+        };
         self.validate_source_copy_impl(source, predicate, &mut proof)?;
-        self.validate_source_constant_type_impl(owner, source, predicate, &mut proof)?;
+        if !reservation {
+            self.validate_source_constant_type_impl(owner, source, predicate, &mut proof)?;
+        }
         self.validate_source_dispatch_impl(source, predicate, &mut proof)?;
         let coerced = self.validate_source_coercion_impl(source, predicate, &mut proof)?;
         self.retain_trait_proof(owner, source, &mut proof);
@@ -378,12 +383,18 @@ impl Checker<'_> {
                 .outlives(longer, shorter, 0)
                 .map_err(|e| self.error(source, e.to_string()))?;
         }
-        for &(a, b) in &requirements.regions {
+        for &(a, b) in requirements
+            .iter()
+            .flat_map(|requirements| &requirements.regions)
+        {
             constraints
                 .outlives(a, b, 0)
                 .map_err(|e| self.error(source, e.to_string()))?;
         }
-        for &requirement in requirements.required.iter().chain(&requirements.implied) {
+        for &requirement in requirements
+            .iter()
+            .flat_map(|requirements| requirements.required.iter().chain(&requirements.implied))
+        {
             if let Clause::Predicate(Predicate {
                 ty,
                 bound: Bound::Outlives(shorter),

@@ -92,11 +92,12 @@ impl Search<'_> {
                         .as_mut()
                         .ok_or("missing explicit auto-trait implementations")?;
                     let candidates = registry
-                        .candidates(
+                        .candidates_for(
                             &mut facts.types,
                             &mut frame.inputs.context,
                             &frame.goal,
                             self.query.availability,
+                            self.query.purpose,
                         )
                         .map_err(inference)?;
                     match candidates {

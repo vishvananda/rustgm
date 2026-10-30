@@ -22,13 +22,6 @@ pub(super) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), E
     else {
         return Ok(());
     };
-    let inventory = report
-        .package
-        .library_policy()
-        .and_then(crate::resolve::stability::Library::inventory)
-        .ok_or_else(|| {
-            Error::unlocated("unstable impl lint requires a completed staged library inventory")
-        })?;
     producer.attribute_read(
         NodeKey {
             file: report.package.modules[0].file,
@@ -52,6 +45,16 @@ pub(super) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), E
         let Some(annotation) = producer.impl_annotation(&report.package, key)? else {
             continue;
         };
+        if annotation.unstable.is_none() && annotation.bound.is_none() {
+            continue;
+        }
+        let inventory = report
+            .package
+            .library_policy()
+            .and_then(crate::resolve::stability::Library::inventory)
+            .ok_or_else(|| {
+                Error::unlocated("unstable impl lint requires a completed staged library inventory")
+            })?;
         check(
             report,
             facts,

@@ -1,4 +1,4 @@
-//! Actual Always definitions share the existing constant-provider template owner.
+//! Actual const and Always definitions share the constant-provider template owner.
 use super::{BodyKey, Context, Declarations, Engine, Error, Owner, Report, Template};
 use crate::{
     pipeline::original_contexts::Original,
@@ -15,11 +15,12 @@ pub(super) fn validate(
     let source = function
         .body
         .ok_or_else(|| Error::unlocated("comptime definition has no actual body"))?;
-    if facts
-        .source_function_context(report, function.definition, source)
-        .map_err(Error::unlocated)?
-        != FunctionContext::Comptime
-        || body.source.source() != Some(source)
+    if !matches!(
+        facts
+            .source_function_context(report, function.definition, source)
+            .map_err(Error::unlocated)?,
+        FunctionContext::Comptime | FunctionContext::ConstFunction
+    ) || body.source.source() != Some(source)
         || body.instance.is_some()
         || !body.const_context
         || !matches!(body.owner,Owner::Function{definition,signature,execution:None}
@@ -34,7 +35,7 @@ pub(super) fn validate(
 }
 impl Context {
     /// None denotes an already checked immutable component/concrete original.
-    pub(crate) fn take_comptime_definition(
+    pub(crate) fn take_const_definition(
         &self,
         report: &Report,
         facts: &mut Declarations,
@@ -45,9 +46,9 @@ impl Context {
             .map_err(|_| {
                 Error::unlocated("constant provider is active during defining-body request")
             })?
-            .take_comptime_definition(report, facts, function)
+            .take_const_definition(report, facts, function)
     }
-    pub(crate) fn return_comptime_definition(
+    pub(crate) fn return_const_definition(
         &self,
         report: &Report,
         facts: &mut Declarations,
@@ -58,11 +59,11 @@ impl Context {
             .map_err(|_| {
                 Error::unlocated("constant provider is active during defining-body publication")
             })?
-            .return_comptime_definition(report, facts, original)
+            .return_const_definition(report, facts, original)
     }
 }
 impl Engine {
-    fn take_comptime_definition(
+    fn take_const_definition(
         &mut self,
         report: &Report,
         facts: &mut Declarations,
@@ -102,7 +103,7 @@ impl Engine {
             .map_err(Error::unlocated)?;
         Ok(Some(Original { template, contract }))
     }
-    fn return_comptime_definition(
+    fn return_const_definition(
         &mut self,
         report: &Report,
         facts: &mut Declarations,

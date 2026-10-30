@@ -249,18 +249,19 @@ impl Checker<'_> {
     }
     fn trait_override(&self, function: Function) -> Result<(), Error> {
         let item = self.item(function.node)?;
-        let ItemKind::Function { flags, abi, .. } = item.kind else {
+        let ItemKind::Function { flags, .. } = item.kind else {
             return Err(self.error(function.node, "missing implementation method syntax"));
         };
         if item.visibility != Visibility::Private
             || flags.safety == Safety::Safe
             || flags.constant
             || flags.asynchronous
-            || !crate::sema::declarations::rust_abi(self.report, function.node, abi)?
             || function.body.is_none()
         {
-            return Err(self.error(function.node,"trait implementation methods require inherited visibility, a Rust body, and supported function qualifiers"));
+            return Err(self.error(function.node,"trait implementation methods require inherited visibility, a body, and supported function qualifiers"));
         }
+        // The completed callable signature retains the ABI. The shared full
+        // conformance check compares it with the trait's actual signature.
         Ok(())
     }
 }

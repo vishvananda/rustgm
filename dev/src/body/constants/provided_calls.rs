@@ -171,15 +171,19 @@ pub(super) fn closed_request(
     statement: &Statement,
     work: &mut Work,
 ) -> Result<bool, &'static str> {
-    if !body.const_context || facts.source_bindings.is_none() {
+    if !body.const_context {
         return Ok(false);
     }
     work.charge(9)?;
-    facts
-        .source_bindings
-        .as_deref()
-        .ok_or("const member has no source catalog")?
-        .require_provider_report(report)?;
+    if let Some(catalog) = facts.source_bindings.as_deref() {
+        catalog.require_provider_report(report)?;
+    } else if report.package.uses_source_bindings() {
+        return Err("const member has no source catalog");
+    } else {
+        facts
+            .require_lint_context(report)
+            .map_err(|_| "const member changed its actual source report")?;
+    }
     body.owner
         .source_caller(facts, body.source, body.instance)?;
     let source = body
@@ -207,9 +211,11 @@ pub(super) fn closed_request(
     if signature != call.signature || node.ty != Some(call.result) {
         return Err("const member changed its current signature or result");
     }
-    let effect = source_use
-        .ok_or("const member has no current source use")?
-        .effect_for(facts, source)?;
+    let effect = match (facts.source_bindings.as_deref(), source_use) {
+        (Some(_), Some(use_)) => use_.effect_for(facts, source)?,
+        (None, None) => ordinary_effect(report, facts, body, source, work)?,
+        _ => return Err("const member has no current source use"),
+    };
     if !closed_effect(report, facts, body, source, effect, work)? {
         return Ok(false);
     }
@@ -231,6 +237,38 @@ pub(super) fn closed_request(
         direct_source(report, facts, call, definition, work)?;
     }
     Ok(true)
+}
+
+fn ordinary_effect(
+    report: &crate::resolve::expansion::Report,
+    facts: &Declarations,
+    body: &Body,
+    source: crate::resolve::unit::NodeKey,
+    work: &mut Work,
+) -> Result<crate::support::constness::Constness, &'static str> {
+    use crate::support::constness::Constness;
+    work.charge(8)?;
+    // source_caller has already authenticated this exact initializer/function.
+    // An ordinary typed body has no SourceCore context descriptor to borrow.
+    match body.owner {
+        Owner::Initializer { .. }
+        | Owner::InitializerInstance { .. }
+        | Owner::AnonymousConstant
+        | Owner::AnonymousInstance(_) => Ok(Constness::Const),
+        Owner::Function { definition, .. } => {
+            match facts.source_function_context(report, definition, source)? {
+                crate::sema::function_context::FunctionContext::Comptime => Ok(Constness::Const),
+                crate::sema::function_context::FunctionContext::ConstFunction
+                | crate::sema::function_context::FunctionContext::ConstTraitDefault { .. } => {
+                    Ok(Constness::Conditional)
+                }
+                crate::sema::function_context::FunctionContext::Runtime => {
+                    Err("const member has no actual const source owner")
+                }
+            }
+        }
+        _ => Err("const member has no actual const source owner"),
+    }
 }
 
 fn closed_effect(

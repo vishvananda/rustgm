@@ -22276,6 +22276,54 @@
         "default_lints": true
       },
       "maintainer_origin": "dev/tests/discarded_domains.rs"
+    },
+    {
+      "path": "tests/spec/local-bound-coherence/closed-local.rs",
+      "source_sha256": "6aa761f203981c09e672f87c93f42dcf7cbdcd69d8478c98ec468e7696ab3ab4",
+      "exit_status": 0,
+      "features": [
+        "pa20.coherence"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "metadata",
+        "default_lints": true
+      },
+      "mode": "--emit-trait-semantics",
+      "maintainer_origin": "LIB103 closed local trait-bound coherence; dev/tests/invariants/future_impls.rs; independent Rust oracle-v3"
+    },
+    {
+      "path": "tests/spec/local-bound-coherence/real-bound-overlap.rs",
+      "source_sha256": "7c81ecf37a33210f8979b9dab266282e94ff3e481322e2b3a82d851a7308d117",
+      "exit_status": 1,
+      "features": [
+        "pa20.coherence"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "metadata",
+        "default_lints": true
+      },
+      "mode": "--emit-trait-semantics",
+      "maintainer_origin": "LIB103 closed local trait-bound coherence; dev/tests/invariants/future_impls.rs; independent Rust oracle-v3"
+    },
+    {
+      "path": "tests/spec/local-bound-coherence/open-bound-overlap.rs",
+      "source_sha256": "3a548cb538b8a4414fec32b2492a8573931c74f10020321b19f0ee033e726a90",
+      "exit_status": 1,
+      "features": [
+        "pa20.coherence"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "metadata",
+        "default_lints": true
+      },
+      "mode": "--emit-trait-semantics",
+      "maintainer_origin": "LIB103 closed local trait-bound coherence; dev/tests/invariants/future_impls.rs; independent Rust oracle-v3"
     }
   ]
 }

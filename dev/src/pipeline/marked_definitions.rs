@@ -24,12 +24,12 @@ impl Demand {
         function: &Function,
         context: Option<&execution::Context>,
     ) -> Result<Option<Original>, Error> {
-        if facts.is_comptime_function(function.definition)
+        if facts.is_const_function(function.definition)
             && let Some(context) = context
         {
-            return context.take_comptime_definition(report, facts, function);
+            return context.take_const_definition(report, facts, function);
         }
-        let template = if facts.is_comptime_function(function.definition) {
+        let template = if facts.is_const_function(function.definition) {
             self.prepared
                 .templates
                 .function_charged(report, facts, function)?
@@ -45,7 +45,7 @@ impl Demand {
             .clone();
         Ok(Some(Original { template, contract }))
     }
-    pub(super) fn complete_comptime(
+    pub(super) fn complete_const_definition(
         &mut self,
         report: &Report,
         facts: &mut Declarations,
@@ -58,14 +58,14 @@ impl Demand {
             .ok_or_else(|| Error::unlocated("marked defining body is absent"))?;
         if !facts.typed_function_bodies.contains(&definition)
             || facts.patterns.pending_bodies.contains(&source)
-            || facts
-                .source_function_context(report, definition, source)
-                .map_err(Error::unlocated)?
-                != FunctionContext::Comptime
+            || !matches!(
+                facts
+                    .source_function_context(report, definition, source)
+                    .map_err(Error::unlocated)?,
+                FunctionContext::Comptime | FunctionContext::ConstFunction
+            )
         {
-            return Err(
-                report.body_error(source, "comptime defining body is not genuinely complete")
-            );
+            return Err(report.body_error(source, "const defining body is not genuinely complete"));
         }
         if let Some(original) = self.defining_original(report, facts, &function, context)? {
             self.retain_defining_original(report, facts, original, context)?;
@@ -82,9 +82,9 @@ impl Demand {
         let body::ir::Owner::Function { definition, .. } = original.template.body.owner else {
             return Err(Error::unlocated("defining retention requires a function"));
         };
-        if facts.is_comptime_function(definition) {
+        if facts.is_const_function(definition) {
             if let Some(context) = context {
-                return context.return_comptime_definition(report, facts, original);
+                return context.return_const_definition(report, facts, original);
             }
             if !body::templates::owns(facts, definition) {
                 let key = body::ir::BodyKey::Declaration(definition);

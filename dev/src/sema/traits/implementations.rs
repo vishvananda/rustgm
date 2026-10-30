@@ -21,6 +21,9 @@ use crate::{
 pub(in crate::sema) use member_contracts::ConstantRequest;
 pub(in crate::sema) type OverlapPair = ((Predicate, DefId), (Predicate, DefId));
 #[cfg(test)]
+#[path = "../../../tests/invariants/future_impls.rs"]
+mod future_tests;
+#[cfg(test)]
 #[path = "../../../tests/invariants/polarity_registry.rs"]
 mod tests;
 
@@ -33,6 +36,12 @@ pub(in crate::sema) enum Availability {
     Declarations,
 }
 
+/// Compatible-world absence is a different question from ordinary trait use.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(in crate::sema) enum Purpose {
+    Use,
+    Coherence,
+}
 pub struct Implementation {
     pub owner: DefId,
     pub source: Option<NodeKey>,
@@ -165,6 +174,16 @@ impl Implementations {
         goal: &crate::types::infer::predicates::Predicate,
         availability: Availability,
     ) -> Result<Candidates, crate::types::infer::Error> {
+        self.candidates_for(store, context, goal, availability, Purpose::Use)
+    }
+    pub(in crate::sema) fn candidates_for(
+        &mut self,
+        store: &mut Store,
+        context: &mut crate::types::infer::Context,
+        goal: &crate::types::infer::predicates::Predicate,
+        availability: Availability,
+        purpose: Purpose,
+    ) -> Result<Candidates, crate::types::infer::Error> {
         use crate::types::infer::Error;
         let item = Identity::goal(goal)?;
         let subject = pending_subject(store, context, goal.subject())?;
@@ -196,6 +215,7 @@ impl Implementations {
                 context,
                 self.closed.get(&(item, shape)),
                 availability,
+                purpose,
                 &mut result,
                 &mut unvalidated,
             )?;
@@ -206,12 +226,20 @@ impl Implementations {
             } else {
                 self.heads.get(&(item, Some(head)))
             };
-            self.append_candidates(context, bucket, availability, &mut result, &mut unvalidated)?;
+            self.append_candidates(
+                context,
+                bucket,
+                availability,
+                purpose,
+                &mut result,
+                &mut unvalidated,
+            )?;
         }
         self.append_candidates(
             context,
             self.heads.get(&(item, None)),
             availability,
+            purpose,
             &mut result,
             &mut unvalidated,
         )?;
@@ -303,12 +331,16 @@ impl Implementations {
         context: &mut crate::types::infer::Context,
         bucket: Option<&Vec<usize>>,
         availability: Availability,
+        purpose: Purpose,
         output: &mut Vec<DefId>,
         unvalidated: &mut Vec<DefId>,
     ) -> Result<(), crate::types::infer::Error> {
         context.account_work(bucket.map_or(0, Vec::len))?;
         for &index in bucket.into_iter().flatten() {
             let entry = &self.entries[index];
+            if purpose == Purpose::Use && entry.status.polarity() == Polarity::Reservation {
+                continue;
+            }
             if entry.status.validated() || matches!(availability, Availability::Declarations) {
                 output.push(entry.value.owner);
             } else if matches!(availability, Availability::Executable) {
@@ -537,9 +569,13 @@ impl Implementations {
     pub fn validated(&self) -> impl Iterator<Item = &Implementation> {
         self.entries
             .iter()
-            .filter(|entry| entry.status.validated())
+            .filter(|entry| {
+                entry.status.validated() && entry.status.polarity() != Polarity::Reservation
+            })
             .map(|entry| &entry.value)
     }
+    /// The actual declaration finished conformance. Selection additionally
+    /// authenticates polarity; even a checked reservation supplies no evidence.
     pub fn is_validated(&self, owner: DefId) -> bool {
         self.owners
             .get(&owner)
@@ -547,7 +583,7 @@ impl Implementations {
     }
     pub fn method(&self, owner: DefId, declaration: DefId) -> Option<DefId> {
         let entry = &self.entries[*self.owners.get(&owner)?];
-        if !entry.status.validated() {
+        if !entry.status.validated() || entry.status.polarity() != Polarity::Positive {
             return None;
         }
         let index = entry
@@ -559,7 +595,7 @@ impl Implementations {
     }
     pub fn constant(&self, owner: DefId, declaration: DefId) -> Option<DefId> {
         let entry = &self.entries[*self.owners.get(&owner)?];
-        if !entry.status.validated() {
+        if !entry.status.validated() || entry.status.polarity() != Polarity::Positive {
             return None;
         }
         let index = entry
