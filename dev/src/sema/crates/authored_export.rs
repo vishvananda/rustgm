@@ -15,6 +15,7 @@ mod modifier_rows;
 mod namespace_emission;
 #[path = "authored_export/versioned_sources.rs"]
 mod non_type_sources;
+mod payments;
 mod scoped_parameters;
 mod self_requests;
 mod verbatim_exports;

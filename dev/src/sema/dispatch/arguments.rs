@@ -13,6 +13,7 @@ use crate::{
         traits::Application,
     },
 };
+mod reconstruction;
 
 /// The completed formal order includes inherited parameters independently of
 /// declaration slot numbers. Share this structural fold with const requirements;
@@ -161,6 +162,15 @@ impl Arguments {
         selected: GenericArgs,
         method: DefId,
     ) -> Result<TypeId, &'static str> {
+        let arguments = self.target_arguments(facts, implementation, selected)?;
+        instantiate(facts, method, &arguments)
+    }
+    fn target_arguments(
+        &self,
+        facts: &Declarations,
+        implementation: DefId,
+        selected: GenericArgs,
+    ) -> Result<Vec<Argument>, &'static str> {
         let captures = facts
             .associated
             .schema(implementation)
@@ -198,7 +208,7 @@ impl Arguments {
                 arguments.push(argument);
             }
         }
-        instantiate(facts, method, &arguments)
+        Ok(arguments)
     }
 }
 

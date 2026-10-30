@@ -4,7 +4,7 @@ use crate::{sema::model::Operation, types::Kind as Type};
 
 pub(in super::super) fn emit(
     source: &mut Source,
-    facts: &Declarations,
+    facts: &mut Declarations,
     body: &Body,
     context: Context,
     raw: &mut s::Original,
@@ -58,7 +58,7 @@ pub(in super::super) fn emit(
 
 struct Ports<'a> {
     source: &'a mut Source,
-    facts: &'a Declarations,
+    facts: &'a mut Declarations,
     body: &'a Body,
     context: Context,
     raw: &'a mut s::Original,
@@ -112,13 +112,8 @@ impl Ports<'_> {
         else {
             return Err("source Call requires its actual direct function-item application");
         };
-        if let Some(method) = self.facts.methods.calls.get(&key)
-            && (method.method.0 != item.0 || method.callable != callable.ty)
-        {
-            return Err(
-                "source method Call changed its actual selected declaration or application",
-            );
-        }
+        let callable_type = callable.ty;
+        self.method_target(key, item, callable_type)?;
         let target =
             self.source
                 .stage
@@ -126,7 +121,7 @@ impl Ports<'_> {
         let method = self
             .source
             .stage
-            .method_request(self.facts, item, arguments, self.context)?;
+            .method_request(self.facts, callable_type, self.context)?;
         let s::ValueKind::Call {
             signature: wire_signature,
             ..
@@ -151,6 +146,38 @@ impl Ports<'_> {
             effect,
             safety,
         });
+        Ok(())
+    }
+    fn method_target(
+        &mut self,
+        key: NodeKey,
+        item: ItemId,
+        callable: crate::types::TypeId,
+    ) -> Result<(), &'static str> {
+        let Some(method) = self.facts.methods.calls.get(&key).copied() else {
+            return Ok(());
+        };
+        self.source.stage.charge(1)?;
+        if !matches!(self.facts.types.kind(method.callable),Some(Type::FunctionItem{item,..}) if item.0==method.method.0)
+        {
+            return Err("source method Call changed its actual semantic declaration");
+        }
+        if method.method.0 == item.0 && method.callable == callable {
+            return Ok(());
+        }
+        if !self.source.stage.conversion_roles() {
+            return Err(
+                "source method Call changed its actual selected declaration or application",
+            );
+        }
+        let selected = self.source.stage.paying(|pay| {
+            crate::sema::dispatch::selected_callable(self.facts, key, method.callable, pay)
+        })?;
+        if selected != Some(callable) {
+            return Err(
+                "source method Call changed its actual selected declaration or application",
+            );
+        }
         Ok(())
     }
     fn opening(

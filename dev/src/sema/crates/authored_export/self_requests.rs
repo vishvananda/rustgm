@@ -13,12 +13,27 @@ use crate::{
 impl Stage {
     pub(crate) fn method_request(
         &mut self,
-        facts: &Declarations,
-        item: ItemId,
-        arguments: GenericArgs,
+        facts: &mut Declarations,
+        callable: TypeId,
         context: Context,
     ) -> Result<Option<s::TraitApplicationRef>, &'static str> {
         self.charge(1)?;
+        let Some(Kind::FunctionItem {
+            item, arguments, ..
+        }) = facts.types.kind(callable)
+        else {
+            return Err("source method request has no actual callable");
+        };
+        self.member_request(facts, item, arguments, callable, context)
+    }
+    fn member_request(
+        &mut self,
+        facts: &mut Declarations,
+        item: ItemId,
+        arguments: GenericArgs,
+        callable: TypeId,
+        context: Context,
+    ) -> Result<Option<s::TraitApplicationRef>, &'static str> {
         let definition = DefId(item.0);
         let Some(owner) = facts.associated.trait_owner(definition) else {
             if let Some(application) = self
@@ -28,6 +43,11 @@ impl Stage {
                 .and_then(|map| map.get(&definition))
                 .copied()
             {
+                if self.conversion_roles() {
+                    return self
+                        .selected_request(facts, callable, application, context)
+                        .map(Some);
+                }
                 return Ok(Some(application));
             }
             if facts.associated.owner(definition).is_some() {
@@ -105,6 +125,37 @@ impl Stage {
             self.applied_method_request(facts, subject, application, (formals, arguments), context)
         }
         .map(Some)
+    }
+
+    fn selected_request(
+        &mut self,
+        facts: &mut Declarations,
+        callable: TypeId,
+        witness: s::TraitApplicationRef,
+        context: Context,
+    ) -> Result<s::TraitApplicationRef, &'static str> {
+        let goal = self
+            .paying(|pay| crate::sema::dispatch::callable_requirement(facts, callable, pay))?
+            .ok_or("source selected method has no actual caller trait goal")?;
+        let (application, _) = goal
+            .bound
+            .trait_parts()
+            .ok_or("source selected method goal is not a trait predicate")?;
+        let actual = facts
+            .types
+            .trait_application(application)
+            .ok_or("source selected method trait goal disappeared")?;
+        let owner = DefId(actual.item.0);
+        let declaration = self
+            .rows
+            .trait_applications
+            .get(witness.0 as usize)
+            .ok_or("source selected method linkage disappeared")?
+            .declaration;
+        if declaration != self.address(owner)? {
+            return Err("source selected method linkage changed its trait owner");
+        }
+        self.trait_application(facts, goal.ty, application, context)
     }
 
     /// The implicit trait predicate uses the genuine inherited callable formals.
