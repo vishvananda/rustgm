@@ -149,6 +149,9 @@ fn validate_profile(
     facts: &Declarations,
     identity: &CrateIdentity,
 ) -> Result<(), Error> {
+    facts
+        .require_incoherent_target_transport(report)
+        .map_err(error)?;
     if let Some(producer) = report.lint_producer() {
         producer.require_deprecation_transport(&report.package)?;
         producer.require_impl_bound_transport(&report.package)?;

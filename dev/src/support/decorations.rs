@@ -19,6 +19,7 @@ pub(crate) enum Consumer {
     CrateOptions,
     TraitDiagnostics,
     InherentPolicy,
+    IncoherentTarget,
     NonExhaustive,
     UnsafeSpecialization,
     MarkerTrait,
@@ -112,6 +113,7 @@ impl Consumer {
             "rustc_coherence_is_core" | "rustc_preserve_ub_checks" => Self::CrateOptions,
             "rustc_on_unimplemented" => Self::TraitDiagnostics,
             "rustc_allow_incoherent_impl" => Self::InherentPolicy,
+            "rustc_has_incoherent_inherent_impls" => Self::IncoherentTarget,
             _ => return None,
         })
     }

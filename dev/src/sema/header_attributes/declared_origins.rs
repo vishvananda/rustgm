@@ -23,6 +23,8 @@ pub(in crate::sema) use implicit_receivers::{consume_no_implicit_autorefs, consu
 mod comptime;
 mod nonconst_members;
 pub(in crate::sema) use nonconst_members::consume as consume_nonconst_member;
+mod incoherent_targets;
+pub(in crate::sema) use incoherent_targets::consume as consume_incoherent_target;
 mod promotability;
 pub(in crate::sema) use comptime::consume as consume_comptime;
 pub(in crate::sema) use promotability::consume as consume_promotable;
@@ -39,6 +41,7 @@ struct Promises {
     promotable: Option<promotability::Marker>,
     comptime: Option<comptime::Marker>,
     member: Option<nonconst_members::Choice>,
+    incoherent: Option<incoherent_targets::Marker>,
 }
 struct Owner {
     key: NodeKey,
@@ -52,6 +55,7 @@ pub(super) struct Headers {
     complete: bool,
     comptime_complete: bool,
     has_special_calls: bool,
+    first_incoherent_target: Option<DefId>,
     bytes: Cell<usize>,
     pub(super) steps: Cell<usize>,
 }
@@ -103,7 +107,7 @@ fn observe_selected_owner(
     if report.package.source_core().is_none() && !force {
         return Ok(());
     }
-    if !admitted(report, declaration) {
+    if !admitted(report, declaration) && !force {
         reserve_source_contracts(facts, 5, 0)?;
         if !retained_role_site(report, declaration) {
             return Ok(());
@@ -143,7 +147,7 @@ pub(in crate::sema) fn bind_definition(
     declaration: NodeKey,
 ) -> Result<(), Error> {
     let member = nonconst_members::is_trait_member(facts, definition);
-    if !admitted(report, declaration)
+    if (!admitted(report, declaration) && !incoherent_targets::marked(facts, declaration))
         || (report.package.source_core().is_none()
             && !member
             && !facts
@@ -178,6 +182,10 @@ pub(in crate::sema) fn bind_definition(
             0,
             "duplicate source header completion identity",
         ));
+    }
+    incoherent_targets::bind(report, facts, definition, declaration)?;
+    if !admitted(report, declaration) {
+        return Ok(());
     }
     tracking::validate_intrinsic_annotations(report, facts, definition, declaration)?;
     promotability::bind(report, facts, definition, declaration)?;

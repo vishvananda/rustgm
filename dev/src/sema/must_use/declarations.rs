@@ -279,6 +279,14 @@ fn consume_other(
     consumer: Option<Consumer>,
 ) -> Result<bool, Error> {
     match consumer {
+        Some(Consumer::IncoherentTarget) => {
+            crate::sema::header_attributes::consume_incoherent_target(
+                report,
+                facts,
+                (owner, declaration),
+                (attribute, effect),
+            )?;
+        }
         Some(Consumer::ReservationImpl) => {
             crate::sema::associated::reserved_impls::consume(
                 report,

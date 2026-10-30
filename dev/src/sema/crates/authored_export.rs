@@ -313,6 +313,7 @@ impl Stage {
         identity: &CrateIdentity,
         mode: ExportMode,
     ) -> Result<Self, &'static str> {
+        facts.require_incoherent_target_transport(report)?;
         if let Some(producer) = report.lint_producer() {
             producer
                 .require_deprecation_transport(&report.package)

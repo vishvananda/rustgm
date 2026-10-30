@@ -13,7 +13,7 @@ pub(in crate::sema) use local::has_comptime_headers;
 #[cfg(test)]
 pub(in crate::sema) use local::source_contract_costs;
 pub(in crate::sema) use local::{
-    consume_comptime, consume_const_panic, consume_inherited_overflow,
+    consume_comptime, consume_const_panic, consume_incoherent_target, consume_inherited_overflow,
     consume_no_implicit_autorefs, consume_nonconst_member, consume_pointer_lint,
     consume_promotable, consume_tracking, inherit_tracking, marker_trait,
 };
