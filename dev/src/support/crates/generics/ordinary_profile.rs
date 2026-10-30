@@ -415,7 +415,7 @@ fn originals(
                     && matches!(
                         value.kind,
                         ValueKind::Borrow(_)
-                            | ValueKind::Read(Place::Projection(_))
+                            | ValueKind::Read(Place::Projection(_) | Place::Temporary(_))
                             | ValueKind::ScalarCast(_)
                     ))
             {

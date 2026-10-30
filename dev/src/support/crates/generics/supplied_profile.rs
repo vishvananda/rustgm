@@ -27,6 +27,13 @@ pub(super) fn validate(
         }
         for value in &original.values {
             work.charge(1)?;
+            if matches!(
+                value.kind,
+                s::ValueKind::Read(s::Place::Temporary(_))
+                    | s::ValueKind::Borrow(s::Place::Temporary(_))
+            ) {
+                return Err("source SSA reads require their explicit v9 ordinary profile");
+            }
             if matches!(value.kind, s::ValueKind::Scalar(_)) {
                 return Err("source scalar operation requires its explicit v4 ordinary profile");
             }

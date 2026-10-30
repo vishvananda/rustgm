@@ -193,3 +193,29 @@ fn disconnected_definitions_cannot_authorize_reached_snapshot_and_failure_is_pai
     }
     assert!(work.steps > crate::support::crates::MAX_COMPONENTS);
 }
+
+#[test]
+fn direct_ssa_reads_retain_exact_evaluations_and_reject_invalid_dependencies() -> Result {
+    let mut original = snapshot();
+    original.values[2].kind = s::ValueKind::Read(s::Place::Temporary(0));
+    validate(&original, &mut Work::default())?;
+    assert!(matches!(
+        original.values[2].kind,
+        s::ValueKind::Read(s::Place::Temporary(0))
+    ));
+    original.statements.swap(0, 4);
+    assert!(matches!(
+        validate(&original, &mut Work::default()),
+        Err(error) if error.contains("not dominated")
+    ));
+    original.statements.swap(0, 4);
+    original.values[0].kind = s::ValueKind::Read(s::Place::Temporary(2));
+    assert!(matches!(
+        validate(&original, &mut Work::default()),
+        Err(error) if error.contains("cyclic")
+    ));
+    original.values[0].kind = s::ValueKind::Read(s::Place::Local(0));
+    original.values[2].kind = s::ValueKind::Read(s::Place::Temporary(u32::MAX));
+    assert!(validate(&original, &mut Work::default()).is_err());
+    Ok(())
+}

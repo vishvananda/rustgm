@@ -42,6 +42,7 @@ impl DomainIndex<'_, '_> {
                 )?;
             }
             for (index, value) in original.values.iter().enumerate() {
+                snapshots |= matches!(value.kind, s::ValueKind::Read(s::Place::Temporary(_)));
                 self.value(context, original, index, value, work)?;
             }
             self.calls(context, original, work)?;
@@ -90,6 +91,9 @@ impl DomainIndex<'_, '_> {
         match value.kind {
             s::ValueKind::Scalar(_) => {
                 value.scalar_value(&self.headers.rows().types)?;
+            }
+            s::ValueKind::Read(s::Place::Temporary(value)) => {
+                prefix_value(original, value, index, work)?;
             }
             s::ValueKind::Read(place) | s::ValueKind::Borrow(place) => {
                 Self::place(original, place, None, work)?;

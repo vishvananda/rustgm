@@ -30,6 +30,9 @@ pub(super) fn emit(
                 let value = crate::sema::crates::export_scalar_value(ty, scalar)?;
                 s::ValueKind::Scalar(value.bits().to_le_bytes())
             }
+            ir::Rvalue::Read(ir::Place::Temporary(value)) if stage.conversion_roles() => {
+                s::ValueKind::Read(s::Place::Temporary(value.0))
+            }
             ir::Rvalue::Read(target) => s::ValueKind::Read(place(target)?),
             ir::Rvalue::Borrow {
                 place: target,
