@@ -19,14 +19,28 @@ pub(super) struct Inputs {
     outlives: Vec<(TermId, RegionId)>,
     formed: Vec<TermId>,
 }
+pub(super) struct Header {
+    substitution: Instantiation,
+    lifetimes: substitute::Bound,
+}
 impl Inputs {
     pub fn instantiate(
         &mut self,
         facts: &mut Declarations,
         context: &mut Context,
-        (predicate, owner): (Predicate, DefId),
+        input: (Predicate, DefId),
     ) -> Result<infer::predicates::Predicate, String> {
-        self.reserve_traits(facts, context, owner)?;
+        let (goal, mut header) = self.head(facts, context, input)?;
+        self.conditions(facts, context, input.1, &mut header)?;
+        Ok(goal)
+    }
+
+    pub fn head(
+        &mut self,
+        facts: &mut Declarations,
+        context: &mut Context,
+        (predicate, owner): (Predicate, DefId),
+    ) -> Result<(infer::predicates::Predicate, Header), String> {
         let ids = facts.generics.parameter_ids(&facts.types, owner)?;
         let mut bindings = Vec::with_capacity(ids.len());
         for id in ids {
@@ -46,6 +60,37 @@ impl Inputs {
         let mut substitution =
             Instantiation::new(context, &facts.types, &bindings).map_err(|e| e.to_string())?;
         let mut lifetimes = self.lifetimes(facts, owner)?;
+        let predicate = lifetimes.predicate(&mut facts.types, predicate)?;
+        context
+            .account_work(lifetimes.steps)
+            .map_err(|e| e.to_string())?;
+        let goal = context
+            .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
+            .map_err(|e| e.to_string())?;
+        self.formed
+            .extend(goal.arguments().filter_map(|arg| match arg {
+                Argument::Type(ty) => Some(ty),
+                _ => None,
+            }));
+        Ok((
+            goal,
+            Header {
+                substitution,
+                lifetimes,
+            },
+        ))
+    }
+
+    /// Materialize assumptions only after both actual heads can intersect.
+    pub fn conditions(
+        &mut self,
+        facts: &mut Declarations,
+        context: &mut Context,
+        owner: DefId,
+        header: &mut Header,
+    ) -> Result<(), String> {
+        self.reserve_traits(facts, context, owner)?;
+        let before = header.lifetimes.steps;
         for requirement in facts.generics.predicates_in_scope(owner) {
             if let Clause::UnstableFeature(id) = requirement.value {
                 context.account_work(1).map_err(|e| e.to_string())?;
@@ -60,10 +105,14 @@ impl Inputs {
                 continue;
             };
             if predicate.bound.trait_parts().is_some() {
-                let predicate = lifetimes.predicate(&mut facts.types, predicate)?;
+                let predicate = header.lifetimes.predicate(&mut facts.types, predicate)?;
                 self.traits.push(
                     context
-                        .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
+                        .instantiate_predicate(
+                            &mut facts.types,
+                            predicate,
+                            &mut header.substitution,
+                        )
                         .map_err(|e| e.to_string())?,
                 );
                 continue;
@@ -74,9 +123,9 @@ impl Inputs {
             ) {
                 continue;
             }
-            let predicate = lifetimes.predicate(&mut facts.types, predicate)?;
+            let predicate = header.lifetimes.predicate(&mut facts.types, predicate)?;
             let term = context
-                .instantiate_with(&mut facts.types, predicate.ty, &mut substitution)
+                .instantiate_with(&mut facts.types, predicate.ty, &mut header.substitution)
                 .map_err(|e| e.to_string())?;
             if let Bound::Outlives(region) = predicate.bound {
                 self.outlives.push((term, region));
@@ -84,19 +133,10 @@ impl Inputs {
                 self.sized.push(term);
             }
         }
-        let predicate = lifetimes.predicate(&mut facts.types, predicate)?;
         context
-            .account_work(lifetimes.steps)
-            .map_err(|e| e.to_string())?;
-        let goal = context
-            .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
-            .map_err(|e| e.to_string())?;
-        self.formed
-            .extend(goal.arguments().filter_map(|arg| match arg {
-                Argument::Type(ty) => Some(ty),
-                _ => None,
-            }));
-        Ok(goal)
+            .account_work(header.lifetimes.steps.saturating_sub(before))
+            .map_err(|error| error.to_string())?;
+        Ok(())
     }
 
     fn reserve_traits(

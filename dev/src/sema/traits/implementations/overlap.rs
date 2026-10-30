@@ -1,5 +1,8 @@
 //! Structural impl disjointness uses simultaneous existential type/const equations.
 mod disjointness;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/overlap_headers.rs"]
+mod head_tests;
 mod inputs;
 mod iteration;
 use crate::{
@@ -19,10 +22,12 @@ pub(in crate::sema) fn possible(
 ) -> Result<(bool, usize), String> {
     let mut context = Context::default();
     let mut inputs = inputs::Inputs::default();
-    let a = inputs.instantiate(facts, &mut context, left)?;
-    let b = inputs.instantiate(facts, &mut context, right)?;
+    let (a, mut left_inputs) = inputs.head(facts, &mut context, left)?;
+    let (b, mut right_inputs) = inputs.head(facts, &mut context, right)?;
     let possible = match context.equate_predicate_shapes(&facts.types, &a, &b) {
         Ok(()) => {
+            inputs.conditions(facts, &mut context, left.1, &mut left_inputs)?;
+            inputs.conditions(facts, &mut context, right.1, &mut right_inputs)?;
             !disjointness::has_unsized(facts, &mut context, &inputs)?
                 && !inputs.has_absent_local_trait(facts, &mut context)?
         }
