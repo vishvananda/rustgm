@@ -22,8 +22,10 @@ pub(in crate::sema) fn possible(
     let a = inputs.instantiate(facts, &mut context, left)?;
     let b = inputs.instantiate(facts, &mut context, right)?;
     let possible = match context.equate_predicate_shapes(&facts.types, &a, &b) {
-        Ok(()) => !disjointness::has_unsized(facts, &mut context, &inputs)?
-            && !inputs.has_absent_local_trait(facts, &mut context)? ,
+        Ok(()) => {
+            !disjointness::has_unsized(facts, &mut context, &inputs)?
+                && !inputs.has_absent_local_trait(facts, &mut context)?
+        }
         Err(infer::Error::Mismatch | infer::Error::Occurs) => false,
         Err(error) => return Err(error.to_string()),
     };
@@ -73,4 +75,6 @@ pub(in crate::sema) fn reference_comparison(
 }
 
 #[cfg(test)]
-pub(in crate::sema) fn input_layout() -> usize { size_of::<inputs::Inputs>() }
+pub(in crate::sema) fn input_layout() -> usize {
+    size_of::<inputs::Inputs>()
+}

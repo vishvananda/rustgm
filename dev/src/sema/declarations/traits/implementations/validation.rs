@@ -218,7 +218,9 @@ impl Checker<'_> {
         second: (Predicate, DefId),
         steps: &mut usize,
     ) -> Result<(), Error> {
-        if self.reservation_pair(key, [first.1, second.1], steps)? { return Ok(()); }
+        if self.reservation_pair(key, [first.1, second.1], steps)? {
+            return Ok(());
+        }
         if crate::sema::specialization::remembered(
             &mut self.facts,
             self.report,
@@ -353,9 +355,13 @@ impl Checker<'_> {
         let reservation = self.reservation_impl(Some(source), owner)?;
         let environment = self.facts.generics.environments.get(&owner).cloned();
         let mut proof = self.declaration_proof(owner, environment);
-        let requirements = if reservation { None } else {
-            Some(impl_contract_obligations(&mut self.facts, predicate, &mut proof)
-                .map_err(|e| self.error(source, e))?)
+        let requirements = if reservation {
+            None
+        } else {
+            Some(
+                impl_contract_obligations(&mut self.facts, predicate, &mut proof)
+                    .map_err(|e| self.error(source, e))?,
+            )
         };
         self.validate_source_copy_impl(source, predicate, &mut proof)?;
         if !reservation {
@@ -377,12 +383,18 @@ impl Checker<'_> {
                 .outlives(longer, shorter, 0)
                 .map_err(|e| self.error(source, e.to_string()))?;
         }
-        for &(a, b) in requirements.iter().flat_map(|requirements| &requirements.regions) {
+        for &(a, b) in requirements
+            .iter()
+            .flat_map(|requirements| &requirements.regions)
+        {
             constraints
                 .outlives(a, b, 0)
                 .map_err(|e| self.error(source, e.to_string()))?;
         }
-        for &requirement in requirements.iter().flat_map(|requirements| requirements.required.iter().chain(&requirements.implied)) {
+        for &requirement in requirements
+            .iter()
+            .flat_map(|requirements| requirements.required.iter().chain(&requirements.implied))
+        {
             if let Clause::Predicate(Predicate {
                 ty,
                 bound: Bound::Outlives(shorter),

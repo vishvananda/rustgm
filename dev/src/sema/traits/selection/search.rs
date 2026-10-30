@@ -82,8 +82,8 @@ mod pending_closure_tests;
 #[path = "../../../../tests/invariants/refutation_completion.rs"]
 mod refutation_completion;
 mod refutations;
-mod result_bounds;
 mod reserved_trials;
+mod result_bounds;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/contract_evidence.rs"]
 mod result_tests;
@@ -345,11 +345,16 @@ impl Search<'_> {
             match result {
                 Ok(()) => {
                     if self.query.purpose == crate::sema::traits::implementations::Purpose::Use
-                        && facts.generics.implementations.as_ref()
+                        && facts
+                            .generics
+                            .implementations
+                            .as_ref()
                             .ok_or("missing reservation implementation registry")?
                             .polarity(&facts.types, &facts.associated, owner)?
                             == crate::sema::traits::implementations::Polarity::Reservation
-                    { return Err("reservation entered an ordinary trait-use trial".into()); }
+                    {
+                        return Err("reservation entered an ordinary trait-use trial".into());
+                    }
                     if Self::source_auto_goal(facts, &frame.goal)? {
                         frame.explicit_auto = true;
                     }

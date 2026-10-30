@@ -200,7 +200,8 @@
     "transport": "v0-v8 have only bool negative; reject actual reservation headers without changing bytes or fabricating source bounds"
   },
   "corrections": [
-    "oracle-v1 associated_type_probe was predicted accepted; rustc E0277 S:A rejects its actual associated type definition. Oracle-v2 retained same bytes with corrected prediction and proves independent real impl case accepted."
+    "oracle-v1 associated_type_probe was predicted accepted; rustc E0277 S:A rejects its actual associated type definition. Oracle-v2 retained same bytes with corrected prediction and proves independent real impl case accepted.",
+    "oracle-v3 auto_structural_kept was predicted accepted; actual pinned Rust rejects E0277 because any explicit auto-impl head, including Reservation, suppresses structural default. Source unchanged; candidate keeps original O(1) override machinery and does not grant auto proof."
   ],
   "producer": "actual name-value string attribute, rustc_attrs/real macro allowance, positive trait impl owner, current annotation witness/message, typed polarity independent constness",
   "semantics": "Use excludes reservation; compatible coherence candidate prevents closed absence, incompatible Self/arguments do not. Direct overlap allowed without specialization. Full member/body checking retained; no own Self:Trait assumption. Ordinary positive and explicit assumptions remain authoritative.",
@@ -209,12 +210,72 @@
       "metadata_status": 0,
       "object_status": 0,
       "candidate_export": "reservation implementation transport requires a wider metadata profile",
-      "sha256": "723a42c1c0e888f29e8e3ac0685e06f09cd8827ffc8605e485a6e5666e82bd5a"
+      "sha256": "3f5a86499c9a2815fecc3758bf1bf28c2bc369efdba4f1ae3e7a35a09d702cb0"
     },
     "pa20_local_bound": {
       "closed-local": 0,
       "real-bound-overlap": 1,
       "open-bound-overlap": 1
+    },
+    "module-provider-missing-policy": {
+      "metadata_status": 1,
+      "object_status": 1,
+      "diagnostic": "implementation has missing stability attribute",
+      "sha256": "723a42c1c0e888f29e8e3ac0685e06f09cd8827ffc8605e485a6e5666e82bd5a",
+      "predecessor": "oracle-v3/module_provider metadata+object were predicted0 but actually1; source retained byte-identical"
     }
+  },
+  "new_observed_cases": {
+    "macro_allowance": {
+      "metadata_status": 0,
+      "sha256": "77c7931e22e186484d593e88d2a638be0155e2ae2ebacd7c416b7f6f23381c9f",
+      "reference": "oracle-v3/receipt.json actual row, overall mismatch preserved"
+    },
+    "cfg_removed": {
+      "metadata_status": 0,
+      "sha256": "31be87bdb60a8915c7c5b26fb691e5229f712f8d699a012e8a5f4a32b39492da",
+      "reference": "oracle-v3/receipt.json actual row, overall mismatch preserved"
+    },
+    "unsafe_wrapper": {
+      "metadata_status": 1,
+      "sha256": "a54f1dcee930618468e1f63a9447254c850250bac1d67859b1447e62e9bc5394",
+      "reference": "oracle-v3/receipt.json actual row, overall mismatch preserved"
+    },
+    "constant_unused": {
+      "metadata_status": 0,
+      "sha256": "c2dea40b798f47702e73cea5f20c1ee8b950e207afac9d65482b629b8131f8d8",
+      "reference": "oracle-v3/receipt.json actual row, overall mismatch preserved"
+    },
+    "constant_use_denied": {
+      "metadata_status": 1,
+      "sha256": "5d73fb625b3d193b4227bf3163167bbbe7300b4840ff3c40318961ae069e0492",
+      "reference": "oracle-v3/receipt.json actual row, overall mismatch preserved"
+    },
+    "copy_physical_ok": {
+      "metadata_status": 0,
+      "sha256": "cd4242fe64428293473ebd7f636c4c7a651ddbf1bee671aa434a643e4df5ff94",
+      "reference": "oracle-v3/receipt.json actual row, overall mismatch preserved"
+    },
+    "copy_physical_bad": {
+      "metadata_status": 1,
+      "sha256": "1fabc64fdf375a245f0893d643bd79be00df24068dc90a50f5df52fdbdb391cd",
+      "reference": "oracle-v3/receipt.json actual row, overall mismatch preserved"
+    },
+    "copy_use_denied": {
+      "metadata_status": 1,
+      "sha256": "68da3b119d651916de644626ffe7b3fd4362d7800edb0738992f7884040aca44",
+      "reference": "oracle-v3/receipt.json actual row, overall mismatch preserved"
+    },
+    "auto_structural_kept": {
+      "metadata_status": 1,
+      "sha256": "0601b7af29828ef86afdeaadec66dac8bf4a581b44edf403a1aebd3f95d31516",
+      "reference": "oracle-v3/receipt.json actual row, overall mismatch preserved"
+    }
+  },
+  "independent_receipts": {
+    "oracle-v1": "e8e171c2607fdecb7633f8bca2489b6ad2607fe7403df012c006622ac01295db",
+    "oracle-v2": "6f7c1c028d2e1392cc826a0285ce408e35265ed0a65cfc3582316ecb2e02885a",
+    "oracle-v3": "636ba16bcee3cf1550311176538e473e8942d0ff91de7a8a884526dc0ddf4e5c",
+    "oracle-v4": "6295df37b2f6f7b700b5039c44eb3e89d6b6f76e7f6efc6b48e4a17a89ad7a1c"
   }
 }

@@ -99,4 +99,5 @@ pub const fn const_forward(value:u8)->u8{const_identity(value)}
 
 #[stable(feature="reservation_fixture",since="1.0.0")]pub trait A{#[stable(feature="reservation_fixture",since="1.0.0")]fn n()->u32;}
 #[stable(feature="reservation_fixture",since="1.0.0")]pub struct S;
+#[stable(feature="reservation_fixture",since="1.0.0")]
 #[rustc_reservation_impl="future impl"]impl A for S{fn n()->u32{7}}

@@ -107,14 +107,7 @@ impl Search<'_> {
                             return Ok(ControlFlow::Break(self.await_header(facts, frame)?));
                         }
                         crate::sema::traits::implementations::Candidates::Ready(owners) => {
-                            let (overridden, work) =
-                                registry.auto_override(&facts.types, obligation);
-                            frame.inputs.context.account_work(work).map_err(inference)?;
-                            if !overridden
-                                && !(self.query.purpose
-                                    == crate::sema::traits::implementations::Purpose::Coherence
-                                    && !owners.is_empty())
-                            {
+                            if !registry.auto_override(&facts.types, obligation) {
                                 pending.query.reconsider(obligation)?;
                                 continue;
                             }
@@ -266,7 +259,6 @@ impl Pending {
         let before = self.query.steps;
         let permissions_before = self.permissions.as_ref().map_or(0, |q| q.steps());
         let source = super::freezing::has_source(facts, self.root.marker);
-        let mut override_steps = 0_usize;
         let step = self.query.advance(
             &mut facts.types,
             &mut facts.aggregates,
@@ -284,26 +276,21 @@ impl Pending {
                     environment.matching_auto(types, obligation, &mut self.permissions)
                 })? {
                     Ok(Rule::Assumed)
+                } else if facts
+                    .generics
+                    .implementations
+                    .as_ref()
+                    .is_some_and(|registry| registry.auto_override(types, obligation))
+                {
+                    Ok(Rule::External)
                 } else {
-                    let (overridden, work) = facts
-                        .generics
-                        .implementations
-                        .as_ref()
-                        .map_or((false, 0), |registry| {
-                            registry.auto_override(types, obligation)
-                        });
-                    override_steps = override_steps.saturating_add(work);
-                    Ok(if overridden {
-                        Rule::External
-                    } else {
-                        Rule::Structural
-                    })
+                    Ok(Rule::Structural)
                 }
             },
         )?;
         let work = (self.query.steps - before).saturating_add(
             self.permissions.as_ref().map_or(0, |q| q.steps()) - permissions_before,
         );
-        Ok((step, work.saturating_add(override_steps)))
+        Ok((step, work))
     }
 }

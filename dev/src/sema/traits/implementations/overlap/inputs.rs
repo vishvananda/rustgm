@@ -61,7 +61,11 @@ impl Inputs {
             };
             if predicate.bound.trait_parts().is_some() {
                 let predicate = lifetimes.predicate(&mut facts.types, predicate)?;
-                self.traits.push(context.instantiate_predicate(&mut facts.types, predicate, &mut substitution).map_err(|e| e.to_string())?);
+                self.traits.push(
+                    context
+                        .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
+                        .map_err(|e| e.to_string())?,
+                );
                 continue;
             }
             if !matches!(
@@ -104,19 +108,43 @@ impl Inputs {
         let mut count = 0_usize;
         for requirement in facts.generics.predicates_in_scope(owner) {
             context.account_work(1).map_err(|e| e.to_string())?;
-            if matches!(requirement.value, Clause::Predicate(value) if value.bound.trait_parts().is_some()) {
+            if matches!(requirement.value, Clause::Predicate(value) if value.bound.trait_parts().is_some())
+            {
                 count = count.saturating_add(1);
             }
         }
         if count != 0 {
-            let growth = crate::support::retained::Growth::vector::<infer::predicates::Predicate>(self.traits.len(), self.traits.capacity(), count);
+            let growth = crate::support::retained::Growth::vector::<infer::predicates::Predicate>(
+                self.traits.len(),
+                self.traits.capacity(),
+                count,
+            );
             // Ordinary PA20 crates have no source-header ledger. Do not create
             // one after declaration completion merely to account temporary work.
-            context.account_work(growth.work.saturating_add(count).saturating_add(growth.bytes)).map_err(|e| e.to_string())?;
-            if facts.must_use_contracts.as_deref().and_then(|owner| owner.headers.as_ref()).is_some() {
-                crate::sema::header_attributes::charge_attribute_retention(facts, growth.work.saturating_add(count), growth.bytes).map_err(|e| e.to_string())?;
+            context
+                .account_work(
+                    growth
+                        .work
+                        .saturating_add(count)
+                        .saturating_add(growth.bytes),
+                )
+                .map_err(|e| e.to_string())?;
+            if facts
+                .must_use_contracts
+                .as_deref()
+                .and_then(|owner| owner.headers.as_ref())
+                .is_some()
+            {
+                crate::sema::header_attributes::charge_attribute_retention(
+                    facts,
+                    growth.work.saturating_add(count),
+                    growth.bytes,
+                )
+                .map_err(|e| e.to_string())?;
             }
-            self.traits.try_reserve(count).map_err(|_| "coherence trait conditions allocation failed")?;
+            self.traits
+                .try_reserve(count)
+                .map_err(|_| "coherence trait conditions allocation failed")?;
         }
         Ok(())
     }
@@ -162,8 +190,15 @@ impl Inputs {
             if !predicate.is_concrete(&facts.types)? || predicate.contains_opaques(&facts.types)? {
                 continue;
             }
-            let (application, _) = predicate.bound.trait_parts().ok_or("coherence trait condition lost its application")?;
-            let item = facts.types.trait_application(application).ok_or("coherence trait application is missing")?.item;
+            let (application, _) = predicate
+                .bound
+                .trait_parts()
+                .ok_or("coherence trait condition lost its application")?;
+            let item = facts
+                .types
+                .trait_application(application)
+                .ok_or("coherence trait application is missing")?
+                .item;
             let local = facts.associated.owner(DefId(item.0)).and_then(|id| facts.associated.get(id))
                 .is_some_and(|owner| owner.source.is_some() && matches!(owner.kind,
                     crate::sema::associated::OwnerKind::Trait { definition, .. } if definition == DefId(item.0)));

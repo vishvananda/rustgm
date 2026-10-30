@@ -94,41 +94,26 @@ impl Implementations {
         &self,
         store: &Store,
         obligation: crate::types::auto_traits::Obligation,
-    ) -> (bool, usize) {
+    ) -> bool {
         let Some(Kind::Adt(item, _)) = store.kind(obligation.ty) else {
-            return (false, 0);
+            return false;
         };
         let identity = Identity::Auto(obligation.marker);
         let head = Head::Nominal(item);
-        let (checked, work) = self.overriding_bucket(identity, Some(head));
-        (
-            checked
-                || self.pending.as_ref().is_some_and(|pending| {
-                    pending.may_have_subject(identity, Subject::Rigid(head))
-                }),
-            work,
-        )
+        self.heads.contains_key(&(identity, Some(head)))
+            || self
+                .pending
+                .as_ref()
+                .is_some_and(|pending| pending.may_have_subject(identity, Subject::Rigid(head)))
     }
 
     /// An actual source auto impl replaces the structural default for its
     /// entire typed head family, independently of a particular RHS match.
-    pub(in crate::sema) fn source_auto_override(&self, item: ItemId, kind: Kind) -> (bool, usize) {
+    pub(in crate::sema) fn source_auto_override(&self, item: ItemId, kind: Kind) -> bool {
         let identity = Identity::User(item);
-        let (specific, first) = self.overriding_bucket(identity, Some(Head::canonical(kind)));
-        if specific { return (true, first); }
-        let (generic, second) = self.overriding_bucket(identity, None);
-        (generic, first.saturating_add(second))
-    }
-    fn overriding_bucket(&self, item: Identity, head: Option<Head>) -> (bool, usize) {
-        let bucket = self.heads.get(&(item, head));
-        // Only explicit positive/negative declarations suppress structural proof.
-        // A reservation cannot silently acquire that permission from an index.
-        let mut work = 1_usize;
-        for &index in bucket.into_iter().flatten() {
-            work = work.saturating_add(1);
-            if self.entries[index].status.polarity() != Polarity::Reservation { return (true, work); }
-        }
-        (false, work)
+        self.heads
+            .contains_key(&(identity, Some(Head::canonical(kind))))
+            || self.heads.contains_key(&(identity, None))
     }
 
     /// Reserve the complete source inventory before any early candidate selection.

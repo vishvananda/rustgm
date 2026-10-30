@@ -102,15 +102,12 @@ impl Search<'_> {
             .types
             .kind(goal.ty)
             .ok_or("source Freeze lost its subject")?;
-        let (overridden, work) = facts
+        if facts
             .generics
             .implementations
             .as_ref()
-            .map_or((false, 0), |registry| {
-                registry.source_auto_override(item, kind)
-            });
-        frame.inputs.context.account_work(work).map_err(inference)?;
-        if overridden {
+            .is_some_and(|registry| registry.source_auto_override(item, kind))
+        {
             if matches!(
                 self.query.availability,
                 crate::sema::traits::implementations::Availability::Validated
