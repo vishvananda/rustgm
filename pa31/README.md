@@ -72,6 +72,12 @@ const, unsafe or mutation permission. Broader interior-mutation warning policy i
 explicitly deferred; whole original algorithms and artifacts remain required.
 Candidate qualification for this source checkpoint is pending.
 
+The source-only [confusable-name plan](tests/spec/source-confusable-methods/README.md)
+and [suspension-advisory plan](tests/spec/source-suspend-advisory/README.md) freeze
+independent predictions for adjacent declarations. Neither has reference or
+candidate execution evidence yet, and neither is an observed next blocker.
+Broader diagnostics, async ownership and imported intent remain required.
+
 The source `rustc_promotable` declaration checkpoint retains its actual attribute,
 configured owner and direct const-stability witness. Word, list and value forms
 follow the pinned parser's marker semantics. This header promise grants neither

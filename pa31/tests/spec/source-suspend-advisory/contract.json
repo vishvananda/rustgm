@@ -1,0 +1,293 @@
+{
+  "state": "Frozen independent predictions ONLY; no reference/candidate execution or observed next-blocker claim",
+  "pin": "Rust1.98.0 commit88d9e12ae178fab0fb5cc050a94da85685d449ea Linuxx86-64 edition2024",
+  "owner": "PA31 source declarations; PA42/43 future suspension diagnostics; ordinary PA15/19/23/26 ownership retained",
+  "primary": {
+    "compiler/rustc_attr_parsing/src/attributes/must_not_suspend.rs:5-33": {
+      "file_sha256": "24a82ab29226416be40a957ba87abb066fd5b49128534d0e4212d3379ce48ed2",
+      "interval_sha256": "6ad9efd2eef40476e58a4138b874003c4b16475d71c2ce000a747c42d2b6b356"
+    },
+    "compiler/rustc_attr_parsing/src/attributes/mod.rs:129-185": {
+      "file_sha256": "d1fce438128338feacb8e231dda21938442d0b91d6959430e1b411c537fdf044",
+      "interval_sha256": "c10c2a2fdeec86133bd7b8fcf14f4f8c04f57ee7d426a51da7a1a3ea8248dc88"
+    },
+    "compiler/rustc_mir_transform/src/coroutine/layout.rs:694-724": {
+      "file_sha256": "b33fcc7ce24a13e473ca654f1ac93cf5502d3d4c17c997f73cc8c8fa55a8d41d",
+      "interval_sha256": "0ccf4710140c840f82175a9f913b08f0fffd62ab3adc0e2077f77714d946b1ec"
+    },
+    "library/core/src/cell.rs:1609-1628": {
+      "file_sha256": "235e62c8a1a5c431562862bf6121f9508e8eed09b26a07433690ed3ba7ef0ccb",
+      "interval_sha256": "ef4cb15a7500d2b3d4365f20087074136ad0c013ed1a5a234cb0ccff02e4ac6e"
+    },
+    "library/core/src/cell.rs:2092-2112": {
+      "file_sha256": "235e62c8a1a5c431562862bf6121f9508e8eed09b26a07433690ed3ba7ef0ccb",
+      "interval_sha256": "b0792f4d4b90dba52149d9f9b4b752482b3b73b8b6af9e94414cb25882afd03e"
+    }
+  },
+  "cases": {
+    "structure.rs": {
+      "sha256": "11844410273fdaac24898109a91fad0f27ffa8079b8073c8f328fb7df34d006d",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_expected": 0
+    },
+    "enumeration.rs": {
+      "sha256": "bf8c9e94191629d3b801ec94126bdcfd65e194025ac71fb7555c2c1274b47e89",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_expected": 0
+    },
+    "union.rs": {
+      "sha256": "3997d4e6663182f66fec7172722ffee830d21740a78ce01d8f805e868378fb6f",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_expected": 0
+    },
+    "trait.rs": {
+      "sha256": "d9a767210db6613992a813cdba74163066abb106608cedb967204c43f5054f8a",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_expected": 0
+    },
+    "reason.rs": {
+      "sha256": "0a3b43c55edf737295ec2569653d1bf643f5bbdb49e5190d60f8efab2c532eff",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_expected": 0
+    },
+    "raw-reason.rs": {
+      "sha256": "fa53670644fd2f12931a93d099d82e94f609a1f557e3679178d22e31c9b88895",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_expected": 0
+    },
+    "empty-reason.rs": {
+      "sha256": "35d2cd0d052b989b0851060ed27cabd438d3e81d5cadea74c2b3557b4ac1f12e",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_expected": 0
+    },
+    "generic.rs": {
+      "sha256": "4c0b667f59618a22dc5f37eea5570e1521addb1fa4b2898699b4a05f51c988a5",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_expected": 0
+    },
+    "const-allowed.rs": {
+      "sha256": "f4afdbfc188743d0ee49a615f5c9bcc818f287e95598a6cb5005d1e4bd7241c0",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_expected": 0
+    },
+    "mutation.rs": {
+      "sha256": "9ef7258727a57a6eb4199669bf1e31a272a9e8fc1b30a5a58bf218d80b55d2e2",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_expected": 0,
+      "future_native_predictions": {
+        "observe": 9
+      }
+    },
+    "drop-body.rs": {
+      "sha256": "09a56bae00be23bf5c8dba635d41e658cdffef649cfc6e452dd5d747035c97d6",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_expected": 0,
+      "future_native_predictions": {
+        "observe": 9
+      }
+    },
+    "deny-unused.rs": {
+      "sha256": "b1de2bbfb46a3d2bf87a60409e9ec7008eba4fdd1e4571b7b95e4b3d1774f6e8",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_expected": 0
+    },
+    "list.rs": {
+      "sha256": "5b81da0161ee1b751b45145d201ddd44701391a5a0b7a2b0982b72a83e1dc055",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1
+    },
+    "empty-list.rs": {
+      "sha256": "7aacb21404a55714bb99d304bc74e7a681b36a9dd4e19666e92242d37a7340e1",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1
+    },
+    "non-string.rs": {
+      "sha256": "84930fb3363f0ef13803776cee93a9bf60152c29e9d324d8f69797c0ccd12be8",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1
+    },
+    "byte-string.rs": {
+      "sha256": "ec6155a9d1d61cac9802aab9cd5566f92b1cae632706fa1d763dd607cb8736db",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1
+    },
+    "duplicate.rs": {
+      "sha256": "7016b348029f4bc0fdcef009a46898ddebe0ad92fd60f8bd7f867927f88308f8",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1
+    },
+    "different-reasons.rs": {
+      "sha256": "f8bf20eaa6aec8f882e101b4e30b7ba3316023f776e766bb13d1c99b3417e91a",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1
+    },
+    "free.rs": {
+      "sha256": "2694820ed5ec53d77a4043708f17465a7f4a74636141707e8b2d2b1589289266",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1
+    },
+    "method.rs": {
+      "sha256": "63c83fa85ba71a7f7a8e455a3e366ad06d2146eac66567f0eddbe3376f49b3f2",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1
+    },
+    "type-alias.rs": {
+      "sha256": "58ca187afe1e11dac28b305eddcdb25468d9c41491f33991085a478e75a9f4df",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1
+    },
+    "constant.rs": {
+      "sha256": "4edd7244860e65d2af39a4a1d1ef12cf1d9b896cc098cd2ddd1b28e5b903943b",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1
+    },
+    "variant.rs": {
+      "sha256": "9938b74db65e7fa88ea91b2ec8a311166e86d9a69df8558765e51d6d78a6a6d0",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1
+    },
+    "field.rs": {
+      "sha256": "f94e8731b2c2f7ff168ef0f6358865686a82ae2166d43b2ea9de0ae05fca1817",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1
+    },
+    "impl-target.rs": {
+      "sha256": "c2b0c9dd5d26208f63faaf7d11cda179fd33a7978dc8de0ab8e6e1846cd138fd",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1
+    },
+    "unsafe-wrapper.rs": {
+      "sha256": "21acdc604e90536595d8bdcd3a2ae95772b791f391692f4380bd3eaee6175fea",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1
+    },
+    "missing-gate.rs": {
+      "sha256": "19b69807cc14e437348f6d2f526abef9c44f58e068b6955ababd54e1485cd664",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1
+    },
+    "wrong-feature.rs": {
+      "sha256": "867246f9c196d31685ac30bf3180d16d722578d7c6e990eee79bbbab003daeba",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1
+    },
+    "cfg-removed.rs": {
+      "sha256": "858a9fd2ced132299bb15270dfcc9c762ee0bff5176f1ca81b183f1415350616",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_expected": 0
+    },
+    "mutation-denied.rs": {
+      "sha256": "5147befc0357a4cda0847dffdb626aeb96388c288978a2f6a258b9369e9b3363",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1,
+      "stage": "Ordinary shared-reference mutation restriction"
+    },
+    "drop-move-denied.rs": {
+      "sha256": "6da2ca8ed261ca5d7bda169e59d2192e230fe5d36eb85b624339b60fd559a07f",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1,
+      "stage": "Ordinary moved non-Copy value remains unusable"
+    },
+    "drop-copy-denied.rs": {
+      "sha256": "5ec5c27d019a04bdaf3d8ff4852cd288f2f89164c0da210ff0bd355375568c82",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1,
+      "stage": "Drop and Copy remain incompatible"
+    },
+    "unsafe-denied.rs": {
+      "sha256": "2c75f9ed9ae9c645e914440855aae9790cc1c1cb1c46c9c791f2da0d203baf56",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1,
+      "stage": "Union read retains unsafe requirement"
+    },
+    "auto-marker-denied.rs": {
+      "sha256": "22ad8bd3ee37cb9c24ae6b2741fc8d35ea56aa38b8bec2bda6e0265e22d9aee7",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1,
+      "stage": "Advisory trait grants no Send object evidence"
+    },
+    "macro-meta-allowance.rs": {
+      "sha256": "8020ef07f41f5f6cfb6b0e9a1265e197439128e3e69f7ed6a04bc6ba8098322d",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_expected": 0
+    },
+    "macro-item-input-missing-gate.rs": {
+      "sha256": "1e2506494d53b3712cdbc51ec4b8fbc25664519b581d26526470c3b09987dad0",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1
+    },
+    "macro-without-allowance.rs": {
+      "sha256": "be5e827bc76114856546df6c029e6268c871e66297f711a4a565163284ddd8fa",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1
+    },
+    "trait-method.rs": {
+      "sha256": "ea6b948b44ce1dacd48233a871b9762fc92940d4078155fc7319c80923c667be",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1
+    },
+    "foreign-type.rs": {
+      "sha256": "a20282ca1e2c93bc9199f4f4c07a11bdaa0d5be7ad2e0c7cacc788d142ce4a1e",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_expected": 1
+    },
+    "owner-replay.rs": {
+      "sha256": "a0a77ced79311cf803dd13f88d218fddcd8abf1d596fe5d74c61595db89334ef",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_expected": 0
+    }
+  },
+  "rules": [
+    "Own must_not_suspend feature or actual macro attribute-envelope allowance; rustc_attrs alone is insufficient",
+    "Word or string name-value reason accepted, lists rejected by convert despite TEMPLATE text",
+    "Actual Struct/Enum/Union/Trait targets only; active repeated attributes are hard errors including differing reasons",
+    "Advisory affects suspension warning only, never drop order/Copy/Send/Unpin/unsafe/mutation or borrow permission"
+  ],
+  "required": "Actual PA42/43 suspension liveness, reasons, allow/warn/deny/expect and imported advisory transport remain Required; no async dependency or fake suspend execution is hidden in this PA31 declaration packet. Future owning tests must retain guard-across-await warning, scoped-before-await opposite and real cancellation/drop/borrow semantics. Whole original Ref/RefMut algorithms and artifacts remain required.",
+  "future_qualification": {
+    "source": "Exact type/trait source identity/owner/effect/reason/feature; changed Store/source/owner and failed payment controls",
+    "ownership": "Real source Drop must execute with original scope; unused annotation never grants Copy/Send/unsafe/borrow permissions",
+    "async": "Actual guard-across-await warning and scoped-before-await opposite, reason/allow/warn/deny/expect/cancellation under owningPA42/43",
+    "whole_artifacts": "Full original Ref/RefMut source, bodies and artifacts remain Required"
+  }
+}
