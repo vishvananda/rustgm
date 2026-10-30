@@ -202,6 +202,32 @@ impl<'a> ValidatedView<'a> {
         {
             return Err("frozen allocation inverse requires its actual Provided live owner");
         }
+        self.allocation_inverse(body, live_base, extra, work)
+    }
+    /// Version-nine ordinary imports require a separate actual live owner.
+    /// This returns only checked ordinals; semantic regions and body proof are absent.
+    pub(crate) fn ordinary_allocation_ordinals(
+        self,
+        body: super::super::BodyRef,
+        live_base: usize,
+        extra: usize,
+        work: &mut super::super::super::Work,
+    ) -> Result<super::super::AllocationOrdinals<'a>, &'static str> {
+        work.charge(1)?;
+        if self.source.profile != super::Profile::Source2024ModuleConversions
+            || live_base < self.source.budget.bytes
+        {
+            return Err("ordinary allocation inverse requires its actual version-nine live owner");
+        }
+        self.allocation_inverse(body, live_base, extra, work)
+    }
+    fn allocation_inverse(
+        self,
+        body: super::super::BodyRef,
+        live_base: usize,
+        extra: usize,
+        work: &mut super::super::super::Work,
+    ) -> Result<super::super::AllocationOrdinals<'a>, &'static str> {
         let unit = self
             .source
             .columns

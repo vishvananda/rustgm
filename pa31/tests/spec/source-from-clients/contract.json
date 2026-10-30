@@ -1,0 +1,45 @@
+{
+  "status": "independent Rust provider/client/native2 passed; candidate checks pending",
+  "profile": "Rust1.98.0/edition2024/Linuxx86-64/panic-abort",
+  "work_units": [
+    "source-declarations",
+    "source-runtime",
+    "generic-transport"
+  ],
+  "provider": "pa31/tests/spec/source-from/nested-into-dot.rs",
+  "provider_identity": "minicore@from_fallback",
+  "candidate_profile": "module-conversions-v9",
+  "fixtures": {
+    "pa31/tests/spec/source-from/nested-into-dot.rs": "1389286f5547cee9c27da6ca02cf06a43056105787797ea87ce8f20352bee672",
+    "pa31/tests/spec/source-from-clients/default.rs": "93edc030b7aa22678d72784dd1073b16c319ce52f6228f987edca86b25733447",
+    "pa31/tests/spec/source-from-clients/explicit.rs": "4d4ec8d8063b6f15ba3e52fa37c872ec0a0fcf2f3fb77d74644bacfa1a196435",
+    "pa31/tests/spec/source-from-clients/observer.c": "bdb06e1d4d1f203b2147bfdc94a5ca70f9bbbfbf1e9945f78c5022bb6b93466e"
+  },
+  "cases": {
+    "default.rs": {
+      "rust_provider": 0,
+      "rust_client": 0,
+      "candidate_provider": 0,
+      "candidate_client": 0,
+      "native_stdout": "32\n"
+    },
+    "explicit.rs": {
+      "rust_provider": 0,
+      "rust_client": 0,
+      "candidate_provider": 0,
+      "candidate_client": 0,
+      "native_stdout": "64\n"
+    }
+  },
+  "opponents": [
+    "v9 bytes roundtrip exactly",
+    "v9 packet downgraded to v8 rejects"
+  ],
+  "independent": {
+    "receipt_sha256": "e55899b1d58b500579901f498bade46569d14ddeb70a6b2530aa8fcb65099fb3",
+    "rustc_commit": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "receipt": "obj/parallel/source-from-reference-v2/receipt.json",
+    "input_contract_sha256": "a6b3185031392d826eb6d6f1b294f8f0e76450f113f94053bcc88251453d5448"
+  }
+}

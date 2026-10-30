@@ -59,11 +59,11 @@ pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'s
             }
         }
     };
-    let variables = read.provided_list(crates::MAX_COMPONENTS, 6, allocations::owned_read)?;
+    let variables = read.regional_list(crates::MAX_COMPONENTS, 6, allocations::owned_read)?;
     let locals = read.list(crates::MAX_COMPONENTS, 16, storage::local_read)?;
     let parameter_bindings = read.list(crates::MAX_COMPONENTS, 12, storage::parameter_read)?;
     let projections =
-        read.provided_list(crates::MAX_COMPONENTS, 14, allocations::projection_read)?;
+        read.regional_list(crates::MAX_COMPONENTS, 14, allocations::projection_read)?;
     let values = read.list(crates::MAX_COMPONENTS, 5, value_read)?;
     let statements = read.list(crates::MAX_COMPONENTS, 9, statement_read)?;
     let blocks = read.list(crates::MAX_COMPONENTS, 13, storage::block_read)?;
@@ -79,7 +79,7 @@ pub(super) fn original_read(read: &mut Input<'_, '_>) -> Result<s::Original, &'s
         None
     };
     let arguments = read.call_list(crates::MAX_COMPONENTS, 4, Input::id)?;
-    let openings = read.provided_list(
+    let openings = read.regional_list(
         crates::MAX_COMPONENTS,
         4,
         super::recipe_columns::root_region_read,
@@ -119,7 +119,7 @@ pub(super) fn place_read(read: &mut Input<'_, '_>) -> Result<s::Place, &'static 
     match read.reader.u8()? {
         0 => Ok(s::Place::Local(read.id()?)),
         1 => {
-            read.require_provided("source projection requires a wider source profile")?;
+            read.require_regional("source projection requires a wider source profile")?;
             Ok(s::Place::Projection(read.id()?))
         }
         _ => Err("source projection requires a wider source profile"),
@@ -139,6 +139,10 @@ fn value_write(out: &mut Writer, row: &s::Value) -> Result<(), &'static str> {
         }
         s::ValueKind::Constrain(value) => {
             out.u8(2)?;
+            id(out, value)
+        }
+        s::ValueKind::ScalarCast(value) => {
+            out.u8(7)?;
             id(out, value)
         }
         s::ValueKind::Borrow(place) => {
@@ -173,8 +177,9 @@ fn value_read(read: &mut Input<'_, '_>) -> Result<s::Value, &'static str> {
         }
         1 => s::ValueKind::Read(place_read(read)?),
         2 => s::ValueKind::Constrain(read.id()?),
+        7 if read.profile.conversion_roles() => s::ValueKind::ScalarCast(read.id()?),
         3 => {
-            read.require_provided("unknown source ordinary value operation")?;
+            read.require_regional("unknown source ordinary value operation")?;
             s::ValueKind::Borrow(place_read(read)?)
         }
         tag @ (4 | 5) => {
@@ -248,7 +253,7 @@ fn statement_read(read: &mut Input<'_, '_>) -> Result<s::Statement, &'static str
         5 => s::Action::CheckInitialized(place_read(read)?),
         6 => s::Action::Mention(place_read(read)?),
         7 => {
-            read.require_provided("unknown source ordinary statement operation")?;
+            read.require_regional("unknown source ordinary statement operation")?;
             s::Action::Project(read.id()?)
         }
         _ => return Err("unknown source ordinary statement operation"),
@@ -267,3 +272,7 @@ fn release_read(read: &mut Input<'_, '_>) -> Result<s::Release, &'static str> {
         exits_before: read.id()?,
     })
 }
+
+#[cfg(test)]
+#[path = "../../../../../tests/invariants/cast_columns.rs"]
+mod tests;

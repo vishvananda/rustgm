@@ -1,4 +1,4 @@
-//! Owned numbering records are private data, never a defining environment or proof.
+//! Numbering owns exact allocations; v9 may retain its constructed defining Arc.
 use super::{Progress, Ready, Session};
 use crate::{
     resolve::{
@@ -36,7 +36,7 @@ struct Seal {
     expected: Ready,
     arena: Identity,
 }
-struct DomainStage {
+pub(super) struct DomainStage {
     seal: Seal,
     variables: usize,
     aliases: Option<usize>,
@@ -54,9 +54,11 @@ pub(in crate::sema::crates::typed_headers) struct RecordedDomain {
     seal: Seal,
     log: AllocationLog,
     aliases: Option<Vec<RegionId>>,
+    pub(super) ordinary_environment:
+        std::cell::OnceCell<Arc<crate::types::parameters::environment::Environment>>,
 }
 impl DomainStage {
-    fn new(
+    pub(super) fn new(
         view: &RecipeView<'_>,
         store: &Store,
         expected: &Ready,
@@ -159,7 +161,21 @@ impl DomainStage {
         work.charge(n.saturating_mul(3).saturating_add(u).saturating_add(1))?;
         work.reserve(persistent.saturating_add(inverse))?;
         let order = metadata(work, |budget| {
-            rows.allocation_ordinals(self.seal.raw, before.saturating_add(persistent), 0, budget)
+            if rows.descriptor().profile() == s::Profile::Source2024ModuleConversions {
+                rows.ordinary_allocation_ordinals(
+                    self.seal.raw,
+                    before.saturating_add(persistent),
+                    0,
+                    budget,
+                )
+            } else {
+                rows.allocation_ordinals(
+                    self.seal.raw,
+                    before.saturating_add(persistent),
+                    0,
+                    budget,
+                )
+            }
         })?;
         let log = allocate(view, self.seal.raw, n, work)?;
         let aliases = self
@@ -190,6 +206,7 @@ impl DomainStage {
             seal: self.seal,
             log,
             aliases,
+            ordinary_environment: std::cell::OnceCell::new(),
         };
         let actual = result.retained_bytes();
         if actual > work.retained.saturating_sub(before) {
@@ -256,6 +273,9 @@ fn metadata<T>(
     result.map_err(error)
 }
 impl RecordedDomain {
+    pub(super) fn expected(&self) -> &Ready {
+        &self.seal.expected
+    }
     fn retained_bytes(&self) -> usize {
         size_of::<Self>()
             .saturating_add(2 * size_of::<usize>())
@@ -263,7 +283,7 @@ impl RecordedDomain {
             .saturating_add(retained::vector(&self.log.by_slot))
             .saturating_add(self.aliases.as_ref().map_or(0, retained::vector))
     }
-    fn require(
+    pub(super) fn require(
         &self,
         stage: &DomainStage,
         store: &Store,
@@ -400,7 +420,10 @@ pub(super) struct Owner {
     bytes: usize,
 }
 impl Owner {
-    fn new(rows: s::ValidatedView<'_>, work: &mut ReservationWork) -> Result<Self, Error> {
+    pub(super) fn new(
+        rows: s::ValidatedView<'_>,
+        work: &mut ReservationWork,
+    ) -> Result<Self, Error> {
         let before = work.retained;
         let count = rows.functions.len();
         let growth = Growth::vector::<Option<Arc<RecordedDomain>>>(0, 0, count);
@@ -431,7 +454,7 @@ impl Owner {
         record.require(&stage, store, work)?;
         Ok(record)
     }
-    fn complete(
+    pub(super) fn complete(
         &mut self,
         view: &RecipeView<'_>,
         store: &Store,

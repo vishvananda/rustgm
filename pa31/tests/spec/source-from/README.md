@@ -6,7 +6,7 @@ Rust. This corpus does not claim RustGM acceptance or release PA31. The explicit
 Rust object outcome and native assertion. The implementation order and algorithm
 requirements are in [the plan](../../../../docs/pa31-source-from-plan.md).
 
-The 23 independently checked sources cover real language ownership, renamed traits, ordinary and
+The original 23 independently checked sources cover real language ownership, renamed traits, ordinary and
 diagnostic-only lookalikes, distinct diagnostic/language owners, explicit float
 types, aliases, generic wrappers, late Self inference and both orders of shared
 numeric obligations. Empty From traits remain valid: the language role does not
@@ -21,10 +21,14 @@ They grant no synthetic implementation proof. Source feature requests and
 stability policies are explicit; advisory warnings are capped in the independent
 bring-up profile.
 
-Five additional `nested-into-*` inputs declare the required outcomes for actual
+Five additional `nested-into-*` inputs cover actual
 Into blanket conditions, UFCS, a generic wrapper, explicit f64 and an ordinary
-From lookalike. Their independent Rust and candidate/native runs remain pending;
-the earlier 23-source/19-native receipt does not cover these new inputs. Their
+From lookalike. All five pinned Rust object and native checks now pass in
+[CI41005181258](https://github.com/vishvananda/rustgm/actions/runs/41005181258).
+The contract records receipt
+ef23bfc9265286cd419e0c156a56c2fa0a94f945af1dd735ec8e424ee62bc7c0
+and every observed fixture hash. Candidate/native qualification remains pending.
+The earlier 23-source/19-native receipt does not cover these new inputs. Their
 pre-execution plan is
 bd71f6d89e71fafbf2874a60a9c333e43b44179109abaa79234339c5bd29568a.
 The grouped `conversion_inference` tests retain every earlier case and include

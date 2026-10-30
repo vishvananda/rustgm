@@ -45,6 +45,9 @@ pub enum ValueKind {
     /// absence of a kind field must never erase their distinct semantics.
     Borrow(Place),
     Constrain(u32),
+    /// A closed primitive `as` conversion. The operand and result types determine
+    /// its operation; no provider cast decision or semantic proof is serialized.
+    ScalarCast(u32),
     Function(FunctionApplicationRef),
     Call {
         signature: TypeRef,
@@ -58,6 +61,42 @@ pub struct Value {
     pub kind: ValueKind,
 }
 impl Value {
+    pub(crate) fn scalar_cast_types(
+        self,
+        original: &Original,
+        types: &[super::Type],
+    ) -> Result<
+        (
+            crate::support::crates::Scalar,
+            crate::support::crates::Scalar,
+        ),
+        &'static str,
+    > {
+        use crate::support::crates::Scalar;
+        let ValueKind::ScalarCast(operand) = self.kind else {
+            return Err("source cast request belongs to another value operation");
+        };
+        let operand = original
+            .values
+            .get(operand as usize)
+            .ok_or("source scalar cast lost its actual operand")?;
+        let (Some(&super::Type::Scalar(from)), Some(&super::Type::Scalar(to))) = (
+            types.get(operand.ty.0 as usize),
+            types.get(self.ty.0 as usize),
+        ) else {
+            return Err("source scalar cast requires actual closed primitive types");
+        };
+        let number = |ty| !matches!(ty, Scalar::Unit | Scalar::Bool | Scalar::Char);
+        let integer = |ty| number(ty) && !matches!(ty, Scalar::F32 | Scalar::F64);
+        if !(number(from) && number(to)
+            || matches!(from, Scalar::Bool | Scalar::Char) && integer(to)
+            || from == Scalar::U8 && to == Scalar::Char)
+        {
+            return Err("source scalar cast has an invalid primitive conversion");
+        }
+        Ok((from, to))
+    }
+
     pub(crate) fn scalar_value(
         self,
         types: &[super::Type],

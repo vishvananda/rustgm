@@ -1,4 +1,6 @@
 //! Independent `From` inputs exercise actual source roles through the CLI.
+#[path = "conversion_inference/downstream.rs"]
+mod downstream;
 use std::{
     path::{Path, PathBuf},
     process::{Command, Output},
@@ -41,6 +43,10 @@ fn root() -> TestResult<PathBuf> {
         .into())
 }
 fn compile(name: &str) -> TestResult<Output> {
+    let folder = root()?
+        .join("obj/parallel/source-from-cli")
+        .join(std::process::id().to_string());
+    std::fs::create_dir_all(&folder)?;
     Ok(Command::new(env!("CARGO_BIN_EXE_rustgm"))
         .args([
             "--emit-lowir",
@@ -53,7 +59,11 @@ fn compile(name: &str) -> TestResult<Output> {
             "from_fallback",
             "--source-core",
             "minicore@from_fallback",
+            "--source-profile",
+            "module-conversions-v9",
         ])
+        .arg("--metadata-output")
+        .arg(folder.join(format!("{name}.rgcrate")))
         .arg(
             root()?
                 .join("pa31/tests/spec/source-from")

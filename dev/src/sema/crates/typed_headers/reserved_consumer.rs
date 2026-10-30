@@ -73,7 +73,12 @@ impl crate::sema::dispatch::Preparation for RuntimePreparation<'_, '_> {
         use crate::support::bindings::LangItem;
         self.selected.require(self.report, facts)?;
         let result = (|| {
-            for kind in [LangItem::Clone, LangItem::Copy, LangItem::CloneFn] {
+            for kind in [
+                LangItem::Clone,
+                LangItem::Copy,
+                LangItem::CloneFn,
+                LangItem::From,
+            ] {
                 self.selected.work.charge(1)?;
                 let role = facts
                     .source_bindings
@@ -93,7 +98,7 @@ impl crate::sema::dispatch::Preparation for RuntimePreparation<'_, '_> {
                     ));
                 }
             }
-            crate::sema::compiler_items::selected_copying(self.report, facts)
+            crate::sema::compiler_items::selected_roles(self.report, facts)
         })();
         let synchronized = super::synchronize_headers(facts, self.selected.work);
         result.and(synchronized)

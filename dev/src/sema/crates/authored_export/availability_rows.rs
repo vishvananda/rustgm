@@ -48,13 +48,84 @@ impl Stage {
         facts: &Declarations,
         modules: &s::ModuleContractRows,
     ) -> Result<s::AvailabilityRows, &'static str> {
-        self.require_attribute_context(report, facts)
-            .map_err(|_| "availability collection lost its actual source owner")?;
         let inventory = report
             .package
             .library_policy()
             .and_then(crate::resolve::stability::Library::staged_inventory)
             .ok_or("availability collection requires its completed source inventory")?;
+        self.availability_inventory(report, facts, modules, inventory)
+    }
+
+    /// Version nine also exports authenticated ordinary stability absence.
+    pub(crate) fn conversion_availability_rows(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        modules: &s::ModuleContractRows,
+    ) -> Result<s::AvailabilityRows, &'static str> {
+        let Some(library) = report.package.library_policy() else {
+            return self.unstaged_availability(report, facts, modules);
+        };
+        let inventory = library
+            .inventory()
+            .ok_or("conversion availability lacks its completed source inventory")?;
+        self.availability_inventory(report, facts, modules, inventory)
+    }
+
+    /// Successful reservation capture has checked every active stability
+    /// attribute. With no Library request, each such attribute is a hard error;
+    /// absence follows from that completed current producer, never an import.
+    fn unstaged_availability(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        modules: &s::ModuleContractRows,
+    ) -> Result<s::AvailabilityRows, &'static str> {
+        self.require_attribute_context(report, facts)
+            .map_err(|_| "unstaged availability lost its completed source capture")?;
+        let count = self.rows.declarations.len();
+        let bindings = modules.namespace.bindings.len();
+        self.charge(count.saturating_add(bindings))?;
+        self.reserve(
+            count
+                .saturating_mul(size_of::<s::DeclarationAvailability>())
+                .saturating_add(bindings.saturating_mul(size_of::<s::BindingAvailability>())),
+        )?;
+        let mut rows = s::AvailabilityRows {
+            policies: Vec::new(),
+            declarations: Vec::with_capacity(count),
+            bindings: Vec::with_capacity(bindings),
+        };
+        for index in 0..count {
+            rows.declarations.push(s::DeclarationAvailability {
+                declaration: DeclarationRef(
+                    u32::try_from(index).map_err(|_| "unstaged declaration identity overflow")?,
+                ),
+                regular: None,
+                constant: None,
+            });
+        }
+        for (index, binding) in modules.namespace.bindings.iter().enumerate() {
+            if binding.target.artifact != self.rows.policy.provider {
+                return Err("foreign binding requires its actual availability producer");
+            }
+            rows.bindings.push(s::BindingAvailability {
+                binding: u32::try_from(index).map_err(|_| "unstaged binding identity overflow")?,
+                regular: None,
+            });
+        }
+        Ok(rows)
+    }
+
+    fn availability_inventory(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        modules: &s::ModuleContractRows,
+        inventory: &Inventory,
+    ) -> Result<s::AvailabilityRows, &'static str> {
+        self.require_attribute_context(report, facts)
+            .map_err(|_| "availability collection lost its actual source owner")?;
         if inventory.has_implications() {
             return Err(
                 "source implied feature relationships require complete wider policy transport",

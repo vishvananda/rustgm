@@ -66,7 +66,7 @@ mod range_contract;
 mod roles;
 pub(in crate::sema) use range_contract::{RangeHelper, SourceRangeMember, source_range_member};
 pub(in crate::sema) mod site_records;
-pub(in crate::sema) use roles::admitted_headers::selected_copying;
+pub(in crate::sema) use roles::admitted_headers::selected_roles;
 pub(crate) use roles::callable_role;
 pub(crate) use roles::float_default;
 pub(crate) use roles::{destruct_predicate, drop_glue_member, freeze_predicate};

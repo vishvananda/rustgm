@@ -22,6 +22,9 @@ pub(super) fn validate(
             if matches!(value.kind, s::ValueKind::Scalar(_)) {
                 return Err("source scalar operation requires its explicit v4 ordinary profile");
             }
+            if matches!(value.kind, s::ValueKind::ScalarCast(_)) {
+                return Err("source scalar cast requires its explicit v9 ordinary profile");
+            }
         }
     }
     for header in &rows.traits {

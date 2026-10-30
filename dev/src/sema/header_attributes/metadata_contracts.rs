@@ -61,7 +61,8 @@ fn profile_has_inventory(
         | s::Profile::Source2024ModuleDefinitions
         | s::Profile::Source2024ModuleCompatibility
         | s::Profile::Source2024ModuleCallables
-        | s::Profile::Source2024ModuleSafety => {
+        | s::Profile::Source2024ModuleSafety
+        | s::Profile::Source2024ModuleConversions => {
             descriptor.module_contracts().map_err(Error::unlocated)?;
         }
         s::Profile::Source2024ProvidedContracts => {
@@ -82,6 +83,7 @@ fn profile_has_complete_attributes(profile: s::Profile) -> bool {
             | s::Profile::Source2024ModuleCompatibility
             | s::Profile::Source2024ModuleCallables
             | s::Profile::Source2024ModuleSafety
+            | s::Profile::Source2024ModuleConversions
             | s::Profile::Source2024ProvidedContracts
     )
 }
@@ -332,7 +334,8 @@ pub(super) fn caller_tracking_absent(
         | s::Profile::Source2024ModuleDefinitions
         | s::Profile::Source2024ModuleCompatibility
         | s::Profile::Source2024ModuleCallables
-        | s::Profile::Source2024ModuleSafety => {
+        | s::Profile::Source2024ModuleSafety
+        | s::Profile::Source2024ModuleConversions => {
             descriptor.module_contracts()?;
         }
         _ => return Err("imported caller policy requires an implemented explicit profile"),

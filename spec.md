@@ -3281,6 +3281,22 @@ The [source From contract](docs/pa31-source-from-plan.md) records independently
 qualified original-header, generic, alias, ordering and native controls; candidate
 implementation and imported transport remain open.
 
+The explicit source `module-conversions-v9` capability must transport the actual
+From role and numbered ordinary generic originals without enabling Provided
+authority. Preserve complete defining type parameters and body-local lifetime
+allocations through the existing cursor and recorded domain, demanding them
+after declaration preparation instead of eagerly mapping every body region.
+Construct the genuine defining Contract environment once and authenticate that
+same owner and environment on readonly reconstruction. Header readiness is
+distinct from body-environment readiness. Reuse existing maps and allocators;
+do not add another per-body cache or grow common Body/Header/State records.
+Closed primitive cast opcode7 carries the actual operand index and result type,
+never a serialized cast proof. Revalidate both primitive types and derive the
+operation with the normal semantic classifier. Old source/Provided profiles
+retain their exact bytes and reject unsupported conversion operations. The
+[conversion plan](docs/pa31-source-from-plan.md) tracks the still-unqualified
+body, private alias and fresh-client joins.
+
 Associated bindings in trait bounds retain resolved member identities separately
 from positional arguments. Complete ordinary trait headers before resolving
 header bindings through the supertrait graph, then publish all equality predicates

@@ -110,7 +110,7 @@ impl Stage {
         budget.charge(1)?;
         let Walk { remap, .. } = walk;
         let applications = remap.finish(&mut facts.types, budget)?;
-        graph.finish_applications(applications);
+        graph.finish_applications(applications, &facts.types, budget)?;
         finish_inputs(context, &mut graph, &scopes, budget)?;
         rebuilt_environments::complete(context, &graph, facts, &mut scopes, budget)?;
         budget.reserve(2 * size_of::<usize>())?;

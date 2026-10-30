@@ -22,12 +22,17 @@ use crate::{
 #[path = "assumed_scopes.rs"]
 mod assumption_environments;
 pub(in crate::sema::crates::typed_headers) use assumption_environments::{
-    OriginalBody, ScopeReader,
+    Observed, OriginalBody, ScopeReader, ordinary_requests,
 };
 #[path = "formal_ancestry.rs"]
 mod formal_path;
 #[path = "recorded_regions.rs"]
 mod numbering_records;
+#[path = "ordinary_recordings.rs"]
+mod ordinary_recordings;
+pub(in crate::sema::crates::typed_headers) use ordinary_recordings::{
+    OrdinaryDomain, OrdinaryRecords,
+};
 #[path = "regional_occurrences.rs"]
 mod occurrence_work;
 #[cfg(test)]

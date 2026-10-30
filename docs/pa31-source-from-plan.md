@@ -8,7 +8,10 @@ qualified these outcomes. All PA25–PA44 and original library states stay open.
 
 The nested-condition extension adds five declared `nested-into-*` programs to
 the required corpus. Independent Rust and candidate/native observations for
-those five remain pending; the original 23-source evidence is unchanged.
+those five passed in CI41005181258 (receipt
+ef23bfc9265286cd419e0c156a56c2fa0a94f945af1dd735ec8e424ee62bc7c0);
+candidate/native observations remain pending. The original 23-source evidence
+is unchanged.
 Snapshot only the live uniquely selected retained subtree, through its actual
 condition-child slots and forwarding/unsizing continuations. Completed proof
 node IDs and earlier speculative candidates cannot supply preferences. Reuse
@@ -21,8 +24,11 @@ fallback pass, cross a projection barrier or become projection notifications.
 Cancel them before resuming/replacing their owner and when it completes.
 Temporary root deduplication lasts one unsuccessful fallback sweep;
 it prevents shared mixed ready/blocked fanouts from rescanning the same waiters.
-All of this implementation and its new scaling/lifecycle invariants currently
-remain unqualified local work.
+The exact 37 selected ownership, scaling and lifecycle controls pass on
+6fd0671cc in [CI41006194659](https://github.com/vishvananda/rustgm/actions/runs/41006194659),
+including strict production/private Clippy, formatting and architecture checks.
+This does not qualify the whole source or native corpus: the production run
+exposed a real unsupported library transport boundary, retained below.
 
 ## Primary evidence and required behavior
 
@@ -84,6 +90,37 @@ substitute for real compiler behavior.
    An explicit development fence is unfinished PA29 work, not a completed crate.
 
 ## Qualification and integration
+
+### Version-nine conversion metadata (implementation in progress)
+
+The explicit `module-conversions-v9` capability carries From role tag9 and
+existing body-numbering units. Earlier wire0–v8 and Provided profiles keep their
+old bytes and admission rules. A source From declaration still follows the
+actual language-item header contract; the finite transport additionally requires
+one type formal. Required members of its genuine const trait retain Conditional
+eligibility without granting a const implementation or executable default body.
+
+Transport the actual borrowed Clone and generic Into originals in the unchanged
+source families. Reuse the authenticated ordinary graph, recipe cursor, existing
+recorded domain allocator and full defining Contract constructor; demand body
+regions only after their declaration is ready. Do not eagerly interpret every
+body-local region as a declaration lifetime, substitute empty environments or
+build another type/region map. Recheck the exact defining environment and owner
+on reconstruction. Selected Provided authority remains independent.
+
+Scalar cast opcode7 carries only its preceding value index. Validate closed
+operand/result primitive types and rederive the cast through the ordinary
+semantic classifier on import; pointer, enum, invalid bool/char and direct
+variant conversions cannot use this opcode. Old profiles reject it. Transparent
+private aliases may close through their actual completed typed target; this
+does not publish an alias name or confer nominal identity.
+
+All 28 standalone outcomes and 24 native positives remain required. The new
+[fresh client graph](../pa31/tests/spec/source-from-clients/contract.json)
+declares independent Rust and candidate provider/client results32/64 before
+execution. It consumes the unchanged real Into provider in a fresh process and
+store, checking deterministic v9 roundtrip and old-version refusal. These joins
+are uncompiled and unqualified until their own actual gates pass.
 
 The independent plan SHA-256 is
 2f1ecc3def916a4ae635aae2e13e1ada140f7bcad0b9ae6252ad22eff9984810;

@@ -11,14 +11,14 @@ use crate::{
     support::constness::Constness,
 };
 
-/// Only actual selected copying declarations enter their existing ledger.
-pub(in crate::sema) fn selected_copying(
+/// Only actual selected copying/conversion headers enter their existing ledger.
+pub(in crate::sema) fn selected_roles(
     report: &Report,
     facts: &mut Declarations,
 ) -> Result<(), Error> {
     if report.package.staged_consumer().is_none() {
         return Err(Error::unlocated(
-            "selected Copy preparation requires its actual private consumer",
+            "selected role preparation requires its actual private consumer",
         ));
     }
     let mut steps = 0usize;
@@ -62,6 +62,10 @@ pub(in crate::sema) fn selected_copying(
         }
         if catalog.role(LangItem::CloneFn)?.is_some() && !complete.contains(LangItem::CloneFn) {
             return Err("source language member has no validated actual trait owner");
+        }
+        if let Some(declaration) = catalog.role(LangItem::From)? {
+            conversion(report, facts, declaration, &mut steps)?;
+            complete.insert(LangItem::From);
         }
         Ok(complete)
     })();
@@ -230,6 +234,10 @@ fn trait_headers(
                 free_marker(report, facts, catalog, role, declaration, steps)?;
                 complete.insert(role);
             }
+            LangItem::From => {
+                conversion(report, facts, declaration, steps)?;
+                complete.insert(role);
+            }
             _ => return Err("imported source role requires its wider explicit header profile"),
         }
     }
@@ -237,6 +245,23 @@ fn trait_headers(
         return Err("source language member has no validated actual trait owner");
     }
     Ok(complete)
+}
+
+fn conversion(
+    report: &Report,
+    facts: &Declarations,
+    declaration: super::super::Role,
+    steps: &mut usize,
+) -> Result<(), &'static str> {
+    *steps = steps.saturating_add(64 + LangItem::ALL.len());
+    facts.associated.require_imported_role(declaration)?;
+    facts
+        .associated
+        .imported_owner()
+        .ok_or("imported From lost its actual header owner")?
+        .conversion_role(&facts.types, declaration)?;
+    let header = Trait::current(report, facts, declaration, steps)?;
+    super::conversion::header(facts, &header)
 }
 
 fn free_marker(

@@ -89,6 +89,10 @@ impl DomainIndex<'_, '_> {
                 Self::place(original, place, None, work)?;
             }
             s::ValueKind::Constrain(operand) => prefix_value(original, operand, index, work)?,
+            s::ValueKind::ScalarCast(operand) => {
+                prefix_value(original, operand, index, work)?;
+                value.scalar_cast_types(original, &self.headers.rows().types)?;
+            }
             s::ValueKind::Function(application) => {
                 self.function_use(context, application, work)?;
                 if self.headers.rows().types.get(value.ty.0 as usize)

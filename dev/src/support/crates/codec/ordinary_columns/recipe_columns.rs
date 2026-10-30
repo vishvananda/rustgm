@@ -137,7 +137,7 @@ pub(super) fn region_read(read: &mut Input<'_, '_>) -> Result<s::Region, &'stati
             depth: read.reader.u16()?,
         },
         3 => {
-            read.require_provided("unknown source function region recipe")?;
+            read.require_regional("unknown source function region recipe")?;
             s::Region::Variable {
                 body: super::BodyRef(read.id()?),
                 slot: read.id()?,
@@ -298,6 +298,7 @@ pub(super) fn function_effect_read(
     match read.reader.u8()? {
         0 => Ok(Constness::Ordinary),
         1 => Ok(Constness::Const),
+        2 if read.profile.conversion_roles() => Ok(Constness::Conditional),
         2 => Err("source conditional callable effect requires its wider profile"),
         _ => Err("unknown source constness effect"),
     }

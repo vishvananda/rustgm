@@ -320,6 +320,19 @@ impl Graph {
             .environments
             .get(&definition)
             .ok_or("source function readiness omitted its actual declaration environment")?;
+        if header.environment.is_none()
+            && rows.descriptor().profile() == s::Profile::Source2024ModuleConversions
+            && let s::FunctionBody::Original(body) = raw.body
+            && rows.body_inputs.get(body.0 as usize).is_some_and(|input| {
+                input.body == body
+                    && input.frame == raw.original.binder
+                    && input.environment == s::EnvironmentOrigin::Contract
+            })
+        {
+            // This query exposes declaration facts only. The v9 original port
+            // separately requires its recorded domain and exact defining Arc.
+            return Ok(());
+        }
         let defining = header
             .environment
             .as_ref()

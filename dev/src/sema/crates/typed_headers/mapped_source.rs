@@ -1,7 +1,14 @@
 //! One private canonical graph is sealed to an actual immutable source inventory.
 pub(super) mod checked_rows;
 mod dag_recipes;
+mod ingest_roots;
+mod ingested_domains;
+mod lending_originals;
+pub(crate) use lending_originals::prepare as prepare_original;
 mod decoded_original;
+#[cfg(test)]
+#[path = "../../../../tests/invariants/ingested_originals.rs"]
+mod domain_tests;
 #[path = "mapped_source/request_mapping.rs"]
 mod original_requests;
 pub(crate) use decoded_original::Original as SourceOriginal;
@@ -49,12 +56,25 @@ pub(in crate::sema) struct Graph {
     provider_index: u32,
     inventory: Arc<Dependencies>,
     origins: Rc<Catalog>,
-    nodes: Vec<TypeId>,
-    slots: Vec<Argument>,
-    regions: Vec<RegionId>,
-    applications: Vec<Predicate>,
+    canonical: Canonical,
+    applications: Applications,
     trait_inputs: Vec<Option<Arc<[crate::sema::declaration_inputs::Input]>>>,
     impl_inputs: Vec<Option<Arc<[crate::sema::declaration_inputs::Input]>>>,
+}
+enum Canonical {
+    Eager {
+        nodes: Vec<TypeId>,
+        slots: Vec<Argument>,
+        regions: Vec<RegionId>,
+    },
+    Lazy(Box<ingested_domains::Lazy>),
+}
+enum Applications {
+    Eager(Vec<Predicate>),
+    Lazy {
+        memo: super::predicate_remap::translation::applications::Shared,
+        reader: super::predicate_remap::translation::applications::Reader,
+    },
 }
 impl Context<'_> {
     pub(super) fn require_functions(&self, budget: &mut Headers) -> Result<(), Error> {
@@ -104,7 +124,8 @@ impl Context<'_> {
                 | s::Profile::Source2024ModuleDefinitions
                 | s::Profile::Source2024ModuleCompatibility
                 | s::Profile::Source2024ModuleCallables
-                | s::Profile::Source2024ModuleSafety => {
+                | s::Profile::Source2024ModuleSafety
+                | s::Profile::Source2024ModuleConversions => {
                     actual.module_contracts().map_err(error)?;
                 }
                 _ => {
@@ -185,21 +206,33 @@ impl Graph {
             .map_err(error)?;
         // Retained maps coexist with the visiting/output vectors and a cursor
         // frontier bounded by node count, even for repeated shared children.
-        let bytes = facts
-            .types
-            .node_allocation_bound(rows.types.len().saturating_add(rows.slots.len()))
-            .saturating_add(rows.types.len().saturating_mul(
-                size_of::<Option<TypeId>>() + size_of::<bool>() + 2 * size_of::<usize>(),
-            ))
-            .saturating_add(rows.slots.len().saturating_mul(size_of::<Argument>()))
-            .saturating_add(rows.regions.len().saturating_mul(size_of::<RegionId>()));
-        budget.reserve(size_of::<Self>().saturating_add(bytes))?;
-        let slots = slot_bindings::prepare(context, facts, budget)?;
-        let regions = slot_bindings::regions(context, budget)?;
-        let nodes = dag_recipes::prepare(context, facts, &slots, &regions, root, budget)?;
-        budget.observed.vector(&slots);
-        budget.observed.vector(&regions);
-        budget.observed.vector(&nodes);
+        let canonical = if context.descriptor.profile() == s::Profile::Source2024ModuleConversions {
+            budget.reserve(size_of::<Self>())?;
+            Canonical::Lazy(Box::new(ingested_domains::Lazy::prepare(
+                context, facts, root, budget,
+            )?))
+        } else {
+            let bytes = facts
+                .types
+                .node_allocation_bound(rows.types.len().saturating_add(rows.slots.len()))
+                .saturating_add(rows.types.len().saturating_mul(
+                    size_of::<Option<TypeId>>() + size_of::<bool>() + 2 * size_of::<usize>(),
+                ))
+                .saturating_add(rows.slots.len().saturating_mul(size_of::<Argument>()))
+                .saturating_add(rows.regions.len().saturating_mul(size_of::<RegionId>()));
+            budget.reserve(size_of::<Self>().saturating_add(bytes))?;
+            let slots = slot_bindings::prepare(context, facts, budget)?;
+            let regions = slot_bindings::regions(context, budget)?;
+            let nodes = dag_recipes::prepare(context, facts, &slots, &regions, root, budget)?;
+            budget.observed.vector(&slots);
+            budget.observed.vector(&regions);
+            budget.observed.vector(&nodes);
+            Canonical::Eager {
+                nodes,
+                slots,
+                regions,
+            }
+        };
         let origins = context
             .imported
             .origin_catalog()
@@ -212,10 +245,8 @@ impl Graph {
             provider_index: context.provider_index,
             inventory: context.imported.shared_dependencies(),
             origins,
-            nodes,
-            slots,
-            regions,
-            applications: Vec::new(),
+            canonical,
+            applications: Applications::Eager(Vec::new()),
             trait_inputs: Vec::new(),
             impl_inputs: Vec::new(),
         })
@@ -255,17 +286,60 @@ impl Graph {
             .map_err(error)?;
         Ok(())
     }
-    pub(super) fn finish_applications(&mut self, applications: Vec<Predicate>) {
-        self.applications = applications;
+    pub(super) fn finish_applications(
+        &mut self,
+        applications: Vec<Option<Predicate>>,
+        store: &crate::types::Store,
+        budget: &mut Headers,
+    ) -> Result<(), Error> {
+        use super::predicate_remap::translation::applications::{Cache, Shared};
+        if matches!(self.canonical, Canonical::Lazy(_)) {
+            let mut memo = Shared::new(applications.len(), budget)?;
+            for (index, predicate) in applications.into_iter().enumerate() {
+                budget.charge(1)?;
+                if let Some(predicate) = predicate {
+                    memo.publish(index, predicate)?;
+                }
+            }
+            let mut work = ingested_domains::begin(budget);
+            let reader = memo.reader(&self.recipe_view(), store, &mut work);
+            ingested_domains::finish(budget, &work);
+            self.applications = Applications::Lazy {
+                memo,
+                reader: reader?,
+            };
+        } else {
+            self.applications = Applications::Eager(
+                applications
+                    .into_iter()
+                    .map(|entry| {
+                        entry.ok_or_else(|| error("source trait application table is incomplete"))
+                    })
+                    .collect::<Result<Vec<_>, _>>()?,
+            );
+        }
+        Ok(())
     }
     pub(super) fn application(
         &self,
         reference: s::TraitApplicationRef,
     ) -> Result<Predicate, &'static str> {
-        self.applications
-            .get(reference.0 as usize)
-            .copied()
-            .ok_or("source canonical application is outside its completed table")
+        use super::predicate_remap::translation::applications::Cache;
+        match &self.applications {
+            Applications::Eager(applications) => applications.get(reference.0 as usize).copied(),
+            Applications::Lazy { memo, .. } => memo
+                .entry(reference.0 as usize)
+                .map_err(|_| "source canonical application is outside its actual table")?,
+        }
+        .ok_or("source canonical application requires its actual pending body request")
+    }
+    fn recipe_view(&self) -> crate::resolve::crates::unpaid_provided::RecipeView<'_> {
+        crate::resolve::crates::unpaid_provided::RecipeView::retained_parts(
+            &self.inventory,
+            self.provider_index,
+            &self.origins,
+            self.root,
+        )
     }
     pub(in crate::sema::crates::typed_headers) fn requirement(
         &self,
@@ -276,10 +350,13 @@ impl Graph {
     }
 
     pub(super) fn slot(&self, reference: s::SlotRef) -> Result<Argument, Error> {
-        self.slots
-            .get(reference.0 as usize)
-            .copied()
-            .ok_or_else(|| error("source graph has no canonical argument at its actual slot"))
+        match &self.canonical {
+            Canonical::Eager { slots, .. } => slots
+                .get(reference.0 as usize)
+                .copied()
+                .ok_or_else(|| error("source graph has no canonical argument at its actual slot")),
+            Canonical::Lazy(lazy) => lazy.slot(reference),
+        }
     }
     pub(super) fn signature(
         &self,
@@ -324,15 +401,21 @@ impl Graph {
         &self,
         reference: crate::support::crates::generics::TypeRef,
     ) -> Result<TypeId, Error> {
-        self.nodes
-            .get(reference.0 as usize)
-            .copied()
-            .ok_or_else(|| error("source graph has no canonical type at its actual root"))
+        match &self.canonical {
+            Canonical::Eager { nodes, .. } => nodes
+                .get(reference.0 as usize)
+                .copied()
+                .ok_or_else(|| error("source graph has no canonical type at its actual root")),
+            Canonical::Lazy(lazy) => lazy.ty(reference),
+        }
     }
     pub(super) fn region(&self, reference: s::RegionRef) -> Result<RegionId, Error> {
-        self.regions
-            .get(reference.0 as usize)
-            .copied()
-            .ok_or_else(|| error("source graph has no canonical region at its actual root"))
+        match &self.canonical {
+            Canonical::Eager { regions, .. } => regions
+                .get(reference.0 as usize)
+                .copied()
+                .ok_or_else(|| error("source graph has no canonical region at its actual root")),
+            Canonical::Lazy(lazy) => lazy.region(reference),
+        }
     }
 }

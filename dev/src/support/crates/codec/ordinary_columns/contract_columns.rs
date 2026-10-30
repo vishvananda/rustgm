@@ -193,6 +193,17 @@ pub(super) fn member_read(read: &mut Input<'_, '_>) -> Result<s::MemberLink, &'s
         implementation: read.option()?.map(DeclarationRef),
     })
 }
+pub(super) fn conversion_role_write(
+    out: &mut Writer,
+    row: &s::RoleBinding,
+) -> Result<(), &'static str> {
+    if row.role == LangItem::From {
+        out.u8(9)?;
+        address_write(out, row.declaration)
+    } else {
+        role_write(out, row)
+    }
+}
 pub(super) fn role_write(out: &mut Writer, row: &s::RoleBinding) -> Result<(), &'static str> {
     // These profile-local IDs are independent of the compiler's LangItem order.
     out.u8(match row.role {
@@ -228,6 +239,7 @@ pub(super) fn role_read(read: &mut Input<'_, '_>) -> Result<s::RoleBinding, &'st
                 LangItem::Freeze
             }
         }
+        9 if read.profile.conversion_roles() => LangItem::From,
         _ => return Err("unknown source function role ID"),
     };
     Ok(s::RoleBinding {
@@ -235,3 +247,7 @@ pub(super) fn role_read(read: &mut Input<'_, '_>) -> Result<s::RoleBinding, &'st
         declaration: address_read(read)?,
     })
 }
+
+#[cfg(test)]
+#[path = "../../../../../tests/invariants/converted_roles.rs"]
+mod tests;

@@ -38,11 +38,11 @@ impl OriginalBody<'_> {
                 .saturating_add(raw.values.len())
                 .saturating_add(1),
         )?;
-        let mut port = Recorded {
-            port: Reserved::new(view, &state.maps, &facts.types, work)?,
-            body: self,
-            callables: &facts.lifetimes.callables,
-        };
+        let mut port = Recorded::selected(
+            Reserved::new(view, &state.maps, &facts.types, work)?,
+            self,
+            &facts.lifetimes.callables,
+        );
         for root in raw
             .locals
             .iter()
@@ -284,6 +284,16 @@ impl OriginalBody<'_> {
                 "selected original region is outside its actual domain",
             )),
         }
+    }
+    pub(in crate::sema::crates::typed_headers) fn variable(
+        &self,
+        view: &RecipeView<'_>,
+        store: &Store,
+        slot: u32,
+        work: &mut ReservationWork,
+    ) -> Result<RegionId, Error> {
+        self.record(view, store, work)?
+            .region(view, store, &self.expected, slot, work)
     }
 }
 impl Prepared {

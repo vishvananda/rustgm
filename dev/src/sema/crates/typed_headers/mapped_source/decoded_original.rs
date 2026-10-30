@@ -46,7 +46,7 @@ impl Graph {
     pub(in crate::sema::crates::typed_headers) fn source_original<'a>(
         &'a self,
         catalog: &'a Catalog,
-        facts: &Declarations,
+        facts: &'a Declarations,
         headers: &'a super::super::Headers,
         definition: DefId,
         steps: &mut usize,
@@ -91,9 +91,10 @@ impl Graph {
             || header.constant != constant
             || (constant
                 && (!descriptor.profile().unconditional_callables() || function.parent.is_some()))
-            || header.universals != 0
+            || (header.universals != 0 && !matches!(self.canonical, super::Canonical::Lazy(_)))
             || (function.parent.is_some() && !descriptor.profile().feature_predicates())
-            || header.signature != header.callable
+            || (header.signature != header.callable
+                && !matches!(self.canonical, super::Canonical::Lazy(_)))
             || raw.context != context
         {
             return Err(
@@ -108,8 +109,44 @@ impl Graph {
                 "source original builtin environment changed its actual construction origin",
             );
         }
+        let domain = match &self.canonical {
+            super::Canonical::Eager { .. } => None,
+            super::Canonical::Lazy(lazy) => {
+                headers
+                    .charge(0)
+                    .map_err(|_| "ordinary original has an exhausted header ledger")?;
+                if headers.base.saturating_add(headers.bytes) > crate::support::crates::MAX_BYTES {
+                    return Err("ordinary original has an exhausted header storage ledger");
+                }
+                let mut work = crate::resolve::crates::ReservationWork::default();
+                let result = lazy.body(self, facts, definition, header, &mut work);
+                *steps = steps.saturating_add(work.steps);
+                if *steps > crate::support::crates::MAX_COMPONENTS {
+                    return Err("ordinary original domain lookup work budget exceeded");
+                }
+                let domain = result
+                    .map_err(|_| "ordinary original requires its actual current body domain")?;
+                let environment = header
+                    .environment
+                    .as_ref()
+                    .ok_or("ordinary original requires its actual pending defining environment")?;
+                if domain
+                    .environment()
+                    .is_none_or(|actual| !Arc::ptr_eq(actual, environment))
+                {
+                    return Err(
+                        "ordinary original changed its actual constructed defining environment",
+                    );
+                }
+                Some(domain)
+            }
+        };
         let original = Original {
-            mapping: Mapping::Ordinary(self),
+            mapping: Mapping::Ordinary {
+                graph: self,
+                store: &facts.types,
+                domain,
+            },
             catalog,
             header,
             definition,
@@ -123,7 +160,14 @@ impl Graph {
 }
 impl Original<'_> {
     pub(crate) fn numbered(&self) -> bool {
-        matches!(&self.mapping, Mapping::Selected { .. })
+        matches!(
+            &self.mapping,
+            Mapping::Selected { .. }
+                | Mapping::Ordinary {
+                    domain: Some(_),
+                    ..
+                }
+        )
     }
     /// Defining checking mode only; current body proof and execution remain separate.
     pub(crate) const fn const_context(&self) -> bool {
@@ -164,7 +208,7 @@ impl Original<'_> {
     pub(crate) fn ty(&self, reference: TypeRef, steps: &mut usize) -> Result<TypeId, &'static str> {
         charge(steps)?;
         match &self.mapping {
-            Mapping::Ordinary(graph) => graph
+            Mapping::Ordinary { graph, .. } => graph
                 .ty(reference)
                 .map_err(|_| "source original has an unknown actual type root"),
             Mapping::Selected { owner, store, .. } => owner.original_type(store, reference, steps),
@@ -177,9 +221,28 @@ impl Original<'_> {
     ) -> Result<RegionId, &'static str> {
         charge(steps)?;
         match &self.mapping {
-            Mapping::Ordinary(graph) => graph
-                .region(reference)
-                .map_err(|_| "source original has an unknown actual region root"),
+            Mapping::Ordinary {
+                graph,
+                store,
+                domain,
+            } => {
+                if let Some(domain) = domain {
+                    let mut work = crate::resolve::crates::ReservationWork::default();
+                    let result = domain.region(&graph.recipe_view(), store, reference, &mut work);
+                    *steps = steps.saturating_add(work.steps);
+                    if *steps > crate::support::crates::MAX_COMPONENTS {
+                        return Err("ordinary original regional query work budget exceeded");
+                    }
+                    if let Some(region) = result
+                        .map_err(|_| "ordinary original changed its actual recorded region")?
+                    {
+                        return Ok(region);
+                    }
+                }
+                graph
+                    .region(reference)
+                    .map_err(|_| "source original has an unknown actual region root")
+            }
             Mapping::Selected {
                 owner,
                 store,
@@ -196,6 +259,28 @@ impl Original<'_> {
             }
         }
     }
+    pub(crate) fn variable(&self, slot: u32, steps: &mut usize) -> Result<RegionId, &'static str> {
+        charge(steps)?;
+        let mut work = crate::resolve::crates::ReservationWork::default();
+        let result = match &self.mapping {
+            Mapping::Ordinary {
+                graph,
+                store,
+                domain: Some(domain),
+            } => domain.variable(&graph.recipe_view(), store, slot, &mut work),
+            Mapping::Selected {
+                body, view, store, ..
+            } => body.variable(view, store, slot, &mut work),
+            Mapping::Ordinary { domain: None, .. } => {
+                return Err("source variable requires its actual recorded body domain");
+            }
+        };
+        *steps = steps.saturating_add(work.steps);
+        if *steps > crate::support::crates::MAX_COMPONENTS {
+            return Err("source variable mapping work budget exceeded");
+        }
+        result.map_err(|_| "source variable changed its actual body/allocation owner")
+    }
     pub(crate) fn predicate(
         &self,
         raw: &s::Requirement,
@@ -203,8 +288,15 @@ impl Original<'_> {
     ) -> Result<Predicate, &'static str> {
         charge(steps)?;
         match &self.mapping {
-            Mapping::Ordinary(graph) => graph.requirement(raw),
-            Mapping::Selected { .. } => super::original_requests::map(
+            Mapping::Ordinary {
+                graph,
+                domain: None,
+                ..
+            } => graph.requirement(raw),
+            Mapping::Ordinary {
+                domain: Some(_), ..
+            }
+            | Mapping::Selected { .. } => super::original_requests::map(
                 &mut Requests {
                     original: self,
                     steps,
@@ -462,7 +554,7 @@ impl super::original_requests::Requests for Requests<'_, '_, '_> {
         reference: s::TraitApplicationRef,
     ) -> Result<Predicate, &'static str> {
         match &self.original.mapping {
-            Mapping::Ordinary(graph) => graph.application(reference),
+            Mapping::Ordinary { graph, .. } => graph.application(reference),
             Mapping::Selected { owner, store, .. } => {
                 owner.original_application(store, reference, self.steps)
             }

@@ -62,6 +62,7 @@ enum ExportMode {
     Compatibility,
     Callables,
     Safety,
+    Conversions,
 }
 
 impl ExportMode {
@@ -73,6 +74,7 @@ impl ExportMode {
                 | Self::Compatibility
                 | Self::Callables
                 | Self::Safety
+                | Self::Conversions
         )
     }
     fn availability(self) -> bool {
@@ -84,6 +86,7 @@ impl ExportMode {
                 | Self::Compatibility
                 | Self::Callables
                 | Self::Safety
+                | Self::Conversions
         )
     }
     fn module_contracts(self) -> bool {
@@ -96,12 +99,17 @@ impl ExportMode {
                 | Self::Compatibility
                 | Self::Callables
                 | Self::Safety
+                | Self::Conversions
         )
     }
     fn exact(self) -> bool {
         matches!(
             self,
-            Self::Definitions | Self::Compatibility | Self::Callables | Self::Safety
+            Self::Definitions
+                | Self::Compatibility
+                | Self::Callables
+                | Self::Safety
+                | Self::Conversions
         )
     }
 }
@@ -120,6 +128,9 @@ pub(crate) struct Stage {
 impl Stage {
     pub(crate) fn callable_effects(&self) -> bool {
         self.functions.callable_effects
+    }
+    pub(crate) fn conversion_roles(&self) -> bool {
+        self.functions.conversions
     }
     pub(crate) fn exact_linkage(&self) -> bool {
         self.functions.exact
@@ -307,6 +318,13 @@ impl Stage {
     ) -> Result<Self, &'static str> {
         Self::begin_mode(report, facts, identity, ExportMode::Safety)
     }
+    pub(crate) fn begin_module_conversions(
+        report: &Report,
+        facts: &mut Declarations,
+        identity: &CrateIdentity,
+    ) -> Result<Self, &'static str> {
+        Self::begin_mode(report, facts, identity, ExportMode::Conversions)
+    }
     fn begin_mode(
         report: &Report,
         facts: &mut Declarations,
@@ -336,14 +354,20 @@ impl Stage {
         if report.package.library_policy().is_some() && !mode.availability() {
             return Err("source stability contracts are outside this metadata profile");
         }
-        if mode.availability()
-            && report
-                .package
-                .library_policy()
-                .and_then(crate::resolve::stability::Library::staged_inventory)
-                .is_none()
-        {
-            return Err("source availability export requires its completed actual library policy");
+        if mode.availability() {
+            let library = report.package.library_policy();
+            let complete = if mode == ExportMode::Conversions {
+                library.is_none_or(|library| library.inventory().is_some())
+            } else {
+                library
+                    .and_then(crate::resolve::stability::Library::staged_inventory)
+                    .is_some()
+            };
+            if !complete {
+                return Err(
+                    "source availability export requires its completed actual library policy",
+                );
+            }
         }
         if report.resolution.bindings.has_contextual_items()
             || report.package.marks.context_count() != 1
@@ -355,7 +379,7 @@ impl Stage {
             .as_deref()
             .ok_or("source export has no actual role catalog")?
             .require_provider_report(report)?;
-        authored_traits::require_role_transport(facts)?;
+        authored_traits::require_role_transport(facts, mode == ExportMode::Conversions)?;
         let unit = report
             .package
             .units
@@ -386,8 +410,11 @@ impl Stage {
             stage.inputs.selected_methods = Some(Box::default());
         }
         stage.functions.exact = mode.exact();
-        stage.functions.callable_effects =
-            matches!(mode, ExportMode::Callables | ExportMode::Safety);
+        stage.functions.conversions = mode == ExportMode::Conversions;
+        stage.functions.callable_effects = matches!(
+            mode,
+            ExportMode::Callables | ExportMode::Safety | ExportMode::Conversions
+        );
         stage.reserve(count.saturating_mul(size_of::<Option<DeclarationRef>>()))?;
         stage.definitions.resize(count, None);
         stage.declarations(report, facts, mode)?;
@@ -462,11 +489,15 @@ impl Stage {
         let mut parents = Vec::with_capacity(report.resolution.definitions.len());
         for (index, definition) in report.resolution.definitions.iter().enumerate() {
             self.charge(1)?;
+            let id =
+                DefId(u32::try_from(index).map_err(|_| "source declaration identity overflow")?);
+            if mode == ExportMode::Conversions && definition.kind == DefKind::TypeAlias {
+                self.private_alias(report, facts, id)?;
+                continue;
+            }
             let Some(kind) = kind(definition.kind, definition.namespace)? else {
                 continue;
             };
-            let id =
-                DefId(u32::try_from(index).map_err(|_| "source declaration identity overflow")?);
             features.observe(report, facts, id, self)?;
             if !mode.module_contracts()
                 && definition.kind == DefKind::Trait
@@ -531,6 +562,50 @@ impl Stage {
             }
         }
         features.finish()
+    }
+
+    /// Private transparent aliases have no independent nominal identity. All
+    /// uses retain the real completed canonical type; exported alias names still
+    /// require a declaration row and therefore remain outside this profile.
+    fn private_alias(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        id: DefId,
+    ) -> Result<(), &'static str> {
+        self.charge(8)?;
+        let declaration = report
+            .resolution
+            .definitions
+            .get(id.0 as usize)
+            .ok_or("private alias lost its actual declaration")?;
+        if declaration.kind != DefKind::TypeAlias
+            || declaration.namespace != Namespace::Type
+            || !matches!(declaration.access, Access::Within(_))
+            || facts.associated.owner(id).is_some()
+            || facts
+                .generics
+                .parameters
+                .get(&id)
+                .is_some_and(|parameters| !parameters.is_empty())
+        {
+            return Err("named, associated or generic alias transport requires its wider profile");
+        }
+        let source = declaration
+            .node
+            .ok_or("private alias lost its actual source owner")?;
+        let ty = facts
+            .definitions
+            .get(id.0 as usize)
+            .copied()
+            .flatten()
+            .ok_or("private alias has no completed canonical type")?;
+        if facts.node(source).and_then(|node| node.ty) != Some(ty)
+            || facts.types.contains_parameters(ty) != Some(false)
+        {
+            return Err("private alias changed its completed closed type or source witness");
+        }
+        Ok(())
     }
 }
 

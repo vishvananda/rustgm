@@ -70,6 +70,8 @@ pub enum Profile {
     Source2024ModuleCallables,
     /// Version-eight exact source call safety contexts; no implicit unsafe permission.
     Source2024ModuleSafety,
+    /// Version-nine From identity and complete ordinary conversion method bodies.
+    Source2024ModuleConversions,
 }
 impl Profile {
     #[must_use]
@@ -81,6 +83,7 @@ impl Profile {
                 | Self::Source2024ModuleCompatibility
                 | Self::Source2024ModuleCallables
                 | Self::Source2024ModuleSafety
+                | Self::Source2024ModuleConversions
         )
     }
     #[must_use]
@@ -94,6 +97,7 @@ impl Profile {
                 | Self::Source2024ModuleCompatibility
                 | Self::Source2024ModuleCallables
                 | Self::Source2024ModuleSafety
+                | Self::Source2024ModuleConversions
         )
     }
     #[must_use]
@@ -113,6 +117,7 @@ impl Profile {
                 | Self::Source2024ModuleCompatibility
                 | Self::Source2024ModuleCallables
                 | Self::Source2024ModuleSafety
+                | Self::Source2024ModuleConversions
         )
     }
 }
@@ -404,7 +409,9 @@ impl ValidatedRows {
         let indexed = HeaderIndex::new(&rows, extended_base, work)?;
         if profile.definitions() {
             exact_exports::validate(&rows, &indexed, work)?;
-            if profile.call_safety() {
+            if profile.conversion_roles() {
+                functions::validate_module_conversions(&rows, &indexed, work)?;
+            } else if profile.call_safety() {
                 functions::validate_module_safety(&rows, &indexed, work)?;
             } else if profile.unconditional_callables() {
                 functions::validate_module_callables(&rows, &indexed, work)?;
@@ -522,7 +529,8 @@ impl ValidatedRows {
             | Profile::Source2024ModuleDefinitions
             | Profile::Source2024ModuleCompatibility
             | Profile::Source2024ModuleCallables
-            | Profile::Source2024ModuleSafety => {
+            | Profile::Source2024ModuleSafety
+            | Profile::Source2024ModuleConversions => {
                 return Err(
                     "module contracts require their complete namespace/domain/attribute columns",
                 );

@@ -4,6 +4,18 @@ use crate::resolve::body_origin::BodyOrigin;
 use crate::sema::associated::{Owner, OwnerKind};
 
 impl Graph {
+    pub(in crate::sema) fn conversion_role(
+        &self,
+        store: &crate::types::Store,
+        role: crate::sema::compiler_items::Role,
+    ) -> Result<(), &'static str> {
+        self.require_store(store)?;
+        self.role_origin(role)?;
+        if !self.descriptor(&self.origins)?.profile().conversion_roles() {
+            return Err("imported From requires its explicit version-nine profile");
+        }
+        Ok(())
+    }
     pub(in crate::sema) fn role_origin(
         &self,
         role: crate::sema::compiler_items::Role,
@@ -84,7 +96,8 @@ impl Graph {
                 | s::Profile::Source2024ModuleDefinitions
                 | s::Profile::Source2024ModuleCompatibility
                 | s::Profile::Source2024ModuleCallables
-                | s::Profile::Source2024ModuleSafety => {
+                | s::Profile::Source2024ModuleSafety
+                | s::Profile::Source2024ModuleConversions => {
                     descriptor.module_contracts()?;
                 }
                 _ => return Err("source header profile is unsupported"),

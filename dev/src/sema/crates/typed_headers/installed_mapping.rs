@@ -275,6 +275,18 @@ impl ProvidedOwners {
         }
         Ok(())
     }
+    pub(in crate::sema) fn conversion_role(
+        &self,
+        store: &Store,
+        role: Role,
+    ) -> Result<(), &'static str> {
+        self.require_store(store)?;
+        self.role_origin(role)?;
+        if !self.descriptor()?.profile().conversion_roles() {
+            return Err("selected From requires its explicit version-nine profile");
+        }
+        Ok(())
+    }
     pub(in crate::sema::crates::typed_headers) fn function(
         &self,
         catalog: &Catalog,

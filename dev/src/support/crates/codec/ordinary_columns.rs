@@ -120,6 +120,12 @@ pub(super) fn decode_module_callables(
 ) -> Result<AvailabilityPacket, &'static str> {
     decode_availability_profile(reader, base, s::Profile::Source2024ModuleCallables)
 }
+pub(super) fn decode_module_conversions(
+    reader: &mut Reader<'_>,
+    base: usize,
+) -> Result<AvailabilityPacket, &'static str> {
+    decode_availability_profile(reader, base, s::Profile::Source2024ModuleConversions)
+}
 pub(super) fn decode_module_safety(
     reader: &mut Reader<'_>,
     base: usize,
@@ -172,7 +178,8 @@ fn encode_profile(
     if rows.policy.edition != Edition::Rust2024 {
         return Err("source function columns require defining Rust2024 edition");
     }
-    if !provided && !rows.body_units.is_empty() {
+    let regional = provided || rows.descriptor().profile().conversion_roles();
+    if !regional && !rows.body_units.is_empty() {
         return Err("source function columns cannot encode numbering units");
     }
     id(out, rows.policy.provider.0)?;
@@ -210,14 +217,18 @@ fn encode_profile(
     write(out, &rows.formals, contract_columns::formal_write)?;
     write_copy(out, &rows.members, owner_rows::declaration_ref_write)?;
     write(out, &rows.member_links, contract_columns::member_write)?;
-    write(out, &rows.roles, contract_columns::role_write)?;
+    if rows.descriptor().profile().conversion_roles() {
+        write(out, &rows.roles, contract_columns::conversion_role_write)?;
+    } else {
+        write(out, &rows.roles, contract_columns::role_write)?;
+    }
     if rows.descriptor().profile().call_safety() {
         write(out, &rows.originals, operation_columns::safety_write)?;
     } else {
         write(out, &rows.originals, operation_columns::original_write)?;
     }
     write(out, &rows.body_inputs, relation_columns::body_write)?;
-    if provided {
+    if regional {
         write(out, &rows.body_units, allocation_columns::unit_write)?;
     }
     Ok(())
@@ -355,7 +366,7 @@ fn decode_profile_with(
         roles: read.list(crates::MAX_COMPONENTS, 9, contract_columns::role_read)?,
         originals: read.list(crates::MAX_FUNCTIONS, 70, operation_columns::original_read)?,
         body_inputs: read.list(crates::MAX_FUNCTIONS, 30, relation_columns::body_read)?,
-        body_units: if read.provided() {
+        body_units: if read.regional() {
             read.list(crates::MAX_FUNCTIONS, 13, allocation_columns::unit_read)?
         } else {
             Vec::new()
@@ -378,6 +389,16 @@ impl Input<'_, '_> {
                 | s::Profile::Source2024ProvidedContracts
                 | s::Profile::Source2024ProvidedCurrent
         )
+    }
+    fn regional(&self) -> bool {
+        self.provided() || self.profile.conversion_roles()
+    }
+    fn require_regional(&self, message: &'static str) -> Result<(), &'static str> {
+        if self.regional() {
+            Ok(())
+        } else {
+            Err(message)
+        }
     }
     fn require_provided(&self, message: &'static str) -> Result<(), &'static str> {
         if self.provided() {
@@ -406,13 +427,13 @@ impl Input<'_, '_> {
             Ok(Vec::new())
         }
     }
-    fn provided_list<T>(
+    fn regional_list<T>(
         &mut self,
         limit: usize,
         minimum: usize,
         row: impl FnMut(&mut Self) -> Result<T, &'static str>,
     ) -> Result<Vec<T>, &'static str> {
-        if self.provided() {
+        if self.regional() {
             self.list(limit, minimum, row)
         } else {
             self.empty()?;

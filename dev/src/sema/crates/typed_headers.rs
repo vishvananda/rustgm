@@ -435,6 +435,7 @@ pub(crate) fn source_original<'a>(
         .ok_or("source original lacks its actual current catalog")?;
     graph.source_original(catalog, facts, headers, definition, steps)
 }
+pub(crate) use mapped_source::prepare_original as prepare_source_original;
 
 pub(in crate::sema) fn source_trait_header<'a>(
     facts: &'a Declarations,
@@ -455,6 +456,23 @@ pub(in crate::sema) fn source_trait_header<'a>(
         .origin_catalog()
         .ok_or("imported trait lacks its actual catalog")?;
     graph.trait_header(catalog, facts, role, steps)
+}
+
+/// Borrowed source-header queries reuse their actual imported owner's sticky
+/// ledger, including clients that have no local source-header allocation.
+pub(in crate::sema) fn charge_source_header_query(
+    facts: &Declarations,
+    steps: usize,
+) -> Result<(), Error> {
+    let headers = facts
+        .crates
+        .as_deref()
+        .and_then(|linkage| linkage.originals.as_deref())
+        .ok_or_else(|| error("source query lacks its installed header budget"))?;
+    if headers.source.is_none() {
+        return Err(error("source query cannot use legacy header authority"));
+    }
+    headers.charge(steps)
 }
 
 pub(in crate::sema) fn charge_source_headers(

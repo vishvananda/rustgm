@@ -21,13 +21,15 @@ pub(super) fn append(
     facts: &mut Declarations,
     scratch: &mut promote::Scratch,
     originals: &mut ImportedOriginals,
-    allowance: Allowance,
+    mut allowance: Allowance,
     rows: s::ValidatedView<'_>,
 ) -> Result<(), Error> {
-    preflight(rows, originals, &allowance)
+    let mut body_bound = preflight(rows, originals, &allowance)
         .map_err(|e| context.report.body_optional_error(None, e))?;
+    let before_index = originals.retained_bytes();
     let selected = super::versioned_calls::Index::new(rows, originals, &allowance)
         .map_err(|e| context.report.body_optional_error(None, e))?;
+    body_bound = body_bound.saturating_add(originals.retained_bytes().saturating_sub(before_index));
     for raw in &rows.originals {
         originals
             .charge(1)
@@ -36,6 +38,27 @@ pub(super) fn append(
             .imported
             .generic_definition(context.owner, raw.declaration)
             .map_err(|e| context.report.body_optional_error(None, e))?;
+        crate::sema::crates::prepare_source_original(
+            context.report,
+            facts,
+            definition,
+            originals.steps,
+            body_bound,
+        )?;
+        if rows.descriptor().profile() == s::Profile::Source2024ModuleConversions {
+            let current = facts
+                .crates
+                .as_deref()
+                .and_then(crate::sema::crates::Linkage::original_work)
+                .ok_or_else(|| {
+                    context.report.body_optional_error(
+                        None,
+                        "ordinary original lost its current header accounting",
+                    )
+                })?;
+            allowance.header_work = current.0;
+            allowance.header_bytes = current.1;
+        }
         let original = build(context, facts, scratch, originals, definition, &selected)?;
         let source = original.template.body.source;
         let retained = originals
@@ -135,7 +158,7 @@ fn preflight(
     rows: s::ValidatedView<'_>,
     work: &mut ImportedOriginals,
     allowance: &Allowance,
-) -> Result<(), &'static str> {
+) -> Result<usize, &'static str> {
     let (bytes, visits) = allocation(rows, work, rows.originals.len(), rows.originals.iter())?;
     if allowance
         .header_work
@@ -151,7 +174,7 @@ fn preflight(
     {
         return Err("source original aggregate work/storage preflight exceeded its budget");
     }
-    Ok(())
+    Ok(bytes.saturating_add(work.retained_bytes()))
 }
 
 pub(super) fn allocation<'a>(

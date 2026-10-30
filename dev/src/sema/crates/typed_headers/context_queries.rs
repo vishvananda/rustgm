@@ -50,7 +50,7 @@ impl ImportedOwners {
     pub(super) fn source_original<'a>(
         &'a self,
         catalog: &'a Catalog,
-        facts: &Declarations,
+        facts: &'a Declarations,
         headers: &'a Headers,
         definition: DefId,
         steps: &mut usize,

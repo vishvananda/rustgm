@@ -52,6 +52,21 @@ pub(crate) fn client_analysis_with(
     pipeline::Analysis,
     CrateIdentity,
 )> {
+    let (report, current) = client_report_with(interface, extra, source)?;
+    let analysis = pipeline::analyze_source(&report)?;
+    Ok((report, analysis, current))
+}
+pub(crate) fn client_report(
+    interface: crates::Interface,
+    source: &str,
+) -> Result<resolve::expansion::Report> {
+    Ok(client_report_with(interface, Vec::new(), source)?.0)
+}
+fn client_report_with(
+    interface: crates::Interface,
+    extra: Vec<crates::Interface>,
+    source: &str,
+) -> Result<(resolve::expansion::Report, CrateIdentity)> {
     let provider = interface.identity().clone();
     let mut aliases = vec![Dependency::new("base".into(), provider.clone())?];
     for (index, artifact) in extra.iter().enumerate() {
@@ -98,9 +113,9 @@ pub(crate) fn client_analysis_with(
                 .is_none()
         );
     }
-    let analysis = pipeline::analyze_source(&report)?;
-    Ok((report, analysis, current))
+    Ok((report, current))
 }
+
 pub(crate) fn client(
     interface: crates::Interface,
     source: &str,
