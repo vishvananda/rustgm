@@ -251,19 +251,26 @@ impl Methods {
 
     pub(in crate::sema) fn inherent_groups(
         &self,
-    ) -> impl Iterator<Item = (Key, ItemContext, &[DefId])> {
+    ) -> impl Iterator<Item = (Bucket, ItemContext, &[DefId])> {
         self.inherent
             .iter()
-            .map(|(&key, members)| (key, ItemContext::ROOT, members.as_slice()))
+            .map(|(&key, members)| (Bucket::from(key), ItemContext::ROOT, members.as_slice()))
             .chain(
                 self.contextual()
                     .into_iter()
                     .flat_map(|index| &index.inherent)
                     .flat_map(|(&key, names)| {
-                        names
-                            .iter()
-                            .map(move |(&context, members)| (key, context, members.as_slice()))
+                        names.iter().map(move |(&context, members)| {
+                            (Bucket::from(key), context, members.as_slice())
+                        })
                     }),
+            )
+            .chain(
+                self.names
+                    .as_ref()
+                    .and_then(|index| index.structural.as_ref())
+                    .into_iter()
+                    .flat_map(|structural| structural.principals()),
             )
     }
 

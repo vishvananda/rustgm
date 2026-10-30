@@ -6259,6 +6259,248 @@
         "emit": "obj"
       },
       "maintainer_origin": "dev/tests/object_dispatch/upcasts.rs:REJECTED"
+    },
+    {
+      "path": "tests/spec/members/local-dyn-inherent/local-nominal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members",
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/principal_owners.rs:predeclared source matrix",
+      "native": {
+        "kind": "codegen",
+        "reason": "Source acceptance/unused declaration control; explicit native proof is separately required for forwarded-virtual."
+      }
+    },
+    {
+      "path": "tests/spec/members/local-dyn-inherent/forwarded-virtual.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members",
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/principal_owners.rs:predeclared source matrix",
+      "native": {
+        "kind": "codegen",
+        "reason": "Source acceptance/unused declaration control; explicit native proof is separately required for forwarded-virtual."
+      }
+    },
+    {
+      "path": "tests/spec/members/local-dyn-inherent/alias.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members",
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/principal_owners.rs:predeclared source matrix",
+      "native": {
+        "kind": "codegen",
+        "reason": "Source acceptance/unused declaration control; explicit native proof is separately required for forwarded-virtual."
+      }
+    },
+    {
+      "path": "tests/spec/members/local-dyn-inherent/generic-principal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members",
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/principal_owners.rs:predeclared source matrix",
+      "native": {
+        "kind": "codegen",
+        "reason": "Source acceptance/unused declaration control; explicit native proof is separately required for forwarded-virtual."
+      }
+    },
+    {
+      "path": "tests/spec/members/local-dyn-inherent/associated-principal.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members",
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/principal_owners.rs:predeclared source matrix",
+      "native": {
+        "kind": "codegen",
+        "reason": "Source acceptance/unused declaration control; explicit native proof is separately required for forwarded-virtual."
+      }
+    },
+    {
+      "path": "tests/spec/members/local-dyn-inherent/auto-set.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members",
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/principal_owners.rs:predeclared source matrix",
+      "native": {
+        "kind": "codegen",
+        "reason": "Source acceptance/unused declaration control; explicit native proof is separately required for forwarded-virtual."
+      }
+    },
+    {
+      "path": "tests/spec/members/local-dyn-inherent/generic-object-lifetime.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members",
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/principal_owners.rs:predeclared source matrix",
+      "native": {
+        "kind": "codegen",
+        "reason": "Source acceptance/unused declaration control; explicit native proof is separately required for forwarded-virtual."
+      }
+    },
+    {
+      "path": "tests/spec/members/local-dyn-inherent/method-bound.rs",
+      "exit_status": 0,
+      "features": [
+        "pa23.members",
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/principal_owners.rs:predeclared source matrix",
+      "native": {
+        "kind": "codegen",
+        "reason": "Source acceptance/unused declaration control; explicit native proof is separately required for forwarded-virtual."
+      }
+    },
+    {
+      "path": "tests/spec/members/local-dyn-inherent/missing-method-bound.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.members",
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/principal_owners.rs:predeclared source matrix"
+    },
+    {
+      "path": "tests/spec/members/local-dyn-inherent/wrong-principal-argument.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.members",
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/principal_owners.rs:predeclared source matrix"
+    },
+    {
+      "path": "tests/spec/members/local-dyn-inherent/object-lifetime-escape.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.members",
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/principal_owners.rs:predeclared source matrix"
+    },
+    {
+      "path": "tests/spec/members/local-dyn-inherent/auto-only.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.members",
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/principal_owners.rs:predeclared source matrix"
+    },
+    {
+      "path": "tests/spec/members/local-dyn-inherent/wrong-principal-owner.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.members",
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/principal_owners.rs:predeclared source matrix"
+    },
+    {
+      "path": "tests/spec/members/local-dyn-inherent/overlap-unused.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.members",
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/principal_owners.rs:predeclared source matrix"
+    },
+    {
+      "path": "tests/spec/members/local-dyn-inherent/invalid-receiver.rs",
+      "exit_status": 1,
+      "features": [
+        "pa23.members",
+        "pa23.dispatch"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/invariants/principal_owners.rs:predeclared source matrix"
     }
   ]
 }

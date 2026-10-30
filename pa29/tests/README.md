@@ -17,3 +17,8 @@ Put required regressions here, in the earliest assignment owning all their
 features. Register every maintainer input in the checkpoint inventory. The
 reviewed assignment release must publish `manifest.json` and references together;
 no undiscovered fixtures or empty-suite success is permitted.
+
+`local-dyn-owner-outcomes.json` declares a real source provider and two fresh
+clients: bare imported dyn formation succeeds, while a foreign inherent impl
+rejects after actual trait resolution. It preserves the ModuleContracts-v2
+provider foundation and grants no foreign permission.

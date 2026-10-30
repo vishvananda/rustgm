@@ -337,3 +337,39 @@ fn defaults_retain_the_binding_time_of_trait_lifetimes() -> Result<(), Box<dyn s
     }
     Ok(())
 }
+
+#[test]
+fn local_inherent_inputs_keep_all_sixteen_declared_outcomes()
+-> Result<(), Box<dyn std::error::Error>> {
+    for (name, accepted) in [
+        ("local-nominal", true),
+        ("forwarded-virtual", true),
+        ("alias", true),
+        ("generic-principal", true),
+        ("associated-principal", true),
+        ("auto-set", true),
+        ("generic-object-lifetime", true),
+        ("method-bound", true),
+        ("missing-method-bound", false),
+        ("wrong-principal-argument", false),
+        ("object-lifetime-escape", false),
+        ("auto-only", false),
+        ("wrong-principal-owner", false),
+        ("foreign-principal", false),
+        ("overlap-unused", false),
+        ("invalid-receiver", false),
+    ] {
+        let relative = if name == "foreign-principal" {
+            "pa36/tests/spec/inherent-ownership/foreign-principal.rs".to_owned()
+        } else {
+            format!("pa23/tests/spec/members/local-dyn-inherent/{name}.rs")
+        };
+        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("..")
+            .join(relative);
+        let source = std::fs::read_to_string(path)?;
+        let result = crate::foreign_frontend::checked(&source);
+        assert_eq!(result.is_ok(), accepted, "{name}: {:?}", result.err());
+    }
+    Ok(())
+}

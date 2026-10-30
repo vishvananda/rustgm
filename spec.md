@@ -136,6 +136,15 @@ Implement a complete supported consumer path before broadening the profile.
 Unsupported forms must diagnose at their actual boundary rather than requiring
 every future form to be implemented before any supported source can execute.
 
+Index inherent trait-object candidates by the actual principal trait identity in
+the existing cold method owner. Keep complete Self arguments, auto traits,
+lifetimes and receiver applicability in the ordinary proof. Shape identifiers are
+not a disjointness proof: local principal methods retain ordinary unused-member
+overlap checks. Authenticate a local principal against its exact active trait
+source owner; imported principals require their own target permission and
+validated method-index transport. Primitive incoherent lookup policy stays
+separate. See the [PA23 contract](pa23/tests/spec/members/local-dyn-inherent/README.md).
+
 Header diagnostic and advisory contracts use complete versioned cold columns.
 Authenticate local declaration, configured owner and retained source incarnation;
 join imported declarations to their actual catalog coordinates once. Reuse the
