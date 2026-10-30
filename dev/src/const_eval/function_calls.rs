@@ -32,23 +32,12 @@ impl Machine<'_, '_> {
             return Err("constant callable lost its item identity".into());
         };
         let definition = DefId(item.0);
-        if self
-            .evaluator
-            .facts()
-            .associated
-            .trait_owner(definition)
-            .is_some()
-        {
-            self.charge(5)?;
-            self.evaluator
-                .facts()
-                .check_const_member_execution(definition)?;
-        }
-        if !self.evaluator.facts().is_const_function(definition) {
+        let default = self.check_default_call(body, frame, target, form)?;
+        if !default && !self.evaluator.facts().is_const_function(definition) {
             return Err("non-const calls are not allowed during constant execution".into());
         }
         crate::sema::compiler_items::check_const_drop_glue(self.evaluator.facts(), target)?;
-        if let Some(catalog) = self.evaluator.facts().source_bindings.as_deref() {
+        if !default && let Some(catalog) = self.evaluator.facts().source_bindings.as_deref() {
             if matches!(form, Form::Selected { .. })
                 && catalog.intrinsic_kind(definition)?.is_some()
             {
@@ -86,7 +75,7 @@ impl Machine<'_, '_> {
             }
         }
         let selected = self.bodies.functions.get(&target).copied().or_else(|| {
-            if matches!(form, Form::Direct) {
+            if !default && matches!(form, Form::Direct) {
                 self.bodies.definitions.get(&definition).copied()
             } else {
                 None
@@ -96,10 +85,10 @@ impl Machine<'_, '_> {
             self.waiting = Some(Requirement::FunctionBody(target));
             return Ok(Outcome::Pending);
         };
-        if !matches!(form, Form::Direct) {
+        if default || !matches!(form, Form::Direct) {
             self.validate_invoked_entry(index, target)?;
         }
-        if matches!(form, Form::Selected { .. }) {
+        if default || matches!(form, Form::Selected { .. }) {
             self.validate_selected_entry(index, target)?;
         }
         Ok(Outcome::Enter(index))

@@ -22,6 +22,19 @@ impl Engine {
     ) -> Result<bool, Error> {
         let error = |e| Error::at(FileId(0), 0, e);
         crate::sema::compiler_items::check_const_drop_glue(facts, instance).map_err(error)?;
+        if facts
+            .const_default_member(instance)
+            .map_err(error)?
+            .is_some()
+        {
+            let limits = self.available_limits()?;
+            state
+                .ok_or_else(|| error("const default requires an actual reached caller"))?
+                .check_reached_default(facts, &self.catalog, instance, limits.steps)
+                .map_err(error)?;
+            facts.check_const_default(report, instance).map_err(error)?;
+            return self.function_body(report, facts, instance);
+        }
         let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(instance.ty()) else {
             return Err(error("source const target lost its function item"));
         };

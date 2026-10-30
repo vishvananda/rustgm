@@ -10,6 +10,8 @@ Full original Iterator/helper execution and core/alloc/std artifacts remain requ
 
 The source producer seals an explicit marked/unmarked choice at the existing trait member declaration pass. Queries authenticate the canonical function, configured owner/effect and source incarnation. The marker changes trait default defining eligibility and const call eligibility; actual const impl bodies keep their own const context. A const trait's marked member receives no inherited const API policy. Current metadata profiles must not export an unrepresented member restriction; this source checkpoint does not add a wire tag or grant foreign permission. Ordinary free functions retain their existing sparse path.
 
+The candidate default execution path requires an actual reached direct Call in checked const Code, its exact callable captures/signature and a fresh concrete const implementation selecting that same default. It separately proves the method's conditional requirements, then prepares the existing original, specialization and borrow-checked Code. A trait header, cached Code or direct function root supplies no const execution permission. Indirect default invocation, nonempty quantified conditional bounds and unresolved lifetime/size debts remain explicit required work; metadata transport and the original Iterator graph remain separate requirements.
+
 Primary implementation references at pinned revision `88d9e12ae178fab0fb5cc050a94da85685d449ea`:
 
 - [`rustc_internal.rs`](https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_attr_parsing/src/attributes/rustc_internal.rs): word-only parser, internal gate, required/default trait-function targets.

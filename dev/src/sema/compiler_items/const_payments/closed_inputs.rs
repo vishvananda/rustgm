@@ -36,7 +36,10 @@ pub(super) fn closed_arguments(
     Ok(true)
 }
 /// Reading a binder does not remove it; only fresh payment opens its body.
-pub(super) fn closed_clause(store: &Store, clause: Clause) -> Result<Predicate, &'static str> {
+pub(in crate::sema) fn closed_clause(
+    store: &Store,
+    clause: Clause,
+) -> Result<Predicate, &'static str> {
     match clause {
         Clause::UnstableFeature(_) => {
             Err("non-type feature condition cannot become a const type payment")
@@ -53,7 +56,7 @@ pub(super) fn closed_clause(store: &Store, clause: Clause) -> Result<Predicate, 
         }
     }
 }
-pub(super) fn open_closed_clause(
+pub(in crate::sema) fn open_closed_clause(
     facts: &mut Declarations,
     clause: Clause,
 ) -> Result<Predicate, &'static str> {

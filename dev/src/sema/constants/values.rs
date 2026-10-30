@@ -384,6 +384,15 @@ impl<'a> Evaluator<'a> {
     pub fn facts(&self) -> &Declarations {
         self.queries.typing.facts
     }
+    pub(crate) fn check_const_default(
+        &mut self,
+        instance: crate::types::instance::Instance,
+    ) -> Result<(), &'static str> {
+        self.queries
+            .typing
+            .facts
+            .check_const_default(self.queries.report, instance)
+    }
     pub(crate) fn promotable_contract(
         &self,
         definition: DefId,

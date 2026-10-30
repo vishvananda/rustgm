@@ -125,18 +125,14 @@ impl Inputs {
         body: &Body,
         bytes: usize,
     ) -> Result<Uses, &'static str> {
-        let Some(catalog) = facts.source_bindings.as_deref() else {
+        if facts.source_bindings.is_none() {
             return Ok(Uses::default());
-        };
+        }
         if !body.const_context {
             return Ok(Uses::default());
         }
         let mut uses = Uses {
-            needed: if let Owner::Function { definition, .. } = body.owner {
-                catalog.requires_const_payment(definition)?
-            } else {
-                false
-            },
+            needed: function_payment(facts, body.owner, body.instance)?,
             ..Uses::default()
         };
         let mut descriptor_work = 0;
@@ -239,23 +235,14 @@ impl Inputs {
         let budget = (64usize * 1024 * 1024)
             .checked_sub(fixed)
             .ok_or("source const-call input storage exceeds budget")?;
-        let requirements = if let Owner::Function { definition, .. } = body.owner {
-            if facts
-                .source_bindings
-                .as_deref()
-                .ok_or("source const catalog disappeared")?
-                .requires_const_payment(definition)?
-            {
-                Some(const_payments::prepare(
-                    facts,
-                    selected
-                        .or(body.instance)
-                        .ok_or("conditional code needs its complete selected instance")?,
-                    budget,
-                )?)
-            } else {
-                None
-            }
+        let requirements = if function_payment(facts, body.owner, body.instance)? {
+            Some(const_payments::prepare(
+                facts,
+                selected
+                    .or(body.instance)
+                    .ok_or("conditional code needs its complete selected instance")?,
+                budget,
+            )?)
         } else {
             None
         };
@@ -359,6 +346,29 @@ impl Inputs {
             .ok_or("source conditional code disappeared")?;
         self.checked(catalog, code, body).map(Rc::clone)
     }
+}
+
+fn function_payment(
+    facts: &mut Declarations,
+    owner: Owner,
+    instance: Option<Instance>,
+) -> Result<bool, &'static str> {
+    let Owner::Function { definition, .. } = owner else {
+        return Ok(false);
+    };
+    facts.charge_caller_inputs(8, 0)?;
+    // A default's implicit Self contract is proved at its reached call. It is
+    // not the free-function conditional effect represented by Requirements.
+    if let Some(instance) = instance
+        && facts.const_default_member(instance)? == Some(definition)
+    {
+        return Ok(false);
+    }
+    facts
+        .source_bindings
+        .as_deref()
+        .ok_or("source const catalog disappeared")?
+        .requires_const_payment(definition)
 }
 
 #[cfg(test)]

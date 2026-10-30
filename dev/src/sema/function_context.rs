@@ -7,6 +7,7 @@ use crate::types::parameters::{
 };
 mod abstract_uses;
 pub(in crate::sema) mod assumption_environment;
+mod entry_contracts;
 pub(crate) use abstract_uses::{Call, DefiningCalls};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

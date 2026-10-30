@@ -90,6 +90,9 @@ fn real_source_runtime_required_and_const_calls_emit_observer_lowir() -> TestRes
             mut facts,
             prepared,
         } = pipeline::analyze_source(&report)?;
+        if name == "source-default-const" {
+            check_default_entries(&report, &mut facts)?;
+        }
         let program = crate::lower::instances::build_roots_prepared(
             &report,
             &mut facts,
@@ -110,6 +113,69 @@ fn real_source_runtime_required_and_const_calls_emit_observer_lowir() -> TestRes
             &mut std::fs::File::create(directory.join("provider.lowir"))?,
         )?;
     }
+    Ok(())
+}
+fn check_default_entries(report: &Report, facts: &mut Declarations) -> TestResult {
+    let definition = method(report, facts, "constant")?;
+    let callable = facts
+        .methods
+        .calls
+        .values()
+        .find(|call| call.method == definition)
+        .ok_or("actual default call")?
+        .callable;
+    let instance = crate::types::instance::Instance::new(&facts.types, callable)?;
+    facts.check_const_default(report, instance)?;
+    assert!(facts.check_const_member_execution(definition).is_err());
+    let Some(crate::types::Kind::FunctionItem {
+        item,
+        arguments,
+        signature,
+    }) = facts.types.kind(callable)
+    else {
+        return Err("actual default function item".into());
+    };
+    let Some(crate::types::Kind::Function {
+        parameters,
+        bound_regions,
+        unsafe_,
+        convention,
+        ..
+    }) = facts.types.kind(signature)
+    else {
+        return Err("actual default signature".into());
+    };
+    let signature = facts.types.intern(crate::types::Kind::Function {
+        parameters,
+        bound_regions,
+        unsafe_,
+        convention,
+        result: crate::types::TypeId::UNIT,
+    })?;
+    let wrong = facts.types.intern(crate::types::Kind::FunctionItem {
+        item,
+        arguments,
+        signature,
+    })?;
+    let wrong = crate::types::instance::Instance::new(&facts.types, wrong)?;
+    assert!(facts.check_const_default(report, wrong).is_err());
+    let key = facts.functions[facts.function_indices[&definition]].node;
+    let choice = local(facts)?
+        .declarations
+        .get_mut(&key)
+        .and_then(|header| header.promises.as_deref_mut())
+        .ok_or("default promises")?
+        .member
+        .take()
+        .ok_or("completed default absence")?;
+    assert!(facts.check_const_default(report, instance).is_err());
+    local(facts)?
+        .declarations
+        .get_mut(&key)
+        .and_then(|header| header.promises.as_deref_mut())
+        .ok_or("default promises")?
+        .member = Some(choice);
+    facts.check_const_default(report, instance)?;
     Ok(())
 }
 #[test]
