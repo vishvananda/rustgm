@@ -2995,6 +2995,13 @@ Share existential bindings across Self and every type/const argument when probin
 compatibility. Lifetime erasure may establish structural disjointness, never body
 permissions. Charge candidate-pair storage before allocation and equation work
 during probes; predicate-sensitive coherence remains a separate proof.
+Instantiate and equate the actual implementation heads before materializing their
+conditional assumption graphs. A structural mismatch needs no unrelated trait
+condition expansion. Compatible heads retain their own type/const substitution
+and lifetime mapping, then pay and prove the complete conditions through the
+existing coherence kernels. Keep reference and iteration queries on their full
+condition path. Scaling controls must exercise both disjoint heads and compatible
+heads with growing conditions, alongside real/open overlap and failed payment.
 
 Trait application index and cycle keys share one lazy structural fold owned by
 the canonical type store. Its result is an opaque comparable key, never a usable
