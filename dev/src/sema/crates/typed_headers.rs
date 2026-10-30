@@ -372,7 +372,7 @@ impl super::Linkage {
         definition: DefId,
         declared: bool,
     ) -> Result<&[Input], &'static str> {
-        if let Some(source) = self
+        if let Some(super::ImportedOwners::Ordinary(source)) = self
             .originals
             .as_deref()
             .and_then(|headers| headers.source.as_ref())
