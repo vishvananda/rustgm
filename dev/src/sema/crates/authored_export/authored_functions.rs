@@ -463,5 +463,5 @@ mod effect_storage {
 }
 
 #[cfg(test)]
-#[path = "../../../../tests/invariants/conditional_exports.rs"]
+#[path = "../../../../tests/invariants/required_exports.rs"]
 mod conditional_tests;
