@@ -75,7 +75,13 @@ fn lookup_const_unsafe_and_shared_mutation_fail_at_their_real_consumers() -> Tes
         ),
         (
             "qualified-typo-is-not-an-alias",
-            &["method", "associated", "unresolved", "unknown"][..],
+            &[
+                "method",
+                "associated",
+                "unresolved",
+                "unknown",
+                "missing value resolution",
+            ][..],
         ),
         (
             "mutation-denied",

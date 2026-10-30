@@ -151,14 +151,53 @@ fn marker_grants_no_const_unsafe_or_shared_reference_mutation_permission() -> Te
 
 #[test]
 fn actual_advisory_bodies_emit_local_native_roots_without_metadata_publication() -> TestResult {
-    for (name, fixture, expression) in [
-        ("advisory-mutation", "mutation", "observe()"),
-        ("advisory-const", "const-allowed", "V"),
-        ("advisory-unsafe", "unsafe-allowed", "observe()"),
+    for (name, cluster, fixture, expression) in [
+        (
+            "advisory-mutation",
+            "source-const-item-calls",
+            "mutation",
+            "observe()",
+        ),
+        (
+            "advisory-const",
+            "source-const-item-calls",
+            "const-allowed",
+            "V",
+        ),
+        (
+            "advisory-unsafe",
+            "source-const-item-calls",
+            "unsafe-allowed",
+            "observe()",
+        ),
+        (
+            "confusable-mutation",
+            "source-confusable-methods",
+            "mutation",
+            "observe()",
+        ),
+        (
+            "confusable-const",
+            "source-confusable-methods",
+            "const-allowed",
+            "V",
+        ),
+        (
+            "suspension-mutation",
+            "source-suspend-advisory",
+            "mutation",
+            "observe()",
+        ),
+        (
+            "suspension-drop",
+            "source-suspend-advisory",
+            "drop-body",
+            "observe()",
+        ),
     ] {
         let source = format!(
             "{}\n#[unsafe(no_mangle)]pub extern \"C\" fn native_observed()->u64{{{expression} as u64}}\n",
-            input(fixture)?
+            test_source::fixture(&format!("pa31/tests/spec/{cluster}/{fixture}.rs"))?
         );
         let report = test_source::resolve(&source, true)?;
         let analysis = pipeline::analyze_source(&report)?;

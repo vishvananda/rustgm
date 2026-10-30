@@ -34,7 +34,7 @@ impl Entry {
         }
     }
     pub fn annotation_count(&self) -> usize {
-        1 + self.extra.as_deref().map_or(0, |rows| rows.len())
+        1 + self.extra.as_deref().map_or(0, Vec::len)
     }
     pub fn annotations(&self) -> impl Iterator<Item = &Annotation> {
         std::iter::once(&self.first).chain(self.extra.iter().flat_map(|rows| rows.iter()))
