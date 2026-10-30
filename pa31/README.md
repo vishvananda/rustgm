@@ -154,6 +154,18 @@ preserve authenticated imported intent. The source marker grants no const,
 unsafe, API, layout or intrinsic capability. The complete original pointer and
 MaybeUninit body graph remains required independently of this header contract.
 
+The [incoherent inherent permission contracts](tests/spec/source-incoherent-inherent/README.md)
+retain the original Error header and independently qualified local/cross-crate
+controls. `rustc_has_incoherent_inherent_impls` is an authenticated, gated target
+permission. A foreign nominal or dyn-principal implementation additionally needs
+its own internal-attribute feature and Allow on every actual inherent method.
+Local dyn ownership follows the principal trait and uses ordinary local rules.
+Preserve complete Self arguments, auto traits, lifetimes, receivers, coherence,
+privacy, const and unsafe checks. The target permission and validated incoherent
+candidate index must survive genuine cross-crate transport; the local-only Allow
+attribute is not itself exported. Existing narrower metadata profiles must reject
+unsupported transport explicitly. This contract remains required implementation.
+
 The [selected source handler checkpoint](../docs/pa31-source-panic-handler-checkpoint.md)
 executes genuine Location/PanicInfo/panic/handler bodies through LowIR and the
 native backend, with normal/drop and handler/abort traces. Its selected local
