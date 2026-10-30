@@ -232,6 +232,72 @@
         "stdout": "64\n",
         "stderr": ""
       }
+    },
+    "nested-into-dot.rs": {
+      "sha256": "1389286f5547cee9c27da6ca02cf06a43056105787797ea87ce8f20352bee672",
+      "candidate_required": 0,
+      "independent_status": "pending; expected outcomes declared before execution",
+      "rust_object_expected": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "32\n",
+        "stderr": ""
+      }
+    },
+    "nested-into-ufcs.rs": {
+      "sha256": "c8e2aad81b1baca003583a649e882599c10b866b521c2810ef5ec42048946600",
+      "candidate_required": 0,
+      "independent_status": "pending; expected outcomes declared before execution",
+      "rust_object_expected": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "32\n",
+        "stderr": ""
+      }
+    },
+    "nested-into-explicit.rs": {
+      "sha256": "28b8d2bb3f90e92f45156bc42662e68ea48447210b0f94c737b688a82761aba2",
+      "candidate_required": 0,
+      "independent_status": "pending; expected outcomes declared before execution",
+      "rust_object_expected": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "64\n",
+        "stderr": ""
+      }
+    },
+    "nested-into-lookalike.rs": {
+      "sha256": "f8b50cc1e095a3bdb1190c5bb1c893123e96a83b7c56df68ec1b8c708784283e",
+      "candidate_required": 0,
+      "independent_status": "pending; expected outcomes declared before execution",
+      "rust_object_expected": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "64\n",
+        "stderr": ""
+      }
+    },
+    "nested-into-wrapper.rs": {
+      "sha256": "0879dfa601145fa6d86308c8e1b93a2e8f328354e8f8dbc164d8dca9d303c101",
+      "candidate_required": 0,
+      "independent_status": "pending; expected outcomes declared before execution",
+      "rust_object_expected": 0,
+      "native": {
+        "exit_status": 0,
+        "stdout": "32\n",
+        "stderr": ""
+      }
     }
+  },
+  "nested_condition_extension": {
+    "state": "declared; independent and candidate qualification pending",
+    "cases": [
+      "nested-into-dot",
+      "nested-into-ufcs",
+      "nested-into-explicit",
+      "nested-into-lookalike",
+      "nested-into-wrapper"
+    ],
+    "reason": "Real Into blanket conditions must carry pending From preferences across selected refinement contexts."
   }
 }

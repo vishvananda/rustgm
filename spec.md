@@ -3268,6 +3268,15 @@ or diagnostic-only homonyms retain their normal behavior. Reuse the numeric
 dependency frontier and actual changed-root waiters; do not scan every pending
 goal per call or introduce another numeric cache. Preserve projection barriers,
 attempted-work payments, hot widths and unsupported metadata capabilities.
+For a unique retained candidate, map live nested preferences through the actual
+validated input-publication mappings. Completed proof nodes and rejected or
+ambiguous candidates supply no hint. Keep traversal iterative and confined to
+that selected subtree, preserving its scope and universal export witnesses.
+The receiving body or projection owner cancels silent child tickets before
+reselection and on completion. Such tickets cannot seed fallback themselves or
+publish resolution notifications. Within one unsuccessful fallback sweep,
+deduplicate inspected roots so shared mixed frontiers do not rescan the same
+waiters quadratically; discard that temporary state before binding any root.
 The [source From contract](docs/pa31-source-from-plan.md) records independently
 qualified original-header, generic, alias, ordering and native controls; candidate
 implementation and imported transport remain open.

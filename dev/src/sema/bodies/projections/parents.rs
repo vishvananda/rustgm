@@ -22,7 +22,7 @@ impl Checker<'_> {
         watch: WatchId,
     ) -> Result<Completion, Error> {
         if query.parent.is_none() {
-            if let Some(owner) = self.advance_projection_parent(&mut query, false)? {
+            if let Some(owner) = self.advance_projection_parent(&mut query, watch, false)? {
                 return Ok(Completion::Dependency(
                     super::super::Requirement::from(owner),
                     Continuation::Parent {
@@ -143,8 +143,13 @@ impl Checker<'_> {
     pub(super) fn advance_projection_parent(
         &mut self,
         query: &mut Query,
+        watch: WatchId,
         resolved: bool,
     ) -> Result<Option<selection::Dependency>, Error> {
+        self.state
+            .notifications
+            .clear_projection_hints(&mut self.state.infer, watch)
+            .map_err(|reason| self.error(query.node, reason))?;
         let Some(application) = self.parent_application(query, resolved)? else {
             return Ok(None);
         };
@@ -221,7 +226,19 @@ impl Checker<'_> {
                 }));
                 Ok(Some(owner))
             }
-            selection::Progress::Inferred { query: pending } => {
+            selection::Progress::Inferred { query: mut pending } => {
+                let hints = pending
+                    .float_hints(self.facts, &mut self.state.infer)
+                    .map_err(|reason| self.error(node, reason))?;
+                self.state
+                    .notifications
+                    .prefer_projection_floats(
+                        &mut self.state.infer,
+                        &self.facts.types,
+                        watch,
+                        &hints,
+                    )
+                    .map_err(|reason| self.error(node, reason))?;
                 reservation
                     .reserve(
                         self.facts,

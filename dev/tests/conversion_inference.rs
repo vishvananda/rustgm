@@ -28,6 +28,11 @@ const CASES: &[(&str, Option<u8>)] = &[
     ("completed-blanket", Some(64)),
     ("diagnostic-only", Some(64)),
     ("different-diagnostic-owner", Some(64)),
+    ("nested-into-dot", Some(32)),
+    ("nested-into-ufcs", Some(32)),
+    ("nested-into-explicit", Some(64)),
+    ("nested-into-lookalike", Some(64)),
+    ("nested-into-wrapper", Some(32)),
 ];
 fn root() -> TestResult<PathBuf> {
     Ok(Path::new(env!("CARGO_MANIFEST_DIR"))

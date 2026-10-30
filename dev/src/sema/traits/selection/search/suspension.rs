@@ -352,6 +352,17 @@ fn begin_with_inputs(
     }
 }
 impl Pending {
+    pub fn float_hints(
+        &mut self,
+        facts: &mut Declarations,
+        context: &mut Context,
+    ) -> Result<Vec<crate::types::infer::TermId>, String> {
+        let result = self.query.float_hints(facts, context);
+        let charged = context
+            .account_work(std::mem::take(&mut self.query.steps))
+            .map_err(super::inference);
+        result.and_then(|hints| charged.map(|()| hints))
+    }
     /// Reserve every allocated trial ID before declaration work begins.
     pub fn allocation_end(&self) -> u32 {
         self.query.allocations.end()

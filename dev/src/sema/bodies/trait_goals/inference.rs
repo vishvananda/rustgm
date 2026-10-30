@@ -226,7 +226,10 @@ impl Checker<'_> {
         self.facts.body_work.trait_selections += 1;
         let selected = self.select_pending_goal(pending, index, first)?;
         match selected {
-            selection::Progress::Inferred { query } => {
+            selection::Progress::Inferred { mut query } => {
+                let hints = query
+                    .float_hints(self.facts, &mut self.state.infer)
+                    .map_err(|reason| self.error(node, reason))?;
                 pending
                     .reservation
                     .reserve(
@@ -239,6 +242,10 @@ impl Checker<'_> {
                 let reservation = std::mem::take(&mut pending.reservation);
                 pending.partial.insert(index, (query, reservation));
                 self.observe_trait_goal(node, index)?;
+                self.state
+                    .notifications
+                    .prefer_floats(&mut self.state.infer, &self.facts.types, index, &hints)
+                    .map_err(|reason| self.error(node, reason))?;
             }
             selection::Progress::Ready(selected) => {
                 let reservation = std::mem::take(&mut pending.reservation);
@@ -310,6 +317,10 @@ impl Checker<'_> {
         index: usize,
         first: u32,
     ) -> Result<selection::Progress, Error> {
+        self.state
+            .notifications
+            .clear_hints(&mut self.state.infer, index)
+            .map_err(|reason| self.error(self.state.body.node, reason))?;
         let environment =
             self.trait_query_environment(self.state.call_types.obligations[index].0)?;
         if let Some((query, reservation)) = pending.partial.remove(&index) {

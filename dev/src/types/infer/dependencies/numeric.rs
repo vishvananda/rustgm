@@ -1,18 +1,19 @@
 //! Numeric fallback consumes one dependency-ready frontier, then yields to proof work.
 use super::{Context, Dependency, Error, Fallback, State, Storage, Visit, Watch, WatchId};
+use crate::support::hash::HashMap;
 use crate::support::retained::Growth;
 use crate::types::infer::{Domain, TermId, Value};
 
 impl Watch {
     fn numeric_ready(&self) -> bool {
-        self.fallback.enabled() && self.walking == 0 && self.numeric != 0 && self.blockers == 0
+        self.fallback.seeds() && self.walking == 0 && self.numeric != 0 && self.blockers == 0
     }
 }
 impl Storage {
     pub(super) fn disable_fallback(&mut self, id: WatchId) {
         let watch = &mut self.watches[id.0 as usize];
         if watch.fallback.enabled() {
-            self.fallback_watches -= 1;
+            self.fallback_watches -= usize::from(watch.fallback.seeds());
             watch.fallback = Fallback::Disabled;
         }
     }
@@ -39,8 +40,7 @@ impl Storage {
         context: &mut Context,
         id: WatchId,
     ) -> Result<(), Error> {
-        if !self.watches[id.0 as usize].fallback.enabled()
-            || self.watches[id.0 as usize].walking != 0
+        if !self.watches[id.0 as usize].fallback.seeds() || self.watches[id.0 as usize].walking != 0
         {
             return Ok(());
         }
@@ -77,7 +77,7 @@ impl Storage {
             .watches
             .get(id.0 as usize)
             .ok_or(Error::InvalidIdentity)?;
-        if watch.fallback.enabled() && !watch.numeric_ready() {
+        if watch.fallback.seeds() && !watch.numeric_ready() {
             // Only a blocked watch can have kept an otherwise ready peer off
             // the numeric queue. Ready cancellation supplies no new binding.
             self.notify_numeric_peers(context, id)?;
@@ -158,54 +158,96 @@ impl Storage {
         }
         Ok(())
     }
+    fn numeric_root(&self, context: &mut Context, term: TermId) -> Result<Option<bool>, Error> {
+        let dependency = Dependency::Type(term);
+        let mut float32 = false;
+        if let Some(waiters) = self.waiting.get(&dependency) {
+            for &other in waiters {
+                context.step()?;
+                let watch = &self.watches[other.0 as usize];
+                if watch.seen.get(&dependency) != Some(&Visit::Numeric) {
+                    continue;
+                }
+                if watch.fallback.seeds() && !watch.numeric_ready() {
+                    return Ok(None);
+                }
+                if let Some(argument) = watch.fallback.preferred()
+                    && context.root(argument)? == term
+                {
+                    float32 = true;
+                }
+            }
+        }
+        Ok(Some(float32))
+    }
+    fn numeric_seeds(
+        &self,
+        context: &mut Context,
+        id: WatchId,
+        inspected: &mut HashMap<TermId, Option<bool>>,
+    ) -> Result<Option<Vec<(TermId, bool)>>, Error> {
+        let mut seeds = Vec::new();
+        for (&dependency, &visit) in &self.watches[id.0 as usize].seen {
+            context.step()?;
+            if visit != Visit::Numeric {
+                continue;
+            }
+            let Dependency::Type(term) = dependency else {
+                return Err(Error::InvalidIdentity);
+            };
+            let state = if let Some(&known) = inspected.get(&term) {
+                known
+            } else {
+                self.numeric_root(context, term)?
+            };
+            let Some(float32) = state else {
+                Self::remember_numeric(context, inspected, term, None)?;
+                for (term, preference) in seeds {
+                    Self::remember_numeric(context, inspected, term, Some(preference))?;
+                }
+                return Ok(None);
+            };
+            Self::prepay(
+                context,
+                Growth::vector::<(TermId, bool)>(seeds.len(), seeds.capacity(), 1),
+            )?;
+            seeds.push((term, float32));
+        }
+        Ok(Some(seeds))
+    }
+    fn remember_numeric(
+        context: &mut Context,
+        inspected: &mut HashMap<TermId, Option<bool>>,
+        term: TermId,
+        preference: Option<bool>,
+    ) -> Result<(), Error> {
+        context.step()?;
+        let growth = Growth::map::<TermId, Option<bool>>(inspected.len(), inspected.capacity(), 1);
+        if let std::collections::hash_map::Entry::Vacant(entry) = inspected.entry(term) {
+            Self::prepay(context, growth)?;
+            entry.insert(preference);
+        }
+        Ok(())
+    }
     pub(super) fn default_seed(&mut self, context: &mut Context) -> Result<bool, Error> {
         context.step()?;
         if self.has_pending_resolution() || self.equations.has_ready() {
             return Ok(false);
         }
+        // No bindings change during an unsuccessful sweep. Memoize inspected
+        // roots only after a blocked candidate, so failed shared frontiers are
+        // linear while an immediately successful frontier needs no extra map.
+        let mut inspected = HashMap::default();
         while let Some(id) = self.numeric_ready.pop_front() {
             context.step()?;
             self.watches[id.0 as usize].numeric_queued = false;
             if !self.watches[id.0 as usize].numeric_ready() {
                 continue;
             }
-            let mut seeds = Vec::new();
-            let mut blocked = false;
-            for (&dependency, &visit) in &self.watches[id.0 as usize].seen {
-                context.step()?;
-                if visit != Visit::Numeric {
-                    continue;
-                }
-                let Dependency::Type(term) = dependency else {
-                    return Err(Error::InvalidIdentity);
-                };
-                let mut float32 = false;
-                if let Some(waiters) = self.waiting.get(&dependency) {
-                    for &other in waiters {
-                        context.step()?;
-                        let watch = &self.watches[other.0 as usize];
-                        if watch.seen.get(&dependency) == Some(&Visit::Numeric)
-                            && !watch.numeric_ready()
-                        {
-                            blocked = true;
-                        }
-                        if watch.seen.get(&dependency) == Some(&Visit::Numeric)
-                            && let Fallback::Float32(argument) = watch.fallback
-                            && context.root(argument)? == term
-                        {
-                            float32 = true;
-                        }
-                    }
-                }
-                Self::prepay(
-                    context,
-                    Growth::vector::<(TermId, bool)>(seeds.len(), seeds.capacity(), 1),
-                )?;
-                seeds.push((term, float32));
-            }
-            if blocked {
+            let Some(seeds) = self.numeric_seeds(context, id, &mut inspected)? else {
                 continue;
-            }
+            };
+            drop(inspected);
             for (term, float32) in seeds {
                 let root = context.root(term)?;
                 let primitive = match context.terms[root.0 as usize].value {
@@ -224,27 +266,6 @@ impl Storage {
     }
 }
 impl Context {
-    /// Attach a preference to this live predicate, never to a numeric root globally.
-    /// The semantic caller authenticates the source language contract first.
-    pub(crate) fn prefer_f32(&mut self, id: WatchId, argument: TermId) -> Result<(), Error> {
-        self.step()?;
-        if self.unresolved_domain(argument)? != Some(Domain::Float) {
-            return Err(Error::InvalidIdentity);
-        }
-        let watch = self
-            .dependencies
-            .as_mut()
-            .and_then(|storage| storage.watches.get_mut(id.0 as usize))
-            .ok_or(Error::InvalidIdentity)?;
-        if !matches!(watch.fallback, Fallback::Predicate | Fallback::Float32(_))
-            || watch.state == State::Cancelled
-        {
-            return Err(Error::InvalidIdentity);
-        }
-        watch.fallback = Fallback::Float32(argument);
-        Ok(())
-    }
-
     /// Observe a normalization's inputs, excluding only its own result root
     /// from input-normalization barriers. The ticket supplies no proof.
     pub(crate) fn watch_normalization(&mut self, input: TermId) -> Result<WatchId, Error> {

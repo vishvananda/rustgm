@@ -53,6 +53,7 @@ mod equalities;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/equality_search.rs"]
 mod equality_tests;
+mod fallback_hints;
 mod feature_conditions;
 mod forwarding;
 #[cfg(test)]
@@ -628,7 +629,9 @@ impl Search<'_> {
                 self.charge(&mut trial.inputs.context)?;
                 frame.trial = None;
             }
-            Decision::Deferred => trial.defer_condition(facts, index)?,
+            Decision::Deferred => {
+                self.query.numeric_hints_seen |= trial.defer_condition(facts, index)?;
+            }
             Decision::Refuted(_) => return Err("negative child was not classified".into()),
             Decision::Proven(node) => {
                 trial

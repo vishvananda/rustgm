@@ -2,9 +2,27 @@
 
 LIB-105 remains open. The pinned compiler's actual `From` language role changes
 float fallback, so accepting its attribute as an inert spelling is insufficient.
-The [23-case required corpus](../pa31/tests/spec/source-from/contract.json) now
-has independent Rust object evidence and 19 native observations. RustGM has not
+The original 23 cases in the [required corpus](../pa31/tests/spec/source-from/contract.json)
+have independent Rust object evidence and 19 native observations. RustGM has not
 qualified these outcomes. All PA25–PA44 and original library states stay open.
+
+The nested-condition extension adds five declared `nested-into-*` programs to
+the required corpus. Independent Rust and candidate/native observations for
+those five remain pending; the original 23-source evidence is unchanged.
+Snapshot only the live uniquely selected retained subtree, through its actual
+condition-child slots and forwarding/unsizing continuations. Completed proof
+node IDs and earlier speculative candidates cannot supply preferences. Reuse
+the existing publication import/reverse mappings, including newly exposed
+numeric leaves; never import an unrelated private variable for a preference.
+
+Body goals and projection parents own silent child tickets. These tickets can
+lend f32 only to a real visible numeric frontier and cannot seed a separate
+fallback pass, cross a projection barrier or become projection notifications.
+Cancel them before resuming/replacing their owner and when it completes.
+Temporary root deduplication lasts one unsuccessful fallback sweep;
+it prevents shared mixed ready/blocked fanouts from rescanning the same waiters.
+All of this implementation and its new scaling/lifecycle invariants currently
+remain unqualified local work.
 
 ## Primary evidence and required behavior
 

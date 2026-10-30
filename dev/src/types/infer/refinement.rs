@@ -1,5 +1,6 @@
 //! Commit isolated input refinements after closing lifetimes and validating current inputs.
 mod interfaces;
+mod numeric_exports;
 use super::{
     Constructor, Context, Error, RegionId, Store, TermId, Value,
     arguments::{Argument, Slot},
@@ -179,16 +180,28 @@ impl Refinement {
         source: &mut Context,
         closing: &mut Bound,
     ) -> Result<bool, Error> {
+        self.publish_inputs(store, source, closing, &[])
+            .map(|(changed, _)| changed)
+    }
+
+    fn publish_inputs(
+        &mut self,
+        store: &mut Store,
+        source: &mut Context,
+        closing: &mut Bound,
+        hints: &[TermId],
+    ) -> Result<(bool, Vec<TermId>), Error> {
+        numeric_exports::validate_hints(&mut self.context, source, hints)?;
         let Some(selected_inputs) = &self.inputs else {
             source.account_work(self.context.steps)?;
             self.context.steps = 0;
-            return Ok(false);
+            return Ok((false, Vec::new()));
         };
         if selected_inputs.types.is_empty() && selected_inputs.constants.is_empty() {
             source.account_work(self.context.steps)?;
             self.context.steps = 0;
             self.publish_stable(store, source)?;
-            return Ok(false);
+            return Ok((false, Vec::new()));
         }
         let roots = self.roots(false);
         let inputs = Inputs::discover(source, &roots)?;
@@ -214,13 +227,15 @@ impl Refinement {
         let mut validation = Context::default();
         let mut source_map = Import::default();
         let current = import(store, source, &mut validation, &roots, &mut source_map)?;
+        let mut selected_map = Import::default();
         let selected = import(
             store,
             &mut self.context,
             &mut validation,
             &exported,
-            &mut Import::default(),
+            &mut selected_map,
         )?;
+        let selected_map = (!hints.is_empty()).then_some(selected_map);
         let pairs: Vec<_> = current.into_iter().zip(selected).collect();
         validation.equate_input_pairs(store, &pairs)?;
         let mut reverse = inputs.preserved(source, &mut validation, &source_map)?;
@@ -255,7 +270,19 @@ impl Refinement {
             .region_equalities
             .append(&mut validation.region_equalities);
         self.publish_stable(store, source)?;
-        Ok(changed)
+        let mapped = if let Some(selected_map) = selected_map.as_ref() {
+            numeric_exports::mapped_hints(
+                &mut self.context,
+                &mut validation,
+                source,
+                selected_map,
+                &reverse,
+                hints,
+            )?
+        } else {
+            Vec::new()
+        };
+        Ok((changed, mapped))
     }
 
     /// These source graphs had no holes, projections or lifetimes at import.

@@ -15,6 +15,13 @@ pub(super) struct Wakeups {
     data: Option<Box<Data>>,
 }
 impl Wakeups {
+    pub(super) fn live(&self) -> impl Iterator<Item = (usize, WatchId, Option<usize>)> + '_ {
+        self.data.iter().flat_map(|data| {
+            data.by_goal
+                .iter()
+                .map(move |(goal, watch)| (*goal, *watch, data.children.get(goal).copied()))
+        })
+    }
     pub fn waiting(&self) -> bool {
         self.data
             .as_ref()
@@ -40,7 +47,7 @@ impl Trial {
         &mut self,
         facts: &Declarations,
         index: usize,
-    ) -> Result<(), String> {
+    ) -> Result<bool, String> {
         let data = self.wakeups.data.get_or_insert_with(Default::default);
         let goal = self
             .instance
@@ -56,7 +63,7 @@ impl Trial {
             entry.insert(watch);
             data.by_watch.insert(watch, index);
         }
-        if let Some(argument) =
+        let hinted = if let Some(argument) =
             crate::sema::compiler_items::float_default(facts, &mut self.inputs.context, goal)?
         {
             let watch = *data.by_goal.get(&index).ok_or("missing condition watch")?;
@@ -64,10 +71,19 @@ impl Trial {
                 .context
                 .prefer_f32(watch, argument)
                 .map_err(inference)?;
-        }
+            true
+        } else {
+            let watch = *data.by_goal.get(&index).ok_or("missing condition watch")?;
+            self.inputs
+                .context
+                .clear_float_preference(watch)
+                .map_err(inference)?;
+            false
+        };
         // This condition has consumed its current inputs, including any progress
         // it just published. Preserve notifications for its other dependencies.
-        self.poll_condition_changes(facts, Some(index))
+        self.poll_condition_changes(facts, Some(index))?;
+        Ok(hinted)
     }
 
     pub(super) fn complete_condition(&mut self, index: usize) -> Result<(), String> {

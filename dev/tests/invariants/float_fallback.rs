@@ -2,7 +2,7 @@
 use super::*;
 use crate::types::{
     ItemId, Primitive, TypeId,
-    infer::{Domain, arguments::Argument, predicates::Predicate},
+    infer::{Domain, Value, arguments::Argument, predicates::Predicate},
 };
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 fn watch(context: &mut Context, store: &Store, input: TermId) -> TestResult<WatchId> {
@@ -132,5 +132,132 @@ fn shared_fanout_registration_and_binding_keep_linear_work_and_compact_payloads(
             context.steps
         );
     }
+    Ok(())
+}
+
+#[test]
+fn shared_blocked_frontiers_are_linear_and_cancellation_releases_the_root() -> TestResult {
+    for (mixed, reverse) in [(false, false), (true, false), (true, true)] {
+        for count in [8, 32, 128] {
+            let mut context = Context::default();
+            let mut store = Store::default();
+            let first = context.variable(Domain::Float)?;
+            let second = context.variable(Domain::Float)?;
+            let (input, ready) = if reverse {
+                (second, first)
+            } else {
+                (first, second)
+            };
+            let unresolved = context.variable(Domain::Any)?;
+            let blocker =
+                context.watch_inputs(&[input, unresolved], &[], true, Fallback::Predicate)?;
+            for index in 0..count {
+                let id = if mixed {
+                    context.watch_inputs(&[ready, input], &[], true, Fallback::Predicate)?
+                } else {
+                    watch(&mut context, &store, input)?
+                };
+                if index + 1 == count {
+                    context.prefer_f32(id, input)?;
+                }
+            }
+            drain(&mut context, &store)?;
+            let before = context.steps;
+            assert!(!context.default_numbers()?);
+            let blocked_work = context.steps - before;
+            assert_eq!(context.unresolved_domain(input)?, Some(Domain::Float));
+            assert_eq!(context.unresolved_domain(ready)?, Some(Domain::Float));
+            assert!(
+                blocked_work <= 24 * count + 128,
+                "blocked fanout {count}/{mixed}/{reverse}: {blocked_work}"
+            );
+            context.cancel_watch(blocker)?;
+            drain(&mut context, &store)?;
+            assert!(context.default_numbers()?);
+            drain(&mut context, &store)?;
+            assert_eq!(
+                context.resolved(&mut store, input)?,
+                TypeId::primitive(Primitive::F32)
+            );
+            if mixed {
+                assert_eq!(
+                    context.resolved(&mut store, ready)?,
+                    TypeId::primitive(Primitive::F64)
+                );
+            }
+            eprintln!(
+                "blocked float fanout={count} mixed={mixed} reverse={reverse} sweep_work={blocked_work} total_work={}",
+                context.steps
+            );
+            assert!(context.steps <= 192 * count + 512);
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn a_silent_hint_never_seeds_fallback_or_emits_a_foreign_notification() -> TestResult {
+    let mut context = Context::default();
+    let mut store = Store::default();
+    let input = context.variable(Domain::Float)?;
+    let parent = watch(&mut context, &store, input)?;
+    drain(&mut context, &store)?;
+    let hint = context
+        .watch_float_hint(parent, input)?
+        .ok_or("missing visible hint")?;
+    assert_eq!(context.ready_resolution(&store)?, None);
+    context.cancel_watch(parent)?;
+    assert!(context.default_numbers()?);
+    assert_eq!(
+        context.resolved(&mut store, input)?,
+        TypeId::primitive(Primitive::F64)
+    );
+    assert_eq!(context.ready_resolution(&store)?, None);
+    context.cancel_watch(hint)?;
+    Ok(())
+}
+
+#[test]
+fn failed_hint_payment_leaves_the_parent_and_float_unchanged() -> TestResult {
+    let mut context = Context::default();
+    let store = Store::default();
+    let input = context.variable(Domain::Float)?;
+    let parent = watch(&mut context, &store, input)?;
+    drain(&mut context, &store)?;
+    let count = context
+        .dependencies
+        .as_ref()
+        .ok_or("dependencies")?
+        .watches
+        .len();
+    context.steps = 1_000_000;
+    assert_eq!(context.watch_float_hint(parent, input), Err(Error::Budget));
+    let storage = context.dependencies.as_ref().ok_or("dependencies")?;
+    assert_eq!(storage.watches.len(), count);
+    assert!(matches!(
+        storage.watches[parent.0 as usize].fallback,
+        Fallback::Predicate
+    ));
+    assert!(matches!(
+        context.terms[input.0 as usize].value,
+        Value::Variable(Domain::Float)
+    ));
+    Ok(())
+}
+
+#[test]
+fn reobserved_ordinary_conditions_remove_the_old_direct_preference() -> TestResult {
+    let mut context = Context::default();
+    let mut store = Store::default();
+    let input = context.variable(Domain::Float)?;
+    let id = watch(&mut context, &store, input)?;
+    context.prefer_f32(id, input)?;
+    drain(&mut context, &store)?;
+    context.clear_float_preference(id)?;
+    assert!(context.default_numbers()?);
+    assert_eq!(
+        context.resolved(&mut store, input)?,
+        TypeId::primitive(Primitive::F64)
+    );
     Ok(())
 }
