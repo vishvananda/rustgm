@@ -11,7 +11,7 @@ fn complete_artifacts_reject_unused_const_definitions_after_type_readiness() -> 
             Some("reservation implementation transport requires a wider metadata profile"),
         ),
         (
-            "pa31/tests/spec/trait-default-effects/free-const-nonconst-body.rs",
+            "pa25/tests/spec/const-machine/eligibility/runtime-call.rs",
             None,
         ),
         (
@@ -58,7 +58,7 @@ fn complete_artifacts_reject_unused_const_definitions_after_type_readiness() -> 
                 assert_eq!(error.message, expected);
             } else {
                 assert!(
-                    error.message.contains("const"),
+                    error.message.contains("non-const"),
                     "{path}/{cutpoint}: {error}"
                 );
             }
