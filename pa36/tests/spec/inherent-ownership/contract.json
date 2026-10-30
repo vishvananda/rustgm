@@ -12,5 +12,13 @@
     "PA20/23 authentic foreign principal inherent ownership",
     "PA29 cross-crate permission/lookup transport remains independent"
   ],
-  "related_actual_foreign_owner_graph": "pa29/tests/local-dyn-owner-outcomes.json"
+  "related_actual_foreign_owner_graph": "pa29/tests/local-dyn-owner-outcomes.json",
+  "actual_earlier_boundary": {
+    "diagnostic": "file 0: 9: unresolved type name",
+    "proof": {
+      "path": "obj/parallel/local-dyn-inherent-v1/native-v1/receipt.json",
+      "sha256": "a349564a380638347117ea138a3e7d31d518511cc9c9f22bef600eec2dd164e5"
+    },
+    "meaning": "Observed resolution boundary only; no foreign ownership result from this source."
+  }
 }
