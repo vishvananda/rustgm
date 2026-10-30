@@ -182,11 +182,10 @@ fn disconnected_definitions_cannot_authorize_reached_snapshot_and_failure_is_pai
         },
     ];
     let mut work = Work::default();
-    assert!(
-        validate(&original, &mut work)
-            .unwrap_err()
-            .contains("not dominated")
-    );
+    assert!(matches!(
+        validate(&original, &mut work),
+        Err(error) if error.contains("not dominated")
+    ));
     assert!(work.steps > 0);
     work.steps = crate::support::crates::MAX_COMPONENTS;
     for _ in 0..2 {
