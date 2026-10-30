@@ -92,11 +92,18 @@ impl Declarations {
             return Err("const default lost its completed current member contract");
         }
         super::super::dispatch::check_const_default(self, instance)?;
-        let source = self.function_header(definition)?
-            .and_then(|header| header.body).ok_or("const default lost its actual source body")?;
+        let source = self
+            .function_header(definition)?
+            .and_then(|header| header.body)
+            .ok_or("const default lost its actual source body")?;
         if self.types.existing_arena_identity().is_none() {
             self.charge_caller_inputs(1, crate::types::arena::Identity::allocation_bytes())?;
         }
-        Ok(DefaultExecution { instance, definition, source, arena: self.types.arena_identity() })
+        Ok(DefaultExecution {
+            instance,
+            definition,
+            source,
+            arena: self.types.arena_identity(),
+        })
     }
 }

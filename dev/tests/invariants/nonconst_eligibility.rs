@@ -129,7 +129,9 @@ fn check_default_entries(report: &Report, facts: &mut Declarations) -> TestResul
     let function = facts.functions[facts.function_indices[&definition]];
     let mut original = crate::body::ir::Body::new(
         crate::body::ir::Owner::Function {
-            definition, signature: function.signature, execution: None,
+            definition,
+            signature: function.signature,
+            execution: None,
         },
         function.body.ok_or("actual default source")?,
         crate::types::TypeId::UNIT,
@@ -386,7 +388,10 @@ fn cold_trait_choices_and_failed_warm_queries_are_paid_and_scale_linearly() -> T
         size_of::<crate::syntax::ast::Node>(),
         size_of::<crate::body::ir::Body>()
     );
-    println!("Transient DefaultExecution={}", size_of::<crate::sema::function_context::DefaultExecution>());
+    println!(
+        "Transient DefaultExecution={}",
+        size_of::<crate::sema::function_context::DefaultExecution>()
+    );
     assert_eq!(size_of::<Header>(), 80);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
@@ -401,14 +406,24 @@ fn ordinary_default_indexes_scale() -> TestResult {
         }
         source.push('}');
         let report = test_source::resolve(&source, true)?;
-        let pipeline::Analysis { mut facts, prepared } = pipeline::analyze_source(&report)?;
+        let pipeline::Analysis {
+            mut facts,
+            prepared,
+        } = pipeline::analyze_source(&report)?;
         assert!(!facts.uses_source_copy());
         let before = facts.body_work.canonical_steps;
         crate::lower::instances::build_roots_prepared(
-            &report, &mut facts, crate::lower::Roots { entry: None, exports: &[] }, prepared,
+            &report,
+            &mut facts,
+            crate::lower::Roots {
+                entry: None,
+                exports: &[],
+            },
+            prepared,
         )?;
         let work = facts.body_work.canonical_steps - before;
-        let (_, bytes) = super::super::source_contract_storage(&facts).ok_or("ordinary header payments")?;
+        let (_, bytes) =
+            super::super::source_contract_storage(&facts).ok_or("ordinary header payments")?;
         println!("ordinary default indexes width={width} work={work} bytes={bytes}");
         if let Some((old_work, old_bytes)) = previous {
             assert!(work <= old_work * 5 && bytes <= old_bytes * 5);

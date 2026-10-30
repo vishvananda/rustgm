@@ -248,21 +248,26 @@ fn non_source_defaults_require_preparation_while_ordinary_bodies_allocate_no_car
             assert_eq!(facts.body_work.canonical_steps, before);
         }
         let before = facts.body_work.canonical_steps;
-        crate::body::copy_requirements::originals(
-            &mut facts,
-            [&template.body],
-            [&mut contract],
-        )?;
+        crate::body::copy_requirements::originals(&mut facts, [&template.body], [&mut contract])?;
         if default {
             assert!(facts.body_work.canonical_steps > before + 1);
             let mut required = crate::body::regions::Collector::default()
-                .function(&facts, &function)?.clone();
+                .function(&facts, &function)?
+                .clone();
             assert!(facts.charge_caller_inputs(0, usize::MAX).is_err());
             for _ in 0..2 {
-                assert!(crate::body::copy_requirements::originals(
-                    &mut facts, [&template.body], [&mut required],
-                ).is_err());
-                assert!(matches!(required.builtins.as_deref().and_then(|r| r.defining()), Some(State::Required(_))));
+                assert!(
+                    crate::body::copy_requirements::originals(
+                        &mut facts,
+                        [&template.body],
+                        [&mut required],
+                    )
+                    .is_err()
+                );
+                assert!(matches!(
+                    required.builtins.as_deref().and_then(|r| r.defining()),
+                    Some(State::Required(_))
+                ));
             }
         } else {
             assert_eq!(facts.body_work.canonical_steps, before + 1);

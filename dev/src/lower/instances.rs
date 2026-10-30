@@ -814,9 +814,14 @@ fn prepare_original_contracts(
         // contracts allocate no index; only an actual Required carrier opens it.
         body::copy_requirements::originals(
             facts,
-            templates.bodies.iter().chain(&contexts.bodies.bodies).map(|template| &template.body),
+            templates
+                .bodies
+                .iter()
+                .chain(&contexts.bodies.bodies)
+                .map(|template| &template.body),
             inputs.iter_mut().chain(&mut contexts.source),
-        ).map_err(|e| diagnostic(report, None, e))?;
+        )
+        .map_err(|e| diagnostic(report, None, e))?;
     }
     for input in inputs {
         input

@@ -329,7 +329,8 @@ pub(crate) fn originals<'a, 'b>(
                 &mut attempted,
                 Some(&|work, bytes| facts.charge_caller_inputs(work, bytes)),
             );
-            facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(attempted);
+            facts.body_work.canonical_steps =
+                facts.body_work.canonical_steps.saturating_add(attempted);
             index = Some(prepared?);
         }
         let body = index
@@ -359,7 +360,11 @@ fn original_index<'a>(
         if index.len() >= 1_000_000 || index.contains_key(&body.key()) {
             return Err("source Copy original body index is duplicate or exhausted".into());
         }
-        let growth = crate::support::retained::Growth::map::<BodyKey, &Body>(index.len(), index.capacity(), 1);
+        let growth = crate::support::retained::Growth::map::<BodyKey, &Body>(
+            index.len(),
+            index.capacity(),
+            1,
+        );
         *steps = steps.saturating_add(growth.work);
         if let Some(payment) = payment {
             payment(growth.work, growth.bytes)?;
@@ -367,7 +372,9 @@ fn original_index<'a>(
         if growth.bytes > 64 * 1024 * 1024 {
             return Err("source Copy original body index exceeds storage budget".into());
         }
-        index.try_reserve(1).map_err(|_| "source Copy original body index allocation failed")?;
+        index
+            .try_reserve(1)
+            .map_err(|_| "source Copy original body index allocation failed")?;
         index.insert(body.key(), body);
     }
     Ok(index)

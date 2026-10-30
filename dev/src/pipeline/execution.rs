@@ -530,7 +530,8 @@ impl Engine {
             template
         };
         let retained = body::templates::owns(facts, definition);
-        let specialize = default.is_some() || retained || Self::needs_method_dispatch(facts, &template.body);
+        let specialize =
+            default.is_some() || retained || Self::needs_method_dispatch(facts, &template.body);
         let purpose = if specialize {
             ProofPurpose::Original
         } else {
@@ -731,7 +732,14 @@ impl Engine {
             row.contract(),
         )
         .map_err(|e| report.body_error(row.template().body.source, e))?;
-        self.specialize(report, facts, instance, row.template(), row.contract(), None)?;
+        self.specialize(
+            report,
+            facts,
+            instance,
+            row.template(),
+            row.contract(),
+            None,
+        )?;
         Ok(true)
     }
     fn reserve_template(
@@ -777,7 +785,8 @@ impl Engine {
         let mut materialized = body::instantiate::with_contract(facts, template, instance, input)
             .map_err(|e| report.body_error(source, e))?;
         if let Some(default) = default {
-            default.prepare(report, facts, &mut materialized.body)
+            default
+                .prepare(report, facts, &mut materialized.body)
                 .map_err(|e| report.body_error(source, e))?;
         }
         materialized

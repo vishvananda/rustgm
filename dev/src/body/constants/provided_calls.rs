@@ -256,11 +256,15 @@ fn ordinary_effect(
         | Owner::InitializerInstance { .. }
         | Owner::AnonymousConstant
         | Owner::AnonymousInstance(_) => Ok(Constness::Const),
-        Owner::Function { definition, .. } => match facts.source_function_context(report, definition, source)? {
-            FunctionContext::Comptime => Ok(Constness::Const),
-            FunctionContext::ConstFunction | FunctionContext::ConstTraitDefault { .. } => Ok(Constness::Conditional),
-            FunctionContext::Runtime => Err("const member has no actual const source owner"),
-        },
+        Owner::Function { definition, .. } => {
+            match facts.source_function_context(report, definition, source)? {
+                FunctionContext::Comptime => Ok(Constness::Const),
+                FunctionContext::ConstFunction | FunctionContext::ConstTraitDefault { .. } => {
+                    Ok(Constness::Conditional)
+                }
+                FunctionContext::Runtime => Err("const member has no actual const source owner"),
+            }
+        }
         _ => Err("const member has no actual const source owner"),
     }
 }
