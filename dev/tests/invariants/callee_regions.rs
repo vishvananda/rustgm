@@ -64,7 +64,7 @@ fn constant_borrowed_elements_keep_the_actual_reached_intrinsic_call_contract() 
     let report = crate::test_source::source_provider(&source, "borrowed_const")?;
     let crate::pipeline::Analysis {
         mut facts,
-        mut prepared,
+        prepared,
     } = crate::pipeline::analyze_source(&report)?;
     let definition = report
         .resolution
@@ -98,17 +98,22 @@ fn constant_borrowed_elements_keep_the_actual_reached_intrinsic_call_contract() 
         })
         .copied()
         .ok_or("actual borrowed const method")?;
-    let built = prepared.templates.work().0;
-    let template = prepared.templates.function(&report, &facts, &function)?;
-    assert_eq!(
-        prepared.templates.work().0,
-        built,
-        "rebuild of retained CFG"
+    let body = prepared
+        .concrete
+        .get(&crate::body::ir::BodyKey::Declaration(function.definition))
+        .ok_or("actual retained borrowed const original")?;
+    assert!(matches!(body.owner, crate::body::ir::Owner::Function {
+        definition, signature, execution: None
+    } if definition == function.definition && signature == function.signature));
+    assert_eq!(body.source.source(), function.body);
+    assert_eq!(body.instance, None);
+    assert!(body.const_context);
+    assert!(body.promotions.is_some());
+    assert!(
+        body.values
+            .iter()
+            .any(|value| matches!(value.kind, crate::body::ir::Rvalue::Borrow { .. }))
     );
-    assert_eq!(template.body.instance, None);
-    assert!(template.body.const_context);
-    assert!(template.body.promotions.is_some());
-    prepared.templates.retain(template)?;
     let program = crate::lower::instances::build_roots_prepared(
         &report,
         &mut facts,
