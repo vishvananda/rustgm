@@ -267,7 +267,7 @@ fn corrupt_member_header(
     match opponent {
         0 => rows.functions[index].parent = Some(root),
         1 => rows.functions[index].parent = Some(foreign),
-        _ => rows.functions.push(rows.functions[index].clone()),
+        _ => rows.functions.push(rows.functions[index]),
     }
     Ok(())
 }
