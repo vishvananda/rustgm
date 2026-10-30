@@ -81,6 +81,36 @@ fn observed(graph: &Graph) -> Result<(usize, usize, usize)> {
     };
     Ok(lazy.observed()?)
 }
+fn actual_member_bindings(report: &Report, facts: &Declarations) -> Result {
+    let mut count = 0;
+    for (index, definition) in report.resolution.definitions.iter().enumerate() {
+        if definition.kind != DefKind::Function || definition.node.is_some() {
+            continue;
+        }
+        let id = DefId(u32::try_from(index)?);
+        let Some(owner) = facts.associated.trait_owner(id) else {
+            continue;
+        };
+        let scope = report.resolution.definitions[owner.0 as usize]
+            .members
+            .ok_or("actual imported trait scope")?;
+        assert_eq!(definition.scope, scope);
+        let binding = report
+            .resolution
+            .bindings
+            .get(
+                scope,
+                definition.name,
+                crate::resolve::model::Namespace::Value,
+            )
+            .ok_or("actual imported member binding")?;
+        assert_eq!(binding.target, id);
+        assert_eq!(binding.access, definition.access);
+        count += 1;
+    }
+    assert!(count > 0);
+    Ok(())
+}
 fn clones(report: &Report) -> Result<Vec<DefId>> {
     let mut result = Vec::new();
     for (index, definition) in report.resolution.definitions.iter().enumerate() {
@@ -213,6 +243,34 @@ fn corrupt_applied_goal(rows: &mut s::SourceRows, opponent: usize) -> Result {
     }
     Ok(())
 }
+fn corrupt_member_header(
+    rows: &mut s::SourceRows,
+    root: crates::owner_catalog::DeclarationRef,
+    opponent: usize,
+) -> Result {
+    let index = rows
+        .functions
+        .iter()
+        .position(|header| {
+            header
+                .parent
+                .is_some_and(|parent| rows.traits.iter().any(|owner| owner.declaration == parent))
+        })
+        .ok_or("actual trait member header")?;
+    let header = &rows.functions[index];
+    let foreign = rows
+        .traits
+        .iter()
+        .find(|owner| Some(owner.declaration) != header.parent)
+        .ok_or("another actual trait owner")?
+        .declaration;
+    match opponent {
+        0 => rows.functions[index].parent = Some(root),
+        1 => rows.functions[index].parent = Some(foreign),
+        _ => rows.functions.push(rows.functions[index].clone()),
+    }
+    Ok(())
+}
 fn malformed_recorded_inputs() -> Result {
     let source = crate::test_source::fixture(PROVIDER)?;
     let artifact = crate::module_packets::exported_profile(
@@ -221,7 +279,7 @@ fn malformed_recorded_inputs() -> Result {
         "ordinary_recorded_inputs",
     )?;
     let descriptor = artifact.source_descriptor().ok_or("actual descriptor")?;
-    for opponent in 0..17 {
+    for opponent in 0..20 {
         let (mut rows, attributes, modules) = crate::module_packets::raw(&artifact)?;
         if opponent < 3 {
             corrupt_late_header(&mut rows, opponent)?;
@@ -229,6 +287,8 @@ fn malformed_recorded_inputs() -> Result {
             corrupt_normalization(&mut rows, opponent - 3)?;
         } else if opponent < 12 {
             corrupt_applied_goal(&mut rows, opponent - 6)?;
+        } else if opponent >= 17 {
+            corrupt_member_header(&mut rows, modules.namespace.root, opponent - 17)?;
         }
         if opponent == 16 {
             rows.clauses
@@ -301,6 +361,7 @@ fn ordinary_headers_do_not_allocate_unused_borrowed_original_domains() -> Result
     malformed_recorded_inputs()?;
     staged_root_cannot_be_erased()?;
     let (report, mut facts) = fresh()?;
+    actual_member_bindings(&report, &facts)?;
     let graph = mapped_graph(&facts)?;
     assert_eq!(observed(&graph)?.0, 0);
     let definitions = bodies(&facts, &report)?;
