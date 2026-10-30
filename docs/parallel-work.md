@@ -1,27 +1,30 @@
 # Parallel library bootstrap implementation
 
 Root owns integration, original-core observations and public main publication.
-The current qualified development checkpoint is 0d8cfe3f6, joining actual
-compile-time-only source semantics and checked unsafe-call body transport.
-Private 201 passes128.96 seconds; Root production/CLI 35 passes41.61 seconds.
-Both include strict Clippy, formatting and architecture. Fresh whole v7/v8
-providers, client metadata and native observers pass with exact prior v7 bytes.
-Seventeen compile-time-only native results are reused only by current 201 emitted
-source/LowIR and exact backend/observer equality. All 39 CLI constant outcomes and
-PA25 course94 pass. Raw cold timeout and validator predecessor failures remain;
-no deadline, source input or expected outcome was relaxed.
+Public788889aac contains the qualified Comptime/v8 checkpoint; its full
+CI40976018856 is running. Private201 and production35, full v7/v8 CLI/native,
+39 constant outcomes and PA25 course94 pass; historical evidence remains below.
 
-Current CLI 9b73af38 clears rustc_comptime/type_id_vtable and reaches
-rustc_no_mir_inline at original ptr/mod.rs1445 swap_chunk.375 loading opens,
-all722 original hashes, target and explicit finite quotas remain fixed. Strict
-separately retains expectation68. The current observation/native reuse receipt is
-d6276e501adccbf679fe412251faf64a7857b951047ec5380a438f49196a9abf.
+The current successor additionally qualifies actual rustc_no_mir_inline source
+contracts. C14 passes221.94 seconds; same-source Root production35 passes133.70
+seconds with strict Clippy and all static checks. All29 CLI outcomes and a fresh
+full-provider/NoCore-client metadata/native7 graph match independent pinned Rust.
+No new native inline rule, source permission, hot field or transport fence is
+introduced; there is no local/imported MIR inliner. Future such passes require
+authenticated imported intent. Receipt:
+61b2f1a066565877f9c352deb4866c127188f2494fdbb6f967adbee75568642c.
+
+CLI49f16ba0 clears NoMir on ptr::swap_chunk and now stops at
+convert/mod.rs801 rustc_reservation_impl on const impl<T> From<!> for T.
+The capped attempt takes17.24 seconds with375 loading opens, all722 original
+hashes and unchanged target/finite limits. Strict separately retains expectation68.
 No original artifact or additional whole assignment is complete.
 
-C owns LIB-101 actual attribute/owner/image validation with its MIR-only meaning,
-preserving native inline hints and all source permissions. B completed v8 and
-owns a read-only cohesive inventory of likely next active compiler-attribute gaps;
-semantic solver/const/coherence markers must never be accepted inertly.
+C owns LIB-103 actual reservation polarity and solver/coherence/body/metadata
+semantics; the current source marker cannot become executable trait evidence.
+B owns LIB-102 actual non-const trait members, including required/default body,
+call and const-API classification with ordinary/Always/unsafe opponents. Both
+use independent pinned outcomes and coordinate shared headers/const machinery.
 Root owns production qualification, public main and original-crate observations.
 No new advisory lint producer, worker, worktree or target directory is queued.
 

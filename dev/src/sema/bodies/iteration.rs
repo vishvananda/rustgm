@@ -190,23 +190,8 @@ impl Checker<'_> {
         let Some(pending) = self.state.call_types.iteration.take() else {
             return Ok(());
         };
-        let option = self
-            .report
-            .resolution
-            .library_types
-            .get(LibraryType::Option)
-            .ok_or_else(|| {
-                self.error(self.state.body.node, "missing canonical iteration Option")
-            })?;
-        let option_item = ItemId(option.definition.0);
-        let variants = self.facts.members.variants(option_item);
-        let [none, some] = variants else {
-            return Err(self.error(
-                self.state.body.node,
-                "invalid canonical iteration Option variants",
-            ));
-        };
-        let (none, some) = (*none, *some);
+        let (option_item, [none, some]) = self.iteration_option_variants()?;
+        let mut allowances = self.report.macro_allowances();
         for (node, plan) in pending.plans {
             let call = |open: OpenCall| Call {
                 callable: solved.types[open.callable.0 as usize],
@@ -214,6 +199,10 @@ impl Checker<'_> {
             };
             let into_iter = call(plan.into_iter);
             let next = call(plan.next);
+            // A For node owns two distinct typed callables, not Call syntax.
+            // Validate both before publishing their complete iteration plan.
+            self.check_const_library_callable(node, into_iter.callable, &mut allowances)?;
+            self.check_const_library_callable(node, next.callable, &mut allowances)?;
             let iterator = solved.types[plan.iterator.0 as usize];
             let item = solved.types[plan.item.0 as usize];
             let Some(Type::Function {
@@ -287,6 +276,27 @@ impl Checker<'_> {
                 );
         }
         Ok(())
+    }
+    fn iteration_option_variants(
+        &self,
+    ) -> Result<(ItemId, [crate::sema::members::VariantId; 2]), Error> {
+        let option = self
+            .report
+            .resolution
+            .library_types
+            .get(LibraryType::Option)
+            .ok_or_else(|| {
+                self.error(self.state.body.node, "missing canonical iteration Option")
+            })?;
+        let option_item = ItemId(option.definition.0);
+        let variants = self.facts.members.variants(option_item);
+        let [none, some] = variants else {
+            return Err(self.error(
+                self.state.body.node,
+                "invalid canonical iteration Option variants",
+            ));
+        };
+        Ok((option_item, [*none, *some]))
     }
     fn prepare_iteration_storage(
         &mut self,

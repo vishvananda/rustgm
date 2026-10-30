@@ -339,6 +339,10 @@ impl<'a> Checker<'a> {
             .map_err(|error| facts.retain_error_warnings(error))?;
         let target_feature_sources = super::target_features::collect(report, &mut facts)
             .map_err(|error| facts.retain_error_warnings(report.diagnostic(error)))?;
+        // Attribute collection already completed in these facts. Target-feature
+        // accounting can create its shared budget owner afterward; seal that
+        // owner's coverage before any early initializer checks a const body.
+        super::header_attributes::finish(report, &mut facts)?;
         Ok(Self {
             selected: None,
             trait_aliases: aliases::collect(report)?,

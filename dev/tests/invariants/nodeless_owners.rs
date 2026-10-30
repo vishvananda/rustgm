@@ -155,6 +155,10 @@ fn bootstrap_case() -> Result<(Report, pipeline::Analysis, DefId, DefId, DefId)>
 #[test]
 fn actual_bootstrap_owners_keep_legacy_diagnostics_without_completed_source_headers() -> Result {
     let (report, analysis, method, trait_, nominal) = bootstrap_case()?;
+    assert!(matches!(
+        analysis.facts.source_comptime_contract(&report, method)?,
+        ContractKnowledge::KnownAbsent
+    ));
     for definition in [method, trait_, nominal] {
         assert!(matches!(
             analysis.facts.promotable_contract(&report, definition)?,
@@ -190,9 +194,21 @@ fn missing_or_changed_bootstrap_owners_cannot_waive_unknown_contracts() -> Resul
     let (mut report, analysis, method, _, _) = bootstrap_case()?;
     report.resolution.definitions[method.0 as usize].kind = DefKind::Static;
     rejected(&report, &analysis.facts, method);
+    assert!(
+        analysis
+            .facts
+            .source_comptime_contract(&report, method)
+            .is_err()
+    );
     report.resolution.definitions[method.0 as usize].kind = DefKind::Function;
     report.resolution.builtin_traits = crate::resolve::model::BuiltinTraits::default();
     rejected(&report, &analysis.facts, method);
+    assert!(
+        analysis
+            .facts
+            .source_comptime_contract(&report, method)
+            .is_err()
+    );
     assert!(analysis.facts.promotable_contract(&report, method).is_err());
     let main = report
         .resolution
@@ -202,5 +218,11 @@ fn missing_or_changed_bootstrap_owners_cannot_waive_unknown_contracts() -> Resul
         .ok_or("actual source main")?;
     report.resolution.definitions[main].node = None;
     rejected(&report, &analysis.facts, DefId(u32::try_from(main)?));
+    assert!(
+        analysis
+            .facts
+            .source_comptime_contract(&report, DefId(u32::try_from(main)?))
+            .is_err()
+    );
     Ok(())
 }

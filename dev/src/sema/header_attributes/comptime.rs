@@ -301,13 +301,24 @@ impl Declarations {
             .filter(|row| row.kind == crate::resolve::model::DefKind::Function)
             .ok_or_else(|| Error::unlocated("comptime query requires an actual function"))?;
         let Some(key) = actual.node else {
+            // Canonical factory methods have no source header to borrow. Their
+            // checked registry/owner cannot carry an authored comptime marker.
+            if super::super::bootstrap::owner(report, definition)? {
+                return Ok(ContractKnowledge::KnownAbsent);
+            }
             // Every admitted current wire profile encodes ordinary constness;
             // the producer fences Always before publishing any function row.
-            self.function_header(definition)
+            let header = self
+                .function_header(definition)
                 .map_err(Error::unlocated)?
                 .ok_or_else(|| {
                     Error::unlocated("foreign comptime query requires its actual callable")
                 })?;
+            if header.declaration.source().is_some() {
+                return Err(Error::unlocated(
+                    "foreign comptime query changed its actual declaration origin",
+                ));
+            }
             return Ok(ContractKnowledge::KnownAbsent);
         };
         let local = self
