@@ -11,6 +11,7 @@ pub(super) enum Role {
     #[default]
     Other,
     Function(bool),
+    NonConstMember,
     Trait(bool),
     Impl(bool),
 }

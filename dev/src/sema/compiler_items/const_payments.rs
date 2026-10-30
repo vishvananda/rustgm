@@ -15,7 +15,8 @@ use crate::{
 };
 use std::sync::Arc;
 mod closed_inputs;
-use closed_inputs::{closed_arguments, closed_clause, open_closed_clause};
+use closed_inputs::closed_arguments;
+pub(in crate::sema) use closed_inputs::{closed_clause, open_closed_clause};
 
 /// Immutable materialization data, without caller permission or a selected proof.
 pub(crate) struct Requirements {

@@ -241,14 +241,15 @@ fn counted_definition(
     source: BodyOrigin,
     work: &mut Work,
 ) -> Result<Option<Definition>, &'static str> {
-    if super::generic_const_function(facts, id)
-        || facts
-            .associated
-            .trait_owner(id)
-            .is_some_and(|owner| facts.associated.constant_trait(owner) == Some(true))
+    if facts
+        .associated
+        .trait_owner(id)
+        .is_some_and(|owner| facts.associated.constant_trait(owner) == Some(true))
     {
-        // Reserve the bounded indexed owner/function/header lookups before
-        // attempting them, including missing or malformed completed rows.
+        // Include the completed declaration-kind and member-constness choice
+        // lookups, before any attempt or malformed/pending result.
+        work.charge(32)?;
+    } else if super::generic_const_function(facts, id) {
         work.charge(16)?;
     }
     let result = definition(facts, id, source, &mut work.steps);

@@ -235,6 +235,11 @@ impl Inventory {
     }
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub(super) enum FunctionMarker {
+    Comptime,
+    NonConstMember,
+}
 #[derive(Default)]
 pub(super) struct Draft {
     policies: Vec<Policy>,
@@ -242,43 +247,46 @@ pub(super) struct Draft {
     attributes: HashMap<NodeKey, PolicyId>,
     import_attributes: HashMap<NodeKey, PolicyId>,
     const_attributes: HashMap<NodeKey, PolicyId>,
-    comptime: Vec<NodeKey>,
+    function_markers: Vec<(NodeKey, FunctionMarker)>,
     steps: usize,
     bytes: usize,
 }
 impl Draft {
-    fn record_comptime(&mut self, key: NodeKey) -> Result<(), Error> {
-        let growth = crate::support::retained::Growth::vector::<NodeKey>(
-            self.comptime.len(),
-            self.comptime.capacity(),
+    fn record_marker(&mut self, key: NodeKey, marker: FunctionMarker) -> Result<(), Error> {
+        let growth = crate::support::retained::Growth::vector::<(NodeKey, FunctionMarker)>(
+            self.function_markers.len(),
+            self.function_markers.capacity(),
             1,
         );
         self.charge(growth.work.saturating_add(1), growth.bytes)?;
-        self.comptime
+        self.function_markers
             .try_reserve(1)
-            .map_err(|_| Error::unlocated("comptime API owner allocation failed"))?;
-        self.comptime.push(key);
+            .map_err(|_| Error::unlocated("function API marker allocation failed"))?;
+        self.function_markers.push((key, marker));
         Ok(())
     }
     fn finish_comptime(&mut self) -> Result<(), Error> {
-        let count = self.comptime.len();
+        let count = self.function_markers.len();
         let depth = usize::try_from(usize::BITS - count.leading_zeros()).unwrap_or(usize::MAX);
         self.charge(count.saturating_mul(depth.saturating_add(1)), 0)?;
-        self.comptime
-            .sort_unstable_by_key(|key| (key.file.0, key.node.get()));
-        self.comptime.dedup();
+        self.function_markers
+            .sort_unstable_by_key(|(key, marker)| (key.file.0, key.node.get(), *marker));
+        self.function_markers.dedup();
         Ok(())
     }
-    fn is_comptime(&mut self, key: NodeKey) -> Result<bool, Error> {
-        let depth = usize::try_from(usize::BITS - self.comptime.len().leading_zeros())
+    fn has_marker(&mut self, key: NodeKey, marker: FunctionMarker) -> Result<bool, Error> {
+        let depth = usize::try_from(usize::BITS - self.function_markers.len().leading_zeros())
             .unwrap_or(usize::MAX);
         self.charge(depth.saturating_add(1), 0)?;
         Ok(self
-            .comptime
-            .binary_search_by_key(&(key.file.0, key.node.get()), |key| {
-                (key.file.0, key.node.get())
+            .function_markers
+            .binary_search_by_key(&(key.file.0, key.node.get(), marker), |(key, marker)| {
+                (key.file.0, key.node.get(), *marker)
             })
             .is_ok())
+    }
+    fn is_comptime(&mut self, key: NodeKey) -> Result<bool, Error> {
+        self.has_marker(key, FunctionMarker::Comptime)
     }
     fn charge(&mut self, steps: usize, bytes: usize) -> Result<(), Error> {
         self.steps = self.steps.saturating_add(steps);
@@ -321,3 +329,13 @@ mod predicate_transport_tests;
 #[cfg(test)]
 #[path = "../../tests/invariants/stability_implications.rs"]
 mod implication_tests;
+
+#[cfg(test)]
+pub(crate) const fn member_marker_layouts() -> (usize, usize, usize, usize) {
+    (
+        size_of::<Draft>(),
+        size_of::<constness::Role>(),
+        size_of::<constness::Frame>(),
+        size_of::<(NodeKey, FunctionMarker)>(),
+    )
+}

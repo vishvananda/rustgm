@@ -7,6 +7,7 @@ use crate::{
     resolve::{expansion::Report, package::Error},
     sema::{model::Declarations, values::Evaluator},
 };
+pub(crate) use provided_calls::prepare_default_execution;
 
 /// Evaluate each demanded definition once, retaining values in semantic arenas.
 /// # Errors

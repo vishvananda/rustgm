@@ -7,7 +7,9 @@ use crate::types::parameters::{
 };
 mod abstract_uses;
 pub(in crate::sema) mod assumption_environment;
+mod entry_contracts;
 pub(crate) use abstract_uses::{Call, DefiningCalls};
+pub(crate) use entry_contracts::{DefaultExecution, DefaultMaterialization};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum FunctionContext {
@@ -35,6 +37,17 @@ impl Declarations {
         body: NodeKey,
     ) -> Result<FunctionContext, &'static str> {
         let context = self.function_context(definition, body)?;
+        if self.associated.trait_owner(definition).is_some() {
+            match self.source_non_const_trait_method_contract(report, definition) {
+                Ok(
+                    super::header_attributes::ContractKnowledge::KnownPresent(_)
+                    | super::header_attributes::ContractKnowledge::KnownAbsent,
+                ) => {}
+                _ => {
+                    return Err("trait defining body lost its completed source constness contract");
+                }
+            }
+        }
         if matches!(
             context,
             FunctionContext::Comptime | FunctionContext::ConstFunction
@@ -70,6 +83,9 @@ impl Declarations {
         };
         if self.associated.constant_trait(trait_definition) != Some(true) {
             return Ok(());
+        }
+        if self.nonconst_trait_member(definition)? {
+            return Err("non-const trait methods cannot be called in const contexts");
         }
         let function = self
             .function_indices
@@ -130,6 +146,9 @@ impl Declarations {
         };
         if self.associated.constant_trait(trait_definition) != Some(true) {
             return Ok(clause);
+        }
+        if self.nonconst_trait_member(definition)? {
+            return Err("non-const trait methods cannot be called in const contexts");
         }
         let owner = self
             .associated
@@ -207,7 +226,11 @@ impl Declarations {
                 if self.associated.owner(trait_definition) != Some(id) {
                     return Err("defining context changed its actual trait owner");
                 }
-                return Ok(FunctionContext::ConstTraitDefault { trait_definition });
+                return Ok(if self.nonconst_trait_member(definition)? {
+                    FunctionContext::Runtime
+                } else {
+                    FunctionContext::ConstTraitDefault { trait_definition }
+                });
             }
         }
         Ok(if self.is_comptime_function(definition) {

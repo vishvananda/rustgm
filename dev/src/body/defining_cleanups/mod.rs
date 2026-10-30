@@ -184,6 +184,7 @@ pub(crate) fn definition(
         .associated
         .trait_owner(definition)
         .is_some_and(|owner| facts.associated.constant_trait(owner) == Some(true));
+    let default = default && !facts.nonconst_trait_member(definition)?;
     if !default && !generic_const_function(facts, definition) {
         return Ok(None);
     }
@@ -229,6 +230,7 @@ pub(crate) fn needs_preparation(facts: &Declarations, body: &Body) -> bool {
             .associated
             .trait_owner(id)
             .is_some_and(|owner| facts.associated.constant_trait(owner) == Some(true))
+            && !matches!(facts.nonconst_trait_member(id), Ok(true))
 }
 
 /// Nongeneric const bodies have no parameter cleanup promises to retain.

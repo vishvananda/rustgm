@@ -4,11 +4,41 @@ use crate::{
     body::ir::{Action, Body, Owner, Rvalue, Statement},
     resolve::model::DefId,
     sema::{
-        function_context::{Call, DefiningCalls},
+        function_context::{Call, DefiningCalls, FunctionContext},
         model::Declarations,
     },
     types::Kind,
 };
+
+/// Only the actual freshly materialized body may consume a const-default
+/// selection. Original and runtime templates retain their defining context.
+pub(crate) fn prepare_default_execution(
+    report: &crate::resolve::expansion::Report,
+    facts: &mut Declarations,
+    execution: &crate::sema::function_context::DefaultExecution,
+    body: &mut Body,
+) -> Result<(), &'static str> {
+    let callable = match body.owner {
+        Owner::Function {
+            definition,
+            signature,
+            execution: Some(_),
+        } => Some((definition, signature)),
+        _ => None,
+    };
+    execution.require_materialization(
+        report,
+        facts,
+        crate::sema::function_context::DefaultMaterialization {
+            source: body.source,
+            instance: body.instance,
+            callable,
+            const_context: body.const_context,
+        },
+    )?;
+    body.const_context = true;
+    Ok(())
+}
 
 /// One preparation is shared by the readonly and cumulative-budget entrypoints.
 pub(super) fn defining(
@@ -60,7 +90,8 @@ pub(super) fn defining(
             return Err("provided runtime body lost its actual materialized callable relation");
         }
         // Runtime instances still require the normal paired original/instance
-        // proof. Actual CTFE entry rejects this declaration independently.
+        // proof. Reached CTFE additionally selects a concrete const impl;
+        // direct root entry still cannot borrow that call's permission.
         return Ok(false);
     }
     work.charge(2)?;
@@ -257,14 +288,11 @@ fn ordinary_effect(
         | Owner::AnonymousInstance(_) => Ok(Constness::Const),
         Owner::Function { definition, .. } => {
             match facts.source_function_context(report, definition, source)? {
-                crate::sema::function_context::FunctionContext::Comptime => Ok(Constness::Const),
-                crate::sema::function_context::FunctionContext::ConstFunction
-                | crate::sema::function_context::FunctionContext::ConstTraitDefault { .. } => {
+                FunctionContext::Comptime => Ok(Constness::Const),
+                FunctionContext::ConstFunction | FunctionContext::ConstTraitDefault { .. } => {
                     Ok(Constness::Conditional)
                 }
-                crate::sema::function_context::FunctionContext::Runtime => {
-                    Err("const member has no actual const source owner")
-                }
+                FunctionContext::Runtime => Err("const member has no actual const source owner"),
             }
         }
         _ => Err("const member has no actual const source owner"),
@@ -288,10 +316,13 @@ fn closed_effect(
                 return Ok(false);
             };
             work.charge(16)?;
-            Ok(matches!(
-                facts.source_function_context(report, definition, source)?,
-                crate::sema::function_context::FunctionContext::ConstFunction
-            ))
+            Ok(
+                match facts.source_function_context(report, definition, source)? {
+                    FunctionContext::ConstFunction => true,
+                    FunctionContext::ConstTraitDefault { .. } => body.instance.is_some(),
+                    FunctionContext::Runtime | FunctionContext::Comptime => false,
+                },
+            )
         }
     }
 }
@@ -366,10 +397,14 @@ fn closed_member(facts: &Declarations, call: Call, work: &mut Work) -> Result<De
     let header = facts
         .function_header(definition)?
         .ok_or("const member header is pending")?;
+    work.charge(1)?;
+    if facts.nonconst_trait_member(definition)? {
+        return Err("non-const trait methods cannot be called in const contexts");
+    }
     // A default body does not prevent a concrete impl from supplying its own
     // const override. This validates only the defining request. Ordinary
     // dispatch must select the actual impl and prove its body before Code;
-    // check_const_member_execution still rejects executing a trait default.
+    // direct root entry still cannot execute a trait default without a caller.
     if header.declaration.source().is_none()
         || facts
             .associated

@@ -1,0 +1,196 @@
+{
+  "state": "predictions frozen before pinned Rust observations/candidate",
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "rustc": "1.98.0",
+  "cases": {
+    "required-runtime": {
+      "status": 0,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "default-runtime": {
+      "status": 0,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "unmarked-default": {
+      "status": 1,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation",
+      "contains": "cannot call non-const"
+    },
+    "ordinary-trait": {
+      "status": 0,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "const-impl": {
+      "status": 0,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "const-call-denied": {
+      "status": 1,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation",
+      "contains": "cannot call non-const"
+    },
+    "ufcs-const-denied": {
+      "status": 1,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation",
+      "contains": "cannot call non-const"
+    },
+    "const-impl-body": {
+      "status": 1,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation",
+      "contains": "cannot call non-const"
+    },
+    "ordinary-impl-body": {
+      "status": 0,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "wrong-free": {
+      "status": 1,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "wrong-inherent": {
+      "status": 1,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "wrong-impl-method": {
+      "status": 1,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "wrong-trait": {
+      "status": 1,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "list": {
+      "status": 1,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "value": {
+      "status": 1,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "duplicate": {
+      "status": 1,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "unsafe-wrapper": {
+      "status": 1,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "missing-gate": {
+      "status": 1,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "cfg-disabled": {
+      "status": 0,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "cfg-selected": {
+      "status": 0,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "unsafe-runtime": {
+      "status": 0,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "unsafe-denied": {
+      "status": 1,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation",
+      "contains": "unsafe"
+    },
+    "unsafe-const-denied": {
+      "status": 1,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation",
+      "contains": "cannot call non-const"
+    },
+    "always-owner-denied": {
+      "status": 1,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "macro": {
+      "status": 0,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "macro-allowance": {
+      "status": 0,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "staged-api": {
+      "status": 0,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "staged-const-policy-denied": {
+      "status": 1,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    },
+    "native": {
+      "status": 0,
+      "scope": "Authored pinned Rust method-constness control; genuine ordinary Rust foundation, not original Iterator implementation"
+    }
+  },
+  "native_stdout": "7 11 13\n",
+  "original": {
+    "path": "library/core/src/iter/traits/double_ended.rs",
+    "sha256": "ab39bfe0833d1346fe8f0082a75f3826449ab38b48624f44ce7acade438b8fef",
+    "method_interval_character_range": [
+      4705,
+      5032
+    ],
+    "method_interval_sha256": "dada026947f41494e0855a254a0b1ecb872a7512064b8759da9420352e0f38c7",
+    "trait_interval_character_range": [
+      1500,
+      1555
+    ],
+    "trait_interval_sha256": "70330f372b0daba68c38ac057c619b41983ae55eb21f69539e2ea9413197cc51",
+    "scope": "Exact original source/header evidence only; no standalone helper substitution/full Iterator runtime claim",
+    "method_interval_byte_range": [
+      4705,
+      5032
+    ],
+    "method_first_line": 134,
+    "trait_interval_byte_range": [
+      1500,
+      1555
+    ],
+    "trait_first_line": 44
+  },
+  "candidate_opponents": [
+    "actual current/foreign source owner/effect/header/cfg/source-incarnation identity",
+    "effective trait member constness vs unchanged const trait/impl/unsafe/Always/API axes",
+    "unused defining-body CFG eligibility",
+    "old profile transport and marker-mutation denial",
+    "ordinary and8/32/128 paid/scaling/failed warm controls"
+  ],
+  "files": {
+    "README.md": "7dfdde33ef6a0a1034632b2bd9bcab738494272825ad695b7893bac36f5bba98",
+    "always-owner-denied.rs": "92cefa1ba42aefec05311f7444200b84a9cf774040415e3826b602950781ec9b",
+    "cfg-disabled.rs": "4515ca52799891a47bb59db7647a00b5e91e100deef30a91c1181fb5df7c1f8b",
+    "cfg-selected.rs": "e21648750438af4f16e6919988c617e028802fd7680e5c641d8bdb1bf546953b",
+    "const-call-denied.rs": "2aa3a181ecc79ba1e4eb19e6468f19125cfa32cdff4b76d478148e71fcab430f",
+    "const-impl-body.rs": "3e9a7a9659f6e419d0a7a3a7dbba454ab663d9a8c1576367bc36188255aedba4",
+    "const-impl.rs": "118db65c30900eea6ec19ca6abcc6e54f305f45803cadcc6319eccfbe3a768e1",
+    "default-runtime.rs": "40440cbb0e3512e4cc6d80083b3052001547dff68cc1f8baeddecebbe09459f3",
+    "duplicate.rs": "5db368cc15d9858c1c9317e80e5e57981b3f1bc321baa19c8ed160c7121f56b7",
+    "list.rs": "eb95a715e889d6f78c01bf3df94708c17ff514d9171d4513b0e646f758755f90",
+    "macro-allowance.rs": "49b4b74e1321a4ce751352554a48b574d39a0265dfda1bfc65950efa80b1e76d",
+    "macro.rs": "2abb07ac030ae6dda6d8408a6647b7c78be0442dc979d11c0f26ef7ad04cd016",
+    "missing-gate.rs": "8d90010e50bfee35c8e8ad56ce774fc4872ffb4f564bdc1181647cc30990e98a",
+    "native.rs": "7eae01dd8c1a78e78320e5278a85f4733600d81167c23a8a08b896032530da77",
+    "ordinary-impl-body.rs": "ad7fa922169ce2d7900e45149b808336260ee53913f23cb3b9697f1496a60bbb",
+    "ordinary-trait.rs": "0a9598ea766c0ba907a101ef57d73c0526e2bbb7e7fc5e75a45b8b8453726826",
+    "original-next-chunk.txt": "dada026947f41494e0855a254a0b1ecb872a7512064b8759da9420352e0f38c7",
+    "original-trait-header.txt": "70330f372b0daba68c38ac057c619b41983ae55eb21f69539e2ea9413197cc51",
+    "required-runtime.rs": "194a675802ed170357d0e7323212550f3e28647fd849acd787dd8b9de1ec7406",
+    "staged-api.rs": "679a59fb4ec8daac1c1b0478703dfe2a7c5207476e6d9736e514f4d9044ac197",
+    "staged-const-policy-denied.rs": "38c0e5a97bb4be7467febd42180f565e035eaceab484ebbb7553e00f7a8c5ca0",
+    "ufcs-const-denied.rs": "67633ebc1f9a30f33fc18a7d5efdbb1c194b8f81d4967c14b9afca1e712d954a",
+    "unmarked-default.rs": "ab7dc4bf5cbdfcb13fc0561e2add6a3b5040b837d18bfb908819dc93cb89a49f",
+    "unsafe-const-denied.rs": "b408b2859976380989990ebed3b43881bfbd5aafebd6221ebe3b5a9a91dc372c",
+    "unsafe-denied.rs": "c12a92f72c3b903990890d3a19e784a860bf17f76a1ff4fe0d856c110e1af320",
+    "unsafe-runtime.rs": "2f3d25a4035f4fc471794cb385b495db0d2ea26132807b5feff0c62c26cf8036",
+    "unsafe-wrapper.rs": "d93eb12c2096004a7d593b5872a47973844817048398d76acf335cbd7a6a4802",
+    "value.rs": "73243c2ed1b6f22122a9723d872490491fed008b40181d24fa6d49cffab705f3",
+    "wrong-free.rs": "4bf849278831284bb6dc86e9aab94c9d1e74f2fb638b15d90994d44aa978bcb3",
+    "wrong-impl-method.rs": "f40120ac418eb5fb02f3f6e07951ecacfd5817683a973da67f01059fa7f76662",
+    "wrong-inherent.rs": "8d433a21547d12630ce9fe728224e4f0b4eaa63ca79d8f35cef59c14bb226d46",
+    "wrong-trait.rs": "8ad3e55890cb3d4f0fa21fe02e5c51a57bb7b323153efe7acdbaee1941e8112f"
+  }
+}

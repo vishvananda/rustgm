@@ -289,6 +289,16 @@ fn consume_other(
                 effect,
             )?;
         }
+        Some(Consumer::NonConstTraitMethod) => {
+            crate::sema::header_attributes::consume_nonconst_member(
+                report,
+                facts,
+                owner,
+                declaration,
+                attribute,
+                effect,
+            )?;
+        }
         Some(Consumer::Comptime) => {
             crate::sema::header_attributes::consume_comptime(
                 report,
@@ -463,6 +473,7 @@ fn bind_definitions(
         || report
             .lint_producer()
             .is_some_and(Producer::has_impl_annotations)
+        || !facts.associated.owners().is_empty()
         || report.package.source_core().is_some()
         || crate::sema::header_attributes::has_comptime_headers(facts)
         || facts

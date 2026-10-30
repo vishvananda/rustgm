@@ -144,7 +144,7 @@ fn record_comptime(
     attribute: Attribute,
     name: &str,
 ) -> Result<bool, Error> {
-    if name != "rustc_comptime"
+    if !matches!(name, "rustc_comptime" | "rustc_non_const_trait_method")
         || !library.is_some_and(|library| library.staged)
         || unit.include_context.is_some()
         || attribute.input != Input::Empty
@@ -152,9 +152,14 @@ fn record_comptime(
     {
         return Ok(false);
     }
-    draft
-        .get_or_insert_with(Draft::default)
-        .record_comptime(key)?;
+    draft.get_or_insert_with(Draft::default).record_marker(
+        key,
+        if name == "rustc_comptime" {
+            super::FunctionMarker::Comptime
+        } else {
+            super::FunctionMarker::NonConstMember
+        },
+    )?;
     Ok(true)
 }
 

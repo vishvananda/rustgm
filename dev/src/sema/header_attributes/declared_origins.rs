@@ -21,6 +21,8 @@ pub(in crate::sema) use internal_constness::{consume_const_panic, consume_inheri
 mod implicit_receivers;
 pub(in crate::sema) use implicit_receivers::{consume_no_implicit_autorefs, consume_pointer_lint};
 mod comptime;
+mod nonconst_members;
+pub(in crate::sema) use nonconst_members::consume as consume_nonconst_member;
 mod promotability;
 pub(in crate::sema) use comptime::consume as consume_comptime;
 pub(in crate::sema) use promotability::consume as consume_promotable;
@@ -36,6 +38,7 @@ struct Header {
 struct Promises {
     promotable: Option<promotability::Marker>,
     comptime: Option<comptime::Marker>,
+    member: Option<nonconst_members::Choice>,
 }
 struct Owner {
     key: NodeKey,
@@ -48,7 +51,7 @@ pub(super) struct Headers {
     definitions: HashMap<DefId, NodeKey>,
     complete: bool,
     comptime_complete: bool,
-    has_comptime: bool,
+    has_special_calls: bool,
     bytes: Cell<usize>,
     pub(super) steps: Cell<usize>,
 }
@@ -139,8 +142,10 @@ pub(in crate::sema) fn bind_definition(
     definition: DefId,
     declaration: NodeKey,
 ) -> Result<(), Error> {
+    let member = nonconst_members::is_trait_member(facts, definition);
     if !admitted(report, declaration)
         || (report.package.source_core().is_none()
+            && !member
             && !facts
                 .must_use_contracts
                 .as_deref()
@@ -176,7 +181,8 @@ pub(in crate::sema) fn bind_definition(
     }
     tracking::validate_intrinsic_annotations(report, facts, definition, declaration)?;
     promotability::bind(report, facts, definition, declaration)?;
-    comptime::bind(report, facts, definition, declaration)
+    comptime::bind(report, facts, definition, declaration)?;
+    nonconst_members::bind(report, facts, definition, declaration)
 }
 pub(in crate::sema) fn finish(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     if report.package.source_core().is_some() {

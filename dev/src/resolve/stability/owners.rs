@@ -179,6 +179,11 @@ fn definition_scopes(
         if matches!(role, Role::Function(false)) && draft.is_comptime(key)? {
             role = Role::Function(true);
         }
+        if matches!(role, Role::Function(_))
+            && draft.has_marker(key, super::FunctionMarker::NonConstMember)?
+        {
+            role = Role::NonConstMember;
+        }
         let explicit = draft.const_attributes.get(&key).copied();
         let parent = facts.scopes[scope.0 as usize]
             .parent

@@ -44,6 +44,18 @@ impl Checker<'_> {
                 ));
             }
         }
+        if self.callee_use_effect()? != Constness::Ordinary
+            && self.facts.associated.trait_owner(definition).is_some()
+            && self
+                .facts
+                .nonconst_trait_member(definition)
+                .map_err(|e| self.error(node, e))?
+        {
+            return Err(self.error(
+                node,
+                "non-const trait methods cannot be called in const contexts",
+            ));
+        }
         match self
             .facts
             .source_comptime_contract(self.report, definition)?
