@@ -88,13 +88,19 @@ pub(super) fn method(
     {
         return Ok(false);
     }
-    for scope in [implementation.scope, function.scope] {
-        if headers.scopes().complete_slots(scope, work)?
-            != headers.scopes().complete_type_slots(scope, work)?
-        {
-            return Ok(false);
-        }
+    let scopes = headers.scopes();
+    if scopes.complete_slots(implementation.scope, work)?
+        != scopes.complete_type_slots(implementation.scope, work)?
+        || scopes
+            .complete_slots(function.scope, work)?
+            .checked_sub(scopes.complete_type_slots(function.scope, work)?)
+            != Some(function.regions.total)
+    {
+        return Ok(false);
     }
+    // The shared late-slot validator authenticates this exact difference as
+    // this declaration's original/public late region-slot permutation. It is
+    // not an early or captured generic lifetime transport permission.
     if let Some(receiver) = function.receiver {
         work.charge(2)?;
         if receiver.base != implementation.self_type
