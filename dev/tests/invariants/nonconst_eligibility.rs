@@ -218,14 +218,13 @@ fn replay_requires_current_choice_owner_effect_function_and_source_image() -> Te
             .source_non_const_trait_method_contract(&foreign, id)
             .is_err()
     );
-    let marker = match local(&mut facts)?
+    let Some(Choice::Marked(marker)) = local(&mut facts)?
         .declarations
         .get_mut(&key)
         .and_then(|header| header.promises.as_deref_mut())
         .and_then(|promises| promises.member.as_mut())
-    {
-        Some(Choice::Marked(marker)) => marker,
-        _ => return Err("actual source marker".into()),
+    else {
+        return Err("actual source marker".into());
     };
     let old = marker.effect;
     marker.effect = usize::MAX - 1;
