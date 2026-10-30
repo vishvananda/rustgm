@@ -18,6 +18,42 @@ impl Checker<'_> {
             .map(|polarity| polarity == Polarity::Reservation)
             .map_err(|error| self.implementation_error(source, error))
     }
+    pub(in crate::sema::declarations::traits) fn reserved_type_parent(
+        &mut self,
+        owner: DefId,
+        key: NodeKey,
+        parent: crate::types::parameters::predicates::Predicate,
+        proof: &mut crate::sema::nominals::Proof,
+    ) -> Result<(), Error> {
+        if !self.reservation_impl(Some(key), owner)? {
+            return Ok(());
+        }
+        let (application, _) = parent
+            .bound
+            .trait_parts()
+            .ok_or_else(|| self.error(key, "associated type lost its actual parent trait"))?;
+        let requirement = crate::types::parameters::predicates::Predicate {
+            ty: parent.ty,
+            bound: crate::types::parameters::predicates::Bound::Trait(application),
+        };
+        crate::sema::header_attributes::charge_source_contract_query(&self.facts, 1)?;
+        let before = proof.trait_selection_steps();
+        let result = proof.prove_clause(
+            &mut self.facts,
+            crate::types::parameters::clauses::Clause::Predicate(requirement),
+        );
+        crate::sema::header_attributes::charge_source_contract_query(
+            &self.facts,
+            proof.trait_selection_steps().saturating_sub(before),
+        )?;
+        if !result.map_err(|error| self.error(key, error))? {
+            return Err(self.error(
+                key,
+                "associated type definition requires actual parent trait proof",
+            ));
+        }
+        Ok(())
+    }
     pub(super) fn reservation_pair(
         &self,
         source: Option<NodeKey>,

@@ -132,6 +132,7 @@ impl Checker<'_> {
             .map_err(|e| self.error(key, e))?;
         let mut proof = Proof::for_declaration(Some(environment.into()), contract.mapping.total, 1);
         if let Some((ty, raw)) = contract.result {
+            self.reserved_type_parent(owner, key, parent, &mut proof)?;
             for ty in [raw, ty] {
                 if !proof
                     .check(&mut self.facts, ty)

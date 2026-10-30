@@ -21,3 +21,10 @@ Reservation-only rows do not require staged stability inventory; actual unstable
 annotations and feature bounds retain their real staged policy checks. Every
 metadata profile rejects reservation polarity even when it supports feature
 predicates.
+
+Reserved associated definitions still require a genuine ordinary parent trait
+proof. Pinned Rust rejects the unchanged `associated_relaxed.rs` even with
+`?Sized`, contrary to the preserved initial prediction; actual generic premises
+and an independent ordinary implementation inside a const reservation succeed.
+The definition conformance check uses the existing declaration proof under the
+actual impl/member environment and retains its ordinary lifetime obligations.

@@ -423,6 +423,12 @@ impl Proof {
             .ok_or("missing nominal trait proof")
     }
 
+    pub(in crate::sema) fn trait_selection_steps(&self) -> usize {
+        self.traits
+            .as_deref()
+            .map_or(0, traits::State::selection_steps)
+    }
+
     /// Retain every selected lifetime obligation, including fresh existential identities.
     pub fn take_trait_proof(&mut self) -> Option<super::traits::obligations::Obligations> {
         self.traits.take().map(|state| state.finish())

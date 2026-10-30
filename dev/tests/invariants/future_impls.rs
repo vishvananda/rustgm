@@ -40,6 +40,8 @@ fn reservation_headers_keep_ordinary_assumptions_and_independent_implementations
         "body_explicit_parameter_bound",
         "body_independent_real_impl",
         "associated_with_real_impl",
+        "associated_generic_assumption",
+        "associated_const_real_ordinary",
         "coherence_clear",
         "coherence_incompatible_subject",
         "coherence_incompatible_arguments",
@@ -88,6 +90,7 @@ fn reservation_never_supplies_call_projection_const_or_own_body_evidence() -> Te
         "projection_denied",
         "associated_type_probe",
         "associated_type_requires_real_self_bound",
+        "associated_relaxed",
         "body_own_trait_probe",
         "const_denied",
         "const_body_restriction",
@@ -142,7 +145,8 @@ fn reservation_attribute_keeps_actual_gate_owner_signature_safety_and_duplicate_
             .ok_or_else(|| format!("{name}: accepted malformed declaration"))?
             .to_string();
         let expected: &[&str] = match name {
-            "missing_method" | "wrong_signature" => &["method", "signature"],
+            "missing_method" => &["method"],
+            "wrong_signature" => &["signature", "incompatible types"],
             "unsafe_missing" => &["safety", "unsafe"],
             "missing_gate" => &["rustc_attrs"],
             "negative" => &["custom source auto traits are not implemented"],

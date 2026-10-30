@@ -294,5 +294,35 @@
     "actual_rust_metadata_status": 1,
     "actual_rust_diagnostic": "reservation impls can't be negative",
     "receipt_sha256": "2f768395ca1cd3d84cfe27f83dcef3a253a427daf9e559ef7e4ab396829eaad9"
+  },
+  "associated_type_v6": {
+    "plan_sha256": "a0402afa39f10904a748ac2d96c772e53d9413e7d3dd364a4f867ee21af8be69",
+    "receipt_sha256": "61e00b22b2b62b794e4ba5d9b697186906e36f5dde90e77ccca4a1be777d2a82",
+    "whole_receipt": "mismatch retained; no observation rerun or source replacement",
+    "observations": {
+      "associated_relaxed": {
+        "predicted_metadata_status": 0,
+        "actual_metadata_status": 1,
+        "actual_diagnostic": "E0277 S:A at associated definition; relaxing Sized does not avoid actual parent trait requirement"
+      },
+      "associated_generic_assumption": {
+        "predicted_metadata_status": 0,
+        "actual_metadata_status": 0
+      },
+      "associated_const_real_ordinary": {
+        "predicted_metadata_status": 0,
+        "actual_metadata_status": 0
+      }
+    },
+    "candidate_contract": "actual reserved associated definition proves ordinary parent in genuine immutable declaration/member environment; reserved header gives no premise, real generic assumptions/independent impls remain authoritative"
+  },
+  "candidate_runtime_successor": {
+    "receipt": "obj/qualification/fast/1793330474422789139/receipt.json",
+    "actual": "21/25 PASS after strict Clippy/link; actual0.18s runtime",
+    "remaining_causes": [
+      "const_real ordinary initializer shared closed member owner path",
+      "reserved associated type falsely accepted without actual parent proof",
+      "wrong_signature correctly rejected incompatible types; stale diagnostic assertion"
+    ]
   }
 }

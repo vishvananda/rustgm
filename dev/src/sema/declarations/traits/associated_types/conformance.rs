@@ -207,6 +207,7 @@ impl Checker<'_> {
                 result.push((expected, actual));
                 continue;
             }
+            self.reserved_type_parent(owner, key, predicate, &mut proof)?;
             let ty = self.facts.definitions[actual.0 as usize]
                 .ok_or_else(|| self.error(key, "missing associated type definition type"))?;
             if !proof
