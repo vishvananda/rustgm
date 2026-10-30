@@ -37,9 +37,6 @@ impl Checker<'_> {
         }
         self.register_foreign_function(id, key, ty, flags.safety)?;
         self.register_function_call_traits(key, id)?;
-        self.facts
-            .function_indices
-            .insert(id, self.facts.functions.len());
         let function = Function {
             definition: id,
             node: key,
@@ -50,6 +47,11 @@ impl Checker<'_> {
                 node,
             }),
         };
+        self.facts
+            .validate_legacy_indices_function(self.report, &function)?;
+        self.facts
+            .function_indices
+            .insert(id, self.facts.functions.len());
         self.publish_exact_method_receiver(&function)?;
         self.facts.functions.push(function);
         self.validate_published_intrinsic(key)?;

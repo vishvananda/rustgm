@@ -328,6 +328,18 @@ fn consume_other(
                 effect,
             )?;
         }
+        Some(Consumer::LegacyConstGenerics) => {
+            crate::sema::header_attributes::consume_legacy_indices(
+                report,
+                facts,
+                owner,
+                declaration,
+                attribute,
+                effect,
+                forest,
+                allowances,
+            )?;
+        }
         Some(Consumer::Comptime) => {
             crate::sema::header_attributes::consume_comptime(
                 report,

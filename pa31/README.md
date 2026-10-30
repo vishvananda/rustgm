@@ -51,6 +51,13 @@ no such assumption. A future optimizer must preserve authenticated intent across
 imports or remain conservative before using the assumption. The source draft has
 independent Rust evidence; candidate qualification remains pending.
 
+The [local legacy const-generic contract](tests/spec/source-legacy-const/README.md)
+validates actual free-function generic headers and index lists. It does not
+rewrite same-crate calls or grant const/unsafe permission. Current metadata
+profiles fence the required external index/call protocol; Rust-positive external
+legacy calls remain declared requirements in PA29. Candidate qualification is
+pending for this source-only phase.
+
 The source `rustc_promotable` declaration checkpoint retains its actual attribute,
 configured owner and direct const-stability witness. Word, list and value forms
 follow the pinned parser's marker semantics. This header promise grants neither

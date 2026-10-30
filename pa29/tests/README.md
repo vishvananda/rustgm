@@ -22,3 +22,8 @@ no undiscovered fixtures or empty-suite success is permitted.
 clients: bare imported dyn formation succeeds, while a foreign inherent impl
 rejects after actual trait resolution. It preserves the ModuleContracts-v2
 provider foundation and grants no foreign permission.
+
+`legacy-const-call-outcomes.json` retains genuine external direct-path legacy
+const-argument positives. The local header phase fences their metadata until the
+real index list and anonymous-constant call protocol are transported; source
+expectations are preserved as required work rather than rejection cases.

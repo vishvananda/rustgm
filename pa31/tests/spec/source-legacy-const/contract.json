@@ -1,0 +1,264 @@
+{
+  "state": "Independent pinned Rust successor91/91PASS; candidate source checkpoint UNCOMPILED and runtime/transport incomplete",
+  "pin": "Rust1.98.0 88d9e12ae178fab0fb5cc050a94da85685d449ea Linuxx86-64",
+  "cases": {
+    "local-modern.rs": {
+      "sha256": "e8e85fa79ee69b9aad5e75e2c442b95468f807aa1dea690d77de6d33c7ddf8cb",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "local-legacy-denied.rs": {
+      "sha256": "a2fe5075f7fcd44d873b04d4d8dc413a0420db832e05e76d9a36cedef0ac7e43",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "const-modern.rs": {
+      "sha256": "636c844553b4b8ed3a91520954ac7460ffae065ad988a15a4d7957301927c26f",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "ordinary-not-const.rs": {
+      "sha256": "0d2ba573e92a4130ed59a7532ef474059411be4307e9b09aa51bf7a053baaae1",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "unsafe-not-granted.rs": {
+      "sha256": "e832a0ded878e36e4660398cd061bb68c070ce59cf197b73b16e3b6ede076c64",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "unsafe-modern.rs": {
+      "sha256": "3ad05d02e17f8c6fd7a272d5ac32a5fb95b7803ebd8ecbd0c6bbdb7c0242b365",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "multiple.rs": {
+      "sha256": "9de8e160e02d2cd0f5a3b0dd6cb40649ff2cc433a532496ada5be8f478e9da19",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "duplicate-positions.rs": {
+      "sha256": "b59b030c9e4bfb4f992e942b751840d772ecb35964993ef8ff9acb21be263442",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "reordered-positions.rs": {
+      "sha256": "d405e062779038fdf1c396dcf2a591e8748c1c93956dfce8f39b63a6a1c42cee",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "wrapped-meta-index.rs": {
+      "sha256": "44ae1bd816e2ac60b9b8f282041e1722fc59391398a626033f52b4d61e2d8339",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "radix-trailing.rs": {
+      "sha256": "271b4a1256bf89f9a683abeb9b169438095f2a3195dfc607edb222455e095313",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "boolean-formal.rs": {
+      "sha256": "78471f74888967a5f905bf5667046ec5df58b3d97906909e3146ab3203a20045",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "elided-lifetime.rs": {
+      "sha256": "8de06d62c0748912ac1abe02c900f6933a68b1f43de0ca9a160b0f87c31949cf",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1,
+      "prediction_history": {
+        "initial_rust_metadata": 0,
+        "initial_rust_object": 0,
+        "actual_first_metadata": 1,
+        "actual_first_object": 1,
+        "reason": "Pinned HIR introduces an outer lifetime generic even when elided in source; initialprediction was incorrect."
+      }
+    },
+    "alias-modern.rs": {
+      "sha256": "d28964597e9c3c7dfeef13c39c0f58a05b5464ed038bc9cd18acf57909f35e37",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "alias-legacy-denied.rs": {
+      "sha256": "ac87f972736f185d229d1e66138a6260e7026f1aaf63c6c0d2c9d6548e9131a7",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "fnptr-modern.rs": {
+      "sha256": "69699921a44e0140ff55b5df4216e3b279069d953128e92fdb9ee691f406c7d6",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "fnptr-legacy-denied.rs": {
+      "sha256": "f35e6bd88ad7674b0cf39fbcbec98bb2bf61b0adcdc471daa79a702fa99ef0c2",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "explicit-generics-no-rewrite.rs": {
+      "sha256": "4d4005f1bb8d1d9e997f89c925764d23587abcf219a6e6104e65105198e4668e",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "wrong-type-formal.rs": {
+      "sha256": "63d163370cd64bb24f0d220e8f980b13cec439132e80a6e1c9354f450954fdca",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "wrong-lifetime-formal.rs": {
+      "sha256": "d5691922cece9d857649ec4e601dc99e88e10dcf91a58dbb942a1f7a122e1aba",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "wrong-count.rs": {
+      "sha256": "6ef58cb97a20e404bb830c02e4c07ec13286b16e57a6d47f71d968addbcec115",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "wrong-index.rs": {
+      "sha256": "afb560118107854244218f0dccc14bbd721726e71ebe0f9e1070737d01904a72",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "no-formals.rs": {
+      "sha256": "eb98751ab63145881ffa2e42a9849dfe9d3e135061f10f48272326bad9e4a25b",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "inherent-denied.rs": {
+      "sha256": "62f74ef63bf1015e57431676ccc3cafbd431d24d634bdf270e3ddfb381f52a0d",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "foreign-denied.rs": {
+      "sha256": "68a80183d16e73161c7a08e1e38bd6df2c03dfa2a3358af26eed44091c22bbdb",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "empty-list.rs": {
+      "sha256": "7c9bafeae40de1db4eee4d33bd744b465ed53d3b1d0621fe58f6dc53460be29a",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "word.rs": {
+      "sha256": "068af5a56d207c55d102065aa5cdc218c48d2ad5d937a7fb8c0a5226ab3f47b5",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "value.rs": {
+      "sha256": "848c0a408ac3afad9aafa42e472b84ec9777c52c3f8b8993a9e458493cfc1ed7",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "suffix.rs": {
+      "sha256": "59be81de4780768357e62c6345460872cafb8cea860d9cc4ca991f18427135a6",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "negative.rs": {
+      "sha256": "705a5d4ecdefe778712d7124754323b5a17cccf62a1cd99fed01626d660266a4",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "noninteger.rs": {
+      "sha256": "3cc3a68ee3505e0be6346e556c745b6649a7220190aba373b8475064a60327f5",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "missing-gate.rs": {
+      "sha256": "3ef37f99c9f9a57a3bc62b7211e966a01a1d34dce42a3d9c5f0a1d1af371c418",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "duplicate.rs": {
+      "sha256": "8e315cf8b2ebe319847b518cee537cc1748cd0ea0a600d13bf8db0ac936557ee",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "cfg-removed.rs": {
+      "sha256": "94f49ec69c7ca91cfdc8c5addef78c023f35afcb3b897dc8db3b72e219d6fa34",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "macro-allowance.rs": {
+      "sha256": "8311f0df36395879a0c87010f0a8593b5264dda95fd702ad3ddf70170e067a3d",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "owner-replay.rs": {
+      "sha256": "812662d6f6195e09a01c3360e80778c8dc04bc082a89cb023f30a8d519a04fc1",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "module-provider.rs": {
+      "sha256": "bda781f2c689a2baed4bcf81159060987f3f780264225a960f08c98571c78f51",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": "required metadata fence; local typechecking0"
+    },
+    "static-reference.rs": {
+      "sha256": "058f68af265fae70bb888785dd6f440e6202d74f834f2f7cf8421761ca520f86",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "nested-higher-ranked.rs": {
+      "sha256": "326258c86b640c6001ae029b2b2d2b7540c25abf04069b08470dbe2bd6dba7fb",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    }
+  },
+  "semantics": "Actual free-function const-generic index declaration; no same-crate rewrites or const/unsafe/API grants. Preserve duplicate and source-order index semantics, including pinned usize normalization.",
+  "required": "Cross-crate direct-path argument extraction and metadata index transport remain Required; genuine Rust-positive PA29 clients remain positive, not relabelled language negatives.",
+  "phase": "Owner/attribute pass parses syntactic shape; real publish_source_function hook seals actual typed signature/owned const parameters/Store. No new Work or AST factory.",
+  "primary": {
+    "compiler/rustc_attr_parsing/src/attributes/rustc_internal.rs": "f667f727ca0ca74a922e2a0dae4e9d5b6e0c681fa8f604e699a17e546178106c",
+    "compiler/rustc_passes/src/check_attr.rs": "6bb6c566adff5f1fa95e6d47b5a03b7a38a01d5a7b8e7d9eb82eda8a0505abf1",
+    "compiler/rustc_ast_lowering/src/lib.rs": "d5510729a600c1876710b6f0ea3bd4c355dfaedde94b34ce4eb2602173b2d8fe",
+    "compiler/rustc_ast_lowering/src/expr.rs": "5a346a88df995b066dd638ec109f53eeb27cfd46b6db9d252155657c28b7b1c5",
+    "compiler/rustc_resolve/src/lib.rs": "afb2adb1e4326fdc2a62456c4b68b8fc158703a8e361fdfdbc0d9c81f439bb55"
+  },
+  "reference_evidence": {
+    "first_plan_sha256": "275f57dbfdd4c47ba7a12defcb30738536e58cc21c37c625ae274794c925af7e",
+    "first_outcome": "85/87; elided-lifetime prediction0 wrong, original bytes unchanged",
+    "successor_plan_sha256": "80d15c8810bb34321bc29aeb81b372a7061e337200d74d843f831b1bc789611b",
+    "successor_receipt_sha256": "4d9e486c0e5a69375047bed473195bf5de32ad64eea39cbc3da12ca047e23681",
+    "successor_outcome": "91/91 PASS; reference Rust metadata/object only, actual launcher0; no RustGM or native execution claim"
+  }
+}

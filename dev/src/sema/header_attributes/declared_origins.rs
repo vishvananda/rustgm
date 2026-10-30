@@ -21,6 +21,8 @@ pub(in crate::sema) use internal_constness::{consume_const_panic, consume_inheri
 mod implicit_receivers;
 pub(in crate::sema) use implicit_receivers::{consume_no_implicit_autorefs, consume_pointer_lint};
 mod comptime;
+mod legacy_indices;
+pub(in crate::sema) use legacy_indices::consume as consume_legacy_indices;
 mod nonconst_members;
 pub(in crate::sema) use nonconst_members::consume as consume_nonconst_member;
 mod incoherent_targets;
@@ -42,6 +44,7 @@ struct Promises {
     comptime: Option<comptime::Marker>,
     member: Option<nonconst_members::Choice>,
     incoherent: Option<incoherent_targets::Marker>,
+    legacy: Option<Box<legacy_indices::Marker>>,
 }
 struct Owner {
     key: NodeKey,
@@ -190,7 +193,8 @@ pub(in crate::sema) fn bind_definition(
     tracking::validate_intrinsic_annotations(report, facts, definition, declaration)?;
     promotability::bind(report, facts, definition, declaration)?;
     comptime::bind(report, facts, definition, declaration)?;
-    nonconst_members::bind(report, facts, definition, declaration)
+    nonconst_members::bind(report, facts, definition, declaration)?;
+    legacy_indices::bind(report, facts, definition, declaration)
 }
 pub(in crate::sema) fn finish(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     if report.package.source_core().is_some() {

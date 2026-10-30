@@ -1,0 +1,76 @@
+{
+  "state": "Frozen independent predictions; external positive protocol remains Required",
+  "cases": [
+    {
+      "name": "provider",
+      "path": "tests/spec/legacy-const-calls/provider.rs",
+      "crate": "legacy_provider",
+      "deps": {},
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate": "Required metadata index transport; explicit source fence",
+      "source_sha256": "76283e723c500cbc6e8e5b23b37bed332bc6d784853f21fbda319a44d54aff82"
+    },
+    {
+      "name": "legacy",
+      "path": "tests/spec/legacy-const-calls/legacy.rs",
+      "crate": "client",
+      "deps": {
+        "base": "provider"
+      },
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate": "Required genuine external directpath protocol; no substitution or expected-language-status change",
+      "source_sha256": "19f7e6b43601c579a8276a94d11183c81ca631fb873f8b9f4e5ec956bfb1e578"
+    },
+    {
+      "name": "modern",
+      "path": "tests/spec/legacy-const-calls/modern.rs",
+      "crate": "client",
+      "deps": {
+        "base": "provider"
+      },
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate": "Required genuine external directpath protocol; no substitution or expected-language-status change",
+      "source_sha256": "10bdd338fe0c48e56bad80968e05cf6713d320f4f5779a906e5b8fa5f70443cf"
+    },
+    {
+      "name": "alias",
+      "path": "tests/spec/legacy-const-calls/alias.rs",
+      "crate": "client",
+      "deps": {
+        "base": "provider"
+      },
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate": "Required genuine external directpath protocol; no substitution or expected-language-status change",
+      "source_sha256": "b140662ca41e51d5429136b3fc74b693066677be1c2dc856bcfabc8d23e469ba"
+    },
+    {
+      "name": "explicit-wrong",
+      "path": "tests/spec/legacy-const-calls/explicit-wrong.rs",
+      "crate": "client",
+      "deps": {
+        "base": "provider"
+      },
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate": "Required genuine external directpath protocol; no substitution or expected-language-status change",
+      "source_sha256": "40297ccc5b6e7d4233526475484a4baa4902a1d2f1e34d619d3e8280de9d9cc3"
+    },
+    {
+      "name": "runtime-const-denied",
+      "path": "tests/spec/legacy-const-calls/runtime-const-denied.rs",
+      "crate": "client",
+      "deps": {
+        "base": "provider"
+      },
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate": "Required genuine external directpath protocol; no substitution or expected-language-status change",
+      "source_sha256": "c7393e0aac04c73635d1fd8718b904f9fbedaa43b43d3bfbf27254e7c68564d5"
+    }
+  ],
+  "primary": "rustc_ast_lowering/lib.rs279\u2013311; rustc_resolve/lib.rs2604\u20132632 external-only, no explicit generics; expr.rs545+ real anonymous const extraction"
+}

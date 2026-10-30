@@ -185,6 +185,7 @@ impl Declarations {
         if actual.kind != DefKind::Function {
             return Ok(());
         }
+        self.reject_legacy_indices_transport(report, definition)?;
         if matches!(
             self.source_comptime_contract(report, definition)?,
             ContractKnowledge::KnownPresent(_)
@@ -209,6 +210,9 @@ impl Declarations {
         let mut required = None;
         if !visit_words(self, report, definition, |name| {
             let message = match name {
+                Some("rustc_legacy_const_generics") => Some(
+                    "legacy const generic indices require their cross-crate transport and argument protocol",
+                ),
                 Some("rustc_as_ptr") => {
                     Some("source rustc_as_ptr diagnostic marker transport is not implemented")
                 }
