@@ -317,11 +317,9 @@ impl Stage {
             producer
                 .require_deprecation_transport(&report.package)
                 .map_err(|error| error.message)?;
-            if !mode.feature_predicates() {
-                producer
-                    .require_impl_bound_transport(&report.package)
-                    .map_err(|error| error.message)?;
-            }
+            producer
+                .require_impl_annotation_transport(&report.package, mode.feature_predicates())
+                .map_err(|error| error.message)?;
         }
         let provider = report
             .package

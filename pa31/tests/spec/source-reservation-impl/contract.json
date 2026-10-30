@@ -277,5 +277,19 @@
     "oracle-v2": "6f7c1c028d2e1392cc826a0285ce408e35265ed0a65cfc3582316ecb2e02885a",
     "oracle-v3": "636ba16bcee3cf1550311176538e473e8942d0ff91de7a8a884526dc0ddf4e5c",
     "oracle-v4": "6295df37b2f6f7b700b5039c44eb3e89d6b6f76e7f6efc6b48e4a17a89ad7a1c"
+  },
+  "candidate_failure_history": {
+    "receipt": "obj/qualification/fast/1793327320997065754/receipt.json",
+    "actual": "25 executed: 17 passed, 8 failed; old sixteen and closed-local coherence controls passed",
+    "marker_only": "Reservation-only rows incorrectly demanded staged stability inventory",
+    "metadata": "v7 skipped annotation fence and reached unsupported declaration-kind transport",
+    "negative_custom_auto": "negative.rs rejects at custom source auto-trait boundary, before reservation validation; retained unchanged as executed boundary control"
+  },
+  "negative_trait_successor": {
+    "source": "negative-trait.rs",
+    "source_sha256": "32d38b818e5c44eeabbf2c648c93113a7bdc0c0debf2f8edf889f11234a9cf21",
+    "predicted_rust_metadata_status": 1,
+    "predicted_candidate": "reservation impl cannot be negative",
+    "scope": "ordinary authored trait isolates reservation marker validation; original custom-auto negative remains unchanged and executed; general custom source auto-trait implementation remains Required"
   }
 }

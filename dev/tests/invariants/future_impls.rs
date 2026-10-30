@@ -129,6 +129,7 @@ fn reservation_attribute_keeps_actual_gate_owner_signature_safety_and_duplicate_
         "inherent",
         "function",
         "negative",
+        "negative-trait",
         "missing_method",
         "wrong_signature",
         "unsafe_missing",
@@ -144,6 +145,7 @@ fn reservation_attribute_keeps_actual_gate_owner_signature_safety_and_duplicate_
             "missing_method" | "wrong_signature" => &["method", "signature"],
             "unsafe_missing" => &["safety", "unsafe"],
             "missing_gate" => &["rustc_attrs"],
+            "negative" => &["custom source auto traits are not implemented"],
             _ => &["reservation"],
         };
         assert!(
@@ -203,6 +205,7 @@ fn checked_reservation_has_no_selected_member_but_real_exported_body_can_lower()
 #[test]
 fn reservation_source_witnesses_are_current_and_failed_queries_retain_work() -> TestResult {
     let (report, mut analysis) = checked("unused")?;
+    assert!(report.package.library_policy().is_none());
     let header = analysis
         .facts
         .generics
@@ -311,6 +314,18 @@ fn reservation_work_is_linear_and_hot_layouts_stay_fixed() -> TestResult {
 #[test]
 fn old_metadata_profiles_cannot_drop_actual_reservation_polarity() -> TestResult {
     let source = input("module-provider")?;
+    let report = test_source::source_provider(&source, "future_impl")?;
+    let producer = report.lint_producer().ok_or("actual provider producer")?;
+    for feature_predicates in [false, true] {
+        let error = producer
+            .require_impl_annotation_transport(&report.package, feature_predicates)
+            .err()
+            .ok_or("reservation polarity lost at annotation boundary")?;
+        assert_eq!(
+            error.message,
+            "reservation implementation transport requires a wider metadata profile"
+        );
+    }
     let error = crate::module_packets::exported_profile(
         &source,
         crate::lower::instances::SourcePublication::ModuleCallables,

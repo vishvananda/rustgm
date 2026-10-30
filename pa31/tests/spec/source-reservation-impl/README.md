@@ -12,3 +12,12 @@ trait cases are distinct from the complete original core From declaration,
 whose language role and downstream float fallback remain a separate join.
 Historical v0-v8 metadata cannot represent reservation polarity and remains
 explicitly fenced when that implementation/header semantics must cross crates.
+
+The unchanged `negative.rs` is also an executed candidate boundary control: its
+custom auto trait currently rejects before reservation validation. The separate
+`negative-trait.rs` uses an ordinary authored trait to isolate the negative-impl
+marker prohibition. General custom source auto-trait support remains required.
+Reservation-only rows do not require staged stability inventory; actual unstable
+annotations and feature bounds retain their real staged policy checks. Every
+metadata profile rejects reservation polarity even when it supports feature
+predicates.

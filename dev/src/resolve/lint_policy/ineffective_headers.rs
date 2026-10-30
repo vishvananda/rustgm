@@ -330,6 +330,13 @@ impl Producer {
         }))
     }
     pub(crate) fn require_impl_bound_transport(&self, package: &Package) -> Result<(), Violation> {
+        self.require_impl_annotation_transport(package, false)
+    }
+    pub(crate) fn require_impl_annotation_transport(
+        &self,
+        package: &Package,
+        feature_predicates: bool,
+    ) -> Result<(), Violation> {
         if let Some(column) = &self.ineffective_headers {
             for (&key, row) in &column.rows {
                 self.attribute_read(key, 1)?;
@@ -340,7 +347,7 @@ impl Producer {
                         "reservation implementation transport requires a wider metadata profile",
                     ));
                 }
-                if !row.bound.is_empty() {
+                if !feature_predicates && !row.bound.is_empty() {
                     self.declaration_annotation(package, key)?;
                     return Err(invalid(
                         key,
