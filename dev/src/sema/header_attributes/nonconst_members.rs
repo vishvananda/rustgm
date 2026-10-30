@@ -251,10 +251,7 @@ fn validate_marker(
 }
 impl Declarations {
     /// Indexed completed classification, never a const-call or body permission.
-    pub(crate) fn nonconst_trait_member(
-        &self,
-        definition: DefId,
-    ) -> Result<bool, &'static str> {
+    pub(crate) fn nonconst_trait_member(&self, definition: DefId) -> Result<bool, &'static str> {
         if !is_trait_member(self, definition) {
             return Ok(false);
         }
