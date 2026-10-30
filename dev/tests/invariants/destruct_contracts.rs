@@ -248,22 +248,37 @@ fn non_source_defaults_require_preparation_while_ordinary_bodies_allocate_no_car
             assert_eq!(facts.body_work.canonical_steps, before);
         }
         let before = facts.body_work.canonical_steps;
-        crate::body::copy_requirements::originals(&mut facts, [&template.body], [&mut contract])?;
+        let scratch =
+            crate::body::copy_requirements::OriginalIndexBudget::new(1_000_000, 64 * 1024 * 1024);
+        crate::body::copy_requirements::originals_with_budget(
+            &mut facts,
+            [&template.body],
+            [&mut contract],
+            &scratch,
+        )?;
         if default {
+            assert!(scratch.costs().0 > 0 && scratch.costs().1 > 0);
             assert!(facts.body_work.canonical_steps > before + 1);
             let mut required = crate::body::regions::Collector::default()
                 .function(&facts, &function)?
                 .clone();
-            assert!(facts.charge_caller_inputs(0, usize::MAX).is_err());
+            let payment = crate::body::copy_requirements::OriginalIndexBudget::new(1_000_000, 0);
+            let mut previous = (0, 0);
             for _ in 0..2 {
+                let before = facts.body_work.canonical_steps;
                 assert!(
-                    crate::body::copy_requirements::originals(
+                    crate::body::copy_requirements::originals_with_budget(
                         &mut facts,
                         [&template.body],
                         [&mut required],
+                        &payment,
                     )
                     .is_err()
                 );
+                assert!(facts.body_work.canonical_steps > before);
+                let charged = payment.costs();
+                assert!(charged.0 > previous.0 && charged.1 > 0);
+                previous = charged;
                 assert!(matches!(
                     required.builtins.as_deref().and_then(|r| r.defining()),
                     Some(State::Required(_))
@@ -271,6 +286,7 @@ fn non_source_defaults_require_preparation_while_ordinary_bodies_allocate_no_car
             }
         } else {
             assert_eq!(facts.body_work.canonical_steps, before + 1);
+            assert_eq!(scratch.costs(), (0, 0));
             assert!(contract.builtins.is_none());
         }
     }

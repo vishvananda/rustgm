@@ -304,6 +304,61 @@ pub(crate) fn originals<'a, 'b>(
     bodies: impl IntoIterator<Item = &'a Body>,
     contracts: impl IntoIterator<Item = &'b mut Contract>,
 ) -> Result<(), String> {
+    originals_using(
+        facts,
+        bodies,
+        contracts,
+        &OriginalIndexBudget::new(1_000_000, 64 * 1024 * 1024),
+    )
+}
+
+/// Temporary index costs have no declaration/header authority. Failed attempted
+/// work and capacity payments remain sticky for this one construction owner.
+pub(crate) struct OriginalIndexBudget {
+    steps: std::cell::Cell<usize>,
+    bytes: std::cell::Cell<usize>,
+    work_limit: usize,
+    byte_limit: usize,
+}
+impl OriginalIndexBudget {
+    pub(crate) const fn new(work_limit: usize, byte_limit: usize) -> Self {
+        Self {
+            steps: std::cell::Cell::new(0),
+            bytes: std::cell::Cell::new(0),
+            work_limit,
+            byte_limit,
+        }
+    }
+    #[cfg(test)]
+    pub(crate) fn costs(&self) -> (usize, usize) {
+        (self.steps.get(), self.bytes.get())
+    }
+    fn charge(&self, work: usize, bytes: usize) -> Result<(), &'static str> {
+        self.steps.set(self.steps.get().saturating_add(work));
+        self.bytes.set(self.bytes.get().saturating_add(bytes));
+        if self.steps.get() > self.work_limit || self.bytes.get() > self.byte_limit {
+            return Err("original body index exceeds its scratch work/storage budget");
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+pub(crate) fn originals_with_budget<'a, 'b>(
+    facts: &mut Declarations,
+    bodies: impl IntoIterator<Item = &'a Body>,
+    contracts: impl IntoIterator<Item = &'b mut Contract>,
+    budget: &OriginalIndexBudget,
+) -> Result<(), String> {
+    originals_using(facts, bodies, contracts, budget)
+}
+
+fn originals_using<'a, 'b>(
+    facts: &mut Declarations,
+    bodies: impl IntoIterator<Item = &'a Body>,
+    contracts: impl IntoIterator<Item = &'b mut Contract>,
+    budget: &OriginalIndexBudget,
+) -> Result<(), String> {
     let source = facts.source_bindings.is_some();
     let mut bodies = Some(bodies.into_iter());
     let mut index = if source {
@@ -327,7 +382,7 @@ pub(crate) fn originals<'a, 'b>(
                     .take()
                     .ok_or("original body index was consumed twice")?,
                 &mut attempted,
-                Some(&|work, bytes| facts.charge_caller_inputs(work, bytes)),
+                Some(&|work, bytes| budget.charge(work, bytes)),
             );
             facts.body_work.canonical_steps =
                 facts.body_work.canonical_steps.saturating_add(attempted);

@@ -415,6 +415,9 @@ fn ordinary_default_indexes_scale() -> TestResult {
         } = pipeline::analyze_source(&report)?;
         assert!(!facts.uses_source_copy());
         let before = facts.body_work.canonical_steps;
+        let headers = super::super::source_contract_storage(&facts).map(
+            |(_, bytes, count, capacity, owners, width)| (bytes, count, capacity, owners, width),
+        );
         crate::lower::instances::build_roots_prepared(
             &report,
             &mut facts,
@@ -425,13 +428,19 @@ fn ordinary_default_indexes_scale() -> TestResult {
             prepared,
         )?;
         let work = facts.body_work.canonical_steps - before;
-        let (_, bytes, ..) =
-            super::super::source_contract_storage(&facts).ok_or("ordinary header payments")?;
-        println!("ordinary default indexes width={width} work={work} bytes={bytes}");
-        if let Some((old_work, old_bytes)) = previous {
-            assert!(work <= old_work * 5 && bytes <= old_bytes * 5);
+        assert_eq!(
+            super::super::source_contract_storage(&facts).map(
+                |(_, bytes, count, capacity, owners, width)| (
+                    bytes, count, capacity, owners, width
+                )
+            ),
+            headers
+        );
+        println!("ordinary default indexes width={width} work={work}");
+        if let Some(old_work) = previous {
+            assert!(work <= old_work * 5);
         }
-        previous = Some((work, bytes));
+        previous = Some(work);
     }
     Ok(())
 }
