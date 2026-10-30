@@ -20,6 +20,7 @@ pub(crate) enum Consumer {
     TraitDiagnostics,
     InherentPolicy,
     IncoherentTarget,
+    InsignificantDestructor,
     NonExhaustive,
     UnsafeSpecialization,
     MarkerTrait,
@@ -38,6 +39,7 @@ pub(crate) enum Consumer {
     Promotion,
     Comptime,
     NoMirInline,
+    NoWritable,
     ReservationImpl,
     NonConstTraitMethod,
 }
@@ -94,6 +96,7 @@ impl Consumer {
             "rustc_promotable" => Self::Promotion,
             "rustc_comptime" => Self::Comptime,
             "rustc_no_mir_inline" => Self::NoMirInline,
+            "rustc_no_writable" => Self::NoWritable,
             "rustc_reservation_impl" => Self::ReservationImpl,
             "rustc_non_const_trait_method" => Self::NonConstTraitMethod,
             "no_mangle" | "export_name" | "link_name" => Self::Linkage,
@@ -114,6 +117,7 @@ impl Consumer {
             "rustc_on_unimplemented" => Self::TraitDiagnostics,
             "rustc_allow_incoherent_impl" => Self::InherentPolicy,
             "rustc_has_incoherent_inherent_impls" => Self::IncoherentTarget,
+            "rustc_insignificant_dtor" => Self::InsignificantDestructor,
             _ => return None,
         })
     }

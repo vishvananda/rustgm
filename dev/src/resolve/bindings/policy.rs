@@ -157,6 +157,7 @@ impl Features {
     }
     fn needs_local_owner(&self) -> bool {
         self.has(Feature::PreludeImport)
+            || self.has(Feature::ExpressionAttributes)
             || self.has(Feature::InternalMacroAllowance)
             || crate::support::cpu_features::Gate::ALL
                 .into_iter()

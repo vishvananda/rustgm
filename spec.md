@@ -104,6 +104,16 @@ typed LowIR directly. All backend-visible facts must have a LowIR spelling.
 
 ### Upstream library boundary
 
+Validate active source optimization/advisory annotations against their real
+feature and configured target. Reuse transient per-owner state or existing cold
+drafts when the current backend has no corresponding optimization or advisory
+producer; do not add ordinary nominal permission rows, fake absence knowledge,
+write privileges or a reason to skip destruction. Preserve independent inline,
+const, unsafe, lifetime and body checks. Expression annotations consume the
+actual parsed root request or token-origin macro allowance in every crate mode.
+The [source checkpoint](docs/pa31-advisory-source-checkpoint.md) records the
+current backend boundary and deferred advisory work.
+
 Follow the [library bootstrap plan](docs/library-bootstrap-roadmap.md). Compile
 ordinary library definitions, generic bodies and algorithms from pinned upstream
 sources. Bootstrap declaration/body factories are temporary: a source sysroot

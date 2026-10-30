@@ -29,6 +29,7 @@ pub mod generics;
 mod glob_shadowing;
 mod ineffective_impls;
 pub mod inline_constants;
+mod insignificant_drop;
 pub(crate) mod invocations;
 pub(crate) mod iteration;
 pub mod layout_view;

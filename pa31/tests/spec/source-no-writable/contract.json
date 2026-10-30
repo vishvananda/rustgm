@@ -1,0 +1,282 @@
+{
+  "state": "independent Rust and finite candidate source/native checkpoint qualified; PA31 planned",
+  "pin": "Rust1.98.0 commit88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "owner": "PA31 source declarations; PA30/34 ABI optimization policy; future PA29 optimization-intent consumer",
+  "cases": {
+    "borrow-denied.rs": {
+      "sha256": "08d3f71ec50006979c3245c23656abf0515e6842aa90aafb7a6cdc0cd360277d",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "cfg-removed-bad-target.rs": {
+      "sha256": "224ddfb6363a48942be7c3e473cefe348cf3e9b4c3c5a968c3f5ff9f116a15e8",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "cfg-removed-duplicate.rs": {
+      "sha256": "5c417e677f10274c497e98e3c4b7e2f92c66e0bd237db4270104938a37a6e19e",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "closure-call.rs": {
+      "sha256": "8f2b0908361fb7e2220dbc3aa9d4458ee08adcce7b253aa6386cdb8af944f456",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "closure-duplicate.rs": {
+      "sha256": "7dd3e7a59e31942f7ef8fbe758f4e51a3b8d16a03b21be95336dcbe119b2760d",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "closure-missing-expression-gate.rs": {
+      "sha256": "18e5e970cb6fa6733a492390e2a4fade8b24579c84707b1ed3940cbed1e84274",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "closure-unsafe-denied.rs": {
+      "sha256": "6db8c9709548ae4a160a8ffe467ef552f7637bdf5ce78fcb2fa4907cd123aaae",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "closure.rs": {
+      "sha256": "7c5aa7a749ab0a02b8bd48572383cdebc6b5e0434d3e3ea32922101737fb4fdd",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "const.rs": {
+      "sha256": "1f1b9eb3103b021fae3749895b5da2c12bc80bfdfd531991182ae9ce40109bdf",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "constant.rs": {
+      "sha256": "594265770e52ade2af85f2be55a147e4f37bbedb6528844b44e88e146f40a74d",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "default.rs": {
+      "sha256": "dfcc9b0aeee4db3560df3ba06d7e8a59aa469e31897cb86891e1af810ccdee9f",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "deny-unused.rs": {
+      "sha256": "c0ca21338a8dc37b57efe0e5cf411c4ad2447a39ac990b0ea91eb31da80b5607",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "duplicate-allowed.rs": {
+      "sha256": "4dd1703a8ebccd0123b483a4042cd97b993a9a127c8bfb57f3cc762cc7d5a834",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "duplicate.rs": {
+      "sha256": "7933322b7654e3bfa417c8163252d7f58c94c988121a08fd699afded838f99c5",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "empty-list.rs": {
+      "sha256": "291ed7dc12e9c1ce7c46391b0e65dc5c3cf90773c4018301457f8ca68add4459",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "extern-body.rs": {
+      "sha256": "88c065753d0e3c6623b812143feda77c6f3bef708e55ce4576b2b4ed64d3f956",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "foreign.rs": {
+      "sha256": "7c3e084fa2ad2ba4b67bca28cc19aaf10065b95e7aaf0c5b394d2c1dd84574d0",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "implementation.rs": {
+      "sha256": "d242341fa8e1fadac1945269a14e3e256474abc2ddbd63cb413041793193c3d2",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "inherent.rs": {
+      "sha256": "ea353679605e9b601918bb971c63f728f3acaa6e0a1888512f637e2646a28245",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "list.rs": {
+      "sha256": "5bc023d3eef28161116e73f5904f9ce9647f2a1e5ebe9c4c3565ff70e524ecb1",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "macro-allowance.rs": {
+      "sha256": "c48530dc02ddf71578da171704f64ecb50124832ef05b430364235e2ef483a99",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "missing-gate.rs": {
+      "sha256": "2f5eae1218d47b24b02df1569f5269c90eb0ee735cc5ed6afd8326143288704d",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "module-provider.rs": {
+      "sha256": "9b438c3a849e42311f19ed8e7006b3a5e7dd0ef42667d69adf247f70c1cc7ff9",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "mutation.rs": {
+      "sha256": "8f35101573f820ef27e2049c35e698d799266cc3a9d893d7bea6eff95457734f",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "nonconst-denied.rs": {
+      "sha256": "048b1189cadd327dd46af6cb80b7eec2aaf63d8f29c01f14f575472a3250b5f0",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "required.rs": {
+      "sha256": "76f11e46400e53dc73ac01be40016e9a3f69cbcfd519c7e679fc08e70a8faac2",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "same-owner-distinct.rs": {
+      "sha256": "00f8dfaa0e9822d28d7dd6719f88a79ce18c9d253396ebfadcd5e2a707af2915",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "struct.rs": {
+      "sha256": "fa3d2ad651f81132501cf86cb020e8b8c66172d20104877aa1e539222faa759d",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "unsafe-denied.rs": {
+      "sha256": "41a3334695f00e9199b9a2c482a658d4ca5688a8fbf10cc8cd6bf75364851360",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "unsafe-wrapper.rs": {
+      "sha256": "9f6fee0757f07ec6fbe36a39ef181af2d537f2cc082b2b6d268c95c4a0feeff4",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "unsafe.rs": {
+      "sha256": "9cb881181b2d1ce083d3d1fba229411b2bd35457055c2c93548a452206730bb8",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "value.rs": {
+      "sha256": "ad2792968f94ec93e4be1195084f91fa504fa631767f35a768502eee94188c58",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "with-always.rs": {
+      "sha256": "f7c1dd27656bea2ef8dd1e87240d5a38c4e8e58d554465ed41bc72256dc79556",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "with-inline.rs": {
+      "sha256": "06f6fc75a26ab2f81807649729e3669db3d478886ba825e33efb24a263675154",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "with-mir.rs": {
+      "sha256": "217d69d79bbff77694ea87ec22c1e77c25afca931804a6ae67275bee24bcb384",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "with-never.rs": {
+      "sha256": "042c58564e6a7d8fff2786c1115e24ea9fac6ffebaa66307892734aeb29f5e0a",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "word.rs": {
+      "sha256": "b1520922459f15d8071b26608d234825503714b7e05cef6391f20ef5f91ecb21",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "mixed-duplicate-mir.rs": {
+      "sha256": "9c14ab6d918e829a413c477c43c47a73e573bc54ca303d522513f2504df96785",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "mixed-duplicate-writable.rs": {
+      "sha256": "4b968a0ce452d76d2cc4f654391896f8b2340b297ee3dece9ff0213b2279bd91",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "native-body.rs": {
+      "sha256": "f840ee949cf037bed575eace48d78c76e1638467e4409357c031b76083ca78b7",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "owner-replay.rs": {
+      "sha256": "7aa7f53acdb64a3f6338bc9b3f1f5f86960d5127ea0aa99e92131e4d948d6f3a",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    }
+  },
+  "semantics": "Suppresses optional LLVM Writable on mutable reference arguments. Does not grant/prohibit source writes or unsafe/const/API/ABI operations. Current compiler/backend has no such optimization assumption.",
+  "metadata": "No current consumer emits LLVM Writable; no new wire field/fence/absence query is introduced. A future consumer must preserve authenticated local/imported intent or remain conservative before emitting the assumption.",
+  "required": [
+    "Complete original core/alloc/std and genuine slice trait/default/body graph",
+    "Future optimization-intent transport before an LLVM Writable-like consumer can use imported contracts"
+  ],
+  "source_principle": "Actual configured owner/effect/current image; function bodies +closure allowed; required trait/foreign/nonfunction denied; word/rustc_attrs/harddup; independent NoMir/inline choices",
+  "native": {
+    "source": "native-body.rs",
+    "observer": "observer.c",
+    "expected_stdout": "7\n",
+    "state": "Declared, unexecuted; actual mutable-reference store must execute through original body."
+  },
+  "independent_rust": {
+    "receipt_sha256": "685fcdf591dbd659c41b928ab9b6d941e30a4fbedf904d550507120ac26d0e92",
+    "plan_sha256": "bb2783f4bc2748eabd2b1ddaf0d0f3354e28c2eaded4c2c25ac1fc530f60d91e",
+    "observations": 82,
+    "scope": "Only pinned Rust metadata/object compilation, no candidate compiler/harness or native executable run in C."
+  },
+  "candidate_qualification": {
+    "source": "f91fc9b24831bd8b685383f0bf8315e938e7415f",
+    "scope": "finite source declaration and current backend semantics; full parent requirements remain required",
+    "receipts": {
+      "obj/qualification/fast/1793353410607545172/receipt.json": "aa79b9ec2e4fe39d048ab32d351f9135d2b0b79f7d357f9ce40cb27c8b3de150",
+      "obj/qualification/fast/1793353545695013853/receipt.json": "db21168a8c87f6ee17990d57baaecf22db74ef8e961427771c9124d6a2ba9c35",
+      "obj/parallel/advisory-source-checkpoint-v1/native-v1/receipt.json": "349284bad25b6b7c483c85536e4bdc970d631165aea15ea1079d2e7e102fd6fc"
+    },
+    "checkpoint": "docs/pa31-advisory-source-checkpoint.md"
+  }
+}

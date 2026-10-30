@@ -1,0 +1,5 @@
+    #[inline(always)]
+    #[rustc_no_writable]
+    fn index_mut(&mut self, index: I) -> &mut I::Output {
+        index.index_mut(self)
+    }
