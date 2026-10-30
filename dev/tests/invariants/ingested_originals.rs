@@ -22,19 +22,50 @@ fn fresh() -> Result<(Report, Declarations)> {
         .source_descriptor()
         .ok_or("actual source descriptor")?;
     assert!(
-        source.rows().originals.iter().any(|original| {
-            original
-                .projections
-                .iter()
-                .any(|projection| matches!(projection.base, s::Place::Temporary(_)))
-        }),
-        "unchanged borrowed Clone bodies retain their actual SSA reference base"
+        source.rows().originals.iter().any(retained_snapshot_read),
+        "unchanged source retains its exact evaluated/materialized SSA read: {:?}",
+        source.rows().originals,
     );
     let bytes = crates::encode(&artifact)?;
     assert_eq!(bytes.get(13..15), Some([9, 0].as_slice()));
     let report = crate::source_packets::client_report(crates::decode(&bytes)?, CLIENT)?;
     let facts = sema::declarations::analyze(&report)?;
     Ok((report, facts))
+}
+fn retained_snapshot_read(original: &s::Original) -> bool {
+    original.values.iter().enumerate().any(|(index, value)| {
+        let s::ValueKind::Read(s::Place::Temporary(snapshot)) = value.kind else {
+            return false;
+        };
+        let Some(input) = original.values.get(snapshot as usize) else {
+            return false;
+        };
+        let Ok(read) = u32::try_from(index) else {
+            return false;
+        };
+        let evaluated = |id| {
+            original
+                .statements
+                .iter()
+                .enumerate()
+                .filter_map(move |(position, statement)| {
+                    (statement.action == s::Action::Evaluate(id)).then_some(position)
+                })
+        };
+        let mut producer = evaluated(snapshot);
+        let mut consumer = evaluated(read);
+        matches!((producer.next(),consumer.next()), (Some(before),Some(after)) if before < after)
+            && producer.next().is_none()
+            && consumer.next().is_none()
+            && (snapshot as usize) < index
+            && input.ty == value.ty
+            && original
+                .temporaries
+                .iter()
+                .filter(|temporary| temporary.value == snapshot)
+                .count()
+                == 1
+    })
 }
 fn mapped_graph(facts: &Declarations) -> Result<Rc<Graph>> {
     let Some(crate::sema::crates::ImportedOwners::Ordinary(graph)) =
