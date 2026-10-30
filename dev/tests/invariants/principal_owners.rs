@@ -35,37 +35,13 @@ fn unmarked_local_objects_keep_real_self_receiver_bounds_and_virtual_bodies() ->
 #[test]
 fn local_principal_cannot_be_replaced_by_a_nominal_or_missing_source_owner() -> Result {
     let report = crate::test_source::resolve("struct Nominal;trait Value{}fn main(){}", true)?;
-    let principal = report
-        .resolution
-        .definitions
-        .iter()
-        .enumerate()
-        .find_map(|(index, definition)| {
-            (report.package.names.get(definition.name) == "Value"
-                && definition.kind == DefKind::Trait)
-                .then_some(index)
-        })
-        .ok_or("actual principal Value")?;
-    let nominal = report
-        .resolution
-        .definitions
-        .iter()
-        .enumerate()
-        .find_map(|(index, definition)| {
-            (report.package.names.get(definition.name) == "Nominal"
-                && definition.kind == DefKind::Struct)
-                .then_some(index)
-        })
-        .ok_or("actual nominal")?;
-    let definition = DefId(u32::try_from(principal)?);
-    let source = report.resolution.definitions[principal]
-        .node
-        .ok_or("principal source")?;
+    let (definition, source) = actual_declaration(&report, "Value", DefKind::Trait)?;
+    let (nominal, nominal_source) = actual_declaration(&report, "Nominal", DefKind::Struct)?;
     let mut checker = Checker::new(&report)?;
     checker.require_local_principal(source, ItemId(definition.0))?;
     assert!(
         checker
-            .require_local_principal(source, ItemId(u32::try_from(nominal)?))
+            .require_local_principal(source, ItemId(nominal.0))
             .is_err()
     );
     let id = checker
@@ -90,6 +66,23 @@ fn local_principal_cannot_be_replaced_by_a_nominal_or_missing_source_owner() -> 
         .associated
         .owner_for_test(id)
         .ok_or("current owner")? = original;
+    checker
+        .facts
+        .associated
+        .owner_for_test(id)
+        .ok_or("current owner")?
+        .source = Some(nominal_source);
+    assert!(
+        checker
+            .require_local_principal(source, ItemId(definition.0))
+            .is_err(),
+        "a different present source key cannot replay the actual trait owner"
+    );
+    *checker
+        .facts
+        .associated
+        .owner_for_test(id)
+        .ok_or("current owner")? = original;
     let OwnerKind::Trait {
         definition: current,
         ..
@@ -102,13 +95,33 @@ fn local_principal_cannot_be_replaced_by_a_nominal_or_missing_source_owner() -> 
     else {
         return Err("trait owner".into());
     };
-    *current = DefId(u32::try_from(nominal)?);
+    *current = nominal;
     assert!(
         checker
             .require_local_principal(source, ItemId(definition.0))
             .is_err()
     );
     Ok(())
+}
+
+fn actual_declaration(
+    report: &crate::resolve::expansion::Report,
+    name: &str,
+    kind: DefKind,
+) -> Result<(DefId, NodeKey)> {
+    let (index, definition) = report
+        .resolution
+        .definitions
+        .iter()
+        .enumerate()
+        .find(|(_, definition)| {
+            report.package.names.get(definition.name) == name && definition.kind == kind
+        })
+        .ok_or("actual source declaration")?;
+    Ok((
+        DefId(u32::try_from(index)?),
+        definition.node.ok_or("actual source key")?,
+    ))
 }
 
 fn method_work(width: usize, noise: usize) -> Result<[usize; 4]> {

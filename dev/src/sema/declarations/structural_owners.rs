@@ -189,10 +189,29 @@ impl Checker<'_> {
             .owner(definition)
             .and_then(|owner| self.facts.associated.get(owner))
             .is_some_and(|owner| {
-                actual.node.is_some()
-                    && owner.source.is_some()
-                    && matches!(owner.kind, OwnerKind::Trait { definition: current, .. }
-                    if current == definition)
+                let Some(key) = owner.source else {
+                    return false;
+                };
+                let OwnerKind::Trait {
+                    definition: current,
+                    auto_,
+                    unsafe_,
+                    constant,
+                } = owner.kind
+                else {
+                    return false;
+                };
+                if current != definition || actual.node != Some(key) {
+                    return false;
+                }
+                let unit = self.report.package.unit(key.file);
+                unit.configured.active.get(key.node.get() as usize) == Some(&true)
+                    && matches!(unit.configured.ast.node(key.node).kind,
+                        crate::syntax::ast::Kind::Item(index)
+                        if matches!(unit.configured.ast.items[index as usize].kind,
+                            crate::syntax::item::ItemKind::Trait {
+                                auto_: a, unsafe_: u, constant: c, ..
+                            } if (a, u, c) == (auto_, unsafe_, constant)))
             });
         if !local {
             return Err(self.error(source,
