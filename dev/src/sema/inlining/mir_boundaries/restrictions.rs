@@ -67,7 +67,7 @@ pub(super) fn authenticate(
 ) -> Result<(Restriction, bool), Error> {
     facts.require_lint_context(report)?;
     facts.reserve_must_use_source(declaration, attribute.span)?;
-    let error = |message| Error::at(declaration.file, attribute.span.start, message);
+    let error = |message: &str| Error::at(declaration.file, attribute.span.start, message);
     let unit = report.package.unit(declaration.file);
     let restriction = attribute
         .name(forest, unit.source.text())
