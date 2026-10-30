@@ -1,0 +1,233 @@
+{
+  "schema": 1,
+  "state": "Frozen before any reference/candidate execution; no implementation claim",
+  "owner": "LIB-111 PA30 ffi-closure and PA31 typed source authority; PA29 representation transport remains required",
+  "pin": "Rust 1.98.0 revision88d9e12ae178fab0fb5cc050a94da85685d449ea edition2024 x86_64-unknown-linux-gnu panic=abort overflow-checks=on",
+  "primary": {
+    "compiler/rustc_attr_parsing/src/attributes/codegen_attrs.rs:774-781": {
+      "file_sha256": "cadff1c5afe081e459f0105daa76d5ccf10a1ee6f3fd54d1443323f688fa7885",
+      "interval_sha256": "3e978f361a78e5b701184ae71fe15919209ba41e9b05774ba39ac6362b0a8543"
+    },
+    "compiler/rustc_abi/src/layout/ty.rs:230-246": {
+      "file_sha256": "73dfa52bf75382a12b6649492fa842bb160e2afa02eef5376b61ccca66387464",
+      "interval_sha256": "9f00aaebed2a2c321d22c7acb4799abcdda4e03448b1db645df7b20ec4887fea"
+    },
+    "compiler/rustc_target/src/callconv/x86_64.rs:188-199": {
+      "file_sha256": "023f4724c9a81c23df51af44f581026b12710ebfa7076ea1f7a1da1a7911016c",
+      "interval_sha256": "c435b2003bf9db093eb6e7a30d925719e07204c596573223f75d8cf1d74e78af"
+    },
+    "compiler/rustc_passes/src/check_attr.rs:1225-1247": {
+      "file_sha256": "6bb6c566adff5f1fa95e6d47b5a03b7a38a01d5a7b8e7d9eb82eda8a0505abf1",
+      "interval_sha256": "c82c57003fbf7feedefbd88c6d30ce34c65d972e9ca5bcfd4d91c00173593717"
+    },
+    "library/core/src/ffi/va_list.rs:409-423": {
+      "file_sha256": "0eafd01f996b0e06644887453fb5229a0c4f359345888ce7fc554b157dbdb974",
+      "interval_sha256": "1b6023a51b4220188c875ef65213015c2ffae5662caa0b51b3b51c7607118f18"
+    }
+  },
+  "cases": {
+    "word.rs": {
+      "source_sha256": "7bb5962a426f9f1c8d2292ee3606a37fe0437e68a18268835e6f46bda793f0a5",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_types_required": 0
+    },
+    "rust-representation.rs": {
+      "source_sha256": "66d1d8ab1323fac52cc76cbce8d1900d5f91111ecdfb1860a41e12a412f7091d",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_types_required": 0
+    },
+    "generic.rs": {
+      "source_sha256": "c616e528c51ad56769082a60203f5677a2174b2960145aefa638bb79b76a8c14",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_types_required": 0
+    },
+    "packed.rs": {
+      "source_sha256": "976baaea634d8eb57b23a832d34715ac8b4c034571956e7fff696d02a92f8fa7",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_types_required": 0
+    },
+    "empty.rs": {
+      "source_sha256": "fc0789fa2164c20e848e6517ed036d7cc61ae72107bf2d8d0d00cb82c2ae30cf",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_types_required": 0
+    },
+    "original-const-shape.rs": {
+      "source_sha256": "09a26e82678aa3e9a3fb6f211e7d756e7a5e4133c8b7aa7caad76f8dadd33046",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_types_required": 0
+    },
+    "transparent-wrapper.rs": {
+      "source_sha256": "782e233fbc4f4b1c2b5b9f51e475be945d808ddd4e0859bf62afbc9fbcf228c2",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_types_required": 0
+    },
+    "rust-convention.rs": {
+      "source_sha256": "ac3b96253b37a19ddb2d9ee9562a9895072f984c1d3cf9eb125b4481602f0e61",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_types_required": 0
+    },
+    "missing-gate.rs": {
+      "source_sha256": "378222b337290f7aa48df3923ff66596a74eb1a9ed1c7307ea64d575659d5c10",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_types_required": 1
+    },
+    "list.rs": {
+      "source_sha256": "ef2c2d27622d61d09b1f3c384cd31c70be7604ce804776f7bacdae680f70b55a",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_types_required": 1
+    },
+    "value.rs": {
+      "source_sha256": "12084a7bf36e666f92cdd0ba2d861a14a72869d884fa5c0a884ea6d67d4026b6",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_types_required": 1
+    },
+    "duplicate.rs": {
+      "source_sha256": "e9b4b07cf78ebaf2b83857a9656e2e1db55ab75624427f825b62e7e3fb58ed08",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_types_required": 1
+    },
+    "unsafe-wrapper.rs": {
+      "source_sha256": "8965104f1c3873e05dc7f4436918e64c899d5ea63879dee320164eff2a658e42",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_types_required": 1
+    },
+    "function.rs": {
+      "source_sha256": "25f2ad88f9b53eb8634a98ed2d5e52f0baf66dcfd41e83312de3392338a3a5d9",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_types_required": 1
+    },
+    "enum.rs": {
+      "source_sha256": "22f2b2bd887967a1747e06de9613d44c7c8e6c3f47e714d31857794a44c04461",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_types_required": 1
+    },
+    "union.rs": {
+      "source_sha256": "7212f1364ea9dad05b9e0705d140d713da1c20476383bf6d1ae5fabee6603bfd",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_types_required": 1
+    },
+    "alias.rs": {
+      "source_sha256": "2e0732e50297681453dd0ccb8f51d38c38b8b23bc695e1cb13f158f05587524f",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_types_required": 1
+    },
+    "field.rs": {
+      "source_sha256": "c9ae0b131b228dc81b03cf16f317720e66d7e7e1e9dff94bad5cd214a4528380",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_types_required": 1
+    },
+    "transparent-conflict.rs": {
+      "source_sha256": "034e4466e36487e5d1c856316458a9c591091a57209d463e714ceccdad24ebb7",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_types_required": 1
+    },
+    "transparent-conflict-reversed.rs": {
+      "source_sha256": "ae04cc7382160e1c4dd896d3ac60fe409a8c1ced225e6c5f535d92fa07b8c06e",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_types_required": 1
+    },
+    "macro-allowance.rs": {
+      "source_sha256": "fbec02fc2883e5f1740b1f4c51875144d1f6e49250dcc05f7fed9da2b07f9efb",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_types_required": 0
+    },
+    "macro-without-allowance.rs": {
+      "source_sha256": "986b7eb3f01420f060a3fa5f07e6d63bf1fa709e670628ccc8e23f422ede11ee",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_types_required": 1
+    },
+    "cfg-removed.rs": {
+      "source_sha256": "72dbfdcf449cd27417bf83ce955cfee28ced6b2eba3c3a1f2c39b598de0e891b",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_types_required": 0
+    },
+    "native-export.rs": {
+      "source_sha256": "3c2c6c89f4ffb31394d934e19d1f88a278f9b695a3e0c1a41e782a96b832b012",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_types_required": 0,
+      "native": {
+        "observer": "native-export.c",
+        "observer_sha256": "1a156b3e4b46da1dc24801c5f962f6566ad5192b23ee168392227f546ad324e0",
+        "stdout": "7\n"
+      }
+    },
+    "native-return.rs": {
+      "source_sha256": "fc91b13b23eff3d96d38acce956149ded48a3cb83ec3d1c0d67d78bb1a393938",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_types_required": 0,
+      "native": {
+        "observer": "native-return.c",
+        "observer_sha256": "b88f514335c18b6aafb2c850f2e0804dcbd9311982428c21e56469e353cf0187",
+        "stdout": "7\n"
+      }
+    },
+    "native-wrapper.rs": {
+      "source_sha256": "f4230557836f03e45a553daa950cdce13bb117b2f45a65e19245abb0d734d17c",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_types_required": 0,
+      "native": {
+        "observer": "native-wrapper.c",
+        "observer_sha256": "1a156b3e4b46da1dc24801c5f962f6566ad5192b23ee168392227f546ad324e0",
+        "stdout": "7\n"
+      }
+    },
+    "native-caller-copy.rs": {
+      "source_sha256": "738c8a67e49d4aa980d8a1b197a0c7c9868c7f4fd61132237f98daac9deac9eb",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_types_required": 0,
+      "native": {
+        "observer": "native-caller-copy.c",
+        "observer_sha256": "f85f3d02a66b1a8ed8d79ea1c0412059bc444706ce5c7b66585b59d876fbea67",
+        "stdout": "16\n"
+      }
+    },
+    "native-register-pressure.rs": {
+      "source_sha256": "8d70c0cb57121dd5d95e12b67583d67006bc676603609d3cf87be2afead83fcf",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_types_required": 0,
+      "native": {
+        "observer": "native-register-pressure.c",
+        "observer_sha256": "2f752765398e2c34b95f3c2ace260dee60300e4c88033ca5c62d763955c216e5",
+        "stdout": "16\n"
+      }
+    }
+  },
+  "required": [
+    "word/rustc_attrs/struct/duplicate/transparent conflict/actual macro envelope",
+    "non-Rustic arguments use a pointer rather than SysV MEMORY stack byval",
+    "transparent-wrapper propagation preserves real layout and ownership",
+    "normal return classification is independent of argument type-cache entries",
+    "Rust convention, call safety, Copy/Drop/borrow and object snapshots remain authoritative",
+    "actual fixed and variadic arguments, register pressure, callback/import/export and full VaList graph",
+    "old metadata profiles must fence unencoded ABI intent; explicit authenticated representation transport required"
+  ],
+  "native_profile": "Exact original authored fixture, pinned Rust staticlib with its actual native-static-libs, independent C observer; candidate local library roots and same C observer required before metadata qualification"
+}

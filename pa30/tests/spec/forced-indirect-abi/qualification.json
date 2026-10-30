@@ -1,0 +1,21 @@
+{
+  "state": "Partial independent reference qualification; no candidate implementation or qualification",
+  "source_contract_sha256": "889ee3f732245334278b3b7ac338b566dd380d9209a968d7ae4d57d84b3f8b2b",
+  "supported_reference_receipt": {
+    "path": "obj/parallel/forced-indirect-abi-v1/reference-supported-v2/receipt.json",
+    "sha256": "b67ee04518e01483b1f93ff8f54e52e6a257c043171f3c29232385926961317d",
+    "metadata_outcomes": 28,
+    "object_outcomes": 27,
+    "native_programs": 4
+  },
+  "unqualified_required": [
+    "native-return object emission: pinned rustc ICE, original expected success retained",
+    "native-return native7: no executable oracle because of the same ICE"
+  ],
+  "original_failure": {
+    "path": "obj/parallel/forced-indirect-abi-v1/reference-v1/receipt.json",
+    "sha256": "44656a07c7e2fb63f11004442eb9f1ae37f5a615157393391b3a62220f9aa7c8",
+    "diagnostic_index_sha256": "160781a0e2a6301512f5a133b9a9eb901ed1c2962022be32cb0674c34679bc46"
+  },
+  "candidate": "All positive and negative source outcomes, typed ABI/owner/payment/scaling controls, native comparisons and authenticated representation transport remain required; no generated oracle or full-PA claim"
+}
