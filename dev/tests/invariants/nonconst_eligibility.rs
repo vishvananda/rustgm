@@ -127,13 +127,13 @@ fn check_default_entries(report: &Report, facts: &mut Declarations) -> TestResul
     let instance = crate::types::instance::Instance::new(&facts.types, callable)?;
     let execution = facts.check_const_default(report, instance)?;
     let function = facts.functions[facts.function_indices[&definition]];
-    let mut original = crate::body::ir::Body::new(
+    let mut original = crate::body::ir::Body::original(
         crate::body::ir::Owner::Function {
             definition,
             signature: function.signature,
             execution: None,
         },
-        function.body.ok_or("actual default source")?,
+        function.body.ok_or("actual default source")?.into(),
         crate::types::TypeId::UNIT,
     );
     assert!(
@@ -425,7 +425,7 @@ fn ordinary_default_indexes_scale() -> TestResult {
             prepared,
         )?;
         let work = facts.body_work.canonical_steps - before;
-        let (_, bytes) =
+        let (_, bytes, ..) =
             super::super::source_contract_storage(&facts).ok_or("ordinary header payments")?;
         println!("ordinary default indexes width={width} work={work} bytes={bytes}");
         if let Some((old_work, old_bytes)) = previous {
