@@ -14,6 +14,15 @@ mod non_type_enclosing;
 mod originals;
 pub(crate) use originals::{anonymous as original_anonymous, initializer as original_initializer};
 
+/// Imported originals already number their own variables; reuse the ordinary
+/// contract frontier without borrowing a local source namespace.
+pub(in crate::body) fn imported_region_frontier(
+    facts: &Declarations,
+    contract: &Contract,
+) -> Result<u32, &'static str> {
+    callers::first_region(facts, contract, false)
+}
+
 /// Borrow the same actual member identity used by concrete operand dispatch.
 pub(crate) fn trait_function(facts: &Declarations, value: &super::ir::Value) -> bool {
     matches!(value.kind, Rvalue::Function(id) if facts.associated.trait_owner(id).is_some())

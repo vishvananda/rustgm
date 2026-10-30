@@ -93,6 +93,16 @@ fn completed_selection_reconstructs_full_generic_and_late_bound_callables() -> R
                 goal.bound.trait_parts().map(|p| p.0),
                 original.bound.trait_parts().map(|p| p.0)
             );
+            let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(call.original) else {
+                return Err("actual requested trait member".into());
+            };
+            for recorded in [Some(original), None] {
+                assert_eq!(
+                    requested_callable(&mut facts, DefId(item.0), call.actual, recorded, &pay)?,
+                    call.original,
+                    "real calls and reified items retain the complete formal order"
+                );
+            }
         }
         assert!(work.get() > 0);
         assert!(bytes.get() > 0);
@@ -136,6 +146,7 @@ fn changed_arguments_owner_source_store_and_failed_payment_cannot_reuse_a_target
             })
             .ok_or("real unrelated declaration with the same signature")?;
         assert_ne!(target, Some(unrelated));
+        reverse_opponents(&mut facts, call, wrong, unrelated)?;
         match opponent {
             0 => {
                 let selected = facts
@@ -193,6 +204,61 @@ fn changed_arguments_owner_source_store_and_failed_payment_cannot_reuse_a_target
     assert_eq!(facts.types.node_table_allocation().bytes, before);
     Ok(())
 }
+fn reverse_opponents(
+    facts: &mut Declarations,
+    call: Call,
+    wrong: TypeId,
+    unrelated: TypeId,
+) -> Result {
+    let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(call.original) else {
+        return Err("actual original trait member".into());
+    };
+    let goal = callable_requirement(facts, call.original, &|_, _| Ok(()))?
+        .ok_or("actual complete method goal")?;
+    for selected in [wrong, unrelated] {
+        assert!(
+            requested_callable(facts, DefId(item.0), selected, Some(goal), &|_, _| Ok(())).is_err()
+        );
+    }
+    let changed = Predicate {
+        ty: TypeId::primitive(Primitive::Bool),
+        ..goal
+    };
+    assert!(
+        requested_callable(
+            facts,
+            DefId(item.0),
+            call.actual,
+            Some(changed),
+            &|_, _| Ok(())
+        )
+        .is_err()
+    );
+    assert!(
+        requested_callable(facts, DefId(u32::MAX), call.actual, Some(goal), &|_, _| Ok(
+            ()
+        ))
+        .is_err()
+    );
+    let attempted = Cell::new(0usize);
+    for _ in 0..2 {
+        assert!(
+            requested_callable(
+                facts,
+                DefId(item.0),
+                call.actual,
+                Some(goal),
+                &|steps, _| {
+                    attempted.set(attempted.get().saturating_add(steps));
+                    Err("denied exact structural query")
+                }
+            )
+            .is_err()
+        );
+    }
+    assert!(attempted.get() >= 2);
+    Ok(())
+}
 #[test]
 fn repeated_source_calls_pay_linear_reconstruction_without_a_new_lookup_search() -> Result {
     let mut previous = None;
@@ -210,13 +276,23 @@ fn repeated_source_calls_pay_linear_reconstruction_without_a_new_lookup_search()
         let bytes = Cell::new(0usize);
         let selections = facts.dispatch_dependencies.work.selections;
         for call in &calls {
+            let pay = |s, b| {
+                work.set(work.get() + s);
+                bytes.set(bytes.get() + b);
+                Ok(())
+            };
             assert_eq!(
-                selected_callable(&mut facts, call.source, call.original, &|s, b| {
-                    work.set(work.get() + s);
-                    bytes.set(bytes.get() + b);
-                    Ok(())
-                })?,
+                selected_callable(&mut facts, call.source, call.original, &pay)?,
                 Some(call.actual)
+            );
+            let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(call.original) else {
+                return Err("actual complete trait member".into());
+            };
+            let goal = callable_requirement(&mut facts, call.original, &pay)?
+                .ok_or("actual full caller goal")?;
+            assert_eq!(
+                requested_callable(&mut facts, DefId(item.0), call.actual, Some(goal), &pay)?,
+                call.original
             );
         }
         assert_eq!(facts.dispatch_dependencies.work.selections, selections);

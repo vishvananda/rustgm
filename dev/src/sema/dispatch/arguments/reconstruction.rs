@@ -8,6 +8,101 @@ use crate::{
 };
 
 impl Arguments {
+    pub(in crate::sema::dispatch) fn requested_paid(
+        &self,
+        facts: &mut Declarations,
+        member: DefId,
+        goal: crate::types::parameters::predicates::Predicate,
+        pay: Payment<'_>,
+    ) -> Result<TypeId, &'static str> {
+        pay(8, 0)?;
+        let owner = facts
+            .associated
+            .trait_owner(member)
+            .ok_or("requested method has no actual trait owner")?;
+        let (application, _) = goal
+            .bound
+            .trait_parts()
+            .ok_or("requested method has no complete trait application")?;
+        let application = facts
+            .types
+            .trait_application(application)
+            .ok_or("requested method lost its actual trait application")?;
+        let schema = facts
+            .associated
+            .schema(owner)
+            .ok_or("requested trait has no Self schema")?;
+        if application.item != ItemId(owner.0) || schema.captures != 0 {
+            return Err(
+                "requested method changed its trait or requires inherited lifetime mapping",
+            );
+        }
+        let self_type = schema.self_type;
+        let template = facts
+            .lifetimes
+            .callables
+            .get(ItemId(member.0))
+            .ok_or("requested method has no complete callable template")?;
+        let parameters = facts
+            .lifetimes
+            .callables
+            .generic_parameters(ItemId(member.0))
+            .ok_or("requested method lost its complete formal order")?;
+        if template.parameters as usize != self.regions.len() {
+            return Err("requested method changed its complete early lifetime arity");
+        }
+        let count = self.regions.len().saturating_add(parameters.len());
+        pay(
+            count.saturating_add(self.bindings.len()),
+            Growth::vector::<Argument>(0, 0, count).bytes,
+        )?;
+        let own = self
+            .bindings
+            .iter()
+            .filter(|(id, _)| {
+                facts
+                    .types
+                    .parameter(*id)
+                    .is_some_and(|p| p.owner == ItemId(self.method.0))
+            })
+            .count();
+        let offset = self.bindings.len().saturating_sub(own);
+        let mut arguments = Vec::with_capacity(count);
+        arguments.extend(self.regions.iter().copied().map(Argument::Lifetime));
+        for &id in parameters {
+            pay(8, 0)?;
+            let parameter = facts
+                .types
+                .parameter(id)
+                .ok_or("requested method has a foreign formal")?;
+            arguments.push(
+                if facts.types.kind(self_type) == Some(Kind::Parameter(id)) {
+                    Argument::Type(goal.ty)
+                } else if parameter.owner == ItemId(owner.0) {
+                    trait_argument(facts, owner, id, parameter.index, application.arguments)?
+                } else if parameter.owner == ItemId(member.0) {
+                    let (actual, value) = *self
+                        .bindings
+                        .get(offset.saturating_add(parameter.index as usize))
+                        .ok_or("selected method lost its own formal suffix")?;
+                    let actual = facts
+                        .types
+                        .parameter(actual)
+                        .ok_or("selected method lost its own formal")?;
+                    if actual.owner != ItemId(self.method.0)
+                        || actual.index != parameter.index
+                        || actual.kind != parameter.kind
+                    {
+                        return Err("selected and requested own method formals do not correspond");
+                    }
+                    value
+                } else {
+                    return Err("requested method has a foreign inherited formal owner");
+                },
+            );
+        }
+        instantiate_paid(facts, member, &arguments, pay)
+    }
     pub(in crate::sema::dispatch) fn new_paid(
         facts: &Declarations,
         callable: TypeId,
@@ -97,6 +192,29 @@ impl Arguments {
         let arguments = self.target_arguments(facts, implementation, selected)?;
         instantiate_paid(facts, method, &arguments, pay)
     }
+}
+fn trait_argument(
+    facts: &Declarations,
+    owner: DefId,
+    id: ParameterId,
+    index: u32,
+    actuals: GenericArgs,
+) -> Result<Argument, &'static str> {
+    let formal = facts
+        .generics
+        .parameters
+        .get(&owner)
+        .and_then(|parameters| parameters.get(index as usize))
+        .ok_or("requested trait lost its actual written formal")?;
+    if !matches!(formal.argument, Argument::Type(ty) if facts.types.kind(ty) == Some(Kind::Parameter(id)))
+    {
+        return Err("requested trait changed its actual formal identity or kind");
+    }
+    facts
+        .types
+        .arguments(actuals)
+        .and_then(|mut args| args.nth(index as usize))
+        .ok_or("requested trait lost a complete actual argument")
 }
 fn instantiate_paid(
     facts: &mut Declarations,

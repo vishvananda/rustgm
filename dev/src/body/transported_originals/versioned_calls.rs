@@ -16,6 +16,10 @@ use crate::{
     types::{ItemId, Kind, TypeId, arguments::Argument, parameters::environment::Environment},
 };
 use std::{cell::Cell, sync::Arc};
+mod applied_members;
+#[cfg(test)]
+#[path = "../../../tests/invariants/envelope_payments.rs"]
+mod tests;
 #[derive(Clone, Copy)]
 struct Member {
     owner: DeclarationRef,
@@ -27,11 +31,21 @@ pub(super) struct Index<'a> {
     members: HashMap<DeclarationRef, Member>,
     bytes: usize,
 }
-pub(super) struct Pending {
-    member: DefId,
-    subject: TypeId,
-    signature: TypeId,
-    selected: TypeId,
+#[derive(Clone, Copy, Default)]
+pub(super) enum Pending {
+    #[default]
+    Unused,
+    Primitive {
+        member: DefId,
+        subject: TypeId,
+        signature: TypeId,
+        selected: TypeId,
+    },
+    Applied {
+        member: DefId,
+        selected: TypeId,
+        recorded: Option<crate::types::parameters::predicates::Predicate>,
+    },
 }
 impl<'a> Index<'a> {
     pub(super) fn new(
@@ -104,6 +118,9 @@ impl<'a> Index<'a> {
         if !std::ptr::eq(&raw const *self.rows, &raw const *view.rows()) {
             return Err("selected source member index belongs to another actual descriptor");
         }
+        if self.rows.descriptor().profile().conversion_roles() {
+            return applied_members::prepare(self, view, facts, body, work);
+        }
         let mut pending = Vec::new();
         for (record, value) in view.raw().values.iter().zip(&body.values) {
             work.charge(1)?;
@@ -132,7 +149,7 @@ impl<'a> Index<'a> {
             {
                 return Err("selected method requires its exact closed primitive trait signature");
             }
-            pending.push(Pending {
+            pending.push(Pending::Primitive {
                 member: definition,
                 subject: view.ty(member.subject, &mut work.steps)?,
                 signature,
@@ -149,39 +166,43 @@ pub(super) fn prove(
     facts: &mut Declarations,
     environment: Arc<Environment>,
     pending: &[Pending],
+    body: &Body,
+    contract: &crate::body::regions::Contract,
     work: &mut ImportedOriginals,
+    allowance: &super::decoded_bodies::Allowance,
 ) -> Result<(), String> {
     if pending.is_empty() {
         return Ok(());
     }
-    let steps = Cell::new(0_usize);
-    let bytes = Cell::new(0_usize);
-    let base = work.retained_bytes();
-    let pay = |count, allocation| {
-        steps.set(steps.get().saturating_add(count));
-        bytes.set(bytes.get().saturating_add(allocation));
-        if work.steps.saturating_add(steps.get()) > crates::MAX_COMPONENTS
-            || base.saturating_add(bytes.get()) > crates::MAX_BYTES
-        {
-            return Err("selected source trait proof exceeds its actual work/storage envelope");
-        }
-        Ok(())
-    };
-    let result = (|| {
-        let mut dispatcher = Dispatcher::in_body(&facts.types, 0, 1, environment, &pay)?;
-        for goal in pending {
-            let arguments = facts
-                .types
-                .intern_arguments_observed::<true>(&[Argument::Type(goal.subject)], &pay)?;
-            let requested = facts.types.intern_observed::<true>(
-                Kind::FunctionItem {
-                    item: ItemId(goal.member.0),
-                    arguments,
-                    signature: goal.signature,
-                },
-                &pay,
+    paying(work, allowance, |pay| {
+        pay(pending.len(), 0)?;
+        let applied = pending.iter().any(|p| matches!(p, Pending::Applied { .. }));
+        let (universals, first) = if applied {
+            if contract.key != body.key() || contract.source != body.source {
+                return Err("selected source dispatch changed its actual body contract".into());
+            }
+            pay(
+                contract
+                    .obligations
+                    .len()
+                    .saturating_add(contract.proofs.len())
+                    .saturating_add(1),
+                0,
             )?;
-            if dispatcher.select(facts, requested)? != goal.selected {
+            (
+                contract.universals,
+                crate::body::dispatch::imported_region_frontier(facts, contract)?,
+            )
+        } else {
+            (0, 1)
+        };
+        let mut dispatcher =
+            Dispatcher::in_body(&facts.types, universals, first, environment, &pay)?;
+        for goal in pending {
+            let Some((requested, selected)) = request(facts, *goal, &pay)? else {
+                continue;
+            };
+            if dispatcher.select(facts, requested)? != selected {
                 return Err(
                     "fresh source trait dispatch selected another implementation function".into(),
                 );
@@ -193,7 +214,80 @@ pub(super) fn prove(
             );
         }
         Ok(())
-    })();
+    })
+}
+
+fn paying<T>(
+    work: &mut ImportedOriginals,
+    allowance: &super::decoded_bodies::Allowance,
+    query: impl FnOnce(retained::Payment<'_>) -> Result<T, String>,
+) -> Result<T, String> {
+    let steps = Cell::new(0_usize);
+    let bytes = Cell::new(0_usize);
+    let base = work.retained_bytes();
+    let pay = |count, allocation| {
+        steps.set(steps.get().saturating_add(count));
+        bytes.set(bytes.get().saturating_add(allocation));
+        if allowance
+            .header_work
+            .saturating_add(work.steps)
+            .saturating_add(steps.get())
+            > crates::MAX_COMPONENTS
+            || allowance
+                .header_bytes
+                .saturating_add(base)
+                .saturating_add(bytes.get())
+                > crates::MAX_BYTES
+            || base.saturating_add(bytes.get()) > allowance.templates
+        {
+            return Err("selected source trait proof exceeds its actual work/storage envelope");
+        }
+        Ok(())
+    };
+    let result = query(&pay);
     work.steps = work.steps.saturating_add(steps.get());
+    // Canonical interning survives the query. Retain its prepaid allocation
+    // bound even on failure; temporary argument/dispatcher scratch deliberately
+    // remains a conservative part of the same finite storage envelope.
+    work.payload = work.payload.saturating_add(bytes.get());
     result
+}
+
+fn request(
+    facts: &mut Declarations,
+    goal: Pending,
+    pay: retained::Payment<'_>,
+) -> Result<Option<(TypeId, TypeId)>, &'static str> {
+    Ok(Some(match goal {
+        Pending::Unused => return Ok(None),
+        Pending::Primitive {
+            member,
+            subject,
+            signature,
+            selected,
+        } => {
+            let arguments = facts
+                .types
+                .intern_arguments_observed::<true>(&[Argument::Type(subject)], &|s, b| pay(s, b))?;
+            (
+                facts.types.intern_observed::<true>(
+                    Kind::FunctionItem {
+                        item: ItemId(member.0),
+                        arguments,
+                        signature,
+                    },
+                    &|s, b| pay(s, b),
+                )?,
+                selected,
+            )
+        }
+        Pending::Applied {
+            member,
+            selected,
+            recorded,
+        } => (
+            crate::sema::dispatch::requested_callable(facts, member, selected, recorded, pay)?,
+            selected,
+        ),
+    }))
 }

@@ -62,5 +62,19 @@ pub(super) fn prepare<'rows, P: ports::OwnedPort<'rows>>(
             }
         }
     }
+    if rows.descriptor().profile().conversion_roles() {
+        let original = rows
+            .originals
+            .get(body.0 as usize)
+            .filter(|original| original.body == body)
+            .ok_or_else(|| error("ordinary requests lost their actual original body"))?;
+        work.charge(original.calls.len().saturating_add(1))?;
+        for call in &original.calls {
+            if let Some(application) = call.method {
+                Port::require_context(&port.port, store, work)?;
+                translation::application(port, applications, application, store, work)?;
+            }
+        }
+    }
     Ok(())
 }

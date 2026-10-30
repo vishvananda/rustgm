@@ -134,7 +134,7 @@ impl Original<'_> {
             Mapping::Selected { owner, .. } => owner.descriptor(),
         }
     }
-    pub(super) fn require_store(&self, store: &crate::types::Store) -> Result<(), &'static str> {
+    pub(crate) fn require_store(&self, store: &crate::types::Store) -> Result<(), &'static str> {
         match &self.mapping {
             Mapping::Ordinary { graph, .. } => graph.require_store(store),
             Mapping::Selected { owner, .. } => owner.require_store(store),

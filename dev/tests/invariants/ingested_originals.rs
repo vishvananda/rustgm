@@ -486,6 +486,18 @@ fn all_original_type_roots(report: &Report, facts: &mut Declarations) -> Result 
             let ty = view.ty(root, &mut steps)?;
             assert!(facts.types.kind(ty).is_some());
         }
+        for call in &raw.calls {
+            if let Some(application) = call.method {
+                let goal = view.predicate(
+                    &s::Requirement::Trait {
+                        application,
+                        effect: crate::support::constness::Constness::Ordinary,
+                    },
+                    &mut steps,
+                )?;
+                assert!(goal.bound.trait_parts().is_some());
+            }
+        }
     }
     assert!(
         saw_signature,

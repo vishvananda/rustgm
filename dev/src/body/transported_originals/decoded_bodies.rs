@@ -59,7 +59,9 @@ pub(super) fn append(
             allowance.header_work = current.0;
             allowance.header_bytes = current.1;
         }
-        let original = build(context, facts, scratch, originals, definition, &selected)?;
+        let original = build(
+            context, facts, scratch, originals, definition, &selected, &allowance,
+        )?;
         let source = original.template.body.source;
         let retained = originals
             .retained_bytes()
@@ -89,6 +91,7 @@ fn build(
     work: &mut ImportedOriginals,
     definition: crate::resolve::model::DefId,
     selected: &super::versioned_calls::Index<'_>,
+    allowance: &Allowance,
 ) -> Result<Original, Error> {
     let report = context.report;
     let (body, contract, environment, pending) = {
@@ -120,8 +123,16 @@ fn build(
             pending,
         )
     };
-    super::versioned_calls::prove(facts, Arc::clone(&environment), &pending, work)
-        .map_err(|e| report.body_error(body.source, e))?;
+    super::versioned_calls::prove(
+        facts,
+        Arc::clone(&environment),
+        &pending,
+        &body,
+        &contract,
+        work,
+        allowance,
+    )
+    .map_err(|e| report.body_error(body.source, e))?;
     finish(report, facts, scratch, body, contract, environment)
 }
 pub(super) fn finish(

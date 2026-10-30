@@ -263,3 +263,34 @@ pub(crate) fn callable_requirement(
     fold.predicate_charged(&mut facts.types, predicate, &|s, b| pay(s, b))
         .map(Some)
 }
+
+/// Reconstruct structural request data for a fresh dispatch proof. Neither the
+/// selected item nor its recorded goal supplies implementation permission.
+pub(crate) fn requested_callable(
+    facts: &mut Declarations,
+    member: DefId,
+    selected: TypeId,
+    recorded: Option<Predicate>,
+    pay: crate::support::retained::Payment<'_>,
+) -> Result<TypeId, &'static str> {
+    let goal = callable_requirement(facts, selected, pay)?
+        .ok_or("selected callable has no actual implementation goal")?;
+    if recorded.is_some_and(|recorded| !same_goal(recorded, goal)) {
+        return Err("selected callable changed its complete recorded method goal");
+    }
+    let arguments = super::arguments::Arguments::new_paid(facts, selected, pay)?;
+    let requested = arguments.requested_paid(facts, member, goal, pay)?;
+    let actual = callable_requirement(facts, requested, pay)?
+        .ok_or("requested callable lost its actual trait goal")?;
+    let signature = |ty| match facts.types.kind(ty) {
+        Some(Kind::FunctionItem { signature, .. }) => Some(signature),
+        _ => None,
+    };
+    if !same_goal(actual, goal) || signature(requested) != signature(selected) {
+        return Err("requested callable changed its complete goal or applied signature");
+    }
+    Ok(requested)
+}
+fn same_goal(a: Predicate, b: Predicate) -> bool {
+    a.ty == b.ty && a.bound.trait_parts().map(|p| p.0) == b.bound.trait_parts().map(|p| p.0)
+}
