@@ -74,7 +74,16 @@ fn method_abi_must_match_for_foreign_and_rust_declarations() -> Result {
             unsafe_,
             convention: changed,
         })?;
-        fixture.valid(false)?;
+        let definitions = Definitions::new(&fixture.facts, fixture.predicate, &[])?;
+        let result = check(
+            &mut fixture.facts,
+            fixture.owner,
+            fixture.predicate,
+            fixture.expected,
+            fixture.actual,
+            &definitions,
+        );
+        assert_eq!(result.err().as_deref(), Some("incompatible types"));
     }
     Ok(())
 }
