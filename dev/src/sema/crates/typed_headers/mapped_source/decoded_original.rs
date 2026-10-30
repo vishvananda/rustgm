@@ -167,7 +167,6 @@ impl Graph {
             }
         })
     }
-
 }
 impl Original<'_> {
     pub(crate) fn numbered(&self) -> bool {
