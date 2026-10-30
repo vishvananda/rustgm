@@ -251,7 +251,7 @@ fn validate_marker(
 }
 impl Declarations {
     /// Indexed completed classification, never a const-call or body permission.
-    pub(in crate::sema) fn nonconst_trait_member(
+    pub(crate) fn nonconst_trait_member(
         &self,
         definition: DefId,
     ) -> Result<bool, &'static str> {
