@@ -10,10 +10,52 @@ pub(super) enum Progress {
     Inferred,
 }
 
+/// Input publication and observed hints belong to the same retained query.
+/// Observing a hint alone cannot authorize exporting any caller input.
+#[derive(Clone, Copy, Default)]
+pub(super) enum Publication {
+    #[default]
+    Fresh,
+    HintsObserved,
+    Published,
+    PublishedWithHints,
+}
+impl Publication {
+    pub fn published(self) -> bool {
+        matches!(self, Self::Published | Self::PublishedWithHints)
+    }
+    pub fn has_hints(self) -> bool {
+        matches!(self, Self::HintsObserved | Self::PublishedWithHints)
+    }
+    pub fn observe(&mut self, hinted: bool) {
+        if hinted {
+            *self = if self.published() {
+                Self::PublishedWithHints
+            } else {
+                Self::HintsObserved
+            };
+        }
+    }
+    pub fn publish(&mut self) {
+        *self = if self.has_hints() {
+            Self::PublishedWithHints
+        } else {
+            Self::Published
+        };
+    }
+    pub fn resume(&mut self) {
+        *self = if self.has_hints() {
+            Self::HintsObserved
+        } else {
+            Self::Fresh
+        };
+    }
+}
+
 pub(super) struct Query {
     pub reuse: Option<super::completed_proofs::Active>,
     pub refining: bool,
-    pub inferred: bool,
+    pub publication: Publication,
     pub suspended: Vec<Option<Frame>>,
     pub scopes: Option<Box<super::scopes::Scopes>>,
     pub universal: Option<Box<super::input_universe::InputUniverse>>,
@@ -75,7 +117,7 @@ impl<'a> Search<'a> {
             query: Query {
                 reuse: None,
                 refining: false,
-                inferred: false,
+                publication: Publication::Fresh,
                 suspended: Vec::new(),
                 scopes: None,
                 universal: None,
@@ -178,7 +220,7 @@ impl<'a> Search<'a> {
                         child.inference = super::frames::Inference::Committed;
                         stack.push(child);
                         self.query.stack = stack;
-                        self.query.inferred = true;
+                        self.query.publication.publish();
                         return Ok(Progress::Inferred);
                     }
                 }
@@ -241,7 +283,7 @@ impl<'a> Search<'a> {
     }
 
     pub(super) fn resume_at(&mut self, first: u32) -> Result<(), String> {
-        if self.query.waiting.is_none() && !self.query.inferred {
+        if self.query.waiting.is_none() && !self.query.publication.published() {
             return Err("trait selection is not waiting for a header".into());
         }
         let previous = self.query.allocations.end();
@@ -289,10 +331,10 @@ impl<'a> Search<'a> {
         facts: &mut Declarations,
         caller: &mut super::Context,
     ) -> Result<(), String> {
-        if self.query.inferred {
+        if self.query.publication.published() {
             let frame = self.query.stack.first_mut().ok_or("missing partial root")?;
             frame.refresh(facts, caller)?;
-            self.query.inferred = false;
+            self.query.publication.resume();
         }
         Ok(())
     }

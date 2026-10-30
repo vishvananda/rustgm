@@ -127,6 +127,20 @@ pub(super) trait Port<'rows, B: Budget>: sealed::Sealed {
         row: s::FunctionApplicationRef,
         budget: &mut B,
     ) -> Result<Dependency, Error>;
+    fn mapped_applications(&self) -> bool {
+        false
+    }
+    fn map_application(
+        &mut self,
+        _: &mut Store,
+        _: s::Type,
+        _: &dyn Fn(g::TypeRef) -> Result<TypeId, Error>,
+        _: &mut B,
+    ) -> Result<TypeId, Error> {
+        Err(error(
+            "source application requires its actual callable producer",
+        ))
+    }
     fn require_context(&self, _: &Store, _: &mut B) -> Result<(), Error> {
         Ok(())
     }
@@ -303,8 +317,28 @@ impl<M: Storage> Worklist<M> {
             if let s::Type::FunctionItem(application) | s::Type::ApplicationSignature(application) =
                 row
             {
-                let dependency = port.application(application, budget)?;
-                return Ok(self.block(dependency));
+                if !port.mapped_applications() {
+                    let dependency = port.application(application, budget)?;
+                    return Ok(self.block(dependency));
+                }
+                let rows = port.rows();
+                let application = rows
+                    .function_applications
+                    .get(application.0 as usize)
+                    .ok_or_else(|| error("source application lost its actual argument row"))?;
+                let arguments = application
+                    .arguments
+                    .slice(&rows.arguments)
+                    .map_err(error)?;
+                while matches!(
+                    arguments.get(self.children[index]),
+                    Some(s::Argument::Region(_))
+                ) {
+                    budget.charge(1)?;
+                    self.children[index] = self.children[index]
+                        .checked_add(1)
+                        .ok_or_else(|| error("source application argument cursor overflow"))?;
+                }
             }
             let child = next(row, self.children[index], port.rows())?;
             self.children[index] = self.children[index]
@@ -405,9 +439,9 @@ impl<M: Storage> Worklist<M> {
                 .map(Demand::Ready);
             }
             s::Type::FunctionItem(_) | s::Type::ApplicationSignature(_) => {
-                return Err(error(
-                    "source application recipe escaped its explicit profile",
-                ));
+                return port
+                    .map_application(store, row, &|root| self.child(root), budget)
+                    .map(Demand::Ready);
             }
         };
         store.intern(kind).map(Demand::Ready).map_err(error)
@@ -441,9 +475,26 @@ fn next(
                 parameters.get(cursor).copied()
             }
         }
-        s::Type::FunctionItem(_) | s::Type::ApplicationSignature(_) => Err(error(
-            "source callable application needs its wider explicit remap profile",
-        ))?,
+        s::Type::FunctionItem(reference) | s::Type::ApplicationSignature(reference) => {
+            let application = rows
+                .function_applications
+                .get(reference.0 as usize)
+                .ok_or_else(|| error("source callable application has no actual argument row"))?;
+            match application
+                .arguments
+                .slice(&rows.arguments)
+                .map_err(error)?
+                .get(cursor)
+            {
+                Some(s::Argument::Type(root)) => Some(*root),
+                Some(s::Argument::Region(_)) => {
+                    return Err(error(
+                        "source application did not advance its regional argument",
+                    ));
+                }
+                None => None,
+            }
+        }
     })
 }
 

@@ -1,18 +1,19 @@
 //! Numeric fallback consumes one dependency-ready frontier, then yields to proof work.
 use super::{Context, Dependency, Error, Fallback, State, Storage, Visit, Watch, WatchId};
+use crate::support::hash::HashMap;
 use crate::support::retained::Growth;
 use crate::types::infer::{Domain, TermId, Value};
 
 impl Watch {
     fn numeric_ready(&self) -> bool {
-        self.fallback.enabled() && self.walking == 0 && self.numeric != 0 && self.blockers == 0
+        self.fallback.seeds() && self.walking == 0 && self.numeric != 0 && self.blockers == 0
     }
 }
 impl Storage {
     pub(super) fn disable_fallback(&mut self, id: WatchId) {
         let watch = &mut self.watches[id.0 as usize];
         if watch.fallback.enabled() {
-            self.fallback_watches -= 1;
+            self.fallback_watches -= usize::from(watch.fallback.seeds());
             watch.fallback = Fallback::Disabled;
         }
     }
@@ -39,18 +40,14 @@ impl Storage {
         context: &mut Context,
         id: WatchId,
     ) -> Result<(), Error> {
-        if !self.watches[id.0 as usize].fallback.enabled()
-            || self.watches[id.0 as usize].walking != 0
+        if !self.watches[id.0 as usize].fallback.seeds() || self.watches[id.0 as usize].walking != 0
         {
             return Ok(());
         }
-        let open = self.watches[id.0 as usize].numeric_ready();
-        let was_open = std::mem::replace(&mut self.watches[id.0 as usize].numeric_open, open);
-        self.queue_numeric(context, id)?;
-        if !open || was_open {
-            return Ok(());
-        }
-        self.notify_numeric_peers(context, id)
+        // Queue this changed watch. If it can default a shared root, ordinary
+        // dependency wakeups deliver that binding to every peer. Broadcasting
+        // on each registration would visit a shared fanout quadratically.
+        self.queue_numeric(context, id)
     }
     fn notify_numeric_peers(&mut self, context: &mut Context, id: WatchId) -> Result<(), Error> {
         // A previously blocked shared numeric leaf may now be eligible. Only
@@ -80,7 +77,9 @@ impl Storage {
             .watches
             .get(id.0 as usize)
             .ok_or(Error::InvalidIdentity)?;
-        if watch.fallback.enabled() {
+        if watch.fallback.seeds() && !watch.numeric_ready() {
+            // Only a blocked watch can have kept an otherwise ready peer off
+            // the numeric queue. Ready cancellation supplies no new binding.
             self.notify_numeric_peers(context, id)?;
         }
         self.disable_fallback(id);
@@ -159,51 +158,101 @@ impl Storage {
         }
         Ok(())
     }
+    fn numeric_root(&self, context: &mut Context, term: TermId) -> Result<Option<bool>, Error> {
+        let dependency = Dependency::Type(term);
+        let mut float32 = false;
+        if let Some(waiters) = self.waiting.get(&dependency) {
+            for &other in waiters {
+                context.step()?;
+                let watch = &self.watches[other.0 as usize];
+                if watch.seen.get(&dependency) != Some(&Visit::Numeric) {
+                    continue;
+                }
+                if watch.fallback.seeds() && !watch.numeric_ready() {
+                    return Ok(None);
+                }
+                if let Some(argument) = watch.fallback.preferred()
+                    && context.root(argument)? == term
+                {
+                    float32 = true;
+                }
+            }
+        }
+        Ok(Some(float32))
+    }
+    fn numeric_seeds(
+        &self,
+        context: &mut Context,
+        id: WatchId,
+        inspected: &mut HashMap<TermId, Option<bool>>,
+    ) -> Result<Option<Vec<(TermId, bool)>>, Error> {
+        let mut seeds = Vec::new();
+        for (&dependency, &visit) in &self.watches[id.0 as usize].seen {
+            context.step()?;
+            if visit != Visit::Numeric {
+                continue;
+            }
+            let Dependency::Type(term) = dependency else {
+                return Err(Error::InvalidIdentity);
+            };
+            let state = if let Some(&known) = inspected.get(&term) {
+                known
+            } else {
+                self.numeric_root(context, term)?
+            };
+            let Some(float32) = state else {
+                Self::remember_numeric(context, inspected, term, None)?;
+                for (term, preference) in seeds {
+                    Self::remember_numeric(context, inspected, term, Some(preference))?;
+                }
+                return Ok(None);
+            };
+            Self::prepay(
+                context,
+                Growth::vector::<(TermId, bool)>(seeds.len(), seeds.capacity(), 1),
+            )?;
+            seeds.push((term, float32));
+        }
+        Ok(Some(seeds))
+    }
+    fn remember_numeric(
+        context: &mut Context,
+        inspected: &mut HashMap<TermId, Option<bool>>,
+        term: TermId,
+        preference: Option<bool>,
+    ) -> Result<(), Error> {
+        context.step()?;
+        let growth = Growth::map::<TermId, Option<bool>>(inspected.len(), inspected.capacity(), 1);
+        if let std::collections::hash_map::Entry::Vacant(entry) = inspected.entry(term) {
+            Self::prepay(context, growth)?;
+            entry.insert(preference);
+        }
+        Ok(())
+    }
     pub(super) fn default_seed(&mut self, context: &mut Context) -> Result<bool, Error> {
         context.step()?;
         if self.has_pending_resolution() || self.equations.has_ready() {
             return Ok(false);
         }
+        // No bindings change during an unsuccessful sweep. Memoize inspected
+        // roots only after a blocked candidate, so failed shared frontiers are
+        // linear while an immediately successful frontier needs no extra map.
+        let mut inspected = HashMap::default();
         while let Some(id) = self.numeric_ready.pop_front() {
             context.step()?;
             self.watches[id.0 as usize].numeric_queued = false;
             if !self.watches[id.0 as usize].numeric_ready() {
                 continue;
             }
-            let mut seeds = Vec::new();
-            let mut blocked = false;
-            for (&dependency, &visit) in &self.watches[id.0 as usize].seen {
-                context.step()?;
-                if visit != Visit::Numeric {
-                    continue;
-                }
-                if let Some(waiters) = self.waiting.get(&dependency) {
-                    for &other in waiters {
-                        context.step()?;
-                        let watch = &self.watches[other.0 as usize];
-                        if watch.seen.get(&dependency) == Some(&Visit::Numeric)
-                            && !watch.numeric_ready()
-                        {
-                            blocked = true;
-                        }
-                    }
-                }
-                let Dependency::Type(term) = dependency else {
-                    return Err(Error::InvalidIdentity);
-                };
-                Self::prepay(
-                    context,
-                    Growth::vector::<TermId>(seeds.len(), seeds.capacity(), 1),
-                )?;
-                seeds.push(term);
-            }
-            if blocked {
+            let Some(seeds) = self.numeric_seeds(context, id, &mut inspected)? else {
                 continue;
-            }
-            for term in seeds {
+            };
+            drop(inspected);
+            for (term, float32) in seeds {
                 let root = context.root(term)?;
                 let primitive = match context.terms[root.0 as usize].value {
                     Value::Variable(Domain::Integer) => crate::types::Primitive::I32,
+                    Value::Variable(Domain::Float) if float32 => crate::types::Primitive::F32,
                     Value::Variable(Domain::Float) => crate::types::Primitive::F64,
                     _ => return Err(Error::InvalidIdentity),
                 };

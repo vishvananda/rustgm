@@ -198,7 +198,7 @@ fn obligation_read(read: &mut Input<'_, '_>) -> Result<s::Obligation, &'static s
             shorter: s::RegionRef(read.id()?),
         },
         tag @ (5..=8) => {
-            read.require_provided("unknown source ordinary obligation kind")?;
+            read.require_regional("unknown source ordinary obligation kind")?;
             match tag {
                 5 => s::InputKind::Variable {
                     slot: read.id()?,
@@ -230,7 +230,7 @@ fn normalization_write(out: &mut Writer, row: &s::NormalizationInput) -> Result<
 fn normalization_read(read: &mut Input<'_, '_>) -> Result<s::NormalizationInput, &'static str> {
     let site = site_read(read)?;
     let sources = read.list(crates::MAX_COMPONENTS, 5, site_read)?;
-    let owned = read.provided_list(crates::MAX_COMPONENTS, 8, Input::range)?;
+    let owned = read.regional_list(crates::MAX_COMPONENTS, 8, Input::range)?;
     Ok(s::NormalizationInput {
         site,
         sources,

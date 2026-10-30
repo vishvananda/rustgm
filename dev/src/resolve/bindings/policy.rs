@@ -66,6 +66,7 @@ pub(in crate::resolve) enum Feature {
     OffsetOfEnum = 49,
     DeprecatedSuggestion = 50,
     PreludeImport = 51,
+    RustdocInternals = 52,
 }
 
 impl Feature {
@@ -103,6 +104,9 @@ impl Request {
             "lang_items" => Self::Capability(Feature::LangItems),
             "intrinsics" => Self::Capability(Feature::Intrinsics),
             "rustc_attrs" => Self::Capability(Feature::RustcAttributes),
+            // This is a pinned language feature, not a library instability.
+            // Documentation metadata grants no type, body or execution authority.
+            "rustdoc_internals" => Self::Capability(Feature::RustdocInternals),
             "never_type" => Self::Capability(Feature::NeverType),
             "stmt_expr_attributes" => Self::Capability(Feature::ExpressionAttributes),
             "const_trait_impl" => Self::Capability(Feature::ConstTrait),

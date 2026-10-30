@@ -196,6 +196,19 @@ impl Source {
             modules,
         ))
     }
+    fn begin_module_conversions(
+        report: &Report,
+        facts: &mut Declarations,
+        checked: &Checked<'_>,
+        identity: &CrateIdentity,
+    ) -> Result<(Self, s::ModuleContractRows), &'static str> {
+        let mut stage = Stage::begin_module_conversions(report, facts, identity)?;
+        let modules = stage.module_contract_rows(report, facts)?;
+        Ok((
+            Self::begin_stage(facts, checked, stage, true, None)?,
+            modules,
+        ))
+    }
     pub(super) fn begin_publication(
         report: &Report,
         facts: &mut Declarations,
@@ -248,6 +261,12 @@ impl Source {
             super::instances::SourcePublication::ModuleSafety => {
                 let (source, modules) = Self::begin_module_safety(report, facts, checked, identity)
                     .map_err(legacy_error)?;
+                Ok((source, Some(modules)))
+            }
+            super::instances::SourcePublication::ModuleConversions => {
+                let (source, modules) =
+                    Self::begin_module_conversions(report, facts, checked, identity)
+                        .map_err(legacy_error)?;
                 Ok((source, Some(modules)))
             }
             super::instances::SourcePublication::LegacyFunctions
@@ -516,16 +535,21 @@ impl Source {
                 | super::instances::SourcePublication::ModuleCompatibility
                 | super::instances::SourcePublication::ModuleCallables
                 | super::instances::SourcePublication::ModuleSafety
+                | super::instances::SourcePublication::ModuleConversions
         ) {
-            Some(
+            let available = if profile == super::instances::SourcePublication::ModuleConversions {
                 self.stage
-                    .availability_rows(report, facts, &modules)
-                    .map_err(crate::resolve::package::Error::unlocated)?,
-            )
+                    .conversion_availability_rows(report, facts, &modules)
+            } else {
+                self.stage.availability_rows(report, facts, &modules)
+            };
+            Some(available.map_err(crate::resolve::package::Error::unlocated)?)
         } else {
             None
         };
-        if self.numbering.is_some() {
+        if self.numbering.is_some()
+            && profile != super::instances::SourcePublication::ModuleConversions
+        {
             return Err(crate::resolve::package::Error::unlocated(
                 "Provided numbering has no module-contract publisher",
             ));
@@ -548,7 +572,9 @@ impl Source {
             ..g::Work::default()
         };
         let payload = if let Some(availability) = availability {
-            let publish = if profile == super::instances::SourcePublication::ModuleSafety {
+            let publish = if profile == super::instances::SourcePublication::ModuleConversions {
+                g::Payload::from_source_module_conversions
+            } else if profile == super::instances::SourcePublication::ModuleSafety {
                 g::Payload::from_source_module_safety
             } else if profile == super::instances::SourcePublication::ModuleCallables {
                 g::Payload::from_source_module_callables

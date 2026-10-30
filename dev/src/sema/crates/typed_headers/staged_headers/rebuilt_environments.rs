@@ -256,6 +256,17 @@ pub(super) fn complete(
             .get(reference.0 as usize)
             .filter(|inputs| inputs.body == reference)
             .ok_or_else(|| error("source original environment omitted its actual body inputs"))?;
+        if context.descriptor.profile() == s::Profile::Source2024ModuleConversions
+            && inputs.environment == s::EnvironmentOrigin::Contract
+        {
+            scope
+                .function
+                .as_mut()
+                .ok_or_else(|| error("source original lost its callable"))?
+                .header
+                .environment = None;
+            continue;
+        }
         let environment = match inputs.environment {
             s::EnvironmentOrigin::Declaration(actual) if actual == row => {
                 Arc::clone(&scope.environment)
@@ -287,6 +298,61 @@ fn from_contract(
     ContractParts::ordinary(graph, facts, scope, inputs, budget)?.build(facts, budget)
 }
 impl ContractParts {
+    pub(in crate::sema::crates::typed_headers) fn original(
+        graph: &mapped_source::Graph,
+        facts: &Declarations,
+        domain: &super::super::unpaid_provided::OrdinaryDomain,
+        inputs: &s::BodyInputs,
+        budget: &mut impl super::environments::Accounting,
+    ) -> Result<Self, Error> {
+        let raw = domain.raw()?;
+        if inputs.body != raw || inputs.environment != s::EnvironmentOrigin::Contract {
+            return Err(error(
+                "ordinary Contract changed its actual body or construction origin",
+            ));
+        }
+        budget.charge(
+            inputs
+                .parameters
+                .len()
+                .saturating_add(inputs.type_assumptions.len())
+                .saturating_add(1),
+        )?;
+        budget.reserve(
+            inputs
+                .parameters
+                .len()
+                .saturating_mul(size_of::<(ParameterId, Abilities)>())
+                .saturating_add(
+                    inputs
+                        .type_assumptions
+                        .len()
+                        .saturating_mul(size_of::<Clause>()),
+                ),
+        )?;
+        let mut parameters = Vec::with_capacity(inputs.parameters.len());
+        for &slot in &inputs.parameters {
+            let Argument::Type(ty) = graph.slot(slot)? else {
+                return Err(error("ordinary Contract original formal is not a type"));
+            };
+            let Some(Kind::Parameter(id)) = facts.types.kind(ty) else {
+                return Err(error(
+                    "ordinary Contract lost its actual rigid original formal",
+                ));
+            };
+            parameters.push((id, Abilities::default()));
+        }
+        let mut clauses = Vec::with_capacity(inputs.type_assumptions.len());
+        for input in &inputs.type_assumptions {
+            clauses.push(Clause::Predicate(
+                graph.requirement(&input.value).map_err(error)?,
+            ));
+        }
+        Ok(Self {
+            parameters,
+            clauses,
+        })
+    }
     fn ordinary(
         graph: &mapped_source::Graph,
         facts: &Declarations,

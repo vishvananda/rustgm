@@ -59,19 +59,19 @@ impl<'a> Context<'a> {
         mut self,
         store: &mut Store,
         budget: &mut Headers,
-    ) -> Result<Vec<Predicate>, Error> {
+    ) -> Result<Vec<Option<Predicate>>, Error> {
         let count = self.applications.len();
         budget.reserve(count.saturating_mul(size_of::<Predicate>()))?;
-        for index in 0..count {
+        for index in 0..if self.descriptor.profile() == s::Profile::Source2024ModuleConversions {
+            0
+        } else {
+            count
+        } {
             let index = u32::try_from(index)
                 .map_err(|_| error("source trait application ordinal overflow"))?;
             self.application(s::TraitApplicationRef(index), store, budget)?;
         }
-        let applications = self
-            .applications
-            .into_iter()
-            .map(|entry| entry.ok_or_else(|| error("source trait application table is incomplete")))
-            .collect::<Result<Vec<_>, _>>()?;
+        let applications = self.applications;
         budget.observed.vector(&applications);
         Ok(applications)
     }

@@ -1,4 +1,5 @@
 //! Route shared inference notifications to body projections or retained trait goals.
+mod hints;
 #[cfg(test)]
 #[path = "../../../tests/invariants/notification_routing.rs"]
 mod tests;
@@ -18,6 +19,7 @@ struct Data {
     queued: HashSet<usize>,
     projections: VecDeque<WatchId>,
     owned: Option<Box<Owned>>,
+    hints: Option<Box<hints::Hints>>,
 }
 #[derive(Default)]
 struct Owned {
@@ -36,6 +38,24 @@ impl Data {
         {
             owned.ready.entry(owner).or_default().push_back(index);
         }
+    }
+    fn poll(
+        &mut self,
+        context: &mut Context,
+        store: &Store,
+        consumed: hints::Owner,
+    ) -> Result<(), Error> {
+        while let Some(watch) = context.ready_resolution(store)? {
+            context.account_work(1)?;
+            if let Some(&owner) = self.by_watch.get(&watch) {
+                if consumed != hints::Owner::Goal(owner) {
+                    self.queue(owner);
+                }
+            } else if consumed != hints::Owner::Projection(watch) {
+                self.projections.push_back(watch);
+            }
+        }
+        Ok(())
     }
 }
 #[derive(Default)]
@@ -120,6 +140,7 @@ impl Notifications {
         store: &Store,
         index: usize,
         goal: &Predicate,
+        float_default: Option<crate::types::infer::TermId>,
     ) -> Result<(), Error> {
         let data = self.data.get_or_insert_with(Default::default);
         if let std::collections::hash_map::Entry::Vacant(entry) = data.by_goal.entry(index) {
@@ -127,19 +148,17 @@ impl Notifications {
             entry.insert(watch);
             data.by_watch.insert(watch, index);
         }
-        while let Some(watch) = context.ready_resolution(store)? {
-            context.account_work(1)?;
-            if let Some(&owner) = data.by_watch.get(&watch) {
-                if owner != index {
-                    data.queue(owner);
-                }
-            } else {
-                data.projections.push_back(watch);
-            }
+        if let Some(argument) = float_default {
+            let watch = *data.by_goal.get(&index).ok_or(Error::InvalidIdentity)?;
+            context.prefer_f32(watch, argument)?;
+        } else {
+            let watch = *data.by_goal.get(&index).ok_or(Error::InvalidIdentity)?;
+            context.clear_float_preference(watch)?;
         }
-        Ok(())
+        data.poll(context, store, hints::Owner::Goal(index))
     }
     pub fn complete(&mut self, context: &mut Context, index: usize) -> Result<(), Error> {
+        self.clear_hints(context, index)?;
         if let Some(data) = &mut self.data {
             if let Some(watch) = data.by_goal.remove(&index) {
                 data.by_watch.remove(&watch);

@@ -1,8 +1,12 @@
 //! Resume input queries only when one of their unresolved leaves changes.
+#[cfg(test)]
+#[path = "../../../tests/invariants/float_fallback.rs"]
+mod float_tests;
 mod numeric;
 #[cfg(test)]
 #[path = "../../../tests/invariants/numeric_frontiers.rs"]
 mod numeric_tests;
+mod preferences;
 mod walk;
 use super::{Context, Error, Store, TermId, constants::ConstTermId};
 use crate::support::hash::HashMap;
@@ -48,11 +52,22 @@ impl Visit {
 enum Fallback {
     Disabled,
     Predicate,
+    Float32(TermId),
+    Hint32(TermId),
     Projection(TermId),
 }
 impl Fallback {
     fn enabled(self) -> bool {
         !matches!(self, Self::Disabled)
+    }
+    fn seeds(self) -> bool {
+        self.enabled() && !matches!(self, Self::Hint32(_))
+    }
+    fn preferred(self) -> Option<TermId> {
+        match self {
+            Self::Float32(term) | Self::Hint32(term) => Some(term),
+            _ => None,
+        }
     }
 }
 struct Watch {
@@ -63,7 +78,6 @@ struct Watch {
     blockers: usize,
     walking: usize,
     numeric_queued: bool,
-    numeric_open: bool,
     changes: bool,
     state: State,
 }
@@ -171,11 +185,10 @@ impl Storage {
             blockers: 0,
             walking: 0,
             numeric_queued: false,
-            numeric_open: false,
             changes,
             state: State::Initial,
         });
-        self.fallback_watches += usize::from(fallback.enabled());
+        self.fallback_watches += usize::from(fallback.seeds());
         for dependency in types
             .iter()
             .copied()
@@ -199,19 +212,24 @@ impl Storage {
             .checked_sub(1)
             .ok_or(Error::InvalidIdentity)?;
         if watch.remaining == 0 {
-            Self::prepay(
-                context,
-                crate::support::retained::Growth::vector::<WatchId>(
-                    self.ready.len(),
-                    self.ready.capacity(),
-                    1,
-                ),
-            )?;
+            let silent = matches!(watch.fallback, Fallback::Hint32(_));
+            if !silent {
+                Self::prepay(
+                    context,
+                    crate::support::retained::Growth::vector::<WatchId>(
+                        self.ready.len(),
+                        self.ready.capacity(),
+                        1,
+                    ),
+                )?;
+            }
             self.disable_fallback(id);
             let watch = &mut self.watches[id.0 as usize];
             watch.seen = HashMap::default();
             watch.state = State::Resolved;
-            self.ready.push_back(id);
+            if !silent {
+                self.ready.push_back(id);
+            }
         }
         Ok(())
     }

@@ -139,6 +139,7 @@ impl AvailabilityRows {
         modules: &ModuleContractRows,
         base: usize,
         work: &mut Work,
+        profile: super::Profile,
     ) -> Result<AvailabilityColumns, &'static str> {
         let bytes = self.storage_bytes(work)?;
         if self.declarations.len() != columns.declarations.len()
@@ -146,6 +147,24 @@ impl AvailabilityRows {
         {
             return Err("availability columns omit their complete declaration or binding census");
         }
+        if profile.conversion_roles()
+            && self
+                .declarations
+                .get(modules.namespace.root.0 as usize)
+                .is_some_and(|row| row.regular.is_none())
+        {
+            return self.ordinary_absence(work);
+        }
+        self.staged(columns, headers, modules, base.saturating_add(bytes), work)
+    }
+    fn staged(
+        self,
+        columns: &Columns,
+        headers: &[Option<super::HeaderRef>],
+        modules: &ModuleContractRows,
+        base: usize,
+        work: &mut Work,
+    ) -> Result<AvailabilityColumns, &'static str> {
         if self
             .declarations
             .get(modules.namespace.root.0 as usize)
@@ -158,8 +177,7 @@ impl AvailabilityRows {
         let ancestry = AvailabilityAncestry::new(
             &columns.declarations,
             modules.namespace.root,
-            base.saturating_add(bytes)
-                .saturating_add(self.policies.len())
+            base.saturating_add(self.policies.len())
                 .saturating_add(origins),
             work,
         )?;
@@ -231,6 +249,31 @@ impl AvailabilityRows {
         }
         if used.iter().any(|used| !used) {
             return Err("availability policy has no actual declaration or binding owner");
+        }
+        Ok(AvailabilityColumns { rows: self })
+    }
+    /// Explicit v9 ordinary absence is complete data, never a synthesized policy.
+    fn ordinary_absence(self, work: &mut Work) -> Result<AvailabilityColumns, &'static str> {
+        work.charge(1)?;
+        if !self.policies.is_empty() {
+            return Err("ordinary availability absence cannot erase actual staged policies");
+        }
+        for (index, row) in self.declarations.iter().enumerate() {
+            work.charge(1)?;
+            if row.declaration.0 as usize != index
+                || row.regular.is_some()
+                || row.constant.is_some()
+            {
+                return Err(
+                    "ordinary availability absence has partial or foreign declaration rows",
+                );
+            }
+        }
+        for (index, row) in self.bindings.iter().enumerate() {
+            work.charge(1)?;
+            if row.binding as usize != index || row.regular.is_some() {
+                return Err("ordinary availability absence has partial or foreign binding rows");
+            }
         }
         Ok(AvailabilityColumns { rows: self })
     }

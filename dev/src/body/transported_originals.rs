@@ -10,6 +10,7 @@ mod non_type_calls;
 mod operations;
 mod rebuilt_inputs;
 mod rebuilt_operations;
+mod regional_records;
 mod safety_requests;
 mod versioned_calls;
 use crate::{

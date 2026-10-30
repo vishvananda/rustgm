@@ -81,6 +81,24 @@ pub(super) struct Trial {
     pub requirements: Option<Box<super::builtins::Requirements>>,
 }
 impl Frame {
+    pub(super) fn materialization_only(&self) -> bool {
+        self.inference == Inference::Committed
+            && !self.normalizing()
+            && !self.deferred
+            && self.selected.is_none()
+            && self.partial.is_none()
+            && self.language.is_none()
+            && self.equality_hint.is_none()
+            && self.trial.as_ref().is_some_and(|trial| {
+                trial.instance.quantified.is_none()
+                    && trial.instance.regions.is_empty()
+                    && trial.instance.outlives.is_empty()
+                    && trial.pending.is_empty()
+                    && trial.requirements.as_ref().is_some_and(|requirements| {
+                        requirements.numeric_cursor == trial.instance.goals.len()
+                    })
+            })
+    }
     pub fn new(
         facts: &Declarations,
         source: &mut Context,
@@ -182,6 +200,7 @@ impl Search<'_> {
             return Ok(Action::Descend);
         }
         let result = if trial.wakeups.waiting() {
+            trial.classify_waiting_materialization(facts)?;
             Decision::Deferred
         } else {
             let Some(result) = self.finish(facts, trial)? else {
@@ -257,6 +276,7 @@ impl Search<'_> {
                 Ok(ty) => ty,
                 Err(infer::Error::Unresolved) => {
                     requirements.cursor = index;
+                    trial.classify_materialization(facts, &mut requirements)?;
                     trial.requirements = Some(Box::new(requirements));
                     return Ok(Some(Decision::Deferred));
                 }
@@ -287,6 +307,7 @@ impl Search<'_> {
         let (goal, arguments) = match trial.resolved_parent(facts) {
             Ok(resolved) => resolved,
             Err(infer::Error::Unresolved) => {
+                trial.classify_materialization(facts, &mut requirements)?;
                 trial.requirements = Some(Box::new(requirements));
                 return Ok(Some(Decision::Deferred));
             }

@@ -32,11 +32,11 @@ pub(in crate::sema) use typed_headers::{
     PrimitiveMethods, SelectedConsumer, primitive_method_plan,
 };
 pub(super) use typed_headers::{
-    charge_source_headers, mapped_source::Readiness as ImportedReadiness, source_readiness,
-    source_trait_header,
+    charge_source_header_query, charge_source_headers,
+    mapped_source::Readiness as ImportedReadiness, source_readiness, source_trait_header,
 };
 pub(crate) use typed_headers::{
-    is_source_original, mapped_source::SourceOriginal, source_original,
+    is_source_original, mapped_source::SourceOriginal, prepare_source_original, source_original,
 };
 
 #[derive(Default)]
@@ -191,8 +191,18 @@ pub(super) fn import(report: &Report, facts: &mut Declarations) -> Result<(), Er
     imported_storage::seed(report, facts, &records)
 }
 pub(super) const fn scalar(value: Scalar) -> TypeId {
-    TypeId::primitive(match value {
-        Scalar::Unit => return TypeId::UNIT,
+    match scalar_primitive(value) {
+        Some(primitive) => TypeId::primitive(primitive),
+        None => TypeId::UNIT,
+    }
+}
+/// Re-derive a transported closed primitive cast through the ordinary classifier.
+pub(crate) fn scalar_cast(from: Scalar, to: Scalar) -> Option<super::model::Cast> {
+    super::scalar::cast(scalar_primitive(from)?, scalar_primitive(to)?)
+}
+const fn scalar_primitive(value: Scalar) -> Option<Primitive> {
+    Some(match value {
+        Scalar::Unit => return None,
         Scalar::Bool => Primitive::Bool,
         Scalar::Char => Primitive::Char,
         Scalar::U8 => Primitive::U8,

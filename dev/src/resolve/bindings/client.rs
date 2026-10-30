@@ -71,7 +71,7 @@ impl SourceClient {
         if !descriptor.profile().ordinary_functions() {
             match descriptor.profile() {
                 crate::support::crates::generics::source::Profile::Source2024ModuleContracts
-                | crate::support::crates::generics::source::Profile::Source2024ModuleAvailability | crate::support::crates::generics::source::Profile::Source2024ModuleFeaturePredicates | crate::support::crates::generics::source::Profile::Source2024ModuleDefinitions | crate::support::crates::generics::source::Profile::Source2024ModuleCompatibility | crate::support::crates::generics::source::Profile::Source2024ModuleCallables| crate::support::crates::generics::source::Profile::Source2024ModuleSafety =>
+                | crate::support::crates::generics::source::Profile::Source2024ModuleAvailability | crate::support::crates::generics::source::Profile::Source2024ModuleFeaturePredicates | crate::support::crates::generics::source::Profile::Source2024ModuleDefinitions | crate::support::crates::generics::source::Profile::Source2024ModuleCompatibility | crate::support::crates::generics::source::Profile::Source2024ModuleCallables| crate::support::crates::generics::source::Profile::Source2024ModuleSafety | crate::support::crates::generics::source::Profile::Source2024ModuleConversions =>
                 {
                     descriptor.module_contracts()?;
                 }

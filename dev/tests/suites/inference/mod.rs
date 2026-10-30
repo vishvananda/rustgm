@@ -63,3 +63,6 @@ mod solver_queries;
 mod substitution_contexts;
 #[path = "../../type_inference.rs"]
 mod type_inference;
+
+#[path = "../../conversion_inference.rs"]
+mod conversion_inference;

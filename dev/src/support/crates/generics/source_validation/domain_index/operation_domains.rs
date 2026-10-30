@@ -6,7 +6,11 @@ mod storage;
 use super::{Context, DomainIndex, HeaderRef, Types, Work, g, s};
 
 impl DomainIndex<'_, '_> {
-    pub(super) fn originals(&mut self, work: &mut Work) -> Result<(), &'static str> {
+    pub(super) fn originals(
+        &mut self,
+        work: &mut Work,
+        conversions: bool,
+    ) -> Result<(), &'static str> {
         let rows = self.headers.rows();
         for original in &rows.originals {
             let input = &rows.body_inputs[original.body.0 as usize];
@@ -27,7 +31,9 @@ impl DomainIndex<'_, '_> {
                 Self::site(original, local.site, work)?;
                 self.types.root(self.headers, context, local.ty, work)?;
             }
+            let mut snapshots = false;
             for (index, projection) in original.projections.iter().enumerate() {
+                snapshots |= matches!(projection.base, s::Place::Temporary(_));
                 Self::place(original, projection.base, Some(index), work)?;
                 self.types
                     .root(self.headers, context, projection.ty, work)?;
@@ -40,11 +46,16 @@ impl DomainIndex<'_, '_> {
                 )?;
             }
             for (index, value) in original.values.iter().enumerate() {
+                snapshots |= matches!(value.kind, s::ValueKind::Read(s::Place::Temporary(_)));
                 self.value(context, original, index, value, work)?;
             }
-            self.calls(context, original, work)?;
+            self.calls(context, original, work, conversions)?;
             self.storage_ports(original, work)?;
             self.input_ports(context, original, input, work)?;
+            if snapshots {
+                self.scratch(super::snapshots::allocation(original), work)?;
+                super::snapshots::validate(original, work)?;
+            }
         }
         Ok(())
     }
@@ -85,10 +96,17 @@ impl DomainIndex<'_, '_> {
             s::ValueKind::Scalar(_) => {
                 value.scalar_value(&self.headers.rows().types)?;
             }
+            s::ValueKind::Read(s::Place::Temporary(value)) => {
+                prefix_value(original, value, index, work)?;
+            }
             s::ValueKind::Read(place) | s::ValueKind::Borrow(place) => {
                 Self::place(original, place, None, work)?;
             }
             s::ValueKind::Constrain(operand) => prefix_value(original, operand, index, work)?,
+            s::ValueKind::ScalarCast(operand) => {
+                prefix_value(original, operand, index, work)?;
+                value.scalar_cast_types(original, &self.headers.rows().types)?;
+            }
             s::ValueKind::Function(application) => {
                 self.function_use(context, application, work)?;
                 if self.headers.rows().types.get(value.ty.0 as usize)
@@ -132,11 +150,19 @@ impl DomainIndex<'_, '_> {
         work.charge(1)?;
         match place {
             s::Place::Local(index) if (index as usize) < original.locals.len() => Ok(()),
+            s::Place::Temporary(index)
+                if prefix.is_some() && (index as usize) < original.values.len() =>
+            {
+                Ok(())
+            }
             s::Place::Projection(index)
                 if (index as usize) < original.projections.len()
                     && prefix.is_none_or(|prefix| (index as usize) < prefix) =>
             {
                 Ok(())
+            }
+            s::Place::Temporary(_) if prefix.is_none() => {
+                Err("source direct temporary storage requires its wider lifetime/move profile")
             }
             _ => Err("source place has a foreign, forward or unknown actual slot"),
         }

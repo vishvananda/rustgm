@@ -2,11 +2,12 @@
 use super::{
     ImportedOriginals, encoded_literals,
     operations::{self, lexical},
+    regional_records,
 };
 use crate::{
     body::{
         drops::values,
-        ir::{Action, Body, LocalId, Owner, Place, Rvalue, Statement, Value, ValueId},
+        ir::{Action, Body, LocalId, Owner, Rvalue, Statement, Value, ValueId},
     },
     sema::crates::SourceOriginal,
     support::crates::generics::source as s,
@@ -22,13 +23,14 @@ pub(super) fn build(
 ) -> Result<Body, &'static str> {
     let record = view.raw();
     if (!record.variables.is_empty() && !view.numbered())
-        || !record.projections.is_empty()
         || (!v4(view) && (!record.calls.is_empty() || !record.arguments.is_empty()))
-        || !record.openings.is_empty()
     {
         return Err(
             "source regional/projected/call body requires its wider ordinary import profile",
         );
+    }
+    if !record.projections.is_empty() || !record.openings.is_empty() {
+        regional_records::require(view)?;
     }
     work.charge(
         record
@@ -62,14 +64,20 @@ pub(super) fn build(
             source: view.site(local.site, &mut work.steps)?,
         })
     })?;
+    body.projections = regional_records::projections(view, work)?;
     encoded_literals::allocate(record, &mut body, work)?;
     body.values = record.values.iter().map(|value| Ok(Value {
         ty: view.ty(value.ty, &mut work.steps)?,
         kind: match value.kind {
             s::ValueKind::Unit => Rvalue::Unit,
             s::ValueKind::Scalar(_) => encoded_literals::append(view, *value, &mut body)?,
-            s::ValueKind::Read(place) => Rvalue::Read(local(place)?),
+            s::ValueKind::Read(place) => Rvalue::Read(regional_records::place(view, place)?),
+            s::ValueKind::Borrow(place) => regional_records::borrow(view, place)?,
             s::ValueKind::Constrain(value) => Rvalue::Constrain(ValueId(value)),
+            s::ValueKind::ScalarCast(_) => {
+                let (kind, operand) = scalar_cast(view, *value)?;
+                Rvalue::Cast { kind, operand, direct_variant: false }
+            }
             s::ValueKind::Function(application) if v4(view) => Rvalue::Function(view.function(application, &mut work.steps)?),
             s::ValueKind::Call {signature, callee, arguments} if v4(view) => Rvalue::Call {
                 signature:view.ty(signature, &mut work.steps)?, callee:ValueId(callee),
@@ -86,7 +94,7 @@ pub(super) fn build(
         .map(|statement| {
             Ok(Statement {
                 source: view.site(statement.site, &mut work.steps)?,
-                action: action(statement.action)?,
+                action: action(view, statement.action)?,
             })
         })
         .collect::<Result<_, &'static str>>()?;
@@ -105,13 +113,7 @@ pub(super) fn build(
     owned(view, &mut body, work)?;
     Ok(body)
 }
-fn local(place: s::Place) -> Result<Place, &'static str> {
-    match place {
-        s::Place::Local(local) => Ok(Place::Local(LocalId(local))),
-        s::Place::Projection(_) => Err("source projection requires its wider actual place profile"),
-    }
-}
-fn action(record: s::Action) -> Result<Action, &'static str> {
+fn action(view: &SourceOriginal<'_>, record: s::Action) -> Result<Action, &'static str> {
     Ok(match record {
         s::Action::StorageLive(id) => Action::StorageLive(LocalId(id)),
         s::Action::StorageDead(id) => Action::StorageDead(LocalId(id)),
@@ -121,15 +123,30 @@ fn action(record: s::Action) -> Result<Action, &'static str> {
         },
         s::Action::Evaluate(id) => Action::Evaluate(ValueId(id)),
         s::Action::Store { place, value } => Action::Store {
-            place: local(place)?,
+            place: regional_records::place(view, place)?,
             value: ValueId(value),
         },
-        s::Action::CheckInitialized(place) => Action::CheckInitialized(local(place)?),
-        s::Action::Mention(place) => Action::Mention(local(place)?),
-        s::Action::Project(_) => {
-            return Err("source projection statement requires its wider actual profile");
+        s::Action::CheckInitialized(place) => {
+            Action::CheckInitialized(regional_records::place(view, place)?)
         }
+        s::Action::Mention(place) => Action::Mention(regional_records::place(view, place)?),
+        s::Action::Project(index) => regional_records::project(view, index)?,
     })
+}
+fn scalar_cast(
+    view: &SourceOriginal<'_>,
+    value: s::Value,
+) -> Result<(crate::sema::model::Cast, ValueId), &'static str> {
+    if !view.rows().descriptor().profile().conversion_roles() {
+        return Err("source primitive cast requires its actual version-nine descriptor");
+    }
+    let s::ValueKind::ScalarCast(operand) = value.kind else {
+        return Err("source cast reconstruction belongs to another operation");
+    };
+    let (from, to) = value.scalar_cast_types(view.raw(), &view.rows().types)?;
+    let kind = crate::sema::crates::scalar_cast(from, to)
+        .ok_or("source scalar cast has no ordinary primitive conversion")?;
+    Ok((kind, ValueId(operand)))
 }
 fn owned(
     view: &SourceOriginal<'_>,
@@ -162,68 +179,72 @@ pub(super) fn allocation(
     work: &mut ImportedOriginals,
 ) -> Result<usize, &'static str> {
     use crate::body::{ir, scopes, storage};
-    Ok(encoded_literals::count(record, work)?
-        .saturating_mul(size_of::<crate::sema::model::Scalar>())
-        .saturating_add(
-            record
-                .locals
-                .len()
-                .saturating_mul(size_of::<ir::Local>())
-                .saturating_add(record.values.len().saturating_mul(size_of::<ir::Value>()))
-                .saturating_add(
-                    record
-                        .statements
-                        .len()
-                        .saturating_mul(size_of::<ir::Statement>()),
-                )
-                .saturating_add(record.blocks.len().saturating_mul(size_of::<ir::Block>()))
-                .saturating_add(
-                    record
-                        .scopes
-                        .len()
-                        .saturating_mul(size_of::<storage::Scope>()),
-                )
-                .saturating_add(
-                    record
-                        .exits
-                        .len()
-                        .saturating_mul(size_of::<storage::Exit>()),
-                )
-                .saturating_add(
-                    record
-                        .temporaries
-                        .len()
-                        .saturating_mul(size_of::<ir::Temporary>()),
-                )
-                .saturating_add(record.owned.as_ref().map_or(0, |owned| {
-                    size_of::<values::Facts>()
-                        .saturating_add(
-                            owned
-                                .created
-                                .len()
-                                .saturating_mul(size_of::<ir::Temporary>()),
-                        )
-                        .saturating_add(
-                            owned
-                                .returned
-                                .len()
-                                .saturating_mul(size_of::<values::Release>()),
-                        )
-                        .saturating_add(crate::support::retained::new_map::<ir::ValueId, usize>(
-                            owned.created.len(),
-                        ))
-                }))
-                // Keep alignment overhead conservative without flattening any owner graph.
-                .saturating_add(
-                    record
-                        .arguments
-                        .len()
-                        .saturating_mul(size_of::<ir::ValueId>()),
-                )
-                .saturating_add(
-                    size_of::<Body>() + size_of::<storage::Facts>() + size_of::<scopes::Id>(),
-                ),
-        ))
+    Ok(regional_records::allocation(record).saturating_add(
+        encoded_literals::count(record, work)?
+            .saturating_mul(size_of::<crate::sema::model::Scalar>())
+            .saturating_add(
+                record
+                    .locals
+                    .len()
+                    .saturating_mul(size_of::<ir::Local>())
+                    .saturating_add(record.values.len().saturating_mul(size_of::<ir::Value>()))
+                    .saturating_add(
+                        record
+                            .statements
+                            .len()
+                            .saturating_mul(size_of::<ir::Statement>()),
+                    )
+                    .saturating_add(record.blocks.len().saturating_mul(size_of::<ir::Block>()))
+                    .saturating_add(
+                        record
+                            .scopes
+                            .len()
+                            .saturating_mul(size_of::<storage::Scope>()),
+                    )
+                    .saturating_add(
+                        record
+                            .exits
+                            .len()
+                            .saturating_mul(size_of::<storage::Exit>()),
+                    )
+                    .saturating_add(
+                        record
+                            .temporaries
+                            .len()
+                            .saturating_mul(size_of::<ir::Temporary>()),
+                    )
+                    .saturating_add(record.owned.as_ref().map_or(0, |owned| {
+                        size_of::<values::Facts>()
+                            .saturating_add(
+                                owned
+                                    .created
+                                    .len()
+                                    .saturating_mul(size_of::<ir::Temporary>()),
+                            )
+                            .saturating_add(
+                                owned
+                                    .returned
+                                    .len()
+                                    .saturating_mul(size_of::<values::Release>()),
+                            )
+                            .saturating_add(
+                                crate::support::retained::new_map::<ir::ValueId, usize>(
+                                    owned.created.len(),
+                                ),
+                            )
+                    }))
+                    // Keep alignment overhead conservative without flattening any owner graph.
+                    .saturating_add(
+                        record
+                            .arguments
+                            .len()
+                            .saturating_mul(size_of::<ir::ValueId>()),
+                    )
+                    .saturating_add(
+                        size_of::<Body>() + size_of::<storage::Facts>() + size_of::<scopes::Id>(),
+                    ),
+            ),
+    ))
 }
 
 pub(super) fn validate(
@@ -248,7 +269,6 @@ pub(super) fn validate(
         || body.closure_calls.is_some()
         || !body.guards.is_empty()
         || !body.guard_places.is_empty()
-        || !body.projections.is_empty()
         || body.arguments.len() != record.arguments.len()
         || body
             .arguments
@@ -262,11 +282,12 @@ pub(super) fn validate(
     {
         return Err("source original changed its complete supported body/header domain");
     }
+    regional_records::validate(view, body, steps)?;
     ports(view, body, steps)?;
     for (actual, record) in body.statements.iter().zip(&record.statements) {
         *steps = steps.saturating_add(1);
         if actual.source != view.site(record.site, steps)?
-            || !same_action(actual.action, action(record.action)?)
+            || !same_action(actual.action, action(view, record.action)?)
         {
             return Err("source original changed an actual statement/site");
         }
@@ -333,7 +354,27 @@ fn ports(view: &SourceOriginal<'_>, body: &Body, steps: &mut usize) -> Result<()
             (Rvalue::Scalar(id), s::ValueKind::Scalar(_)) => {
                 encoded_literals::same(view, *record, id, body, &mut scalar)?
             }
-            (Rvalue::Read(actual), s::ValueKind::Read(record)) => actual == local(record)?,
+            (Rvalue::Read(actual), s::ValueKind::Read(record)) => {
+                actual == regional_records::place(view, record)?
+            }
+            (
+                Rvalue::Borrow {
+                    place,
+                    kind: crate::body::ir::BorrowKind::Immediate,
+                },
+                s::ValueKind::Borrow(raw),
+            ) => {
+                regional_records::require(view)?;
+                place == regional_records::place(view, raw)?
+            }
+            (
+                Rvalue::Cast {
+                    kind,
+                    operand,
+                    direct_variant: false,
+                },
+                s::ValueKind::ScalarCast(_),
+            ) => (kind, operand) == scalar_cast(view, *record)?,
             (Rvalue::Constrain(actual), s::ValueKind::Constrain(record)) => actual.0 == record,
             (Rvalue::Function(actual), s::ValueKind::Function(raw)) if v4(view) => {
                 actual == view.function(raw, steps)?
@@ -374,6 +415,7 @@ fn same_action(a: Action, b: Action) -> bool {
             a == x && b == y
         }
         (Action::Evaluate(a), Action::Evaluate(b)) => a == b,
+        (Action::Project(a), Action::Project(b)) => a == b,
         (Action::Store { place: a, value: b }, Action::Store { place: x, value: y }) => {
             a == x && b == y
         }

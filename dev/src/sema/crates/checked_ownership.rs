@@ -64,6 +64,16 @@ impl ImportedOwners {
             Self::Provided(mapping) => mapping.role_origin(role),
         }
     }
+    pub(in crate::sema) fn conversion_role(
+        &self,
+        store: &Store,
+        role: Role,
+    ) -> Result<(), &'static str> {
+        match self {
+            Self::Ordinary(graph) => graph.conversion_role(store, role),
+            Self::Provided(owner) => owner.conversion_role(store, role),
+        }
+    }
     pub(in crate::sema) fn empty_module_trait(&self, owner: Owner) -> Result<bool, &'static str> {
         match self {
             Self::Ordinary(graph) => graph.empty_module_trait(owner),

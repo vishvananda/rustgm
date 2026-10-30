@@ -352,6 +352,23 @@ fn begin_with_inputs(
     }
 }
 impl Pending {
+    pub fn materialization_only(&self, context: &mut Context) -> Result<bool, String> {
+        context.account_work(1).map_err(super::inference)?;
+        Ok(self.query.stack.len() == 1
+            && self.query.stack[0].scope == self.query.input_scope()
+            && self.query.stack[0].materialization_only())
+    }
+    pub fn float_hints(
+        &mut self,
+        facts: &mut Declarations,
+        context: &mut Context,
+    ) -> Result<Vec<crate::types::infer::TermId>, String> {
+        let result = self.query.float_hints(facts, context);
+        let charged = context
+            .account_work(std::mem::take(&mut self.query.steps))
+            .map_err(super::inference);
+        result.and_then(|hints| charged.map(|()| hints))
+    }
     /// Reserve every allocated trial ID before declaration work begins.
     pub fn allocation_end(&self) -> u32 {
         self.query.allocations.end()

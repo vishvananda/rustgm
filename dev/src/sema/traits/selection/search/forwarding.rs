@@ -29,6 +29,11 @@ impl Frame {
         }
     }
 }
+impl Pending {
+    pub(super) fn retained_child(&self) -> Option<usize> {
+        self.suspended
+    }
+}
 
 impl Search<'_> {
     pub(super) fn start_forwarding(

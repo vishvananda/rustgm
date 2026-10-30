@@ -11,7 +11,7 @@ use crate::{
         crates::typed_headers::{
             error,
             predicate_remap::{self, translation},
-            recipe_cursor::{Budget, Demand, Dependency, Port, Reserved},
+            recipe_cursor::{Budget, Cursor, Demand, Dependency, Port, Recorded, Reserved},
             staged_headers::environments::{self, Accounting},
         },
         declaration_inputs::Input,
@@ -376,6 +376,22 @@ impl environments::LeafClauses for ImportedLeaves<'_> {
 }
 #[path = "reconstruction_requests.rs"]
 mod body_requests;
+pub(in crate::sema::crates::typed_headers) fn ordinary_requests(
+    body: crate::support::crates::owner_catalog::BodyRef,
+    port: Recorded<'_, '_, '_>,
+    cursor: &mut Cursor,
+    applications: &mut impl Cache,
+    store: &mut crate::types::Store,
+    work: &mut ReservationWork,
+) -> Result<(), Error> {
+    body_requests::prepare(
+        body,
+        &mut ports::Adapter { port, cursor },
+        applications,
+        store,
+        work,
+    )
+}
 #[path = "recorded_body.rs"]
 mod selected_body;
 pub(in crate::sema::crates::typed_headers) use selected_body::OriginalBody;
@@ -1016,9 +1032,9 @@ fn declared_formals(
         },
     )
 }
-struct Observed<'a> {
-    work: &'a mut ReservationWork,
-    allocation: Allocation,
+pub(in crate::sema::crates::typed_headers) struct Observed<'a> {
+    pub(in crate::sema::crates::typed_headers) work: &'a mut ReservationWork,
+    pub(in crate::sema::crates::typed_headers) allocation: Allocation,
 }
 impl Budget for Observed<'_> {
     fn charge(&mut self, count: usize) -> Result<(), Error> {

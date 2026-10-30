@@ -133,6 +133,7 @@ const fn function_role(role: LangItem) -> Option<bool> {
         | LangItem::Add
         | LangItem::Sub
         | LangItem::Div
+        | LangItem::From
         | LangItem::BitOr => false,
         LangItem::Panic
         | LangItem::PanicFmt

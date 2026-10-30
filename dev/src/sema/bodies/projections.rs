@@ -455,6 +455,10 @@ impl Checker<'_> {
             }
             Completion::Complete => {
                 self.state
+                    .notifications
+                    .clear_projection_hints(&mut self.state.infer, watch)
+                    .map_err(|reason| self.error(body, reason))?;
+                self.state
                     .infer
                     .cancel_watch(watch)
                     .map_err(|e| self.error(body, e))?;
@@ -496,7 +500,7 @@ impl Checker<'_> {
         };
         self.prepare_universals(node)?;
         if (query.parent.is_some() || self.range_parent_readiness(&query)?)
-            && let Some(owner) = self.advance_projection_parent(&mut query, resolved)?
+            && let Some(owner) = self.advance_projection_parent(&mut query, watch, resolved)?
         {
             return Ok(Completion::Dependency(
                 super::Requirement::from(owner),

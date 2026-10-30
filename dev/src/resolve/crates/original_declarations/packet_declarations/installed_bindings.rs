@@ -201,40 +201,50 @@ fn append_members(
 ) -> Result<(), Error> {
     for header in &rows.functions {
         work.charge(1)?;
-        let Some(parent) = header.parent else {
-            continue;
-        };
-        if !matches!(
-            rows.declarations
-                .get(parent.0 as usize)
-                .map(|row| row.definition.kind),
-            Some(s::DefinitionKind::Trait | s::DefinitionKind::SelfType)
-        ) {
-            return Err(error("named member has an unsupported actual owner"));
+        if let Some(binding) = member_binding(resolver, rows, definitions, header)? {
+            bindings.push(binding);
         }
-        let target = definitions[header.declaration.0 as usize];
-        let actual = &resolver.facts.definitions[target.0 as usize];
-        if resolver
-            .facts
-            .bindings
-            .get(actual.scope, actual.name, actual.namespace)
-            .is_some()
-        {
-            return Err(error("named member has an existing binding"));
-        }
-        bindings.push(PendingBinding {
-            scope: actual.scope,
-            name: actual.name,
-            namespace: actual.namespace,
-            binding: Binding {
-                target,
-                access: actual.access,
-                origin: Origin::Direct,
-                ambiguous: false,
-            },
-        });
     }
     Ok(())
+}
+fn member_binding(
+    resolver: &Resolver<'_>,
+    rows: s::ValidatedView<'_>,
+    definitions: &[DefId],
+    header: &s::FunctionHeader,
+) -> Result<Option<PendingBinding>, Error> {
+    let Some(parent) = header.parent else {
+        return Ok(None);
+    };
+    if !matches!(
+        rows.declarations
+            .get(parent.0 as usize)
+            .map(|row| row.definition.kind),
+        Some(s::DefinitionKind::Trait | s::DefinitionKind::SelfType)
+    ) {
+        return Err(error("named member has an unsupported actual owner"));
+    }
+    let target = definitions[header.declaration.0 as usize];
+    let actual = &resolver.facts.definitions[target.0 as usize];
+    if resolver
+        .facts
+        .bindings
+        .get(actual.scope, actual.name, actual.namespace)
+        .is_some()
+    {
+        return Err(error("named member has an existing binding"));
+    }
+    Ok(Some(PendingBinding {
+        scope: actual.scope,
+        name: actual.name,
+        namespace: actual.namespace,
+        binding: Binding {
+            target,
+            access: actual.access,
+            origin: Origin::Direct,
+            ambiguous: false,
+        },
+    }))
 }
 pub(super) fn prepare(
     resolver: &mut Resolver<'_>,

@@ -92,7 +92,7 @@ impl Ports {
             }
             self.writable[index] = mutable
                 && match projection.base {
-                    s::Place::Local(_) => true,
+                    s::Place::Local(_) | s::Place::Temporary(_) => true,
                     s::Place::Projection(parent) => self.writable[parent as usize],
                 };
         }
@@ -106,6 +106,7 @@ impl Ports {
         work.charge(1)?;
         match place {
             s::Place::Local(index) => original.locals.get(index as usize).map(|local| local.ty),
+            s::Place::Temporary(index) => original.values.get(index as usize).map(|value| value.ty),
             s::Place::Projection(index) => original
                 .projections
                 .get(index as usize)
@@ -126,6 +127,9 @@ impl Ports {
                 .get(index as usize)
                 .map(|local| local.mutable),
             s::Place::Projection(index) => self.writable.get(index as usize).copied(),
+            s::Place::Temporary(_) => {
+                return Err("source direct temporary writes require wider proof");
+            }
         }
         .ok_or("source writable place is foreign to its original body")
     }

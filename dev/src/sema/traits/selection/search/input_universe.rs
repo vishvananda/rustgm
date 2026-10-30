@@ -108,6 +108,19 @@ impl InputUniverse {
         allocations: &mut super::allocations::Allocations,
         scopes: &mut super::scopes::Scopes,
     ) -> Result<bool, String> {
+        self.publish_numeric(facts, caller, frame, allocations, scopes, &[])
+            .map(|(changed, _)| changed)
+    }
+
+    pub(super) fn publish_numeric(
+        &mut self,
+        facts: &mut Declarations,
+        caller: &mut Context,
+        frame: &mut Frame,
+        allocations: &mut super::allocations::Allocations,
+        scopes: &mut super::scopes::Scopes,
+        hints: &[crate::types::infer::TermId],
+    ) -> Result<(bool, Vec<crate::types::infer::TermId>), String> {
         let first = allocations.end();
         if let Some(closing) = &mut self.closing {
             let before = closing.steps;
@@ -125,10 +138,17 @@ impl InputUniverse {
             .closing
             .as_mut()
             .ok_or("missing universal input export")?;
-        let changed = frame
-            .inputs
-            .publish(&mut facts.types, caller, closing)
-            .map_err(inference)?;
+        let result = if hints.is_empty() {
+            frame
+                .inputs
+                .publish(&mut facts.types, caller, closing)
+                .map(|changed| (changed, Vec::new()))
+        } else {
+            frame
+                .inputs
+                .publish_with_numeric_hints(&mut facts.types, caller, closing, hints)
+        }
+        .map_err(inference)?;
         allocations.record(
             closing
                 .next_region()
@@ -140,6 +160,6 @@ impl InputUniverse {
                 .map_err(inference)?;
         }
         self.bridges = closing.exported_regions().len();
-        Ok(changed)
+        Ok(result)
     }
 }

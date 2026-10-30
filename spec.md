@@ -3329,9 +3329,34 @@ or diagnostic-only homonyms retain their normal behavior. Reuse the numeric
 dependency frontier and actual changed-root waiters; do not scan every pending
 goal per call or introduce another numeric cache. Preserve projection barriers,
 attempted-work payments, hot widths and unsupported metadata capabilities.
+For a unique retained candidate, map live nested preferences through the actual
+validated input-publication mappings. Completed proof nodes and rejected or
+ambiguous candidates supply no hint. Keep traversal iterative and confined to
+that selected subtree, preserving its scope and universal export witnesses.
+The receiving body or projection owner cancels silent child tickets before
+reselection and on completion. Such tickets cannot seed fallback themselves or
+publish resolution notifications. Within one unsuccessful fallback sweep,
+deduplicate inspected roots so shared mixed frontiers do not rescan the same
+waiters quadratically; discard that temporary state before binding any root.
 The [source From contract](docs/pa31-source-from-plan.md) records independently
 qualified original-header, generic, alias, ordering and native controls; candidate
 implementation and imported transport remain open.
+
+The explicit source `module-conversions-v9` capability must transport the actual
+From role and numbered ordinary generic originals without enabling Provided
+authority. Preserve complete defining type parameters and body-local lifetime
+allocations through the existing cursor and recorded domain, demanding them
+after declaration preparation instead of eagerly mapping every body region.
+Construct the genuine defining Contract environment once and authenticate that
+same owner and environment on readonly reconstruction. Header readiness is
+distinct from body-environment readiness. Reuse existing maps and allocators;
+do not add another per-body cache or grow common Body/Header/State records.
+Closed primitive cast opcode7 carries the actual operand index and result type,
+never a serialized cast proof. Revalidate both primitive types and derive the
+operation with the normal semantic classifier. Old source/Provided profiles
+retain their exact bytes and reject unsupported conversion operations. The
+[conversion plan](docs/pa31-source-from-plan.md) tracks the still-unqualified
+body, private alias and fresh-client joins.
 
 Associated bindings in trait bounds retain resolved member identities separately
 from positional arguments. Complete ordinary trait headers before resolving

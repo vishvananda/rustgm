@@ -17,6 +17,7 @@ pub(super) struct Index {
     headers: HashMap<crate::types::ItemId, u32>,
     pub(super) exact: bool,
     pub(super) callable_effects: bool,
+    pub(super) conversions: bool,
 }
 
 impl Stage {
@@ -208,8 +209,8 @@ impl Stage {
             formals,
             receiver,
             constness: if self.callable_effects() {
-                self.charge(4)?;
-                written_constness(report, facts, function)?
+                self.charge(if self.conversion_roles() { 20 } else { 4 })?;
+                written_constness(report, facts, function, self.conversion_roles())?
             } else if facts.is_const_function(function.definition) {
                 Constness::Const
             } else {
@@ -339,6 +340,7 @@ fn written_constness(
     report: &Report,
     facts: &Declarations,
     function: &crate::sema::model::Function,
+    conversions: bool,
 ) -> Result<Constness, &'static str> {
     let ast = &report.package.unit(function.node.file).configured.ast;
     let crate::syntax::ast::Kind::Item(index) = ast.node(function.node.node).kind else {
@@ -352,6 +354,14 @@ fn written_constness(
     else {
         return Err("source callable effect owner is not a function");
     };
+    if conversions && required_conversion_member(report, facts, function)? {
+        if flags.constant || facts.is_const_function(function.definition) {
+            return Err(
+                "required conversion member changed its written/effective const eligibility",
+            );
+        }
+        return Ok(Constness::Conditional);
+    }
     if flags.constant != facts.is_const_function(function.definition) {
         return Err("source effective const eligibility requires its actual marker transport");
     }
@@ -360,6 +370,61 @@ fn written_constness(
     } else {
         Constness::Ordinary
     })
+}
+
+/// A required const-trait declaration is conditional, never a const body or an
+/// executable impl. The indexed actual parent supplies the declaration fact;
+/// a member's name and signature cannot create the language role.
+fn required_conversion_member(
+    report: &Report,
+    facts: &Declarations,
+    function: &crate::sema::model::Function,
+) -> Result<bool, &'static str> {
+    let Some(owner_id) = facts.associated.owner(function.definition) else {
+        return Ok(false);
+    };
+    let owner = facts
+        .associated
+        .get(owner_id)
+        .ok_or("conversion member lost its actual associated owner")?;
+    let OwnerKind::Trait {
+        definition,
+        constant: true,
+        ..
+    } = owner.kind
+    else {
+        return Ok(false);
+    };
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("conversion member lost its actual language catalog")?;
+    catalog.require_provider_report(report)?;
+    let role = catalog
+        .header_role(crate::support::bindings::LangItem::From)?
+        .ok_or("conditional member requires its actual From declaration")?;
+    if role.definition != definition {
+        return Err("conditional member belongs to another actual trait");
+    }
+    if function.body.is_some() {
+        return Err("conversion trait defaults require their actual body transport");
+    }
+    if role.parent.is_some()
+        || owner.source != Some(role.origin)
+        || facts.associated.owner(role.definition) != Some(owner_id)
+    {
+        return Err("conversion member changed its actual source trait owner");
+    }
+    let actual = report
+        .resolution
+        .definitions
+        .get(function.definition.0 as usize)
+        .ok_or("conversion member lost its actual declaration")?;
+    if actual.kind != crate::resolve::model::DefKind::Function || actual.node != Some(function.node)
+    {
+        return Err("conversion member changed its actual source function header");
+    }
+    Ok(true)
 }
 
 #[cfg(test)]
@@ -396,3 +461,7 @@ mod effect_storage {
         );
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../tests/invariants/required_exports.rs"]
+mod conditional_tests;

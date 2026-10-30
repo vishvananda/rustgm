@@ -314,6 +314,20 @@ fn obligation(
     steps: &mut usize,
 ) -> Result<Obligation, &'static str> {
     let kind = match record.kind {
+        s::InputKind::Variable {
+            slot,
+            needs_provenance,
+        } => {
+            super::regional_records::require(view)?;
+            Kind::Variable {
+                id: view.variable(slot, steps)?,
+                needs_provenance,
+            }
+        }
+        s::InputKind::LocalBorrow(region) => {
+            super::regional_records::require(view)?;
+            Kind::LocalBorrow(view.region(region, steps)?)
+        }
         s::InputKind::Equality(p) => Kind::Equality(pair(view, p, steps)?),
         s::InputKind::Outlives(p) => Kind::Outlives(pair(view, p, steps)?),
         s::InputKind::WellFormed(ty) => Kind::WellFormed(view.ty(ty, steps)?),
@@ -525,6 +539,17 @@ fn validate_builtins(
 }
 fn same_kind(actual: Kind, expected: Kind) -> bool {
     match (actual, expected) {
+        (
+            Kind::Variable {
+                id: a,
+                needs_provenance: ap,
+            },
+            Kind::Variable {
+                id: b,
+                needs_provenance: bp,
+            },
+        ) => a == b && ap == bp,
+        (Kind::LocalBorrow(a), Kind::LocalBorrow(b)) => a == b,
         (Kind::Equality(actual), Kind::Equality(expected))
         | (Kind::Outlives(actual), Kind::Outlives(expected)) => actual == expected,
         (Kind::WellFormed(actual), Kind::WellFormed(expected)) => actual == expected,

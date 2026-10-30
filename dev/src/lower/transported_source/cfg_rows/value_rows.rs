@@ -30,12 +30,22 @@ pub(super) fn emit(
                 let value = crate::sema::crates::export_scalar_value(ty, scalar)?;
                 s::ValueKind::Scalar(value.bits().to_le_bytes())
             }
+            ir::Rvalue::Read(ir::Place::Temporary(value)) if stage.conversion_roles() => {
+                s::ValueKind::Read(s::Place::Temporary(value.0))
+            }
             ir::Rvalue::Read(target) => s::ValueKind::Read(place(target)?),
             ir::Rvalue::Borrow {
                 place: target,
                 kind: ir::BorrowKind::Immediate,
             } => s::ValueKind::Borrow(place(target)?),
             ir::Rvalue::Constrain(value) => s::ValueKind::Constrain(value.0),
+            ir::Rvalue::Cast {
+                kind,
+                operand,
+                direct_variant: false,
+            } if stage.conversion_roles() => {
+                scalar_cast(facts, body, index, value.ty, operand, kind)?
+            }
             ir::Rvalue::Function(definition) => {
                 let Some(crate::types::Kind::FunctionItem {
                     item, arguments, ..
@@ -96,4 +106,29 @@ pub(super) fn emit(
         raw.values.push(s::Value { ty, kind });
     }
     Ok(())
+}
+
+fn scalar_cast(
+    facts: &Declarations,
+    body: &Body,
+    before: usize,
+    result: crate::types::TypeId,
+    operand: ir::ValueId,
+    kind: crate::sema::model::Cast,
+) -> Result<s::ValueKind, &'static str> {
+    if operand.0 as usize >= before {
+        return Err("source scalar cast changed its actual preceding operand");
+    }
+    let input = body
+        .values
+        .get(operand.0 as usize)
+        .ok_or("source scalar cast lost its actual operand")?;
+    let from = crate::sema::crates::export_scalar(facts, input.ty)
+        .map_err(|_| "source cast operand requires a closed primitive type")?;
+    let to = crate::sema::crates::export_scalar(facts, result)
+        .map_err(|_| "source cast result requires a closed primitive type")?;
+    if crate::sema::crates::scalar_cast(from, to) != Some(kind) {
+        return Err("source scalar cast changed its actual primitive conversion");
+    }
+    Ok(s::ValueKind::ScalarCast(operand.0))
 }

@@ -180,6 +180,26 @@ fn final_publication_rejects_only_live_numeric_frontiers() -> TestResult {
     Ok(())
 }
 
+#[test]
+fn child_hints_cannot_cross_a_parent_projection_barrier() -> TestResult {
+    let mut context = Context::default();
+    let mut store = Store::default();
+    let input = context.variable(Domain::Float)?;
+    let output = projection(&mut context, &mut store, input)?;
+    let parent = context.watch_inputs(&[output], &[], true, Fallback::Predicate)?;
+    let producer = context.watch_normalization(output)?;
+    drain(&mut context, &store)?;
+    assert_eq!(context.watch_float_hint(parent, input)?, None);
+    assert!(context.default_numbers()?);
+    assert_eq!(
+        context.resolved(&mut store, input)?,
+        TypeId::primitive(Primitive::F64)
+    );
+    context.cancel_watch(producer)?;
+    context.cancel_watch(parent)?;
+    Ok(())
+}
+
 fn ready_equations_precede_numeric_fallback() -> TestResult {
     use crate::types::infer::deferred::{Outcome, Relation};
     for watched in [false, true] {

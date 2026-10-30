@@ -394,6 +394,35 @@ impl Checker<'_> {
             .collect::<Vec<_>>();
         self.bound_obligations(node, owner, &arguments, &[])
     }
+    fn call_input_clauses(
+        &mut self,
+        node: NodeId,
+        owner: DefId,
+    ) -> Result<Vec<crate::sema::declaration_inputs::Input>, Error> {
+        if self.facts.crates.is_none() {
+            return Ok(
+                crate::sema::declaration_inputs::all(&self.facts.generics, None, owner)
+                    .map_err(|e| self.error(node, e))?
+                    .collect(),
+            );
+        }
+        let mut bytes = 0usize;
+        let inference = &mut self.state.infer;
+        crate::sema::declaration_inputs::collect_inherited(
+            &self.facts.generics,
+            self.facts.crates.as_deref(),
+            owner,
+            |work, retained| {
+                inference.account_work(work).map_err(|e| e.to_string())?;
+                bytes = bytes.saturating_add(retained);
+                if bytes > 64 * 1024 * 1024 {
+                    return Err("call input scratch exceeds 64 MB budget".into());
+                }
+                Ok(())
+            },
+        )
+        .map_err(|e| self.error(node, e))
+    }
     pub(super) fn bound_obligations(
         &mut self,
         node: NodeId,
@@ -401,13 +430,7 @@ impl Checker<'_> {
         arguments: &[Argument],
         bindings: &[(ParameterId, Argument)],
     ) -> Result<(), Error> {
-        let predicates = crate::sema::declaration_inputs::all(
-            &self.facts.generics,
-            self.facts.crates.as_deref(),
-            owner,
-        )
-        .map_err(|e| self.error(node, e))?
-        .collect::<Vec<_>>();
+        let predicates = self.call_input_clauses(node, owner)?;
         if predicates.is_empty() {
             return Ok(());
         }

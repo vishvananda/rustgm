@@ -1,7 +1,11 @@
 //! A callback-scoped provided original borrows the actual selected body authority.
 use super::{Arc, Argument, Catalog, Declarations, DefId, Graph, Original, s};
 pub(super) enum Mapping<'a> {
-    Ordinary(&'a Graph),
+    Ordinary {
+        graph: &'a Graph,
+        store: &'a crate::types::Store,
+        domain: Option<super::super::super::unpaid_provided::OrdinaryDomain>,
+    },
     Selected {
         owner: &'a super::super::super::unpaid_provided::ProvidedOwners,
         store: &'a crate::types::Store,
@@ -85,6 +89,23 @@ impl Original<'_> {
         input: &s::NormalizationInput,
         steps: &mut usize,
     ) -> Result<std::ops::Range<u32>, &'static str> {
+        if let Mapping::Ordinary {
+            graph,
+            store,
+            domain: Some(domain),
+        } = &self.mapping
+        {
+            let mut work = crate::resolve::crates::ReservationWork::default();
+            let result =
+                domain.normalization_interval(&graph.recipe_view(), store, index, input, &mut work);
+            *steps = steps.saturating_add(work.steps);
+            if *steps > crate::support::crates::MAX_COMPONENTS {
+                return Err("ordinary normalization mapping exceeded its actual work budget");
+            }
+            return result.map_err(
+                |_| "ordinary normalization changed its actual recorded allocation domain",
+            );
+        }
         let Mapping::Selected {
             body, view, store, ..
         } = &self.mapping
@@ -109,13 +130,13 @@ impl Original<'_> {
         &self,
     ) -> Result<crate::support::crates::SourceDescriptor<'_>, &'static str> {
         match &self.mapping {
-            Mapping::Ordinary(graph) => graph.descriptor(self.catalog),
+            Mapping::Ordinary { graph, .. } => graph.descriptor(self.catalog),
             Mapping::Selected { owner, .. } => owner.descriptor(),
         }
     }
-    pub(super) fn require_store(&self, store: &crate::types::Store) -> Result<(), &'static str> {
+    pub(crate) fn require_store(&self, store: &crate::types::Store) -> Result<(), &'static str> {
         match &self.mapping {
-            Mapping::Ordinary(graph) => graph.require_store(store),
+            Mapping::Ordinary { graph, .. } => graph.require_store(store),
             Mapping::Selected { owner, .. } => owner.require_store(store),
         }
     }
@@ -124,13 +145,13 @@ impl Original<'_> {
         role: crate::sema::compiler_items::Role,
     ) -> Result<(), &'static str> {
         match &self.mapping {
-            Mapping::Ordinary(graph) => graph.role_origin(role),
+            Mapping::Ordinary { graph, .. } => graph.role_origin(role),
             Mapping::Selected { owner, .. } => owner.role_origin(role),
         }
     }
     pub(super) fn slot(&self, reference: s::SlotRef) -> Result<Argument, &'static str> {
         match &self.mapping {
-            Mapping::Ordinary(graph) => graph
+            Mapping::Ordinary { graph, .. } => graph
                 .slot(reference)
                 .map_err(|_| "source original lost its actual formal slot"),
             Mapping::Selected { owner, .. } => owner.original_slot(reference),

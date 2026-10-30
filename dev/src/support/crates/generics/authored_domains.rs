@@ -75,6 +75,16 @@ impl<'a> HeaderIndex<'a> {
     ) -> Result<DomainIndex<'index, 'a>, &'static str> {
         DomainIndex::new(self, work)
     }
+    /// Inspect version-nine caller-applied method goals with complete root mapping.
+    /// This remains structural data and supplies no selected implementation proof.
+    /// # Errors
+    /// Rejects malformed applications, changed owners and attempted budget exhaustion.
+    pub fn conversion_domains<'index>(
+        &'index self,
+        work: &mut Work,
+    ) -> Result<DomainIndex<'index, 'a>, &'static str> {
+        DomainIndex::new_mode(self, work, true)
+    }
     /// Index the complete original declaration/header/body association once.
     /// # Errors
     /// Rejects malformed ownership/coverage and aggregate storage/work limits.

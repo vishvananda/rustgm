@@ -226,7 +226,13 @@ impl Checker<'_> {
         self.facts.body_work.trait_selections += 1;
         let selected = self.select_pending_goal(pending, index, first)?;
         match selected {
-            selection::Progress::Inferred { query } => {
+            selection::Progress::Inferred { mut query } => {
+                let semantic_debt = !query
+                    .materialization_only(&mut self.state.infer)
+                    .map_err(|reason| self.error(node, reason))?;
+                let hints = query
+                    .float_hints(self.facts, &mut self.state.infer)
+                    .map_err(|reason| self.error(node, reason))?;
                 pending
                     .reservation
                     .reserve(
@@ -238,7 +244,11 @@ impl Checker<'_> {
                     .map_err(|e| self.error(node, e))?;
                 let reservation = std::mem::take(&mut pending.reservation);
                 pending.partial.insert(index, (query, reservation));
-                self.observe_trait_goal(node, index)?;
+                self.observe_trait_goal(node, index, semantic_debt)?;
+                self.state
+                    .notifications
+                    .prefer_floats(&mut self.state.infer, &self.facts.types, index, &hints)
+                    .map_err(|reason| self.error(node, reason))?;
             }
             selection::Progress::Ready(selected) => {
                 let reservation = std::mem::take(&mut pending.reservation);
@@ -263,7 +273,7 @@ impl Checker<'_> {
                         .complete(&mut self.state.infer, index)
                         .map_err(|e| self.error(node, e))?;
                 } else {
-                    self.observe_trait_goal(node, index)?;
+                    self.observe_trait_goal(node, index, true)?;
                 }
             }
             selection::Progress::Pending(owner, query) => {
@@ -286,7 +296,18 @@ impl Checker<'_> {
         }
         Ok(None)
     }
-    fn observe_trait_goal(&mut self, node: NodeId, index: usize) -> Result<(), Error> {
+    fn observe_trait_goal(
+        &mut self,
+        node: NodeId,
+        index: usize,
+        semantic_debt: bool,
+    ) -> Result<(), Error> {
+        let float_default = crate::sema::compiler_items::float_default(
+            self.facts,
+            &mut self.state.infer,
+            &self.state.call_types.obligations[index].1,
+        )
+        .map_err(|reason| self.error(node, reason))?;
         self.state
             .notifications
             .observe(
@@ -294,6 +315,7 @@ impl Checker<'_> {
                 &self.facts.types,
                 index,
                 &self.state.call_types.obligations[index].1,
+                float_default.filter(|_| semantic_debt),
             )
             .map_err(|e| self.error(node, e))
     }
@@ -303,6 +325,10 @@ impl Checker<'_> {
         index: usize,
         first: u32,
     ) -> Result<selection::Progress, Error> {
+        self.state
+            .notifications
+            .clear_hints(&mut self.state.infer, index)
+            .map_err(|reason| self.error(self.state.body.node, reason))?;
         let environment =
             self.trait_query_environment(self.state.call_types.obligations[index].0)?;
         if let Some((query, reservation)) = pending.partial.remove(&index) {

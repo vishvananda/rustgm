@@ -11,11 +11,17 @@ use crate::{
 };
 
 /// Admission precedes any declaration/constant row serialization.
-pub(super) fn require_role_transport(facts: &Declarations) -> Result<(), &'static str> {
+pub(super) fn require_role_transport(
+    facts: &Declarations,
+    conversions: bool,
+) -> Result<(), &'static str> {
     let catalog = facts
         .source_bindings
         .as_deref()
         .ok_or("source header graph has no role catalog")?;
+    if !conversions && catalog.language(LangItem::From).is_some() {
+        return Err("source From contract transport is not implemented");
+    }
     if catalog.language(LangItem::Div).is_some() {
         return Err("source Div contract transport is not implemented");
     }

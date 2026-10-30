@@ -26,6 +26,9 @@ mod selected;
 mod template_demands;
 pub(super) use selected::SelectedHeaders;
 pub(super) use template_demands::OriginalBody;
+pub(in crate::sema::crates::typed_headers) use template_demands::{
+    Observed, OrdinaryDomain, OrdinaryRecords, ordinary_requests,
+};
 #[cfg(test)]
 #[path = "../../../../tests/invariants/held_stores.rs"]
 mod tests;

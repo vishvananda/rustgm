@@ -26,6 +26,12 @@ pub(super) struct Pending {
     pub end: u32,
 }
 impl Pending {
+    pub(super) fn retained_child(&self) -> Option<usize> {
+        match self.phase {
+            Phase::Suspended { slot, .. } => Some(slot),
+            Phase::Ready(_) => None,
+        }
+    }
     fn index(&self) -> Result<usize, String> {
         usize::try_from(self.cursor).map_err(|_| "Unsize cursor exceeds host indexing".into())
     }

@@ -180,8 +180,11 @@ impl Generics {
             .iter()
             .flat_map(|registry| registry.validated())
     }
-    fn scopes(&self, owner: DefId) -> impl Iterator<Item = DefId> + '_ {
+    pub(super) fn scopes(&self, owner: DefId) -> impl Iterator<Item = DefId> + '_ {
         std::iter::successors(Some(owner), |id| self.parents.get(id).copied())
+    }
+    pub(super) fn scope_limit(&self) -> usize {
+        self.parents.len().saturating_add(1)
     }
     /// Parameters retain their declaration identities when inherited by a method.
     pub fn parameters_in_scope(&self, owner: DefId) -> impl Iterator<Item = &Parameter> {

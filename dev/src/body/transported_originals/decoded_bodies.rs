@@ -21,13 +21,15 @@ pub(super) fn append(
     facts: &mut Declarations,
     scratch: &mut promote::Scratch,
     originals: &mut ImportedOriginals,
-    allowance: Allowance,
+    mut allowance: Allowance,
     rows: s::ValidatedView<'_>,
 ) -> Result<(), Error> {
-    preflight(rows, originals, &allowance)
+    let mut body_bound = preflight(rows, originals, &allowance)
         .map_err(|e| context.report.body_optional_error(None, e))?;
+    let before_index = originals.retained_bytes();
     let selected = super::versioned_calls::Index::new(rows, originals, &allowance)
         .map_err(|e| context.report.body_optional_error(None, e))?;
+    body_bound = body_bound.saturating_add(originals.retained_bytes().saturating_sub(before_index));
     for raw in &rows.originals {
         originals
             .charge(1)
@@ -36,7 +38,47 @@ pub(super) fn append(
             .imported
             .generic_definition(context.owner, raw.declaration)
             .map_err(|e| context.report.body_optional_error(None, e))?;
-        let original = build(context, facts, scratch, originals, definition, &selected)?;
+        crate::sema::crates::prepare_source_original(
+            context.report,
+            facts,
+            definition,
+            originals.steps,
+            body_bound,
+        )?;
+        if rows.descriptor().profile() == s::Profile::Source2024ModuleConversions {
+            let current = facts
+                .crates
+                .as_deref()
+                .and_then(crate::sema::crates::Linkage::original_work)
+                .ok_or_else(|| {
+                    context.report.body_optional_error(
+                        None,
+                        "ordinary original lost its current header accounting",
+                    )
+                })?;
+            allowance.header_work = current.0;
+            allowance.header_bytes = current.1;
+        }
+        let prepaid = body_bound
+            .checked_sub(originals.retained_bytes())
+            .ok_or_else(|| {
+                context.report.body_optional_error(
+                    None,
+                    "actual original retention exceeded its prepaid bound",
+                )
+            })?;
+        let remaining = Allowance {
+            header_bytes: allowance.header_bytes.saturating_add(prepaid),
+            templates: allowance.templates.saturating_sub(prepaid),
+            ..allowance
+        };
+        let before_proof = originals.payload;
+        let original = build(
+            context, facts, scratch, originals, definition, &selected, &remaining,
+        )?;
+        // Raw body retention is already in the aggregate bound. Only newly
+        // charged proof/canonical scratch extends the next preparation's bound.
+        body_bound = body_bound.saturating_add(originals.payload.saturating_sub(before_proof));
         let source = original.template.body.source;
         let retained = originals
             .retained_bytes()
@@ -66,6 +108,7 @@ fn build(
     work: &mut ImportedOriginals,
     definition: crate::resolve::model::DefId,
     selected: &super::versioned_calls::Index<'_>,
+    allowance: &Allowance,
 ) -> Result<Original, Error> {
     let report = context.report;
     let (body, contract, environment, pending) = {
@@ -97,8 +140,16 @@ fn build(
             pending,
         )
     };
-    super::versioned_calls::prove(facts, Arc::clone(&environment), &pending, work)
-        .map_err(|e| report.body_error(body.source, e))?;
+    super::versioned_calls::prove(
+        facts,
+        Arc::clone(&environment),
+        &pending,
+        &body,
+        &contract,
+        work,
+        allowance,
+    )
+    .map_err(|e| report.body_error(body.source, e))?;
     finish(report, facts, scratch, body, contract, environment)
 }
 pub(super) fn finish(
@@ -135,7 +186,7 @@ fn preflight(
     rows: s::ValidatedView<'_>,
     work: &mut ImportedOriginals,
     allowance: &Allowance,
-) -> Result<(), &'static str> {
+) -> Result<usize, &'static str> {
     let (bytes, visits) = allocation(rows, work, rows.originals.len(), rows.originals.iter())?;
     if allowance
         .header_work
@@ -151,7 +202,7 @@ fn preflight(
     {
         return Err("source original aggregate work/storage preflight exceeded its budget");
     }
-    Ok(())
+    Ok(bytes.saturating_add(work.retained_bytes()))
 }
 
 pub(super) fn allocation<'a>(
@@ -179,7 +230,10 @@ pub(super) fn allocation<'a>(
             bytes = bytes.saturating_add(crate::body::defining_cleanups::required_allocation());
         }
         let clauses = (header.inputs.end - header.inputs.start) as usize;
-        bytes = bytes.saturating_add(super::versioned_calls::allocation(raw.values.len()));
+        bytes = bytes.saturating_add(super::versioned_calls::allocation(
+            raw.values.len(),
+            rows.descriptor().profile().conversion_roles(),
+        ));
         let ports = raw
             .locals
             .len()
