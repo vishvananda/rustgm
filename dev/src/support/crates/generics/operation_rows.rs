@@ -11,6 +11,8 @@ use crate::support::{
 pub enum Place {
     Local(u32),
     Projection(u32),
+    /// Version-nine reference projection base: exact evaluated SSA snapshot.
+    Temporary(u32),
 }
 /// Exactly a retained reference Dereference projection. Raw dereferences, fields,
 /// captures and other projections are not encodable by this first source form.

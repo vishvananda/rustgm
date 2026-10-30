@@ -18,6 +18,18 @@ fn fresh() -> Result<(Report, Declarations)> {
         SourcePublication::ModuleConversions,
         "ordinary_recorded",
     )?;
+    let source = artifact
+        .source_descriptor()
+        .ok_or("actual source descriptor")?;
+    assert!(
+        source.rows().originals.iter().any(|original| {
+            original
+                .projections
+                .iter()
+                .any(|projection| matches!(projection.base, s::Place::Temporary(_)))
+        }),
+        "unchanged borrowed Clone bodies retain their actual SSA reference base"
+    );
     let bytes = crates::encode(&artifact)?;
     assert_eq!(bytes.get(13..15), Some([9, 0].as_slice()));
     let report = crate::source_packets::client_report(crates::decode(&bytes)?, CLIENT)?;

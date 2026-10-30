@@ -27,7 +27,9 @@ impl DomainIndex<'_, '_> {
                 Self::site(original, local.site, work)?;
                 self.types.root(self.headers, context, local.ty, work)?;
             }
+            let mut snapshots = false;
             for (index, projection) in original.projections.iter().enumerate() {
+                snapshots |= matches!(projection.base, s::Place::Temporary(_));
                 Self::place(original, projection.base, Some(index), work)?;
                 self.types
                     .root(self.headers, context, projection.ty, work)?;
@@ -45,6 +47,10 @@ impl DomainIndex<'_, '_> {
             self.calls(context, original, work)?;
             self.storage_ports(original, work)?;
             self.input_ports(context, original, input, work)?;
+            if snapshots {
+                self.scratch(super::snapshots::allocation(original), work)?;
+                super::snapshots::validate(original, work)?;
+            }
         }
         Ok(())
     }
@@ -136,11 +142,19 @@ impl DomainIndex<'_, '_> {
         work.charge(1)?;
         match place {
             s::Place::Local(index) if (index as usize) < original.locals.len() => Ok(()),
+            s::Place::Temporary(index)
+                if prefix.is_some() && (index as usize) < original.values.len() =>
+            {
+                Ok(())
+            }
             s::Place::Projection(index)
                 if (index as usize) < original.projections.len()
                     && prefix.is_none_or(|prefix| (index as usize) < prefix) =>
             {
                 Ok(())
+            }
+            s::Place::Temporary(_) if prefix.is_none() => {
+                Err("source direct temporary storage requires its wider lifetime/move profile")
             }
             _ => Err("source place has a foreign, forward or unknown actual slot"),
         }

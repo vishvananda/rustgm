@@ -48,7 +48,12 @@ pub(super) fn emit(
         };
         stage.reserve(4 * size_of::<s::Projection>())?;
         raw.projections.push(s::Projection {
-            base: place(projection.base)?,
+            base: match projection.base {
+                ir::Place::Temporary(value) if stage.conversion_roles() => {
+                    s::Place::Temporary(value.0)
+                }
+                base => place(base)?,
+            },
             ty: stage.ty(facts, projection.ty, context)?,
             region: stage.region(region, context)?,
             mutable,

@@ -29,6 +29,13 @@ pub(super) fn place(view: &SourceOriginal<'_>, raw: s::Place) -> Result<Place, &
             }
             Ok(Place::Local(LocalId(index)))
         }
+        s::Place::Temporary(index) => {
+            require(view)?;
+            if index as usize >= view.raw().values.len() {
+                return Err("source snapshot lost its actual SSA value identity");
+            }
+            Ok(Place::Temporary(crate::body::ir::ValueId(index)))
+        }
         s::Place::Projection(index) => {
             require(view)?;
             if index as usize >= view.raw().projections.len() {

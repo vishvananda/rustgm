@@ -111,6 +111,7 @@ pub(super) fn place_write(out: &mut Writer, place: s::Place) -> Result<(), &'sta
     let (tag, index) = match place {
         s::Place::Local(index) => (0, index),
         s::Place::Projection(index) => (1, index),
+        s::Place::Temporary(index) => (2, index),
     };
     out.u8(tag)?;
     id(out, index)
@@ -122,6 +123,7 @@ pub(super) fn place_read(read: &mut Input<'_, '_>) -> Result<s::Place, &'static 
             read.require_regional("source projection requires a wider source profile")?;
             Ok(s::Place::Projection(read.id()?))
         }
+        2 if read.profile.conversion_roles() => Ok(s::Place::Temporary(read.id()?)),
         _ => Err("source projection requires a wider source profile"),
     }
 }

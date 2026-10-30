@@ -17,6 +17,14 @@ pub(super) fn validate(
     }
     functions::bindings(rows, headers, work, functions::BindingProfile::Provided)?;
     for original in &rows.originals {
+        for projection in &original.projections {
+            work.charge(1)?;
+            if matches!(projection.base, s::Place::Temporary(_)) {
+                return Err(
+                    "source SSA projection bases require their explicit v9 ordinary profile",
+                );
+            }
+        }
         for value in &original.values {
             work.charge(1)?;
             if matches!(value.kind, s::ValueKind::Scalar(_)) {

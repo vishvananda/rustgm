@@ -138,3 +138,49 @@ fn scalar_cast_domains_rederive_kind_and_reject_nonprimitive_and_invalid_pairs()
     );
     Ok(())
 }
+
+#[test]
+fn temporary_place_wire_is_version_nine_only_and_preserves_legacy_bytes() -> Result {
+    for (place, tag) in [
+        (s::Place::Local(3), 0),
+        (s::Place::Projection(3), 1),
+        (s::Place::Temporary(3), 2),
+    ] {
+        let mut writer = Writer::source(0);
+        place_write(&mut writer, place)?;
+        let bytes = writer.finish();
+        assert_eq!(bytes, [tag, 3, 0, 0, 0]);
+        let decode = |bytes: &[u8], profile| {
+            let mut reader = super::super::Reader::new(bytes);
+            place_read(&mut Input {
+                reader: &mut reader,
+                bytes: 0,
+                base: 0,
+                profile,
+            })
+        };
+        assert_eq!(decode(&bytes, Profile::Source2024ModuleConversions)?, place);
+        for end in 0..bytes.len() {
+            assert!(decode(&bytes[..end], Profile::Source2024ModuleConversions).is_err());
+        }
+        if tag == 2 {
+            for profile in [
+                Profile::Source2024Functions,
+                Profile::Source2024FunctionContracts,
+                Profile::Source2024ModuleContracts,
+                Profile::Source2024ModuleAvailability,
+                Profile::Source2024ModuleFeaturePredicates,
+                Profile::Source2024ModuleDefinitions,
+                Profile::Source2024ModuleCompatibility,
+                Profile::Source2024ModuleCallables,
+                Profile::Source2024ModuleSafety,
+                Profile::Source2024Provided,
+                Profile::Source2024ProvidedContracts,
+                Profile::Source2024ProvidedCurrent,
+            ] {
+                assert!(decode(&bytes, profile).is_err(), "{profile:?}");
+            }
+        }
+    }
+    Ok(())
+}

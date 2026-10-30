@@ -7,6 +7,8 @@ mod input_plan;
 mod input_ports;
 #[path = "domain_index/root_ports.rs"]
 mod root_ports;
+#[path = "domain_index/ssa_ports.rs"]
+mod snapshots;
 use super::{
     HeaderIndex, HeaderRef, Work,
     binder_domains::BinderIndex,
