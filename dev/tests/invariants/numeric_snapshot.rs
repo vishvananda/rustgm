@@ -161,6 +161,9 @@ fn disjoint_ambiguous_candidates_cannot_publish_their_nested_float_hints() -> Te
         Availability::Declarations,
     );
     search.query.refining = true;
+    // An earlier discarded candidate may have observed a real hint. That cold
+    // presence state cannot authorize publishing this ambiguous root's inputs.
+    search.query.publication.observe(true);
     let mut frame = Frame::new(&facts, &mut context, &goal, 1)?;
     frame.inference = Inference::Selecting;
     assert_eq!(
