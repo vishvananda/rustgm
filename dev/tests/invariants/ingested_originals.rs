@@ -480,7 +480,7 @@ fn all_original_type_roots(report: &Report, facts: &mut Declarations) -> Result 
                 std::iter::once(value.ty).chain(signature)
             }))
             .chain(original.projections.iter().map(|projection| projection.ty))
-            .chain(&original.calls.map(|call| call.signature))
+            .chain(original.calls.iter().map(|call| call.signature))
             .chain(std::iter::once(original.result))
         {
             let ty = view.ty(root, &mut steps)?;
