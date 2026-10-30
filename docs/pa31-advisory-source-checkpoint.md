@@ -1,6 +1,14 @@
 # Source optimization and advisory declarations
 
-## Current local legacy and method-advisory checkpoint
+## Current Cell declaration and joined conversion checkpoint
+
+The [joined checkpoint](pa31-cell-advisory-checkpoint.md) supersedes the current
+frontier below: all80 Confusables/MustNotSuspend source outcomes, four native
+body comparisons and the v9 conversion/fresh-client native corpus pass. Original
+core now reaches the semantic ABI marker in ffi/va_list.rs416 (LIB-111). Broader
+diagnostics, imported intent and all original crate artifacts remain required.
+
+## Earlier local legacy and method-advisory checkpoint
 
 Source `a9cc9cf53` qualifies actual local legacy const-generic headers and
 `rustc_should_not_be_called_on_const_items` method declarations. Legacy indices

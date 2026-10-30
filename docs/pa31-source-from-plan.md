@@ -1,17 +1,18 @@
 # Source From implementation contract
 
-LIB-105 remains open. The pinned compiler's actual `From` language role changes
-float fallback, so accepting its attribute as an inert spelling is insufficient.
-The original 23 cases in the [required corpus](../pa31/tests/spec/source-from/contract.json)
-have independent Rust object evidence and 19 native observations. RustGM has not
-qualified these outcomes. All PA25–PA44 and original library states stay open.
+The finite LIB-105 source, inference and version-nine transport profile is now
+qualified in the [joined checkpoint](pa31-cell-advisory-checkpoint.md): all28
+source outcomes,24 native positives and both fresh-client native results pass.
+The pinned compiler's actual `From` language role changes float fallback; it is
+not an inert attribute. Broader generic transport, complete original From/Into
+graphs, all PA25–PA44 and original library artifacts remain open.
 
 The nested-condition extension adds five declared `nested-into-*` programs to
 the required corpus. Independent Rust and candidate/native observations for
 those five passed in CI41005181258 (receipt
 ef23bfc9265286cd419e0c156a56c2fa0a94f945af1dd735ec8e424ee62bc7c0);
-candidate/native observations remain pending. The original 23-source evidence
-is unchanged.
+the final joined candidate/native gate also passes all five. The original
+23-source independent evidence is unchanged.
 Snapshot only the live uniquely selected retained subtree, through its actual
 condition-child slots and forwarding/unsizing continuations. Completed proof
 node IDs and earlier speculative candidates cannot supply preferences. Reuse
@@ -91,7 +92,7 @@ substitute for real compiler behavior.
 
 ## Qualification and integration
 
-### Version-nine conversion metadata (implementation in progress)
+### Version-nine conversion metadata
 
 The explicit `module-conversions-v9` capability carries From role tag9 and
 existing body-numbering units. Earlier wire0–v8 and Provided profiles keep their
@@ -115,24 +116,45 @@ variant conversions cannot use this opcode. Old profiles reject it. Transparent
 private aliases may close through their actual completed typed target; this
 does not publish an alias name or confer nominal identity.
 
-All 28 standalone outcomes and 24 native positives remain required. The new
+All28 standalone outcomes and24 native positives now pass. The
 [fresh client graph](../pa31/tests/spec/source-from-clients/contract.json)
 declares independent Rust and candidate provider/client results32/64 before
 execution. It consumes the unchanged real Into provider in a fresh process and
-store, checking deterministic v9 roundtrip and old-version refusal. These joins
-are uncompiled and unqualified until their own actual gates pass.
+store, checking deterministic v9 roundtrip and old-version refusal. The fresh
+clients now pass both production and native qualification with required32/64.
+
+The native gate exposed two real implementation defects before qualification:
+a completed blanket obligation retained a float preference, and imported calls
+omitted inherited Self:Into<T> clauses. A monotone paid numeric/materialization
+cursor separates canonical inputs from actual completed proof nodes. Completed,
+ambiguous, quantified, projection and region debts do not become permission.
+Call bound collection walks the actual declaration parents with prepaid scratch,
+preserving each header's own prefix and the actual imported environment.
+
+Selected method reconstruction retains complete generic and late-bound arguments,
+the exact selected method identity, defining Store, source, signature and effects.
+Temporary value transport authenticates actual evaluated SSA reads and projection
+types separately from call signatures. Applied domains use one flat inventory
+and one calls pass rather than a subtree scan for every root. Ordinary absent
+paths allocate no new ledger; compact legacy rows and older wire bytes remain
+unchanged. The joined140 controls retain reservation/coherence and const-default
+opponents from the other source lanes.
+
+Remaining PA29 requirements include other inherited all()/declared() consumers,
+multiple normalization ranges, wider early/projected/captured lifetime families,
+public/reexported/associated/contextual aliases, broader const-impl families and
+Always transport. The finite v9 capability does not release PA29 or core.
 
 The independent plan SHA-256 is
 2f1ecc3def916a4ae635aae2e13e1ada140f7bcad0b9ae6252ad22eff9984810;
 receipt5096f879c7a4b343ed55a35d7715ebbda49f63b873a00e434c2989db8757664b
 binds all23 object outcomes and19 native programs. The source corpus matches the
-frozen inputs byte for byte. No candidate references or success have been claimed.
+frozen inputs byte for byte. The joined checkpoint records the actual candidate
+gates separately; it does not generate or bless a full assignment oracle.
 
-After LIB-102/103's current candidate fixes qualify, integrate their actual
-source checkpoints and this consumer coherently. Use the deduplicated affected
-controls and source/native assertions with strict Clippy, architecture/placement
-and file audits. Keep the five-minute development deadline, two-job ceiling,
-16GiB maximum absolute output caps and150GiB reserve. Cold cache preparation is
-labelled build-only; only executed tests qualify semantics. Repeat the unchanged
-722-input original core observation on the qualified resulting CLI, then continue
-the real core/alloc/std artifact and independent-consumer ladder.
+LIB-102/103 and this consumer are integrated and qualified through the same
+joined140 and production/native gates. The unchanged722-input core observation
+now reaches the ABI-affecting source marker in ffi/va_list.rs416 (LIB-111).
+Continue its real PA30 contract and the original core/alloc/std artifact and
+independent-consumer ladder. Preserve five-minute development checks, Root-only
+implementation, bounded output, the two-job controller and150GiB reserve.

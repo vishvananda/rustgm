@@ -379,6 +379,20 @@ A future MIR-like inliner must first retain the authenticated imported contract;
 missing encoded intent cannot become permission. See the
 [owning source contract](pa31/tests/spec/source-no-mir-inline/README.md).
 
+Source Confusables and MustNotSuspend reuse that transient owner walk. Perform
+one draft lookup per actual declaration and visit only its present annotations;
+adding marker kinds must not multiply unrelated definition work. Keep the first
+annotation inline and allocate cold extra storage only for mixed declarations.
+Authenticate each actual image, namespace and impl/nominal owner before completion;
+constructor values and associated Self rows cannot complete a type annotation.
+Confusables validates every repeated nonempty string list without creating aliases.
+MustNotSuspend has its own feature, word/string reason and hard duplicate rule.
+Neither grants const, unsafe, mutation, ownership, drop or suspension permission.
+Prepay parsing and attempted growth and retain sticky failure. The
+[joined checkpoint](docs/pa31-cell-advisory-checkpoint.md) records fixed annotation
+overhead as unrelated definitions grow, actual native bodies and deferred broader
+diagnostic/import obligations.
+
 Local structural inherent ownership consumes the actual crate policy and complete
 member inventory. Head/name/context buckets exclude unrelated work; full Self,
 const arguments, caller conditions and visibility still decide applicability.
@@ -3339,8 +3353,9 @@ publish resolution notifications. Within one unsuccessful fallback sweep,
 deduplicate inspected roots so shared mixed frontiers do not rescan the same
 waiters quadratically; discard that temporary state before binding any root.
 The [source From contract](docs/pa31-source-from-plan.md) records independently
-qualified original-header, generic, alias, ordering and native controls; candidate
-implementation and imported transport remain open.
+qualified original-header, generic, alias, ordering and native controls. The
+finite v9 source/fresh-client/native profile is qualified; wider imported and
+original-library graphs remain required.
 
 The explicit source `module-conversions-v9` capability must transport the actual
 From role and numbered ordinary generic originals without enabling Provided
@@ -3355,8 +3370,15 @@ Closed primitive cast opcode7 carries the actual operand index and result type,
 never a serialized cast proof. Revalidate both primitive types and derive the
 operation with the normal semantic classifier. Old source/Provided profiles
 retain their exact bytes and reject unsupported conversion operations. The
-[conversion plan](docs/pa31-source-from-plan.md) tracks the still-unqualified
-body, private alias and fresh-client joins.
+[conversion plan](docs/pa31-source-from-plan.md) records actual body, private alias
+and fresh-client qualification and the remaining broader transport requirements.
+Keep canonical numeric materialization separate from proof completion: advance a
+paid monotone cursor through actual selected children without completing pending
+Nodes or granting candidate authority. Imported bound consumers collect genuine
+parent declaration clauses while preserving each header's own prefix and owner.
+Reconstruct selected methods with complete type/lifetime arguments and validate
+evaluated SSA temporaries in their actual value domain. Build one flat applied
+domain inventory and make one calls pass; do not rescan a subtree for every root.
 
 Associated bindings in trait bounds retain resolved member identities separately
 from positional arguments. Complete ordinary trait headers before resolving

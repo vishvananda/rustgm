@@ -66,17 +66,15 @@ or mutation legality. Its generated meta attribute allowance follows the real
 attribute envelope; forwarded whole items retain caller provenance. Local/native
 behavior is qualified, while the broader advisory lint producer remains deferred.
 
-The [const-item-call advisory source contract](tests/spec/source-const-item-calls/README.md)
-validates the observed Cell/LazyCell marker on actual impl methods. It grants no
-const, unsafe or mutation permission. Broader interior-mutation warning policy is
-explicitly deferred; whole original algorithms and artifacts remain required.
-Candidate qualification for this source checkpoint is pending.
-
-The source-only [confusable-name plan](tests/spec/source-confusable-methods/README.md)
-and [suspension-advisory plan](tests/spec/source-suspend-advisory/README.md) freeze
-independent predictions for adjacent declarations. Neither has reference or
-candidate execution evidence yet, and neither is an observed next blocker.
-Broader diagnostics, async ownership and imported intent remain required.
+The [confusable-name contract](tests/spec/source-confusable-methods/README.md)
+and [suspension-advisory contract](tests/spec/source-suspend-advisory/README.md)
+have independent160/160 Rust outcomes and joined candidate qualification of all80
+sources. The [joined checkpoint](../docs/pa31-cell-advisory-checkpoint.md) records
+actual mutation, const and destruction native results and the one-pass transient
+annotation frontier. Confusables now clears the original Cell source boundary;
+core next reaches an ABI-affecting attribute in ffi/va_list.rs (PA30/LIB-111).
+Broader diagnostics, async ownership, imported intent and original artifacts
+remain required.
 
 The source `rustc_promotable` declaration checkpoint retains its actual attribute,
 configured owner and direct const-stability witness. Word, list and value forms

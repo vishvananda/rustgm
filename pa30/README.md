@@ -8,6 +8,16 @@ Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The
 
 C ABI, repr attributes, linkage and imported/exported declarations.
 
+The next original-core source requirement is
+`rustc_pass_indirectly_in_non_rustic_abis` on the local repr(C) struct in
+ffi/va_list.rs416 (LIB-111). This is a semantic argument ABI contract, not an
+advisory marker. Validate its actual struct/feature/representation authority and
+implement forced indirect non-Rustic arguments, transparent-wrapper propagation
+and real copy/pointer behavior while preserving Rust ABI and return rules.
+Independent source/native controls and representation metadata must qualify;
+recognizing a spelling cannot complete this requirement. See the
+[observed frontier](../docs/pa31-cell-advisory-checkpoint.md).
+
 Opaque external types require genuine declaration identity and exact
 `extern_types` feature/token authority. Their value size and alignment remain
 unknown. Thin pointer metadata does not make the pointee Sized or MetaSized;
