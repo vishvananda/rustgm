@@ -1,7 +1,7 @@
 {
   "state": "Local source/LowIR/native qualification passed with joined40; pinned Rust76/76 pass; broader advisory lint parity and original library artifacts remain required",
   "pin": "Rust1.98.0 commit88d9e12ae178fab0fb5cc050a94da85685d449ea Linuxx86-64",
-  "owner": "PA31 source compiler/library declarations; broader PA40 diagnostics and PA42/43 suspension diagnostics remain separately owned",
+  "owner": "PA31 source compiler/library declarations; broader PA40 advisory diagnostics remain separately required",
   "semantics": "Advisory on actual inherent/trait-impl methods only; no const prohibition, mutation, receiver, unsafe or API privilege. No persistent absence fact or imported lint permission.",
   "cases": {
     "inherent.rs": {

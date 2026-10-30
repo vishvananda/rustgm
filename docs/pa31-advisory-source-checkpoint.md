@@ -1,8 +1,70 @@
-# Source optimization and drop-advisory declarations
+# Source optimization and advisory declarations
+
+## Current local legacy and method-advisory checkpoint
+
+Source `a9cc9cf53` qualifies actual local legacy const-generic headers and
+`rustc_should_not_be_called_on_const_items` method declarations. Legacy indices
+join real owned const formals and the published function signature; modern local
+calls retain their normal syntax. External legacy indices/call rewriting and
+metadata transport remain required. The advisory accepts inherent and trait-impl
+methods, including associated functions, and changes no const, unsafe, mutation,
+ownership or call permission. Broader advisory lint production remains deferred.
+
+Pinned Rust gates unstable builtin attributes on the full retained `#` through
+`]` envelope. The existing paid macro session now uses that span for these
+consumers: a generated `#[$meta]` can have macro authority while its captured name
+retains caller provenance. A forwarded whole item and a nonallowing macro remain
+rejections. No general origin mutation, new provenance cache or captured-name
+privilege is introduced.
+
+- Exact40 private controls pass124.05s, including strict Clippy/link92.69s,
+  formatting and architecture. Receipt B
+  `obj/qualification/fast/1793356451939646414/receipt.json`, SHA
+  `1e8ad0983bb5f1d8a463db33f6a00a9023e89b5911cbd7b4c81d4a54b4366fb1`.
+- Production CLI/lexer10 and all2605 affected text cases pass: PA3 90/90,
+  PA4 200/200, PA17 205/205, PA18 502/502, PA19 1193/1193, PA23 415/415.
+  The initial production gate takes134.74s; the final matching-source gate
+  takes47.14s with cached Clippy/build and identical actual CLI bytes. Final
+  receipt B `obj/qualification/fast/1793356590580700587/receipt.json`, SHA
+  `4d191f23005717d9ee891d4397b31de66693cae07893fa310a29cdcd55cba432`.
+- All3258 source/tool fingerprints match. Fresh candidate LowIR through locked
+  CPPGM and fresh pinned Rust objects match all seven native results:
+  legacy runtime/const/unsafe/meta7, advisory mutation9/const7/unsafe7.
+  Advisory programs use the existing local library-root API; the CLI's public
+  nominal/member metadata restriction remains an explicit separate gap. Receipt B
+  `obj/parallel/legacy-advisory-join-v1/native-v2/receipt.json`, SHA
+  `932510ef8f8ed123277e3441f46f4ecd70ade09c22a37e3e56e1857608ba0cad`.
+  Successful cleanup removes28 generated objects/executables.
+- Original independent Legacy91/91 and advisory76/76 outcomes are preserved;
+  two additional Legacy macro-envelope cases match4/4. Header80/Node36/Body456
+  are unchanged. Legacy width8/32/128 work216/864/3456 and bytes12320/49184/196640
+  are linear; cold Marker136/Promises232. Advisory work328/1026/3794 and
+  bytes2080/9120/36320 are linear; transient Draft32/Entry24/key12.
+- Full harness/upstream passes15.55s. The final native/core guarded batch takes
+  43.74s including cleanup. Every development gate stays under300s, with two
+  threads,16GiB absolute output caps and150GiB free reserve.
+
+Current immutable CLI
+`f154c53ef2cb40e45c1a859a71db8fc0dcff3cd4fe0f19c0fb975e8c7db985a4`
+recognizes the previous LIB109 marker. The unchanged-core types probe now stops
+at `file3:0: source lint policy work budget exceeded` in21.07s, with375 loading
+opens and all722 original hashes unchanged. Source-contract limits stay at
+14500624 work/1GiB attempted/64MiB retained; the separate lint-policy limit stays
+10M work/64MiB. This is a LIB046 work-budget recurrence requiring attribution,
+not evidence of full semantic completion or an output-equal speedup. Receipt B
+`obj/parallel/legacy-advisory-join-v1/core-v2/receipt.json`, SHA
+`350dc7d15488dd477002d3f67e18e55e56dcfc2abfac087aeefb2d01ac73d15b`.
+No core/alloc/std artifact or additional whole PA is complete.
+
+The previous public5beb full
+[CI41038124565](https://github.com/vishvananda/rustgm/actions/runs/41038124565)
+is terminal SUCCESS. It does not qualify this new compiler's full release gates.
+
+## Earlier optimization and drop declaration checkpoint
 
 Source f91fc9b24 implements the actual `rustc_no_writable` and
 `rustc_insignificant_dtor` declaration contracts without changing independent
-language permissions. The unchanged-core loading/expansion observation now
+language permissions. That unchanged-core loading/expansion observation
 clears these markers and reaches LIB-109 at `cell/lazy.rs:137`:
 `rustc_should_not_be_called_on_const_items`. No whole assignment or original
 library artifact is complete.
