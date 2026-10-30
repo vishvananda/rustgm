@@ -36,6 +36,14 @@ records current hard source boundaries and qualified checkpoint scope. Preserve
 real diagnostic policy while using explicit capped observations to prioritize
 compilation; deferred advisory producers and strict qualification remain required.
 
+The [source Writable-suppression contract](tests/spec/source-no-writable/README.md)
+validates actual `rustc_no_writable` word/gate/owner/duplicate semantics. The marker
+suppresses an optional LLVM argument optimization; it grants neither write nor
+unsafe/const/ABI permission. Current local and imported executable bodies emit
+no such assumption. A future optimizer must preserve authenticated intent across
+imports or remain conservative before using the assumption. The source draft has
+independent Rust evidence; candidate qualification remains pending.
+
 The source `rustc_promotable` declaration checkpoint retains its actual attribute,
 configured owner and direct const-stability witness. Word, list and value forms
 follow the pinned parser's marker semantics. This header promise grants neither

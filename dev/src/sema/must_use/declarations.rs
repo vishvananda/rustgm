@@ -59,7 +59,10 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                     report.expanded_derive(owner_key, effect)?;
                     continue;
                 }
-                if attribute.name(forest, unit.source.text()) == Some("rustc_no_mir_inline") {
+                if matches!(
+                    attribute.name(forest, unit.source.text()),
+                    Some("rustc_no_mir_inline" | "rustc_no_writable")
+                ) {
                     mir_boundaries.consume(
                         report,
                         facts,

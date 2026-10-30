@@ -1,0 +1,26 @@
+{
+  "compiler/rustc_attr_parsing/src/attributes/rustc_internal.rs": {
+    "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_attr_parsing/src/attributes/rustc_internal.rs",
+    "sha256": "f667f727ca0ca74a922e2a0dae4e9d5b6e0c681fa8f604e699a17e546178106c"
+  },
+  "compiler/rustc_ty_utils/src/abi.rs": {
+    "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_ty_utils/src/abi.rs",
+    "sha256": "9dbb00313730ce82abdbbc02dd8e7fce4fd766454b73f06c16c82b78c1c7b841"
+  },
+  "compiler/rustc_feature/src/builtin_attrs.rs": {
+    "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_feature/src/builtin_attrs.rs",
+    "sha256": "0c503aa7399200dc3eaec7aaa8ab39da4d756d6f6f69d0abb7f0a0a0176cf6eb"
+  },
+  "library/core/src/slice/index.rs": {
+    "path": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/slice/index.rs",
+    "sha256": "8c2d4f2dd29808136d4a45878010f2edb7c64c3c197d564f86d034b33df4e8ec"
+  },
+  "original_method": {
+    "path": "pa31/tests/spec/source-no-writable/original-index-mut.txt",
+    "original": "library/core/src/slice/index.rs",
+    "byte_start": 741,
+    "byte_end": 882,
+    "sha256": "d93d7e0fdf5afbc74c13ae1dcd7ce606801201452292cf8900f2a0e393f73653",
+    "scope": "Exact original slice IndexMut method interval; genuine ops::IndexMut/SliceIndex const/generic/body graph remains Required, no standalone Rust/candidate positive is claimed."
+  }
+}
