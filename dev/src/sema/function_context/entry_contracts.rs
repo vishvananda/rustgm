@@ -1,9 +1,8 @@
 //! A default's defining context is not permission to execute it as a root.
 use crate::{
-    body::ir::{Body, BodyOrigin, Owner},
-    resolve::{expansion::Report, model::DefId},
+    resolve::{body_origin::BodyOrigin, expansion::Report, model::DefId},
     sema::{header_attributes::ContractKnowledge, model::Declarations},
-    types::{Kind, instance::Instance},
+    types::{Kind, TypeId, instance::Instance},
 };
 
 /// Transient selection binds one materialization, never a root or runtime original.
@@ -13,19 +12,27 @@ pub(crate) struct DefaultExecution {
     source: BodyOrigin,
     arena: crate::types::arena::Identity,
 }
+/// A body consumer supplies only the actual typed materialization coordinates.
+/// The semantic layer never inspects, mutates or owns a body/CFG record.
+pub(crate) struct DefaultMaterialization {
+    pub(crate) source: BodyOrigin,
+    pub(crate) instance: Option<Instance>,
+    pub(crate) callable: Option<(DefId, TypeId)>,
+    pub(crate) const_context: bool,
+}
 impl DefaultExecution {
-    pub(crate) fn prepare(
+    pub(crate) fn require_materialization(
         &self,
         report: &Report,
         facts: &mut Declarations,
-        body: &mut Body,
+        materialized: DefaultMaterialization,
     ) -> Result<(), &'static str> {
         facts.charge_caller_inputs(12, 0)?;
         if !facts.types.has_identity(&self.arena)
-            || body.source != self.source
-            || body.instance != Some(self.instance)
-            || body.const_context
-            || !matches!(body.owner, Owner::Function { definition, signature, execution: Some(_) }
+            || materialized.source != self.source
+            || materialized.instance != Some(self.instance)
+            || materialized.const_context
+            || !matches!(materialized.callable, Some((definition, signature))
                 if definition == self.definition && matches!(facts.types.kind(self.instance.ty()),
                     Some(Kind::FunctionItem { item, signature: actual, .. })
                         if item.0 == definition.0 && actual == signature))
@@ -38,7 +45,6 @@ impl DefaultExecution {
         if current.source != self.source || current.definition != self.definition {
             return Err("const default materialization changed its current source declaration");
         }
-        body.const_context = true;
         Ok(())
     }
 }

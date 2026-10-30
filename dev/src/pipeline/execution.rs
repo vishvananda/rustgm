@@ -785,9 +785,13 @@ impl Engine {
         let mut materialized = body::instantiate::with_contract(facts, template, instance, input)
             .map_err(|e| report.body_error(source, e))?;
         if let Some(default) = default {
-            default
-                .prepare(report, facts, &mut materialized.body)
-                .map_err(|e| report.body_error(source, e))?;
+            body::constants::prepare_default_execution(
+                report,
+                facts,
+                default,
+                &mut materialized.body,
+            )
+            .map_err(|e| report.body_error(source, e))?;
         }
         materialized
             .resolve(facts)

@@ -136,7 +136,10 @@ fn check_default_entries(report: &Report, facts: &mut Declarations) -> TestResul
         function.body.ok_or("actual default source")?,
         crate::types::TypeId::UNIT,
     );
-    assert!(execution.prepare(report, facts, &mut original).is_err());
+    assert!(
+        crate::body::constants::prepare_default_execution(report, facts, &execution, &mut original)
+            .is_err()
+    );
     assert!(!original.const_context);
     assert!(facts.check_const_member_execution(definition).is_err());
     let Some(crate::types::Kind::FunctionItem {

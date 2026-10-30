@@ -10,6 +10,36 @@ use crate::{
     types::Kind,
 };
 
+/// Only the actual freshly materialized body may consume a const-default
+/// selection. Original and runtime templates retain their defining context.
+pub(crate) fn prepare_default_execution(
+    report: &crate::resolve::expansion::Report,
+    facts: &mut Declarations,
+    execution: &crate::sema::function_context::DefaultExecution,
+    body: &mut Body,
+) -> Result<(), &'static str> {
+    let callable = match body.owner {
+        Owner::Function {
+            definition,
+            signature,
+            execution: Some(_),
+        } => Some((definition, signature)),
+        _ => None,
+    };
+    execution.require_materialization(
+        report,
+        facts,
+        crate::sema::function_context::DefaultMaterialization {
+            source: body.source,
+            instance: body.instance,
+            callable,
+            const_context: body.const_context,
+        },
+    )?;
+    body.const_context = true;
+    Ok(())
+}
+
 /// One preparation is shared by the readonly and cumulative-budget entrypoints.
 pub(super) fn defining(
     facts: &Declarations,
