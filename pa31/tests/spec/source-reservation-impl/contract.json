@@ -290,6 +290,9 @@
     "source_sha256": "32d38b818e5c44eeabbf2c648c93113a7bdc0c0debf2f8edf889f11234a9cf21",
     "predicted_rust_metadata_status": 1,
     "predicted_candidate": "reservation impl cannot be negative",
-    "scope": "ordinary authored trait isolates reservation marker validation; original custom-auto negative remains unchanged and executed; general custom source auto-trait implementation remains Required"
+    "scope": "ordinary authored trait isolates reservation marker validation; original custom-auto negative remains unchanged and executed; general custom source auto-trait implementation remains Required",
+    "actual_rust_metadata_status": 1,
+    "actual_rust_diagnostic": "reservation impls can't be negative",
+    "receipt_sha256": "2f768395ca1cd3d84cfe27f83dcef3a253a427daf9e559ef7e4ab396829eaad9"
   }
 }
