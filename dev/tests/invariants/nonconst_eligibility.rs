@@ -321,15 +321,14 @@ fn failed_marker_publication_keeps_choice_empty_and_ordinary_free_functions_spar
     let mut facts = pipeline::analyze_source(&report)?.facts;
     let id = method(&report, &facts, "runtime")?;
     let key = facts.functions[facts.function_indices[&id]].node;
-    let actual = local(&mut facts)?
+    let mut actual = local(&mut facts)?
         .declarations
         .get_mut(&key)
-        .and_then(|row| row.promises.as_deref_mut())
-        .ok_or("actual promise")?
-        .member
+        .ok_or("actual header")?
+        .promises
         .take()
-        .ok_or("actual member")?;
-    let Choice::Marked(marker) = actual else {
+        .ok_or("actual promises")?;
+    let Choice::Marked(marker) = actual.member.take().ok_or("actual member")? else {
         return Err("marked member".into());
     };
     let owner = header(&facts, key)
@@ -351,11 +350,7 @@ fn failed_marker_publication_keeps_choice_empty_and_ordinary_free_functions_spar
             )
             .is_err()
         );
-        assert!(
-            header(&facts, key)
-                .and_then(|row| row.promises.as_deref())
-                .is_some_and(|row| row.member.is_none())
-        );
+        assert!(header(&facts, key).is_some_and(|row| row.promises.is_none()));
     }
     assert!(local(&mut facts)?.bytes.get() > crate::support::crates::MAX_BYTES);
     let ordinary = test_source::resolve("fn plain()->u32{7}", true)?;

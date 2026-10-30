@@ -258,6 +258,23 @@ impl Declarations {
         if !is_trait_member(self, definition) {
             return Ok(false);
         }
+        let declared = self
+            .definitions
+            .get(definition.0 as usize)
+            .copied()
+            .flatten()
+            .and_then(|ty| self.types.kind(ty))
+            .ok_or("trait member constness requires its completed declaration type")?;
+        match declared {
+            crate::types::Kind::FunctionItem { item, .. } if item.0 == definition.0 => {}
+            crate::types::Kind::FunctionItem { .. } => {
+                return Err("trait member constness changed its declared callable");
+            }
+            _ if self.function_indices.contains_key(&definition) => {
+                return Err("trait member constness changed its function declaration type");
+            }
+            _ => return Ok(false),
+        }
         let local = &self
             .must_use_contracts
             .as_deref()
