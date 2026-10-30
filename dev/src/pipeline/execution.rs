@@ -468,13 +468,14 @@ impl Engine {
             .map_err(|e| Error::at(FileId(0), 0, e))?;
         crate::sema::compiler_items::check_const_drop_glue(facts, instance)
             .map_err(|e| Error::at(FileId(0), 0, e))?;
-        self.function_body(report, facts, instance)
+        self.function_body(report, facts, instance, None)
     }
     fn function_body(
         &mut self,
         report: &Report,
         facts: &mut Declarations,
         instance: crate::types::instance::Instance,
+        default: Option<&crate::sema::function_context::DefaultExecution>,
     ) -> Result<bool, Error> {
         if self.cached_function(report, facts, instance)? {
             return Ok(true);
@@ -503,7 +504,7 @@ impl Engine {
             .function(facts, &function)
             .map_err(|e| report.body_error(source, e))?
             .clone();
-        if self.lent_function(report, facts, function, instance, &input)? {
+        if default.is_none() && self.lent_function(report, facts, function, instance, &input)? {
             return Ok(true);
         }
         if let Some(templates) = self.runtime_templates.as_ref().map(Rc::clone)
@@ -512,7 +513,7 @@ impl Engine {
             let template = templates
                 .get(index)
                 .ok_or_else(|| report.body_error(source, "runtime template index is stale"))?;
-            self.specialize(report, facts, instance, template, &input)?;
+            self.specialize(report, facts, instance, template, &input, default)?;
             return Ok(true);
         }
         let template = if let Some(template) = self.originals.remove(&definition) {
@@ -529,7 +530,7 @@ impl Engine {
             template
         };
         let retained = body::templates::owns(facts, definition);
-        let specialize = retained || Self::needs_method_dispatch(facts, &template.body);
+        let specialize = default.is_some() || retained || Self::needs_method_dispatch(facts, &template.body);
         let purpose = if specialize {
             ProofPurpose::Original
         } else {
@@ -540,7 +541,7 @@ impl Engine {
             if retained {
                 self.reserve_template(report, facts, definition, &template)?;
             }
-            self.specialize(report, facts, instance, &template, &input)?;
+            self.specialize(report, facts, instance, &template, &input, default)?;
             if retained {
                 self.originals.insert(definition, template);
             } else {
@@ -730,7 +731,7 @@ impl Engine {
             row.contract(),
         )
         .map_err(|e| report.body_error(row.template().body.source, e))?;
-        self.specialize(report, facts, instance, row.template(), row.contract())?;
+        self.specialize(report, facts, instance, row.template(), row.contract(), None)?;
         Ok(true)
     }
     fn reserve_template(
@@ -766,6 +767,7 @@ impl Engine {
         instance: crate::types::instance::Instance,
         template: &Template,
         input: &Contract,
+        default: Option<&crate::sema::function_context::DefaultExecution>,
     ) -> Result<(), Error> {
         let source = template.body.source;
         if template.retained_bytes() > 64 * 1024 * 1024 {
@@ -774,9 +776,16 @@ impl Engine {
         body::assembly::prepay_instance(report, &template.body)?;
         let mut materialized = body::instantiate::with_contract(facts, template, instance, input)
             .map_err(|e| report.body_error(source, e))?;
+        if let Some(default) = default {
+            default.prepare(report, facts, &mut materialized.body)
+                .map_err(|e| report.body_error(source, e))?;
+        }
         materialized
             .resolve(facts)
             .map_err(|e| report.body_error(source, e))?;
+        if default.is_some() {
+            body::constants::eligibility_charged(report, facts, &materialized.body)?;
+        }
         body::promote::instance_reusing(
             report,
             facts,

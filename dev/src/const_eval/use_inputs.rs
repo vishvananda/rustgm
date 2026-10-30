@@ -356,13 +356,16 @@ fn function_payment(
     let Owner::Function { definition, .. } = owner else {
         return Ok(false);
     };
-    facts.charge_caller_inputs(8, 0)?;
+    facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(1);
     // A default's implicit Self contract is proved at its reached call. It is
     // not the free-function conditional effect represented by Requirements.
-    if let Some(instance) = instance
-        && facts.const_default_member(instance)? == Some(definition)
+    if facts.associated.trait_owner(definition).is_some()
+        && let Some(instance) = instance
     {
-        return Ok(false);
+        facts.charge_caller_inputs(8, 0)?;
+        if facts.const_default_member(instance)? == Some(definition) {
+            return Ok(false);
+        }
     }
     facts
         .source_bindings

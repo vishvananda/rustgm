@@ -125,7 +125,17 @@ fn check_default_entries(report: &Report, facts: &mut Declarations) -> TestResul
         .ok_or("actual default call")?
         .callable;
     let instance = crate::types::instance::Instance::new(&facts.types, callable)?;
-    facts.check_const_default(report, instance)?;
+    let execution = facts.check_const_default(report, instance)?;
+    let function = facts.functions[facts.function_indices[&definition]];
+    let mut original = crate::body::ir::Body::new(
+        crate::body::ir::Owner::Function {
+            definition, signature: function.signature, execution: None,
+        },
+        function.body.ok_or("actual default source")?,
+        crate::types::TypeId::UNIT,
+    );
+    assert!(execution.prepare(report, facts, &mut original).is_err());
+    assert!(!original.const_context);
     assert!(facts.check_const_member_execution(definition).is_err());
     let Some(crate::types::Kind::FunctionItem {
         item,
@@ -312,6 +322,7 @@ fn replay_requires_current_choice_owner_effect_function_and_source_image() -> Te
 }
 #[test]
 fn cold_trait_choices_and_failed_warm_queries_are_paid_and_scale_linearly() -> TestResult {
+    ordinary_default_indexes_scale()?;
     let source = input("source-runtime")?;
     let (foundation, _) = source
         .split_once("fn helper()")
@@ -375,9 +386,35 @@ fn cold_trait_choices_and_failed_warm_queries_are_paid_and_scale_linearly() -> T
         size_of::<crate::syntax::ast::Node>(),
         size_of::<crate::body::ir::Body>()
     );
+    println!("Transient DefaultExecution={}", size_of::<crate::sema::function_context::DefaultExecution>());
     assert_eq!(size_of::<Header>(), 80);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
+    Ok(())
+}
+fn ordinary_default_indexes_scale() -> TestResult {
+    let mut previous = None;
+    for width in [8, 32, 128] {
+        let mut source = String::from("#![feature(const_trait_impl)]const trait Defaults{");
+        for index in 0..width {
+            write!(source, "fn f{index}()->u8{{7}}")?;
+        }
+        source.push('}');
+        let report = test_source::resolve(&source, true)?;
+        let pipeline::Analysis { mut facts, prepared } = pipeline::analyze_source(&report)?;
+        assert!(!facts.uses_source_copy());
+        let before = facts.body_work.canonical_steps;
+        crate::lower::instances::build_roots_prepared(
+            &report, &mut facts, crate::lower::Roots { entry: None, exports: &[] }, prepared,
+        )?;
+        let work = facts.body_work.canonical_steps - before;
+        let (_, bytes) = super::super::source_contract_storage(&facts).ok_or("ordinary header payments")?;
+        println!("ordinary default indexes width={width} work={work} bytes={bytes}");
+        if let Some((old_work, old_bytes)) = previous {
+            assert!(work <= old_work * 5 && bytes <= old_bytes * 5);
+        }
+        previous = Some((work, bytes));
+    }
     Ok(())
 }
 #[test]

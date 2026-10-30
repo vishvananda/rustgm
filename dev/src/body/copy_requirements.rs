@@ -310,6 +310,7 @@ pub(crate) fn originals<'a, 'b>(
         Some(original_index(
             bodies.take().ok_or("missing original bodies")?,
             &mut facts.body_work.canonical_steps,
+            None,
         )?)
     } else {
         None
@@ -320,12 +321,16 @@ pub(crate) fn originals<'a, 'b>(
             continue;
         }
         if index.is_none() {
-            index = Some(original_index(
+            let mut attempted = 0;
+            let prepared = original_index(
                 bodies
                     .take()
                     .ok_or("original body index was consumed twice")?,
-                &mut facts.body_work.canonical_steps,
-            )?);
+                &mut attempted,
+                Some(&|work, bytes| facts.charge_caller_inputs(work, bytes)),
+            );
+            facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(attempted);
+            index = Some(prepared?);
         }
         let body = index
             .as_mut()
@@ -343,13 +348,27 @@ pub(crate) fn originals<'a, 'b>(
 fn original_index<'a>(
     bodies: impl Iterator<Item = &'a Body>,
     steps: &mut usize,
+    payment: Option<crate::support::retained::Payment<'_>>,
 ) -> Result<HashMap<BodyKey, &'a Body>, String> {
     let mut index = HashMap::default();
     for body in bodies {
         *steps = steps.saturating_add(1);
-        if index.len() >= 1_000_000 || index.insert(body.key(), body).is_some() {
+        if let Some(payment) = payment {
+            payment(1, 0)?;
+        }
+        if index.len() >= 1_000_000 || index.contains_key(&body.key()) {
             return Err("source Copy original body index is duplicate or exhausted".into());
         }
+        let growth = crate::support::retained::Growth::map::<BodyKey, &Body>(index.len(), index.capacity(), 1);
+        *steps = steps.saturating_add(growth.work);
+        if let Some(payment) = payment {
+            payment(growth.work, growth.bytes)?;
+        }
+        if growth.bytes > 64 * 1024 * 1024 {
+            return Err("source Copy original body index exceeds storage budget".into());
+        }
+        index.try_reserve(1).map_err(|_| "source Copy original body index allocation failed")?;
+        index.insert(body.key(), body);
     }
     Ok(index)
 }

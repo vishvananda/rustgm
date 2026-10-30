@@ -392,6 +392,7 @@ impl<'a> Evaluator<'a> {
             .typing
             .facts
             .check_const_default(self.queries.report, instance)
+            .map(|_| ())
     }
     pub(crate) fn promotable_contract(
         &self,
