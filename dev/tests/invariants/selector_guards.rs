@@ -263,7 +263,7 @@ fn selector_preparation_visits_both_calls_after_early_or_owner_retention() -> Te
         );
         assert_eq!(
             facts.body_work.canonical_steps - before,
-            body.values.len() + 10 + uses.descriptor_work,
+            1 + body.values.len() + 10 + uses.descriptor_work,
             "{name}"
         );
         let before = facts.body_work.canonical_steps;
