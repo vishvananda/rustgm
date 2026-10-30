@@ -1,0 +1,1 @@
+#[cfg(any())]#[must_not_suspend]#[must_not_suspend]pub fn f(){}
