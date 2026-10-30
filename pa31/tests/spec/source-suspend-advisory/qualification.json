@@ -1,0 +1,14 @@
+{
+  "state": "Pinned Rust reference160/160 PASS across two frozen80source clusters; source implementation drafted, candidate RustGM compilation/tests/native unexecuted",
+  "plan_sha256": "bb000fddf5d6f0465d4782feb9bc9cd76b17e7c7627c07e16d55b1edb425bff5",
+  "receipt_sha256": "c28e07043f80db38a4d9027250b56f2931d83ac2750eb1ec50e8d135af238ed1",
+  "launcher_sha256": "ba5649661c490e83da327ff38025119f3fefca46d663420b655e856908a1e9f3",
+  "source_scope": "Exact declaration forms/feature/owner rules; no runtime alias/permission/drop change; no broad diagnostics or metadata capability completion",
+  "candidate_required": [
+    "strict Clippy/static and actual typed tests on warm Root build",
+    "all80real source positives/negatives",
+    "failed/warm/source owner/namespace/constructor identities and common layout measurements",
+    "touched annotation frontier scaling and exact hash/cold-row cost observation"
+  ],
+  "wider_required": "Full original algorithms/artifacts and broad advisory/liveness/suggestion producers and imported intent remain required"
+}

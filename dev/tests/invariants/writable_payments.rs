@@ -125,7 +125,7 @@ fn transient_restrictions_scale_linearly_without_common_layout_growth() -> TestR
         "restriction Draft={} Entry={} key={}",
         size_of::<Draft>(),
         size_of::<Entry>(),
-        size_of::<(NodeKey, Restriction)>()
+        size_of::<NodeKey>()
     );
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);

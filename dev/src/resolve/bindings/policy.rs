@@ -66,6 +66,8 @@ pub(in crate::resolve) enum Feature {
     OffsetOfEnum = 49,
     DeprecatedSuggestion = 50,
     PreludeImport = 51,
+    // Bit52 belongs to RustdocInternals in the independently qualified v9 lane.
+    MustNotSuspend = 53,
 }
 
 impl Feature {
@@ -99,6 +101,7 @@ impl Request {
     fn named(name: &str) -> Option<Self> {
         Some(match name {
             "prelude_import" => Self::Capability(Feature::PreludeImport),
+            "must_not_suspend" => Self::Capability(Feature::MustNotSuspend),
             "no_core" => Self::Capability(Feature::NoCore),
             "lang_items" => Self::Capability(Feature::LangItems),
             "intrinsics" => Self::Capability(Feature::Intrinsics),
@@ -157,6 +160,7 @@ impl Features {
     }
     fn needs_local_owner(&self) -> bool {
         self.has(Feature::PreludeImport)
+            || self.has(Feature::MustNotSuspend)
             || self.has(Feature::ExpressionAttributes)
             || self.has(Feature::InternalMacroAllowance)
             || crate::support::cpu_features::Gate::ALL

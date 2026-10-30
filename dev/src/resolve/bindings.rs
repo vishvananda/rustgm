@@ -295,6 +295,12 @@ impl super::package::Package {
             "expression-attribute client identity changed",
         )
     }
+    pub(crate) fn requested_must_not_suspend(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::MustNotSuspend,
+            "suspension-advisory client identity changed",
+        )
+    }
     fn requested_expression_feature(
         &self,
         feature: policy::Feature,

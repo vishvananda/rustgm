@@ -1,8 +1,9 @@
 # Suspension advisory declaration plan
 
-This packet freezes source hashes and predicted pinned Rust metadata/object
-outcomes before reference or candidate execution. It is not an observed next
-core blocker or a completed compiler implementation.
+This packet preserves source hashes and predictions frozen before execution.
+The independent pinned Rust batch matched all160 outcomes across both80source
+clusters. Source validation is drafted; candidate compiler/runtime qualification
+remains pending. Only Confusables is an observed core blocker (cell.rs508).
 
 The pinned MustNotSuspendParser accepts a word or string name-value reason on
 Struct, Enum, Union or Trait. Its own must_not_suspend feature is required;
@@ -24,3 +25,9 @@ and imported advisory intent remain required in PA42/43 and PA29. They are not
 hidden dependencies of a PA31 source-header positive. Existing diagnostics keep
 their actual policy. Original Ref/RefMut source intervals/full file hashes are
 recorded in contract.json; whole original algorithms and artifacts remain required.
+
+`qualification.json` binds the independent receipt and unexecuted candidate
+requirements. The transient draft performs one declaration lookup, keeps its
+first annotation inline, and visits only actual present kinds. Repeated
+Confusables lists are all validated, without allocating a successful-name table.
+No future imported diagnostic consumer may treat absent wire intent as permission.

@@ -15,8 +15,14 @@ use crate::{
     },
 };
 use std::sync::Arc;
+mod advisory_inputs;
+mod boundary_entries;
 mod restrictions;
+use boundary_entries::Entry;
 use restrictions::Restriction;
+#[cfg(test)]
+#[path = "../../../tests/invariants/cell_annotation_cases.rs"]
+mod cell_tests;
 #[cfg(test)]
 #[path = "../../../tests/invariants/advisory_methods.rs"]
 mod const_item_tests;
@@ -26,16 +32,12 @@ mod tests;
 #[cfg(test)]
 #[path = "../../../tests/invariants/writable_boundaries.rs"]
 mod writable_tests;
-struct Entry {
-    image: Arc<OriginalImage>,
-    span: Span,
-    bound: bool,
-}
-/// A once-per-declaration draft, consumed by the existing real definition walk.
-/// There is deliberately no absence query or optimizer permission represented here.
+/// One lookup per reached definition; kinds are visited only on touched owners.
+/// No absence query, diagnostic alias or optimizer permission survives this draft.
 #[derive(Default)]
 pub(in crate::sema) struct Draft {
-    entries: HashMap<(NodeKey, Restriction), Entry>,
+    entries: HashMap<NodeKey, Entry>,
+    annotations: usize,
 }
 impl Draft {
     pub(in crate::sema) fn consume(
@@ -55,30 +57,45 @@ impl Draft {
             forest,
             allowances,
         )?;
-        let error = |message| Error::at(declaration.file, attribute.span.start, message);
+        let error = |message: &str| Error::at(declaration.file, attribute.span.start, message);
+        let image = report
+            .package
+            .unit(declaration.file)
+            .source
+            .original_image();
         reserve_source_contracts(facts, 1, 0)?;
-        let key = (declaration, restriction);
-        if self.entries.contains_key(&key) {
-            return Err(error(restriction.duplicate_error()));
+        if let Some(entry) = self.entries.get_mut(&declaration) {
+            if !Arc::ptr_eq(&entry.image, image) {
+                return Err(error("source advisory draft incarnation changed"));
+            }
+            let count = entry.annotation_count();
+            reserve_source_contracts(facts, count, 0)?;
+            if entry
+                .annotations()
+                .any(|row| row.restriction == restriction)
+            {
+                if restriction == Restriction::Confusables {
+                    // Each repeated list was fully validated above. Its names
+                    // combine for future diagnostics, never successful lookup.
+                    entry.bound = false;
+                    return Ok(());
+                }
+                return Err(error(restriction.duplicate_error()));
+            }
+            entry.append(facts, declaration, restriction, attribute.span)?;
+        } else {
+            let growth =
+                Growth::map::<NodeKey, Entry>(self.entries.len(), self.entries.capacity(), 1);
+            reserve_source_contracts(facts, growth.work, growth.bytes)?;
+            self.entries
+                .try_reserve(1)
+                .map_err(|_| error("source advisory draft allocation failed"))?;
+            self.entries.insert(
+                declaration,
+                Entry::new(Arc::clone(image), restriction, attribute.span, closure),
+            );
         }
-        let growth = Growth::map::<(NodeKey, Restriction), Entry>(
-            self.entries.len(),
-            self.entries.capacity(),
-            1,
-        );
-        reserve_source_contracts(facts, growth.work, growth.bytes)?;
-        self.entries
-            .try_reserve(1)
-            .map_err(|_| error("optimization boundary draft allocation failed"))?;
-        let unit = report.package.unit(declaration.file);
-        self.entries.insert(
-            key,
-            Entry {
-                image: Arc::clone(unit.source.original_image()),
-                span: attribute.span,
-                bound: closure,
-            },
-        );
+        self.annotations += 1;
         Ok(())
     }
     pub(in crate::sema) fn is_empty(&self) -> bool {
@@ -97,8 +114,8 @@ impl Draft {
                     .resolution
                     .definitions
                     .len()
-                    .saturating_mul(Restriction::ALL.len())
-                    .saturating_add(self.entries.len().saturating_mul(12)),
+                    .saturating_add(self.annotations.saturating_mul(16))
+                    .saturating_add(self.entries.capacity()),
                 0,
             )?;
         }
@@ -111,51 +128,58 @@ impl Draft {
         index: usize,
         definition: &Definition,
     ) -> Result<(), Error> {
-        if self.entries.is_empty() {
-            return Ok(());
-        }
-        facts.require_lint_context(report)?;
         let Some(key) = definition.node else {
             return Ok(());
         };
-        for restriction in Restriction::ALL {
-            let Some(entry) = self.entries.get_mut(&(key, restriction)) else {
-                continue;
-            };
-            let actual = DefId(
-                u32::try_from(index)
-                    .map_err(|_| Error::unlocated("too many optimization boundary definitions"))?,
-            );
-            if report
-                .resolution
-                .definitions
-                .get(index)
-                .is_none_or(|current| !std::ptr::eq(current, definition))
-                || definition.kind != DefKind::Function
-                || definition.namespace != Namespace::Value
-                || report.resolution.foreign_owners.contains_key(&actual)
-                || !Arc::ptr_eq(
-                    &entry.image,
-                    report.package.unit(key.file).source.original_image(),
-                )
-            {
-                return Err(Error::at(
-                    key.file,
-                    entry.span.start,
-                    restriction.binding_error(),
-                ));
-            }
-            if restriction == Restriction::ConstItemCalls {
-                restrictions::validate_impl_method(report, facts, actual, definition)?;
-            }
-            entry.bound = true;
+        let Some(entry) = self.entries.get_mut(&key) else {
+            return Ok(());
+        };
+        facts.require_lint_context(report)?;
+        let actual = DefId(
+            u32::try_from(index)
+                .map_err(|_| Error::unlocated("too many source advisory definitions"))?,
+        );
+        if report
+            .resolution
+            .definitions
+            .get(index)
+            .is_none_or(|row| !std::ptr::eq(row, definition))
+            || !Arc::ptr_eq(
+                &entry.image,
+                report.package.unit(key.file).source.original_image(),
+            )
+        {
+            return Err(Error::at(
+                key.file,
+                0,
+                "source advisory actual definition or incarnation changed",
+            ));
         }
+        // Constructors and trait Self share a source item but do not name the
+        // canonical type declaration. They cannot complete its annotation.
+        if entry.is_nominal()
+            && restrictions::nominal_auxiliary(report, facts, actual, definition, key)?
+        {
+            return Ok(());
+        }
+        entry.bound = false;
+        for annotation in entry.annotations() {
+            annotation
+                .restriction
+                .validate_definition(report, facts, actual, definition, key)
+                .map_err(|mut error| {
+                    error.file = crate::resolve::package::DiagnosticFile::Source(key.file);
+                    error.span = annotation.span;
+                    error
+                })?;
+        }
+        entry.bound = true;
         Ok(())
     }
     pub(in crate::sema) fn finish(&self) -> Result<(), Error> {
         if self.entries.values().any(|entry| !entry.bound) {
             return Err(Error::unlocated(
-                "optimization boundary lacks its actual function declaration",
+                "source advisory lacks its actual declaration",
             ));
         }
         Ok(())
