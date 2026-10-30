@@ -17,6 +17,7 @@ mod coverage_annotations;
 pub(crate) mod declaration_inputs;
 pub mod declarations;
 mod deprecation;
+mod destructor_hints;
 pub mod destructors;
 mod diagnostic_contracts;
 pub(crate) mod dispatch;

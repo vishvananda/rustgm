@@ -1,0 +1,279 @@
+{
+  "state": "independent Rust outcomes qualified; candidate implementation awaiting strict qualification; PA31 planned",
+  "issue": "LIB-108",
+  "work_units": [
+    "source-declarations"
+  ],
+  "toolchain": {
+    "release": "1.98.0",
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "panic": "abort",
+    "overflow_checks": true,
+    "debug_assertions": false
+  },
+  "cases": {
+    "word": {
+      "source": "word.rs",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "sha256": "e624ed7ea3e1689e7badd2ce3b8538f18d50ffc872dc305e8bcc85a9e91aa47c"
+    },
+    "enum": {
+      "source": "enum.rs",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "sha256": "db91db8ee0a58cc89c90a4739c5867f870fc33b284652188cbb15828a72f264a"
+    },
+    "foreign": {
+      "source": "foreign.rs",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "sha256": "d8a62fa55bc3f2b707941508a09a4ca3a964078560539b5c3cd41f10bb012bb4"
+    },
+    "generic": {
+      "source": "generic.rs",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "sha256": "26f124f724b34839f3530b1cdbd2d4df0c3ec227833fa6a27ec9362eda39fcc4"
+    },
+    "alias": {
+      "source": "alias.rs",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "sha256": "6ccb28fa8d1fee8f11968951b78b62b233118a65b0384637147776062e8a3c37"
+    },
+    "duplicate": {
+      "source": "duplicate.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "661f5389c864011a54f98235e8760b9b46373bc43faad0bea98174036c2a5866"
+    },
+    "missing-feature": {
+      "source": "missing-feature.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "0551b4b878264e1d16e6d551d6fbd8329ee0c89ab832e6b304f789dbdbfd9035"
+    },
+    "list": {
+      "source": "list.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "6e0a4233552cd751e5bf229504497b6e545b8b3844a76cadc1caf7c8836382c6"
+    },
+    "value": {
+      "source": "value.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "af2d17a73c1ac6205e89805a9d3f343c4dd520cb9bc99bfc893e1720a8ae9ad8"
+    },
+    "unsafe-wrapper": {
+      "source": "unsafe-wrapper.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "be568740aca15ba42247e9daf5e3076bf840122663673b07246f23bebb447a14"
+    },
+    "wrong-union": {
+      "source": "wrong-union.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "72f9fdf913f10613652952139ac0c40619131eb3ac94b92ed26155b3d44c3132"
+    },
+    "wrong-trait": {
+      "source": "wrong-trait.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "a20375d4bf865b8ce63f952b3a0a4de34d32212b392290ef142b36d75211bb86"
+    },
+    "wrong-function": {
+      "source": "wrong-function.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "4f9645c956381de07d32b58cbd57b562c5b925c5705084c808c105cb55b67a80"
+    },
+    "wrong-alias": {
+      "source": "wrong-alias.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "e8ed2faa3f29431405888e76deaa3a928b0f7a299bd35e1d09e7a804561bb74f"
+    },
+    "wrong-impl": {
+      "source": "wrong-impl.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "b331e72e806949cb496f1cf697c8a5d1ced373a1d36e335a43c971069f7f025e"
+    },
+    "wrong-module": {
+      "source": "wrong-module.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "cad27b87c616d0c9757d78522fcd282f841bb8e240c27b7c159ce89528d1a735"
+    },
+    "wrong-field": {
+      "source": "wrong-field.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "ed1eaf861369aa6352bc556562f37acdab4aab35dddd250b97fc2f5595cff11e"
+    },
+    "wrong-variant": {
+      "source": "wrong-variant.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "68f95af6e33a034420bc66c85819af82302db89d0c1a659c9ed1979c31f75237"
+    },
+    "wrong-const": {
+      "source": "wrong-const.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "2b84ec1b19e1651cd2ea821a34fdf6366b957692e104d91567b7434253da5893"
+    },
+    "wrong-static": {
+      "source": "wrong-static.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "840dbe609f28a97213807a876c157567c3d7e878801651f5b401b0ee55b62f3f"
+    },
+    "wrong-closure": {
+      "source": "wrong-closure.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "bc87a24cd5045dad531975aae5092f63aaccdb8b4425193f9e3c0e0c8282dea3"
+    },
+    "wrong-foreign-function": {
+      "source": "wrong-foreign-function.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "cf2ab5976f43b7c57dae2c08cc7ea5eaa1d6dfff40da9794eafe44ffd1246297"
+    },
+    "macro-authorized": {
+      "source": "macro-authorized.rs",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "sha256": "0e46eb4a106545f9c3eb1216be0ac5342e05da4335e78c924fbdec7819dfb709"
+    },
+    "macro-captured-caller": {
+      "source": "macro-captured-caller.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "e2b98fd933e4d02629cbcdf60f9ce84663336b667b340d34461ca00430d7f7c9"
+    },
+    "macro-unprivileged": {
+      "source": "macro-unprivileged.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "53380cdb681e4cc6cc1d8e2e2c4c377e10fa81b65e7a8d5188cc79c054324cfc"
+    },
+    "macro-global-request": {
+      "source": "macro-global-request.rs",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "sha256": "0053165a4d047534ef00c15b43eb476360ad332f986fe028d325ffd1dfcbce15"
+    },
+    "cfg-removed": {
+      "source": "cfg-removed.rs",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "sha256": "60a05e8430a144a4f97a8500840843c9080dc56c4d3d3a7342569dc2a386f815"
+    },
+    "not-copy": {
+      "source": "not-copy.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "ff4b39def54d2304399d6b05512551afd82a9598edde63eb3a15afd2625df307"
+    },
+    "still-borrowed": {
+      "source": "still-borrowed.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "sha256": "7b162aea4e0e5e9e3cdac33982c62b6aa84aa76ee9a0a94d58947f90b264785b"
+    },
+    "with-target-has": {
+      "source": "with-target-has.rs",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "sha256": "a361bff081b1a8903496b790940d875f23a9257027ba99b023d8e40d95a5daf4"
+    },
+    "still-drops": {
+      "source": "still-drops.rs",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "sha256": "f6067b8257cacf9cab6a7c5912ce208af156efafb4e223758cb8286c94b9a971",
+      "native": {
+        "status": 0,
+        "stdout": "37\n",
+        "stderr": ""
+      }
+    }
+  },
+  "primary": {
+    "compiler/rustc_attr_parsing/src/attributes/rustc_internal.rs": {
+      "sha256": "f667f727ca0ca74a922e2a0dae4e9d5b6e0c681fa8f604e699a17e546178106c",
+      "lines": [
+        [
+          950,
+          960
+        ]
+      ]
+    },
+    "compiler/rustc_attr_parsing/src/attributes/mod.rs": {
+      "sha256": "d1fce438128338feacb8e231dda21938442d0b91d6959430e1b411c537fdf044",
+      "lines": [
+        [
+          262,
+          302
+        ]
+      ]
+    },
+    "compiler/rustc_ty_utils/src/needs_drop.rs": {
+      "sha256": "585f2e60aa8029c748e2b7513ed77225ba916675288830a9fc15ebd8faa9d7e5",
+      "lines": [
+        [
+          454,
+          480
+        ]
+      ]
+    },
+    "compiler/rustc_middle/src/ty/util.rs": {
+      "sha256": "75418a60be90551a19644dda78e86ced6e1796439526f8f258ed3e8e8f75f597",
+      "lines": [
+        [
+          1396,
+          1435
+        ]
+      ]
+    },
+    "compiler/rustc_hir_typeck/src/upvar.rs": {
+      "sha256": "184ebeb764c3a46b6a6e1568a91cb57112766432d637ed4d0394102eabbf840f",
+      "lines": [
+        [
+          1320,
+          1352
+        ]
+      ]
+    }
+  },
+  "original": {
+    "path": "library/core/src/array/iter.rs",
+    "sha256": "570b98951edb1bf47932c2de58dc4d3f38f34d37b3dffeac2fe80572dc0475cb",
+    "lines": [
+      17,
+      24
+    ],
+    "excerpt": "original-array-header.txt",
+    "excerpt_sha256": "7d728a40b23f25d8762e497cac7f958fb59301cafadbe53352fc8f61ee13f466"
+  },
+  "scope": "Actual source form/gate/target/hard duplicate validation. Insignificant destructor classification only affects advisory analyses; actual needs_drop, moves, lifetimes, field/own destruction and capture semantics remain required and unchanged. Broader advisory lint parity and imported annotation knowledge are deferred, never claimed absent.",
+  "qualification": {
+    "independent": {
+      "receipt": "obj/parallel/insignificant-dtor-v1/oracle-v1/receipt.json",
+      "sha256": "e771e249a5b5005d5ac3748d39a65858a0ed09c4f50bfea9ab825cdb81a2d558",
+      "frozen_contract_sha256": "5facd1ab58922b54985ffb273dbd65e063264be88dc90ff93dd28834b03655be",
+      "cases": 31,
+      "commands": 64,
+      "seconds": 1.7125034919008613,
+      "native": "37\n"
+    },
+    "candidate": "pending"
+  }
+}

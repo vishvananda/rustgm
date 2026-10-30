@@ -17,6 +17,13 @@ use crate::{
     },
 };
 
+/// State lasts for this one configured owner's existing attribute walk only.
+#[derive(Default)]
+struct OwnerFlags {
+    coverage: bool,
+    insignificant_dtor: bool,
+}
+
 pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     crate::sema::specialization::prepare(report, facts)?;
     let mut by_source = HashMap::default();
@@ -42,7 +49,7 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
             let (key, supported) = declaration(unit, owner_key);
             crate::sema::header_attributes::observe_owner(report, facts, owner_key, key)?;
             crate::sema::specialization::observe_owner(report, facts, owner_key, key)?;
-            let mut covered = false;
+            let mut flags = OwnerFlags::default();
             for effect in owner.attributes.clone() {
                 let Some((attribute, forest)) = unit.retained_attributes(effect..effect + 1).next()
                 else {
@@ -70,7 +77,7 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                     (attribute, effect),
                     forest,
                     &mut allowances,
-                    &mut covered,
+                    &mut flags,
                 )? {
                     if attribute.name(forest, unit.source.text()) == Some("rustc_as_ptr") {
                         retain_pointer_marker(facts, key, &mut pointer_markers)?;
@@ -188,7 +195,7 @@ fn consume_annotation(
     (attribute, effect): (Attribute, usize),
     forest: &Forest,
     allowances: &mut crate::resolve::expansion::MacroAllowanceSession<'_>,
-    covered: &mut bool,
+    flags: &mut OwnerFlags,
 ) -> Result<bool, Error> {
     let consumer = attribute
         .name(forest, report.package.unit(declaration.file).source.text())
@@ -228,14 +235,14 @@ fn consume_annotation(
             )?;
         }
         Some(Consumer::Coverage) => {
-            if *covered {
+            if flags.coverage {
                 return Err(Error::at(
                     declaration.file,
                     attribute.span.start,
                     "duplicate coverage attribute",
                 ));
             }
-            *covered = true;
+            flags.coverage = true;
             crate::sema::coverage_annotations::consume(
                 report,
                 facts,
@@ -243,6 +250,17 @@ fn consume_annotation(
                 attribute,
                 forest,
                 allowances,
+            )?;
+        }
+        Some(Consumer::InsignificantDestructor) => {
+            crate::sema::destructor_hints::consume(
+                report,
+                facts,
+                declaration,
+                attribute,
+                forest,
+                allowances,
+                &mut flags.insignificant_dtor,
             )?;
         }
         Some(Consumer::MarkerTrait) => {

@@ -1,0 +1,8 @@
+#[rustc_insignificant_dtor]
+#[rustc_diagnostic_item = "ArrayIntoIter"]
+#[derive(Clone)]
+pub struct IntoIter<T, const N: usize> {
+    inner: ManuallyDrop<InnerSized<T, N>>,
+}
+
+impl<T, const N: usize> IntoIter<T, N> {

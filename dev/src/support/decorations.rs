@@ -20,6 +20,7 @@ pub(crate) enum Consumer {
     TraitDiagnostics,
     InherentPolicy,
     IncoherentTarget,
+    InsignificantDestructor,
     NonExhaustive,
     UnsafeSpecialization,
     MarkerTrait,
@@ -114,6 +115,7 @@ impl Consumer {
             "rustc_on_unimplemented" => Self::TraitDiagnostics,
             "rustc_allow_incoherent_impl" => Self::InherentPolicy,
             "rustc_has_incoherent_inherent_impls" => Self::IncoherentTarget,
+            "rustc_insignificant_dtor" => Self::InsignificantDestructor,
             _ => return None,
         })
     }
