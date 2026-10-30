@@ -574,7 +574,7 @@ impl Stage {
         facts: &Declarations,
         id: DefId,
     ) -> Result<(), &'static str> {
-        self.charge(8)?;
+        self.charge(10)?;
         let declaration = report
             .resolution
             .definitions
@@ -586,6 +586,11 @@ impl Stage {
             || facts.associated.owner(id).is_some()
             || facts
                 .generics
+                .parameters
+                .get(&id)
+                .is_some_and(|parameters| !parameters.is_empty())
+            || facts
+                .lifetimes
                 .parameters
                 .get(&id)
                 .is_some_and(|parameters| !parameters.is_empty())
@@ -603,6 +608,7 @@ impl Stage {
             .ok_or("private alias has no completed canonical type")?;
         if facts.node(source).and_then(|node| node.ty) != Some(ty)
             || facts.types.contains_parameters(ty) != Some(false)
+            || facts.types.needs_region_context(ty) != Some(false)
         {
             return Err("private alias changed its completed closed type or source witness");
         }

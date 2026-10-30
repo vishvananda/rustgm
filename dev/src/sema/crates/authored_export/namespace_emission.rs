@@ -97,7 +97,7 @@ impl Stage {
                 declaration_site: site,
             });
         }
-        self.module_bindings(report, &index, &mut result.namespace)?;
+        self.module_bindings(report, facts, &index, &mut result.namespace)?;
         self.trait_domains(report, facts, &index, &mut result.domains)?;
         self.scratch(
             result
@@ -120,6 +120,7 @@ impl Stage {
     fn module_bindings(
         &mut self,
         report: &Report,
+        facts: &Declarations,
         index: &Modules,
         names: &mut s::ModuleNamespace,
     ) -> Result<(), &'static str> {
@@ -134,6 +135,9 @@ impl Stage {
                 self.charge(1)?;
                 if binding.ambiguous {
                     return Err("module contract binding is ambiguous");
+                }
+                if self.erased_alias_binding(report, facts, scope, namespace, binding)? {
+                    continue;
                 }
                 let namespace = match namespace {
                     Namespace::Type => WireNamespace::Type,
@@ -164,6 +168,40 @@ impl Stage {
             }
         }
         Ok(())
+    }
+    /// Only the defining private name of a positively checked transparent alias
+    /// disappears. Imports/reexports still require their genuine named row.
+    fn erased_alias_binding(
+        &mut self,
+        report: &Report,
+        facts: &Declarations,
+        scope: crate::resolve::model::ScopeId,
+        namespace: Namespace,
+        binding: &Binding,
+    ) -> Result<bool, &'static str> {
+        if !self.conversion_roles() || namespace != Namespace::Type {
+            return Ok(false);
+        }
+        self.charge(2)?;
+        let declaration = report
+            .resolution
+            .definitions
+            .get(binding.target.0 as usize)
+            .ok_or("module binding lost its actual source declaration")?;
+        if declaration.kind != DefKind::TypeAlias {
+            return Ok(false);
+        }
+        if self.definitions.get(binding.target.0 as usize) != Some(&None)
+            || !matches!(binding.origin, Origin::Direct)
+            || declaration.scope != scope
+            || binding.access != declaration.access
+        {
+            return Err("named alias binding transport requires its actual wider profile");
+        }
+        // The absent row is not proof. Reauthenticate the same source node,
+        // complete closed type and nongeneric/nonassociated private owner.
+        self.private_alias(report, facts, binding.target)?;
+        Ok(true)
     }
     fn trait_domains(
         &mut self,
