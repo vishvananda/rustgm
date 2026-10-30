@@ -630,7 +630,9 @@ impl Search<'_> {
                 frame.trial = None;
             }
             Decision::Deferred => {
-                self.query.numeric_hints_seen |= trial.defer_condition(facts, index)?;
+                self.query
+                    .publication
+                    .observe(trial.defer_condition(facts, index)?);
             }
             Decision::Refuted(_) => return Err("negative child was not classified".into()),
             Decision::Proven(node) => {
