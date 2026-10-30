@@ -203,7 +203,7 @@ fn malformed_recorded_inputs() -> Result {
             rows.clauses
                 .first_mut()
                 .ok_or("actual declaration input")?
-                .requirement = s::Requirement::UnstableFeature("caller_only_permission".to_owned());
+                .requirement = s::Requirement::UnstableFeature("caller_only_permission".into());
         }
         let mut availability = descriptor.availability()?.clone();
         assert!(availability.policies.is_empty(), "actual no-Library source");
