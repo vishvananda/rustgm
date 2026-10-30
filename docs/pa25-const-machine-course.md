@@ -20,7 +20,13 @@ grant execution, and a checked value does not waive its source proof.
 | Selected initializers | 17 | Actual complete arguments, forward dependencies, recursion/cycles, faults and body restrictions |
 | Native values | 9 | Constants and runtime calls, recursion, loops, statics, methods, generic transfer and typed queries |
 | Inspection | 5 | Entry-free roots, deterministic sharing/counts, compressed repeats, unused errors and closure identities |
-| Repeat counts | 8 | Forward/associated/parameter counts; wrong types, local capture, nonconst calls and reached/unreachable faults |
+| Repeat counts | 9 | Named annotation/repeat, forward/associated/parameter counts; wrong types, local capture, nonconst calls and reached/unreachable faults |
+
+The 95-case corpus includes the unchanged former PA12 named-constant array
+boundary fixture. Its annotation and repeat count are PA25 queries; successful
+support replaces that earlier unsupported boundary, rather than preserving a
+false rejection in the cumulative compiler. The two PA18 generic repeat controls
+remain genuine Rust rejections and retain their original inputs.
 
 Expected outcomes are declared before candidate execution. The eligibility and
 destruction sources come from the existing const-functions controls, with their

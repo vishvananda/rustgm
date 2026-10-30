@@ -300,6 +300,20 @@ transport, including otherwise const-capable profiles. The
 [compile-time-only checkpoint](docs/pa31-source-comptime-checkpoint.md) records
 the actual source/native opponents and remaining reflection/library work.
 
+Comptime absence on a canonical factory function comes from its authenticated
+registry, current kind, binding scope and nonimported owner. It does not create
+a source header or executable body proof. Imported ordinary callables instead
+require their real imported declaration; a source callable whose resolver node
+disappeared cannot masquerade as foreign. A budget-only ledger created after
+declaration attributes were checked must inherit that completed phase before an
+early initializer queries const-body context. Do not substitute a missing row
+or pending coverage for a checked absence.
+
+Generated iteration retains two distinct callables on a For plan. Check both
+through the typed callable API before publication; the source node is not Call
+syntax and cannot identify one callee. Reuse the existing completed plan and
+canonical Option variants without reparsing, extra passes or common fields.
+
 The source rustc_no_mir_inline restriction authenticates the feature, active
 function/method owner, exact effect, nonforeign definition and source image.
 Use a prepaid transient declaration draft inside the existing attribute and

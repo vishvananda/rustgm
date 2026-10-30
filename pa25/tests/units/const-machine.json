@@ -1832,6 +1832,27 @@
         "status": 1,
         "emit": "obj"
       }
+    },
+    {
+      "path": "tests/spec/const-machine/repeats/named-annotation-and-repeat.rs",
+      "source_sha256": "da3c3a7d03c6a5180505bd65844886df4b6d0fdb4d80af4a7318296ba7d159da",
+      "exit_status": 0,
+      "input": "file",
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "emit": "obj"
+      },
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }
