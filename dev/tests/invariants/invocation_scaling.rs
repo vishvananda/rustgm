@@ -105,7 +105,8 @@ fn check_preparation(
         2 | 3 => (7, 2),
         _ => (0, 0),
     };
-    assert_eq!(work, body.values.len() + width * per_call);
+    // One actual function-owner eligibility probe precedes the single value pass.
+    assert_eq!(work, 1 + body.values.len() + width * per_call);
     assert_eq!(uses.descriptor_work, width * filter_work);
     assert_eq!(uses.needed, profile < 4);
     if profile < 2 {

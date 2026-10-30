@@ -74,13 +74,7 @@ fn defaults_reject_nonconst_helpers_even_unused_and_preserve_runtime_opposites()
         assert!(lower(&fixture(name)?).is_err(), "{name}");
     }
     for name in ["const-required", "conditional-const-required"] {
-        let error = lower(&fixture(name)?)
-            .err()
-            .ok_or("unsupported default executed")?;
-        assert!(
-            error.to_string().contains("not implemented"),
-            "{name}: {error}"
-        );
+        lower(&fixture(name)?).map_err(|error| format!("{name}: {error}"))?;
     }
     Ok(())
 }
@@ -142,6 +136,8 @@ fn actual_default_runtime_and_cleanup_native_outcomes_match() -> TestResult {
         "conditional-runtime",
         "nested-ordinary",
         "ordinary-trait",
+        "const-required",
+        "conditional-const-required",
     ] {
         super::native::execute(&folder, name, &fixture(name)?, 29)?;
     }
