@@ -464,12 +464,12 @@ fn all_original_type_roots(report: &Report, facts: &mut Declarations) -> Result 
         let mut steps = 0;
         let view = crate::sema::crates::source_original(facts, definition, &mut steps)?
             .ok_or("actual original")?;
-        let raw = view.raw();
-        for root in raw
+        let original = view.raw();
+        for root in original
             .locals
             .iter()
             .map(|local| local.ty)
-            .chain(raw.values.iter().flat_map(|value| {
+            .chain(original.values.iter().flat_map(|value| {
                 let signature = match value.kind {
                     s::ValueKind::Call { signature, .. } => {
                         saw_signature = true;
@@ -479,14 +479,14 @@ fn all_original_type_roots(report: &Report, facts: &mut Declarations) -> Result 
                 };
                 std::iter::once(value.ty).chain(signature)
             }))
-            .chain(raw.projections.iter().map(|projection| projection.ty))
-            .chain(raw.calls.iter().map(|call| call.signature))
-            .chain(std::iter::once(raw.result))
+            .chain(original.projections.iter().map(|projection| projection.ty))
+            .chain(&original.calls.map(|call| call.signature))
+            .chain(std::iter::once(original.result))
         {
             let ty = view.ty(root, &mut steps)?;
             assert!(facts.types.kind(ty).is_some());
         }
-        for call in raw.calls.iter() {
+        for call in &original.calls {
             if let Some(application) = call.method {
                 let goal = view.predicate(
                     &s::Requirement::Trait {
