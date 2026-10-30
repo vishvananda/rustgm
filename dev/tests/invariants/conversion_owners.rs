@@ -20,10 +20,8 @@ fn goal(facts: &Declarations, context: &mut Context) -> TestResult<(Predicate, T
 }
 #[test]
 fn reserved_or_missing_canonical_headers_cannot_supply_float_preferences() -> TestResult {
-    let report = crate::test_source::source_provider(
-        &crate::test_source::fixture(FIXTURE)?,
-        "float_owner",
-    )?;
+    let report =
+        crate::test_source::source_provider(&crate::test_source::fixture(FIXTURE)?, "float_owner")?;
     let reserved = Declarations::new(&report)?;
     let mut context = Context::default();
     let (predicate, _) = goal(&reserved, &mut context)?;
@@ -41,10 +39,8 @@ fn reserved_or_missing_canonical_headers_cannot_supply_float_preferences() -> Te
 }
 #[test]
 fn completed_preferences_are_warm_and_require_the_exact_role_identity() -> TestResult {
-    let report = crate::test_source::source_provider(
-        &crate::test_source::fixture(FIXTURE)?,
-        "float_warm",
-    )?;
+    let report =
+        crate::test_source::source_provider(&crate::test_source::fixture(FIXTURE)?, "float_warm")?;
     let facts = sema::declarations::analyze(&report)?;
     let mut context = Context::default();
     let (predicate, input) = goal(&facts, &mut context)?;

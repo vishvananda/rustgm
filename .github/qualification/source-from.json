@@ -1,6 +1,6 @@
 {
   "state": "pending; no execution",
-  "source_commit": "3942b51ba49a38000dba0e1fdfbcbfb7047317fb",
+  "source_commit": "de5d5791dd0060b90ecdb44f5d10893ccca39397",
   "scope": "SourceFrom selected nested preference ownership, sparse publication, numeric frontier/scaling and ordinary controls",
   "private_cases": [
     "types::infer::dependencies::float_tests::shared_root_preferences_preserve_order_explicit_types_and_cancellation",
@@ -62,5 +62,5 @@
     "Fresh unchanged original core probe after coherent integration"
   ],
   "registration": "All module paths checked against owning Rust source declarations before any execution.",
-  "hosted_ci": "Temporary focused qualification; cold build-only preparation is separate from bounded exact runtime gates. No main publication before qualification."
+  "hosted_ci": "Temporary focused qualification; cold build-only preparation is separate from bounded exact runtime gates."
 }
