@@ -48,7 +48,7 @@ fn principal_bucket_ignores_object_shape_without_colliding_with_nominal_identity
 }
 
 #[test]
-fn principal_groups_join_nominal_coherence_while_primitive_groups_remain_demanded() -> Result {
+fn principal_groups_join_nominal_coherence_while_primitive_groups_remain_demanded() {
     let mut methods = crate::sema::methods::Methods::default();
     let name = NameId(0);
     let principal = Bucket::Structural(Target::Principal(ItemId(5)), name);
@@ -62,5 +62,4 @@ fn principal_groups_join_nominal_coherence_while_primitive_groups_remain_demande
         groups[0],
         (principal, ItemContext::ROOT, &[DefId(1), DefId(2)][..])
     );
-    Ok(())
 }
