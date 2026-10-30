@@ -100,6 +100,11 @@ pub(in crate::sema) fn bind(
     let Some((attribute, _message)) = annotation.reservation else {
         return Ok(());
     };
+    facts.require_lint_context(report)?;
+    if report.package.source_core().is_some() {
+        facts.source_bindings.as_deref().ok_or_else(|| Error::unlocated("reservation provider catalog is missing"))?
+            .require_provider_report(report).map_err(Error::unlocated)?;
+    }
     reserve_source_contracts(facts, 1, 0)?;
     let error = |message| Error::at(key.file, attribute.span.start, message);
     let id = DefId(u32::try_from(index).map_err(|_| error("too many reservation owners"))?);

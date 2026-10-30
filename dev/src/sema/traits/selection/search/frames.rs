@@ -300,16 +300,7 @@ impl Search<'_> {
             }
             Some(true) => {}
         }
-        if facts.generics.implementations.as_ref()
-            .ok_or("reservation trial lost its actual registry")?
-            .polarity(&facts.types, &facts.associated, trial.instance.owner)?
-            == crate::sema::traits::implementations::Polarity::Reservation
-        {
-            if self.query.purpose != crate::sema::traits::implementations::Purpose::Coherence {
-                return Err("reservation cannot complete ordinary trait selection".into());
-            }
-            // Conditions have been checked; this possibility still cannot
-            // publish a selected implementation, substitutions or proof node.
+        if self.deferred_reservation(facts, trial)? {
             return Ok(Some(Decision::Deferred));
         }
         let owned_end = trial.first

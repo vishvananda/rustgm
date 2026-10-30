@@ -83,6 +83,7 @@ mod pending_closure_tests;
 mod refutation_completion;
 mod refutations;
 mod result_bounds;
+mod reserved_trials;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/contract_evidence.rs"]
 mod result_tests;
