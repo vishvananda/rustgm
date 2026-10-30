@@ -79,34 +79,66 @@ fn bodies(facts: &Declarations, report: &Report) -> Result<Vec<DefId>> {
     assert_eq!(result.len(), 2);
     Ok(result)
 }
-fn malformed_late_headers() -> Result {
+fn corrupt_late_header(rows: &mut s::SourceRows, opponent: usize) -> Result {
+    let header = rows
+        .functions
+        .iter_mut()
+        .find(|header| header.parent.is_some() && header.regions.total != 0)
+        .ok_or("actual borrowed method header")?;
+    let reference = *header
+        .regions
+        .late
+        .slice(&rows.region_slots)?
+        .first()
+        .ok_or("actual original late slot")?;
+    match opponent {
+        0 => header.regions.total += 1,
+        1 => header.regions.late.end -= 1,
+        _ => {
+            rows.slots[reference.0 as usize].owner =
+                header.parent.ok_or("actual associated owner")?;
+        }
+    }
+    Ok(())
+}
+fn corrupt_normalization(rows: &mut s::SourceRows, opponent: usize) -> Result {
+    let (body, input) = rows
+        .body_inputs
+        .iter_mut()
+        .find_map(|body| {
+            body.normalizations
+                .iter_mut()
+                .find(|input| !input.owned.is_empty())
+                .map(|input| (body.body, input))
+        })
+        .ok_or("actual body-owned normalization")?;
+    let range = input.owned[0];
+    match opponent {
+        0 => input.owned.push(range),
+        1 => input.owned[0].end = range.start,
+        _ => {
+            rows.originals[body.0 as usize].variables[range.start as usize].allocation =
+                s::RegionAllocation::Inference {
+                    needs_provenance: false,
+                };
+        }
+    }
+    Ok(())
+}
+fn malformed_recorded_inputs() -> Result {
     let source = crate::test_source::fixture(PROVIDER)?;
     let artifact = crate::module_packets::exported_profile(
         &source,
         SourcePublication::ModuleConversions,
-        "ordinary_late_headers",
+        "ordinary_recorded_inputs",
     )?;
     let descriptor = artifact.source_descriptor().ok_or("actual descriptor")?;
-    for opponent in 0..3 {
+    for opponent in 0..6 {
         let (mut rows, attributes, modules) = crate::module_packets::raw(&artifact)?;
-        let header = rows
-            .functions
-            .iter_mut()
-            .find(|header| header.parent.is_some() && header.regions.total != 0)
-            .ok_or("actual borrowed method header")?;
-        let reference = *header
-            .regions
-            .late
-            .slice(&rows.region_slots)?
-            .first()
-            .ok_or("actual original late slot")?;
-        match opponent {
-            0 => header.regions.total += 1,
-            1 => header.regions.late.end -= 1,
-            _ => {
-                rows.slots[reference.0 as usize].owner =
-                    header.parent.ok_or("actual associated owner")?;
-            }
+        if opponent < 3 {
+            corrupt_late_header(&mut rows, opponent)?;
+        } else {
+            corrupt_normalization(&mut rows, opponent - 3)?;
         }
         let mut work = crate::support::crates::generics::Work::default();
         assert!(
@@ -127,7 +159,7 @@ fn malformed_late_headers() -> Result {
 }
 #[test]
 fn ordinary_headers_do_not_allocate_unused_borrowed_original_domains() -> Result {
-    malformed_late_headers()?;
+    malformed_recorded_inputs()?;
     let (report, mut facts) = fresh()?;
     let graph = mapped_graph(&facts)?;
     assert_eq!(observed(&graph)?.0, 0);

@@ -466,7 +466,10 @@ fn originals(
         }
         for normalization in &input.normalizations {
             work.charge(1)?;
-            if !normalization.owned.is_empty() {
+            if !normalization.owned.is_empty()
+                && (!regional
+                    || !matches!(normalization.owned.as_slice(), [range] if range.start < range.end))
+            {
                 return Err("source owned normalization requires a wider explicit profile");
             }
         }
