@@ -66,7 +66,7 @@
       "sha256": "757bdb3fe510dd2e34026ff99bf7316c5ab1ac34f4cd7d228bc05aa1805b1429",
       "rust_object": true,
       "native": 29,
-      "candidate": "unsupported"
+      "candidate": "accept"
     },
     {
       "name": "conditional-const-required",
@@ -74,7 +74,7 @@
       "sha256": "23e2a9aca791f0b7a329cdede8e7f8808051d7daefe2f416471be0c4b13e576c",
       "rust_object": true,
       "native": 29,
-      "candidate": "unsupported"
+      "candidate": "accept"
     },
     {
       "name": "conditional-const-unpaid",

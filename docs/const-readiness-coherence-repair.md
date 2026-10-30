@@ -55,3 +55,24 @@ produce original core, alloc or std. The latest original-core observation is
 still the qualified9da source reaching rustc_has_incoherent_inherent_impls on
 core::error::Error; current conversion transport and the new source permission
 contract remain separate work.
+
+## Follow-up expectation reconciliation
+
+Full CI41019939070 clears the original seven failures and exposes three stale
+tests. Source bb2013ef2 changes no production code. Both selector assertions now
+include the existing one-step function-owner eligibility probe; per-call costs,
+8/32/128 scaling, sparse descriptor storage and zero-work early exits remain
+checked. The provided-default test now requires the two previously declared
+Rust-positive const-default programs to compile, and the existing native test
+executes both alongside its original runtime/cleanup opponents.
+
+The corrected exact selection passes six private and eight integration controls
+in34.24 seconds (B receipt1793347065603287970), including strict Clippy and all
+static checks. The existing native case executes all eight programs in30.35
+seconds including guards (B receipt1793347157520753214). Fresh pinned Rust
+object/link/native observations repeat both required29 answers in0.258 seconds
+(main obj/parallel/ci-default-selector-v1/rust-v1/receipt.json). Original fixtures,
+Rust expected outcomes, implementation checks and resource quotas are unchanged.
+The first local selection attempt compiled successfully but selected a submodule
+instead of exact case names, so it ran zero tests; that failed receipt is retained.
+A fresh full CI successor is required; the predecessor failure is not green.

@@ -9,8 +9,13 @@ runtime/const observations returned native 29.
 
 `provider/contract.json` declares a separate thirteen-input no_core/source-role
 context before execution. All metadata/object outcomes matched; six accepted
-native observers returned 29. Those include two required const-default positives
-whose execution remains outside the initial compiler correction.
+native observers returned29. The two formerly unsupported const-default positives
+now also compile and execute through the maintainer frontend and locked backend,
+returning29 as required. All original source bytes and Rust outcomes are unchanged.
+The ordinary-implementation, nonconst-helper and unpaid-condition opponents remain
+rejections. Current qualification passes six selector controls, all eight regular
+provided-method tests and eight actual native programs; it also repeats fresh
+pinned Rust object/native29 for both new accepted paths.
 
 The source correction checks an actual const-trait default body under defining
 Conditional demand. It does not make that body executable through an ordinary

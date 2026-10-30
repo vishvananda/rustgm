@@ -66,8 +66,12 @@ integration. The joined non-const/reservation repair passes249 focused controls
 in124.61s and all four original integration failures in117.29s, including strict
 Clippy and static checks. Canonical source84e73fcfff also passes all18 coherence/cache/payment controls
 and three trait/reference/iteration matrices in254.73s. The repair and its
-architecture guidance are published ona26373d69; manual fullCI41019939070 has
-passed its fast job and is still qualifying the broader compiler. See
+architecture guidance are published ona26373d69. Manual fullCI41019939070
+clears those seven failures, then fails two stale selector cost assertions and an
+old unsupported-default expectation. Test-only bb2013ef2 reconciles the real
+one-step owner probe and requires both declared Rust-positive const defaults to
+compile/native29. Exact6+8 passes34.24s; eight native programs pass30.35s; fresh
+pinned Rust repeats both29 answers. Fresh full CI remains required. See
 [the repair evidence](const-readiness-coherence-repair.md).
 
 Public85d06ebec full qualification40954355053 has passed. The subsequent
@@ -303,7 +307,7 @@ concrete; a private Ready state is not an executable result.
 
 | Owner | Issues and owning assignments | Next observable exit |
 | --- | --- | --- |
-| Root, direct compiler owner | Qualified main repair, LIB105 transport integration and LIB107 source permissions, PA19/20/23/25/29/31 | Maina263 publishes all seven CI repairs and head-first coherence guidance; broaderCI41019939070 remains in progress. PA31 independent31+12/four-native permission contracts are qualified. Join genuine v9 call transport and local-dyn source prerequisites, implement actual Has authority, then repeat unchanged core. |
+| Root, direct compiler owner | Qualified main repair, LIB105 transport integration and LIB107 source permissions, PA19/20/23/25/29/31 | Maina263 publishes all seven CI repairs and head-first coherence guidance; broaderCI41019939070 found three stale expectations, now reconciled by qualified test-onlybb2013. PA31 independent31+12/four-native permission contracts are qualified. Join genuine v9 call transport and local-dyn source prerequisites, implement actual Has authority, then repeat unchanged core. |
 | `const_call_review`, existing C worktree | LIB107 local dyn-principal inherent registration/lookup, PA19/20/23 | Source-only draft uses method-local principal keys, genuine local trait ownership, ordinary unused-overlap checks and full Self proof, retaining global Head and foreign/primitive boundaries. Independent16 metadata/object +native7/9 pass. Freeze and qualify candidate via an existing warm worker target; two prior C private-cache timeouts executed no tests and must not be retried as semantic failures. |
 | `lint_expectations`, existing B worktree; editing Root v9 | LIB105 actual selected-call export and full generic method goal, PA20/29/31 | Reuse completed selections to authenticate the complete concrete callable and rebuild the actual requirement in caller coordinates. Preserve legacy definition-only queries/payment and all old profiles. Keep same60 plus new forgery/argument/owner/payment controls, then all28 production,24 native and two fresh clients. Root owns B-tree PA31 fixture work while this source lane is active. |
 | Root, retained formatting/panic lane | LIB-029/021/034/055/057/073/077, PA25–28/31 | Finite Debug array/native consumer and exact borrowed-call repair are qualified. Full original Count/Formatter/write/runtime parity, other derive families, metadata and original crate consumers remain required when an actual source demand reaches them. |
