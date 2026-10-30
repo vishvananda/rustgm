@@ -4,6 +4,42 @@ use crate::sema::declaration_inputs::Input;
 use std::sync::Arc;
 
 impl Graph {
+    pub(in crate::sema::crates::typed_headers) fn require_input_parent(
+        &self,
+        catalog: &Catalog,
+        generics: &crate::sema::generics::Generics,
+        definition: DefId,
+    ) -> Result<(), &'static str> {
+        let descriptor = self.descriptor(catalog)?;
+        let Some(id) = catalog.declaration_if_imported(definition)? else {
+            return Ok(());
+        };
+        let (owner, row, _) = catalog.declaration_coordinate(id)?;
+        if owner != descriptor.identity() {
+            return Ok(());
+        }
+        let rows = descriptor.rows();
+        let raw = rows
+            .declarations
+            .get(row.0 as usize)
+            .ok_or("source input scope is outside its actual declaration table")?;
+        catalog.validate_declaration(id, definition, slot_bindings::kind(raw.definition.kind))?;
+        let parent = match rows.header(row)? {
+            Some(s::HeaderRef::Function(index)) => rows.functions[index as usize].parent,
+            Some(s::HeaderRef::Trait(index)) => Some(rows.traits[index as usize].self_definition),
+            Some(s::HeaderRef::Implementation(_)) => None,
+            None if raw.definition.kind == s::DefinitionKind::SelfType => None,
+            None => return Ok(()),
+        };
+        let expected = parent
+            .map(|parent| catalog.definition_at(owner, parent))
+            .transpose()?;
+        if generics.parents.get(&definition).copied() != expected {
+            return Err("source declaration inputs changed their actual parent scope");
+        }
+        Ok(())
+    }
+
     pub(in crate::sema::crates::typed_headers) fn finish_inputs(
         &mut self,
         traits: Vec<Option<Arc<[Input]>>>,

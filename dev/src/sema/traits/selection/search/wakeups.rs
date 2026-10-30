@@ -15,6 +15,11 @@ pub(super) struct Wakeups {
     data: Option<Box<Data>>,
 }
 impl Wakeups {
+    pub(super) fn contains(&self, index: usize) -> bool {
+        self.data
+            .as_ref()
+            .is_some_and(|data| data.by_goal.contains_key(&index))
+    }
     pub(super) fn live(&self) -> impl Iterator<Item = (usize, WatchId, Option<usize>)> + '_ {
         self.data.iter().flat_map(|data| {
             data.by_goal
@@ -47,6 +52,7 @@ impl Trial {
         &mut self,
         facts: &Declarations,
         index: usize,
+        semantic_debt: bool,
     ) -> Result<bool, String> {
         let data = self.wakeups.data.get_or_insert_with(Default::default);
         let goal = self
@@ -67,11 +73,19 @@ impl Trial {
             crate::sema::compiler_items::float_default(facts, &mut self.inputs.context, goal)?
         {
             let watch = *data.by_goal.get(&index).ok_or("missing condition watch")?;
-            self.inputs
-                .context
-                .prefer_f32(watch, argument)
-                .map_err(inference)?;
-            true
+            if semantic_debt {
+                self.inputs
+                    .context
+                    .prefer_f32(watch, argument)
+                    .map_err(inference)?;
+                true
+            } else {
+                self.inputs
+                    .context
+                    .clear_float_preference(watch)
+                    .map_err(inference)?;
+                false
+            }
         } else {
             let watch = *data.by_goal.get(&index).ok_or("missing condition watch")?;
             self.inputs

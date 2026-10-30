@@ -106,6 +106,7 @@ fn explicit_f64_and_an_ordinary_from_homonym_supply_no_nested_hint() -> TestResu
             Availability::Declarations,
         );
         begin(&mut search, &mut facts, &mut context, &goal)?;
+        assert!(!search.query.stack[0].materialization_only());
         if !ordinary {
             let explicit = context.known(&facts.types, TypeId::primitive(Primitive::F64))?;
             context.equate(&facts.types, input, explicit)?;
@@ -125,6 +126,165 @@ fn explicit_f64_and_an_ordinary_from_homonym_supply_no_nested_hint() -> TestResu
             );
         }
     }
+    Ok(())
+}
+
+#[test]
+fn a_completed_blanket_keeps_canonical_proof_pending_without_a_float_preference() -> TestResult {
+    for nested in [false, true] {
+        let mut source =
+            crate::test_source::fixture("pa31/tests/spec/source-from/completed-blanket.rs")?;
+        if nested {
+            source.push_str("trait Into<T>:Sized{fn into(self)->T;}impl<T,U>Into<U>for T where U:From<T>{fn into(self)->U{<U as From<T>>::from(self)}}");
+        }
+        let report = crate::test_source::source_provider(&source, "blanket_snapshot")?;
+        let mut facts = crate::sema::declarations::analyze(&report)?;
+        let item = tests::definition(&report, if nested { "Into" } else { "From" })?;
+        let mut context = Context::default();
+        let input = context.variable(Domain::Float)?;
+        let output = context.known(&facts.types, TypeId::primitive(Primitive::F32))?;
+        let (subject, argument) = if nested {
+            (input, output)
+        } else {
+            (output, input)
+        };
+        let goal = Goal::trait_application(subject, ItemId(item.0), vec![Argument::Type(argument)]);
+        let assumptions = Assumptions::default();
+        let mut search = Search::new(
+            tests::caller(&assumptions, None),
+            Availability::Declarations,
+        );
+        begin(&mut search, &mut facts, &mut context, &goal)?;
+        assert_eq!(search.query.stack[0].materialization_only(), !nested);
+        assert!(search.query.stack[0].selected.is_none());
+        assert!(
+            search
+                .query
+                .float_hints(&mut facts, &mut context)?
+                .is_empty()
+        );
+        let watch = context.watch_predicate(&goal)?;
+        drain(&mut context, &facts)?;
+        assert!(context.default_numbers()?);
+        assert_eq!(
+            context.resolved(&mut facts.types, input)?,
+            TypeId::primitive(Primitive::F64)
+        );
+        context.cancel_watch(watch)?;
+        search.resume_at(search.query.allocations.end())?;
+        search.refresh_inputs(&mut facts, &mut context)?;
+        assert!(matches!(
+            search.poll(&mut facts)?,
+            Progress::Ready(Decision::Proven(_))
+        ));
+    }
+    Ok(())
+}
+
+fn failed_materialization_payment(
+    facts: &mut Declarations,
+    item: ItemId,
+    count: usize,
+) -> TestResult {
+    assert!(
+        crate::sema::header_attributes::source_payments(facts.must_use_contracts.as_deref())?
+            .charge(0, crate::support::crates::MAX_BYTES)
+            .is_err()
+    );
+    for _ in 0..2 {
+        let mut context = Context::default();
+        let subject = context.known(&facts.types, TypeId::primitive(Primitive::F32))?;
+        let mut arguments = Vec::new();
+        let input = context.variable(Domain::Float)?;
+        arguments.push(Argument::Type(input));
+        for _ in 1..count {
+            arguments.push(Argument::Type(context.variable(Domain::Float)?));
+        }
+        let goal = Goal::trait_application(subject, item, arguments);
+        let assumptions = Assumptions::default();
+        let mut search = Search::new(
+            tests::caller(&assumptions, None),
+            Availability::Declarations,
+        );
+        assert!(begin(&mut search, facts, &mut context, &goal).is_err());
+        assert_eq!(context.unresolved_domain(input)?, Some(Domain::Float));
+    }
+    Ok(())
+}
+
+#[test]
+fn numeric_materialization_is_paid_monotone_and_linear_in_actual_selected_edges() -> TestResult {
+    use std::fmt::Write as _;
+    let mut observed = Vec::new();
+    for count in [8, 32, 128] {
+        let mut source =
+            crate::test_source::fixture("pa31/tests/spec/source-from/completed-blanket.rs")?;
+        let formals = (0..count)
+            .map(|index| format!("T{index}"))
+            .collect::<Vec<_>>()
+            .join(",");
+        write!(
+            source,
+            "trait Wide<{formals}>:Sized{{}}impl<{formals}>Wide<{formals}>for f32{{}}"
+        )?;
+        let report = crate::test_source::source_provider(&source, "wide_materialization")?;
+        let mut facts = crate::sema::declarations::analyze(&report)?;
+        let item = tests::definition(&report, "Wide")?;
+        let mut context = Context::default();
+        let subject = context.known(&facts.types, TypeId::primitive(Primitive::F32))?;
+        let mut arguments = Vec::new();
+        for _ in 0..count {
+            arguments.push(Argument::Type(context.variable(Domain::Float)?));
+        }
+        let goal = Goal::trait_application(subject, ItemId(item.0), arguments);
+        let assumptions = Assumptions::default();
+        let mut search = Search::new(
+            tests::caller(&assumptions, None),
+            Availability::Declarations,
+        );
+        begin(&mut search, &mut facts, &mut context, &goal)?;
+        assert!(search.query.stack[0].materialization_only());
+        observed.push(search.query.steps + context.steps);
+        let frame = &mut search.query.stack[0];
+        let trial = frame.trial.as_mut().ok_or("actual selected trial")?;
+        let mut requirements = trial
+            .requirements
+            .take()
+            .ok_or("retained numeric requirements")?;
+        assert_eq!(requirements.numeric_cursor, trial.instance.goals.len());
+        let retained = trial.inputs.context.retained_allocation();
+        let before = trial.inputs.context.steps;
+        for _ in 0..32 {
+            trial.classify_materialization(&facts, &mut requirements)?;
+        }
+        assert_eq!(trial.inputs.context.steps - before, 32);
+        assert_eq!(trial.inputs.context.retained_allocation(), retained);
+        requirements.numeric_cursor = 0;
+        trial.inputs.context.steps = 1_000_000;
+        for _ in 0..2 {
+            assert!(
+                trial
+                    .classify_materialization(&facts, &mut requirements)
+                    .is_err()
+            );
+            assert_eq!(requirements.numeric_cursor, 0);
+            assert_eq!(trial.inputs.context.retained_allocation(), retained);
+        }
+        failed_materialization_payment(&mut facts, ItemId(item.0), count)?;
+    }
+    assert!(observed[1] < observed[0] * 5);
+    assert!(observed[2] < observed[1] * 5);
+    eprintln!(
+        "numeric materialization 8/32/128 work={observed:?}; Requirements={} Frame={} Trial={} Query={} Node={}",
+        size_of::<super::super::builtins::Requirements>(),
+        size_of::<Frame>(),
+        size_of::<super::super::frames::Trial>(),
+        size_of::<super::super::Query>(),
+        size_of::<super::super::Node>()
+    );
+    assert_eq!(size_of::<super::super::builtins::Requirements>(), 64);
+    assert_eq!(size_of::<Frame>(), 1312);
+    assert_eq!(size_of::<super::super::Node>(), 160);
     Ok(())
 }
 

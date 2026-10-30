@@ -85,13 +85,14 @@ impl Search<'_> {
             .pending
             .get(trial.cursor)
             .ok_or("missing partial condition index")?;
+        let semantic_debt = !child.materialization_only();
         child.publish(facts, &mut trial.inputs.context)?;
         trial.end = trial.end.max(self.query.allocations.end());
         let slot = self.query.retain_partial(child)?;
         trial.wakeups.retain_child(index, slot);
         self.query
             .publication
-            .observe(trial.defer_condition(facts, index)?);
+            .observe(trial.defer_condition(facts, index, semantic_debt)?);
         trial.cursor += 1;
         self.charge(&mut trial.inputs.context)
     }

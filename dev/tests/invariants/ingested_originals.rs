@@ -32,6 +32,101 @@ fn fresh() -> Result<(Report, Declarations)> {
     let facts = sema::declarations::analyze(&report)?;
     Ok((report, facts))
 }
+#[test]
+fn inherited_imported_inputs_keep_actual_parent_clauses_and_reject_changed_links() -> Result {
+    let mut source = crate::test_source::fixture(PROVIDER)?;
+    source.push_str(
+        "trait Extra<T>:Sized{}trait Parent<T>:Sized where Self:Extra<T>{fn inherited(self)->T;}",
+    );
+    let artifact = crate::module_packets::exported_profile(
+        &source,
+        SourcePublication::ModuleConversions,
+        "inherited_inputs",
+    )?;
+    let bytes = crates::encode(&artifact)?;
+    let report = crate::source_packets::client_report(crates::decode(&bytes)?, CLIENT)?;
+    let mut facts = sema::declarations::analyze(&report)?;
+    let method = report
+        .resolution
+        .definitions
+        .iter()
+        .enumerate()
+        .find_map(|(index, row)| {
+            (row.kind == DefKind::Function && report.package.names.get(row.name) == "inherited")
+                .then(|| u32::try_from(index).map(DefId))
+        })
+        .ok_or("actual imported member")??;
+    let parent = facts
+        .generics
+        .parents
+        .get(&method)
+        .copied()
+        .ok_or("actual parent")?;
+    let own = sema::declaration_inputs::own_view(&facts.generics, facts.crates.as_deref(), method)?;
+    assert_eq!(own.len(), 0);
+    let mut work = 0;
+    let mut bytes = 0;
+    let inputs = sema::declaration_inputs::collect_inherited(
+        &facts.generics,
+        facts.crates.as_deref(),
+        method,
+        |steps, retained| {
+            work += steps;
+            bytes += retained;
+            Ok(())
+        },
+    )?;
+    let mut traits = Vec::new();
+    for input in &inputs {
+        assert!(input.source.source().is_none());
+        if let crate::types::parameters::clauses::Clause::Predicate(predicate) = input.value
+            && let Some((application, _)) = predicate.bound.trait_parts()
+        {
+            let item = facts
+                .types
+                .trait_application(application)
+                .ok_or("full parent application")?
+                .item;
+            traits.push(
+                report
+                    .package
+                    .names
+                    .get(report.resolution.definitions[item.0 as usize].name),
+            );
+        }
+    }
+    assert!(traits.contains(&"Parent"));
+    assert!(traits.contains(&"Extra"));
+    assert!(work > 0 && bytes >= inputs.len() * size_of::<sema::declaration_inputs::Input>());
+    for changed in [None, Some(method), Some(DefId(u32::MAX))] {
+        if let Some(changed) = changed {
+            facts.generics.parents.insert(method, changed);
+        } else {
+            facts.generics.parents.remove(&method);
+        }
+        let mut attempted = 0;
+        assert!(
+            sema::declaration_inputs::collect_inherited(
+                &facts.generics,
+                facts.crates.as_deref(),
+                method,
+                |steps, _| {
+                    attempted += steps;
+                    Ok(())
+                },
+            )
+            .is_err()
+        );
+        assert!(attempted > 0);
+    }
+    facts.generics.parents.insert(method, parent);
+    assert_eq!(
+        sema::declaration_inputs::own_view(&facts.generics, facts.crates.as_deref(), method,)?
+            .len(),
+        0
+    );
+    Ok(())
+}
 fn retained_snapshot_read(original: &s::Original) -> bool {
     original.values.iter().enumerate().any(|(index, value)| {
         let s::ValueKind::Read(s::Place::Temporary(snapshot)) = value.kind else {

@@ -46,65 +46,82 @@ fn qualify(native: bool) -> TestResult {
         .join(format!("{lane}-{}", std::process::id()));
     std::fs::create_dir_all(&folder)?;
     let metadata = provider(&folder)?;
+    let mut failures = Vec::new();
     for (name, expected) in [("default", b"32\n"), ("explicit", b"64\n")] {
-        let lowir = folder.join(format!("{name}.lowir"));
-        run(
-            &folder,
-            &format!("{name}-client"),
-            Command::new(env!("CARGO_BIN_EXE_rustgm"))
-                .args([
-                    "--emit-lowir",
-                    "--edition=2024",
-                    "--cap-lints=allow",
-                    "--crate-type=lib",
-                    "--crate-name",
-                    "conversion_client",
-                    "--crate-disambiguator",
-                    name,
-                    "--source-client",
-                    "minicore@from_fallback",
-                    "--extern",
-                ])
-                .arg(format!("minicore={}", metadata.display()))
-                .arg("-o")
-                .arg(&lowir)
-                .arg(root.join(format!("pa31/tests/spec/source-from-clients/{name}.rs"))),
-        )?;
-        assert!(!std::fs::read(&lowir)?.is_empty());
-        if native {
-            let object = folder.join(format!("{name}.o"));
-            let executable = folder.join(format!("{name}.native"));
+        let result = (|| -> TestResult {
+            let lowir = folder.join(format!("{name}.lowir"));
             run(
                 &folder,
-                &format!("{name}-backend"),
-                Command::new("python3")
-                    .arg(root.join("scripts/backend.py"))
-                    .arg("--emit-object")
+                &format!("{name}-client"),
+                Command::new(env!("CARGO_BIN_EXE_rustgm"))
+                    .args([
+                        "--emit-lowir",
+                        "--edition=2024",
+                        "--cap-lints=allow",
+                        "--crate-type=lib",
+                        "--crate-name",
+                        "conversion_client",
+                        "--crate-disambiguator",
+                        name,
+                        "--source-client",
+                        "minicore@from_fallback",
+                        "--extern",
+                    ])
+                    .arg(format!("minicore={}", metadata.display()))
+                    .arg("-o")
                     .arg(&lowir)
-                    .arg("-o")
-                    .arg(&object),
+                    .arg(root.join(format!("pa31/tests/spec/source-from-clients/{name}.rs"))),
             )?;
-            run(
-                &folder,
-                &format!("{name}-link"),
-                Command::new("cc")
-                    .arg(root.join("pa31/tests/spec/source-from-clients/observer.c"))
-                    .arg(&object)
-                    .arg("-lm")
-                    .arg("-o")
-                    .arg(&executable),
-            )?;
-            let output = run(
-                &folder,
-                &format!("{name}-execute"),
-                &mut Command::new(&executable),
-            )?;
-            assert_eq!(output.stdout, expected, "{name}");
-            std::fs::remove_file(object)?;
-            std::fs::remove_file(executable)?;
+            assert!(!std::fs::read(&lowir)?.is_empty());
+            if native {
+                let object = folder.join(format!("{name}.o"));
+                let executable = folder.join(format!("{name}.native"));
+                run(
+                    &folder,
+                    &format!("{name}-backend"),
+                    Command::new("python3")
+                        .arg(root.join("scripts/backend.py"))
+                        .arg("--emit-object")
+                        .arg(&lowir)
+                        .arg("-o")
+                        .arg(&object),
+                )?;
+                run(
+                    &folder,
+                    &format!("{name}-link"),
+                    Command::new("cc")
+                        .arg(root.join("pa31/tests/spec/source-from-clients/observer.c"))
+                        .arg(&object)
+                        .arg("-lm")
+                        .arg("-o")
+                        .arg(&executable),
+                )?;
+                let output = run(
+                    &folder,
+                    &format!("{name}-execute"),
+                    &mut Command::new(&executable),
+                )?;
+                if output.stdout != expected {
+                    return Err(format!(
+                        "{name}: expected {expected:?}, actual {:?}",
+                        output.stdout
+                    )
+                    .into());
+                }
+                std::fs::remove_file(object)?;
+                std::fs::remove_file(executable)?;
+            }
+            Ok(())
+        })();
+        if let Err(error) = result {
+            failures.push(format!("{name}: {error}"));
         }
     }
-    Ok(())
+    if failures.is_empty() {
+        Ok(())
+    } else {
+        Err(failures.join("\n").into())
+    }
 }
 
 #[test]

@@ -79,6 +79,41 @@ pub(crate) fn all<'a>(
         .map(Input::from)
         .chain(imported(generics, linkage, owner, false)?.iter().copied()))
 }
+
+/// A call needs each actual parent scope's own clauses. Imported function
+/// headers deliberately retain only their own input/prefix, just as source
+/// declarations do; that header slice cannot stand in for the whole chain.
+pub(crate) fn collect_inherited(
+    generics: &Generics,
+    linkage: Option<&super::crates::Linkage>,
+    owner: DefId,
+    mut pay: impl FnMut(usize, usize) -> Result<(), String>,
+) -> Result<Vec<Input>, String> {
+    let mut result = Vec::new();
+    let limit = generics.scope_limit();
+    for (visited, scope) in generics.scopes(owner).enumerate() {
+        pay(16, 0)?;
+        if visited == limit {
+            return Err("declaration input scopes contain a parent cycle".into());
+        }
+        let inputs = own_view(generics, linkage, scope).map_err(str::to_owned)?;
+        let count = inputs.len();
+        if count == 0 {
+            continue;
+        }
+        let growth = crate::support::retained::Growth::vector::<Input>(
+            result.len(),
+            result.capacity(),
+            count,
+        );
+        pay(growth.work.saturating_add(count), growth.bytes)?;
+        result
+            .try_reserve(count)
+            .map_err(|_| "declaration input scratch allocation failed".to_owned())?;
+        result.extend(inputs.iter());
+    }
+    Ok(result)
+}
 pub(crate) fn declared<'a>(
     generics: &'a Generics,
     linkage: Option<&'a super::crates::Linkage>,

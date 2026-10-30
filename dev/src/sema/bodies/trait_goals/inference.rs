@@ -227,6 +227,9 @@ impl Checker<'_> {
         let selected = self.select_pending_goal(pending, index, first)?;
         match selected {
             selection::Progress::Inferred { mut query } => {
+                let semantic_debt = !query
+                    .materialization_only(&mut self.state.infer)
+                    .map_err(|reason| self.error(node, reason))?;
                 let hints = query
                     .float_hints(self.facts, &mut self.state.infer)
                     .map_err(|reason| self.error(node, reason))?;
@@ -241,7 +244,7 @@ impl Checker<'_> {
                     .map_err(|e| self.error(node, e))?;
                 let reservation = std::mem::take(&mut pending.reservation);
                 pending.partial.insert(index, (query, reservation));
-                self.observe_trait_goal(node, index)?;
+                self.observe_trait_goal(node, index, semantic_debt)?;
                 self.state
                     .notifications
                     .prefer_floats(&mut self.state.infer, &self.facts.types, index, &hints)
@@ -270,7 +273,7 @@ impl Checker<'_> {
                         .complete(&mut self.state.infer, index)
                         .map_err(|e| self.error(node, e))?;
                 } else {
-                    self.observe_trait_goal(node, index)?;
+                    self.observe_trait_goal(node, index, true)?;
                 }
             }
             selection::Progress::Pending(owner, query) => {
@@ -293,7 +296,12 @@ impl Checker<'_> {
         }
         Ok(None)
     }
-    fn observe_trait_goal(&mut self, node: NodeId, index: usize) -> Result<(), Error> {
+    fn observe_trait_goal(
+        &mut self,
+        node: NodeId,
+        index: usize,
+        semantic_debt: bool,
+    ) -> Result<(), Error> {
         let float_default = crate::sema::compiler_items::float_default(
             self.facts,
             &mut self.state.infer,
@@ -307,7 +315,7 @@ impl Checker<'_> {
                 &self.facts.types,
                 index,
                 &self.state.call_types.obligations[index].1,
-                float_default,
+                float_default.filter(|_| semantic_debt),
             )
             .map_err(|e| self.error(node, e))
     }

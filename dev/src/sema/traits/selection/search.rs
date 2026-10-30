@@ -632,7 +632,7 @@ impl Search<'_> {
             Decision::Deferred => {
                 self.query
                     .publication
-                    .observe(trial.defer_condition(facts, index)?);
+                    .observe(trial.defer_condition(facts, index, true)?);
             }
             Decision::Refuted(_) => return Err("negative child was not classified".into()),
             Decision::Proven(node) => {

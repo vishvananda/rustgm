@@ -352,6 +352,12 @@ fn begin_with_inputs(
     }
 }
 impl Pending {
+    pub fn materialization_only(&self, context: &mut Context) -> Result<bool, String> {
+        context.account_work(1).map_err(super::inference)?;
+        Ok(self.query.stack.len() == 1
+            && self.query.stack[0].scope == self.query.input_scope()
+            && self.query.stack[0].materialization_only())
+    }
     pub fn float_hints(
         &mut self,
         facts: &mut Declarations,

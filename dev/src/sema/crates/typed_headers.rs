@@ -372,6 +372,18 @@ impl super::Linkage {
         definition: DefId,
         declared: bool,
     ) -> Result<&[Input], &'static str> {
+        if let Some(source) = self
+            .originals
+            .as_deref()
+            .and_then(|headers| headers.source.as_ref())
+        {
+            source.require_input_parent(
+                self.origin_catalog()
+                    .ok_or("source input scope lost its actual catalog")?,
+                generics,
+                definition,
+            )?;
+        }
         let Some(header) = self.originals.as_deref().and_then(|h| h.get(definition)) else {
             let Some(source) = self.originals.as_deref().and_then(|h| h.source.as_ref()) else {
                 return Ok(&[]);

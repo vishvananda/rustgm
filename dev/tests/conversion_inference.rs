@@ -100,11 +100,9 @@ fn run(folder: &Path, name: &str, command: &mut Command) -> TestResult<Output> {
     let output = command.output()?;
     std::fs::write(folder.join(format!("{name}.stdout")), &output.stdout)?;
     std::fs::write(folder.join(format!("{name}.stderr")), &output.stderr)?;
-    assert!(
-        output.status.success() && output.stderr.is_empty(),
-        "{name}: {}",
-        String::from_utf8_lossy(&output.stderr)
-    );
+    if !output.status.success() || !output.stderr.is_empty() {
+        return Err(format!("{name}: {}", String::from_utf8_lossy(&output.stderr)).into());
+    }
     Ok(output)
 }
 
@@ -116,46 +114,59 @@ fn exact_source_candidates_match_independent_native_values() -> TestResult {
         .join("obj/parallel/source-from-native")
         .join(std::process::id().to_string());
     std::fs::create_dir_all(&folder)?;
+    let mut failures = Vec::new();
     for &(name, expected) in CASES {
         let Some(expected) = expected else { continue };
-        let output = compile(name)?;
-        assert!(
-            output.status.success() && output.stderr.is_empty(),
-            "{name}: {}",
-            String::from_utf8_lossy(&output.stderr)
-        );
-        let lowir = folder.join(format!("{name}.lowir"));
-        let object = folder.join(format!("{name}.o"));
-        let executable = folder.join(format!("{name}.native"));
-        std::fs::write(&lowir, output.stdout)?;
-        run(
-            &folder,
-            &format!("{name}-backend"),
-            Command::new("python3")
-                .arg(root.join("scripts/backend.py"))
-                .arg("--emit-object")
-                .arg(&lowir)
-                .arg("-o")
-                .arg(&object),
-        )?;
-        run(
-            &folder,
-            &format!("{name}-link"),
-            Command::new("cc")
-                .arg(root.join("pa31/tests/spec/source-from/observer.c"))
-                .arg(&object)
-                .arg("-lm")
-                .arg("-o")
-                .arg(&executable),
-        )?;
-        let actual = run(
-            &folder,
-            &format!("{name}-execute"),
-            &mut Command::new(&executable),
-        )?;
-        assert_eq!(actual.stdout, format!("{expected}\n").as_bytes(), "{name}");
-        std::fs::remove_file(&object)?;
-        std::fs::remove_file(&executable)?;
+        let result = (|| -> TestResult {
+            let output = compile(name)?;
+            if !output.status.success() || !output.stderr.is_empty() {
+                return Err(format!("{name}: {}", String::from_utf8_lossy(&output.stderr)).into());
+            }
+            let lowir = folder.join(format!("{name}.lowir"));
+            let object = folder.join(format!("{name}.o"));
+            let executable = folder.join(format!("{name}.native"));
+            std::fs::write(&lowir, output.stdout)?;
+            run(
+                &folder,
+                &format!("{name}-backend"),
+                Command::new("python3")
+                    .arg(root.join("scripts/backend.py"))
+                    .arg("--emit-object")
+                    .arg(&lowir)
+                    .arg("-o")
+                    .arg(&object),
+            )?;
+            run(
+                &folder,
+                &format!("{name}-link"),
+                Command::new("cc")
+                    .arg(root.join("pa31/tests/spec/source-from/observer.c"))
+                    .arg(&object)
+                    .arg("-lm")
+                    .arg("-o")
+                    .arg(&executable),
+            )?;
+            let actual = run(
+                &folder,
+                &format!("{name}-execute"),
+                &mut Command::new(&executable),
+            )?;
+            if actual.stdout != format!("{expected}\n").as_bytes() {
+                return Err(
+                    format!("{name}: expected {expected}, actual {:?}", actual.stdout).into(),
+                );
+            }
+            std::fs::remove_file(&object)?;
+            std::fs::remove_file(&executable)?;
+            Ok(())
+        })();
+        if let Err(error) = result {
+            failures.push(error.to_string());
+        }
     }
-    Ok(())
+    if failures.is_empty() {
+        Ok(())
+    } else {
+        Err(failures.join("\n").into())
+    }
 }
