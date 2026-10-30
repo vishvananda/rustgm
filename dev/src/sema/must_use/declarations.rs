@@ -61,7 +61,11 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
                 }
                 if matches!(
                     attribute.name(forest, unit.source.text()),
-                    Some("rustc_no_mir_inline" | "rustc_no_writable")
+                    Some(
+                        "rustc_no_mir_inline"
+                            | "rustc_no_writable"
+                            | "rustc_should_not_be_called_on_const_items"
+                    )
                 ) {
                     mir_boundaries.consume(
                         report,
@@ -522,7 +526,7 @@ fn bind_definitions(
     {
         for (index, definition) in report.resolution.definitions.iter().enumerate() {
             bind_pointer_marker(report, index, definition, pointer_markers)?;
-            mir_boundaries.bind(report, index, definition)?;
+            mir_boundaries.bind(report, facts, index, definition)?;
             crate::sema::associated::reserved_impls::bind(report, facts, index, definition)?;
             bind_macro_helpers(report, facts, index, definition)?;
             if let Some(key) = definition.node {

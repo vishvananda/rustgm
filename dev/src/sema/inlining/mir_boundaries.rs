@@ -1,4 +1,4 @@
-//! Validate source optimization restrictions without inferring invocation permission.
+//! Validate transient source restrictions/advisories without invocation permission.
 //! Neither Rust MIR inlining nor LLVM Writable assumptions exist in this backend.
 use crate::{
     resolve::{
@@ -17,6 +17,9 @@ use crate::{
 use std::sync::Arc;
 mod restrictions;
 use restrictions::Restriction;
+#[cfg(test)]
+#[path = "../../../tests/invariants/advisory_methods.rs"]
+mod const_item_tests;
 #[cfg(test)]
 #[path = "../../../tests/invariants/mir_boundaries.rs"]
 mod tests;
@@ -95,7 +98,7 @@ impl Draft {
                     .definitions
                     .len()
                     .saturating_mul(Restriction::ALL.len())
-                    .saturating_add(self.entries.len()),
+                    .saturating_add(self.entries.len().saturating_mul(12)),
                 0,
             )?;
         }
@@ -104,12 +107,14 @@ impl Draft {
     pub(in crate::sema) fn bind(
         &mut self,
         report: &Report,
+        facts: &Declarations,
         index: usize,
         definition: &Definition,
     ) -> Result<(), Error> {
         if self.entries.is_empty() {
             return Ok(());
         }
+        facts.require_lint_context(report)?;
         let Some(key) = definition.node else {
             return Ok(());
         };
@@ -139,6 +144,9 @@ impl Draft {
                     entry.span.start,
                     restriction.binding_error(),
                 ));
+            }
+            if restriction == Restriction::ConstItemCalls {
+                restrictions::validate_impl_method(report, facts, actual, definition)?;
             }
             entry.bound = true;
         }

@@ -1,7 +1,7 @@
-//! Source restrictions suppress distinct optimizations; neither grants an effect.
+//! Transient source optimization and advisory contracts never grant an effect.
 use super::{
-    Attribute, Declarations, Error, Forest, MacroAllowanceSession, NodeKey, Report,
-    reserve_source_contracts,
+    Attribute, Declarations, DefId, DefKind, Definition, Error, Forest, MacroAllowanceSession,
+    NodeKey, Report, reserve_source_contracts,
 };
 use crate::syntax::{ast::Kind, attribute::Input, item::ItemKind};
 
@@ -9,13 +9,15 @@ use crate::syntax::{ast::Kind, attribute::Input, item::ItemKind};
 pub(super) enum Restriction {
     MirInline,
     Writable,
+    ConstItemCalls,
 }
 impl Restriction {
-    pub const ALL: [Self; 2] = [Self::MirInline, Self::Writable];
+    pub const ALL: [Self; 3] = [Self::MirInline, Self::Writable, Self::ConstItemCalls];
     fn named(name: &str) -> Option<Self> {
         match name {
             "rustc_no_mir_inline" => Some(Self::MirInline),
             "rustc_no_writable" => Some(Self::Writable),
+            "rustc_should_not_be_called_on_const_items" => Some(Self::ConstItemCalls),
             _ => None,
         }
     }
@@ -23,12 +25,14 @@ impl Restriction {
         match self {
             Self::MirInline => "rustc_no_mir_inline",
             Self::Writable => "rustc_no_writable",
+            Self::ConstItemCalls => "rustc_should_not_be_called_on_const_items",
         }
     }
     pub fn duplicate_error(self) -> &'static str {
         match self {
             Self::MirInline => "duplicate rustc_no_mir_inline attribute",
             Self::Writable => "duplicate rustc_no_writable attribute",
+            Self::ConstItemCalls => "duplicate rustc_should_not_be_called_on_const_items attribute",
         }
     }
     pub fn binding_error(self) -> &'static str {
@@ -38,6 +42,9 @@ impl Restriction {
             }
             Self::Writable => {
                 "rustc_no_writable requires its actual non-foreign function or method body"
+            }
+            Self::ConstItemCalls => {
+                "rustc_should_not_be_called_on_const_items requires its actual inherent or trait-impl method"
             }
         }
     }
@@ -155,4 +162,49 @@ pub(super) fn authenticate(
         ));
     }
     Ok((restriction, closure))
+}
+
+/// The marker is accepted on impl methods, including associated functions, but
+/// not free functions or declarations/default bodies belonging to a trait.
+pub(super) fn validate_impl_method(
+    report: &Report,
+    facts: &Declarations,
+    id: DefId,
+    definition: &Definition,
+) -> Result<(), Error> {
+    let owner = facts
+        .associated
+        .owner(id)
+        .and_then(|id| facts.associated.get(id))
+        .ok_or_else(|| Error::unlocated("const-item advisory requires an actual impl method"))?;
+    let crate::sema::associated::OwnerKind::Impl {
+        target, trait_type, ..
+    } = owner.kind
+    else {
+        return Err(Error::unlocated(
+            "const-item advisory requires an actual impl method",
+        ));
+    };
+    let source = owner
+        .source
+        .ok_or_else(|| Error::unlocated("const-item advisory impl source missing"))?;
+    let unit = report.package.unit(source.file);
+    let self_definition = report
+        .resolution
+        .definitions
+        .get(owner.self_definition.0 as usize);
+    if self_definition.is_none_or(|row| {
+        row.kind != DefKind::SelfType || row.node != Some(source) || row.scope != definition.scope
+    }) || unit.configured.active.get(source.node.get() as usize) != Some(&true)
+        || target.file != source.file
+        || trait_type.is_some_and(|key| key.file != source.file)
+        || !matches!(unit.configured.ast.node(source.node).kind, Kind::Item(index)
+            if matches!(unit.configured.ast.items[index as usize].kind, ItemKind::Impl { ty, trait_path, .. }
+                if ty == target.node && trait_path == trait_type.map(|key| key.node)))
+    {
+        return Err(Error::unlocated(
+            "const-item advisory changed its actual impl owner, scope or source",
+        ));
+    }
+    Ok(())
 }

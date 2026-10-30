@@ -65,12 +65,16 @@ fn source_incarnation_actual_definition_owner_and_failed_payments_remain_checked
     consume_first(&mut draft, &report, &mut analysis.facts, false)?;
     let other = test_source::resolve(&input("owner-replay")?, true)?;
     let (index, row) = function(&other, "f")?;
-    assert!(draft.bind(&other, index, row).is_err());
+    assert!(draft.bind(&other, &analysis.facts, index, row).is_err());
     assert!(draft.finish().is_err());
     let (index, row) = function(&report, "f")?;
-    assert!(draft.bind(&report, index + 1, row).is_err());
+    assert!(
+        draft
+            .bind(&report, &analysis.facts, index + 1, row)
+            .is_err()
+    );
     draft.prepare_binding(&report, &mut analysis.facts)?;
-    draft.bind(&report, index, row)?;
+    draft.bind(&report, &analysis.facts, index, row)?;
     draft.finish()?;
     let mut wrong = Draft::default();
     assert!(consume_first(&mut wrong, &report, &mut analysis.facts, true).is_err());

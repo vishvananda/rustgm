@@ -58,6 +58,12 @@ profiles fence the required external index/call protocol; Rust-positive external
 legacy calls remain declared requirements in PA29. Candidate qualification is
 pending for this source-only phase.
 
+The [const-item-call advisory source contract](tests/spec/source-const-item-calls/README.md)
+validates the observed Cell/LazyCell marker on actual impl methods. It grants no
+const, unsafe or mutation permission. Broader interior-mutation warning policy is
+explicitly deferred; whole original algorithms and artifacts remain required.
+Candidate qualification for this source checkpoint is pending.
+
 The source `rustc_promotable` declaration checkpoint retains its actual attribute,
 configured owner and direct const-stability witness. Word, list and value forms
 follow the pinned parser's marker semantics. This header promise grants neither

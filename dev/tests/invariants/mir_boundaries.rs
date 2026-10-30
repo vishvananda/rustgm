@@ -182,11 +182,11 @@ fn foreign_incarnations_and_failed_payments_publish_no_checked_owner() -> TestRe
     consume_first(&mut draft, &report, &mut analysis.facts)?;
     let other = test_source::resolve(&input("word")?, true)?;
     let (index, row) = definition(&other, "f")?;
-    assert!(draft.bind(&other, index, row).is_err());
+    assert!(draft.bind(&other, &analysis.facts, index, row).is_err());
     assert!(draft.finish().is_err());
     let (index, row) = definition(&report, "f")?;
     draft.prepare_binding(&report, &mut analysis.facts)?;
-    draft.bind(&report, index, row)?;
+    draft.bind(&report, &analysis.facts, index, row)?;
     draft.finish()?;
     for (work, bytes) in [
         (crate::support::crates::MAX_COMPONENTS, 0),

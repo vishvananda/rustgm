@@ -1,0 +1,2 @@
+pub struct S;
+impl S{#[cfg(any())]#[rustc_should_not_be_called_on_const_items]#[rustc_should_not_be_called_on_const_items]fn f(){}}

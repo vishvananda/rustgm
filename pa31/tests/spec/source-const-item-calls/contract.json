@@ -1,0 +1,282 @@
+{
+  "state": "Independent pinned Rust successor76/76PASS; candidate implementation uncompiled, no runtime/native/artifact or broader advisory parity claim",
+  "pin": "Rust1.98.0 commit88d9e12ae178fab0fb5cc050a94da85685d449ea Linuxx86-64",
+  "owner": "PA31 source compiler/library declarations; broader PA30/34 diagnostics deferred",
+  "semantics": "Advisory on actual inherent/trait-impl methods only; no const prohibition, mutation, receiver, unsafe or API privilege. No persistent absence fact or imported lint permission.",
+  "cases": {
+    "inherent.rs": {
+      "sha256": "86986fca60b70afe6dd89eb0802b5879cc235015495a61c91021cc796c05ceef",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "associated-static.rs": {
+      "sha256": "8c22583b45de4d9f4f1bf038aaa7c85eabd301a4f6c29daf01eca14b6b987ee2",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "trait-implementation.rs": {
+      "sha256": "3fae37e31b23b4c1d15a35d7fa06a8ccea3498a6f7cacba8008d5be4e735ee95",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "const-allowed.rs": {
+      "sha256": "a6850a246dfd6bb596b999cfdad37424d619810de3ca33633671c07ee3603937",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "const-item-runtime.rs": {
+      "sha256": "746498e326f5d3a0a0ba82613fed1000ec00f5699f02da478a160ac4b0b4525d",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "const-item-ufcs.rs": {
+      "sha256": "1d5e2d6a5f2e354ef9be7a27502069eaf2162cff15d60254b52ec91d29ef5461",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "mutation.rs": {
+      "sha256": "c1421c76c5f4c90ff2c38588fc3b82c8f3d897c483864dbfc3efdaf1430b2381",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "unsafe-allowed.rs": {
+      "sha256": "d83421bac38c6191e79eb348de9a833cbac37f325a58329013a42c7134f52606",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "const-denied.rs": {
+      "sha256": "287e53a863dc50888e466ae8eca973c45fa9323c85462664ee2b1a879862f740",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "mutation-denied.rs": {
+      "sha256": "9636436dc36cf826702cb365be6f645fc8bbd4b4c344051ee29f81f1882029f1",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "unsafe-denied.rs": {
+      "sha256": "f4492074c7c96a1c84b594ca4b422c8e4ad19a29f16802c3423eeb6327f6461b",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "const-body-denied.rs": {
+      "sha256": "04152513a72a546c7911bcb8c5815e7b74eee3142560b83116d78eb49b5df4e0",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "free.rs": {
+      "sha256": "9e720e447575a57c8d1dadd28d55d441b6c4ec42fda0723917847aa67f7530f0",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "trait-required.rs": {
+      "sha256": "a28a3033666d157790964442d3250d7b4565566df0a0cd027542893b193b4b65",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "trait-default.rs": {
+      "sha256": "3d22649e08fe3fb4ce814f1a9690766f54a58b76bc0fd13fcad1ae173015542b",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "foreign.rs": {
+      "sha256": "8c317b429d6274e39daf87fc658352e45ba2329b55842f71339ac078b6023320",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "constant.rs": {
+      "sha256": "80b84fb2035201c3f179fa13268e7ea5c3bac20f9e03d1f274355df5ba7e7bda",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "structure.rs": {
+      "sha256": "a0c94b1de842e28c6262d2a248a3942c52a11d0b5827c67279a6b915e625b9ba",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "impl-target.rs": {
+      "sha256": "b6e5e27b88f02c43f1b1dc69ef2f6833e8863c4e0110a190928bef3c131b9c37",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "nested-free.rs": {
+      "sha256": "7ea79a5aba2034829b6c4467278de469f48742c9664ff9168da5e3153f08be0b",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "closure.rs": {
+      "sha256": "82566b0d986536d9145b564e977d05d86828da153a3ed4116b0418e246b13cc1",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "list.rs": {
+      "sha256": "2ffcee7e9810e455414862d726876972046fe120cc631331d96254954b00b124",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "value.rs": {
+      "sha256": "e3188d3033b0c32c78e4a1bc439dac5b4313bfd4929b0194a2feb0548a35bf5e",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "unsafe-wrapper.rs": {
+      "sha256": "e6f9a59967b1d1bc473538acced9f7e9425d59e2659d7a83e02de289715227d5",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "duplicate.rs": {
+      "sha256": "db87f6146d9e763ed072a9567927c52eefa6564fb53c5240dc87c8e5a5e9148b",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "missing-gate.rs": {
+      "sha256": "3f52d580a7d4ab01c6b7b85d9ce74ac0a461d3de1a2c671f8a285de4bd070b45",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "cfg-removed.rs": {
+      "sha256": "6457989dc01475ebc8966d71350f4830807a154b71ba9177d4e65627708a3ebc",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "deny-unused.rs": {
+      "sha256": "f64dba959652205197c33b0c15313f4313994098c8d4ccb8e8fda6c1e93570d9",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "macro-allowance.rs": {
+      "sha256": "da5eaa51a1bdc8df816eac4deb9d61dbab8fd85ba1dd5190ecfd9ac41463725f",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "macro-input-missing-gate.rs": {
+      "sha256": "d306886f0b9f78e78b235e4e5a7078017214344cd31acbea62e10bd2b0426472",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0,
+      "prediction_history": {
+        "initial_rust_metadata": 1,
+        "initial_rust_object": 1,
+        "actual_first_metadata": 0,
+        "actual_first_object": 0,
+        "reason": "Attribute emitted by genuinely allowing macro with meta capture is accepted; initial prediction wrong. Original source bytes/name retained."
+      }
+    },
+    "owner-replay.rs": {
+      "sha256": "77c1a96b4402b1c6f8c8965a04c71ecfd829fd97dec4cee05afc87980a21b1ee",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "lint-allow.rs": {
+      "sha256": "a8b14a22454fc66515284cedb358ad9378aebb57d2e46cc51531e8191ef55a4b",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": "Required advisory diagnostic producer; no language permission or hard call ban"
+    },
+    "lint-warn.rs": {
+      "sha256": "e139605098262ea1f4f56440026d4a9de4997cab23abaeeeb00df3ad9ebaa244",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": "Required advisory diagnostic producer; no language permission or hard call ban"
+    },
+    "lint-deny.rs": {
+      "sha256": "69b69c3b7fe54aadbcdd6d117ff89987b398c77fb541ad0920ccd54990465d3d",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": "Required advisory diagnostic producer; no language permission or hard call ban"
+    },
+    "lint-expect.rs": {
+      "sha256": "35185bbe90aad23c1645bcfd5668f58b0e8231a4cb58870d75ae168a27ab19c7",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": "Required advisory diagnostic producer; no language permission or hard call ban"
+    },
+    "independent-markers.rs": {
+      "sha256": "f890951b19fa4f46aaf186fdac165d6dff75979f93b5c0c428c3387c17279741",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_fullchecked": 0
+    },
+    "macro-without-allowance.rs": {
+      "sha256": "f1dec139a33af4b2a8fab2b2d0f6844a84dd23cac46db051f3fd81a27b6d735d",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    },
+    "macro-item-input-missing-gate.rs": {
+      "sha256": "0763ed13605947b0b120690ef73a4f3db558a8c9ebf19c84a24e77a3c86cc953",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_fullchecked": 1
+    }
+  },
+  "primary": {
+    "compiler/rustc_attr_parsing/src/attributes/lint_helpers.rs:43-52": {
+      "file_sha256": "ddaaefe270836de5ab2a44060d560d0cf852ea6d603514a32b08145b5265809c",
+      "interval_sha256": "5b53fd299f554a31848bad7561d719a752e553eff1af8c3919cac1522b2daf67"
+    },
+    "compiler/rustc_lint/src/interior_mutable_consts.rs:1-140": {
+      "file_sha256": "f8fec588509c8a2f67545df679f845c89b55da1102ac46a6f0fec686b506c5b1",
+      "interval_sha256": "f8fec588509c8a2f67545df679f845c89b55da1102ac46a6f0fec686b506c5b1"
+    },
+    "library/core/src/cell/lazy.rs:133-155": {
+      "file_sha256": "fcb0df34f637636741d8f97dfd06cdf370bd3eb499adbe2a1d92d714525286b9",
+      "interval_sha256": "8df2eccdd45d7ca63a22e60a34c089ae07e79ff917f3c8543721d6e5b2abb5c3"
+    },
+    "library/core/src/cell/once.rs:85-100": {
+      "file_sha256": "c2b885641eca549dff66c7cfcc55d7f67db7ce73340dff5618a6488ed7be2c1a",
+      "interval_sha256": "fa61d36eb97a9e3a2ca2125bbb0ced71718d7f59d3aea7ab0b7a19789d7afea6"
+    },
+    "library/core/src/cell/once.rs:118-130": {
+      "file_sha256": "c2b885641eca549dff66c7cfcc55d7f67db7ce73340dff5618a6488ed7be2c1a",
+      "interval_sha256": "78c0e8f5797bc5879bcde0ffafa843c5ff311d1e4e34753e04e97586174135ce"
+    },
+    "library/core/src/cell/once.rs:156-174": {
+      "file_sha256": "c2b885641eca549dff66c7cfcc55d7f67db7ce73340dff5618a6488ed7be2c1a",
+      "interval_sha256": "4d87d4e8ce4d0db4565c5ac7d9e225295d87dfb084d424da98533433aa3ad1ae"
+    },
+    "library/core/src/cell/once.rs:230-244": {
+      "file_sha256": "c2b885641eca549dff66c7cfcc55d7f67db7ce73340dff5618a6488ed7be2c1a",
+      "interval_sha256": "d289f94dbbe463b7a122c7561d3b34fc8f256eab526d27c1ac1f984e8111b448"
+    }
+  },
+  "required": "Whole original Cell/LazyCell algorithms, execution, artifacts and broader advisory diagnostic producers remain required. Current compiler validation does not claim lint parity; deny/warn/expect differential remains declared Required, never a blanket ban.",
+  "reference_evidence": {
+    "first_plan_sha256": "fe86ad37543bf53e84d128fcc63b5c87dad90c49b26ab3b8624e6c436066b00e",
+    "first_receipt_sha256": "8ed374d8804eeb099f4805b468f9aea4a8b44745d3bf26a21c2ec4c3679ca484",
+    "first_outcome": "70/72; genuine allowing meta-macro accepts marker, initial prediction wrong; original source unchanged",
+    "successor_plan_sha256": "c0e7e92742534dcace9eeddf343942da804e06391992adc8b5558efa6b6fcd90",
+    "successor_receipt_sha256": "82f66f1e88b10e5fe7cf52c42cd4cd6e74d28ebe40126837c2abd0b1c56402e0",
+    "successor_outcome": "76/76 metadata/object outcomes PASS; actual resource/storage launcher0; no RustGM build/test or native execution"
+  }
+}
