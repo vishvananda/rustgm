@@ -213,7 +213,7 @@ pub(super) fn closed_request(
     }
     let effect = match (facts.source_bindings.as_deref(), source_use) {
         (Some(_), Some(use_)) => use_.effect_for(facts, source)?,
-        (None, None) => ordinary_effect(facts, body, source, work)?,
+        (None, None) => ordinary_effect(report, facts, body, source, work)?,
         _ => return Err("const member has no current source use"),
     };
     if !closed_effect(report, facts, body, source, effect, work)? {
@@ -240,6 +240,7 @@ pub(super) fn closed_request(
 }
 
 fn ordinary_effect(
+    report: &crate::resolve::expansion::Report,
     facts: &Declarations,
     body: &Body,
     source: crate::resolve::unit::NodeKey,
@@ -254,10 +255,17 @@ fn ordinary_effect(
         | Owner::InitializerInstance { .. }
         | Owner::AnonymousConstant
         | Owner::AnonymousInstance(_) => Ok(Constness::Const),
-        Owner::Function { definition, .. }
-            if facts.function_context(definition, source)?.checks_const() =>
-        {
-            Ok(Constness::Conditional)
+        Owner::Function { definition, .. } => {
+            match facts.source_function_context(report, definition, source)? {
+                crate::sema::function_context::FunctionContext::Comptime => Ok(Constness::Const),
+                crate::sema::function_context::FunctionContext::ConstFunction
+                | crate::sema::function_context::FunctionContext::ConstTraitDefault { .. } => {
+                    Ok(Constness::Conditional)
+                }
+                crate::sema::function_context::FunctionContext::Runtime => {
+                    Err("const member has no actual const source owner")
+                }
+            }
         }
         _ => Err("const member has no actual const source owner"),
     }
