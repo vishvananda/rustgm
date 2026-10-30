@@ -56,6 +56,7 @@ fn qualify(native: bool) -> TestResult {
                     "--emit-lowir",
                     "--edition=2024",
                     "--cap-lints=allow",
+                    "--crate-type=lib",
                     "--crate-name",
                     "conversion_client",
                     "--crate-disambiguator",
