@@ -1,6 +1,14 @@
 //! A method goal follows its genuine trait Self slot and complete callable formals.
 use super::{Declarations, DefId, Stage, canonical_nodes::Context, s};
-use crate::types::{GenericArgs, ItemId, Kind, arguments::Argument};
+use crate::{
+    support::{hash::HashMap, retained},
+    types::{
+        GenericArgs, ItemId, Kind, TypeId,
+        arguments::Argument,
+        parameters::{ParameterId, ParameterKind},
+        traits::ApplicationId,
+    },
+};
 
 impl Stage {
     pub(crate) fn method_request(
@@ -43,12 +51,15 @@ impl Stage {
             .types
             .trait_application(application)
             .ok_or("source method trait application is unknown")?;
-        if actual.item.0 != owner.0
-            || facts
-                .types
-                .arguments(actual.arguments)
-                .is_none_or(|arguments| arguments.len() != 0)
-        {
+        if actual.item.0 != owner.0 {
+            return Err("source method Self request changed its actual trait owner");
+        }
+        let count = facts
+            .types
+            .arguments(actual.arguments)
+            .ok_or("source method trait arguments are absent")?
+            .len();
+        if count != 0 && !self.conversion_roles() {
             return Err(
                 "parameterized source method trait arguments require complete wider transport",
             );
@@ -69,15 +80,15 @@ impl Stage {
         if template.parameters != 0 {
             return Err("source method early arguments require a wider complete request profile");
         }
-        let arguments = facts
+        let supplied = facts
             .types
             .arguments(arguments)
             .ok_or("source method application inputs are absent")?;
-        if arguments.len() != formals.len() {
+        if supplied.len() != formals.len() {
             return Err("source method application changed its complete formal count");
         }
         let mut subject = None;
-        for (&formal, argument) in formals.iter().zip(arguments) {
+        for (&formal, argument) in formals.iter().zip(supplied) {
             self.charge(1)?;
             let Argument::Type(ty) = argument else {
                 return Err("source method formal kind is outside the supported type domain");
@@ -88,7 +99,79 @@ impl Stage {
         }
         let subject =
             subject.ok_or("source method application omitted its exact actual Self parameter")?;
-        self.trait_application(facts, subject, application, context)
-            .map(Some)
+        if count == 0 {
+            self.trait_application(facts, subject, application, context)
+        } else {
+            self.applied_method_request(facts, subject, application, (formals, arguments), context)
+        }
+        .map(Some)
+    }
+
+    /// The implicit trait predicate uses the genuine inherited callable formals.
+    /// Actual arguments are simultaneous replacements, then ordinary recipe roots.
+    fn applied_method_request(
+        &mut self,
+        facts: &Declarations,
+        subject: TypeId,
+        application: ApplicationId,
+        supplied: (&[ParameterId], GenericArgs),
+        context: Context,
+    ) -> Result<s::TraitApplicationRef, &'static str> {
+        let (formals, arguments) = supplied;
+        self.reserve(retained::new_map::<ParameterId, TypeId>(formals.len()))?;
+        let mut mapped = HashMap::default();
+        for (&formal, argument) in formals.iter().zip(
+            facts
+                .types
+                .arguments(arguments)
+                .ok_or("source method inputs disappeared")?,
+        ) {
+            self.charge(3)?;
+            let Argument::Type(ty) = argument else {
+                return Err("source method argument is outside its actual type formal domain");
+            };
+            if !facts
+                .types
+                .parameter(formal)
+                .is_some_and(|parameter| matches!(parameter.kind, ParameterKind::Type { .. }))
+                || facts.types.kind(ty).is_none()
+            {
+                return Err("source method changed its actual type formal or argument identity");
+            }
+            if mapped.insert(formal, ty).is_some() {
+                return Err("source method repeats an actual callable formal");
+            }
+        }
+        let actual = facts
+            .types
+            .trait_application(application)
+            .ok_or("source method trait application disappeared")?;
+        let arguments = facts
+            .types
+            .arguments(actual.arguments)
+            .ok_or("source method inherited trait arguments disappeared")?;
+        self.reserve(arguments.len().saturating_mul(4 * size_of::<Argument>()))?;
+        let mut completed = Vec::with_capacity(arguments.len());
+        for argument in arguments {
+            self.charge(3)?;
+            let Argument::Type(ty) = argument else {
+                return Err("source method inherited non-type arguments require wider transport");
+            };
+            let Some(Kind::Parameter(parameter)) = facts.types.kind(ty) else {
+                return Err("source method implicit trait argument is not an actual formal");
+            };
+            let ty = *mapped
+                .get(&parameter)
+                .ok_or("source method omitted an inherited trait formal")?;
+            completed.push(Argument::Type(ty));
+        }
+        let declaration = self.address(DefId(actual.item.0))?;
+        let subject = self.ty(facts, subject, context)?;
+        let arguments = self.argument_rows(facts, completed.into_iter(), context)?;
+        self.push_trait(s::TraitApplication {
+            declaration,
+            subject,
+            arguments,
+        })
     }
 }

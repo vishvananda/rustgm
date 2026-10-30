@@ -210,7 +210,7 @@ impl Stage {
         })
     }
 
-    fn push_trait(
+    pub(super) fn push_trait(
         &mut self,
         application: s::TraitApplication,
     ) -> Result<s::TraitApplicationRef, &'static str> {
@@ -233,6 +233,15 @@ impl Stage {
             .types
             .arguments(arguments)
             .ok_or("source argument list is unknown")?;
+        self.argument_rows(facts, actual, context)
+    }
+
+    pub(super) fn argument_rows(
+        &mut self,
+        facts: &Declarations,
+        actual: impl ExactSizeIterator<Item = Argument>,
+        context: Context,
+    ) -> Result<g::Range, &'static str> {
         // Children can append their own application lists. Stage this complete
         // list before appending, so its wire range never absorbs nested inputs.
         self.reserve(actual.len().saturating_mul(8 * size_of::<s::Argument>()))?;

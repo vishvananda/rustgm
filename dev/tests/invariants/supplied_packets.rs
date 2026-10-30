@@ -333,7 +333,7 @@ fn version_nine_regional_data_does_not_grant_provided_authority() -> Result {
             profile,
         };
         assert!(
-            input.regional_list::<u32>(1, 0, Input::id).is_err(),
+            input.regional_list::<u32>(1, 4, Input::id).is_err(),
             "{profile:?}"
         );
         assert_eq!(input.bytes, 0, "{profile:?} allocated regional data");
@@ -351,7 +351,7 @@ fn version_nine_regional_data_does_not_grant_provided_authority() -> Result {
             base: 0,
             profile,
         };
-        assert_eq!(input.regional_list::<u32>(1, 0, Input::id)?, [7]);
+        assert_eq!(input.regional_list::<u32>(1, 4, Input::id)?, [7]);
         assert!(input.bytes > 0);
         assert_eq!(
             input.require_provided("provided only").is_ok(),
