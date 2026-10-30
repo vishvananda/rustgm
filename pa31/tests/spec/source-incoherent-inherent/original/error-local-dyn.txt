@@ -1,0 +1,110 @@
+impl dyn Error + 'static {
+    /// Returns `true` if the inner type is the same as `T`.
+    #[stable(feature = "error_downcast", since = "1.3.0")]
+    #[inline]
+    pub fn is<T: Error + 'static>(&self) -> bool {
+        // Get `TypeId` of the type this function is instantiated with.
+        let t = TypeId::of::<T>();
+
+        // Get `TypeId` of the type in the trait object (`self`).
+        let concrete = self.type_id(private::Internal);
+
+        // Compare both `TypeId`s on equality.
+        t == concrete
+    }
+
+    /// Returns some reference to the inner value if it is of type `T`, or
+    /// `None` if it isn't.
+    #[stable(feature = "error_downcast", since = "1.3.0")]
+    #[inline]
+    pub fn downcast_ref<T: Error + 'static>(&self) -> Option<&T> {
+        if self.is::<T>() {
+            // SAFETY: `is` ensures this type cast is correct
+            unsafe { Some(&*(self as *const dyn Error as *const T)) }
+        } else {
+            None
+        }
+    }
+
+    /// Returns some mutable reference to the inner value if it is of type `T`, or
+    /// `None` if it isn't.
+    #[stable(feature = "error_downcast", since = "1.3.0")]
+    #[inline]
+    pub fn downcast_mut<T: Error + 'static>(&mut self) -> Option<&mut T> {
+        if self.is::<T>() {
+            // SAFETY: `is` ensures this type cast is correct
+            unsafe { Some(&mut *(self as *mut dyn Error as *mut T)) }
+        } else {
+            None
+        }
+    }
+}
+
+impl dyn Error + 'static + Send {
+    /// Forwards to the method defined on the type `dyn Error`.
+    #[stable(feature = "error_downcast", since = "1.3.0")]
+    #[inline]
+    pub fn is<T: Error + 'static>(&self) -> bool {
+        <dyn Error + 'static>::is::<T>(self)
+    }
+
+    /// Forwards to the method defined on the type `dyn Error`.
+    #[stable(feature = "error_downcast", since = "1.3.0")]
+    #[inline]
+    pub fn downcast_ref<T: Error + 'static>(&self) -> Option<&T> {
+        <dyn Error + 'static>::downcast_ref::<T>(self)
+    }
+
+    /// Forwards to the method defined on the type `dyn Error`.
+    #[stable(feature = "error_downcast", since = "1.3.0")]
+    #[inline]
+    pub fn downcast_mut<T: Error + 'static>(&mut self) -> Option<&mut T> {
+        <dyn Error + 'static>::downcast_mut::<T>(self)
+    }
+}
+
+impl dyn Error + 'static + Send + Sync {
+    /// Forwards to the method defined on the type `dyn Error`.
+    #[stable(feature = "error_downcast", since = "1.3.0")]
+    #[inline]
+    pub fn is<T: Error + 'static>(&self) -> bool {
+        <dyn Error + 'static>::is::<T>(self)
+    }
+
+    /// Forwards to the method defined on the type `dyn Error`.
+    #[stable(feature = "error_downcast", since = "1.3.0")]
+    #[inline]
+    pub fn downcast_ref<T: Error + 'static>(&self) -> Option<&T> {
+        <dyn Error + 'static>::downcast_ref::<T>(self)
+    }
+
+    /// Forwards to the method defined on the type `dyn Error`.
+    #[stable(feature = "error_downcast", since = "1.3.0")]
+    #[inline]
+    pub fn downcast_mut<T: Error + 'static>(&mut self) -> Option<&mut T> {
+        <dyn Error + 'static>::downcast_mut::<T>(self)
+    }
+}
+
+impl dyn Error {
+    /// Returns an iterator starting with the current error and continuing with
+    /// recursively calling [`Error::source`].
+    ///
+    /// If you want to omit the current error and only use its sources,
+    /// use `skip(1)`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// #![feature(error_iter)]
+    /// use std::error::Error;
+    /// use std::fmt;
+    ///
+    /// #[derive(Debug)]
+    /// struct A;
+    ///
+    /// #[derive(Debug)]
+    /// struct B(Option<Box<dyn Error + 'static>>);
+    ///
+    /// impl fmt::Display for A {
+    ///     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

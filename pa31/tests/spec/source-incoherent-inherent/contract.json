@@ -1,0 +1,476 @@
+{
+  "state": "INDEPENDENT_RUST_QUALIFIED_RUSTGM_IMPLEMENTATION_REQUIRED",
+  "issue": "LIB107",
+  "owning": [
+    "PA31 source-declarations: authenticated gated Has/Allow owners and macro authority",
+    "PA19/20 inherent method ownership, full Self and coherence",
+    "PA23 genuine local dyn dispatch (C owns earliest local-dyn-inherent baseline)",
+    "PA29 actual cross-crate target authority and incoherent candidate index"
+  ],
+  "toolchain": {
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "rustc": "1.98.0",
+    "edition": 2024,
+    "target": "x86_64-unknown-linux-gnu",
+    "environment": {
+      "RUSTC_BOOTSTRAP": "1",
+      "LC_ALL": "C"
+    },
+    "flags": [
+      "-Cpanic=abort",
+      "-Coverflow-checks=yes",
+      "-Cdebug-assertions=no",
+      "-Copt-level=0"
+    ]
+  },
+  "standalone": {
+    "has-targets": {
+      "source": "local/has-targets.rs",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "has-word": {
+      "source": "local/has-word.rs",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "has-missing-feature": {
+      "source": "local/has-missing-feature.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "has-list": {
+      "source": "local/has-list.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "has-value": {
+      "source": "local/has-value.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "has-duplicate": {
+      "source": "local/has-duplicate.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "has-unsafe-wrapper": {
+      "source": "local/has-unsafe-wrapper.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "has-wrong-function": {
+      "source": "local/has-wrong-function.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "has-wrong-module": {
+      "source": "local/has-wrong-module.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "has-wrong-alias": {
+      "source": "local/has-wrong-alias.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "has-wrong-static": {
+      "source": "local/has-wrong-static.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "has-wrong-impl": {
+      "source": "local/has-wrong-impl.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "has-wrong-method": {
+      "source": "local/has-wrong-method.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "cfg-removed": {
+      "source": "local/cfg-removed.rs",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "macro-authorized": {
+      "source": "local/macro-authorized.rs",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "macro-unprivileged": {
+      "source": "local/macro-unprivileged.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "macro-global-request": {
+      "source": "local/macro-global-request.rs",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "macro-captured-caller": {
+      "source": "local/macro-captured-caller.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Captured complete caller item keeps caller marker authority; internal macro allowance is not copied onto caller bytes"
+    },
+    "alias-actual-owner": {
+      "source": "local/alias-actual-owner.rs",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "scope": "Authored attribute/owner control; no original Error body substitution",
+      "native": {
+        "status": 0,
+        "stdout": "7\n",
+        "stderr": ""
+      }
+    },
+    "local-nominal-duplicate": {
+      "source": "local/local-nominal-duplicate.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Has does not move an actual local nominal owner into the incoherent duplicate policy"
+    },
+    "allow-wrong-const": {
+      "source": "local/allow-wrong-const.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "allow-wrong-trait-required": {
+      "source": "local/allow-wrong-trait-required.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "allow-wrong-trait-provided": {
+      "source": "local/allow-wrong-trait-provided.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "allow-wrong-trait-impl": {
+      "source": "local/allow-wrong-trait-impl.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "allow-list": {
+      "source": "local/allow-list.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "allow-value": {
+      "source": "local/allow-value.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "allow-duplicate": {
+      "source": "local/allow-duplicate.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "allow-no-unsafe-grant": {
+      "source": "local/allow-no-unsafe-grant.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "allow-no-const-grant": {
+      "source": "local/allow-no-const-grant.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "auto-only": {
+      "source": "local/auto-only.rs",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "scope": "Authored attribute/owner control; no original Error body substitution"
+    },
+    "original-error-header-dyn": {
+      "source": "local/original-error-header-dyn.rs",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "scope": "Exact pinned Error header and exact local impl header; explicitly authored observer trait bodies/supertraits, real dyn dispatch. Full original Error/TypeId/Option/alloc graphs remain Required",
+      "native": {
+        "status": 0,
+        "stdout": "7 9\n",
+        "stderr": ""
+      }
+    }
+  },
+  "future_cross_crate": {
+    "state": "Rust-required outcomes; genuine RustGM transport/schema/header/index consumer remains required",
+    "crate_roles": [
+      "lib107_authority (renamed authority extern)",
+      "lib107_extension (renamed extension extern)",
+      "fresh third client"
+    ],
+    "provider_and_implementer_emit": [
+      "metadata",
+      "link (rlib)"
+    ],
+    "client_emit": [
+      "metadata",
+      "obj"
+    ],
+    "graphs": {
+      "actual-three-crate": {
+        "provider": "provider.rs",
+        "implementer": "implementer.rs",
+        "client": "client.rs",
+        "rust": [
+          0,
+          0,
+          0
+        ],
+        "native_stdout": "7 9\n"
+      },
+      "canonical-alias": {
+        "provider": "provider.rs",
+        "implementer": "implementer-alias.rs",
+        "client": "client.rs",
+        "rust": [
+          0,
+          0,
+          0
+        ],
+        "native_stdout": "7 9\n"
+      },
+      "missing-has": {
+        "provider": "provider-unmarked.rs",
+        "implementer": "implementer.rs",
+        "rust": [
+          0,
+          1
+        ]
+      },
+      "wrong-owner": {
+        "provider": "provider-wrong-owner.rs",
+        "implementer": "implementer-nominal.rs",
+        "rust": [
+          0,
+          1
+        ]
+      },
+      "missing-feature": {
+        "provider": "provider.rs",
+        "implementer": "implementer-no-feature.rs",
+        "rust": [
+          0,
+          1
+        ]
+      },
+      "one-missing-allow": {
+        "provider": "provider.rs",
+        "implementer": "implementer-one-missing.rs",
+        "rust": [
+          0,
+          1
+        ]
+      },
+      "empty-marked": {
+        "provider": "provider.rs",
+        "implementer": "implementer-empty.rs",
+        "rust": [
+          0,
+          0
+        ]
+      },
+      "empty-unmarked": {
+        "provider": "provider-unmarked.rs",
+        "implementer": "implementer-empty.rs",
+        "rust": [
+          0,
+          1
+        ]
+      },
+      "core-flag-not-has": {
+        "provider": "provider-unmarked.rs",
+        "implementer": "implementer-core-flag.rs",
+        "rust": [
+          0,
+          1
+        ]
+      },
+      "private-field": {
+        "provider": "provider-private.rs",
+        "implementer": "implementer-nominal.rs",
+        "rust": [
+          0,
+          1
+        ]
+      },
+      "no-const-grant": {
+        "provider": "provider.rs",
+        "implementer": "implementer.rs",
+        "client": "client-no-const-grant.rs",
+        "rust": [
+          0,
+          0,
+          1
+        ]
+      },
+      "no-unsafe-grant": {
+        "provider": "provider.rs",
+        "implementer": "implementer-unsafe.rs",
+        "client": "client-no-unsafe-grant.rs",
+        "rust": [
+          0,
+          0,
+          1
+        ]
+      }
+    },
+    "native_observer": "dyn-observer.c",
+    "native_status": 0,
+    "old_profiles": "Existing profiles must explicitly reject unsupported Has/index transport; no ordinary bits, name permission, current artifact or top-provider shortcut"
+  },
+  "original": {
+    "source": "library/core/src/error.rs",
+    "sha256": "ebb76aa552e3450d716580d39882147536828e7182d5c852a49575eb225b07cd",
+    "header_lines": [
+      55,
+      59
+    ],
+    "dyn_interval_lines": [
+      275,
+      384
+    ],
+    "exact_header_embedded": true,
+    "authored_observer_scope": "Error code method and empty Debug/Display observer traits are authored. No original Error/formatting/TypeId/Option/alloc body has been changed or claimed implemented."
+  },
+  "foundation": {
+    "source": "pa31/tests/spec/debug-field-arrays-runtime/source-observer.rs",
+    "sha256": "b81b207c8d26140be3fbd566769f952042fcb3f27a443aeafe4d00f97741bf9a",
+    "prefix_interval": [
+      0,
+      7931
+    ],
+    "prefix_sha256": "c694852ab66f323796a80fa0e2019d775ea4fb42e1eb3df92caeedf23e4c18d7",
+    "unsize_interval": [
+      11169,
+      11767
+    ],
+    "unsize_sha256": "6caf927eb7d628bd0ad5e3029a7b831f9b3f2a3835357ca4a4eb05634374299d",
+    "dyn_metadata_source": "library/core/src/ptr/metadata.rs",
+    "dyn_metadata_interval": [
+      6287,
+      6439
+    ],
+    "dyn_metadata_sha256": "4b1069c61e9506116c14b624210a8708bd35dd7d309642ab99ae6ed207a6283c",
+    "notes": "Selected genuine previously frozen NoCore source foundation retains actual patterned NonNull, not a pointer replacement. Its core-coherence flag supports its existing primitive-pointer bodies only; foreign Has opponents separately prove this cannot grant foreign nominal/principal permission."
+  },
+  "future_private_opponents": [
+    "same numeric owner from foreign source report/Store/artifact",
+    "changed actual Has owner/header or missing sealed absence",
+    "all member Allow including const/type wrong kinds",
+    "incomplete or speculative method bucket must not authorize call",
+    "warm indexed work, sticky failed prepayment and linear owner/member16/64/256 scaling",
+    "full Self args/autos/lifetimes/receiver applicability after coarse principal lookup",
+    "no trait orphan, const, unsafe, API or privacy permission from marker"
+  ],
+  "inputs": {
+    "cross/client-no-const-grant.rs": "950c8a70a4da9f03d98a9d80c4974a277220974076c4fa61d6c6e48e2dd56cf4",
+    "cross/client-no-unsafe-grant.rs": "c198c363bb3bd625f390591f87bd41b240d4b43fb17936e8d33db90218b8a6d6",
+    "cross/client.rs": "5b863bfb8947fbc996c052e529c4f87ddc2159129d665be0c1a80a1711912234",
+    "cross/implementer-alias.rs": "fc56c424c82c916892f39b67a3d7a6638905eec82af187c934fb89bc50841240",
+    "cross/implementer-core-flag.rs": "c698298e4cc49f88cf8636413d0aced6ce25ce23caf7cc6340cd18abc0f43897",
+    "cross/implementer-empty.rs": "bedff65de472655c375158df4b3772bccb0089c3a8961b5d8af8f53337f3839e",
+    "cross/implementer-no-feature.rs": "ff9825235355e7295bae73494785253e4f97e20ddc1470f690fff739bd90c9d4",
+    "cross/implementer-nominal.rs": "1a0c3a6f0f23f1f483dee661d676ffad26b1f685b5df1722778a08f3884841d8",
+    "cross/implementer-one-missing.rs": "3b3ffed79de8e6b59848699abe5a2b3e9109ffa3f4b4eaf2ac32f32becc8e4aa",
+    "cross/implementer-unsafe.rs": "04a4dc30f337a6e15cce732b19d0c2e8d2d11208e73014e106d657bb96f59337",
+    "cross/implementer.rs": "0f0482eae50d7fef3fa9f6c434e3a4ff2f6a22d0e1e784e5204813618dd86d30",
+    "cross/provider-private.rs": "fb5f0471e3d2eaa42e01acf75f5aa53b4da9764c6037709369e562a2305a66f6",
+    "cross/provider-unmarked.rs": "661046eda8caf3ce6fd09130427a452e8bea14ea687680559a6abd55899c5167",
+    "cross/provider-wrong-owner.rs": "9428cbfed15e3e18aa6e88162a3ae8bc0e89ab811fa2f61639f241a8cac5c493",
+    "cross/provider.rs": "def241ea6e63f90912fe7ce2c2a2b1c50c9d2224cd56226a109226fe817ab6f9",
+    "dyn-observer.c": "f57a5a265a6ef5a1e5a7886ed536a6705eee3ba2c08466ca3fb97242d6285444",
+    "local/alias-actual-owner.rs": "91735c9523124ac936e22615c53159df3a83598fcadaada4b0f26a29017eb1ac",
+    "local/allow-duplicate.rs": "f794a61496ddab682a85d624760dcc690d90a9e76bb73ef11574d336d3b1de5a",
+    "local/allow-list.rs": "bae74eb4f6a146cab8bce4958375108f59cced23ef467dd977179a8b64903a4a",
+    "local/allow-no-const-grant.rs": "543ae2f030225cbcf54e10809084f16d37c87229bd8c3264bb13a2c1fe9f535d",
+    "local/allow-no-unsafe-grant.rs": "98b9cfcfe43c6d83a5cef27dd6af0ad3cbd3d044c43f8c52b72fdaec8da13f26",
+    "local/allow-value.rs": "5bb4de9d086301f61445270b99c6909c0ebc886b01c6323ca613476b55d5489f",
+    "local/allow-wrong-const.rs": "ab2d565e60678be51d568500a32156ceef8a02e27fa83096af99eb0754a7ace6",
+    "local/allow-wrong-trait-impl.rs": "353085b15a9e07d46f053dcc976c7ce5315f5a9e1783d307024bbb94c7836213",
+    "local/allow-wrong-trait-provided.rs": "5b0105ed0113d4f08ba2e04cbfd087b8300a5a5e467bd5cf3982d98922990ca5",
+    "local/allow-wrong-trait-required.rs": "a045a4e8da63007488639e093f4ddf5b826e3b4b56fb64d27255d175573873f3",
+    "local/auto-only.rs": "272bb4c5b6096b9a517b07bac99c94fb6638a69233b8de5258f2631116a8398e",
+    "local/cfg-removed.rs": "cae8aabced4b70f1b660ee32f509fdb63c44634d7b4877324caa3daa4651acb6",
+    "local/has-duplicate.rs": "2d510098df3dc07ae9f17160f167d5697229a58052672d634c641f07d8c02189",
+    "local/has-list.rs": "429138e12f019e99b4e895b940975110262ef1612ca6308feaef916b93030c9b",
+    "local/has-missing-feature.rs": "21c65b4d5f52aa691b79f5de0f429a2db98e4dfe98569c92019d96d6ab21e7d0",
+    "local/has-targets.rs": "f6d7238ada260e575f769f2f143f4e79dc002b503c7c8fff0742a5ab404f2e9d",
+    "local/has-unsafe-wrapper.rs": "b23029ad8613daeb5758511f3e0f40b6b70068d4245a35a23ca7520fbe874c67",
+    "local/has-value.rs": "8e307126f610549c76b0ecd8c811c2ab55e178baf21fa9835f4189b09ec9d968",
+    "local/has-word.rs": "08d658d4ddfd9cb1de1d581f04e4011c5de3090e0a368488dbbec61ccde28df8",
+    "local/has-wrong-alias.rs": "2b7f95274479ce99bda57bc33c266ee08b8dc661df9875c774fb92b70903c788",
+    "local/has-wrong-function.rs": "f67ad2254e6fb74f297d87365f9df6d79700b05f93e8002b705cc142296c339a",
+    "local/has-wrong-impl.rs": "04cc9e92e186eca44fb252dca5a7b91b7bc26523c53c9caecc356c4a38159d79",
+    "local/has-wrong-method.rs": "dea02ece3e0efcdc3470a2ba576b8bba0015d9955210aef13cbd91daa4e81e54",
+    "local/has-wrong-module.rs": "0c32f88caa51ca0eefb1c5d9f1d323d741f61f7b8de4b58e3ccb416d2f2f3c86",
+    "local/has-wrong-static.rs": "a84207e70d9a25678c66643d19b6e1b7fe9e8ed34cff0c36dda5dc32881d279f",
+    "local/local-nominal-duplicate.rs": "499912a9164d4a4f9817fdf14f89d4673ed210e2b9f19413576cddd96b442420",
+    "local/macro-authorized.rs": "87dd7eff119f768900184804017471938b94560f8e44cbb2cb80377b7c9d9780",
+    "local/macro-captured-caller.rs": "2772144b2f58b405a015898a97e1efbd35ece1f53c2e7aed3ce432efe36a5f6a",
+    "local/macro-global-request.rs": "76b32361797651934abf373a21f98f8c12fa74f3470aa56fc5bdf8cc589c1c57",
+    "local/macro-unprivileged.rs": "473eb02b3512ffada7655a0526131faec9d094fbef5ed56d17f2924b52681bf0",
+    "local/original-error-header-dyn.rs": "5979bf7046f110a86a654ebdd2e0769494b60816b1043d5cd6adb27f69f23049",
+    "observer.c": "59aed593bb3fb07cd920c7810687ce7b153bb1e2c6f0b8e32cc215ac49d546b4",
+    "original/error-header.txt": "badf6783957930d38c5e160c4d945d488dbbbf06f391287aa51dfd05b2da3eb0",
+    "original/error-local-dyn.txt": "00fd06a67dd0db0a2551a330e30b9153e3c5bf51033c1d4109614b31774d1cda",
+    "primary-map.json": "5bf6b9e543b4b9a6bdf24aa054901e264e48d55c2257bf545cecbbc50d10c782"
+  },
+  "qualification": {
+    "independent": "All31 standalone metadata/object outcomes and12 cross-crate metadata/rlib/object graph outcomes observed unchanged; four native streams match",
+    "candidate": "Not executed; Has authority, local dyn consumers, foreign permission and transport/index remain implementation requirements",
+    "receipts": [
+      {
+        "scope": "standalone",
+        "receipt": "obj/parallel/incoherent-inherent-preparation-v1/standalone-rust-v1/receipt.json",
+        "sha256": "c27f3f9bcd650d4e751348c93881c71e11e954eebe61544c8c79ca4f74e43733",
+        "seconds": 4.208352530840784,
+        "commands": 66
+      },
+      {
+        "scope": "cross-crate",
+        "receipt": "obj/parallel/incoherent-inherent-preparation-v1/cross-rust-v2/receipt.json",
+        "sha256": "a23056897e29de950a31c0676147ce0eab8eafbdb4d93f11569121c61e49548d",
+        "seconds": 4.497577501926571,
+        "commands": 60
+      }
+    ],
+    "predeclared_contract_sha256": "937f27ca0e18b6704da6dff250f021dee610cea6affb83a5c5f2fdc612e7319c",
+    "preserved_failed_harness": "cross-rust-v1 contains correct language outcomes but two observer links omitted the actual dependency archives. Corrected runner v2 links client+extension+provider with unchanged source/outcomes; v1 raw evidence retained."
+  },
+  "pending_review": [
+    "PA23 local dyn baseline final names/hashes pending C."
+  ],
+  "authoring_corrections": [
+    "Before first execution, the canonical-alias graph constructs the genuine nominal using provider make(), preserving alias ownership and expected native7/9. Type aliases are never tuple constructors."
+  ]
+}

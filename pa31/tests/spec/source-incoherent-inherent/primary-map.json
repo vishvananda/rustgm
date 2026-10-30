@@ -1,0 +1,155 @@
+{
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "source": "local pinned primary compiler/library files; no Rust/compiler execution",
+  "original_error_matches_pin": true,
+  "files": [
+    {
+      "path": "compiler/rustc_attr_parsing/src/attributes/rustc_internal.rs",
+      "sha256": "f667f727ca0ca74a922e2a0dae4e9d5b6e0c681fa8f604e699a17e546178106c",
+      "lines_inclusive": [
+        [
+          605,
+          618
+        ]
+      ],
+      "primary_url": "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_attr_parsing/src/attributes/rustc_internal.rs"
+    },
+    {
+      "path": "compiler/rustc_attr_parsing/src/attributes/traits.rs",
+      "sha256": "0b194927dcefa4d8f509f9f53ac2d30166c7d8842bc6eefa7921dfdda6e9d1a2",
+      "lines_inclusive": [
+        [
+          119,
+          126
+        ]
+      ],
+      "primary_url": "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_attr_parsing/src/attributes/traits.rs"
+    },
+    {
+      "path": "compiler/rustc_attr_parsing/src/attributes/mod.rs",
+      "sha256": "d1fce438128338feacb8e231dda21938442d0b91d6959430e1b411c537fdf044",
+      "lines_inclusive": [
+        [
+          262,
+          304
+        ]
+      ],
+      "primary_url": "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_attr_parsing/src/attributes/mod.rs"
+    },
+    {
+      "path": "compiler/rustc_hir_analysis/src/coherence/inherent_impls.rs",
+      "sha256": "025059ea6d4395eb87c8944889dc0b45db9e4451cd511de561dc6acac1a42ccb",
+      "lines_inclusive": [
+        [
+          66,
+          163
+        ],
+        [
+          168,
+          237
+        ]
+      ],
+      "primary_url": "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir_analysis/src/coherence/inherent_impls.rs"
+    },
+    {
+      "path": "compiler/rustc_hir_analysis/src/coherence/inherent_impls_overlap.rs",
+      "sha256": "4f736d47fb49e2dc6f25395495d993cb85b125211b7eeba87b54fe9ac5ee9c65",
+      "lines_inclusive": [
+        [
+          174,
+          210
+        ]
+      ],
+      "primary_url": "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir_analysis/src/coherence/inherent_impls_overlap.rs"
+    },
+    {
+      "path": "compiler/rustc_hir_typeck/src/method/probe.rs",
+      "sha256": "fd8b7132e859cb2df7a5e62f63636c89b03cb864d186d02ee7180075b418cfe2",
+      "lines_inclusive": [
+        [
+          839,
+          932
+        ]
+      ],
+      "primary_url": "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir_typeck/src/method/probe.rs"
+    },
+    {
+      "path": "compiler/rustc_middle/src/ty/trait_def.rs",
+      "sha256": "063330c929d18935b9cd2e2e34c20572766a0d7c800f58a331ca31dd13c9b1d4",
+      "lines_inclusive": [
+        [
+          290,
+          306
+        ]
+      ],
+      "primary_url": "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_middle/src/ty/trait_def.rs"
+    },
+    {
+      "path": "compiler/rustc_type_ir/src/fast_reject.rs",
+      "sha256": "f0e9a52f412d1d1a2cfdefd55c0e5ca4a92c81e7af699e6dbb69ee1950f7535b",
+      "lines_inclusive": [
+        [
+          105,
+          117
+        ],
+        [
+          150,
+          160
+        ]
+      ],
+      "primary_url": "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_type_ir/src/fast_reject.rs"
+    },
+    {
+      "path": "compiler/rustc_hir/src/attrs/encode_cross_crate.rs",
+      "sha256": "1dc310cdc82240329e9318f7cdc737b540b2752858c87725a89cb6a1aabbb062",
+      "lines_inclusive": [
+        [
+          107,
+          107
+        ],
+        [
+          148,
+          148
+        ]
+      ],
+      "primary_url": "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir/src/attrs/encode_cross_crate.rs"
+    },
+    {
+      "path": "compiler/rustc_metadata/src/rmeta/encoder.rs",
+      "sha256": "150609d7720282abe294270fc81665f04805c7a7010b4185d3ee381a4293f6ab",
+      "lines_inclusive": [
+        [
+          2242,
+          2258
+        ]
+      ],
+      "primary_url": "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_metadata/src/rmeta/encoder.rs"
+    },
+    {
+      "path": "library/core/src/error.rs",
+      "sha256": "ebb76aa552e3450d716580d39882147536828e7182d5c852a49575eb225b07cd",
+      "lines_inclusive": [
+        [
+          55,
+          60
+        ],
+        [
+          275,
+          384
+        ]
+      ],
+      "primary_url": "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/error.rs"
+    },
+    {
+      "path": "library/alloc/src/boxed/convert.rs",
+      "sha256": "1534b6cd36659f2753a6633dd4bd25d7f9bbccb0ff1d83e3adc5fb52569fb45e",
+      "lines_inclusive": [
+        [
+          705,
+          749
+        ]
+      ],
+      "primary_url": "https://github.com/rust-lang/rust/blob/88d9e12ae178fab0fb5cc050a94da85685d449ea/library/alloc/src/boxed/convert.rs"
+    }
+  ]
+}
