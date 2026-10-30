@@ -1,5 +1,8 @@
 //! Source restrictions suppress distinct optimizations; neither grants an effect.
-use super::*;
+use super::{
+    Attribute, Declarations, Error, Forest, MacroAllowanceSession, NodeKey, Report,
+    reserve_source_contracts,
+};
 use crate::syntax::{ast::Kind, attribute::Input, item::ItemKind};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
