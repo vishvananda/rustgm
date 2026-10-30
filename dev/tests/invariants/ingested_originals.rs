@@ -382,13 +382,48 @@ fn demanded_originals_use_actual_allocation_order_and_reject_foreign_body_region
     let before = steps;
     assert!(view.variable(u32::MAX, &mut steps).is_err());
     assert!(steps > before);
+    assert_local_regions(&view, &facts, &mut steps)?;
+    Ok(())
+}
+fn assert_local_regions(
+    view: &SourceOriginal<'_>,
+    facts: &Declarations,
+    steps: &mut usize,
+) -> Result {
+    let rows = view.rows();
+    let Some(s::HeaderRef::Function(index)) = rows.header(view.raw().declaration)? else {
+        return Err("actual local original header".into());
+    };
+    let original_binder = rows.functions[index as usize].original.binder;
     let mut saw_borrow = false;
     for local in &view.raw().locals {
-        let ty = view.ty(local.ty, &mut steps)?;
-        if let Some(Kind::Reference { region, .. }) = facts.types.kind(ty) {
-            assert!(region != RegionId::STATIC && region.bound_parts().is_none());
-            saw_borrow = true;
+        let ty = view.ty(local.ty, steps)?;
+        let Some(Kind::Reference { region, .. }) = facts.types.kind(ty) else {
+            continue;
+        };
+        let Some(s::Type::Reference { region: raw, .. }) = rows.types.get(local.ty.0 as usize)
+        else {
+            return Err("actual local reference recipe".into());
+        };
+        assert_eq!(region, view.region(*raw, steps)?);
+        assert_ne!(region, RegionId::STATIC);
+        match rows.regions[raw.0 as usize] {
+            s::Region::Bound {
+                binder,
+                depth,
+                slot,
+            } => {
+                assert_eq!(binder, original_binder);
+                assert_eq!(region.bound_parts(), Some((depth, u16::try_from(slot)?)));
+            }
+            s::Region::Variable { body, slot } => {
+                assert_eq!(body, view.raw().body);
+                assert_eq!(region, view.variable(slot, steps)?);
+                assert!(region.bound_parts().is_none());
+            }
+            _ => return Err("local reference lost its actual bound or recorded domain".into()),
         }
+        saw_borrow = true;
     }
     assert!(saw_borrow);
     Ok(())
