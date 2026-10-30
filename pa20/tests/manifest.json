@@ -22291,9 +22291,6 @@
         "default_lints": true
       },
       "mode": "--emit-trait-semantics",
-      "args": [
-        "--crate-type=lib"
-      ],
       "maintainer_origin": "LIB103 closed local trait-bound coherence; dev/tests/invariants/future_impls.rs; independent Rust oracle-v3"
     },
     {
@@ -22310,9 +22307,6 @@
         "default_lints": true
       },
       "mode": "--emit-trait-semantics",
-      "args": [
-        "--crate-type=lib"
-      ],
       "maintainer_origin": "LIB103 closed local trait-bound coherence; dev/tests/invariants/future_impls.rs; independent Rust oracle-v3"
     },
     {
@@ -22329,9 +22323,6 @@
         "default_lints": true
       },
       "mode": "--emit-trait-semantics",
-      "args": [
-        "--crate-type=lib"
-      ],
       "maintainer_origin": "LIB103 closed local trait-bound coherence; dev/tests/invariants/future_impls.rs; independent Rust oracle-v3"
     }
   ]
