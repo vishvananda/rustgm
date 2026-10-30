@@ -464,15 +464,7 @@ fn originals(
             work.charge(1)?;
             ordinary(&request.value)?;
         }
-        for normalization in &input.normalizations {
-            work.charge(1)?;
-            if !normalization.owned.is_empty()
-                && (!regional
-                    || !matches!(normalization.owned.as_slice(), [range] if range.start < range.end))
-            {
-                return Err("source owned normalization requires a wider explicit profile");
-            }
-        }
+        normalization_ownership(input, work, regional)?;
         for obligation in &input.obligations {
             work.charge(1)?;
             if matches!(
@@ -486,6 +478,23 @@ fn originals(
             {
                 return Err("source allocation/scoped input requires a wider explicit profile");
             }
+        }
+    }
+    Ok(())
+}
+/// Owned normalization is data only; the recorded body domain proves each slot.
+fn normalization_ownership(
+    input: &super::super::BodyInputs,
+    work: &mut Work,
+    regional: bool,
+) -> Result<(), &'static str> {
+    for normalization in &input.normalizations {
+        work.charge(1)?;
+        if !normalization.owned.is_empty()
+            && (!regional
+                || !matches!(normalization.owned.as_slice(), [range] if range.start < range.end))
+        {
+            return Err("source owned normalization requires a wider explicit profile");
         }
     }
     Ok(())
