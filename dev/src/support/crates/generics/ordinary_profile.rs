@@ -110,7 +110,6 @@ fn validate_mode(
             BindingProfile::Ordinary
         },
     )?;
-    let sizing = roles.sizing;
     let features = matches!(
         profile,
         NamespaceProfile::FeaturePredicates
@@ -125,6 +124,37 @@ fn validate_mode(
         features,
         profile == NamespaceProfile::Conversions,
     )?;
+    trait_headers(rows, headers, work, profile, &roles)?;
+    functions(rows, headers, work, profile, &roles)?;
+    for header in &rows.implementations {
+        work.charge(1)?;
+        if header.constant || header.negative || header.unsafe_ {
+            return Err(
+                "source const/negative/unsafe implementation requires a wider explicit profile",
+            );
+        }
+    }
+    for clause in &rows.clauses {
+        work.charge(1)?;
+        ordinary(&clause.requirement)?;
+    }
+    originals(
+        rows,
+        headers,
+        work,
+        features,
+        profile.callables(),
+        profile == NamespaceProfile::Conversions,
+    )
+}
+fn trait_headers(
+    rows: &SourceRows,
+    headers: &HeaderIndex<'_>,
+    work: &mut Work,
+    profile: NamespaceProfile,
+    roles: &Bindings,
+) -> Result<(), &'static str> {
+    let sizing = roles.sizing;
     for header in &rows.traits {
         work.charge(1)?;
         let flags = header.flags.bits();
@@ -185,27 +215,7 @@ fn validate_mode(
             );
         }
     }
-    functions(rows, headers, work, profile, &roles)?;
-    for header in &rows.implementations {
-        work.charge(1)?;
-        if header.constant || header.negative || header.unsafe_ {
-            return Err(
-                "source const/negative/unsafe implementation requires a wider explicit profile",
-            );
-        }
-    }
-    for clause in &rows.clauses {
-        work.charge(1)?;
-        ordinary(&clause.requirement)?;
-    }
-    originals(
-        rows,
-        headers,
-        work,
-        features,
-        profile.callables(),
-        profile == NamespaceProfile::Conversions,
-    )
+    Ok(())
 }
 fn functions(
     rows: &SourceRows,

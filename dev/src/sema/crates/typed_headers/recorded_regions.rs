@@ -55,7 +55,7 @@ pub(in crate::sema::crates::typed_headers) struct RecordedDomain {
     log: AllocationLog,
     aliases: Option<Vec<RegionId>>,
     pub(super) ordinary_environment:
-        std::cell::OnceCell<Arc<crate::types::parameters::environment::Environment>>,
+        std::sync::OnceLock<Arc<crate::types::parameters::environment::Environment>>,
 }
 impl DomainStage {
     pub(super) fn new(
@@ -206,7 +206,7 @@ impl DomainStage {
             seal: self.seal,
             log,
             aliases,
-            ordinary_environment: std::cell::OnceCell::new(),
+            ordinary_environment: std::sync::OnceLock::new(),
         };
         let actual = result.retained_bytes();
         if actual > work.retained.saturating_sub(before) {

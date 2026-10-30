@@ -133,7 +133,7 @@ fn scalar_cast_domains_rederive_kind_and_reject_nonprimitive_and_invalid_pairs()
     };
     assert!(
         value
-            .scalar_cast_types(&original, &[types[0].clone(), pointer])
+            .scalar_cast_types(&original, &[types[0], pointer])
             .is_err()
     );
     Ok(())

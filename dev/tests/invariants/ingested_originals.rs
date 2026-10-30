@@ -217,7 +217,7 @@ fn ordinary_original_warm_queries_reuse_memo_and_failed_prepayment_is_sticky() -
     let bytes = facts
         .crates
         .as_deref()
-        .and_then(|linkage| linkage.original_work())
+        .and_then(crate::sema::crates::Linkage::original_work)
         .ok_or("cost")?
         .1;
     for _ in 0..16 {
@@ -229,7 +229,7 @@ fn ordinary_original_warm_queries_reuse_memo_and_failed_prepayment_is_sticky() -
         facts
             .crates
             .as_deref()
-            .and_then(|linkage| linkage.original_work())
+            .and_then(crate::sema::crates::Linkage::original_work)
             .ok_or("cost")?
             .1,
         bytes

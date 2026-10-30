@@ -109,7 +109,32 @@ impl Graph {
                 "source original builtin environment changed its actual construction origin",
             );
         }
-        let domain = match &self.canonical {
+        let domain = self.ordinary_domain(facts, headers, definition, header, steps)?;
+        let original = Original {
+            mapping: Mapping::Ordinary {
+                graph: self,
+                store: &facts.types,
+                domain,
+            },
+            catalog,
+            header,
+            definition,
+            body,
+            rows,
+            reference,
+        };
+        original.check_locals(steps)?;
+        Ok(Some(original))
+    }
+    fn ordinary_domain(
+        &self,
+        facts: &Declarations,
+        headers: &super::super::Headers,
+        definition: DefId,
+        header: &super::super::Header,
+        steps: &mut usize,
+    ) -> Result<Option<super::super::unpaid_provided::OrdinaryDomain>, &'static str> {
+        Ok(match &self.canonical {
             super::Canonical::Eager { .. } => None,
             super::Canonical::Lazy(lazy) => {
                 headers
@@ -140,23 +165,9 @@ impl Graph {
                 }
                 Some(domain)
             }
-        };
-        let original = Original {
-            mapping: Mapping::Ordinary {
-                graph: self,
-                store: &facts.types,
-                domain,
-            },
-            catalog,
-            header,
-            definition,
-            body,
-            rows,
-            reference,
-        };
-        original.check_locals(steps)?;
-        Ok(Some(original))
+        })
     }
+
 }
 impl Original<'_> {
     pub(crate) fn numbered(&self) -> bool {

@@ -65,6 +65,13 @@ fn record(session: &Session, owner: DeclarationRef) -> Result<(&Ready, &Recorded
 }
 #[test]
 fn private_numbering_records_actual_units_without_binding_environments() -> Result {
+    fn shared<T: Send + Sync>() {}
+    shared::<RecordedDomain>();
+    println!(
+        "recorded-domain bytes={} ordinary-environment-cell={}",
+        size_of::<RecordedDomain>(),
+        size_of::<std::sync::OnceLock<Arc<crate::types::parameters::environment::Environment>>>()
+    );
     full_family()?;
     foreign_contexts()?;
     failed_prepayment()?;
