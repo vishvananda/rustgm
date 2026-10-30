@@ -130,7 +130,7 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         for index in 0..self.facts.functions.len() {
             let function = self.facts.functions[index];
-            if self.facts.is_comptime_function(function.definition) {
+            if self.facts.is_const_function(function.definition) {
                 let previous = self.state.pending_patterns.take();
                 self.function(function)?;
                 let mut pending = self.state.pending_patterns.take();
@@ -189,7 +189,11 @@ impl Checker<'_> {
             .facts
             .source_function_context(self.report, function.definition, body)
             .map_err(|error| Declarations::error(self.report, body, error))?;
-        if context != crate::sema::function_context::FunctionContext::Comptime {
+        if !matches!(
+            context,
+            crate::sema::function_context::FunctionContext::Comptime
+                | crate::sema::function_context::FunctionContext::ConstFunction
+        ) {
             return Ok(());
         }
         if let Some(pending) = pending.take() {
@@ -198,7 +202,11 @@ impl Checker<'_> {
         close(
             self.report,
             self.facts,
-            DefiningRequest::ComptimeDefinition(function.definition),
+            if context == crate::sema::function_context::FunctionContext::Comptime {
+                DefiningRequest::ComptimeDefinition(function.definition)
+            } else {
+                DefiningRequest::ConstDefinition(function.definition)
+            },
         )
     }
     fn close_hidden(

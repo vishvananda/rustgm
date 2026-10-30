@@ -123,12 +123,16 @@ pub fn analyze_with_hidden(
         DefiningRequest::ComptimeDefinition(_) => Err(Error::unlocated(
             "comptime defining bodies require a checked CFG provider",
         )),
+        // This API performs type analysis only. Full pipeline analysis supplies
+        // the existing CFG provider for ordinary const defining legality.
+        DefiningRequest::ConstDefinition(_) => Ok(()),
     })
 }
 #[derive(Clone, Copy)]
 pub(crate) enum DefiningRequest {
     Hidden(crate::types::opaque::OpaqueId),
     ComptimeDefinition(DefId),
+    ConstDefinition(DefId),
 }
 pub(crate) fn analyze_defining(
     report: &Report,

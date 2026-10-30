@@ -132,7 +132,8 @@ impl Checker<'_> {
         };
         if linkage == crate::support::linkage::Linkage::Export
             && (self.facts.generics.parameters.contains_key(&definition)
-                || self.facts.associated.schema(definition).is_some())
+                || self.facts.associated.schema(definition).is_some()
+                    && !self.closed_implementation_export(definition))
         {
             return Err(self.error(
                 key,
@@ -152,6 +153,23 @@ impl Checker<'_> {
                 },
             )
             .map_err(|e| self.error(key, e))
+    }
+    /// A concrete impl's Self schema is not a generic argument. Preserve the
+    /// inherited scope and actual owner instead of treating every method as generic.
+    fn closed_implementation_export(&self, definition: DefId) -> bool {
+        self.facts
+            .associated
+            .owner(definition)
+            .and_then(|id| self.facts.associated.get(id))
+            .is_some_and(|owner| {
+                matches!(owner.kind, crate::sema::associated::OwnerKind::Impl { .. })
+            })
+            && self
+                .facts
+                .generics
+                .parameters_in_scope(definition)
+                .next()
+                .is_none()
     }
     pub(super) fn register_foreign_global(
         &mut self,
