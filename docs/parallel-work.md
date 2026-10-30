@@ -12,7 +12,10 @@ formatting and architecture. Existing target-feature, missing/changed factory,
 source-origin and Always controls are preserved. No fixture is reclassified.
 See [repair evidence](const-call-policy-ci-repair.md). Private and integration
 checks use separate bounded gates; the mixed cold predecessor timed out after
-strict code generation and never qualified runtime. Full CI must be repeated.
+strict code generation and never qualified runtime. Full CI40981612452 is
+running on public827155167. Fresh production CLI/native20 operations match
+pinned Rust for all3 accepted programs and the exact target-feature rejection;
+see the same repair evidence.
 
 The preceding public successor qualifies actual rustc_no_mir_inline source
 contracts. C14 passes221.94 seconds; same-source Root production35 passes133.70
@@ -104,6 +107,15 @@ union expansion and reports typed field-macro copying at niche_types.rs20 in
 Its fresh strict receipt7629b28fb776aa15818fc38da1c485a4012aab9641d2b0881d0afc54e348e5d3
 still retains the deferred expectation. All722 input hashes and target settings
 are unchanged. Do not claim a library artifact from373 opened sources.
+
+When free space is close to the reserve, an idle worker's shrinking-only cleanup
+can request a stricter absolute cap sized above its current output footprint and
+small receipt/log growth. For example, a14GiB cleanup cap may admit standard
+scoped pruning when a16GiB build reservation cannot. This raises no cap and never
+lowers the150GiB reserve. Preserve pins, current warm caches, raw evidence and
+other checkouts; use the usual16GiB cap again for compiler qualification. Do not
+run a build under an unreviewed cleanup budget or repeatedly retry admission
+while a peer is between acquired and supervised states.
 
 Keep at most two heavy jobs globally, one per worktree, two Cargo/test threads,
 16GiB absolute output caps and150GiB free reserve. B and C may each use one

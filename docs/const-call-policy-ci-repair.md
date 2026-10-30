@@ -44,7 +44,18 @@ then exposed the missing canonical-factory absence route, which is repaired
 above. Raw static/type/budget and semantic predecessor failures remain in obj;
 none count as runtime qualification. Private and production validation now run
 as separate bounded development gates. Caps, deadlines, fixtures and expected
-outcomes remain unchanged. Full qualification will be repeated on the repair.
+outcomes remain unchanged. Full qualification40981612452 is running on the published repair827155167.
+
+A subsequent production CLI/native batch passes20 operations in1.11 seconds
+(after admission): the exact original range input, the existing target-feature
+const-positive with an explicit main adapter, and an authored Always-plus-range
+program each emit checked LowIR and execute successfully through the locked
+backend and pinned Rust. The unchanged const-missing input rejects in both
+compilers with its proper target-feature permission diagnostic. No library or
+crate-artifact claim is inferred. Receipt:
+56b094ab32c678affef3fde065974a4f6522c433864b098d213cd4a50b946758.
+The actual current CLI hash is recorded with the complete frozen inputs and
+commands; generated executables were pruned after successful validation.
 
 The latest actual whole-core observation remains CLI49f16ba0 at the original
 reservation attribute in convert/mod.rs801. This repair alone does not establish
