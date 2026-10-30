@@ -3,6 +3,7 @@ use super::{Contract, Declarations, Error, HashMap, HashSet, NodeKey, Report, Wa
 use crate::{
     literal::{self, Value},
     resolve::{
+        lint_policy::producer::Producer,
         model::{DefId, Namespace},
         unit::FileId,
     },
@@ -444,7 +445,7 @@ fn bind_definitions(
     if !pointer_markers.is_empty()
         || report
             .lint_producer()
-            .is_some_and(|producer| producer.has_impl_annotations())
+            .is_some_and(Producer::has_impl_annotations)
     {
         crate::sema::header_attributes::reserve_source_contracts(
             facts,
@@ -461,7 +462,7 @@ fn bind_definitions(
         || !mir_boundaries.is_empty()
         || report
             .lint_producer()
-            .is_some_and(|producer| producer.has_impl_annotations())
+            .is_some_and(Producer::has_impl_annotations)
         || report.package.source_core().is_some()
         || crate::sema::header_attributes::has_comptime_headers(facts)
         || facts
