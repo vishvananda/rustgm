@@ -205,7 +205,13 @@ fn checked_reservation_has_no_selected_member_but_real_exported_body_can_lower()
 #[test]
 fn reservation_source_witnesses_are_current_and_failed_queries_retain_work() -> TestResult {
     let (report, mut analysis) = checked("unused")?;
-    assert!(report.package.library_policy().is_none());
+    assert!(
+        report
+            .package
+            .library_policy()
+            .and_then(crate::resolve::stability::Library::inventory)
+            .is_none()
+    );
     let header = analysis
         .facts
         .generics
