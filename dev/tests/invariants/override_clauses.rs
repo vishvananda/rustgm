@@ -57,23 +57,21 @@ fn method_abi_must_match_for_foreign_and_rust_declarations() -> Result {
             result,
             bound_regions,
             unsafe_,
-            variadic,
             convention,
         }) = fixture.facts.types.kind(fixture.actual.signature)
         else {
             return Err("actual implementation method signature".into());
         };
-        let changed = if convention == crate::types::callable::Convention::Rust {
+        let changed = if convention == crate::types::callable::Convention::RUST {
             crate::types::callable::Convention::C
         } else {
-            crate::types::callable::Convention::Rust
+            crate::types::callable::Convention::RUST
         };
         fixture.actual.signature = fixture.facts.types.intern(Kind::Function {
             parameters,
             result,
             bound_regions,
             unsafe_,
-            variadic,
             convention: changed,
         })?;
         fixture.valid(false)?;
