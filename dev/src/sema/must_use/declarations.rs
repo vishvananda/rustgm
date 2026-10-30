@@ -256,7 +256,7 @@ fn consume_annotation(
             )?;
         }
         Some(Consumer::InsignificantDestructor) => {
-            crate::sema::destructor_hints::consume(
+            crate::sema::insignificant_drop::consume(
                 report,
                 facts,
                 declaration,
