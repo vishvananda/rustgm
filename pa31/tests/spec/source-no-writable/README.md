@@ -20,8 +20,9 @@ unchanged original `index_mut` method bytes are retained separately; its full
 IndexMut/SliceIndex const/generic/body prerequisites remain required. That text
 is not a candidate or independent standalone-body qualification claim.
 
-The frozen 41 inputs matched all 82 pinned Rust metadata/object predictions.
-Candidate RustGM compilation/runtime and the declared mutating native observer
-remain unexecuted. Source format, architecture and assignment metadata checks
-passed; the eventual warm-cache qualification must retain all new controls and
-the existing MIR-inline controls, including genuine owner/payment/layout tests.
+The frozen41 inputs match all82 pinned Rust metadata/object predictions. The
+[joined source checkpoint](../../../../docs/pa31-advisory-source-checkpoint.md)
+now passes the new controls and existing MIR-inline/Has/coverage controls,
+production Clippy, affected text suites and actual candidate/Rust native7.
+Real owner/payment/layout, const/unsafe/borrow and independent inline checks
+remain intact. Original method graphs and broader assignments remain required.

@@ -18,3 +18,8 @@ The original-array-header.txt excerpt preserves exact pinned Rust bytes and
 attribution through the repository Rust notices; authored fixtures do not replace
 original IntoIter/ManuallyDrop/InnerSized source bodies or establish an artifact.
 PA31 remains planned; no generated reference files or active stage are claimed.
+
+The [joined source checkpoint](../../../../docs/pa31-advisory-source-checkpoint.md)
+passes all declared outcomes, current private/production Clippy and actual
+candidate/Rust own-and-field destruction37. All ordinary move/borrow and cleanup
+requirements remain active; advisory producers remain deferred.

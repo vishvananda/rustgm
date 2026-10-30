@@ -16,6 +16,13 @@ old cycle; both units and the complete contract below remain required.
 
 ## Required implementation
 
+The [advisory source checkpoint](../docs/pa31-advisory-source-checkpoint.md)
+validates actual insignificant-destructor declarations and the independent
+optimization restrictions without inventing write, cleanup or language
+permission. Current semantic consumers retain real destruction and mutable
+stores; broader advisory lint parity remains deferred under the compilation-first
+plan. The next unchanged-core source marker is tracked separately from releases.
+
 Register source-declared language items, diagnostic items and intrinsic
 identities through validated attributes and ordinary crate ownership. Validate
 signatures, generic parameters, duplicate/missing items and feature gates. One

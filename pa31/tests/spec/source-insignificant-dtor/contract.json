@@ -1,5 +1,5 @@
 {
-  "state": "independent Rust outcomes qualified; candidate implementation awaiting strict qualification; PA31 planned",
+  "state": "independent Rust and finite candidate source/native checkpoint qualified; PA31 planned",
   "issue": "LIB-108",
   "work_units": [
     "source-declarations"
@@ -274,6 +274,25 @@
       "seconds": 1.7125034919008613,
       "native": "37\n"
     },
-    "candidate": "pending"
+    "candidate": {
+      "source": "f91fc9b24831bd8b685383f0bf8315e938e7415f",
+      "scope": "finite source declaration and current backend semantics; full parent requirements remain required",
+      "receipts": {
+        "obj/qualification/fast/1793353410607545172/receipt.json": "aa79b9ec2e4fe39d048ab32d351f9135d2b0b79f7d357f9ce40cb27c8b3de150",
+        "obj/qualification/fast/1793353545695013853/receipt.json": "db21168a8c87f6ee17990d57baaecf22db74ef8e961427771c9124d6a2ba9c35",
+        "obj/parallel/advisory-source-checkpoint-v1/native-v1/receipt.json": "349284bad25b6b7c483c85536e4bdc970d631165aea15ea1079d2e7e102fd6fc"
+      },
+      "checkpoint": "docs/pa31-advisory-source-checkpoint.md"
+    }
+  },
+  "candidate_qualification": {
+    "source": "f91fc9b24831bd8b685383f0bf8315e938e7415f",
+    "scope": "finite source declaration and current backend semantics; full parent requirements remain required",
+    "receipts": {
+      "obj/qualification/fast/1793353410607545172/receipt.json": "aa79b9ec2e4fe39d048ab32d351f9135d2b0b79f7d357f9ce40cb27c8b3de150",
+      "obj/qualification/fast/1793353545695013853/receipt.json": "db21168a8c87f6ee17990d57baaecf22db74ef8e961427771c9124d6a2ba9c35",
+      "obj/parallel/advisory-source-checkpoint-v1/native-v1/receipt.json": "349284bad25b6b7c483c85536e4bdc970d631165aea15ea1079d2e7e102fd6fc"
+    },
+    "checkpoint": "docs/pa31-advisory-source-checkpoint.md"
   }
 }
