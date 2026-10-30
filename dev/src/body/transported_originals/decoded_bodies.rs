@@ -59,9 +59,26 @@ pub(super) fn append(
             allowance.header_work = current.0;
             allowance.header_bytes = current.1;
         }
+        let prepaid = body_bound
+            .checked_sub(originals.retained_bytes())
+            .ok_or_else(|| {
+                context.report.body_optional_error(
+                    None,
+                    "actual original retention exceeded its prepaid bound",
+                )
+            })?;
+        let remaining = Allowance {
+            header_bytes: allowance.header_bytes.saturating_add(prepaid),
+            templates: allowance.templates.saturating_sub(prepaid),
+            ..allowance
+        };
+        let before_proof = originals.payload;
         let original = build(
-            context, facts, scratch, originals, definition, &selected, &allowance,
+            context, facts, scratch, originals, definition, &selected, &remaining,
         )?;
+        // Raw body retention is already in the aggregate bound. Only newly
+        // charged proof/canonical scratch extends the next preparation's bound.
+        body_bound = body_bound.saturating_add(originals.payload.saturating_sub(before_proof));
         let source = original.template.body.source;
         let retained = originals
             .retained_bytes()
@@ -213,7 +230,10 @@ pub(super) fn allocation<'a>(
             bytes = bytes.saturating_add(crate::body::defining_cleanups::required_allocation());
         }
         let clauses = (header.inputs.end - header.inputs.start) as usize;
-        bytes = bytes.saturating_add(super::versioned_calls::allocation(raw.values.len()));
+        bytes = bytes.saturating_add(super::versioned_calls::allocation(
+            raw.values.len(),
+            rows.descriptor().profile().conversion_roles(),
+        ));
         let ports = raw
             .locals
             .len()

@@ -2,17 +2,23 @@
 use super::*;
 use crate::{
     body::transported_originals::decoded_bodies::Allowance,
-    types::{Primitive, Store},
+    types::{Primitive as ScalarPrimitive, Store},
 };
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 fn pointer() -> Kind {
     Kind::Pointer {
         mutable: false,
-        pointee: TypeId::primitive(Primitive::U8),
+        pointee: TypeId::primitive(ScalarPrimitive::U8),
     }
 }
 #[test]
 fn combined_proof_envelopes_reconcile_failure_and_warm_canonical_growth() -> Result {
+    assert_eq!(size_of::<Primitive>(), 16);
+    assert_eq!(allocation(128, false), 128 * 4 * 16);
+    assert_eq!(
+        allocation(128, true),
+        128 * 4 * size_of::<Option<Applied>>()
+    );
     for axis in 0..3 {
         let mut store = Store::default();
         let before = store.len();
@@ -72,8 +78,10 @@ fn combined_proof_envelopes_reconcile_failure_and_warm_canonical_growth() -> Res
         );
     }
     eprintln!(
-        "selected Pending={} Member={} Index={}",
+        "selected Pending={} legacy_row={} applied_slot={} Member={} Index={}",
         size_of::<Pending>(),
+        size_of::<Primitive>(),
+        size_of::<Option<Applied>>(),
         size_of::<Member>(),
         size_of::<Index<'_>>()
     );

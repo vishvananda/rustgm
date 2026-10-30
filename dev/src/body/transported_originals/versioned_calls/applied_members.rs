@@ -1,6 +1,6 @@
 //! Actual v9 selected operands retain full goals in their exact original scope.
 use super::{
-    Body, Declarations, ImportedOriginals, Index, Kind, Pending, Rvalue, SourceOriginal, s,
+    Applied, Body, Declarations, ImportedOriginals, Index, Kind, Rvalue, SourceOriginal, s,
 };
 use crate::{support::constness::Constness, types::ItemId};
 
@@ -10,7 +10,7 @@ pub(super) fn prepare(
     facts: &Declarations,
     body: &Body,
     work: &mut ImportedOriginals,
-) -> Result<Vec<Pending>, &'static str> {
+) -> Result<Vec<Option<Applied>>, &'static str> {
     require_original(view, facts, body, work)?;
     work.charge(body.values.len())?;
     // Aggregate original preflight includes this selected, flat value-domain
@@ -28,7 +28,7 @@ pub(super) fn prepare(
         };
         if pending.is_empty() {
             work.charge(body.values.len().saturating_add(view.raw().calls.len()))?;
-            pending.resize(body.values.len(), Pending::Unused);
+            pending.resize(body.values.len(), None);
         }
         work.charge(6)?;
         let Some(s::HeaderRef::Function(header)) = index.rows.header(target)? else {
@@ -41,11 +41,11 @@ pub(super) fn prepare(
         {
             return Err("applied source member changed its actual owner or complete function item");
         }
-        pending[position] = Pending::Applied {
+        pending[position] = Some(Applied {
             member: view.declaration(member.declaration, &mut work.steps)?,
             selected: value.ty,
             recorded: None,
-        };
+        });
     }
     if pending.is_empty() {
         return Ok(pending);
@@ -63,11 +63,11 @@ pub(super) fn prepare(
         else {
             return Err("applied source call changed its actual operation kind");
         };
-        let Some(Pending::Applied {
+        let Some(Some(Applied {
             member,
             selected,
             recorded,
-        }) = pending.get_mut(callee.0 as usize)
+        })) = pending.get_mut(callee.0 as usize)
         else {
             continue;
         };

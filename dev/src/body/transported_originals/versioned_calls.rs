@@ -31,21 +31,52 @@ pub(super) struct Index<'a> {
     members: HashMap<DeclarationRef, Member>,
     bytes: usize,
 }
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy)]
+pub(super) struct Primitive {
+    member: DefId,
+    subject: TypeId,
+    signature: TypeId,
+    selected: TypeId,
+}
+#[derive(Clone, Copy)]
+pub(super) struct Applied {
+    member: DefId,
+    selected: TypeId,
+    recorded: Option<crate::types::parameters::predicates::Predicate>,
+}
 pub(super) enum Pending {
-    #[default]
-    Unused,
-    Primitive {
-        member: DefId,
-        subject: TypeId,
-        signature: TypeId,
-        selected: TypeId,
-    },
-    Applied {
-        member: DefId,
-        selected: TypeId,
-        recorded: Option<crate::types::parameters::predicates::Predicate>,
-    },
+    Primitive(Vec<Primitive>),
+    Applied(Vec<Option<Applied>>),
+}
+#[derive(Clone, Copy)]
+enum Operand {
+    Primitive(Primitive),
+    Applied(Applied),
+}
+impl Pending {
+    fn is_empty(&self) -> bool {
+        match self {
+            Self::Primitive(rows) => rows.is_empty(),
+            Self::Applied(rows) => rows.is_empty(),
+        }
+    }
+    fn len(&self) -> usize {
+        match self {
+            Self::Primitive(rows) => rows.len(),
+            Self::Applied(rows) => rows.len(),
+        }
+    }
+    fn operands(&self) -> impl Iterator<Item = Operand> + '_ {
+        let (primitive, applied) = match self {
+            Self::Primitive(rows) => (rows.as_slice(), &[][..]),
+            Self::Applied(rows) => (&[][..], rows.as_slice()),
+        };
+        primitive
+            .iter()
+            .copied()
+            .map(Operand::Primitive)
+            .chain(applied.iter().copied().flatten().map(Operand::Applied))
+    }
 }
 impl<'a> Index<'a> {
     pub(super) fn new(
@@ -114,12 +145,12 @@ impl<'a> Index<'a> {
         facts: &Declarations,
         body: &Body,
         work: &mut ImportedOriginals,
-    ) -> Result<Vec<Pending>, &'static str> {
+    ) -> Result<Pending, &'static str> {
         if !std::ptr::eq(&raw const *self.rows, &raw const *view.rows()) {
             return Err("selected source member index belongs to another actual descriptor");
         }
         if self.rows.descriptor().profile().conversion_roles() {
-            return applied_members::prepare(self, view, facts, body, work);
+            return applied_members::prepare(self, view, facts, body, work).map(Pending::Applied);
         }
         let mut pending = Vec::new();
         for (record, value) in view.raw().values.iter().zip(&body.values) {
@@ -149,23 +180,29 @@ impl<'a> Index<'a> {
             {
                 return Err("selected method requires its exact closed primitive trait signature");
             }
-            pending.push(Pending::Primitive {
+            pending.push(Primitive {
                 member: definition,
                 subject: view.ty(member.subject, &mut work.steps)?,
                 signature,
                 selected: value.ty,
             });
         }
-        Ok(pending)
+        Ok(Pending::Primitive(pending))
     }
 }
-pub(super) fn allocation(values: usize) -> usize {
-    values.saturating_mul(4 * size_of::<Pending>())
+pub(super) fn allocation(values: usize, conversions: bool) -> usize {
+    values.saturating_mul(
+        4 * if conversions {
+            size_of::<Option<Applied>>()
+        } else {
+            size_of::<Primitive>()
+        },
+    )
 }
 pub(super) fn prove(
     facts: &mut Declarations,
     environment: Arc<Environment>,
-    pending: &[Pending],
+    pending: &Pending,
     body: &Body,
     contract: &crate::body::regions::Contract,
     work: &mut ImportedOriginals,
@@ -176,7 +213,7 @@ pub(super) fn prove(
     }
     paying(work, allowance, |pay| {
         pay(pending.len(), 0)?;
-        let applied = pending.iter().any(|p| matches!(p, Pending::Applied { .. }));
+        let applied = matches!(pending, Pending::Applied(_));
         let (universals, first) = if applied {
             if contract.key != body.key() || contract.source != body.source {
                 return Err("selected source dispatch changed its actual body contract".into());
@@ -198,10 +235,8 @@ pub(super) fn prove(
         };
         let mut dispatcher =
             Dispatcher::in_body(&facts.types, universals, first, environment, &pay)?;
-        for goal in pending {
-            let Some((requested, selected)) = request(facts, *goal, &pay)? else {
-                continue;
-            };
+        for goal in pending.operands() {
+            let (requested, selected) = request(facts, goal, &pay)?;
             if dispatcher.select(facts, requested)? != selected {
                 return Err(
                     "fresh source trait dispatch selected another implementation function".into(),
@@ -255,17 +290,16 @@ fn paying<T>(
 
 fn request(
     facts: &mut Declarations,
-    goal: Pending,
+    goal: Operand,
     pay: retained::Payment<'_>,
-) -> Result<Option<(TypeId, TypeId)>, &'static str> {
-    Ok(Some(match goal {
-        Pending::Unused => return Ok(None),
-        Pending::Primitive {
+) -> Result<(TypeId, TypeId), &'static str> {
+    Ok(match goal {
+        Operand::Primitive(Primitive {
             member,
             subject,
             signature,
             selected,
-        } => {
+        }) => {
             let arguments = facts
                 .types
                 .intern_arguments_observed::<true>(&[Argument::Type(subject)], &|s, b| pay(s, b))?;
@@ -281,13 +315,13 @@ fn request(
                 selected,
             )
         }
-        Pending::Applied {
+        Operand::Applied(Applied {
             member,
             selected,
             recorded,
-        } => (
+        }) => (
             crate::sema::dispatch::requested_callable(facts, member, selected, recorded, pay)?,
             selected,
         ),
-    }))
+    })
 }
