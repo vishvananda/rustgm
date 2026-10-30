@@ -129,7 +129,8 @@ fn same_crate_legacy_alias_pointer_const_and_unsafe_calls_get_no_new_permission(
 }
 #[test]
 fn legacy_indices_are_fenced_before_any_current_source_function_publication() -> TestResult {
-    let (report, analysis) = checked("module-provider")?;
+    let report = test_source::source_provider(&input("module-provider")?, "legacy_header_fence")?;
+    let analysis = pipeline::analyze_source(&report)?;
     let id = function(&report, "marked_legacy")?;
     let error = analysis
         .facts

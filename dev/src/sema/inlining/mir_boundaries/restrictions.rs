@@ -89,14 +89,12 @@ pub(super) fn authenticate(
             restriction.name()
         )));
     }
-    let name = forest
-        .tree(attribute.path.start)
-        .ok_or_else(|| error("optimization boundary lost its actual name"))?
-        .span;
+    // Rust gates the attribute envelope, whose `#` can be macro-authored even
+    // when a captured meta fragment keeps its caller's name-token context.
     if !report.package.requested_internal_attributes()
         && !allowances.allows_at(
             declaration.file,
-            name,
+            attribute.span,
             &crate::resolve::bindings::FeatureName::new("rustc_attrs").map_err(error)?,
         )?
     {
@@ -134,7 +132,7 @@ pub(super) fn authenticate(
             .map_err(error)?
         && !allowances.allows_at(
             declaration.file,
-            name,
+            attribute.span,
             &crate::resolve::bindings::FeatureName::new("stmt_expr_attributes").map_err(error)?,
         )?
     {
