@@ -16,8 +16,9 @@ pub(super) fn foreign_trait_requires_real_imported_owner() -> Result {
     let fixture =
         |name| crate::test_source::fixture(&format!("pa29/tests/spec/local-dyn-owner/{name}.rs"));
     let interface = crate::module_packets::roundtrip(&fixture("provider")?)?;
+    let imported = crate::support::crates::decode(&crate::support::crates::encode(&interface)?)?;
     let (report, _, _) =
-        crate::source_packets::client_analysis(interface.clone(), &fixture("bare-client")?)?;
+        crate::source_packets::client_analysis(imported, &fixture("bare-client")?)?;
     let actual: Vec<_> = report
         .resolution
         .definitions
