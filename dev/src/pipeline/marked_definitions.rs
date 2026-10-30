@@ -5,6 +5,27 @@ use super::{
 use crate::{body, sema::function_context::FunctionContext, support::retained::Growth};
 
 impl Demand {
+    pub(super) fn const_readiness(
+        report: &Report,
+        facts: &Declarations,
+        definition: DefId,
+    ) -> Result<(), Error> {
+        let function = Self::defining_function(facts, definition)?;
+        let source = function
+            .body
+            .ok_or_else(|| Error::unlocated("const defining body is absent"))?;
+        if !facts.typed_function_bodies.contains(&definition)
+            || facts
+                .source_function_context(report, definition, source)
+                .map_err(Error::unlocated)?
+                != FunctionContext::ConstFunction
+        {
+            return Err(report.body_error(source, "const defining type facts are incomplete"));
+        }
+        // Ordinary unused const CFG legality belongs to complete lowering,
+        // after all pattern facts have completed. A types view is not code.
+        Ok(())
+    }
     pub(super) fn defining_function(
         facts: &Declarations,
         definition: DefId,

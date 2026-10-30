@@ -101,8 +101,18 @@ fn reservation_never_supplies_call_projection_const_or_own_body_evidence() -> Te
         "copy_physical_bad",
         "auto_structural_kept",
     ] {
-        let outcome: TestResult<pipeline::Analysis> =
-            report(name).and_then(|report| pipeline::analyze_source(&report).map_err(Into::into));
+        let outcome: TestResult = report(name).and_then(|report| {
+            let mut analysis = pipeline::analyze_source(&report)?;
+            if name == "const_body_restriction" {
+                crate::lower::instances::inspect_prepared(
+                    &report,
+                    &mut analysis.facts,
+                    analysis.prepared,
+                    |_, _| (),
+                )?;
+            }
+            Ok(())
+        });
         let error = outcome
             .err()
             .ok_or_else(|| format!("{name}: accepted without genuine proof"))?

@@ -130,7 +130,17 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         for index in 0..self.facts.functions.len() {
             let function = self.facts.functions[index];
-            if self.facts.is_const_function(function.definition) {
+            let eager = if let Some(body) = function.body
+                && self.facts.is_const_function(function.definition)
+            {
+                self.facts
+                    .source_function_context(self.report, function.definition, body)
+                    .map_err(|error| Declarations::error(self.report, body, error))?
+                    == crate::sema::function_context::FunctionContext::Comptime
+            } else {
+                false
+            };
+            if eager {
                 let previous = self.state.pending_patterns.take();
                 self.function(function)?;
                 let mut pending = self.state.pending_patterns.take();
@@ -196,7 +206,9 @@ impl Checker<'_> {
         ) {
             return Ok(());
         }
-        if let Some(pending) = pending.take() {
+        if context == crate::sema::function_context::FunctionContext::Comptime
+            && let Some(pending) = pending.take()
+        {
             self.prepare_defining_patterns(pending)?;
         }
         close(
