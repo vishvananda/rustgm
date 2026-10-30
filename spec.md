@@ -145,6 +145,16 @@ source owner; imported principals require their own target permission and
 validated method-index transport. Primitive incoherent lookup policy stays
 separate. See the [PA23 contract](pa23/tests/spec/members/local-dyn-inherent/README.md).
 
+An incoherent inherent target marker belongs to its actual defining declaration,
+separately from a method's Allow permission. Retain this sparse promise in the
+existing cold source-header owner and bind it in the existing definition walk;
+do not create ordinary nominal header rows merely to record absence. Source
+queries authenticate the current image, configured effect and target kind.
+Keep old imported profiles Unknown and explicitly reject exports that would
+lose target authority or its validated inherent candidate index. Local ownership
+does not require Has. The [source checkpoint](docs/pa31-incoherent-target-checkpoint.md)
+retains the wider foreign/metadata requirements.
+
 Header diagnostic and advisory contracts use complete versioned cold columns.
 Authenticate local declaration, configured owner and retained source incarnation;
 join imported declarations to their actual catalog coordinates once. Reuse the

@@ -4,6 +4,15 @@ The declared outcomes in `contract.json` are independently qualified against the
 
 The standalone observation takes4.21 seconds and the complete cross-crate observation4.50 seconds under the normal resource/storage guard. An initial cross-native link omitted its provider/extension archives; the corrected link includes both actual rlibs. All sources and declared outcomes remain unchanged, and the failed raw receipt is retained. Contract provenance records both passing receipts and the frozen pre-execution contract hash.
 
+The [local source checkpoint](../../../../docs/pa31-incoherent-target-checkpoint.md)
+now qualifies the actual Has producer, nominal/local-object consumers and explicit
+old-metadata fences. All31 standalone outcomes match; the custom auto-only input
+still has an earlier unsupported auto-trait prerequisite, while the separate
+canonical PA23 input checks the actual principal guard. Fresh native candidate
+and Rust results match7 and7/9. The twelve foreign graphs retain their original
+required outcomes; target authority and validated foreign index transport remain
+unimplemented. No whole assignment is activated by this checkpoint.
+
 PA31 owns the real gated Has/Allow declaration and macro authority; PA19/20 own complete inherent Self/receiver/coherence checks, PA23 owns real dyn dispatch, and PA29 owns external target authority plus the validated incoherent candidate index. C owns the earliest unmarked `pa23/tests/spec/local-dyn-inherent` baseline; its final source hashes will be referenced when available.
 
 `original/error-header.txt` and `original/error-local-dyn.txt` preserve exact pinned Error intervals. `local/original-error-header-dyn.rs` embeds the exact header and exact original local impl header, with an explicitly authored small observer body and ordinary empty Debug/Display observer supertraits. It exercises real virtual calls for two concrete types through a shared dyn argument, then local inherent forwarding. It does not implement original Error, formatting, TypeId, Option, or alloc downcast bodies. The genuine patterned NonNull/DynMetadata source foundation is retained; there is no fake metadata pointer field. Its existing core flag does not substitute for foreign Has.
