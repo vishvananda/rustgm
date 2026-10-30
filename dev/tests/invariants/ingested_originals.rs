@@ -486,7 +486,7 @@ fn all_original_type_roots(report: &Report, facts: &mut Declarations) -> Result 
             let ty = view.ty(root, &mut steps)?;
             assert!(facts.types.kind(ty).is_some());
         }
-        for call in &raw.calls {
+        for call in raw.calls.iter() {
             if let Some(application) = call.method {
                 let goal = view.predicate(
                     &s::Requirement::Trait {
