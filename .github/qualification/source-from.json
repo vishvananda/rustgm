@@ -1,6 +1,6 @@
 {
   "state": "pending; no execution",
-  "source_commit": "94e07b5f14b827a6685d2c38b6db17b0a873ac52",
+  "source_commit": "6fd0671cc4d3978f7b2dc922d72e571640279b14",
   "scope": "SourceFrom selected nested preference ownership, sparse publication, numeric frontier/scaling and ordinary controls",
   "private_cases": [
     "types::infer::dependencies::float_tests::shared_root_preferences_preserve_order_explicit_types_and_cancellation",

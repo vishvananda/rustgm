@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lane: [production, private]
+        lane: [private]
     env:
       CARGO_BUILD_JOBS: '2'
       CARGO_INCREMENTAL: '1'
