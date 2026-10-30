@@ -2,10 +2,19 @@
 
 Root owns integration, original-core observations and public main publication.
 Public788889aac contains the qualified Comptime/v8 checkpoint; its full
-CI40976018856 is running. Private201 and production35, full v7/v8 CLI/native,
+CI40976018856 is terminal failed on two later regressions, repaired as below.
+Private201 and production35, full v7/v8 CLI/native,
 39 constant outcomes and PA25 course94 pass; historical evidence remains below.
 
-The current successor additionally qualifies actual rustc_no_mir_inline source
+The current CI repair07d22ba24 passes private6 in135.56 seconds and the exact
+47-input production range outcome test in100.97 seconds, both with strict Clippy,
+formatting and architecture. Existing target-feature, missing/changed factory,
+source-origin and Always controls are preserved. No fixture is reclassified.
+See [repair evidence](const-call-policy-ci-repair.md). Private and integration
+checks use separate bounded gates; the mixed cold predecessor timed out after
+strict code generation and never qualified runtime. Full CI must be repeated.
+
+The preceding public successor qualifies actual rustc_no_mir_inline source
 contracts. C14 passes221.94 seconds; same-source Root production35 passes133.70
 seconds with strict Clippy and all static checks. All29 CLI outcomes and a fresh
 full-provider/NoCore-client metadata/native7 graph match independent pinned Rust.
