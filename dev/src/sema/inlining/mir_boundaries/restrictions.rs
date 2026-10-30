@@ -111,14 +111,12 @@ pub(super) fn authenticate(
             restriction.name()
         )));
     }
-    let closure = restriction
-        .target(unit, declaration.node)
-        .ok_or_else(|| {
-            error(&format!(
-                "{} requires an allowed function, method or closure target",
-                restriction.name()
-            ))
-        })?;
+    let closure = restriction.target(unit, declaration.node).ok_or_else(|| {
+        error(&format!(
+            "{} requires an allowed function, method or closure target",
+            restriction.name()
+        ))
+    })?;
     let actual = unit
         .retained_attributes(effect..effect + 1)
         .next()
