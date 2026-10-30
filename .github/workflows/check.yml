@@ -35,6 +35,7 @@ jobs:
           key: source-from-${{ runner.os }}-1.98-${{ matrix.lane }}-${{ github.sha }}
           restore-keys: source-from-${{ runner.os }}-1.98-${{ matrix.lane }}-
       - name: Static setup
+        id: static
         run: |
           mkdir -p obj/qualification/ci-build
           make fmt-check setup-audit
@@ -46,7 +47,7 @@ jobs:
         run: |
           python3 scripts/storage.py run --no-prune -- cargo clippy --manifest-path dev/Cargo.toml --locked --profile dev-fast --lib -- -D warnings
       - name: Cold private strict build only
-        if: matrix.lane == 'private'
+        if: ${{ !cancelled() && matrix.lane == 'private' && steps.static.outcome == 'success' }}
         run: |
           python3 scripts/storage.py run --no-prune -- env CARGO_TARGET_DIR="$PWD/obj/rust/private-lint" RUSTC_WORKSPACE_WRAPPER="$(command -v clippy-driver)" CLIPPY_ARGS=-Dwarnings cargo test --manifest-path dev/Cargo.toml --locked --profile dev-fast --lib --no-run --message-format=json > obj/qualification/ci-build/private-build.jsonl
       - name: Exact private checks within five minutes

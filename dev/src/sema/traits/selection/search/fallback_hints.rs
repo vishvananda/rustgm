@@ -113,10 +113,10 @@ impl Query {
         caller: &mut Context,
     ) -> Result<Vec<TermId>, String> {
         caller.account_work(1).map_err(inference)?;
-        if !self.inferred || self.stack.len() != 1 {
+        if !self.publication.published() || self.stack.len() != 1 {
             return Err("numeric hints require the current inferred selection".into());
         }
-        if !self.numeric_hints_seen {
+        if !self.publication.has_hints() {
             return Ok(Vec::new());
         }
         let mut snapshot = Snapshot::default();

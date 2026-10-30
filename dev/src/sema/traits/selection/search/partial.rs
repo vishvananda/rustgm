@@ -89,7 +89,9 @@ impl Search<'_> {
         trial.end = trial.end.max(self.query.allocations.end());
         let slot = self.query.retain_partial(child)?;
         trial.wakeups.retain_child(index, slot);
-        self.query.numeric_hints_seen |= trial.defer_condition(facts, index)?;
+        self.query
+            .publication
+            .observe(trial.defer_condition(facts, index)?);
         trial.cursor += 1;
         self.charge(&mut trial.inputs.context)
     }

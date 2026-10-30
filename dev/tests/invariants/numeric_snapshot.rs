@@ -167,7 +167,7 @@ fn disjoint_ambiguous_candidates_cannot_publish_their_nested_float_hints() -> Te
         search.begin(&mut facts, frame)?,
         Progress::Ready(Decision::Deferred)
     );
-    assert!(search.query.numeric_hints_seen);
+    assert!(search.query.publication.has_hints());
     assert!(search.query.float_hints(&mut facts, &mut context).is_err());
     assert_eq!(context.unresolved_domain(subject)?, Some(Domain::Any));
     assert_eq!(context.unresolved_domain(input)?, Some(Domain::Float));

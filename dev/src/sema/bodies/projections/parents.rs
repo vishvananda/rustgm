@@ -227,18 +227,7 @@ impl Checker<'_> {
                 Ok(Some(owner))
             }
             selection::Progress::Inferred { query: mut pending } => {
-                let hints = pending
-                    .float_hints(self.facts, &mut self.state.infer)
-                    .map_err(|reason| self.error(node, reason))?;
-                self.state
-                    .notifications
-                    .prefer_projection_floats(
-                        &mut self.state.infer,
-                        &self.facts.types,
-                        watch,
-                        &hints,
-                    )
-                    .map_err(|reason| self.error(node, reason))?;
+                self.observe_parent_hints(node, watch, &mut pending)?;
                 reservation
                     .reserve(
                         self.facts,
@@ -255,6 +244,20 @@ impl Checker<'_> {
                 Ok(None)
             }
         }
+    }
+    fn observe_parent_hints(
+        &mut self,
+        node: super::NodeId,
+        watch: WatchId,
+        pending: &mut selection::Pending,
+    ) -> Result<(), Error> {
+        let hints = pending
+            .float_hints(self.facts, &mut self.state.infer)
+            .map_err(|reason| self.error(node, reason))?;
+        self.state
+            .notifications
+            .prefer_projection_floats(&mut self.state.infer, &self.facts.types, watch, &hints)
+            .map_err(|reason| self.error(node, reason))
     }
     fn start_projection_parent(
         &mut self,
