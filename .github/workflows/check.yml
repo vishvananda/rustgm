@@ -1,71 +1,102 @@
-name: Reference and course checks
+name: Source From focused qualification
 on:
   push:
-  pull_request:
+    branches: [ci/source-from-fallback]
   workflow_dispatch:
-  schedule:
-    - cron: '23 3 * * *'
 permissions:
   contents: read
 concurrency:
-  group: rustgm-${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
-  cancel-in-progress: ${{ github.event_name != 'schedule' }}
+  group: source-from-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
-  fast:
+  focused:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [production, private]
+    env:
+      CARGO_BUILD_JOBS: '2'
+      CARGO_INCREMENTAL: '1'
+      RUST_TEST_THREADS: '2'
+      CARGO_TARGET_DIR: ${{ github.workspace }}/obj/rust
     steps:
       - uses: actions/checkout@v6
       - name: Pinned Rust
         run: rustup toolchain install 1.98.0 --profile minimal --component rustfmt --component clippy
-      - uses: actions/cache@v6
+      - uses: actions/cache/restore@v6
+        id: cache
         with:
           path: |
-            obj/rust/dev-fast
+            obj/rust
             obj/fast-audit.json
             ~/.cargo/registry
-          key: dev-fast-${{ runner.os }}-rust-1.98-${{ hashFiles('dev/Cargo.lock', 'dev/Cargo.toml') }}-${{ github.sha }}
-          restore-keys: |
-            dev-fast-${{ runner.os }}-rust-1.98-${{ hashFiles('dev/Cargo.lock', 'dev/Cargo.toml') }}-
-      - name: Audit setup
-        run: make setup-audit
-      - name: Five-minute compiler smoke
-        run: make smoke
-      - name: Harness, audit cache and upstream contracts
-        run: make test-harness test-upstream && obj/audit-venv/bin/python -m unittest discover -s scripts/audit_tests -v
-      - name: Retain focused evidence
+          key: source-from-${{ runner.os }}-1.98-${{ matrix.lane }}-${{ github.sha }}
+          restore-keys: source-from-${{ runner.os }}-1.98-${{ matrix.lane }}-
+      - name: Static setup
+        run: |
+          mkdir -p obj/qualification/ci-build
+          make fmt-check setup-audit
+          python3 scripts/storage.py run --no-prune -- obj/audit-venv/bin/python scripts/rust_audit.py --root . --cache obj/fast-audit.json
+      - name: Harness and upstream contracts
+        if: matrix.lane == 'production'
+        run: python3 scripts/storage.py run -- make test-harness test-upstream
+      - name: Strict production mode
+        run: |
+          python3 scripts/storage.py run --no-prune -- cargo clippy --manifest-path dev/Cargo.toml --locked --profile dev-fast --lib -- -D warnings
+      - name: Cold private strict build only
+        if: matrix.lane == 'private'
+        run: |
+          python3 scripts/storage.py run --no-prune -- env CARGO_TARGET_DIR="$PWD/obj/rust/private-lint" RUSTC_WORKSPACE_WRAPPER="$(command -v clippy-driver)" CLIPPY_ARGS=-Dwarnings cargo test --manifest-path dev/Cargo.toml --locked --profile dev-fast --lib --no-run --message-format=json > obj/qualification/ci-build/private-build.jsonl
+      - name: Exact private checks within five minutes
+        if: matrix.lane == 'private'
+        run: |
+          python3 - <<'PY'
+          import json, subprocess
+          from pathlib import Path
+          plan = json.loads(Path('.github/qualification/source-from.json').read_text())
+          command = ['python3', 'scripts/fastcheck.py']
+          for case in plan['private_cases']:
+              command += ['--lib-case', case]
+          subprocess.run(command, check=True)
+          PY
+      - name: Integration Clippy
+        if: matrix.lane == 'production'
+        run: python3 scripts/storage.py run --no-prune -- cargo clippy --manifest-path dev/Cargo.toml --locked --profile dev-fast --test suite_inference --bin rustgm -- -D warnings
+      - name: Cold integration build only
+        if: matrix.lane == 'production'
+        run: python3 scripts/storage.py run --no-prune -- cargo test --manifest-path dev/Cargo.toml --locked --profile dev-fast --test suite_inference --no-run --message-format=json > obj/qualification/ci-build/integration-build.jsonl
+      - name: Independent five-input Rust object and native qualification
+        if: matrix.lane == 'production'
+        run: python3 scripts/storage.py run --prune-under obj/qualification/source-from-rust/generated -- python3 .github/qualification/source_from_oracle.py
+      - name: Exact production checks within five minutes
+        if: matrix.lane == 'production'
+        run: make fastcheck FAST_ARGS='conversion_inference type_inference::numeric_constraints_merge_domains_and_fallback_only_after_constraints'
+      - name: Locked native backend
+        if: matrix.lane == 'production'
+        run: python3 scripts/storage.py run --no-prune -- python3 scripts/setup_backend.py
+      - name: Exact native checks within five minutes
+        if: matrix.lane == 'production'
+        run: make fastcheck FAST_ARGS='conversion_inference --ignored --prune-under obj/parallel/source-from-native'
+      - name: Save reusable cache
+        if: always() && steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            obj/rust
+            obj/fast-audit.json
+            ~/.cargo/registry
+          key: source-from-${{ runner.os }}-1.98-${{ matrix.lane }}-${{ github.sha }}
+      - name: Retain exact evidence
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: fastcheck-evidence
-          path: obj/qualification/fast
+          name: source-from-${{ matrix.lane }}-${{ github.sha }}
+          path: |
+            obj/qualification/fast
+            obj/qualification/ci-build
+            obj/qualification/source-from-rust
+            obj/parallel/source-from-native
           if-no-files-found: ignore
           retention-days: 7
-  qualification:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v6
-      - name: Pinned Rust
-        run: rustup toolchain install 1.98.0 --profile minimal --component rustfmt --component clippy
-      - name: Lint, architecture and harness
-        run: make fmt-check setup-audit audit-rust lint test-harness test-upstream
-      - name: Independent host build graph
-        run: make test-host-builds
-      - name: Release and course tests
-        run: make test
-      - name: Native maintainer qualification
-        run: |
-          python3 scripts/storage.py run --no-prune -- python3 scripts/setup_backend.py
-          make test-maintainer-native
-      - name: Debug invariants
-        run: make test-debug-invariants
-      - name: Independent Rust qualification
-        run: make test-rustc
-      - name: PA25 const-machine candidate contract
-        run: |
-          python3 scripts/check_layout.py --unit const-machine
-          python3 scripts/storage.py run -- python3 scripts/course.py pa25 --unit const-machine
-          python3 scripts/storage.py run --prune-under obj/rustc-syntax/pa25/units/const-machine -- python3 scripts/check_syntax.py pa25 --unit const-machine --jobs 2
-          python3 scripts/storage.py run --prune-under obj/native/pa25/units/const-machine -- python3 scripts/check_native.py pa25 --unit const-machine --jobs 2
