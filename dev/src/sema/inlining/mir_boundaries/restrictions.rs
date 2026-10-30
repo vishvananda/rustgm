@@ -117,6 +117,21 @@ pub(super) fn authenticate(
             restriction.name()
         ))
     })?;
+    if closure
+        && !report
+            .package
+            .requested_expression_attributes()
+            .map_err(error)?
+        && !allowances.allows_at(
+            declaration.file,
+            name,
+            &crate::resolve::bindings::FeatureName::new("stmt_expr_attributes").map_err(error)?,
+        )?
+    {
+        return Err(error(
+            "source closure attributes require stmt_expr_attributes",
+        ));
+    }
     let actual = unit
         .retained_attributes(effect..effect + 1)
         .next()

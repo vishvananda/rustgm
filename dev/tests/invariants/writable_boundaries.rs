@@ -176,7 +176,7 @@ fn current_module_imports_keep_real_hints_without_inventing_an_optimizer_permiss
     assert_eq!(crate::support::crates::encode(&decoded)?, bytes);
     let (report, analysis, _) = crate::source_packets::client_analysis(
         decoded,
-        "#![feature(no_core)]#![no_core]extern crate base;pub fn observed()->u32{base::marked_hint(7)}",
+        "#![feature(no_core)]#![no_core]extern crate base;pub fn observed()->u8{base::marked_hint(7)}",
     )?;
     let imported = report
         .resolution
