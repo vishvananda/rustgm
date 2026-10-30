@@ -75,8 +75,10 @@ pinned Rust repeats both29 answers. Full CI41024395052 passes all2394 private
 controls and all13 integration suites. Its only course failures are two PA19
 diagnostic byte changes from "a Rust body" to "a body"; owning scoped generation
 and exact2 replay qualify the unchanged rejection outcomes. The two references
-and proper partial provenance are published ona83402765. Fresh full CI remains
-required. See
+and proper partial provenance are published ona83402765. Successor full
+[CI41029764068](https://github.com/vishvananda/rustgm/actions/runs/41029764068)
+on c8e8c7717 is terminal SUCCESS, including local dyn/Has, release/course/native,
+debug invariants, independent Rust and the PA25 const-machine contract. See
 [the repair evidence](const-readiness-coherence-repair.md).
 
 Public85d06ebec full qualification40954355053 has passed. The subsequent

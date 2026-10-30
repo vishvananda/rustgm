@@ -27,6 +27,10 @@ neither the core flag nor an arbitrary target name supplies those proofs.
 All observations use the unchanged five-minute guard, two threads,16GiB absolute
 output cap and150GiB free reserve. No local release or cold C-tree build ran.
 
+Full [CI41029764068](https://github.com/vishvananda/rustgm/actions/runs/41029764068)
+on public c8e8c7717 subsequently passes release/course/native qualification,
+debug invariants, independent Rust and the complete PA25 const-machine contract.
+
 - Exact11 private tests pass in220.85s, including strict Clippy/link185.50s,
   formatting and architecture checks. They retain all31 independently declared
   standalone outcomes, actual five-kind definition queries, source replay and
