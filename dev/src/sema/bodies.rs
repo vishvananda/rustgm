@@ -123,8 +123,8 @@ pub fn analyze_with_hidden(
         DefiningRequest::ComptimeDefinition(_) => Err(Error::unlocated(
             "comptime defining bodies require a checked CFG provider",
         )),
-        // This API performs type analysis only. Full pipeline analysis supplies
-        // the existing CFG provider for ordinary const defining legality.
+        // Ordinary const readiness is a type fact. Complete lowering checks
+        // its unused CFG as well as every CFG actually reached by evaluation.
         DefiningRequest::ConstDefinition(_) => Ok(()),
     })
 }

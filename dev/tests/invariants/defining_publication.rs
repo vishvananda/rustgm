@@ -4,6 +4,55 @@ use crate::{body, borrow, types};
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 #[test]
+fn complete_artifacts_reject_unused_const_definitions_after_type_readiness() -> Result {
+    for path in [
+        "pa31/tests/spec/source-reservation-impl/const_body_restriction.rs",
+        "pa31/tests/spec/trait-default-effects/free-const-nonconst-body.rs",
+        "pa25/tests/spec/const-machine/eligibility/trait-runtime-method.rs",
+    ] {
+        let text = crate::test_source::fixture(path)?;
+        for cutpoint in 0..3 {
+            let report = crate::test_source::resolve(&text, true)?;
+            let mut analysis = crate::pipeline::analyze_source(&report)?;
+            assert_eq!(analysis.facts.body_work.cfg_functions.get(), 0);
+            let result = match cutpoint {
+                0 => crate::lower::instances::build_roots_prepared(
+                    &report,
+                    &mut analysis.facts,
+                    crate::lower::Roots {
+                        entry: None,
+                        exports: &[],
+                    },
+                    analysis.prepared,
+                )
+                .map(|_| ()),
+                1 => crate::lower::instances::inspect_prepared(
+                    &report,
+                    &mut analysis.facts,
+                    analysis.prepared,
+                    |_, _| (),
+                ),
+                _ => crate::lower::instances::build_library_prepared(
+                    &report,
+                    &mut analysis.facts,
+                    crate::support::crates::CrateIdentity::new("unused", "cutpoint")?,
+                    analysis.prepared,
+                )
+                .map(|_| ()),
+            };
+            let error = result
+                .err()
+                .ok_or("unused const escaped complete checking")?;
+            assert!(
+                error.message.contains("const"),
+                "{path}/{cutpoint}: {error}"
+            );
+        }
+    }
+    Ok(())
+}
+
+#[test]
 fn component_identity_preflight_precedes_every_hidden_head_publication() -> Result {
     for forged in [false, true] {
         let report = crate::test_source::resolve(
