@@ -51,7 +51,9 @@ impl Implementations {
         declaration: DefId,
     ) -> Result<Option<DefId>, &'static str> {
         let header = self.checked_entry(key)?;
-        if !self.is_validated(key.owner()) {
+        if !self.is_validated(key.owner())
+            || self.entries[key.index as usize].status.polarity() != super::Polarity::Positive
+        {
             return Err("specialization method owner is not validated");
         }
         let index = header

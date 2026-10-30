@@ -13,6 +13,7 @@ use crate::types::{
 #[derive(Default)]
 pub(super) struct Inputs {
     pub sized: Vec<TermId>,
+    traits: Vec<infer::predicates::Predicate>,
     universals: u32,
     regions: Vec<(RegionId, RegionId)>,
     outlives: Vec<(TermId, RegionId)>,
@@ -25,6 +26,7 @@ impl Inputs {
         context: &mut Context,
         (predicate, owner): (Predicate, DefId),
     ) -> Result<infer::predicates::Predicate, String> {
+        self.reserve_traits(facts, context, owner)?;
         let ids = facts.generics.parameter_ids(&facts.types, owner)?;
         let mut bindings = Vec::with_capacity(ids.len());
         for id in ids {
@@ -57,6 +59,11 @@ impl Inputs {
             let Clause::Predicate(predicate) = requirement.value else {
                 continue;
             };
+            if predicate.bound.trait_parts().is_some() {
+                let predicate = lifetimes.predicate(&mut facts.types, predicate)?;
+                self.traits.push(context.instantiate_predicate(&mut facts.types, predicate, &mut substitution).map_err(|e| e.to_string())?);
+                continue;
+            }
             if !matches!(
                 predicate.bound,
                 Bound::Sized | Bound::Copy | Bound::Clone | Bound::Outlives(_)
@@ -88,6 +95,27 @@ impl Inputs {
         Ok(goal)
     }
 
+    fn reserve_traits(
+        &mut self,
+        facts: &mut Declarations,
+        context: &mut Context,
+        owner: DefId,
+    ) -> Result<(), String> {
+        let mut count = 0_usize;
+        for requirement in facts.generics.predicates_in_scope(owner) {
+            context.account_work(1).map_err(|e| e.to_string())?;
+            if matches!(requirement.value, Clause::Predicate(value) if value.bound.trait_parts().is_some()) {
+                count = count.saturating_add(1);
+            }
+        }
+        if count != 0 {
+            let growth = crate::support::retained::Growth::vector::<infer::predicates::Predicate>(self.traits.len(), self.traits.capacity(), count);
+            crate::sema::header_attributes::reserve_source_contracts(facts, growth.work.saturating_add(count), growth.bytes).map_err(|e| e.to_string())?;
+            self.traits.try_reserve(count).map_err(|_| "coherence trait conditions allocation failed")?;
+        }
+        Ok(())
+    }
+
     fn lifetimes(
         &mut self,
         facts: &Declarations,
@@ -110,6 +138,35 @@ impl Inputs {
                 .push((mapping.region(a, 0)?, mapping.region(b, 0)?));
         }
         Ok(mapping)
+    }
+
+    /// Only local, fully closed applications can establish compatible-world
+    /// absence. Open/foreign/projected conditions remain possible.
+    pub fn has_absent_local_trait(
+        &self,
+        facts: &mut Declarations,
+        context: &mut Context,
+    ) -> Result<bool, String> {
+        for goal in &self.traits {
+            context.account_work(1).map_err(|e| e.to_string())?;
+            let predicate = match context.resolved_predicate(&mut facts.types, goal) {
+                Ok(value) => value,
+                Err(infer::Error::Unresolved | infer::Error::Normalization) => continue,
+                Err(error) => return Err(error.to_string()),
+            };
+            if !predicate.is_concrete(&facts.types)? || predicate.contains_opaques(&facts.types)? {
+                continue;
+            }
+            let (application, _) = predicate.bound.trait_parts().ok_or("coherence trait condition lost its application")?;
+            let item = facts.types.trait_application(application).ok_or("coherence trait application is missing")?.item;
+            let local = facts.associated.owner(DefId(item.0)).and_then(|id| facts.associated.get(id))
+                .is_some_and(|owner| owner.source.is_some() && matches!(owner.kind,
+                    crate::sema::associated::OwnerKind::Trait { definition, .. } if definition == DefId(item.0)));
+            if local && !crate::sema::traits::selection::may_overlap(facts, context, goal)? {
+                return Ok(true);
+            }
+        }
+        Ok(false)
     }
 
     pub fn prove(

@@ -1,4 +1,5 @@
 //! Cold exact declaration/attribute joins; these rows grant no API availability.
+mod reserved_messages;
 use super::{
     Violation,
     producer::{Parsed, Producer, Tail, Work, invalid},
@@ -28,6 +29,7 @@ pub(super) struct Annotation {
     node: Node,
     item: Item,
     unstable: Option<u32>,
+    reservation: Option<reserved_messages::Message>,
     bound: Vec<BoundEffect>,
     bounds: Vec<Box<str>>,
 }
@@ -43,6 +45,7 @@ pub(crate) struct DeclarationAnnotation<'a> {
     pub unstable: Option<Attribute>,
     pub bound: Option<Attribute>,
     pub bounds: &'a [Box<str>],
+    pub reservation: Option<(Attribute, &'a str)>,
 }
 pub(crate) type ImplAnnotation<'a> = DeclarationAnnotation<'a>;
 pub(super) fn capture(
@@ -82,6 +85,7 @@ pub(super) fn capture(
             )
         });
     let mut unstable = None;
+    let mut reservation = None;
     let mut bound = Vec::new();
     let mut bounds = Vec::new();
     for witness in &parsed.witnesses {
@@ -91,6 +95,15 @@ pub(super) fn capture(
         let attribute = witness.attribute;
         match attribute.name(forest, unit.source.text()) {
             Some("unstable") if accepts_bound => unstable = Some(witness.effect),
+            Some("rustc_reservation_impl") => {
+                if !is_impl || reservation.is_some() {
+                    return Err(invalid(
+                        key,
+                        "rustc_reservation_impl requires one actual trait impl owner",
+                    ));
+                }
+                reservation = Some(reserved_messages::capture(unit, key, witness, work)?);
+            }
             Some("unstable_feature_bound") => {
                 if !accepts_bound {
                     return Err(Violation {
@@ -104,7 +117,7 @@ pub(super) fn capture(
             _ => {}
         }
     }
-    if bound.is_empty() && (!is_impl || unstable.is_none()) {
+    if reservation.is_none() && bound.is_empty() && (!is_impl || unstable.is_none()) {
         return Ok(None);
     }
     Ok(Some(Annotation {
@@ -113,6 +126,7 @@ pub(super) fn capture(
         node,
         item: item.ok_or_else(|| invalid(key, "declaration annotation lost actual item"))?,
         unstable,
+        reservation,
         bound,
         bounds,
     }))
@@ -308,12 +322,24 @@ impl Producer {
                 .transpose()?,
             bound: bound_attributes(self, unit, owner, row)?,
             bounds: &row.bounds,
+            reservation: row
+                .reservation
+                .as_ref()
+                .map(|message| reserved_messages::current(self, unit, owner, message))
+                .transpose()?,
         }))
     }
     pub(crate) fn require_impl_bound_transport(&self, package: &Package) -> Result<(), Violation> {
         if let Some(column) = &self.ineffective_headers {
             for (&key, row) in &column.rows {
                 self.attribute_read(key, 1)?;
+                if row.reservation.is_some() {
+                    self.declaration_annotation(package, key)?;
+                    return Err(invalid(
+                        key,
+                        "reservation implementation transport requires a wider metadata profile",
+                    ));
+                }
                 if !row.bound.is_empty() {
                     self.declaration_annotation(package, key)?;
                     return Err(invalid(

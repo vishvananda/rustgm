@@ -343,6 +343,22 @@ impl Search<'_> {
             self.charge(&mut trial.inputs.context)?;
             match result {
                 Ok(()) => {
+                    if facts
+                        .generics
+                        .implementations
+                        .as_ref()
+                        .ok_or("missing reservation implementation registry")?
+                        .polarity(&facts.types, &facts.associated, owner)?
+                        == crate::sema::traits::implementations::Polarity::Reservation
+                    {
+                        if self.query.purpose
+                            != crate::sema::traits::implementations::Purpose::Coherence
+                        {
+                            return Err("reservation entered an ordinary trait-use trial".into());
+                        }
+                        frame.deferred = true;
+                        return Ok(Action::Continue);
+                    }
                     if Self::source_auto_goal(facts, &frame.goal)? {
                         frame.explicit_auto = true;
                     }
@@ -505,11 +521,12 @@ impl Search<'_> {
             return self.language_result(facts, frame);
         };
         let candidates = registry
-            .candidates(
+            .candidates_for(
                 &mut facts.types,
                 &mut frame.inputs.context,
                 &frame.goal,
                 self.query.availability,
+                self.query.purpose,
             )
             .map_err(inference)?;
         match candidates {

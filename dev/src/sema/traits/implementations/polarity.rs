@@ -6,11 +6,7 @@ use crate::{
     types::Store,
 };
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(in crate::sema) enum Polarity {
-    Positive,
-    Negative,
-}
+pub(in crate::sema) use crate::sema::associated::ImplPolarity as Polarity;
 #[derive(Clone, Copy)]
 pub(super) enum Status {
     PositiveHeader,
@@ -19,10 +15,16 @@ pub(super) enum Status {
     NegativeHeader,
     NegativeEarlyUnavailable,
     NegativeValidated,
+    ReservationHeader,
+    ReservationEarlyUnavailable,
+    ReservationChecked,
 }
 impl Status {
     pub(super) fn validated(self) -> bool {
-        matches!(self, Self::PositiveValidated | Self::NegativeValidated)
+        matches!(
+            self,
+            Self::PositiveValidated | Self::NegativeValidated | Self::ReservationChecked
+        )
     }
     pub(super) fn negative(self) -> bool {
         matches!(
@@ -30,17 +32,38 @@ impl Status {
             Self::NegativeHeader | Self::NegativeEarlyUnavailable | Self::NegativeValidated
         )
     }
+    pub(super) fn polarity(self) -> Polarity {
+        if self.negative() {
+            Polarity::Negative
+        } else if matches!(
+            self,
+            Self::ReservationHeader | Self::ReservationEarlyUnavailable | Self::ReservationChecked
+        ) {
+            Polarity::Reservation
+        } else {
+            Polarity::Positive
+        }
+    }
+    pub(super) fn header(polarity: Polarity) -> Self {
+        match polarity {
+            Polarity::Positive => Self::PositiveHeader,
+            Polarity::Negative => Self::NegativeHeader,
+            Polarity::Reservation => Self::ReservationHeader,
+        }
+    }
     pub(super) fn early_unavailable(self) -> bool {
         matches!(
             self,
-            Self::PositiveEarlyUnavailable | Self::NegativeEarlyUnavailable
+            Self::PositiveEarlyUnavailable
+                | Self::NegativeEarlyUnavailable
+                | Self::ReservationEarlyUnavailable
         )
     }
     pub(super) fn complete(self) -> Self {
-        if self.negative() {
-            Self::NegativeValidated
-        } else {
-            Self::PositiveValidated
+        match self.polarity() {
+            Polarity::Positive => Self::PositiveValidated,
+            Polarity::Negative => Self::NegativeValidated,
+            Polarity::Reservation => Self::ReservationChecked,
         }
     }
 }
@@ -133,10 +156,10 @@ impl Implementations {
         {
             return Err("early implementation profile changed its source, predicate or validation");
         }
-        entry.status = if entry.status.negative() {
-            Status::NegativeEarlyUnavailable
-        } else {
-            Status::PositiveEarlyUnavailable
+        entry.status = match entry.status.polarity() {
+            Polarity::Positive => Status::PositiveEarlyUnavailable,
+            Polarity::Negative => Status::NegativeEarlyUnavailable,
+            Polarity::Reservation => Status::ReservationEarlyUnavailable,
         };
         self.profile_arena.get_or_insert_with(|| arena.clone());
         Ok(())
@@ -172,7 +195,7 @@ impl Implementations {
     ) -> Result<(), &'static str> {
         let source = owner.source_owner()?;
         let OwnerKind::Impl {
-            negative, constant, ..
+            polarity, constant, ..
         } = owner.kind
         else {
             return Err("source implementation requires an actual impl owner");
@@ -188,12 +211,7 @@ impl Implementations {
             return Err("source implementation changed its retained owner");
         }
         check_effect(value.predicate, constant)?;
-        let status = if negative {
-            Status::NegativeHeader
-        } else {
-            Status::PositiveHeader
-        };
-        self.prepare_with_status(store, identity, value, status)
+        self.prepare_with_status(store, identity, value, Status::header(polarity))
     }
 
     pub(in crate::sema) fn prepare_factory(
@@ -233,44 +251,42 @@ impl Implementations {
             .owner(definition)
             .and_then(|id| associated.get(id))
         {
-            let (constant, negative) = match owner.kind {
+            let (constant, polarity) = match owner.kind {
                 OwnerKind::Impl {
-                    negative, constant, ..
+                    polarity, constant, ..
                 } => {
                     let source = owner.source_owner()?;
                     if Some(source.source) != entry.value.source {
                         return Err("implementation polarity changed its actual source owner");
                     }
-                    (constant, negative)
+                    (constant, polarity)
                 }
                 OwnerKind::ImportedImpl(_) => {
                     if entry.value.source.is_some() {
                         return Err("imported conformance cannot acquire source syntax provenance");
                     }
-                    associated.imported_implementation(store, *owner, entry.value.predicate)?
+                    let (constant, negative) =
+                        associated.imported_implementation(store, *owner, entry.value.predicate)?;
+                    (constant, Polarity::from_negative(negative))
                 }
                 OwnerKind::Trait { .. } => {
                     return Err("implementation polarity belongs to a non-impl owner");
                 }
             };
             check_effect(entry.value.predicate, constant)?;
-            if owner.self_definition != definition || negative != entry.status.negative() {
+            if owner.self_definition != definition || polarity != entry.status.polarity() {
                 return Err("implementation polarity disagrees with its source owner");
             }
         } else {
             check_effect(entry.value.predicate, false)?;
-            if entry.status.negative()
+            if entry.status.polarity() != Polarity::Positive
                 || associated.declaration_owner(definition) != Some(definition)
                 || associated.schema(definition).is_none()
             {
                 return Err("implementation polarity has no registered source or factory owner");
             }
         }
-        Ok(if entry.status.negative() {
-            Polarity::Negative
-        } else {
-            Polarity::Positive
-        })
+        Ok(entry.status.polarity())
     }
 }
 

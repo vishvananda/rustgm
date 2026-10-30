@@ -49,7 +49,7 @@ pub(super) fn collect(report: &Report, facts: &Declarations) -> Result<Vec<Heade
         };
         let OwnerKind::Impl {
             unsafe_,
-            negative,
+            polarity,
             trait_type: Some(path),
             target,
             constant,
@@ -67,7 +67,7 @@ pub(super) fn collect(report: &Report, facts: &Declarations) -> Result<Vec<Heade
         }
         if constant
             || unsafe_
-            || negative
+            || polarity != crate::sema::associated::ImplPolarity::Positive
             || crate::sema::lifetimes::arguments(report, path, false)?.is_some()
         {
             return Err(Declarations::error(

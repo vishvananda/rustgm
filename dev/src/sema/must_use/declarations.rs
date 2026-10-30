@@ -278,6 +278,16 @@ fn consume_other(
     consumer: Option<Consumer>,
 ) -> Result<bool, Error> {
     match consumer {
+        Some(Consumer::ReservationImpl) => {
+            crate::sema::associated::reserved_impls::consume(
+                report,
+                facts,
+                owner,
+                declaration,
+                attribute,
+                effect,
+            )?;
+        }
         Some(Consumer::Comptime) => {
             crate::sema::header_attributes::consume_comptime(
                 report,
@@ -431,7 +441,11 @@ fn bind_definitions(
     mir_boundaries: &mut crate::sema::inlining::MirBoundaries,
 ) -> Result<(), Error> {
     mir_boundaries.prepare_binding(report, facts)?;
-    if !pointer_markers.is_empty() {
+    if !pointer_markers.is_empty()
+        || report
+            .lint_producer()
+            .is_some_and(|producer| producer.has_impl_annotations())
+    {
         crate::sema::header_attributes::reserve_source_contracts(
             facts,
             report
@@ -445,6 +459,9 @@ fn bind_definitions(
     if !by_source.is_empty()
         || !pointer_markers.is_empty()
         || !mir_boundaries.is_empty()
+        || report
+            .lint_producer()
+            .is_some_and(|producer| producer.has_impl_annotations())
         || report.package.source_core().is_some()
         || crate::sema::header_attributes::has_comptime_headers(facts)
         || facts
@@ -455,6 +472,7 @@ fn bind_definitions(
         for (index, definition) in report.resolution.definitions.iter().enumerate() {
             bind_pointer_marker(report, index, definition, pointer_markers)?;
             mir_boundaries.bind(report, index, definition)?;
+            crate::sema::associated::reserved_impls::bind(report, facts, index, definition)?;
             bind_macro_helpers(report, facts, index, definition)?;
             if let Some(key) = definition.node {
                 crate::sema::header_attributes::bind_definition(

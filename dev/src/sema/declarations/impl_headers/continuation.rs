@@ -154,15 +154,20 @@ impl Checker<'_> {
         let OwnerKind::Impl {
             trait_type,
             unsafe_,
-            negative,
+            polarity,
             ..
         } = owner.kind
         else {
             return Err(self.error(owner.source, "impl header requires an implementation owner"));
         };
         if let Some(path) = trait_type {
-            self.validate_trait_header(owner, path, unsafe_, negative)?;
-        } else if unsafe_ || negative {
+            self.validate_trait_header(
+                owner,
+                path,
+                unsafe_,
+                polarity == crate::sema::associated::ImplPolarity::Negative,
+            )?;
+        } else if unsafe_ || polarity != crate::sema::associated::ImplPolarity::Positive {
             return Err(self.error(owner.source, "inherent impls cannot be unsafe or negative"));
         }
         self.work.push(Work::ImplHeader(id, Phase::Target));

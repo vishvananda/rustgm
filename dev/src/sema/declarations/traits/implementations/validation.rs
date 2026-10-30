@@ -141,7 +141,18 @@ impl Checker<'_> {
         {
             return Ok(());
         }
-        self.validate_reference_coherence(owner, source, predicate, steps)?;
+        if self
+            .facts
+            .generics
+            .implementations
+            .as_ref()
+            .ok_or_else(|| self.error(source, "missing impl polarity registry"))?
+            .polarity(&self.facts.types, &self.facts.associated, owner)
+            .map_err(|e| self.error(source, e))?
+            != crate::sema::traits::implementations::Polarity::Reservation
+        {
+            self.validate_reference_coherence(owner, source, predicate, steps)?;
+        }
         let negative = self.negative_impl_contract(owner, source, predicate)?;
         if negative || matches!(predicate.bound, Bound::Auto(_)) {
             self.facts
@@ -216,6 +227,27 @@ impl Checker<'_> {
         second: (Predicate, DefId),
         steps: &mut usize,
     ) -> Result<(), Error> {
+        *steps = steps.saturating_add(2);
+        if *steps > 1_000_000 {
+            return Err(
+                self.implementation_error(key, "trait implementation overlap work budget exceeded")
+            );
+        }
+        let registry = self
+            .facts
+            .generics
+            .implementations
+            .as_ref()
+            .ok_or_else(|| self.implementation_error(key, "missing overlap polarity registry"))?;
+        for owner in [first.1, second.1] {
+            if registry
+                .polarity(&self.facts.types, &self.facts.associated, owner)
+                .map_err(|error| self.implementation_error(key, error))?
+                == crate::sema::traits::implementations::Polarity::Reservation
+            {
+                return Ok(());
+            }
+        }
         if crate::sema::specialization::remembered(
             &mut self.facts,
             self.report,
@@ -355,6 +387,18 @@ impl Checker<'_> {
                 .ok_or_else(|| self.error(source, "const implementation trait is not prepared"))?
                 .item;
             self.require_const_trait(source, DefId(item.0))?;
+        }
+        if self
+            .facts
+            .generics
+            .implementations
+            .as_ref()
+            .ok_or_else(|| self.error(source, "missing impl polarity registry"))?
+            .polarity(&self.facts.types, &self.facts.associated, owner)
+            .map_err(|e| self.error(source, e))?
+            == crate::sema::traits::implementations::Polarity::Reservation
+        {
+            return Ok(());
         }
         let environment = self.facts.generics.environments.get(&owner).cloned();
         let mut proof = self.declaration_proof(owner, environment);

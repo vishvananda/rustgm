@@ -18,6 +18,7 @@ pub(in crate::sema) fn may_overlap(
     };
     let first = Frame::new(facts, context, goal, caller.first_region)?;
     let mut search = Search::new(caller, Availability::Declarations);
+    search.query.purpose = crate::sema::traits::implementations::Purpose::Coherence;
     let progress = search.begin(facts, first)?;
     context
         .account_work(search.query.steps)

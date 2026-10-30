@@ -50,12 +50,15 @@ impl Stage {
         let OwnerKind::Impl {
             unsafe_,
             constant,
-            negative,
+            polarity,
             ..
         } = owner.kind
         else {
             return Err("source conformance record does not belong to an implementation");
         };
+        if polarity == crate::sema::associated::ImplPolarity::Reservation {
+            return Err("reservation implementation transport requires a wider metadata profile");
+        }
         let declaration = self.declaration(owner.self_definition)?;
         let schema = facts
             .associated
@@ -110,7 +113,7 @@ impl Stage {
             trait_application,
             unsafe_,
             constant,
-            negative,
+            negative: polarity == crate::sema::associated::ImplPolarity::Negative,
             region_captures: schema.captures,
             region_bounds,
             inputs,

@@ -1,0 +1,207 @@
+{
+  "state": "declared-before-candidate-execution",
+  "owning_assignments": [
+    "PA20 trait/coherence",
+    "PA21 generic environments",
+    "PA25 const execution",
+    "PA29 metadata boundary",
+    "PA31 source ownership"
+  ],
+  "cases": {
+    "unused": {
+      "rust_metadata": 0,
+      "sha256": "359c0a133b3992780bf05a7121a99b07bcc606b36a323173f193a132d2a0538a",
+      "oracle": "oracle-v1"
+    },
+    "empty_message": {
+      "rust_metadata": 0,
+      "sha256": "4bad69d16a1d66149a3de3fedd7aaeaab6f6f2ab97ab12ef568deceecede3a97",
+      "oracle": "oracle-v1"
+    },
+    "use_denied": {
+      "rust_metadata": 1,
+      "sha256": "12dd4f9feefa7f1763eb04624f9e1df598402df0ac9472e510482bf1235626da",
+      "oracle": "oracle-v1"
+    },
+    "bound_denied": {
+      "rust_metadata": 1,
+      "sha256": "97f76e3427bd4cbcacd4b362e2886cd642391f82b6573de9f6eebaf22ab8ad17",
+      "oracle": "oracle-v1"
+    },
+    "assumption": {
+      "rust_metadata": 0,
+      "sha256": "f5c6680a6b5d4da59acb1110a230a70469fd32768ebe88da182d99ff71cbbda2",
+      "oracle": "oracle-v1"
+    },
+    "real_positive": {
+      "rust_metadata": 0,
+      "sha256": "040ceb24965f33a4c478486a23461e37e7135ff82cea533fb30f6507f5ef11bb",
+      "oracle": "oracle-v1"
+    },
+    "coherence_clear": {
+      "rust_metadata": 0,
+      "sha256": "e691d2ab1832187bbdc7e4d6725980f0fb93b70da78aec413d2988890b7b384e",
+      "oracle": "oracle-v1"
+    },
+    "coherence_reserved": {
+      "rust_metadata": 1,
+      "sha256": "b3367299a6ceb09385b61870b4f9e76eeba39d7256a44f48e02ab0ef19d2721c",
+      "oracle": "oracle-v1"
+    },
+    "wf_exemption": {
+      "rust_metadata": 0,
+      "sha256": "1a6642f2b47a184b65e8a930f671b4c0c30b8100ba4b87791ab5f107a38a1248",
+      "oracle": "oracle-v1"
+    },
+    "wf_positive_control": {
+      "rust_metadata": 1,
+      "sha256": "6baf55f800705bfce29a628c06e863563a94c7afbb98fa945d88fba5f86b4bee",
+      "oracle": "oracle-v1"
+    },
+    "missing_method": {
+      "rust_metadata": 1,
+      "sha256": "605a211d482915c5e8e084606be8d7feccc7a6fa443ac883879abd96a43a45b2",
+      "oracle": "oracle-v1"
+    },
+    "wrong_signature": {
+      "rust_metadata": 1,
+      "sha256": "63c2cc534ccc1d4ec5b640178a84807206b86614d65970b828bbd46a70a6b700",
+      "oracle": "oracle-v1"
+    },
+    "duplicate": {
+      "rust_metadata": 1,
+      "sha256": "feddd978cc8e9e4005d6f73042ea5a3f0f43e5d4aebd53b25286c7bd1bd820ab",
+      "oracle": "oracle-v1"
+    },
+    "missing_gate": {
+      "rust_metadata": 1,
+      "sha256": "042e77edb1dbdf56ad9ced3315dcfe6f9efc8861ed8b1486fab58959bf04c9fd",
+      "oracle": "oracle-v1"
+    },
+    "word": {
+      "rust_metadata": 1,
+      "sha256": "bb00c33329304ecfe0d1aeeea9a6102b8a2b5c54720ff8c0eaeddd1d0374f407",
+      "oracle": "oracle-v1"
+    },
+    "number": {
+      "rust_metadata": 1,
+      "sha256": "3b86b5b40037493d0cfe1f3c9d3d78dbed82dfab20c39354b9d599903161314e",
+      "oracle": "oracle-v1"
+    },
+    "list": {
+      "rust_metadata": 1,
+      "sha256": "b5f8f5c263e2ce703bf812563409d97d35bc99d7e3840d39b04908ee484b9f6b",
+      "oracle": "oracle-v1"
+    },
+    "inherent": {
+      "rust_metadata": 1,
+      "sha256": "e0d5dcafcbfd09a3f33a7c13cbc9ecaa7495540ee9e32969a22b3bc4c5a1838c",
+      "oracle": "oracle-v1"
+    },
+    "function": {
+      "rust_metadata": 1,
+      "sha256": "bf989e5fde7f18fc8f6d5789ee7bd8841a9fad4bb826c8b9e7aa100cc6b97ef8",
+      "oracle": "oracle-v1"
+    },
+    "negative": {
+      "rust_metadata": 1,
+      "sha256": "4eff92737be253829f3ebb474c9033431e6af892dd871e010597ec63b7bb3092",
+      "oracle": "oracle-v1"
+    },
+    "unsafe_missing": {
+      "rust_metadata": 1,
+      "sha256": "2bb385d9720cf209658b344199ca841650099d3b0d1ff5291083d335d16cf461",
+      "oracle": "oracle-v1"
+    },
+    "unsafe_valid": {
+      "rust_metadata": 0,
+      "sha256": "bb543c127196c28b599c52102f5f76198f8fd16e2fab574db72c6e0e54d9409f",
+      "oracle": "oracle-v1"
+    },
+    "const_unused": {
+      "rust_metadata": 0,
+      "sha256": "0fe938f07a8ee1b9f3460610aa472cc6bd0f1ef6f89b260fe6fe868a784ed600",
+      "oracle": "oracle-v1"
+    },
+    "const_denied": {
+      "rust_metadata": 1,
+      "sha256": "a85a3eaac57aed0c03ae4c39dc8d5ba97f1e4f7722cbb9b92ce364228c0c2f75",
+      "oracle": "oracle-v1"
+    },
+    "const_real": {
+      "rust_metadata": 0,
+      "sha256": "deb1b26c46dbdb50164f515df16bce8a86a5fab9b30813531544a52d190efd19",
+      "oracle": "oracle-v1"
+    },
+    "const_body_restriction": {
+      "rust_metadata": 1,
+      "sha256": "6779835248c5db690c67ba1c2ef41dc2f421ff17995157225280457948603577",
+      "oracle": "oracle-v1"
+    },
+    "body_own_trait_probe": {
+      "rust_metadata": 1,
+      "sha256": "b92b74b4496e0e5767ebba32399ba7d7363d43a8da32e2c432961017b271f08a",
+      "oracle": "oracle-v1"
+    },
+    "associated_type_probe": {
+      "rust_metadata": 1,
+      "sha256": "0c040fa5717c7aceff929f86ee00034bc1221372d825c2e5b9d379ae75b4ba37",
+      "oracle": "oracle-v1",
+      "historical_prediction": 0
+    },
+    "projection_denied": {
+      "rust_metadata": 1,
+      "sha256": "d5820e8bb7ae62c8c3f6c9e1f287b0398f8d3673de4352369a4eaa4a27af285b",
+      "oracle": "oracle-v1"
+    },
+    "associated_type_requires_real_self_bound": {
+      "rust_metadata": 1,
+      "sha256": "0c040fa5717c7aceff929f86ee00034bc1221372d825c2e5b9d379ae75b4ba37",
+      "oracle": "oracle-v2"
+    },
+    "associated_with_real_impl": {
+      "rust_metadata": 0,
+      "sha256": "02ed7df07a093138070fa9de6577f7c175ba558b7e04058758ee6bc17d5e52c9",
+      "oracle": "oracle-v2"
+    },
+    "coherence_incompatible_subject": {
+      "rust_metadata": 0,
+      "sha256": "3fbc9c978737e2aa1a70c190adca9763aa479a2abbca9a2a7d2abfc8e5bfaef5",
+      "oracle": "oracle-v2"
+    },
+    "coherence_incompatible_arguments": {
+      "rust_metadata": 0,
+      "sha256": "9e1a94f37c4665b20e952cd7541cf08a60c37ab2ee94edec30b56d5b6bdd16b1",
+      "oracle": "oracle-v2"
+    },
+    "body_explicit_parameter_bound": {
+      "rust_metadata": 0,
+      "sha256": "0a072811b4ab0a1c18c860c30512d945581e850034f40dd2f28fd8c1a4b18e89",
+      "oracle": "oracle-v2"
+    },
+    "body_independent_real_impl": {
+      "rust_metadata": 0,
+      "sha256": "2fb409e17ca8187422666b56228947f43d8d05ebf607bf88fc9b23bf6e5d8cb5",
+      "oracle": "oracle-v2"
+    },
+    "reservation_body_direct_export": {
+      "rust_metadata": 0,
+      "sha256": "1370351022cf053fc2a134fea4635d7399250cb3fd916004a24eaf2e552dd6fc",
+      "oracle": "oracle-v2"
+    }
+  },
+  "native": {
+    "real_positive": "7\n",
+    "const_real": "7\n",
+    "reservation_body_direct_export": "7\n"
+  },
+  "boundary": {
+    "source_From": "Root LIB105 genuine lang-role/floatfallback join required; no original From qualification from authored trait reducers",
+    "transport": "v0-v8 have only bool negative; reject actual reservation headers without changing bytes or fabricating source bounds"
+  },
+  "corrections": [
+    "oracle-v1 associated_type_probe was predicted accepted; rustc E0277 S:A rejects its actual associated type definition. Oracle-v2 retained same bytes with corrected prediction and proves independent real impl case accepted."
+  ],
+  "producer": "actual name-value string attribute, rustc_attrs/real macro allowance, positive trait impl owner, current annotation witness/message, typed polarity independent constness",
+  "semantics": "Use excludes reservation; compatible coherence candidate prevents closed absence, incompatible Self/arguments do not. Direct overlap allowed without specialization. Full member/body checking retained; no own Self:Trait assumption. Ordinary positive and explicit assumptions remain authoritative."
+}

@@ -3,6 +3,7 @@ mod comparisons;
 mod language;
 mod matching;
 mod provenance;
+pub(in crate::sema) mod reserved_impls;
 mod reserved_owners;
 pub(in crate::sema) use provenance::SourceOwner;
 pub(in crate::sema) use reserved_owners::ImportedOwner;
@@ -42,6 +43,22 @@ pub struct Family {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct OwnerId(pub u32);
+/// Source polarity is independent of constness and semantic conformance.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ImplPolarity {
+    Positive,
+    Negative,
+    Reservation,
+}
+impl ImplPolarity {
+    pub(crate) const fn from_negative(negative: bool) -> Self {
+        if negative {
+            Self::Negative
+        } else {
+            Self::Positive
+        }
+    }
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum OwnerKind {
     Trait {
@@ -55,7 +72,7 @@ pub enum OwnerKind {
         trait_type: Option<NodeKey>,
         unsafe_: bool,
         constant: bool,
-        negative: bool,
+        polarity: ImplPolarity,
     },
     ImportedImpl(crate::resolve::body_origin::ImportedDeclarationId),
 }
@@ -103,6 +120,10 @@ pub struct Inventory {
     type_members: HashMap<(OwnerId, DefId), DefId>,
 }
 impl Inventory {
+    #[cfg(test)]
+    pub(in crate::sema) fn owner_for_test(&mut self, id: OwnerId) -> Option<&mut Owner> {
+        self.owners.get_mut(id.0 as usize)
+    }
     pub(crate) fn has_associated_types(&self) -> bool {
         !self.types.is_empty()
     }
@@ -488,7 +509,7 @@ fn owner_kind(
             trait_type: trait_path.map(|node| NodeKey { node, ..source }),
             unsafe_,
             constant,
-            negative,
+            polarity: ImplPolarity::from_negative(negative),
         }),
         ItemKind::TraitAlias { .. } => {
             Err(error("trait alias contract expansion is not implemented"))

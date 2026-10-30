@@ -46,11 +46,11 @@ impl Implementations {
         availability: Availability,
     ) -> Option<DefId> {
         self.constant(owner, declaration).or_else(|| {
-            if matches!(availability, Availability::Declarations) {
-                self.entries[*self.owners.get(&owner)?]
-                    .checked_constants
-                    .get(&declaration)
-                    .copied()
+            let entry = &self.entries[*self.owners.get(&owner)?];
+            if matches!(availability, Availability::Declarations)
+                && entry.status.polarity() == super::Polarity::Positive
+            {
+                entry.checked_constants.get(&declaration).copied()
             } else {
                 None
             }

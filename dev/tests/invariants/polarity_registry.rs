@@ -253,11 +253,14 @@ fn source_polarity_publication_checks_the_actual_inventory_row()
         .ok_or("owner")?;
     assert!(matches!(
         owner.kind,
-        crate::sema::associated::OwnerKind::Impl { negative: true, .. }
+        crate::sema::associated::OwnerKind::Impl {
+            polarity: crate::sema::associated::ImplPolarity::Negative,
+            ..
+        }
     ));
     let mut forged = owner;
-    if let crate::sema::associated::OwnerKind::Impl { negative, .. } = &mut forged.kind {
-        *negative = false;
+    if let crate::sema::associated::OwnerKind::Impl { polarity, .. } = &mut forged.kind {
+        *polarity = crate::sema::associated::ImplPolarity::Positive;
     }
     let mut registry = Implementations::default();
     assert!(
@@ -374,7 +377,10 @@ fn unavailable_negative_header_preserves_polarity_and_normal_completion()
                 .is_some_and(|owner| {
                     matches!(
                         owner.kind,
-                        crate::sema::associated::OwnerKind::Impl { negative: true, .. }
+                        crate::sema::associated::OwnerKind::Impl {
+                            polarity: crate::sema::associated::ImplPolarity::Negative,
+                            ..
+                        }
                     )
                 })
         })
