@@ -127,8 +127,14 @@ fn identity_lookup_exhaustion_counts_the_attempt_before_returning() -> TestResul
 
 fn structural_query_work(depth: u32, nominal_noise: bool) -> TestResult<[usize; 5]> {
     use crate::types::subject_head::Head;
-    let key = Bucket::Structural(Head::Pointer(false), NameId(0));
-    let missing = Bucket::Structural(Head::Pointer(true), NameId(0));
+    let key = Bucket::Structural(
+        super::super::buckets::Target::Shape(Head::Pointer(false)),
+        NameId(0),
+    );
+    let missing = Bucket::Structural(
+        super::super::buckets::Target::Shape(Head::Pointer(true)),
+        NameId(0),
+    );
     let nominal = (ItemId(99), NameId(99));
     let mut report = crate::test_source::resolve("", true)?;
     let marks = &mut report.package.marks;
@@ -317,5 +323,32 @@ fn actual_impl_containers_adjust_privacy_without_reusing_another_callers_access(
     assert!(literal.permits(&report, owner, DefId(u32::MAX)).is_err());
     report.resolution.definitions[public.0 as usize].access = Access::ExternalPrivate;
     assert!(!literal.permits(&report, owner, public)?);
+    Ok(())
+}
+
+#[test]
+fn principal_names_keep_failed_lookup_work_and_other_principal_indices() -> TestResult {
+    use super::super::buckets::Target;
+    let (mut report, mut methods) = (crate::test_source::resolve("", true)?, Methods::default());
+    let syntax = mark(&mut report.package.marks, SyntaxContextId::ROOT, 1)?;
+    let context = report.package.marks.item(syntax)?;
+    let key = Bucket::Structural(Target::Principal(ItemId(1)), NameId(0));
+    let other = Bucket::Structural(Target::Principal(ItemId(2)), NameId(0));
+    methods.publish_inherent(key, context, DefId(1));
+    methods.publish_inherent(other, context, DefId(2));
+    methods.retain_candidate_index(other, context, Candidates::default())?;
+    methods.names.as_deref_mut().ok_or("name owner")?.steps = 1_000_000;
+    for expected in [1_000_001, 1_000_002] {
+        assert!(
+            Cursor::new(context)
+                .next(&mut methods, &report, key)
+                .is_err()
+        );
+        assert_eq!(
+            methods.names.as_deref().ok_or("name owner")?.steps,
+            expected
+        );
+        assert!(methods.candidate_index(other, context).is_some());
+    }
     Ok(())
 }

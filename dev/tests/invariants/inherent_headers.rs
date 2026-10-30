@@ -1,5 +1,5 @@
 //! Candidate name completeness includes unknown heads and excludes unrelated owners.
-use super::Pending;
+use super::{Pending, Store, Target};
 use crate::{
     resolve::{model::DefId, names::NameId},
     types::{ItemId, subject_head::Head},
@@ -78,7 +78,7 @@ fn reserve(pending: &mut Pending, owner: DefId, head: Option<Head>) {
     pending.owners.insert(
         owner,
         super::Members {
-            head,
+            head: head.map(Target::Shape),
             all_marked: true,
             declarations: Vec::new(),
         },
@@ -99,12 +99,12 @@ fn structural_pending_names_preserve_mutability_and_empty_permission() {
     assert!(pending.permitted(DefId(1), true));
     assert!(!pending.permitted(DefId(2), true));
     assert_eq!(
-        pending.head_dependencies(Head::Pointer(false), NameId(7)),
+        pending.head_dependencies(&Store::default(), Head::Pointer(false), NameId(7)),
         vec![DefId(1)]
     );
     assert_eq!(
-        pending.head_dependencies(Head::Pointer(true), NameId(7)),
+        pending.head_dependencies(&Store::default(), Head::Pointer(true), NameId(7)),
         vec![DefId(2)]
     );
-    assert!(!pending.contains_head(Head::Array, NameId(7)));
+    assert!(!pending.contains_head(&Store::default(), Head::Array, NameId(7)));
 }

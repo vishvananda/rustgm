@@ -1,0 +1,2 @@
+fn check(ok:bool){if !ok{let _=fail(0);}}fn fail(x:u8)->u8{1/x}
+trait Value{type Output;fn value(&self)->Self::Output;}struct Byte;struct Word;impl Value for Byte{type Output=u8;fn value(&self)->u8{7}}impl Value for Word{type Output=u16;fn value(&self)->u16{9}}impl dyn Value<Output=u8>{fn forward(&self)->u8{self.value()}}impl dyn Value<Output=u16>{fn forward(&self)->u16{self.value()}}fn main(){let a=Byte;let b=Word;let x:&dyn Value<Output=u8>=&a;let y:&dyn Value<Output=u16>=&b;check(x.forward()==7);check(y.forward()==9);}

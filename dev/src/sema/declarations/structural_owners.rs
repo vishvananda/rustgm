@@ -131,6 +131,17 @@ impl Checker<'_> {
             .types
             .kind(ty)
             .ok_or_else(|| self.error(source, "missing inherent target type"))?;
+        if let Type::Dynamic { shape, .. } = kind {
+            let item = self
+                .facts
+                .types
+                .dynamic_shape(shape)
+                .and_then(|shape| shape.principal)
+                .ok_or_else(|| {
+                    self.error(source, "inherent object impl requires a principal trait")
+                })?;
+            return self.require_local_principal(source, item);
+        }
         if let Type::Adt(item, _) = kind {
             return self.require_local_inherent(source, item);
         }
@@ -161,6 +172,35 @@ impl Checker<'_> {
         Err(self.error(source, "inherent impl requires a local nominal type"))
     }
 
+    fn require_local_principal(&self, source: NodeKey, item: ItemId) -> Result<(), Error> {
+        let definition = DefId(item.0);
+        let actual = self
+            .report
+            .resolution
+            .definitions
+            .get(item.0 as usize)
+            .ok_or_else(|| self.error(source, "inherent object principal declaration is absent"))?;
+        if actual.kind != DefKind::Trait {
+            return Err(self.error(source, "inherent object principal is not an actual trait"));
+        }
+        let local = self
+            .facts
+            .associated
+            .owner(definition)
+            .and_then(|owner| self.facts.associated.get(owner))
+            .is_some_and(|owner| {
+                actual.node.is_some()
+                    && owner.source.is_some()
+                    && matches!(owner.kind, OwnerKind::Trait { definition: current, .. }
+                    if current == definition)
+            });
+        if !local {
+            return Err(self.error(source,
+                "foreign object inherent permission and lookup require their wider authenticated profile"));
+        }
+        Ok(())
+    }
+
     fn require_local_inherent(&self, source: NodeKey, item: ItemId) -> Result<(), Error> {
         let actual = self
             .report
@@ -185,3 +225,7 @@ impl Checker<'_> {
 #[cfg(test)]
 #[path = "../../../tests/invariants/structural_impls.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/principal_owners.rs"]
+mod local_object_tests;

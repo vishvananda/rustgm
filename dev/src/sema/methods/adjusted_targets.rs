@@ -1,6 +1,6 @@
 //! Relevant structural Self shapes are collected once, before isolated receiver probes.
 use super::{
-    buckets::Bucket,
+    buckets::{Bucket, Target},
     names::Use,
     selection::{self, Found},
 };
@@ -33,9 +33,10 @@ pub(super) fn collect(
     );
     let retain_references = array_base
         && [false, true].into_iter().any(|mutable| {
-            facts
-                .methods
-                .has_inherent(Bucket::Structural(Head::Reference(mutable), name))
+            facts.methods.has_inherent(Bucket::Structural(
+                Target::Shape(Head::Reference(mutable)),
+                name,
+            ))
         });
     let mut depth = 0;
     let mut reference_steps = Vec::new();
@@ -100,9 +101,10 @@ fn unsized_candidates(
 ) -> Result<(), &'static str> {
     extend(report, facts, context, term, name, site, found)?;
     let present = [false, true].map(|mutable| {
-        facts
-            .methods
-            .has_inherent(Bucket::Structural(Head::Reference(mutable), name))
+        facts.methods.has_inherent(Bucket::Structural(
+            Target::Shape(Head::Reference(mutable)),
+            name,
+        ))
     });
     if !present.into_iter().any(|present| present) {
         return Ok(());
@@ -137,7 +139,9 @@ fn extend(
     else {
         return Ok(());
     };
-    let Some(bucket @ Bucket::Structural(..)) = Bucket::lookup(Head::inferred(head), name) else {
+    let Some(bucket @ Bucket::Structural(..)) =
+        Bucket::lookup(&facts.types, Head::inferred(head), name)
+    else {
         return Ok(());
     };
     if !facts.methods.has_inherent(bucket) {

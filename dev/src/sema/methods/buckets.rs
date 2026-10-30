@@ -6,14 +6,29 @@ use crate::{
         names::NameId,
     },
     support::hash::{HashMap, HashSet},
-    types::{ItemId, subject_head::Head},
+    types::{ItemId, Store, subject_head::Head},
 };
 
 /// Only an exclusion key. Applicability still consumes the full Self equations.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(in crate::sema) enum Bucket {
     Nominal(ItemId, NameId),
-    Structural(Head, NameId),
+    Structural(Target, NameId),
+}
+
+/// Method-only exclusion identity. Object shapes retain their full proof elsewhere.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub(in crate::sema) enum Target {
+    Shape(Head),
+    Principal(ItemId),
+}
+impl Target {
+    pub fn of(store: &Store, head: Head) -> Option<Self> {
+        match head {
+            Head::Dynamic(shape) => store.dynamic_shape(shape)?.principal.map(Self::Principal),
+            head => Some(Self::Shape(head)),
+        }
+    }
 }
 
 impl From<(ItemId, NameId)> for Bucket {
@@ -23,39 +38,42 @@ impl From<(ItemId, NameId)> for Bucket {
 }
 
 impl Bucket {
-    pub fn declared(head: Head, name: NameId) -> Option<Self> {
-        match head {
-            Head::Nominal(item) => Some(Self::Nominal(item, name)),
-            Head::Primitive(_)
-            | Head::Reference(_)
-            | Head::Pointer(_)
-            | Head::Tuple
-            | Head::Array
-            | Head::Slice
-            | Head::Function
-            | Head::Never => Some(Self::Structural(head, name)),
+    pub fn declared(store: &Store, head: Head, name: NameId) -> Option<Self> {
+        match Target::of(store, head)? {
+            Target::Shape(Head::Nominal(item)) => Some(Self::Nominal(item, name)),
+            target @ Target::Principal(_) => Some(Self::Structural(target, name)),
+            Target::Shape(
+                head @ (Head::Primitive(_)
+                | Head::Reference(_)
+                | Head::Pointer(_)
+                | Head::Tuple
+                | Head::Array
+                | Head::Slice
+                | Head::Function
+                | Head::Never),
+            ) => Some(Self::Structural(Target::Shape(head), name)),
             _ => None,
         }
     }
 
     /// rustc admits function-pointer impl declarations but excludes them from lookup.
-    pub fn lookup(head: Head, name: NameId) -> Option<Self> {
+    pub fn lookup(store: &Store, head: Head, name: NameId) -> Option<Self> {
         if head == Head::Function {
             None
         } else {
-            Self::declared(head, name)
+            Self::declared(store, head, name)
         }
     }
 }
 
-type Key = (Head, NameId);
+type Key = (Target, NameId);
 
 /// One optional crate owner; ordinary nominal maps keep their existing compact keys.
 #[derive(Default)]
 pub(super) struct Structural {
     names: HashSet<NameId>,
     members: HashMap<Key, HashMap<ItemContext, Vec<DefId>>>,
-    indices: HashMap<(Head, NameId, ItemContext), Candidates>,
+    indices: HashMap<(Target, NameId, ItemContext), Candidates>,
 }
 
 impl Structural {
@@ -66,6 +84,21 @@ impl Structural {
         contexts.entry(ItemContext::ROOT).or_default();
         contexts.entry(context).or_default().push(member);
         self.indices.remove(&(key.0, key.1, context));
+    }
+
+    pub fn principals(&self) -> impl Iterator<Item = (Bucket, ItemContext, &[DefId])> {
+        self.members
+            .iter()
+            .filter(|((target, _), _)| matches!(target, Target::Principal(_)))
+            .flat_map(|(&(target, name), contexts)| {
+                contexts.iter().map(move |(&context, members)| {
+                    (
+                        Bucket::Structural(target, name),
+                        context,
+                        members.as_slice(),
+                    )
+                })
+            })
     }
 
     pub fn freeze(&mut self) {
@@ -108,3 +141,7 @@ impl Structural {
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/principal_buckets.rs"]
+mod tests;

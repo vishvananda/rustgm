@@ -1,0 +1,143 @@
+{
+  "schema": 1,
+  "state": "independent_rust_observed_candidate_unexecuted",
+  "pin": "Rust1.98.0 88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "scope": "Unmarked local dyn-principal inherent ownership/lookup, fullSelf proof; no Has/Allow/foreign transport permission",
+  "cases": [
+    {
+      "path": "pa23/tests/spec/members/local-dyn-inherent/local-nominal.rs",
+      "sha256": "420de212ff6376c00623b3a2f93e9936b82ebf0c0cda82f2d0614248a243600c",
+      "predicted_rust_metadata": 0,
+      "predicted_rust_object": 0,
+      "candidate_required": 0
+    },
+    {
+      "path": "pa23/tests/spec/members/local-dyn-inherent/forwarded-virtual.rs",
+      "sha256": "2e2433ca32703ca751b845898737518b74981cbc2d05d6b39796fb6293927b2e",
+      "predicted_rust_metadata": 0,
+      "predicted_rust_object": 0,
+      "candidate_required": 0
+    },
+    {
+      "path": "pa23/tests/spec/members/local-dyn-inherent/alias.rs",
+      "sha256": "b96409f7df4f24d33daaf9bd9a2d6a2ffa7d2a155b97ba54500110b7e9edceee",
+      "predicted_rust_metadata": 0,
+      "predicted_rust_object": 0,
+      "candidate_required": 0
+    },
+    {
+      "path": "pa23/tests/spec/members/local-dyn-inherent/generic-principal.rs",
+      "sha256": "9552b1ee49a5f3926aad64a616767da516a6a58225416c17c506c59995779185",
+      "predicted_rust_metadata": 0,
+      "predicted_rust_object": 0,
+      "candidate_required": 0
+    },
+    {
+      "path": "pa23/tests/spec/members/local-dyn-inherent/associated-principal.rs",
+      "sha256": "0fb9cf6829cd61edb765c952fdc633bce598c05e3085c6ab4c79bc3241af45c7",
+      "predicted_rust_metadata": 0,
+      "predicted_rust_object": 0,
+      "candidate_required": 0
+    },
+    {
+      "path": "pa23/tests/spec/members/local-dyn-inherent/auto-set.rs",
+      "sha256": "711430232f9591f74b0366fb89db286e9af89145b1fa1affa5924f4dc48367a3",
+      "predicted_rust_metadata": 0,
+      "predicted_rust_object": 0,
+      "candidate_required": 0
+    },
+    {
+      "path": "pa23/tests/spec/members/local-dyn-inherent/generic-object-lifetime.rs",
+      "sha256": "5930793862b014bd90cfecf6edaadec1ab637af8f8f4b7636a4bdacd3e72be3e",
+      "predicted_rust_metadata": 0,
+      "predicted_rust_object": 0,
+      "candidate_required": 0
+    },
+    {
+      "path": "pa23/tests/spec/members/local-dyn-inherent/method-bound.rs",
+      "sha256": "e9be6a6a1f07f9698299e5076f71d7673a12b666bb0cd2d4989ed22a94e62c67",
+      "predicted_rust_metadata": 0,
+      "predicted_rust_object": 0,
+      "candidate_required": 0
+    },
+    {
+      "path": "pa23/tests/spec/members/local-dyn-inherent/missing-method-bound.rs",
+      "sha256": "8a33688c2dee48707e2673ed10cf0aea600461930196fd2cf90ef47c0059544b",
+      "predicted_rust_metadata": 1,
+      "predicted_rust_object": 1,
+      "candidate_required": 1
+    },
+    {
+      "path": "pa23/tests/spec/members/local-dyn-inherent/wrong-principal-argument.rs",
+      "sha256": "3943c570a5782e12d1b0ec41b29e26049db20e0af21a3cf2367f3f62f8b51acb",
+      "predicted_rust_metadata": 1,
+      "predicted_rust_object": 1,
+      "candidate_required": 1
+    },
+    {
+      "path": "pa23/tests/spec/members/local-dyn-inherent/object-lifetime-escape.rs",
+      "sha256": "6bb4b3c9b30f694629010de474a8f315521da6895550d9a9ee406a6667503c4b",
+      "predicted_rust_metadata": 1,
+      "predicted_rust_object": 1,
+      "candidate_required": 1
+    },
+    {
+      "path": "pa23/tests/spec/members/local-dyn-inherent/auto-only.rs",
+      "sha256": "c46fa77e533628e4df01c6cd6b9881a02abc0944077707e3e209c8552730140b",
+      "predicted_rust_metadata": 1,
+      "predicted_rust_object": 1,
+      "candidate_required": 1
+    },
+    {
+      "path": "pa23/tests/spec/members/local-dyn-inherent/wrong-principal-owner.rs",
+      "sha256": "cf98400ee40947cdb98fed32764fc431ec7cf200572f7ddaed09f8e671f74b74",
+      "predicted_rust_metadata": 1,
+      "predicted_rust_object": 1,
+      "candidate_required": 1
+    },
+    {
+      "path": "pa23/tests/spec/members/local-dyn-inherent/foreign-principal.rs",
+      "sha256": "0d12a92b62dea029ecdc3f4627543bce76a23648020ee4c796dbb83d14f7d072",
+      "predicted_rust_metadata": 1,
+      "predicted_rust_object": 1,
+      "candidate_required": 1
+    },
+    {
+      "path": "pa23/tests/spec/members/local-dyn-inherent/overlap-unused.rs",
+      "sha256": "4114352e50fd438852f572639f567348658733fc242dc314d52b419f5ac0f71c",
+      "predicted_rust_metadata": 1,
+      "predicted_rust_object": 1,
+      "candidate_required": 1
+    },
+    {
+      "path": "pa23/tests/spec/members/local-dyn-inherent/invalid-receiver.rs",
+      "sha256": "42c9945fdc4028d3dd9170b064a9d6895e755f964b86bc2ef7ab8d5b444a4074",
+      "predicted_rust_metadata": 1,
+      "predicted_rust_object": 1,
+      "candidate_required": 1
+    }
+  ],
+  "native": {
+    "input": "forwarded-virtual.rs",
+    "functions": [
+      "observed_forward",
+      "observed_item"
+    ],
+    "expected": [
+      7,
+      9
+    ],
+    "requirements": "Actual selected inherent body forwards real virtual dispatch; reified function pointer preserves actual callable/lifetime signature.",
+    "observer": "observer.c",
+    "observer_sha256": "edc4202edb53259049d50408db4d4a46fd44b31d9619aaac6f12c5e72efef426"
+  },
+  "pending": "Candidate/compiler, native CPPGM, source widths, failed-work controls and owning reference generation remain unexecuted; foreign/marker/transport remain separately required.",
+  "declaration_state": "predeclared_before_independent_or_candidate_execution",
+  "independent": {
+    "receipt_sha256": "d1246287a2d051b96f89dbe211ad703462702515802ef7495db8bf9abf602d9b",
+    "metadata_and_object": "All32 status predictions match",
+    "native_stdout": "7 9\n",
+    "native_link_status": 0,
+    "native_exit_status": 0
+  }
+}

@@ -110,8 +110,10 @@ impl Checker<'_> {
             return Ok(true);
         }
         if path.namespace == Namespace::Value
-            && let Some(bucket) = Bucket::lookup(path.head, path.name)
-            && (self.inherent_headers.contains_head(path.head, path.name)
+            && let Some(bucket) = Bucket::lookup(&self.facts.types, path.head, path.name)
+            && (self
+                .inherent_headers
+                .contains_head(&self.facts.types, path.head, path.name)
                 || self.facts.methods.has_inherent(bucket))
         {
             self.work
@@ -288,14 +290,14 @@ impl Checker<'_> {
         limit: usize,
         scan: &mut Vec<NodeId>,
     ) -> Result<(), Error> {
-        let Some(bucket) = Bucket::lookup(path.head, path.name) else {
+        let Some(bucket) = Bucket::lookup(&self.facts.types, path.head, path.name) else {
             return self
                 .schedule_implicit_method(key, context, steps, limit, scan)
                 .map(|_| ());
         };
-        let pending = self
-            .inherent_headers
-            .head_dependencies(path.head, path.name);
+        let pending =
+            self.inherent_headers
+                .head_dependencies(&self.facts.types, path.head, path.name);
         if !pending.is_empty() {
             self.work.push(Work::InherentMethod(key, *path, context));
             for owner in pending.into_iter().rev() {
