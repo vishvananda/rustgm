@@ -256,6 +256,15 @@ from strict qualification; the cap grants no syntax, feature, type, unsafe,
 API, CTFE or metadata permission. Deferred producers remain named assignment
 requirements and strict failures remain visible.
 
+Authenticate the effective cap and sticky diagnostic budget before entering an
+optional event producer. When Allow suppresses every event, macro deprecation
+does not traverse target/module ancestry or revalidate wide source witnesses for
+each call. The configured owner walk still parses and retains all annotations,
+including malformed, duplicate and feature-gated deprecation errors. Known
+expectations remain pending; suppression never produces fulfillment. Keep the
+uncapped path and actual macro definition/execution checks unchanged. This
+cap-aware boundary adds no cache or common record field.
+
 Legacy imported admission asserts no deprecation absence, and local deprecated
 exports stay closed until explicit transport exists. The
 [finite checkpoint](docs/pa40-lint-expectations-checkpoint.md) records its scope

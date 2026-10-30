@@ -188,3 +188,101 @@ fn capped_declaration_facts_and_progress_cannot_be_reused_with_strict_source() -
     assert!(error.to_string().contains("compilation cap"));
     Ok(())
 }
+
+#[test]
+fn capped_macro_deprecation_work_is_linear_in_headers_and_calls() -> Result {
+    let mut previous = None;
+    for width in [8, 32, 128] {
+        let mut source = String::new();
+        for _ in 0..width {
+            source.push_str("#![doc=\"retained owner data\"]\n");
+        }
+        source.push_str("macro_rules! plain{()=>{0u32}}pub fn observed()->u32{");
+        for _ in 0..width {
+            source.push_str("let _=plain!();");
+        }
+        source.push_str("7}");
+        let report = resolved(&source, LintCap::Allow, false)?;
+        let work = report.lint_producer().ok_or("actual producer")?.work();
+        println!(
+            "capped macro width={width} work={} bytes={} owners={} calls={}",
+            work.steps, work.bytes, work.owners, work.calls
+        );
+        if let Some(before) = previous {
+            assert!(
+                work.steps < before * 6,
+                "repeated owner validation is quadratic"
+            );
+        }
+        previous = Some(work.steps);
+        assert!(report.macro_deprecation_warnings()?.is_empty());
+        assert!(
+            crate::pipeline::analyze_source(&report)?
+                .facts
+                .warnings()
+                .next()
+                .is_none()
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn capped_macro_calls_keep_expectations_pending_and_strict_events_real() -> Result {
+    for name in ["macro-invocation", "macro-reexport"] {
+        let source =
+            crate::test_source::fixture(&format!("pa40/tests/spec/lint-expectations/{name}.rs"))?;
+        let capped = resolved(&source, LintCap::Allow, false)?;
+        assert!(capped.macro_deprecation_warnings()?.is_empty());
+        let analysis = crate::pipeline::analyze_source(&capped)?;
+        assert!(analysis.facts.warnings().next().is_none());
+        let progress = analysis
+            .facts
+            .safety_policies
+            .progress
+            .as_deref()
+            .ok_or("actual expectation progress")?;
+        assert_eq!(
+            capped
+                .lint_producer()
+                .ok_or("actual producer")?
+                .pending(&capped.package, progress)
+                .map_err(Error::from)?
+                .len(),
+            1,
+            "a suppressed macro event cannot fulfill a strict expectation"
+        );
+        let strict = resolved(&source, LintCap::Uncapped, false)?;
+        assert!(
+            crate::pipeline::analyze_source(&strict)?
+                .facts
+                .warnings()
+                .next()
+                .is_none(),
+            "the genuine strict event must still fulfill its expectation"
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn suppressed_macro_events_keep_deprecation_attribute_errors_hard() -> Result {
+    for name in [
+        "macro-non-string-note",
+        "macro-unsafe-wrapper",
+        "macro-duplicate-attributes",
+    ] {
+        for cap in [LintCap::Allow, LintCap::Uncapped] {
+            let error = resolved(&fixture(name)?, cap, false)
+                .err()
+                .ok_or_else(|| format!("{name}: malformed deprecated attribute accepted"))?;
+            let expected = if name == "macro-non-string-note" {
+                "string"
+            } else {
+                "deprecated"
+            };
+            assert!(error.to_string().contains(expected), "{name}: {error}");
+        }
+    }
+    Ok(())
+}

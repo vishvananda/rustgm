@@ -100,5 +100,20 @@ fn capped_source_headers_and_warning_only_lowir_keep_actual_semantic_inputs() ->
     assert!(String::from_utf8_lossy(&strict.stderr).contains("warning[unreachable_patterns]"));
     assert!(capped.stderr.is_empty());
     assert_eq!(strict.stdout, capped.stdout);
+    for name in ["macro-invocation", "macro-reexport"] {
+        let source = std::fs::read_to_string(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("../pa40/tests/spec/lint-expectations")
+                .join(format!("{name}.rs")),
+        )?;
+        let strict = run("--emit-lowir", &source, &[])?;
+        let capped = run("--emit-lowir", &source, &["--cap-lints=allow"])?;
+        assert!(strict.status.success() && capped.status.success(), "{name}");
+        assert!(
+            strict.stderr.is_empty() && capped.stderr.is_empty(),
+            "{name}"
+        );
+        assert_eq!(strict.stdout, capped.stdout, "{name}");
+    }
     Ok(())
 }

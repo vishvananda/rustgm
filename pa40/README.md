@@ -77,3 +77,10 @@ The unpublished [explicit Allow cap checkpoint](../docs/pa40-lint-cap-allow-chec
 keeps strict policy as the default while permitting an authenticated compilation
 to suppress optional diagnostics. Hard semantic checks and witnessed expectation
 debt remain separate from diagnostic suppression.
+
+Under an authenticated Allow cap, suppress optional macro deprecation event
+lookup before target/module ancestry traversal. Preserve owner parsing, hard
+attribute errors, macro execution identity, pending expectations and sticky
+work/storage limits. Wide retained headers and many invocations must not create
+unnecessary Cartesian validation work for a suppressed event; the uncapped
+diagnostic path retains its full checks.

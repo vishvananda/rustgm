@@ -466,6 +466,54 @@
       "expected_capped_lints": {},
       "required_error_codes": [],
       "prediction": "frozen attribute-free default-policy control before candidate observation"
+    },
+    {
+      "name": "macro-non-string-note",
+      "path": "pa40/tests/spec/lint-cap-allow/macro-non-string-note.rs",
+      "sha256": "ef612abb174ebe24b90c84815a21b4d68bce54dc50ac1b29ddbd38400ca07523",
+      "mode": "ordinary",
+      "editions": [
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_lints": {},
+      "expected_capped_status": 1,
+      "expected_capped_lints": {},
+      "required_error_codes": [],
+      "prediction": "Frozen independently before Rust observations;26/26 cap macro reference batch passed",
+      "reference_receipt_sha256": "32f905bf94dd0c9149748ee21f60638752210eb0bb1feb26113d2812b9a995db"
+    },
+    {
+      "name": "macro-unsafe-wrapper",
+      "path": "pa40/tests/spec/lint-cap-allow/macro-unsafe-wrapper.rs",
+      "sha256": "a3a7f3d35d5189f4d425bde102d07bb374c3470a5dd35bd935f982edfc396a4b",
+      "mode": "ordinary",
+      "editions": [
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_lints": {},
+      "expected_capped_status": 1,
+      "expected_capped_lints": {},
+      "required_error_codes": [],
+      "prediction": "Frozen independently before Rust observations;26/26 cap macro reference batch passed",
+      "reference_receipt_sha256": "32f905bf94dd0c9149748ee21f60638752210eb0bb1feb26113d2812b9a995db"
+    },
+    {
+      "name": "macro-duplicate-attributes",
+      "path": "pa40/tests/spec/lint-cap-allow/macro-duplicate-attributes.rs",
+      "sha256": "250c19053633f5be87fe01dfec53c7949e95d00affc3322e65243b09b36af3af",
+      "mode": "ordinary",
+      "editions": [
+        2024
+      ],
+      "expected_uncapped_status": 1,
+      "expected_uncapped_lints": {},
+      "expected_capped_status": 1,
+      "expected_capped_lints": {},
+      "required_error_codes": [],
+      "prediction": "Frozen independently before Rust observations;26/26 cap macro reference batch passed",
+      "reference_receipt_sha256": "32f905bf94dd0c9149748ee21f60638752210eb0bb1feb26113d2812b9a995db"
     }
   ]
 }

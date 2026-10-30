@@ -24,6 +24,10 @@ impl<S: Sources> Engine<'_, S> {
         else {
             return Ok(());
         };
+        if self.loader.package.lint_cap().suppresses_lints() {
+            producer.validate_cap(&self.loader.package, target)?;
+            return Ok(());
+        }
         let Some((origin, note)) = producer.deprecation_in(
             &self.loader.package,
             target,
