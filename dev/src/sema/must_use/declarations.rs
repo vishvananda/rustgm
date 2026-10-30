@@ -276,6 +276,16 @@ fn consume_annotation(
                 allowances,
             )?;
         }
+        Some(Consumer::LegacyConstGenerics) => {
+            crate::sema::header_attributes::consume_legacy_indices(
+                report,
+                facts,
+                (owner, declaration),
+                (attribute, effect),
+                forest,
+                allowances,
+            )?;
+        }
         _ => {
             return consume_other(
                 report,
@@ -326,18 +336,6 @@ fn consume_other(
                 declaration,
                 attribute,
                 effect,
-            )?;
-        }
-        Some(Consumer::LegacyConstGenerics) => {
-            crate::sema::header_attributes::consume_legacy_indices(
-                report,
-                facts,
-                owner,
-                declaration,
-                attribute,
-                effect,
-                forest,
-                allowances,
             )?;
         }
         Some(Consumer::Comptime) => {

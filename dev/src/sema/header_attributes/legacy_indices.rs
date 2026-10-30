@@ -47,10 +47,8 @@ fn marker(facts: &Declarations, key: NodeKey) -> Option<&Marker> {
 pub(in crate::sema) fn consume(
     report: &Report,
     facts: &mut Declarations,
-    owner: NodeKey,
-    key: NodeKey,
-    attribute: Attribute,
-    effect: usize,
+    (owner, key): (NodeKey, NodeKey),
+    (attribute, effect): (Attribute, usize),
     forest: &Forest,
     allowances: &mut MacroAllowanceSession<'_>,
 ) -> Result<(), Error> {
