@@ -40,6 +40,46 @@ fn method_view_preserves_source_contract_and_rejects_imported_authority() -> Res
     assert_eq!(fixture.facts.body_work.canonical_steps, before + 1);
     fixture.valid(true)
 }
+
+#[test]
+fn method_abi_must_match_for_foreign_and_rust_declarations() -> Result {
+    let mut foreign = Fixture::new(
+        "trait Api{extern \"C\" fn f<T>();}impl Api for u8{extern \"C\" fn f<T>(){}}",
+    )?;
+    foreign.valid(true)?;
+    for source in [
+        METHODS,
+        "trait Api{extern \"C\" fn f<T>();}impl Api for u8{extern \"C\" fn f<T>(){}}",
+    ] {
+        let mut fixture = Fixture::new(source)?;
+        let Some(Kind::Function {
+            parameters,
+            result,
+            bound_regions,
+            unsafe_,
+            variadic,
+            convention,
+        }) = fixture.facts.types.kind(fixture.actual.signature)
+        else {
+            return Err("actual implementation method signature".into());
+        };
+        let changed = if convention == crate::types::callable::Convention::Rust {
+            crate::types::callable::Convention::C
+        } else {
+            crate::types::callable::Convention::Rust
+        };
+        fixture.actual.signature = fixture.facts.types.intern(Kind::Function {
+            parameters,
+            result,
+            bound_regions,
+            unsafe_,
+            variadic,
+            convention: changed,
+        })?;
+        fixture.valid(false)?;
+    }
+    Ok(())
+}
 struct NoFiles;
 impl Sources for NoFiles {
     fn read(&mut self, _: &Path) -> std::result::Result<Option<InputFile>, String> {
