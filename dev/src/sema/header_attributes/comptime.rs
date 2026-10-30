@@ -168,7 +168,7 @@ pub(in crate::sema) fn consume(
         size_of::<super::Promises>()
     };
     let headers = &mut ledger(facts, bytes)?.local;
-    headers.has_comptime = true;
+    headers.has_special_calls = true;
     let actual = headers
         .declarations
         .get_mut(&declaration)
@@ -270,7 +270,7 @@ impl Declarations {
                 .must_use_contracts
                 .as_deref()
                 .and_then(|owner| owner.headers.as_deref())
-                .is_some_and(|ledger| ledger.local.has_comptime)
+                .is_some_and(|ledger| ledger.local.has_special_calls)
     }
     /// Classification from an already bound declaration; never a call permission.
     pub(crate) fn is_comptime_function(&self, definition: DefId) -> bool {

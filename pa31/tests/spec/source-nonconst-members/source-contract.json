@@ -1,0 +1,27 @@
+{
+  "state": "predictions frozen before independent/candidate source observations",
+  "original_contract_sha256": "def119deca2688b00348ffcba97358708de040ec83bcb246bcc40d02929fb565",
+  "cases": {
+    "source-runtime": {
+      "metadata": 0,
+      "object": 0,
+      "native_status": 0,
+      "stdout": "7 11 13\n"
+    },
+    "source-default-const": {
+      "metadata": 0,
+      "object": 0,
+      "native_status": 0,
+      "stdout": "7 11 13\n"
+    }
+  },
+  "foundation": "Unchanged genuine NoCore source prefix from source-comptime/const-own.rs before its first rustc_comptime; explicit source Clone/Copy/Destruct/receiver declarations. No replacement of original Iterator helpers.",
+  "scope": "First source fixture uses a real const impl override; second retains the real const default-body obligation rather than substituting the override.",
+  "files": {
+    "source-runtime.rs": "838945ac4fe8c0dbd88689c162aaa7d9ee29e8f0e8d5a7926b0df1a08f81a61c",
+    "source-default-const.rs": "e2003813a3d76eb869944f721d43c7a99b550ab3a26a7fd1f9109fb6b4f358dd",
+    "observer.c": "4d4bfb08fae8cafe18b4af45c70b3ddf06287d69f8369c47b2bfde571158fcbc"
+  },
+  "predecessor_contract_sha256": "424915432d597d948511edc13f6f04b475c7743183c2a50c752d0e940f69e701",
+  "correction": "Keep real staged-API foundation: Mixed trait and const impl carry their actual const-unstable declaration policies. Both earlier missing-prerequisite snapshots remain under obj."
+}

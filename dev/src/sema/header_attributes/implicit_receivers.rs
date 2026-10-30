@@ -193,6 +193,19 @@ impl Declarations {
                 "always-comptime source contracts require a wider transport profile",
             ));
         }
+        if self
+            .associated
+            .trait_owner(definition)
+            .is_some_and(|parent| self.associated.constant_trait(parent) == Some(true))
+            && matches!(
+                self.source_non_const_trait_method_contract(report, definition)?,
+                ContractKnowledge::KnownPresent(_)
+            )
+        {
+            return Err(Error::unlocated(
+                "non-const trait member restrictions require a wider transport profile",
+            ));
+        }
         let mut required = None;
         if !visit_words(self, report, definition, |name| {
             let message = match name {

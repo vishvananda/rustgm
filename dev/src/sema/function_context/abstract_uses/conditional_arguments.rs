@@ -20,6 +20,9 @@ pub(super) fn select(
     charge: &mut impl FnMut(usize) -> Result<(), &'static str>,
 ) -> Result<Predicate, &'static str> {
     charge(12)?;
+    if facts.nonconst_trait_member(definition)? {
+        return Err("non-const trait methods cannot be called in const contexts");
+    }
     let parent = facts
         .associated
         .trait_owner(definition)

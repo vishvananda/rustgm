@@ -37,6 +37,7 @@ pub(crate) enum Consumer {
     Promotion,
     Comptime,
     NoMirInline,
+    NonConstTraitMethod,
 }
 impl Consumer {
     pub(crate) fn tool_member(tool: &str, name: &str) -> Option<Self> {
@@ -91,6 +92,7 @@ impl Consumer {
             "rustc_promotable" => Self::Promotion,
             "rustc_comptime" => Self::Comptime,
             "rustc_no_mir_inline" => Self::NoMirInline,
+            "rustc_non_const_trait_method" => Self::NonConstTraitMethod,
             "no_mangle" | "export_name" | "link_name" => Self::Linkage,
             "target_feature" => Self::TargetFeature,
             "allow" | "warn" | "deny" | "forbid" | "expect" | "deprecated" => Self::SafetyLint,
