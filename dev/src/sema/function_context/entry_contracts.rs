@@ -14,6 +14,7 @@ pub(crate) struct DefaultExecution {
 }
 /// A body consumer supplies only the actual typed materialization coordinates.
 /// The semantic layer never inspects, mutates or owns a body/CFG record.
+#[derive(Clone, Copy)]
 pub(crate) struct DefaultMaterialization {
     pub(crate) source: BodyOrigin,
     pub(crate) instance: Option<Instance>,
