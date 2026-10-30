@@ -444,6 +444,53 @@ fn demanded_originals_use_actual_allocation_order_and_reject_foreign_body_region
     assert!(view.variable(u32::MAX, &mut steps).is_err());
     assert!(steps > before);
     assert_local_regions(&view, &facts, &mut steps)?;
+    all_original_type_roots(&report, &mut facts)?;
+    Ok(())
+}
+fn all_original_type_roots(report: &Report, facts: &mut Declarations) -> Result {
+    let mut saw_signature = false;
+    for (index, definition) in report.resolution.definitions.iter().enumerate() {
+        if definition.kind != DefKind::Function || definition.node.is_some() {
+            continue;
+        }
+        let definition = DefId(u32::try_from(index)?);
+        if facts
+            .declaration_header(definition)?
+            .is_none_or(|header| header.body.is_none())
+        {
+            continue;
+        }
+        crate::sema::crates::prepare_source_original(report, facts, definition, 0, 0)?;
+        let mut steps = 0;
+        let view = crate::sema::crates::source_original(facts, definition, &mut steps)?
+            .ok_or("actual original")?;
+        let raw = view.raw();
+        for root in raw
+            .locals
+            .iter()
+            .map(|local| local.ty)
+            .chain(raw.values.iter().flat_map(|value| {
+                let signature = match value.kind {
+                    s::ValueKind::Call { signature, .. } => {
+                        saw_signature = true;
+                        Some(signature)
+                    }
+                    _ => None,
+                };
+                std::iter::once(value.ty).chain(signature)
+            }))
+            .chain(raw.projections.iter().map(|projection| projection.ty))
+            .chain(raw.calls.iter().map(|call| call.signature))
+            .chain(std::iter::once(raw.result))
+        {
+            let ty = view.ty(root, &mut steps)?;
+            assert!(facts.types.kind(ty).is_some());
+        }
+    }
+    assert!(
+        saw_signature,
+        "actual generic Into original has a separate Call signature"
+    );
     Ok(())
 }
 fn assert_local_regions(

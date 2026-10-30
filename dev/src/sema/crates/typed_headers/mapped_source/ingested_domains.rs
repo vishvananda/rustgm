@@ -76,14 +76,25 @@ impl Lazy {
             original
                 .locals
                 .len()
-                .saturating_add(original.values.len())
+                .saturating_add(original.values.len().saturating_mul(2))
+                .saturating_add(original.projections.len())
+                .saturating_add(original.calls.len())
                 .saturating_add(1),
         )?;
+        // A Call's result type does not include its separate applied signature.
+        // Reconstruct only this actual original's complete operation frontier.
         for root in original
             .locals
             .iter()
             .map(|local| local.ty)
-            .chain(original.values.iter().map(|value| value.ty))
+            .chain(original.values.iter().flat_map(|value| {
+                std::iter::once(value.ty).chain(match value.kind {
+                    s::ValueKind::Call { signature, .. } => Some(signature),
+                    _ => None,
+                })
+            }))
+            .chain(original.projections.iter().map(|projection| projection.ty))
+            .chain(original.calls.iter().map(|call| call.signature))
             .chain(std::iter::once(original.result))
         {
             if matches!(
