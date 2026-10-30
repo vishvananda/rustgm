@@ -246,6 +246,7 @@ impl ValidatedRows {
             modules.rows(),
             base.saturating_add(staged.budget.bytes),
             work,
+            profile,
         )?;
         if features {
             predicate_contracts::complete(

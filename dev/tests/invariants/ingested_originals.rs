@@ -190,14 +190,32 @@ fn malformed_recorded_inputs() -> Result {
         "ordinary_recorded_inputs",
     )?;
     let descriptor = artifact.source_descriptor().ok_or("actual descriptor")?;
-    for opponent in 0..12 {
+    for opponent in 0..17 {
         let (mut rows, attributes, modules) = crate::module_packets::raw(&artifact)?;
         if opponent < 3 {
             corrupt_late_header(&mut rows, opponent)?;
         } else if opponent < 6 {
             corrupt_normalization(&mut rows, opponent - 3)?;
-        } else {
+        } else if opponent < 12 {
             corrupt_applied_goal(&mut rows, opponent - 6)?;
+        }
+        if opponent == 16 {
+            rows.clauses
+                .first_mut()
+                .ok_or("actual declaration input")?
+                .requirement = s::Requirement::UnstableFeature("caller_only_permission".to_owned());
+        }
+        let mut availability = descriptor.availability()?.clone();
+        assert!(availability.policies.is_empty(), "actual no-Library source");
+        match opponent {
+            12 => {
+                availability.declarations[0].declaration =
+                    crate::support::crates::owner_catalog::DeclarationRef(u32::MAX)
+            }
+            13 => availability.declarations[0].constant = Some(s::AvailabilityRef(0)),
+            14 => availability.bindings[0].regular = Some(s::AvailabilityRef(0)),
+            15 => availability.declarations[0].regular = Some(s::AvailabilityRef(0)),
+            _ => {}
         }
         let mut work = crate::support::crates::generics::Work::default();
         assert!(
@@ -206,7 +224,7 @@ fn malformed_recorded_inputs() -> Result {
                 rows,
                 attributes,
                 modules,
-                descriptor.availability()?.clone(),
+                availability,
                 0,
                 &mut work,
             )
@@ -216,9 +234,41 @@ fn malformed_recorded_inputs() -> Result {
     }
     Ok(())
 }
+fn staged_root_cannot_be_erased() -> Result {
+    let source =
+        crate::test_source::fixture("pa31/tests/spec/source-availability-transport/provider.rs")?;
+    let artifact = crate::module_packets::exported_profile(
+        &source,
+        SourcePublication::ModuleAvailability,
+        "staged_availability_root",
+    )?;
+    let descriptor = artifact
+        .source_descriptor()
+        .ok_or("actual staged descriptor")?;
+    let (rows, attributes, modules) = crate::module_packets::raw(&artifact)?;
+    let mut availability = descriptor.availability()?.clone();
+    assert!(!availability.policies.is_empty());
+    availability.declarations[modules.namespace.root.0 as usize].regular = None;
+    let mut work = crate::support::crates::generics::Work::default();
+    assert!(
+        crate::support::crates::generics::Payload::from_source_module_conversions(
+            artifact.identity(),
+            rows,
+            attributes,
+            modules,
+            availability,
+            0,
+            &mut work,
+        )
+        .is_err()
+    );
+    assert!(work.steps > 0);
+    Ok(())
+}
 #[test]
 fn ordinary_headers_do_not_allocate_unused_borrowed_original_domains() -> Result {
     malformed_recorded_inputs()?;
+    staged_root_cannot_be_erased()?;
     let (report, mut facts) = fresh()?;
     let graph = mapped_graph(&facts)?;
     assert_eq!(observed(&graph)?.0, 0);
