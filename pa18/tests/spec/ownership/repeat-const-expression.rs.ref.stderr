@@ -1,1 +1,1 @@
-ERROR: file 0: 41: nonliteral array lengths require constant evaluation
+ERROR: file 0: 41: constant expression cannot use an enclosing generic parameter

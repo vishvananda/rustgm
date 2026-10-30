@@ -12,8 +12,16 @@ formatting and architecture. Existing target-feature, missing/changed factory,
 source-origin and Always controls are preserved. No fixture is reclassified.
 See [repair evidence](const-call-policy-ci-repair.md). Private and integration
 checks use separate bounded gates; the mixed cold predecessor timed out after
-strict code generation and never qualified runtime. Full CI40981612452 is
-running on public827155167. Fresh production CLI/native20 operations match
+strict code generation and never qualified runtime. Full CI40981612452 on
+public827155167 passed all2373 private controls and all13 integration suites,
+then failed three PA12/PA18 course expectations. The course-only successor moves
+the unchanged named-count positive to PA25 and regenerates the two genuine
+generic-repeat rejection diagnostics. PA12 125/125, PA18 502/502 and the expanded
+PA25 const-machine95/95 pass, alongside pinned Rust object outcomes, native
+execution, upstream checks and all275 harness tests. The qualification takes
+29.88 seconds after admission, with no compiler rebuild; receipt
+02b26e12eb1a2fcb92085e70a01449328a91ec99a9954a1dca49b1087ceb1faa.
+Fresh production CLI/native20 operations match
 pinned Rust for all3 accepted programs and the exact target-feature rejection;
 see the same repair evidence.
 

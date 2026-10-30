@@ -46,6 +46,17 @@ architecture checks. It repairs completed attribute-budget lifecycle, checks
 both actual generated iterator callables and authenticates factory absence
 without inventing a source header. No whole PA or original crate is complete.
 
+Full qualification40981612452 on public827155167 passes all2373 private tests
+and all13 integration suites. Its remaining three course failures are repaired
+without changing the compiler: move the unchanged PA12 named-count input to its
+PA25 owner and regenerate the two PA18 Rust-invalid generic-repeat diagnostics.
+The declared outcomes match pinned Rust objects; the accepted input also runs
+through the locked CPPGM backend and pinned Rust with exit0. PA12 125/125,
+PA18 502/502 and PA25 const-machine95/95 pass, as do upstream/layout checks and
+all275 harness tests. The input-only gate takes29.88 seconds after admission;
+receipt02b26e12eb1a2fcb92085e70a01449328a91ec99a9954a1dca49b1087ceb1faa.
+No original-core advancement or assignment release is implied.
+
 Public85d06ebec full qualification40954355053 has passed. The subsequent
 PA25 course-corpus review exposed LIB-099, a genuine computed repeat-count gap.
 Its repair passes24 focused controls with strict Clippy/audits, plus94 independent

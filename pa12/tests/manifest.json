@@ -1233,19 +1233,6 @@
       }
     },
     {
-      "path": "tests/spec/boundary/constant-array-length.rs",
-      "exit_status": 1,
-      "features": [
-        "pa12.boundary"
-      ],
-      "rustc": {
-        "kind": "program",
-        "status": 0,
-        "default_lints": true,
-        "reason": "PA25 owns nonliteral array-length queries; PA12 retains the earlier concrete array annotation profile."
-      }
-    },
-    {
       "path": "tests/spec/layout/c-record.rs",
       "exit_status": 0,
       "features": [
