@@ -1,71 +1,188 @@
-name: Reference and course checks
+name: Reservation impl focused qualification
 on:
   push:
-  pull_request:
+    branches: [ci/reservation-impl]
   workflow_dispatch:
-  schedule:
-    - cron: '23 3 * * *'
 permissions:
   contents: read
 concurrency:
-  group: rustgm-${{ github.workflow }}-${{ github.ref }}-${{ github.event_name }}
-  cancel-in-progress: ${{ github.event_name != 'schedule' }}
+  group: reservation-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
-  fast:
+  focused:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 25
+    env:
+      CARGO_BUILD_JOBS: '2'
+      CARGO_INCREMENTAL: '1'
+      RUST_TEST_THREADS: '2'
+      RUSTGM_TEST_JOBS: '2'
+      OMP_NUM_THREADS: '2'
+      CARGO_TARGET_DIR: ${{ github.workspace }}/obj/rust
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
       - name: Pinned Rust
         run: rustup toolchain install 1.98.0 --profile minimal --component rustfmt --component clippy
-      - uses: actions/cache@v6
+      - name: Exact declared source checkpoint
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, subprocess, sys
+          from pathlib import Path
+          root = Path.cwd()
+          sys.path.insert(0, str(root / 'scripts'))
+          from fastcheck_run import fingerprint
+          from resource_policy import discover
+          from storage import minimum_reserve
+          folder = root / 'obj/qualification/ci-build'
+          folder.mkdir(parents=True, exist_ok=True)
+          path = root / '.github/qualification/reservation/reservation.json'
+          plan = json.loads(path.read_text())
+          assert plan['source_commit'] == '8a60de2b39fac20583b6e0c3e977ecd7148d0e53'
+          assert subprocess.check_output(['git', 'rev-parse', 'HEAD^'], text=True).strip() == plan['source_commit']
+          assert hashlib.sha256(path.read_bytes()).hexdigest() == '70046c8b489755240feb135011ce334cb14d33a1b5f25ad43762c2560583066c'
+          assert plan['sources'] == fingerprint(root)
+          assert len(plan['private_cases']) == len(set(plan['private_cases'])) == plan['private_count'] == 25
+          assert all(hashlib.sha256((root / name).read_bytes()).hexdigest() == value for name, value in plan['fixtures'].items())
+          runner = path.with_name('native.py')
+          observer = path.with_name(plan['observer']['packet_file'])
+          assert hashlib.sha256(runner.read_bytes()).hexdigest() == plan['hosted_native_runner_sha256']
+          assert hashlib.sha256(observer.read_bytes()).hexdigest() == plan['observer']['sha256']
+          assert hashlib.sha256(path.with_name('references.py').read_bytes()).hexdigest() == 'd5d5fa29e1c17d7c3825149eb664cf67c8f06537710395bc369a0d13312f3f2d'
+          (folder / 'declared-source.json').write_text(json.dumps({'state': 'source-hashes-only', 'ci_head': subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip(), 'source_commit': plan['source_commit'], 'sources': plan['sources'], 'fixtures': plan['fixtures'], 'plan_sha256': hashlib.sha256(path.read_bytes()).hexdigest()}, indent=2) + '\n')
+          (folder / 'hosted-guard.json').write_text(json.dumps({'shared_controller_present': discover(root) is not None, 'storage_minimum_free_gib': minimum_reserve(), 'compiler_threads': 2, 'runtime_threads': 2, 'fastcheck_seconds': 300, 'native_internal_seconds': 270, 'qualification': 'Host guard facts only; do not infer the local shared-disk150GiB policy from an unconfigured hosted runner.'}, indent=2) + '\n')
+          PY
+      - uses: actions/cache/restore@v6
+        id: cache
         with:
           path: |
-            obj/rust/dev-fast
+            obj/rust
             obj/fast-audit.json
             ~/.cargo/registry
-          key: dev-fast-${{ runner.os }}-rust-1.98-${{ hashFiles('dev/Cargo.lock', 'dev/Cargo.toml') }}-${{ github.sha }}
+          key: reservation-${{ runner.os }}-1.98-${{ github.sha }}
           restore-keys: |
-            dev-fast-${{ runner.os }}-rust-1.98-${{ hashFiles('dev/Cargo.lock', 'dev/Cargo.toml') }}-
-      - name: Audit setup
-        run: make setup-audit
-      - name: Five-minute compiler smoke
-        run: make smoke
-      - name: Harness, audit cache and upstream contracts
-        run: make test-harness test-upstream && obj/audit-venv/bin/python -m unittest discover -s scripts/audit_tests -v
-      - name: Retain focused evidence
+            reservation-${{ runner.os }}-1.98-
+            source-from-${{ runner.os }}-1.98-private-
+      - name: Static setup and architecture
+        run: |
+          make fmt-check setup-audit
+          python3 scripts/storage.py run --no-prune -- obj/audit-venv/bin/python scripts/rust_audit.py --root . --cache obj/fast-audit.json
+          python3 scripts/storage.py run --no-prune -- python3 scripts/assignment_metadata.py
+      - name: Early suite registration and upstream contracts (layout pending references)
+        run: |
+          python3 scripts/storage.py run --no-prune -- python3 scripts/maintainer_suites.py check
+          python3 scripts/storage.py run --no-prune -- make test-upstream
+      - name: Strict ordinary production library and CLI mode
+        run: |
+          set -o pipefail
+          python3 scripts/storage.py run --no-prune -- cargo clippy --manifest-path dev/Cargo.toml --locked --profile dev-fast --lib --bin rustgm -- -D warnings 2>&1 | tee obj/qualification/ci-build/production-clippy.log
+      - name: Cold private strict build ONLY
+        run: |
+          python3 scripts/storage.py run --no-prune -- env CARGO_TARGET_DIR="$PWD/obj/rust/private-lint" RUSTC_WORKSPACE_WRAPPER="$(command -v clippy-driver)" CLIPPY_ARGS=-Dwarnings cargo test --manifest-path dev/Cargo.toml --locked --profile dev-fast --lib --no-run --message-format=json > obj/qualification/ci-build/private-build.jsonl 2> obj/qualification/ci-build/private-build.stderr
+      - name: Exact private25 within five minutes
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, subprocess, sys
+          from pathlib import Path
+          root = Path.cwd()
+          sys.path.insert(0, str(root / 'scripts'))
+          from fastcheck_run import fingerprint
+          plan = json.loads(Path('.github/qualification/reservation/reservation.json').read_text())
+          base = root / 'obj/qualification/fast'
+          before = set(base.iterdir()) if base.exists() else set()
+          command = [sys.executable, 'scripts/fastcheck.py']
+          for case in plan['private_cases']:
+              command += ['--lib-case', case]
+          status = subprocess.run(command, check=False).returncode
+          if status:
+              raise SystemExit(status)
+          created = [path for path in base.iterdir() if path not in before and path.is_dir() and (path / 'receipt.json').is_file()]
+          assert len(created) == 1, 'expected exactly one newly completed fastcheck scope'
+          folder = created[0]
+          receipt_path = folder / 'receipt.json'
+          launcher_path = folder.with_suffix('.launcher.json')
+          receipt = json.loads(receipt_path.read_text())
+          launcher = json.loads(launcher_path.read_text())
+          assert receipt['state'] == launcher['state'] == 'passed'
+          assert receipt['sources'] == plan['sources'] == fingerprint(root)
+          assert set(receipt['groups']['lib']) == set(plan['private_cases']) and len(receipt['groups']['lib']) == 25
+          binary = Path(receipt['binaries']['lib']['path'])
+          binary_hash = hashlib.sha256(binary.read_bytes()).hexdigest()
+          assert binary_hash == receipt['binaries']['lib']['sha256']
+          pin_dir = root / 'obj/qualification/reservation-harness' / binary_hash
+          pin_dir.mkdir(parents=True, exist_ok=False)
+          pin = pin_dir / 'rustgm-tests'
+          os.link(binary, pin)
+          (pin_dir / '.keep-artifacts').write_text('Exact current qualified reservation private harness only\n')
+          generated = root / 'obj/parallel/reservation-impl-v1/candidate'
+          lowir = {case['name']: hashlib.sha256((root / case['candidate_lowir']).read_bytes()).hexdigest() for case in plan['native_cases']}
+          selected = {'state': 'passed-private25-only', 'receipt': str(receipt_path), 'receipt_sha256': hashlib.sha256(receipt_path.read_bytes()).hexdigest(), 'launcher': str(launcher_path), 'launcher_sha256': hashlib.sha256(launcher_path.read_bytes()).hexdigest(), 'harness': str(binary), 'harness_sha256': binary_hash, 'current_harness_pin': str(pin), 'native_lowir_sha256': lowir}
+          Path('obj/qualification/ci-build/reservation-private.json').write_text(json.dumps(selected, indent=2) + '\n')
+          PY
+      - name: Actual CLI Cargo artifact
+        run: |
+          python3 scripts/storage.py run --no-prune -- cargo build --manifest-path dev/Cargo.toml --locked --profile dev-fast --bin rustgm --message-format=json > obj/qualification/ci-build/reservation-cli.jsonl 2> obj/qualification/ci-build/reservation-cli.stderr
+      - name: Exact locked backend distribution
+        run: python3 scripts/storage.py run --no-prune -- python3 scripts/setup_backend.py
+      - name: Native3, existing policy controls and CLI fences
+        run: |
+          python3 - <<'PY'
+          import json, os, signal, subprocess, sys, time
+          from pathlib import Path
+          selected = json.loads(Path('obj/qualification/ci-build/reservation-private.json').read_text())
+          command = [sys.executable, 'scripts/storage.py', 'run', '--no-prune', '--', sys.executable,
+                     '.github/qualification/reservation/native.py',
+                     '.github/qualification/reservation/reservation.json',
+                     selected['receipt'], selected['launcher'],
+                     'obj/qualification/ci-build/reservation-cli.jsonl']
+          started = time.monotonic()
+          process = subprocess.Popen(command, start_new_session=True)
+          status = 1
+          try:
+              status = process.wait(timeout=295)
+          except subprocess.TimeoutExpired:
+              os.killpg(process.pid, signal.SIGTERM)
+              try:
+                  process.wait(timeout=3)
+              except subprocess.TimeoutExpired:
+                  os.killpg(process.pid, signal.SIGKILL)
+                  process.wait(timeout=1)
+              status = 124
+          finally:
+              Path('obj/qualification/ci-build/reservation-native-launcher.json').write_text(json.dumps({'state': 'passed' if status == 0 else 'failed', 'status': status, 'seconds': time.monotonic() - started, 'command': command}, indent=2) + '\n')
+          raise SystemExit(status)
+          PY
+      - name: Fresh Rust metadata3 and owning PA20 reference generation
+        timeout-minutes: 5
+        run: python3 scripts/storage.py run --no-prune -- python3 .github/qualification/reservation/references.py
+      - name: Final full harness, layout and upstream contracts
+        run: |
+          set -o pipefail
+          python3 scripts/storage.py run --no-prune -- make test-harness test-upstream 2>&1 | tee obj/qualification/ci-build/reservation-final-harness.log
+      - name: Save reusable cache
+        if: always() && steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            obj/rust
+            obj/fast-audit.json
+            ~/.cargo/registry
+          key: reservation-${{ runner.os }}-1.98-${{ github.sha }}
+      - name: Retain exact raw evidence
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: fastcheck-evidence
-          path: obj/qualification/fast
+          name: reservation-${{ github.sha }}
+          path: |
+            .github/qualification/reservation
+            obj/qualification/fast
+            obj/qualification/ci-build
+            obj/qualification/reservation-harness
+            obj/qualification/reservation-native
+            obj/qualification/reservation-references
+            obj/parallel/reservation-impl-v1/candidate
+            obj/cleanup
+          include-hidden-files: true
           if-no-files-found: ignore
           retention-days: 7
-  qualification:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v6
-      - name: Pinned Rust
-        run: rustup toolchain install 1.98.0 --profile minimal --component rustfmt --component clippy
-      - name: Lint, architecture and harness
-        run: make fmt-check setup-audit audit-rust lint test-harness test-upstream
-      - name: Independent host build graph
-        run: make test-host-builds
-      - name: Release and course tests
-        run: make test
-      - name: Native maintainer qualification
-        run: |
-          python3 scripts/storage.py run --no-prune -- python3 scripts/setup_backend.py
-          make test-maintainer-native
-      - name: Debug invariants
-        run: make test-debug-invariants
-      - name: Independent Rust qualification
-        run: make test-rustc
-      - name: PA25 const-machine candidate contract
-        run: |
-          python3 scripts/check_layout.py --unit const-machine
-          python3 scripts/storage.py run -- python3 scripts/course.py pa25 --unit const-machine
-          python3 scripts/storage.py run --prune-under obj/rustc-syntax/pa25/units/const-machine -- python3 scripts/check_syntax.py pa25 --unit const-machine --jobs 2
-          python3 scripts/storage.py run --prune-under obj/native/pa25/units/const-machine -- python3 scripts/check_native.py pa25 --unit const-machine --jobs 2
