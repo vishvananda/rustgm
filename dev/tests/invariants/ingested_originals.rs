@@ -101,7 +101,7 @@ fn bodies(facts: &Declarations, report: &Report) -> Result<Vec<DefId>> {
     let mut result = Vec::new();
     for definition in clones(report)? {
         if facts
-            .function_header(definition)?
+            .declaration_header(definition)?
             .is_some_and(|header| header.body.is_some())
         {
             result.push(definition);
@@ -318,6 +318,7 @@ fn ordinary_headers_do_not_allocate_unused_borrowed_original_domains() -> Result
         super::super::source_readiness(&mut facts, definitions[0])?,
         Some(Readiness::Declaration)
     );
+    assert!(facts.function_header(definitions[0]).is_err());
     assert!(crate::sema::crates::source_original(&facts, definitions[0], &mut 0).is_err());
     assert_eq!(observed(&graph)?.0, 0);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
