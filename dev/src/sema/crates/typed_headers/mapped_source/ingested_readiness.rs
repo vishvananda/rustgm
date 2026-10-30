@@ -225,8 +225,10 @@ impl Graph {
         let header = headers
             .get(definition)
             .ok_or("source function readiness lacks its actual canonical header")?;
+        // Readiness borrows declaration identity. The original-demand owner
+        // alone constructs and publishes its defining environment.
         facts
-            .function_header(definition)?
+            .declaration_header(definition)?
             .ok_or("source function readiness lacks its actual declaration header")?;
         if !self.function(catalog, definition, header.body, header.universals)? {
             return Err("source function readiness changed its actual defining artifact");
