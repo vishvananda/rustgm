@@ -88,8 +88,19 @@ impl Engine {
             crate::body::constants::eligibility_charged(report, facts, &template.body)?;
             template
         } else {
-            self.construction
-                .function_charged(report, facts, function)?
+            let mut template = self
+                .construction
+                .function_charged(report, facts, function)?;
+            // Retained originals are reused by the constant provider without
+            // rebuilding their CFG or repeating its promotion analysis.
+            crate::body::promote::instance_reusing(
+                report,
+                facts,
+                &mut template.body,
+                &template.destruction,
+                &mut self.promotions,
+            )?;
+            template
         };
         validate(report, facts, function, &template.body)?;
         let contract = self

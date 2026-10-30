@@ -64,7 +64,7 @@ fn constant_borrowed_elements_keep_the_actual_reached_intrinsic_call_contract() 
     let report = crate::test_source::source_provider(&source, "borrowed_const")?;
     let crate::pipeline::Analysis {
         mut facts,
-        prepared,
+        mut prepared,
     } = crate::pipeline::analyze_source(&report)?;
     let definition = report
         .resolution
@@ -86,6 +86,29 @@ fn constant_borrowed_elements_keep_the_actual_reached_intrinsic_call_contract() 
         reader.view(value)?,
         crate::sema::values::View::Scalar(crate::sema::model::Scalar::Integer(1))
     ));
+    let function = facts
+        .functions
+        .iter()
+        .find(|function| {
+            report
+                .package
+                .names
+                .get(report.resolution.definitions[function.definition.0 as usize].name)
+                == "length"
+        })
+        .copied()
+        .ok_or("actual borrowed const method")?;
+    let built = prepared.templates.work().0;
+    let template = prepared.templates.function(&report, &facts, &function)?;
+    assert_eq!(
+        prepared.templates.work().0,
+        built,
+        "rebuild of retained CFG"
+    );
+    assert_eq!(template.body.instance, None);
+    assert!(template.body.const_context);
+    assert!(template.body.promotions.is_some());
+    prepared.templates.retain(template)?;
     let program = crate::lower::instances::build_roots_prepared(
         &report,
         &mut facts,
