@@ -3,6 +3,8 @@
 mod coverage;
 #[path = "port_plan/applied_debts.rs"]
 mod debts;
+#[path = "port_plan/goal_mappings.rs"]
+mod goals;
 #[path = "port_plan/signature_matches.rs"]
 mod matching;
 #[path = "port_plan/rewritten_nodes.rs"]

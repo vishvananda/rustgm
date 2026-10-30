@@ -47,6 +47,13 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
         headers: &'index HeaderIndex<'rows>,
         work: &mut Work,
     ) -> Result<Self, &'static str> {
+        Self::new_mode(headers, work, false)
+    }
+    pub(super) fn new_mode(
+        headers: &'index HeaderIndex<'rows>,
+        work: &mut Work,
+        conversions: bool,
+    ) -> Result<Self, &'static str> {
         let first = work.steps;
         let roots = work.roots;
         let functions = headers.rows().function_applications.len();
@@ -77,7 +84,7 @@ impl<'index, 'rows> DomainIndex<'index, 'rows> {
             used_traits: vec![false; traits],
         };
         index.header_roots(work)?;
-        index.originals(work)?;
+        index.originals(work, conversions)?;
         work.charge(applications)?;
         if index.used_functions.contains(&false) || index.used_traits.contains(&false) {
             return Err("source application has no actual owning header/body request");

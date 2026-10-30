@@ -6,7 +6,11 @@ mod storage;
 use super::{Context, DomainIndex, HeaderRef, Types, Work, g, s};
 
 impl DomainIndex<'_, '_> {
-    pub(super) fn originals(&mut self, work: &mut Work) -> Result<(), &'static str> {
+    pub(super) fn originals(
+        &mut self,
+        work: &mut Work,
+        conversions: bool,
+    ) -> Result<(), &'static str> {
         let rows = self.headers.rows();
         for original in &rows.originals {
             let input = &rows.body_inputs[original.body.0 as usize];
@@ -45,7 +49,7 @@ impl DomainIndex<'_, '_> {
                 snapshots |= matches!(value.kind, s::ValueKind::Read(s::Place::Temporary(_)));
                 self.value(context, original, index, value, work)?;
             }
-            self.calls(context, original, work)?;
+            self.calls(context, original, work, conversions)?;
             self.storage_ports(original, work)?;
             self.input_ports(context, original, input, work)?;
             if snapshots {

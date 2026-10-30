@@ -7,6 +7,7 @@ impl DomainIndex<'_, '_> {
         context: Context,
         original: &s::Original,
         work: &mut Work,
+        conversions: bool,
     ) -> Result<(), &'static str> {
         let scratch = original
             .values
@@ -55,7 +56,14 @@ impl DomainIndex<'_, '_> {
                     "source request changed its exact value/site/signature/effect ownership",
                 );
             }
-            self.call(context, original, request, callee, arguments, work)?;
+            self.call(
+                context,
+                original,
+                request,
+                (callee, arguments),
+                work,
+                conversions,
+            )?;
         }
         for (index, value) in original.values.iter().enumerate() {
             work.charge(1)?;
@@ -70,10 +78,11 @@ impl DomainIndex<'_, '_> {
         context: Context,
         original: &s::Original,
         request: &s::CallRequest,
-        callee: u32,
-        arguments: g::Range,
+        operands: (u32, g::Range),
         work: &mut Work,
+        conversions: bool,
     ) -> Result<(), &'static str> {
+        let (callee, arguments) = operands;
         let rows = self.headers.rows();
         let callee = original
             .values
@@ -126,7 +135,7 @@ impl DomainIndex<'_, '_> {
             return Err("source Call argument count differs from its actual request signature");
         }
         self.opening(context, original, request, header, work)?;
-        self.method(context, request, header, application, work)
+        self.method(context, request, header, application, work, conversions)
     }
     fn opening(
         &self,
@@ -166,6 +175,7 @@ impl DomainIndex<'_, '_> {
         target: &s::FunctionHeader,
         application: &s::FunctionApplication,
         work: &mut Work,
+        conversions: bool,
     ) -> Result<(), &'static str> {
         let rows = self.headers.rows();
         match (target.parent, request.method) {
@@ -174,9 +184,19 @@ impl DomainIndex<'_, '_> {
                 if let Some(HeaderRef::Implementation(index)) = parent_header {
                     let implementation = &rows.implementations[index as usize];
                     if implementation.trait_application != Some(method) {
-                        return Err(
-                            "source selected method lost its exact implementation trait request",
-                        );
+                        let expected = implementation
+                            .trait_application
+                            .and_then(|id| rows.trait_applications.get(id.0 as usize));
+                        let actual = rows.trait_applications.get(method.0 as usize);
+                        if !conversions
+                            || !matches!((expected, actual), (Some(a), Some(b)) if a.declaration == b.declaration)
+                        {
+                            return Err(
+                                "source selected method lost its exact implementation trait request",
+                            );
+                        }
+                        // The input planner compares the complete caller-applied
+                        // Self and trait arguments through the real target formals.
                     }
                     self.trait_use(context, method, work)?;
                     return Ok(());

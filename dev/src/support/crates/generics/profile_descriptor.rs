@@ -430,7 +430,11 @@ impl ValidatedRows {
             indexed.retained_bytes(),
             work,
         )?;
-        let domains = indexed.domains(work)?;
+        let domains = if profile.conversion_roles() {
+            indexed.conversion_domains(work)?
+        } else {
+            indexed.domains(work)?
+        };
         let inputs = domains.original_inputs(work)?;
         let peak = inputs
             .peak_bytes()

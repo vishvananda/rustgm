@@ -125,6 +125,63 @@ fn corrupt_normalization(rows: &mut s::SourceRows, opponent: usize) -> Result {
     }
     Ok(())
 }
+fn applied_goal(rows: &s::SourceRows, implementation: bool) -> Result<s::TraitApplicationRef> {
+    for call in rows.originals.iter().flat_map(|body| &body.calls) {
+        let application = &rows.function_applications[call.target.0 as usize];
+        let header = rows
+            .functions
+            .iter()
+            .find(|header| header.declaration == application.declaration.declaration)
+            .ok_or("actual target header")?;
+        let Some(parent) = header.parent else {
+            continue;
+        };
+        let Some(method) = call.method else { continue };
+        if implementation {
+            if rows.implementations.iter().any(|header| {
+                header.self_definition == parent && header.trait_application != Some(method)
+            }) {
+                return Ok(method);
+            }
+        } else if rows
+            .traits
+            .iter()
+            .any(|header| header.declaration == parent)
+            && !rows.trait_applications[method.0 as usize]
+                .arguments
+                .slice(&rows.arguments)?
+                .is_empty()
+        {
+            return Ok(method);
+        }
+    }
+    Err("actual caller-applied method goal".into())
+}
+fn corrupt_applied_goal(rows: &mut s::SourceRows, opponent: usize) -> Result {
+    let reference = applied_goal(rows, opponent < 3)?;
+    let goal = &rows.trait_applications[reference.0 as usize];
+    let other = rows
+        .traits
+        .iter()
+        .find(|header| {
+            header.written_parameters == 1 && header.declaration != goal.declaration.declaration
+        })
+        .ok_or("another actual trait declaration")?
+        .declaration;
+    let scalar = rows
+        .types
+        .iter()
+        .position(|ty| matches!(ty, s::Type::Scalar(crate::support::crates::Scalar::F64)))
+        .ok_or("actual distinct scalar type")?;
+    let scalar = crate::support::crates::generics::TypeRef(u32::try_from(scalar)?);
+    let goal = &mut rows.trait_applications[reference.0 as usize];
+    match opponent % 3 {
+        0 => goal.subject = scalar,
+        1 => rows.arguments[goal.arguments.start as usize] = s::Argument::Type(scalar),
+        _ => goal.declaration.declaration = other,
+    }
+    Ok(())
+}
 fn malformed_recorded_inputs() -> Result {
     let source = crate::test_source::fixture(PROVIDER)?;
     let artifact = crate::module_packets::exported_profile(
@@ -133,12 +190,14 @@ fn malformed_recorded_inputs() -> Result {
         "ordinary_recorded_inputs",
     )?;
     let descriptor = artifact.source_descriptor().ok_or("actual descriptor")?;
-    for opponent in 0..6 {
+    for opponent in 0..12 {
         let (mut rows, attributes, modules) = crate::module_packets::raw(&artifact)?;
         if opponent < 3 {
             corrupt_late_header(&mut rows, opponent)?;
-        } else {
+        } else if opponent < 6 {
             corrupt_normalization(&mut rows, opponent - 3)?;
+        } else {
+            corrupt_applied_goal(&mut rows, opponent - 6)?;
         }
         let mut work = crate::support::crates::generics::Work::default();
         assert!(

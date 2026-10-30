@@ -201,6 +201,23 @@ impl<'a> ScopeIndex<'a> {
             .ok_or("source type parameter count has no owner scope")
     }
 
+    /// Borrow the actual declared slot interval through this owner's existing index.
+    /// # Errors
+    /// Rejects an unknown owner and charges successful and failed lookup work.
+    pub fn declared_slots(
+        &self,
+        owner: DeclarationRef,
+        work: &mut Work,
+    ) -> Result<super::Range, &'static str> {
+        work.charge(2)?;
+        self.owners
+            .get(owner.0 as usize)
+            .copied()
+            .flatten()
+            .map(|index| self.rows.scopes[index as usize].declared)
+            .ok_or("source declared slot interval has no actual owner scope")
+    }
+
     /// Locate an actual inherited type formal without guessing that Self is
     /// argument zero or retaining flattened formal vectors for every owner.
     /// # Errors

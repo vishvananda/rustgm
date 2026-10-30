@@ -119,6 +119,7 @@ impl Arena {
                 )?;
                 let actual = self.root(domains, key, work)?;
                 self.same(domains, template.result, actual, opening, work)?;
+                self.method_goal(domains, request, caller, opening, work)?;
             }
         }
         Ok(())
