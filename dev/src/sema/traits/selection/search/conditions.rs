@@ -57,7 +57,12 @@ impl Search<'_> {
         while let Some(Clause::UnstableFeature(id)) =
             conditions.clauses.get(conditions.cursor).copied()
         {
-            if !self.feature_condition(facts, &mut trial.inputs.context, id)? {
+            if self.query.purpose == crate::sema::traits::implementations::Purpose::Coherence {
+                // A compatible future caller can request this feature. This
+                // private absence query exports no evidence or API permission.
+                trial.inputs.context.account_work(1).map_err(inference)?;
+                facts.types.feature_name(id).ok_or("invalid coherence feature condition")?;
+            } else if !self.feature_condition(facts, &mut trial.inputs.context, id)? {
                 return Ok(Some(false));
             }
             conditions.cursor += 1;
