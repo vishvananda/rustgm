@@ -12,13 +12,64 @@ use crate::{
 };
 
 type Edge = (BindingKey, u32);
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub(super) struct Source {
     pub key: Option<BindingKey>,
     pub binding: Binding,
 }
 #[derive(Default)]
 pub(super) struct Lineage {
-    edges: HashMap<Edge, Source>,
+    edges: HashMap<Edge, u32>,
+    sources: Vec<Source>,
+    selections: HashMap<Source, u32>,
+}
+impl Lineage {
+    fn source(&self, edge: Edge) -> Option<&Source> {
+        self.edges
+            .get(&edge)
+            .and_then(|index| self.sources.get(*index as usize))
+    }
+    /// Fan-out shares exact immutable selections, including their binding snapshot.
+    /// Replacements retain old versions so a changed source cannot repair stale edges.
+    fn record(
+        &mut self,
+        owner: NodeKey,
+        edge: Edge,
+        source: Source,
+        budget: &mut super::super::lint_policy::producer::Work,
+    ) -> Result<(), Error> {
+        let selected = self.selections.get(&source).copied();
+        let additional = usize::from(selected.is_none());
+        let index = selected.map_or_else(
+            || {
+                u32::try_from(self.sources.len())
+                    .map_err(|_| Error::at(owner.file, 0, "import source index overflow"))
+            },
+            Ok,
+        )?;
+        let mut growth = Growth::map::<Edge, u32>(
+            self.edges.len(),
+            self.edges.capacity(),
+            usize::from(!self.edges.contains_key(&edge)),
+        );
+        growth.include(Growth::map::<Source, u32>(
+            self.selections.len(),
+            self.selections.capacity(),
+            additional,
+        ));
+        growth.include(Growth::vector::<Source>(
+            self.sources.len(),
+            self.sources.capacity(),
+            additional,
+        ));
+        budget.charge(owner, 2 + growth.work, growth.bytes)?;
+        if selected.is_none() {
+            self.sources.push(source);
+            self.selections.insert(source, index);
+        }
+        self.edges.insert(edge, index);
+        Ok(())
+    }
 }
 fn imported(origin: Origin) -> Option<u32> {
     match origin {
@@ -37,7 +88,7 @@ impl Work {
         let source = self
             .lineage
             .as_deref()
-            .and_then(|lineage| lineage.edges.get(&(key, index)))
+            .and_then(|lineage| lineage.source((key, index)))
             .ok_or_else(|| {
                 Error::at(
                     owner.file,
@@ -94,16 +145,7 @@ impl Work {
         let Some(lineage) = self.lineage.as_mut() else {
             return Err(Error::at(owner.file, 0, "import lineage payer disappeared"));
         };
-        let edge = (key, index);
-        let growth = Growth::map::<Edge, Source>(
-            lineage.edges.len(),
-            lineage.edges.capacity(),
-            usize::from(!lineage.edges.contains_key(&edge)),
-        );
-        self.lineage_budget
-            .charge(owner, 1 + growth.work, growth.bytes)?;
-        lineage.edges.insert(edge, source);
-        Ok(())
+        lineage.record(owner, (key, index), source, &mut self.lineage_budget)
     }
     pub(super) fn remove_source(
         &mut self,
@@ -211,7 +253,7 @@ impl Work {
             let source = self
                 .lineage
                 .as_ref()
-                .and_then(|lineage| lineage.edges.get(&(key, index)))
+                .and_then(|lineage| lineage.source((key, index)))
                 .ok_or_else(|| {
                     Error::at(owner.file, 0, "exported import source lineage is required")
                 })?;

@@ -313,6 +313,16 @@ Close this early lint at completed name resolution without additional body
 demands. The [finite checkpoint](docs/pa40-hidden-glob-reexports-checkpoint.md)
 records namespace, effective visibility, work/storage and original-source controls.
 
+Import fan-out shares immutable selected-source records within the existing cold
+lineage owner. Each destination/import edge keeps a checked dense source index.
+Intern the complete selection: source scope, name, namespace, hygiene context,
+target, visibility, origin and ambiguity, including explicit textual terminals.
+Changed selections allocate distinct snapshots; never backpatch older edges from
+a mutable latest-binding cache. Prepay edge-map, interning-map and source-vector
+growth before publishing any entry, retaining failed charges and unchanged limits.
+The [storage checkpoint](docs/import-lineage-storage-checkpoint.md) records the
+original-core measurement and fan-out controls.
+
 Ineffective unstable trait-impl events consume completed local stability rows and
 actual resolved self/trait header paths, preserving alias and generic-argument
 identity. Missing/imported policy is required information. Retain exact underlying

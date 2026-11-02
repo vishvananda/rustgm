@@ -53,7 +53,7 @@ impl Namespace {
         }
     }
 }
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Access {
     Public,
     Within(ModuleId),
@@ -136,13 +136,13 @@ pub struct Definition {
     pub access: Access,
     pub members: Option<ScopeId>,
 }
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum Origin {
     Direct,
     Import(u32),
     Glob(u32),
 }
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Binding {
     pub target: DefId,
     pub access: Access,

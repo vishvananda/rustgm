@@ -50,6 +50,14 @@ that run failed despite its other2513 private tests passing. Full successor is
 tracked separately. Root continues alone with the same budgets/tree/caches;
 measure retention and redundant query allocation before changing the algorithm.
 
+Root's new [import-selection storage checkpoint](import-lineage-storage-checkpoint.md)
+measures the actual glob lineage payer at229376 edges and shares complete immutable
+source snapshots through dense IDs. Private9/production18/full PA6245/PA8120 pass;
+CLI7f41f3f4 clears the storage recurrence with unchanged original inputs and limits.
+Next is LIB-116 unresolved value at file55:12164, whose actual source/import binding
+must be reduced. Root stays alone in the same warm tree with all existing guards.
+Whole PA releases and original core/alloc/std artifacts remain outstanding.
+
 Public788889aac contains the qualified Comptime/v8 checkpoint; its full
 CI40976018856 is terminal failed on two later regressions, repaired as below.
 Private201 and production35, full v7/v8 CLI/native,
