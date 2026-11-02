@@ -12,6 +12,17 @@ Target attributes and assembly contracts against explicit backend capabilities.
 
 ### Required core prerequisite
 
+The [SIMD lane-limit packet](tests/spec/simd-lane-limit/README.md) adds actual
+rustc_simd_monomorphize_lane_limit validation and concrete lane enforcement to
+this existing SIMD contract. Preserve source ownership, feature/macro authority,
+zero and target-width parsing, duplicates, pending generic declarations and
+ordinary struct behavior. Real substituted array counts drive the bound; packed
+non-power-of-two vectors remain valid. Source-provider intrinsics in const blocks
+and the original independent native/imported controls test the actual layout.
+PA31/40 own annotation authority, PA27 supplies unsafe prerequisites, and PA29
+must transport the authenticated representation policy. Existing old-profile
+metadata rejection is a boundary, not completed imported support.
+
 The original core source needs this assignment's assembly slice during PA32,
 before the broader PA41 release. Track that implementation as LIB-045; do not
 add another assignment or postpone a required core feature to this number.

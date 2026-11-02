@@ -61,7 +61,8 @@ The original file SHA is8207b15055d7a60b18608702b8b6fdaeab9e053dd1f29ebdbd73816a
 All722 source hashes, target, capAllow and finite work/storage limits remain
 unchanged. Timing is an observation, not an A/B performance claim.
 
-PA27 owns actual instantiated SIMD layout; PA31/40 own source annotation
+PA41 owns actual instantiated SIMD layout; PA27 supplies unsafe prerequisites,
+while PA31/40 own source annotation
 validation and PA29 owns representation-policy transport. The pinned parser
 accepts a name-value string on actual structs under rustc_attrs. The actual
 layout consumer checks the monomorphized array lane count against the retained

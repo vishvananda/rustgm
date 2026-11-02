@@ -34,6 +34,14 @@ Predecessor full CI41468186690 on0aa237ff0 passes every gate. Root continues alo
 in the same btrfs tree with unchanged resource limits, scoped cleanup and warm
 caches; no original artifact or whole assignment is complete.
 
+Source2d18a3c44 now qualifies actual source-owned SIMD lane limits after genuine
+generic substitution and native24 8. Original core advances to LIB-115,
+rustc_doc_primitive in primitive_docs.rs1. PA41 owns SIMD layout; PA27 supplies
+unsafe prerequisites. See [the checkpoint](pa41-simd-lane-limit-checkpoint.md).
+Imported SIMD/optimizer policy and earlier runtime/dispatch requirements remain.
+Full predecessor CI41474033332 passes every gate. Root remains alone with the
+same btrfs tree, warm caches, resource limits and scoped artifact cleanup.
+
 Public788889aac contains the qualified Comptime/v8 checkpoint; its full
 CI40976018856 is terminal failed on two later regressions, repaired as below.
 Private201 and production35, full v7/v8 CLI/native,

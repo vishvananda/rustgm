@@ -4591,6 +4591,16 @@ for exact scope, source mutation opponents, costs and closed transport boundarie
 
 Nominal SIMD layout reuses prepared substituted aggregate fields through
 `Definitions::simd_shape`; it returns NotSimd, Pending or an actual lane/count.
+Retain a struct's rustc_simd_monomorphize_lane_limit in sparse, prepaid nominal
+policy data, published before concrete layout. The configured-owner pass validates
+actual struct target, rustc_attrs request or real attribute-envelope allowance,
+name-value decimal string, unsafe wrapper and hard duplicate rules. Zero is a
+valid limit; a pending generic declaration need not have an instantiated layout.
+Compare the actual substituted lane count only for repr(simd), preserving ordinary
+struct layout and all independent lane/element rules. Old metadata must reject
+unencoded limits rather than lose them. The [PA41 lane-limit packet](pa41/tests/spec/simd-lane-limit/README.md)
+retains real source-provider, original-library-path and imported requirements.
+
 Do not infer vector shape from a source name, add a parallel type cache, or
 substitute at this query boundary. Preserve the single array field at offset
 zero. Rust arguments and results use the existing indirect object convention.
