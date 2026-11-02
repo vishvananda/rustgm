@@ -7,7 +7,7 @@ use crate::{
     body::{ir::ProjectionKind, scopes, storage::Range},
     sema::{
         members::{Name, Selection, VariantId},
-        try_plans::{Kind as PlanKind, Plan},
+        protocol_plans::{Kind as PlanKind, Plan},
     },
     types::{Primitive, TypeId},
 };
@@ -17,7 +17,7 @@ impl Builder<'_> {
         let Some(Operation::Try { plan }) = self.fact(node)?.operation else {
             return Err(self.error(node, "Try expression lost its checked call plan"));
         };
-        crate::sema::try_plans::checked(
+        crate::sema::protocol_plans::checked(
             self.report,
             self.facts,
             self.source,

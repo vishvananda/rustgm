@@ -1,0 +1,78 @@
+{
+  "profile": "Rust1.98.0 88d9, x86_64 Linux, edition2024, panicabort, RUSTC_BOOTSTRAP=1, library metadata. Source methods and arbitrary labels are deliberately renamed.",
+  "cases": [
+    {
+      "name": "renamed-protocol",
+      "path": "renamed-protocol.rs",
+      "sha256": "8ace930af445f5da053e1d770c5b15544b1ba878855f7e1dd508f4b2b9e02893",
+      "status": 0
+    },
+    {
+      "name": "missing-next",
+      "path": "missing-next.rs",
+      "sha256": "0a9ddbb8cad1a713fc1f2647ac76b4ecfbaf3165901068a0cdefe0ceb54bae1b",
+      "status": 1
+    },
+    {
+      "name": "missing-into-iter",
+      "path": "missing-into-iter.rs",
+      "sha256": "c09c310e867b5bcbd671c9c1994bc8dc26c2cb171baa41a7d4e354a486dacde4",
+      "status": 1
+    },
+    {
+      "name": "missing-iterator-marker",
+      "path": "missing-iterator-marker.rs",
+      "sha256": "645bb75e8085c915096e8df025b49eb4320769254f77e4a0094ba877bd4426a0",
+      "status": 0
+    },
+    {
+      "name": "provided-next",
+      "path": "provided-next.rs",
+      "sha256": "751b2f3fa97d5dc34ed54806767590493337e21a84d54cd5a38084faad8ec5b7",
+      "status": 1
+    },
+    {
+      "name": "wrong-next-result",
+      "path": "wrong-next-result.rs",
+      "sha256": "b1ffac69e3ab64f2f9abcd1c3f586776c79a4d0c575d89b484587d8bca73a83d",
+      "status": 1
+    },
+    {
+      "name": "wrong-next-impl",
+      "path": "wrong-next-impl.rs",
+      "sha256": "c384d80831d4b5870434d2fc245a5b36d6c7652ab14adb5cb89913962fa818b3",
+      "status": 1
+    },
+    {
+      "name": "unused-protocol",
+      "path": "unused-protocol.rs",
+      "sha256": "007c832416d7299c2a81fb09d8893c52e5e1fc9f8f4463f3ea7ae213b21f9ebd",
+      "status": 0
+    },
+    {
+      "name": "alternate-next-parent",
+      "path": "alternate-next-parent.rs",
+      "sha256": "5f12040d425bdde0499baced5b13e55a3c64134e875aa920438822bd41d3186d",
+      "status": 0
+    },
+    {
+      "name": "native-protocol",
+      "path": "native-protocol.rs",
+      "sha256": "a09b66e6fe385e42b0aa9d6036f2db12efe55e4cbc255cc8065e5156d5f30af8",
+      "status": 0
+    }
+  ],
+  "native": {
+    "case": "native-protocol",
+    "observer": "native.c",
+    "sha256": "ad75886e676e33079908bf8f44cdc7acbadd85c48ccb9c4c73fcebf833d7a917",
+    "stdout": "7\n"
+  },
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir/src/lang_items.rs": "af62146fd0255b1b8baea76309e13eb00ff5b9a8ffe110348beba4deb3569690",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/iter/traits/iterator.rs": "db43b7acc33fca53d85fef3ddea29ec9f8c1e768df428676fe2de160f21d5f6b",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/iter/traits/collect.rs": "47c3434877779443d4314cde2970263022f8fdd767a8eb709c86f5364b2d6acf"
+  },
+  "predecessor_contract_sha256": "4db6bacea4a7fecf3459f922a519f7f6aba23b65626bdf95636b6dcc2269ca3b",
+  "reference_correction": "Pinned required-method target rejects provided next. Original hypothesis/result retained. Native code generation additionally needs genuine Freeze lang item; new native input has real auto-trait declaration and source feature."
+}

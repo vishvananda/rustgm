@@ -143,9 +143,11 @@ impl Resolver<'_> {
                 start: Some(start),
                 end: Some(end),
             } => {
-                self.facts
-                    .builtin_traits
-                    .note_range(c.module, NodeKey { file: c.file, node });
+                if !self.package.uses_source_bindings() {
+                    self.facts
+                        .builtin_traits
+                        .note_range(c.module, NodeKey { file: c.file, node });
+                }
                 self.visit(c, start, Namespace::Value)?;
                 self.visit(c, end, Namespace::Value)
             }
@@ -154,9 +156,11 @@ impl Resolver<'_> {
                 iterator,
                 body,
             } => {
-                self.facts
-                    .builtin_traits
-                    .note_collection(c.module, NodeKey { file: c.file, node });
+                if !self.package.uses_source_bindings() {
+                    self.facts
+                        .builtin_traits
+                        .note_collection(c.module, NodeKey { file: c.file, node });
+                }
                 self.visit(c, iterator, Namespace::Value)?;
                 self.bind_pattern(c, pattern, DefKind::Local)?;
                 self.visit(c, body, Namespace::Value)

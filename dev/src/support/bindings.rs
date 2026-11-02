@@ -88,9 +88,12 @@ pub enum LangItem {
     RangeSub,
     Div,
     From,
+    Iterator,
+    IteratorNext,
+    IntoIter,
 }
 impl LangItem {
-    pub const ALL: [Self; 72] = [
+    pub const ALL: [Self; 75] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -163,6 +166,9 @@ impl LangItem {
         Self::RangeSub,
         Self::Div,
         Self::From,
+        Self::Iterator,
+        Self::IteratorNext,
+        Self::IntoIter,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -239,6 +245,9 @@ impl LangItem {
             Self::RangeSub => 69,
             Self::Div => 70,
             Self::From => 71,
+            Self::Iterator => 72,
+            Self::IteratorNext => 73,
+            Self::IntoIter => 74,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -315,6 +324,9 @@ impl LangItem {
             "sub" => Some(Self::Sub),
             "div" => Some(Self::Div),
             "From" => Some(Self::From),
+            "iterator" => Some(Self::Iterator),
+            "next" => Some(Self::IteratorNext),
+            "into_iter" => Some(Self::IntoIter),
             "offset_of" => Some(Self::OffsetOf),
             _ => None,
         }

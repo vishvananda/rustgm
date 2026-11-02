@@ -17,6 +17,12 @@ pub(crate) enum Kind {
         continue_: VariantId,
         break_: VariantId,
     },
+    Iteration {
+        iterator: NodeId,
+        pattern: NodeId,
+        body: NodeId,
+        plan: super::iteration::ForPlan,
+    },
 }
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) struct Plan {
@@ -31,6 +37,7 @@ impl Plan {
             Kind::Branch {
                 branch, residual, ..
             } => [Some(branch), Some(residual)],
+            Kind::Iteration { plan, .. } => [Some(plan.into_iter), Some(plan.next)],
         }
     }
 }
@@ -41,7 +48,7 @@ pub(crate) fn checked(
     facts: &super::model::Declarations,
     owner: NodeKey,
     node: NodeKey,
-    id: super::bodies::TryPlanId,
+    id: super::bodies::ProtocolPlanId,
 ) -> Result<Plan, crate::resolve::package::Error> {
     use crate::{
         syntax::ast::{Kind as Syntax, Unary},
@@ -53,7 +60,6 @@ pub(crate) fn checked(
     if matches!(plan.kind, Kind::Block { .. }) {
         crate::resolve::require_try_block(report, node)?;
     }
-    let protocol = super::compiler_items::try_protocol::source(report, facts, node)?;
     let actual = report
         .package
         .unit(node.file)
@@ -61,6 +67,22 @@ pub(crate) fn checked(
         .ast
         .node(node.node)
         .kind;
+    if let Kind::Iteration {
+        iterator,
+        pattern,
+        body,
+        plan: iteration,
+    } = plan.kind
+    {
+        if !matches!(actual, Syntax::For { iterator: a, pattern: b, body: c }
+            if (a, b, c) == (iterator, pattern, body))
+        {
+            return Err(error("iteration plan changed its actual source operation"));
+        }
+        super::compiler_items::for_roles::check_plan(report, facts, node, iteration)?;
+        return Ok(plan);
+    }
+    let protocol = super::compiler_items::try_protocol::source(report, facts, node)?;
     let expected = match (plan.kind, actual) {
         (Kind::Block { body, .. }, Syntax::TryBlock { body: actual, .. }) if body == actual => {
             [Some(protocol.from_output), None]

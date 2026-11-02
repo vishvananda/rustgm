@@ -224,7 +224,8 @@ fn current_plan_rejects_other_bodies_nodes_and_changed_source_images() -> Result
             gate: u32::MAX,
         };
     assert!(
-        crate::sema::try_plans::checked(&report, &analysis.facts, owner, plan.node, id).is_err()
+        crate::sema::protocol_plans::checked(&report, &analysis.facts, owner, plan.node, id)
+            .is_err()
     );
     report.package.units[0].configured.ast.nodes[plan.node.node.get() as usize].kind = original;
     report.package.units[0].source = report.package.units[0].source.physical_copy();
@@ -236,7 +237,7 @@ fn retained_try_storage_and_empty_paths_keep_actual_enclosing_layouts() -> Resul
     assert_eq!(size_of::<Operation>(), 16);
     assert_eq!(size_of::<crate::sema::model::NodeFacts>(), 80);
     assert_eq!(size_of::<SourceCallUse>(), 4);
-    assert_eq!(size_of::<TryPlanId>(), 4);
+    assert_eq!(size_of::<ProtocolPlanId>(), 4);
     let full = fixture("source-protocol")?;
     let prefix = full
         .split_once("#[unsafe(no_mangle)]")
@@ -311,7 +312,7 @@ fn retained_rows_fail_before_growth_and_preserve_prior_current_context() -> Resu
         contexts.plans.capacity(),
     );
     for _ in 0..2 {
-        assert!(contexts.reserve_try(MAX_ROWS + 1).is_err());
+        assert!(contexts.reserve_protocol(MAX_ROWS + 1).is_err());
     }
     assert_eq!(
         before,

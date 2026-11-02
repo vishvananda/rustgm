@@ -15,7 +15,7 @@ pub(crate) struct Call {
     pub callable: TypeId,
     pub signature: TypeId,
 }
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) struct ForPlan {
     pub into_iter: Call,
     pub next: Call,

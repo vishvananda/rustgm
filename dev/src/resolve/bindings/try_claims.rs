@@ -16,12 +16,17 @@ enum Owner {
 
 pub(super) fn validate(
     package: &Package,
+    facts: &crate::resolve::model::Resolution,
     declaration: Declaration,
     role: LangItem,
 ) -> Result<(), Error> {
     let required = match role {
-        LangItem::TryTrait => Owner::Trait,
-        LangItem::TryFromResidual | LangItem::TryFromOutput | LangItem::TryBranch => Owner::Member,
+        LangItem::TryTrait | LangItem::Iterator => Owner::Trait,
+        LangItem::TryFromResidual
+        | LangItem::TryFromOutput
+        | LangItem::TryBranch
+        | LangItem::IteratorNext
+        | LangItem::IntoIter => Owner::Member,
         LangItem::IntoTryType => Owner::Function,
         LangItem::ControlFlowContinue
         | LangItem::ControlFlowBreak
@@ -49,6 +54,29 @@ pub(super) fn validate(
             package,
             declaration.origin,
             "source Try role has the wrong actual declaration kind or owner",
+        ));
+    }
+    if matches!(role, LangItem::IteratorNext | LangItem::IntoIter) {
+        let required = declaration
+            .parent
+            .and_then(|id| facts.definitions.get(id.0 as usize))
+            .is_some_and(|parent| parent.kind == crate::resolve::model::DefKind::Trait)
+            && matches!(actual, Kind::Item(index) if matches!(ast.items[index as usize].kind, ItemKind::Function { body: None, .. }));
+        if !required {
+            return Err(error(
+                package,
+                declaration.origin,
+                "iteration lang item requires an actual required trait method",
+            ));
+        }
+    }
+    if role == LangItem::Iterator
+        && matches!(actual, Kind::Item(index) if ast.items[index as usize].generics.start != ast.items[index as usize].generics.end)
+    {
+        return Err(error(
+            package,
+            declaration.origin,
+            "iterator lang item requires no own generic parameters",
         ));
     }
     Ok(())

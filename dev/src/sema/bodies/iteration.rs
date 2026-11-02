@@ -30,6 +30,10 @@ impl Checker<'_> {
         &mut self,
         node: NodeId,
     ) -> Result<Option<super::Dependency>, Error> {
+        if self.facts.source_bindings.is_some() {
+            self.source_for_iterator(node)?;
+            return Ok(None);
+        }
         if let Some(requirement) = self.for_collection_readiness(node)? {
             self.state.work.push(Work::ForIterator(node));
             return Ok(Some(super::Dependency {
@@ -298,7 +302,7 @@ impl Checker<'_> {
         };
         Ok((option_item, [*none, *some]))
     }
-    fn prepare_iteration_storage(
+    pub(super) fn prepare_iteration_storage(
         &mut self,
         node: NodeId,
         iterator: TypeId,

@@ -20,8 +20,8 @@ impl OffsetPlanId {
 
 /// Current-table location; it grants no call, source or const permission.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct TryPlanId(NonZeroU32);
-impl TryPlanId {
+pub struct ProtocolPlanId(NonZeroU32);
+impl ProtocolPlanId {
     pub(crate) const fn index(self) -> u32 {
         self.0.get() - 1
     }
@@ -38,7 +38,7 @@ struct Descriptor {
 #[derive(Default)]
 pub(in crate::sema) struct CallContexts {
     rows: Vec<Descriptor>,
-    plans: Vec<crate::sema::try_plans::Plan>,
+    plans: Vec<crate::sema::protocol_plans::Plan>,
     sites: Vec<caller_sites::Site>,
     offsets: Option<Box<displacement_rows::Rows>>,
     safety: Option<Box<discharged_sites::Rows>>,
@@ -54,7 +54,7 @@ impl CallContexts {
                 bytes.checked_add(
                     self.plans
                         .capacity()
-                        .checked_mul(size_of::<crate::sema::try_plans::Plan>())?,
+                        .checked_mul(size_of::<crate::sema::protocol_plans::Plan>())?,
                 )
             })
             .and_then(|bytes| {
@@ -207,9 +207,7 @@ impl Checker<'_> {
                 })?
                 .operation;
             // ForPlan retains distinct into_iter/next signatures, not one Call.
-            if matches!(self.kind(node), crate::syntax::ast::Kind::For { .. })
-                || self.erased_source_operator(node)?
-            {
+            if self.erased_source_operator(node)? {
                 continue;
             }
             any = true;
@@ -224,8 +222,8 @@ impl Checker<'_> {
                 }
                 continue;
             }
-            if self.is_try_call(node) {
-                if let Some(source) = self.replayed_try_context(key, operation, effect)? {
+            if self.is_protocol_call(node) {
+                if let Some(source) = self.replayed_protocol_context(key, operation, effect)? {
                     if existing.is_some_and(|old| old != source) {
                         return Err(Declarations::error(
                             self.report,
@@ -397,14 +395,14 @@ impl Checker<'_> {
                 ));
             }
         }
-        self.publish_try_plans(solved, source_use, &mut allowances)?;
+        self.publish_protocol_plans(solved, source_use, &mut allowances)?;
         self.publish_displacement_plans(solved, source_use, &mut allowances)?;
         self.commit_caller_sites(&sites, warm);
         self.commit_safety_sites(&safety, warm);
         for (node, term) in &self.state.calls {
             if matches!(self.kind(*node), crate::syntax::ast::Kind::For { .. })
                 || self.erased_source_operator(*node)?
-                || self.is_try_call(*node)
+                || self.is_protocol_call(*node)
                 || matches!(self.kind(*node), crate::syntax::ast::Kind::OffsetOf { .. })
             {
                 continue;

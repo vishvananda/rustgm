@@ -71,7 +71,7 @@ impl Query<'_> {
         field_type: TypeId,
     ) -> Result<VariantId, Error> {
         let declaration = self.claimed(role)?;
-        header_attributes::require_control_flow_variant(self.facts, self.report, declaration)?;
+        header_attributes::require_protocol_variant(self.facts, self.report, declaration, role)?;
         let id = self
             .facts
             .members

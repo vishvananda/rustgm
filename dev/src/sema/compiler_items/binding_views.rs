@@ -376,7 +376,9 @@ fn role_kind(role: LangItem) -> DefKind {
         | LangItem::TryBranch
         | LangItem::SliceLen
         | LangItem::OffsetOf
-        | LangItem::IntoTryType => DefKind::Function,
+        | LangItem::IntoTryType
+        | LangItem::IteratorNext
+        | LangItem::IntoIter => DefKind::Function,
         LangItem::ControlFlowContinue
         | LangItem::ControlFlowBreak
         | LangItem::ResultOk

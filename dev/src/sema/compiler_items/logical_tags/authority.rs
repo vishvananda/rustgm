@@ -209,7 +209,7 @@ impl Contracts {
             ));
         }
         for (declaration, image) in [self.trait_, self.member].into_iter().zip(&self.images) {
-            let actual = header_attributes::pointee_source_image(facts, report, declaration)?;
+            let actual = header_attributes::role_source_image(facts, report, declaration)?;
             if !image.same(&actual) {
                 return Err(Error::unlocated(
                     "source discriminant changed its source incarnation",

@@ -1,0 +1,38 @@
+{
+  "profile": "Same pinned Rust/native profile as v2, explicit new move/lifetime/ordinary-drop opponents",
+  "predecessor_contract_sha256": "1e03efc10a3c97938600fab1b8a0468064e10085666a3ccd721f0804ca64c98a",
+  "cases": [
+    {
+      "name": "moved-iterator",
+      "path": "pa31/tests/spec/source-iteration/moved-iterator.rs",
+      "sha256": "7f1d5110ba3fa10a197a349a54c7f952055b639aa65e76ae3c2870ed5cae55e7",
+      "status": 1
+    },
+    {
+      "name": "escaping-item",
+      "path": "pa31/tests/spec/source-iteration/escaping-item.rs",
+      "sha256": "b6f43ba24ac34ced1cac18c3b001ae06f46e15687915f6e58c40b9ba7f684a98",
+      "status": 1
+    },
+    {
+      "name": "native-drop",
+      "path": "pa31/tests/spec/source-iteration/native-drop.rs",
+      "sha256": "66903cc6642e9343e7cbb1be4e021c22b08f720164713d90606dba2102d6b9d6",
+      "status": 0
+    }
+  ],
+  "native": {
+    "case": "native-drop",
+    "observer": "pa31/tests/spec/source-iteration/drop.c",
+    "sha256": "918c2218a1c9d54021451916a23c6ca23c92cb8ad3c911986efd94b07eda8db7",
+    "stdout": "7 8 9 \n7 8 9 \n"
+  },
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir/src/lang_items.rs": "af62146fd0255b1b8baea76309e13eb00ff5b9a8ffe110348beba4deb3569690",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/iter/traits/iterator.rs": "db43b7acc33fca53d85fef3ddea29ec9f8c1e768df428676fe2de160f21d5f6b",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/iter/traits/collect.rs": "47c3434877779443d4314cde2970263022f8fdd767a8eb709c86f5364b2d6acf",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ptr/mod.rs": "f7b3e71d9e9246762c38641c6c1a49079265782aab6deaa537b43665b418f029"
+  },
+  "predecessor_ownership_contract_sha256": "8280fe1419869a72de5ee2bb7de31cd72a2c5a223a04f944f0e32af019c3b19f",
+  "reference_correction": "Metadata admitted genuine Drop, but native code generation requires the real drop_glue lang function and Destruct prerequisite. The original failed contract/input/diagnostics remain preserved. Required native traces and two ownership rejections are unchanged."
+}

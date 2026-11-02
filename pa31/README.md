@@ -390,3 +390,11 @@ The [typed field-macro checkpoint](../docs/pa31-derive-type-macros-checkpoint.md
 now preserves genuine nested macro captures and reaches the actual range parser.
 Scalar pattern validity and the authentic range-helper protocol remain required;
 successful copying does not grant those semantics or source body permission.
+
+The [source-owned iteration checkpoint](../docs/pa26-source-iteration-checkpoint.md)
+now compiles actual tagged next/into_iter calls with real Option variants,
+ordinary source-call effects, borrow/move proof and native normal/break cleanup.
+It shares Try's existing cold per-body plan owner and preserves the no-bootstrap
+fence and ordinary hot layouts. Authentic imported protocol transport, remaining
+families and whole assignment release checks stay required. The independently
+hashed source packet lives in PA31's source-iteration directory.

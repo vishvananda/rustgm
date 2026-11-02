@@ -77,6 +77,15 @@ completion. Root remains alone. Full CI41494273651 on9e1c5b335 is terminal
 success; full namespace successor41499430614 on0682f57e0 also passes every gate.
 A same-binary debugger trace confirms the current source-mode iteration fence.
 
+Root's [source iteration checkpoint](pa26-source-iteration-checkpoint.md) now
+qualifies13 independent Rust outcomes, private23/production6/26CLI, actual
+native7 and normal/break destruction7 8 9, linear source plans and PA19 1193/1193.
+CLI6abca8a0 clears LIB-118's bootstrap reservation and reaches LIB-119,
+contract_build_check_ensures in original contracts.rs. Broader iteration transport
+and whole assignments remain required. Prior full CI41503512103 on97861a4eb
+passes every gate. Root stays alone in the same btrfs tree with all guards and
+bounded warm caches; no worker or original library artifact is added.
+
 Public788889aac contains the qualified Comptime/v8 checkpoint; its full
 CI40976018856 is terminal failed on two later regressions, repaired as below.
 Private201 and production35, full v7/v8 CLI/native,

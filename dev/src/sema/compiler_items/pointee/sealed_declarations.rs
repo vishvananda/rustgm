@@ -105,7 +105,7 @@ impl State {
                     .and_then(|c| c.language(LangItem::MetadataType))
                     .ok_or_else(|| Error::unlocated("source Metadata role disappeared"))?
         {
-            header_attributes::pointee_source_image(facts, report, declaration)?
+            header_attributes::role_source_image(facts, report, declaration)?
         } else {
             header_attributes::completed_source_image(facts, report, declaration.definition)?
         };
@@ -121,7 +121,7 @@ impl State {
     fn current(&self, report: &Report, facts: &Declarations) -> Result<(), Error> {
         let declaration = self.declaration;
         let unit = report.package.unit(declaration.origin.file);
-        header_attributes::pointee_source_image(facts, report, declaration)?;
+        header_attributes::role_source_image(facts, report, declaration)?;
         if Row::read(report, declaration)? != self.row
             || !self.image.current(unit, declaration.origin.node)
             || item(report, declaration)? != self.item

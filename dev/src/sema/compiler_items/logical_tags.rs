@@ -192,7 +192,7 @@ pub(in crate::sema) fn prepare(report: &Report, facts: &mut Declarations) -> Res
     let arena = facts.types.arena_identity();
     let images = [
         header_attributes::completed_source_image(facts, report, plan.trait_.definition)?,
-        header_attributes::pointee_source_image(facts, report, plan.member)?,
+        header_attributes::role_source_image(facts, report, plan.member)?,
     ];
     let contract = Rc::new(Contracts {
         arena,

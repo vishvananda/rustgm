@@ -93,7 +93,10 @@ pub enum Operation {
         right: TypeId,
     },
     Try {
-        plan: super::bodies::TryPlanId,
+        plan: super::bodies::ProtocolPlanId,
+    },
+    Iteration {
+        plan: super::bodies::ProtocolPlanId,
     },
     OffsetOf {
         plan: super::bodies::OffsetPlanId,

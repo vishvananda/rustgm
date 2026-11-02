@@ -393,7 +393,7 @@ fn reserve_language(
     super::panic_claims::validate(package, declaration, kind)?;
     super::pointee_claims::validate(package, declaration, kind)?;
     super::range_claims::validate(package, facts, declaration, kind)?;
-    super::try_claims::validate(package, declaration, kind)?;
+    super::try_claims::validate(package, facts, declaration, kind)?;
     // Weak foreign declarations never own the defining handler's slot.
     if kind == LangItem::PanicImpl && foreign {
         return Ok(());

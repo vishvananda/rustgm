@@ -11,7 +11,7 @@ pub(super) struct OpenPlan {
     pub container: TermId,
     pub field: FieldId,
     pub field_ty: TermId,
-    pub call: super::try_control::OpenCall,
+    pub call: super::protocol_control::OpenCall,
 }
 #[derive(Default)]
 pub(super) struct Pending {
@@ -120,7 +120,7 @@ impl Checker<'_> {
             container: receiver,
             field,
             field_ty,
-            call: super::try_control::OpenCall {
+            call: super::protocol_control::OpenCall {
                 callable,
                 signature,
             },

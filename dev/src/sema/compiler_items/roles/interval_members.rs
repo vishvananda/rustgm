@@ -44,8 +44,8 @@ pub(super) fn prepare(
     let arena = facts.types.arena_identity();
     let images = [
         header_attributes::completed_source_image(facts, report, plan.parent.definition),
-        header_attributes::pointee_source_image(facts, report, plan.members[0]),
-        header_attributes::pointee_source_image(facts, report, plan.members[1]),
+        header_attributes::role_source_image(facts, report, plan.members[0]),
+        header_attributes::role_source_image(facts, report, plan.members[1]),
         header_attributes::completed_source_image(facts, report, plan.members[2].definition),
     ];
     let [a, b, c, d] = images;
@@ -267,7 +267,7 @@ impl Contracts {
                 DefKind::Function
             };
             let image = if index == 1 || index == 2 {
-                header_attributes::pointee_source_image(facts, report, declaration)?
+                header_attributes::role_source_image(facts, report, declaration)?
             } else {
                 header_attributes::completed_source_image(facts, report, declaration.definition)?
             };

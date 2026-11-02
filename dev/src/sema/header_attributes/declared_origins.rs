@@ -591,6 +591,9 @@ fn retained_role_site(report: &Report, key: NodeKey) -> bool {
                 LangItem::DynMetadata,
                 LangItem::ControlFlowContinue,
                 LangItem::ControlFlowBreak,
+                LangItem::Option,
+                LangItem::OptionSome,
+                LangItem::OptionNone,
                 LangItem::RangeMin,
                 LangItem::RangeMax,
             ]
@@ -603,7 +606,7 @@ fn retained_role_site(report: &Report, key: NodeKey) -> bool {
         })
 }
 /// Associated/nominal role witnesses do not enter attribute completion admission.
-pub(in crate::sema) fn pointee_source_image(
+pub(in crate::sema) fn role_source_image(
     facts: &Declarations,
     report: &Report,
     declaration: crate::resolve::bindings::Declaration,
@@ -627,6 +630,7 @@ pub(in crate::sema) fn pointee_source_image(
                 (LangItem::DynMetadata, DefKind::Struct),
                 (LangItem::RangeMin, DefKind::Const),
                 (LangItem::RangeMax, DefKind::Const),
+                (LangItem::Option, DefKind::Enum),
             ]
             .into_iter()
             .any(|(role, kind)| reserved.language(role) == Some(declaration) && actual.kind == kind)
@@ -649,10 +653,11 @@ pub(in crate::sema) fn pointee_source_image(
 
 /// Variant-role evidence shares the existing configured-owner/image producer.
 /// It never completes a function/trait attribute contract for this variant.
-pub(in crate::sema) fn require_control_flow_variant(
+pub(in crate::sema) fn require_protocol_variant(
     facts: &Declarations,
     report: &Report,
     declaration: crate::resolve::bindings::Declaration,
+    role: LangItem,
 ) -> Result<(), Error> {
     charge_source_contract_query(facts, 3)?;
     let actual = report
@@ -668,9 +673,14 @@ pub(in crate::sema) fn require_control_flow_variant(
     if actual.kind != DefKind::Variant
         || actual.namespace != crate::resolve::model::Namespace::Value
         || actual.node != Some(declaration.origin)
-        || ![LangItem::ControlFlowContinue, LangItem::ControlFlowBreak]
-            .into_iter()
-            .any(|role| reserved.language(role) == Some(declaration))
+        || !matches!(
+            role,
+            LangItem::ControlFlowContinue
+                | LangItem::ControlFlowBreak
+                | LangItem::OptionSome
+                | LangItem::OptionNone
+        )
+        || reserved.language(role) != Some(declaration)
     {
         return Err(Error::unlocated(
             "source control-flow variant changed its actual role or kind",

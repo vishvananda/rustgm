@@ -1,20 +1,20 @@
 //! Multi-call publication keeps one current body effect and exact protocol rows.
 use super::{
-    CallContexts, Checker, Error, MAX_RETAINED, MAX_ROWS, MAX_TRANSIENT, SourceCallUse, TryPlanId,
+    CallContexts, Checker, Error, MAX_RETAINED, MAX_ROWS, MAX_TRANSIENT, ProtocolPlanId,
+    SourceCallUse,
 };
 use crate::{
     resolve::unit::NodeKey,
     sema::{
-        bodies::try_control::OpenKind,
         compiler_items::try_protocol,
         model::{Declarations, Operation},
-        try_plans::{Kind, Plan},
+        protocol_plans::{Kind, Plan},
     },
     types::{Kind as Type, infer::Solved},
 };
 use std::num::NonZeroU32;
 
-impl TryPlanId {
+impl ProtocolPlanId {
     pub(crate) fn current(
         self,
         facts: &Declarations,
@@ -36,7 +36,7 @@ impl TryPlanId {
     }
 }
 impl CallContexts {
-    fn try_growth(&self, count: usize) -> Result<(usize, usize), &'static str> {
+    fn protocol_growth(&self, count: usize) -> Result<(usize, usize), &'static str> {
         let length = self
             .plans
             .len()
@@ -64,8 +64,8 @@ impl CallContexts {
         }
         Ok((self.plans.len(), bytes))
     }
-    fn reserve_try(&mut self, count: usize) -> Result<(), &'static str> {
-        let (_, bytes) = self.try_growth(count)?;
+    fn reserve_protocol(&mut self, count: usize) -> Result<(), &'static str> {
+        let (_, bytes) = self.protocol_growth(count)?;
         if bytes == 0 {
             return Ok(());
         }
@@ -81,7 +81,10 @@ impl CallContexts {
     }
 }
 impl Checker<'_> {
-    pub(in crate::sema::bodies) fn is_try_call(&self, node: crate::syntax::ast::NodeId) -> bool {
+    pub(in crate::sema::bodies) fn is_protocol_call(
+        &self,
+        node: crate::syntax::ast::NodeId,
+    ) -> bool {
         matches!(
             self.kind(node),
             crate::syntax::ast::Kind::TryBlock { .. }
@@ -89,15 +92,16 @@ impl Checker<'_> {
                     op: crate::syntax::ast::Unary::Try,
                     ..
                 }
+                | crate::syntax::ast::Kind::For { .. }
         )
     }
-    pub(in crate::sema::bodies) fn replayed_try_context(
+    pub(in crate::sema::bodies) fn replayed_protocol_context(
         &self,
         key: NodeKey,
         operation: Option<Operation>,
         effect: crate::support::constness::Constness,
     ) -> Result<Option<SourceCallUse>, Error> {
-        let Some(Operation::Try { plan }) = operation else {
+        let Some(Operation::Try { plan } | Operation::Iteration { plan }) = operation else {
             return Ok(None);
         };
         let plan = plan
@@ -117,13 +121,13 @@ impl Checker<'_> {
         }
         Ok(Some(plan.source_use))
     }
-    pub(in crate::sema::bodies) fn publish_try_plans(
+    pub(in crate::sema::bodies) fn publish_protocol_plans(
         &mut self,
         solved: &Solved,
         source_use: Option<SourceCallUse>,
         allowances: &mut crate::resolve::expansion::MacroAllowanceSession<'_>,
     ) -> Result<(), Error> {
-        if self.state.call_types.try_plans.is_empty() {
+        if self.state.call_types.protocol_plans.is_empty() {
             return Ok(());
         }
         let source_use = source_use.ok_or_else(|| {
@@ -132,7 +136,7 @@ impl Checker<'_> {
                 "Try calls lost their actual source-use effect",
             )
         })?;
-        let count = self.state.call_types.try_plans.len();
+        let count = self.state.call_types.protocol_plans.len();
         crate::sema::header_attributes::charge_source_contract_query(self.facts, 1)?;
         let contexts = self
             .facts
@@ -143,7 +147,7 @@ impl Checker<'_> {
                 self.error(self.state.body.node, "Try calls lost their current context")
             })?;
         let (copy_work, growth) = contexts
-            .try_growth(count)
+            .protocol_growth(count)
             .map_err(|e| self.error(self.state.body.node, e))?;
         let bytes = count
             .checked_mul(2 * size_of::<Plan>())
@@ -167,52 +171,30 @@ impl Checker<'_> {
             )
         })?;
         for index in 0..count {
-            let open = self.state.call_types.try_plans[index];
-            let kind = match open.kind {
-                OpenKind::Block { body, call } => Kind::Block {
-                    body,
-                    from_output: call.solved(solved).map_err(|e| self.error(open.node, e))?,
-                },
-                OpenKind::Branch {
-                    operand,
-                    branch,
-                    residual,
-                    target,
-                    control_flow,
-                    continue_,
-                    break_,
-                } => Kind::Branch {
-                    operand,
-                    branch: branch
-                        .solved(solved)
-                        .map_err(|e| self.error(open.node, e))?,
-                    residual: residual
-                        .solved(solved)
-                        .map_err(|e| self.error(open.node, e))?,
-                    target,
-                    control_flow: *solved.types.get(control_flow.0 as usize).ok_or_else(|| {
-                        self.error(open.node, "Try branch lost its solved control-flow type")
-                    })?,
-                    continue_,
-                    break_,
-                },
-            };
+            let open = self.state.call_types.protocol_plans[index];
+            let kind = open
+                .kind
+                .solved(solved)
+                .map_err(|e| self.error(open.node, e))?;
+            if let Kind::Iteration { plan, .. } = kind {
+                self.prepare_iteration_storage(open.node, plan.iterator, plan.option)?;
+            }
             let plan = Plan {
                 node: self.key(open.node),
                 source_use,
                 kind,
             };
-            self.check_try_plan(plan, allowances)?;
+            self.check_protocol_plan(plan, allowances)?;
             plans.push(plan);
         }
-        self.commit_try_plans(plans)?;
-        self.state.call_types.try_plans = Vec::new();
+        self.commit_protocol_plans(plans)?;
+        self.state.call_types.protocol_plans = Vec::new();
         Ok(())
     }
-    fn commit_try_plans(&mut self, plans: Vec<Plan>) -> Result<(), Error> {
+    fn commit_protocol_plans(&mut self, plans: Vec<Plan>) -> Result<(), Error> {
         let mut new_count = 0;
         for plan in &plans {
-            if let Some(Operation::Try { plan: id }) =
+            if let Some(Operation::Try { plan: id } | Operation::Iteration { plan: id }) =
                 self.facts.node(plan.node).and_then(|node| node.operation)
             {
                 if id
@@ -244,17 +226,17 @@ impl Checker<'_> {
                 )
             })?;
         contexts
-            .reserve_try(new_count)
+            .reserve_protocol(new_count)
             .map_err(|e| Declarations::error(report, owner, e))?;
         for plan in plans {
             if matches!(
                 self.facts.nodes[plan.node.file.0 as usize][plan.node.node.get() as usize]
                     .operation,
-                Some(Operation::Try { .. })
+                Some(Operation::Try { .. } | Operation::Iteration { .. })
             ) {
                 continue;
             }
-            let id = TryPlanId(
+            let id = ProtocolPlanId(
                 NonZeroU32::new(u32::try_from(contexts.plans.len() + 1).map_err(|_| {
                     Declarations::error(report, owner, "Try plan identity exhausted")
                 })?)
@@ -262,15 +244,34 @@ impl Checker<'_> {
             );
             contexts.plans.push(plan);
             self.facts.nodes[plan.node.file.0 as usize][plan.node.node.get() as usize].operation =
-                Some(Operation::Try { plan: id });
+                Some(if matches!(plan.kind, Kind::Iteration { .. }) {
+                    Operation::Iteration { plan: id }
+                } else {
+                    Operation::Try { plan: id }
+                });
         }
         Ok(())
     }
-    fn check_try_plan(
+    fn check_protocol_plan(
         &mut self,
         plan: Plan,
         allowances: &mut crate::resolve::expansion::MacroAllowanceSession<'_>,
     ) -> Result<(), Error> {
+        if let Kind::Iteration {
+            plan: iteration, ..
+        } = plan.kind
+        {
+            crate::sema::compiler_items::for_roles::check_plan(
+                self.report,
+                self.facts,
+                plan.node,
+                iteration,
+            )?;
+            for call in plan.calls().into_iter().flatten() {
+                self.check_const_library_callable(plan.node.node, call.callable, allowances)?;
+            }
+            return Ok(());
+        }
         let protocol = try_protocol::source(self.report, self.facts, plan.node)?;
         let expected = match plan.kind {
             Kind::Block { .. } => [Some(protocol.from_output), None],
@@ -300,6 +301,9 @@ impl Checker<'_> {
                     }),
                 ]
             }
+            Kind::Iteration { .. } => {
+                return Err(self.error(plan.node.node, "iteration plan lost its source branch"));
+            }
         };
         for (call, expected) in plan.calls().into_iter().zip(expected) {
             let Some(call) = call else {
@@ -321,3 +325,7 @@ impl Checker<'_> {
 #[cfg(test)]
 #[path = "../../../../tests/invariants/residual_protocol.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../../../../tests/invariants/for_protocol_contracts.rs"]
+mod iteration_tests;

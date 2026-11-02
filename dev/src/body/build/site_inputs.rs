@@ -40,7 +40,7 @@ impl Builder<'_> {
                 signature: expected,
                 source_use: Some(source),
             }) if expected == signature => source,
-            Some(Operation::Try { plan }) => {
+            Some(Operation::Try { plan } | Operation::Iteration { plan }) => {
                 let plan = plan
                     .current(
                         self.facts,

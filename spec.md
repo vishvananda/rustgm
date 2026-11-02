@@ -402,6 +402,20 @@ through the typed callable API before publication; the source node is not Call
 syntax and cannot identify one callee. Reuse the existing completed plan and
 canonical Option variants without reparsing, extra passes or common fields.
 
+Source-owned iteration binds actual required methods tagged next/into_iter and
+actual Option/Some/None declarations. The Iterator marker and parent trait
+spellings do not confer call proof. Reuse the current body's paid protocol-plan
+owner for both Try and for-loops, carrying the real For AST children, two generic
+call contexts and current source witnesses into CFG construction. Source mode
+must not reserve synthetic iterator/range metadata. Keep ordinary inference,
+projection, const/unsafe, ownership and region checks on both real calls; use
+actual variant ordinals and payloads. Batch solved-plan publication and prepaid
+retention rather than creating another global For map or scanning prior loops.
+The [source iteration checkpoint](docs/pa26-source-iteration-checkpoint.md)
+records exact linear work/storage, native drop opponents and retained transport
+requirements. Imported protocols still require authentic declarations and bodies.
+
+
 The source rustc_no_mir_inline restriction authenticates the feature, active
 function/method owner, exact effect, nonforeign definition and source image.
 Use a prepaid transient declaration draft inside the existing attribute and

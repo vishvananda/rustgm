@@ -249,6 +249,7 @@ impl Checker<'_> {
                         source_use: Some(_),
                         ..
                     } | crate::sema::model::Operation::Try { .. }
+                        | crate::sema::model::Operation::Iteration { .. }
                 )
             ) {
                 return Ok(true);

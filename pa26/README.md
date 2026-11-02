@@ -434,3 +434,11 @@ field's selected ordinary method even when Copy appears in the same list. The
 original Result/Option/ControlFlow enabled lists now expand without replacing
 those declarations. Source comparison/discriminant, complete generic forms and
 full formatter/panic execution remain required; this is not a PA26 release.
+
+The [source-owned iteration checkpoint](../docs/pa26-source-iteration-checkpoint.md)
+now compiles actual tagged next/into_iter calls with real Option variants,
+ordinary source-call effects, borrow/move proof and native normal/break cleanup.
+It shares Try's existing cold per-body plan owner and preserves the no-bootstrap
+fence and ordinary hot layouts. Authentic imported protocol transport, remaining
+families and whole assignment release checks stay required. The independently
+hashed source packet lives in PA31's source-iteration directory.

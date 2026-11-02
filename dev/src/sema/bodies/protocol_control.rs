@@ -22,6 +22,18 @@ pub(super) enum OpenKind {
         continue_: crate::sema::members::VariantId,
         break_: crate::sema::members::VariantId,
     },
+    Iteration {
+        iterator: NodeId,
+        pattern: NodeId,
+        body: NodeId,
+        into_iter: OpenCall,
+        next: OpenCall,
+        iterator_type: TermId,
+        item: TermId,
+        option: TermId,
+        some: crate::sema::members::VariantId,
+        none: crate::sema::members::VariantId,
+    },
 }
 #[derive(Clone, Copy)]
 pub(super) struct OpenPlan {
@@ -45,8 +57,75 @@ impl OpenCall {
         })
     }
 }
+impl OpenKind {
+    pub(super) fn solved(
+        self,
+        solved: &Solved,
+    ) -> Result<crate::sema::protocol_plans::Kind, &'static str> {
+        use crate::sema::protocol_plans::Kind;
+        let ty = |term: TermId| {
+            solved
+                .types
+                .get(term.0 as usize)
+                .copied()
+                .ok_or("source protocol lost a solved type")
+        };
+        Ok(match self {
+            Self::Block { body, call } => Kind::Block {
+                body,
+                from_output: call.solved(solved)?,
+            },
+            Self::Branch {
+                operand,
+                branch,
+                residual,
+                target,
+                control_flow,
+                continue_,
+                break_,
+            } => Kind::Branch {
+                operand,
+                branch: branch.solved(solved)?,
+                residual: residual.solved(solved)?,
+                target,
+                control_flow: ty(control_flow)?,
+                continue_,
+                break_,
+            },
+            Self::Iteration {
+                iterator,
+                pattern,
+                body,
+                into_iter,
+                next,
+                iterator_type,
+                item,
+                option,
+                some,
+                none,
+            } => Kind::Iteration {
+                iterator,
+                pattern,
+                body,
+                plan: crate::sema::iteration::ForPlan {
+                    into_iter: into_iter.solved(solved)?,
+                    next: next.solved(solved)?,
+                    iterator: ty(iterator_type)?,
+                    item: ty(item)?,
+                    option: ty(option)?,
+                    some,
+                    none,
+                },
+            },
+        })
+    }
+}
 impl Checker<'_> {
-    fn protocol_call(&mut self, node: NodeId, method: super::DefId) -> Result<OpenCall, Error> {
+    pub(super) fn protocol_call(
+        &mut self,
+        node: NodeId,
+        method: super::DefId,
+    ) -> Result<OpenCall, Error> {
         let callable = self.implicit_source_function(node, method)?;
         let signature = self.child(node, callable, 0)?;
         let signature = self.call_signature(node, signature)?;
@@ -56,8 +135,8 @@ impl Checker<'_> {
             signature,
         })
     }
-    fn retain_try(&mut self, plan: OpenPlan) -> Result<usize, Error> {
-        let plans = &self.state.call_types.try_plans;
+    pub(super) fn retain_try(&mut self, plan: OpenPlan) -> Result<usize, Error> {
+        let plans = &self.state.call_types.protocol_plans;
         let growing = plans.len() == plans.capacity();
         let capacity = plans.len().saturating_mul(2).max(4);
         let bytes = if growing {
@@ -77,17 +156,17 @@ impl Checker<'_> {
         if growing {
             self.state
                 .call_types
-                .try_plans
+                .protocol_plans
                 .try_reserve_exact(additional)
                 .map_err(|_| self.error(plan.node, "Try staging allocation failed"))?;
-            if self.state.call_types.try_plans.capacity() > capacity {
+            if self.state.call_types.protocol_plans.capacity() > capacity {
                 return Err(
                     self.error(plan.node, "Try staging allocation exceeds prepaid capacity")
                 );
             }
         }
-        let index = self.state.call_types.try_plans.len();
-        self.state.call_types.try_plans.push(plan);
+        let index = self.state.call_types.protocol_plans.len();
+        self.state.call_types.protocol_plans.push(plan);
         Ok(index)
     }
     pub(super) fn enter_try_block(
@@ -131,7 +210,7 @@ impl Checker<'_> {
             .ok_or_else(|| self.error(node, "Try block lost its actual lexical frame"))?;
         let plan = frame
             .breaks
-            .and_then(|index| self.state.call_types.try_plans.get(index))
+            .and_then(|index| self.state.call_types.protocol_plans.get(index))
             .ok_or_else(|| self.error(node, "Try block lost its staged from_output call"))?;
         let OpenKind::Block { call, body: actual } = plan.kind else {
             return Err(self.error(node, "Try block has a different staged operation"));

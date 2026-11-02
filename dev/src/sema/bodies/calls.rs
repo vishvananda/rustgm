@@ -16,7 +16,7 @@ pub(super) struct ActiveCall {
 #[derive(Default)]
 pub(super) struct CallTypes {
     pub safety: Option<Box<super::safety::Pending>>,
-    pub try_plans: Vec<super::try_control::OpenPlan>,
+    pub protocol_plans: Vec<super::protocol_control::OpenPlan>,
     pub offsets: Option<Box<super::displacement_inputs::Pending>>,
     pub iteration: Option<Box<super::iteration::Pending>>,
     pub formatting: Option<Box<super::formatting_values::Pending>>,
@@ -90,7 +90,7 @@ impl CallTypes {
     }
     pub fn clear(&mut self) {
         self.safety = None;
-        self.try_plans.clear();
+        self.protocol_plans.clear();
         self.offsets = None;
         self.iteration = None;
         self.formatting = None;

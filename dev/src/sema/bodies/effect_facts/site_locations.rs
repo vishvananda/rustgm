@@ -176,8 +176,8 @@ impl Checker<'_> {
     ) -> Result<(), Error> {
         for index in 0..self.state.calls.len() {
             let (node, _) = self.state.calls[index];
-            if self.is_try_call(node) {
-                if let Some(Operation::Try { plan }) = self
+            if self.is_protocol_call(node) {
+                if let Some(Operation::Try { plan } | Operation::Iteration { plan }) = self
                     .facts
                     .node(self.key(node))
                     .and_then(|facts| facts.operation)
@@ -223,15 +223,22 @@ impl Checker<'_> {
         }
         let mut requests = Vec::new();
         self.ordinary_site_requests(solved, &mut requests)?;
-        for index in 0..self.state.call_types.try_plans.len() {
-            let open = self.state.call_types.try_plans[index];
+        for index in 0..self.state.call_types.protocol_plans.len() {
+            let open = self.state.call_types.protocol_plans[index];
             let calls = match open.kind {
-                crate::sema::bodies::try_control::OpenKind::Block { call, .. } => {
+                crate::sema::bodies::protocol_control::OpenKind::Block { call, .. } => {
                     [Some(call), None]
                 }
-                crate::sema::bodies::try_control::OpenKind::Branch {
-                    branch, residual, ..
+                crate::sema::bodies::protocol_control::OpenKind::Branch {
+                    branch,
+                    residual,
+                    ..
                 } => [Some(branch), Some(residual)],
+                crate::sema::bodies::protocol_control::OpenKind::Iteration {
+                    into_iter,
+                    next,
+                    ..
+                } => [Some(into_iter), Some(next)],
             };
             for call in calls.into_iter().flatten() {
                 let call = call.solved(solved).map_err(|e| self.error(open.node, e))?;

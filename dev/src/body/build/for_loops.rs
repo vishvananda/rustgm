@@ -13,6 +13,27 @@ use crate::{
 };
 impl Builder<'_> {
     fn for_plan(&self, node: NodeId) -> Result<crate::sema::iteration::ForPlan, Error> {
+        if self.facts.source_bindings.is_some() {
+            let Some(crate::sema::model::Operation::Iteration { plan }) =
+                self.fact(node)?.operation
+            else {
+                return Err(self.error(node, "source loop lost its checked protocol plan"));
+            };
+            let plan = crate::sema::protocol_plans::checked(
+                self.report,
+                self.facts,
+                self.source,
+                crate::resolve::unit::NodeKey {
+                    file: self.source.file,
+                    node,
+                },
+                plan,
+            )?;
+            let crate::sema::protocol_plans::Kind::Iteration { plan, .. } = plan.kind else {
+                return Err(self.error(node, "source loop has another protocol operation"));
+            };
+            return Ok(plan);
+        }
         let plan = self
             .facts
             .iteration
