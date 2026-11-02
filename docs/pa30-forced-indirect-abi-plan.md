@@ -1,5 +1,14 @@
 # Original core forced indirect ABI requirement
 
+The user resumed Root-only work and the [local source/native implementation](pa30-indirect-arguments-checkpoint.md)
+is now qualified on source1244ebfa2. It clears LIB-111 and advances unchanged
+core to LIB-112 in IntoIterator's method-dispatch policy. The implementation
+steps below remain the original design record; authenticated representation
+transport, wider forced families and actual VaList/runtime consumers are still
+required. No whole PA or original library artifact is complete.
+
+## Original design record
+
 The current compiler is qualified through source `c6369af04` and the
 [joined Cell/conversion checkpoint](pa31-cell-advisory-checkpoint.md). Its
 unchanged core types attempt reaches LIB-111, the local marked repr(C) struct in

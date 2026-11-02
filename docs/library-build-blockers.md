@@ -19,7 +19,7 @@ Use the [current execution plan](library-bootstrap-acceleration.md) to choose wo
 real artifact/source consumers, demanded imported-body proof and consolidated
 qualification. The existing complete assignment and upstream gates remain required.
 
-Work is paused at the user's request after the 2026-11-02 integration checkpoint.
+The user resumed Root-only work after the 2026-11-02 integration checkpoint.
 Both former workers remain stopped and their completed commits are on main.
 The existing warm worktree and scratch
 now reside on btrfs at /mnt/vizier/rustgm-scratch/rustgm-pa26-work, with the home
@@ -33,12 +33,21 @@ the profile choice, retaining the installed Provided input reader and ordinary
 source parent traversal. All152 focused controls,69 production checks,4460text,
 SourceFrom native26,14 extra owner/negative controls and fresh Provided native7
 pass. See [the repair evidence](pa29-call-input-profile-ci-repair.md). Current
-CLI71054639 still reaches LIB-111 at ffi/va_list.rs416 in22.01s with all722 hashes
-and the original finite profile unchanged. Full successor CI remains pending.
-No original library artifact or whole-PA completion is implied. Push CI for
-public191649b6a passes; full qualification of the repaired compiler is queued
-separately. Resume with the actual LIB-111 ABI implementation and the unchanged
-original-source observation, then continue semantic checking and artifact work.
+The repair's CLI71054639 reached LIB-111 at ffi/va_list.rs416 in22.01s with all722 hashes
+and the original finite profile unchanged. Its full successor CI passed below.
+No original library artifact or whole-PA completion is implied. Full qualification
+[CI41399199606](https://github.com/vishvananda/rustgm/actions/runs/41399199606)
+on f19eea903 passed every gate.
+
+Source1244ebfa2 implements the local forced argument ABI contract, clearing
+LIB-111. All28 source outcomes,13 focused controls,21 production checks and627
+text cases pass; five original C observers execute7/7/7/16/16 and fresh pinned
+Rust matches the four codegen-supported programs. Common ABI record sizes stay
+unchanged and shared wrapper queries scale linearly. CurrentCLI4e18000f reaches
+LIB-112, rustc_skip_during_method_dispatch(array, boxed_slice), at original
+iter/traits/collect.rs280, file172 byte8793, in23.80s. All722 source hashes and
+the same target/cap/finite profile are preserved. See [the ABI checkpoint](pa30-indirect-arguments-checkpoint.md).
+Representation transport and full VaList/runtime consumers remain required.
 
 The source pin is Rust `88d9e12ae178fab0fb5cc050a94da85685d449ea`, edition 2024,
 x86-64 Linux, panic abort. Use the existing immutable shared source tree and
@@ -217,7 +226,8 @@ actual native hints and the future authenticated MIR-import obligation.
 | LIB-108 | Actual advisory source declaration qualified; original marker cleared | rustc_insignificant_dtor on array::IntoIter | PA31 source contract +PA40 deferred advisory consumer / original array/iter.rs17 | Root | [Joined source checkpoint](pa31-advisory-source-checkpoint.md): real struct/enum/foreign target, word/gate/duplicate/macro authority validation and per-owner ephemeral state. All31 independently declared source outcomes remain intact; actual own/field cleanup native37 matches pinned Rust and ordinary move/borrow checks remain required. No ordinary nominal permission rows or destructor suppression. CLIe464 clears original marker and reaches LIB109; full original IntoIter and library artifacts remain required. |
 | LIB-109 | Local source/native contract qualified; original marker recognized | rustc_should_not_be_called_on_const_items on LazyCell::force | PA31 source validation +PA40 deferred advisory consumer / original cell/lazy.rs137 | Root; C source | Actual inherent/trait-impl method, word/gate/duplicate/current source and Self/member scope qualify in joined40. Real const7, mutation9 and unsafe7 native match pinned Rust; generated meta uses its authentic attribute envelope while forwarded items gain no allowance. Full76 independent outcomes retained; broader advisory parity and original algorithms/artifacts remain required. Core now reaches LIB046 work exhaustion. |
 | LIB-110 | Actual source/native declarations qualified; original marker cleared | rustc_confusables on Cell::replace and adjacent MustNotSuspend | PA31 declaration validation +PA40 deferred suggestions; PA42/43 broader suspension producer / original cell.rs508 | Root, C source handoff integrated | [Joined checkpoint](pa31-cell-advisory-checkpoint.md): all80 candidate source outcomes and160 pinnedRust metadata/object outcomes pass; Root140/production15 and four fresh native pairs preserve mutation16/9, const7 and actual drop9. One transient declaration lookup and only present annotations keep additional work104 at unrelated widths8/32/128; no common Node/Body growth or executable alias/permission. Broader suggestion/liveness producers and imported intent remain Required. Original core clears marker and reaches LIB-111. |
-| LIB-111 | Current original-core source blocker; implementation and owning tests required | rustc_pass_indirectly_in_non_rustic_abis | PA30 foreign representation/callable closure +PA31 source authority +PA29 representation transport / original ffi/va_list.rs416 | Root only | Original local repr(C) Type inside its constant exposes a semantic argument ABI requirement. Pinned parser permits actual structs under rustc_attrs; normal non-Rustic arguments require Indirect with on_stack=false, including transparent-wrapper propagation. Preserve Rust ABI and independent return rules, real caller/callee copy and pointer behavior, representation conflicts and old metadata fences. Never accept an inert spelling, erase the argument or alter original source. The [draft packet](pa30-forced-indirect-abi-plan.md) freezes28 source/five native inputs. Independent28 metadata/27 object/four native outcomes match; marked-return object/staticlib ICE remains an explicitly unqualified positive. All candidate implementation and full VaList/metadata/runtime qualification remain required. |
+| LIB-111 | Local source/native ABI qualified; original marker cleared; wider transport/runtime required | rustc_pass_indirectly_in_non_rustic_abis | PA30 foreign representation/callable closure +PA31 source authority +PA29 representation transport / original ffi/va_list.rs416 | Root only | [Source1244ebfa2](pa30-indirect-arguments-checkpoint.md) passes28 source outcomes,13 controls,21 production/627text and five original C observers. Pointer arguments retain owned copies, transparent policy and independent return classification. Fresh Rust matches four supported natives; its return ICE remains explicit. Common records stay unchanged and shared policy work scales41/161/641 at widths8/32/128. Older metadata fences pass; authenticated representation transport, wider forced families and original VaList/runtime consumers remain Required. |
+| LIB-112 | Current original-core source blocker; primary contract and implementation required | rustc_skip_during_method_dispatch(array, boxed_slice) on IntoIterator | PA19 method lookup +PA31 source authority +PA34 defining edition +PA29 transport / original iter/traits/collect.rs280 | Root only | The unchanged original core attempt now stops here, file172 byte8793. Investigate pinned attribute parsing, actual trait ownership and edition-sensitive array/boxed-slice method-candidate rules. Retain ordinary qualified calls, receiver adjustments and defining token context; do not erase the policy as an advisory spelling. Freeze opposing source/native controls before qualification. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
@@ -389,7 +399,7 @@ concrete; a private Ready state is not an executable result.
 
 | Owner | Issues and owning assignments | Next observable exit |
 | --- | --- | --- |
-| Root, direct compiler owner; sole worker | LIB-111 forced-indirect ABI, PA30/31/29; original core PA32 | Joined140/production15/text4460/conversion-native26/Cell-native4 qualified. Integrated checkpoint published on f290002c8. Root-only work resumed on btrfs; CI profile repair qualified. Continue the frozen ABI packet, implement real ffi/va_list.rs416 semantics and repeat unchanged core. |
+| Root, direct compiler owner; sole worker | LIB-112 method-dispatch policy, PA19/31/34/29; original core PA32 | LIB-111 local source/native checkpoint1244ebfa2 clears the original marker.13private/21production/627text and5C/4Rust natives qualify. Continue actual IntoIterator edition-sensitive policy while retaining wider ABI/metadata/runtime closure. |
 | `const_call_review`, stopped at user request | Confusables/MustNotSuspend source handoff complete and integrated | No queued job, build or source edit. Root owns continuation. |
 | `lint_expectations`, stopped at user request | SourceFrom/v9 component69 and native26 complete; read-only merge review integrated | No queued job, build or source edit. Root owns continuation. |
 | Root, retained formatting/panic lane | LIB-029/021/034/055/057/073/077, PA25–28/31 | Finite Debug array/native consumer and exact borrowed-call repair are qualified. Full original Count/Formatter/write/runtime parity, other derive families, metadata and original crate consumers remain required when an actual source demand reaches them. |

@@ -1,5 +1,5 @@
 {
-  "state": "Partial independent reference qualification; no candidate implementation or qualification",
+  "state": "Local candidate source/native qualified; partial independent reference qualification and wider required contracts retained",
   "source_contract_sha256": "889ee3f732245334278b3b7ac338b566dd380d9209a968d7ae4d57d84b3f8b2b",
   "supported_reference_receipt": {
     "path": "obj/parallel/forced-indirect-abi-v1/reference-supported-v2/receipt.json",
@@ -17,5 +17,26 @@
     "sha256": "44656a07c7e2fb63f11004442eb9f1ae37f5a615157393391b3a62220f9aa7c8",
     "diagnostic_index_sha256": "160781a0e2a6301512f5a133b9a9eb901ed1c2962022be32cb0674c34679bc46"
   },
-  "candidate": "All positive and negative source outcomes, typed ABI/owner/payment/scaling controls, native comparisons and authenticated representation transport remain required; no generated oracle or full-PA claim"
+  "candidate": {
+    "source": "1244ebfa2",
+    "checkpoint": "docs/pa30-indirect-arguments-checkpoint.md",
+    "source_outcomes": 28,
+    "private_controls": 13,
+    "production_controls": 21,
+    "text_cases": 627,
+    "native_c_observers": 5,
+    "fresh_pinned_rust_native_comparisons": 4,
+    "normal_return_candidate_native": 7,
+    "private_receipt_sha256": "335f0930ea4fe8854e6d9f8866272f0930245c17e3037a5c4596b8e7908075ff",
+    "native_receipt_sha256": "2138bbd20d1d2b7cb210633495037befea3861a969fcacffdfb53882d17b177d",
+    "production_receipt_sha256": "557a38d0e4bdc24d33c865a8a01443b76f8cc0f0f05a10db33eff0f720f6c987",
+    "original_core_next": "LIB-112 rustc_skip_during_method_dispatch at iter/traits/collect.rs280",
+    "core_receipt_sha256": "e978c0ef6f171e8a3d04bb672430b509fd3f8f03bff43133156440cee6a2978e",
+    "required": [
+      "authenticated representation transport through every reached nominal/body/callable graph",
+      "wider forced callback/variadic/packed/large-value independent families",
+      "actual original VaList/runtime and core artifact consumers",
+      "whole assignment and component publication/release checks"
+    ]
+  }
 }

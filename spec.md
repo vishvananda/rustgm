@@ -4903,6 +4903,22 @@ Async transformation accounts for borrows, pinning and cancellation cleanup.
 
 ## Crate calling-convention transport
 
+Retain forced non-Rustic argument passing as typed nominal representation.
+Authenticate actual struct, word, duplicate, feature/macro-envelope and
+representation-conflict rules during the existing owner walk. Summarize actual
+transparent payloads in the optional completed-layout cache with prepaid work
+and storage; absent declaration families allocate no policy cache. Cache argument
+overrides separately from normal return classification. Keep the original type
+identity instead of expanding common passing records with a second layout.
+Lower forced arguments to pointers to fresh owned snapshots and copy incoming
+values into genuine callee storage. Preserve Copy/move/drop/loans, call safety,
+Rust convention and independent return rules. An all-scalar/pointer physical
+boundary uses the existing scalar LowIR signature; source callable identity still
+selects conversion. This pointer mode is distinct from SysV MEMORY stack byval.
+Reject the policy in older metadata profiles before erasing its intent. See
+[the source/native checkpoint](docs/pa30-indirect-arguments-checkpoint.md) for the
+qualified local family and required transport/runtime closure.
+
 Source body transport must retain every raw input consumed by its original
 proof, including CFG-derived local-borrow upper bounds and reborrow ancestry.
 Share the existing typed place-bounds producer between the ordinary proof

@@ -1,6 +1,6 @@
 # Parallel library bootstrap implementation
 
-Current state (2026-11-02): work is paused at the user's request. Both former
+Current state (2026-11-02): the user resumed work with Root alone. Both former
 workers remain stopped and their compiler commits are integrated into main.
 The existing warm integration worktree now lives at
 /mnt/vizier/rustgm-scratch/rustgm-pa26-work; its home path is an alias. The obj
@@ -12,9 +12,12 @@ The [current tracker](library-build-blockers.md),
 [forced indirect ABI plan](pa30-forced-indirect-abi-plan.md) supersede the older
 worker queues below. Keep workers stopped. The two-job controller, two threads,
 16 GiB absolute output caps,150 GiB free reserve and five-minute checks remain.
-On resume, use the existing btrfs worktree and continue the forced indirect ABI
-plan. No local compiler, test or resource lease remains active at this pause.
-Remote CI qualification runs independently of the paused local goal.
+Full CI41399199606 on f19eea903 passed every gate. The
+[forced argument ABI checkpoint](pa30-indirect-arguments-checkpoint.md) now
+qualifies local LIB-111 behavior and advances original core to LIB-112,
+IntoIterator's edition-sensitive method-dispatch policy. Continue there while
+retaining the broader representation transport/runtime requirements. No new
+worker or cache is required.
 
 Public788889aac contains the qualified Comptime/v8 checkpoint; its full
 CI40976018856 is terminal failed on two later regressions, repaired as below.
