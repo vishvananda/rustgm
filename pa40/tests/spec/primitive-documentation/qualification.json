@@ -1,0 +1,33 @@
+{
+  "state": "Finite source documentation-label contract qualified; whole PA40 and original library artifacts remain required",
+  "contract_sha256": "8ccdce2675db34fd04592a6245aad8e9baba1262548bd16403be1dba6f17cea5",
+  "independent": {
+    "cases": 42,
+    "metadata_object_outcomes": 84,
+    "native_stdout": "7\n",
+    "reference_receipt_sha256": "9ebf53895681a3b4686292e82985ebbcc004a062100c5e9c92fe9a4f1725e9eb"
+  },
+  "candidate": {
+    "private_controls": 14,
+    "private_scope": "5 documentation checks,2 existing SIMD controls,7 exact compilation-owner size guards",
+    "production_controls": 58,
+    "text_cases": 323,
+    "cli_cases": 42,
+    "native_c_observer_stdout": "7\n",
+    "private_receipt_sha256": "91097d31b9270dfeb7bccbbdb32ebd9b5e61c98974910f9fbde9cc223815f88d",
+    "production_receipt_sha256": "9f5a6b7b749613fd0c5ec8b513ebc6d354afd110bfabdb76c85a17431673a1cd",
+    "consumer_receipt_sha256": "c493f85b163f409030817ae9bb611989b90a0c8ec540161ecf7b58c59daab082",
+    "core_receipt_sha256": "27c797df63976932486c67c2eb5a817bcc23384d1d8631cb3fff9da79a19ab15",
+    "cli_sha256": "6076cc08c184bb7296bd73eada77f547a2bebee1455c2f676891de492a15da96",
+    "core_source_hashes": 722,
+    "core_seconds": 16.053353367984528,
+    "next_blocker": "LIB-046 recurrence: source lint policy storage budget exceeded at file2 prelude/v1.rs",
+    "original_library_artifact": false
+  },
+  "unqualified_required": [
+    "Full PA40 edition/attribute closure and all logical module contexts",
+    "Existing LIB-046 storage/query algorithm closure under unchanged limits",
+    "Original core alloc std artifacts and real dependency/runtime consumers",
+    "Earlier SIMD/optimizer/ABI/receiver/Box/edition/metadata requirements"
+  ]
+}

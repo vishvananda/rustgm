@@ -1,0 +1,17 @@
+{
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "files": [
+    {
+      "path": "compiler/rustc_attr_parsing/src/attributes/rustc_internal.rs",
+      "sha256": "f667f727ca0ca74a922e2a0dae4e9d5b6e0c681fa8f604e699a17e546178106c"
+    },
+    {
+      "path": "compiler/rustc_attr_parsing/src/attributes/mod.rs",
+      "sha256": "d1fce438128338feacb8e231dda21938442d0b91d6959430e1b411c537fdf044"
+    },
+    {
+      "path": "library/core/src/primitive_docs.rs",
+      "sha256": "339d21cb6a937245e38a5d09e84b329b1c6c11a6bc35eeb829fc18cd644c8e3b"
+    }
+  ]
+}

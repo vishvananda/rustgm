@@ -17,11 +17,19 @@ use crate::{
     },
 };
 
-/// State lasts for this one configured owner's existing attribute walk only.
+/// Sparse annotation state lasts for the pass; flags reset for each owner.
 #[derive(Default)]
-struct OwnerFlags {
+struct AnnotationState {
     coverage: bool,
+    documentation: crate::sema::documentation_labels::Draft,
     insignificant_dtor: bool,
+}
+
+impl AnnotationState {
+    fn begin_owner(&mut self) {
+        self.coverage = false;
+        self.insignificant_dtor = false;
+    }
 }
 
 pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
@@ -30,6 +38,7 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
     let mut pointer_markers = HashMap::default();
     let mut mir_boundaries = crate::sema::inlining::MirBoundaries::default();
     let mut allowances = report.macro_allowances();
+    let mut flags = AnnotationState::default();
     for (file, unit) in report.package.units.iter().enumerate() {
         if unit.include_context.is_some() {
             continue;
@@ -49,7 +58,7 @@ pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Res
             let (key, supported) = declaration(unit, owner_key);
             crate::sema::header_attributes::observe_owner(report, facts, owner_key, key)?;
             crate::sema::specialization::observe_owner(report, facts, owner_key, key)?;
-            let mut flags = OwnerFlags::default();
+            flags.begin_owner();
             for effect in owner.attributes.clone() {
                 let Some((attribute, forest)) = unit.retained_attributes(effect..effect + 1).next()
                 else {
@@ -208,7 +217,7 @@ fn consume_annotation(
     (attribute, effect): (Attribute, usize),
     forest: &Forest,
     allowances: &mut crate::resolve::expansion::MacroAllowanceSession<'_>,
-    flags: &mut OwnerFlags,
+    flags: &mut AnnotationState,
 ) -> Result<bool, Error> {
     let consumer = attribute
         .name(forest, report.package.unit(declaration.file).source.text())
@@ -245,6 +254,17 @@ fn consume_annotation(
                 attribute,
                 forest,
                 allowances,
+            )?;
+        }
+        Some(Consumer::PrimitiveDocumentation) => {
+            crate::sema::documentation_labels::consume(
+                report,
+                facts,
+                declaration,
+                attribute,
+                forest,
+                allowances,
+                &mut flags.documentation,
             )?;
         }
         Some(Consumer::Coverage) => {

@@ -1,0 +1,268 @@
+{
+  "state": "Declared outcomes before independent execution; whole PA40 and original crate artifacts remain required",
+  "pin": "Rust1.98.0 88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "owner": "PA40 attribute/documentation closure; PA31 actual feature/macro authority",
+  "cases": {
+    "alias.rs": {
+      "sha256": "61a7d386b5af65154e797ec08726731721d5c6502bfcdfff0dda3897d08a0ade",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "body-type-error.rs": {
+      "sha256": "aff4c1793980d548247737de2cf50a6d308868af2ef8f3b02041dc0a317496c0",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "bool-value.rs": {
+      "sha256": "a7c98087074eae7cefdd4519e94be2406df7e5da4e4bd208dbfacae8ac2c4b54",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "bool.rs": {
+      "sha256": "9381a2625db748b96246428916f9c5d4bddbe87dda2400e9a52fba08517d13fa",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_status": 0
+    },
+    "byte-string.rs": {
+      "sha256": "52b2784431fb8fc5d6b35fd5bbb4261b1162c906777116e4215becce6f64e716",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "cfg-removed.rs": {
+      "sha256": "30f05ea519c92acb281f2c96684778854bef4d50d26b1ed9baeed27abd6679e4",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_status": 0
+    },
+    "char.rs": {
+      "sha256": "abe1f3acb030d27f2b15113a800a3a3d01e8d7a72038aa12c52c5265dc7c4f5a",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "const-denied.rs": {
+      "sha256": "2e3b43fc5c7b5206281b462498ba46d18c2d79a0b91b558df324a4fe799be436",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "constant.rs": {
+      "sha256": "858a6624b4d5e20bef411fb58183fc0ea452fb472a11aa40c11afbaa47212d58",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "duplicate-different.rs": {
+      "sha256": "62faf6cb3c947dc0a626a1ff1d80f777ab4afec337649ff63aba5118132d19d9",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "duplicate-same.rs": {
+      "sha256": "b4d5c869990609dca0bf557f2d6e2735e3fb981c19b1079a71362fec727aa43d",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "empty.rs": {
+      "sha256": "3be37ad5725c8fc1f3097af3a30894be1d1c1839b60a89c5b41849da66078e12",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_status": 0
+    },
+    "enum.rs": {
+      "sha256": "1bffda7b929362ad05d1d2e7ab69dbef0ebc5d2b99ef7b6a7d7803a90dfb94b6",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "escape.rs": {
+      "sha256": "f109241a38977a491675be49eaddde4d3a2b32513a3dc1d4456444ba28352a29",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_status": 0
+    },
+    "external-module.rs": {
+      "sha256": "3ab197f5cb79a0ef17c85c16e640f80e23adab01e8652b50420736e9743de59e",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_status": 0,
+      "files": {
+        "external-child.rs": "7ab04014eaf4101a7458c6fd4b10c09c10f41422c314e18865956121727f9974"
+      }
+    },
+    "field.rs": {
+      "sha256": "6572f69481535204934340f16a9ff1410f254fef11ffd917909a9ccfaf5e64b4",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "function.rs": {
+      "sha256": "41995ecb8b973417cd22daa03088ecc95aba29680d93c4a51b52492b793325d7",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "impl.rs": {
+      "sha256": "ee443072761744c23a7097ef8c4d5b34873c00bb35ddd8c6dce9b5ad9e7126a0",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "inner-crate.rs": {
+      "sha256": "0499c1330d5f499ff9926dca9e2a79b1aff174be65976c59e854e766f6d281a3",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "inner-module.rs": {
+      "sha256": "1b429bf81873864b3b740366cc5e9dac51713749415f440bb60aec37b35a2792",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_status": 0
+    },
+    "inner-outer-duplicate.rs": {
+      "sha256": "74f4ad6eb91046eb17fb05f0214ad69a8d01371c1b8633b508e11b3302d0f603",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "integer.rs": {
+      "sha256": "9e506485b59d601474cbe786c824c198b7f1611ee492a55ab9165c89bc600d21",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "list.rs": {
+      "sha256": "3ea163aafd6cdedd2357a951da21886bb19cfe2486585adfb293df36ba291cd7",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "macro-allowed-meta.rs": {
+      "sha256": "730614d2bd0535355841f7f77b2a1cc8926e4d02e952a0e5f7ea2d498d4fe7e9",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_status": 0
+    },
+    "macro-forwarded-item.rs": {
+      "sha256": "4e027d55f2cf04b5cc23f63eaee8adba66ab2cd4d38e698f77145a4931e10e86",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "macro-no-allowance.rs": {
+      "sha256": "bd4025679da01fc31f29957727b63ff45f631c657d37626a6294c6a37142dc8d",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "missing-gate.rs": {
+      "sha256": "b9b881ea3261f4eff8dcb29d3d4f97073c22dab128f5dc7b8b8ee17b72a91cf0",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "move-denied.rs": {
+      "sha256": "45844bbdbad0443cb6fe4facb765ad045cf0ebb0ae1b145a1b3309ebcfd1392e",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "multiple-modules.rs": {
+      "sha256": "0727e09f80d0257949a33aae52bfb4e1c8594cdda65268bdc7965649cd1136fe",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_status": 0
+    },
+    "native.rs": {
+      "sha256": "96ffaf24aa4bddb75c077fdd6ccb943ae273dba7d1438df362c8cf2d265715c1",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_status": 0,
+      "native_c_observer": {
+        "path": "native.c",
+        "sha256": "b95e31f708f4d6fa29ab02f683a65a56d56e60d7560fb0715624c86aa6d6526a",
+        "stdout": "7\n"
+      }
+    },
+    "private-field.rs": {
+      "sha256": "72dd548ed8096e0ab8334d710515747879b80213555a747661a3627774f95866",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "raw.rs": {
+      "sha256": "fddcf010fb81519cf575e70d05c9c59e93cb5800262d595de9233be88f2292dd",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_status": 0
+    },
+    "semantic-type.rs": {
+      "sha256": "42618f1a391b47edf276ccde01a459e3a5f78cba9293fa542c2b8b802304902f",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_status": 0
+    },
+    "static.rs": {
+      "sha256": "70ce26edd4fa6a0314b7c825407431eca7e78647c7acab202ba4b36ed7e7a876",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "struct.rs": {
+      "sha256": "dace6f2afdbb7f1a02c0e3cf187ff94dafb02ac9fbe999669c354e6f64a0a8c9",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "trait.rs": {
+      "sha256": "2132c23d422c59f9068252c6b0cc6eb37720aa8fc0c54e55e9e60736d83708e3",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "unicode.rs": {
+      "sha256": "a7e2a0d98b7240c47e1f44ee2b332663ac85c5a222253db2e551b8a61bc4e628",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_status": 0
+    },
+    "union.rs": {
+      "sha256": "f47642ec9d46a5acedc277c2cfcf347f998f6246e0a3cc389dd5738c93c888c3",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "unknown.rs": {
+      "sha256": "eb8603b0597dedd8b44d1383bb967e86a8bdea902fd8d71fc658035ed96d0bcd",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_status": 0
+    },
+    "unsafe-denied.rs": {
+      "sha256": "3863097b99f7ba83d6b818855e8436c305c1fa0dbfa0039231ec441494fe6fac",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "unsafe-wrapper.rs": {
+      "sha256": "1b1b820177116c38e045aaa8ff68fb10ecb9af34b250d00e44395cd4145e2283",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    },
+    "word.rs": {
+      "sha256": "59034f0be6a9e41e93312c9454d67e2237c433d662c0ef76891a0f602fd15fe0",
+      "rust_metadata": 1,
+      "rust_object": 1,
+      "candidate_status": 1
+    }
+  },
+  "predecessor_contract_sha256": "8c5720e797ca29a5c15139d617204f27a7bc20744edcd61ca3363293afd783c0"
+}
