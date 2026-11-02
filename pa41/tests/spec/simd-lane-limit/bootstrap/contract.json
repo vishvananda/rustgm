@@ -1,0 +1,77 @@
+{
+  "state": "Additional existing bootstrap std::mem profile declared before independent execution; original core::mem positives remain required unchanged",
+  "reason": "RustGM bootstrap inventory exposes std::mem; original source core::mem requires genuine source library bindings, not a fake alias",
+  "cases": {
+    "concrete-at-limit.rs": {
+      "sha256": "e342d20fe8d1f991d4d73a9697e285c11d2db8da35ff9dcb639fecc4dacf67de",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "original_core_path_required": "concrete-at-limit.rs"
+    },
+    "concrete-over-limit.rs": {
+      "sha256": "9f0e292c79fdf2320cae782eb6f87726ea1e47da6c54cdf7825dae95f7513f6f",
+      "rust_metadata": 0,
+      "rust_object": 1,
+      "original_core_path_required": "concrete-over-limit.rs"
+    },
+    "generic-16.rs": {
+      "sha256": "8cabce70a1bd1a08dc5990ab934cecb3b4ad589c7eb32926b205f4e0a4f8ac7d",
+      "rust_metadata": 0,
+      "rust_object": 1,
+      "original_core_path_required": "generic-16.rs"
+    },
+    "generic-24.rs": {
+      "sha256": "eb8f3d5bfd22d69b8ea19ce040bd529429274c446e7851d29c99ecb2ff19d09b",
+      "rust_metadata": 0,
+      "rust_object": 1,
+      "original_core_path_required": "generic-24.rs"
+    },
+    "generic-4.rs": {
+      "sha256": "96a81aba4cb54b459523a021b8cc1a65b8e1226129ba1ed98f3fc009956cf1af",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "original_core_path_required": "generic-4.rs"
+    },
+    "generic-6.rs": {
+      "sha256": "45ae6ad8d78887b297f9de1e7cc1cd8dc7e48dcbddc81afe5af3cc5eaa07e7e8",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "original_core_path_required": "generic-6.rs"
+    },
+    "generic-8.rs": {
+      "sha256": "b4d07b27904aa8cf3624ef4a13eec2e95446c7cf12a871cdd2514c90a7bf8d01",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "original_core_path_required": "generic-8.rs"
+    },
+    "generic-9.rs": {
+      "sha256": "ebd7e6c6300bed3424e98dce69db109b432348a4ce1f1a6a2c919eb44d15f804",
+      "rust_metadata": 0,
+      "rust_object": 1,
+      "original_core_path_required": "generic-9.rs"
+    },
+    "native.rs": {
+      "sha256": "503cdfc412728308569a6573848fc98c6ed743fd42feb706f2a72c65c2922388",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "original_core_path_required": "native.rs",
+      "native_c_observer": {
+        "path": "native.c",
+        "sha256": "99e099df355848195cd490ea9547782f1bb37b770631c70ab85f966fd941bd42",
+        "stdout": "2408\n"
+      }
+    },
+    "ordinary-no-effect.rs": {
+      "sha256": "c1e01556437f56dbf4c815baac7ab2ff6675cc2540c309e772dbfce98a8745f1",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "original_core_path_required": "ordinary-no-effect.rs"
+    },
+    "zero-concrete.rs": {
+      "sha256": "74a7d6457d2626949cb0d37ff9a67c6197b3e6cae01564ce03ab8e8652abb56a",
+      "rust_metadata": 0,
+      "rust_object": 1,
+      "original_core_path_required": "zero-concrete.rs"
+    }
+  }
+}

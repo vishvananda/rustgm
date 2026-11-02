@@ -1,4 +1,5 @@
 //! Interpret retained nominal attributes without reparsing item source.
+pub(in crate::sema) mod lane_limits;
 #[cfg(test)]
 #[path = "../../tests/invariants/transparency_claims.rs"]
 mod tests;
@@ -31,11 +32,16 @@ pub(super) struct Attributes {
     pub derives: Properties,
     pub equality: crate::types::equality::Properties,
 }
-pub(super) fn analyze(
-    report: &Report,
-) -> Result<crate::support::hash::HashMap<NodeKey, Attributes>, Error> {
+pub(super) struct Representations {
+    pub attributes: crate::support::hash::HashMap<NodeKey, Attributes>,
+    pub limits: lane_limits::Sources,
+}
+pub(super) fn analyze(report: &Report, facts: &mut Declarations) -> Result<Representations, Error> {
     let mut allowances = report.macro_allowances();
-    let mut representations = crate::support::hash::HashMap::default();
+    let mut representations = Representations {
+        attributes: crate::support::hash::HashMap::default(),
+        limits: None,
+    };
     for (file, unit) in report.package.units.iter().enumerate() {
         if unit.include_context.is_some() {
             continue;
@@ -60,20 +66,24 @@ pub(super) fn analyze(
             } else {
                 None
             };
-            let indirect_arguments = transparency_promises::validate(
+            let policies = transparency_promises::validate(
                 report,
+                facts,
                 key,
                 index,
                 attributes.map(|attributes| attributes.repr),
                 &mut allowances,
             )?;
+            if let Some(limit) = policies.lane_limit {
+                lane_limits::retain(facts, &mut representations.limits, key, limit)?;
+            }
             if let Some(mut attributes) = attributes {
-                attributes.repr.arguments = if indirect_arguments {
+                attributes.repr.arguments = if policies.indirect {
                     crate::types::aggregate::ArgumentPassing::Indirect
                 } else {
                     crate::types::aggregate::ArgumentPassing::Ordinary
                 };
-                representations.insert(key, attributes);
+                representations.attributes.insert(key, attributes);
             }
         }
     }

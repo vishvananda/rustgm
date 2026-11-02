@@ -10,7 +10,7 @@ impl Checker<'_> {
             .is_some_and(|linkage| linkage.imported_record(DefId(item.0)))
     }
     pub(in super::super) fn reserve_nominals(&mut self) -> Result<(), Error> {
-        let representations = representation::analyze(self.report)?;
+        let representations = representation::analyze(self.report, &mut self.facts)?;
         for index in 0..self.report.resolution.definitions.len() {
             let definition = &self.report.resolution.definitions[index];
             if !matches!(definition.kind, DefKind::Struct | DefKind::Enum) {
@@ -48,9 +48,14 @@ impl Checker<'_> {
             }
             let id = u32::try_from(index)
                 .map_err(|_| self.error(key, "too many nominal declarations"))?;
-            let attributes = representations.get(&key).copied().unwrap_or_default();
+            let attributes = representations
+                .attributes
+                .get(&key)
+                .copied()
+                .unwrap_or_default();
             self.reserve_fields(ItemId(id), key, attributes)?;
         }
+        self.nominals.lane_limits = representations.limits;
         self.index_constructors()
     }
     pub(in super::super) fn complete_nominal_headers(
@@ -129,5 +134,33 @@ impl Checker<'_> {
         self.facts.generics.nominal_contracts.insert(owner);
         self.nominals.entries[index].contract = State::Complete;
         Ok(())
+    }
+}
+
+impl Checker<'_> {
+    pub(super) fn publish_simd_limit(&mut self, item: ItemId, key: NodeKey) -> Result<(), Error> {
+        let Some(limit) = self
+            .nominals
+            .lane_limits
+            .as_deref_mut()
+            .and_then(|rows| rows.remove(&key))
+        else {
+            return Ok(());
+        };
+        let growth = self.facts.aggregates.simd_limit_growth();
+        let prepaid = self
+            .facts
+            .aggregates
+            .simd_limit_bytes()
+            .saturating_add(growth.bytes);
+        crate::sema::header_attributes::reserve_source_contracts(
+            &mut self.facts,
+            1 + growth.work,
+            growth.bytes,
+        )?;
+        self.facts
+            .aggregates
+            .register_simd_limit(item, limit, prepaid)
+            .map_err(|message| self.error(key, message))
     }
 }

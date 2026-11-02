@@ -1,0 +1,37 @@
+{
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "files": [
+    {
+      "path": "compiler/rustc_attr_parsing/src/attributes/rustc_internal.rs",
+      "sha256": "f667f727ca0ca74a922e2a0dae4e9d5b6e0c681fa8f604e699a17e546178106c"
+    },
+    {
+      "path": "compiler/rustc_attr_parsing/src/attributes/util.rs",
+      "sha256": "6b094c868e64ecc9ff5369b5ab7c432ff24e6a6129a9885339d7ae4bdfe68cf7"
+    },
+    {
+      "path": "compiler/rustc_hir/src/limit.rs",
+      "sha256": "d2c5d75cbb9dbf2117da91c46b2400faf385044707f5b605d44aa84bd4277eb2"
+    },
+    {
+      "path": "compiler/rustc_ty_utils/src/layout.rs",
+      "sha256": "453f25100465cde1949dd27aa4a0ad1abba6e3ab484fbb1d7f2e2e4ced61e8e9"
+    },
+    {
+      "path": "tests/ui/simd/auxiliary/simd-lane-limit.rs",
+      "sha256": "04ed492db07efefad63659f394e2c8a1f826dcfd2a878842eaf6adb7599b263b"
+    },
+    {
+      "path": "tests/ui/simd/simd-lane-limit-ok.rs",
+      "sha256": "f0185563d9b8e3149674983cd228211c6d92698d3801aa1b823579f133fed5e7"
+    },
+    {
+      "path": "tests/ui/simd/simd-lane-limit-err.rs",
+      "sha256": "0a3eacf77ca37c9e431308bddc81f43adcf9f22a159aca54f7962a7cbc5029cc"
+    },
+    {
+      "path": "tests/ui/simd/simd-lane-limit-err-npow2.rs",
+      "sha256": "a692a6b5e68eb9c5403901325a6438fd063e43f75473365916595b80ec2e47e2"
+    }
+  ]
+}

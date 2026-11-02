@@ -1,0 +1,34 @@
+{
+  "state": "Required independent imported layout protocol declared before reference execution; candidate transport remains unimplemented",
+  "provider": {
+    "path": "provider.rs",
+    "crate_name": "lane_provider",
+    "sha256": "a3ae51720ea8efbe27fdfbe169f2627c16f61e2be2fe223a9ad51251ea336d57"
+  },
+  "consumers": {
+    "at-limit.rs": {
+      "sha256": "bd1dd17da7ffd425e50142a1c9f1319d8f1253b7ad39f97753d7e1caea66743f",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_required": "positive independent import/monomorphization protocol; candidate transport not qualified"
+    },
+    "non-power-two.rs": {
+      "sha256": "5c00cfe2c19e10ff2177283e252e48c22746025a66c975c45a375f938dc26dd0",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "candidate_required": "positive independent import/monomorphization protocol; candidate transport not qualified"
+    },
+    "over-limit.rs": {
+      "sha256": "8c6e765bba6b6d3c9b87538f21df185d9e1b5c980328fafeee36acedc2d8519d",
+      "rust_metadata": 0,
+      "rust_object": 1,
+      "candidate_required": "positive independent import/monomorphization protocol; candidate transport not qualified"
+    },
+    "over-odd.rs": {
+      "sha256": "4a0db70578ef2afc705124b3c9d81ec5b83c779bf9991b813023cbffc77d46a7",
+      "rust_metadata": 0,
+      "rust_object": 1,
+      "candidate_required": "positive independent import/monomorphization protocol; candidate transport not qualified"
+    }
+  }
+}

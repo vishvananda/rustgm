@@ -156,6 +156,10 @@ fn validate_profile(
         .require_dispatch_policy_transport(report)
         .map_err(error)?;
     facts
+        .aggregates
+        .require_simd_limit_transport()
+        .map_err(error)?;
+    facts
         .require_optimization_transport(report)
         .map_err(error)?;
     if let Some(producer) = report.lint_producer() {

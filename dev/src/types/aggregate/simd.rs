@@ -81,7 +81,15 @@ impl Definitions {
             return Ok(SimdShape::Pending);
         }
         Ok(match count {
-            Some(count) => SimdShape::Ready { lane, count },
+            Some(count) => {
+                if self
+                    .simd_lane_limit(item)
+                    .is_some_and(|limit| count > limit)
+                {
+                    return Err("SIMD lane count exceeds the actual struct monomorphization limit");
+                }
+                SimdShape::Ready { lane, count }
+            }
             None => SimdShape::Pending,
         })
     }

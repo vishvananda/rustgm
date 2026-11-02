@@ -178,6 +178,7 @@ impl Checker<'_> {
         key: NodeKey,
         kind: aggregate::Kind,
     ) -> Result<(), Error> {
+        self.publish_simd_limit(item, key)?;
         match kind {
             aggregate::Kind::Enum => self
                 .facts

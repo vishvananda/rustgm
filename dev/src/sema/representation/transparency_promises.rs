@@ -10,20 +10,39 @@ use crate::{
     types::aggregate::{Repr, Representation},
 };
 
+#[derive(Default)]
+pub(super) struct Policies {
+    pub indirect: bool,
+    pub lane_limit: Option<u64>,
+}
 pub(super) fn validate(
     report: &Report,
+    facts: &mut crate::sema::model::Declarations,
     key: NodeKey,
     owner: usize,
     representation: Option<Repr>,
     allowances: &mut MacroAllowanceSession<'_>,
-) -> Result<bool, Error> {
+) -> Result<Policies, Error> {
     let unit = report.package.unit(key.file);
     let mut seen = false;
-    let mut indirect = false;
+    let mut policies = Policies::default();
     for (attribute, forest) in
         unit.retained_attributes(unit.configured.owners[owner].attributes.clone())
     {
         let name = attribute.name(forest, unit.source.text());
+        if name == Some("rustc_simd_monomorphize_lane_limit") {
+            if policies.lane_limit.is_some() {
+                return Err(Error::at(
+                    key.file,
+                    attribute.span.start,
+                    "duplicate SIMD lane limit attribute",
+                ));
+            }
+            policies.lane_limit = Some(super::lane_limits::parse(
+                report, facts, key, attribute, forest, allowances,
+            )?);
+            continue;
+        }
         if !matches!(
             name,
             Some("rustc_pub_transparent" | "rustc_pass_indirectly_in_non_rustic_abis")
@@ -34,7 +53,7 @@ pub(super) fn validate(
         let is_indirect = name == Some("rustc_pass_indirectly_in_non_rustic_abis");
         if std::mem::replace(
             if is_indirect {
-                &mut indirect
+                &mut policies.indirect
             } else {
                 &mut seen
             },
@@ -84,5 +103,5 @@ pub(super) fn validate(
         // Current metadata rejects transparent records, so it cannot lose the
         // external private-field eligibility contract during an export.
     }
-    Ok(indirect)
+    Ok(policies)
 }

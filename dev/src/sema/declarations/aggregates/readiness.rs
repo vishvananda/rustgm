@@ -17,6 +17,7 @@ pub(super) struct Entry {
 }
 #[derive(Default)]
 pub(in super::super) struct Pending {
+    pub(super) lane_limits: crate::sema::representation::lane_limits::Sources,
     pub(super) entries: Vec<Entry>,
     pub(super) index: HashMap<ItemId, usize>,
     constructors: HashMap<DefId, ItemId>,

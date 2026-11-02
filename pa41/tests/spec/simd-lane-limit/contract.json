@@ -1,0 +1,238 @@
+{
+  "state": "Declared required outcomes before independent execution; whole PA41 and crate builds remain required",
+  "pin": "Rust1.98.0 88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "owner": "PA41 genuine SIMD layout; PA31/40 source authority; PA27 unsafe prerequisites; PA29 imported representation policy",
+  "cases": {
+    "alias.rs": {
+      "sha256": "6a6567ccba19b8009ba0cd15767a18a5ff39d19a30edff30c5e1cf6e0e296982",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "cfg-removed.rs": {
+      "sha256": "611bdeb71bc1ed6e18dc78e6b12e9dc585e25be249881cd26e064c7486cf4e5b",
+      "rust_metadata": 0,
+      "rust_object": 0
+    },
+    "concrete-at-limit.rs": {
+      "sha256": "f2217f091516547b0dceb92686e9a3f0a4d25b30f57e3efd520515b1f6645504",
+      "rust_metadata": 0,
+      "rust_object": 0
+    },
+    "concrete-over-limit.rs": {
+      "sha256": "a114a7e6bb24c939c237c4c64a8feab49a9921032060ecd5827216d608abf985",
+      "rust_metadata": 0,
+      "rust_object": 1
+    },
+    "duplicate-different.rs": {
+      "sha256": "881de2d2cf957bbea1919cac0df89e3ac399e7d4ab644e37b99a30b04626d690",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "duplicate-same.rs": {
+      "sha256": "b59821750eaeaa1f17c1dfedc153ce3bf0e90a8fa6e2173f0dc651df57605897",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "empty.rs": {
+      "sha256": "829046db398324fa995257f5d74b10b8cd34896cf11798ab6b01d5dbf7bd83e4",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "enum.rs": {
+      "sha256": "a2314b4823b829eee43032ecbeeb16a0379e4e0da6c9b97e7ba174060ee8820e",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "field.rs": {
+      "sha256": "1b12b46a678165b6745063c5807cdf96aedbb2358a8a3987da7dbef2cdf8cd47",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "float.rs": {
+      "sha256": "21a1e86d743ebdb52f64f30d2c860f1cb12b0d3b9b3308bc2ac244538d857eb3",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "function.rs": {
+      "sha256": "6d4e158cb79895d011520cd009dae3d4704a95c23e730a3cc94f25cfd8ac5a66",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "generic-16.rs": {
+      "sha256": "8de78d0ca79bf229ab5629ee6468b82cf86607b68f152d64701833e6160a21a8",
+      "rust_metadata": 0,
+      "rust_object": 1,
+      "required_layout": "size_of concrete V<i32,16>"
+    },
+    "generic-24.rs": {
+      "sha256": "aea8fa3babe0f5a16f6e174667b879c2685f6d7988e0fff9e47a18b83d896752",
+      "rust_metadata": 0,
+      "rust_object": 1,
+      "required_layout": "size_of concrete V<i32,24>"
+    },
+    "generic-4.rs": {
+      "sha256": "3d74f0e263564e86735dcda4a00afb86fdc9e4dd0e4c734bd60b5c4a7188bbfb",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "required_layout": "size_of concrete V<i32,4>"
+    },
+    "generic-6.rs": {
+      "sha256": "8f15dfe9b3825dfafd183d11fc7f36020351872ce43c85a9aa5fc9591bbf383c",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "required_layout": "size_of concrete V<i32,6>"
+    },
+    "generic-8.rs": {
+      "sha256": "456179310378f6f401701519236d3a10d589aa3b1b99e82c7c4aaf6e6c7bdbc3",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "required_layout": "size_of concrete V<i32,8>"
+    },
+    "generic-9.rs": {
+      "sha256": "fd8d0f1190f0dbbc59153ee7180da9b73335a75fac885f1599965701bd0fc3c3",
+      "rust_metadata": 0,
+      "rust_object": 1,
+      "required_layout": "size_of concrete V<i32,9>"
+    },
+    "hex.rs": {
+      "sha256": "694df8b4aeb65c8ecd8b9acc2bcc21cf003478fd230a69eb1c4c2005b46d0b49",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "impl.rs": {
+      "sha256": "bd8690cbca013363af2c96ec65ec0611058450c24b7834e4b3239eac80438edc",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "integer.rs": {
+      "sha256": "725ea4b286fa777545e7d6f0c3518b630431e2f3ec0a6ec613523db259c16153",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "leading-zero.rs": {
+      "sha256": "8fc80984e8ebdb12fbdbfc0bb765afb4bd9d6743f4f7118b84440539ebecb29a",
+      "rust_metadata": 0,
+      "rust_object": 0
+    },
+    "list.rs": {
+      "sha256": "69fe96ad239146bb2ed7bdc4e3b8ddf7a0256998d4570ef80dd15c8f37a9dab2",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "macro-allowed.rs": {
+      "sha256": "f6ba56f6db32ad6f0576845a5ac803d2e87ec3233e0e1e63bdcf1780715995e7",
+      "rust_metadata": 0,
+      "rust_object": 0
+    },
+    "macro-forwarded.rs": {
+      "sha256": "162dceb95f2dbd06fcf2424ff29271ba3f6a987de9c7ae879ac6d6ebcf353a03",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "macro-no-allowance.rs": {
+      "sha256": "95fb46da9ef5a07ddd177517179e8d650d5c51a446c2eb4a700fe5bdcc5239d2",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "maximum.rs": {
+      "sha256": "3ce066afb9f8d3bd744addf22cfed2d8ac99044f78b521e215416ff7eb9005a0",
+      "rust_metadata": 0,
+      "rust_object": 0
+    },
+    "missing-gate.rs": {
+      "sha256": "24c52e856b67e4bf182a9a898c771f6eb68c3ddb9a785957e6410620da632ec2",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "module.rs": {
+      "sha256": "97ac1cc4796267a353e89633766cc8d0cea7274616509b8ea2994ca173de3c78",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "native.rs": {
+      "sha256": "ea6ea6eabffe346bbd98a1cbc05c36393d6bd7f03a756353d6649f421e3a2ca5",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "native_c_observer": {
+        "path": "native.c",
+        "sha256": "99e099df355848195cd490ea9547782f1bb37b770631c70ab85f966fd941bd42",
+        "stdout": "2408\n"
+      }
+    },
+    "negative.rs": {
+      "sha256": "68caa9eab4aa02fc1365b196900d8d6953c7608622207b5e201cb401c425080e",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "ordinary-no-effect.rs": {
+      "sha256": "b37bea1829f36825965a73cb929c30d802b93752b410212517eb13b04ad009d8",
+      "rust_metadata": 0,
+      "rust_object": 0
+    },
+    "ordinary.rs": {
+      "sha256": "601574d9c061d7195af929d34fed1341705266fa43c97503f5f7b8df985c19b0",
+      "rust_metadata": 0,
+      "rust_object": 0
+    },
+    "overflow.rs": {
+      "sha256": "aee54cf90705c5f76588b8d40eaf2d895fbd7267a73c6f546ba9f0b04dcf2c89",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "plus.rs": {
+      "sha256": "8920c69f2ad15dba77d4f929f76d1e10460a53fd4899381f7f6365cb4a0a7c87",
+      "rust_metadata": 0,
+      "rust_object": 0
+    },
+    "raw-string.rs": {
+      "sha256": "5efc9aba1476bc7bf367fd6cddbcb01caee54c6629eeaee72a00e22ea4f88dc9",
+      "rust_metadata": 0,
+      "rust_object": 0
+    },
+    "space.rs": {
+      "sha256": "2734487159f645ecffac6c2e25a479cd5bf469edba3da7182db3ddd8c6375470",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "trait.rs": {
+      "sha256": "63bb4868f0a7414c2d9c48c0da668efdc920600f9c7bf2ef5b0d236da214b83e",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "underscores.rs": {
+      "sha256": "8e25bd7f28cd76a1c793bc57430f516d872440da99bb5a89588c939cbbc9a0c2",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "union.rs": {
+      "sha256": "6f7f0076ec9103f9712d8c9985d7399f4a0aea016e0b72639d988d45059b274b",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "unsafe.rs": {
+      "sha256": "12403223e3930b54f1c78c0391548d7efb80128dbe201d155f1a8b29bba34897",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "unused-generic.rs": {
+      "sha256": "6e41e282b945de57fc2d67a9f400f238b417dbc0a78adaab93628dcf5324d892",
+      "rust_metadata": 0,
+      "rust_object": 0
+    },
+    "word.rs": {
+      "sha256": "cae58ca5a87c99952230c3d8bf2d7728af59c7f33c6316e1f977b3a317e975e0",
+      "rust_metadata": 1,
+      "rust_object": 1
+    },
+    "zero-concrete.rs": {
+      "sha256": "b0af8c4ba06ea3bc410ebe48e0d49aec7a205e898f95b5ed64b813999ac79fb0",
+      "rust_metadata": 0,
+      "rust_object": 1
+    },
+    "zero.rs": {
+      "sha256": "87c3440104fff5d70172ef8f7592fe802b2efd909b88659d10fa21747baffc0a",
+      "rust_metadata": 0,
+      "rust_object": 0
+    }
+  }
+}

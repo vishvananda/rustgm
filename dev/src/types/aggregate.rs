@@ -5,6 +5,7 @@ mod instances;
 mod metadata;
 mod nullable;
 pub(crate) use nullable::NullableEnum;
+mod lane_limits;
 mod packing;
 mod phantom;
 mod preparation;
@@ -99,6 +100,7 @@ pub struct Definitions {
     suppressed_fields: crate::support::hash::HashSet<ItemId>,
     interior_storage: crate::support::hash::HashSet<ItemId>,
     nullable_enums: Option<Box<nullable::Policies>>,
+    simd_limits: Option<Box<lane_limits::Limits>>,
 }
 impl Definitions {
     pub(crate) fn arena_identity(&mut self) -> super::arena::Identity {

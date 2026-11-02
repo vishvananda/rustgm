@@ -1,0 +1,45 @@
+{
+  "state": "Local source and genuine instantiated layout qualified; imported policy and original libraries remain required",
+  "local_contract_sha256": "1035cf6c6497ad03a78d1ec3b9a933ac0291f5e29a8fa5c78db25539705cd12b",
+  "source_provider_contract_sha256": "87922bc88a04a2b1dfe9e792ab1c5b48ff7e08583918d545b0896fb14938d914",
+  "import_contract_sha256": "981f6b4d1c4ae19fe2380b0c8780c1911d3fe3cfb1a422a9bb45a8abfcec0506",
+  "independent": {
+    "original_outcomes": 88,
+    "source_provider_outcomes": 22,
+    "imported_consumer_outcomes": 8,
+    "native_original_stdout": "2408\n",
+    "native_source_provider_stdout": "24 8\n",
+    "original_receipt_sha256": "b2e27491c8b6d91555a73ce6fc103a603fe7980cce7db3a7be260def3f9bf1e0",
+    "provider_receipt_sha256": "7f2847af750783b04b57afc00afee673ea238a6b621130d6bbc98d02ebfe5e98",
+    "imports_receipt_sha256": "3bfd95781be0b5727c7c8e3acacaaffea387e9acb498d4e9285ab7e9b5fb5ff2",
+    "extra_std_path_observations": {
+      "outcomes": 22,
+      "native_stdout": "2408\n",
+      "scope": "Independent Rust only; historical bootstrap inventory hypothesis disproven by candidate resolver",
+      "receipt_sha256": "4b65f2050da1b42c5cf3b7832f0bef5213416df54c181f66f9b733eafc7f6b27"
+    }
+  },
+  "candidate": {
+    "private_controls": 10,
+    "production_controls": 58,
+    "text_cases": 627,
+    "cli_cases": 44,
+    "cli_scope": "33 original declaration inputs and11 genuine no_core source-provider inputs; constants mode requires real object-relevant constant/layout preparation",
+    "extra_forced_argument_controls": 2,
+    "native_c_observer_stdout": "24 8\n",
+    "private_receipt_sha256": "b2d7349585b714a5ab0bad8f808da61c59a37cf3a48a6d2883ca4533fe8aa1de",
+    "production_receipt_sha256": "c16d5c8e02b2d18c6f74d392f849691bb3e2f8042d0a3ebcac7fc84dc73c9cf7",
+    "consumer_receipt_sha256": "47ecd7898cacce6493cb26167652f6fa75c5e60b01381f09f9d4c5869773d566",
+    "core_receipt_sha256": "2ee795bdc5ac95908b2e73c5627f302ec8c08a5a066a64ab7f02f1feb7981648",
+    "cli_sha256": "7707232fbb9a6418ff0e19c4a042dc489c5f8773ad4224274accb12877a19639",
+    "core_source_hashes": 722,
+    "core_seconds": 13.58432789199287,
+    "next_blocker": "LIB-115 rustc_doc_primitive=\"bool\" on primitive_docs.rs module at file374 byte0",
+    "original_library_artifact": false
+  },
+  "unqualified_required": [
+    "Authenticated imported SIMD representation/lane-limit protocol and real imported instances",
+    "Original core::mem and std::mem library-path consumers; no_core companions do not replace original library artifacts",
+    "Whole PA41/31/40/29 requirements, target/runtime closure and independent real library consumers"
+  ]
+}

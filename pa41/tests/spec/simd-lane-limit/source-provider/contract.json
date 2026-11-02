@@ -1,0 +1,69 @@
+{
+  "state": "Actual no_core source-provider intrinsic protocol declared before independent execution; original library-path fixtures remain required",
+  "cases": {
+    "concrete-at-limit.rs": {
+      "sha256": "1d35d7f92ac34c5f48cfe4814e07663cbbdb6b1ad7e8ff6a376b7ba2cf1c53cd",
+      "rust_metadata": 0,
+      "rust_object": 0
+    },
+    "concrete-over-limit.rs": {
+      "sha256": "1cde8786c5ac6c88adecde4ac879899e975dc4ac0791b41f7838e6fa9e4e0071",
+      "rust_metadata": 0,
+      "rust_object": 1
+    },
+    "generic-16.rs": {
+      "sha256": "1736a4115e90f1b9aa4dcef037dd0fd0d96f4fdc20a1f44f2303f920749cd774",
+      "rust_metadata": 0,
+      "rust_object": 1
+    },
+    "generic-24.rs": {
+      "sha256": "301134ca21ea45756552d077d15f7d8b879688a6f0fa4268cbe07d451196833f",
+      "rust_metadata": 0,
+      "rust_object": 1
+    },
+    "generic-4.rs": {
+      "sha256": "b2e432ae7255a7b0c3bc52540466f87cafcf6b9f692edef982fb74ed11924bc2",
+      "rust_metadata": 0,
+      "rust_object": 0
+    },
+    "generic-6.rs": {
+      "sha256": "37974ede0e90e1c2e222e3cefd82e1d7fe7db062894a4f44f6fc1cc9a35b53c2",
+      "rust_metadata": 0,
+      "rust_object": 0
+    },
+    "generic-8.rs": {
+      "sha256": "676d3725b94bf5efdb3e25b1539632d2ebe553b4dcc56cba4a11291823093683",
+      "rust_metadata": 0,
+      "rust_object": 0
+    },
+    "generic-9.rs": {
+      "sha256": "d21841ba7baaac02d8a7ea059c3dd4e157a31bb172a97b419e32bf7bf689e4d6",
+      "rust_metadata": 0,
+      "rust_object": 1
+    },
+    "native.rs": {
+      "sha256": "59c6d7e635e31afdcef3fe563e0c6d8cab8f4ed7ef107690be6e78602cc0bfdc",
+      "rust_metadata": 0,
+      "rust_object": 0,
+      "native_c_observer": {
+        "path": "native.c",
+        "sha256": "b4479a89173b58d1eeee2b898b22023b38d1cb6d4e804048bce87396f597f134",
+        "stdout": "24 8\n"
+      }
+    },
+    "ordinary-no-effect.rs": {
+      "sha256": "1b4aa777dd0688e97f7be7ad233837b8f5f086106b4fa11abe0920c752c06d58",
+      "rust_metadata": 0,
+      "rust_object": 0
+    },
+    "zero-concrete.rs": {
+      "sha256": "aad7f4fb8a32a57002cd69773126ed6b974e932520e29d3d0fc699650d3a4f4d",
+      "rust_metadata": 0,
+      "rust_object": 1
+    }
+  },
+  "prediction_review": {
+    "predecessor_contract_sha256": "1180606b90f10f2bc9182b5a989377dab48a419e54b30b428cf10aa2a873de30",
+    "correction": "Initial authored foundation omitted Copy lang identity and used raw nullary layout intrinsics at runtime. Pinned primary requires genuine Copy declarations and const blocks. All original positive/negative lane requirements remain unchanged; initial source/diagnostics/failed receipt retained."
+  }
+}
