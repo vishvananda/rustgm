@@ -247,11 +247,11 @@ fn iterator_layout_keeps_ordinary_records_compact() {
         size_of::<crate::sema::iteration::Call>(),
         size_of::<body::ir::Value>()
     );
-    // The prior 7048-byte crate owner gains an interned-policy Vec and one
-    // optional per-request progress pointer; dense lint nodes shrink to u32.
+    // The compilation-wide owner has an interned-policy Vec, request-progress
+    // pointer and sparse SIMD-policy pointer; dense nodes and body rows are unchanged.
     assert_eq!(
         size_of::<Declarations>(),
-        7048 + size_of::<Vec<()>>() + size_of::<usize>()
+        7048 + size_of::<Vec<()>>() + 2 * size_of::<usize>()
     );
     assert_eq!(size_of::<Original>(), 56);
     // The demand-only collection catalog adds one optional Box to this owner.
