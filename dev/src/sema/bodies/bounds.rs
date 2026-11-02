@@ -399,12 +399,19 @@ impl Checker<'_> {
         node: NodeId,
         owner: DefId,
     ) -> Result<Vec<crate::sema::declaration_inputs::Input>, Error> {
-        if self.facts.crates.is_none() {
-            return Ok(
-                crate::sema::declaration_inputs::all(&self.facts.generics, None, owner)
-                    .map_err(|e| self.error(node, e))?
-                    .collect(),
-            );
+        if !matches!(
+            self.facts.associated.imported_owner(),
+            Some(crate::sema::crates::ImportedOwners::Ordinary(_))
+        ) {
+            // Selected originals retain their actual installed scope inputs;
+            // only ordinary source headers split clauses between parent rows.
+            return Ok(crate::sema::declaration_inputs::all(
+                &self.facts.generics,
+                self.facts.crates.as_deref(),
+                owner,
+            )
+            .map_err(|e| self.error(node, e))?
+            .collect());
         }
         let mut bytes = 0usize;
         let inference = &mut self.state.infer;

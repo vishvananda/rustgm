@@ -181,6 +181,7 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
     assert_eq!(LangItem::FormatArgument.index(), 21);
     assert_eq!(LangItem::Not.index(), 22);
     assert_eq!(LangItem::ConstPanicFmt.index(), 27);
+    assert_eq!(LangItem::From.index(), 71);
     let report = crate::test_source::resolve("fn abort(){}fn ordinary(){abort();}", true)?;
     let facts = crate::sema::declarations::analyze(&report)?;
     assert!(report.resolution.source_bindings.is_none());
@@ -188,8 +189,8 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
     assert!(report.resolution.intrinsics.get(Intrinsic::Abort).is_none());
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
-    // The three appended range-member roles extend only this cold table.
-    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 2312);
+    // The appended From role adds one cold slot; ordinary records stay fixed.
+    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 2328);
     assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 184);
     assert_eq!(size_of::<Declaration>(), 20);
     assert_eq!(size_of::<Option<Declaration>>(), 20);
