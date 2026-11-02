@@ -58,6 +58,14 @@ Next is LIB-116 unresolved value at file55:12164, whose actual source/import bin
 must be reduced. Root stays alone in the same warm tree with all existing guards.
 Whole PA releases and original core/alloc/std artifacts remain outstanding.
 
+Root's [namespace visibility checkpoint](reexport-namespace-visibility-checkpoint.md)
+now qualifies LIB-116 with14 independent Rust cases,28 CLI observations,
+private12/production27 and complete PA6259/PA8120 text. CLI2cca7d76 clears the
+prior unresolved constructor and reaches LIB-117 at file199:33916. Investigate
+actual bare atomic target cfg/gating without source patches or ad-hoc flags.
+Full CI41489097835 on8ae6b703b passes every gate; full storage-source successor
+41494273651 on9e1c5b335 is tracked separately. Root remains the only worker.
+
 Public788889aac contains the qualified Comptime/v8 checkpoint; its full
 CI40976018856 is terminal failed on two later regressions, repaired as below.
 Private201 and production35, full v7/v8 CLI/native,

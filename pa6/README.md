@@ -75,6 +75,13 @@ Resolve nested use trees, aliases, underscore imports, self imports, globs,
 reexports and import cycles. Direct/explicit bindings take precedence over globs;
 different glob targets are ambiguous on use. Repeated paths to the same target
 retain one definition identity. Imports follow namespace and privacy rules,
+retaining each available namespace at its own effective visibility. A public
+type re-export keeps an available restricted constructor or same-named function
+at that narrower visibility; a public value can likewise retain a restricted
+type. At least one available namespace must permit the requested import
+visibility, and ordinary uses still enforce each name's privacy. See the
+[re-export controls](tests/spec/reexport-visibility/README.md).
+Imports preserve restrictions,
 including ancestor-restricted visibility and tuple-constructor field visibility.
 Direct trait members inherit the trait's visibility; items nested inside a
 default method retain their own visibility. Anonymous imports retain their final

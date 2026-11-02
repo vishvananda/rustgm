@@ -451,21 +451,26 @@ impl Resolver<'_> {
             let (found, privacy, source) = self.import_lookup(index, import, path, ns, work)?;
             match found {
                 Lookup::Found(binding) => {
-                    if !self.visible(binding.access, privacy)
-                        || !self.can_reexport(binding.access, import.access)
-                    {
+                    if !self.visible(binding.access, privacy) {
                         inaccessible =
                             Some(self.import_error(import, "private import or widened visibility"));
                         self.withdraw_single(key, origin, work)?;
                         continue;
                     }
-                    work.resolved[index] = true;
+                    let access = if self.can_reexport(binding.access, import.access) {
+                        work.resolved[index] = true;
+                        import.access
+                    } else {
+                        inaccessible =
+                            Some(self.import_error(import, "private import or widened visibility"));
+                        binding.access
+                    };
                     if self.package.names.get(name) == "_" {
                         if ns == Namespace::Type {
                             self.facts.anonymous_types.insert(
                                 index,
                                 Binding {
-                                    access: import.access,
+                                    access,
                                     origin,
                                     ..binding
                                 },
@@ -490,7 +495,7 @@ impl Resolver<'_> {
                     self.publish(
                         key,
                         Some(Binding {
-                            access: import.access,
+                            access,
                             origin,
                             ..binding
                         }),

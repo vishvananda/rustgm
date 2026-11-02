@@ -52,6 +52,7 @@ binding scope=0 type name=2 def=19 Direct ambiguous=false access=public
 binding scope=0 value name=2 def=20 Direct ambiguous=false access=module:0
 binding scope=0 value name=22 def=21 Direct ambiguous=false access=module:0
 binding scope=0 type name=3 def=19 Import(0) ambiguous=false access=public
+binding scope=0 value name=3 def=20 Import(0) ambiguous=false access=module:0
 ref 0:0 scope=1 type def=5
 ref 0:8 scope=2 type def=19
 eof files=1 modules=1 definitions=22 references=2

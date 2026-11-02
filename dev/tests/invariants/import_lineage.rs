@@ -207,3 +207,98 @@ fn sharing_keeps_old_selections_and_failed_payments_do_not_publish() -> TestResu
     );
     Ok(())
 }
+
+#[test]
+fn public_reexports_keep_restricted_selected_namespaces_without_widening() -> TestResult {
+    for name in [
+        "crate-constructor",
+        "alias-constructor",
+        "parent-constructor",
+        "private-function-paired-use",
+        "private-type-public-function",
+        "original-num-shape",
+    ] {
+        let source =
+            crate::test_source::fixture(&format!("pa6/tests/spec/reexport-visibility/{name}.rs"))?;
+        let mut report = expand(&source)?;
+        let work = report.imports.take().ok_or("completed expansion imports")?;
+        let lineage = work.lineage.as_deref().ok_or("actual import selections")?;
+        let mut restricted = 0;
+        for &edge in lineage.edges.keys() {
+            let import = &report.resolution.imports[edge.1 as usize];
+            let selected = lineage.source(edge).ok_or("retained namespace selection")?;
+            let binding = report
+                .resolution
+                .bindings
+                .get_key(edge.0)
+                .ok_or("installed namespace")?;
+            assert_eq!(binding.target, selected.binding.target);
+            assert_eq!(binding.origin, Origin::Import(edge.1));
+            if import.access == Access::Public && selected.binding.access != Access::Public {
+                assert_eq!(binding.access, selected.binding.access);
+                restricted += 1;
+            }
+        }
+        assert!(
+            restricted > 0,
+            "{name}: restricted namespace must be retained"
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn incomplete_reexport_visibility_never_grants_private_namespace_access() -> TestResult {
+    for name in [
+        "private-constructor-use",
+        "parent-constructor-outside",
+        "private-function-reexport",
+        "private-type-reexport",
+        "private-function-paired-inaccessible",
+    ] {
+        let source =
+            crate::test_source::fixture(&format!("pa6/tests/spec/reexport-visibility/{name}.rs"))?;
+        let error = expand(&source)
+            .and_then(|report| crate::resolve::analyze_expanded(report).map_err(Into::into))
+            .err()
+            .ok_or_else(|| format!("{name}: accepted private namespace"))?;
+        let diagnostic = error
+            .downcast_ref::<Error>()
+            .ok_or("expected a source resolution diagnostic")?;
+        assert_eq!(
+            diagnostic.file.source(),
+            Some(crate::resolve::unit::FileId(0)),
+            "{name}"
+        );
+    }
+    Ok(())
+}
+
+#[test]
+fn restricted_namespace_aliases_share_snapshots_and_pay_linear_growth() -> TestResult {
+    use std::fmt::Write;
+    for width in [1, 8, 32, 128] {
+        let mut source = String::from("mod base { pub struct Token(pub(crate) u8); }");
+        for index in 0..width {
+            write!(source, "pub use base::Token as Alias{index};")?;
+        }
+        let mut report = expand(&source)?;
+        let work = report.imports.take().ok_or("completed expansion imports")?;
+        let lineage = work
+            .lineage
+            .as_deref()
+            .ok_or("actual namespace selections")?;
+        assert_eq!(lineage.edges.len(), 2 * width);
+        assert_eq!(lineage.sources.len(), 2);
+        assert!(work.lineage_budget.bytes < 1200 * width + 1000);
+        assert!(work.lineage_budget.steps < 80 * width + 100);
+        println!(
+            "restricted aliases width={width} edges={} sources={} paid_bytes={} work={}",
+            lineage.edges.len(),
+            lineage.sources.len(),
+            work.lineage_budget.bytes,
+            work.lineage_budget.steps,
+        );
+    }
+    Ok(())
+}

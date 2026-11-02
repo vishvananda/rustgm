@@ -2488,6 +2488,15 @@ import records. Reprocessing an import withdraws its old anonymous target before
 resolving the replacement; method lookup must consume these facts rather than
 resolve source paths again.
 
+Single imports preserve each available namespace at the narrower of its source
+and requested visibility. At least one selected namespace must permit the
+requested visibility; an unavailable name remains unavailable. A public type
+can therefore retain an available crate-visible constructor or same-named
+function through a public alias, without exporting that value publicly. Public
+values similarly retain an available restricted type. Completed ordinary lookup
+still checks each use. Consume the retained real source selection once, as in
+the [namespace visibility checkpoint](docs/reexport-namespace-visibility-checkpoint.md).
+
 Retain trait/impl owners and their direct associated declarations in one shared
 inventory after name resolution. Keep owner, Self and member identities separate;
 generic parameters and nested method-body items are not direct members. Preserve

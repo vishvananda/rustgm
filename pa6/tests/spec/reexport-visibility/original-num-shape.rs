@@ -1,0 +1,1 @@
+mod num { mod error { pub enum IntErrorKind { NotAPowerOfTwo } pub struct TryFromIntError(pub(crate) IntErrorKind); } pub use error::{IntErrorKind, TryFromIntError}; } mod mem { use crate::num; pub fn fail() -> num::TryFromIntError { num::TryFromIntError(num::IntErrorKind::NotAPowerOfTwo) } } fn main() { let _ = mem::fail(); }
