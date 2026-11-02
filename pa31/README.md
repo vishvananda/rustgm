@@ -16,6 +16,14 @@ old cycle; both units and the complete contract below remain required.
 
 ## Required implementation
 
+The [optimization-intent packet](tests/spec/source-optimize/README.md) freezes
+real size/speed/none semantics, executable owners, feature and macro-envelope
+authority, hard duplicates and none/inline conflicts. The source producer retains
+typed intent in sparse existing headers; current O0 behavior grants no new
+const/unsafe/borrow or body authority. Old metadata profiles fence unencoded
+intent. Authenticated imported optimizer policy and original library artifacts
+remain required alongside source qualification.
+
 The [method-dispatch declaration producer](../docs/pa34-dispatch-declaration-checkpoint.md)
 retains the actual trait's array/boxed-slice policy with source ownership,
 feature/macro authority, bounded payments and old-profile metadata fences.

@@ -26,6 +26,14 @@ Its receiver/Box/edition/metadata consumers remain required. Full CI41453970215
 on the prior558a998b2 ABI checkpoint is terminal success. Root continues alone
 in the same btrfs tree with unchanged guards and scoped cleanup.
 
+Latest source216f00020 qualifies local optimization intent and advances core to
+LIB-114, rustc_simd_monomorphize_lane_limit="64" in portable-simd vector.rs107.
+See [the optimization checkpoint](pa31-optimization-intent-checkpoint.md).
+Imported intent and the full dispatch/ABI/runtime requirements remain open.
+Predecessor full CI41468186690 on0aa237ff0 passes every gate. Root continues alone
+in the same btrfs tree with unchanged resource limits, scoped cleanup and warm
+caches; no original artifact or whole assignment is complete.
+
 Public788889aac contains the qualified Comptime/v8 checkpoint; its full
 CI40976018856 is terminal failed on two later regressions, repaired as below.
 Private201 and production35, full v7/v8 CLI/native,

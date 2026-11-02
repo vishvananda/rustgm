@@ -2,6 +2,13 @@
 
 Planned: no graded manifest or generated reference outputs yet.
 
+`spec/source-optimize/` owns the declared 49-case source optimizer-intent packet,
+including body/closure/trait targets, macro authority, independent inline policy,
+const/unsafe/borrow opponents and a native C observer. Its contract and primary
+map distinguish local source intent from imported transport and whole-library
+artifacts. Independent and candidate outcomes are recorded separately in its
+qualification file.
+
 `spec/source-offset-of/provider/reached-contract.json` adds an independently
 frozen direct intrinsic consumer; it does not replace the original macro exit.
 The actual source pipeline and locked backend now match `1 4 8 0 0 8 16`,

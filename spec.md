@@ -114,6 +114,18 @@ actual parsed root request or token-origin macro allowance in every crate mode.
 The [source checkpoint](docs/pa31-advisory-source-checkpoint.md) records the
 current backend boundary and deferred advisory work.
 
+Retain `optimize(size|speed|none)` as typed, source-owned intent, using the existing
+configured-owner walk and sparse header promises. Validate its optimize_attribute
+request, actual attribute-envelope macro authority, function/method/closure body,
+forms and hard duplicate rules. None conflicts with inline and inline(always),
+but accepts inline(never), in either attribute order. Source presence, checked
+absence and unknown imported policy are distinct; queries authenticate original
+images, callable syntax, effects and bound function identities. Old metadata
+profiles reject unencoded intent. The locked O0 backend remains conservative;
+future MIR/backend optimizers must consume authenticated local/imported intent
+before selecting optimization or inlining. The [source optimization packet](pa31/tests/spec/source-optimize/README.md)
+records primary and independent evidence; it does not complete PA31/40/29.
+
 Attribute feature queries follow the pinned gate's actual construct span.
 Unstable builtin attributes use their retained `#` through `]` envelope: an
 allowing macro can generate `#[$meta]` while the captured name keeps its caller

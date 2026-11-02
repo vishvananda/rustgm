@@ -6,6 +6,14 @@ Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The
 
 ## Required implementation
 
+LIB-114 now blocks original core on rustc_simd_monomorphize_lane_limit in the
+pinned portable-simd Simd declaration. PA31/40 own actual attribute authority;
+this assignment consumes the retained limit when laying out genuine instantiated
+SIMD array lanes, preserving the existing element/count/representation rules.
+PA29 must transport the authenticated representation policy. See the
+[current source checkpoint](../docs/pa31-optimization-intent-checkpoint.md);
+local annotation recognition alone does not implement this consumer.
+
 Unsafe operations, raw pointers, unions, packed access and validity.
 
 Track unsafe permission lexically in the typed body checker. An `unsafe` block
