@@ -49,7 +49,7 @@ fn actual_source_transmute_preserves_owned_drop_and_prepares_native_roundtrips()
         &mut std::fs::File::create(folder.join("provider.lowir"))?,
     )?;
     // From appends one cold role after the source range-member identities.
-    assert_eq!(size_of::<crate::sema::compiler_items::Catalog>(), 1696);
+    assert_eq!(size_of::<crate::sema::compiler_items::Catalog>(), 1752);
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     eprintln!(

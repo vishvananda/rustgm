@@ -222,6 +222,7 @@ impl Snapshot {
                 let child = match frame.language.as_deref() {
                     Some(super::mechanical::Pending::Forward(pending)) => pending.retained_child(),
                     Some(super::mechanical::Pending::Unsize(pending)) => pending.retained_child(),
+                    Some(super::mechanical::Pending::Captures(pending)) => pending.retained_child(),
                     _ => None,
                 };
                 if let Some(slot) = child {

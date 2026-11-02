@@ -9,10 +9,44 @@ use crate::{
 };
 
 pub(super) fn source_copying_role(facts: &Declarations, goal: &Goal) -> Result<bool, String> {
-    let Some(catalog) = facts.source_bindings.as_deref() else {
+    let Some((item, arguments)) = goal.trait_arguments() else {
         return Ok(false);
     };
-    let Some((item, arguments)) = goal.trait_arguments() else {
+    copying_role(facts, item, arguments.is_empty(), goal.constness())
+}
+
+/// Validate the exact source family of already selected canonical marker evidence.
+/// This supplies no implementation identity or executable Clone method.
+pub(in crate::sema) fn copying_predicate(
+    facts: &Declarations,
+    predicate: Predicate,
+) -> Result<bool, String> {
+    if facts.source_bindings.is_none() {
+        return Ok(false);
+    }
+    let Some((id, constness)) = predicate.bound.trait_parts() else {
+        return Ok(false);
+    };
+    let application = facts
+        .types
+        .trait_application(id)
+        .ok_or("invalid source copying application")?;
+    let empty = facts
+        .types
+        .arguments(application.arguments)
+        .ok_or("invalid source copying arguments")?
+        .next()
+        .is_none();
+    copying_role(facts, application.item, empty, Some(constness))
+}
+
+fn copying_role(
+    facts: &Declarations,
+    item: crate::types::ItemId,
+    empty: bool,
+    constness: Option<Constness>,
+) -> Result<bool, String> {
+    let Some(catalog) = facts.source_bindings.as_deref() else {
         return Ok(false);
     };
     let mut found = false;
@@ -34,12 +68,12 @@ pub(super) fn source_copying_role(facts: &Declarations, goal: &Goal) -> Result<b
     if !found {
         return Ok(false);
     }
-    if !arguments.is_empty() {
+    if !empty {
         return Err("source callable copying role has unexpected arguments".into());
     }
     // A nonordinary Clone application can be valid Rust. This ordinary marker
     // profile supplies neither its const permission nor an executable method.
-    Ok(goal.constness() == Some(Constness::Ordinary))
+    Ok(constness == Some(Constness::Ordinary))
 }
 
 impl Search<'_> {
@@ -65,7 +99,8 @@ impl Search<'_> {
             Some(
                 infer::Constructor::Function { .. }
                 | infer::Constructor::FunctionItem(..)
-                | infer::Constructor::FunctionItemArgs(..),
+                | infer::Constructor::FunctionItemArgs(..)
+                | infer::Constructor::Closure(..),
             ) => Ok(true),
             Some(infer::Constructor::Tuple) => frame
                 .inputs
@@ -103,6 +138,12 @@ impl Search<'_> {
             Err(error) => return Err(inference(error)),
         };
         frame.require_nominal_formed(facts, goal.ty)?;
+        if matches!(
+            facts.types.kind(goal.ty),
+            Some(crate::types::Kind::Closure { .. })
+        ) {
+            return self.start_capture_markers(facts, frame, goal).map(Some);
+        }
         Ok(Some(self.complete_source_builtin(frame, goal, false)))
     }
 

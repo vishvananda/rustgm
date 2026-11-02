@@ -99,6 +99,9 @@ pub(in crate::sema) use unary_contract::{source_neg, source_not};
 #[path = "../../tests/invariants/panic_declarations.rs"]
 mod panic_declarations;
 #[cfg(test)]
+#[path = "../../tests/invariants/postcondition_builders.rs"]
+mod postcondition_tests;
+#[cfg(test)]
 #[path = "../../tests/invariants/slice_headers.rs"]
 mod slice_headers;
 #[cfg(test)]

@@ -203,8 +203,8 @@ fn wider_const_values_and_payloads_stay_required_and_cold_roles_are_explicit() -
     assert_eq!(LangItem::ConstParamTy.index(), 65);
     assert_eq!(LangItem::OffsetOf.index(), 64);
     // RangeMin/Max/Sub extend the fixed cold role tables; hot records stay fixed.
-    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 2392);
-    assert_eq!(size_of::<crate::sema::compiler_items::Catalog>(), 1696);
+    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 2456);
+    assert_eq!(size_of::<crate::sema::compiler_items::Catalog>(), 1752);
     eprintln!(
         "source ConstParamTy cold Reservations={} Catalog={} Transaction={} roles={}",
         size_of::<crate::resolve::bindings::Reservations>(),

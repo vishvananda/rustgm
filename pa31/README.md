@@ -398,3 +398,10 @@ It shares Try's existing cold per-body plan owner and preserves the no-bootstrap
 fence and ordinary hot layouts. Authentic imported protocol transport, remaining
 families and whole assignment release checks stay required. The independently
 hashed source packet lives in PA31's source-iteration directory.
+
+The [contract builder/capture checkpoint](../docs/pa31-contract-builders-checkpoint.md)
+qualifies real generic const helper bodies, actual source callable Copy evidence,
+closure capture field proofs and typed-wildcard reborrow evaluation. Existing
+caller assumptions, source traits, lifetime debts and const/safety checks remain
+required. Contract intrinsic/runtime transformations, imported body/value/API
+transport and complete assignment publication remain outstanding.

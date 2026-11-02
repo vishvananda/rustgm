@@ -125,3 +125,10 @@ Run the owning `test-pa24` and `test-native-pa24` targets and preserve root
 text, independent-source and native-suite coverage. Follow
 `TESTING_AND_REFERENCES.md` and use the storage/resource guards. Student export
 is a later operation; this repository owns the full reference implementation.
+
+The [contract builder/capture checkpoint](../docs/pa31-contract-builders-checkpoint.md)
+qualifies real generic const helper bodies, actual source callable Copy evidence,
+closure capture field proofs and typed-wildcard reborrow evaluation. Existing
+caller assumptions, source traits, lifetime debts and const/safety checks remain
+required. Contract intrinsic/runtime transformations, imported body/value/API
+transport and complete assignment publication remain outstanding.

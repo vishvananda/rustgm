@@ -1,0 +1,91 @@
+{
+  "profile": "Pinned1.98 88d9 x86_64 Linux edition2024 panicabort RUSTC_BOOTSTRAP=1. Required function language target has GenericRequirementNone; ordinary calls retain real written constness and trait obligations.",
+  "cases": [
+    {
+      "name": "native-item",
+      "path": "native-item.rs",
+      "sha256": "22f41dd41d1dbf97a69ffb97a3a751ae3cb1431d858014e6c6ff4c201476f085",
+      "status": 0
+    },
+    {
+      "name": "native-closure",
+      "path": "native-closure.rs",
+      "sha256": "942fc3c9a0a3f93844d9d248ede3fac41f37ef7639647bc439db3ea87e82d9e4",
+      "status": 0
+    },
+    {
+      "name": "const-identity",
+      "path": "const-identity.rs",
+      "sha256": "aac06325f1f2e1c6f8752d54cdd17b1d11b3fd3efc91723cef1b8dae715f5746",
+      "status": 0
+    },
+    {
+      "name": "ordinary-nonconst",
+      "path": "ordinary-nonconst.rs",
+      "sha256": "c953fefbdbe9afe808448dbeeccee34e22bf5d0015e53ff74c2f39e471deeeb9",
+      "status": 0
+    },
+    {
+      "name": "nonconst-const-use",
+      "path": "nonconst-const-use.rs",
+      "sha256": "5572971d0171170cd53c982ea553dd0e6347282bf9e21c2c415765fc00221977",
+      "status": 1
+    },
+    {
+      "name": "wrong-struct-owner",
+      "path": "wrong-struct-owner.rs",
+      "sha256": "5d09fe780e4f6ad80d5696880d998ef8185a1f8e8a2723d736dc60730ed8705c",
+      "status": 1
+    },
+    {
+      "name": "wrong-trait-member",
+      "path": "wrong-trait-member.rs",
+      "sha256": "7b991485c88b3551c916faa8aa9f0d4a2ed040fa8f860bcee359a793976ae75f",
+      "status": 1
+    },
+    {
+      "name": "tag-has-no-arity",
+      "path": "tag-has-no-arity.rs",
+      "sha256": "66a79341f9f9a17252865e6ff03eed67f523c2820b3ab2368252d3ebec5993b2",
+      "status": 0
+    },
+    {
+      "name": "all-function-claims",
+      "path": "all-function-claims.rs",
+      "sha256": "dc962514c896e97497c9b80f4927fe83c800870751ed0c78c4b9d7cbbdf1bf1c",
+      "status": 0
+    },
+    {
+      "name": "wrong-predicate",
+      "path": "wrong-predicate.rs",
+      "sha256": "d5585e73f4acc2d0579447416121813a5c164d95cdbfb8f233ce065130ddebb5",
+      "status": 1
+    }
+  ],
+  "native": [
+    {
+      "case": "native-item",
+      "observer": "native.c",
+      "sha256": "4283f29a366cad8cba3be26708d20572bd87d8ac294ae419d752529ee6e902e8",
+      "stdout": "7\n"
+    },
+    {
+      "case": "native-closure",
+      "observer": "native.c",
+      "sha256": "4283f29a366cad8cba3be26708d20572bd87d8ac294ae419d752529ee6e902e8",
+      "stdout": "7\n"
+    },
+    {
+      "case": "const-identity",
+      "observer": "native.c",
+      "sha256": "4283f29a366cad8cba3be26708d20572bd87d8ac294ae419d752529ee6e902e8",
+      "stdout": "7\n"
+    }
+  ],
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir/src/lang_items.rs": "af62146fd0255b1b8baea76309e13eb00ff5b9a8ffe110348beba4deb3569690",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/contracts.rs": "3153f260290aa5a47fadc548a0f19dd932c81b6241f13003fdffe80b1631b11d",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/intrinsics/mod.rs": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_ast_lowering/src/contract.rs": "427c97820a06deebc32e2129d1703c96a8fa3e4632522113d141e087c0283c92"
+  }
+}

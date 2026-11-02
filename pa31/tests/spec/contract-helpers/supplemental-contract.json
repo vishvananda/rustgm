@@ -1,0 +1,97 @@
+{
+  "profile": "Pinned1.98 88d9 x86_64 Linux edition2024 panicabort RUSTC_BOOTSTRAP=1. Required function language target has GenericRequirementNone; ordinary calls retain real written constness and trait obligations.",
+  "cases": [
+    {
+      "name": "original-header-native",
+      "path": "original-header-native.rs",
+      "sha256": "8900b353bcaeda16fbb8e88ea05d3be2882f6174c7f05884484a485b2e99a5ac",
+      "status": 0
+    },
+    {
+      "name": "original-header-const",
+      "path": "original-header-const.rs",
+      "sha256": "9dab629b833df86deedb6650d7f8d0d5070ab4d073f6aebf897b6026a6c9f2cf",
+      "status": 0
+    },
+    {
+      "name": "original-header-const-no-feature",
+      "path": "original-header-const-no-feature.rs",
+      "sha256": "ef7362eb6abdf67bd987910d53db56c812deb710900c72bd2d97d2521ee773b1",
+      "status": 0
+    },
+    {
+      "name": "duplicate-claim",
+      "path": "duplicate-claim.rs",
+      "sha256": "88e7454888122efea31f7e9af666185369bba865cdfa9ebf5b17225a76f73453",
+      "status": 1
+    },
+    {
+      "name": "cfg-removed-claim",
+      "path": "cfg-removed-claim.rs",
+      "sha256": "b8a651eb00dd4db20570d577ec461b2e0ff8d5659abb0adebd1a77e348107ed6",
+      "status": 0
+    },
+    {
+      "name": "captured-bool",
+      "path": "captured-bool.rs",
+      "sha256": "c89da5a419be3e6d04fea2f83140c742d0a5d10e78ee7d85a46d662d9568395d",
+      "status": 0
+    },
+    {
+      "name": "captured-nominal",
+      "path": "captured-nominal.rs",
+      "sha256": "6a2f1e6541a4544c04ee99d3052e3f6e62e52312dcda89f9cee75a41ce693d34",
+      "status": 0
+    },
+    {
+      "name": "captured-noncopy",
+      "path": "captured-noncopy.rs",
+      "sha256": "ca284c73c6bfe57652c5e36e2b38ba0d342b550bb7639b8d51001059b83aa0e4",
+      "status": 1
+    },
+    {
+      "name": "captured-borrow-escape",
+      "path": "captured-borrow-escape.rs",
+      "sha256": "96654b4565e387884bb8bffeb16344a8b509ef0cf1b07b81a1186bbc37742912",
+      "status": 1
+    }
+  ],
+  "native": [
+    {
+      "case": "original-header-native",
+      "observer": "native.c",
+      "sha256": "4283f29a366cad8cba3be26708d20572bd87d8ac294ae419d752529ee6e902e8",
+      "stdout": "7\n"
+    },
+    {
+      "case": "original-header-const",
+      "observer": "native.c",
+      "sha256": "4283f29a366cad8cba3be26708d20572bd87d8ac294ae419d752529ee6e902e8",
+      "stdout": "7\n"
+    },
+    {
+      "case": "captured-bool",
+      "observer": "native.c",
+      "sha256": "4283f29a366cad8cba3be26708d20572bd87d8ac294ae419d752529ee6e902e8",
+      "stdout": "7\n"
+    },
+    {
+      "case": "captured-nominal",
+      "observer": "native.c",
+      "sha256": "4283f29a366cad8cba3be26708d20572bd87d8ac294ae419d752529ee6e902e8",
+      "stdout": "7\n"
+    }
+  ],
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir/src/lang_items.rs": "af62146fd0255b1b8baea76309e13eb00ff5b9a8ffe110348beba4deb3569690",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/contracts.rs": "3153f260290aa5a47fadc548a0f19dd932c81b6241f13003fdffe80b1631b11d",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/intrinsics/mod.rs": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_ast_lowering/src/contract.rs": "427c97820a06deebc32e2129d1703c96a8fa3e4632522113d141e087c0283c92"
+  },
+  "predeclared_contracts": {
+    "obj/parallel/source-contract-helpers-v1/header-contract.json": "357223145983cf29bce387577eee9439e38e81bd1d254379e591edf0ba5de145",
+    "obj/parallel/source-contract-helpers-v1/capture-contract.json": "764474bd861080b54df02681c06446c18b778e1c2e19e0e25984df027268a1dc"
+  },
+  "predecessor_contract_sha256": "eb1508accd85908c317e672d3d984f371517b8f70a8192b78c5a56fc689df7aa",
+  "reference_correction": "Pinned Rust accepts this same-crate const call without a root contracts feature request. The earlier rejection hypothesis and actual successful diagnostics remain preserved; the required outcome is acceptance. Cross-crate API authority remains a separate contract."
+}

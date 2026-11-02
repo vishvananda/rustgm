@@ -1,0 +1,39 @@
+{
+  "profile": "Pinned1.98 88d9 x86_64 Linux edition2024 panicabort RUSTC_BOOTSTRAP=1. Required function language target has GenericRequirementNone; ordinary calls retain real written constness and trait obligations.",
+  "cases": [
+    {
+      "name": "lookalike-copy",
+      "path": "lookalike-copy.rs",
+      "sha256": "dd274f53444ecdc1041866693338794d94abad70af63eb8dd530ea97f872573b",
+      "status": 1
+    },
+    {
+      "name": "captured-mutable-reference",
+      "path": "captured-mutable-reference.rs",
+      "sha256": "0d0c4154372e3a114360a2ad024bda89b5c8fa4fdebe82e06b6f12b67514ae54",
+      "status": 1
+    },
+    {
+      "name": "reference-mention",
+      "path": "reference-mention.rs",
+      "sha256": "b9b84bcbea9b91cbb29e78bbbe3efec1789a044476d1fdf50008635c29ebb999",
+      "status": 0
+    }
+  ],
+  "native": [
+    {
+      "case": "reference-mention",
+      "observer": "reference.c",
+      "sha256": "44dcedd55d71180654fc1f3c8c0b964c80b4a2d6464d6755fe0ad3462d64d588",
+      "stdout": "7 9\n"
+    }
+  ],
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir/src/lang_items.rs": "af62146fd0255b1b8baea76309e13eb00ff5b9a8ffe110348beba4deb3569690",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/contracts.rs": "3153f260290aa5a47fadc548a0f19dd932c81b6241f13003fdffe80b1631b11d",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/intrinsics/mod.rs": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_ast_lowering/src/contract.rs": "427c97820a06deebc32e2129d1703c96a8fa3e4632522113d141e087c0283c92"
+  },
+  "reference_note": "The lookalike control uses an ordinary function so missing no_core Destruct cannot mask the actual non-language trait obligation. Its previous const input/diagnostics remain retained.",
+  "predecessor_extra_sha256": "fd83800f065246662d11186e86659f453186706944ac341dbc440c78d63e61a0"
+}

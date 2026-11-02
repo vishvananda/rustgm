@@ -1,0 +1,64 @@
+{
+  "profile": "Pinned1.98 88d9 x86_64 Linux edition2024 panicabort RUSTC_BOOTSTRAP=1. Required function language target has GenericRequirementNone; ordinary calls retain real written constness and trait obligations.",
+  "predecessor_contract_sha256": "3181773fb0946fd892ee332f2822df066c2188f0b2be84446c91af41e7789239",
+  "cases": [
+    {
+      "name": "plain-static",
+      "path": "plain-static.rs",
+      "sha256": "1e4c6311ac69e951080c985e95dfa1626250fa4a4490a568c5ae0c7b82c911d6",
+      "status": 0
+    },
+    {
+      "name": "plain-unbounded",
+      "path": "plain-unbounded.rs",
+      "sha256": "e780306701e89882065ec29e7a20e6331531e33ae9460762d4c208e4653d653b",
+      "status": 0
+    },
+    {
+      "name": "plain-static-escape",
+      "path": "plain-static-escape.rs",
+      "sha256": "f3997133ac3969e01f73afa04b9d95253bc5c0d21328155be568ac2e01b094f1",
+      "status": 1
+    },
+    {
+      "name": "untagged-item",
+      "path": "untagged-item.rs",
+      "sha256": "e295b71a09639054536605c8a4ac85989ecaa004035ed20317b46bda642874b5",
+      "status": 0
+    },
+    {
+      "name": "untagged-no-static",
+      "path": "untagged-no-static.rs",
+      "sha256": "67191641821e3503737167ca248c04b5d8a047fd92877290e72bc8a2474c146b",
+      "status": 0
+    },
+    {
+      "name": "untagged-no-copy",
+      "path": "untagged-no-copy.rs",
+      "sha256": "f03329ce909b5e1408097b2eb86b1276c4ae925fa927e99bbb82bd4663161d34",
+      "status": 0
+    },
+    {
+      "name": "untagged-plain",
+      "path": "untagged-plain.rs",
+      "sha256": "56e25fe97ef4367a6d2822767ddc359a09bda6d05087ab55d21fb8701ef47041",
+      "status": 0
+    },
+    {
+      "name": "lookalike-copy",
+      "path": "lookalike-copy.rs",
+      "sha256": "dd274f53444ecdc1041866693338794d94abad70af63eb8dd530ea97f872573b",
+      "status": 1
+    }
+  ],
+  "native": [],
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir/src/lang_items.rs": "af62146fd0255b1b8baea76309e13eb00ff5b9a8ffe110348beba4deb3569690",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/contracts.rs": "3153f260290aa5a47fadc548a0f19dd932c81b6241f13003fdffe80b1631b11d",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/intrinsics/mod.rs": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_ast_lowering/src/contract.rs": "427c97820a06deebc32e2129d1703c96a8fa3e4632522113d141e087c0283c92"
+  },
+  "predecessor_outlives_sha256": "4029a82eed7f50bed8d57366aa408adbfbfea30366faf9cc60e76a3345e8732e",
+  "predecessor_control_contract_sha256": "2338763341996af74a9f18a9e8b30c4d43b75271346d334db974e0b4b953554a",
+  "reference_correction": "The initial no-Copy const controls need a real Destruct declaration in no_core. The Copy/static isolation controls now use ordinary generic functions so const-drop prerequisites do not confound their result. Original failed inputs/contract/diagnostics retained; the original ten required outcomes and three natives are unchanged. The lookalike trait control also uses an ordinary function, independently observed by extra-reference-v1."
+}

@@ -415,6 +415,23 @@ The [source iteration checkpoint](docs/pa26-source-iteration-checkpoint.md)
 records exact linear work/storage, native drop opponents and retained transport
 requirements. Imported protocols still require authentic declarations and bodies.
 
+Source contract helper tags are free-function identities with no fixed generic
+arity. They confer no const/unsafe permission or replacement body. Consume the
+real generic bodies and source call constraints. A selected source Copy/Clone
+marker has no implementation/method target: use the same authenticated ordinary
+role classifier for open and canonical call goals. For closures, prove that
+actual trait on each typed stored capture in the current query/caller, retaining
+nominal formation, lifetime and suspended-child evidence. Keep one cursor in the
+existing optional language-condition owner; do not replay prior fields or use
+physical layout as trait proof. A genuine contextual reborrow evaluates its
+place even when a typed wildcard discards the result; only an unadjusted wildcard
+remains a non-reading mention. The
+[contract builder checkpoint](docs/pa31-contract-builders-checkpoint.md) records
+concrete/generic/projected opponents, native effects and linear work. Contract
+check intrinsic execution, attribute transformations and imported authority
+remain separate required consumers.
+
+
 
 The source rustc_no_mir_inline restriction authenticates the feature, active
 function/method owner, exact effect, nonforeign definition and source image.

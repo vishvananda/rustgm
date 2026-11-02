@@ -1,0 +1,36 @@
+{
+  "profile": "Pinned1.98 88d9 x86_64 Linux edition2024 panicabort RUSTC_BOOTSTRAP=1. Required function language target has GenericRequirementNone; ordinary calls retain real written constness and trait obligations.",
+  "cases": [
+    {
+      "name": "generic-capture",
+      "path": "generic-capture.rs",
+      "sha256": "676936902f8773228681871c250bdc977504e2a243a0fffc5f58dba3b88774f4",
+      "status": 0
+    },
+    {
+      "name": "projected-capture",
+      "path": "projected-capture.rs",
+      "sha256": "39865340533dd3a4684f629c9d90a45a6adea71bcbc5741a8df2fffd456f0f35",
+      "status": 0
+    },
+    {
+      "name": "generic-noncopy-capture",
+      "path": "generic-noncopy-capture.rs",
+      "sha256": "94fee1ee52377a16f4aeffe133c0f1ad499c30b560885e969b534be72cae8d57",
+      "status": 1
+    },
+    {
+      "name": "generic-nonstatic-capture",
+      "path": "generic-nonstatic-capture.rs",
+      "sha256": "22f9a336ef48551b4c37834e766c433dc7f435b58439406a379d2f643a9d9bd0",
+      "status": 1
+    }
+  ],
+  "native": [],
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir/src/lang_items.rs": "af62146fd0255b1b8baea76309e13eb00ff5b9a8ffe110348beba4deb3569690",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/contracts.rs": "3153f260290aa5a47fadc548a0f19dd932c81b6241f13003fdffe80b1631b11d",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/intrinsics/mod.rs": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_ast_lowering/src/contract.rs": "427c97820a06deebc32e2129d1703c96a8fa3e4632522113d141e087c0283c92"
+  }
+}

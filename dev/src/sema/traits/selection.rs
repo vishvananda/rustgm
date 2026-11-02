@@ -38,6 +38,7 @@ pub(in crate::sema) use result_templates::symbolic_result;
 pub(in crate::sema) use search::callable_layouts;
 #[cfg(test)]
 pub(crate) use search::copy_trace;
+pub(in crate::sema) use search::copying_predicate;
 pub(in crate::sema) use search::may_overlap;
 #[cfg(test)]
 pub(in crate::sema) use search::specialization_layouts;

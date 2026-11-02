@@ -86,6 +86,15 @@ and whole assignments remain required. Prior full CI41503512103 on97861a4eb
 passes every gate. Root stays alone in the same btrfs tree with all guards and
 bounded warm caches; no worker or original library artifact is added.
 
+Root's [contract builder/capture checkpoint](pa31-contract-builders-checkpoint.md)
+now qualifies private29/production27,38 independent source programs,8 natives,
+linear stored-field proofs and PA24 482/482. CLI035e3b48 clears LIB-119's source
+builder and reaches LIB-120's nested diagnostic attribute expression in original
+legacy_int_modules.rs. Check intrinsic/macro execution, imported authority and
+all prior whole-assignment requirements remain required. Full predecessor
+CI41514507772 on9950910f0 passes every gate. Root remains alone with the same
+btrfs tree, warm caches, budgets and scoped cleanup; no original artifact exists.
+
 Public788889aac contains the qualified Comptime/v8 checkpoint; its full
 CI40976018856 is terminal failed on two later regressions, repaired as below.
 Private201 and production35, full v7/v8 CLI/native,

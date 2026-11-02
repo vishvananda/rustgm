@@ -91,9 +91,12 @@ pub enum LangItem {
     Iterator,
     IteratorNext,
     IntoIter,
+    ContractBuildCheckEnsures,
+    ContractCheckRequires,
+    ContractCheckEnsures,
 }
 impl LangItem {
-    pub const ALL: [Self; 75] = [
+    pub const ALL: [Self; 78] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -169,6 +172,9 @@ impl LangItem {
         Self::Iterator,
         Self::IteratorNext,
         Self::IntoIter,
+        Self::ContractBuildCheckEnsures,
+        Self::ContractCheckRequires,
+        Self::ContractCheckEnsures,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -248,6 +254,9 @@ impl LangItem {
             Self::Iterator => 72,
             Self::IteratorNext => 73,
             Self::IntoIter => 74,
+            Self::ContractBuildCheckEnsures => 75,
+            Self::ContractCheckRequires => 76,
+            Self::ContractCheckEnsures => 77,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -327,6 +336,9 @@ impl LangItem {
             "iterator" => Some(Self::Iterator),
             "next" => Some(Self::IteratorNext),
             "into_iter" => Some(Self::IntoIter),
+            "contract_build_check_ensures" => Some(Self::ContractBuildCheckEnsures),
+            "contract_check_requires" => Some(Self::ContractCheckRequires),
+            "contract_check_ensures" => Some(Self::ContractCheckEnsures),
             "offset_of" => Some(Self::OffsetOf),
             _ => None,
         }

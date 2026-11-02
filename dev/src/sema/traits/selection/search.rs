@@ -8,6 +8,8 @@ mod builtins;
 mod callable_queries;
 mod callables;
 mod cloning;
+mod upvar_markers;
+pub(in crate::sema) use cloning::copying_predicate;
 mod coherence;
 mod coinduction;
 #[cfg(test)]
@@ -601,6 +603,12 @@ impl Search<'_> {
         }
         if frame.normalizing() {
             return self.accept_normalization(facts, frame, decision);
+        }
+        if matches!(
+            frame.language.as_deref(),
+            Some(mechanical::Pending::Captures(_))
+        ) {
+            return self.accept_capture_marker(facts, frame, decision);
         }
         if matches!(
             frame.language.as_deref(),

@@ -56,9 +56,11 @@ impl Collector<'_> {
         let (conversion, borrow) = self.references.get(&work.node).copied().ok_or_else(|| {
             checker.error(work.node, "missing capture reference conversion selection")
         })?;
-        if work.dereferences != 0 || work.receiver.is_some() || matches!(work.usage, Use::Mention) {
+        if work.dereferences != 0 || work.receiver.is_some() {
             return Err(checker.error(work.node, "conflicting capture reference conversion uses"));
         }
+        // A contextual reborrow evaluates the place even with a wildcard
+        // destination. Only an unadjusted wildcard remains a non-reading mention.
         let usage = match checker.head(work.node, borrow)? {
             Some(Constructor::Reference { mutable: true, .. }) => Use::Mutable,
             Some(Constructor::Reference { mutable: false, .. }) => Use::Shared,

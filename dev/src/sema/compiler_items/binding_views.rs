@@ -378,7 +378,10 @@ fn role_kind(role: LangItem) -> DefKind {
         | LangItem::OffsetOf
         | LangItem::IntoTryType
         | LangItem::IteratorNext
-        | LangItem::IntoIter => DefKind::Function,
+        | LangItem::IntoIter
+        | LangItem::ContractBuildCheckEnsures
+        | LangItem::ContractCheckRequires
+        | LangItem::ContractCheckEnsures => DefKind::Function,
         LangItem::ControlFlowContinue
         | LangItem::ControlFlowBreak
         | LangItem::ResultOk

@@ -27,7 +27,10 @@ pub(super) fn validate(
         | LangItem::TryBranch
         | LangItem::IteratorNext
         | LangItem::IntoIter => Owner::Member,
-        LangItem::IntoTryType => Owner::Function,
+        LangItem::IntoTryType
+        | LangItem::ContractBuildCheckEnsures
+        | LangItem::ContractCheckRequires
+        | LangItem::ContractCheckEnsures => Owner::Function,
         LangItem::ControlFlowContinue
         | LangItem::ControlFlowBreak
         | LangItem::ResultOk
@@ -54,6 +57,20 @@ pub(super) fn validate(
             package,
             declaration.origin,
             "source Try role has the wrong actual declaration kind or owner",
+        ));
+    }
+    if matches!(
+        role,
+        LangItem::ContractBuildCheckEnsures
+            | LangItem::ContractCheckRequires
+            | LangItem::ContractCheckEnsures
+    ) && (facts.foreign_owners.contains_key(&declaration.definition)
+        || !matches!(actual, Kind::Item(index) if matches!(ast.items[index as usize].kind, ItemKind::Function { body: Some(_), .. })))
+    {
+        return Err(error(
+            package,
+            declaration.origin,
+            "contract language item requires an actual free function definition",
         ));
     }
     if matches!(role, LangItem::IteratorNext | LangItem::IntoIter) {
