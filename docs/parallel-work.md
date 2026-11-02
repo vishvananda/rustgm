@@ -42,6 +42,14 @@ Imported SIMD/optimizer policy and earlier runtime/dispatch requirements remain.
 Full predecessor CI41474033332 passes every gate. Root remains alone with the
 same btrfs tree, warm caches, resource limits and scoped artifact cleanup.
 
+Latest source d6e091a3f qualifies the documentation-label boundary; current core
+reaches recurring LIB-046 source-policy storage exhaustion in prelude/v1.rs.
+See [the checkpoint](pa40-documentation-label-checkpoint.md). Testing9e12b64fa
+repairs seven exact compilation-owner size guards exposed by full CI41481896869;
+that run failed despite its other2513 private tests passing. Full successor is
+tracked separately. Root continues alone with the same budgets/tree/caches;
+measure retention and redundant query allocation before changing the algorithm.
+
 Public788889aac contains the qualified Comptime/v8 checkpoint; its full
 CI40976018856 is terminal failed on two later regressions, repaired as below.
 Private201 and production35, full v7/v8 CLI/native,

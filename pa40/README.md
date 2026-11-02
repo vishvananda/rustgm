@@ -10,6 +10,13 @@ implementation priority, source pins and the migration of unreleased numbers.
 
 Pinned edition differences and remaining mandatory attribute semantics.
 
+The [primitive documentation packet](tests/spec/primitive-documentation/README.md)
+validates the compilation-required rustc_doc_primitive marker on real modules,
+including mixed inner/outer captures, with actual source/macro authority. A
+label is any string; it cannot install a primitive type or bypass body checks.
+Native, metadata-export and real two-field layout controls remain separate from
+Rustdoc rendering, general edition closure and original crate artifacts.
+
 PA34 already owns the 2021/2024 behavior needed by the first crate graph. Complete
 2015/2018 and remaining edition/attribute semantics here. Required internal source
 features cannot be deferred past an earlier library that actually exercises them.

@@ -114,6 +114,18 @@ actual parsed root request or token-origin macro allowance in every crate mode.
 The [source checkpoint](docs/pa31-advisory-source-checkpoint.md) records the
 current backend boundary and deferred advisory work.
 
+Validate rustc_doc_primitive as a documentation label on an actual module, under
+rustc_attrs or its real attribute-envelope allowance. The pinned compiler accepts
+any string, including unknown/empty names. It rejects unsafe wrappers, malformed
+forms, wrong targets and hard duplicates. Inner and outer captures of the same
+parsed module share duplicate state; use a sparse prepaid draft scoped to the
+existing owner walk, then discard it. The retained AST already owns the original
+label. It grants no primitive type, language item, layout, body/const/unsafe or
+privacy permission and needs no semantic metadata fence. The
+[PA40 documentation-label packet](pa40/tests/spec/primitive-documentation/README.md)
+records source, native and original-core evidence separately from whole attribute
+closure and original library artifacts.
+
 Retain `optimize(size|speed|none)` as typed, source-owned intent, using the existing
 configured-owner walk and sparse header promises. Validate its optimize_attribute
 request, actual attribute-envelope macro authority, function/method/closure body,
