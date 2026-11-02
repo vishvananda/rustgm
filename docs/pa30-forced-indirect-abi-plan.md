@@ -3,7 +3,7 @@
 The current compiler is qualified through source `c6369af04` and the
 [joined Cell/conversion checkpoint](pa31-cell-advisory-checkpoint.md). Its
 unchanged core types attempt reaches LIB-111, the local marked repr(C) struct in
-ffi/va_list.rs:416. Root-only work resumed on 2026-11-02, after the
+ffi/va_list.rs:416. Work is paused after the 2026-11-02
 [Provided call-input CI repair](pa29-call-input-profile-ci-repair.md). Both former
 worker handoffs are integrated into public main; workers remain stopped. Use
 the existing btrfs worktree at /mnt/vizier/rustgm-scratch/rustgm-pa26-work.

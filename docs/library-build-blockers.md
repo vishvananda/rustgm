@@ -19,7 +19,9 @@ Use the [current execution plan](library-bootstrap-acceleration.md) to choose wo
 real artifact/source consumers, demanded imported-body proof and consolidated
 qualification. The existing complete assignment and upstream gates remain required.
 
-Root-only work resumed on 2026-11-02. The existing warm worktree and scratch
+Work is paused at the user's request after the 2026-11-02 integration checkpoint.
+Both former workers remain stopped and their completed commits are on main.
+The existing warm worktree and scratch
 now reside on btrfs at /mnt/vizier/rustgm-scratch/rustgm-pa26-work, with the home
 path retained as an alias. Source/tool and saved binary hashes survived the move;
 resource caps and the150GiB reserve are unchanged. No additional worker, tree or
@@ -33,7 +35,10 @@ SourceFrom native26,14 extra owner/negative controls and fresh Provided native7
 pass. See [the repair evidence](pa29-call-input-profile-ci-repair.md). Current
 CLI71054639 still reaches LIB-111 at ffi/va_list.rs416 in22.01s with all722 hashes
 and the original finite profile unchanged. Full successor CI remains pending.
-No original library artifact or whole-PA completion is implied.
+No original library artifact or whole-PA completion is implied. Push CI for
+public191649b6a passes; full qualification of the repaired compiler is queued
+separately. Resume with the actual LIB-111 ABI implementation and the unchanged
+original-source observation, then continue semantic checking and artifact work.
 
 The source pin is Rust `88d9e12ae178fab0fb5cc050a94da85685d449ea`, edition 2024,
 x86-64 Linux, panic abort. Use the existing immutable shared source tree and
@@ -133,9 +138,9 @@ No full semantic completion or original crate artifact is implied. Core receipt
 B obj/parallel/source-from-integration-v1/core-v3/receipt.json SHA
 `eff395f97115562a8795fbb0800976ea837d35415dd8d127eee2e888c67755a0`.
 
-Work has resumed with Root alone; both existing workers remain stopped with
-their source handoffs integrated. Publicb87's fullCI41047857876 passed;
-full CI41054298940 for the published f290002c8 compiler remains in progress.
+Historical checkpoint: publicb87's fullCI41047857876 passed. Full
+CI41054298940 for f290002c8 subsequently failed; the qualified repair and current
+pause are recorded above. Both worker handoffs remain integrated.
 
 Previous qualified source6697b601a/CLIb84d28999 passes the LIB046 policy-work
 recurrence and reaches LIB110: `rustc_confusables("swap")`, original cell.rs508
