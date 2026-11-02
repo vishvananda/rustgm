@@ -2,6 +2,14 @@
 
 Planned: no graded manifest or generated reference outputs yet.
 
+`spec/diagnostic-values/` freezes22 independently declared source outcomes and
+one native observer for nested attribute macros, opaque expression forwarding,
+real aliases/shadowing, inline/external module scope, cfg removal and hard
+payload/feature/duplicate rejection. The contract binds the actual upstream
+legacy integer-module attribute and every source/data file. This is a source
+identity consumer of PA8 expansion; complete attribute consumers and imported
+authority retain PA40/29 requirements. See the packet README and qualification.
+
 `spec/source-optimize/` owns the declared 49-case source optimizer-intent packet,
 including body/closure/trait targets, macro authority, independent inline policy,
 const/unsafe/borrow opponents and a native C observer. Its contract and primary

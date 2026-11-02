@@ -274,3 +274,38 @@ fn edition_fixture(name: &str) -> std::io::Result<String> {
             .join(format!("../pa34/tests/spec/driver-edition/{name}.rs")),
     )
 }
+
+#[test]
+fn source_expansion_view_consumes_actual_bindings_and_rejects_the_session_only_view()
+-> Result<(), Box<dyn std::error::Error>> {
+    let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../pa31/tests/spec/diagnostic-values");
+    let source = std::fs::read_to_string(folder.join("legacy.rs"))?;
+    let args = [
+        "--source-core",
+        "minicore@attribute_values",
+        "--crate-name",
+        "minicore",
+        "--crate-disambiguator",
+        "attribute_values",
+    ];
+    let output = run_args("--emit-expanded-crate", &source, &args)?;
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let rendered = String::from_utf8(output.stdout)?;
+    assert!(rendered.starts_with("expanded-crate 1\n"));
+    assert!(rendered.contains("u8_legacy_mod") && rendered.contains("i16_legacy_mod"));
+    let output = run_args("--count-expanded-crate", &source, &args)?;
+    assert!(output.status.success() && !output.stdout.is_empty());
+    let output = run_args("--emit-expanded", &source, &args)?;
+    assert_eq!(output.status.code(), Some(2));
+    assert!(output.stdout.is_empty());
+    let invalid = std::fs::read_to_string(folder.join("missing-feature.rs"))?;
+    let output = run_args("--emit-expanded-crate", &invalid, &args)?;
+    assert_eq!(output.status.code(), Some(1));
+    assert!(output.stdout.is_empty());
+    Ok(())
+}

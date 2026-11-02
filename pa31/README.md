@@ -405,3 +405,11 @@ closure capture field proofs and typed-wildcard reborrow evaluation. Existing
 caller assumptions, source traits, lifetime debts and const/safety checks remain
 required. Contract intrinsic/runtime transformations, imported body/value/API
 transport and complete assignment publication remain outstanding.
+
+The [diagnostic value checkpoint](../docs/pa31-diagnostic-values-checkpoint.md)
+expands actual nested/source/aliased attribute macros, preserving literal values,
+original owners and inline/external module lookup. A paid module-item queue
+retains outer wrappers when inner attributes introduce another owner. The full
+original core clears that declaration and next reaches
+rustc_allow_const_fn_unstable(const_eval_select) in panic.rs. Real const feature
+allowances and imported stability/provenance remain required; PA31 stays planned.

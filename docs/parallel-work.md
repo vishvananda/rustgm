@@ -95,6 +95,22 @@ all prior whole-assignment requirements remain required. Full predecessor
 CI41514507772 on9950910f0 passes every gate. Root remains alone with the same
 btrfs tree, warm caches, budgets and scoped cleanup; no original artifact exists.
 
+
+Root's [diagnostic value checkpoint](pa31-diagnostic-values-checkpoint.md) now
+qualifies24 independent programs, private14/production92,48 expanded CLI controls,
+semantic constants, maintainer native7 and PA8 126/126. A paid module-item queue
+preserves every outer owner across inner module attributes; the simpler first
+candidate's unchanged-core failure is retained. The SourceCore driver selects the
+actual expanded-crate view rather than the session-only view. CLI912ff4ef clears
+LIB-120 and reaches LIB-121 rustc_allow_const_fn_unstable(const_eval_select) in
+original panic.rs163,15.48s/375 opens/all722 unchanged. The six-file configuration
+binding explicitly rebinds only driver view validation; emit-types target/args,
+capAllow and finite limits are unchanged. Source library provenance publication
+and imported consumers remain required, with no library artifact claimed.
+Full predecessor41529659240 failed two stale Pending80 assertions; both repaired
+96-byte guards pass the focused gate, shared Frame1312 unchanged. Root remains
+alone; all worker/CPU/disk and five-minute development policies remain in force.
+
 Public788889aac contains the qualified Comptime/v8 checkpoint; its full
 CI40976018856 is terminal failed on two later regressions, repaired as below.
 Private201 and production35, full v7/v8 CLI/native,

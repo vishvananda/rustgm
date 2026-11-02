@@ -23,6 +23,16 @@ source provenance, expansion ancestry and syntax hygiene distinct. Every library
 I/O or environment dependency is an explicit provider input at the driver boundary.
 Read `spec.md` and the pinned Rust Reference before changing these contracts.
 
+Source diagnostic attribute values also use this worklist. PA31 owns their
+source-provider authority and exact identity data; PA40 owns complete attribute
+form closure. Retain the original attribute and one demanded expression root,
+including opaque forwarding. Resolve actual macro definitions and aliases in
+the proper module scope. An external-module declaration keeps its source file
+while lookup uses the child module. Do not treat arbitrary constant expressions
+as literal metadata or enter ordinary body scopes for invalid values. The
+[source packet](../pa31/tests/spec/diagnostic-values/README.md) records this
+consumer without changing the whole assignment's completion status.
+
 ## Tool surface and tests
 
 `dev/rustgm --emit-expanded-crate -o OUTPUT SOURCE` emits the deterministic view

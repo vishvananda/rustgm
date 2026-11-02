@@ -48,6 +48,10 @@ fn ordinary_source_concat_keeps_the_shared_budgeted_eager_fast_path_absent() -> 
 }
 #[test]
 fn source_eager_role_addition_keeps_actual_hot_and_definition_layouts() {
+    assert_eq!(size_of::<Option<Parent>>(), 4);
+    assert_eq!(Parent::new(999_999).map(Parent::index), Some(999_999));
+    assert!(Parent::new(usize::MAX).is_none());
+    assert!(Parent::new(u32::MAX as usize).is_none());
     eprintln!(
         "byte layouts Builtin={} Body={} Definition={} SyntaxKind={} Node={} SourceCore={} Package={}",
         size_of::<Builtin>(),

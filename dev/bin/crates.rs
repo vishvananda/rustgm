@@ -107,7 +107,7 @@ impl Options {
             if !matches!(
                 mode,
                 "--emit-names"
-                    | "--emit-expanded"
+                    | "--emit-expanded-crate"
                     | "--emit-types"
                     | "--emit-semantics"
                     | "--emit-trait-semantics"

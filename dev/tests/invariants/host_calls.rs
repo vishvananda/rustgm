@@ -186,7 +186,8 @@ fn ordinary_callable_skips_declaration_reconstruction_and_pending_const_is_not_a
         selection::Selection::Deferred
     ));
     assert_eq!(size_of::<super::super::Matched>(), 20);
-    assert_eq!(selection::callable_layouts(), (1312, 80));
+    // The source closure marker plan is cold; the shared frame stays 1312.
+    assert_eq!(selection::callable_layouts(), (1312, 96));
     println!(
         "Matched={} Eligibility={}",
         size_of::<super::super::Matched>(),

@@ -84,6 +84,7 @@ impl<S: Sources> Engine<'_, S> {
             self.calls[index]
                 .visit
                 .eager
+                .map(super::eager::Parent::index)
                 .ok_or_else(|| self.calls[index].diagnostic("derive member lost its actual list"))?
         } else {
             index
@@ -257,7 +258,10 @@ impl<S: Sources> Engine<'_, S> {
         let child = self.calls.len();
         self.calls.push(Call {
             visit: super::Visit {
-                eager: Some(index),
+                eager: Some(
+                    super::eager::Parent::new(index)
+                        .ok_or_else(|| call.diagnostic("derive parent identity overflow"))?,
+                ),
                 introduction: context,
                 ..call.visit
             },

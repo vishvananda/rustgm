@@ -10,6 +10,7 @@ pub(crate) struct Effects {
     pub policy: Option<Producer>,
     pub(super) derives: Option<Box<super::derive_lists::Transactions>>,
     pub(super) visibilities: Option<Box<super::unnamed_visibility::Causes>>,
+    pub(crate) values: Option<Box<super::metavalues::Values>>,
 }
 impl Report {
     /// Parsed optional expectations deferred by an explicit cap have no IDs or
@@ -48,7 +49,7 @@ impl<S: Sources> Engine<'_, S> {
             })
     }
     pub(super) fn lint_owner(&mut self, visit: Visit, frame: u32) -> Result<Option<Tail>, Error> {
-        let key = self.visit_key(visit);
+        let key = Self::visit_key(visit);
         let parent = self.lint_frame(frame, key)?;
         let unit = self.loader.package.unit(key.file);
         let Some(index) = unit
@@ -91,9 +92,9 @@ impl<S: Sources> Engine<'_, S> {
         }
         Ok(())
     }
-    pub(super) fn visit_key(&self, visit: Visit) -> NodeKey {
+    pub(super) fn visit_key(visit: Visit) -> NodeKey {
         NodeKey {
-            file: self.loader.package.modules[visit.module.0 as usize].file,
+            file: visit.file,
             node: visit.node,
         }
     }
@@ -103,7 +104,7 @@ impl<S: Sources> Engine<'_, S> {
         visit: Visit,
         tail: Option<Tail>,
     ) -> Result<(), Error> {
-        let key = self.visit_key(visit);
+        let key = Self::visit_key(visit);
         if let Some(producer) = self
             .attribute_effects
             .as_deref_mut()

@@ -188,6 +188,7 @@ impl<S: Sources> Engine<'_, S> {
                 removals,
                 policy: None,
                 visibilities: None,
+                values: None,
                 derives: None,
             }));
         }
@@ -245,7 +246,7 @@ impl<S: Sources> Engine<'_, S> {
     fn preflight_test_completion(&mut self, index: usize) -> Result<(), Error> {
         let call = &self.calls[index];
         if !call.notified
-            && let Some(parent) = call.visit.eager
+            && let Some(parent) = call.visit.eager.map(super::eager::Parent::index)
         {
             let pending = self
                 .calls

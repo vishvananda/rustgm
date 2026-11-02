@@ -16,6 +16,22 @@ pub(super) struct Arguments {
     context: ExpansionId,
     pub(super) pending: usize,
 }
+/// The worklist caps calls at one million. Keep its optional parent identity
+/// compact while the traversal frame distinguishes source and lookup modules.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) struct Parent(std::num::NonZeroU32);
+impl Parent {
+    pub(super) fn new(index: usize) -> Option<Self> {
+        u32::try_from(index)
+            .ok()?
+            .checked_add(1)
+            .and_then(std::num::NonZeroU32::new)
+            .map(Self)
+    }
+    pub(super) const fn index(self) -> usize {
+        (self.0.get() - 1) as usize
+    }
+}
 
 impl<S: Sources> Engine<'_, S> {
     pub(super) fn source_eager_definition(&self, index: usize) -> Result<Builtin, Error> {
@@ -131,6 +147,7 @@ impl<S: Sources> Engine<'_, S> {
         }
         self.calls[index].notified = true;
         if let Some(parent) = self.calls[index].visit.eager {
+            let parent = parent.index();
             if self.derive_outer(parent) {
                 return self.derive_completed(parent);
             }
@@ -234,7 +251,9 @@ impl<S: Sources> Engine<'_, S> {
                 node: root,
                 depth: visit.depth + 1,
                 introduction: context,
-                eager: Some(index),
+                eager: Some(Parent::new(index).ok_or_else(|| {
+                    Error::at(file, original.start, "eager parent identity overflow")
+                })?),
                 ..visit
             },
             tail,

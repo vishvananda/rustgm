@@ -45,6 +45,7 @@ mod deprecation;
 mod derive_lists;
 mod diagnostics;
 mod eager;
+pub(crate) mod metavalues;
 pub(crate) mod removed_functions;
 use application_kind::CallGrammar;
 #[path = "expansion/placeholder_bindings.rs"]
@@ -153,13 +154,15 @@ pub struct Report {
 #[derive(Clone, Copy, PartialEq, Eq)]
 struct Visit {
     module: ModuleId,
+    file: FileId,
     node: NodeId,
     owner: Option<NodeId>,
     in_block: bool,
+    literal_value: bool,
     depth: usize,
     introduction: ExpansionId,
     path_scope: ScopeId,
-    eager: Option<usize>,
+    eager: Option<eager::Parent>,
     include: Option<FileId>,
     foreign: Option<NodeKey>,
 }
@@ -169,6 +172,11 @@ enum Work {
     Visit {
         node: NodeId,
         frame: u32,
+    },
+    AttributeValue {
+        node: NodeId,
+        frame: u32,
+        scope: Scope,
     },
     /// Release frames above this mark; every visit sharing them has finished.
     Frames(u32),
@@ -418,9 +426,11 @@ impl<'a, S: Sources> Engine<'a, S> {
         engine
             .push_visit(Visit {
                 module: ModuleId(0),
+                file: engine.loader.package.modules[0].file,
                 node: root,
                 owner: None,
                 in_block: false,
+                literal_value: false,
                 depth: 0,
                 introduction: ExpansionId(0),
                 path_scope: ScopeId(0),
@@ -496,6 +506,11 @@ impl<'a, S: Sources> Engine<'a, S> {
     fn scan(&mut self) -> Result<(), Error> {
         while let Some(work) = self.work.pop() {
             match work {
+                Work::AttributeValue { node, frame, scope } => {
+                    self.work.push(Work::Restore(self.head));
+                    self.head = scope;
+                    self.work.push(Work::Visit { node, frame });
+                }
                 Work::Visit { node, frame } => {
                     let visit = Visit {
                         node,
@@ -611,6 +626,7 @@ impl<'a, S: Sources> Engine<'a, S> {
         };
         let index = self.calls.len();
         if let Some(parent) = visit.eager {
+            let parent = parent.index();
             self.calls[parent]
                 .eager
                 .as_mut()
@@ -745,15 +761,33 @@ impl<'a, S: Sources> Engine<'a, S> {
         reason = "one typed-node visit coordinates declaration, module and expansion scope transitions"
     )]
     fn visit(&mut self, mut visit: Visit, frame: u32) -> Result<(), Error> {
-        let file = self.loader.package.modules[visit.module.0 as usize].file;
+        let file = visit.file;
         super::default_items::bind_pending(&mut self.loader.package, file)?;
         let module = &self.loader.package.modules[visit.module.0 as usize];
-        let (file, module_root) = (module.file, module.root);
+        let module_root = module.root;
         let unit = self.loader.package.unit(file);
         if !unit.configured.active[visit.node.get() as usize] {
             return Ok(());
         }
         let kind = unit.configured.ast.node(visit.node).kind;
+        if visit.literal_value
+            && !matches!(
+                kind,
+                Kind::Expansion { .. }
+                    | Kind::Macro { .. }
+                    | Kind::Literal(_)
+                    | Kind::Unary {
+                        op: crate::syntax::ast::Unary::Negate,
+                        ..
+                    }
+            )
+        {
+            return Err(Error::at(
+                file,
+                unit.configured.ast.node(visit.node).span.start,
+                "attribute value must expand to a literal",
+            ));
+        }
         if matches!(kind, Kind::Attributed { .. }) && self.attribute_call(visit, file, frame)? {
             return Ok(());
         }
@@ -768,6 +802,9 @@ impl<'a, S: Sources> Engine<'a, S> {
                 },
             )?
         };
+        if matches!(kind, Kind::Attributed { .. }) {
+            self.expand_attribute_values(visit, tail)?;
+        }
         let mut item_scope = None;
         if let Kind::Item(index) = kind {
             let item = self.loader.package.unit(file).configured.ast.items[index as usize];
@@ -949,7 +986,7 @@ impl<'a, S: Sources> Engine<'a, S> {
             node: parent.node,
             ..child
         }) == parent
-            && self.lint_frame(frame, self.visit_key(child))? == tail
+            && self.lint_frame(frame, Self::visit_key(child))? == tail
         {
             return Ok(frame);
         }
@@ -989,9 +1026,11 @@ impl<'a, S: Sources> Engine<'a, S> {
         if !self.flags(file, visit.owner)?.macro_use {
             self.work.push(Work::Restore(self.head));
         }
+        self.expand_module_values(visit, child, path_scope)?;
         self.push_visit_with_tail(
             Visit {
                 module: child,
+                file: self.loader.package.modules[child.0 as usize].file,
                 node: self.loader.package.modules[child.0 as usize].root,
                 owner: None,
                 in_block: false,
@@ -1281,7 +1320,7 @@ impl<'a, S: Sources> Engine<'a, S> {
         input: &Input,
         builtin: Builtin,
     ) -> Result<ExpansionId, Error> {
-        let file = self.loader.package.modules[visit.module.0 as usize].file;
+        let file = visit.file;
         let parent = visit.introduction;
         let original = self
             .loader

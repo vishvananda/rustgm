@@ -1,0 +1,201 @@
+{
+  "schema": 1,
+  "purpose": "LIB120 actual attribute expression expansion and diagnostic identity boundaries; expected before reference generation",
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/num/shells/legacy_int_modules.rs": "b5e5541e59e1120035c4a371264c3c5e4c00f2ffb6b11935788a30c2e9701cd8"
+  },
+  "cases": [
+    {
+      "name": "literal",
+      "path": "pa31/tests/spec/diagnostic-values/literal.rs",
+      "sha256": "cefe7f425fe650649727a79531b443d3a769b9d3fcbb146f27eea5a5458b6cd8",
+      "status": 0,
+      "names": [
+        "u8_legacy_mod"
+      ]
+    },
+    {
+      "name": "legacy",
+      "path": "pa31/tests/spec/diagnostic-values/legacy.rs",
+      "sha256": "87b93f945593547f2a2a35939a4c79cc7f4226296646d9780eff023f019eb816",
+      "status": 0,
+      "names": [
+        "u8_legacy_mod",
+        "i16_legacy_mod"
+      ]
+    },
+    {
+      "name": "nested",
+      "path": "pa31/tests/spec/diagnostic-values/nested.rs",
+      "sha256": "ab81e155e6539bcd976eb725cd9a761f978490eb74e0157e27757d6a25495ada",
+      "status": 0,
+      "names": [
+        "prefixu8"
+      ]
+    },
+    {
+      "name": "module-parent-alias",
+      "path": "pa31/tests/spec/diagnostic-values/module-parent-alias.rs",
+      "sha256": "2928a1bf03bda3416e982371f503c436d60c89b5a74fda6107a5b6e5b06ef0dd",
+      "status": 1,
+      "names": []
+    },
+    {
+      "name": "shadow",
+      "path": "pa31/tests/spec/diagnostic-values/shadow.rs",
+      "sha256": "e38d590418f880dc6d716bc19fa0c7fb47043765f071c6511c21828164fbafbf",
+      "status": 0,
+      "names": [
+        "shadowed"
+      ]
+    },
+    {
+      "name": "ordinary",
+      "path": "pa31/tests/spec/diagnostic-values/ordinary.rs",
+      "sha256": "301ff380ae7b9bdc18e0af10f0b5275cfc197a449b4c876ad530bc43662ffaa7",
+      "status": 0,
+      "names": [
+        "ordinary\\n"
+      ]
+    },
+    {
+      "name": "forwarded",
+      "path": "pa31/tests/spec/diagnostic-values/forwarded.rs",
+      "sha256": "b5b4017cdc805797f0abf44cf53c9d34bd05cee18093f8c57798247bf248959c",
+      "status": 0,
+      "names": [
+        "forwarded"
+      ]
+    },
+    {
+      "name": "cfg-removed",
+      "path": "pa31/tests/spec/diagnostic-values/cfg-removed.rs",
+      "sha256": "6f875fa89d40b0dafb1f5fbc04eadae99d52d7ef0792be77d3765baee5c6d00c",
+      "status": 0,
+      "names": [
+        "kept"
+      ]
+    },
+    {
+      "name": "nonliteral",
+      "path": "pa31/tests/spec/diagnostic-values/nonliteral.rs",
+      "sha256": "6929bcf5d612abdef0567657cd9a557667fe6d3929747478c046be5dfa691069",
+      "status": 1,
+      "names": []
+    },
+    {
+      "name": "wrong-kind",
+      "path": "pa31/tests/spec/diagnostic-values/wrong-kind.rs",
+      "sha256": "b64681ff35df90ebaba928c82337b1631f03c0fa397d6e266e00d1c4dd2797c4",
+      "status": 1,
+      "names": []
+    },
+    {
+      "name": "byte-string",
+      "path": "pa31/tests/spec/diagnostic-values/byte-string.rs",
+      "sha256": "cf9eceb1f923a3903a4ea4094b66e60f82abe38d3551ab65aff1c25258e37e56",
+      "status": 1,
+      "names": []
+    },
+    {
+      "name": "block",
+      "path": "pa31/tests/spec/diagnostic-values/block.rs",
+      "sha256": "00c877d5b6e5868535ef5afe60220fe3c2472f6b8d3b286a6c9ec0d33687b2c6",
+      "status": 1,
+      "names": []
+    },
+    {
+      "name": "duplicate",
+      "path": "pa31/tests/spec/diagnostic-values/duplicate.rs",
+      "sha256": "09a59b831b1bdadc0a0e7c99b55a3386202ee3d1da1a431d155968c8dff54042",
+      "status": 1,
+      "names": []
+    },
+    {
+      "name": "missing-feature",
+      "path": "pa31/tests/spec/diagnostic-values/missing-feature.rs",
+      "sha256": "1483f7337e98fa87985a39cb0e2b33586213fe1076e955a537c2fc695c9f9c28",
+      "status": 1,
+      "names": []
+    },
+    {
+      "name": "missing-macro",
+      "path": "pa31/tests/spec/diagnostic-values/missing-macro.rs",
+      "sha256": "7c588700564d92c96c5c7e8977c2959cf21fe1aa87fdd5fc3c7b74965321af54",
+      "status": 1,
+      "names": []
+    },
+    {
+      "name": "multiple-values",
+      "path": "pa31/tests/spec/diagnostic-values/multiple-values.rs",
+      "sha256": "afd7f9d76af25e437b30f1d61c44bfcb27dc6482ee917966d8c4ba6b90bedd1d",
+      "status": 1,
+      "names": []
+    },
+    {
+      "name": "alias-function",
+      "path": "pa31/tests/spec/diagnostic-values/alias-function.rs",
+      "sha256": "77d9075996878bfe35c2cb26bdb84169c92bf5e5bbb7afb0c828b761c910fb54",
+      "status": 0,
+      "names": [
+        "aliasu8"
+      ]
+    },
+    {
+      "name": "alias-module",
+      "path": "pa31/tests/spec/diagnostic-values/alias-module.rs",
+      "sha256": "ea9790a1c3074503dc5d5b224c1ac22839051ddd476944f750bcb1219997076a",
+      "status": 0,
+      "names": [
+        "aliasu8"
+      ]
+    },
+    {
+      "name": "native",
+      "path": "pa31/tests/spec/diagnostic-values/native.rs",
+      "sha256": "347b331deea4d70979c0d19ba8b17318d63c65b900f7311d490164a3773696e7",
+      "status": 0,
+      "names": [
+        "ordinary_callable"
+      ]
+    },
+    {
+      "name": "external",
+      "path": "pa31/tests/spec/diagnostic-values/external/root.rs",
+      "sha256": "d72b4d054962d3a500444910149db810bd521a988339cf29a3e2c03905907b8e",
+      "status": 0,
+      "names": [
+        "aliasu8"
+      ]
+    },
+    {
+      "name": "external-nonliteral",
+      "path": "pa31/tests/spec/diagnostic-values/external/nonliteral.rs",
+      "sha256": "3acf5228723676c11f8e4eced061dae4026d13a9192e0025351774136c91fd0c",
+      "status": 1,
+      "names": []
+    },
+    {
+      "name": "signed-concat",
+      "path": "pa31/tests/spec/diagnostic-values/signed-concat.rs",
+      "sha256": "6a9b677cca7891fa8efa094404043a32bc5195cf19ae3c32d2fec7be7cd6d274",
+      "status": 0,
+      "names": [
+        "n-7"
+      ]
+    }
+  ],
+  "correction": "Original unexported macro_rules is textual only, so self::concat import correctly rejected by pinned rustc. Alias positive now exports its actual definition; v1 input and observation retained. Exported alias still fails on module attributes because attribute lookup uses the module scope. Added a rejecting parent-only alias, an accepted function alias and a module-local import positive. All original sources and observations retained. The isolated no_core function additionally requires its genuine Sized family. Added those declarations to the function positive only; kept prior failure. The external-module isolated no_core unit struct adds a Copy prerequisite unrelated to attributes. The child now contains only the identical macro import used by the inline-module positive; original failed child retained.",
+  "local_reference": "obj/parallel/diagnostic-values-v1/reference-v8/receipt.json",
+  "native": {
+    "observer": "pa31/tests/spec/diagnostic-values/native.c",
+    "stdout": "7\n",
+    "sha256": "dd3a1e6d991f3b66a95131e60400665cead8e2684901133f7bec86fbc4a3beea"
+  },
+  "data": [
+    {
+      "path": "pa31/tests/spec/diagnostic-values/external/selected.rs",
+      "sha256": "8dddd6631b1dc00efe7967346e5ad91f31f1ff8eea44fc88b38a63536363685d"
+    }
+  ]
+}

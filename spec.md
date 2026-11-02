@@ -239,6 +239,29 @@ work before mutation. A failed payment preserves the previous table and IDs.
 Ordinary insertion uses the same algorithm without a second table or owner.
 Do not publish these rows through an older metadata profile.
 
+Demand diagnostic attribute expressions from their retained token trees once,
+using the existing opaque registry, parser and macro worklist. Keep the original
+attribute/effect/owner witnesses and a cold typed expression root; decode the
+completed literal rather than reparsing rendered output. Module attributes use
+the module's macro scope, including its imports, while an external module's
+attribute still belongs to its declaration file. Keep those identities distinct.
+Restore the captured textual scope when visiting a delayed value. Charge syntax,
+opaque payloads and retained receipts before publication. Direct literals and
+ordinary source allocate no value column. Irreducible non-literals reject before
+ordinary body/scoping work; detached metadata does not enter the ordinary
+one-file-per-module node-scope index. Preserve the real eager parent dependency
+using a checked compact call identity, including derive members and retirement.
+Module wrappers with inner attributes retain every affected outer owner in a
+paid queue keyed by the actual module item. Replay those owners when its scope
+is created; the nearest wrapper alone does not own all declaration attributes.
+Do not recover this association with a per-module scan of every file owner.
+This first consumer owns source diagnostic identities; other attribute-expression
+consumers retain their own PA8/31/40 contracts. No computed name creates a role,
+feature allowance, const body or imported execution permission.
+The SourceCore expansion view is `--emit-expanded-crate` (or its count form),
+which runs actual configured expansion and binding completion. The PA7
+`--emit-expanded` session has no source context and must reject source options.
+
 Free unnamed constants retain real declaration identities, item keys, scopes and
 all initializer typing and evaluation obligations. Omit only their lexical name
 binding and declaration-name wakeup. Associated constants require names. Retain

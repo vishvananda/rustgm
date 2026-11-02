@@ -179,7 +179,7 @@ impl<S: Sources> Engine<'_, S> {
         if !matches!(item.kind, ItemKind::Const { .. }) || item.visibility == Visibility::Private {
             return Ok(());
         }
-        let key = self.visit_key(visit);
+        let key = Self::visit_key(visit);
         let unit = self.loader.package.unit(key.file);
         if item
             .name

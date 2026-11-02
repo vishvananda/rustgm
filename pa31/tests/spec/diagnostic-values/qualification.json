@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "state": "qualified finite source expansion/identity checkpoint; whole assignments and original artifacts remain required",
+  "contracts": [
+    {
+      "path": "pa31/tests/spec/diagnostic-values/contract.json",
+      "sha256": "821881650105c6e4000f92320c8c431c65b20a35dc90043b6e86e13aef80f793"
+    },
+    {
+      "path": "pa31/tests/spec/diagnostic-values/supplement.json",
+      "sha256": "53aa36228f11fc1358bec65dc980cec40c06af984972ce9425d9c9360044a9cb"
+    },
+    {
+      "path": "pa31/tests/spec/diagnostic-values/stacked-contract.json",
+      "sha256": "aa07cc8a0347f1f91e2b03236994c78d0d9f9e4edb84c51dc916d99efe26c0bd"
+    }
+  ],
+  "independent": [
+    {
+      "receipt": "obj/parallel/diagnostic-values-v1/reference-v8/receipt.json",
+      "sha256": "a3af63c7b776383dc749358c824cb47e8052fb0be1f146e30691bc05dfe7d30b",
+      "state": "passed",
+      "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+    },
+    {
+      "receipt": "obj/parallel/diagnostic-values-v1/supplement-reference-v1/receipt.json",
+      "sha256": "08aa554a062be775383ceafa718b56ec7bdfc0f759dbabc6df95e709ad3ab054",
+      "state": "passed",
+      "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+    },
+    {
+      "receipt": "obj/parallel/diagnostic-values-v1/stacked-reference-v1/receipt.json",
+      "sha256": "2622bc8f02148453427ff1a48715a72f3361951a073f9861929c5afcf8439a35",
+      "state": "passed",
+      "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2"
+    }
+  ],
+  "independent_programs": 24,
+  "independent_native_observers": 2,
+  "native_stdout": "7\n",
+  "native_candidate": "maintainer exported-root LowIR through locked CPPGM backend; SourceCore CLI library publication remains unimplemented",
+  "private": {
+    "tests": 14,
+    "receipt": "obj/qualification/fast/1793658978659207779/receipt.json",
+    "sha256": "ca32438ecf1a09330c109a28765a6c88240c73164163a1f476b5e8f21f1abeea"
+  },
+  "production": {
+    "tests": 92,
+    "pa8": "126/126",
+    "receipt": "obj/qualification/fast/1793659192103847404/receipt.json",
+    "sha256": "5a4766b8ebcbf3da450b655716a21a101cd1a2d7d54d8e4fda8c5ca59d8c8ed2"
+  },
+  "cli_expansion_observations": 48,
+  "semantic_constant_cli": 1,
+  "cli_sha256": "912ff4ef28abe24a38a951521bed65aee401f93e4cf1a47d1ceba35a4fb107e5",
+  "source_fingerprint_sha256": "00a4071f5068bd44ff147d5e7496a6649dba23758f7a9b5d3685ed8b45df3b46",
+  "joined": {
+    "path": "obj/parallel/diagnostic-values-v1/joined-v7/receipt.json",
+    "sha256": "4af3966fdc9147ef9f4fc3e620c6659c1728fc241bdd8ee4a43db8b3e477336a",
+    "seconds": 31.71321078701294
+  },
+  "scaling": [
+    {
+      "width": 8,
+      "nodes": 94,
+      "work": 1442,
+      "bytes": 45676,
+      "invocations": 16
+    },
+    {
+      "width": 32,
+      "nodes": 358,
+      "work": 5424,
+      "bytes": 175052,
+      "invocations": 64
+    },
+    {
+      "width": 128,
+      "nodes": 1414,
+      "work": 21388,
+      "bytes": 694860,
+      "invocations": 256
+    }
+  ],
+  "core": {
+    "path": "obj/parallel/diagnostic-values-v1/joined-v7/observed/result.json",
+    "sha256": "25336b784d8c83ca603bda157b18308ee12fa268c445ed9fe8297ce3af020b22",
+    "first_error": "ERROR: file 184: 6497: const, default-body and macro library stability contracts are not implemented",
+    "status": 1,
+    "opened_source_count": 375,
+    "inputs_unchanged": true,
+    "total_seconds": 15.484807283006376,
+    "original_source_count": 722,
+    "driver_view_rebind_sha256": "37f170d2a0756acc0d6b45fe54e1f4df09ca4266d033fdf301ce12ba54feee3e"
+  },
+  "open_requirements": [
+    "genuine SourceCore library macro/semantic-name provenance metadata and independent imported consumers",
+    "all other attribute-expression consumers and complete source feature/stability authority",
+    "original core/alloc/std artifacts and full assignment release checks"
+  ]
+}

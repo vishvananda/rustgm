@@ -110,9 +110,10 @@ pub(super) enum Claim {
 pub(in crate::resolve) fn finish(
     package: &mut Package,
     facts: &mut Resolution,
+    values: Option<&crate::resolve::expansion::metavalues::Values>,
 ) -> Result<(), Error> {
     let mut library = None;
-    let mut extra = super::diagnostic_extras::Draft::default();
+    let mut extra = super::diagnostic_extras::Draft::with_values(values);
     let claims = claims(package, facts, &mut library, &mut extra)?;
     let mut inventory = crate::resolve::stability::complete(package, facts, library)?;
     let mut reserved = reserve_all(package, facts, &claims)?;
@@ -467,7 +468,7 @@ fn claims(
     package: &Package,
     facts: &Resolution,
     library: &mut Option<crate::resolve::stability::Draft>,
-    extra: &mut super::diagnostic_extras::Draft,
+    extra: &mut super::diagnostic_extras::Draft<'_>,
 ) -> Result<HashMap<NodeKey, Vec<Claim>>, Error> {
     let mut result: HashMap<NodeKey, Vec<Claim>> = HashMap::default();
     for (file, unit) in package.units.iter().enumerate() {
@@ -486,7 +487,7 @@ fn owner_claims(
     package: &Package,
     facts: &Resolution,
     library: &mut Option<crate::resolve::stability::Draft>,
-    extra: &mut super::diagnostic_extras::Draft,
+    extra: &mut super::diagnostic_extras::Draft<'_>,
     file: FileId,
     owner: &crate::expand::crate_syntax::Owner,
     result: &mut HashMap<NodeKey, Vec<Claim>>,

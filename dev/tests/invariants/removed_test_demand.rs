@@ -355,6 +355,7 @@ fn failed_retirement_preflight_publishes_neither_flags_nor_receipts() -> TestRes
         removals,
         policy: None,
         visibilities: None,
+        values: None,
         derives: None,
     }));
     let call = engine

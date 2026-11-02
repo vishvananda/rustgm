@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "purpose": "Original core owner-shape reducer: forwarded meta plus outer and inner module attributes, frozen before qualification",
+  "cases": [
+    {
+      "name": "stacked-module",
+      "path": "pa31/tests/spec/diagnostic-values/stacked-module.rs",
+      "sha256": "551b872914502ee73d8563a3db442017c20bb111af132e1103fdc7c1e2e98028",
+      "status": 0,
+      "names": [
+        "u8_legacy_mod",
+        "i16_legacy_mod"
+      ]
+    }
+  ]
+}

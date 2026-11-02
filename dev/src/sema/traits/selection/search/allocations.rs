@@ -76,13 +76,15 @@ impl Allocations {
 fn reference_comparison_layout_remains_compact() {
     // The integrated closure signature-slot cache adds one pointer to each of
     // Frame's two inline inference contexts; reference forwarding adds none.
+    // Source closure marker fields extend the optional Pending capture plan;
+    // the shared Frame and proof Node remain unchanged.
     assert_eq!(
         (
             std::mem::size_of::<super::Frame>(),
             std::mem::size_of::<super::mechanical::Pending>(),
             std::mem::size_of::<super::Node>(),
         ),
-        (1312, 80, 160),
+        (1312, 96, 160),
         "reference comparison must retain the qualified x86-64 search layout",
     );
 }

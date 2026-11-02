@@ -69,18 +69,27 @@ impl Budget {
     }
 }
 #[derive(Default)]
-pub(super) struct Draft {
+pub(super) struct Draft<'a> {
     pending: Vec<Pending>,
     foreign: Option<Vec<NodeKey>>,
     budget: Budget,
     error_site: Option<(NodeKey, Span)>,
+    values: Option<&'a crate::resolve::expansion::metavalues::Values>,
 }
 #[derive(Clone, Copy)]
 struct Ordered {
     entry: Entry,
     ordinal: usize,
 }
-impl Draft {
+impl<'a> Draft<'a> {
+    pub(super) fn with_values(
+        values: Option<&'a crate::resolve::expansion::metavalues::Values>,
+    ) -> Self {
+        Self {
+            values,
+            ..Self::default()
+        }
+    }
     pub(super) fn error(&self, message: &'static str) -> Error {
         self.error_site.map_or_else(
             || Error::unlocated(message),
@@ -118,7 +127,26 @@ impl Draft {
             ));
         }
         let unit = package.unit(owner.file);
-        let bytes = decode(unit, owner.file, attribute, forest)?;
+        let bytes = if let Some(root) = self
+            .values
+            .map(|values| values.completed(package, owner, attribute))
+            .transpose()?
+            .flatten()
+        {
+            let crate::syntax::ast::Kind::Literal(index) = unit.configured.ast.node(root).kind
+            else {
+                return Err(error("diagnostic item requires one string literal"));
+            };
+            let crate::literal::Value::String(bytes) = unit
+                .literal(index)
+                .map_err(|e| Error::at(owner.file, e.offset, e.message))?
+            else {
+                return Err(error("diagnostic item requires one string literal"));
+            };
+            bytes
+        } else {
+            decode(unit, owner.file, attribute, forest)?
+        };
         if let Some(known) = annotations::known(&bytes) {
             return Ok(Some(known));
         }

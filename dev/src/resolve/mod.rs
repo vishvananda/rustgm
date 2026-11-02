@@ -54,7 +54,7 @@ pub fn analyze(package: &mut package::Package) -> Result<model::Resolution, pack
     resolver.collect()?;
     resolver.imports()?;
     resolver.bodies()?;
-    bindings::finish(package, &mut state.facts)?;
+    bindings::finish(package, &mut state.facts, None)?;
     impl_restrictions::validate_plain(package)?;
     float_features::validate_plain(package, &state.facts)?;
     default_items::validate_plain(package)?;
@@ -101,8 +101,15 @@ pub fn analyze_expanded(
     report.resolution = state.facts;
     let work =
         result.map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
-    bindings::finish(&mut report.package, &mut report.resolution)
-        .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
+    bindings::finish(
+        &mut report.package,
+        &mut report.resolution,
+        report
+            .attribute_effects
+            .as_deref()
+            .and_then(|effects| effects.values.as_deref()),
+    )
+    .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
     float_features::validate_paths(&report)
         .map_err(|error| report.retain_expansion_warnings(report.diagnostic(error)))?;
     report
