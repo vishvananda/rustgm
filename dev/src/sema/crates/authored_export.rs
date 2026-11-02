@@ -333,6 +333,7 @@ impl Stage {
         mode: ExportMode,
     ) -> Result<Self, &'static str> {
         facts.require_incoherent_target_transport(report)?;
+        facts.require_dispatch_policy_transport(report)?;
         if let Some(producer) = report.lint_producer() {
             producer
                 .require_deprecation_transport(&report.package)

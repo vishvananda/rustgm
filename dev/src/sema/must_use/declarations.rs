@@ -197,6 +197,10 @@ fn complete_imports(report: &Report, facts: &mut Declarations) -> Result<(), Err
     }
     Ok(())
 }
+#[expect(
+    clippy::too_many_lines,
+    reason = "one annotation dispatch shares the configured owner, retained forest and macro allowance session"
+)]
 fn consume_annotation(
     report: &Report,
     facts: &mut Declarations,
@@ -284,6 +288,16 @@ fn consume_annotation(
         }
         Some(Consumer::LegacyConstGenerics) => {
             crate::sema::header_attributes::consume_legacy_indices(
+                report,
+                facts,
+                (owner, declaration),
+                (attribute, effect),
+                forest,
+                allowances,
+            )?;
+        }
+        Some(Consumer::SkippedMethodDispatch) => {
+            crate::sema::header_attributes::consume_skipped_dispatch(
                 report,
                 facts,
                 (owner, declaration),

@@ -26,7 +26,9 @@ pub(in crate::sema) use legacy_indices::consume as consume_legacy_indices;
 mod nonconst_members;
 pub(in crate::sema) use nonconst_members::consume as consume_nonconst_member;
 mod incoherent_targets;
+pub(super) mod skipped_traits;
 pub(in crate::sema) use incoherent_targets::consume as consume_incoherent_target;
+pub(in crate::sema) use skipped_traits::consume as consume_skipped_dispatch;
 mod promotability;
 pub(in crate::sema) use comptime::consume as consume_comptime;
 pub(in crate::sema) use promotability::consume as consume_promotable;
@@ -45,6 +47,7 @@ struct Promises {
     member: Option<nonconst_members::Choice>,
     incoherent: Option<incoherent_targets::Marker>,
     legacy: Option<Box<legacy_indices::Marker>>,
+    dispatch: Option<Box<skipped_traits::Marker>>,
 }
 struct Owner {
     key: NodeKey,
@@ -59,6 +62,7 @@ pub(super) struct Headers {
     comptime_complete: bool,
     has_special_calls: bool,
     first_incoherent_target: Option<DefId>,
+    first_skipped_trait: Option<DefId>,
     bytes: Cell<usize>,
     pub(super) steps: Cell<usize>,
 }
@@ -187,6 +191,7 @@ pub(in crate::sema) fn bind_definition(
         ));
     }
     incoherent_targets::bind(report, facts, definition, declaration)?;
+    skipped_traits::bind(report, facts, definition, declaration)?;
     if !admitted(report, declaration) {
         return Ok(());
     }

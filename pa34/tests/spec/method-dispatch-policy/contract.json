@@ -1,0 +1,527 @@
+{
+  "schema": 1,
+  "state": "Predictions frozen before reference/candidate execution; all Rust-positive inputs remain requirements",
+  "owner": "LIB-112: PA31 source declarations, PA19 method lookup, PA34 required edition contexts, PA33 genuine Box prerequisite, PA29 transport",
+  "pin": "Rust1.98.0 revision88d9e12ae178fab0fb5cc050a94da85685d449ea x86_64-unknown-linux-gnu panic=abort overflow-checks=on",
+  "primary": {
+    "compiler/rustc_attr_parsing/src/attributes/traits.rs": {
+      "file_sha256": "0b194927dcefa4d8f509f9f53ac2d30166c7d8842bc6eefa7921dfdda6e9d1a2",
+      "lines": [
+        12,
+        49
+      ],
+      "interval_sha256": "dccc2bc9930e0008286e134f61ee91819791eeb7699a26b682d1e43dc4181f11"
+    },
+    "compiler/rustc_attr_parsing/src/attributes/mod.rs": {
+      "file_sha256": "d1fce438128338feacb8e231dda21938442d0b91d6959430e1b411c537fdf044",
+      "lines": [
+        131,
+        145
+      ],
+      "interval_sha256": "d32a97009eb7b37499dbf38f0390fe823bc71fec9e2090ff34fd3f3efda4d260"
+    },
+    "compiler/rustc_hir_typeck/src/method/probe.rs": {
+      "file_sha256": "fd8b7132e859cb2df7a5e62f63636c89b03cb864d186d02ee7180075b418cfe2",
+      "lines": [
+        2016,
+        2042
+      ],
+      "interval_sha256": "cd48c1c4fc766aa1a2425fd09f0a9c3395d887a0b3baef96f28b04c8de06d1a6"
+    },
+    "library/core/src/iter/traits/collect.rs": {
+      "file_sha256": "47c3434877779443d4314cde2970263022f8fdd767a8eb709c86f5364b2d6acf",
+      "lines": [
+        275,
+        289
+      ],
+      "interval_sha256": "3fbc1142bb475b8c13c876a3204276f3a00e342da290f38779248882b51effaf"
+    }
+  },
+  "cases": {
+    "array.rs": {
+      "sha256": "0ceb6761605b3c9921e3be835f8faf97122f16ff9eea79c753e084fc81011e8d",
+      "metadata": 0,
+      "object": 0,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "boxed-slice.rs": {
+      "sha256": "a2f78e79be57333c03ee4710a4eed178ea6e9b8d21f01d9f34f2bde74e0c3b12",
+      "metadata": 0,
+      "object": 0,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "both.rs": {
+      "sha256": "8633216e6bdb7250cb1220753f8affdd3f7743fb0d31cb603eb84d0aea21a43d",
+      "metadata": 0,
+      "object": 0,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "reversed.rs": {
+      "sha256": "ef2fb3955c79f4e22c58bde61ec2f9737331232285e204ba49d02f1ec4f871a3",
+      "metadata": 0,
+      "object": 0,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "trailing.rs": {
+      "sha256": "7805ce2b022d91eb9ab17c85bf85fdb96839ccad9ee0e909e2622b59f56a460d",
+      "metadata": 0,
+      "object": 0,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "raw-key.rs": {
+      "sha256": "1d58673578dc41deeec7651375dbe67f1eeebc94d4acb96f71acf8a2d71202e1",
+      "metadata": 0,
+      "object": 0,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "word.rs": {
+      "sha256": "ce9aa510ec73400b0d4a3087c55e11e3c164a404ea447523c18b9e7e06493dc5",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "value.rs": {
+      "sha256": "58372156c18099ede6749a48e63a379580850eb49fcc85d8c79df285c4770373",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "empty.rs": {
+      "sha256": "97429c5b205dfcd2b6ca1bb06f591ec48d1b3790eac71ba38785ec6ff8bd72d5",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "duplicate-key.rs": {
+      "sha256": "ccec75940e07d03a41e2b5aa16051487754e21b0261de630f233f0215d70d894",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "duplicate-boxed.rs": {
+      "sha256": "fd58d7b32fa4614986520adf8c27ef8150e983aaae81e19ff89fcd95a17a749a",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "unknown.rs": {
+      "sha256": "ea371db02f2147e969105732662b93d4283cf261599feee429ff5982303f1e58",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "literal.rs": {
+      "sha256": "b019a2b2d6bd5cfafb56fb7a64922d4d5e7d002c393d7e34feb063ad92693a43",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "key-value.rs": {
+      "sha256": "70693b1d4b55ff78bb760707184fba9b7ed1903eb931c1205a5221dd70d70035",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "nested.rs": {
+      "sha256": "924cd72f328a385c511bed9b1f878fff8d939759303f28f9b6e89f02aa785898",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "qualified.rs": {
+      "sha256": "93f0bfbdf2f0b3f42f6240f76f9c55a5b2d832d286dfc12e2277056f1dd43a30",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "number.rs": {
+      "sha256": "893c1c62cfa63d99d568640ae7220914c6735a728801a147a302fea181aab011",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "delimiter.rs": {
+      "sha256": "caad32d3129681f97fd77f58032ceb13409c00be0004366a32fb39f4c43c50ed",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "duplicate-attribute.rs": {
+      "sha256": "2c4e44f8083533b47adb752cc0c4be9ed7abee62ac15fabb6704feb0c58efbf3",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "unsafe-wrapper.rs": {
+      "sha256": "fc377bdce1c9fdc1ddb3071e0fcc8bec14f9867ab4685dc85b859cfeedfd8b55",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "missing-gate.rs": {
+      "sha256": "71eb87c144bb315ba44c1a0fc77a06b664eb6add39548d98ea23227b56e54d6b",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "struct.rs": {
+      "sha256": "f6b6f5f7b5e76ade97db9853a398a17e165f1886a89d4c3e435a8fe0cd129107",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "enum.rs": {
+      "sha256": "5b1c390afebce79557437497d559f7ad56145bc277cd04a5a2f327349e526d57",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "union.rs": {
+      "sha256": "a27922dfa38ca65a30e8fff7c333db91740a365d8e8715689ef54a47732fd920",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "function.rs": {
+      "sha256": "fc55f1106816e370470b1895227af386a88bab2f1d0fdd360e2321ab91266bbd",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "alias.rs": {
+      "sha256": "d3360aeb12bb34613e825357f8af56fc41a2db6879487d1a2e6e89bfff875a1c",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "impl.rs": {
+      "sha256": "6a45dde16e4c41d5589a1fa403b21541977f122322d1f2c0ecbaf060ac380660",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "associated.rs": {
+      "sha256": "b0e36dd8ede97c900f022d2b3bb50fd7e7dce6353c542aa6eedcc38c99c1caa9",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "field.rs": {
+      "sha256": "8b8f6c96818f929dc593780e93bcb63dea897d486777d1e1779adbfd5516c0ca",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "inner-crate.rs": {
+      "sha256": "031285d72c4ec15ebb217557e697b41f3cf61093891125b054fd5d325dd0393f",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "auto-trait.rs": {
+      "sha256": "45467f34663ed092d8c513e00165efe9aaffa3a0ed1b9177f3a864bc92b93a91",
+      "metadata": 0,
+      "object": 0,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "const-trait.rs": {
+      "sha256": "cee631c4ec82a385818562965be9773586de58549b576029880d44b423d1e4ac",
+      "metadata": 0,
+      "object": 0,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "cfg-removed.rs": {
+      "sha256": "214ac2649f73d206c3d8a83335080f053e771bf68df506f9771d2c3b628e45b7",
+      "metadata": 0,
+      "object": 0,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "macro-allowance.rs": {
+      "sha256": "e07c338d76d6f156a927f9178ce9527051fcbc479a9f8b2e617da62350f3f4cc",
+      "metadata": 0,
+      "object": 0,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "macro-no-allowance.rs": {
+      "sha256": "f0d418519d1fd2055e1262bef8cbf2f80a60569578399b05e6fa442a31fe6522",
+      "metadata": 1,
+      "object": 1,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    },
+    "native-array.rs": {
+      "sha256": "f9e2e2b89d3c07e9fee6c6d3a45a0c5ea90334b763c96ba59c4182ba4a67281d",
+      "metadata": 0,
+      "object": 0,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ],
+      "native_stdout": {
+        "2018": "9\n",
+        "2021": "7\n",
+        "2024": "7\n"
+      }
+    },
+    "native-array-qualified.rs": {
+      "sha256": "647eb9942bc04210aeea11521eadc83a0d49ff1b1cd3f80971a6c4c24c8b7cb4",
+      "metadata": 0,
+      "object": 0,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ],
+      "native_stdout": {
+        "2018": "7\n",
+        "2021": "7\n",
+        "2024": "7\n"
+      }
+    },
+    "native-boxed-slice.rs": {
+      "sha256": "4dd1c7724901b3badada44f8df36447e08a149500293fd2b520e83e92b1908c6",
+      "metadata": 0,
+      "object": 0,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ],
+      "native_stdout": {
+        "2018": "7\n",
+        "2021": "7\n",
+        "2024": "7\n"
+      }
+    },
+    "native-boxed-qualified.rs": {
+      "sha256": "4325f285950d7c28412839e61da3e024a74912a08737dbcc5dba326039647def",
+      "metadata": 0,
+      "object": 0,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ],
+      "native_stdout": {
+        "2018": "7\n",
+        "2021": "7\n",
+        "2024": "7\n"
+      }
+    },
+    "native-lookalike.rs": {
+      "sha256": "fdf8484d78c5de1e719560fcebca6d120f8749b3efdd1c701ae4e9f525ac6ed8",
+      "metadata": 0,
+      "object": 0,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ],
+      "native_stdout": {
+        "2018": "7\n",
+        "2021": "7\n",
+        "2024": "7\n"
+      }
+    },
+    "native-array-non-skipped.rs": {
+      "sha256": "89cd4374121ef7dc500f4929ceb5876643fbaffa59dd72c6f0ea0bfa84c2f233",
+      "metadata": 0,
+      "object": 0,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ],
+      "native_stdout": {
+        "2018": "7\n",
+        "2021": "7\n",
+        "2024": "7\n"
+      }
+    },
+    "native-boxed-value.rs": {
+      "sha256": "1eb4290db5766ae621956b9f8de3c5fd36eb5611c52f86cd51a450bd1d5b2089",
+      "metadata": 0,
+      "object": 0,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ],
+      "native_stdout": {
+        "2018": "9\n",
+        "2021": "9\n",
+        "2024": "7\n"
+      }
+    },
+    "source-auto-trait.rs": {
+      "sha256": "1254360653c63a44c8aafb6ce89d387ffe91bb4e32a78cb4ff4a73cd7c1cb846",
+      "metadata": 0,
+      "object": 0,
+      "editions": [
+        "2018",
+        "2021",
+        "2024"
+      ]
+    }
+  },
+  "required": [
+    "actual Trait-only nonempty word list, duplicates, rustc_attrs and real macro envelope",
+    "method NAME token defining edition, including captured mixed-edition expansions",
+    "actual adjusted array receivers skipped before2021 and genuine adjusted Box<[T]> receivers before2024",
+    "qualified trait/path calls unaffected; ordinary and lookalike nominal receivers retain candidates",
+    "authenticated source-owner/image and nominal Box identity; no spelling-based privilege",
+    "full metadata policy transport or old-profile fence, payment/scaling and original core observation",
+    "all Rust-positive native Box and older-edition cases remain required if a prerequisite is unimplemented"
+  ],
+  "prediction_review": {
+    "predecessor_sha256": "356784e84159f8253d5e92eb87df6b4d6dcb29207e833c85cb4e28ab4901f242",
+    "retained_predecessor": "obj/parallel/method-dispatch-policy-v1/reference-v1/contract-frozen.json",
+    "failed_reference_receipt_sha256": "433f31941ee8261e78c2ab1d68c26e47a7195d005ea2fb2daf5ae193bb5f12b3",
+    "reason": "The pinned probe tests adjusted actual receiver self_ty before xform; &Box is not Box. The original &self source stays unchanged and returns7 in every edition. New by-value source freezes9/9/7. This does not invert a Rust-positive language outcome."
+  },
+  "candidate_prerequisites": {
+    "auto-trait.rs": "The unchanged Rust-positive custom auto trait is rejected before attribute collection by the existing associated-owner auto-trait boundary. Keep as a required PA21/31/40 language positive, not a policy rejection. source-auto-trait.rs separately proves the attribute on actual authenticated source Send.",
+    "native-boxed-value.rs": "Requires genuine Box identity/storage, edition/token-aware adjusted receiver filtering and native execution; no nominal lookalike substitute.",
+    "2018": "Required older edition context stays explicit; the current RustGM driver profile is not silently widened."
+  }
+}
