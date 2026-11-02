@@ -15,16 +15,36 @@ impl Lower<'_, '_, '_> {
                 continue;
             }
             let representation = self.context.representation(local.ty)?;
-            if matches!(representation, Representation::Scalar(Type::Void)) {
+            let indirect = self.context.indirect_argument(local.ty)?;
+            if indirect.is_none() && matches!(representation, Representation::Scalar(Type::Void)) {
                 continue;
             }
-            let expected = *self
+            let expected = self
                 .context
                 .output
-                .object_boundary(self.native)?
-                .parameters
-                .get(parameter as usize)
-                .ok_or("missing C incoming ABI parameter")?;
+                .parameter_type(self.native, parameter as usize)?;
+            if let Some(span) = indirect {
+                if expected != boundary::Type::Scalar(Type::Ptr) {
+                    return Err("indirect incoming argument requires its canonical pointer");
+                }
+                if span.bytes != 0 {
+                    let destination =
+                        self.locals[index].ok_or("missing indirect parameter snapshot")?;
+                    let target = self.pointer(destination)?;
+                    self.builder.copy_object(
+                        span,
+                        Value {
+                            ty: Type::Ptr,
+                            operand: Operand::Parameter(parameter),
+                        },
+                        target,
+                    )?;
+                }
+                parameter = parameter
+                    .checked_add(1)
+                    .ok_or("too many C incoming parameters")?;
+                continue;
+            }
             let selected = match (representation, expected) {
                 (Representation::Scalar(ty), boundary::Type::Scalar(expected))
                     if ty == expected =>
@@ -68,14 +88,7 @@ impl Lower<'_, '_, '_> {
                 .checked_add(1)
                 .ok_or("too many C incoming parameters")?;
         }
-        if parameter as usize
-            != self
-                .context
-                .output
-                .object_boundary(self.native)?
-                .parameters
-                .len()
-        {
+        if parameter as usize != self.context.output.parameter_count(self.native)? {
             return Err("C incoming parameter count differs from ABI plan");
         }
         Ok(())
@@ -124,14 +137,28 @@ impl Lower<'_, '_, '_> {
         let mut tail = Vec::new();
         for id in &self.body.arguments[arguments.start as usize..arguments.end as usize] {
             let value = self.value(*id)?;
+            let ty = self.body.values[id.0 as usize].ty;
+            let indirect = self.context.indirect_argument(ty)?;
             if variadic
                 && retained.len() >= fixed
-                && !matches!(value, Selected::Unit | Selected::Item(_))
+                && (indirect.is_some() || !matches!(value, Selected::Unit | Selected::Item(_)))
             {
                 tail.push(
                     self.context
                         .c_argument(self.body.values[id.0 as usize].ty)?,
                 );
+            }
+            if let Some(span) = indirect {
+                let destination = Address {
+                    operand: Operand::Slot(self.builder.object_slot(MemorySpan {
+                        bytes: span.bytes.max(1),
+                        ..span
+                    })?),
+                    align: span.align,
+                };
+                self.write(Some(destination), value, ty)?;
+                retained.push(boundary::Value::Scalar(self.pointer(destination)?));
+                continue;
             }
             match value {
                 Selected::Runtime(value) => retained.push(boundary::Value::Scalar(value)),

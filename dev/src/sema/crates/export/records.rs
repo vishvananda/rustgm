@@ -259,6 +259,7 @@ fn validate(
         || definition.repr.packed.is_some()
         || definition.repr.align.is_some()
         || definition.repr.tag.is_some()
+        || definition.repr.arguments != aggregate::ArgumentPassing::Ordinary
         || facts.aggregates.shared_mutation(item) != Some(aggregate::SharedMutation::Ordinary)
         || facts.aggregates.destruction(item) != Some(aggregate::FieldDestruction::Fields)
     {

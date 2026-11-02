@@ -1,6 +1,9 @@
 //! One cached x86-64 C boundary plan derives classes from prepared typed layouts.
 mod composites;
 #[cfg(test)]
+#[path = "../../tests/invariants/indirect_arguments.rs"]
+mod indirect_tests;
+#[cfg(test)]
 #[path = "../../tests/invariants/composite_classes.rs"]
 mod tests;
 use super::layout::{Layouts, Shape};
@@ -32,6 +35,7 @@ pub struct Object {
 pub enum Passing {
     Scalar(TypeId),
     Object(Object),
+    Indirect(TypeId),
 }
 pub struct Plan {
     pub signature: TypeId,
@@ -88,7 +92,7 @@ impl Plans {
         )?;
         let mut passing = Vec::with_capacity(parameters.len());
         for &ty in parameters {
-            passing.push(self.passing(types, definitions, layouts, ty)?);
+            passing.push(self.argument(types, definitions, layouts, ty)?);
         }
         let result = self.passing(types, definitions, layouts, result)?;
         let plan = Arc::new(Plan {
@@ -117,6 +121,55 @@ impl Plans {
         let value = self.classify(types, definitions, layouts, ty);
         self.types.insert(ty, value);
         value
+    }
+    /// Argument-only nominal policy is independent of the ordinary return cache.
+    /// # Errors
+    /// Rejects incomplete layouts, invalid transparent shapes and exhausted budgets.
+    pub fn argument(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        layouts: &mut Layouts,
+        ty: TypeId,
+    ) -> Result<Passing, &'static str> {
+        if self
+            .indirect_argument(types, definitions, layouts, ty)?
+            .is_some()
+        {
+            return Ok(Passing::Indirect(ty));
+        }
+        self.passing(types, definitions, layouts, ty)
+    }
+    /// Read only the argument override, without classifying an ordinary C value.
+    /// # Errors
+    /// Rejects incomplete layouts, invalid transparent shapes and exhausted budgets.
+    pub fn indirect_argument(
+        &mut self,
+        types: &Store,
+        definitions: &Definitions,
+        layouts: &mut Layouts,
+        ty: TypeId,
+    ) -> Result<Option<(u64, u32)>, &'static str> {
+        if definitions.has_indirect_arguments() {
+            self.charge(1)?;
+            if self.composites.is_none() {
+                self.retain(size_of::<composites::Cache>() + 16)?;
+            }
+            if self.composites.get_or_insert_default().indirect_argument(
+                types,
+                definitions,
+                layouts,
+                ty,
+                &mut self.steps,
+                &mut self.retained_bytes,
+            )? {
+                let layout = layouts
+                    .get(types.storage_head(ty)?)
+                    .ok_or("missing indirect argument layout")?;
+                return Ok(Some((layout.size, layout.align)));
+            }
+        }
+        Ok(None)
     }
     fn classify(
         &mut self,

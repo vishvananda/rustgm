@@ -46,6 +46,7 @@ fn validate(facts: &Declarations, item: ItemId) -> Result<TypeId, &'static str> 
         packed: None,
         align: None,
         tag: Some(Primitive::I8),
+        arguments: aggregate::ArgumentPassing::Ordinary,
     };
     if schema.kind != aggregate::Kind::Enum
         || schema.repr != repr

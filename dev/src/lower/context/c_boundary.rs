@@ -35,12 +35,32 @@ impl Context<'_> {
         let Some(crate::types::Kind::Function { convention, .. }) = self.types.kind(ty) else {
             return Err("C ABI plan requires a function signature");
         };
-        let signature = self.output.object_signature_with_arity(
-            &parameters,
-            result,
-            matches!(plan.result, classification::Passing::Scalar(TypeId::NEVER)),
-            convention.variadic,
-        )?;
+        let noreturn = matches!(plan.result, classification::Passing::Scalar(TypeId::NEVER));
+        let signature = if !matches!(result, boundary::Type::Object(_))
+            && parameters
+                .iter()
+                .all(|parameter| matches!(parameter, boundary::Type::Scalar(_)))
+        {
+            let parameters = parameters
+                .iter()
+                .map(|parameter| match parameter {
+                    boundary::Type::Scalar(ty) => Ok(*ty),
+                    boundary::Type::Object(_) => Err("scalar C signature has an object parameter"),
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+            let boundary::Type::Scalar(result) = result else {
+                return Err("scalar C signature has an object result");
+            };
+            self.output
+                .signature_with_arity(&parameters, result, noreturn, convention.variadic)?
+        } else {
+            self.output.object_signature_with_arity(
+                &parameters,
+                result,
+                noreturn,
+                convention.variadic,
+            )?
+        };
         self.signatures.insert((ty, false), signature);
         Ok(signature)
     }
@@ -48,7 +68,7 @@ impl Context<'_> {
         &mut self,
         ty: TypeId,
     ) -> Result<boundary::Type, &'static str> {
-        let passing = self.c_abi.get_or_insert_default().passing(
+        let passing = self.c_abi.get_or_insert_default().argument(
             self.types,
             self.aggregates,
             self.layouts,
@@ -56,11 +76,54 @@ impl Context<'_> {
         )?;
         self.boundary_type(passing)
     }
+    pub(in crate::lower) fn indirect_argument(
+        &mut self,
+        ty: TypeId,
+    ) -> Result<Option<MemorySpan>, &'static str> {
+        if !self.aggregates.has_indirect_arguments() {
+            return Ok(None);
+        }
+        Ok(self
+            .c_abi
+            .get_or_insert_default()
+            .indirect_argument(self.types, self.aggregates, self.layouts, ty)?
+            .map(|(bytes, align)| MemorySpan { bytes, align }))
+    }
+    pub(in crate::lower) fn indirect_parameters(
+        &mut self,
+        signature: TypeId,
+    ) -> Result<bool, &'static str> {
+        if !self.aggregates.has_indirect_arguments() {
+            return Ok(false);
+        }
+        let Some(crate::types::Kind::Function {
+            parameters,
+            convention,
+            ..
+        }) = self.types.kind(signature)
+        else {
+            return Err("argument policy requires a callable signature");
+        };
+        if convention.abi != crate::types::callable::Abi::C {
+            return Ok(false);
+        }
+        for &ty in self
+            .types
+            .list(parameters)
+            .ok_or("missing C signature parameters")?
+        {
+            if self.indirect_argument(ty)?.is_some() {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
     fn boundary_type(
         &mut self,
         value: classification::Passing,
     ) -> Result<boundary::Type, &'static str> {
         Ok(match value {
+            classification::Passing::Indirect(_) => boundary::Type::Scalar(Type::Ptr),
             classification::Passing::Scalar(ty) => match self.representation(ty)? {
                 Representation::Scalar(ty) => boundary::Type::Scalar(ty),
                 Representation::ScalarObject(storage) => boundary::Type::Scalar(storage.ty),

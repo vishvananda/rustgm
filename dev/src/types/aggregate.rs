@@ -46,11 +46,19 @@ pub enum Representation {
     Simd,
 }
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum ArgumentPassing {
+    #[default]
+    Ordinary,
+    Indirect,
+}
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Repr {
     pub representation: Representation,
     pub packed: Option<u32>,
     pub align: Option<u32>,
     pub tag: Option<Primitive>,
+    /// Non-Rustic arguments use a pointer to an owned copy; returns are unaffected.
+    pub arguments: ArgumentPassing,
 }
 #[derive(Clone, Copy, Debug)]
 pub struct Variant {
@@ -81,6 +89,7 @@ pub struct Definitions {
     unions: bool,
     packing_checked: bool,
     projected_templates: bool,
+    argument_policy: ArgumentPassing,
     entries: Vec<Definition>,
     index: HashMap<ItemId, u32>,
     variants: Vec<Variant>,
@@ -137,6 +146,11 @@ impl Definitions {
     #[must_use]
     pub const fn has_unions(&self) -> bool {
         self.unions
+    }
+    /// Skip nominal argument-policy queries when no declaration requests them.
+    #[must_use]
+    pub const fn has_indirect_arguments(&self) -> bool {
+        matches!(self.argument_policy, ArgumentPassing::Indirect)
     }
     /// This direct nominal policy does not inspect children or grant an auto trait.
     #[must_use]
@@ -266,6 +280,11 @@ impl Definitions {
         if self.index.contains_key(&item) {
             return Err("aggregate definition already complete");
         }
+        if repr.arguments == ArgumentPassing::Indirect
+            && (kind != Kind::Struct || repr.representation == Representation::Transparent)
+        {
+            return Err("indirect argument policy requires a nontransparent struct");
+        }
         if matches!(kind, Kind::Struct | Kind::Union | Kind::PhantomData) && variants.len() != 1 {
             return Err("a struct or union has exactly one field group");
         }
@@ -289,6 +308,9 @@ impl Definitions {
         });
         self.index.insert(item, id);
         self.unions |= kind == Kind::Union;
+        if repr.arguments == ArgumentPassing::Indirect {
+            self.argument_policy = ArgumentPassing::Indirect;
+        }
         if mutation == SharedMutation::Interior {
             self.interior_storage.insert(item);
         }

@@ -60,14 +60,19 @@ pub(super) fn analyze(
             } else {
                 None
             };
-            transparency_promises::validate(
+            let indirect_arguments = transparency_promises::validate(
                 report,
                 key,
                 index,
                 attributes.map(|attributes| attributes.repr),
                 &mut allowances,
             )?;
-            if let Some(attributes) = attributes {
+            if let Some(mut attributes) = attributes {
+                attributes.repr.arguments = if indirect_arguments {
+                    crate::types::aggregate::ArgumentPassing::Indirect
+                } else {
+                    crate::types::aggregate::ArgumentPassing::Ordinary
+                };
                 representations.insert(key, attributes);
             }
         }

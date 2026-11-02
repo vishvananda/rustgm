@@ -496,7 +496,8 @@ impl<'a> Context<'a> {
         {
             let representation = self.representation(*parameter)?;
             if convention.abi == crate::types::callable::Abi::C
-                && (matches!(representation, Representation::Object(_))
+                && (self.indirect_argument(*parameter)?.is_some()
+                    || matches!(representation, Representation::Object(_))
                     || (!matches!(representation, Representation::ScalarObject(_))
                         && self.non_scalar_boundary(*parameter)?))
             {

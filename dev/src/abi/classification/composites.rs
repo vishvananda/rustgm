@@ -1,5 +1,6 @@
 //! Composite validation and placed classes belong to one immutable prepared layout graph.
 mod classes;
+mod indirect;
 mod shapes;
 use super::{Class, Classes, Definitions, Layouts, Store, TypeId};
 use crate::support::hash::HashMap;
@@ -31,6 +32,7 @@ struct Key {
 pub(super) struct Cache {
     nodes: HashMap<TypeId, Node>,
     classes: HashMap<Key, [Class; 2]>,
+    indirect: HashMap<TypeId, Result<bool, &'static str>>,
 }
 struct Query<'a> {
     cache: &'a mut Cache,

@@ -131,6 +131,7 @@ impl Lower<'_, '_, '_> {
         result: TypeId,
         location: Option<crate::lowir::program::Value>,
     ) -> Result<Selected, &'static str> {
+        let indirect = self.context.indirect_parameters(signature)?;
         let signature = self
             .context
             .caller_signature(signature, location.is_some())?;
@@ -138,6 +139,7 @@ impl Lower<'_, '_, '_> {
             self.context.output.signatures.get(signature.0 as usize),
             Some(crate::lowir::program::Signature::Object(_))
         ) || self.context.output.variadic(signature)?
+            || indirect
         {
             let Arguments::Values(values) = arguments else {
                 return Err("runtime selector callback requires the ordinary Rust ABI");
