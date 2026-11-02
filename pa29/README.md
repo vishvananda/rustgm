@@ -11,8 +11,11 @@ Separate compilation, crate identities, metadata and generic body exports.
 Current source conversion work uses the explicit `module-conversions-v9`
 capability, retaining actual From ownership, generic originals and body-local
 lifetime numbering. The [implementation and qualification plan](../docs/pa31-source-from-plan.md)
-keeps its unfinished source/native and fresh-store consumers explicit. This
-does not release PA29 or widen earlier metadata profiles.
+records the qualified finite source/native/fresh-store profile and remaining
+transport requirements. The [call-input repair](../docs/pa29-call-input-profile-ci-repair.md)
+keeps ordinary parent-header inputs separate from the selected Provided reader,
+preserving actual bounds, source ownership and executable proof. This does not
+release PA29 or widen earlier metadata profiles.
 
 The maintainer implements this responsibility in `dev/src/` and introduces its
 typed interface before generating text views. Consult `spec.md`, the pinned

@@ -9,7 +9,7 @@ The review retains storage, primitive lookup/Formatter and target-feature/assemb
 requirements. The execution queue below tracks the current source blockers; no
 original library artifact is established by this reorganization.
 
-Updated 2026-10-30. This is the work queue for compiling the original pinned
+Updated 2026-11-02. This is the work queue for compiling the original pinned
 `core`, `alloc` and `std`, not a count of completed internal checkpoints.
 PA21–PA24 have implemented/release-evidence status; PA1–PA20 retain
 implemented-draft. PA25–PA44 remain planned. No additional assignment or whole
@@ -18,6 +18,22 @@ upstream library has been completed.
 Use the [current execution plan](library-bootstrap-acceleration.md) to choose work:
 real artifact/source consumers, demanded imported-body proof and consolidated
 qualification. The existing complete assignment and upstream gates remain required.
+
+Root-only work resumed on 2026-11-02. The existing warm worktree and scratch
+now reside on btrfs at /mnt/vizier/rustgm-scratch/rustgm-pa26-work, with the home
+path retained as an alias. Source/tool and saved binary hashes survived the move;
+resource caps and the150GiB reserve are unchanged. No additional worker, tree or
+cache was created.
+
+FullCI41054298940 exposed twelve private regressions: four real Provided consumer
+failures and eight stale cold From-role size assertions. Sourcefbf4242c7 repairs
+the profile choice, retaining the installed Provided input reader and ordinary
+source parent traversal. All152 focused controls,69 production checks,4460text,
+SourceFrom native26,14 extra owner/negative controls and fresh Provided native7
+pass. See [the repair evidence](pa29-call-input-profile-ci-repair.md). Current
+CLI71054639 still reaches LIB-111 at ffi/va_list.rs416 in22.01s with all722 hashes
+and the original finite profile unchanged. Full successor CI remains pending.
+No original library artifact or whole-PA completion is implied.
 
 The source pin is Rust `88d9e12ae178fab0fb5cc050a94da85685d449ea`, edition 2024,
 x86-64 Linux, panic abort. Use the existing immutable shared source tree and
@@ -117,8 +133,8 @@ No full semantic completion or original crate artifact is implied. Core receipt
 B obj/parallel/source-from-integration-v1/core-v3/receipt.json SHA
 `eff395f97115562a8795fbb0800976ea837d35415dd8d127eee2e888c67755a0`.
 
-Work is paused at the user's request. Resume with Root alone; both existing
-workers are stopped with their source handoffs integrated. Publicb87's fullCI41047857876 passed;
+Work has resumed with Root alone; both existing workers remain stopped with
+their source handoffs integrated. Publicb87's fullCI41047857876 passed;
 full CI41054298940 for the published f290002c8 compiler remains in progress.
 
 Previous qualified source6697b601a/CLIb84d28999 passes the LIB046 policy-work
@@ -368,7 +384,7 @@ concrete; a private Ready state is not an executable result.
 
 | Owner | Issues and owning assignments | Next observable exit |
 | --- | --- | --- |
-| Root, direct compiler owner; Root-only on resume | LIB-111 forced-indirect ABI, PA30/31/29; original core PA32 | Joined140/production15/text4460/conversion-native26/Cell-native4 qualified. Integrated checkpoint published on f290002c8. Work paused at user request; resume Root-only with the frozen ABI packet, implement real ffi/va_list.rs416 semantics and repeat unchanged core. |
+| Root, direct compiler owner; sole worker | LIB-111 forced-indirect ABI, PA30/31/29; original core PA32 | Joined140/production15/text4460/conversion-native26/Cell-native4 qualified. Integrated checkpoint published on f290002c8. Root-only work resumed on btrfs; CI profile repair qualified. Continue the frozen ABI packet, implement real ffi/va_list.rs416 semantics and repeat unchanged core. |
 | `const_call_review`, stopped at user request | Confusables/MustNotSuspend source handoff complete and integrated | No queued job, build or source edit. Root owns continuation. |
 | `lint_expectations`, stopped at user request | SourceFrom/v9 component69 and native26 complete; read-only merge review integrated | No queued job, build or source edit. Root owns continuation. |
 | Root, retained formatting/panic lane | LIB-029/021/034/055/057/073/077, PA25–28/31 | Finite Debug array/native consumer and exact borrowed-call repair are qualified. Full original Count/Formatter/write/runtime parity, other derive families, metadata and original crate consumers remain required when an actual source demand reaches them. |

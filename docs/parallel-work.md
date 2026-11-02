@@ -1,15 +1,18 @@
 # Parallel library bootstrap implementation
 
-Current state (2026-10-30): work is paused at the user's request. Both former
-workers are stopped and all their compiler commits are integrated into public
-main. Resume with Root alone in the existing warm integration checkout. The
-[current tracker](library-build-blockers.md) and
-[forced indirect ABI plan](pa30-forced-indirect-abi-plan.md) supersede the worker
-queues below, which are historical. Do not restart workers or create worktrees,
-targets or caches. The two-job controller, two threads, 16 GiB absolute output
-caps, 150 GiB free reserve and five-minute development checks remain in effect.
+Current state (2026-11-02): work has resumed with Root alone. Both former
+workers remain stopped and their compiler commits are integrated into main.
+The existing warm integration worktree now lives at
+/mnt/vizier/rustgm-scratch/rustgm-pa26-work; its home path is an alias. The obj
+directory and cache are regular directories on btrfs. Git and the controller
+registration use the actual new path, with source/tool and saved binary hashes
+verified unchanged after relocation. No additional tree, cache or target exists.
+The [current tracker](library-build-blockers.md),
+[CI profile repair](pa29-call-input-profile-ci-repair.md) and
+[forced indirect ABI plan](pa30-forced-indirect-abi-plan.md) supersede the older
+worker queues below. Keep workers stopped. The two-job controller, two threads,
+16 GiB absolute output caps,150 GiB free reserve and five-minute checks remain.
 
-Root owns integration, original-core observations and public main publication.
 Public788889aac contains the qualified Comptime/v8 checkpoint; its full
 CI40976018856 is terminal failed on two later regressions, repaired as below.
 Private201 and production35, full v7/v8 CLI/native,

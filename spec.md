@@ -3376,6 +3376,12 @@ Keep canonical numeric materialization separate from proof completion: advance a
 paid monotone cursor through actual selected children without completing pending
 Nodes or granting candidate authority. Imported bound consumers collect genuine
 parent declaration clauses while preserving each header's own prefix and owner.
+Choose that input protocol from the actual typed imported owner, rather than
+crate linkage presence. Selected Provided consumers retain their authenticated
+installed scope-input view; ordinary source headers require the paid parent
+walk. Neither representation grants an implementation premise or executable
+permission. The [profile repair](docs/pa29-call-input-profile-ci-repair.md) records
+real full-family regressions, restored negative controls and native consumers.
 Reconstruct selected methods with complete type/lifetime arguments and validate
 evaluated SSA temporaries in their actual value domain. Build one flat applied
 domain inventory and make one calls pass; do not rescan a subtree for every root.
