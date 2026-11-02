@@ -1043,6 +1043,54 @@
         "RUSTC_BOOTSTRAP": "1"
       },
       "maintainer_origin": "PA3 computes target facts without PA8 feature authorization; paired actual gate denial retained in PA8"
+    },
+    {
+      "path": "tests/spec/bare-atomic/bare-atomic.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "target_has_atomic",
+        "value": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "Independent pinned bootstrap target; bare atomic is separate from load-store feature permission."
+    },
+    {
+      "path": "tests/spec/bare-atomic/bare-complement.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "not(target_has_atomic)",
+        "value": false
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "Independent pinned bootstrap target; bare atomic is separate from load-store feature permission."
+    },
+    {
+      "path": "tests/spec/bare-atomic/widths-unchanged.rs",
+      "exit_status": 0,
+      "features": [
+        "pa3.cfg"
+      ],
+      "rustc": {
+        "kind": "predicate",
+        "predicate": "all(target_has_atomic=\"8\",target_has_atomic=\"16\",target_has_atomic=\"32\",target_has_atomic=\"64\",target_has_atomic=\"ptr\",not(target_has_atomic=\"128\"),not(target_has_atomic_primitive_alignment))",
+        "value": true
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "Independent pinned bootstrap target; bare atomic is separate from load-store feature permission."
     }
   ]
 }

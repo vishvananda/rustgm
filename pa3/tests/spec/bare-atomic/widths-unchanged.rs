@@ -1,0 +1,1 @@
+#[cfg(all(target_has_atomic="8",target_has_atomic="16",target_has_atomic="32",target_has_atomic="64",target_has_atomic="ptr",not(target_has_atomic="128"),not(target_has_atomic_primitive_alignment)))] fn selected() {}

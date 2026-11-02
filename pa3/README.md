@@ -53,9 +53,14 @@ set the bare flag. Raw identifiers allow keyword-named custom options.
 Compiler-controlled flags and `target_*` keys cannot be overridden. Invalid
 command-line configuration is a usage error, not source rejection.
 
-The target also retains bare `target_has_atomic_load_store` and its
-8/16/32/64/ptr widths (not 128). PA3 computes these facts; demanded uses require
-the actual `cfg_target_has_atomic` source feature or macro allowance in PA8.
+The bootstrap-capable target retains bare `target_has_atomic` and
+`target_has_atomic_load_store`, separately from their 8/16/32/64/ptr width
+values (not 128). Bare `target_has_atomic_primitive_alignment` is false; its
+width values remain available. PA3 computes these facts. Demanded load/store
+predicates require the actual `cfg_target_has_atomic` source feature or macro
+allowance in PA8; bare `target_has_atomic` has no such source feature gate.
+These fixed course facts do not depend on the host's `RUSTC_BOOTSTRAP` environment.
+See [the atomic predicate controls](tests/spec/bare-atomic/README.md).
 
 `cfg_attr(predicate, attrs...)` validates attribute syntax and, if selected,
 expands its attributes in order. Expansion may produce more `cfg_attr` or `cfg`

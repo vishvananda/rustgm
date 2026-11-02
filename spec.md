@@ -909,6 +909,16 @@ frontend fallbacks cannot satisfy upstream acceptance. Keep build/configuration
 orchestration outside the frontend. A whole selected crate build and independent
 native consumers are required; source reducers guide work but do not replace it.
 
+The fixed bootstrap-capable x86-64 target includes bare target_has_atomic,
+separately from its width values and the gated target_has_atomic_load_store
+predicate. Target truth grants no source feature or macro permission. Preserve
+override rejection and keep host bootstrap environment out of the compiler
+library. The [atomic predicate checkpoint](docs/bare-atomic-cfg-checkpoint.md)
+compares pinned stable/bootstrap behavior and records the explicit configuration
+implementation hash change in its derived original-core manifest. Hardware,
+CLI target inputs, source bytes and finite limits are separate invariants; do
+not conceal a corrected target fact behind an ad-hoc --cfg override.
+
 Source auto-trait selection preserves explicit positive and negative identities.
 A refutation is not positive evidence, and an applicable explicit implementation
 family replaces its structural default even when its conditions are unpaid.

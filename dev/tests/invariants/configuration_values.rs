@@ -227,3 +227,95 @@ fn generated_gate_counts_reuse_one_capture_and_keep_real_atomic_impls() -> Resul
     assert_eq!(actual.invocations.len(), 11);
     Ok(())
 }
+
+#[test]
+fn bare_atomic_target_fact_preserves_widths_and_separate_gate_authority() {
+    let mut config = Config::default();
+    assert!(config.contains("target_has_atomic", None));
+    assert!(CfgGate::named("target_has_atomic").is_none());
+    assert_eq!(
+        CfgGate::named("target_has_atomic_load_store"),
+        Some(CfgGate::TargetHasAtomic)
+    );
+    for name in [
+        "target_has_atomic",
+        "target_has_atomic_load_store",
+        "target_has_atomic_primitive_alignment",
+    ] {
+        for width in ["8", "16", "32", "64", "ptr"] {
+            assert!(config.contains(name, Some(width)));
+        }
+        for width in ["", "7", "128", "256"] {
+            assert!(!config.contains(name, Some(width)));
+        }
+        assert!(config.add(name).is_err());
+        assert!(config.add(&format!("{name}=\"128\"")).is_err());
+    }
+    assert!(!config.contains("target_has_atomic_primitive_alignment", None));
+    assert!(!config.contains("unrelated_atomic", None));
+}
+
+#[test]
+fn bare_atomic_sources_keep_real_macro_selection_and_load_store_permissions() -> Result {
+    for (name, accepted) in [
+        ("bare-helper", true),
+        ("bare-generated", true),
+        ("bare-captured", true),
+        ("bare-no-permission", false),
+        ("bare-authorized", true),
+        ("bare-macro-no-permission", false),
+    ] {
+        let input = crate::test_source::fixture(&format!("pa8/tests/spec/bare-atomic/{name}.rs"))?;
+        for edition in [Edition::Rust2021, Edition::Rust2024] {
+            let actual = report(&input, edition);
+            if accepted {
+                let actual = actual.map_err(|error| format!("{name}: {error}"))?;
+                assert_eq!(
+                    actual
+                        .resolution
+                        .definitions
+                        .iter()
+                        .filter(|definition| {
+                            definition.kind == crate::resolve::model::DefKind::Function
+                                && actual.package.names.get(definition.name) == "helper"
+                        })
+                        .count(),
+                    1
+                );
+                crate::pipeline::analyze_source(&actual)
+                    .map_err(|error| format!("{name}: {error}"))?;
+            } else {
+                let error = actual
+                    .err()
+                    .ok_or_else(|| format!("{name}: accepted missing gate"))?;
+                assert!(
+                    error.to_string().contains("cfg_target_has_atomic"),
+                    "{name}: {error}"
+                );
+            }
+        }
+    }
+    Ok(())
+}
+
+#[test]
+fn bare_atomic_capture_does_not_create_gated_use_storage() -> Result {
+    for width in [1_usize, 8, 32, 128] {
+        let mut input = String::from("macro_rules! many { ($flag:meta) => {");
+        for index in 0..width {
+            write!(input, "#[cfg($flag)] fn f{index}() {{}}")?;
+        }
+        input.push_str("}}many!(target_has_atomic);fn main(){}");
+        let actual = report(&input, Edition::Rust2024)?;
+        assert_eq!(actual.invocations[0].parser_calls, 1);
+        assert_eq!(actual.captures.len(), 1);
+        let unit = &actual.package.units[0];
+        assert!(unit.configured.cfg_uses.is_none());
+        assert!(unit.configured.ast.nodes.len() <= 128 + 32 * width);
+        eprintln!(
+            "bare atomic width={width} capture-parses=1 captures=1 gated-uses=0 nodes={}",
+            unit.configured.ast.nodes.len()
+        );
+    }
+    Ok(())
+}

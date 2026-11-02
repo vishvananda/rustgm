@@ -66,6 +66,17 @@ actual bare atomic target cfg/gating without source patches or ad-hoc flags.
 Full CI41489097835 on8ae6b703b passes every gate; full storage-source successor
 41494273651 on9e1c5b335 is tracked separately. Root remains the only worker.
 
+Root's [bare atomic predicate checkpoint](bare-atomic-cfg-checkpoint.md)
+qualifies LIB-117 with18 independent Rust outcomes, private7/production36,
+16 CLI controls and PA393/PA8126. Its derived core observation explicitly binds
+the corrected config implementation, preserving source bytes/hardware/arguments
+and finite limits. CLIb39b1012 reaches LIB-118 source-mode iteration reservation.
+Next work consumes actual Iterator/next/into_iter/Option source declarations and
+ordinary calls, retaining the no-bootstrap fence; name-only admission is not
+completion. Root remains alone. Full CI41494273651 on9e1c5b335 is terminal
+success; full namespace successor41499430614 on0682f57e0 also passes every gate.
+A same-binary debugger trace confirms the current source-mode iteration fence.
+
 Public788889aac contains the qualified Comptime/v8 checkpoint; its full
 CI40976018856 is terminal failed on two later regressions, repaired as below.
 Private201 and production35, full v7/v8 CLI/native,

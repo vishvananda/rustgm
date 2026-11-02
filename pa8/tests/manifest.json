@@ -1578,6 +1578,96 @@
         "RUSTC_BOOTSTRAP": "1"
       },
       "maintainer_origin": "LIB-044 pinned52 preimplementation observations; exact opaque string root and actual target gate ordering"
+    },
+    {
+      "path": "tests/spec/bare-atomic/bare-helper.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "Independent pinned bootstrap target; bare atomic is separate from load-store feature permission."
+    },
+    {
+      "path": "tests/spec/bare-atomic/bare-generated.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "Independent pinned bootstrap target; bare atomic is separate from load-store feature permission."
+    },
+    {
+      "path": "tests/spec/bare-atomic/bare-captured.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "Independent pinned bootstrap target; bare atomic is separate from load-store feature permission."
+    },
+    {
+      "path": "tests/spec/bare-atomic/bare-no-permission.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "Independent pinned bootstrap target; bare atomic is separate from load-store feature permission."
+    },
+    {
+      "path": "tests/spec/bare-atomic/bare-authorized.rs",
+      "exit_status": 0,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "Independent pinned bootstrap target; bare atomic is separate from load-store feature permission."
+    },
+    {
+      "path": "tests/spec/bare-atomic/bare-macro-no-permission.rs",
+      "exit_status": 1,
+      "features": [
+        "pa8.expansion"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1
+      },
+      "environment": {
+        "RUSTC_BOOTSTRAP": "1"
+      },
+      "maintainer_origin": "Independent pinned bootstrap target; bare atomic is separate from load-store feature permission."
     }
   ]
 }

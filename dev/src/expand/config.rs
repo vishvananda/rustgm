@@ -133,7 +133,10 @@ impl Config {
             return if name == "ub_checks" {
                 self.runtime_checks.ub_checks()
             } else {
-                matches!(name, "unix" | "target_has_atomic_load_store") || self.flags.contains(name)
+                matches!(
+                    name,
+                    "unix" | "target_has_atomic" | "target_has_atomic_load_store"
+                ) || self.flags.contains(name)
             };
         };
         TARGET_VALUES.contains(&(name, value))
