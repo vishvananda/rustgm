@@ -4903,6 +4903,18 @@ Async transformation accounts for borrows, pinning and cancellation cleanup.
 
 ## Crate calling-convention transport
 
+Method-dispatch policy is an original trait declaration fact. Retain the actual
+configured owner, source image, full trait header, bound definition and both
+array/boxed-slice bits in the existing cold header promises. Parse its word list
+once in the shared attribute walk, with genuine feature/macro authority and
+prepaid storage. Both checked absence and presence require a current trait;
+unknown imports never become absent policy. Older export profiles reject intent
+they cannot transport. The method probe must consume the adjusted receiver
+and method-name token's defining edition, independently of trait Self and the
+whole call's span; qualified paths remain separate. Genuine Box identity cannot
+be inferred from a nominal spelling. The [declaration checkpoint](docs/pa34-dispatch-declaration-checkpoint.md)
+records the qualified producer and required receiver/edition/metadata closure.
+
 Retain forced non-Rustic argument passing as typed nominal representation.
 Authenticate actual struct, word, duplicate, feature/macro-envelope and
 representation-conflict rules during the existing owner walk. Summarize actual

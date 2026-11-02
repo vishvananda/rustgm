@@ -11,6 +11,14 @@ implementation priority, source pins and the migration of unreleased numbers.
 
 ## Required implementation
 
+The [method-dispatch packet](tests/spec/method-dispatch-policy/README.md) freezes
+actual array/boxed-slice rules for2018/2021/2024 and the required source/Box/metadata
+prerequisites. Its declaration producer is [qualified](../docs/pa34-dispatch-declaration-checkpoint.md),
+but the packet's full receiver/native and mixed-origin method-name behavior is
+not complete. The policy reads the adjusted receiver and method identifier's
+origin, not the trait Self or compiling crate's edition. Preserve these explicit
+positives when closing required older editions and real Box consumers.
+
 Provide reproducible crate-build orchestration for Rust 2021 and 2024, retaining
 per-crate editions through expansion and metadata. Resolve the selected manifest,
 lockfile, dependency renames, features and target configuration used by the

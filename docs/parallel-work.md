@@ -19,6 +19,13 @@ IntoIterator's edition-sensitive method-dispatch policy. Continue there while
 retaining the broader representation transport/runtime requirements. No new
 worker or cache is required.
 
+Current successor: source d16450c29 qualifies original method-dispatch
+declarations and advances source admission to LIB-113 optimize(size) in
+panicking.rs262. See [the declaration checkpoint](pa34-dispatch-declaration-checkpoint.md).
+Its receiver/Box/edition/metadata consumers remain required. Full CI41453970215
+on the prior558a998b2 ABI checkpoint is terminal success. Root continues alone
+in the same btrfs tree with unchanged guards and scoped cleanup.
+
 Public788889aac contains the qualified Comptime/v8 checkpoint; its full
 CI40976018856 is terminal failed on two later regressions, repaired as below.
 Private201 and production35, full v7/v8 CLI/native,

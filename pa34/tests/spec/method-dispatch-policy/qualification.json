@@ -1,0 +1,39 @@
+{
+  "state": "Declaration producer qualified; full dispatch/Box/edition/metadata requirements remain open",
+  "source": "d16450c29",
+  "contract_sha256": "7f8ca802d14188d5a2bbf5861195e14cd36a238f92e17a3e29db62346a56398b",
+  "independent": {
+    "cases": 43,
+    "metadata_object_outcomes": 258,
+    "native_executions": 21,
+    "reference_v2_sha256": "0743f9a99431565260894f016fc6890ab3b809ad89cb17ce05b60e316aabdf03",
+    "reference_v3_sha256": "b474117f5ae5f8b099b3fb1ae6ac7a4a442d5e703b31a5dd9ddea469ee88ade3",
+    "unchanged_predecessor_results_reused_only_after_source_tool_contract_hash_verification": true
+  },
+  "candidate": {
+    "private_controls": 20,
+    "production_controls": 58,
+    "text_cases": 1608,
+    "cli_declarations": 35,
+    "native_abi_regressions": {
+      "c_observers": 5,
+      "fresh_rust_comparisons": 4,
+      "scope": "Previous forced argument ABI regression coverage, not the seven unfinished dispatch-native inputs"
+    },
+    "private_receipt_sha256": "2cb2b7c897e354e366a8538cd9ba9c96c1b2e53cd0538433707bd788a083e301",
+    "production_receipt_sha256": "fc7984dccfa0dfc8d6f9c00e7e03f8336fb61f17c142d1292de2859bd7380ad9",
+    "consumer_receipt_sha256": "5ff1705329e499ac3b5383d6ab9259fb8acccce1950d09698c72c0ebffb398d0",
+    "core_receipt_sha256": "41433126c094405550d958c33df21bc7039b095acc8ef8877494b98c113c49dd",
+    "next_original_core_source": "LIB-113 optimize(size) in active cfg_attr at panicking.rs262",
+    "core_source_hashes": 722,
+    "original_library_artifact": false
+  },
+  "unqualified_required": [
+    "Actual adjusted receiver filtering, separately from trait Self or method reference form",
+    "Method-name token edition, including captured and mixed-origin identifiers",
+    "Genuine Box identity/storage and older-edition native consumers; no spelling or nominal substitute",
+    "Authenticated trait policy metadata transport and independent imported consumers",
+    "Original custom auto trait positive before annotation processing; actual source Send does not qualify general custom-auto support",
+    "All whole-assignment, original crate artifact, debug, native and release requirements"
+  ]
+}

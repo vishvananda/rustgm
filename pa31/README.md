@@ -16,6 +16,15 @@ old cycle; both units and the complete contract below remain required.
 
 ## Required implementation
 
+The [method-dispatch declaration producer](../docs/pa34-dispatch-declaration-checkpoint.md)
+retains the actual trait's array/boxed-slice policy with source ownership,
+feature/macro authority, bounded payments and old-profile metadata fences.
+The [cross-edition packet](../pa34/tests/spec/method-dispatch-policy/README.md)
+preserves real adjusted-receiver, qualified-call and genuine Box requirements.
+Receiver execution, mixed-origin method-name editions, custom-auto prerequisites
+and authenticated policy transport remain required; this does not complete the
+source binding or runtime units.
+
 The [advisory source checkpoint](../docs/pa31-advisory-source-checkpoint.md)
 validates actual insignificant-destructor declarations and the independent
 optimization restrictions without inventing write, cleanup or language
