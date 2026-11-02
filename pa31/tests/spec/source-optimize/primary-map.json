@@ -1,0 +1,29 @@
+{
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "files": [
+    {
+      "path": "compiler/rustc_attr_parsing/src/attributes/codegen_attrs.rs",
+      "sha256": "cadff1c5afe081e459f0105daa76d5ccf10a1ee6f3fd54d1443323f688fa7885"
+    },
+    {
+      "path": "compiler/rustc_passes/src/check_attr.rs",
+      "sha256": "6bb6c566adff5f1fa95e6d47b5a03b7a38a01d5a7b8e7d9eb82eda8a0505abf1"
+    },
+    {
+      "path": "compiler/rustc_codegen_llvm/src/attributes.rs",
+      "sha256": "dd764494fad38c3de5709c94757a307a8fdd9dbcea8f5de2f4fb07e28d4549db"
+    },
+    {
+      "path": "compiler/rustc_mir_transform/src/inline.rs",
+      "sha256": "1b8d110f32d205db75f4c56a699673bc5d5bfaf4c72b00655301a31d91b9a8c3"
+    },
+    {
+      "path": "tests/ui/attributes/optimize.rs",
+      "sha256": "8090c6ebf9ce08ad5c94574138ecd9ff34a41dbe235cc60a84b437049c242c18"
+    },
+    {
+      "path": "tests/ui/attributes/optimize-smoke-test.rs",
+      "sha256": "8b2e676fa978c4b723e8554e9ef493f2de08b1f91f9c64989b71819d0b2c11c0"
+    }
+  ]
+}

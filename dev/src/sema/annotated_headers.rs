@@ -10,14 +10,16 @@ mod incarnations;
 mod local;
 pub(in crate::sema) use incarnations::SourceImage;
 pub(in crate::sema) use local::has_comptime_headers;
+pub(in crate::sema) use local::optimization::check_inline;
+pub use local::optimization::{Optimization, OptimizationView};
 pub use local::skipped_traits::{DispatchPolicy, DispatchPolicyView};
 #[cfg(test)]
 pub(in crate::sema) use local::source_contract_costs;
 pub(in crate::sema) use local::{
     consume_comptime, consume_const_panic, consume_incoherent_target, consume_inherited_overflow,
     consume_legacy_indices, consume_no_implicit_autorefs, consume_nonconst_member,
-    consume_pointer_lint, consume_promotable, consume_skipped_dispatch, consume_tracking,
-    inherit_tracking, marker_trait,
+    consume_optimization, consume_pointer_lint, consume_promotable, consume_skipped_dispatch,
+    consume_tracking, inherit_tracking, marker_trait,
 };
 #[cfg(test)]
 #[path = "../../tests/invariants/nodeless_owners.rs"]

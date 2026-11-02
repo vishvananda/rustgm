@@ -283,6 +283,12 @@ impl super::package::Package {
             "metavariable-expression client identity changed",
         )
     }
+    pub(crate) fn requested_optimize_attribute(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::OptimizeAttribute,
+            "optimization attribute client identity changed",
+        )
+    }
     pub(crate) fn requested_coverage_attribute(&self) -> Result<bool, &'static str> {
         self.requested_expression_feature(
             policy::Feature::CoverageAttribute,

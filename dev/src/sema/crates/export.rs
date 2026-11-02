@@ -155,6 +155,9 @@ fn validate_profile(
     facts
         .require_dispatch_policy_transport(report)
         .map_err(error)?;
+    facts
+        .require_optimization_transport(report)
+        .map_err(error)?;
     if let Some(producer) = report.lint_producer() {
         producer.require_deprecation_transport(&report.package)?;
         producer.require_impl_bound_transport(&report.package)?;

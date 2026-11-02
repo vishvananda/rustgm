@@ -1,0 +1,36 @@
+{
+  "state": "Local source declaration intent qualified; imported transport and whole assignments remain required",
+  "contract_sha256": "cc8df3cdfdd2ea3cffacb67ba30e4bbf48dcc3b12d28e030c6f4f78e3e1417c5",
+  "independent": {
+    "source_cases": 49,
+    "metadata_object_outcomes": 98,
+    "native_executions": 2,
+    "native_stdout": "11\n",
+    "reference_receipt_sha256": "c8fbc8c60248b7abd04765861e683a9b01b4b1abca1bb55b8bb6d2dc23b14e3b",
+    "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "predecessor_reference_receipt_sha256": "0f3dc25dc3453c78615763008d91d19fc8cbe7c09a10f92a3fd7233df558408b"
+  },
+  "candidate": {
+    "private_controls": 8,
+    "production_controls": 58,
+    "text_cases": 1608,
+    "cli_cases": 48,
+    "cli_scope": "types view for declarations; loans view for borrow opponent; exact native source separately lowered and executed",
+    "native_c_observers": 1,
+    "native_stdout": "11\n",
+    "private_receipt_sha256": "02bd8c0d400eb9fd68b0fd9f4538ac2deae37d870e59141aa3e03808710765a4",
+    "production_receipt_sha256": "0212c52209217133d366576b1f31b2387431e2590d3dbf8e1fb9ad309dee246b",
+    "consumer_receipt_sha256": "8e3ddbf8258bfaff0af74fa180bebedfb78646a5db206b1e7816e8cbeff48c2a",
+    "core_receipt_sha256": "47deaf6a9817d10238d0cea1456e462ab1f88381e70376f826c43b52c20fd8f5",
+    "cli_sha256": "6d50fae4f4e4489c3a91a78847c9fa88af99148c03c70fbafc1d50685a0b9270",
+    "original_source_hashes": 722,
+    "next_blocker": "LIB-114 rustc_simd_monomorphize_lane_limit = \"64\" at portable-simd core_simd/src/vector.rs107",
+    "original_library_artifact": false
+  },
+  "unqualified_required": [
+    "Authenticated metadata transport of optimization intent across real crate consumers",
+    "Original core alloc std and independent real consumer artifacts",
+    "Full attribute and whole assignment release requirements",
+    "The independently successful std println native.rs fixture retains its required broader formatting/runtime positive; the C observer qualifies the actual arithmetic functions without claiming std formatting"
+  ]
+}

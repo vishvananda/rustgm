@@ -296,6 +296,16 @@ fn consume_annotation(
                 allowances,
             )?;
         }
+        Some(Consumer::Optimization) => {
+            crate::sema::header_attributes::consume_optimization(
+                report,
+                facts,
+                (owner, declaration),
+                (attribute, effect),
+                forest,
+                allowances,
+            )?;
+        }
         Some(Consumer::SkippedMethodDispatch) => {
             crate::sema::header_attributes::consume_skipped_dispatch(
                 report,

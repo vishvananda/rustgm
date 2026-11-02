@@ -232,6 +232,7 @@ pub(super) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), E
                     )?;
                     continue;
                 }
+                super::header_attributes::check_inline(report, facts, key, hint)?;
                 let contracts = facts
                     .must_use_contracts
                     .get_or_insert_default()

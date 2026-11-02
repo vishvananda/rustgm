@@ -68,6 +68,7 @@ pub(in crate::resolve) enum Feature {
     PreludeImport = 51,
     RustdocInternals = 52,
     MustNotSuspend = 53,
+    OptimizeAttribute = 54,
 }
 
 impl Feature {
@@ -142,6 +143,7 @@ impl Request {
             "repr_simd" => Self::Capability(Feature::ReprSimd),
             "simd_ffi" => Self::Capability(Feature::SimdFfi),
             "coverage_attribute" => Self::Capability(Feature::CoverageAttribute),
+            "optimize_attribute" => Self::Capability(Feature::OptimizeAttribute),
             "pattern_type_macro" => Self::Library(Feature::PatternTypeMacro),
             "pattern_types" => Self::Capability(Feature::PatternTypes),
             // Requests do not authorize the unsupported live const-drop operation.
@@ -163,6 +165,7 @@ impl Features {
     }
     fn needs_local_owner(&self) -> bool {
         self.has(Feature::PreludeImport)
+            || self.has(Feature::OptimizeAttribute)
             || self.has(Feature::MustNotSuspend)
             || self.has(Feature::ExpressionAttributes)
             || self.has(Feature::InternalMacroAllowance)
