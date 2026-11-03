@@ -29,6 +29,7 @@ impl Length {
                 .map(Self::Known)
                 .map_err(|_| "array length exceeds target usize"),
             Some(ConstKind::Parameter(_)) => Ok(Self::Parameter(id)),
+            Some(ConstKind::Aggregate(_)) => Err("array length cannot be an aggregate constant"),
             None => Err("missing array length argument"),
         }
     }

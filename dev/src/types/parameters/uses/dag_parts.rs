@@ -34,7 +34,7 @@ fn constant<V: Summary>(
             .ok_or("invalid default parameter constant")?
         {
             ConstKind::Parameter(id) => parameter(id)?,
-            ConstKind::Value(_) => V::empty(),
+            ConstKind::Value(_) | ConstKind::Aggregate(_) => V::empty(),
         },
     )
 }

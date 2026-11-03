@@ -289,6 +289,9 @@ impl Constant {
         let value = match store.const_kind(id) {
             Some(crate::types::arguments::ConstKind::Value(value)) => value,
             Some(crate::types::arguments::ConstKind::Parameter(_)) => return Ok(None),
+            Some(crate::types::arguments::ConstKind::Aggregate(_)) => {
+                return Err("aggregate const argument requires typed value materialization");
+            }
             None => return Err("missing canonical const argument"),
         };
         let scalar = match store.kind(value.ty) {

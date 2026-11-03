@@ -146,5 +146,8 @@ performance result. Preserve their raw observations for subsequent comparison.
 
 The public predecessor `fedfef216` passed full CI
 [41650945582](https://github.com/vishvananda/rustgm/actions/runs/41650945582).
-This checkpoint's full CI is recorded separately when available; focused gates
-do not stand in for assignment release.
+This checkpoint also passes full CI
+[41662263222](https://github.com/vishvananda/rustgm/actions/runs/41662263222)
+on `7e0c6517f`, including release/course tests, native qualification, debug
+invariants, independent Rust and the PA25 constant-machine contract. This is
+broader checkpoint evidence; no whole assignment or original crate is released.

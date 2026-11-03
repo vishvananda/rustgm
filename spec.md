@@ -5406,3 +5406,18 @@ reject unrepresentable IDs and keep caller/parent authentication intact. Measure
 actual retained layouts before updating size guards; keep the existing
 provider/imported difference bound and remove lint expectations made obsolete
 by a structural improvement. No ordinary node, body or execution frame grows.
+
+Canonical aggregate const data belongs beneath the existing optional generic
+argument storage. Keep scalar bits, rigid parameters and aggregate identities
+distinct. Intern complete typed products from immediate canonical child IDs;
+nominal owner, enum variant and field order are part of identity. Normalize
+uniform array sequences and compressed repeats consistently, including empty
+arrays, without expanding large repeats or recursively hashing shared children.
+Charge validation, collision comparisons and prospective growth before publication;
+warm queries still pay work. Payload nodes and field edges belong to the const
+producer, not unrelated trait-input charges or cache-invalidating extents.
+Semantic producers separately validate actual fields, feature/marker authority,
+initialized values and defining contexts. Data interning supplies none of that
+permission. The [PA25 foundation and integration order](docs/pa25-aggregate-const-values.md)
+records qualified data controls and the remaining evaluator, reader, declaration,
+transmutability-relation and imported-artifact work.

@@ -542,6 +542,12 @@ pub(super) fn argument(
             ConstKind::Value(value) => {
                 write!(out, "const:{}:0x{:032x}", value.ty.0, value.bits)?;
             }
+            ConstKind::Aggregate(id) => {
+                let value = store
+                    .aggregate_constant(id)
+                    .ok_or_else(|| io::Error::other("invalid canonical aggregate constant"))?;
+                write!(out, "const-aggregate:{}:{}", value.ty().0, id.0)?;
+            }
             ConstKind::Parameter(id) => {
                 let parameter = store
                     .parameter(id)

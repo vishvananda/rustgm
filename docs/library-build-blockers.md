@@ -32,8 +32,15 @@ same finite limits. No original crate artifact exists. The
 [source NoDrop checkpoint](pa31-no-drop-checkpoint.md) remains its independently
 qualified field/Copy prerequisite. Full predecessor CI41650945582 onfedfef216
 passed every gate, including the earlier CI's three repaired private expectations.
-The native successor's full CI follows integration. These focused results do not
-activate a whole PA.
+The native successor's full CI41662263222 on7e0c6517f also passes every gate.
+No whole PA is activated.
+
+LIB-124 now has a [canonical aggregate const-value foundation](pa25-aggregate-const-values.md):
+typed nominal/variant identity, shared child IDs, normalized compressed repeats,
+failed-payment guards and bounded deep-sharing controls. Private5, production9
+and PA21 758/758 pass. This representation does not yet enable aggregate Rust
+parameters: actual evaluator/reader handoff, feature/ConstParamTy proof,
+TransmuteFrom's relation and general nominal/constant transport remain required.
 
 Use the [current execution plan](library-bootstrap-acceleration.md) to choose work:
 real artifact/source consumers, demanded imported-body proof and consolidated

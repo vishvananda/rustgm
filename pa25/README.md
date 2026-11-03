@@ -8,6 +8,13 @@ Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The
 
 Const functions, statics, promotions and symbolic allocation provenance.
 
+The [aggregate const-value foundation](../docs/pa25-aggregate-const-values.md)
+provides canonical typed products, nominal variant identities and compressed
+repeats for the original core `Assume` dependency. Source parameter admission,
+evaluator/reader integration, actual marker/feature proof and PA29 transport
+remain required. The data representation alone does not enable aggregate const
+generics or complete the assignment.
+
 The [source allowance checkpoint](../docs/pa31-const-fn-allowances-checkpoint.md)
 implements exact rustc_allow_const_fn_unstable body effects, keeping recursive
 const API checking separate from feature requests, constness and unsafe
@@ -68,5 +75,7 @@ The [source wrapper checkpoint](../docs/pa31-source-wrappers-checkpoint.md) qual
 real source wrapper constants through typed byte/result traversal, compressed
 arrays, bounded shared graphs and failed-budget rollback. Its local/source/native
 component leaves general imported nominal transport and broader pointer metadata
-open. Original core now reaches actual source MaybeUninit; initialization masks,
-validity and unsafe assume-initialized execution remain required with PA27/31.
+open. The [MaybeUninit native checkpoint](../docs/pa31-maybe-uninit-native-checkpoint.md)
+qualifies the local source constant/native profile; general validity/runtime and
+imported requirements remain. Original core currently reaches genuine
+TransmuteFrom and its structured Assume const argument.

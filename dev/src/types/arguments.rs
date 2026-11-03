@@ -1,4 +1,5 @@
 //! Canonical generic arguments in declaration order, with a lifetime-only fast path.
+pub mod trees;
 use super::{GenericArgs, Kind, Primitive, RegionId, Store, TypeId};
 use crate::support::hash::HashMap;
 use crate::support::intern_slice::Slices;
@@ -18,6 +19,7 @@ pub struct Constant {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum ConstKind {
     Value(Constant),
+    Aggregate(trees::AggregateId),
     Parameter(super::parameters::ParameterId),
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -69,6 +71,7 @@ pub(super) struct Storage {
     mixed: Slices<Argument>,
     constants: Vec<ConstKind>,
     constant_index: HashMap<ConstKind, ConstId>,
+    aggregates: Option<Box<trees::Storage>>,
     pub(super) ranges: Option<Box<Slices<super::ScalarRange>>>,
 }
 impl Store {
@@ -237,7 +240,7 @@ impl Store {
     pub fn constant(&self, id: ConstId) -> Option<Constant> {
         match self.const_kind(id)? {
             ConstKind::Value(value) => Some(value),
-            ConstKind::Parameter(_) => None,
+            ConstKind::Parameter(_) | ConstKind::Aggregate(_) => None,
         }
     }
     #[must_use]
@@ -252,6 +255,7 @@ impl Store {
     pub fn const_type(&self, id: ConstId) -> Option<TypeId> {
         match self.const_kind(id)? {
             ConstKind::Value(value) => Some(value.ty),
+            ConstKind::Aggregate(id) => self.aggregate_constant(id).map(trees::Aggregate::ty),
             ConstKind::Parameter(id) => match self.parameter(id)?.kind {
                 super::parameters::ParameterKind::Const { ty } => Some(ty),
                 super::parameters::ParameterKind::Type { .. } => None,
@@ -268,6 +272,7 @@ impl Store {
     pub fn intern_const(&mut self, kind: ConstKind) -> Result<ConstId, &'static str> {
         let valid = match kind {
             ConstKind::Value(value) => self.valid_constant(value),
+            ConstKind::Aggregate(id) => self.aggregate_constant(id).is_some(),
             ConstKind::Parameter(id) => self.parameter(id).is_some_and(|parameter| {
                 matches!(
                     parameter.kind,
