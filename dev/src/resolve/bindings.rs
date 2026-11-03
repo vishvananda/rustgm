@@ -7,6 +7,8 @@ mod client;
 pub(crate) mod consumer_policy;
 mod deprecation_feature;
 mod diagnostic_extras;
+mod lang_claims;
+pub(crate) use lang_claims::kind as language_kind;
 #[path = "bindings/allowance_owner.rs"]
 mod macro_context;
 mod panic_claims;

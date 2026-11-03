@@ -304,7 +304,7 @@ fn warm_queries_failed_payments_and_cold_role_arrays_keep_bounded_ownership() ->
     assert_eq!(LangItem::RangeMin.index(), 67);
     assert_eq!(LangItem::RangeMax.index(), 68);
     assert_eq!(LangItem::RangeSub.index(), 69);
-    assert_eq!(size_of::<super::super::roles::RoleSet>(), 16);
+    assert_eq!(size_of::<super::super::roles::RoleSet>(), 24);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     layouts();
@@ -314,9 +314,9 @@ fn warm_queries_failed_payments_and_cold_role_arrays_keep_bounded_ownership() ->
 fn layouts() {
     let (bindings, imported, role) = Catalog::binding_layouts();
     let provider = Catalog::provider_binding_bytes();
-    // Two actual reflection roles add two additional 16-byte slots to both cold catalogs.
-    assert_eq!(provider, 1392);
-    assert_eq!(imported, 1464);
+    // The complete declaration inventory grows cold role slots; ordinary records stay fixed.
+    assert_eq!(provider, 2992);
+    assert_eq!(imported, 3064);
     assert!(provider.abs_diff(imported) <= 256);
     assert!(bindings >= provider);
     eprintln!(

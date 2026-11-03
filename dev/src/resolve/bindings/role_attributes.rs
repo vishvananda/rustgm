@@ -225,17 +225,11 @@ pub(super) fn primary(
             && namespace == crate::resolve::model::Namespace::Value
             && claims.is_some_and(|claims| {
                 claims.iter().any(|claim| {
-                    matches!(
-                        claim,
-                        Claim::Language(
-                            LangItem::ControlFlowContinue
-                                | LangItem::ControlFlowBreak
-                                | LangItem::ResultOk
-                                | LangItem::ResultErr
-                                | LangItem::OptionSome
-                                | LangItem::OptionNone
-                        )
-                    )
+                    matches!(claim, Claim::Language(role) if
+                        matches!(role, LangItem::ControlFlowContinue | LangItem::ControlFlowBreak
+                            | LangItem::ResultOk | LangItem::ResultErr | LangItem::OptionSome | LangItem::OptionNone)
+                        || role.declaration_profile().is_some_and(|profile|
+                            profile.target == crate::support::bindings::DeclarationTarget::Variant))
                 })
             });
     }

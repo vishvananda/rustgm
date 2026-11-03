@@ -104,6 +104,18 @@ typed LowIR directly. All backend-visible facts must have a LowIR spelling.
 
 ### Upstream library boundary
 
+Source language-item vocabulary is append-only and driven by one declarative
+inventory. Preserve existing ordinals and diagnostic-only spellings. Validate
+new targets, written own/associated-owner generic counts and foreign-only policy
+from configured syntax and resolved ownership, before reserving claims. A known
+name is no completed builtin proof: unsupported semantic consumers must fail
+before ordinary trait, layout, drop or auto-trait processing could assume their
+absence. Profiling hooks execute their actual ordinary bodies; current codegen
+adds no profiling annotations. Fence old metadata profiles until they encode the
+actual compiler contract. The [PA31 declaration packet](pa31/tests/spec/compiler-language-claims/README.md)
+binds independent positive/opposing cases and preserves unimplemented semantics.
+
+
 Validate active source optimization/advisory annotations against their real
 feature and configured target. Reuse transient per-owner state or existing cold
 drafts when the current backend has no corresponding optimization or advisory

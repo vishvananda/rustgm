@@ -1,0 +1,100 @@
+use_cloned	87	None	
+fn_ptr_trait	88	Exact	0
+fn_ptr_addr	89	None	
+async_drop	90	None	
+async_drop_in_place	91	Exact	1
+mul	92	Exact	1
+rem	93	Exact	1
+bitxor	94	Exact	1
+bitand	95	Exact	1
+shr	96	Exact	1
+add_assign	97	Exact	1
+sub_assign	98	Exact	1
+mul_assign	99	Exact	1
+div_assign	100	Exact	1
+rem_assign	101	Exact	1
+bitxor_assign	102	Exact	1
+bitand_assign	103	Exact	1
+bitor_assign	104	Exact	1
+shl_assign	105	Exact	1
+shr_assign	106	Exact	1
+index	107	Exact	1
+index_mut	108	Exact	1
+unsafe_cell	109	None	
+unsafe_pinned	110	None	
+va_arg_safe	111	None	
+va_list	112	None	
+deref	113	Exact	0
+deref_mut	114	Exact	0
+deref_pure	115	Exact	0
+deref_target	116	None	
+receiver	117	None	
+receiver_target	118	None	
+async_fn	119	Exact	1
+async_fn_mut	120	Exact	1
+async_fn_once	121	Exact	1
+async_fn_once_output	122	Exact	1
+call_once_future	123	Exact	1
+call_ref_future	124	Exact	2
+async_fn_kind_helper	125	Exact	1
+async_fn_kind_upvars	126	Exact	5
+fused_iterator	127	Exact	0
+future_trait	128	Exact	0
+future_output	129	Exact	0
+async_iterator	130	Exact	0
+coroutine_state	131	None	
+coroutine	132	Exact	1
+coroutine_return	133	Exact	1
+coroutine_yield	134	Exact	1
+coroutine_resume	135	None	
+pin	136	None	
+c_void	137	None	
+panic_bounds_check	138	Exact	0
+panic_misaligned_pointer_dereference	139	Exact	0
+panic_cannot_unwind	140	Exact	0
+panic_in_cleanup	141	Exact	0
+panic_null_pointer_dereference	142	None	
+panic_invalid_enum_construction	143	None	
+compiler_move	144	Exact	2
+compiler_copy	145	Exact	2
+from_yeet	146	None	
+coerce_pointee_validated	147	Exact	0
+Poll	148	None	
+Ready	149	None	
+Pending	150	None	
+AsyncGenReady	151	Exact	1
+AsyncGenPending	152	Exact	1
+AsyncGenFinished	153	Exact	1
+ResumeTy	154	None	
+get_context	155	None	
+Context	156	None	
+poll	157	None	
+async_iterator_poll_next	158	Exact	0
+into_async_iter_into_iter	159	Exact	0
+into_future	160	None	
+new_unchecked	161	None	
+RangeFrom	162	None	
+RangeFull	163	None	
+RangeInclusive	164	None	
+range_inclusive_new	165	None	
+Range	166	None	
+RangeToInclusive	167	None	
+RangeTo	168	None	
+RangeFromCopy	169	None	
+RangeCopy	170	None	
+RangeInclusiveCopy	171	None	
+RangeToInclusiveCopy	172	None	
+CStr	173	None	
+reborrow	174	Exact	0
+coerce_shared	175	Exact	1
+field_representing_type	176	Exact	3
+field	177	Exact	0
+field_base	178	Exact	0
+field_type	179	Exact	0
+field_offset	180	Exact	0
+memcpy_fn	181	None	
+memmove_fn	182	None	
+memset_fn	183	None	
+memcmp_fn	184	None	
+bcmp_fn	185	None	
+strlen_fn	186	None	

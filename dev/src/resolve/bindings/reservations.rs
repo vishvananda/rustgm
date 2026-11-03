@@ -414,6 +414,7 @@ fn reserve_language(
         }
         // GenericRequirement::None imposes no count, receiver or spelling rule.
     }
+    super::lang_claims::validate(package, facts, declaration, kind, foreign)?;
     super::panic_claims::validate(package, declaration, kind)?;
     super::pointee_claims::validate(package, declaration, kind)?;
     super::wrapper_claims::validate(package, declaration, kind)?;

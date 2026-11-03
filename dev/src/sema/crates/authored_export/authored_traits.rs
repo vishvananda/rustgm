@@ -19,6 +19,12 @@ pub(super) fn require_role_transport(
         .source_bindings
         .as_deref()
         .ok_or("source header graph has no role catalog")?;
+    if LangItem::DECLARATIONS
+        .into_iter()
+        .any(|role| catalog.language(role).is_some())
+    {
+        return Err("source compiler language contract transport is not implemented");
+    }
     if [LangItem::TypeInfo, LangItem::TypeId]
         .into_iter()
         .any(|role| catalog.language(role).is_some())

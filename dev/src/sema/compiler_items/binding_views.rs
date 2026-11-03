@@ -365,6 +365,9 @@ fn charge(work: &mut usize, count: usize) -> Result<(), &'static str> {
     Ok(())
 }
 fn role_kind(role: LangItem) -> DefKind {
+    if let Some(profile) = role.declaration_profile() {
+        return crate::resolve::bindings::language_kind(profile.target);
+    }
     match role {
         LangItem::RangeSub
         | LangItem::CloneFn

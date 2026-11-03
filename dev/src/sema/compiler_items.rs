@@ -2,6 +2,7 @@
 mod binding_views;
 mod calls;
 mod frozen_effects;
+mod vocab_semantics;
 pub(in crate::sema) use frozen_effects::Prepared as ImportedCallEffects;
 pub(in crate::sema) mod formatting;
 pub(in crate::sema) mod phantom;
@@ -189,6 +190,7 @@ impl Catalog {
                 "source declaration provider identity changed",
             ));
         }
+        vocab_semantics::require_supported(report, reserved)?;
         for kind in [LangItem::FormatArguments, LangItem::FormatArgument] {
             if let Some(declaration) = reserved.language(kind) {
                 formatting::require_shape(report, declaration).map_err(|message| {

@@ -16,6 +16,11 @@ old cycle; both units and the complete contract below remain required.
 
 ## Required implementation
 
+The [language-item declaration packet](tests/spec/compiler-language-claims/README.md)
+checks shared target, generic and foreign-only rules for the remaining raw-source
+inventory. Profiling hooks keep actual bodies; declaration recognition alone
+does not supply builtin semantics, metadata transport or original artifacts.
+
 The [type-reflection source checkpoint](../docs/pa31-type-reflection-source-checkpoint.md)
 qualifies actual `type_info`/`type_id` declaration targets and unrestricted generic
 forms, while retaining intrinsic/provenance and old-metadata boundaries. Its

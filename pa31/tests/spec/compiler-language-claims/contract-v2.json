@@ -1,0 +1,1758 @@
+{
+  "schema": 1,
+  "scope": "Source declaration targets and generic counts; implicit builtin implementations and metadata/debug semantics remain required. Raw inventory is not a cfg-active blocker count.",
+  "rustc_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir/src/lang_items.rs": "af62146fd0255b1b8baea76309e13eb00ff5b9a8ffe110348beba4deb3569690",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_passes/src/lang_items.rs": "4037b9d6f231067e211b8a310c74d0fef7537a3e37cfa33ce9552a7054cda47e"
+  },
+  "roles": [
+    {
+      "variant": "UseCloned",
+      "name": "use_cloned",
+      "target": "Target::Trait",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/clone.rs",
+      "ordinal": 87
+    },
+    {
+      "variant": "FnPtrTrait",
+      "name": "fn_ptr_trait",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 0,
+      "first_source": "library/core/src/marker.rs",
+      "ordinal": 88
+    },
+    {
+      "variant": "FnPtrAddr",
+      "name": "fn_ptr_addr",
+      "target": "Target::Method(MethodKind::Trait { body: false })",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/marker.rs",
+      "ordinal": 89
+    },
+    {
+      "variant": "AsyncDrop",
+      "name": "async_drop",
+      "target": "Target::Trait",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/future/async_drop.rs",
+      "ordinal": 90
+    },
+    {
+      "variant": "AsyncDropInPlace",
+      "name": "async_drop_in_place",
+      "target": "Target::Fn",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/future/async_drop.rs",
+      "ordinal": 91
+    },
+    {
+      "variant": "Mul",
+      "name": "mul",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/arith.rs",
+      "ordinal": 92
+    },
+    {
+      "variant": "Rem",
+      "name": "rem",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/arith.rs",
+      "ordinal": 93
+    },
+    {
+      "variant": "BitXor",
+      "name": "bitxor",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/bit.rs",
+      "ordinal": 94
+    },
+    {
+      "variant": "BitAnd",
+      "name": "bitand",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/bit.rs",
+      "ordinal": 95
+    },
+    {
+      "variant": "Shr",
+      "name": "shr",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/bit.rs",
+      "ordinal": 96
+    },
+    {
+      "variant": "AddAssign",
+      "name": "add_assign",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/arith.rs",
+      "ordinal": 97
+    },
+    {
+      "variant": "SubAssign",
+      "name": "sub_assign",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/arith.rs",
+      "ordinal": 98
+    },
+    {
+      "variant": "MulAssign",
+      "name": "mul_assign",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/arith.rs",
+      "ordinal": 99
+    },
+    {
+      "variant": "DivAssign",
+      "name": "div_assign",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/arith.rs",
+      "ordinal": 100
+    },
+    {
+      "variant": "RemAssign",
+      "name": "rem_assign",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/arith.rs",
+      "ordinal": 101
+    },
+    {
+      "variant": "BitXorAssign",
+      "name": "bitxor_assign",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/bit.rs",
+      "ordinal": 102
+    },
+    {
+      "variant": "BitAndAssign",
+      "name": "bitand_assign",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/bit.rs",
+      "ordinal": 103
+    },
+    {
+      "variant": "BitOrAssign",
+      "name": "bitor_assign",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/bit.rs",
+      "ordinal": 104
+    },
+    {
+      "variant": "ShlAssign",
+      "name": "shl_assign",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/bit.rs",
+      "ordinal": 105
+    },
+    {
+      "variant": "ShrAssign",
+      "name": "shr_assign",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/bit.rs",
+      "ordinal": 106
+    },
+    {
+      "variant": "Index",
+      "name": "index",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/index.rs",
+      "ordinal": 107
+    },
+    {
+      "variant": "IndexMut",
+      "name": "index_mut",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/index.rs",
+      "ordinal": 108
+    },
+    {
+      "variant": "UnsafeCell",
+      "name": "unsafe_cell",
+      "target": "Target::Struct",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/cell.rs",
+      "ordinal": 109
+    },
+    {
+      "variant": "UnsafePinned",
+      "name": "unsafe_pinned",
+      "target": "Target::Struct",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/pin/unsafe_pinned.rs",
+      "ordinal": 110
+    },
+    {
+      "variant": "VaArgSafe",
+      "name": "va_arg_safe",
+      "target": "Target::Trait",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ffi/va_list.rs",
+      "ordinal": 111
+    },
+    {
+      "variant": "VaList",
+      "name": "va_list",
+      "target": "Target::Struct",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ffi/va_list.rs",
+      "ordinal": 112
+    },
+    {
+      "variant": "Deref",
+      "name": "deref",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 0,
+      "first_source": "library/core/src/ops/deref.rs",
+      "ordinal": 113
+    },
+    {
+      "variant": "DerefMut",
+      "name": "deref_mut",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 0,
+      "first_source": "library/core/src/ops/deref.rs",
+      "ordinal": 114
+    },
+    {
+      "variant": "DerefPure",
+      "name": "deref_pure",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 0,
+      "first_source": "library/core/src/ops/deref.rs",
+      "ordinal": 115
+    },
+    {
+      "variant": "DerefTarget",
+      "name": "deref_target",
+      "target": "Target::AssocTy",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ops/deref.rs",
+      "ordinal": 116
+    },
+    {
+      "variant": "Receiver",
+      "name": "receiver",
+      "target": "Target::Trait",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ops/deref.rs",
+      "ordinal": 117
+    },
+    {
+      "variant": "ReceiverTarget",
+      "name": "receiver_target",
+      "target": "Target::AssocTy",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ops/deref.rs",
+      "ordinal": 118
+    },
+    {
+      "variant": "AsyncFn",
+      "name": "async_fn",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/async_function.rs",
+      "ordinal": 119
+    },
+    {
+      "variant": "AsyncFnMut",
+      "name": "async_fn_mut",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/async_function.rs",
+      "ordinal": 120
+    },
+    {
+      "variant": "AsyncFnOnce",
+      "name": "async_fn_once",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/async_function.rs",
+      "ordinal": 121
+    },
+    {
+      "variant": "AsyncFnOnceOutput",
+      "name": "async_fn_once_output",
+      "target": "Target::AssocTy",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/async_function.rs",
+      "ordinal": 122
+    },
+    {
+      "variant": "CallOnceFuture",
+      "name": "call_once_future",
+      "target": "Target::AssocTy",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/async_function.rs",
+      "ordinal": 123
+    },
+    {
+      "variant": "CallRefFuture",
+      "name": "call_ref_future",
+      "target": "Target::AssocTy",
+      "generic_requirement": "Exact",
+      "generic_count": 2,
+      "first_source": "library/core/src/ops/async_function.rs",
+      "ordinal": 124
+    },
+    {
+      "variant": "AsyncFnKindHelper",
+      "name": "async_fn_kind_helper",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/async_function.rs",
+      "ordinal": 125
+    },
+    {
+      "variant": "AsyncFnKindUpvars",
+      "name": "async_fn_kind_upvars",
+      "target": "Target::AssocTy",
+      "generic_requirement": "Exact",
+      "generic_count": 5,
+      "first_source": "library/core/src/ops/async_function.rs",
+      "ordinal": 126
+    },
+    {
+      "variant": "FusedIterator",
+      "name": "fused_iterator",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 0,
+      "first_source": "library/core/src/iter/traits/marker.rs",
+      "ordinal": 127
+    },
+    {
+      "variant": "Future",
+      "name": "future_trait",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 0,
+      "first_source": "library/core/src/future/future.rs",
+      "ordinal": 128
+    },
+    {
+      "variant": "FutureOutput",
+      "name": "future_output",
+      "target": "Target::AssocTy",
+      "generic_requirement": "Exact",
+      "generic_count": 0,
+      "first_source": "library/core/src/future/future.rs",
+      "ordinal": 129
+    },
+    {
+      "variant": "AsyncIterator",
+      "name": "async_iterator",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 0,
+      "first_source": "library/core/src/async_iter/async_iter.rs",
+      "ordinal": 130
+    },
+    {
+      "variant": "CoroutineState",
+      "name": "coroutine_state",
+      "target": "Target::Enum",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ops/coroutine.rs",
+      "ordinal": 131
+    },
+    {
+      "variant": "Coroutine",
+      "name": "coroutine",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/coroutine.rs",
+      "ordinal": 132
+    },
+    {
+      "variant": "CoroutineReturn",
+      "name": "coroutine_return",
+      "target": "Target::AssocTy",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/coroutine.rs",
+      "ordinal": 133
+    },
+    {
+      "variant": "CoroutineYield",
+      "name": "coroutine_yield",
+      "target": "Target::AssocTy",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/ops/coroutine.rs",
+      "ordinal": 134
+    },
+    {
+      "variant": "CoroutineResume",
+      "name": "coroutine_resume",
+      "target": "Target::Method(MethodKind::Trait { body: false })",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ops/coroutine.rs",
+      "ordinal": 135
+    },
+    {
+      "variant": "Pin",
+      "name": "pin",
+      "target": "Target::Struct",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/pin.rs",
+      "ordinal": 136
+    },
+    {
+      "variant": "CVoid",
+      "name": "c_void",
+      "target": "Target::Enum",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ffi/mod.rs",
+      "ordinal": 137
+    },
+    {
+      "variant": "PanicBoundsCheck",
+      "name": "panic_bounds_check",
+      "target": "Target::Fn",
+      "generic_requirement": "Exact",
+      "generic_count": 0,
+      "first_source": "library/core/src/panicking.rs",
+      "ordinal": 138
+    },
+    {
+      "variant": "PanicMisalignedPointerDereference",
+      "name": "panic_misaligned_pointer_dereference",
+      "target": "Target::Fn",
+      "generic_requirement": "Exact",
+      "generic_count": 0,
+      "first_source": "library/core/src/panicking.rs",
+      "ordinal": 139
+    },
+    {
+      "variant": "PanicCannotUnwind",
+      "name": "panic_cannot_unwind",
+      "target": "Target::Fn",
+      "generic_requirement": "Exact",
+      "generic_count": 0,
+      "first_source": "library/core/src/panicking.rs",
+      "ordinal": 140
+    },
+    {
+      "variant": "PanicInCleanup",
+      "name": "panic_in_cleanup",
+      "target": "Target::Fn",
+      "generic_requirement": "Exact",
+      "generic_count": 0,
+      "first_source": "library/core/src/panicking.rs",
+      "ordinal": 141
+    },
+    {
+      "variant": "PanicNullPointerDereference",
+      "name": "panic_null_pointer_dereference",
+      "target": "Target::Fn",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/panicking.rs",
+      "ordinal": 142
+    },
+    {
+      "variant": "PanicInvalidEnumConstruction",
+      "name": "panic_invalid_enum_construction",
+      "target": "Target::Fn",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/panicking.rs",
+      "ordinal": 143
+    },
+    {
+      "variant": "CompilerMove",
+      "name": "compiler_move",
+      "target": "Target::Fn",
+      "generic_requirement": "Exact",
+      "generic_count": 2,
+      "first_source": "library/core/src/profiling.rs",
+      "ordinal": 144
+    },
+    {
+      "variant": "CompilerCopy",
+      "name": "compiler_copy",
+      "target": "Target::Fn",
+      "generic_requirement": "Exact",
+      "generic_count": 2,
+      "first_source": "library/core/src/profiling.rs",
+      "ordinal": 145
+    },
+    {
+      "variant": "TryTraitFromYeet",
+      "name": "from_yeet",
+      "target": "Target::Fn",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ops/try_trait.rs",
+      "ordinal": 146
+    },
+    {
+      "variant": "CoercePointeeValidated",
+      "name": "coerce_pointee_validated",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 0,
+      "first_source": "library/core/src/marker.rs",
+      "ordinal": 147
+    },
+    {
+      "variant": "Poll",
+      "name": "Poll",
+      "target": "Target::Enum",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/task/poll.rs",
+      "ordinal": 148
+    },
+    {
+      "variant": "PollReady",
+      "name": "Ready",
+      "target": "Target::Variant",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/task/poll.rs",
+      "ordinal": 149
+    },
+    {
+      "variant": "PollPending",
+      "name": "Pending",
+      "target": "Target::Variant",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/task/poll.rs",
+      "ordinal": 150
+    },
+    {
+      "variant": "AsyncGenReady",
+      "name": "AsyncGenReady",
+      "target": "Target::Method(MethodKind::Inherent)",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/async_iter/async_iter.rs",
+      "ordinal": 151
+    },
+    {
+      "variant": "AsyncGenPending",
+      "name": "AsyncGenPending",
+      "target": "Target::AssocConst",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/async_iter/async_iter.rs",
+      "ordinal": 152
+    },
+    {
+      "variant": "AsyncGenFinished",
+      "name": "AsyncGenFinished",
+      "target": "Target::AssocConst",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/async_iter/async_iter.rs",
+      "ordinal": 153
+    },
+    {
+      "variant": "ResumeTy",
+      "name": "ResumeTy",
+      "target": "Target::Struct",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/future/mod.rs",
+      "ordinal": 154
+    },
+    {
+      "variant": "GetContext",
+      "name": "get_context",
+      "target": "Target::Fn",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/future/mod.rs",
+      "ordinal": 155
+    },
+    {
+      "variant": "Context",
+      "name": "Context",
+      "target": "Target::Struct",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/task/wake.rs",
+      "ordinal": 156
+    },
+    {
+      "variant": "FuturePoll",
+      "name": "poll",
+      "target": "Target::Method(MethodKind::Trait { body: false })",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/future/future.rs",
+      "ordinal": 157
+    },
+    {
+      "variant": "AsyncIteratorPollNext",
+      "name": "async_iterator_poll_next",
+      "target": "Target::Method(MethodKind::Trait { body: false })",
+      "generic_requirement": "Exact",
+      "generic_count": 0,
+      "first_source": "library/core/src/async_iter/async_iter.rs",
+      "ordinal": 158
+    },
+    {
+      "variant": "IntoAsyncIterIntoIter",
+      "name": "into_async_iter_into_iter",
+      "target": "Target::Method(MethodKind::Trait { body: false })",
+      "generic_requirement": "Exact",
+      "generic_count": 0,
+      "first_source": "library/core/src/async_iter/async_iter.rs",
+      "ordinal": 159
+    },
+    {
+      "variant": "IntoFutureIntoFuture",
+      "name": "into_future",
+      "target": "Target::Method(MethodKind::Trait { body: false })",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/future/into_future.rs",
+      "ordinal": 160
+    },
+    {
+      "variant": "PinNewUnchecked",
+      "name": "new_unchecked",
+      "target": "Target::Method(MethodKind::Inherent)",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/pin.rs",
+      "ordinal": 161
+    },
+    {
+      "variant": "RangeFrom",
+      "name": "RangeFrom",
+      "target": "Target::Struct",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ops/range.rs",
+      "ordinal": 162
+    },
+    {
+      "variant": "RangeFull",
+      "name": "RangeFull",
+      "target": "Target::Struct",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ops/range.rs",
+      "ordinal": 163
+    },
+    {
+      "variant": "RangeInclusiveStruct",
+      "name": "RangeInclusive",
+      "target": "Target::Struct",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ops/range.rs",
+      "ordinal": 164
+    },
+    {
+      "variant": "RangeInclusiveNew",
+      "name": "range_inclusive_new",
+      "target": "Target::Method(MethodKind::Inherent)",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ops/range.rs",
+      "ordinal": 165
+    },
+    {
+      "variant": "Range",
+      "name": "Range",
+      "target": "Target::Struct",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ops/range.rs",
+      "ordinal": 166
+    },
+    {
+      "variant": "RangeToInclusive",
+      "name": "RangeToInclusive",
+      "target": "Target::Struct",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ops/range.rs",
+      "ordinal": 167
+    },
+    {
+      "variant": "RangeTo",
+      "name": "RangeTo",
+      "target": "Target::Struct",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ops/range.rs",
+      "ordinal": 168
+    },
+    {
+      "variant": "RangeFromCopy",
+      "name": "RangeFromCopy",
+      "target": "Target::Struct",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/range.rs",
+      "ordinal": 169
+    },
+    {
+      "variant": "RangeCopy",
+      "name": "RangeCopy",
+      "target": "Target::Struct",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/range.rs",
+      "ordinal": 170
+    },
+    {
+      "variant": "RangeInclusiveCopy",
+      "name": "RangeInclusiveCopy",
+      "target": "Target::Struct",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/range.rs",
+      "ordinal": 171
+    },
+    {
+      "variant": "RangeToInclusiveCopy",
+      "name": "RangeToInclusiveCopy",
+      "target": "Target::Struct",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/range.rs",
+      "ordinal": 172
+    },
+    {
+      "variant": "CStr",
+      "name": "CStr",
+      "target": "Target::Struct",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ffi/c_str.rs",
+      "ordinal": 173
+    },
+    {
+      "variant": "Reborrow",
+      "name": "reborrow",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 0,
+      "first_source": "library/core/src/marker.rs",
+      "ordinal": 174
+    },
+    {
+      "variant": "CoerceShared",
+      "name": "coerce_shared",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 1,
+      "first_source": "library/core/src/marker.rs",
+      "ordinal": 175
+    },
+    {
+      "variant": "FieldRepresentingType",
+      "name": "field_representing_type",
+      "target": "Target::Struct",
+      "generic_requirement": "Exact",
+      "generic_count": 3,
+      "first_source": "library/core/src/field.rs",
+      "ordinal": 176
+    },
+    {
+      "variant": "Field",
+      "name": "field",
+      "target": "Target::Trait",
+      "generic_requirement": "Exact",
+      "generic_count": 0,
+      "first_source": "library/core/src/field.rs",
+      "ordinal": 177
+    },
+    {
+      "variant": "FieldBase",
+      "name": "field_base",
+      "target": "Target::AssocTy",
+      "generic_requirement": "Exact",
+      "generic_count": 0,
+      "first_source": "library/core/src/field.rs",
+      "ordinal": 178
+    },
+    {
+      "variant": "FieldType",
+      "name": "field_type",
+      "target": "Target::AssocTy",
+      "generic_requirement": "Exact",
+      "generic_count": 0,
+      "first_source": "library/core/src/field.rs",
+      "ordinal": 179
+    },
+    {
+      "variant": "FieldOffset",
+      "name": "field_offset",
+      "target": "Target::AssocConst",
+      "generic_requirement": "Exact",
+      "generic_count": 0,
+      "first_source": "library/core/src/field.rs",
+      "ordinal": 180
+    },
+    {
+      "variant": "MemCpy",
+      "name": "memcpy_fn",
+      "target": "Target::Fn",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ffi/mod.rs",
+      "ordinal": 181
+    },
+    {
+      "variant": "MemMove",
+      "name": "memmove_fn",
+      "target": "Target::Fn",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ffi/mod.rs",
+      "ordinal": 182
+    },
+    {
+      "variant": "MemSet",
+      "name": "memset_fn",
+      "target": "Target::Fn",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ffi/mod.rs",
+      "ordinal": 183
+    },
+    {
+      "variant": "MemCmp",
+      "name": "memcmp_fn",
+      "target": "Target::Fn",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ffi/mod.rs",
+      "ordinal": 184
+    },
+    {
+      "variant": "Bcmp",
+      "name": "bcmp_fn",
+      "target": "Target::Fn",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ffi/mod.rs",
+      "ordinal": 185
+    },
+    {
+      "variant": "StrLen",
+      "name": "strlen_fn",
+      "target": "Target::Fn",
+      "generic_requirement": "None",
+      "generic_count": null,
+      "first_source": "library/core/src/ffi/mod.rs",
+      "ordinal": 186
+    }
+  ],
+  "cases": [
+    {
+      "name": "header-use_cloned",
+      "path": "pa31/tests/spec/compiler-language-claims/header-use_cloned.rs",
+      "sha256": "4c2677a00bd999c63fe6b01aeeba3ae5f06c633827957db092761ecbd8329df8",
+      "status": 0,
+      "role": "use_cloned"
+    },
+    {
+      "name": "header-fn_ptr_trait",
+      "path": "pa31/tests/spec/compiler-language-claims/header-fn_ptr_trait.rs",
+      "sha256": "4b6df72280d0c629c8efd2c9e55ccfc6d34c0c735dbfca28ccf9f8be3d38e864",
+      "status": 0,
+      "role": "fn_ptr_trait"
+    },
+    {
+      "name": "header-fn_ptr_addr",
+      "path": "pa31/tests/spec/compiler-language-claims/header-fn_ptr_addr.rs",
+      "sha256": "7fffad8f262d716a74a3f6c283a6adaa408f0ea5d257462f1612a37805f780da",
+      "status": 0,
+      "role": "fn_ptr_addr"
+    },
+    {
+      "name": "header-async_drop",
+      "path": "pa31/tests/spec/compiler-language-claims/header-async_drop.rs",
+      "sha256": "fc2f49aac638019f88d5fd2c00bd76594fb1d1322335bcd6de4030afc154ce59",
+      "status": 0,
+      "role": "async_drop"
+    },
+    {
+      "name": "header-async_drop_in_place",
+      "path": "pa31/tests/spec/compiler-language-claims/header-async_drop_in_place.rs",
+      "sha256": "d8f0537001e1675a2ac41b90b0f2121624fd40bec5d97895f99d082706ac6b6a",
+      "status": 0,
+      "role": "async_drop_in_place"
+    },
+    {
+      "name": "header-mul",
+      "path": "pa31/tests/spec/compiler-language-claims/header-mul.rs",
+      "sha256": "0e75898da320fa53408c7d846ad3aea34d31f7701baf402c0fe67e6d6e542d86",
+      "status": 0,
+      "role": "mul"
+    },
+    {
+      "name": "header-rem",
+      "path": "pa31/tests/spec/compiler-language-claims/header-rem.rs",
+      "sha256": "1fb8893d6e6b499616b0ea2fbf2d373323a3864cc2b829daa662e6926a73569a",
+      "status": 0,
+      "role": "rem"
+    },
+    {
+      "name": "header-bitxor",
+      "path": "pa31/tests/spec/compiler-language-claims/header-bitxor.rs",
+      "sha256": "8abd2dcda513e62f3f71e0baaaac1cf82cfbd6c4a77442c50877bfe7797d9be3",
+      "status": 0,
+      "role": "bitxor"
+    },
+    {
+      "name": "header-bitand",
+      "path": "pa31/tests/spec/compiler-language-claims/header-bitand.rs",
+      "sha256": "cfcbaeeaceb831deb1d86d14aec87d1414c2885f16fe08dec19abe80a5655bf5",
+      "status": 0,
+      "role": "bitand"
+    },
+    {
+      "name": "header-shr",
+      "path": "pa31/tests/spec/compiler-language-claims/header-shr.rs",
+      "sha256": "10a569756f22146c15ebcbf4aaf521675780a42e5f617081e6352e81cf424490",
+      "status": 0,
+      "role": "shr"
+    },
+    {
+      "name": "header-add_assign",
+      "path": "pa31/tests/spec/compiler-language-claims/header-add_assign.rs",
+      "sha256": "1939c1e5aa7f3b61314400809c8543abfa9b60a445fb2c6201ba0b8f01ceb8f9",
+      "status": 0,
+      "role": "add_assign"
+    },
+    {
+      "name": "header-sub_assign",
+      "path": "pa31/tests/spec/compiler-language-claims/header-sub_assign.rs",
+      "sha256": "1468e3e53b953122acbd591076075c339baaf4588a4b66690f1af16bd8d2f2b8",
+      "status": 0,
+      "role": "sub_assign"
+    },
+    {
+      "name": "header-mul_assign",
+      "path": "pa31/tests/spec/compiler-language-claims/header-mul_assign.rs",
+      "sha256": "2bace3ccd5951ff04c14a2474e6ea03e43cf52fa8fb1d73a69910341ae851b52",
+      "status": 0,
+      "role": "mul_assign"
+    },
+    {
+      "name": "header-div_assign",
+      "path": "pa31/tests/spec/compiler-language-claims/header-div_assign.rs",
+      "sha256": "786c14672343ad8fd07dce3a237b0e3fe1be118aec795e7cd7032906ec724f2e",
+      "status": 0,
+      "role": "div_assign"
+    },
+    {
+      "name": "header-rem_assign",
+      "path": "pa31/tests/spec/compiler-language-claims/header-rem_assign.rs",
+      "sha256": "bb5aca3638f43a9d67ef580270dba2f50726bf48518d7a6bf6cd533c68f9d885",
+      "status": 0,
+      "role": "rem_assign"
+    },
+    {
+      "name": "header-bitxor_assign",
+      "path": "pa31/tests/spec/compiler-language-claims/header-bitxor_assign.rs",
+      "sha256": "d8d82a908dbe5865e56bafe0b60576beb92e055eecc48f5682ba09ce42c7a8b2",
+      "status": 0,
+      "role": "bitxor_assign"
+    },
+    {
+      "name": "header-bitand_assign",
+      "path": "pa31/tests/spec/compiler-language-claims/header-bitand_assign.rs",
+      "sha256": "b5d2da1a0f59b8b47ba01ed64a98028b0d51b936a271bb839d8b5fec6bafeeac",
+      "status": 0,
+      "role": "bitand_assign"
+    },
+    {
+      "name": "header-bitor_assign",
+      "path": "pa31/tests/spec/compiler-language-claims/header-bitor_assign.rs",
+      "sha256": "e63cdf5d8efe37962e0ecd51712644ec0a1efafc1f8b99468b1ae7dd1341ca0d",
+      "status": 0,
+      "role": "bitor_assign"
+    },
+    {
+      "name": "header-shl_assign",
+      "path": "pa31/tests/spec/compiler-language-claims/header-shl_assign.rs",
+      "sha256": "d9a6943ec00cb39b9418948a797f4b812f0521baad78adb2627e07fb44531567",
+      "status": 0,
+      "role": "shl_assign"
+    },
+    {
+      "name": "header-shr_assign",
+      "path": "pa31/tests/spec/compiler-language-claims/header-shr_assign.rs",
+      "sha256": "e29b340bd855ec8c13c44dffa70ef796a7d9ba1948f2c2ed3c70f1c3912f92b7",
+      "status": 0,
+      "role": "shr_assign"
+    },
+    {
+      "name": "header-index",
+      "path": "pa31/tests/spec/compiler-language-claims/header-index.rs",
+      "sha256": "157f1c25a0b9c778e3c5857f672785f836e2eed03dd0ec20d211ffa2e0e97e45",
+      "status": 0,
+      "role": "index"
+    },
+    {
+      "name": "header-index_mut",
+      "path": "pa31/tests/spec/compiler-language-claims/header-index_mut.rs",
+      "sha256": "3a50f4fe6dccefc15f27f86900f7692f5270a1738e23b01542e0e7907284c5b4",
+      "status": 0,
+      "role": "index_mut"
+    },
+    {
+      "name": "header-unsafe_cell",
+      "path": "pa31/tests/spec/compiler-language-claims/setup-v2/header-unsafe_cell.rs",
+      "sha256": "f61e92180656e022bc4632025c04ab3955ffc2b1fee0aad3bdd554ffe4f2eac4",
+      "status": 0,
+      "role": "unsafe_cell"
+    },
+    {
+      "name": "header-unsafe_pinned",
+      "path": "pa31/tests/spec/compiler-language-claims/header-unsafe_pinned.rs",
+      "sha256": "47dc19d9f3daae1b5d5f440c8b6b18e4c808f36901356052f353014d19a78ee1",
+      "status": 0,
+      "role": "unsafe_pinned"
+    },
+    {
+      "name": "header-va_arg_safe",
+      "path": "pa31/tests/spec/compiler-language-claims/header-va_arg_safe.rs",
+      "sha256": "10c304470b1dda67aeb6256389020640192ddd61351984486307d0bfae2fc02d",
+      "status": 0,
+      "role": "va_arg_safe"
+    },
+    {
+      "name": "header-va_list",
+      "path": "pa31/tests/spec/compiler-language-claims/header-va_list.rs",
+      "sha256": "c63f4318672275d027245ddad74106fd02b3e3aef828d640a7c499acfc527214",
+      "status": 0,
+      "role": "va_list"
+    },
+    {
+      "name": "header-deref",
+      "path": "pa31/tests/spec/compiler-language-claims/header-deref.rs",
+      "sha256": "585a2c3d65903567eaed08bf2e44963a439d2b09bab3e195d76313cfe02d8fa8",
+      "status": 0,
+      "role": "deref"
+    },
+    {
+      "name": "header-deref_mut",
+      "path": "pa31/tests/spec/compiler-language-claims/header-deref_mut.rs",
+      "sha256": "96e4732ae07e2a537fa183930f15d89193b7d999b92de47c14a8be26b9a361e1",
+      "status": 0,
+      "role": "deref_mut"
+    },
+    {
+      "name": "header-deref_pure",
+      "path": "pa31/tests/spec/compiler-language-claims/header-deref_pure.rs",
+      "sha256": "a0f2d5282b2f991980aa2ee2282599f7e507f9c8a223f82dd98212989b9da15c",
+      "status": 0,
+      "role": "deref_pure"
+    },
+    {
+      "name": "header-deref_target",
+      "path": "pa31/tests/spec/compiler-language-claims/header-deref_target.rs",
+      "sha256": "c8249d3dc8428bea0292b2babb23172c0e6111ef4e968b62288224ad60ce965f",
+      "status": 0,
+      "role": "deref_target"
+    },
+    {
+      "name": "header-receiver",
+      "path": "pa31/tests/spec/compiler-language-claims/header-receiver.rs",
+      "sha256": "f2fb6189279c08027e9a10d21bd397847b8b7d2a63771045d741e646bf609198",
+      "status": 0,
+      "role": "receiver"
+    },
+    {
+      "name": "header-receiver_target",
+      "path": "pa31/tests/spec/compiler-language-claims/header-receiver_target.rs",
+      "sha256": "ad07c0073c95b9252e2927a0b1c1aabd1e0d10b35bda6e1bc4f908efc1ec58bd",
+      "status": 0,
+      "role": "receiver_target"
+    },
+    {
+      "name": "header-async_fn",
+      "path": "pa31/tests/spec/compiler-language-claims/header-async_fn.rs",
+      "sha256": "eece8db11dd78067e225342c9ed3eb48b4ecc6996ac673b2670a06cd80055dc1",
+      "status": 0,
+      "role": "async_fn"
+    },
+    {
+      "name": "header-async_fn_mut",
+      "path": "pa31/tests/spec/compiler-language-claims/header-async_fn_mut.rs",
+      "sha256": "a90564eb98bdd191c8e3d7eb447c399e1626540e1dd988f95f5b4c46ef42f2e6",
+      "status": 0,
+      "role": "async_fn_mut"
+    },
+    {
+      "name": "header-async_fn_once",
+      "path": "pa31/tests/spec/compiler-language-claims/header-async_fn_once.rs",
+      "sha256": "860b2f51ee3735769a934bc0bca5ba8bed797f42862d1c44ec1db78985755ace",
+      "status": 0,
+      "role": "async_fn_once"
+    },
+    {
+      "name": "header-async_fn_once_output",
+      "path": "pa31/tests/spec/compiler-language-claims/header-async_fn_once_output.rs",
+      "sha256": "2d0f5dd129a4a2052d15d11dfc1500c2e35489fa57a2a7ccbb94df3ca4852e36",
+      "status": 0,
+      "role": "async_fn_once_output"
+    },
+    {
+      "name": "header-call_once_future",
+      "path": "pa31/tests/spec/compiler-language-claims/header-call_once_future.rs",
+      "sha256": "befecde3f902e936ca55e6c8ab8025894451503cbfdb02883042d67693042894",
+      "status": 0,
+      "role": "call_once_future"
+    },
+    {
+      "name": "header-call_ref_future",
+      "path": "pa31/tests/spec/compiler-language-claims/header-call_ref_future.rs",
+      "sha256": "6d81577652ff8cb596fda5f5e8ea257ac89649b100b2d131c9467ace742fe127",
+      "status": 0,
+      "role": "call_ref_future"
+    },
+    {
+      "name": "header-async_fn_kind_helper",
+      "path": "pa31/tests/spec/compiler-language-claims/header-async_fn_kind_helper.rs",
+      "sha256": "d13d40cf9daf2320cf8ad0ea33b24f9c1f297b2701528641d6f18baacd4ac721",
+      "status": 0,
+      "role": "async_fn_kind_helper"
+    },
+    {
+      "name": "header-async_fn_kind_upvars",
+      "path": "pa31/tests/spec/compiler-language-claims/header-async_fn_kind_upvars.rs",
+      "sha256": "374bf69158c8b26e8bd10c6a6f8692a36e2556bc0dd39c1c3d05a275c211a95c",
+      "status": 0,
+      "role": "async_fn_kind_upvars"
+    },
+    {
+      "name": "header-fused_iterator",
+      "path": "pa31/tests/spec/compiler-language-claims/header-fused_iterator.rs",
+      "sha256": "3306ab062be7d858da9b65455b5de2047d6e6373843592cd4009e5309e27839f",
+      "status": 0,
+      "role": "fused_iterator"
+    },
+    {
+      "name": "header-future_trait",
+      "path": "pa31/tests/spec/compiler-language-claims/header-future_trait.rs",
+      "sha256": "87addb7f6395b625e9901f61af900442763933e228b50b866e117ef9b1c39c06",
+      "status": 0,
+      "role": "future_trait"
+    },
+    {
+      "name": "header-future_output",
+      "path": "pa31/tests/spec/compiler-language-claims/header-future_output.rs",
+      "sha256": "3c8acec4cd2367597fc0193c88edd2232b0f0f9bc3872a7f4ddd7fe33a225f15",
+      "status": 0,
+      "role": "future_output"
+    },
+    {
+      "name": "header-async_iterator",
+      "path": "pa31/tests/spec/compiler-language-claims/header-async_iterator.rs",
+      "sha256": "c934c05266b88e24da55b4293afbb117704f099646e4ceb24cd2b362ded3b054",
+      "status": 0,
+      "role": "async_iterator"
+    },
+    {
+      "name": "header-coroutine_state",
+      "path": "pa31/tests/spec/compiler-language-claims/header-coroutine_state.rs",
+      "sha256": "39ec9ef27b3381542201a840d52b18a35ee1d9090bbf9c081c21d2a9e56edd12",
+      "status": 0,
+      "role": "coroutine_state"
+    },
+    {
+      "name": "header-coroutine",
+      "path": "pa31/tests/spec/compiler-language-claims/header-coroutine.rs",
+      "sha256": "c2c5dd1879e0bbfa9a6cc5689dcc701d34fb48431228c16f959875c9c8d6f734",
+      "status": 0,
+      "role": "coroutine"
+    },
+    {
+      "name": "header-coroutine_return",
+      "path": "pa31/tests/spec/compiler-language-claims/header-coroutine_return.rs",
+      "sha256": "d6b1d856ac38975d1039393e7693ac019bd634fc1baf9ad7819546ed6e5826cc",
+      "status": 0,
+      "role": "coroutine_return"
+    },
+    {
+      "name": "header-coroutine_yield",
+      "path": "pa31/tests/spec/compiler-language-claims/header-coroutine_yield.rs",
+      "sha256": "01ffff40bea9be679f8b3630d0a27cd7e70c521683167b3a049580e55ac06be8",
+      "status": 0,
+      "role": "coroutine_yield"
+    },
+    {
+      "name": "header-coroutine_resume",
+      "path": "pa31/tests/spec/compiler-language-claims/header-coroutine_resume.rs",
+      "sha256": "594f95c18289496ced13f11166b2bf2924f8a80d6600ed533a935d8e6a7c90e8",
+      "status": 0,
+      "role": "coroutine_resume"
+    },
+    {
+      "name": "header-pin",
+      "path": "pa31/tests/spec/compiler-language-claims/header-pin.rs",
+      "sha256": "5983cf040d036070845d552c305ae79c99cfdc1563d7f8eeb292bac53e44d6a4",
+      "status": 0,
+      "role": "pin"
+    },
+    {
+      "name": "header-c_void",
+      "path": "pa31/tests/spec/compiler-language-claims/header-c_void.rs",
+      "sha256": "30dd4c6fd7251d691ffa9b465e25cc59638d24f5f4c24b251961c543fa82f414",
+      "status": 0,
+      "role": "c_void"
+    },
+    {
+      "name": "header-panic_bounds_check",
+      "path": "pa31/tests/spec/compiler-language-claims/header-panic_bounds_check.rs",
+      "sha256": "c8654397749a21902a7acc0d07ffb9b858d87e925c87c533617380ab4df8849a",
+      "status": 0,
+      "role": "panic_bounds_check"
+    },
+    {
+      "name": "header-panic_misaligned_pointer_dereference",
+      "path": "pa31/tests/spec/compiler-language-claims/header-panic_misaligned_pointer_dereference.rs",
+      "sha256": "a3dc8df8062632ae4025a95691a938a2a7943dd39a1a086cc9996e18b798118f",
+      "status": 0,
+      "role": "panic_misaligned_pointer_dereference"
+    },
+    {
+      "name": "header-panic_cannot_unwind",
+      "path": "pa31/tests/spec/compiler-language-claims/header-panic_cannot_unwind.rs",
+      "sha256": "db9c417bcea33b0cb568c9811458fdcd7ac755f550af7c553875224008515137",
+      "status": 0,
+      "role": "panic_cannot_unwind"
+    },
+    {
+      "name": "header-panic_in_cleanup",
+      "path": "pa31/tests/spec/compiler-language-claims/header-panic_in_cleanup.rs",
+      "sha256": "d0b66122868dbe005961ce8f67217d0112739977baeb94ce74de92aa0535f5ef",
+      "status": 0,
+      "role": "panic_in_cleanup"
+    },
+    {
+      "name": "header-panic_null_pointer_dereference",
+      "path": "pa31/tests/spec/compiler-language-claims/header-panic_null_pointer_dereference.rs",
+      "sha256": "ce9f72c8d6ee1fec0627d94d1b349fc5589ce026818a927a9dda59bf3ba3355b",
+      "status": 0,
+      "role": "panic_null_pointer_dereference"
+    },
+    {
+      "name": "header-panic_invalid_enum_construction",
+      "path": "pa31/tests/spec/compiler-language-claims/header-panic_invalid_enum_construction.rs",
+      "sha256": "6947fd1e2afbfee1424db727ed19ca184a144e5fddf8290e25f844feb7e4474f",
+      "status": 0,
+      "role": "panic_invalid_enum_construction"
+    },
+    {
+      "name": "header-compiler_move",
+      "path": "pa31/tests/spec/compiler-language-claims/header-compiler_move.rs",
+      "sha256": "1e11478059a9f02f8bf3095a9322bf89361a2ce6cb97b411b2484fb08f341ae9",
+      "status": 0,
+      "role": "compiler_move"
+    },
+    {
+      "name": "header-compiler_copy",
+      "path": "pa31/tests/spec/compiler-language-claims/header-compiler_copy.rs",
+      "sha256": "e0043bb66f177be29ec1b535b8b944f74094b47685b2eb90d44bccec4dfea467",
+      "status": 0,
+      "role": "compiler_copy"
+    },
+    {
+      "name": "header-from_yeet",
+      "path": "pa31/tests/spec/compiler-language-claims/header-from_yeet.rs",
+      "sha256": "5b403128f74908ffb7f42ec809a90286324134f9cda63ff21f66e6ee9fea9584",
+      "status": 0,
+      "role": "from_yeet"
+    },
+    {
+      "name": "header-coerce_pointee_validated",
+      "path": "pa31/tests/spec/compiler-language-claims/header-coerce_pointee_validated.rs",
+      "sha256": "535e6081789093f8ed8f3e0bb6b0fd3a3151b2aa60a53bd21f9afb46508067f4",
+      "status": 0,
+      "role": "coerce_pointee_validated"
+    },
+    {
+      "name": "header-poll",
+      "path": "pa31/tests/spec/compiler-language-claims/header-poll.rs",
+      "sha256": "6dcb9be95a557e23a2aa944f9873caa6f2f4b3e325caa3370bba70cdc2b5fef0",
+      "status": 0,
+      "role": "Poll"
+    },
+    {
+      "name": "header-ready",
+      "path": "pa31/tests/spec/compiler-language-claims/header-ready.rs",
+      "sha256": "237e1ffc2197284e015a70160ed0618f6923db5a458562f40cf0b9f3c378b239",
+      "status": 0,
+      "role": "Ready"
+    },
+    {
+      "name": "header-pending",
+      "path": "pa31/tests/spec/compiler-language-claims/header-pending.rs",
+      "sha256": "99334921d21102dca207dbddc34bb47e116489532d77606ed7b369ed6be722a5",
+      "status": 0,
+      "role": "Pending"
+    },
+    {
+      "name": "header-asyncgenready",
+      "path": "pa31/tests/spec/compiler-language-claims/header-asyncgenready.rs",
+      "sha256": "072d26809e0185cda3b37f0001e99f6464f2837bf431e945eb3cdd4026152fd7",
+      "status": 0,
+      "role": "AsyncGenReady"
+    },
+    {
+      "name": "header-asyncgenpending",
+      "path": "pa31/tests/spec/compiler-language-claims/header-asyncgenpending.rs",
+      "sha256": "747b296e527ce46a9136b353b129e3ed2e22cc5052ee7cb1600c406249900289",
+      "status": 0,
+      "role": "AsyncGenPending"
+    },
+    {
+      "name": "header-asyncgenfinished",
+      "path": "pa31/tests/spec/compiler-language-claims/header-asyncgenfinished.rs",
+      "sha256": "756671e7f3b03f10a7a73c198cbbf8ecca1828fd72d874d712d7d010b062a37a",
+      "status": 0,
+      "role": "AsyncGenFinished"
+    },
+    {
+      "name": "header-resumety",
+      "path": "pa31/tests/spec/compiler-language-claims/header-resumety.rs",
+      "sha256": "2dd40f677783886f4eb127f867763151f6da2abd97f561ae6354dd04f7a1d937",
+      "status": 0,
+      "role": "ResumeTy"
+    },
+    {
+      "name": "header-get_context",
+      "path": "pa31/tests/spec/compiler-language-claims/header-get_context.rs",
+      "sha256": "4139c98154be24068cac3cfccd4499237136a2c95a34c650c390f14fb3064c55",
+      "status": 0,
+      "role": "get_context"
+    },
+    {
+      "name": "header-context",
+      "path": "pa31/tests/spec/compiler-language-claims/header-context.rs",
+      "sha256": "9841498f13219de25e5f30be6182b7d73982ea2060f84e2c60703fff4038df9a",
+      "status": 0,
+      "role": "Context"
+    },
+    {
+      "name": "header-poll",
+      "path": "pa31/tests/spec/compiler-language-claims/header-poll.rs",
+      "sha256": "58d37adcb842f84a1f9ca7e2cf84daf22e640b8307a57a0e9a5fa9f6d971ef60",
+      "status": 0,
+      "role": "poll"
+    },
+    {
+      "name": "header-async_iterator_poll_next",
+      "path": "pa31/tests/spec/compiler-language-claims/header-async_iterator_poll_next.rs",
+      "sha256": "e30b542b35e29e6655e2e6f7e3701e681ff9e3731ac6d1ecb39c980c5ad5539b",
+      "status": 0,
+      "role": "async_iterator_poll_next"
+    },
+    {
+      "name": "header-into_async_iter_into_iter",
+      "path": "pa31/tests/spec/compiler-language-claims/header-into_async_iter_into_iter.rs",
+      "sha256": "6e74d4b53f89d38fe743c3074fcd7de2787ca4f0edd7ba5634bd45009dbc2041",
+      "status": 0,
+      "role": "into_async_iter_into_iter"
+    },
+    {
+      "name": "header-into_future",
+      "path": "pa31/tests/spec/compiler-language-claims/header-into_future.rs",
+      "sha256": "7cfc69afa8db6a4ae619171e2a2778c466bc945b0407e47e7613d782f8f6c681",
+      "status": 0,
+      "role": "into_future"
+    },
+    {
+      "name": "header-new_unchecked",
+      "path": "pa31/tests/spec/compiler-language-claims/header-new_unchecked.rs",
+      "sha256": "59ba9671b395cadfbd6d37a652316d6157ff81a67a4a091f11073864a713ea10",
+      "status": 0,
+      "role": "new_unchecked"
+    },
+    {
+      "name": "header-rangefrom",
+      "path": "pa31/tests/spec/compiler-language-claims/header-rangefrom.rs",
+      "sha256": "b08a89cd9b4112c4d5ca528a013e1c0d1246e97476f637ef234c9ee3e8a0a384",
+      "status": 0,
+      "role": "RangeFrom"
+    },
+    {
+      "name": "header-rangefull",
+      "path": "pa31/tests/spec/compiler-language-claims/header-rangefull.rs",
+      "sha256": "a0e677908e4c49d670974477f4b41e60e442a8c9dcce51856c0f7fe789155eef",
+      "status": 0,
+      "role": "RangeFull"
+    },
+    {
+      "name": "header-rangeinclusive",
+      "path": "pa31/tests/spec/compiler-language-claims/header-rangeinclusive.rs",
+      "sha256": "bb93ac1dde5103b3e98b84b615b23a31b7fd750df74b241819e78dd857825edb",
+      "status": 0,
+      "role": "RangeInclusive"
+    },
+    {
+      "name": "header-range_inclusive_new",
+      "path": "pa31/tests/spec/compiler-language-claims/header-range_inclusive_new.rs",
+      "sha256": "12ec5d972c70c2a7a3404ccdc326408ea8a60d3de1e5c344b29ee424024b1e1c",
+      "status": 0,
+      "role": "range_inclusive_new"
+    },
+    {
+      "name": "header-range",
+      "path": "pa31/tests/spec/compiler-language-claims/header-range.rs",
+      "sha256": "bae91efc1250f76de79e7b1b99e55941de9815ed875b036a976afd2316ebf570",
+      "status": 0,
+      "role": "Range"
+    },
+    {
+      "name": "header-rangetoinclusive",
+      "path": "pa31/tests/spec/compiler-language-claims/header-rangetoinclusive.rs",
+      "sha256": "3a61c7e828547dce71267d54124f167b7fbcd2ef3e2dbc562bac00009181d94d",
+      "status": 0,
+      "role": "RangeToInclusive"
+    },
+    {
+      "name": "header-rangeto",
+      "path": "pa31/tests/spec/compiler-language-claims/header-rangeto.rs",
+      "sha256": "ea3ee455ab8ea106f7cbc1b5cb8561a30b34d6ff01d612cc08301a7743fe8c2d",
+      "status": 0,
+      "role": "RangeTo"
+    },
+    {
+      "name": "header-rangefromcopy",
+      "path": "pa31/tests/spec/compiler-language-claims/header-rangefromcopy.rs",
+      "sha256": "756edf19de1964b593fa291e6dfb5362111bdb80e8cbd4ce9ba55030396f053f",
+      "status": 0,
+      "role": "RangeFromCopy"
+    },
+    {
+      "name": "header-rangecopy",
+      "path": "pa31/tests/spec/compiler-language-claims/header-rangecopy.rs",
+      "sha256": "b0c3079d5d7577fbb870ad3a67dab04900c23063b40622d85034c24e60f55265",
+      "status": 0,
+      "role": "RangeCopy"
+    },
+    {
+      "name": "header-rangeinclusivecopy",
+      "path": "pa31/tests/spec/compiler-language-claims/header-rangeinclusivecopy.rs",
+      "sha256": "023c788ea2ada33b08a3b42239d0973957a5bb83081fb5245073d0054816d8cb",
+      "status": 0,
+      "role": "RangeInclusiveCopy"
+    },
+    {
+      "name": "header-rangetoinclusivecopy",
+      "path": "pa31/tests/spec/compiler-language-claims/header-rangetoinclusivecopy.rs",
+      "sha256": "51359d2eb6b824163ae79f21310084fb3d0026778e688bbabd4777d12dd09d9b",
+      "status": 0,
+      "role": "RangeToInclusiveCopy"
+    },
+    {
+      "name": "header-cstr",
+      "path": "pa31/tests/spec/compiler-language-claims/header-cstr.rs",
+      "sha256": "2e72f448bcdb1ad6e73ab88988b9a9b90dc68a1c4b4e51481711dc27ff543ac1",
+      "status": 0,
+      "role": "CStr"
+    },
+    {
+      "name": "header-reborrow",
+      "path": "pa31/tests/spec/compiler-language-claims/header-reborrow.rs",
+      "sha256": "f622e9fd516eef0fe7a02a5de7ac9e2f115d4810e9ed9d25076a0476cc46f29d",
+      "status": 0,
+      "role": "reborrow"
+    },
+    {
+      "name": "header-coerce_shared",
+      "path": "pa31/tests/spec/compiler-language-claims/header-coerce_shared.rs",
+      "sha256": "7aa33e5ec6e3e58be154b5a523ada7d034fc9543e3dc8917c27dbb787f45be97",
+      "status": 0,
+      "role": "coerce_shared"
+    },
+    {
+      "name": "header-field_representing_type",
+      "path": "pa31/tests/spec/compiler-language-claims/header-field_representing_type.rs",
+      "sha256": "dbe4ed5c8e14c8527f4a95c3f65fab7a997fec391f6cd872393f58ac38070fe5",
+      "status": 0,
+      "role": "field_representing_type"
+    },
+    {
+      "name": "header-field",
+      "path": "pa31/tests/spec/compiler-language-claims/header-field.rs",
+      "sha256": "3157e2ca7e4a4f49a3f056940f87e3e2a564a722cdd78e2798b5255c878ae263",
+      "status": 0,
+      "role": "field"
+    },
+    {
+      "name": "header-field_base",
+      "path": "pa31/tests/spec/compiler-language-claims/header-field_base.rs",
+      "sha256": "e96d2a71b5084ce0634b207fc327aaeb0e8636369ea689d5876657ebc025a854",
+      "status": 0,
+      "role": "field_base"
+    },
+    {
+      "name": "header-field_type",
+      "path": "pa31/tests/spec/compiler-language-claims/header-field_type.rs",
+      "sha256": "f62d02843ee9b91c9606c7f92e902bac5f2fca2eb4e3676fabacdf8173a93145",
+      "status": 0,
+      "role": "field_type"
+    },
+    {
+      "name": "header-field_offset",
+      "path": "pa31/tests/spec/compiler-language-claims/header-field_offset.rs",
+      "sha256": "1192bf9129e78781c3389707ee111523444637f3acd1a1df7cefbb96036d38e0",
+      "status": 0,
+      "role": "field_offset"
+    },
+    {
+      "name": "header-memcpy_fn",
+      "path": "pa31/tests/spec/compiler-language-claims/header-memcpy_fn.rs",
+      "sha256": "df932f0b72cba4d7ca691cd6cbc27f3679ed7e16e2150878743281948ce0f9b3",
+      "status": 0,
+      "role": "memcpy_fn"
+    },
+    {
+      "name": "header-memmove_fn",
+      "path": "pa31/tests/spec/compiler-language-claims/header-memmove_fn.rs",
+      "sha256": "4ad65471d17034521392006455b187a949103e9134084f77d92bc6fdfb928c4c",
+      "status": 0,
+      "role": "memmove_fn"
+    },
+    {
+      "name": "header-memset_fn",
+      "path": "pa31/tests/spec/compiler-language-claims/header-memset_fn.rs",
+      "sha256": "797adbf4fbc21574a4f5243b1ce5c707f981d6f017f1088c7965d6b9d64c32a9",
+      "status": 0,
+      "role": "memset_fn"
+    },
+    {
+      "name": "header-memcmp_fn",
+      "path": "pa31/tests/spec/compiler-language-claims/header-memcmp_fn.rs",
+      "sha256": "613e00ee7ad78bb55472756331d04479760d8d1cb4b8ffb5bf5509d3416dcb64",
+      "status": 0,
+      "role": "memcmp_fn"
+    },
+    {
+      "name": "header-bcmp_fn",
+      "path": "pa31/tests/spec/compiler-language-claims/header-bcmp_fn.rs",
+      "sha256": "1553067f072e2ce125f8f0bacbd39a9f9ec0e77db8e228c3e2bffb463aae950a",
+      "status": 0,
+      "role": "bcmp_fn"
+    },
+    {
+      "name": "header-strlen_fn",
+      "path": "pa31/tests/spec/compiler-language-claims/header-strlen_fn.rs",
+      "sha256": "e6cf321f096f43d1c45231117a89d271d11a3da0e9045ecf2427b3b3fc8de256",
+      "status": 0,
+      "role": "strlen_fn"
+    },
+    {
+      "name": "compiler_move-arity-0",
+      "path": "pa31/tests/spec/compiler-language-claims/compiler_move-arity-0.rs",
+      "sha256": "50fe8c5d2a23a3f24834cde8181f39594677f446d15d8a045e454d04e882f29e",
+      "status": 1,
+      "role": "compiler_move"
+    },
+    {
+      "name": "compiler_move-arity-1",
+      "path": "pa31/tests/spec/compiler-language-claims/compiler_move-arity-1.rs",
+      "sha256": "8267a9cf01571e057b0d07befc0978c3156ec6b52b89aa1149b8ce6be43ba90b",
+      "status": 1,
+      "role": "compiler_move"
+    },
+    {
+      "name": "compiler_move-arity-3",
+      "path": "pa31/tests/spec/compiler-language-claims/compiler_move-arity-3.rs",
+      "sha256": "87878ff7e03de20187b332bf9d37d2ce873e01080b09b424e5583efb3d433b2f",
+      "status": 1,
+      "role": "compiler_move"
+    },
+    {
+      "name": "compiler_copy-arity-0",
+      "path": "pa31/tests/spec/compiler-language-claims/compiler_copy-arity-0.rs",
+      "sha256": "128cc77ed3c37aed0e0de250d25866076b640bda85a40778e2d526e0287af14a",
+      "status": 1,
+      "role": "compiler_copy"
+    },
+    {
+      "name": "compiler_copy-arity-1",
+      "path": "pa31/tests/spec/compiler-language-claims/compiler_copy-arity-1.rs",
+      "sha256": "1b0b1365f1e6ea9b7ca1cfde15a7e806d800c7cdf10cb8f5b4f8f83cf07b230c",
+      "status": 1,
+      "role": "compiler_copy"
+    },
+    {
+      "name": "compiler_copy-arity-3",
+      "path": "pa31/tests/spec/compiler-language-claims/compiler_copy-arity-3.rs",
+      "sha256": "efb97b7a2b546dda7caa259f486fbd38e149b35d410a1333c4af2de6631e200a",
+      "status": 1,
+      "role": "compiler_copy"
+    },
+    {
+      "name": "ordinary-marker-bodies",
+      "path": "pa31/tests/spec/compiler-language-claims/ordinary-marker-bodies.rs",
+      "sha256": "7ed307eda0bfc188c8f1d106744779600ce0510330ed5a81d5ca87eb3eb8c038",
+      "status": 0
+    },
+    {
+      "name": "wrong-target-target-assocconst",
+      "path": "pa31/tests/spec/compiler-language-claims/wrong-target-target-assocconst.rs",
+      "sha256": "3a03b2a1055f6bd8459e0bdfa5ca139954f9a5b9ead26a0595c3704d14b90de2",
+      "status": 1,
+      "role": "AsyncGenPending"
+    },
+    {
+      "name": "wrong-target-target-assocty",
+      "path": "pa31/tests/spec/compiler-language-claims/wrong-target-target-assocty.rs",
+      "sha256": "cac7b5d14661d946783c9eaa52dc7c9c0eda3e57f92acbd55ff33738ad11aba1",
+      "status": 1,
+      "role": "deref_target"
+    },
+    {
+      "name": "wrong-target-target-enum",
+      "path": "pa31/tests/spec/compiler-language-claims/wrong-target-target-enum.rs",
+      "sha256": "1bcfc9a3dc70f3222a2a22c5d99e328acb083f18788bf0ad9653c0a92d45f665",
+      "status": 1,
+      "role": "coroutine_state"
+    },
+    {
+      "name": "wrong-target-target-fn",
+      "path": "pa31/tests/spec/compiler-language-claims/wrong-target-target-fn.rs",
+      "sha256": "5cae962d67e4414d9cf50be3d61422a7f5805413e5a697a3bbf08ad0909dcf7a",
+      "status": 1,
+      "role": "async_drop_in_place"
+    },
+    {
+      "name": "wrong-target-target-method-methodkind-inherent",
+      "path": "pa31/tests/spec/compiler-language-claims/wrong-target-target-method-methodkind-inherent.rs",
+      "sha256": "2671ca54c00cfa5e36686561fd0e1ca1bc516a21a5d4546b69d339d94cd5dc4d",
+      "status": 1,
+      "role": "AsyncGenReady"
+    },
+    {
+      "name": "wrong-target-target-method-methodkind-trait-body-false",
+      "path": "pa31/tests/spec/compiler-language-claims/wrong-target-target-method-methodkind-trait-body-false.rs",
+      "sha256": "ec4e569daa0b3971305c8b0a47ce53f00d4032d33715c44bcae633d87d840d78",
+      "status": 1,
+      "role": "fn_ptr_addr"
+    },
+    {
+      "name": "wrong-target-target-struct",
+      "path": "pa31/tests/spec/compiler-language-claims/wrong-target-target-struct.rs",
+      "sha256": "b6dd91d99d63667b1699da0a89f3641a4412dd45a01389fb230b02e11aefeb54",
+      "status": 1,
+      "role": "unsafe_cell"
+    },
+    {
+      "name": "wrong-target-target-trait",
+      "path": "pa31/tests/spec/compiler-language-claims/wrong-target-target-trait.rs",
+      "sha256": "b3402b05df25cc4e6f800750dcb80e585c726789d1d5b446622dec3a15f9c6ac",
+      "status": 1,
+      "role": "use_cloned"
+    },
+    {
+      "name": "wrong-target-target-variant",
+      "path": "pa31/tests/spec/compiler-language-claims/wrong-target-target-variant.rs",
+      "sha256": "fc2014d11fe726c76b0df2f2e23014c49a35a7df9d0254c960596a94e6dbfffd",
+      "status": 1,
+      "role": "Ready"
+    },
+    {
+      "name": "duplicate",
+      "path": "pa31/tests/spec/compiler-language-claims/duplicate.rs",
+      "sha256": "be7f5b7bbd0a255bdcfe03d8473b956b7df701fb982b5ac44b89b4851b3845b2",
+      "status": 1
+    },
+    {
+      "name": "unknown-name",
+      "path": "pa31/tests/spec/compiler-language-claims/unknown-name.rs",
+      "sha256": "899d1d745458f9c96e87a5cb1218e5bfaf03c16f62415913a853b5f82413410e",
+      "status": 1
+    },
+    {
+      "name": "marker-lifetime-count",
+      "path": "pa31/tests/spec/compiler-language-claims/marker-lifetime-count.rs",
+      "sha256": "fe6dda94c910bc8e838ca6a4cb42537f8e8270b0bfe38eaff65f4d8e0372880e",
+      "status": 0
+    },
+    {
+      "name": "foreign-marker-generics-absent",
+      "path": "pa31/tests/spec/compiler-language-claims/foreign-marker-generics-absent.rs",
+      "sha256": "7e7c0920aef02b03fd962503ac4d42e2289b43a5a9a6ea1105999edcac659205",
+      "status": 0
+    }
+  ],
+  "native": {
+    "case": "ordinary-marker-bodies",
+    "observer": "pa31/tests/spec/compiler-language-claims/observer.c",
+    "observer_sha256": "8a98f828ee87a046baedb22c43a515165b6b9271ecfe582c2953e0add31cf1cf",
+    "status": 0,
+    "stdout": "9 11\n",
+    "stderr": ""
+  },
+  "predecessor_contract_sha256": "927b854bc471505951bb0ea23187635b68f335d91870e30509f3c67279487fec",
+  "setup_repair": "The zero-parameter UnsafeCell header triggered a pinned rustc variance ICE, which is infrastructure failure, not a language rejection. Use the real transparent generic storage form; preserve the original case and outcome prediction."
+}

@@ -1,15 +1,16 @@
 # Parallel library bootstrap implementation
 
-Current original-core frontier is LIB-126, compiler_move in profiling.rs12.
-The [reflection declaration checkpoint](pa31-type-reflection-source-checkpoint.md)
-passes14 private/19 production controls,27 independent source outcomes,29 CLI
-observations and real ordinary-field native7. CLI18c64d26 clears type_info with
-all722 sources/configuration/limits unchanged,18.12s/375 opens. Actual reflection,
-source library publication and imported consumers remain required. A raw-source
-inventory maps100 additional names to pinned target/generic contracts, without
-claiming all are cfg-active. Batch shared declaration rules, preserve real builtin
-semantics and prioritize genuine nominal/value artifacts. Root remains alone.
-Production import repair8d4005d84 passes push CI41727937954;17b full CI remains failed.
+Current original-core frontier is LIB-127, old_name="try_trait" on the unstable
+Try/FromResidual reexport in ops/mod.rs197. The
+[shared declaration checkpoint](pa31-language-declarations-checkpoint.md) passes
+17 private/19 production,135 independent source outcomes,239 CLI phase checks
+and actual native9 11. CLI50b48197 clears profiling language claims with all722
+sources/configuration/limits unchanged,18.67s/375 opens. Remaining builtin
+semantics are explicit fences, not fabricated implementations; source library
+publication and original artifacts remain required. Next implement actual renamed
+feature identity/gating/transport. Root remains alone in the same warm btrfs tree,
+with unchanged five-minute/two-thread/16GiB/150GiB guards and scoped cleanup.
+Full predecessor CI41731751383 on d12d1d133 passes every gate.
 
 Prior original-core frontier: LIB-125, `type_info` in mem/type_info.rs13.
 The published b9 header compiler clears the preceding declaration frontier with
