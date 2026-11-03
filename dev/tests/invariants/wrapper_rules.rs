@@ -167,3 +167,25 @@ fn source_dangling_permission_is_typed_scoped_and_never_scalar_or_borrow_authori
     }
     Ok(())
 }
+
+#[test]
+fn source_maybe_uninit_invalid_values_fail_for_their_actual_const_rules() -> TestResult {
+    for (name, reason) in [
+        ("invalid-bool", "invalid bool"),
+        ("null-reference", "null"),
+        (
+            "wrong-size-transmute",
+            "constant execution reached source panic_display",
+        ),
+    ] {
+        let source =
+            crate::test_source::fixture(&format!("pa31/tests/spec/source-maybe-uninit/{name}.rs"))?;
+        let report = crate::test_source::source_provider(&source, "source_wrappers")?;
+        let error = crate::pipeline::analyze_source(&report)
+            .err()
+            .ok_or("invalid value accepted")?
+            .to_string();
+        assert!(error.contains(reason), "{name}: {error}");
+    }
+    Ok(())
+}

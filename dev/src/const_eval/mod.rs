@@ -16,6 +16,7 @@ mod compare_calls;
 mod entry_policy;
 mod function_calls;
 mod operator_calls;
+mod panicking;
 mod place_cache;
 mod ptr_values;
 mod queried_fields;

@@ -128,6 +128,7 @@ impl Engine {
         let bits = match selected.kind {
             LayoutIntrinsic::SizeOf => layout.size,
             LayoutIntrinsic::AlignOf => u64::from(layout.align),
+            LayoutIntrinsic::AssertInhabited => u64::from(layout.inhabited),
         };
         self.catalog.cache_layout(&call, bits).map_err(error)?;
         Ok(true)

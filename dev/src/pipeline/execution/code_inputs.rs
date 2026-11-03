@@ -72,18 +72,29 @@ impl Engine {
             )
             .saturating_sub(size_of::<const_eval::use_inputs::Row>())
             .saturating_sub(contract.retained_bytes());
-        let uses = const_eval::use_inputs::Inputs::prepare_uses(facts, body, row_bytes)?;
+        let mut uses = const_eval::use_inputs::Inputs::prepare_uses(facts, body, row_bytes)?;
         let available = (64 * 1024 * 1024usize).saturating_sub(self.catalog.bytes);
         let fixed = const_eval::code::Code::storage_bytes(body)?;
         let extra = available
             .checked_sub(fixed)
             .ok_or("constant execution code exceeds 64 MiB budget")?;
         let mut work = 0;
-        let targets =
-            crate::borrow::solved_callables(&mut facts.types, body, regions, extra, &mut work);
+        let code =
+            crate::borrow::solved_callables(&mut facts.types, body, regions, extra, &mut work)
+                .and_then(|solved| {
+                    let code = const_eval::code::Prepared::from_proved(
+                        &mut facts.types,
+                        solved.body,
+                        solved.targets,
+                        solved.storage,
+                        available,
+                        &mut work,
+                    )?;
+                    uses.finalize_code(&mut facts.types, code.code(), &mut work)?;
+                    Ok(code)
+                });
         facts.body_work.canonical_steps = facts.body_work.canonical_steps.saturating_add(work);
-        let code = const_eval::code::Prepared::snapshot(body, targets?, available)?;
-        Ok((Some(code), uses))
+        Ok((Some(code?), uses))
     }
 }
 

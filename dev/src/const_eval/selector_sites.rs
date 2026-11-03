@@ -172,6 +172,7 @@ pub(super) fn validate_source<'code>(
     {
         return Err("source selector belongs to another actual executable caller");
     }
+    let selection = storage_selection(facts, body, selection)?;
     opened(facts, body, frame, callee, signature, value.ty, selection)?;
     let operands = operands(body, frame, arguments, selection)?;
     let callback = Machine::value(frame, operands[1])
@@ -217,6 +218,32 @@ pub(super) fn validate_source<'code>(
     #[cfg(test)]
     observation::record(facts, catalog, inputs, &call, reference.as_ref());
     Ok(Some(call))
+}
+
+fn storage_selection(
+    facts: &Declarations,
+    body: &Code,
+    mut selection: Select,
+) -> Result<Select, &'static str> {
+    let actual = body.callable_target(selection.instance);
+    if actual == selection.instance {
+        return Ok(selection);
+    }
+    let mapped = source_select(facts, actual)?
+        .ok_or("proved selector target lost its actual source declaration")?;
+    if mapped.definition != selection.definition {
+        return Err("proved selector target changed its source identity");
+    }
+    for (original, mapped) in selection.types.iter_mut().zip(mapped.types) {
+        if !facts
+            .types
+            .contains_function_items(*original)
+            .ok_or("proved selector lost its source type root")?
+        {
+            *original = mapped;
+        }
+    }
+    Ok(selection)
 }
 
 fn reference_opening<'caller>(

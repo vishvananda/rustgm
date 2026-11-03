@@ -9,7 +9,18 @@ use crate::{
         aggregate::{self, FieldDestruction},
     },
 };
-const ROLES: [LangItem; 2] = [LangItem::ManuallyDrop, LangItem::MaybeDangling];
+const ROLES: [LangItem; 3] = [
+    LangItem::ManuallyDrop,
+    LangItem::MaybeDangling,
+    LangItem::MaybeUninit,
+];
+fn nominal_kind(role: LangItem) -> aggregate::Kind {
+    if role == LangItem::MaybeUninit {
+        aggregate::Kind::Union
+    } else {
+        aggregate::Kind::Struct
+    }
+}
 fn claim(
     report: &Report,
     facts: &Declarations,
@@ -35,11 +46,14 @@ fn claim(
         return Err(error("source wrapper lost its actual item"));
     };
     let written = ast.items[index as usize];
-    if actual.kind != DefKind::Struct
-        || actual.node != Some(declaration.origin)
-        || !matches!(written.kind, ItemKind::Struct { .. })
-        || ast.list(written.generics).len() != 1
-    {
+    let shape = if role == LangItem::MaybeUninit {
+        actual.kind == DefKind::Struct && matches!(written.kind, ItemKind::Union { .. })
+    } else {
+        actual.kind == DefKind::Struct
+            && matches!(written.kind, ItemKind::Struct { .. })
+            && ast.list(written.generics).len() == 1
+    };
+    if !shape || actual.node != Some(declaration.origin) {
         return Err(error(
             "source wrapper changed its actual structure or generic arity",
         ));
@@ -60,11 +74,16 @@ pub(in crate::sema) fn register(
         if facts
             .aggregates
             .get(item)
-            .is_none_or(|shape| shape.kind != aggregate::Kind::Struct)
+            .is_none_or(|shape| shape.kind != nominal_kind(role))
         {
             return Err(error(
                 "source wrapper requires its completed structure fields",
             ));
+        }
+        if role == LangItem::MaybeUninit {
+            // Union storage already suppresses destruction of unselected fields.
+            // This identity grants no value validity or executable API permission.
+            continue;
         }
         let growth = facts.aggregates.nominal_policy_growth(item);
         crate::sema::header_attributes::reserve_source_contracts(
@@ -103,7 +122,7 @@ pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Re
             || facts
                 .aggregates
                 .get(item)
-                .is_none_or(|d| d.kind != aggregate::Kind::Struct)
+                .is_none_or(|d| d.kind != nominal_kind(role))
             || match role {
                 LangItem::ManuallyDrop => {
                     facts.aggregates.destruction(item) != Some(FieldDestruction::Never)
@@ -111,6 +130,7 @@ pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Re
                 LangItem::MaybeDangling => {
                     facts.aggregates.permits_dangling_pointers(item) != Some(true)
                 }
+                LangItem::MaybeUninit => false,
                 _ => true,
             }
         {

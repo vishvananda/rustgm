@@ -72,11 +72,16 @@ impl Machine<'_, '_> {
         }
         let length = match Reader::new(self.evaluator.facts()).storage_shape(ty)? {
             StoredShape::Array { length: 0, .. }
+            | StoredShape::Product { union: true, .. }
             | StoredShape::Scalar
             | StoredShape::Word
             | StoredShape::Unsupported => 0,
             StoredShape::Array { .. } => 1,
-            StoredShape::Product { fields, .. } => fields.len(),
+            StoredShape::Product {
+                fields,
+                union: false,
+                ..
+            } => fields.len(),
             StoredShape::Enumeration { .. } | StoredShape::Niche => {
                 let reader = Reader::new(self.evaluator.facts());
                 let ids;
@@ -103,11 +108,16 @@ impl Machine<'_, '_> {
         let reader = Reader::new(self.evaluator.facts());
         match reader.storage_shape(ty)? {
             StoredShape::Array { length: 0, .. }
+            | StoredShape::Product { union: true, .. }
             | StoredShape::Scalar
             | StoredShape::Word
             | StoredShape::Unsupported => {}
             StoredShape::Array { element, .. } => children.push(element),
-            StoredShape::Product { fields, .. } => children.extend_from_slice(fields),
+            StoredShape::Product {
+                fields,
+                union: false,
+                ..
+            } => children.extend_from_slice(fields),
             StoredShape::Enumeration { .. } | StoredShape::Niche => {
                 if niche {
                     children.push(reader.enum_niche(ty)?.encoding.ty);
@@ -121,3 +131,7 @@ impl Machine<'_, '_> {
         Ok(children)
     }
 }
+
+#[cfg(test)]
+#[path = "../../../../tests/invariants/union_capabilities.rs"]
+mod tests;

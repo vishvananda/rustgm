@@ -1,5 +1,6 @@
 //! Warm layout data cannot authorize a different or malformed checked call.
 use super::*;
+use crate::types::Primitive;
 use crate::{
     body,
     expand::config::Config,
@@ -140,7 +141,7 @@ fn warmed_layout_data_still_requires_the_current_direct_checked_call() -> Result
     machine.begin(bad, &[]).map_err(|e| e.message)?;
     assert_eq!(
         machine.advance().err().map(|e| e.message),
-        Some("source intrinsic call differs from its checked const contract")
+        Some("source intrinsic call result type differs from its checked const contract")
     );
     Ok(())
 }

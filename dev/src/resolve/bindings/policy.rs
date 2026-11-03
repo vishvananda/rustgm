@@ -69,6 +69,7 @@ pub(in crate::resolve) enum Feature {
     RustdocInternals = 52,
     MustNotSuspend = 53,
     OptimizeAttribute = 54,
+    TransparentUnions = 55,
 }
 
 impl Feature {
@@ -144,6 +145,7 @@ impl Request {
             "simd_ffi" => Self::Capability(Feature::SimdFfi),
             "coverage_attribute" => Self::Capability(Feature::CoverageAttribute),
             "optimize_attribute" => Self::Capability(Feature::OptimizeAttribute),
+            "transparent_unions" => Self::Capability(Feature::TransparentUnions),
             "pattern_type_macro" => Self::Library(Feature::PatternTypeMacro),
             "pattern_types" => Self::Capability(Feature::PatternTypes),
             // Requests do not authorize the unsupported live const-drop operation.

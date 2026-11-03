@@ -752,9 +752,6 @@ pub(crate) fn validate_repr(
         {
             Err("integer representation requires an enum")
         }
-        aggregate::Kind::Union if repr.representation == Representation::Transparent => {
-            Err("transparent representation is not allowed on a union")
-        }
         aggregate::Kind::Enum if repr.packed.is_some() => {
             Err("packed representation requires a struct")
         }

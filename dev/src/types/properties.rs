@@ -17,6 +17,7 @@ pub(super) enum Property {
     ProjectedSizes,
     AnonymousCallables,
     TrivialCopy,
+    FunctionItems,
 }
 impl Property {
     const fn mask(self) -> u16 {
@@ -33,7 +34,8 @@ const DEPENDENCIES: u16 = Property::Regions.mask()
     | Property::Opaques.mask()
     | Property::Nominals.mask()
     | Property::ProjectedSizes.mask()
-    | Property::AnonymousCallables.mask();
+    | Property::AnonymousCallables.mask()
+    | Property::FunctionItems.mask();
 
 #[derive(Clone, Copy)]
 pub(super) struct Properties {

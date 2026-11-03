@@ -135,3 +135,52 @@ fn source_no_drop_native_relay_executes_actual_mutation_and_owned_source_fields(
     )?;
     Ok(())
 }
+
+#[test]
+fn source_maybe_uninit_const_outcomes_keep_bytes_validity_and_ownership_separate() -> TestResult {
+    let accepted = "new-u8 new-bool new-record new-reference new-array unit empty-array unused-uninhabited opaque-union-uninhabited write-and-borrow write-through-pointer array-complete copy-preserves-uninitialized header-zero header-many header-life-const ordinary-panic-spelling opaque-invalid-bool opaque-null-reference inferred-valid-reference";
+    let rejected = "uninitialized-u8 uninitialized-reference invalid-bool null-reference uninhabited-read unsafe-required uninitialized-ref-access array-partial wrong-size-transmute borrow-escape no-copy-grant header-wrong-target header-duplicate transparent-missing-gate transparent-two-fields transparent-macro-allowance renamed-source-panic";
+    let mut failures = Vec::new();
+    for (name, accepted) in accepted
+        .split_whitespace()
+        .map(|name| (name, true))
+        .chain(rejected.split_whitespace().map(|name| (name, false)))
+    {
+        let source = std::fs::read_to_string(
+            root()?.join(format!("pa31/tests/spec/source-maybe-uninit/{name}.rs")),
+        )?;
+        let result = lower(&source);
+        let error = result.as_ref().err().map(ToString::to_string);
+        if let Some(error) = &error {
+            eprintln!("{name}: {error}");
+        }
+        let infrastructure = error.as_ref().is_some_and(|message| {
+            [
+                "budget",
+                "limit exceeded",
+                "non-const body requested",
+                "prepared scalar union",
+                "source intrinsic call",
+                "not implemented",
+                "unsupported active source-core feature",
+            ]
+            .iter()
+            .any(|text| message.contains(text))
+        });
+        let reason = match name {
+            "invalid-bool" => Some("bool"),
+            "null-reference" => Some("null"),
+            "wrong-size-transmute" | "renamed-source-panic" => {
+                Some("constant execution reached source panic_display")
+            }
+            _ => None,
+        };
+        let wrong_reason =
+            reason.is_some_and(|reason| error.as_ref().is_none_or(|error| !error.contains(reason)));
+        if result.is_ok() != accepted || infrastructure || wrong_reason {
+            failures.push(format!("{name}: {error:?}"));
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}

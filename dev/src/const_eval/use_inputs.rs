@@ -24,6 +24,19 @@ pub(crate) struct Uses {
     #[cfg(test)]
     pub descriptor_work: usize,
 }
+impl Uses {
+    pub(crate) fn finalize_code(
+        &mut self,
+        types: &mut crate::types::Store,
+        code: &Code,
+        work: &mut usize,
+    ) -> Result<(), &'static str> {
+        if let Some(rows) = &mut self.selectors {
+            rows.finalize_code(types, code, work)?;
+        }
+        Ok(())
+    }
+}
 pub(crate) struct Source {
     contract: Arc<Contract>,
     selectors: Option<Box<selectors::Rows>>,

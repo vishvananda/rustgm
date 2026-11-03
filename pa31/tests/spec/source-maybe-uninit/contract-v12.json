@@ -1,0 +1,280 @@
+{
+  "schema": 1,
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "purpose": "Genuine MaybeUninit header, original method bodies, opaque union bytes, const/runtime validity and ownership; full imported library closure remains required",
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir/src/lang_items.rs": "af62146fd0255b1b8baea76309e13eb00ff5b9a8ffe110348beba4deb3569690",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/mem/maybe_uninit.rs": "4189eaa95d41706cd506ef9dfdb81478640a53ccacc4d88f96329ad3a27e90fb",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/mem/mod.rs": "538b04a5f1988ae5c50edc376021f6db3fe6291ebc24423ba6a747bc0d00688b",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/intrinsics/mod.rs": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_codegen_ssa/src/mir/block.rs": "13d6d31caf4c1693ec26c4fa4d8385361d816413b1c9fbc77a71b914face653b",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_const_eval/src/const_eval/machine.rs": "fa6717e7d0e0043388f594982c11139bff23441ff6e1cec92479506b78fd8d33",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir_analysis/src/check/check.rs": "f88983f311efa4e83ae8683365ab4ba1b59f47d82c6ffa6197f30c48f9cd1987"
+  },
+  "cases": [
+    {
+      "name": "new-u8",
+      "path": "pa31/tests/spec/source-maybe-uninit/new-u8.rs",
+      "sha256": "56d2664d6fa05643f5ddf7ecec8cfa1a7a98ddc78af1d992e4e152ced9a10ad1",
+      "status": 0
+    },
+    {
+      "name": "new-bool",
+      "path": "pa31/tests/spec/source-maybe-uninit/new-bool.rs",
+      "sha256": "75b3fd1a2f11f19c86b39a0920bea2ab1a5582a0a20317129b9a87d991508e38",
+      "status": 0
+    },
+    {
+      "name": "new-record",
+      "path": "pa31/tests/spec/source-maybe-uninit/new-record.rs",
+      "sha256": "887849c3b01b81af52cd3d0f299ece4e97207fc389d6f3af227c95e02cd21946",
+      "status": 0
+    },
+    {
+      "name": "new-reference",
+      "path": "pa31/tests/spec/source-maybe-uninit/new-reference.rs",
+      "sha256": "50a7fe4557d83a7d40ca14aaa15b73b61682227cbbe9e6462627b64dd2dd2e27",
+      "status": 0
+    },
+    {
+      "name": "new-array",
+      "path": "pa31/tests/spec/source-maybe-uninit/new-array.rs",
+      "sha256": "96bc2d2994c22b98c68d4f51e7546daceb897dc1d38f187b91436f380e289776",
+      "status": 0
+    },
+    {
+      "name": "unit",
+      "path": "pa31/tests/spec/source-maybe-uninit/unit.rs",
+      "sha256": "c8d15f7e678923952678d6ef78839ae520e2e2a58bc3d00f7eeef7023f2da5e3",
+      "status": 0
+    },
+    {
+      "name": "empty-array",
+      "path": "pa31/tests/spec/source-maybe-uninit/empty-array.rs",
+      "sha256": "1ce33a278fd83695259aea204a7051cc874dc23385395279039f8bde2c407edd",
+      "status": 0
+    },
+    {
+      "name": "unused-uninhabited",
+      "path": "pa31/tests/spec/source-maybe-uninit/unused-uninhabited.rs",
+      "sha256": "c4134d2dfb49b8c2f213d70261365c457da418d02fb842c39c04a931a176b426",
+      "status": 0
+    },
+    {
+      "name": "opaque-union-uninhabited",
+      "path": "pa31/tests/spec/source-maybe-uninit/opaque-union-uninhabited.rs",
+      "sha256": "87a89ea450b688dab8bca2384717882cf9e447dc74ed8cf21fa2146e1ddf9de7",
+      "status": 0
+    },
+    {
+      "name": "uninitialized-u8",
+      "path": "pa31/tests/spec/source-maybe-uninit/uninitialized-u8.rs",
+      "sha256": "ac89a31d4c21ff32e6e5706d93cd2bf4072a4b990e844b959d4ad31467f76a5e",
+      "status": 1
+    },
+    {
+      "name": "uninitialized-reference",
+      "path": "pa31/tests/spec/source-maybe-uninit/uninitialized-reference.rs",
+      "sha256": "f79a484dc610a0b24302df4e135a7249d8a0d6514d520dfa7554b779ac952201",
+      "status": 1
+    },
+    {
+      "name": "invalid-bool",
+      "path": "pa31/tests/spec/source-maybe-uninit/invalid-bool.rs",
+      "sha256": "7de97fdd8ee39aa3d649e02bcadbc9ab6951b6a9007fb63a04ba0f6889ac8540",
+      "status": 1
+    },
+    {
+      "name": "null-reference",
+      "path": "pa31/tests/spec/source-maybe-uninit/null-reference.rs",
+      "sha256": "ba5da1a22903754fcda78087ea49988a6267c96de20a2f570aa1cd1bde86788e",
+      "status": 1
+    },
+    {
+      "name": "uninhabited-read",
+      "path": "pa31/tests/spec/source-maybe-uninit/uninhabited-read.rs",
+      "sha256": "fc48a3f834216f47e855f587b3f20a47ec8825255652e6819082d1b901c4355a",
+      "status": 1
+    },
+    {
+      "name": "unsafe-required",
+      "path": "pa31/tests/spec/source-maybe-uninit/unsafe-required.rs",
+      "sha256": "c5696f0bfb383c14038abb94b99e96693ba57e779bf01ecbd8fd68a12d69eb8d",
+      "status": 1
+    },
+    {
+      "name": "write-and-borrow",
+      "path": "pa31/tests/spec/source-maybe-uninit/write-and-borrow.rs",
+      "sha256": "1e0861e07a3f4bacfea7398f3cd8a8e04c490504ce5baa0996c1464718cafeb4",
+      "status": 0
+    },
+    {
+      "name": "write-through-pointer",
+      "path": "pa31/tests/spec/source-maybe-uninit/write-through-pointer.rs",
+      "sha256": "b86607ef728a3e01cb28de590b0eed8925b7b6b6cc0f6fcef8150e3c5805e088",
+      "status": 0
+    },
+    {
+      "name": "uninitialized-ref-access",
+      "path": "pa31/tests/spec/source-maybe-uninit/uninitialized-ref-access.rs",
+      "sha256": "492e9c585356eb2e3192551067e8dbca650d7234f1933f842525ac0ba7f5cbc2",
+      "status": 1
+    },
+    {
+      "name": "array-complete",
+      "path": "pa31/tests/spec/source-maybe-uninit/array-complete.rs",
+      "sha256": "a7542fc5736d7faf292c5b95089b8aaa29f1c1e3b842c193b20501077c7e465c",
+      "status": 0
+    },
+    {
+      "name": "array-partial",
+      "path": "pa31/tests/spec/source-maybe-uninit/array-partial.rs",
+      "sha256": "69f38460755c3c9283f891278dc7622408aa940c839e0fd416c490c31de562a8",
+      "status": 1
+    },
+    {
+      "name": "copy-preserves-uninitialized",
+      "path": "pa31/tests/spec/source-maybe-uninit/copy-preserves-uninitialized.rs",
+      "sha256": "525f0c7b15a1f7fbd21a5df0080ca394db8a5c1f4e81612e4ba8bfa446073108",
+      "status": 0
+    },
+    {
+      "name": "wrong-size-transmute",
+      "path": "pa31/tests/spec/source-maybe-uninit/wrong-size-transmute.rs",
+      "sha256": "5b40ff7316ff84c54f1f359442ddaeb0bd9c6d46f846e694025b173e130b6d5a",
+      "status": 1
+    },
+    {
+      "name": "borrow-escape",
+      "path": "pa31/tests/spec/source-maybe-uninit/borrow-escape.rs",
+      "sha256": "23ffd4dc4f37dce8292b486acccc86cb22fd6b91cfc00bf773bb956235d5e64d",
+      "status": 1
+    },
+    {
+      "name": "no-copy-grant",
+      "path": "pa31/tests/spec/source-maybe-uninit/no-copy-grant.rs",
+      "sha256": "2358de798292250ce282c57cd3ee9438cfa12659d4f909bccc1e1429a52e8169",
+      "status": 1
+    },
+    {
+      "name": "header-zero",
+      "path": "pa31/tests/spec/source-maybe-uninit/header-zero.rs",
+      "sha256": "fede46e6d3d527d680ff813591dc3cf55243deb9297a2a2e63f559d9c226823b",
+      "status": 0
+    },
+    {
+      "name": "header-many",
+      "path": "pa31/tests/spec/source-maybe-uninit/header-many.rs",
+      "sha256": "7df69fe34ec624b165f9c6d5936cbf48bd5019a6c2fa1f003239aa101ed1e64b",
+      "status": 0
+    },
+    {
+      "name": "header-life-const",
+      "path": "pa31/tests/spec/source-maybe-uninit/header-life-const.rs",
+      "sha256": "7c5db9d784d0f4e46e9582da00415aa18af5a0785fc0fe7f08f6598cc6f09a17",
+      "status": 0
+    },
+    {
+      "name": "header-wrong-target",
+      "path": "pa31/tests/spec/source-maybe-uninit/header-wrong-target.rs",
+      "sha256": "0330581ea950316e0bca398d09179f9fa0654ec8e218a66faaea49f288c0dfc3",
+      "status": 1
+    },
+    {
+      "name": "header-duplicate",
+      "path": "pa31/tests/spec/source-maybe-uninit/header-duplicate.rs",
+      "sha256": "4b5bd59fd8e74213fec0d4f605f4f50fb43113ebe8ba74460edda3b254905769",
+      "status": 1
+    },
+    {
+      "name": "native-values",
+      "path": "pa31/tests/spec/source-maybe-uninit/native-values.rs",
+      "sha256": "1db98802cab476e76e1766374d40ba3688fa5d558ab04b54395c95f2a4fc6d7b",
+      "status": 0
+    },
+    {
+      "name": "native-drop",
+      "path": "pa31/tests/spec/source-maybe-uninit/native-drop.rs",
+      "sha256": "abb370c9c0f118f34d7eb872bb35cdbe9ee6b69b8ab1c4eb4364ae5ced2d4e56",
+      "status": 0
+    },
+    {
+      "name": "native-uninhabited",
+      "path": "pa31/tests/spec/source-maybe-uninit/native-uninhabited.rs",
+      "sha256": "8d15f3883c97dbd61c590763d8a9fac8ea98e133a043092abbf7e779f06c75f6",
+      "status": 0
+    },
+    {
+      "name": "transparent-missing-gate",
+      "path": "pa31/tests/spec/source-maybe-uninit/transparent-missing-gate.rs",
+      "sha256": "f16ad899ccb1bf1dd23662608f1b5120a8f1a9a5d6fa4e86a86db5c56be99a98",
+      "status": 1
+    },
+    {
+      "name": "transparent-two-fields",
+      "path": "pa31/tests/spec/source-maybe-uninit/transparent-two-fields.rs",
+      "sha256": "167241e823a3123c5700ab5745d10e0e6a9aab87bb77eaf4d169b5f94df57598",
+      "status": 1
+    },
+    {
+      "name": "transparent-macro-allowance",
+      "path": "pa31/tests/spec/source-maybe-uninit/transparent-macro-allowance.rs",
+      "sha256": "0fbb3f3adb08ba5cea62149882246e3608fa3f69bab15c683c63f3e442cbcd2c",
+      "status": 1
+    },
+    {
+      "name": "ordinary-panic-spelling",
+      "path": "pa31/tests/spec/source-maybe-uninit/ordinary-panic-spelling.rs",
+      "sha256": "94a06bd40530e260980129d908f37522ea121860d69e3b2d51e1afdd8bc4db54",
+      "status": 0
+    },
+    {
+      "name": "renamed-source-panic",
+      "path": "pa31/tests/spec/source-maybe-uninit/renamed-source-panic.rs",
+      "sha256": "a4f513ae1e3c358c73e567db4752717cd2efac2956731b77244317be31c94f03",
+      "status": 1
+    },
+    {
+      "name": "opaque-invalid-bool",
+      "path": "pa31/tests/spec/source-maybe-uninit/opaque-invalid-bool.rs",
+      "sha256": "b5371f8c6ee49b1b6e3386d2d2c01ed5db5d9b0b0c03a5046840861402757f63",
+      "status": 0
+    },
+    {
+      "name": "opaque-null-reference",
+      "path": "pa31/tests/spec/source-maybe-uninit/opaque-null-reference.rs",
+      "sha256": "c224926ae2db2c73f1d4b89c342dc5b992f36f09c749f35a7b5c4c6e39e6cd6a",
+      "status": 0
+    },
+    {
+      "name": "inferred-valid-reference",
+      "path": "pa31/tests/spec/source-maybe-uninit/inferred-valid-reference.rs",
+      "sha256": "dfec9bb26d180504ea893bb37c0c4c6c75b835ebe2af8cfa80f6e9e83c4e17cb",
+      "status": 0
+    }
+  ],
+  "native": [
+    {
+      "name": "native-values",
+      "observer": "pa31/tests/spec/source-maybe-uninit/native-values.c",
+      "sha256": "18664612ee2c48ce2b26af91bcb4bc8cd90ef28d2d8b20940e680a50b98bd30e",
+      "stdout": "8\n",
+      "status": 0
+    },
+    {
+      "name": "native-drop",
+      "observer": "pa31/tests/spec/source-maybe-uninit/native-drop.c",
+      "sha256": "e3e375b17cc6df37d0e879d08c0d3761bb7fc1994553c6f2de56fdbfdc2491f0",
+      "stdout": "drop 7\nvalue 7 count 1\n",
+      "status": 0
+    },
+    {
+      "name": "native-uninhabited",
+      "observer": "pa31/tests/spec/source-maybe-uninit/native-uninhabited.c",
+      "sha256": "1d995504128405c592fa9efcaf687cf6d21f4e59652b9c8b6e839eab8b0fa11c",
+      "stdout": "attempted to instantiate uninhabited type `Void`\n",
+      "status": 23
+    }
+  ],
+  "predecessor": "contract-v11.json: unchanged 37 inputs plus three positive opaque/value reference opponents to require genuine delayed validity and inferred-signature correctness; predecessor retained under obj/parallel/maybe-uninit-v2/frozen-contract-v11.json"
+}

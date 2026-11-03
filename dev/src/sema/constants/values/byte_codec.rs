@@ -36,13 +36,24 @@ impl Evaluator<'_> {
         fragments: &[super::ImageFragment],
         limit: usize,
     ) -> Result<(Constant, usize), Failure> {
-        // Revalidate the already prepared scalar family through its canonical field.
+        // Reinterpretation can demand a union image without a union constructor.
+        // Publish the actual closed field/layout family before copying opaque bytes.
+        let prepared = if self
+            .facts()
+            .constant_images
+            .as_ref()
+            .is_some_and(|arena| arena.families.contains_key(&ty))
+        {
+            0
+        } else {
+            self.prepare_union(ty, limit)?
+        };
         let facts = self.facts();
         let family = facts
             .constant_images
             .as_ref()
             .and_then(|a| a.families.get(&ty))
-            .ok_or("constant byte snapshot requires a prepared scalar union")?;
+            .ok_or("constant byte snapshot requires its prepared union family")?;
         if family.size != bytes.len() || initialized.len() != bytes.len().div_ceil(64) {
             return Err("constant byte snapshot differs from its union storage".into());
         }
@@ -51,6 +62,7 @@ impl Evaluator<'_> {
             .checked_mul(2)
             .and_then(|n| n.checked_add(initialized.len().saturating_mul(2)))
             .and_then(|n| n.checked_add(fragments.len().saturating_mul(16)))
+            .and_then(|n| n.checked_add(prepared))
             .filter(|n| *n <= limit)
             .ok_or("constant union snapshot work budget exceeded")?;
         let arena = self

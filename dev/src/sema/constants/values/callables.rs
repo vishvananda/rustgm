@@ -75,6 +75,18 @@ impl Reader<'_> {
 }
 
 impl Evaluator<'_> {
+    pub(crate) fn checked_source_panic_display(
+        &self,
+        instance: Instance,
+        origin: crate::resolve::body_origin::BodyOrigin,
+    ) -> Result<Option<crate::sema::compiler_items::PanicDisplaySelection>, Failure> {
+        Ok(crate::sema::compiler_items::source_panic_display(
+            self.queries.report,
+            self.facts(),
+            instance,
+            origin,
+        )?)
+    }
     pub(crate) fn checked_source_transmute(
         &self,
         instance: Instance,

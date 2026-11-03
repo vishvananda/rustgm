@@ -60,23 +60,37 @@ pub(super) fn resolve(
 
 /// The caller supplies the exact solved regions only after completing its loans.
 /// No solution means no replacement; structural item arguments grant no proof.
-pub(crate) fn solved(
+pub(crate) struct Solved<'body> {
+    pub body: &'body Body,
+    pub targets: HashMap<Instance, Instance>,
+    pub storage: Option<Box<Bound>>,
+}
+pub(crate) fn solved<'body>(
     types: &mut Store,
-    body: &Body,
+    body: &'body Body,
     proof: &regions::Body,
     bytes: usize,
     work: &mut usize,
-) -> Result<HashMap<Instance, Instance>, &'static str> {
+) -> Result<Solved<'body>, &'static str> {
     if proof.key != body.key() || proof.source != body.source || proof.instance != body.instance {
         return Err("solved callable regions belong to another actual body or instance");
     }
     let Some(mut fold) = prepare(proof)? else {
-        return Ok(HashMap::default());
+        return Ok(Solved {
+            body,
+            targets: HashMap::default(),
+            storage: None,
+        });
     };
     if body.has_resolved_callables() {
         return Err("callable targets already belong to a completed proof");
     }
-    select(types, body, &mut fold, bytes, work)
+    let targets = select(types, body, &mut fold, bytes, work)?;
+    Ok(Solved {
+        body,
+        targets,
+        storage: Some(fold),
+    })
 }
 
 fn select(

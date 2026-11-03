@@ -31,7 +31,7 @@ impl Machine<'_, '_> {
             self.charge(work)?;
             return Ok(value);
         }
-        if !self.byte_family(ty)? {
+        if !self.byte_family(ty)? || !self.byte_family(selected)? {
             return Err(
                 "constant union construction requires a supported closed byte family".into(),
             );

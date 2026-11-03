@@ -247,7 +247,7 @@ pub(super) fn primary(
         | (ItemKind::Function { .. }, DefKind::Function)
         | (ItemKind::Const { .. }, DefKind::Const)
         | (ItemKind::Static { .. }, DefKind::Static)
-        | (ItemKind::Struct { .. }, DefKind::Struct)
+        | (ItemKind::Struct { .. } | ItemKind::Union { .. }, DefKind::Struct)
         | (ItemKind::Enum { .. }, DefKind::Enum)
         | (ItemKind::TypeAlias { .. }, DefKind::TypeAlias)
         | (ItemKind::Impl { .. }, DefKind::SelfType)

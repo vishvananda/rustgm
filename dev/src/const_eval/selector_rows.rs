@@ -26,6 +26,17 @@ impl Rows {
     pub(super) fn get(&self, call: ValueId) -> Option<Opening> {
         self.calls.get(&call).copied()
     }
+    pub(super) fn finalize_code(
+        &mut self,
+        types: &mut crate::types::Store,
+        code: &super::Code,
+        work: &mut usize,
+    ) -> Result<(), &'static str> {
+        for (&call, opening) in &mut self.calls {
+            opening.finalize_code(types, code, call, work)?;
+        }
+        Ok(())
+    }
 }
 /// The caller has already completed the actual whole `FnOnce` input/output proof.
 /// This constructor creates no fresh regions or generic/trait proof witness.
@@ -128,6 +139,67 @@ pub(super) fn push(
     Ok(())
 }
 impl Opening {
+    fn finalize_code(
+        &mut self,
+        types: &mut crate::types::Store,
+        code: &super::Code,
+        call: ValueId,
+        work: &mut usize,
+    ) -> Result<(), &'static str> {
+        *work = work.saturating_add(1);
+        let value = code
+            .values
+            .get(call.0 as usize)
+            .ok_or("selector opening lost its Call")?;
+        let crate::body::ir::Rvalue::Call {
+            signature, callee, ..
+        } = value.kind
+        else {
+            return Err("selector opening no longer belongs to a direct Call");
+        };
+        if code
+            .values
+            .get(callee.0 as usize)
+            .is_none_or(|v| v.ty != self.selector.ty())
+        {
+            return Err("selector opening changed its original caller item context");
+        }
+        let Some(Kind::Function {
+            bound_regions: 0,
+            parameters,
+            result,
+            unsafe_: false,
+            convention: Convention::RUST,
+        }) = types.kind(signature)
+        else {
+            return Err("selector opening lost its proved executable signature");
+        };
+        let Some(&[argument, constant, _]) = types.list(parameters) else {
+            return Err("selector opening lost its exact three parameter roots");
+        };
+        if constant != self.constant.ty() || result != value.ty {
+            return Err("selector opening changed its source callback or result");
+        }
+        let Some(Kind::Tuple(parameters)) = types.kind(argument) else {
+            return Err("selector opening lost its proved argument tuple");
+        };
+        *work = work.saturating_add(
+            types
+                .list(parameters)
+                .ok_or("selector opening lost its tuple fields")?
+                .len(),
+        );
+        // The exact Code was just prepared from the same proved Body. Retain
+        // source identities and publish only its already-proved storage roots.
+        self.signature = types.intern(Kind::Function {
+            bound_regions: 0,
+            parameters,
+            result,
+            unsafe_: false,
+            convention: Convention::RUST,
+        })?;
+        Ok(())
+    }
     pub(in crate::const_eval) fn validate(
         self,
         facts: &Declarations,

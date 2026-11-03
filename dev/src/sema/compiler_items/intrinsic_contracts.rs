@@ -3,7 +3,7 @@ use super::Catalog;
 use crate::{
     resolve::{expansion::Report, model::DefId, package::Error},
     sema::model::{Declarations, Function},
-    support::bindings::SourceIntrinsic,
+    support::bindings::{LayoutIntrinsic, SourceIntrinsic},
     types::{
         Kind, Primitive, TypeId, arguments::Argument, callable::Convention, instance::Instance,
         parameters::ParameterKind,
@@ -163,18 +163,17 @@ fn scalar_signature(
             "source layout intrinsic requires one type parameter"
         })?;
     let expected = if needs_drop {
-        Primitive::Bool
+        TypeId::primitive(Primitive::Bool)
+    } else if kind == SourceIntrinsic::Layout(LayoutIntrinsic::AssertInhabited) {
+        TypeId::UNIT
     } else {
-        Primitive::Usize
+        TypeId::primitive(Primitive::Usize)
     };
-    if !parameters.is_empty()
-        || facts.types.kind(result) != Some(Kind::Primitive(expected))
-        || generic.len() != 1
-    {
+    if !parameters.is_empty() || result != expected || generic.len() != 1 {
         return Err(if needs_drop {
             "source needs_drop requires one type parameter, no values and bool result"
         } else {
-            "source layout intrinsic requires one type parameter, no values and usize result"
+            "source layout intrinsic requires one type parameter, no values and its declared property result"
         });
     }
     let Argument::Type(ty) = generic[0].argument else {

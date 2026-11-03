@@ -20,9 +20,11 @@ The [source NoDrop checkpoint](../docs/pa31-no-drop-checkpoint.md) qualifies the
 actual trait and union Copy fallback through canonical component proofs and real
 native relay execution. Field queries consume a compact shared type fact for
 the pinned structural shortcut; it grants no trait, value or API permission.
-Source wrapper completion precedes its union consumers. Actual MaybeUninit
-storage/method/intrinsic execution and general PA29 imported transport remain
-required; this does not activate PA31.
+Source wrapper completion precedes its union consumers. The
+[MaybeUninit constant checkpoint](../docs/pa31-maybe-uninit-const-checkpoint.md)
+qualifies actual source methods, opaque union storage and reached constant
+intrinsics. Candidate native panic/value/destructor execution and general PA29
+imported transport remain required; this does not activate PA31.
 
 The [optimization-intent packet](tests/spec/source-optimize/README.md) freezes
 real size/speed/none semantics, executable owners, feature and macro-envelope
@@ -434,5 +436,7 @@ qualifies local ManuallyDrop/MaybeDangling headers, real constructors/layout,
 separate cleanup policies, scoped CTFE validity and4 native observations. Full
 CFG proof retains the actual lifetime rejection;64 CLI constant observations
 cover32 cases. General nominal publication/imported consumers remain PA29 work.
-The unchanged original core advances to source MaybeUninit in mem/maybe_uninit.rs352.
-Actual union/mask/unsafe semantics and all library artifacts stay required.
+The successor [MaybeUninit constant checkpoint](../docs/pa31-maybe-uninit-const-checkpoint.md)
+clears that original role boundary and reaches transmute_trait in
+mem/transmutability.rs87. Runtime panic, imported storage/validity consumers and
+all original library artifacts stay required.

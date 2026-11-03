@@ -449,7 +449,7 @@ fn validate_marker(
     Ok(())
 }
 
-/// A paid readiness query for the three existing nominal roles and exact owner.
+/// A paid readiness query for completed nominal roles and their exact owner.
 /// Callers must revalidate current nominal data before using it for reentry.
 pub(super) fn nominal_completed(
     report: &Report,
@@ -465,6 +465,7 @@ pub(super) fn nominal_completed(
             | LangItem::PanicInfo
             | LangItem::ManuallyDrop
             | LangItem::MaybeDangling
+            | LangItem::MaybeUninit
     ) {
         return Err(Error::unlocated("invalid completed nominal readiness role"));
     }
@@ -500,6 +501,7 @@ pub(super) fn complete_nominal(
             | LangItem::PanicInfo
             | LangItem::ManuallyDrop
             | LangItem::MaybeDangling
+            | LangItem::MaybeUninit
     ) {
         return Err(Error::unlocated("invalid completed nominal role"));
     }

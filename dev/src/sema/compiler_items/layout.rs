@@ -1,4 +1,4 @@
-//! Layout selections retain their existing usize contract and carry no permission.
+//! Layout selections describe target properties, without retaining call permission.
 use super::Catalog;
 use crate::{
     resolve::{expansion::Report, model::DefId, package::Error},
@@ -13,6 +13,15 @@ pub(crate) struct Selection {
     pub element: TypeId,
     pub kind: LayoutIntrinsic,
     pub fallback: bool,
+}
+impl Selection {
+    pub(crate) fn result_type(self) -> TypeId {
+        if self.kind == LayoutIntrinsic::AssertInhabited {
+            TypeId::UNIT
+        } else {
+            TypeId::primitive(Primitive::Usize)
+        }
+    }
 }
 
 /// The actual source member has completed type elaboration, not evaluation.

@@ -15,15 +15,21 @@ PA21–PA24 have implemented/release-evidence status; PA1–PA20 retain
 implemented-draft. PA25–PA44 remain planned. No additional assignment or whole
 upstream library has been completed.
 
-The [source NoDrop checkpoint](pa31-no-drop-checkpoint.md) now qualifies a
-LIB-123 prerequisite:35 independent source outcomes, full original CFG proof,
-real Rust/CPPGM native `8`, private19/production5, PA12 125/125 and66 CLI views.
-The pinned union shortcut is a shared four-byte type-property bit, eliminating
-per-declaration type walks; field-query counts remain independent of shared
-array depth. Genuine source MaybeUninit methods/storage/intrinsics and general
-PA29 nominal/role transport stay open. The last original core frontier remains
-mem/maybe_uninit.rs352; no new artifact or original-source advance is inferred.
-Full predecessor repair CI41572102514 on1e9b3c514 passes every gate.
+The [MaybeUninit constant checkpoint](pa31-maybe-uninit-const-checkpoint.md)
+qualifies 37 full-pipeline source cases and 70 capped/uncapped CLI observations.
+Proved executable storage and existing selector descriptors consume the same
+actual static equalities; source contexts, ownership and image identity remain
+checked. Union capability work is constant across widths8/32/128. Candidate native
+panic/value/destructor execution and general PA29 nominal/role transport remain
+required. The unchanged original core now clears the maybe_uninit role and reaches
+LIB-124: transmute_trait in mem/transmutability.rs87 (file59 byte3207),16.12s,
+375opens/all722 inputs unchanged, CLI8d2641b0. No original crate artifact exists.
+
+The [source NoDrop checkpoint](pa31-no-drop-checkpoint.md) remains its independently
+qualified field/Copy prerequisite. Its four-byte type-property fact eliminates
+per-declaration type walks; current callable dependency facts use the same compact
+storage. Predecessor bae177bb8 full CI41584043541 passed every gate. Full successor
+CI follows main integration; these focused results do not activate a whole PA.
 
 Use the [current execution plan](library-bootstrap-acceleration.md) to choose work:
 real artifact/source consumers, demanded imported-body proof and consolidated
@@ -44,7 +50,7 @@ proof/lowering,4 genuine natives, private19/production8, PA12 125/125 and64
 capped/uncapped CLI constant observations. Scoped pointer validity creates no
 allocation/write/borrow authority. Caller-scoped unknown metadata tails use the
 existing iterative solver; final values retain typed bounded graph traversal.
-The same722-source core probe now reaches LIB-123 at
+That predecessor722-source core probe reached LIB-123 at
 mem/maybe_uninit.rs352, file57:14080, lang="maybe_uninit". CLIe659b800 takes17.47s,
 opens375 sources and preserves every source/configuration hash and finite limit.
 
@@ -52,7 +58,7 @@ PA29's general source struct/enum/union declaration transport is an explicit
 artifact prerequisite: the CLI currently errors at general nominal export
 admission. LIB-122's imported requirement stays open. Use one typed nominal model
 with actual fields, variants, generics, constructors and policies, then qualify
-fresh imported consumers. Continue actual source MaybeUninit storage/validity and
+fresh imported consumers. Continue candidate native MaybeUninit execution and
 that artifact work; full panic/intrinsic graphs, other hooks and all original
 core/alloc/std artifacts remain required. No whole PA is completed here.
 Predecessor938a65897 full CI41553049490 passed every gate. Full CI41565945979
@@ -349,7 +355,8 @@ actual native hints and the future authenticated MIR-import obligation.
 | LIB-120 | Qualified source attribute-expression consumer; original boundary cleared | Actual macro worklist/literal pool with all outer owners, module scope and declaration file retained | PA8 expansion +PA31 identity +PA40 forms +PA29 transport /24 independent programs, private14/production92,48CLI, native7 and fresh original core | Root only | CLI912ff4ef clears the full legacy module owner shape and reaches LIB-121. Prior simpler candidate2091a669 still failed the original; the exact inner-attribute reducer and cold module-item queue close that reproduction. Other consumers and genuine library/imported artifacts remain required. |
 | LIB-121 | Qualified source/body-policy/metadata/native component; original attribute cleared | Actual rustc_allow_const_fn_unstable targets, lists, lexical effects and source authority | PA25 const API +PA31 source +PA40 forms +PA29 imported body authority /35 source outcomes, provider/fresh const consumer and native7 7 | Root only | [Checkpoint](pa31-const-fn-allowances-checkpoint.md): private12/production48,70CLI, PA8 126/126, genuine v9 provider/fresh consumer and old-reader rejection. Typed declaration ports preserve the actual defining environment producer. CLI0cee4b63 clears panic.rs163 and reaches LIB-122. Full original panic/const_eval_select graph, other stability forms and all library artifacts remain required. |
 | LIB-122 | Local source semantics qualified; imported/artifact requirement open | Genuine source ManuallyDrop/MaybeDangling identity, typed validity and separate drop policies | PA26 hooks +PA12 layout +PA17/27 ownership/validity +PA25 CTFE +PA29 transport +PA31 authority /33 independent outcomes,4 natives, private19/production8,64CLI, PA12 125/125 | Root only | [Checkpoint](pa31-source-wrappers-checkpoint.md): CLIe659b800 clears manually_drop and reaches LIB-123 with all722 source hashes/config/budgets unchanged. General struct/enum/union metadata is still required for genuine wrapper artifacts/imported consumers; source admission and entry-free native programs do not complete that requirement. Broader validity domains and full libraries stay open. |
-| LIB-123 | Current original-core MaybeUninit role blocker | Implement actual source union identity, transparent storage, initialization masks and unsafe assume-initialized semantics | PA26 hooks +PA12 union/layout +PA27 validity/unsafe +PA25 CTFE +PA29 nominal transport +PA31 source / original mem/maybe_uninit.rs352 | Root only | CLIe659b800 reports unsupported source language item at file57:14080. File SHA4189eaa9,17.47s/375opens/all722 unchanged. Real union fields are unit and ManuallyDrop<T>; preserve uninitialized storage without manufacturing valid T. Existing bootstrap behavior is not source authority. Qualify real native/CTFE and imported consumers with the general nominal model. |
+| LIB-123 | Constant/source contract qualified; native/imported requirements open | Actual source union identity, transparent storage, initialization masks and unsafe assume-initialized semantics | PA26 hooks +PA12 union/layout +PA27 validity/unsafe +PA25 CTFE +PA28 intrinsics +PA29 nominal transport +PA31 source +PA39 panic / source-maybe-uninit packet | Root only | [Checkpoint](pa31-maybe-uninit-const-checkpoint.md):37 full-pipeline cases,70 CLI outcomes, pinned Rust40+3 native observers, strict current-call/proof controls and constant union capability work. CLI8d2641b0 clears original maybe_uninit and reaches LIB-124. Candidate native value/destruction/panic_nounwind observations and authenticated imported nominal consumers remain required. No whole PA or original artifact. |
+| LIB-124 | Current original-core source language-item blocker | Genuine TransmuteFrom compiler trait, structured Assume const arguments and its coinductive layout/validity/lifetime proof | PA20/21 trait relationships +PA25 const values +PA27 validity +PA29 transport +PA31 source declarations +PA40 attributes / original mem/transmutability.rs87 | Root only | CLI8d2641b0 reports unsupported source language item at file59 byte3207,16.12s/375opens/all722 unchanged. Preserve actual unsafe trait formals, Assume::NOTHING default, transmutability gate, deny-explicit-impl/dyn/coinductive attributes and genuine implicit selection. Independent declaration, use, invalidity, lifetime and imported opponents are required; header registration alone does not complete the builtin relation. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
@@ -521,7 +528,7 @@ concrete; a private Ready state is not an executable result.
 
 | Owner | Issues and owning assignments | Next observable exit |
 | --- | --- | --- |
-| Root, direct compiler owner; sole worker | LIB-123 source MaybeUninit; PA29 general source nominal artifact closure; retained core/runtime hooks | CLIe659b800 qualifies local source wrapper semantics and advances the unchanged original core to maybe_uninit in mem/maybe_uninit.rs352. Keep LIB-122 imported consumers open and implement real struct/enum/union metadata with fresh consumers. Continue actual masks/validity/unsafe operations and original core probes; no bootstrap substitution or new wrapper-only export profile. Root remains alone in guarded warm btrfs scratch. |
+| Root, direct compiler owner; sole worker | LIB-124 TransmuteFrom source/builtin contract; LIB-123 native MaybeUninit/panic; PA29 general nominal artifact closure | CLI8d2641b0 clears the maybe_uninit role and reaches mem/transmutability.rs87 with identical722 inputs/configuration/limits. Implement and test genuine TransmuteFrom authority/proof and the three retained native MaybeUninit observations. Keep LIB-122/123 imported consumers open; build general struct/enum/union metadata with fresh consumers. Root remains alone in guarded warm btrfs scratch. |
 | `const_call_review`, stopped at user request | Confusables/MustNotSuspend source handoff complete and integrated | No queued job, build or source edit. Root owns continuation. |
 | `lint_expectations`, stopped at user request | SourceFrom/v9 component69 and native26 complete; read-only merge review integrated | No queued job, build or source edit. Root owns continuation. |
 | Root, retained formatting/panic lane | LIB-029/021/034/055/057/073/077, PA25–28/31 | Finite Debug array/native consumer and exact borrowed-call repair are qualified. Full original Count/Formatter/write/runtime parity, other derive families, metadata and original crate consumers remain required when an actual source demand reaches them. |

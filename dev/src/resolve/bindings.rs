@@ -302,6 +302,12 @@ impl super::package::Package {
             "coverage client identity changed",
         )
     }
+    pub(crate) fn requested_transparent_unions(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::TransparentUnions,
+            "transparent-union client identity changed",
+        )
+    }
     pub(crate) fn requested_expression_attributes(&self) -> Result<bool, &'static str> {
         self.requested_expression_feature(
             policy::Feature::ExpressionAttributes,

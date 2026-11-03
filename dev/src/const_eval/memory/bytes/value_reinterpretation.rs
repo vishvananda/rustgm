@@ -29,9 +29,6 @@ impl Machine<'_, '_> {
                 "constant reinterpretation requires equal source and destination sizes".into(),
             );
         }
-        if a.size == 0 {
-            return Err("zero-sized transmute values require a supported validity profile".into());
-        }
         if !self.byte_family(source)? || !self.byte_family(destination)? {
             return Err(
                 "source transmute requires supported source and destination byte families".into(),

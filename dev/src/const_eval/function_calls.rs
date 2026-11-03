@@ -68,6 +68,7 @@ impl Machine<'_, '_> {
             }
         }
         if matches!(form, Form::Direct) {
+            self.source_panic_call(body, frame, target)?;
             match self.source_intrinsic_call(body, frame, target)? {
                 super::executed_calls::Answer::Ready(value) => return Ok(Outcome::Constant(value)),
                 super::executed_calls::Answer::Pending => return Ok(Outcome::Pending),

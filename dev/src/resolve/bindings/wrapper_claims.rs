@@ -1,4 +1,4 @@
-//! Wrapper roles retain actual struct ownership and the pinned generic arity.
+//! Wrapper roles retain their actual nominal kind and pinned generic requirements.
 use super::{Declaration, reservations::error};
 use crate::{
     resolve::package::{Error, Package},
@@ -10,7 +10,10 @@ pub(super) fn validate(
     declaration: Declaration,
     role: LangItem,
 ) -> Result<(), Error> {
-    if !matches!(role, LangItem::ManuallyDrop | LangItem::MaybeDangling) {
+    if !matches!(
+        role,
+        LangItem::ManuallyDrop | LangItem::MaybeDangling | LangItem::MaybeUninit
+    ) {
         return Ok(());
     }
     let unit = package.unit(declaration.origin.file);
@@ -22,13 +25,18 @@ pub(super) fn validate(
         ));
     };
     let item = unit.configured.ast.items[index as usize];
-    if !matches!(item.kind, ItemKind::Struct { .. })
-        || unit.configured.ast.list(item.generics).len() != 1
-    {
+    let valid = if role == LangItem::MaybeUninit {
+        // GenericRequirement::None imposes no arity, field or representation rule.
+        matches!(item.kind, ItemKind::Union { .. })
+    } else {
+        matches!(item.kind, ItemKind::Struct { .. })
+            && unit.configured.ast.list(item.generics).len() == 1
+    };
+    if !valid {
         return Err(error(
             package,
             declaration.origin,
-            "source wrapper role requires a structure with exactly one generic parameter",
+            "source wrapper role differs from its required nominal kind or generic arity",
         ));
     }
     Ok(())

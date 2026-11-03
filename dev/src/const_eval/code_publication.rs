@@ -26,6 +26,21 @@ impl Prepared {
     pub(crate) fn plain(body: &Body, budget: usize) -> Result<Self, &'static str> {
         Self::snapshot(body, HashMap::default(), budget)
     }
+    pub(crate) fn from_proved(
+        types: &mut crate::types::Store,
+        body: &Body,
+        targets: HashMap<Instance, Instance>,
+        storage: Option<Box<crate::types::substitute::Bound>>,
+        budget: usize,
+        work: &mut usize,
+    ) -> Result<Self, &'static str> {
+        let mut prepared = Self::snapshot(body, targets, budget)?;
+        if let Some(mut fold) = storage {
+            prepared.code.restore_storage(types, &mut fold, work)?;
+        }
+        // Substitution changes canonical IDs, never the snapshot's allocation shape.
+        Ok(prepared)
+    }
     pub(crate) fn snapshot(
         body: &Body,
         targets: HashMap<Instance, Instance>,

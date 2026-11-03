@@ -276,3 +276,44 @@ mod native;
 
 #[path = "provider_layout/needs_drop.rs"]
 mod needs_drop;
+
+#[test]
+fn inhabited_assertions_return_unit_and_reject_only_uninhabited_types() -> Result {
+    for tail in [
+        "#[rustc_intrinsic]const fn assert_inhabited<T>();const V:()=assert_inhabited::<u8>();",
+        "#[rustc_intrinsic]const fn assert_inhabited<T>();const V:()=assert_inhabited::<()>();",
+        "#[rustc_intrinsic]const fn assert_inhabited<T>();enum Void{}const V:()=assert_inhabited::<[Void;0]>();",
+        "#[rustc_intrinsic]const fn assert_inhabited<T>();union U{empty:(),value:u8}const V:()=assert_inhabited::<U>();",
+    ] {
+        inspect(tail).map_err(|e| format!("{tail}: {e}"))?;
+    }
+    for ty in ["Void", "[Void;1]", "(u8,Void)"] {
+        let tail = format!(
+            "#[rustc_intrinsic]const fn assert_inhabited<T>();enum Void{{}}const V:()=assert_inhabited::<{ty}>();"
+        );
+        let error = inspect(&tail)
+            .err()
+            .ok_or("uninhabited type accepted")?
+            .to_string();
+        assert!(
+            error.contains("attempted to instantiate an uninhabited type"),
+            "{error}"
+        );
+    }
+    Ok(())
+}
+#[test]
+fn inhabited_assertion_declarations_preserve_signature_and_per_call_const_authority() {
+    for tail in [
+        "#[rustc_intrinsic]const fn assert_inhabited<T>()->usize;",
+        "#[rustc_intrinsic]const fn assert_inhabited<T>(value:T);",
+        "#[rustc_intrinsic]const fn assert_inhabited<T:?Sized>();",
+        "#[rustc_intrinsic]const unsafe fn assert_inhabited<T>();",
+        "#[rustc_intrinsic]const fn assert_inhabited<T,U>();",
+        "#[rustc_intrinsic]fn assert_inhabited<T>();const V:()=assert_inhabited::<u8>();",
+        "#[rustc_intrinsic]const fn assert_inhabited<T>();const P:fn()=assert_inhabited::<u8>;",
+        "#[rustc_intrinsic]const fn assert_inhabited<T>();const W:()=assert_inhabited::<u8>();trait Paid{}const fn require<T:Paid>(){}const fn unpaid<T>(){require::<T>();assert_inhabited::<u8>();}",
+    ] {
+        assert!(inspect(tail).is_err(), "{tail}");
+    }
+}

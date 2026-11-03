@@ -10,6 +10,8 @@ use crate::{
     types::instance::Instance,
 };
 use std::ops::Index;
+#[path = "proven_storage.rs"]
+mod proven_storage;
 #[path = "code_publication.rs"]
 mod publication;
 pub(crate) use publication::{Prepared, Registration};

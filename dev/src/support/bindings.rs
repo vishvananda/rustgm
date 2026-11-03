@@ -97,9 +97,10 @@ pub enum LangItem {
     ManuallyDrop,
     MaybeDangling,
     BikeshedGuaranteedNoDrop,
+    MaybeUninit,
 }
 impl LangItem {
-    pub const ALL: [Self; 81] = [
+    pub const ALL: [Self; 82] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -181,6 +182,7 @@ impl LangItem {
         Self::ManuallyDrop,
         Self::MaybeDangling,
         Self::BikeshedGuaranteedNoDrop,
+        Self::MaybeUninit,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -266,6 +268,7 @@ impl LangItem {
             Self::ManuallyDrop => 78,
             Self::MaybeDangling => 79,
             Self::BikeshedGuaranteedNoDrop => 80,
+            Self::MaybeUninit => 81,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -351,6 +354,7 @@ impl LangItem {
             "manually_drop" => Some(Self::ManuallyDrop),
             "maybe_dangling" => Some(Self::MaybeDangling),
             "bikeshed_guaranteed_no_drop" => Some(Self::BikeshedGuaranteedNoDrop),
+            "maybe_uninit" => Some(Self::MaybeUninit),
             "offset_of" => Some(Self::OffsetOf),
             _ => None,
         }
@@ -362,6 +366,7 @@ impl LangItem {
 pub enum LayoutIntrinsic {
     SizeOf,
     AlignOf,
+    AssertInhabited,
 }
 impl LayoutIntrinsic {
     /// Called once for an attributed declaration, never for an ordinary use.
@@ -370,6 +375,7 @@ impl LayoutIntrinsic {
         match name {
             "size_of" => Some(Self::SizeOf),
             "align_of" => Some(Self::AlignOf),
+            "assert_inhabited" => Some(Self::AssertInhabited),
             _ => None,
         }
     }

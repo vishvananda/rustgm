@@ -6,7 +6,7 @@ use super::{
 use crate::{
     body::ir::{Action, Rvalue, ValueId},
     sema::{compiler_items::Selection, model::Declarations},
-    types::{Kind, Primitive, instance::Instance},
+    types::{Kind, instance::Instance},
 };
 
 /// A per-call witness. No caller permission is retained in the layout result cache.
@@ -61,10 +61,7 @@ pub(super) fn validate(
         frame,
         position,
         target,
-        (
-            selection.definition,
-            crate::types::TypeId::primitive(Primitive::Usize),
-        ),
+        (selection.definition, selection.result_type()),
     )?;
     Ok(Some(Call {
         instance: target,
@@ -171,14 +168,22 @@ pub(super) fn checked_call_arguments_with_signature(
     else {
         return Err("source intrinsic target lost its item identity");
     };
-    if !body.const_context
-        || !facts.is_const_function(contract.0)
-        || !matches_signature(signature, selected_signature)
-        || value.ty != contract.1
-        || body
-            .values
-            .get(callee.0 as usize)
-            .is_none_or(|v| v.ty != target.ty())
+    if !body.const_context || !facts.is_const_function(contract.0) {
+        return Err("source intrinsic call lacks its actual const caller/target");
+    }
+    if !matches_signature(signature, selected_signature) {
+        return Err("source intrinsic call signature differs from its checked const contract");
+    }
+    if value.ty != contract.1 {
+        return Err("source intrinsic call result type differs from its checked const contract");
+    }
+    let callee_type = body
+        .values
+        .get(callee.0 as usize)
+        .ok_or("source intrinsic call lost its actual callee")?
+        .ty;
+    let original = Instance::new(&facts.types, callee_type)?;
+    if body.callable_target(original) != target
         || Machine::value(frame, callee)
             .map_err(|_| "source intrinsic call has no evaluated callee")?
             .as_function()

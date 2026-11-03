@@ -436,6 +436,12 @@ impl Store {
             .get(id.0 as usize)
             .map(|p| p.has(Property::Callables))
     }
+    /// Context-bearing item identities remain distinct from physical storage types.
+    pub(crate) fn contains_function_items(&self, id: TypeId) -> Option<bool> {
+        self.properties
+            .get(id.0 as usize)
+            .map(|p| p.has(Property::FunctionItems))
+    }
     /// Function-pointer occurrences exclude an item's own callable signature.
     /// Actual type arguments still contribute their ordinary child summaries.
     pub(crate) fn contains_anonymous_callables(&self, id: TypeId) -> Option<bool> {
@@ -688,6 +694,7 @@ impl Store {
                 result.set(Property::AnonymousCallables, false);
                 self.argument_properties(arguments, &mut result)?;
                 result.set(Property::LateCallables, false);
+                result.set(Property::FunctionItems, true);
             }
             Kind::Reference { region, .. } => {
                 result.region(region);

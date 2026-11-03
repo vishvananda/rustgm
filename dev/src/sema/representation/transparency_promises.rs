@@ -15,6 +15,31 @@ pub(super) struct Policies {
     pub indirect: bool,
     pub lane_limit: Option<u64>,
 }
+/// The pinned semantic gate requires the crate feature, including inside macros.
+fn validate_union_feature(
+    report: &Report,
+    key: NodeKey,
+    span: crate::syntax::token_tree::Span,
+) -> Result<(), Error> {
+    let unit = report.package.unit(key.file);
+    if !matches!(unit.configured.ast.node(key.node).kind,
+        Kind::Item(item) if matches!(unit.configured.ast.items[item as usize].kind,
+            ItemKind::Union { .. }))
+    {
+        return Ok(());
+    }
+    let error = |message| Error::at(key.file, span.start, message);
+    if !report
+        .package
+        .requested_transparent_unions()
+        .map_err(error)?
+    {
+        return Err(error(
+            "transparent union representation requires transparent_unions",
+        ));
+    }
+    Ok(())
+}
 pub(super) fn validate(
     report: &Report,
     facts: &mut crate::sema::model::Declarations,
@@ -24,6 +49,9 @@ pub(super) fn validate(
     allowances: &mut MacroAllowanceSession<'_>,
 ) -> Result<Policies, Error> {
     let unit = report.package.unit(key.file);
+    if representation.is_some_and(|repr| repr.representation == Representation::Transparent) {
+        validate_union_feature(report, key, unit.configured.ast.node(key.node).span)?;
+    }
     let mut seen = false;
     let mut policies = Policies::default();
     for (attribute, forest) in

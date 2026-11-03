@@ -75,7 +75,7 @@ impl<'a> Reader<'a> {
     }
 }
 impl Evaluator<'_> {
-    fn prepare_union(&mut self, ty: TypeId, limit: usize) -> Result<usize, Failure> {
+    pub(super) fn prepare_union(&mut self, ty: TypeId, limit: usize) -> Result<usize, Failure> {
         if self
             .facts()
             .constant_images

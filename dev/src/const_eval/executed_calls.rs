@@ -158,9 +158,26 @@ impl Machine<'_, '_> {
         let value = if let Some(call) =
             super::reached_layout::validate(self.evaluator.facts(), body, frame, position, target)?
         {
-            self.bodies
-                .layout_result(call.instance())
-                .map(|bits| Scalar::Integer(u128::from(bits)))
+            if call.selection().kind == crate::support::bindings::LayoutIntrinsic::AssertInhabited {
+                self.bodies.validate_entry(frame.body)?;
+                match self.bodies.layout_result(call.instance()) {
+                    Some(0) => {
+                        return Err(Failure::Fault(
+                            "attempted to instantiate an uninhabited type",
+                        ));
+                    }
+                    Some(1) => {
+                        self.work.calls += 1;
+                        return Ok(Answer::Ready(self.evaluator.fields(&[], None)?));
+                    }
+                    Some(_) => return Err("invalid source inhabited property result".into()),
+                    None => None,
+                }
+            } else {
+                self.bodies
+                    .layout_result(call.instance())
+                    .map(|bits| Scalar::Integer(u128::from(bits)))
+            }
         } else if let Some(call) =
             super::reached_drop::validate(self.evaluator.facts(), body, frame, position, target)?
         {

@@ -5364,3 +5364,26 @@ membership proofs only within their valid caller. The
 [NoDrop checkpoint](docs/pa31-no-drop-checkpoint.md) records independent source,
 native and depth/declaration work controls, unchanged four-byte type properties,
 and calibrated immutable A/B observations without overstating noisy wall time.
+
+
+Executable storage must consume the caller's actual completed static solution
+before Code publication. Reuse the same cached substitution that selects its
+callable targets; keep raw source item contexts and original Body/Contract facts
+intact. Opened Call roots already belong to the body, so their empty function
+record adds no new binder scope. Finalize existing reference-selector descriptors
+from that exact Code's argument tuple/result while the proved producer owns both;
+later shape matches cannot authorize a new source relation. Preserve current
+Code/owner/operand validation and strict image/backing type identity. Ordinary
+bodies with no static replacements do not scan their storage graph or allocate
+a target map. Share canonical dependency bits and one fold across roots, charge
+attempted work and avoid a new parameter vector for an unchanged Call.
+
+An ordinary union is an opaque byte-family leaf only after its real layout is
+complete. Capability queries do not read inactive alternatives; typed construction
+and selected-field reads still validate their actual values, masks and pointer
+provenance. No language role or byte capability grants Copy, initializedness,
+unsafe permission or executable methods. Source MaybeUninit uses ordinary source
+method bodies and reached intrinsic contracts; native panic and imported nominal
+closure remain required. The
+[constant checkpoint](docs/pa31-maybe-uninit-const-checkpoint.md) records source,
+owner, bounded-work and immutable A/B evidence and the new original-core frontier.
