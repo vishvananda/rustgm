@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "state": "qualified-development-checkpoint",
+  "whole_assignments": "planned; no original library artifact",
+  "source_contracts": {
+    "pa31/tests/spec/const-fn-allowances/contract.json": "807ed6487c70ba88370dde8ce1c54ea3df670c6285f333d2af57e92240a71e15",
+    "pa31/tests/spec/const-fn-allowances/intrinsic-contract.json": "65e95eed690f91cb617e8c596b13257afac99cdc808812fae723d864a6b16e65",
+    "pa31/tests/spec/const-fn-allowances/transport-contract-v4.json": "024ce2178ae43aab46165b86cbb62df4a1d97195b4d3d6193c2821560ca1c237"
+  },
+  "independent_receipts": {
+    "reference-v5": "110d8a77a4fc64bf6650284b58cbfb72c72f02e11793ecb978b2cbe138430d35",
+    "intrinsic-reference-v1": "56a42801937fcb2c6d79421e11343b6ebd6c72034a6880db69c62fed1bb532e1",
+    "transport-reference-v3": "8d699906560592c6b90017a89bd1c02ff43c23e2fbd8ab5d1df859cc2f0e1e8b"
+  },
+  "independent_source_outcomes": 35,
+  "additional_provider_consumer_outcomes": 4,
+  "private": {
+    "receipt": "1793664640355061588",
+    "sha256": "eec33dd9dd33e0b293f5765aaa62c14a93f8228dcd63a1ec17b6181a87e2fdc8",
+    "tests": 12,
+    "seconds": 120.58
+  },
+  "production": {
+    "receipt": "1793664812117588439",
+    "sha256": "f9a6ae6a518cdf59504f5ead38f74a7c73015905bf2c46539b9ffae1be07e7b8",
+    "tests": 48,
+    "pa8": 126,
+    "seconds": 157.18
+  },
+  "joined": {
+    "directory": "obj/parallel/const-fn-allowances-v1/joined-v2",
+    "sha256": "4973e505944cc70483c26001f48984443b3ec728fb284a1b4c344f20e95c3539",
+    "seconds": 34.81145873101195,
+    "cli_sha256": "0cee4b63c2bc8f0809cdbbca67f891f413091819d90a7ce5bf1d7c9daa158be9",
+    "source_cli_outcomes": 70,
+    "native_stdout": "7 7\n",
+    "provider_metadata_sha256": "15a3c1c1e0ca4dac45ead77274ef033275d5345874bf1037df7f7dea82db4c68",
+    "cli_provider_bytes_identical": true,
+    "native_consumer": "entry-free maintainer consumer; CLI executable separately compiles and supplies main"
+  },
+  "original_core": {
+    "infrastructure_failure": false,
+    "classification": "observed original-core blocker",
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "0cee4b63c2bc8f0809cdbbca67f891f413091819d90a7ce5bf1d7c9daa158be9",
+    "expected_cli_source": "explicit caller input",
+    "status": 1,
+    "first_error": "ERROR: file 56: 5701: unsupported source language item",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 16.586262247001287,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "c56222810cc17a64012c35962f8a5fb54bd72bb60a94824a1f4e478d3e2d9a38",
+      "whole-core.openat": "7962559694b7eef3dcd2e9575befe6247c5dfac9f0189883d425d1e89880efaa",
+      "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+    }
+  },
+  "original_core_receipt_sha256": "3bc98de6e1624496f46a1297074ba6015a1aa41c79c773c17fe82a8fdb8c9672",
+  "scaling": {
+    "widths": [
+      8,
+      32,
+      128
+    ],
+    "charged_work": [
+      2915,
+      10835,
+      42515
+    ],
+    "retained_grant_bytes": [
+      2552,
+      10136,
+      40472
+    ],
+    "ordinary_inventory": null,
+    "inventory_size": 112,
+    "const_policies_size": 56,
+    "body_size": 456
+  },
+  "ci": "full qualification pending new main integration; predecessor 87b71ad83 full run41540674195 passed",
+  "retained_failures": [
+    "independent fixture corrections before renewed generation; original requirements unchanged",
+    "unrelated provider constant/Clone/Copy export profile boundary",
+    "wrong Provided helper rejected ordinary v9",
+    "premature full-header queries traced, declaration ports now used",
+    "CLI executable and C observer both defined main; entry-free native consumer uses byte-identical metadata"
+  ]
+}

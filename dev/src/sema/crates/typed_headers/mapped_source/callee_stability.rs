@@ -26,7 +26,14 @@ impl Original<'_> {
                     "foreign source const body policy requires its complete defining origin",
                 );
             }
-            if !safe(rows, application.declaration.declaration, steps)? {
+            if !safe(rows, application.declaration.declaration, steps)?
+                && !exempt(
+                    rows,
+                    self.raw().declaration,
+                    application.declaration.declaration,
+                    steps,
+                )?
+            {
                 return Err(
                     "source const-stable body requires its actual const-safe callee policy or wider allowance transport",
                 );
@@ -47,6 +54,20 @@ fn safe(
         .filter(|row| row.declaration == declaration)
         .ok_or("const body policy lost its canonical declaration coverage")?;
     let Some(reference) = row.constant else {
+        let Some(contracts) = &rows.const_bodies else {
+            return Ok(false);
+        };
+        let mut left = 0;
+        let mut right = contracts.implicit.len();
+        while left < right {
+            charge(steps)?;
+            let middle = left + (right - left) / 2;
+            match contracts.implicit[middle].0.cmp(&declaration.0) {
+                std::cmp::Ordering::Equal => return Ok(true),
+                std::cmp::Ordering::Less => left = middle + 1,
+                std::cmp::Ordering::Greater => right = middle,
+            }
+        }
         return Ok(false);
     };
     charge(steps)?;
@@ -63,4 +84,37 @@ fn safe(
         };
     }
     Ok(matches!(policy.level, s::AvailabilityLevel::Stable(_)) || row.regular == row.constant)
+}
+fn exempt(
+    rows: &s::AvailabilityRows,
+    owner: DeclarationRef,
+    target: DeclarationRef,
+    steps: &mut usize,
+) -> Result<bool, &'static str> {
+    charge(steps)?;
+    let Some(contracts) = &rows.const_bodies else {
+        return Ok(false);
+    };
+    let policy = rows
+        .declarations
+        .get(target.0 as usize)
+        .and_then(|row| row.constant)
+        .and_then(|reference| rows.policies.get(reference.0 as usize));
+    let Some(policy) = policy.filter(|policy| policy.kind == s::AvailabilityKind::Const) else {
+        return Ok(false);
+    };
+    let mut left = 0;
+    let mut right = contracts.grants.len();
+    while left < right {
+        let middle = left + (right - left) / 2;
+        let grant = &contracts.grants[middle];
+        *steps = steps.saturating_add(grant.feature.len().saturating_add(policy.feature.len()));
+        charge(steps)?;
+        match (grant.owner.0, grant.feature.as_str()).cmp(&(owner.0, policy.feature.as_str())) {
+            std::cmp::Ordering::Equal => return Ok(true),
+            std::cmp::Ordering::Less => left = middle + 1,
+            std::cmp::Ordering::Greater => right = middle,
+        }
+    }
+    Ok(false)
 }

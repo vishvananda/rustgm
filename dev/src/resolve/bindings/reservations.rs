@@ -115,6 +115,7 @@ pub(in crate::resolve) fn finish(
     let mut library = None;
     let mut extra = super::diagnostic_extras::Draft::with_values(values);
     let claims = claims(package, facts, &mut library, &mut extra)?;
+    crate::resolve::stability::fn_allowances::prepare_library(package, &mut library)?;
     let mut inventory = crate::resolve::stability::complete(package, facts, library)?;
     let mut reserved = reserve_all(package, facts, &claims)?;
     let column = extra
@@ -536,6 +537,19 @@ fn owner_claims(
             attribute,
             forest,
             &mut compatibility,
+        )? {
+            continue;
+        }
+        if crate::resolve::stability::fn_allowances::collect(
+            package,
+            library,
+            NodeKey {
+                file,
+                node: owner.node,
+            },
+            index,
+            attribute,
+            forest,
         )? {
             continue;
         }

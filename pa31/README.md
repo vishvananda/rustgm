@@ -413,3 +413,10 @@ retains outer wrappers when inner attributes introduce another owner. The full
 original core clears that declaration and next reaches
 rustc_allow_const_fn_unstable(const_eval_select) in panic.rs. Real const feature
 allowances and imported stability/provenance remain required; PA31 stays planned.
+
+The [const-function allowance checkpoint](../docs/pa31-const-fn-allowances-checkpoint.md)
+now qualifies that exact lexical contract, including intrinsic feature opponents,
+genuine versioned metadata, a fresh imported const consumer and native `7 7`.
+Declaration-only queries preserve body-demand boundaries. The unchanged original
+core clears the attribute and reaches the actual ManuallyDrop language item;
+source wrapper semantics and all original library artifacts remain required.

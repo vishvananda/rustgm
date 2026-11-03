@@ -27,7 +27,8 @@ pub use attributes::*;
 pub(crate) use availability::{AvailabilityAncestry, AvailabilityColumns};
 pub use availability::{
     AvailabilityKind, AvailabilityLevel, AvailabilityOrigin, AvailabilityPolicy, AvailabilityRef,
-    AvailabilityRows, AvailabilitySince, BindingAvailability, DeclarationAvailability,
+    AvailabilityRows, AvailabilitySince, BindingAvailability, ConstBodyContracts, ConstBodyGrant,
+    DeclarationAvailability,
 };
 pub use bodies::*;
 pub(crate) use descriptor::canonical_order;

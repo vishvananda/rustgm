@@ -4,6 +4,7 @@ pub(in crate::resolve) mod availability_imports;
 mod compatibility_notes;
 mod constness;
 mod exported_scopes;
+pub(crate) mod fn_allowances;
 mod implications;
 mod inventory;
 mod owners;
@@ -115,6 +116,13 @@ impl Library {
                 inventory.consts.as_deref().map_or(0, |consts| {
                     size_of::<constness::ConstPolicies>()
                         .saturating_add(vector(&consts.declarations))
+                        .saturating_add(vector(&consts.implicit))
+                        .saturating_add(
+                            consts
+                                .grants
+                                .as_deref()
+                                .map_or(0, fn_allowances::Grants::storage),
+                        )
                 }),
             ]),
         )?;
@@ -248,6 +256,7 @@ pub(super) struct Draft {
     import_attributes: HashMap<NodeKey, PolicyId>,
     const_attributes: HashMap<NodeKey, PolicyId>,
     function_markers: Vec<(NodeKey, FunctionMarker)>,
+    fn_allowances: Option<Box<fn_allowances::Pending>>,
     steps: usize,
     bytes: usize,
 }

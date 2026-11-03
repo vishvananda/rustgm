@@ -4,6 +4,9 @@ use crate::support::{
     crates::{MAX_BYTES, MAX_COMPONENTS, generics::Work, owner_catalog::DeclarationRef},
     retained,
 };
+#[path = "availability_columns/exemption_columns.rs"]
+mod exemption_columns;
+pub use exemption_columns::{ConstBodyContracts, ConstBodyGrant};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum AvailabilityKind {
@@ -62,6 +65,7 @@ pub struct AvailabilityRows {
     pub policies: Vec<AvailabilityPolicy>,
     pub declarations: Vec<DeclarationAvailability>,
     pub bindings: Vec<BindingAvailability>,
+    pub const_bodies: Option<Box<ConstBodyContracts>>,
 }
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) struct AvailabilityColumns {
@@ -130,6 +134,12 @@ impl AvailabilityRows {
                 return Err("availability columns exceed retained storage budget");
             }
         }
+        if let Some(contracts) = &self.const_bodies {
+            bytes = bytes.saturating_add(contracts.storage_bytes(work)?);
+        }
+        if bytes > MAX_BYTES {
+            return Err("availability const contracts exceed storage budget");
+        }
         Ok(bytes)
     }
     pub(crate) fn validate(
@@ -142,6 +152,9 @@ impl AvailabilityRows {
         profile: super::Profile,
     ) -> Result<AvailabilityColumns, &'static str> {
         let bytes = self.storage_bytes(work)?;
+        if let Some(contracts) = &self.const_bodies {
+            contracts.validate(columns, headers, modules, &self, work)?;
+        }
         if self.declarations.len() != columns.declarations.len()
             || self.bindings.len() != modules.namespace.bindings.len()
         {

@@ -111,6 +111,16 @@ Full predecessor41529659240 failed two stale Pending80 assertions; both repaired
 96-byte guards pass the focused gate, shared Frame1312 unchanged. Root remains
 alone; all worker/CPU/disk and five-minute development policies remain in force.
 
+Root's [const allowance checkpoint](pa31-const-fn-allowances-checkpoint.md)
+now qualifies LIB-121 with35 independent source outcomes, private12/production48,
+PA8 126/126,70CLI, real provider/fresh const consumer and native7 7. The new CLI
+0cee4b63 reaches LIB-122, the actual ManuallyDrop language item in original
+mem/manually_drop.rs154. Its16.59s observation preserves all722 source hashes,
+configuration bindings, target/args/cap and finite limits. Source wrapper roles,
+layout/validity/drop/liveness and imported authority are the next direct work.
+Root remains the sole worker; full assignments and original artifacts stay open.
+
+
 Public788889aac contains the qualified Comptime/v8 checkpoint; its full
 CI40976018856 is terminal failed on two later regressions, repaired as below.
 Private201 and production35, full v7/v8 CLI/native,

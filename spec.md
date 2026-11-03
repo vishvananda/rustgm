@@ -146,6 +146,21 @@ Use the existing paid macro session and authenticate the retained attribute,
 configured owner and source image before publishing the declaration. Do not
 change general token provenance or grant a captured name a new permission.
 
+Const-function feature exemptions belong to exact checked bodies. Parse their
+identifier lists once from the configured attribute, validate the real const
+target and attribute-envelope authority, and retain sparse sorted function and
+feature rows in the cold library inventory. They do not become crate feature
+requests, intrinsic gates, constness or unsafe permission. Unmarked staged const
+bodies retain their own recursive stability obligation; nested bodies do not
+inherit exemptions. Transport actual implicit-body proof and lexical grants
+separately from API policy in versioned availability data, and recheck the
+defining body's actual callees after decoding. Older absence is not authority.
+Declaration-only policy and execution-admission queries use authenticated
+declaration headers; construct defining environments at actual body demand.
+Keep the full original/instance proofs before executable Code publication.
+The [const allowance checkpoint](docs/pa31-const-fn-allowances-checkpoint.md)
+records source, intrinsic, imported const and independent native controls.
+
 Local legacy const-generic indices belong to the actual free function. Complete
 their contract only when its owned const formals and typed signature are
 published; preserve list order, repeated indices and nested function-pointer

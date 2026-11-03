@@ -8,6 +8,13 @@ Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The
 
 Const functions, statics, promotions and symbolic allocation provenance.
 
+The [source allowance checkpoint](../docs/pa31-const-fn-allowances-checkpoint.md)
+implements exact rustc_allow_const_fn_unstable body effects, keeping recursive
+const API checking separate from feature requests, constness and unsafe
+permission. Genuine imported const evaluation consumes transported body policy
+and its ordinary defining-environment producer. This finite component does not
+complete the remaining constant machine or whole assignment requirements.
+
 Const closures extend PA24's actual anonymous identities and capture/call-trait
 machinery. Enforce const creation contexts separately from runtime invocation:
 the pinned profile accepts a const-fn-produced closure invoked at runtime, and

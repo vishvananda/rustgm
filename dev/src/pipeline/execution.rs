@@ -708,7 +708,7 @@ impl Engine {
         definition: DefId,
     ) -> Result<bool, Error> {
         let Some(header) = facts
-            .function_header(definition)
+            .declaration_header(definition)
             .map_err(|e| report.body_optional_error(None, e))?
         else {
             return Ok(false);
@@ -719,6 +719,8 @@ impl Engine {
         if !facts.is_const_function(definition) {
             return Err(report.body_optional_error(None, "imported function is not declared const"));
         }
+        // Identifying an imported declaration needs no defining environment.
+        // Its actual body producer constructs and proves that environment here.
         self.ensure_imported_originals(report, facts)?;
         let originals = self.imported.as_ref().map(Rc::clone).ok_or_else(|| {
             report.body_optional_error(None, "imported function lacks its proved original set")

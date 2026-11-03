@@ -5,6 +5,8 @@ use crate::{resolve::model::DefId, syntax::item::ItemKind};
 /// Only the existing cold inventory owns this optional direct declaration axis.
 pub(super) struct ConstPolicies {
     pub declarations: Vec<Option<PolicyId>>,
+    pub implicit: Vec<DefId>,
+    pub grants: Option<Box<super::fn_allowances::Grants>>,
 }
 #[derive(Clone, Copy, Default)]
 pub(super) enum Role {
@@ -89,7 +91,11 @@ impl Inventory {
     }
     fn const_safe(&self, definition: DefId) -> bool {
         let Some(policy) = self.const_declaration(definition) else {
-            return false;
+            return self.consts.as_deref().is_some_and(|rows| {
+                rows.implicit
+                    .binary_search_by_key(&definition.0, |id| id.0)
+                    .is_ok()
+            });
         };
         matches!(policy.level, Level::Stable(_))
             || self.consts.as_deref().is_some_and(|policies| {

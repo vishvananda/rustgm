@@ -3,6 +3,7 @@ mod allocation_columns;
 mod availability_wire;
 mod cfg_columns;
 mod contract_columns;
+mod exemption_wire;
 #[path = "ordinary_columns/annotation_rows.rs"]
 mod header_facts;
 mod invoked_rows;
@@ -82,7 +83,7 @@ pub(super) fn encode_module_availability(
     if rows.descriptor().profile().definitions() {
         verbatim_exports::encode(out, &rows.exact_callables)?;
     }
-    Ok(())
+    exemption_wire::encode(out, rows.availability()?.const_bodies.as_deref())
 }
 pub(super) struct AvailabilityPacket {
     pub rows: s::SourceRows,
@@ -146,10 +147,11 @@ fn decode_availability_profile(
     };
     let attributes = header_facts::decode(&mut read)?;
     let modules = namespace_rows::decode(&mut read)?;
-    let availability = availability_wire::decode(&mut read, profile.module_compatibility())?;
+    let mut availability = availability_wire::decode(&mut read, profile.module_compatibility())?;
     if profile.definitions() {
         rows.exact_callables = verbatim_exports::decode(&mut read)?;
     }
+    availability.const_bodies = exemption_wire::decode(&mut read)?;
     Ok(AvailabilityPacket {
         rows,
         attributes,

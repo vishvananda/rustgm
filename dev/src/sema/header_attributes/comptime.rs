@@ -309,7 +309,7 @@ impl Declarations {
             // Every admitted current wire profile encodes ordinary constness;
             // the producer fences Always before publishing any function row.
             let header = self
-                .function_header(definition)
+                .declaration_header(definition)
                 .map_err(Error::unlocated)?
                 .ok_or_else(|| {
                     Error::unlocated("foreign comptime query requires its actual callable")

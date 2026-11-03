@@ -35,6 +35,7 @@ pub(super) fn decode(
 ) -> Result<s::AvailabilityRows, &'static str> {
     read.reserve(size_of::<s::AvailabilityRows>())?;
     Ok(s::AvailabilityRows {
+        const_bodies: None,
         policies: read.list(MAX_COMPONENTS, 13, |read| policy_read(read, compatibility))?,
         declarations: read.list(MAX_COMPONENTS, 6, |read| {
             Ok(s::DeclarationAvailability {
@@ -185,7 +186,7 @@ fn since_read(read: &mut Input<'_, '_>) -> Result<s::AvailabilitySince, &'static
         _ => Err("unknown API stability version kind"),
     }
 }
-fn text(read: &mut Input<'_, '_>) -> Result<String, &'static str> {
+pub(super) fn text(read: &mut Input<'_, '_>) -> Result<String, &'static str> {
     let length = read.reader.u32()?;
     if length > s::MAX_REASON_BYTES {
         return Err("API availability text exceeds transport limit");

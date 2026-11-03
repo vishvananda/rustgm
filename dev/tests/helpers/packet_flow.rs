@@ -43,6 +43,32 @@ pub(crate) fn client_analysis(
 )> {
     client_analysis_with(interface, Vec::new(), source)
 }
+pub(crate) fn with_client<R>(
+    interface: crates::Interface,
+    source: &str,
+    alias: &str,
+    inspect: impl FnOnce(
+        &resolve::expansion::Report,
+        &crate::sema::model::Declarations,
+        &crate::lowir::program::Program,
+    ) -> R,
+) -> Result<R> {
+    let (report, _) = client_report_alias(interface, Vec::new(), source, alias)?;
+    let pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = pipeline::analyze_source(&report)?;
+    let program = lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        lower::Roots {
+            entry: None,
+            exports: &[],
+        },
+        prepared,
+    )?;
+    Ok(inspect(&report, &facts, &program))
+}
 pub(crate) fn client_analysis_with(
     interface: crates::Interface,
     extra: Vec<crates::Interface>,
@@ -67,24 +93,15 @@ fn client_report_with(
     extra: Vec<crates::Interface>,
     source: &str,
 ) -> Result<(resolve::expansion::Report, CrateIdentity)> {
-    let provider = interface.identity().clone();
-    let mut aliases = vec![Dependency::new("base".into(), provider.clone())?];
-    for (index, artifact) in extra.iter().enumerate() {
-        aliases.push(Dependency::new(
-            format!("dependency_{index}"),
-            artifact.identity().clone(),
-        )?);
-    }
-    let mut artifacts = vec![interface];
-    artifacts.extend(extra);
-    let dependencies = Arc::new(Dependencies::new(artifacts, aliases)?);
-    let current = CrateIdentity::new("client", "source_transaction")?;
-    let context = resolve::bindings::Context {
-        crate_name: Some("client".into()),
-        current: Some(current.clone()),
-        dependencies: Some(dependencies),
-        mode: Mode::SourceClient { provider },
-    };
+    client_report_alias(interface, extra, source, "base")
+}
+fn client_report_alias(
+    interface: crates::Interface,
+    extra: Vec<crates::Interface>,
+    source: &str,
+    alias: &str,
+) -> Result<(resolve::expansion::Report, CrateIdentity)> {
+    let (context, current) = client_context(interface, extra, alias)?;
     let expanded = resolve::expansion::analyze_with_context(
         resolve::load::InputFile {
             identity: "client.rs".into(),
@@ -114,6 +131,31 @@ fn client_report_with(
         );
     }
     Ok((report, current))
+}
+fn client_context(
+    interface: crates::Interface,
+    extra: Vec<crates::Interface>,
+    alias: &str,
+) -> Result<(resolve::bindings::Context, CrateIdentity)> {
+    let provider = interface.identity().clone();
+    let mut aliases = vec![Dependency::new(alias.into(), provider.clone())?];
+    for (index, artifact) in extra.iter().enumerate() {
+        aliases.push(Dependency::new(
+            format!("dependency_{index}"),
+            artifact.identity().clone(),
+        )?);
+    }
+    let mut artifacts = vec![interface];
+    artifacts.extend(extra);
+    let dependencies = Arc::new(Dependencies::new(artifacts, aliases)?);
+    let current = CrateIdentity::new("client", "source_transaction")?;
+    let context = resolve::bindings::Context {
+        crate_name: Some("client".into()),
+        current: Some(current.clone()),
+        dependencies: Some(dependencies),
+        mode: Mode::SourceClient { provider },
+    };
+    Ok((context, current))
 }
 
 pub(crate) fn client(

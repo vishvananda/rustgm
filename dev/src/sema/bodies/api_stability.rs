@@ -199,7 +199,9 @@ impl Checker<'_> {
                     return Err(self.error(node, "source intrinsic const API requires its checked feature or exact token allowance"));
                 }
             }
+            let exempt = self.const_body_exemption(node, owner, policy, inventory)?;
             if owner.is_some()
+                && !exempt
                 && !marker
                 && policy.is_none_or(|policy| !matches!(policy.level, Level::Stable(_)))
             {
@@ -218,7 +220,14 @@ impl Checker<'_> {
         }
         let inventory = inventory
             .ok_or_else(|| self.error(node, "const API call lost its actual library inventory"))?;
-        if inventory.checks_const_body(target)
+        let exempt = self.const_body_exemption(
+            node,
+            owner,
+            inventory.const_declaration(target),
+            Some(inventory),
+        )?;
+        if exempt
+            || inventory.checks_const_body(target)
             || (inventory.const_declaration(target).is_some()
                 && self.report.package.source_core().is_some()
                 && self.facts.const_panic_markers(self.report, target)?.1)
@@ -230,6 +239,21 @@ impl Checker<'_> {
                 "const-stable body calls a function without const-stable API policy",
             ))
         }
+    }
+    fn const_body_exemption(
+        &mut self,
+        node: NodeId,
+        owner: Option<DefId>,
+        policy: Option<&crate::resolve::stability::Policy>,
+        inventory: Option<&crate::resolve::stability::Inventory>,
+    ) -> Result<bool, Error> {
+        let (Some(owner), Some(policy), Some(inventory)) = (owner, policy, inventory) else {
+            return Ok(false);
+        };
+        let feature = policy.feature_name().map_err(|e| self.error(node, e))?;
+        inventory
+            .const_body_allows(owner, &feature, &mut self.state.steps)
+            .map_err(|e| self.error(node, e))
     }
     // Tuple/variant construction is a language operation, not a function body
     // whose API can be declared const-stable. Ordinary API and field/type checks

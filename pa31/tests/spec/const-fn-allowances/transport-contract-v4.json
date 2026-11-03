@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "purpose": "Required genuine source grant and implicit-body safety transport to an independent const/native consumer; no profile or feature spoofing",
+  "cases": [
+    {
+      "name": "native-provider",
+      "path": "pa31/tests/spec/const-fn-allowances/native-provider.rs",
+      "sha256": "efca78a6cc2c6a8596174b328c8fa8e2bda15f98a5f85a8d0905e04d54da1843",
+      "status": 0
+    },
+    {
+      "name": "consumer",
+      "path": "pa31/tests/spec/const-fn-allowances/consumer.rs",
+      "sha256": "66ce516f4e3d93f09d35cfada32f513f06df6af0ca3f257ae9adc5bb4a5b226a",
+      "status": 0
+    },
+    {
+      "name": "consumer-ungated-target",
+      "path": "pa31/tests/spec/const-fn-allowances/consumer-ungated-target.rs",
+      "sha256": "af41e7fdab2c4386ec1b558b4cfb9b6c4b757f785aa2710bf4b79edb6e847edf",
+      "status": 1
+    },
+    {
+      "name": "consumer-grant-not-request",
+      "path": "pa31/tests/spec/const-fn-allowances/consumer-grant-not-request.rs",
+      "sha256": "18787245396439761c4213f4683e06155da8f04b5b7af064b1570468dfe023c5",
+      "status": 1
+    }
+  ],
+  "native": {
+    "observer": "pa31/tests/spec/const-fn-allowances/native.c",
+    "sha256": "f78ffd15b9d1ef11658c79b1cb042b9751ba0f34d5b8fb1fac8030123f362d13",
+    "stdout": "7 7\n"
+  },
+  "revision": "Before renewed independent generation, remove unrelated provider constant and generic Clone/Copy exports outside the existing metadata contract. Keep the actual private unmarked const body, exact grant and public stable caller. The fresh consumer still must evaluate the imported call and execute both native exports; no required success changes. The fresh consumer uses the existing lazy imported-body continuation, which accepts an executable root: add an empty private main before renewed independent qualification. All const/native witnesses and required outcomes remain."
+}

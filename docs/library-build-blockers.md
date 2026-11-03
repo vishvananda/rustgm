@@ -9,7 +9,7 @@ The review retains storage, primitive lookup/Formatter and target-feature/assemb
 requirements. The execution queue below tracks the current source blockers; no
 original library artifact is established by this reorganization.
 
-Updated 2026-11-02. This is the work queue for compiling the original pinned
+Updated 2026-11-03. This is the work queue for compiling the original pinned
 `core`, `alloc` and `std`, not a count of completed internal checkpoints.
 PA21–PA24 have implemented/release-evidence status; PA1–PA20 retain
 implemented-draft. PA25–PA44 remain planned. No additional assignment or whole
@@ -28,19 +28,20 @@ resource caps and the150GiB reserve are unchanged. No additional worker, tree or
 cache was created.
 
 
-The [diagnostic attribute checkpoint](pa31-diagnostic-values-checkpoint.md) now
-qualifies LIB-120:24 independent programs, private14, production92, PA8 126/126,
-48 expansion CLI controls, a semantic consumer and a maintainer native7 pass.
-The original owner-shape reproduction includes forwarded meta and inner module
-attributes; all affected outer owners replay in the actual module scope.
-CLI912ff4ef clears the legacy integer-module attribute. Its fresh original-core
-attempt reaches LIB-121, rustc_allow_const_fn_unstable(const_eval_select), in
-panic.rs163, file184:6497,15.48s/375 opens/all722 hashes unchanged. Target,
-arguments, capAllow and finite limits are preserved; the manifest explicitly
-rebinds only the corrected driver-view allowlist implementation. Core/alloc/std
-artifacts and complete assignments remain required. Full CI41529659240 on27273013b
-failed two stale Pending80 guards (actual96, Frame1312 unchanged); both repaired
-exact controls pass here. Full successor qualification is still required.
+The [const-function allowance checkpoint](pa31-const-fn-allowances-checkpoint.md)
+qualifies LIB-121:35 independent source outcomes, private12, production48,
+PA8 126/126,70 capped/uncapped CLI checks, genuine provider/fresh const consumer,
+old-reader rejection and native `7 7`. Exact lexical grants and implicit staged
+body proof survive existing availability metadata. Declaration-only policy and
+CTFE admission use checked declaration headers; actual body/environment proofs
+remain required. CLI0cee4b63 clears the original panic.rs attribute and reaches
+LIB-122 at mem/manually_drop.rs154, file56:5701: lang="manually_drop".
+The probe takes16.59s, opens375 files and verifies all722 hashes unchanged, with
+identical configuration bindings, target, arguments, capAllow and finite limits.
+Source ManuallyDrop/MaybeDangling semantics, full panic/intrinsic graphs and all
+original core/alloc/std artifacts remain required. The previous diagnostic-value
+checkpoint's full CI41540674195 on87b71ad83 passed every gate; this checkpoint's
+full CI follows main integration.
 
 FullCI41054298940 exposed twelve private regressions: four real Provided consumer
 failures and eight stale cold From-role size assertions. Sourcefbf4242c7 repairs
@@ -325,7 +326,8 @@ actual native hints and the future authenticated MIR-import obligation.
 | LIB-118 | Local source-provider iteration qualified; transport/families retained | Actual source declarations and loop consumers replace bootstrap reservation | PA26 iteration +PA31 language claims +PA29 transport / source-iteration packet | Root only | [Checkpoint](pa26-source-iteration-checkpoint.md):13 independent Rust outcomes, private23/production6/26CLI, native7 and item/iterator destruction7 8 9 on normal/break, PA19 1193/1193 and harness pass. Real source calls, variants and current body contexts share the paid protocol-plan owner; linear storage64/loop, hot facts unchanged. CLI6abca8a0 clears the original reservation and reaches LIB-119. Authentic imported transport, remaining iteration families and whole-PA release remain required. |
 | LIB-119 | Local contract builder and source callable/capture markers qualified; check execution retained | Real function roles and generic const identity, ordinary Copy/Clone source proof, capture fields and source/native opponents | PA31 declarations +PA25 const +PA24 captures +PA19/20 proof +PA26 calls +PA28 check intrinsics +PA40 contract attributes +PA29 transport / contract-helpers packet | Root only | [Checkpoint](pa31-contract-builders-checkpoint.md):private29/production27,38 independent programs,76CLI outcomes,8 native observers,PA24 482/482 and harness pass. All field proofs use actual source roles/caller scopes, no physical-copy or bootstrap fallback. CLI035e3b48 clears original contracts.rs binding and reaches LIB-120. Real contract_check_requires/ensures rustc_intrinsic execution, contract transformations/imported authority/whole releases remain REQUIRED. |
 | LIB-120 | Qualified source attribute-expression consumer; original boundary cleared | Actual macro worklist/literal pool with all outer owners, module scope and declaration file retained | PA8 expansion +PA31 identity +PA40 forms +PA29 transport /24 independent programs, private14/production92,48CLI, native7 and fresh original core | Root only | CLI912ff4ef clears the full legacy module owner shape and reaches LIB-121. Prior simpler candidate2091a669 still failed the original; the exact inner-attribute reducer and cold module-item queue close that reproduction. Other consumers and genuine library/imported artifacts remain required. |
-| LIB-121 | Current original-core const feature allowance blocker | Implement genuine rustc_allow_const_fn_unstable(const_eval_select) targets, payload, lexical const-call effect and source authority | PA25 const API/effect policy +PA31 source stability +PA40 forms +PA29 imported body authority / original panic.rs do_panic and genuine feature/target/call opponents required | Root only | CLI912ff4ef reaches file184:6497, panic.rs163 SHA5dce27e2,15.48s/375 opens/all722 unchanged. const_assert/const_panic emit the actual const do_panic function. Reuse existing const-call/stability machinery; do not ignore the attribute, enable global permissions or replace the real const_eval_select body. Other extended/default-body/macro stability forms remain required when demanded. |
+| LIB-121 | Qualified source/body-policy/metadata/native component; original attribute cleared | Actual rustc_allow_const_fn_unstable targets, lists, lexical effects and source authority | PA25 const API +PA31 source +PA40 forms +PA29 imported body authority /35 source outcomes, provider/fresh const consumer and native7 7 | Root only | [Checkpoint](pa31-const-fn-allowances-checkpoint.md): private12/production48,70CLI, PA8 126/126, genuine v9 provider/fresh consumer and old-reader rejection. Typed declaration ports preserve the actual defining environment producer. CLI0cee4b63 clears panic.rs163 and reaches LIB-122. Full original panic/const_eval_select graph, other stability forms and all library artifacts remain required. |
+| LIB-122 | Current original-core source wrapper role blocker | Bind and implement genuine source ManuallyDrop and MaybeDangling semantics | PA26 language/nominal hooks +PA12 layout +PA17/27 destruction, validity and liveness +PA25 CTFE +PA29 transport +PA31 source authority / original mem/manually_drop.rs154 | Root only | CLI0cee4b63 reports unsupported source language item at file56:5701, lang="manually_drop". Original file SHAc21100b5,16.59s/375opens/all722 unchanged. Pinned registry also defines maybe_dangling; actual wrapper field is MaybeDangling<T>. Preserve real source identities, transparent layout, validity, destructor/ownership and imported proof; a spelling whitelist or bootstrap wrapper substitution cannot satisfy the source graph. Reuse prior bounded derive/transparency evidence LIB070/071, without claiming full wrapper execution. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |
@@ -497,7 +499,7 @@ concrete; a private Ready state is not an executable result.
 
 | Owner | Issues and owning assignments | Next observable exit |
 | --- | --- | --- |
-| Root, direct compiler owner; sole worker | LIB-121 actual const feature allowance; original core PA32; prior contract intrinsic/runtime/imported closure | CLI912ff4ef clears LIB-120 and reaches rustc_allow_const_fn_unstable(const_eval_select) on macro-generated do_panic in original panic.rs163. Implement real source/feature/target and lexical const-call authority before retrying unchanged core. Library publication/imported metadata, all original artifacts and prior whole-assignment requirements remain open. Root stays alone in the guarded warm btrfs tree. |
+| Root, direct compiler owner; sole worker | LIB-122 actual source ManuallyDrop/MaybeDangling roles; original core PA32; retained runtime/imported closure | CLI0cee4b63 clears LIB-121 and reaches lang="manually_drop" in original mem/manually_drop.rs154. Implement actual role/shape/layout/validity/drop/liveness and source/imported consumers before retrying unchanged core. Existing bootstrap nominal behavior is not source authority. Original panic/intrinsic closure, all artifacts and whole-assignment requirements remain open. Root stays alone in the guarded warm btrfs tree. |
 | `const_call_review`, stopped at user request | Confusables/MustNotSuspend source handoff complete and integrated | No queued job, build or source edit. Root owns continuation. |
 | `lint_expectations`, stopped at user request | SourceFrom/v9 component69 and native26 complete; read-only merge review integrated | No queued job, build or source edit. Root owns continuation. |
 | Root, retained formatting/panic lane | LIB-029/021/034/055/057/073/077, PA25–28/31 | Finite Debug array/native consumer and exact borrowed-call repair are qualified. Full original Count/Formatter/write/runtime parity, other derive families, metadata and original crate consumers remain required when an actual source demand reaches them. |

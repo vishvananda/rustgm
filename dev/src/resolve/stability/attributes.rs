@@ -28,13 +28,11 @@ pub(in crate::resolve) fn collect(
     }
     let extended = matches!(
         name,
-        "rustc_default_body_unstable"
-            | "rustc_allow_const_fn_unstable"
-            | "allow_internal_unstable"
-            | "allow_internal_unsafe"
+        "rustc_default_body_unstable" | "allow_internal_unstable" | "allow_internal_unsafe"
     );
     if unit.include_context.is_some() {
         return Ok(extended
+            || name == "rustc_allow_const_fn_unstable"
             || matches!(
                 name,
                 "stable" | "unstable" | "rustc_const_stable" | "rustc_const_unstable"

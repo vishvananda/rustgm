@@ -92,6 +92,7 @@ impl Stage {
                 .saturating_add(bindings.saturating_mul(size_of::<s::BindingAvailability>())),
         )?;
         let mut rows = s::AvailabilityRows {
+            const_bodies: None,
             policies: Vec::new(),
             declarations: Vec::with_capacity(count),
             bindings: Vec::with_capacity(bindings),
@@ -207,11 +208,59 @@ impl Stage {
             .into_iter()
             .collect::<Option<Vec<_>>>()
             .ok_or("availability declaration census is incomplete")?;
+        let const_bodies = self.const_body_contracts(inventory, &origins.definitions)?;
         Ok(s::AvailabilityRows {
+            const_bodies,
             policies: policies.rows,
             declarations,
             bindings,
         })
+    }
+    fn const_body_contracts(
+        &mut self,
+        inventory: &Inventory,
+        definitions: &[Option<DefId>],
+    ) -> Result<Option<Box<s::ConstBodyContracts>>, &'static str> {
+        if !inventory.has_const_body_contracts() {
+            return Ok(None);
+        }
+        let mut contracts = s::ConstBodyContracts::default();
+        let implicit = inventory.implicit_const_functions();
+        let depth =
+            usize::try_from(usize::BITS - definitions.len().leading_zeros()).unwrap_or(usize::MAX);
+        self.charge(definitions.len().saturating_mul(depth + 1))?;
+        for (index, definition) in definitions.iter().enumerate() {
+            let Some(definition) = definition else {
+                continue;
+            };
+            let owner = DeclarationRef(
+                u32::try_from(index).map_err(|_| "const body declaration overflow")?,
+            );
+            if implicit
+                .binary_search_by_key(&definition.0, |id| id.0)
+                .is_ok()
+            {
+                self.reserve(4 * size_of::<DeclarationRef>())?;
+                contracts.implicit.push(owner);
+            }
+            for feature in inventory
+                .const_body_features(*definition)
+                .into_iter()
+                .flatten()
+            {
+                self.charge(feature.len().saturating_add(1))?;
+                self.reserve(4 * size_of::<s::ConstBodyGrant>() + feature.len())?;
+                contracts.grants.push(s::ConstBodyGrant {
+                    owner,
+                    feature: feature.to_string(),
+                });
+            }
+        }
+        if contracts.implicit.is_empty() && contracts.grants.is_empty() {
+            return Ok(None);
+        }
+        self.reserve(size_of::<s::ConstBodyContracts>())?;
+        Ok(Some(Box::new(contracts)))
     }
     fn availability_declaration(
         &mut self,

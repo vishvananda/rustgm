@@ -259,6 +259,12 @@ impl super::package::Package {
             "const-closure client identity changed",
         )
     }
+    pub(crate) fn requested_rustc_attributes(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::RustcAttributes,
+            "rustc attribute client identity changed",
+        )
+    }
     pub(crate) fn requested_builtin_syntax(&self) -> Result<bool, &'static str> {
         self.requested_expression_feature(
             policy::Feature::BuiltinSyntax,

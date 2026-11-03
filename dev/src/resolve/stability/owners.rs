@@ -53,7 +53,8 @@ pub(super) fn collect(
             let inherited = scopes[parent.0 as usize];
             scopes[index].inherit(draft, inherited);
         }
-        has_const |= scopes[index].constant.is_some();
+        has_const |=
+            scopes[index].constant.is_some() || const_function(scope, &scopes[index], &scopes);
     }
     let mut owners = declaration_rows(package, facts, draft, &scopes, has_const)?;
     import_attributes(package, draft, &mut used)?;
@@ -94,6 +95,7 @@ fn declaration_rows(
     draft.charge(facts.definitions.len(), 0)?;
     let mut declarations = Vec::with_capacity(facts.definitions.len());
     let mut constants = has_const.then(|| Vec::with_capacity(facts.definitions.len()));
+    let mut implicit = Vec::new();
     for (index, definition) in facts.definitions.iter().enumerate() {
         let scope = declaration_scope(package, facts, definition);
         let regular = if definition.kind == DefKind::Module {
@@ -122,14 +124,43 @@ fn declaration_rows(
         };
         declarations.push(regular);
         if let Some(constants) = &mut constants {
-            constants.push(scope.and_then(|id| scopes[id.0 as usize].constant));
+            let policy = scope.and_then(|id| scopes[id.0 as usize].constant);
+            constants.push(policy);
+            if definition.kind == DefKind::Function
+                && policy.is_none()
+                && scope.is_some_and(|id| {
+                    const_function(&facts.scopes[id.0 as usize], &scopes[id.0 as usize], scopes)
+                })
+            {
+                draft.charge(1, 4 * size_of::<crate::resolve::model::DefId>())?;
+                implicit.push(crate::resolve::model::DefId(
+                    u32::try_from(declarations.len() - 1)
+                        .map_err(|_| Error::unlocated("const function identity overflow"))?,
+                ));
+            }
         }
     }
     Ok(Owners {
         declarations,
         imports: Vec::new(),
-        consts: constants.map(|declarations| Box::new(ConstPolicies { declarations })),
+        consts: constants.map(|declarations| {
+            Box::new(ConstPolicies {
+                declarations,
+                implicit,
+                grants: None,
+            })
+        }),
     })
+}
+fn const_function(scope: &crate::resolve::model::Scope, frame: &Frame, scopes: &[Frame]) -> bool {
+    matches!(frame.role, Role::Function(true))
+        || matches!(frame.role, Role::Function(false))
+            && scope.parent.is_some_and(|parent| {
+                matches!(
+                    scopes[parent.0 as usize].role,
+                    Role::Trait(true) | Role::Impl(true)
+                )
+            })
 }
 
 fn declaration_scope(

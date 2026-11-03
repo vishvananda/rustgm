@@ -17,6 +17,13 @@ keeps ordinary parent-header inputs separate from the selected Provided reader,
 preserving actual bounds, source ownership and executable proof. This does not
 release PA29 or widen earlier metadata profiles.
 
+The [const allowance checkpoint](../docs/pa31-const-fn-allowances-checkpoint.md)
+adds an optional versioned availability extension for actual implicit const-body
+proof and exact lexical feature grants. API availability remains separate.
+Genuine provider/codec/fresh-consumer const and native controls pass; old packets
+retain their bytes and cannot invent absent body authority. Broader cross-crate
+body, value, macro and original library transport remain required.
+
 The maintainer implements this responsibility in `dev/src/` and introduces its
 typed interface before generating text views. Consult `spec.md`, the pinned
 Rust Reference, and the existing CPPGM implementation for efficient algorithms.

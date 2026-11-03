@@ -1,0 +1,205 @@
+{
+  "schema": 1,
+  "purpose": "LIB121 real const function allowance syntax, targets, exact lexical feature authority and independent call restrictions",
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/panic.rs": "5dce27e26015feb5cc74f8452fd661a68f65a7d21f5f768ea743051b1beb9101",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_attr_parsing/src/attributes/allow_unstable.rs": "9dec1b3fc396d8b69201df491a2c2b875213a29cc1c271bcfb1d555340c9440b",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_const_eval/src/check_consts/mod.rs": "df243bb5f1a85420de2f4a6045eaa799308731b43ca0fea33c74d0b54fc33e32",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_const_eval/src/check_consts/check.rs": "cab5474f557d7373b42a7d8b57ef3a3e0be205ec518f14e8cd32147ccffea46d"
+  },
+  "cases": [
+    {
+      "name": "allowed",
+      "path": "pa31/tests/spec/const-fn-allowances/allowed.rs",
+      "sha256": "4fe504dd432586b6f0723c0910abf46a6c7d2e4c62d59e18de1e231d28126b91",
+      "status": 0
+    },
+    {
+      "name": "missing",
+      "path": "pa31/tests/spec/const-fn-allowances/missing.rs",
+      "sha256": "05f3f3efe05b5ca9a9307396a9b202b6f70b3cf299fe9f9a1af69e65d19f97cb",
+      "status": 1
+    },
+    {
+      "name": "wrong",
+      "path": "pa31/tests/spec/const-fn-allowances/wrong.rs",
+      "sha256": "111c8a3f712a090c73c568d65ac6ac47ece2c301d7a235a4f18ed18c4478b508",
+      "status": 1
+    },
+    {
+      "name": "requested-without-allow",
+      "path": "pa31/tests/spec/const-fn-allowances/requested-without-allow.rs",
+      "sha256": "9fb56c03ba1e26fbc3d730c29bdf9d521c09be42c54cc81bb48a6acaf375c0fa",
+      "status": 1
+    },
+    {
+      "name": "combined",
+      "path": "pa31/tests/spec/const-fn-allowances/combined.rs",
+      "sha256": "b1f02113e3cf1a9e1f31e9d3d04f2dbed2554f61b34ffe23661ee6d5056f64c9",
+      "status": 0
+    },
+    {
+      "name": "empty",
+      "path": "pa31/tests/spec/const-fn-allowances/empty.rs",
+      "sha256": "4f27f0f1a5a01ebdb5bdfb1ebb43890980c7fa6e8b5ad87296f3002674a18f01",
+      "status": 0
+    },
+    {
+      "name": "unknown",
+      "path": "pa31/tests/spec/const-fn-allowances/unknown.rs",
+      "sha256": "ff45811474809fcc21548c87c547889a582aa7932c874fd46b7c9cfa34a6c5d6",
+      "status": 0
+    },
+    {
+      "name": "no-staged",
+      "path": "pa31/tests/spec/const-fn-allowances/no-staged.rs",
+      "sha256": "11d62f52698c23c231210183f5c1ada1395db680dc8e18c15eeff686427c2778",
+      "status": 0
+    },
+    {
+      "name": "nonconst",
+      "path": "pa31/tests/spec/const-fn-allowances/nonconst.rs",
+      "sha256": "12f7613b3379d3695ca44ec4ba706f6c8a8d81ddf7f2ae84bfbfd1d16ef27b8d",
+      "status": 1
+    },
+    {
+      "name": "struct",
+      "path": "pa31/tests/spec/const-fn-allowances/struct.rs",
+      "sha256": "c78a697327749dd931ef10f61a0f52720c0ae81bbf09d56d99ce1afabb468ca5",
+      "status": 1
+    },
+    {
+      "name": "module",
+      "path": "pa31/tests/spec/const-fn-allowances/module.rs",
+      "sha256": "0ad3f39e9bc62fbd9e697a0a2f230f03f8d9c9c4fd616d3f7a74bde6350d2ec7",
+      "status": 1
+    },
+    {
+      "name": "foreign",
+      "path": "pa31/tests/spec/const-fn-allowances/foreign.rs",
+      "sha256": "91cdae610c826b8a39f8e7daa7a6ed5806142291943f6a9dd3ee818eb20a9a6e",
+      "status": 1
+    },
+    {
+      "name": "missing-feature",
+      "path": "pa31/tests/spec/const-fn-allowances/missing-feature.rs",
+      "sha256": "fabac74e06dcf4e9800ea125d1b7b53b286ed3ca6c9b0e86bbe883405ff88115",
+      "status": 1
+    },
+    {
+      "name": "word",
+      "path": "pa31/tests/spec/const-fn-allowances/word.rs",
+      "sha256": "18a499dd5e211480269e8effdb648a3d30b78e793d0ee74b005fc6b96a44cbb3",
+      "status": 1
+    },
+    {
+      "name": "equals",
+      "path": "pa31/tests/spec/const-fn-allowances/equals.rs",
+      "sha256": "708019a34bc1f3903795510c611951f7d4c50b491eef8555d143fcde4fae46a2",
+      "status": 1
+    },
+    {
+      "name": "nested-list",
+      "path": "pa31/tests/spec/const-fn-allowances/nested-list.rs",
+      "sha256": "258a81f6d0dc288c1fe174d16e09c2dabd5d6da0507b3dc75ce10ee48f2a53c4",
+      "status": 1
+    },
+    {
+      "name": "name-value",
+      "path": "pa31/tests/spec/const-fn-allowances/name-value.rs",
+      "sha256": "a2c89c03a301d02c2c3ff88af9ebdcbbf3ea448ed40c7748ce13f560c8b8f59a",
+      "status": 1
+    },
+    {
+      "name": "string-name",
+      "path": "pa31/tests/spec/const-fn-allowances/string-name.rs",
+      "sha256": "02c2972c106c22d77a8220498fc37c8b44c2fc4a2b354a72adf45e2f3c719080",
+      "status": 1
+    },
+    {
+      "name": "bool-name",
+      "path": "pa31/tests/spec/const-fn-allowances/bool-name.rs",
+      "sha256": "45bc45d5bb3c83a979cc7b53c02faae9f528f9274f5bee21fea4e52d99139781",
+      "status": 1
+    },
+    {
+      "name": "sibling",
+      "path": "pa31/tests/spec/const-fn-allowances/sibling.rs",
+      "sha256": "564b6390bc5a2e170bf8c1385afdfacca24b2389bc95fc9c803d6dfba4253628",
+      "status": 1
+    },
+    {
+      "name": "nested-does-not-inherit",
+      "path": "pa31/tests/spec/const-fn-allowances/nested-does-not-inherit.rs",
+      "sha256": "f7d5b09be48272ca0476340efd4637b91acabeb3f0a1002b122f72f19302736f",
+      "status": 1
+    },
+    {
+      "name": "runtime",
+      "path": "pa31/tests/spec/const-fn-allowances/runtime.rs",
+      "sha256": "fb623ec000f03dd551db6e74dffad67fc83b96872ca6a079e857cf917e43da5d",
+      "status": 0
+    },
+    {
+      "name": "inline-const",
+      "path": "pa31/tests/spec/const-fn-allowances/inline-const.rs",
+      "sha256": "054bdf4d7d44dc61694bf3cc09bf81902530c44e68df17848ebdf107824ceef3",
+      "status": 0
+    },
+    {
+      "name": "unsafe-denied",
+      "path": "pa31/tests/spec/const-fn-allowances/unsafe-denied.rs",
+      "sha256": "4ab66df74ff3db06b40998ae94a3c8b12836284a3ffbb2b02a4f0683fc0666c7",
+      "status": 1
+    },
+    {
+      "name": "nonconst-callee",
+      "path": "pa31/tests/spec/const-fn-allowances/nonconst-callee.rs",
+      "sha256": "19577ee1cb6c33d1508d078ff2303496584a4421436d99684054c8eb87950f4a",
+      "status": 1
+    },
+    {
+      "name": "const-method",
+      "path": "pa31/tests/spec/const-fn-allowances/const-method.rs",
+      "sha256": "193c7ad5f5ef956e07275db0454db7a57c991e22db19230986822d431ca4e204",
+      "status": 0
+    },
+    {
+      "name": "ordinary-method",
+      "path": "pa31/tests/spec/const-fn-allowances/ordinary-method.rs",
+      "sha256": "eb54945a2582ff717304b127336573774df71d86f722fd8c9ea41c30275f9dd1",
+      "status": 1
+    },
+    {
+      "name": "trait-body",
+      "path": "pa31/tests/spec/const-fn-allowances/trait-body.rs",
+      "sha256": "1f401ee14d05bb615b4aac06e4d4623c2826e05d2e90ed42fee4dbebbbc4797d",
+      "status": 0
+    },
+    {
+      "name": "trait-required",
+      "path": "pa31/tests/spec/const-fn-allowances/trait-required.rs",
+      "sha256": "ffe713422079d9dd06abca30afb6d9a6783171331d76efa1ee203706cbb3e75f",
+      "status": 1
+    },
+    {
+      "name": "cfg-removed",
+      "path": "pa31/tests/spec/const-fn-allowances/cfg-removed.rs",
+      "sha256": "2006d154b34f0709cdc6a3df0daf992ccd513abad9a94102a7c9288a53b2cdd8",
+      "status": 0
+    },
+    {
+      "name": "owned-macro-gate",
+      "path": "pa31/tests/spec/const-fn-allowances/owned-macro-gate.rs",
+      "sha256": "a87987b40d00a3eaf8fe2abf89b598a56a7f1ce63d803e08bc9b71232f4e19e2",
+      "status": 0
+    },
+    {
+      "name": "captured-macro-gate",
+      "path": "pa31/tests/spec/const-fn-allowances/captured-macro-gate.rs",
+      "sha256": "aae98f323a2137db34f60c0433b064813ce2940a4659a8419db657146f2fbd19",
+      "status": 1
+    }
+  ],
+  "correction": "Initial runtime, public inherent const method and const trait hypotheses omitted independently required regular/const stability annotations. Added those original policies without changing required outcomes; failed inputs/diagnostics retained. The no_core unit constructor separately requires Copy. Paired inherent-method controls now use an empty enum with no synthesized constructor, preserving the method/allowance question; the old unit source is retained. The enum also requires the no_core Copy language interface; method controls now retain the real Clone/Copy/receiver declarations and u8 implementations rather than relying on the isolated type constructor hypothesis. Added required staged regular stability to the real receiver/Clone/Copy implementations; initial missing-policy diagnostic retained."
+}

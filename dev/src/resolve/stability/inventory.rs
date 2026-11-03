@@ -81,7 +81,7 @@ pub(in crate::resolve) fn complete(
             "local library feature definitions require staged_api",
         ));
     }
-    let owners = if library.staged {
+    let mut owners = if library.staged {
         let owners = owners::collect(package, facts, &mut draft)?;
         owners::reachable(package, facts, &owners, &mut draft)?;
         owners
@@ -97,6 +97,7 @@ pub(in crate::resolve) fn complete(
             consts: None,
         }
     };
+    super::fn_allowances::finish(package, facts, &mut draft, &mut owners.consts)?;
     validate_type_boundary(package, facts, &mut draft)?;
     Ok(Some(Inventory {
         policies: draft.policies,

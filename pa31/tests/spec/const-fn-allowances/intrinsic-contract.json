@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "purpose": "A lexical exemption never enables a disabled intrinsic const feature",
+  "cases": [
+    {
+      "name": "intrinsic-granted",
+      "path": "pa31/tests/spec/const-fn-allowances/intrinsic-granted.rs",
+      "sha256": "bd2602c85fa85faa89e7976c9881370577fe95a96a0f5b5d4094f948d56b1c13",
+      "status": 0
+    },
+    {
+      "name": "intrinsic-missing-request",
+      "path": "pa31/tests/spec/const-fn-allowances/intrinsic-missing-request.rs",
+      "sha256": "0e055427d339820ccd12e4597f4afb41b50ab3ffc041a822c56d7f0bc42ed344",
+      "status": 1
+    },
+    {
+      "name": "intrinsic-missing-grant",
+      "path": "pa31/tests/spec/const-fn-allowances/intrinsic-missing-grant.rs",
+      "sha256": "95cac2a8c9b7fb900597c1d142a36c33b6eef0a4ee5eac7fa7fb9c1e09ed7832",
+      "status": 1
+    }
+  ]
+}
