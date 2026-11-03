@@ -11,6 +11,32 @@ from course import compare, execute, load_cases, run_stage, run_case
 
 
 class HarnessTests(unittest.TestCase):
+    def test_source_provider_uses_one_identity_for_each_inspection_mode(self):
+        with tempfile.TemporaryDirectory() as name:
+            case = {"path": "tests/x.rs", "exit_status": 0, "source_provider": True,
+                    "rustc": {"kind": "library", "status": 0},
+                    "library": {"crate_name": "actual", "disambiguator": "provider_1"}}
+            root, tests = self.fixture_root(name, [case])
+            (tests / "x.rs").write_text("source input")
+            app = [sys.executable, "-c", "import json,sys; print(json.dumps(sys.argv[1:]))"]
+            for mode in ("--emit-lowir", "--emit-constants"):
+                manifest = {"mode": mode, "cases": [case]}
+                (tests / "manifest.json").write_text(json.dumps(manifest))
+                load_cases(root, "pa1")
+                _, actual = run_case(root, "pa1", mode, case, app, 2)
+                self.assertEqual(json.loads(actual[0]), [mode, "--edition=2024", "--source-core",
+                    "actual@provider_1", *(["--crate-type=lib"] if mode == "--emit-lowir" else []),
+                    "--crate-name", "actual",
+                    "--crate-disambiguator", "provider_1"])
+            for changes in ({"source_provider": "yes"}, {"source_provider": 1},
+                            {"library": None}, {"library": {}},
+                            {"args": ["--crate-name", "counterfeit"]},
+                            {"rustc": {"kind": "program", "status": 0}}):
+                manifest["cases"] = [case | changes]
+                (tests / "manifest.json").write_text(json.dumps(manifest))
+                with self.subTest(changes=changes), self.assertRaises(ValueError):
+                    load_cases(root, "pa1")
+
     def test_library_contract_preserves_source_and_separates_identity_arguments(self):
         with tempfile.TemporaryDirectory() as name:
             case = {"path": "tests/x.rs", "exit_status": 0,

@@ -107,6 +107,16 @@ fn known_advisory_feature_request_defines_no_library_feature_or_semantic_capabil
             .err()
             .ok_or("advisory request manufactured a library definition")?;
     assert!(error.contains("undefined library feature"), "{error}");
+    for name in ["min_adt_const_params", "adt_const_params"] {
+        let source = fixture("lint-as-parent")?.replace("multiple_supertrait_upcastable", name);
+        let error = crate::test_source::source_provider(&source, "language_not_library")
+            .err()
+            .ok_or("language request manufactured a library policy target")?;
+        assert!(
+            error.contains("undefined library feature"),
+            "{name}: {error}"
+        );
+    }
     Ok(())
 }
 #[test]

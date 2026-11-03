@@ -1,0 +1,10 @@
+constants 1
+declaration def=15 kind=function type=33 const=false status=deferred-template
+declaration def=19 kind=function type=40 const=false status=checked-body
+declaration def=22 kind=function type=46 const=false status=checked-body
+declaration def=37 kind=function type=51 const=true status=deferred-template
+declaration def=38 kind=const type=2 const=true status=checked-value
+declaration def=39 kind=function type=53 const=false status=checked-body
+root initializer def=38 type=2 value=v0 storage=none
+value v0 type=2 bool bits=1 metadata=none
+eof declarations=6 roots=1 values=1 allocations=0

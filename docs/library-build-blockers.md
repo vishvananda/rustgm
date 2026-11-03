@@ -38,14 +38,21 @@ No whole PA is activated.
 LIB-124 now has a [canonical aggregate const-value boundary](pa25-aggregate-const-values.md):
 typed nominal/variant identity, shared child IDs, normalized compressed repeats,
 failed-payment guards, actual evaluator/reader handoff and bounded deep-sharing
-controls. The successor passes private11, production22 and PA21 758/758. Suspended
+controls. The evaluator successor passes private11, production22 and PA21 758/758. Suspended
 queries retain actual initializer readiness and publish canonical identities;
 VM reads/mutation preserve independent allocations and existing authority. This
-boundary does not yet enable aggregate Rust parameters: feature/ConstParamTy proof,
+local source successor now admits closed struct, enum, tuple and fixed-array
+parameters after actual feature, ConstParamTy and substituted-field proofs.
+Forward defaults and const-function consumers retain canonical typed values.
+Its final snapshot passes production34/private12, PA18 502/502 and PA21 758/758;
+the declared fourteen-case packet independently agrees with pinned Rust,
+including eight C-linked native observations. Wider feature/value contexts,
 TransmuteFrom's relation and general nominal/constant transport remain required.
 Three native controls (eight executions) also pass, preserving the actual source
 MaybeUninit panic/destructor and wrapper/NoDrop behavior. The previous data
-foundation's push CI41670085855 is terminal success.
+foundation's push CI41670085855 and evaluator full CI41680373137 are terminal
+success. No new original-core probe is inferred from the local source packet;
+the f5ae84eb observation above remains the last original-core frontier.
 
 Use the [current execution plan](library-bootstrap-acceleration.md) to choose work:
 real artifact/source consumers, demanded imported-body proof and consolidated

@@ -183,20 +183,14 @@ fn missing_real_supertraits_and_unavailable_macro_members_remain_errors() -> Tes
 }
 
 #[test]
-fn wider_const_values_and_payloads_stay_required_and_cold_roles_are_explicit() -> TestResult {
+fn generic_markers_and_nominal_parameters_preserve_actual_proofs_and_cold_roles() -> TestResult {
     for name in ["wider-generic", "nominal-const"] {
         let result = resolved(&source(name)?).and_then(|report| {
             crate::pipeline::analyze_source(&report)
                 .map(|_| ())
                 .map_err(Into::into)
         });
-        let error = result
-            .err()
-            .ok_or_else(|| format!("admitted wider {name}"))?
-            .to_string();
-        assert!(!error.contains("budget"), "{name}: {error}");
-        assert!(!error.contains("implied and renamed"), "{name}: {error}");
-        eprintln!("ConstParamTy unsupported Rust-positive {name}: {error}");
+        result.map_err(|error| format!("valid Rust {name}: {error}"))?;
     }
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
@@ -212,5 +206,26 @@ fn wider_const_values_and_payloads_stay_required_and_cold_roles_are_explicit() -
         size_of::<Transaction>(),
         LangItem::ALL.len()
     );
+    Ok(())
+}
+
+#[test]
+fn derived_payloads_require_the_actual_marker_on_each_instantiated_child() -> TestResult {
+    let input = source("wider-generic")?
+        + "\nfn marker_roundtrip<T:crate::marker::ConstParamTy_>(value:T)->T{value}\n";
+    let positive = input.clone()
+        + "fn check_payload(value:Payload<SimdAlign>)->Payload<SimdAlign>{marker_roundtrip(value)}\n";
+    crate::pipeline::analyze_source(&resolved(&positive)?)?;
+    let negative = input
+        + "struct Unkeyed;fn check_payload(value:Payload<Unkeyed>)->Payload<Unkeyed>{marker_roundtrip(value)}\n";
+    let error = crate::pipeline::analyze_source(&resolved(&negative)?)
+        .err()
+        .ok_or("derived payload bypassed its actual child marker requirement")?
+        .to_string();
+    assert!(
+        error.contains("can't be used as a const parameter type"),
+        "{error}"
+    );
+    assert!(!error.contains("budget"), "{error}");
     Ok(())
 }

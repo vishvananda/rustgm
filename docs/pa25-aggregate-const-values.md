@@ -7,10 +7,11 @@ owns evaluation/value production; PA21 owns typed generic arguments, PA29 owns
 transport and PA31 owns the actual source language bindings. All these parent
 requirements remain open.
 
-The canonical data representation and typed evaluator/reader handoff are now
-implemented. Source declarations still reject aggregate const-parameter types,
-and the source transmutability relation is unimplemented. Neither original core
-admission nor a whole assignment is completed.
+The canonical representation, evaluator/reader handoff and local source parameter
+profile are implemented. Actual source providers can use struct, enum, tuple and
+fixed-array parameters after real feature and marker proofs. The source
+transmutability relation, broader value profiles and imported transport remain
+unimplemented. No original crate artifact or whole assignment is completed.
 
 ## Representation
 
@@ -74,6 +75,85 @@ can initialize independent VM allocations: reads share the operand, while a fiel
 write thaws only that allocation. Existing raw-write authority and expired-storage
 checks still apply at their normal execution boundaries.
 
+## Source declarations and actual marker proofs
+
+Header registration reserves a typed rigid parameter without treating it as an
+evaluated value. Tuple/array/ADT identity and inference support supplies no source
+permission. Semantic registration separately requires the real
+`min_adt_const_params` or `adt_const_params` request for aggregate types and rejects
+dependent parameter types, projections and free regions outside this profile.
+After all ordinary implementation validation completes, every local const
+parameter under that feature, including unused and primitive parameters, must
+prove the validated source `ConstParamTy` application. Closed types cannot justify
+themselves with a caller's assumed trait premise. Proof scratch is shared within
+one owner's environment; the declaration inventory is traversed once.
+
+The actual marker header retains its required `StructuralPartialEq` and `Eq`
+identities. Its implementations inspect every real struct/enum variant and
+substituted field through the existing shape producer. Each child needs the same
+actual marker; selecting a benign active variant cannot hide an invalid sibling.
+`PhantomData` retains its existing empty physical fields and separate logical
+ownership. Field/generic derives now use the shared constrained header writer and
+ordinary implementation validation. Generated syntax confers no marker permission.
+The former Rust-positive `wider-generic` and `nominal-const` fixtures are accepted;
+a derived `Payload<Unkeyed>` consumer still fails the actual child requirement.
+
+Both aggregate feature spellings are language requests even when a provider
+declares no unstable library API. They do not add library policy definitions:
+`implied_by` still requires its real target. This distinction is covered alongside
+the existing staged-policy opponents. No global or transitive feature premise is
+created by a relationship.
+
+Runtime const operands use the common typed constant initializer, keyed by their
+canonical `ConstId`, with fresh owned snapshots where required. Semantic generic
+substitution likewise retains the typed value. Fieldless enum casts consume the
+actual reader variant rather than assuming an arena-specific representation.
+
+`pa25/tests/spec/aggregate-parameters/contract-v1.json` declares fourteen cases
+before candidate/reference qualification. Eight positive native observers cover
+both gates, records, enums, four-boolean `Assume`, arrays, tuples, an actual forward
+default used by an associated call and const-function local storage. Six opponents
+cover a missing gate, missing or same-spelling counterfeit markers, an invalid
+field, a primitive lacking its real marker and an unused invalid declaration.
+Every source is listed in the existing const-machine manifest; its parent PA stays
+planned. The course runner's explicit `source_provider` context retains the
+checked provider identity, preserving the fixture bytes. These fourteen text
+cases select constant inspection without requesting library artifact publication;
+their genuine LowIR/native executions use the full maintainer pipeline. General
+nominal metadata publication remains an explicit PA29 requirement.
+
+Independent pinned Rust object compilation and C-linked execution pass all
+fourteen outcomes and all eight exact native observations (`7`, `7`, `9`, `11`,
+`13`, `15`, `17`, `19`). Receipt:
+`obj/parallel/aggregate-parameters-v1/reference-native-v3/receipt.json`.
+Private gate `1793730897305304114` passes twelve derive, caller, policy, failed-work
+and ordinary-root controls in 94.19 seconds with strict private Clippy, formatting
+and architecture checks. The final compiler snapshot passes production34 and
+PA18 502/502 plus PA21 758/758 in 132.87 seconds (`1793732280416643837`), private12
+in 67.77 seconds (`1793732438140196812`), and the eight native observations in
+77.41 seconds (`1793732519646561584`). The combined cold predecessor exceeded
+its five-minute link budget and is retained as a failed run, not qualification.
+
+The final course pass compares all 109 cases in 1.87 seconds; only the new
+fourteen oracles were generated, and all 285 earlier sidecars remain byte-equal.
+All 276 harness tests, suite registration, placement and pinned-source checks
+pass. The source-provider adapter now separates semantic inspection from artifact
+publication. This Python/manifest correction is qualified by the actual CLI and
+harness pass; the joined receipt records the exact two adapter/manifest deltas
+and verifies that compiler and Rust-test sources did not change.
+
+Candidate CLI SHA-256 is
+`466cf52ed74ecabfd7ba6a1f618a450f5b19564698dd5c2c27ad8e750a0954af`.
+The independent/native/golden/course/harness and source-matched gate join is
+`obj/parallel/aggregate-parameters-v1/joined/receipt.json`, SHA-256
+`5dead2a35f6926c675a020b57cc4c66b674621c3ab7a3bc39bbcf87a6320c2a2`.
+Its 112 immutable A/A and ABBA observations preserve output equality against
+the previous evaluator CLI. Median candidate/baseline ratios are 0.937 for the
+ordinary control and 1.017 for 64 scalar arguments. A/A spans 0.981–1.337, so
+these noisy process measurements establish no precise speedup or regression.
+The source algorithm reuses one proof per owner and traverses the declaration
+inventory once; existing shared-value/repeat bounds remain covered separately.
+
 ## Focused evidence
 
 `obj/qualification/fast/1793720963537416621` passes five exact private tests in
@@ -128,13 +208,10 @@ The joined source/binary/three-gate/performance receipt is
 
 ## Remaining implementation order
 
-1. Qualify aggregate parameter declarations using the actual feature context and
-   source `ConstParamTy`/structural-equality evidence. Separate header type identity
-   from delayed implementation/default readiness, including the original forward
-   reference from `TransmuteFrom` to `Assume`. The suspended evaluator now
-   publishes canonical results, but that supplies no declaration permission. Add independently
-   checked PA25 source fixtures before enabling the language profile; retain
-   missing-feature, fake-marker, changed-field and lifetime opponents.
+1. Complete the remaining const-parameter profiles: source macro allowance
+   contexts, unsized/string/reference values, dependent parameter types and wider
+   recursive/transport contracts. Root-provider aggregate admission and real
+   marker/default readiness are qualified independently of those requirements.
 2. Implement genuine `transmute_trait`/`transmute_opts` declaration authority and
    the coinductive transmutability relation over source/destination layouts,
    validity sets, padding, references and lifetimes under the actual `Assume`

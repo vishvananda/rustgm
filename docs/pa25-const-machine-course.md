@@ -21,12 +21,23 @@ grant execution, and a checked value does not waive its source proof.
 | Native values | 9 | Constants and runtime calls, recursion, loops, statics, methods, generic transfer and typed queries |
 | Inspection | 5 | Entry-free roots, deterministic sharing/counts, compressed repeats, unused errors and closure identities |
 | Repeat counts | 9 | Named annotation/repeat, forward/associated/parameter counts; wrong types, local capture, nonconst calls and reached/unreachable faults |
+| Aggregate parameters | 14 | Actual feature/marker/child proofs, closed records/enums/tuples/arrays, forward defaults and typed const/runtime consumers |
 
-The 95-case corpus includes the unchanged former PA12 named-constant array
+The 109-case corpus retains all 95 earlier cases, including the unchanged former PA12 named-constant array
 boundary fixture. Its annotation and repeat count are PA25 queries; successful
 support replaces that earlier unsupported boundary, rather than preserving a
 false rejection in the cumulative compiler. The two PA18 generic repeat controls
 remain genuine Rust rejections and retain their original inputs.
+
+The fourteen aggregate cases declare their outcomes and exact source hashes in
+`pa25/tests/spec/aggregate-parameters/contract-v1.json`. Pinned Rust independently
+qualifies all fourteen outcomes and eight C-linked native observers. Their
+explicit source-provider identity is retained in constant inspection, while the
+full maintainer pipeline qualifies LowIR/native execution separately. Authored
+minimal source traits confer no authority from their names. See
+[the source checkpoint](pa25-aggregate-const-values.md) for the final candidate,
+text/harness evidence and remaining profile requirements. The older evidence
+below retains its original corpus counts.
 
 Expected outcomes are declared before candidate execution. The eligibility and
 destruction sources come from the existing const-functions controls, with their

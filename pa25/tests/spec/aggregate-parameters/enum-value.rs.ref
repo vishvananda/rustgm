@@ -1,0 +1,7 @@
+constants 1
+declaration def=15 kind=function type=33 const=false status=deferred-template
+declaration def=19 kind=function type=40 const=false status=checked-body
+declaration def=22 kind=function type=46 const=false status=checked-body
+declaration def=41 kind=function type=51 const=false status=deferred-template
+declaration def=42 kind=function type=53 const=false status=checked-body
+eof declarations=5 roots=0 values=0 allocations=0

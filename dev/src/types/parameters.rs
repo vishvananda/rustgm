@@ -35,6 +35,16 @@ pub(super) struct Storage {
     index: HashMap<(ItemId, u32), ParameterId>,
 }
 impl Store {
+    /// Typed identity support is independent of semantic feature/marker admission.
+    pub(crate) fn supports_const_parameter_type(&self, ty: TypeId) -> bool {
+        match self.kind(ty) {
+            Some(Kind::Primitive(p)) => {
+                p.integer().is_some() || matches!(p, Primitive::Bool | Primitive::Char)
+            }
+            Some(Kind::Adt(..) | Kind::Tuple(_) | Kind::Array { .. }) => true,
+            _ => false,
+        }
+    }
     /// Reserve the actual parameter-table growth independently of type nodes.
     pub(crate) fn parameter_allocation_bound(&self, count: usize) -> usize {
         let Some(arguments) = &self.arguments else {
@@ -77,12 +87,10 @@ impl Store {
     /// # Errors
     /// Rejects conflicting declarations, invalid const parameter types and ID overflow.
     pub fn intern_parameter(&mut self, parameter: Parameter) -> Result<ParameterId, &'static str> {
-        if let ParameterKind::Const { ty } = parameter.kind {
-            let valid = matches!(self.kind(ty), Some(Kind::Primitive(p))
-                if p.integer().is_some() || matches!(p, Primitive::Bool | Primitive::Char));
-            if !valid {
-                return Err("invalid const parameter type");
-            }
+        if let ParameterKind::Const { ty } = parameter.kind
+            && !self.supports_const_parameter_type(ty)
+        {
+            return Err("invalid const parameter type");
         }
         let storage = &mut self
             .arguments

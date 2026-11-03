@@ -149,56 +149,32 @@ impl Checker<'_> {
                     .ok_or_else(|| self.error(source, "ConstParamTy tuple disappeared"))?
                     .to_vec()
             }
-            Some(Kind::Adt(item, arguments)) => {
-                if self
-                    .facts
-                    .types
-                    .arguments(arguments)
-                    .is_none_or(|args| args.len() != 0)
-                {
-                    return Err(self.error(
-                        source,
-                        "generic ConstParamTy nominal field proof requires a wider profile",
-                    ));
-                }
-                self.constant_nominal_leaf(source, item)?;
-                Vec::new()
-            }
+            Some(Kind::Adt(item, _)) => self.constant_nominal_children(source, ty, item)?,
             _ => return Err(self.error(source, "this type cannot implement actual ConstParamTy")),
         };
         Ok((children, needs_feature))
     }
 
-    fn constant_nominal_leaf(
+    fn constant_nominal_children(
         &mut self,
         source: NodeKey,
+        ty: TypeId,
         item: crate::types::ItemId,
-    ) -> Result<(), Error> {
+    ) -> Result<Vec<TypeId>, Error> {
         let definition =
             self.facts.aggregates.get(item).copied().ok_or_else(|| {
                 self.error(source, "ConstParamTy nominal has no actual declaration")
             })?;
         if !matches!(
             definition.kind,
-            crate::types::aggregate::Kind::Struct | crate::types::aggregate::Kind::Enum
+            crate::types::aggregate::Kind::Struct
+                | crate::types::aggregate::Kind::Enum
+                | crate::types::aggregate::Kind::PhantomData
         ) {
             return Err(self.error(source, "ConstParamTy requires an actual struct or enum"));
         }
         let count = self.facts.aggregates.variants(&definition).len();
         crate::sema::header_attributes::reserve_source_contracts(&mut self.facts, count, 0)?;
-        for variant in self.facts.aggregates.variants(&definition) {
-            if self
-                .facts
-                .types
-                .list(variant.fields)
-                .is_none_or(|fields| !fields.is_empty())
-            {
-                return Err(self.error(
-                    source,
-                    "ConstParamTy ADT payloads require their wider recursive field proof",
-                ));
-            }
-        }
         if self.facts.members.variants(item).len() != count {
             return Err(self.error(
                 source,
@@ -230,7 +206,46 @@ impl Checker<'_> {
                 return Err(self.error(source, "non-exhaustive ConstParamTy field lists require their actual ADT feature consumer"));
             }
         }
-        Ok(())
+        self.facts
+            .aggregates
+            .instantiate(&mut self.facts.types, ty)
+            .map_err(|e| self.error(source, e))?;
+        let shape = self
+            .facts
+            .aggregates
+            .shape(&self.facts.types, ty)
+            .map_err(|e| self.error(source, e))?;
+        let length = shape
+            .variants()
+            .try_fold(0_usize, |length, variant| {
+                let count = self
+                    .facts
+                    .types
+                    .list(variant.fields)
+                    .ok_or("ConstParamTy lost its substituted fields")?
+                    .len();
+                length
+                    .checked_add(count)
+                    .ok_or("ConstParamTy field count overflow")
+            })
+            .map_err(|e| self.error(source, e))?;
+        crate::sema::header_attributes::reserve_source_contracts(
+            &mut self.facts,
+            length,
+            length.saturating_mul(4 * size_of::<TypeId>()),
+        )?;
+        let mut children = Vec::with_capacity(length);
+        let shape = self
+            .facts
+            .aggregates
+            .shape(&self.facts.types, ty)
+            .map_err(|e| self.error(source, e))?;
+        for variant in shape.variants() {
+            children.extend_from_slice(self.facts.types.list(variant.fields).ok_or_else(|| {
+                self.error(source, "ConstParamTy substituted field list disappeared")
+            })?);
+        }
+        Ok(children)
     }
 
     fn constant_unsized_premise(

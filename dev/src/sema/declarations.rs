@@ -519,6 +519,7 @@ impl Checker<'_> {
         self.validate_required_family_bounds()?;
         self.validate_signatures()?;
         self.validate_trait_implementations()?;
+        self.validate_const_parameter_types()?;
         self.validate_trait_impl_owners()?;
         self.validate_trait_regions()?;
         self.validate_inherent_overlaps()?;

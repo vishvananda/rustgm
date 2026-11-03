@@ -320,6 +320,13 @@ impl super::package::Package {
             "suspension-advisory client identity changed",
         )
     }
+    /// This is a language request, not marker, field or value evidence.
+    pub(crate) fn requested_aggregate_const_parameters(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::AdtConstParams,
+            "aggregate const-parameter client identity changed",
+        )
+    }
     fn requested_expression_feature(
         &self,
         feature: policy::Feature,

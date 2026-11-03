@@ -1,0 +1,9 @@
+constants 1
+declaration def=15 kind=function type=34 const=false status=deferred-template
+declaration def=19 kind=function type=41 const=false status=checked-body
+declaration def=22 kind=function type=47 const=false status=checked-body
+declaration def=40 kind=const type=21 const=true status=deferred-initializer
+declaration def=42 kind=function type=53 const=false status=deferred-template
+declaration def=43 kind=function type=55 const=false status=checked-body
+associated-value instance=40:0 status=source-complete result=deferred
+eof declarations=6 roots=1 values=0 allocations=0

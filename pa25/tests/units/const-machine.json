@@ -13,7 +13,8 @@
     "tests/spec/inspection/repeats.rs",
     "tests/spec/inspection/unused-division.rs",
     "tests/spec/inspection/unused-uninitialized.rs",
-    "tests/spec/inspection/closures.rs"
+    "tests/spec/inspection/closures.rs",
+    "tests/spec/aggregate-parameters"
   ],
   "cases": [
     {
@@ -1853,6 +1854,352 @@
         "kind": "execute",
         "outcome": "pass"
       }
+    },
+    {
+      "path": "tests/spec/aggregate-parameters/struct-value.rs",
+      "source_sha256": "c80eb76d7b3b68fe20d1d027e0b5813d3b0b545cdb726279ad4b8e9b580c3c2f",
+      "exit_status": 0,
+      "input": "file",
+      "source_provider": true,
+      "library": {
+        "crate_name": "aggregate_parameters",
+        "disambiguator": "source_values"
+      },
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "auxiliary": [
+        "tests/spec/aggregate-parameters/observer.c"
+      ],
+      "mode": "--emit-constants"
+    },
+    {
+      "path": "tests/spec/aggregate-parameters/adt-feature.rs",
+      "source_sha256": "e87a941ce306c6a0299d59199783ce9fcb19a99b9893772f9170c3c9f22b69de",
+      "exit_status": 0,
+      "input": "file",
+      "source_provider": true,
+      "library": {
+        "crate_name": "aggregate_parameters",
+        "disambiguator": "source_values"
+      },
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "auxiliary": [
+        "tests/spec/aggregate-parameters/observer.c"
+      ],
+      "mode": "--emit-constants"
+    },
+    {
+      "path": "tests/spec/aggregate-parameters/forward-default.rs",
+      "source_sha256": "dc3aa4a1cdae917285a422a774906b63dff9450c634faf95fbd16df6e4b98c8f",
+      "exit_status": 0,
+      "input": "file",
+      "source_provider": true,
+      "library": {
+        "crate_name": "aggregate_parameters",
+        "disambiguator": "source_values"
+      },
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "auxiliary": [
+        "tests/spec/aggregate-parameters/observer.c"
+      ],
+      "mode": "--emit-constants"
+    },
+    {
+      "path": "tests/spec/aggregate-parameters/enum-value.rs",
+      "source_sha256": "eba0c3da654bea6e8822369bf34526b82c372f392aaeaabe750bfef8454239d0",
+      "exit_status": 0,
+      "input": "file",
+      "source_provider": true,
+      "library": {
+        "crate_name": "aggregate_parameters",
+        "disambiguator": "source_values"
+      },
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "auxiliary": [
+        "tests/spec/aggregate-parameters/observer.c"
+      ],
+      "mode": "--emit-constants"
+    },
+    {
+      "path": "tests/spec/aggregate-parameters/missing-feature.rs",
+      "source_sha256": "d916399b7642c747e34900990e205842983232b78461bac8ef45f53c8655f1e4",
+      "exit_status": 1,
+      "input": "file",
+      "source_provider": true,
+      "library": {
+        "crate_name": "aggregate_parameters",
+        "disambiguator": "source_values"
+      },
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      },
+      "mode": "--emit-constants"
+    },
+    {
+      "path": "tests/spec/aggregate-parameters/missing-marker.rs",
+      "source_sha256": "f8bd0c98226df925cbe4da8f155cc2d75cddb19b70f61713622b8aa30e1e4efa",
+      "exit_status": 1,
+      "input": "file",
+      "source_provider": true,
+      "library": {
+        "crate_name": "aggregate_parameters",
+        "disambiguator": "source_values"
+      },
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      },
+      "mode": "--emit-constants"
+    },
+    {
+      "path": "tests/spec/aggregate-parameters/lookalike-marker.rs",
+      "source_sha256": "27c8197e4b9c26aa3ede8302d1d9fa9ccc946a2f74ee025bee22b51daba6b4a3",
+      "exit_status": 1,
+      "input": "file",
+      "source_provider": true,
+      "library": {
+        "crate_name": "aggregate_parameters",
+        "disambiguator": "source_values"
+      },
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      },
+      "mode": "--emit-constants"
+    },
+    {
+      "path": "tests/spec/aggregate-parameters/invalid-child.rs",
+      "source_sha256": "4be637b81bcded4787a1a0ca9ae86b9e620a496e75143155bf2e6c6f32546fbd",
+      "exit_status": 1,
+      "input": "file",
+      "source_provider": true,
+      "library": {
+        "crate_name": "aggregate_parameters",
+        "disambiguator": "source_values"
+      },
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      },
+      "mode": "--emit-constants"
+    },
+    {
+      "path": "tests/spec/aggregate-parameters/primitive-marker.rs",
+      "source_sha256": "27a5abec0d5d57fab66e9f025324a738f3d8534420f6b4e0fc1ee7bed33c8fa7",
+      "exit_status": 1,
+      "input": "file",
+      "source_provider": true,
+      "library": {
+        "crate_name": "aggregate_parameters",
+        "disambiguator": "source_values"
+      },
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      },
+      "mode": "--emit-constants"
+    },
+    {
+      "path": "tests/spec/aggregate-parameters/unused-missing-marker.rs",
+      "source_sha256": "240e87e795e677073221b7c6127256eabc8df23c3958ddbb1df28029d6e2e0f7",
+      "exit_status": 1,
+      "input": "file",
+      "source_provider": true,
+      "library": {
+        "crate_name": "aggregate_parameters",
+        "disambiguator": "source_values"
+      },
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 1,
+        "emit": "obj"
+      },
+      "mode": "--emit-constants"
+    },
+    {
+      "path": "tests/spec/aggregate-parameters/assume-fields.rs",
+      "source_sha256": "7f11f82c5c160abbaa45a951dab4643e1e5a6020701f775b6c12561bc6ae6cfa",
+      "exit_status": 0,
+      "input": "file",
+      "source_provider": true,
+      "library": {
+        "crate_name": "aggregate_parameters",
+        "disambiguator": "source_values"
+      },
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "auxiliary": [
+        "tests/spec/aggregate-parameters/observer.c"
+      ],
+      "mode": "--emit-constants"
+    },
+    {
+      "path": "tests/spec/aggregate-parameters/array-value.rs",
+      "source_sha256": "a28019eda6434bce7976043fe6221a22429a9e92b88640b764da262695a8481b",
+      "exit_status": 0,
+      "input": "file",
+      "source_provider": true,
+      "library": {
+        "crate_name": "aggregate_parameters",
+        "disambiguator": "source_values"
+      },
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "auxiliary": [
+        "tests/spec/aggregate-parameters/observer.c"
+      ],
+      "mode": "--emit-constants"
+    },
+    {
+      "path": "tests/spec/aggregate-parameters/tuple-value.rs",
+      "source_sha256": "3f2b92a0b42c45065aa14b8a6e4786107651c4ff9441d9fc4aa9974b7cb089d7",
+      "exit_status": 0,
+      "input": "file",
+      "source_provider": true,
+      "library": {
+        "crate_name": "aggregate_parameters",
+        "disambiguator": "source_values"
+      },
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "auxiliary": [
+        "tests/spec/aggregate-parameters/observer.c"
+      ],
+      "mode": "--emit-constants"
+    },
+    {
+      "path": "tests/spec/aggregate-parameters/ctfe-struct.rs",
+      "source_sha256": "81de9cc43ece1e179c6ab2b461c914feb938bf8a220fe233ef64540917053fe1",
+      "exit_status": 0,
+      "input": "file",
+      "source_provider": true,
+      "library": {
+        "crate_name": "aggregate_parameters",
+        "disambiguator": "source_values"
+      },
+      "features": [
+        "pa25.const-machine"
+      ],
+      "work_units": [
+        "const-machine"
+      ],
+      "rustc": {
+        "kind": "library",
+        "status": 0,
+        "emit": "obj"
+      },
+      "auxiliary": [
+        "tests/spec/aggregate-parameters/observer.c"
+      ],
+      "mode": "--emit-constants"
     }
   ]
 }

@@ -5429,3 +5429,15 @@ requirements, actual out-of-bounds faults and ordinary VM mutation/authority rul
 The [PA25 boundary and integration order](docs/pa25-aggregate-const-values.md)
 records data/evaluator/reader controls and the remaining source declaration,
 transmutability-relation and imported-artifact work.
+
+Separate const-parameter identity registration from final source permission.
+The actual aggregate language request and supported closed type are required
+before registration; validated marker selection follows ordinary implementation
+validation and checks unused declarations as well as demanded instances. Reuse
+proof scratch within its actual owner environment and traverse the parameter
+inventory once. Check real substituted nominal fields and every variant through
+the existing shape producer. A generated marker impl still proves every child;
+the shared derive header retains its real generic constraints. Keep language
+requests distinct from library policy definitions and implied_by targets.
+Const-argument lowering consumes the common typed initializer keyed by canonical
+const identity; it must preserve owned snapshots instead of forcing scalar bits.

@@ -761,12 +761,12 @@ impl Lower<'_, '_, '_> {
             Rvalue::ConstArgument(id) => {
                 let constant = crate::sema::values::Constant::argument(self.context.types, id)?
                     .ok_or("generic const execution requires concrete instantiation")?;
-                self.scalar(
-                    constant
-                        .as_scalar()
-                        .map_err(crate::sema::values::Failure::message)?,
-                    ty,
-                )?
+                return self.constant_value(
+                    super::data::Key::ConstArgument(id),
+                    constant,
+                    value.ty,
+                    representation,
+                );
             }
             Rvalue::Reify(operand)
             | Rvalue::Cast {

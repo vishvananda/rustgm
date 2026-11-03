@@ -12,9 +12,12 @@ The [canonical aggregate const-value boundary](../docs/pa25-aggregate-const-valu
 provides typed products, nominal variant identities, compressed repeats and
 evaluator/reader integration for the original core `Assume` dependency. Suspended
 queries publish canonical identities, and readers/VM allocations share immutable
-values while preserving typed mutation and authority checks. Source parameter
-admission, actual marker/feature proof and PA29 transport remain required. This
-boundary does not enable aggregate source const generics or complete the assignment.
+values while preserving typed mutation and authority checks. The local source
+profile now admits structs, enums, tuples and fixed arrays after actual feature,
+marker and field proofs, including forward defaults and const-function consumers.
+Its explicit fourteen-case corpus belongs to the existing const-machine component.
+Wider value/feature contexts and PA29 transport remain required; the whole
+assignment remains planned.
 
 The [source allowance checkpoint](../docs/pa31-const-fn-allowances-checkpoint.md)
 implements exact rustc_allow_const_fn_unstable body effects, keeping recursive

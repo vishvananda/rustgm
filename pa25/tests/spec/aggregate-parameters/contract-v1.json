@@ -1,0 +1,137 @@
+{
+  "schema": 1,
+  "language": "Rust 1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "owner": "pa25",
+  "source_bindings": "actual source provider, authored minimal traits; no original core artifact claim",
+  "cases": [
+    {
+      "name": "struct-value",
+      "path": "pa25/tests/spec/aggregate-parameters/struct-value.rs",
+      "sha256": "c80eb76d7b3b68fe20d1d027e0b5813d3b0b545cdb726279ad4b8e9b580c3c2f",
+      "rustc_status": 0,
+      "candidate_status": 0,
+      "requirement": "Actual payload fields and aggregate const operands reach a checked runtime instantiation.",
+      "native_stdout": "7\n"
+    },
+    {
+      "name": "adt-feature",
+      "path": "pa25/tests/spec/aggregate-parameters/adt-feature.rs",
+      "sha256": "e87a941ce306c6a0299d59199783ce9fcb19a99b9893772f9170c3c9f22b69de",
+      "rustc_status": 0,
+      "candidate_status": 0,
+      "requirement": "Both pinned aggregate feature requests enter the same actual marker obligation.",
+      "native_stdout": "7\n"
+    },
+    {
+      "name": "forward-default",
+      "path": "pa25/tests/spec/aggregate-parameters/forward-default.rs",
+      "sha256": "dc3aa4a1cdae917285a422a774906b63dff9450c634faf95fbd16df6e4b98c8f",
+      "rustc_status": 0,
+      "candidate_status": 0,
+      "requirement": "A forward nominal/default reference waits for actual completed declarations and source marker implementations.",
+      "native_stdout": "9\n"
+    },
+    {
+      "name": "enum-value",
+      "path": "pa25/tests/spec/aggregate-parameters/enum-value.rs",
+      "sha256": "eba0c3da654bea6e8822369bf34526b82c372f392aaeaabe750bfef8454239d0",
+      "rustc_status": 0,
+      "candidate_status": 0,
+      "requirement": "Enum ordinal, real payload fields and repeated source uses retain their actual owner.",
+      "native_stdout": "11\n"
+    },
+    {
+      "name": "missing-feature",
+      "path": "pa25/tests/spec/aggregate-parameters/missing-feature.rs",
+      "sha256": "d916399b7642c747e34900990e205842983232b78461bac8ef45f53c8655f1e4",
+      "rustc_status": 1,
+      "candidate_status": 1,
+      "requirement": "A real marker implementation cannot replace the aggregate language feature request."
+    },
+    {
+      "name": "missing-marker",
+      "path": "pa25/tests/spec/aggregate-parameters/missing-marker.rs",
+      "sha256": "f8bd0c98226df925cbe4da8f155cc2d75cddb19b70f61713622b8aa30e1e4efa",
+      "rustc_status": 1,
+      "candidate_status": 1,
+      "requirement": "Unused or used aggregate parameters require the actual marker implementation."
+    },
+    {
+      "name": "lookalike-marker",
+      "path": "pa25/tests/spec/aggregate-parameters/lookalike-marker.rs",
+      "sha256": "27c8197e4b9c26aa3ede8302d1d9fa9ccc946a2f74ee025bee22b51daba6b4a3",
+      "rustc_status": 1,
+      "candidate_status": 1,
+      "requirement": "An unrelated same-purpose trait supplies no actual ConstParamTy evidence."
+    },
+    {
+      "name": "invalid-child",
+      "path": "pa25/tests/spec/aggregate-parameters/invalid-child.rs",
+      "sha256": "4be637b81bcded4787a1a0ca9ae86b9e620a496e75143155bf2e6c6f32546fbd",
+      "rustc_status": 1,
+      "candidate_status": 1,
+      "requirement": "A nominal marker implementation cannot hide a real nonstructural field."
+    },
+    {
+      "name": "primitive-marker",
+      "path": "pa25/tests/spec/aggregate-parameters/primitive-marker.rs",
+      "sha256": "27a5abec0d5d57fab66e9f025324a738f3d8534420f6b4e0fc1ee7bed33c8fa7",
+      "rustc_status": 1,
+      "candidate_status": 1,
+      "requirement": "With the aggregate feature enabled, primitive parameters still require the real selected marker."
+    },
+    {
+      "name": "unused-missing-marker",
+      "path": "pa25/tests/spec/aggregate-parameters/unused-missing-marker.rs",
+      "sha256": "240e87e795e677073221b7c6127256eabc8df23c3958ddbb1df28029d6e2e0f7",
+      "rustc_status": 1,
+      "candidate_status": 1,
+      "requirement": "Every unused const-parameter declaration is checked."
+    },
+    {
+      "name": "assume-fields",
+      "path": "pa25/tests/spec/aggregate-parameters/assume-fields.rs",
+      "sha256": "7f11f82c5c160abbaa45a951dab4643e1e5a6020701f775b6c12561bc6ae6cfa",
+      "rustc_status": 0,
+      "candidate_status": 0,
+      "requirement": "The four real boolean fields needed by original Assume retain typed value identity.",
+      "native_stdout": "13\n"
+    },
+    {
+      "name": "array-value",
+      "path": "pa25/tests/spec/aggregate-parameters/array-value.rs",
+      "sha256": "a28019eda6434bce7976043fe6221a22429a9e92b88640b764da262695a8481b",
+      "rustc_status": 0,
+      "candidate_status": 0,
+      "requirement": "Array argument inference and field reads consume canonical child identities.",
+      "native_stdout": "15\n"
+    },
+    {
+      "name": "tuple-value",
+      "path": "pa25/tests/spec/aggregate-parameters/tuple-value.rs",
+      "sha256": "3f2b92a0b42c45065aa14b8a6e4786107651c4ff9441d9fc4aa9974b7cb089d7",
+      "rustc_status": 0,
+      "candidate_status": 0,
+      "requirement": "Tuple const-parameter types require their actual marker and real child proofs.",
+      "native_stdout": "17\n"
+    },
+    {
+      "name": "ctfe-struct",
+      "path": "pa25/tests/spec/aggregate-parameters/ctfe-struct.rs",
+      "sha256": "81de9cc43ece1e179c6ab2b461c914feb938bf8a220fe233ef64540917053fe1",
+      "rustc_status": 0,
+      "candidate_status": 0,
+      "native_stdout": "19\n",
+      "requirement": "A real const function consumes the canonical argument through independent local storage before a runtime observer."
+    }
+  ],
+  "remaining": [
+    "reference/string/unsized values",
+    "dependent const-parameter types",
+    "versioned nominal/value transport",
+    "TransmuteFrom relation and original std-crate artifacts"
+  ],
+  "expected_outcomes_declared_before_candidate_qualification": true
+}

@@ -70,6 +70,7 @@ pub(in crate::resolve) enum Feature {
     MustNotSuspend = 53,
     OptimizeAttribute = 54,
     TransparentUnions = 55,
+    AdtConstParams = 56,
 }
 
 impl Feature {
@@ -114,6 +115,7 @@ impl Request {
             "never_type" => Self::Capability(Feature::NeverType),
             "stmt_expr_attributes" => Self::Capability(Feature::ExpressionAttributes),
             "const_trait_impl" => Self::Capability(Feature::ConstTrait),
+            "min_adt_const_params" | "adt_const_params" => Self::Library(Feature::AdtConstParams),
             "unboxed_closures" => Self::Capability(Feature::UnboxedClosures),
             "auto_traits" => Self::Capability(Feature::AutoTraits),
             "negative_impls" => Self::Capability(Feature::NegativeImpls),
@@ -166,7 +168,8 @@ impl Features {
         self.0 & (1_u64 << feature as u8) != 0
     }
     fn needs_local_owner(&self) -> bool {
-        self.has(Feature::PreludeImport)
+        self.has(Feature::AdtConstParams)
+            || self.has(Feature::PreludeImport)
             || self.has(Feature::OptimizeAttribute)
             || self.has(Feature::MustNotSuspend)
             || self.has(Feature::ExpressionAttributes)

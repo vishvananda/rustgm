@@ -1,5 +1,15 @@
 # Source ConstParamTy and local stability implication checkpoint
 
+The [PA25 source-parameter successor](pa25-aggregate-const-values.md) supersedes
+this checkpoint's fieldless-only marker and nominal-value boundaries below.
+Actual substituted struct/enum fields now prove the same validated marker;
+generic derives use ordinary constrained headers. The unchanged Rust-positive
+`wider-generic` and `nominal-const` inputs are accepted, while an instantiated
+`Payload<Unkeyed>` remains rejected. Source parameters, forward defaults and
+native consumers are qualified separately in that successor. Wider value and
+feature contexts, imported nominal transport and whole assignments remain open.
+The evidence below records the earlier implementation and its actual limits.
+
 The actual original-core failure selects the real `ConstParamTy` source macro
 at `marker.rs`, rather than inferring a missing member from the SimdAlign list.
 The unchanged enum and four-member derive list are retained under

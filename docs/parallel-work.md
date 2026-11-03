@@ -5,8 +5,14 @@ Latest PA25 dependency checkpoint: the
 passes 11 private controls, 22 production tests and PA21 758/758 under the existing
 five-minute guards. Suspended queries publish actual canonical IDs, repeated/shared
 values remain bounded, and VM allocations preserve mutation and raw-write authority.
-Source aggregate declaration/marker proof, TransmuteFrom's relation and imported
-nominal/value transport remain open; no new original-core artifact is claimed.
+The local source successor admits closed struct/enum/tuple/fixed-array parameters
+with actual feature, marker and substituted-field proofs, forward defaults and
+const-function consumers. Final production34/private12, PA18 502/502 and
+PA21 758/758 pass; fourteen independent Rust outcomes include eight native
+observations. See the same checkpoint for candidate execution and text evidence.
+Wider source/value profiles, TransmuteFrom's relation and imported nominal/value
+transport remain open; no new original-core artifact is claimed. Full evaluator
+CI41680373137 passes every gate.
 The last inactive root tree, PA29, was relocated intact to
 /mnt/vizier/rustgm-scratch/rustgm-pa29-work with all file checksums verified and
 its old home path preserved as a compatibility symlink for frozen core inputs.

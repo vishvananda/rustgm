@@ -43,6 +43,8 @@ mod glue_provider;
 mod hygiene;
 #[path = "../../interpolation.rs"]
 mod interpolation;
+#[path = "../../keyed_parameters.rs"]
+mod keyed_parameters;
 #[path = "../../lexer.rs"]
 mod lexer;
 #[path = "../../literal_values.rs"]

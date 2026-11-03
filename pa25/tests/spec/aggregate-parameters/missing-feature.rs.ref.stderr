@@ -1,0 +1,1 @@
+ERROR: file 0: 1095: aggregate const parameter types require min_adt_const_params or adt_const_params

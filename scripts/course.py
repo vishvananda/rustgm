@@ -28,7 +28,13 @@ def check_relative_path(value, stage):
 def library_arguments(case, mode):
     """A library's identity is explicit and cannot be overridden by case arguments."""
     library = case.get("library")
-    required = case.get("rustc", {}).get("kind") == "library" and mode == "--emit-lowir"
+    provider = case.get("source_provider", False)
+    if not isinstance(provider, bool):
+        raise ValueError("source_provider must be an explicit boolean")
+    library_kind = case.get("rustc", {}).get("kind") == "library"
+    if provider and not library_kind:
+        raise ValueError("source providers require an explicit library identity")
+    required = library_kind and (mode == "--emit-lowir" or provider)
     if library is None and not required:
         return []
     if (not required or not isinstance(library, dict)
@@ -41,7 +47,9 @@ def library_arguments(case, mode):
         raise ValueError("invalid library identity")
     if "--crate-name" in case.get("args", [])[::2]:
         raise ValueError("library identity cannot have a competing crate-name argument")
-    return ["--crate-type=lib", "--crate-name", name, "--crate-disambiguator", disambiguator]
+    context = ["--source-core", f"{name}@{disambiguator}"] if provider else []
+    artifact = ["--crate-type=lib"] if mode == "--emit-lowir" else []
+    return [*context, *artifact, "--crate-name", name, "--crate-disambiguator", disambiguator]
 
 
 def load_cases(root, stage, *, unit=None):

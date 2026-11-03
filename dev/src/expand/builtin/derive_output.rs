@@ -86,7 +86,7 @@ pub(crate) fn build(
         output.debug(fields, &inventory.variants)?;
     }
     output.comparison_members(fields, &inventory.variants)?;
-    output.parameter_marker(fields)?;
+    output.parameter_marker()?;
     output.finish(config)
 }
 

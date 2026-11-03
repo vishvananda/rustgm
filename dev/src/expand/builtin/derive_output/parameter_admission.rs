@@ -1,17 +1,13 @@
 //! The source const-parameter marker remains an ordinary checked implementation.
-use super::{LexError, NodeId, Output, error};
+use super::{LexError, Output};
 impl Output<'_> {
-    pub(super) fn parameter_marker(&mut self, fields: &[NodeId]) -> Result<(), LexError> {
+    pub(super) fn parameter_marker(&mut self) -> Result<(), LexError> {
         if !self.select(9) {
             return Ok(());
         }
         (self.charge)(1, 0)?;
-        if !fields.is_empty() || !self.site.ast.list(self.site.item.generics).is_empty() {
-            return Err(error(
-                self.site.original.start,
-                "source ConstParamTy payload or generic derives require a wider field-proof profile",
-            ));
-        }
+        // Ordinary generic bounds are emitted by the shared header writer.
+        // Semantic conformance separately proves every actual substituted field.
         self.header("crate::marker::ConstParamTy_", false)?;
         self.text("{}")
     }

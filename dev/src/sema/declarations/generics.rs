@@ -7,6 +7,7 @@ pub(super) use crate::sema::generics::captures::Captures;
 mod constants;
 mod default_validation;
 mod defaults;
+mod parameter_kinds;
 pub(super) use defaults::{DefaultId, Defaults};
 mod functions;
 pub(in crate::sema) use functions::prepare_callable_template;
@@ -229,14 +230,14 @@ impl Checker<'_> {
                     sized: !self.relaxed.contains(&binding),
                 }
             } else {
-                ParameterKind::Const {
-                    ty: self.ty(NodeKey {
-                        node: syntax
-                            .ty
-                            .ok_or_else(|| self.error(key, "missing const parameter type"))?,
-                        ..key
-                    })?,
-                }
+                let ty = self.ty(NodeKey {
+                    node: syntax
+                        .ty
+                        .ok_or_else(|| self.error(key, "missing const parameter type"))?,
+                    ..key
+                })?;
+                self.require_const_parameter_identity(key, ty)?;
+                ParameterKind::Const { ty }
             };
             let id = self
                 .facts

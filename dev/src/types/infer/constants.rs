@@ -105,11 +105,10 @@ impl Context {
             .constants
     }
     /// # Errors
-    /// Rejects non-scalar const parameter types and exhausted inference resources.
+    /// Rejects unsupported const identities and exhausted inference resources.
+    /// Semantic callers separately establish feature and actual marker permission.
     pub fn const_variable(&mut self, store: &Store, ty: TypeId) -> Result<ConstTermId, Error> {
-        if !matches!(store.kind(ty), Some(crate::types::Kind::Primitive(p))
-            if p.integer().is_some() || matches!(p, Primitive::Bool | Primitive::Char))
-        {
+        if !store.supports_const_parameter_type(ty) {
             return Err(Error::InvalidIdentity);
         }
         self.step()?;

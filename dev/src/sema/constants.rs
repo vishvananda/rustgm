@@ -763,7 +763,13 @@ impl Queries<'_> {
                 target,
                 ..
             } => {
-                let Value::Variant(variant) = self.value(Query::Node(operand))? else {
+                let values::View::Product {
+                    variant: Some(variant),
+                    length: 0,
+                } = values::Reader::new(self.typing.facts)
+                    .view(values::Constant(self.value(Query::Node(operand))?))
+                    .map_err(|e| self.error(query, e))?
+                else {
                     return Err(self.error(query, "missing constant enum variant"));
                 };
                 self.work.push(Work::EnumCast(key, variant, target));
@@ -1048,11 +1054,7 @@ impl Queries<'_> {
                                     "constant value retains an unresolved const parameter",
                                 )
                             })?;
-                        return Ok(Expression::Value(Value::Scalar(
-                            value
-                                .as_scalar()
-                                .map_err(|e| self.error(query, e.message()))?,
-                        )));
+                        return Ok(Expression::Value(value.0));
                     }
                     if self
                         .typing
