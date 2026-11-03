@@ -6,6 +6,12 @@ declarations and assumption decoding are qualified. The all-values relation,
 implicit RustGM selection, coinductive witnesses, imported transport and original
 core/alloc/std artifacts remain required. PA31 and its parent units stay incomplete.
 
+The [layout-language successor](pa31-transmutability-layout-relation.md) qualifies
+the private ABI data kernel; source selection and execution remain open. A fresh
+unchanged-core observation on this published header compiler clears the original
+declaration frontier and reaches `type_info` in mem/type_info.rs13. The older F5
+observation below is historical, not the current frontier.
+
 ## Declaration and value boundary
 
 The source registry appends `transmute_trait` and `transmute_opts` at ordinals
@@ -68,9 +74,9 @@ paired block reaches 4.33 and A/A spans 0.856–1.282. No precise speedup or
 regression conclusion is claimed, and no observations are discarded.
 
 The prior `79a553670` full CI41712407595 passes every gate, including the repaired
-fixture-owned bootstrap context. The last original-core observation remains the
-older `f5ae84eb` unsupported-language-item frontier with all 722 source hashes
-unchanged. No original-core success is inferred from local source qualification.
+fixture-owned bootstrap context. The header publication originally retained the older `f5ae84eb` source frontier.
+The layout successor above records the fresh b9 original-core probe; neither
+local source qualification nor that later blocker observation is an artifact build.
 
 ## Required next work
 

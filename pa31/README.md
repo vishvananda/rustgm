@@ -23,6 +23,12 @@ union/ManuallyDrop algorithm. Actual all-values layout/validity/reference/lifeti
 selection, coinductive evidence, implicit RustGM/native use and imported transport
 remain required; this declaration/value boundary does not complete LIB-124 or PA31.
 
+The [private layout kernel](../docs/pa31-transmutability-layout-relation.md)
+qualifies compressed value languages and actual ABI padding/tag/union/reference
+data. Source-scoped selection and execution remain required. The published header
+compiler now advances unchanged core to `type_info`; prioritize that actual source
+blocker while retaining the complete transmutability and transport requirements.
+
 The [source NoDrop checkpoint](../docs/pa31-no-drop-checkpoint.md) qualifies the
 actual trait and union Copy fallback through canonical component proofs and real
 native relay execution. Field queries consume a compact shared type fact for

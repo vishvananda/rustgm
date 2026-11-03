@@ -6,3 +6,4 @@ pub mod metadata;
 pub(crate) mod storage_relation;
 pub mod tails;
 pub mod templates;
+pub mod transmutability;

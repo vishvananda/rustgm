@@ -5454,3 +5454,14 @@ relation. Preserve caller-scoped/coinductive obligations, the actual source
 default method and required imported transport; a successful value transmute is
 not a type-level transmutability proof. See the
 [source checkpoint](docs/pa31-transmutability-source-checkpoint.md).
+
+Layout-language structure is separate from trait permission. Consume completed
+ABI fields/offsets/tags and opaque references through hash-consed products,
+alternatives and counted repeats. Preserve correlated words, initializedness and
+zero-size nominal guards. Use iterative memoized derivatives and paired states;
+factor repeated/product structure before general comparison. Share interpretation
+across both roots under the same safety policy rather than traversing a common
+graph twice. Prepay work and growth, and retain recursive type, outlives and
+Freeze atoms for the scoped solver. Structural equality or one successful value
+reinterpretation cannot discharge those atoms. See the
+[layout kernel qualification](docs/pa31-transmutability-layout-relation.md).

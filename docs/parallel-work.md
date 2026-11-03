@@ -1,5 +1,16 @@
 # Parallel library bootstrap implementation
 
+Current original-core frontier: LIB-125, `type_info` in mem/type_info.rs13.
+The published b9 header compiler clears the preceding declaration frontier with
+all722 original inputs/configuration/limits unchanged,17.66s/375 opens. The
+[private layout kernel](pa31-transmutability-layout-relation.md) passes ten exact
+tests plus strict Clippy/format/audit in121.68s, including the repaired cold range
+catalog sizes and bounded shared interpretation. Source transmutability evidence,
+execution/transport and original artifacts remain open. Prioritize actual type
+reflection source work. Root remains alone with the existing btrfs/2-thread/
+five-minute/16GiB/150GiB guards. Canonical main's unused1.37GiB Cargo cache was
+retired; active warm caches, inputs, diagnostics and worktrees are preserved.
+
 Latest PA31 source checkpoint: [transmutability declarations and assumptions](pa31-transmutability-source-checkpoint.md)
 passes23 exact controls, PA21 758/758, const-machine109/109 and eight existing
 natives. Real options fields and canonical values preserve owner/type identity;
