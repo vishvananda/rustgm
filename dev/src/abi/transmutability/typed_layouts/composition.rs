@@ -1,5 +1,5 @@
 //! Physical offsets, tags and union alternatives remain correlated in the value language.
-use super::*;
+use super::{Budget, ByteRange, Describer, Kind, Layout, LayoutId, Shape, TypeId, push};
 use crate::{abi::layout::Variant, types::aggregate};
 
 #[derive(Clone, Copy)]
