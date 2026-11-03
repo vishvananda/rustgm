@@ -154,6 +154,23 @@ these noisy process measurements establish no precise speedup or regression.
 The source algorithm reuses one proof per owner and traverses the declaration
 inventory once; existing shared-value/repeat bounds remain covered separately.
 
+Full CI41707652594 on `0e767237f` passed all compiler, release, native, debug and
+ordinary independent gates, then exposed a fixture-context omission in the final
+component check: stable Rust rejected the new `#![feature]` programs with E0554.
+The standalone oracle already used bootstrap, but the fourteen manifest cases
+had not declared that same context. Each now explicitly owns
+`RUSTC_BOOTSTRAP=1`; other cases retain their existing environments. No source,
+compiler behavior, expected outcome or oracle byte changes.
+
+With parent bootstrap removed, the exact CI commands now pass 109 text checks,
+109 independent Rust checks, 90 LowIR independent checks with 53 executable
+comparisons, and all 276 harness tests. All 327 sidecars remain byte-equal;
+only scoped provenance for the explicit context is regenerated. The batch takes
+26.84 seconds after admission and uses the same immutable `466cf52e` CLI, without
+a compiler rebuild. Receipt:
+`obj/parallel/aggregate-parameters-v1/ci-bootstrap-v1/receipt.json`, SHA-256
+`667cbe6aa5b4454f779051359f09a8ddea1d180d47c8bf0e5154593a33b69f25`.
+
 ## Focused evidence
 
 `obj/qualification/fast/1793720963537416621` passes five exact private tests in
