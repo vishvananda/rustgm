@@ -135,6 +135,7 @@ const fn function_role(role: LangItem) -> Option<bool> {
         | LangItem::PartialEq
         | LangItem::StructuralPartialEq
         | LangItem::ConstParamTy
+        | LangItem::TransmuteTrait
         | LangItem::PartialOrd
         | LangItem::Send
         | LangItem::DispatchFromDyn

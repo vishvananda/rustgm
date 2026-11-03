@@ -80,7 +80,7 @@ impl Catalog {
     }
 }
 
-const TRAIT_ROLES: [LangItem; 21] = [
+const TRAIT_ROLES: [LangItem; 22] = [
     LangItem::Clone,
     LangItem::Copy,
     LangItem::LegacyReceiver,
@@ -102,6 +102,7 @@ const TRAIT_ROLES: [LangItem; 21] = [
     LangItem::ConstParamTy,
     LangItem::From,
     LangItem::BikeshedGuaranteedNoDrop,
+    LangItem::TransmuteTrait,
 ];
 
 pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
@@ -139,6 +140,15 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         let self_type = header.self_type;
         match role {
             LangItem::From | LangItem::BikeshedGuaranteedNoDrop => {}
+            LangItem::TransmuteTrait => {
+                super::transmutability::validate_trait(
+                    report,
+                    facts,
+                    catalog,
+                    declaration,
+                    &header,
+                )?;
+            }
             LangItem::ConstParamTy => parameter_types::validate(
                 report,
                 facts,
@@ -355,15 +365,19 @@ fn header<'a>(
                 | LangItem::TrivialClone
         )
     };
-    let expected = usize::from(matches!(
-        role,
-        LangItem::FnOnce
-            | LangItem::FnMut
-            | LangItem::Fn
-            | LangItem::Unsize
-            | LangItem::CoerceUnsized
-            | LangItem::DispatchFromDyn
-    ));
+    let expected = if role == LangItem::TransmuteTrait {
+        2
+    } else {
+        usize::from(matches!(
+            role,
+            LangItem::FnOnce
+                | LangItem::FnMut
+                | LangItem::Fn
+                | LangItem::Unsize
+                | LangItem::CoerceUnsized
+                | LangItem::DispatchFromDyn
+        ))
+    };
     header
         .profile(
             &facts.types,
@@ -375,6 +389,7 @@ fn header<'a>(
                         | LangItem::Send
                         | LangItem::Sync
                         | LangItem::UnsafeUnpin
+                        | LangItem::TransmuteTrait
                 ),
                 constant,
                 auto_: matches!(
@@ -466,6 +481,7 @@ pub(super) fn nominal_completed(
             | LangItem::ManuallyDrop
             | LangItem::MaybeDangling
             | LangItem::MaybeUninit
+            | LangItem::TransmuteOpts
     ) {
         return Err(Error::unlocated("invalid completed nominal readiness role"));
     }
@@ -502,6 +518,7 @@ pub(super) fn complete_nominal(
             | LangItem::ManuallyDrop
             | LangItem::MaybeDangling
             | LangItem::MaybeUninit
+            | LangItem::TransmuteOpts
     ) {
         return Err(Error::unlocated("invalid completed nominal role"));
     }

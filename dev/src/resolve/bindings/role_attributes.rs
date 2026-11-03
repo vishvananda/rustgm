@@ -143,7 +143,12 @@ pub(super) fn validate(
                     | LangItem::PointeeTrait
                     | LangItem::DiscriminantKind
                     | LangItem::BikeshedGuaranteedNoDrop
+                    | LangItem::TransmuteTrait
             )
+        } else if *attribute == HeaderAttribute::Coinductive && role == LangItem::TransmuteTrait {
+            claims
+                .iter()
+                .any(|claim| matches!(claim, Claim::DenyImplementations))
         } else {
             matches!(
                 role,

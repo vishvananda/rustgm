@@ -35,6 +35,7 @@ mod subtraction_contract;
 mod wrapping_contract;
 pub(crate) use subtraction_contract::SubtractionSelection;
 pub(crate) use wrapping_contract::WrappingOffsetSelection;
+pub(in crate::sema) mod transmutability;
 mod transmute_contract;
 mod transmute_sizes;
 pub(crate) use abort_declaration::AbortSelection;

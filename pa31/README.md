@@ -16,6 +16,13 @@ old cycle; both units and the complete contract below remain required.
 
 ## Required implementation
 
+The [transmutability source checkpoint](../docs/pa31-transmutability-source-checkpoint.md)
+qualifies actual `transmute_trait`/`transmute_opts` declarations and canonical
+named-boolean assumption decoding. The source default method retains its real
+union/ManuallyDrop algorithm. Actual all-values layout/validity/reference/lifetime
+selection, coinductive evidence, implicit RustGM/native use and imported transport
+remain required; this declaration/value boundary does not complete LIB-124 or PA31.
+
 The [source NoDrop checkpoint](../docs/pa31-no-drop-checkpoint.md) qualifies the
 actual trait and union Copy fallback through canonical component proofs and real
 native relay execution. Field queries consume a compact shared type fact for

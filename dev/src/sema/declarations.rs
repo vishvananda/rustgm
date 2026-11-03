@@ -510,6 +510,7 @@ impl Checker<'_> {
         super::compiler_items::pointee::prepare(self.report, &mut self.facts)?;
         super::compiler_items::discriminant::prepare(self.report, &mut self.facts)?;
         super::compiler_items::site_records::complete(self.report, &mut self.facts)?;
+        super::compiler_items::transmutability::complete_options(self.report, &mut self.facts)?;
         super::traits::results::prepare_opaque_outlives(&mut self.facts)
             .map_err(|e| Error::at(FileId(0), 0, e))?;
         self.trait_defaults()?;

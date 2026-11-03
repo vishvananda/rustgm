@@ -12,7 +12,10 @@ pub(super) fn validate(
 ) -> Result<(), Error> {
     if !matches!(
         role,
-        LangItem::ManuallyDrop | LangItem::MaybeDangling | LangItem::MaybeUninit
+        LangItem::ManuallyDrop
+            | LangItem::MaybeDangling
+            | LangItem::MaybeUninit
+            | LangItem::TransmuteOpts
     ) {
         return Ok(());
     }
@@ -30,7 +33,8 @@ pub(super) fn validate(
         matches!(item.kind, ItemKind::Union { .. })
     } else {
         matches!(item.kind, ItemKind::Struct { .. })
-            && unit.configured.ast.list(item.generics).len() == 1
+            && unit.configured.ast.list(item.generics).len()
+                == usize::from(role != LangItem::TransmuteOpts)
     };
     if !valid {
         return Err(error(

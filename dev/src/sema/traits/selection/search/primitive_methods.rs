@@ -26,6 +26,9 @@ impl Search<'_> {
         if let Some(action) = self.source_no_drop_result(facts, frame)? {
             return Ok(action);
         }
+        if let Some(action) = Self::source_transmutability_result(facts, frame)? {
+            return Ok(action);
+        }
         if let Some(action) = self.source_auto_result(facts, frame)? {
             return Ok(action);
         }

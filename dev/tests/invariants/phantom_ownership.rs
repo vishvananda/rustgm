@@ -147,7 +147,7 @@ fn source_marker_rejects_changed_roles_formals_fields_and_lifetime_escape() -> R
             .all(|definition| definition.kind != types::aggregate::Kind::PhantomData)
     );
     // The source-only range members append without shifting earlier ordinals.
-    assert_eq!(crate::support::bindings::LangItem::ALL.len(), 83);
+    assert_eq!(crate::support::bindings::LangItem::ALL.len(), 85);
     assert_eq!(crate::support::bindings::LangItem::ManuallyDrop.index(), 78);
     assert_eq!(
         crate::support::bindings::LangItem::MaybeDangling.index(),

@@ -1,5 +1,15 @@
 # Parallel library bootstrap implementation
 
+Latest PA31 source checkpoint: [transmutability declarations and assumptions](pa31-transmutability-source-checkpoint.md)
+passes23 exact controls, PA21 758/758, const-machine109/109 and eight existing
+natives. Real options fields and canonical values preserve owner/type identity;
+independent Rust qualifies the default union/ManuallyDrop body and native `1`.
+The RustGM all-values relation, implicit/coinductive proof, transport and original
+artifacts remain required. Full predecessor CI41712407595 is terminal success.
+Root remains alone in the warm btrfs tree under unchanged five-minute/2-thread/
+16GiB/150GiB guards. Scoped cleanup retired23 superseded RustGM CLI pins and490
+obsolete generated outputs, preserving current baselines, inputs and diagnostics.
+
 Latest PA25 dependency checkpoint: the
 [canonical aggregate evaluator/reader boundary](pa25-aggregate-const-values.md)
 passes 11 private controls, 22 production tests and PA21 758/758 under the existing

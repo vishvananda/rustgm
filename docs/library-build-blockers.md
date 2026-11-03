@@ -58,6 +58,16 @@ Use the [current execution plan](library-bootstrap-acceleration.md) to choose wo
 real artifact/source consumers, demanded imported-body proof and consolidated
 qualification. The existing complete assignment and upstream gates remain required.
 
+The [transmutability source checkpoint](pa31-transmutability-source-checkpoint.md)
+now qualifies the actual unsafe trait/options declarations, forward/default-body
+source checking and typed named-field assumption decoding. Its23 focused tests,
+PA21 758/758, const-machine109/109 and eight existing natives pass. Four independent
+source outcomes include Rust's real implicit default-method native `1`.
+RustGM still requires the all-values relation, coinductive evidence and imported
+transport. LIB-124 remains open and the F5 original-core observation stays the
+last original-input result. Full predecessor CI41712407595 on79a553670 passes
+every gate; no original artifact or whole PA is completed by the local boundary.
+
 The user resumed Root-only work after the 2026-11-02 integration checkpoint.
 Both former workers remain stopped and their completed commits are on main.
 The existing warm worktree and scratch

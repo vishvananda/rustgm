@@ -5441,3 +5441,16 @@ the shared derive header retains its real generic constraints. Keep language
 requests distinct from library policy definitions and implied_by targets.
 Const-argument lowering consumes the common typed initializer keyed by canonical
 const identity; it must preserve owned snapshots instead of forcing scalar bits.
+
+Transmutability source authority has separate declaration, value and relation
+boundaries. Authenticate the actual unsafe trait, its two owned formals and its
+deny-implementation/dyn/coinductive claims. Complete the actual nongeneric options
+struct only after its four named boolean fields exist. Decode canonical values
+against those real field ordinals and nominal identity; source order and scalar
+bits confer no assumption authority. These constant-size checks use the existing
+cold source ledger without growing ordinary body or syntax records. A completed
+header/value does not prove the all-values layout, validity, reference or lifetime
+relation. Preserve caller-scoped/coinductive obligations, the actual source
+default method and required imported transport; a successful value transmute is
+not a type-level transmutability proof. See the
+[source checkpoint](docs/pa31-transmutability-source-checkpoint.md).
