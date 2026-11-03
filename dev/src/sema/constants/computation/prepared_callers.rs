@@ -6,7 +6,7 @@ use super::{
 use crate::{
     sema::{dispatch::Dispatcher, traits::obligations::Reservation},
     types::{
-        arguments::{Argument, ConstKind},
+        arguments::Argument,
         outlives::Pair,
         substitute::{Bound, RegionEquations},
     },
@@ -49,7 +49,7 @@ impl<'a> BodyCaller<'a> {
                     open |= facts.types.needs_region_context(ty) == Some(true);
                 }
                 Argument::Const(id) => {
-                    if !matches!(facts.types.const_kind(id), Some(ConstKind::Value(_))) {
+                    if !facts.types.const_is_value(id) {
                         return Ok(false);
                     }
                 }

@@ -2,10 +2,7 @@
 use crate::{
     body::ir::{Body, Rvalue},
     sema::{model::Declarations, values::Instance},
-    types::{
-        TypeId,
-        arguments::{Argument, ConstKind},
-    },
+    types::{TypeId, arguments::Argument},
 };
 
 pub(super) fn check(facts: &mut Declarations, body: &Body) -> Result<(), &'static str> {
@@ -34,9 +31,7 @@ pub(super) fn check(facts: &mut Declarations, body: &Body) -> Result<(), &'stati
                         "rigid constant pattern requires a parameter-independent inline dependency",
                     );
                 }
-                Rvalue::ConstArgument(id)
-                    if !matches!(facts.types.const_kind(id), Some(ConstKind::Value(_))) =>
-                {
+                Rvalue::ConstArgument(id) if !facts.types.const_is_value(id) => {
                     return Err("constant pattern depends on a rigid const parameter");
                 }
                 _ => {}
@@ -69,9 +64,7 @@ fn arguments(
         visit(work)?;
         match argument {
             Argument::Type(ty) => closed(facts, ty, work)?,
-            Argument::Const(id)
-                if !matches!(facts.types.const_kind(id), Some(ConstKind::Value(_))) =>
-            {
+            Argument::Const(id) if !facts.types.const_is_value(id) => {
                 return Err("constant pattern depends on a rigid const parameter");
             }
             Argument::Lifetime(_) | Argument::Const(_) => {}

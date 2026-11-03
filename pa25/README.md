@@ -8,12 +8,13 @@ Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The
 
 Const functions, statics, promotions and symbolic allocation provenance.
 
-The [aggregate const-value foundation](../docs/pa25-aggregate-const-values.md)
-provides canonical typed products, nominal variant identities and compressed
-repeats for the original core `Assume` dependency. Source parameter admission,
-evaluator/reader integration, actual marker/feature proof and PA29 transport
-remain required. The data representation alone does not enable aggregate const
-generics or complete the assignment.
+The [canonical aggregate const-value boundary](../docs/pa25-aggregate-const-values.md)
+provides typed products, nominal variant identities, compressed repeats and
+evaluator/reader integration for the original core `Assume` dependency. Suspended
+queries publish canonical identities, and readers/VM allocations share immutable
+values while preserving typed mutation and authority checks. Source parameter
+admission, actual marker/feature proof and PA29 transport remain required. This
+boundary does not enable aggregate source const generics or complete the assignment.
 
 The [source allowance checkpoint](../docs/pa31-const-fn-allowances-checkpoint.md)
 implements exact rustc_allow_const_fn_unstable body effects, keeping recursive

@@ -399,7 +399,7 @@ fn substitute(
                 else {
                     return Err("const operand substitution changed argument kind");
                 };
-                if facts.types.constant(actual).is_none() {
+                if !facts.types.const_is_value(actual) {
                     return Err("instance operand retains an unresolved const parameter");
                 }
                 *id = actual;

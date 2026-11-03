@@ -14,10 +14,7 @@ mod seals;
 use super::{Declarations, Error, InitializerKind, NodeKey, Queries, Query, TypeId};
 use crate::{
     sema::values::Instance,
-    types::{
-        Kind, RegionId,
-        arguments::{Argument, ConstKind},
-    },
+    types::{Kind, RegionId, arguments::Argument},
 };
 pub(crate) use catalog::DeclarationEpoch;
 pub(crate) use catalog::Enclosing as CallerInstance;
@@ -367,9 +364,7 @@ impl SourceComputation {
                             && facts.types.escaping_binders(ty) == Some(0)
                     }
                 }
-                Argument::Const(id) => {
-                    matches!(facts.types.const_kind(id), Some(ConstKind::Value(_)))
-                }
+                Argument::Const(id) => facts.types.const_is_value(id),
             };
             if !closed {
                 return Err("source computation retains a non-lifetime parameter");

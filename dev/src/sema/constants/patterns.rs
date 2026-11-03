@@ -1,4 +1,5 @@
 //! Translate shared constant values into selected patterns with use-site provenance.
+use super::values::{Constant, Reader, View};
 use super::{Declarations, Error, NodeKey, Report, Type, Value, VariantId, products};
 use crate::support::hash::HashMap;
 use crate::{
@@ -13,10 +14,22 @@ struct Expansion<'a> {
     facts: &'a mut Declarations,
     source: NodeKey,
     work: Vec<(PatternId, Value)>,
-    products: HashMap<(products::Id, TypeId), PatternId>,
+    products: HashMap<(ProductKey, TypeId), PatternId>,
     references: HashMap<(super::references::Pointer, TypeId), PatternId>,
     texts: HashMap<(crate::sema::text::Id, TypeId), PatternId>,
     remaining: u64,
+}
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+enum ProductKey {
+    Stored(products::Id),
+    Canonical(crate::types::arguments::trees::AggregateId),
+}
+fn product_key(value: Value) -> Option<ProductKey> {
+    match value {
+        Value::Product(id) => Some(ProductKey::Stored(id)),
+        Value::Canonical(id) => Some(ProductKey::Canonical(id)),
+        _ => None,
+    }
 }
 pub(super) fn expand(
     report: &Report,
@@ -57,7 +70,7 @@ pub(super) fn expand(
     if !equality.partial_eq {
         return Err(error("constant pattern type must implement PartialEq"));
     }
-    if let Value::Product(product) = value {
+    if let Some(product) = product_key(value) {
         expansion.products.insert((product, ty), root);
     }
     expansion.drain().map_err(error)
@@ -134,8 +147,8 @@ impl Expansion<'_> {
                 }
                 (
                     Some(Type::Tuple(_) | Type::Array { .. } | Type::Slice(_) | Type::Adt(..)),
-                    Value::Product(product),
-                ) => self.product(ty, product)?,
+                    value @ (Value::Product(_) | Value::Canonical(_)),
+                ) => self.product(ty, value)?,
                 (Some(Type::Adt(..)), Value::Variant(variant)) => {
                     if self.nominal(ty, variant)? != 0 {
                         return Err("fieldless constant has constructor fields");
@@ -153,9 +166,13 @@ impl Expansion<'_> {
         }
         Ok(())
     }
-    fn product(&mut self, ty: TypeId, product: products::Id) -> Result<Kind, &'static str> {
-        let length = self.facts.constant_products.length(product)?;
-        let variant = self.facts.constant_products.variant(product)?;
+    fn product(&mut self, ty: TypeId, value: Value) -> Result<Kind, &'static str> {
+        let (length, variant) = match Reader::new(self.facts).view(Constant(value))? {
+            View::Product { length, variant } => (length, variant),
+            View::Repeat { length, .. } | View::ByteRange { length, .. } => (length, None),
+            _ => return Err("constant product lost its structural view"),
+        };
+        Reader::new(self.facts).field_types(ty, Constant(value))?;
         let expected = match self.facts.types.kind(ty) {
             Some(Type::Tuple(fields)) => self
                 .facts
@@ -182,11 +199,8 @@ impl Expansion<'_> {
         let mark = self.work.len();
         for index in 0..length {
             let (ty, selection) = child(self.facts, ty, variant, index)?;
-            let value = self
-                .facts
-                .constant_products
-                .get(product, index, &self.facts.texts)?;
-            let pattern = self.select(ty, value)?;
+            let field = Reader::new(self.facts).field(Constant(value), index)?.0;
+            let pattern = self.select(ty, field)?;
             self.facts
                 .patterns
                 .fields
@@ -282,7 +296,7 @@ impl Expansion<'_> {
         {
             return Ok(id);
         }
-        if let Value::Product(product) = value
+        if let Some(product) = product_key(value)
             && let Some(&id) = self.products.get(&(product, ty))
         {
             return Ok(id);
@@ -300,7 +314,7 @@ impl Expansion<'_> {
         if let Value::Text(text) | Value::Bytes(text) = value {
             self.texts.insert((text, ty), id);
         }
-        if let Value::Product(product) = value {
+        if let Some(product) = product_key(value) {
             self.products.insert((product, ty), id);
         }
         self.work.push((id, value));

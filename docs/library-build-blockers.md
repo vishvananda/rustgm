@@ -35,12 +35,17 @@ passed every gate, including the earlier CI's three repaired private expectation
 The native successor's full CI41662263222 on7e0c6517f also passes every gate.
 No whole PA is activated.
 
-LIB-124 now has a [canonical aggregate const-value foundation](pa25-aggregate-const-values.md):
+LIB-124 now has a [canonical aggregate const-value boundary](pa25-aggregate-const-values.md):
 typed nominal/variant identity, shared child IDs, normalized compressed repeats,
-failed-payment guards and bounded deep-sharing controls. Private5, production9
-and PA21 758/758 pass. This representation does not yet enable aggregate Rust
-parameters: actual evaluator/reader handoff, feature/ConstParamTy proof,
+failed-payment guards, actual evaluator/reader handoff and bounded deep-sharing
+controls. The successor passes private11, production22 and PA21 758/758. Suspended
+queries retain actual initializer readiness and publish canonical identities;
+VM reads/mutation preserve independent allocations and existing authority. This
+boundary does not yet enable aggregate Rust parameters: feature/ConstParamTy proof,
 TransmuteFrom's relation and general nominal/constant transport remain required.
+Three native controls (eight executions) also pass, preserving the actual source
+MaybeUninit panic/destructor and wrapper/NoDrop behavior. The previous data
+foundation's push CI41670085855 is terminal success.
 
 Use the [current execution plan](library-bootstrap-acceleration.md) to choose work:
 real artifact/source consumers, demanded imported-body proof and consolidated

@@ -192,27 +192,23 @@ impl Queries<'_> {
             complete.push(if let Some(value) = value {
                 value
             } else {
-                let Some(Value::Product(base)) = base else {
+                let Some(base) = base else {
                     return Err(self.error(Query::Node(key), "missing constant update field"));
                 };
-                if self
-                    .typing
-                    .facts
-                    .constant_products
-                    .variant(base)
-                    .map_err(|e| self.error(Query::Node(key), e))?
-                    != Some(variant)
+                let reader = super::values::Reader::new(self.typing.facts);
+                if !matches!(reader.view(super::values::Constant(base))
+                    .map_err(|e|self.error(Query::Node(key),e))?,
+                    super::values::View::Product{variant:Some(actual),..} if actual==variant)
                 {
                     return Err(self.error(
                         Query::Node(key),
                         "constant update base has a different constructor",
                     ));
                 }
-                self.typing
-                    .facts
-                    .constant_products
-                    .get(base, index as u64, &self.typing.facts.texts)
+                reader
+                    .field(super::values::Constant(base), index as u64)
                     .map_err(|e| self.error(Query::Node(key), e))?
+                    .0
             });
         }
         if complete.is_empty() {

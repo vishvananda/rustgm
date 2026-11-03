@@ -70,6 +70,7 @@ pub(super) enum Value {
     Bytes(super::text::Id),
     Variant(VariantId),
     Product(products::Id),
+    Canonical(crate::types::arguments::trees::AggregateId),
     Image(images::Id),
 }
 impl Value {
@@ -90,6 +91,7 @@ impl Value {
             | Self::Function(_)
             | Self::Variant(_)
             | Self::Product(_)
+            | Self::Canonical(_)
             | Self::Image(_)
             | Self::Text(_)
             | Self::Bytes(_) => Err("constant requires a scalar value"),

@@ -5418,6 +5418,14 @@ warm queries still pay work. Payload nodes and field edges belong to the const
 producer, not unrelated trait-input charges or cache-invalidating extents.
 Semantic producers separately validate actual fields, feature/marker authority,
 initialized values and defining contexts. Data interning supplies none of that
-permission. The [PA25 foundation and integration order](docs/pa25-aggregate-const-values.md)
-records qualified data controls and the remaining evaluator, reader, declaration,
+permission. Ordinary and suspended generic-value queries publish canonical
+`ConstId` results. Convert completed evaluator products iteratively, memoizing
+each `(TypeId, Constant)` with its published field recipe and actual variant.
+Keep the scalar path free of graph scratch. Pay bounded conversion work/storage
+separately from AST work and, in source mode, against the completed local producer.
+Readers retain a compact canonical handle and consume immediate children without
+rebuilding the product arena. Preserve storage-type identity, array-length scalar
+requirements, actual out-of-bounds faults and ordinary VM mutation/authority rules.
+The [PA25 boundary and integration order](docs/pa25-aggregate-const-values.md)
+records data/evaluator/reader controls and the remaining source declaration,
 transmutability-relation and imported-artifact work.

@@ -10,6 +10,7 @@ mod computed;
 mod enumerations;
 mod environments;
 mod footprints;
+mod interned_products;
 mod niches;
 mod physical_types;
 mod ptr_values;
@@ -23,6 +24,7 @@ mod mutation;
 mod session;
 mod structure;
 mod tags;
+pub(crate) use structure::FieldRecipe;
 pub use structure::FieldTypes;
 mod array_storage;
 mod inline;
@@ -177,6 +179,7 @@ impl<'a> Reader<'a> {
                 variant: Some(id),
             },
             Value::Product(id) => self.facts.constant_products.view(id)?,
+            Value::Canonical(id) => self.canonical_view(id)?,
         })
     }
     /// A projected location retains its original base; equal values are not
@@ -236,6 +239,7 @@ impl<'a> Reader<'a> {
                 .map(|b| Constant::scalar(Scalar::Integer(u128::from(b))))
                 .ok_or("constant index is out of bounds"),
             Value::Image(_) => self.array_image_field(constant, index),
+            Value::Canonical(id) => self.canonical_field(id, index),
             _ => Err("constant projection requires a product"),
         }
     }
@@ -289,8 +293,11 @@ impl Constant {
         let value = match store.const_kind(id) {
             Some(crate::types::arguments::ConstKind::Value(value)) => value,
             Some(crate::types::arguments::ConstKind::Parameter(_)) => return Ok(None),
-            Some(crate::types::arguments::ConstKind::Aggregate(_)) => {
-                return Err("aggregate const argument requires typed value materialization");
+            Some(crate::types::arguments::ConstKind::Aggregate(aggregate)) => {
+                store
+                    .aggregate_constant(aggregate)
+                    .ok_or("missing canonical aggregate argument")?;
+                return Ok(Some(Self(Value::Canonical(aggregate))));
             }
             None => return Err("missing canonical const argument"),
         };
@@ -618,6 +625,18 @@ impl<'a> Evaluator<'a> {
             Value::Image(_) => Reader::new(facts)
                 .array_image_field(value, index)
                 .map_err(Failure::Invalid),
+            Value::Canonical(id) => {
+                let reader = Reader::new(facts);
+                let (View::Product { length, .. } | View::Repeat { length, .. }) =
+                    reader.canonical_view(id)?
+                else {
+                    return Err("canonical argument lost its product view".into());
+                };
+                if index >= length {
+                    return Err(Failure::Fault("constant index is out of bounds"));
+                }
+                reader.canonical_field(id, index).map_err(Failure::Invalid)
+            }
             _ => Err(Failure::Invalid("constant projection requires a product")),
         }
     }
@@ -711,7 +730,11 @@ impl<'a> Evaluator<'a> {
             return result.map(Constant);
         }
         let (source, value, kind) = if kind == Cast::EnumToInteger {
-            let Value::Variant(id) = value.0 else {
+            let View::Product {
+                variant: Some(id),
+                length: 0,
+            } = Reader::new(self.facts()).view(value)?
+            else {
                 return Err(Failure::Invalid("missing constant enum variant"));
             };
             let (tag, discriminant) = Reader::new(self.facts())

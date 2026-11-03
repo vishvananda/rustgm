@@ -95,11 +95,7 @@ impl Checker<'_> {
             .map_err(|e| self.error(source, e))?;
         match default {
             Argument::Const(constant) => {
-                return Ok(matches!(
-                    self.facts.types.const_kind(constant),
-                    Some(crate::types::arguments::ConstKind::Value(_))
-                )
-                .then_some(id));
+                return Ok(self.facts.types.const_is_value(constant).then_some(id));
             }
             Argument::Type(ty) if self.closed_default(ty) => {
                 let properties = proof

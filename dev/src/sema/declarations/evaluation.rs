@@ -3,7 +3,7 @@ use super::{Checker, DefId, Error, NodeKey, TypeId, Work, regions};
 use crate::support::hash::{HashMap, HashSet};
 use crate::{
     sema::{arguments, constants},
-    types::arguments::{ConstId, Constant},
+    types::arguments::ConstId,
 };
 
 #[derive(Clone, Copy)]
@@ -165,14 +165,20 @@ impl Checker<'_> {
             &self.constant_evaluations.ready_initializers,
         )?;
         match progress {
-            constants::ArgumentProgress::Complete(bits) => {
-                let id = self
-                    .facts
-                    .types
-                    .intern_constant(Constant { ty, bits })
-                    .map_err(|e| self.error(key, e))?;
+            constants::ArgumentProgress::Complete(id) => {
                 self.constant_evaluations.completed.insert((key, ty), id);
                 if array_length {
+                    let bits = self
+                        .facts
+                        .types
+                        .constant(id)
+                        .filter(|value| {
+                            value.ty == TypeId::primitive(crate::types::Primitive::Usize)
+                        })
+                        .ok_or_else(|| {
+                            self.error(key, "array length requires its actual usize scalar")
+                        })?
+                        .bits;
                     let length = u64::try_from(bits)
                         .map_err(|_| self.error(key, "array length overflows usize"))?;
                     self.facts.array_lengths.insert(key, length);

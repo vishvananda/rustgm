@@ -91,6 +91,15 @@ impl<'a> Reader<'a> {
         value: Constant,
     ) -> Result<FieldRecipe, &'static str> {
         ty = self.storage_type(ty)?;
+        if let super::Value::Canonical(id) = value.0
+            && self
+                .facts
+                .types
+                .aggregate_constant(id)
+                .is_none_or(|value| value.ty() != ty)
+        {
+            return Err("canonical const product differs from its exact storage type");
+        }
         if let Some(Kind::Closure { environment, .. }) = self.facts.types.kind(ty) {
             ty = environment;
         }

@@ -1,5 +1,18 @@
 # Parallel library bootstrap implementation
 
+Latest PA25 dependency checkpoint: the
+[canonical aggregate evaluator/reader boundary](pa25-aggregate-const-values.md)
+passes 11 private controls, 22 production tests and PA21 758/758 under the existing
+five-minute guards. Suspended queries publish actual canonical IDs, repeated/shared
+values remain bounded, and VM allocations preserve mutation and raw-write authority.
+Source aggregate declaration/marker proof, TransmuteFrom's relation and imported
+nominal/value transport remain open; no new original-core artifact is claimed.
+The last inactive root tree, PA29, was relocated intact to
+/mnt/vizier/rustgm-scratch/rustgm-pa29-work with all file checksums verified and
+its old home path preserved as a compatibility symlink for frozen core inputs.
+Git/controller registration now use btrfs; limits and the active warm cache are
+unchanged. Only canonical main remains on root. Root continues alone.
+
 Latest runtime checkpoint: [native MaybeUninit](pa31-maybe-uninit-native-checkpoint.md)
 qualifies all three original value/destruction/panic observers and existing
 wrapper/NoDrop/ABI controls. Source catalog compaction reduces1840 to1608 bytes;

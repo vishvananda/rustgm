@@ -423,6 +423,13 @@ impl Queries<'_> {
                         facts.constant_products.variant(id).map_err(error)?
                     }
                     Some(Value::Variant(id)) => Some(id),
+                    Some(value @ Value::Canonical(_)) => match super::values::Reader::new(facts)
+                        .view(super::values::Constant(value))
+                        .map_err(error)?
+                    {
+                        super::values::View::Product { variant, .. } => variant,
+                        _ => return Err(error("canonical nominal backing lost its variant")),
+                    },
                     _ => None,
                 };
                 let ordinal = variant.map_or(0, |id| facts.members.variants[id.0 as usize].ordinal);

@@ -1,6 +1,8 @@
-//! Generic const arguments reuse scalar typing, eligibility and evaluation queries.
-use super::{Declarations, Error, NodeKey, Queries, Query, Report, Scalar, TypeId, Work};
+//! Generic const arguments reuse ordinary typing, eligibility and evaluated values.
+mod valtrees;
+use super::{Declarations, Error, NodeKey, Queries, Query, Report, TypeId, Work};
 use crate::resolve::package::ModuleId;
+use crate::types::arguments::ConstId;
 
 #[derive(Clone, Copy)]
 pub(in crate::sema) struct Input {
@@ -10,7 +12,7 @@ pub(in crate::sema) struct Input {
 }
 
 pub(in crate::sema) enum Progress {
-    Complete(u128),
+    Complete(ConstId),
     Prepare(
         super::suspension::Dependency,
         Box<super::suspension::Continuation>,
@@ -71,12 +73,9 @@ pub(in crate::sema) fn advance(
         *scratch = saved;
         return Ok(Progress::Prepare(definition, continuation));
     }
-    let scalar = queries
-        .value(Query::Node(key))?
-        .scalar()
-        .map_err(|e| Declarations::error(report, key, e))?;
+    let result = complete(&mut queries, key, ty)?;
     *scratch = queries.into_scratch();
-    scalar_bits(report, key, scalar).map(Progress::Complete)
+    Ok(Progress::Complete(result))
 }
 
 pub(in crate::sema) fn argument(
@@ -87,7 +86,7 @@ pub(in crate::sema) fn argument(
     key: NodeKey,
     ty: TypeId,
     module: ModuleId,
-) -> Result<u128, Error> {
+) -> Result<ConstId, Error> {
     let mut queries =
         Queries::with_scratch(report, facts, Some(discriminants), std::mem::take(scratch));
     queries.value_scope = Some(super::instances::ValueScope::Anonymous { body: key, ty });
@@ -96,23 +95,23 @@ pub(in crate::sema) fn argument(
     queries.work.push(Work::Enter(Query::Node(key)));
     queries.prepare(key)?;
     queries.drain()?;
-    let scalar = queries
-        .value(Query::Node(key))?
-        .scalar()
-        .map_err(|e| Declarations::error(report, key, e))?;
+    let result = complete(&mut queries, key, ty)?;
     *scratch = queries.into_scratch();
-    scalar_bits(report, key, scalar)
+    Ok(result)
 }
 
-fn scalar_bits(report: &Report, key: NodeKey, scalar: Scalar) -> Result<u128, Error> {
-    match scalar {
-        Scalar::Integer(bits) => Ok(bits),
-        Scalar::Boolean(value) => Ok(u128::from(value)),
-        Scalar::Character(value) => Ok(u128::from(u32::from(value))),
-        Scalar::Float(_) => Err(Declarations::error(
-            report,
-            key,
-            "floating const generic argument",
-        )),
-    }
+fn complete(queries: &mut Queries<'_>, key: NodeKey, ty: TypeId) -> Result<ConstId, Error> {
+    let value = queries.value(Query::Node(key))?;
+    // Value graph work has its own finite phase budget; it is not bounded by AST size.
+    let value_limit = queries
+        .steps
+        .saturating_add(crate::support::crates::MAX_COMPONENTS);
+    valtrees::canonicalize(
+        queries.typing.facts,
+        &mut queries.steps,
+        value_limit,
+        ty,
+        super::values::Constant(value),
+    )
+    .map_err(|e| Declarations::error(queries.report, key, e))
 }

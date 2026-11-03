@@ -298,6 +298,10 @@ impl Queries<'_> {
     ) -> Result<Value, Error> {
         let error = |e| self.error(Query::Place(key), e);
         match value {
+            Value::Canonical(_) => super::values::Reader::new(self.typing.facts)
+                .field(super::values::Constant(value), index)
+                .map(|value| value.0)
+                .map_err(error),
             Value::Product(id) => self
                 .typing
                 .facts

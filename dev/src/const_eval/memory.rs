@@ -3,6 +3,9 @@ mod active_tags;
 mod bytes;
 mod image_paths;
 mod loads;
+#[cfg(test)]
+#[path = "../../tests/invariants/interned_operands.rs"]
+mod operand_tests;
 mod ranges;
 mod raw_slices;
 mod reinterpretation;

@@ -57,6 +57,32 @@ impl Aggregate<'_> {
     }
 }
 impl Store {
+    pub(crate) fn intern_const_charged(
+        &mut self,
+        kind: ConstKind,
+        mut pay: impl FnMut(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<ConstId, &'static str> {
+        pay(1, 0)?;
+        let arguments = self.arguments.as_deref();
+        if let Some(id) = arguments.and_then(|a| a.constant_index.get(&kind)) {
+            return Ok(*id);
+        }
+        let mut growth = Growth::vector::<ConstKind>(
+            arguments.map_or(0, |a| a.constants.len()),
+            arguments.map_or(0, |a| a.constants.capacity()),
+            1,
+        );
+        growth.include(Growth::map::<ConstKind, ConstId>(
+            arguments.map_or(0, |a| a.constant_index.len()),
+            arguments.map_or(0, |a| a.constant_index.capacity()),
+            1,
+        ));
+        if arguments.is_none() {
+            growth.bytes = growth.bytes.saturating_add(size_of::<Arguments>());
+        }
+        pay(growth.work, growth.bytes)?;
+        self.intern_const(kind)
+    }
     #[must_use]
     pub fn aggregate_constant(&self, id: AggregateId) -> Option<Aggregate<'_>> {
         let storage = self.arguments.as_ref()?.aggregates.as_deref()?;

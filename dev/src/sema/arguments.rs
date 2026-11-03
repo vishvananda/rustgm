@@ -7,10 +7,7 @@ use crate::{
     },
     sema::{constants, generics::captures::Captures, model::Declarations},
     syntax::ast::Kind,
-    types::{
-        TypeId,
-        arguments::{ConstId, Constant},
-    },
+    types::{TypeId, arguments::ConstId},
 };
 
 pub(super) fn groups(
@@ -131,7 +128,7 @@ impl Constants<'_> {
             Input::Parameter(parameter) => return Ok(parameter),
             Input::Expression(input) => input,
         };
-        let value = crate::sema::constants::generic_argument(
+        crate::sema::constants::generic_argument(
             self.report,
             self.facts,
             self.scratch,
@@ -139,11 +136,7 @@ impl Constants<'_> {
             input.key,
             input.ty,
             input.module,
-        )?;
-        self.facts
-            .types
-            .intern_constant(Constant { ty, bits: value })
-            .map_err(|e| Declarations::error(self.report, key, e))
+        )
     }
 
     /// Preserve standalone symbolic parameters; otherwise qualify the anonymous input once.
