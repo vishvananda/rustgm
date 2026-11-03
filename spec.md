@@ -865,6 +865,17 @@ existing artifact profiles closed until their per-policy relationship columns
 and fresh permission consumers are complete. See the
 [ConstParamTy checkpoint](docs/pa31-const-parameter-derive-prerequisite.md).
 
+Former-name links share that same cold relationship owner with an explicit kind;
+they never enable the canonical feature. Project canonical feature definitions
+once, keeping the first unstable declaration and checking stable/unstable or
+release-version conflicts, including const policies. Old names are opaque strings,
+not extra feature definitions or implication targets. Validate root requests with
+a prepaid borrowed index, preserving canonical-name collision precedence; do not
+scan every alias per request or semantic use. Current release means the pinned
+Rust language version, independently of the host compiler. Keep each actual policy,
+const eligibility, metadata provenance and unencoded-relationship fence. See the
+[renamed-feature packet](pa31/tests/spec/renamed-features/README.md).
+
 The explicit source Provided-contract profile uses tag 11, row version 1. Retain
 one advisory-column owner, the complete Provided family and numbering, actual
 namespace bindings, and positive policy that supported headers have no written

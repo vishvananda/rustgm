@@ -1,12 +1,9 @@
 //! Final feature names are resolved only after enabled expansion and name resolution.
 use super::{Draft, Inventory, owners};
-use crate::{
-    resolve::{
-        model::{DefKind, Resolution, Target},
-        package::{Error, Package},
-        unit::FileId,
-    },
-    support::hash::HashSet,
+use crate::resolve::{
+    model::{DefKind, Resolution, Target},
+    package::{Error, Package},
+    unit::FileId,
 };
 
 pub(in crate::resolve) fn complete(
@@ -37,51 +34,7 @@ pub(in crate::resolve) fn complete(
             "dependency library stability contracts are not implemented",
         ));
     }
-    let storage = crate::support::retained::new_map::<&str, ()>(draft.policies.len());
-    draft.charge(
-        draft
-            .policies
-            .iter()
-            .map(|policy| policy.feature.len().saturating_add(1))
-            .sum::<usize>()
-            .saturating_add(
-                library
-                    .requests
-                    .iter()
-                    .map(|name| name.len().saturating_add(1))
-                    .sum::<usize>(),
-            )
-            .saturating_add(draft.implication_work()),
-        storage,
-    )?;
-    let features: HashSet<_> = draft
-        .policies
-        .iter()
-        .map(|policy| policy.feature.as_ref())
-        .collect();
-    draft.validate_implications(package, &features, imported)?;
-    // These are also language gates: using them needs no local unstable API.
-    // This does not add either name to `features` or validate an implied_by target.
-    let aggregate_language = package
-        .requested_aggregate_const_parameters()
-        .map_err(|message| Error::at(FileId(0), 0, message))?;
-    for name in &library.requests {
-        let known = features.contains(name.as_ref())
-            || (aggregate_language
-                && matches!(name.as_ref(), "min_adt_const_params" | "adt_const_params"));
-        if !known
-            && !imported
-                .map(|imports| imports.has_feature(name))
-                .transpose()?
-                .unwrap_or(false)
-        {
-            return Err(Error::at(
-                FileId(0),
-                0,
-                "unsupported active source-core feature or undefined library feature request",
-            ));
-        }
-    }
+    draft.check_feature_requests(package, imported, &library.requests)?;
     if !library.staged && !draft.policies.is_empty() {
         return Err(Error::at(
             FileId(0),
@@ -109,7 +62,7 @@ pub(in crate::resolve) fn complete(
     validate_type_boundary(package, facts, &mut draft)?;
     Ok(Some(Inventory {
         policies: draft.policies,
-        implications: draft.implications,
+        relationships: draft.relationships,
         declarations: owners.declarations,
         imports: owners.imports,
         consts: owners.consts,

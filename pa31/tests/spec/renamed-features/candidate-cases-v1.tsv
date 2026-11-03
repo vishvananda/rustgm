@@ -1,0 +1,44 @@
+declaration	pa31/tests/spec/renamed-features/declaration.rs	0	False		
+canonical-request	pa31/tests/spec/renamed-features/canonical-request.rs	0	False		
+old-request	pa31/tests/spec/renamed-features/old-request.rs	1	False	renamed	
+both-requests	pa31/tests/spec/renamed-features/both-requests.rs	1	False	renamed	
+alias-empty	pa31/tests/spec/renamed-features/alias-empty.rs	0	False		
+alias-nonidentifier	pa31/tests/spec/renamed-features/alias-nonidentifier.rs	0	False		
+alias-punctuation	pa31/tests/spec/renamed-features/alias-punctuation.rs	0	False		
+alias-unicode	pa31/tests/spec/renamed-features/alias-unicode.rs	0	False		
+alias-raw-literal	pa31/tests/spec/renamed-features/alias-raw-literal.rs	0	False		
+same-name	pa31/tests/spec/renamed-features/same-name.rs	0	False		
+duplicate-key	pa31/tests/spec/renamed-features/duplicate-key.rs	1	False		
+nonstring	pa31/tests/spec/renamed-features/nonstring.rs	1	False		
+bare-key	pa31/tests/spec/renamed-features/bare-key.rs	1	False		
+stable-argument	pa31/tests/spec/renamed-features/stable-argument.rs	1	False		
+missing-issue	pa31/tests/spec/renamed-features/missing-issue.rs	1	False		
+cfg-removed	pa31/tests/spec/renamed-features/cfg-removed.rs	0	False		
+cfg-removed-request	pa31/tests/spec/renamed-features/cfg-removed-request.rs	1	False	unknown feature	
+nested-owner	pa31/tests/spec/renamed-features/nested-owner.rs	0	False		
+duplicate-first-none	pa31/tests/spec/renamed-features/duplicate-first-none.rs	1	False	unknown feature	
+duplicate-first-old	pa31/tests/spec/renamed-features/duplicate-first-old.rs	1	False	renamed	
+duplicate-second-ignored	pa31/tests/spec/renamed-features/duplicate-second-ignored.rs	1	False	unknown feature	
+duplicate-canonical	pa31/tests/spec/renamed-features/duplicate-canonical.rs	0	False		
+canonical-collision-first	pa31/tests/spec/renamed-features/canonical-collision-first.rs	0	False		
+rename-collision-first	pa31/tests/spec/renamed-features/rename-collision-first.rs	1	False	renamed	
+constant-declaration	pa31/tests/spec/renamed-features/constant-declaration.rs	0	False		
+constant-current	pa31/tests/spec/renamed-features/constant-current.rs	0	False		
+constant-old	pa31/tests/spec/renamed-features/constant-old.rs	1	False	renamed	
+constant-second-ignored	pa31/tests/spec/renamed-features/constant-second-ignored.rs	1	False	unknown feature	
+alias-not-implication	pa31/tests/spec/renamed-features/alias-not-implication.rs	1	False		
+canonical-implication	pa31/tests/spec/renamed-features/canonical-implication.rs	0	False		
+both-relations	pa31/tests/spec/renamed-features/both-relations.rs	0	False		
+ordinary-native	pa31/tests/spec/renamed-features/setup-v2/ordinary-native.rs	0	False		
+source-provider	pa31/tests/spec/renamed-features/setup-v2/source-provider.rs	0	True		
+source-provider-current	pa31/tests/spec/renamed-features/setup-v2/source-provider-current.rs	0	True		
+source-provider-old	pa31/tests/spec/renamed-features/setup-v2/source-provider-old.rs	1	True	renamed	
+imported-canonical	pa31/tests/spec/renamed-features/setup-v2/imported-canonical.rs	0	False		declaration
+imported-old	pa31/tests/spec/renamed-features/setup-v2/imported-old.rs	1	False	renamed	declaration
+imported-ungated	pa31/tests/spec/renamed-features/setup-v2/imported-ungated.rs	1	False		declaration
+stable-then-unstable	pa31/tests/spec/renamed-features/setup-v4/stable-then-unstable.rs	1	False		
+unstable-then-stable	pa31/tests/spec/renamed-features/setup-v4/unstable-then-stable.rs	1	False		
+stable-version-conflict	pa31/tests/spec/renamed-features/setup-v4/stable-version-conflict.rs	1	False		
+same-stable-version	pa31/tests/spec/renamed-features/setup-v4/same-stable-version.rs	0	False		
+current-stable-version	pa31/tests/spec/renamed-features/setup-v4/current-stable-version.rs	0	False		
+const-definition-conflict	pa31/tests/spec/renamed-features/setup-v4/const-definition-conflict.rs	1	False		

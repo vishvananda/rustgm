@@ -5,9 +5,9 @@ mod compatibility_notes;
 mod constness;
 mod exported_scopes;
 pub(crate) mod fn_allowances;
-mod implications;
 mod inventory;
 mod owners;
+mod relationships;
 mod request_order;
 use super::{
     model::DefId,
@@ -110,7 +110,7 @@ impl Library {
                 vector(&self.requests),
                 size_of::<Inventory>(),
                 vector(&inventory.policies),
-                vector(&inventory.implications),
+                vector(&inventory.relationships),
                 vector(&inventory.declarations),
                 vector(&inventory.imports),
                 inventory.consts.as_deref().map_or(0, |consts| {
@@ -139,8 +139,8 @@ impl Library {
             };
             budget.charge(0, policy.feature.len().saturating_add(reason))?;
         }
-        for edge in &inventory.implications {
-            budget.charge(1, edge.by.len())?;
+        for edge in &inventory.relationships {
+            budget.charge(1, edge.name.len())?;
         }
         Ok(())
     }
@@ -167,7 +167,7 @@ impl Library {
             .ok_or("library stability inventory is incomplete")?;
         if self.staged
             || !inventory.policies.is_empty()
-            || !inventory.implications.is_empty()
+            || !inventory.relationships.is_empty()
             || inventory.consts.is_some()
         {
             return Err("library stability metadata export is not implemented");
@@ -178,7 +178,7 @@ impl Library {
 /// Completed declaration policies. Numerical IDs belong to this resolved package.
 pub struct Inventory {
     policies: Vec<Policy>,
-    implications: Vec<implications::Implication>,
+    relationships: Vec<relationships::Relationship>,
     declarations: Vec<Option<PolicyId>>,
     imports: Vec<Option<PolicyId>>,
     consts: Option<Box<constness::ConstPolicies>>,
@@ -251,7 +251,7 @@ pub(super) enum FunctionMarker {
 #[derive(Default)]
 pub(super) struct Draft {
     policies: Vec<Policy>,
-    implications: Vec<implications::Implication>,
+    relationships: Vec<relationships::Relationship>,
     attributes: HashMap<NodeKey, PolicyId>,
     import_attributes: HashMap<NodeKey, PolicyId>,
     const_attributes: HashMap<NodeKey, PolicyId>,
@@ -348,3 +348,7 @@ pub(crate) const fn member_marker_layouts() -> (usize, usize, usize, usize) {
         size_of::<(NodeKey, FunctionMarker)>(),
     )
 }
+
+#[cfg(test)]
+#[path = "../../tests/invariants/renamed_policies.rs"]
+mod renamed_tests;

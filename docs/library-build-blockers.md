@@ -15,18 +15,18 @@ PA21–PA24 have implemented/release-evidence status; PA1–PA20 retain
 implemented-draft. PA25–PA44 remain planned. No additional assignment or whole
 upstream library has been completed.
 
-Current original-core frontier is LIB-127, renamed library feature old_name on
-Try/FromResidual in ops/mod.rs197 (file83 byte7164). The
-[shared declaration checkpoint](pa31-language-declarations-checkpoint.md)
-qualifies100 appended role profiles,135 independent source outcomes,17 private/
-19 production controls,239 CLI phase outcomes and actual ordinary-body native
-`9 11`. CLI50b48197 clears LIB-126 in18.67s/375opens with all722 source hashes,
-six configuration hashes, target/options/cap and finite limits unchanged.
-New semantic roles remain explicitly fenced until implemented; declaration
-recognition grants no builtin proof. Source stability metadata publication,
-reflection/provenance and genuine original core/alloc/std artifacts remain open.
-Full predecessor CI41731751383 on d12d1d133 passes every gate. Root remains alone
-on btrfs under the existing five-minute/two-thread/16GiB/150GiB policies.
+Current original-core frontier is LIB-128, rustc_default_body_unstable on the
+provided Drop::drop body in ops/drop.rs242 (file90 byte9919). The
+[renamed-feature checkpoint](pa31-renamed-feature-checkpoint.md) qualifies44
+independent outcomes,11 private/27 production controls,82 CLI phase checks and
+actual native7. CLIfc5d8d12 clears LIB-127 in19.96s/375opens with all722 source
+hashes, six configuration hashes, target/options/cap and finite limits unchanged.
+Former names are hard request diagnostics, not enabling aliases. Relationships
+share paid cold storage; canonical feature/request validation has bounded linear
+work and keeps ordinary records unchanged. Actual default-body inheritance/use,
+relationship/nominal/value metadata and original core/alloc/std artifacts remain
+required. Full predecessor CI41739306105 on a83ea4a15 passes every gate. Root
+remains alone under the existing btrfs/five-minute/two-thread/16GiB/150GiB rules.
 
 
 
@@ -407,7 +407,8 @@ actual native hints and the future authenticated MIR-import obligation.
 | LIB-124 | Source declaration frontier cleared; relation/transport still required | Genuine TransmuteFrom compiler trait, structured Assume constants and scoped coinductive layout/validity/lifetime evidence | PA20/21 traits +PA25 const values +PA27 validity +PA29 transport +PA31 source +PA40 attributes / original mem/transmutability.rs87 | Root only | [Headers](pa31-transmutability-source-checkpoint.md) qualify actual identities/options/default-body checking. [Private layout kernel](pa31-transmutability-layout-relation.md) qualifies all-values data and actual ABI adapters, with independent finite-word and bounded scaling controls. Published CLI5d9a9ce5 clears the original declaration frontier; source implicit selection, lifetime/Freeze/coinduction, real native default-method use and imported consumers remain required. |
 | LIB-125 | Original declaration boundary cleared; reflection/transport still required | Actual type_info/type_id identities, CTFE provenance and reflected data | PA31 source/compiler-built-in declarations +PA25 constant reflection +PA29 nominal/value transport / original mem/type_info.rs13 and any.rs | Root only | [Source checkpoint](pa31-type-reflection-source-checkpoint.md) passes14 private/19 production,27 independent source cases,29 CLI observations and actual ordinary-field native7. CLI18c64d26 clears the original declaration and reaches LIB-126 with all722 inputs/configuration/limits unchanged. GenericRequirement::None preserves genuine forms; actual type_id/type_of, forged-value rejection, reflected data and stable imported identity remain required. Existing source library metadata publication is still blocked. |
 | LIB-126 | Source declaration frontier cleared; debug/transport required | Actual compiler_move/compiler_copy profiling markers | PA31 declarations +PA40 compiler/debug instrumentation +PA29 authenticated metadata / original profiling.rs12 | Root only | [Shared declaration checkpoint](pa31-language-declarations-checkpoint.md):17 private/19 production,135 independent outcomes,239 CLI phase checks and real native9 11. Actual bodies execute; no annotation/no-op is invented. CLI50b48197 clears the original claim and reaches LIB-127 with all722 sources/configuration/limits unchanged. Debug annotation policy and authenticated transport remain required. |
-| LIB-127 | Current original-core source blocker | Renamed unstable library feature aliases and actual use/gate authority | PA31 source policy +PA29 authenticated feature metadata +PA40 diagnostics / original ops/mod.rs197 old_name="try_trait" | Root only | Current CLI50b48197 reports renamed library features are not implemented at file83 byte7164,18.6653s/375opens/all722 hashes and six configuration hashes unchanged. Preserve canonical feature identity, old-name requests, implication/use-site behavior, duplicate/conflict handling and imported provider authority. Do not silently drop old_name or treat it as an advisory lint. |
+| LIB-127 | Source declaration/request contract qualified; transport required | Renamed unstable library feature identity and actual hard former-name rejection | PA31 source policy +PA29 authenticated relationship metadata +PA40 hard diagnostics / original ops/mod.rs197 | Root only | [Checkpoint](pa31-renamed-feature-checkpoint.md):44 independent programs including actual fresh rustc rlib consumers,11 private/27 production,82 CLI phase checks and native7. First unstable declaration, canonical collisions, const policies and release consistency preserve the pinned rules; no alias enables an API. CLIfc5d8d12 clears the original declaration and reaches LIB-128. Actual RustGM relationship transport/fresh consumers remain required. |
+| LIB-128 | Current original-core source blocker | Actual unstable provided/default-body policy on stable API and selected inheritance | PA31 source/callable policy +PA26 actual implementation/default selection +PA25 const contexts +PA29 provided-body/policy transport +PA39 destruction / original ops/drop.rs242 Drop::drop | Root only | CLIfc5d8d12 reaches rustc_default_body_unstable(pin_ergonomics) at file90 byte9919,19.9603s/375opens/all722 source and six configuration hashes unchanged. Preserve the real provided Drop body and gate inherited use independently of the stable API and explicit overrides. Do not substitute a no-op or grant global/default-body authority from declaration recognition. |
 | Remaining raw language-item semantic inventory | Declarations checked;98 builtin semantic profiles explicitly unsupported | Actual operators, associated hooks, async/drop/pinning, field reflection, ranges and weak memory hooks | Earliest actual PA23–PA31/40/41 consumer units +PA29 transport / compiler-language-claims packet | Root only | The pinned100-name raw inventory is not a cfg-active blocker count. Shared target/arity/foreign validation and135 independent cases are qualified, but unsupported semantic consumers stop explicitly before ordinary checking can infer absence. Implement each actual builtin relation/runtime contract and add genuine source/native/imported consumers before removing its fence. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |

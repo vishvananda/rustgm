@@ -127,10 +127,8 @@ impl Stage {
     ) -> Result<s::AvailabilityRows, &'static str> {
         self.require_attribute_context(report, facts)
             .map_err(|_| "availability collection lost its actual source owner")?;
-        if inventory.has_implications() {
-            return Err(
-                "source implied feature relationships require complete wider policy transport",
-            );
+        if inventory.has_relationships() {
+            return Err("source feature relationships require complete wider policy transport");
         }
         let census = self
             .rows

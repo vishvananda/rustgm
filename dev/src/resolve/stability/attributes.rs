@@ -83,7 +83,7 @@ pub(in crate::resolve) fn collect(
             "duplicate or conflicting library stability",
         ));
     }
-    let (policy, implied_by) = parse(
+    let (policy, relationships) = parse(
         unit,
         key,
         attribute,
@@ -91,17 +91,17 @@ pub(in crate::resolve) fn collect(
         matches!(name, "stable" | "rustc_const_stable"),
         draft,
     )?;
-    publish_policy(draft, key, attribute.span, policy, implied_by, constant)?;
+    publish_policy(draft, key, attribute.span, policy, relationships, constant)?;
     Ok(true)
 }
 
-/// Publish the policy and its optional implication as one prepaid transaction.
+/// Publish the policy and its sparse feature relationships as one prepaid transaction.
 fn publish_policy(
     draft: &mut Draft,
     key: NodeKey,
     span: crate::syntax::token_tree::Span,
     mut policy: Policy,
-    implied_by: Option<Box<str>>,
+    relationships: super::relationships::Pending,
     constant: bool,
 ) -> Result<(), Error> {
     policy.kind = if constant {
@@ -116,14 +116,18 @@ fn publish_policy(
         1,
         4 * (size_of::<Policy>() + size_of::<(NodeKey, NonZeroUsize)>()),
     )?;
-    if implied_by.is_some() {
-        draft.prepay_implication()?;
-    }
+    draft.prepay_relationships(relationships.len())?;
     draft.policies.push(policy);
-    if let Some(by) = implied_by {
-        draft
-            .implications
-            .push(super::implications::Implication { policy: id, by });
+    for (kind, name) in relationships.entries() {
+        if let Some(name) = name {
+            draft
+                .relationships
+                .push(super::relationships::Relationship {
+                    policy: id,
+                    name,
+                    kind,
+                });
+        }
     }
     if constant {
         draft.const_attributes.insert(key, id);
@@ -168,7 +172,7 @@ fn parse(
     forest: &Forest,
     stable: bool,
     work: &mut Draft,
-) -> Result<(Policy, Option<Box<str>>), Error> {
+) -> Result<(Policy, super::relationships::Pending), Error> {
     let error = |message| Error::at(key.file, attribute.span.start, message);
     let Arguments {
         feature,
@@ -176,6 +180,7 @@ fn parse(
         issue,
         reason,
         implied_by,
+        old_name,
     } = arguments(unit, key, attribute, forest, stable, work)?;
     let feature: Box<str> = feature.ok_or_else(|| error("library stability requires feature"))?;
     work.charge(
@@ -213,7 +218,10 @@ fn parse(
             level,
             origin: key,
         },
-        implied_by,
+        super::relationships::Pending {
+            implied_by,
+            old_name,
+        },
     ))
 }
 #[derive(Default)]
@@ -223,6 +231,7 @@ struct Arguments {
     issue: Option<Box<str>>,
     reason: Option<Box<str>>,
     implied_by: Option<Box<str>>,
+    old_name: Option<Box<str>>,
 }
 fn arguments(
     unit: &Unit,
@@ -252,9 +261,7 @@ fn arguments(
             "issue" if !stable => &mut arguments.issue,
             "reason" if !stable => &mut arguments.reason,
             "implied_by" if !stable => &mut arguments.implied_by,
-            "old_name" if !stable => {
-                return Err(error("renamed library features are not implemented"));
-            }
+            "old_name" if !stable => &mut arguments.old_name,
             _ => return Err(error("unsupported library stability argument")),
         };
         if slot.is_some() {

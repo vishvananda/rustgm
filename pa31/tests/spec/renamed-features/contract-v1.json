@@ -1,0 +1,221 @@
+{
+  "schema": 1,
+  "scope": "Source renamed unstable feature declarations and actual hard request diagnostics; no alias enablement. Broader library metadata and artifacts remain required.",
+  "rustc_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_passes/src/stability.rs": "1f1a590646e7938cd5eb42bc3aa170d1afa4156474d24942bf246736cfc4e167",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_passes/src/lib_features.rs": "0fd879e4a7997ebae4be9a6fc2bea3f403db4820f5d6e5a11ea406c01832bf73",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_attr_parsing/src/attributes/stability.rs": "bee682c77346b06730e1499eb7a50c7b1489c1bc7e3f686b5d89fab909b3506e"
+  },
+  "cases": [
+    {
+      "name": "declaration",
+      "path": "pa31/tests/spec/renamed-features/declaration.rs",
+      "sha256": "c1ae5249cc1b8ac2ca8eb2da40dc4911d1c17c563a567d0e5431b803d0ebab7b",
+      "status": 0
+    },
+    {
+      "name": "canonical-request",
+      "path": "pa31/tests/spec/renamed-features/canonical-request.rs",
+      "sha256": "8a3f2bc17d55611879968b672052fd3d2a49917830411d7097122eec03144126",
+      "status": 0
+    },
+    {
+      "name": "old-request",
+      "path": "pa31/tests/spec/renamed-features/old-request.rs",
+      "sha256": "435e281dd7d80a609d7424f9e24cffedb90ae1936895729b006eba43761c97b0",
+      "status": 1,
+      "diagnostic": "renamed"
+    },
+    {
+      "name": "both-requests",
+      "path": "pa31/tests/spec/renamed-features/both-requests.rs",
+      "sha256": "1a63320a4eca7cf51d3119bb6eac983b4f28e038cc5d2b247b16a2856b95ae1e",
+      "status": 1,
+      "diagnostic": "renamed"
+    },
+    {
+      "name": "alias-empty",
+      "path": "pa31/tests/spec/renamed-features/alias-empty.rs",
+      "sha256": "6fc8bc4284fff1a01e3e39d33c0f338919b78d92921614c80bd67a9c2b5e95c6",
+      "status": 0
+    },
+    {
+      "name": "alias-nonidentifier",
+      "path": "pa31/tests/spec/renamed-features/alias-nonidentifier.rs",
+      "sha256": "3fe011927fdcb3db91d514d51965239410dd5133c1833d5e761c419d951e085f",
+      "status": 0
+    },
+    {
+      "name": "alias-punctuation",
+      "path": "pa31/tests/spec/renamed-features/alias-punctuation.rs",
+      "sha256": "ad284073f19d6e948a29d5a729b8d9fdc7e8eca0a188767bf83a85bd5ab41d3b",
+      "status": 0
+    },
+    {
+      "name": "alias-unicode",
+      "path": "pa31/tests/spec/renamed-features/alias-unicode.rs",
+      "sha256": "04fdc24c1a995e78d02171818bb0aced353dfec99f23d123c99ab42bd6043fa7",
+      "status": 0
+    },
+    {
+      "name": "alias-raw-literal",
+      "path": "pa31/tests/spec/renamed-features/alias-raw-literal.rs",
+      "sha256": "51c12e2dd98d4cf179e3dc2624a308399c8a959498d9f917dd95de25986d42e2",
+      "status": 0
+    },
+    {
+      "name": "same-name",
+      "path": "pa31/tests/spec/renamed-features/same-name.rs",
+      "sha256": "09d1be0101f8f24883e2b255fc47a3f643363132e1552b1b8f111b9f8affee3e",
+      "status": 0
+    },
+    {
+      "name": "duplicate-key",
+      "path": "pa31/tests/spec/renamed-features/duplicate-key.rs",
+      "sha256": "d8d9d02eba194a3de990e6b52ca33a0cf2d6aabc832ea08c4fcd3c1c4d32b917",
+      "status": 1
+    },
+    {
+      "name": "nonstring",
+      "path": "pa31/tests/spec/renamed-features/nonstring.rs",
+      "sha256": "6ed44fdb64cade7565ec6143ad50ee5ec426633f89bcf679b4b0c67245f2c8ca",
+      "status": 1
+    },
+    {
+      "name": "bare-key",
+      "path": "pa31/tests/spec/renamed-features/bare-key.rs",
+      "sha256": "ccb1cedc41ea97b1fa8a1a08dc451905f147dc6b776f658f7f71e3701a70ab8f",
+      "status": 1
+    },
+    {
+      "name": "stable-argument",
+      "path": "pa31/tests/spec/renamed-features/stable-argument.rs",
+      "sha256": "6b6205da48748258ec938376c754e7af9362c5d4afeeffd96995d5d6ad969b20",
+      "status": 1
+    },
+    {
+      "name": "missing-issue",
+      "path": "pa31/tests/spec/renamed-features/missing-issue.rs",
+      "sha256": "1211a38c30d64666d61e8dc43855aea3c7effde31209732a28c1f7a4fe236e06",
+      "status": 1
+    },
+    {
+      "name": "cfg-removed",
+      "path": "pa31/tests/spec/renamed-features/cfg-removed.rs",
+      "sha256": "11d479d18c5f834d8e4c7f663d8b0b49c0c0a0279faf61315d14fa5d69981a7f",
+      "status": 0
+    },
+    {
+      "name": "cfg-removed-request",
+      "path": "pa31/tests/spec/renamed-features/cfg-removed-request.rs",
+      "sha256": "05549a9281240ea4dc25829c2907c5138260e90b63ef85384dd357463ce905fc",
+      "status": 1,
+      "diagnostic": "unknown feature"
+    },
+    {
+      "name": "nested-owner",
+      "path": "pa31/tests/spec/renamed-features/nested-owner.rs",
+      "sha256": "03f996e5baed69d8b5ae3d12fe7eeefc8a18d5073880b6987591d52078fdba23",
+      "status": 0
+    },
+    {
+      "name": "duplicate-first-none",
+      "path": "pa31/tests/spec/renamed-features/duplicate-first-none.rs",
+      "sha256": "d2ef0ecc1d8c2b976f840d990f78c7ecd5be59f8a6180fdc941b47ec9eab879e",
+      "status": 1,
+      "diagnostic": "unknown feature"
+    },
+    {
+      "name": "duplicate-first-old",
+      "path": "pa31/tests/spec/renamed-features/duplicate-first-old.rs",
+      "sha256": "74f9f43d4a13cadc39798bf7a7cbd4a7209dd63f1712096b43bcfbbcae9957a0",
+      "status": 1,
+      "diagnostic": "renamed"
+    },
+    {
+      "name": "duplicate-second-ignored",
+      "path": "pa31/tests/spec/renamed-features/duplicate-second-ignored.rs",
+      "sha256": "988611cada1b365bfb045d42a2be3a8df613b828c113b6b7057b6742666b71f4",
+      "status": 1,
+      "diagnostic": "unknown feature"
+    },
+    {
+      "name": "duplicate-canonical",
+      "path": "pa31/tests/spec/renamed-features/duplicate-canonical.rs",
+      "sha256": "f8ede795b947cc1782686e28780f1ac36da18c755879390c3d20732ad0ce8d50",
+      "status": 0
+    },
+    {
+      "name": "canonical-collision-first",
+      "path": "pa31/tests/spec/renamed-features/canonical-collision-first.rs",
+      "sha256": "7794b33a122b1ad3d7ba2dd35b21649b2a4c58374b37ea6f739f6ec2be346269",
+      "status": 0
+    },
+    {
+      "name": "rename-collision-first",
+      "path": "pa31/tests/spec/renamed-features/rename-collision-first.rs",
+      "sha256": "909b93eccd6a0bdd9f1a2782b7ee3fa2c2109bab33ac717cfe3b04e0615f2e9f",
+      "status": 1,
+      "diagnostic": "renamed"
+    },
+    {
+      "name": "constant-declaration",
+      "path": "pa31/tests/spec/renamed-features/constant-declaration.rs",
+      "sha256": "f8d166c34533cee7c5d00b773ed75189caed1d5a4b976444b7159feb3a0492b6",
+      "status": 0
+    },
+    {
+      "name": "constant-current",
+      "path": "pa31/tests/spec/renamed-features/constant-current.rs",
+      "sha256": "6f147776e3af8badcdfcf5df74db28aa18bc05dfe50b287420b13e22c019b0f7",
+      "status": 0
+    },
+    {
+      "name": "constant-old",
+      "path": "pa31/tests/spec/renamed-features/constant-old.rs",
+      "sha256": "4246d25e1ade2fc7b7128823d0bcbd5a5654eb5976c6069cddf9478048f90e15",
+      "status": 1,
+      "diagnostic": "renamed"
+    },
+    {
+      "name": "constant-second-ignored",
+      "path": "pa31/tests/spec/renamed-features/constant-second-ignored.rs",
+      "sha256": "207330e1a9ddc1980f9c943c8ab187892fb6c3bc4fe5634d790ca67cbe31c481",
+      "status": 1,
+      "diagnostic": "unknown feature"
+    },
+    {
+      "name": "alias-not-implication",
+      "path": "pa31/tests/spec/renamed-features/alias-not-implication.rs",
+      "sha256": "c1fea72111987e119f0ec77517a99522ba7db412378e4a0ccea668be5739ba50",
+      "status": 1
+    },
+    {
+      "name": "canonical-implication",
+      "path": "pa31/tests/spec/renamed-features/canonical-implication.rs",
+      "sha256": "503f71a6902c34112c037f8d7d8636cca21f8eba2955d958dd59916ef8d948aa",
+      "status": 0
+    },
+    {
+      "name": "both-relations",
+      "path": "pa31/tests/spec/renamed-features/both-relations.rs",
+      "sha256": "8893500cc7b8186b4fb8353561d85bb66bc546e6bf1ec07f856ff5720f230cad",
+      "status": 0
+    },
+    {
+      "name": "ordinary-native",
+      "path": "pa31/tests/spec/renamed-features/ordinary-native.rs",
+      "sha256": "5ebff41cb6a85d447b22e60240c1ab0889eebd751afe7f4d9b0b7866d698db9c",
+      "status": 0
+    }
+  ],
+  "native": {
+    "case": "ordinary-native",
+    "observer": "pa31/tests/spec/renamed-features/observer.c",
+    "observer_sha256": "a381b4a59b4ee0c7a528f5370b5d8198c0825f3c09d9390567d06e09ea9b838d",
+    "status": 0,
+    "stdout": "7\n",
+    "stderr": ""
+  }
+}

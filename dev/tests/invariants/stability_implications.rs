@@ -26,14 +26,14 @@ fn local_implications_preserve_actual_regular_const_and_per_policy_identity() ->
         crate::pipeline::analyze_source(&report)?;
         let library = report.package.library_policy().ok_or("actual library")?;
         let inventory = library.inventory().ok_or("complete actual inventory")?;
-        assert_eq!(inventory.implications.len(), count, "{name}");
+        assert_eq!(inventory.relationships.len(), count, "{name}");
         assert!(
             inventory
-                .implications
+                .relationships
                 .windows(2)
                 .all(|rows| rows[0].policy < rows[1].policy)
         );
-        for edge in &inventory.implications {
+        for edge in &inventory.relationships {
             let policy = &inventory.policies[edge.policy.get() - 1];
             assert_eq!(
                 policy.kind,
@@ -48,16 +48,16 @@ fn local_implications_preserve_actual_regular_const_and_per_policy_identity() ->
                 inventory
                     .policies
                     .iter()
-                    .any(|p| p.feature.as_ref() == edge.by.as_ref())
+                    .any(|p| p.feature.as_ref() == edge.name.as_ref())
             );
         }
         if name == "per-policy" {
-            let edges = &inventory.implications;
+            let edges = &inventory.relationships;
             assert_eq!(
                 inventory.policies[edges[0].policy.get() - 1].feature,
                 inventory.policies[edges[1].policy.get() - 1].feature
             );
-            assert_ne!(edges[0].by, edges[1].by);
+            assert_ne!(edges[0].name, edges[1].name);
         }
         assert!(library.predicate_requests()?.is_empty());
     }
@@ -71,7 +71,6 @@ fn malformed_missing_and_untransported_implications_remain_hard_boundaries() -> 
         ("invalid-name", "identifier"),
         ("duplicate", "duplicate library stability argument"),
         ("stable-argument", "unsupported library stability argument"),
-        ("renamed-required", "renamed library features"),
     ] {
         let source = fixture(name)?;
         let result = if name == "language-only-target" {
@@ -162,7 +161,7 @@ fn implied_attribute_failed_payment_never_publishes_a_policy_or_relationship() -
         let failed = draft.as_ref().ok_or("failed state retained")?;
         assert!(
             failed.policies.is_empty()
-                && failed.implications.is_empty()
+                && failed.relationships.is_empty()
                 && failed.attributes.is_empty()
         );
         assert!(failed.bytes > 64 * 1024 * 1024);

@@ -16,6 +16,12 @@ old cycle; both units and the complete contract below remain required.
 
 ## Required implementation
 
+The [renamed-feature packet](tests/spec/renamed-features/README.md) specifies
+old_name declarations and hard former-name request rejection, with independent
+local and actual imported consumers. Its canonical feature projection preserves
+first-declaration, collision, const and release-version behavior; full authenticated
+relationship transport and original library artifacts remain required.
+
 The [language-item declaration packet](tests/spec/compiler-language-claims/README.md)
 checks shared target, generic and foreign-only rules for the remaining raw-source
 inventory. Profiling hooks keep actual bodies; declaration recognition alone
