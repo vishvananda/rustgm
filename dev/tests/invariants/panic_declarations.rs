@@ -10,13 +10,14 @@ use crate::{
 };
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 const SOURCE: &str = "#![feature(no_core,lang_items,intrinsics,rustc_attrs)]#![no_core]#[lang=\"pointee_sized\"]pub trait PointeeSized{}#[lang=\"meta_sized\"]pub trait MetaSized:PointeeSized{}#[lang=\"sized\"]pub trait Sized:MetaSized{}";
-const ROLES: [(LangItem, &str); 6] = [
+const ROLES: [(LangItem, &str); 7] = [
     (LangItem::Not, "not"),
     (LangItem::Panic, "panic"),
     (LangItem::PanicFmt, "panic_fmt"),
     (LangItem::PanicImpl, "panic_impl"),
     (LangItem::PanicDisplay, "panic_display"),
     (LangItem::ConstPanicFmt, "const_panic_fmt"),
+    (LangItem::PanicNounwind, "panic_nounwind"),
 ];
 fn source_report(tail: &str) -> Result<Report> {
     Ok(crate::test_source::source_provider(
@@ -27,7 +28,7 @@ fn source_report(tail: &str) -> Result<Report> {
 
 #[test]
 fn actual_panic_claims_retain_kind_owner_and_uncompleted_role_status() -> Result {
-    let tail = "#[lang=\"not\"]pub trait ActualNot{}#[lang=\"panic\"]fn p()->!{loop{}}#[lang=\"panic_fmt\"]fn pf()->!{loop{}}#[lang=\"panic_impl\"]fn pi()->!{loop{}}#[lang=\"panic_display\"]fn pd()->!{loop{}}#[lang=\"const_panic_fmt\"]fn cp()->!{loop{}}";
+    let tail = "#[lang=\"not\"]pub trait ActualNot{}#[lang=\"panic\"]fn p()->!{loop{}}#[lang=\"panic_fmt\"]fn pf()->!{loop{}}#[lang=\"panic_impl\"]fn pi()->!{loop{}}#[lang=\"panic_display\"]fn pd()->!{loop{}}#[lang=\"const_panic_fmt\"]fn cp()->!{loop{}}#[lang=\"panic_nounwind\"]fn pn()->!{loop{}}";
     let report = source_report(tail)?;
     let reserved = report
         .resolution
@@ -206,8 +207,8 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
     assert!(report.resolution.intrinsics.get(Intrinsic::Abort).is_none());
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
-    // The two wrapper roles extend cold tables; ordinary records stay fixed.
-    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 2544);
+    // The source panic hook extends cold tables; ordinary records stay fixed.
+    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 2560);
     assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 184);
     assert_eq!(size_of::<Declaration>(), 20);
     assert_eq!(size_of::<Option<Declaration>>(), 20);

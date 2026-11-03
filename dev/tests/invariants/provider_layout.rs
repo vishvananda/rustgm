@@ -131,10 +131,9 @@ fn layout_members_require_their_completed_associated_usize_contract() -> Result 
     let super::super::binding_views::Bindings::Provider(languages) = &mut catalog.bindings else {
         return Err("layout opponent requires its actual source provider".into());
     };
-    languages[LangItem::MemSizeConst.index()]
-        .as_mut()
-        .ok_or("claim")?
-        .parent = Some(actual_owner);
+    let mut forged = languages.get(LangItem::MemSizeConst).ok_or("claim")?;
+    forged.parent = Some(actual_owner);
+    languages.replace(LangItem::MemSizeConst, Some(forged))?;
     assert!(validate_member(&report, &facts, member).is_err());
     for tail in [
         "pub trait Properties:Sized{#[lang=\"mem_size_const\"]const SIZE:u32=0;}",
@@ -188,7 +187,7 @@ fn runtime_layout_calls_do_not_execute_a_source_fallback() -> Result {
             mut facts,
             prepared,
         } = crate::pipeline::analyze_source(&report)?;
-        let error = crate::lower::instances::build_roots_prepared(
+        let program = crate::lower::instances::build_roots_prepared(
             &report,
             &mut facts,
             crate::lower::Roots {
@@ -196,14 +195,19 @@ fn runtime_layout_calls_do_not_execute_a_source_fallback() -> Result {
                 exports: &[],
             },
             prepared,
-        )
-        .err()
-        .ok_or("runtime layout call accepted")?;
+        )?;
+        let function = program
+            .symbols
+            .iter()
+            .find(|symbol| symbol.name == "observe")
+            .and_then(|symbol| symbol.body.as_ref())
+            .ok_or("actual runtime observer")?;
         assert!(
-            error
-                .to_string()
-                .contains("source layout intrinsic runtime lowering is not implemented"),
-            "{error}"
+            function
+                .literals
+                .iter()
+                .any(|literal| matches!(literal, crate::lowir::program::Literal::Integer(4))),
+            "runtime size_of must use completed layout, including when its source fallback returns zero"
         );
     }
     Ok(())

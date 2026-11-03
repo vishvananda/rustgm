@@ -52,6 +52,6 @@ fn replace(catalog: &mut Catalog, role: LangItem, declaration: Option<Declaratio
     else {
         return Err("callable opponent requires its actual source provider".into());
     };
-    languages[role.index()] = declaration;
+    languages.replace(role, declaration)?;
     Ok(())
 }

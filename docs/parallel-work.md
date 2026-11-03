@@ -1,5 +1,18 @@
 # Parallel library bootstrap implementation
 
+Latest runtime checkpoint: [native MaybeUninit](pa31-maybe-uninit-native-checkpoint.md)
+qualifies all three original value/destruction/panic observers and existing
+wrapper/NoDrop/ABI controls. Source catalog compaction reduces1840 to1608 bytes;
+28 private controls,105 source outcomes, PA12 and70 CLI observations pass. CLI
+f5ae84eb repeats original core's TransmuteFrom frontier at file59 byte3207 with
+all722 inputs/configuration/limits unchanged. Full predecessor CI41650945582
+passes every gate. General nominal metadata/fresh consumers, TransmuteFrom's
+actual relation and original core/alloc/std artifacts remain open. Root alone
+continues in the same warm btrfs worktree under unchanged guards; no worker or
+cache is added. Seven additional inactive root worktrees were losslessly
+archived on btrfs with staged/index state and retained Git refs before removal.
+
+
 Root's [NoDrop checkpoint](pa31-no-drop-checkpoint.md) qualifies35 real source
 outcomes and native `8` with19 private/5 production controls and125 PA12 cases.
 The source field shortcut now consumes a globally shared compact type fact;

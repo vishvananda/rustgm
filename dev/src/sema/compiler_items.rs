@@ -45,7 +45,11 @@ mod displacement;
 mod intrinsic_contracts;
 pub(crate) use displacement::OffsetSelection;
 mod compare_intrinsic;
+mod inhabited_names;
+mod inhabited_properties;
 mod layout;
+mod nounwind;
+pub(crate) use inhabited_properties::{Ready as RuntimeLayout, prepare as prepare_runtime_layout};
 mod needs_drop;
 pub(in crate::sema) mod pointee;
 mod ptr_metadata;
@@ -124,6 +128,7 @@ pub(crate) struct Catalog {
     intrinsics: crate::support::hash::HashMap<DefId, intrinsic_contracts::Intrinsic>,
     attributes: [crate::resolve::bindings::HeaderAttributes; LangItem::ALL.len()],
     runtime_checks: runtime_checks::RuntimeCheckSession,
+    native_layouts: Option<Box<inhabited_properties::Plans>>,
 }
 impl Catalog {
     /// A provider catalog cannot authenticate a different source report or mode.
@@ -208,7 +213,7 @@ impl Catalog {
         Ok(Some(Box::new(Self {
             provider: reserved.provider.clone(),
             bindings: binding_views::Bindings::Provider(
-                LangItem::ALL.map(|kind| reserved.language(kind)),
+                binding_views::Provider::new(reserved).map_err(Error::unlocated)?,
             ),
             sizing: None,
             destruction_registration: None,
@@ -226,6 +231,7 @@ impl Catalog {
                 .collect(),
             attributes: LangItem::ALL.map(|role| reserved.role_attributes(role)),
             runtime_checks: runtime_checks::RuntimeCheckSession::new(&report.package),
+            native_layouts: None,
         })))
     }
     pub(in crate::sema) fn reserve_staged(
@@ -267,7 +273,7 @@ impl Catalog {
     }
     pub(crate) fn language(&self, kind: LangItem) -> Option<Declaration> {
         match &self.bindings {
-            binding_views::Bindings::Provider(languages) => languages[kind.index()],
+            binding_views::Bindings::Provider(languages) => languages.get(kind),
             binding_views::Bindings::Imported(_) => None,
         }
     }

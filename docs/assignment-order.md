@@ -220,7 +220,11 @@ transport an immediate artifact priority within `generic-transport`. Actual
 struct/enum/union fields, variants, generics, constructors and policies need genuine
 publication and fresh consumers. Existing source-function profiles do not close
 that exit. Local ManuallyDrop/MaybeDangling behavior is qualified; its imported
-requirement stays open. The original-source frontier separately reaches source
-MaybeUninit (LIB-123), owned jointly by hooks, union layout, validity and CTFE.
+requirement stays open. Source MaybeUninit (LIB-123) now has qualified local
+constant and native behavior through actual hooks, union layout, validity and
+CTFE. Its [native checkpoint](pa31-maybe-uninit-native-checkpoint.md) retains
+the imported requirement and advances no whole assignment. The original-source
+frontier is LIB-124, genuine TransmuteFrom/structured Assume and its validity,
+layout and lifetime relation.
 Root proceeds through these concrete units without activating a whole assignment
 or changing the remaining contract ledger.

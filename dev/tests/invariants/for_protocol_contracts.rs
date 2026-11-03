@@ -236,7 +236,7 @@ fn actual_for_storage_scales_with_loops_and_keeps_ordinary_owners_compact() -> T
             size_of::<crate::resolve::bindings::Reservations>()
         );
     }
-    assert_eq!(crate::support::bindings::LangItem::ALL.len(), 82);
+    assert_eq!(crate::support::bindings::LangItem::ALL.len(), 83);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     assert_eq!(size_of::<Operation>(), 16);

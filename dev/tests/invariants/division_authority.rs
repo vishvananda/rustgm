@@ -67,7 +67,7 @@ fn actual_div_header_primitive_evidence_and_cold_layout_are_separate() -> TestRe
         "source-div-layout Catalog={} Reservations={} Bindings={bindings} Imported={imported} Role={role} Provider={} SourceBinary={}",
         size_of::<crate::sema::compiler_items::Catalog>(),
         size_of::<crate::resolve::bindings::Reservations>(),
-        size_of::<Option<crate::resolve::bindings::Declaration>>() * LangItem::ALL.len(),
+        crate::sema::compiler_items::Catalog::provider_binding_bytes(),
         size_of::<SourceBinary>()
     );
     let mut operators = 0;

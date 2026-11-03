@@ -23,8 +23,10 @@ the pinned structural shortcut; it grants no trait, value or API permission.
 Source wrapper completion precedes its union consumers. The
 [MaybeUninit constant checkpoint](../docs/pa31-maybe-uninit-const-checkpoint.md)
 qualifies actual source methods, opaque union storage and reached constant
-intrinsics. Candidate native panic/value/destructor execution and general PA29
-imported transport remain required; this does not activate PA31.
+intrinsics. The [native checkpoint](../docs/pa31-maybe-uninit-native-checkpoint.md)
+also qualifies the three original panic/value/destructor observers through real
+source bodies. General PA29 imported transport and the remaining runtime profiles
+stay required; this does not activate PA31.
 
 The [optimization-intent packet](tests/spec/source-optimize/README.md) freezes
 real size/speed/none semantics, executable owners, feature and macro-envelope

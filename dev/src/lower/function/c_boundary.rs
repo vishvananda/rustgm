@@ -127,7 +127,7 @@ impl Lower<'_, '_, '_> {
         &mut self,
         signature: SignatureId,
         callee: Operand,
-        arguments: ir::ValueList,
+        arguments: super::argument_sources::Arguments,
         result: crate::types::TypeId,
     ) -> Result<Selected, &'static str> {
         let mut retained = std::mem::take(&mut self.object_arguments);
@@ -135,18 +135,14 @@ impl Lower<'_, '_, '_> {
         let fixed = self.context.output.parameter_count(signature)?;
         let variadic = self.context.output.variadic(signature)?;
         let mut tail = Vec::new();
-        for id in &self.body.arguments[arguments.start as usize..arguments.end as usize] {
-            let value = self.value(*id)?;
-            let ty = self.body.values[id.0 as usize].ty;
+        for index in 0..arguments.len(self)? {
+            let (ty, value) = arguments.get(self, index)?;
             let indirect = self.context.indirect_argument(ty)?;
             if variadic
                 && retained.len() >= fixed
                 && (indirect.is_some() || !matches!(value, Selected::Unit | Selected::Item(_)))
             {
-                tail.push(
-                    self.context
-                        .c_argument(self.body.values[id.0 as usize].ty)?,
-                );
+                tail.push(self.context.c_argument(ty)?);
             }
             if let Some(span) = indirect {
                 let destination = Address {
@@ -162,23 +158,19 @@ impl Lower<'_, '_, '_> {
             }
             match value {
                 Selected::Runtime(value) => retained.push(boundary::Value::Scalar(value)),
-                Selected::Object(address) => {
-                    match self
-                        .context
-                        .representation(self.body.values[id.0 as usize].ty)?
-                    {
-                        Representation::Object(span) => retained
-                            .push(boundary::Value::Object(self.object_value(address, span)?)),
-                        Representation::ScalarObject(storage) => {
-                            retained.push(boundary::Value::Scalar(
-                                self.builder.load(storage.ty, address.operand)?,
-                            ));
-                        }
-                        Representation::Scalar(_) => {
-                            return Err("C object argument lacks object storage");
-                        }
+                Selected::Object(address) => match self.context.representation(ty)? {
+                    Representation::Object(span) => {
+                        retained.push(boundary::Value::Object(self.object_value(address, span)?));
                     }
-                }
+                    Representation::ScalarObject(storage) => {
+                        retained.push(boundary::Value::Scalar(
+                            self.builder.load(storage.ty, address.operand)?,
+                        ));
+                    }
+                    Representation::Scalar(_) => {
+                        return Err("C object argument lacks object storage");
+                    }
+                },
                 Selected::Unit | Selected::Item(_) => {}
             }
         }

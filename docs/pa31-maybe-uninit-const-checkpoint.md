@@ -1,17 +1,18 @@
 # Source MaybeUninit constant-execution checkpoint
 
 This finite PA31 source/constant profile clears the original `maybe_uninit`
-language-item error. PA31 and its runtime unit remain planned. Candidate native
-execution, general PA29 nominal transport, original core/alloc/std artifacts and
-independent imported consumers remain required.
+language-item error. PA31 and its runtime unit remain planned. The successor
+[native checkpoint](pa31-maybe-uninit-native-checkpoint.md) qualifies the three
+original native observers. General PA29 nominal transport, original core/alloc/std
+artifacts and independent imported consumers remain required.
 
 The frozen [packet](../pa31/tests/spec/source-maybe-uninit/README.md) contains
 40 source cases and three C observers, independently checked with pinned Rust
 revision `88d9e12ae178fab0fb5cc050a94da85685d449ea`. Candidate full CFG/proof/lowering
 checks cover 37 constant cases, including ownership opponents. The CLI constant
 profile covers 35 cases, both uncapped and with cap-lints=allow. Its stage does
-not replace the two full-pipeline move/borrow checks. None of the three required
-native observers is claimed as candidate-qualified.
+not replace the two full-pipeline move/borrow checks. Native observations are
+qualified by the successor checkpoint, not by this earlier constant receipt.
 
 ## Implementation
 

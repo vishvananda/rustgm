@@ -3,6 +3,22 @@ use super::{Constant, Evaluator, Failure, Reader, Type, TypeId, View};
 use crate::types::instance::Instance;
 
 impl Reader<'_> {
+    pub(crate) fn has_runtime_layouts(self) -> bool {
+        self.facts
+            .source_bindings
+            .as_deref()
+            .is_some_and(crate::sema::compiler_items::Catalog::has_runtime_layouts)
+    }
+    pub(crate) fn runtime_layout(
+        self,
+        instance: Instance,
+    ) -> Option<crate::sema::compiler_items::RuntimeLayout> {
+        self.facts
+            .source_bindings
+            .as_deref()?
+            .runtime_layout(instance)
+    }
+
     pub(crate) fn source_transmute(
         self,
         instance: Instance,

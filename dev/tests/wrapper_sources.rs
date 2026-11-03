@@ -184,3 +184,34 @@ fn source_maybe_uninit_const_outcomes_keep_bytes_validity_and_ownership_separate
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
 }
+
+#[test]
+#[ignore = "requires the pinned CPPGM backend and host C linker"]
+fn source_maybe_uninit_native_preserves_values_destruction_and_actual_panic_hook() -> TestResult {
+    let root = root()?;
+    let folder = root
+        .join("obj/parallel/maybe-uninit-native")
+        .join(std::process::id().to_string());
+    std::fs::create_dir_all(&folder)?;
+    for (name, expected, status) in [
+        ("native-values", "8\n", 0),
+        ("native-drop", "drop 7\nvalue 7 count 1\n", 0),
+        (
+            "native-uninhabited",
+            "attempted to instantiate uninhabited type `Void`\n",
+            23,
+        ),
+    ] {
+        let input = root.join(format!("pa31/tests/spec/source-maybe-uninit/{name}"));
+        crate::ffi_program::check_status(
+            &root,
+            &folder,
+            name,
+            &lower(&std::fs::read_to_string(input.with_extension("rs"))?)?,
+            &std::fs::read_to_string(input.with_extension("c"))?,
+            expected,
+            status,
+        )?;
+    }
+    Ok(())
+}

@@ -11,6 +11,8 @@ use crate::{
     },
 };
 use std::{rc::Rc, sync::Arc};
+mod compact;
+pub(super) use compact::Provider;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(in crate::sema) struct Role {
@@ -27,12 +29,8 @@ impl From<Declaration> for Role {
         }
     }
 }
-#[expect(
-    clippy::large_enum_variant,
-    reason = "Both fixed source/import role tables are cold and comparably sized; inline storage avoids another allocation"
-)]
 pub(super) enum Bindings {
-    Provider([Option<Declaration>; LangItem::ALL.len()]),
+    Provider(Provider),
     Imported(Imported),
 }
 #[derive(Clone, Copy)]
@@ -143,6 +141,10 @@ impl Catalog {
             size_of::<ImportedRole>(),
         )
     }
+    #[cfg(test)]
+    pub(crate) const fn provider_binding_bytes() -> usize {
+        size_of::<Provider>()
+    }
     pub(crate) fn binding_work(&self) -> usize {
         match &self.bindings {
             Bindings::Provider(_) => 0,
@@ -171,7 +173,7 @@ impl Catalog {
     /// `language()`; absence there must never select a bootstrap implementation.
     pub(in crate::sema) fn role(&self, role: LangItem) -> Result<Option<Role>, &'static str> {
         match &self.bindings {
-            Bindings::Provider(languages) => Ok(languages[role.index()].map(Role::from)),
+            Bindings::Provider(languages) => Ok(languages.get(role).map(Role::from)),
             Bindings::Imported(imported) => imported.role(role, &self.provider),
         }
     }
@@ -269,6 +271,7 @@ fn prepare_catalog(
         intrinsics: crate::support::hash::HashMap::default(),
         attributes,
         runtime_checks: super::runtime_checks::RuntimeCheckSession::new(&report.package),
+        native_layouts: None,
     }))
 }
 
@@ -370,6 +373,7 @@ fn role_kind(role: LangItem) -> DefKind {
         | LangItem::PanicFmt
         | LangItem::PanicImpl
         | LangItem::PanicDisplay
+        | LangItem::PanicNounwind
         | LangItem::ConstPanicFmt
         | LangItem::TryFromResidual
         | LangItem::TryFromOutput

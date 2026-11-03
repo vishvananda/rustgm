@@ -7,6 +7,7 @@ mod callback_dispatch;
 mod caller_location;
 mod cleanup;
 mod compare_values;
+mod inhabited_runtime;
 mod intrinsics;
 mod invocations;
 mod logical_values;
@@ -322,7 +323,7 @@ impl Lower<'_, '_, '_> {
             | Action::StorageDead(_)
             | Action::StorageEnd { .. } => {}
             Action::Evaluate(value) => {
-                if self.source_abort(value, location)? {
+                if self.layout_panic(value)? || self.source_abort(value, location)? {
                     return Ok(true);
                 }
                 let result = self.evaluate(value)?;
@@ -906,6 +907,9 @@ impl Lower<'_, '_, '_> {
                     return Ok(value);
                 }
                 if let Some(value) = self.source_ptr_metadata(id)? {
+                    return Ok(value);
+                }
+                if let Some(value) = self.layout_value(id)? {
                     return Ok(value);
                 }
                 if let Some(value) = self.runtime_transmute(id)? {

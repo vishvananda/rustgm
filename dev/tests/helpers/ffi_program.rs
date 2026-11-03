@@ -10,6 +10,18 @@ pub(crate) fn check(
     client_source: &str,
     expected: &str,
 ) -> TestResult {
+    check_status(root, folder, name, program, client_source, expected, 0)
+}
+
+pub(crate) fn check_status(
+    root: &Path,
+    folder: &Path,
+    name: &str,
+    program: &rustgm::lowir::program::Program,
+    client_source: &str,
+    expected: &str,
+    status: i32,
+) -> TestResult {
     let ir = folder.join(format!("{name}.lowir"));
     let object = folder.join(format!("{name}.o"));
     let binary = folder.join(format!("{name}.native"));
@@ -37,11 +49,17 @@ pub(crate) fn check(
             .arg("-o")
             .arg(&binary),
     )?;
-    run(
-        folder,
-        &format!("{name}-execute"),
-        &mut Command::new(&binary),
+    let output = Command::new(&binary).output()?;
+    std::fs::write(
+        folder.join(format!("{name}-execute.stdout")),
+        &output.stdout,
     )?;
+    std::fs::write(
+        folder.join(format!("{name}-execute.stderr")),
+        &output.stderr,
+    )?;
+    assert_eq!(output.status.code(), Some(status), "{name}: {output:?}");
+    assert!(output.stderr.is_empty(), "{name}: {output:?}");
     assert_eq!(
         std::fs::read(folder.join(format!("{name}-execute.stdout")))?,
         expected.as_bytes(),

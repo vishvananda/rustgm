@@ -6,6 +6,11 @@ use crate::types::{Kind, TypeId, instance::Instance};
 #[derive(Clone, Copy)]
 pub(super) enum Arguments {
     Values(ir::ValueList),
+    /// A checked compiler-produced value, such as an initialized static panic string.
+    Single {
+        ty: TypeId,
+        value: Selected,
+    },
     /// An already evaluated, owned ARG snapshot. Its fields move to G; this
     /// adapter grants neither Copy nor permission to read a different place.
     Tuple {
@@ -16,6 +21,7 @@ pub(super) enum Arguments {
 impl Arguments {
     pub(super) fn len(self, lower: &Lower<'_, '_, '_>) -> Result<usize, &'static str> {
         match self {
+            Self::Single { .. } => Ok(1),
             Self::Values(list) => lower
                 .body
                 .arguments
@@ -41,6 +47,8 @@ impl Arguments {
         index: usize,
     ) -> Result<(TypeId, Selected), &'static str> {
         match self {
+            Self::Single { ty, value } if index == 0 => Ok((ty, value)),
+            Self::Single { .. } => Err("compiler-produced argument index exceeds its extent"),
             Self::Values(list) => {
                 let id = *lower
                     .body
@@ -141,10 +149,10 @@ impl Lower<'_, '_, '_> {
         ) || self.context.output.variadic(signature)?
             || indirect
         {
-            let Arguments::Values(values) = arguments else {
+            if matches!(arguments, Arguments::Tuple { .. }) {
                 return Err("runtime selector callback requires the ordinary Rust ABI");
-            };
-            return self.boundary_call(signature, callee, values, result);
+            }
+            return self.boundary_call(signature, callee, arguments, result);
         }
         let count = arguments.len(self)?;
         if matches!(arguments, Arguments::Tuple { .. }) && count > 1_000_000 {

@@ -96,7 +96,16 @@ pub(super) fn validate(
             "source panic role lost its item",
         ));
     };
-    let actual = unit.configured.ast.items[index as usize].kind;
+    let actual_item = unit.configured.ast.items[index as usize];
+    if role == LangItem::PanicNounwind && !unit.configured.ast.list(actual_item.generics).is_empty()
+    {
+        return Err(error(
+            package,
+            declaration.origin,
+            "panic_nounwind requires no written generic parameters",
+        ));
+    }
+    let actual = actual_item.kind;
     if function {
         if !matches!(actual, ItemKind::Function { .. }) || declaration.parent.is_some() {
             return Err(error(
@@ -139,6 +148,7 @@ const fn function_role(role: LangItem) -> Option<bool> {
         | LangItem::PanicFmt
         | LangItem::PanicImpl
         | LangItem::PanicDisplay
+        | LangItem::PanicNounwind
         | LangItem::OffsetOf
         | LangItem::ConstPanicFmt => true,
         _ => return None,

@@ -5383,7 +5383,26 @@ complete. Capability queries do not read inactive alternatives; typed constructi
 and selected-field reads still validate their actual values, masks and pointer
 provenance. No language role or byte capability grants Copy, initializedness,
 unsafe permission or executable methods. Source MaybeUninit uses ordinary source
-method bodies and reached intrinsic contracts; native panic and imported nominal
-closure remain required. The
+method bodies and reached intrinsic contracts; general native profiles and
+imported nominal closure remain required. The
 [constant checkpoint](docs/pa31-maybe-uninit-const-checkpoint.md) records source,
 owner, bounded-work and immutable A/B evidence and the new original-core frontier.
+
+Runtime source layout intrinsics share completed concrete properties in a cold
+optional owner, while every reached Call retains current-body, complete
+signature/result, argument and evaluated-target checks. A shared plan supplies
+data, never another caller's permission. Pay warm queries and prospective map
+growth through the existing source contract ledger. Ordinary sources without
+plans return before speculative value inspection. Assert-inhabited collects the
+real source panic_nounwind function even for a concrete NOP, matching pinned
+monomorphization; false assertions alone emit its normal body/ABI call with
+initialized static text derived from completed types and resolved names. The
+[native checkpoint](docs/pa31-maybe-uninit-native-checkpoint.md) records the actual
+value/destruction/panic observers and remaining diagnostic/imported profiles.
+
+Compact cold retained role tables independently of their public declaration
+API. Checked niche identities preserve zero/absent parent and source origin,
+reject unrepresentable IDs and keep caller/parent authentication intact. Measure
+actual retained layouts before updating size guards; keep the existing
+provider/imported difference bound and remove lint expectations made obsolete
+by a structural improvement. No ordinary node, body or execution frame grows.

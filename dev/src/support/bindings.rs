@@ -98,9 +98,10 @@ pub enum LangItem {
     MaybeDangling,
     BikeshedGuaranteedNoDrop,
     MaybeUninit,
+    PanicNounwind,
 }
 impl LangItem {
-    pub const ALL: [Self; 82] = [
+    pub const ALL: [Self; 83] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -183,6 +184,7 @@ impl LangItem {
         Self::MaybeDangling,
         Self::BikeshedGuaranteedNoDrop,
         Self::MaybeUninit,
+        Self::PanicNounwind,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -269,6 +271,7 @@ impl LangItem {
             Self::MaybeDangling => 79,
             Self::BikeshedGuaranteedNoDrop => 80,
             Self::MaybeUninit => 81,
+            Self::PanicNounwind => 82,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -355,6 +358,7 @@ impl LangItem {
             "maybe_dangling" => Some(Self::MaybeDangling),
             "bikeshed_guaranteed_no_drop" => Some(Self::BikeshedGuaranteedNoDrop),
             "maybe_uninit" => Some(Self::MaybeUninit),
+            "panic_nounwind" => Some(Self::PanicNounwind),
             "offset_of" => Some(Self::OffsetOf),
             _ => None,
         }

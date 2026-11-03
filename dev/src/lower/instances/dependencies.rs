@@ -40,6 +40,7 @@ struct Discovered {
     closures: Vec<TypeId>,
     calls: Vec<Instance>,
     selectors: Vec<crate::body::ir::ValueId>,
+    layouts: Vec<crate::body::ir::ValueId>,
     tables: Vec<(TypeId, TypeId)>,
     captured: Vec<(TypeId, [Option<crate::body::invocation_entries::Entry>; 2])>,
     upcasts: Vec<(TypeId, TypeId)>,
@@ -72,6 +73,10 @@ fn source_call(
     };
     match catalog.intrinsic_kind(crate::resolve::model::DefId(item.0))? {
         Some(SourceIntrinsic::ConstEvalSelect) => Ok(Some(SourceIntrinsic::ConstEvalSelect)),
+        Some(kind @ SourceIntrinsic::Layout(_)) => {
+            layout_call(report, facts, body, value, ty, (signature, arguments))?;
+            Ok(Some(kind))
+        }
         Some(kind @ (SourceIntrinsic::UncheckedSub | SourceIntrinsic::SubWithOverflow)) => {
             subtraction_dependencies::require(report, facts, body, value, ty).map(|()| Some(kind))
         }
@@ -94,26 +99,7 @@ fn source_call(
             runtime_check(facts, body, value, ty, signature, arguments)
         }
         Some(kind @ (SourceIntrinsic::Transmute | SourceIntrinsic::TransmuteUnchecked)) => {
-            let selected = Reader::new(facts)
-                .source_transmute(Instance::new(&facts.types, ty)?, body.source)?
-                .ok_or("source transmute lost its dependency descriptor")?;
-            catalog.require_transmute_report(report, facts, &selected)?;
-            let [input] = body
-                .arguments
-                .get(arguments.start as usize..arguments.end as usize)
-                .ok_or("source transmute lost its actual argument range")?
-            else {
-                return Err("source transmute requires one direct value argument");
-            };
-            if !selected.opened_signature_matches(&facts.types, signature)
-                || value.ty != selected.destination
-                || body
-                    .values
-                    .get(input.0 as usize)
-                    .is_none_or(|v| v.ty != selected.source)
-            {
-                return Err("source transmute dependency differs from its complete direct Call");
-            }
+            transmute_call(report, facts, body, value, ty, (signature, arguments))?;
             Ok(Some(kind))
         }
         Some(SourceIntrinsic::CallerLocation) => {
@@ -155,6 +141,69 @@ fn source_call(
     }
 }
 
+fn transmute_call(
+    report: &crate::resolve::expansion::Report,
+    facts: &Declarations,
+    body: &Body,
+    value: &crate::body::ir::Value,
+    ty: TypeId,
+    (signature, arguments): (TypeId, crate::body::ir::ValueList),
+) -> Result<(), &'static str> {
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("source transmute lost its catalog")?;
+    let selected = Reader::new(facts)
+        .source_transmute(Instance::new(&facts.types, ty)?, body.source)?
+        .ok_or("source transmute lost its dependency descriptor")?;
+    catalog.require_transmute_report(report, facts, &selected)?;
+    let [input] = body
+        .arguments
+        .get(arguments.start as usize..arguments.end as usize)
+        .ok_or("source transmute lost its actual argument range")?
+    else {
+        return Err("source transmute requires one direct value argument");
+    };
+    if !selected.opened_signature_matches(&facts.types, signature)
+        || value.ty != selected.destination
+        || body
+            .values
+            .get(input.0 as usize)
+            .is_none_or(|v| v.ty != selected.source)
+    {
+        return Err("source transmute dependency differs from its complete direct Call");
+    }
+    Ok(())
+}
+
+fn layout_call(
+    report: &crate::resolve::expansion::Report,
+    facts: &Declarations,
+    body: &Body,
+    value: &crate::body::ir::Value,
+    ty: TypeId,
+    (signature, arguments): (TypeId, crate::body::ir::ValueList),
+) -> Result<(), &'static str> {
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("runtime layout lost its catalog")?;
+    let selected = catalog
+        .layout_selection(facts, Instance::new(&facts.types, ty)?)?
+        .ok_or("runtime layout lost its dependency descriptor")?;
+    catalog.require_provider_report(report)?;
+    if value.ty != selected.result_type()
+        || !matches!(facts.types.kind(ty),Some(Kind::FunctionItem { signature: expected, .. }) if expected == signature)
+        || !body
+            .arguments
+            .get(arguments.start as usize..arguments.end as usize)
+            .is_some_and(<[_]>::is_empty)
+    {
+        return Err("runtime layout differs from its complete checked Call");
+    }
+    Ok(())
+}
+
 fn runtime_check(
     facts: &Declarations,
     body: &Body,
@@ -192,6 +241,11 @@ impl Discovered {
     ) -> Result<(), &'static str> {
         use crate::support::bindings::SourceIntrinsic;
         match source_call(report, facts, body, value, ty)? {
+            Some(SourceIntrinsic::Layout(_)) => {
+                self.layouts.push(crate::body::ir::ValueId(
+                    u32::try_from(index).map_err(|_| "too many runtime layout values")?,
+                ));
+            }
             Some(SourceIntrinsic::ConstEvalSelect) => {
                 self.selectors.push(crate::body::ir::ValueId(
                     u32::try_from(index).map_err(|_| "too many source selector values")?,
@@ -339,6 +393,26 @@ impl Dependencies {
     ) -> Result<Demands, String> {
         let mut concrete = Vec::new();
         let mut object_types = Vec::new();
+        if !result.layouts.is_empty() {
+            let body = caller.ok_or("runtime layout data requires its actual caller")?;
+            for call in &result.layouts {
+                self.charge(1)?;
+                let Rvalue::Call { callee, .. } = body.values[call.0 as usize].kind else {
+                    return Err("runtime layout dependency lost its actual Call".into());
+                };
+                let raw = Instance::new(&facts.types, body.values[callee.0 as usize].ty)?;
+                let target = body.callable_target(raw);
+                let plan = crate::sema::compiler_items::prepare_runtime_layout(
+                    report,
+                    facts,
+                    target,
+                    body.source,
+                )?;
+                if let Some(assertion) = plan.assertion {
+                    result.calls.push(assertion.panic.instance);
+                }
+            }
+        }
         if !result.selectors.is_empty() {
             let body = caller.ok_or("source selector requires its actual caller body")?;
             self.selector_origins(facts, body, &result.selectors, &mut result.calls)?;

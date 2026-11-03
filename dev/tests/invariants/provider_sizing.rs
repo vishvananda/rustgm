@@ -77,13 +77,14 @@ fn source_catalog_storage_is_absent_from_ordinary_sources() -> Result {
     let facts = sema::declarations::analyze(&report)?;
     assert!(facts.source_bindings.is_none());
     println!(
-        "Package={} Resolution={} Declarations={} SourceCatalog={} Reservations={} bindings={:?}",
+        "Package={} Resolution={} Declarations={} SourceCatalog={} Reservations={} bindings={:?} provider={}",
         size_of::<crate::resolve::package::Package>(),
         size_of::<crate::resolve::model::Resolution>(),
         size_of::<sema::model::Declarations>(),
         size_of::<Catalog>(),
         size_of::<crate::resolve::bindings::Reservations>(),
-        Catalog::binding_layouts()
+        Catalog::binding_layouts(),
+        Catalog::provider_binding_bytes()
     );
     Ok(())
 }
