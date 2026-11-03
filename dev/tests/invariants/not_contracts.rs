@@ -130,8 +130,8 @@ fn actual_source_not_uses_ordinary_impl_proof_and_erases_only_primitive_dispatch
             .count()
             >= 3
     );
-    // Appended source range roles change the cold catalog, not ordinary facts.
-    assert_eq!(size_of::<crate::sema::compiler_items::Catalog>(), 1752);
+    // Appended wrapper roles extend the cold catalog; ordinary facts stay fixed.
+    assert_eq!(size_of::<crate::sema::compiler_items::Catalog>(), 1800);
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     assert_eq!(size_of::<SourceNot>(), 12);

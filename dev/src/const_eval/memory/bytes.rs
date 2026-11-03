@@ -8,6 +8,7 @@ mod images;
 mod intervals;
 mod niches;
 mod nonnull_values;
+mod numeric_words;
 mod products;
 mod relocations;
 mod slice_words;

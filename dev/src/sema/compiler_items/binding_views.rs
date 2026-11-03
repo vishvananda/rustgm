@@ -393,6 +393,8 @@ fn role_kind(role: LangItem) -> DefKind {
         | LangItem::FormatArgument
         | LangItem::DynMetadata
         | LangItem::PhantomData
+        | LangItem::ManuallyDrop
+        | LangItem::MaybeDangling
         | LangItem::PanicLocation
         | LangItem::PanicInfo
         | LangItem::AllocLayout => DefKind::Struct,

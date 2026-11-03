@@ -157,6 +157,26 @@ fn reserve_all(
         }
         return Ok(None);
     };
+    require_source_identity_space(facts)?;
+    let mut reserved = Reservations {
+        provider: source.provider.clone(),
+        root: *facts
+            .module_scopes
+            .first()
+            .ok_or_else(|| Error::at(FileId(0), 0, "missing source crate root"))?,
+        languages: [None; LangItem::ALL.len()],
+        intrinsics: HashMap::default(),
+        denied_implementations: HashSet::default(),
+        header_attributes: [HeaderAttributes::EMPTY; LangItem::ALL.len()],
+        diagnostics: [None; 35],
+        extra_diagnostics: None,
+        steps: 0,
+    };
+    reserve_declarations(package, facts, claims, source, &mut reserved)?;
+    super::try_claims::enum_variants(package, facts, &mut reserved)?;
+    Ok(Some(Box::new(reserved)))
+}
+fn require_source_identity_space(facts: &Resolution) -> Result<(), Error> {
     if facts.source_bindings.is_some() {
         return Err(Error::at(
             FileId(0),
@@ -178,20 +198,15 @@ fn reserve_all(
             "source bindings cannot share bootstrap identities",
         ));
     }
-    let mut reserved = Reservations {
-        provider: source.provider.clone(),
-        root: *facts
-            .module_scopes
-            .first()
-            .ok_or_else(|| Error::at(FileId(0), 0, "missing source crate root"))?,
-        languages: [None; LangItem::ALL.len()],
-        intrinsics: HashMap::default(),
-        denied_implementations: HashSet::default(),
-        header_attributes: [HeaderAttributes::EMPTY; LangItem::ALL.len()],
-        diagnostics: [None; 35],
-        extra_diagnostics: None,
-        steps: 0,
-    };
+    Ok(())
+}
+fn reserve_declarations(
+    package: &Package,
+    facts: &Resolution,
+    claims: &HashMap<NodeKey, Vec<Claim>>,
+    source: &SourceCore,
+    reserved: &mut Reservations,
+) -> Result<(), Error> {
     let parents = parents(package, facts);
     let mut claimed = HashSet::default();
     for (index, definition) in facts.definitions.iter().enumerate() {
@@ -222,20 +237,28 @@ fn reserve_all(
             parent: parents.get(&definition.scope).copied(),
             origin: key,
         };
+        let mut language = false;
         for claim in claims {
             reserved.steps += 1;
+            if matches!(claim, Claim::Language(_)) && std::mem::replace(&mut language, true) {
+                return Err(error(
+                    package,
+                    key,
+                    "multiple lang attributes on one declaration",
+                ));
+            }
             reserve(
                 package,
                 facts,
                 source,
-                &mut reserved,
+                reserved,
                 declaration,
                 *claim,
                 facts.foreign_owners.contains_key(&id),
             )?;
         }
-        super::role_attributes::validate(package, source, &mut reserved, declaration, claims)?;
-        super::annotations::validate(package, source, &mut reserved, declaration, claims)?;
+        super::role_attributes::validate(package, source, reserved, declaration, claims)?;
+        super::annotations::validate(package, source, reserved, declaration, claims)?;
     }
     if claims.keys().any(|key| !claimed.contains(key)) {
         return Err(Error::at(
@@ -244,8 +267,7 @@ fn reserve_all(
             "source binding requires an indexed declaration owner",
         ));
     }
-    super::try_claims::enum_variants(package, facts, &mut reserved)?;
-    Ok(Some(Box::new(reserved)))
+    Ok(())
 }
 
 fn reserve(
@@ -394,6 +416,7 @@ fn reserve_language(
     }
     super::panic_claims::validate(package, declaration, kind)?;
     super::pointee_claims::validate(package, declaration, kind)?;
+    super::wrapper_claims::validate(package, declaration, kind)?;
     super::range_claims::validate(package, facts, declaration, kind)?;
     super::try_claims::validate(package, facts, declaration, kind)?;
     // Weak foreign declarations never own the defining handler's slot.

@@ -184,7 +184,7 @@ fn repeated_wrapping_flattens_provenance_with_bounded_work_and_unchanged_hot_rec
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<crate::sema::model::NodeFacts>(), 80);
-    // Range member registration grows only the cold source catalog here.
-    assert_eq!(size_of::<crate::sema::compiler_items::Catalog>(), 1752);
+    // Appended wrapper roles extend the cold source catalog.
+    assert_eq!(size_of::<crate::sema::compiler_items::Catalog>(), 1800);
     Ok(())
 }

@@ -195,6 +195,7 @@ impl NeedsDrop {
             .destruction(item)
             .ok_or("missing destruction aggregate")?;
         Ok(match (self.custom.contains(&item), policy) {
+            (_, super::aggregate::FieldDestruction::Never) => Some(false),
             (true, _) => Some(true),
             (_, super::aggregate::FieldDestruction::Suppressed) => Some(false),
             _ => None,

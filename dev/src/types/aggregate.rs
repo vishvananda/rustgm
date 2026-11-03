@@ -72,6 +72,13 @@ pub enum FieldDestruction {
     #[default]
     Fields,
     Suppressed,
+    /// The actual `ManuallyDrop` role suppresses even an authored destructor.
+    Never,
+}
+#[derive(Clone, Copy, Default)]
+struct NominalPolicy {
+    destruction: FieldDestruction,
+    may_dangle: bool,
 }
 #[derive(Clone, Copy, Debug)]
 pub struct Definition {
@@ -97,7 +104,7 @@ pub struct Definitions {
     instances: Option<Box<instances::Instances>>,
     storage: Option<Box<field_forms::Fields>>,
     metadata_ready: HashMap<TypeId, metadata::Readiness>,
-    suppressed_fields: crate::support::hash::HashSet<ItemId>,
+    nominal_policies: HashMap<ItemId, NominalPolicy>,
     interior_storage: crate::support::hash::HashSet<ItemId>,
     nullable_enums: Option<Box<nullable::Policies>>,
     simd_limits: Option<Box<lane_limits::Limits>>,
@@ -173,19 +180,56 @@ impl Definitions {
     #[must_use]
     pub fn destruction(&self, item: ItemId) -> Option<FieldDestruction> {
         self.get(item)?;
-        Some(if self.suppressed_fields.contains(&item) {
-            FieldDestruction::Suppressed
-        } else {
-            FieldDestruction::Fields
-        })
+        Some(
+            self.nominal_policies
+                .get(&item)
+                .map_or(FieldDestruction::Fields, |policy| policy.destruction),
+        )
     }
     pub(crate) fn suppress_field_destruction(&mut self, item: ItemId) -> Result<(), &'static str> {
         self.get(item)
             .ok_or("missing destruction policy declaration")?;
-        if !self.suppressed_fields.insert(item) {
+        let policy = self.nominal_policies.entry(item).or_default();
+        if policy.destruction != FieldDestruction::Fields {
             return Err("field destruction policy is already registered");
         }
+        policy.destruction = FieldDestruction::Suppressed;
         Ok(())
+    }
+    pub(crate) fn nominal_policy_growth(&self, item: ItemId) -> crate::support::retained::Growth {
+        crate::support::retained::Growth::map::<ItemId, NominalPolicy>(
+            self.nominal_policies.len(),
+            self.nominal_policies.capacity(),
+            usize::from(!self.nominal_policies.contains_key(&item)),
+        )
+    }
+    pub(crate) fn suppress_destruction(&mut self, item: ItemId) -> Result<(), &'static str> {
+        self.get(item)
+            .ok_or("missing source destruction policy declaration")?;
+        let policy = self.nominal_policies.entry(item).or_default();
+        if policy.destruction != FieldDestruction::Fields {
+            return Err("source destruction policy is already registered");
+        }
+        policy.destruction = FieldDestruction::Never;
+        Ok(())
+    }
+    pub(crate) fn permit_dangling_pointers(&mut self, item: ItemId) -> Result<(), &'static str> {
+        self.get(item)
+            .ok_or("missing source pointer policy declaration")?;
+        let policy = self.nominal_policies.entry(item).or_default();
+        if policy.may_dangle {
+            return Err("source pointer policy is already registered");
+        }
+        policy.may_dangle = true;
+        Ok(())
+    }
+    pub(crate) fn permits_dangling_pointers(&self, item: ItemId) -> Option<bool> {
+        self.get(item)?;
+        Some(
+            self.nominal_policies
+                .get(&item)
+                .is_some_and(|policy| policy.may_dangle),
+        )
     }
     /// Instantiate immediate fields from completed templates, keyed by the full
     /// canonical nominal type. This does not expand referents or prove layout.

@@ -94,9 +94,11 @@ pub enum LangItem {
     ContractBuildCheckEnsures,
     ContractCheckRequires,
     ContractCheckEnsures,
+    ManuallyDrop,
+    MaybeDangling,
 }
 impl LangItem {
-    pub const ALL: [Self; 78] = [
+    pub const ALL: [Self; 80] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -175,6 +177,8 @@ impl LangItem {
         Self::ContractBuildCheckEnsures,
         Self::ContractCheckRequires,
         Self::ContractCheckEnsures,
+        Self::ManuallyDrop,
+        Self::MaybeDangling,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -257,6 +261,8 @@ impl LangItem {
             Self::ContractBuildCheckEnsures => 75,
             Self::ContractCheckRequires => 76,
             Self::ContractCheckEnsures => 77,
+            Self::ManuallyDrop => 78,
+            Self::MaybeDangling => 79,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -339,6 +345,8 @@ impl LangItem {
             "contract_build_check_ensures" => Some(Self::ContractBuildCheckEnsures),
             "contract_check_requires" => Some(Self::ContractCheckRequires),
             "contract_check_ensures" => Some(Self::ContractCheckEnsures),
+            "manually_drop" => Some(Self::ManuallyDrop),
+            "maybe_dangling" => Some(Self::MaybeDangling),
             "offset_of" => Some(Self::OffsetOf),
             _ => None,
         }

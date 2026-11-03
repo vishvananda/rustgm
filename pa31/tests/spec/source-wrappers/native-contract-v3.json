@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "source_contract_sha256": "1b3ab07b81fbdb392d50d42670d1da8d83e803388accf722b3fa17ac4fa22018",
+  "cases": [
+    {
+      "name": "drop-pair",
+      "observer": "pa31/tests/spec/source-wrappers/drop-pair.c",
+      "sha256": "4d581d0a09dca3edd0da241a9b4727ac6d2fb3138e6f6ed80808f7b84c5e3d0a",
+      "stdout": "23 7 0 1 1\n"
+    },
+    {
+      "name": "manual-own-destructor",
+      "observer": "pa31/tests/spec/source-wrappers/manual-own-destructor.c",
+      "sha256": "7232ff969a7dc2ac97f918e89eed0573fbec6bcfbdd8e06a90a6d2df8f2e27a9",
+      "stdout": "0 7\n"
+    },
+    {
+      "name": "manual-move-out",
+      "observer": "pa31/tests/spec/source-wrappers/manual-move-out.c",
+      "sha256": "7232ff969a7dc2ac97f918e89eed0573fbec6bcfbdd8e06a90a6d2df8f2e27a9",
+      "stdout": "4 7\n"
+    },
+    {
+      "name": "const-layout",
+      "observer": "pa31/tests/spec/source-wrappers/const-layout.c",
+      "sha256": "26ff079501feff3e1adf0f37911de1ac479c9cecf0ebd00ec33635b91a486e56",
+      "stdout": "7 8 8\n"
+    }
+  ]
+}

@@ -2,6 +2,7 @@
 use super::continuations::Source;
 use super::relocations::{Fragment, WordId};
 use super::{Backing, Constant, Failure, Machine, Read, Reader, TypeId};
+use crate::const_eval::memory::validity::ValueType;
 use crate::const_eval::memory::{RawAccess, RawAlignment, Resolved};
 use crate::sema::values::{Metadata, MetadataShape, WordShape, WordTarget};
 impl Machine<'_, '_> {
@@ -40,9 +41,10 @@ impl Machine<'_, '_> {
         &mut self,
         backing: &mut Backing,
         offset: u64,
-        ty: TypeId,
+        validity: ValueType,
         value: Constant,
     ) -> Result<(), Failure> {
+        let ty = validity.ty;
         let shape = Reader::new(self.evaluator.facts()).word_shape(ty)?;
         let value = if matches!(
             shape,
@@ -58,26 +60,7 @@ impl Machine<'_, '_> {
         if let crate::sema::values::View::Address { bits } =
             Reader::new(self.evaluator.facts()).view(value)?
         {
-            if !matches!(
-                shape,
-                WordShape::Data {
-                    reference: None,
-                    metadata: MetadataShape::Thin,
-                    ..
-                }
-            ) || value.metadata().is_some()
-            {
-                return Err(
-                    "numeric reference or wide-pointer words require a supported validity profile"
-                        .into(),
-                );
-            }
-            return self.encode_bytes(
-                backing,
-                offset,
-                TypeId::primitive(crate::types::Primitive::Usize),
-                Constant::scalar(crate::sema::model::Scalar::Integer(u128::from(bits))),
-            );
+            return self.encode_numeric_word(backing, offset, validity, value, bits);
         }
         let (target, metadata) = self.evaluator.pointer_words(value)?;
         match shape {
@@ -154,34 +137,12 @@ impl Machine<'_, '_> {
         &mut self,
         source: Source,
         offset: u64,
-        ty: TypeId,
+        validity: ValueType,
     ) -> Result<(Constant, Option<super::continuations::Duty>), Failure> {
+        let ty = validity.ty;
         let shape = Reader::new(self.evaluator.facts()).word_shape(ty)?;
         if !self.source_has_fragments(source, offset, 8)? {
-            if !matches!(
-                shape,
-                WordShape::Data {
-                    reference: None,
-                    metadata: MetadataShape::Thin,
-                    ..
-                }
-            ) {
-                return Err("numeric references, function or wide-pointer words require supported validity proof".into());
-            }
-            let start =
-                usize::try_from(offset).map_err(|_| "numeric pointer word offset overflow")?;
-            let end = start
-                .checked_add(8)
-                .ok_or("numeric pointer word extent overflow")?;
-            let scalar = self.decode_byte_scalar(
-                source,
-                start,
-                end,
-                TypeId::primitive(crate::types::Primitive::Usize),
-            )?;
-            let bits = u64::try_from(crate::const_eval::values::integer(scalar)?)
-                .map_err(|_| "numeric pointer exceeds target width")?;
-            return Ok((Constant::raw_address(bits), None));
+            return Ok((self.decode_numeric_word(source, offset, validity)?, None));
         }
         let word = self.read_symbolic_word(source, offset)?;
         match shape {
@@ -211,11 +172,12 @@ impl Machine<'_, '_> {
                     offset,
                     address,
                     pointee,
-                    reference.is_some(),
+                    reference.is_some() && !validity.may_dangle,
                     metadata,
                 )?;
                 if let Some(mutable) = reference {
                     if mutable
+                        && !validity.may_dangle
                         && value.write_permission()
                             != Some(crate::sema::values::WritePermission::Writable)
                     {
@@ -235,6 +197,7 @@ impl Machine<'_, '_> {
                             address: value,
                             ty: physical,
                             mutable,
+                            may_dangle: validity.may_dangle,
                         }),
                     ))
                 } else {
@@ -327,7 +290,7 @@ impl Machine<'_, '_> {
         let (parent, from) = selected.projection_parent(Reader::new(self.evaluator.facts()))?;
         self.evaluator.subsequence(parent, from, length, pointee)
     }
-    pub(super) fn validate_word_reference(
+    pub(in crate::const_eval::memory) fn validate_word_reference(
         &mut self,
         address: Constant,
         ty: TypeId,

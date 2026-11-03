@@ -117,7 +117,12 @@ pub(super) fn tag_provenance(repr: &str) -> Result<(), String> {
                 TypeId::primitive(crate::types::Primitive::U8),
             )?;
             let mut buffer = machine.empty_backing(*ty)?;
-            machine.encode_byte_word(&mut buffer, 0, pointer_ty, pointer)?;
+            machine.encode_byte_word(
+                &mut buffer,
+                0,
+                crate::const_eval::memory::validity::ValueType::root(pointer_ty),
+                pointer,
+            )?;
             let snapshot = buffer.snapshot();
             machine.commit_byte_snapshot(root, 0, &snapshot)?;
             assert!(

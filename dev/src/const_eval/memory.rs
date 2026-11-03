@@ -8,6 +8,7 @@ mod raw_slices;
 mod reinterpretation;
 mod sequences;
 mod tails;
+mod validity;
 use super::{Constant, Failure, Frame, Machine};
 use crate::{
     body::ir::{LocalId, Place, ProjectionKind, ValueId},
@@ -617,63 +618,5 @@ impl Machine<'_, '_> {
             self.charge(extra)?;
         }
         self.evaluator.field(value, index)
-    }
-    pub(super) fn validate_result(&mut self, root: Constant, ty: TypeId) -> Result<(), Failure> {
-        let mut pending = vec![root];
-        let mut seen = HashSet::default();
-        while let Some(value) = pending.pop() {
-            if !seen.insert(value) {
-                continue;
-            }
-            self.charge(1)?;
-            match Reader::new(self.evaluator.facts()).view(value)? {
-                View::Reference(_) => {
-                    self.path(value)?;
-                }
-                View::Image { .. } => {
-                    if let Some(image) = Reader::new(self.evaluator.facts()).array_image(value)? {
-                        self.charge(image.bytes.len())?;
-                        Reader::new(self.evaluator.facts()).require_publishable_array(value)?;
-                    }
-
-                    let image = Reader::new(self.evaluator.facts()).image(value)?;
-                    let length = image.fragments.len();
-                    self.charge(length)?;
-                    self.reserve_cells(pending.len().saturating_add(length).saturating_mul(4))?;
-                    let image = Reader::new(self.evaluator.facts()).image(value)?;
-                    for fragment in image.complete_words()? {
-                        if let crate::sema::values::WordTarget::Value(value) = fragment.target {
-                            pending.push(value);
-                        }
-                    }
-                }
-                View::Product { length, .. } => {
-                    self.charge(
-                        usize::try_from(length).map_err(|_| "constant result exceeds host size")?,
-                    )?;
-                    for index in 0..length {
-                        pending.push(self.stored_field(value, index)?);
-                    }
-                }
-                View::Repeat { value, length } if length != 0 => pending.push(value),
-                _ => {}
-            }
-        }
-        let (answer, work) = Reader::new(self.evaluator.facts()).shared_reference_work(ty, root)?;
-        self.charge(work)?;
-        match answer {
-            crate::types::interior_mutability::Answer::Ordinary => {}
-            crate::types::interior_mutability::Answer::Interior => {
-                return Err(Failure::Fault(
-                    "constant reference cannot escape with interior mutable allocation backing",
-                ));
-            }
-            crate::types::interior_mutability::Answer::Unresolved => {
-                return Err(
-                    "constant reference storage requires completed type and value facts".into(),
-                );
-            }
-        }
-        Ok(())
     }
 }

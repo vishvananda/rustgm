@@ -572,5 +572,10 @@ fn select_requirement(
             }
         }
     };
-    selected.map_err(|_| "invalid or exhausted canonical trait selection")
+    selected.map_err(|error| {
+        #[cfg(test)]
+        selection::copy_trace::record(|| format!("declaration selection: {error}"));
+        drop(error);
+        "invalid or exhausted canonical trait selection"
+    })
 }

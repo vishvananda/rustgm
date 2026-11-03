@@ -1,7 +1,7 @@
 //! Typed views touch only their selected footprint; raw transport does not decode.
 use super::continuations::{Duty, Key, ReadInput, Source};
 use super::{Backing, Constant, Failure, Id, Machine, Read, Reader, TypeId};
-use crate::const_eval::static_reads::ReadPurpose;
+use crate::const_eval::{memory::validity::ValueType, static_reads::ReadPurpose};
 use crate::sema::values::StoredShape;
 use crate::{sema::members::VariantId, types::Kind};
 struct Field {
@@ -10,7 +10,7 @@ struct Field {
 }
 enum Encode {
     Value {
-        ty: TypeId,
+        validity: ValueType,
         offset: u64,
         value: Constant,
     },
@@ -23,7 +23,7 @@ enum Encode {
 enum Decode {
     Refinement(crate::types::Constraint),
     Value {
-        ty: TypeId,
+        validity: ValueType,
         offset: u64,
     },
     Product {
@@ -109,11 +109,20 @@ impl Machine<'_, '_> {
         ty: TypeId,
         value: Constant,
     ) -> Result<(), Failure> {
-        let mut pending = vec![Encode::Value { ty, offset, value }];
+        let mut pending = vec![Encode::Value {
+            validity: ValueType::root(ty),
+            offset,
+            value,
+        }];
         while let Some(work) = pending.pop() {
             self.charge(1)?;
             match work {
-                Encode::Value { ty, offset, value } => {
+                Encode::Value {
+                    validity,
+                    offset,
+                    value,
+                } => {
+                    let ty = validity.ty;
                     let physical = Reader::new(self.evaluator.facts()).storage_type(ty)?;
                     if let Some(Kind::Pattern { base, constraint }) =
                         self.evaluator.facts().types.kind(physical)
@@ -124,12 +133,15 @@ impl Machine<'_, '_> {
                         }
                         self.reserve_cells(pending.len().saturating_add(1).saturating_mul(4))?;
                         pending.push(Encode::Value {
-                            ty: base,
+                            validity: ValueType {
+                                ty: base,
+                                ..validity
+                            },
                             offset,
                             value,
                         });
                     } else {
-                        self.encode_byte_value(backing, offset, ty, value, &mut pending)?;
+                        self.encode_byte_value(backing, offset, validity, value, &mut pending)?;
                     }
                 }
                 Encode::Repeat {
@@ -145,12 +157,13 @@ impl Machine<'_, '_> {
         &mut self,
         backing: &mut Backing,
         offset: u64,
-        ty: TypeId,
+        validity: ValueType,
         value: Constant,
         pending: &mut Vec<Encode>,
     ) -> Result<(), Failure> {
-        let layout = self.footprint(ty)?;
-        let ty = Reader::new(self.evaluator.facts()).storage_type(ty)?;
+        let layout = self.footprint(validity.ty)?;
+        let ty = Reader::new(self.evaluator.facts()).storage_type(validity.ty)?;
+        let validity = ValueType { ty, ..validity };
         let start = usize::try_from(offset).map_err(|_| "byte offset exceeds host size")?;
         let end = offset
             .checked_add(layout.size)
@@ -194,12 +207,12 @@ impl Machine<'_, '_> {
             else {
                 return Err("encoded enum lost its checked variant".into());
             };
-            self.encode_byte_fields(ty, offset, value, Some(variant), pending)?;
+            self.encode_byte_fields(validity, offset, value, Some(variant), pending)?;
         } else if matches!(
             Reader::new(self.evaluator.facts()).storage_shape(ty)?,
             StoredShape::Word
         ) {
-            self.encode_byte_word(backing, offset, ty, value)?;
+            self.encode_byte_word(backing, offset, validity, value)?;
         } else if self.byte_union(ty)
             || (matches!(self.evaluator.facts().types.kind(ty), Some(Kind::Array { element, .. }) if element == TypeId::primitive(crate::types::Primitive::U8))
                 && matches!(
@@ -239,30 +252,38 @@ impl Machine<'_, '_> {
                 length,
             });
             pending.push(Encode::Value {
-                ty: element,
+                validity: ValueType {
+                    ty: element,
+                    ..validity
+                },
                 offset,
                 value,
             });
         } else {
-            self.encode_byte_fields(ty, offset, value, None, pending)?;
+            self.encode_byte_fields(validity, offset, value, None, pending)?;
         }
         Ok(())
     }
     fn encode_byte_fields(
         &mut self,
-        ty: TypeId,
+        validity: ValueType,
         offset: u64,
         value: Constant,
         variant: Option<VariantId>,
         pending: &mut Vec<Encode>,
     ) -> Result<(), Failure> {
+        let ty = validity.ty;
         self.check_product_value(ty, value)?;
         let (fields, _) = self.byte_fields(ty, variant)?;
         self.reserve_cells(pending.len().saturating_add(fields.len()).saturating_mul(4))?;
         for (index, field) in fields.into_iter().enumerate().rev() {
             let value = self.stored_field(value, index as u64)?;
             pending.push(Encode::Value {
-                ty: field.ty,
+                validity: validity.field(
+                    Reader::new(self.evaluator.facts()),
+                    field.ty,
+                    index as u64,
+                ),
                 offset: offset
                     .checked_add(field.offset)
                     .ok_or("byte field offset overflow")?,
@@ -407,7 +428,15 @@ impl Machine<'_, '_> {
         purpose: ReadPurpose,
     ) -> Result<(Constant, Vec<Duty>), Failure> {
         self.reserve_cells(16)?;
-        self.decode_byte_work(source, vec![Decode::Value { ty, offset }], purpose, false)
+        self.decode_byte_work(
+            source,
+            vec![Decode::Value {
+                validity: ValueType::root(ty),
+                offset,
+            }],
+            purpose,
+            false,
+        )
     }
     pub(super) fn decode_byte_range(
         &mut self,
@@ -506,7 +535,7 @@ impl Machine<'_, '_> {
         self.charge(count)?;
         for index in (0..count).rev() {
             pending.push(Decode::Value {
-                ty: element,
+                validity: ValueType::root(element),
                 offset: offset
                     .checked_add(
                         stride
@@ -561,8 +590,8 @@ impl Machine<'_, '_> {
                         self.reserve_decode(&mut state, 1, 0, 0)?;
                         state.values.push(self.evaluator.repeat(value, length)?);
                     }
-                    Decode::Value { ty, offset } => {
-                        self.decode_byte_value(source, offset, ty, &mut state)?;
+                    Decode::Value { validity, offset } => {
+                        self.decode_byte_value(source, offset, validity, &mut state)?;
                     }
                 }
             }
@@ -626,19 +655,26 @@ impl Machine<'_, '_> {
         &mut self,
         source: Source,
         offset: u64,
-        ty: TypeId,
+        validity: ValueType,
         state: &mut Decoder,
     ) -> Result<(), Failure> {
         #[cfg(test)]
         {
             self.memory.bytes.decoded += 1;
         }
-        let layout = self.footprint(ty)?;
-        let ty = Reader::new(self.evaluator.facts()).storage_type(ty)?;
+        let layout = self.footprint(validity.ty)?;
+        let ty = Reader::new(self.evaluator.facts()).storage_type(validity.ty)?;
+        let validity = ValueType { ty, ..validity };
         if let Some(Kind::Pattern { base, constraint }) = self.evaluator.facts().types.kind(ty) {
             self.reserve_decode(state, 0, 2, 0)?;
             state.pending.push(Decode::Refinement(constraint));
-            state.pending.push(Decode::Value { ty: base, offset });
+            state.pending.push(Decode::Value {
+                validity: ValueType {
+                    ty: base,
+                    ..validity
+                },
+                offset,
+            });
             return Ok(());
         }
         let start = usize::try_from(offset).map_err(|_| "byte read exceeds host size")?;
@@ -660,12 +696,12 @@ impl Machine<'_, '_> {
             StoredShape::Enumeration { .. } | StoredShape::Niche
         ) {
             let variant = self.decode_byte_variant(source, offset, ty)?;
-            self.decode_byte_fields(ty, offset, Some(variant), state)?;
+            self.decode_byte_fields(validity, offset, Some(variant), state)?;
         } else if matches!(
             Reader::new(self.evaluator.facts()).storage_shape(ty)?,
             StoredShape::Word
         ) {
-            let (value, duty) = self.decode_byte_word(source, offset, ty)?;
+            let (value, duty) = self.decode_byte_word(source, offset, validity)?;
             if let Some(duty) = duty
                 && state.purpose == ReadPurpose::Value
             {
@@ -691,23 +727,26 @@ impl Machine<'_, '_> {
                 self.reserve_decode(state, 0, 2, 0)?;
                 state.pending.push(Decode::Repeat(length));
                 state.pending.push(Decode::Value {
-                    ty: element,
+                    validity: ValueType {
+                        ty: element,
+                        ..validity
+                    },
                     offset,
                 });
             }
         } else {
-            self.decode_byte_fields(ty, offset, None, state)?;
+            self.decode_byte_fields(validity, offset, None, state)?;
         }
         Ok(())
     }
     fn decode_byte_fields(
         &mut self,
-        ty: TypeId,
+        validity: ValueType,
         offset: u64,
         selected: Option<VariantId>,
         state: &mut Decoder,
     ) -> Result<(), Failure> {
-        let (fields, variant) = self.byte_fields(ty, selected)?;
+        let (fields, variant) = self.byte_fields(validity.ty, selected)?;
         state.temporary = fields
             .capacity()
             .saturating_mul(size_of::<Field>())
@@ -717,9 +756,13 @@ impl Machine<'_, '_> {
             start: state.values.len(),
             variant,
         });
-        for field in fields.into_iter().rev() {
+        for (index, field) in fields.into_iter().enumerate().rev() {
             state.pending.push(Decode::Value {
-                ty: field.ty,
+                validity: validity.field(
+                    Reader::new(self.evaluator.facts()),
+                    field.ty,
+                    index as u64,
+                ),
                 offset: offset
                     .checked_add(field.offset)
                     .ok_or("byte read field offset overflow")?,
@@ -834,7 +877,10 @@ impl Machine<'_, '_> {
         self.reserve_cells(16)?;
         self.decode_byte_work(
             source,
-            vec![Decode::Value { ty, offset: 0 }],
+            vec![Decode::Value {
+                validity: ValueType::root(ty),
+                offset: 0,
+            }],
             ReadPurpose::Value,
             true,
         )

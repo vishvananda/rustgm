@@ -178,6 +178,7 @@ impl Checker<'_> {
         key: NodeKey,
         kind: aggregate::Kind,
     ) -> Result<(), Error> {
+        crate::sema::compiler_items::wrappers::register(self.report, &mut self.facts, item)?;
         self.publish_simd_limit(item, key)?;
         match kind {
             aggregate::Kind::Enum => self

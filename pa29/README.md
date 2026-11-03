@@ -172,3 +172,12 @@ sidecars together. Run all active earlier suites, lint, file/architecture audits
 and affected scaling measurements. Record independent checks before setting
 status active in `assignments.json` and adding the stage to the root report.
 Student export is a later operation: this repository owns the full solution.
+
+General source nominal declaration transport is now an explicit artifact priority.
+The [source wrapper checkpoint](../docs/pa31-source-wrappers-checkpoint.md) qualifies
+local behavior, but the library CLI stops at the existing general declaration-kind
+boundary. Extend one typed struct/enum/union model with real fields, variants,
+generics, constructors, visibility and policies. Emit, validate, reload and remap
+it before qualifying actual wrapper identities and native/const behavior in a
+fresh consumer. Source-role recognition and entry-free native programs leave this
+requirement open. No new wrapper-specific export profile is needed.

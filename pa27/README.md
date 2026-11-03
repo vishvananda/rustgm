@@ -285,3 +285,11 @@ owned transfer retaining its runtime destructor. Previously unclosed defining
 results close from the exact fully proved original body; deferred applications
 replay once under their original identity. String words and broader backing families remain
 required. See `docs/pa27-opaque-byte-storage.md`.
+
+The [source wrapper checkpoint](../docs/pa31-source-wrappers-checkpoint.md) exercises
+scoped MaybeDangling pointer validity alongside null/alignment/scalar, extraction,
+mutation provenance and lifetime opponents. Owned interior-mutable storage remains
+ordinary ownership work. Context survives byte-read retries and cannot become a
+stored-value permission. Actual source MaybeUninit's initialization masks and
+unsafe operations, broader pointer domains and imported nominal authority remain
+required before whole-library/assignment completion.

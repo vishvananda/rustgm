@@ -420,3 +420,11 @@ genuine versioned metadata, a fresh imported const consumer and native `7 7`.
 Declaration-only queries preserve body-demand boundaries. The unchanged original
 core clears the attribute and reaches the actual ManuallyDrop language item;
 source wrapper semantics and all original library artifacts remain required.
+
+The [source wrapper checkpoint](../docs/pa31-source-wrappers-checkpoint.md) now
+qualifies local ManuallyDrop/MaybeDangling headers, real constructors/layout,
+separate cleanup policies, scoped CTFE validity and4 native observations. Full
+CFG proof retains the actual lifetime rejection;64 CLI constant observations
+cover32 cases. General nominal publication/imported consumers remain PA29 work.
+The unchanged original core advances to source MaybeUninit in mem/maybe_uninit.rs352.
+Actual union/mask/unsafe semantics and all library artifacts stay required.

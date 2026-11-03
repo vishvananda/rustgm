@@ -635,3 +635,12 @@ auto-blesses outputs or hand-edits references. The integrator runs the required
 focused integration checks before publishing to main; scheduled/manual CI owns
 the full qualification. A resource interruption is
 an infrastructure failure, never a language rejection or passing test.
+
+Root's [source wrapper checkpoint](pa31-source-wrappers-checkpoint.md) qualifies
+local LIB-122 semantics with33 independent outcomes,4 natives, private19/
+production8,64CLI and PA12 125/125. CLIe659b800 advances the original source probe
+to LIB-123 maybe_uninit in mem/maybe_uninit.rs352 (17.47s/375opens/all722 unchanged).
+General struct/enum/union metadata and genuine imported wrapper consumers remain
+an immediate PA29 artifact priority. No original library artifact or whole PA is
+complete. Root stays alone in the same btrfs tree, with warm caches, fixed budgets
+and scoped cleanup; predecessor938a65897 full CI41553049490 passed every gate.

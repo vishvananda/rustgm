@@ -29,6 +29,7 @@ pub(super) struct Duty {
     pub address: Constant,
     pub ty: TypeId,
     pub mutable: bool,
+    pub may_dangle: bool,
 }
 struct Pending {
     key: Key,
@@ -146,9 +147,13 @@ impl Machine<'_, '_> {
                     self.memory.bytes.checked_duties += 1;
                 }
                 self.charge(1)?;
-                let Read::Value(value) =
+                let checked = if duty.may_dangle {
+                    self.reference_bits(duty.address, duty.ty)?;
+                    Read::Value(duty.address)
+                } else {
                     self.validate_word_reference(duty.address, duty.ty, duty.mutable)?
-                else {
+                };
+                let Read::Value(value) = checked else {
                     if self.waiting.is_none() {
                         return Err(
                             "pending reference validity has no preparation requirement".into()

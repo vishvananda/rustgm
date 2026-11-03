@@ -1,0 +1,119 @@
+{
+  "schema": 1,
+  "state": "qualified-local-source-component; imported/artifact requirements open",
+  "whole_assignments": "planned; no original library artifact",
+  "source_contracts": {
+    "pa31/tests/spec/source-wrappers/contract-v3.json": "1b3ab07b81fbdb392d50d42670d1da8d83e803388accf722b3fa17ac4fa22018",
+    "pa31/tests/spec/source-wrappers/native-contract-v3.json": "b30b6f9731ddb033adee63119a12ff72ac6f6699e3bf8d9216a487b29d84098c"
+  },
+  "independent_source_outcomes": 33,
+  "independent_native_outcomes": 4,
+  "independent_receipt_sha256": "1d72f78a9f4f6909da42306d9fcfaf88bfa2238fcd63b2a68a417f1288455070",
+  "private": {
+    "receipt": "1793670897191154625",
+    "sha256": "0d25c0d31771b53c637751e13a6bad01f38019e244bf4841e78c9455cb86dc7d",
+    "tests": 19,
+    "seconds": 123.82
+  },
+  "production": {
+    "receipt": "1793671099463965960",
+    "sha256": "3791651ffa9ddef5704699fddb3bd4f8701e1c0fe78c85ad839f838922bfc4e7",
+    "tests": 8,
+    "pa12": 125,
+    "seconds": 204.85
+  },
+  "joined": {
+    "directory": "obj/parallel/source-wrappers-v1/joined-v3",
+    "sha256": "78392028be7f050d6b33c0570e6d2bdb4bd35da72c93faba46baf1b574c61a21",
+    "seconds": 35.616773996996926,
+    "cli_sha256": "e659b8005c6048d7cabc1769f977cb976791e42aef6cb307165cf52f11576e7e",
+    "cli_constant_outcomes": 64,
+    "full_lifetime_case": "qualified through full maintainer CFG/region/loan/lowering; CLI source nominal publication remains blocked",
+    "ordinary_control_output_equal": true,
+    "native_stdout": [
+      "23 7 0 1 1\n",
+      "0 7\n",
+      "4 7\n",
+      "7 8 8\n"
+    ]
+  },
+  "original_core": {
+    "infrastructure_failure": false,
+    "classification": "observed original-core blocker",
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "e659b8005c6048d7cabc1769f977cb976791e42aef6cb307165cf52f11576e7e",
+    "expected_cli_source": "explicit caller input",
+    "status": 1,
+    "first_error": "ERROR: file 57: 14080: unsupported source language item",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 17.474318952998146,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "321e5028a445b4daec4e6f03985652bd26b8cce7e03bca77b416047a48b28c3d",
+      "whole-core.openat": "893b70ad87d8c37eeeba42f00cf5f87d11313006e2cb2b4a6d6498590761e5dd",
+      "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+    }
+  },
+  "original_core_receipt_sha256": "5aaeae399a2ed496b6448a41c4fcc5f447998b4788a5e8c64e8c30190e433fd9",
+  "scaling": {
+    "depths": [
+      8,
+      32,
+      128
+    ],
+    "work": [
+      116,
+      502,
+      2022
+    ],
+    "peak_slots": [
+      87,
+      330,
+      1302
+    ],
+    "repeat_lengths": [
+      1,
+      1000000
+    ],
+    "repeat_work": [
+      8,
+      8
+    ],
+    "repeat_peak_slots": [
+      12,
+      12
+    ],
+    "catalog_before_after": [
+      1752,
+      1800
+    ],
+    "reservations_before_after": [
+      2456,
+      2496
+    ],
+    "body_size": 456,
+    "rvalue_size": 20,
+    "ordinary_node_size": 36,
+    "node_facts_size": 80
+  },
+  "open_requirements": [
+    "PA29 general source struct/enum/union metadata and genuine independent imported wrapper consumers",
+    "broader numeric object-pointer metadata/validity domains",
+    "LIB123 actual source MaybeUninit storage, masks, unsafe CTFE and imported authority",
+    "full original core/alloc/std and all remaining whole-assignment requirements"
+  ],
+  "ci": "pending new main integration; predecessor938a65897 full41553049490 passed",
+  "retained_failures": [
+    "runtime size/align intrinsic fixture rustc ICE; original bytes and diagnostics preserved",
+    "same-owner dual language role independently disproved initial positive prediction",
+    "type-only lifetime test corrected to use the actual CFG proof boundary, expected rejection unchanged",
+    "debug loans CLI generic body boundary",
+    "library CLI general nominal declaration admission; not counted as borrow or artifact parity"
+  ]
+}

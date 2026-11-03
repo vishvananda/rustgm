@@ -169,6 +169,23 @@ fn source_abort_signature_is_safe_nonconst_and_supplies_no_layout_or_const_permi
     Ok(())
 }
 
+const WRONG_WIRE_ROLES: &[LangItem] = &[
+    LangItem::DispatchFromDyn,
+    LangItem::Shl,
+    LangItem::BitOr,
+    LangItem::Add,
+    LangItem::Sub,
+    LangItem::ResultOk,
+    LangItem::ResultErr,
+    LangItem::Option,
+    LangItem::OptionSome,
+    LangItem::OptionNone,
+    LangItem::SliceLen,
+    LangItem::AllocLayout,
+    LangItem::ManuallyDrop,
+    LangItem::MaybeDangling,
+];
+
 #[test]
 fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles() -> Result {
     observe_role_layouts();
@@ -189,8 +206,8 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
     assert!(report.resolution.intrinsics.get(Intrinsic::Abort).is_none());
     assert_eq!(size_of::<crate::resolve::model::Resolution>(), 2032);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
-    // The appended From role adds one cold slot; ordinary records stay fixed.
-    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 2456);
+    // The two wrapper roles extend cold tables; ordinary records stay fixed.
+    assert_eq!(size_of::<crate::resolve::bindings::Reservations>(), 2496);
     assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 184);
     assert_eq!(size_of::<Declaration>(), 20);
     assert_eq!(size_of::<Option<Declaration>>(), 20);
@@ -208,20 +225,11 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
     )?;
     let interface = crate::module_packets::exported(&source)?;
     let (rows, attributes, modules) = crate::module_packets::raw(&interface)?;
-    for role in ROLES.into_iter().map(|(role, _)| role).chain([
-        LangItem::DispatchFromDyn,
-        LangItem::Shl,
-        LangItem::BitOr,
-        LangItem::Add,
-        LangItem::Sub,
-        LangItem::ResultOk,
-        LangItem::ResultErr,
-        LangItem::Option,
-        LangItem::OptionSome,
-        LangItem::OptionNone,
-        LangItem::SliceLen,
-        LangItem::AllocLayout,
-    ]) {
+    for role in ROLES
+        .into_iter()
+        .map(|(role, _)| role)
+        .chain(WRONG_WIRE_ROLES.iter().copied())
+    {
         let mut changed = rows.clone();
         changed
             .roles

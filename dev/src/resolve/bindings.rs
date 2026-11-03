@@ -22,6 +22,7 @@ pub(crate) mod root_options;
 #[path = "bindings/claimed_macros.rs"]
 mod source_builtin;
 mod try_claims;
+mod wrapper_claims;
 use crate::support::{
     bindings::Mode,
     crates::{CrateIdentity, Dependencies},

@@ -5324,3 +5324,17 @@ Reuse the existing original-template ownership and byte payers rather than
 retaining closed bodies in a generic-template cache. The
 [source operator checkpoint](docs/pa31-source-add-sub.md) records genuine Add/Sub
 headers, macro CTFE and source/native consumers without a primitive factory grant.
+
+Source `ManuallyDrop` and `MaybeDangling` consume actual reserved/completed nominal
+identities, declared fields and representations. Keep total destruction suppression
+separate from a union's field suppression. Pointer relaxation belongs to the first
+actual MaybeDangling field's typed traversal context; never attach allocation,
+write, borrow or API authority to a value because that context was visited. Include
+type/context in visited keys, retain it through suspended byte duties, and start
+ordinary roots without it. Reuse canonical field-list/array recipes and prepay
+queue/table growth while charging live temporary capacity. Unknown source metadata
+tails descend the existing scoped trait stack and retain actual child evidence;
+physical metadata is not a caller's sizing proof. General nominal metadata must
+carry genuine structs, enums, unions, generics, constructors and policies through
+validated remapping before imported source roles can execute. See
+[the source wrapper checkpoint](docs/pa31-source-wrappers-checkpoint.md).

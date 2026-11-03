@@ -2,6 +2,31 @@
 use super::{Constant, Reader, View};
 use crate::types::{Kind, TypeId, aggregate::ShapeReadiness};
 
+/// An owned recipe retains canonical list identity instead of reselecting a variant per field.
+#[derive(Clone, Copy)]
+pub(crate) enum FieldRecipe {
+    Sequence(crate::types::ListId),
+    Repeated { element: TypeId, length: u64 },
+}
+impl FieldRecipe {
+    pub(crate) fn get(self, types: &crate::types::Store, index: u64) -> Option<TypeId> {
+        match self {
+            Self::Sequence(fields) => usize::try_from(index)
+                .ok()
+                .and_then(|index| types.list(fields)?.get(index))
+                .copied(),
+            Self::Repeated { element, length } => (index < length).then_some(element),
+        }
+    }
+    pub(crate) fn len(self, types: &crate::types::Store) -> Result<u64, &'static str> {
+        match self {
+            Self::Sequence(fields) => {
+                Ok(types.list(fields).ok_or("missing stored field list")?.len() as u64)
+            }
+            Self::Repeated { length, .. } => Ok(length),
+        }
+    }
+}
 pub enum FieldTypes<'a> {
     Sequence(&'a [TypeId]),
     Repeated { element: TypeId, length: u64 },
@@ -30,6 +55,13 @@ impl FieldTypes<'_> {
     }
 }
 impl<'a> Reader<'a> {
+    /// Only the first stored field of the actual role relaxes pointer validity.
+    /// This is not a permission to read, write, borrow or dereference its pointers.
+    pub(crate) fn field_may_dangle(self, ty: TypeId, index: u64) -> bool {
+        index == 0
+            && matches!(self.facts.types.kind(ty), Some(Kind::Adt(item, _))
+                if self.facts.aggregates.permits_dangling_pointers(item) == Some(true))
+    }
     /// Physical reference-cell identity ignores only its outer lifetime.
     /// This establishes no source equality, conversion or lifetime permission.
     pub(crate) fn same_storage_type(self, left: TypeId, right: TypeId) -> bool {
@@ -42,11 +74,22 @@ impl<'a> Reader<'a> {
     /// Read the active product's closed stored field types, preserving array compression.
     /// # Errors
     /// Rejects unpublished shapes, invalid variants and non-product types.
-    pub fn field_types(
+    pub fn field_types(self, ty: TypeId, value: Constant) -> Result<FieldTypes<'a>, &'static str> {
+        Ok(match self.field_recipe(ty, value)? {
+            FieldRecipe::Sequence(fields) => FieldTypes::Sequence(
+                self.facts
+                    .types
+                    .list(fields)
+                    .ok_or("missing stored field list")?,
+            ),
+            FieldRecipe::Repeated { element, length } => FieldTypes::Repeated { element, length },
+        })
+    }
+    pub(crate) fn field_recipe(
         self,
         mut ty: TypeId,
         value: Constant,
-    ) -> Result<FieldTypes<'a>, &'static str> {
+    ) -> Result<FieldRecipe, &'static str> {
         ty = self.storage_type(ty)?;
         if let Some(Kind::Closure { environment, .. }) = self.facts.types.kind(ty) {
             ty = environment;
@@ -57,7 +100,9 @@ impl<'a> Reader<'a> {
             .kind(ty)
             .ok_or("missing stored field type")?
         {
-            Kind::Array { element, length } => return Ok(FieldTypes::Repeated { element, length }),
+            Kind::Array { element, length } => {
+                return Ok(FieldRecipe::Repeated { element, length });
+            }
             Kind::Slice(element) => {
                 let length = match self.view(value)? {
                     View::Product {
@@ -69,7 +114,7 @@ impl<'a> Reader<'a> {
                     View::Bytes(text) => self.bytes(text)?.len() as u64,
                     _ => return Err("constant slice lacks completed sequence storage"),
                 };
-                return Ok(FieldTypes::Repeated { element, length });
+                return Ok(FieldRecipe::Repeated { element, length });
             }
             Kind::Tuple(fields) => fields,
             Kind::Adt(item, _) => {
@@ -85,12 +130,7 @@ impl<'a> Reader<'a> {
             }
             _ => return Err("constant view requires a closed product type"),
         };
-        Ok(FieldTypes::Sequence(
-            self.facts
-                .types
-                .list(fields)
-                .ok_or("missing stored field list")?,
-        ))
+        Ok(FieldRecipe::Sequence(fields))
     }
     fn nominal_stored_fields(
         self,

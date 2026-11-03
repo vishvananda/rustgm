@@ -63,3 +63,10 @@ sidecars together. Run all active earlier suites, lint, file/architecture audits
 and affected scaling measurements. Record independent checks before setting
 status active in `assignments.json` and adding the stage to the root report.
 Student export is a later operation: this repository owns the full solution.
+
+The [source wrapper checkpoint](../docs/pa31-source-wrappers-checkpoint.md) qualifies
+real source wrapper constants through typed byte/result traversal, compressed
+arrays, bounded shared graphs and failed-budget rollback. Its local/source/native
+component leaves general imported nominal transport and broader pointer metadata
+open. Original core now reaches actual source MaybeUninit; initialization masks,
+validity and unsafe assume-initialized execution remain required with PA27/31.

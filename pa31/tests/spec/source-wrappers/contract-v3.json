@@ -1,0 +1,217 @@
+{
+  "schema": 1,
+  "purpose": "Genuine source wrapper identity, destruction, scoped pointer validity and ordinary controls; full imported nominal contract remains required",
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/mem/manually_drop.rs": "c21100b507893a11ee27b0711be3ac3fe6cc970b96bba55a7d3bae5978209818",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/mem/maybe_dangling.rs": "dcbb54b27afa08c22e155afde5eada545aa2013e3cdedb4e7dc9f57dfe89f760",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir/src/lang_items.rs": "af62146fd0255b1b8baea76309e13eb00ff5b9a8ffe110348beba4deb3569690",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_passes/src/lang_items.rs": "4037b9d6f231067e211b8a310c74d0fef7537a3e37cfa33ce9552a7054cda47e",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_ty_utils/src/needs_drop.rs": "585f2e60aa8029c748e2b7513ed77225ba916675288830a9fc15ebd8faa9d7e5",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_const_eval/src/interpret/validity.rs": "bd695f5e1c87c5baccb31f6631ae39746d3d6ecb328e475b399a772c441897cb"
+  },
+  "cases": [
+    {
+      "name": "manual-header",
+      "path": "pa31/tests/spec/source-wrappers/manual-header.rs",
+      "sha256": "14a6969ce59f743d74c8daa8653e92d552ec4480cd06c000975a341200b4faef",
+      "status": 0
+    },
+    {
+      "name": "maybe-header",
+      "path": "pa31/tests/spec/source-wrappers/maybe-header.rs",
+      "sha256": "15a0dcb13fa59c6de07972df6c69a8c9657eb488c90f03c07d05ed666db872f3",
+      "status": 0
+    },
+    {
+      "name": "manual-no-repr",
+      "path": "pa31/tests/spec/source-wrappers/manual-no-repr.rs",
+      "sha256": "11f9d7d848300edc949a4e9aaf4857041f91f0db08bc4401c0c259da6f8a4c9f",
+      "status": 0
+    },
+    {
+      "name": "manual-lifetime",
+      "path": "pa31/tests/spec/source-wrappers/manual-lifetime.rs",
+      "sha256": "b66bcf57c775d428e569980989852a02507cd42774676c228dca6f39ac192a57",
+      "status": 0
+    },
+    {
+      "name": "manual-const",
+      "path": "pa31/tests/spec/source-wrappers/manual-const.rs",
+      "sha256": "6f7e10fbb4b59c1820b0fae0b0b639124153c00dac44c0207fb82eedc668cddd",
+      "status": 0
+    },
+    {
+      "name": "manual-two-fields",
+      "path": "pa31/tests/spec/source-wrappers/manual-two-fields.rs",
+      "sha256": "aea44d023baa90d652cd3eb2cd76769255cbd8f923a35969b1e078de65b6d1af",
+      "status": 0
+    },
+    {
+      "name": "maybe-two-fields",
+      "path": "pa31/tests/spec/source-wrappers/maybe-two-fields.rs",
+      "sha256": "86315612f8bea9fa5914680218c2a52ad3ef488d30add58adc22b61d9a26d0c1",
+      "status": 0
+    },
+    {
+      "name": "manual-zero",
+      "path": "pa31/tests/spec/source-wrappers/manual-zero.rs",
+      "sha256": "0488d2c5e2df77fbfd76aa2190ffd7222ae3532b079c6aa5141f9f688498848b",
+      "status": 1
+    },
+    {
+      "name": "manual-two-generics",
+      "path": "pa31/tests/spec/source-wrappers/manual-two-generics.rs",
+      "sha256": "6f4b5cc528ace3c3f29f9f743416dad1388ff71076f81eabdabd476791e7c00f",
+      "status": 1
+    },
+    {
+      "name": "maybe-zero",
+      "path": "pa31/tests/spec/source-wrappers/maybe-zero.rs",
+      "sha256": "7887e6958168db81183460e0301354ab7c8ff77120c40a6fb74b4384155831eb",
+      "status": 1
+    },
+    {
+      "name": "maybe-two-generics",
+      "path": "pa31/tests/spec/source-wrappers/maybe-two-generics.rs",
+      "sha256": "633430af67dd0f4b6fabe3d0cce454b927d137cc7c8025781d96fdcea2c108da",
+      "status": 1
+    },
+    {
+      "name": "manual-wrong-target",
+      "path": "pa31/tests/spec/source-wrappers/manual-wrong-target.rs",
+      "sha256": "fc18ac0cc46f6bd3230a642939b4b57b7057d1525c0e6cbb593c9bd83d4a6bd7",
+      "status": 1
+    },
+    {
+      "name": "maybe-wrong-target",
+      "path": "pa31/tests/spec/source-wrappers/maybe-wrong-target.rs",
+      "sha256": "8464e6dc95256ed6a6ebf1910e92608b65b562a1b1768a90820524d37856ea95",
+      "status": 1
+    },
+    {
+      "name": "manual-duplicate",
+      "path": "pa31/tests/spec/source-wrappers/manual-duplicate.rs",
+      "sha256": "61584ba5bcb5b63de8c2faf7b94cdd2a62f6c4c2f6555b2a6be9e76d10676394",
+      "status": 1
+    },
+    {
+      "name": "maybe-duplicate",
+      "path": "pa31/tests/spec/source-wrappers/maybe-duplicate.rs",
+      "sha256": "7601c8d502fe0e5ce3ae4de4de8b5b3c7a0d34c239f1c0de469e14e81cdfa5c5",
+      "status": 1
+    },
+    {
+      "name": "maybe-valid-dangling",
+      "path": "pa31/tests/spec/source-wrappers/maybe-valid-dangling.rs",
+      "sha256": "8b0ea57b5f4454daad57a6e853da5703ba0c3d94ae8e2f6f63f2ce9cbee4122a",
+      "status": 0
+    },
+    {
+      "name": "manual-nested-valid-dangling",
+      "path": "pa31/tests/spec/source-wrappers/manual-nested-valid-dangling.rs",
+      "sha256": "156a07fb4ca9af323db5b68e81b747d191a2540c7dd4f3952a6d7e62e169c38f",
+      "status": 0
+    },
+    {
+      "name": "maybe-null",
+      "path": "pa31/tests/spec/source-wrappers/maybe-null.rs",
+      "sha256": "523e5d96315c574b0cef1a150fc7ebc81d2f449be02f6583af02d62e202272ed",
+      "status": 1
+    },
+    {
+      "name": "maybe-unaligned",
+      "path": "pa31/tests/spec/source-wrappers/maybe-unaligned.rs",
+      "sha256": "0fe2ef2aa44049cbf003818d5d0af4bafc1cdc7d3801b706993ca632a88c6bb6",
+      "status": 1
+    },
+    {
+      "name": "ordinary-dangling",
+      "path": "pa31/tests/spec/source-wrappers/ordinary-dangling.rs",
+      "sha256": "b21ba35569963bb4d77493800e789a8ec4ad5dafe2b6fc19ad1f79f18c8721be",
+      "status": 1
+    },
+    {
+      "name": "manual-alone-dangling",
+      "path": "pa31/tests/spec/source-wrappers/manual-alone-dangling.rs",
+      "sha256": "68fe9c8329dc3671e006a54a62317c58e5038e79b6b5fc1671f947cdd1e9a8c3",
+      "status": 1
+    },
+    {
+      "name": "lookalike-dangling",
+      "path": "pa31/tests/spec/source-wrappers/lookalike-dangling.rs",
+      "sha256": "bb9ca065d01e76feb95bd2b9d7c193e5b0ce39b41e489ef1d5e47ae9afe4566c",
+      "status": 1
+    },
+    {
+      "name": "maybe-invalid-bool",
+      "path": "pa31/tests/spec/source-wrappers/maybe-invalid-bool.rs",
+      "sha256": "be1704cb191e5f6253a8c36291e14748c7b8bdf5e0dd355faf30cb2017eed781",
+      "status": 1
+    },
+    {
+      "name": "manual-invalid-bool",
+      "path": "pa31/tests/spec/source-wrappers/manual-invalid-bool.rs",
+      "sha256": "1cc0b834fbc2d07203c4737a5afad2fd131dce998bed05faba8642110190a9cf",
+      "status": 1
+    },
+    {
+      "name": "maybe-extracted-dangling",
+      "path": "pa31/tests/spec/source-wrappers/maybe-extracted-dangling.rs",
+      "sha256": "046c0736b608a30aae2778ee33a9e5aee7dda3e1033eb9cc08f1f9ed213894aa",
+      "status": 1
+    },
+    {
+      "name": "maybe-sibling-memo",
+      "path": "pa31/tests/spec/source-wrappers/maybe-sibling-memo.rs",
+      "sha256": "d7026bb82769deae657885a410b32fd58ae8e42d63cb8d3679086b2f607bc691",
+      "status": 1
+    },
+    {
+      "name": "maybe-deref",
+      "path": "pa31/tests/spec/source-wrappers/maybe-deref.rs",
+      "sha256": "7363640d0a7f009d53f9e062c66bf34cb271bec904bfa7e60202926044943003",
+      "status": 1
+    },
+    {
+      "name": "maybe-borrow-escape",
+      "path": "pa31/tests/spec/source-wrappers/maybe-borrow-escape.rs",
+      "sha256": "a6d87651dbc9d7bdb9047e1d17a90b78e89b6739371fd2b83caf8565ce5ff6e3",
+      "status": 1
+    },
+    {
+      "name": "drop-pair",
+      "path": "pa31/tests/spec/source-wrappers/drop-pair.rs",
+      "sha256": "4067b3d1edcfce586ea206cf59acbf44196b61925b5422544e1f642483312bec",
+      "status": 0,
+      "native_stdout": "23 7 0 1 1\n"
+    },
+    {
+      "name": "manual-own-destructor",
+      "path": "pa31/tests/spec/source-wrappers/manual-own-destructor.rs",
+      "sha256": "aa1e87f2684d9bbe0af771448c137bb0b3ab2accff849fa41a63ab7010c1d001",
+      "status": 0,
+      "native_stdout": "0 7\n"
+    },
+    {
+      "name": "const-layout",
+      "path": "pa31/tests/spec/source-wrappers/const-layout.rs",
+      "sha256": "ec97ec843485baa86748f2ae474201308eedaca2f21666ad5d6453d710ed83f1",
+      "status": 0,
+      "native_stdout": "7 8 8\n"
+    },
+    {
+      "name": "manual-move-out",
+      "path": "pa31/tests/spec/source-wrappers/manual-move-out.rs",
+      "sha256": "ec0d81488f6496ae84b22a99d9c549faff553f1f04c08d9f7d2852abe3fd6529",
+      "status": 0,
+      "native_stdout": "4 7\n"
+    },
+    {
+      "name": "combined-roles",
+      "path": "pa31/tests/spec/source-wrappers/combined-roles.rs",
+      "sha256": "4da651f79067ab08a3f50f0896410b789f4c3aee88dd55b71b39a2dea6544dbc",
+      "status": 1
+    }
+  ],
+  "revision": "Keep all required outcomes. Before renewed native qualification place nullary layout intrinsics in actual const blocks, as required by pinned codegen. The original native ICE and inputs are retained. Add a genuine same-owner dual-role declaration control. The same-owner dual-role prediction was invalid: pinned Rust emits the hard error multiple lang attributes. Preserve that input as a negative control, correcting only this independently disproved prediction; all original 32 source requirements and all four native answers are unchanged."
+}

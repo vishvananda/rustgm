@@ -59,7 +59,10 @@ impl Checker<'_> {
             self.facts.union_work.unique_types += 1;
             match self.facts.types.kind(ty) {
                 Some(Kind::Reference { .. }) => {}
-                Some(Kind::Adt(item, _)) if manually_drop.is_some_and(|id| id.0 == item.0) => {}
+                Some(Kind::Adt(item, _))
+                    if manually_drop.is_some_and(|id| id.0 == item.0)
+                        || self.facts.aggregates.destruction(item)
+                            == Some(crate::types::aggregate::FieldDestruction::Never) => {}
                 Some(Kind::Tuple(fields)) => {
                     scratch.work.extend(
                         self.facts

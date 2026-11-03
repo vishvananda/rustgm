@@ -5,6 +5,7 @@ mod frozen_effects;
 pub(in crate::sema) use frozen_effects::Prepared as ImportedCallEffects;
 pub(in crate::sema) mod formatting;
 pub(in crate::sema) mod phantom;
+pub(in crate::sema) mod wrappers;
 pub(in crate::sema) use binding_views::Role;
 pub(in crate::sema) use calls::Effect as CallEffect;
 pub(crate) mod const_payments;

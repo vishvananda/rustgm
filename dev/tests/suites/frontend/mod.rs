@@ -116,3 +116,6 @@ mod inhabited_aggregates;
 
 #[path = "../../test_removal_lints.rs"]
 mod test_removal_lints;
+
+#[path = "../../wrapper_sources.rs"]
+mod wrapper_sources;

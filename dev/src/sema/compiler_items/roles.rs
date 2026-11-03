@@ -450,7 +450,11 @@ pub(super) fn nominal_completed(
     crate::sema::header_attributes::charge_source_contract_query(facts, 1)?;
     if !matches!(
         role,
-        LangItem::PhantomData | LangItem::PanicLocation | LangItem::PanicInfo
+        LangItem::PhantomData
+            | LangItem::PanicLocation
+            | LangItem::PanicInfo
+            | LangItem::ManuallyDrop
+            | LangItem::MaybeDangling
     ) {
         return Err(Error::unlocated("invalid completed nominal readiness role"));
     }
@@ -481,7 +485,11 @@ pub(super) fn complete_nominal(
 ) -> Result<(), Error> {
     if !matches!(
         role,
-        LangItem::PhantomData | LangItem::PanicLocation | LangItem::PanicInfo
+        LangItem::PhantomData
+            | LangItem::PanicLocation
+            | LangItem::PanicInfo
+            | LangItem::ManuallyDrop
+            | LangItem::MaybeDangling
     ) {
         return Err(Error::unlocated("invalid completed nominal role"));
     }

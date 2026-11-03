@@ -369,7 +369,12 @@ impl Query {
                 state.availability,
             )
         };
-        selected.map_err(|_| "invalid or exhausted canonical trait selection")
+        selected.map_err(|error| {
+            #[cfg(test)]
+            selection::copy_trace::record(|| format!("normal-form selection: {error}"));
+            drop(error);
+            "invalid or exhausted canonical trait selection"
+        })
     }
 
     fn equality(

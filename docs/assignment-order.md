@@ -214,3 +214,13 @@ layout/registration/upstream checks in13.30s (actual command time is retained
 in `obj/parallel/assignment-reanalysis-v4/receipt.json`). It verifies an explicitly
 owned source-binding prerequisite is admitted and unrelated future features
 still reject. Legacy fixture and oracle bytes remain unchanged.
+
+The source-wrapper checkpoint makes PA29's general source nominal declaration
+transport an immediate artifact priority within `generic-transport`. Actual
+struct/enum/union fields, variants, generics, constructors and policies need genuine
+publication and fresh consumers. Existing source-function profiles do not close
+that exit. Local ManuallyDrop/MaybeDangling behavior is qualified; its imported
+requirement stays open. The original-source frontier separately reaches source
+MaybeUninit (LIB-123), owned jointly by hooks, union layout, validity and CTFE.
+Root proceeds through these concrete units without activating a whole assignment
+or changing the remaining contract ledger.

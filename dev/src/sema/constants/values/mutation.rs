@@ -11,10 +11,11 @@ use crate::types::{
 struct Inspection<'a> {
     reader: Reader<'a>,
     types: Query<'a>,
-    pending: Vec<(TypeId, Constant)>,
-    seen: HashSet<(TypeId, Constant)>,
+    pending: Vec<(TypeId, Constant, bool)>,
+    seen: HashSet<(TypeId, Constant, bool)>,
     steps: usize,
     references: bool,
+    may_dangle: bool,
 }
 impl Reader<'_> {
     /// Refine owned storage using its actual array length and active variant.
@@ -66,10 +67,11 @@ impl Reader<'_> {
         let mut inspection = Inspection {
             reader: self,
             types: Query::new(&self.facts.types, &self.facts.aggregates),
-            pending: vec![(ty, value)],
+            pending: vec![(ty, value, false)],
             seen: HashSet::default(),
             steps: 0,
             references,
+            may_dangle: false,
         };
         let answer = inspection.inspect()?;
         Ok((answer, inspection.steps + inspection.types.work().steps))
@@ -113,9 +115,10 @@ impl Evaluator<'_> {
 impl Inspection<'_> {
     fn inspect(&mut self) -> Result<Answer, &'static str> {
         let mut unresolved = false;
-        while let Some((ty, value)) = self.pending.pop() {
+        while let Some((ty, value, may_dangle)) = self.pending.pop() {
+            self.may_dangle = may_dangle;
             self.charge(1)?;
-            if !self.seen.insert((ty, value)) {
+            if !self.seen.insert((ty, value, may_dangle)) {
                 continue;
             }
             if !self.references && self.types.contains(ty)? == Answer::Ordinary {
@@ -138,16 +141,18 @@ impl Inspection<'_> {
                     let length = self.reader.field_types(ty, value)?.len();
                     self.array(element, length, value)?;
                 }
-                Kind::Tuple(fields) => self.fields(fields, value)?,
+                Kind::Tuple(fields) => self.fields(fields, value, false)?,
                 Kind::Pattern {
                     base: environment, ..
                 }
                 | Kind::Closure { environment, .. } => self.push(environment, value)?,
-                Kind::Reference { .. } if self.references => match self.reference(value)? {
-                    Answer::Interior => return Ok(Answer::Interior),
-                    Answer::Unresolved => unresolved = true,
-                    Answer::Ordinary => {}
-                },
+                Kind::Reference { .. } if self.references && !self.may_dangle => {
+                    match self.reference(value)? {
+                        Answer::Interior => return Ok(Answer::Interior),
+                        Answer::Unresolved => unresolved = true,
+                        Answer::Ordinary => {}
+                    }
+                }
                 Kind::Foreign(_)
                 | Kind::ArrayTerm { .. }
                 | Kind::Parameter(_)
@@ -226,7 +231,7 @@ impl Inspection<'_> {
             .nth(ordinal)
             .ok_or("stored value variant exceeds its shape")?
             .fields;
-        self.fields(fields, value)?;
+        self.fields(fields, value, self.reader.field_may_dangle(ty, 0))?;
         Ok(Answer::Ordinary)
     }
     fn reference(&mut self, value: Constant) -> Result<Answer, &'static str> {
@@ -265,6 +270,7 @@ impl Inspection<'_> {
         &mut self,
         fields: crate::types::ListId,
         value: Constant,
+        relax_first: bool,
     ) -> Result<(), &'static str> {
         let fields = self
             .reader
@@ -279,7 +285,12 @@ impl Inspection<'_> {
             return Err("stored product arity differs from its field types");
         }
         for (index, &ty) in fields.iter().enumerate() {
-            self.push(ty, self.reader.field(value, index as u64)?)?;
+            self.charge(1)?;
+            self.pending.push((
+                ty,
+                self.reader.field(value, index as u64)?,
+                self.may_dangle || relax_first && index == 0,
+            ));
         }
         Ok(())
     }
@@ -331,7 +342,7 @@ impl Inspection<'_> {
     }
     fn push(&mut self, ty: TypeId, value: Constant) -> Result<(), &'static str> {
         self.charge(1)?;
-        self.pending.push((ty, value));
+        self.pending.push((ty, value, self.may_dangle));
         Ok(())
     }
     fn charge(&mut self, count: usize) -> Result<(), &'static str> {

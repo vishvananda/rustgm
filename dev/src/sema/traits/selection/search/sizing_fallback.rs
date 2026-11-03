@@ -8,6 +8,7 @@ use crate::{
     support::bindings::LangItem,
     types::{Kind, aggregate::MetadataPreparation},
 };
+use std::ops::ControlFlow;
 impl Search<'_> {
     pub(super) fn source_sizing_kind(
         facts: &Declarations,
@@ -104,12 +105,12 @@ impl Search<'_> {
                         MetadataPreparation::Fields(item) => {
                             return Ok(Some(Action::Wait(super::Dependency::Fields(item))));
                         }
-                        MetadataPreparation::Unresolved(_) => {
-                            return Err("source sizing requires a proved metadata tail".into());
-                        }
-                        MetadataPreparation::Ready => {}
+                        MetadataPreparation::Unresolved(_) | MetadataPreparation::Ready => {}
                     }
-                    self.source_tail_sizing(facts, frame, goal.ty, kind)?
+                    match self.source_tail_sizing(facts, frame, goal, kind)? {
+                        ControlFlow::Break(action) => return Ok(Some(action)),
+                        ControlFlow::Continue(valid) => valid,
+                    }
                 }
             }
         };
@@ -136,23 +137,26 @@ impl Search<'_> {
         &mut self,
         facts: &Declarations,
         frame: &mut Frame,
-        mut tail: crate::types::TypeId,
+        goal: Predicate,
         requested: LangItem,
-    ) -> Result<bool, String> {
+    ) -> Result<ControlFlow<Action, bool>, String> {
+        let mut tail = goal.ty;
         loop {
             frame.inputs.context.account_work(1).map_err(inference)?;
             self.charge(&mut frame.inputs.context)?;
             match crate::abi::metadata::declared_step(&facts.types, &facts.aggregates, tail)? {
                 crate::abi::metadata::Step::Tail(child) => tail = child,
                 crate::abi::metadata::Step::Complete(Metadata::Thin) => {
-                    return Ok(!matches!(facts.types.kind(tail), Some(Kind::Foreign(_)))
-                        || requested == LangItem::PointeeSized);
+                    return Ok(ControlFlow::Continue(
+                        !matches!(facts.types.kind(tail), Some(Kind::Foreign(_)))
+                            || requested == LangItem::PointeeSized,
+                    ));
                 }
                 crate::abi::metadata::Step::Complete(Metadata::Length | Metadata::VTable(_)) => {
-                    return Ok(true);
+                    return Ok(ControlFlow::Continue(true));
                 }
                 crate::abi::metadata::Step::Complete(Metadata::Unknown(_)) => {
-                    return Err("source sizing requires a proved metadata tail".into());
+                    return Self::source_tail_condition(frame, tail, goal.bound);
                 }
             }
         }
@@ -179,7 +183,10 @@ impl Search<'_> {
             provisional_size: false,
             goal,
             source: Some(Source::Builtin),
-            children: Vec::new(),
+            children: frame
+                .storage
+                .as_mut()
+                .map_or_else(Vec::new, |storage| std::mem::take(&mut storage.children)),
             first: frame.first,
             end,
             equalities: std::mem::take(&mut frame.inputs.context.region_equalities),

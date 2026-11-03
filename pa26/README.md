@@ -442,3 +442,11 @@ It shares Try's existing cold per-body plan owner and preserves the no-bootstrap
 fence and ordinary hot layouts. Authentic imported protocol transport, remaining
 families and whole assignment release checks stay required. The independently
 hashed source packet lives in PA31's source-iteration directory.
+
+The [source wrapper checkpoint](../docs/pa31-source-wrappers-checkpoint.md) qualifies
+actual ManuallyDrop/MaybeDangling claims through real fields, separate destruction
+policies, typed const validity and native consumers. Unknown metadata tails retain
+the caller's actual sizing obligations on the iterative solver stack. General
+nominal transport/imported consumers remain required. The unchanged original core
+now reaches source MaybeUninit, whose union storage, masks and unsafe operations
+remain hook-closure work; this component does not release the whole assignment.
