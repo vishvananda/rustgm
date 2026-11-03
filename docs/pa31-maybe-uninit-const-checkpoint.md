@@ -105,3 +105,32 @@ TransmuteFrom signature, structured Assume const arguments, feature/attribute
 claims, coinductive proof and layout/validity/lifetime semantics. Header admission
 alone does not complete that protocol. All original library artifacts and the
 assignment release ladder remain required.
+
+
+## CI consumer repair
+
+Full CI41643192120 on40e088886 passed its fast job, lint/audit/host graph and all
+regular integration targets, but three private controls failed while2570 passed.
+One expected the old generic diagnostic for a deliberately altered result type;
+its expectation now names the precise result-type rejection. Two internal
+reference-descriptor consumers still supplied raw source type roots after Code
+and their retained Opening had been finalized. They now use the same storage
+view as reached execution, after validating their exact Code/Row owner. A new
+opponent checks that stale raw roots reject whenever relocation changed them.
+Foreign owner, callback instance and correlated-signature opponents are retained.
+No compiler storage, proof or call guard was relaxed.
+
+The repair passed14 focused tests (three production tests covering105 source
+cases and11 private controls), PA12 125/125, formatting, architecture checks and
+strict selected-target Clippy in184.43 seconds. New immutable CLI is
+`4009b582897f47a69f68ed13c71328605c8c10b3ab9ea8b46269d1c518abf17a`.
+Joined receipt `0536fffb1a45537446323c85d146c8be8a0243e7720eefc9e665c688b918b172`
+repeats all70 CLI checks, upstream/harness, constant union work and unchanged core
+in19.20 seconds with the same TransmuteFrom boundary and every input/configuration
+binding/finite limit preserved. Performance receipt
+`5f488b4ff65367de8b951b013fe12428ad88a9f4945d4076e3a82c7b2c8ebf06`
+compares the repaired CLI with8d2641b0 using the same frozen controls and A/A/ABBA
+protocol. Outputs are byte-identical; timing differences fit calibration noise.
+Successor full CI is required; local checks do not imply its result. Candidate
+native execution, general imported nominal closure and original artifacts remain
+open.

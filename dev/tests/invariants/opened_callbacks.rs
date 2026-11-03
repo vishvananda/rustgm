@@ -42,6 +42,7 @@ fn selected(
     root: usize,
 ) -> TestResult<(ValueId, crate::sema::compiler_items::Select, Opening)> {
     let code = catalog.code(root).ok_or("actual source code")?;
+    inputs.checked(catalog, root, code)?;
     let row = inputs.rows.get(&root).ok_or("retained source row")?;
     let (&call, &opening) = row
         .selectors
@@ -52,8 +53,16 @@ fn selected(
         return Err("actual Call".into());
     };
     let raw = Instance::new(&facts.types, code.values[callee.0 as usize].ty)?;
-    let selection = crate::sema::compiler_items::source_select(facts, raw)?
+    let original = crate::sema::compiler_items::source_select(facts, raw)?
         .ok_or("actual selector instance")?;
+    let selection = crate::const_eval::selector_sites::storage_selection(facts, code, original)?;
+    if selection.types != original.types {
+        let callback = Instance::new(&facts.types, original.types[1])?;
+        assert!(
+            opening.validate(facts, original, callback).is_err(),
+            "raw source roots cannot replace finalized executable storage"
+        );
+    }
     Ok((call, selection, opening))
 }
 

@@ -220,7 +220,8 @@ pub(super) fn validate_source<'code>(
     Ok(Some(call))
 }
 
-fn storage_selection(
+/// Data relocation only; callers still need the actual Code/Row and current Call.
+pub(super) fn storage_selection(
     facts: &Declarations,
     body: &Code,
     mut selection: Select,

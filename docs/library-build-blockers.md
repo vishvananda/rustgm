@@ -28,8 +28,13 @@ LIB-124: transmute_trait in mem/transmutability.rs87 (file59 byte3207),16.12s,
 The [source NoDrop checkpoint](pa31-no-drop-checkpoint.md) remains its independently
 qualified field/Copy prerequisite. Its four-byte type-property fact eliminates
 per-declaration type walks; current callable dependency facts use the same compact
-storage. Predecessor bae177bb8 full CI41584043541 passed every gate. Full successor
-CI follows main integration; these focused results do not activate a whole PA.
+storage. Predecessor bae177bb8 full CI41584043541 passed every gate. Full CI41643192120 on40e088886 later exposed three private consumer/diagnostic
+expectations, while2570 private controls and all regular integration targets
+passed. The [consumer repair](pa31-maybe-uninit-const-checkpoint.md#ci-consumer-repair)
+retains every owner/callback/signature opponent, adds a stale-root rejection and
+passes14 focused tests/PA12 plus70CLI observations. CLI4009b582 repeats the same
+TransmuteFrom boundary in19.20s; successor full CI follows integration. These
+focused results do not activate a whole PA.
 
 Use the [current execution plan](library-bootstrap-acceleration.md) to choose work:
 real artifact/source consumers, demanded imported-body proof and consolidated

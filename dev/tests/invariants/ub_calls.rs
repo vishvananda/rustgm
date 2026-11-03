@@ -147,7 +147,7 @@ fn ub_const_calls_require_actual_direct_caller_and_checked_fallback_even_when_re
     machine.begin(bad, &[]).map_err(|e| e.message)?;
     assert_eq!(
         machine.advance().err().map(|e| e.message),
-        Some("source intrinsic call differs from its checked const contract")
+        Some("source intrinsic call result type differs from its checked const contract")
     );
     Ok(())
 }
