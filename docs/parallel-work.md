@@ -1,6 +1,17 @@
 # Parallel library bootstrap implementation
 
-Current original-core frontier: LIB-125, `type_info` in mem/type_info.rs13.
+Current original-core frontier is LIB-126, compiler_move in profiling.rs12.
+The [reflection declaration checkpoint](pa31-type-reflection-source-checkpoint.md)
+passes14 private/19 production controls,27 independent source outcomes,29 CLI
+observations and real ordinary-field native7. CLI18c64d26 clears type_info with
+all722 sources/configuration/limits unchanged,18.12s/375 opens. Actual reflection,
+source library publication and imported consumers remain required. A raw-source
+inventory maps100 additional names to pinned target/generic contracts, without
+claiming all are cfg-active. Batch shared declaration rules, preserve real builtin
+semantics and prioritize genuine nominal/value artifacts. Root remains alone.
+Production import repair8d4005d84 passes push CI41727937954;17b full CI remains failed.
+
+Prior original-core frontier: LIB-125, `type_info` in mem/type_info.rs13.
 The published b9 header compiler clears the preceding declaration frontier with
 all722 original inputs/configuration/limits unchanged,17.66s/375 opens. The
 [private layout kernel](pa31-transmutability-layout-relation.md) passes ten exact

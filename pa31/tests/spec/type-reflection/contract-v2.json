@@ -1,0 +1,203 @@
+{
+  "schema": 1,
+  "scope": "Actual type_info/type_id declaration identity and ordinary source data; reflection intrinsics, stable type provenance/hash, CTFE/native reflection and imported execution remain required.",
+  "owners": [
+    "pa31",
+    "pa25",
+    "pa29"
+  ],
+  "rustc_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir/src/lang_items.rs": "af62146fd0255b1b8baea76309e13eb00ff5b9a8ffe110348beba4deb3569690",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir_analysis/src/check/intrinsic.rs": "a912d003b71e1cc0655dfec3fc381167ec8c3da955eb28b411713b594beec060",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_const_eval/src/const_eval/machine.rs": "fa6717e7d0e0043388f594982c11139bff23441ff6e1cec92479506b78fd8d33",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/mem/type_info.rs": "dd7fcb15962357e28657486c56931c3a088ece3da545092787ac3949ab312423",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/any.rs": "9a69bf8a203943c2d3e326b862f5b59f8287907e38a34f724c24ccbed4b30296"
+  },
+  "cases": [
+    {
+      "name": "actual-pair",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/actual-pair.rs",
+      "sha256": "35889390ddd6130d6e3745a2d7ee0bc058336ecea3fbb80a25c55ecd881dfbda",
+      "status": 0
+    },
+    {
+      "name": "info-unit",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/info-unit.rs",
+      "sha256": "4a12e3bb9284a3a9694bb86a8e20b47e1c10d2e527cfd592724a5f92328541d3",
+      "status": 0,
+      "notes": "Pinned GenericRequirement::None imposes no generic arity or field shape until an actual consumer requires it."
+    },
+    {
+      "name": "info-tuple",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/info-tuple.rs",
+      "sha256": "1cb72d1f01a596ab9d19353e67cba515ba599a168415f43a4d515ec8146c3cca",
+      "status": 0,
+      "notes": "Pinned GenericRequirement::None imposes no generic arity or field shape until an actual consumer requires it."
+    },
+    {
+      "name": "info-type",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/info-type.rs",
+      "sha256": "3c200891c3ca42983639a564fbb8131c630b21523b12ff8c8e79739d056a8ac2",
+      "status": 0,
+      "notes": "Pinned GenericRequirement::None imposes no generic arity or field shape until an actual consumer requires it."
+    },
+    {
+      "name": "info-lifetime",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/info-lifetime.rs",
+      "sha256": "76a1fbf1b6a0fe49084b300105ee8102afb75feb451c665e28416ab403eb9677",
+      "status": 0,
+      "notes": "Pinned GenericRequirement::None imposes no generic arity or field shape until an actual consumer requires it."
+    },
+    {
+      "name": "info-const",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/info-const.rs",
+      "sha256": "456597b94c5610dd87cf9955fef70e40d45edaf90aba110ddae5f6240f8b81de",
+      "status": 0,
+      "notes": "Pinned GenericRequirement::None imposes no generic arity or field shape until an actual consumer requires it."
+    },
+    {
+      "name": "info-many",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/info-many.rs",
+      "sha256": "84b156e52e6dbf04ea89ba75772a7612311fc473e7a63388bfbe2a5566e6d358",
+      "status": 0,
+      "notes": "Pinned GenericRequirement::None imposes no generic arity or field shape until an actual consumer requires it."
+    },
+    {
+      "name": "info-wrong-enum",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/info-wrong-enum.rs",
+      "sha256": "ca434e089115c80503a4b8664b77d32aac7067690c9725ae9d33c041339585b5",
+      "status": 1
+    },
+    {
+      "name": "info-wrong-union",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/info-wrong-union.rs",
+      "sha256": "a8783b9914df708e2e812f64d79b7b072095aac2a47393aabde084e76b3edc8a",
+      "status": 1
+    },
+    {
+      "name": "info-wrong-trait",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/info-wrong-trait.rs",
+      "sha256": "73df57660215821cc513fbea5b857057ac1f72950a1f63224b22be63ffa5a502",
+      "status": 1
+    },
+    {
+      "name": "info-wrong-function",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/info-wrong-function.rs",
+      "sha256": "334c7e37240762db9ff7d6269bf9e3777b800b01c509056e4706457a578c3ec0",
+      "status": 1
+    },
+    {
+      "name": "info-duplicate",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/info-duplicate.rs",
+      "sha256": "cc48ab67687b79194fff6f8c9db23602f6961d66648b19a3a13c4719edf197f0",
+      "status": 1
+    },
+    {
+      "name": "id-unit",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/id-unit.rs",
+      "sha256": "5c742e9771b533ec0c0014aae974338142a21d402f602b9eaa5a51510ae338e4",
+      "status": 0,
+      "notes": "Pinned GenericRequirement::None imposes no generic arity or field shape until an actual consumer requires it."
+    },
+    {
+      "name": "id-tuple",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/id-tuple.rs",
+      "sha256": "45d7318914da7edcdbd5ef28f6493cd1c75f008cab315b2aecea0a7ec4fd297f",
+      "status": 0,
+      "notes": "Pinned GenericRequirement::None imposes no generic arity or field shape until an actual consumer requires it."
+    },
+    {
+      "name": "id-type",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/id-type.rs",
+      "sha256": "6aefa2b5611328b78e3355e953e1f0305aad60f6db138a057d98f7b715542b13",
+      "status": 0,
+      "notes": "Pinned GenericRequirement::None imposes no generic arity or field shape until an actual consumer requires it."
+    },
+    {
+      "name": "id-lifetime",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/id-lifetime.rs",
+      "sha256": "613f7e01206a41e22b9fe89110e261a30b690ad670c459344ca59fcdde7c999d",
+      "status": 0,
+      "notes": "Pinned GenericRequirement::None imposes no generic arity or field shape until an actual consumer requires it."
+    },
+    {
+      "name": "id-const",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/id-const.rs",
+      "sha256": "4cef88ccbe68128e654a3f8f535ed126acdff32d79dd0f80757f00e769824fa2",
+      "status": 0,
+      "notes": "Pinned GenericRequirement::None imposes no generic arity or field shape until an actual consumer requires it."
+    },
+    {
+      "name": "id-many",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/id-many.rs",
+      "sha256": "62b520e2dd3bc1f910e6e79cb645118115600cfa6ffd6525e9cab488eff61604",
+      "status": 0,
+      "notes": "Pinned GenericRequirement::None imposes no generic arity or field shape until an actual consumer requires it."
+    },
+    {
+      "name": "id-wrong-enum",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/id-wrong-enum.rs",
+      "sha256": "e808f3c06443c866212724f1c940d261be2428e6038772b72aeea9cc4ff1857e",
+      "status": 1
+    },
+    {
+      "name": "id-wrong-union",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/id-wrong-union.rs",
+      "sha256": "3428c5dd46c3444ff5a858c7ba056bd1e3d9814e39bc3368f87b87451e131c63",
+      "status": 1
+    },
+    {
+      "name": "id-wrong-trait",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/id-wrong-trait.rs",
+      "sha256": "19843ca78e533dc88bf6cf66f77e063ce146cde5345504ea0cd50c46a6afa871",
+      "status": 1
+    },
+    {
+      "name": "id-wrong-function",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/id-wrong-function.rs",
+      "sha256": "cd679f8f2c7504e568f4fb799301e0b435b2a61f30200e9538290abedfe2c54c",
+      "status": 1
+    },
+    {
+      "name": "id-duplicate",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/id-duplicate.rs",
+      "sha256": "4fdff19c86a0efe423d818ad0e6e105409cd57ce18f4f8f0b19fbefd95fd68aa",
+      "status": 1
+    },
+    {
+      "name": "same-spellings",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/same-spellings.rs",
+      "sha256": "7e7699f1d2a1759b6716f559d942d2543aa6d3069d34ea3217be1b949ec4aefb",
+      "status": 0
+    },
+    {
+      "name": "cfg-removed",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/cfg-removed.rs",
+      "sha256": "bf7509b12790b830cd0854c6d21d25623a83ff5d7a3497a491d56d4806fdc0c7",
+      "status": 0
+    },
+    {
+      "name": "nested-owner",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/nested-owner.rs",
+      "sha256": "e01bb6c7608bcd79add4eaa5152f924f3afe73a659165b90413a8cd7425b7d34",
+      "status": 0
+    },
+    {
+      "name": "missing-feature",
+      "path": "pa31/tests/spec/type-reflection/setup-v2/missing-feature.rs",
+      "sha256": "c23de8a07ea675bb5af458c401456cec886646605123c409adaa8e16c9e3774b",
+      "status": 1
+    }
+  ],
+  "native": {
+    "case": "actual-pair",
+    "observer": "pa31/tests/spec/type-reflection/observer.c",
+    "observer_sha256": "e3a40e49bb2fc220a4ec1f95c5535d0ed8aeaa542f5e9494243dbf53a234e61a",
+    "status": 0,
+    "stdout": "7\n",
+    "stderr": ""
+  },
+  "predecessor_contract_sha256": "a01045e25b74713fcd4612960aaa999c61fe76eb4d021954e8b44a3642273705",
+  "setup_repair": "v1 actual-pair requires the genuine Copy language-item protocol. v2 retains every expected outcome and adds the existing independently qualified source prelude; v1 sources and failed observation remain unchanged."
+}

@@ -16,6 +16,13 @@ old cycle; both units and the complete contract below remain required.
 
 ## Required implementation
 
+The [type-reflection source checkpoint](../docs/pa31-type-reflection-source-checkpoint.md)
+qualifies actual `type_info`/`type_id` declaration targets and unrestricted generic
+forms, while retaining intrinsic/provenance and old-metadata boundaries. Its
+ordinary field body executes with the pinned backend. Original core advances to
+the `compiler_move` profiling marker; real reflection, nominal/value publication
+and genuine imported consumers remain required.
+
 The [transmutability source checkpoint](../docs/pa31-transmutability-source-checkpoint.md)
 qualifies actual `transmute_trait`/`transmute_opts` declarations and canonical
 named-boolean assumption decoding. The source default method retains its real

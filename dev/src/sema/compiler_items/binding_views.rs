@@ -401,6 +401,8 @@ fn role_kind(role: LangItem) -> DefKind {
         | LangItem::MaybeDangling
         | LangItem::MaybeUninit
         | LangItem::TransmuteOpts
+        | LangItem::TypeInfo
+        | LangItem::TypeId
         | LangItem::PanicLocation
         | LangItem::PanicInfo
         | LangItem::AllocLayout => DefKind::Struct,

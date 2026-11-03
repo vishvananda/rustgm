@@ -1,4 +1,4 @@
-//! Wrapper roles retain their actual nominal kind and pinned generic requirements.
+//! Nominal role claims retain actual kind and pinned generic requirements.
 use super::{Declaration, reservations::error};
 use crate::{
     resolve::package::{Error, Package},
@@ -16,6 +16,8 @@ pub(super) fn validate(
             | LangItem::MaybeDangling
             | LangItem::MaybeUninit
             | LangItem::TransmuteOpts
+            | LangItem::TypeInfo
+            | LangItem::TypeId
     ) {
         return Ok(());
     }
@@ -31,6 +33,9 @@ pub(super) fn validate(
     let valid = if role == LangItem::MaybeUninit {
         // GenericRequirement::None imposes no arity, field or representation rule.
         matches!(item.kind, ItemKind::Union { .. })
+    } else if matches!(role, LangItem::TypeInfo | LangItem::TypeId) {
+        // These reflection declarations have GenericRequirement::None as well.
+        matches!(item.kind, ItemKind::Struct { .. })
     } else {
         matches!(item.kind, ItemKind::Struct { .. })
             && unit.configured.ast.list(item.generics).len()

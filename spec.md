@@ -5465,3 +5465,14 @@ graph twice. Prepay work and growth, and retain recursive type, outlives and
 Freeze atoms for the scoped solver. Structural equality or one successful value
 reinterpretation cannot discharge those atoms. See the
 [layout kernel qualification](docs/pa31-transmutability-layout-relation.md).
+
+Reflection language declarations retain their actual source struct identities.
+Pinned `GenericRequirement::None` supplies no generic-arity or field-shape rule;
+validate the real representation independently at the consuming intrinsic.
+Completion grants no type provenance, runtime hash, reflection operation or
+imported authority. Actual TypeId production must preserve CTFE type provenance
+and stable imported identity rather than treating arbitrary scalar bits or a
+local canonical index as a trusted type. Retain old metadata boundaries until
+the complete nominal/value and operation contract is transported. Share common
+declaration target/arity facts without replacing dedicated trait, projection or
+execution proof. See the [source qualification](docs/pa31-type-reflection-source-checkpoint.md).

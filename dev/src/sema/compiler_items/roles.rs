@@ -482,6 +482,8 @@ pub(super) fn nominal_completed(
             | LangItem::MaybeDangling
             | LangItem::MaybeUninit
             | LangItem::TransmuteOpts
+            | LangItem::TypeInfo
+            | LangItem::TypeId
     ) {
         return Err(Error::unlocated("invalid completed nominal readiness role"));
     }
@@ -519,6 +521,8 @@ pub(super) fn complete_nominal(
             | LangItem::MaybeDangling
             | LangItem::MaybeUninit
             | LangItem::TransmuteOpts
+            | LangItem::TypeInfo
+            | LangItem::TypeId
     ) {
         return Err(Error::unlocated("invalid completed nominal role"));
     }

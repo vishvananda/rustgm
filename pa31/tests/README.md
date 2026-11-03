@@ -2,6 +2,12 @@
 
 Planned: no graded manifest or generated reference outputs yet.
 
+`spec/type-reflection/` owns 27 independently declared source outcomes for
+`type_info`/`type_id`, actual renamed/generic/field data, target/duplicate/feature
+opponents and an ordinary native field observer. Its versioned contracts preserve
+no_core setup failures separately from the qualified v3 inputs. Actual reflection
+provenance/constant evaluation and imported consumers remain PA25/29 dependencies.
+
 `spec/diagnostic-values/` freezes22 independently declared source outcomes and
 one native observer for nested attribute macros, opaque expression forwarding,
 real aliases/shadowing, inline/external module scope, cfg removal and hard

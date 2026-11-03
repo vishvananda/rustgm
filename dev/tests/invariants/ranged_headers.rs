@@ -314,9 +314,9 @@ fn warm_queries_failed_payments_and_cold_role_arrays_keep_bounded_ownership() ->
 fn layouts() {
     let (bindings, imported, role) = Catalog::binding_layouts();
     let provider = Catalog::provider_binding_bytes();
-    // Two actual transmutability roles add two 16-byte slots to both cold catalogs.
-    assert_eq!(provider, 1360);
-    assert_eq!(imported, 1432);
+    // Two actual reflection roles add two additional 16-byte slots to both cold catalogs.
+    assert_eq!(provider, 1392);
+    assert_eq!(imported, 1464);
     assert!(provider.abs_diff(imported) <= 256);
     assert!(bindings >= provider);
     eprintln!(

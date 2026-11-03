@@ -15,17 +15,19 @@ PA21–PA24 have implemented/release-evidence status; PA1–PA20 retain
 implemented-draft. PA25–PA44 remain planned. No additional assignment or whole
 upstream library has been completed.
 
-Current original-core frontier is LIB-125: `#[lang = "type_info"]` in
-mem/type_info.rs13 (file61 byte329). The published b9ce8505b header compiler,
-immutable CLI5d9a9ce5, clears the preceding transmutability declaration boundary
-in17.66s/375 opens, preserving all722 original inputs, six configuration hashes,
-target/options/cap and finite limits. The [layout kernel qualification](pa31-transmutability-layout-relation.md)
-passes ten exact private controls and strict Clippy/format/audit in121.68s.
-Its structural obligations still require source-scoped selection, coinduction,
-actual default-method execution and imported transport. No original artifact or
-whole assignment is complete. Prioritize the actual type-reflection source gap.
-CI41718752648 failed a stale cold catalog-size assertion after2591 other private
-tests passed; the exact provider/imported guards are repaired and pass locally.
+Current original-core frontier is LIB-126, `compiler_move` in profiling.rs12
+(file62 byte518). The [reflection source checkpoint](pa31-type-reflection-source-checkpoint.md)
+qualifies actual type_info/type_id declarations,14 private/19 production controls,
+27 independent source outcomes,29 CLI observations and ordinary-field native7.
+CLI18c64d26 clears the prior declaration boundary in18.12s/375 opens, preserving
+all722 source files, six configuration hashes, target/options/cap and finite limits.
+Actual type provenance/reflection, source library publication and imported nominal/
+constant consumers remain required. A static raw-source inventory maps100 more
+unknown role names to pinned target/generic contracts; this is not a cfg-active
+blocker count. Batch shared declaration validation and retain each operation's
+real semantic requirements. No original artifact or whole PA is complete.
+Production import repair8d4005d84 passes push CI41727937954; failed prior full CI
+and qualification attempts remain retained.
 
 
 The [MaybeUninit constant checkpoint](pa31-maybe-uninit-const-checkpoint.md)
@@ -403,7 +405,8 @@ actual native hints and the future authenticated MIR-import obligation.
 | LIB-122 | Local source semantics qualified; imported/artifact requirement open | Genuine source ManuallyDrop/MaybeDangling identity, typed validity and separate drop policies | PA26 hooks +PA12 layout +PA17/27 ownership/validity +PA25 CTFE +PA29 transport +PA31 authority /33 independent outcomes,4 natives, private19/production8,64CLI, PA12 125/125 | Root only | [Checkpoint](pa31-source-wrappers-checkpoint.md): CLIe659b800 clears manually_drop and reaches LIB-123 with all722 source hashes/config/budgets unchanged. General struct/enum/union metadata is still required for genuine wrapper artifacts/imported consumers; source admission and entry-free native programs do not complete that requirement. Broader validity domains and full libraries stay open. |
 | LIB-123 | Local constant and native profile qualified; imported requirement open | Actual source union identity, transparent storage, initialization masks and unsafe assume-initialized semantics | PA26 hooks +PA12 union/layout +PA27 validity/unsafe +PA25 CTFE +PA28 intrinsics +PA29 nominal transport +PA31 source +PA39 panic / source-maybe-uninit packet | Root only | [Constant](pa31-maybe-uninit-const-checkpoint.md) and [native](pa31-maybe-uninit-native-checkpoint.md) checkpoints:37 full-pipeline cases,70 CLI outcomes, all3 genuine native observers,28 private controls,105 source outcomes, PA12 125/125 and existing ABI controls. CLIf5ae84eb repeats LIB-124 with unchanged original inputs/limits. General diagnostic/runtime profiles and authenticated imported nominal consumers remain required. No whole PA or original artifact. |
 | LIB-124 | Source declaration frontier cleared; relation/transport still required | Genuine TransmuteFrom compiler trait, structured Assume constants and scoped coinductive layout/validity/lifetime evidence | PA20/21 traits +PA25 const values +PA27 validity +PA29 transport +PA31 source +PA40 attributes / original mem/transmutability.rs87 | Root only | [Headers](pa31-transmutability-source-checkpoint.md) qualify actual identities/options/default-body checking. [Private layout kernel](pa31-transmutability-layout-relation.md) qualifies all-values data and actual ABI adapters, with independent finite-word and bounded scaling controls. Published CLI5d9a9ce5 clears the original declaration frontier; source implicit selection, lifetime/Freeze/coinduction, real native default-method use and imported consumers remain required. |
-| LIB-125 | Current original-core source blocker | Actual type_info language identity and type reflection | PA31 source/compiler-built-in declarations +PA25 const reflection +PA29 nominal/constant transport / original mem/type_info.rs13; pinned rustc_hir lang_items and core intrinsic type_of | Root only | CLI5d9a9ce5 observes unsupported source language item at file61 byte329,17.66s/375opens/all722 inputs and six configuration hashes unchanged. Require owning source header/field/arity/duplicate and counterfeit controls, actual type_id/type_of semantics, reflected nominal/field/tag/region data and genuine const/native/imported consumers. Registering a header alone cannot complete reflection or grant intrinsic execution. |
+| LIB-125 | Original declaration boundary cleared; reflection/transport still required | Actual type_info/type_id identities, CTFE provenance and reflected data | PA31 source/compiler-built-in declarations +PA25 constant reflection +PA29 nominal/value transport / original mem/type_info.rs13 and any.rs | Root only | [Source checkpoint](pa31-type-reflection-source-checkpoint.md) passes14 private/19 production,27 independent source cases,29 CLI observations and actual ordinary-field native7. CLI18c64d26 clears the original declaration and reaches LIB-126 with all722 inputs/configuration/limits unchanged. GenericRequirement::None preserves genuine forms; actual type_id/type_of, forged-value rejection, reflected data and stable imported identity remain required. Existing source library metadata publication is still blocked. |
+| LIB-126 | Current original-core source language-item blocker | Actual compiler_move/compiler_copy profiling markers | PA31 source declarations +PA40 compiler/debug instrumentation +PA29 authenticated metadata / original profiling.rs12 and its genuine never-called bodies | Root only | CLI18c64d26 reports unsupported source language item at file62 byte518,18.12s/375opens/all722 source files and six configuration hashes unchanged. Preserve Target::Fn and Exact(2) generic requirements, actual source body behavior and annotation policy. A marker cannot silently replace an invoked body with a no-op. Batch the shared declaration contract with independently checked target/arity/body opponents; actual debug instrumentation and transport remain required. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
 | Original alloc and consumer | Not reached; depends on core and cross-crate transport. | Build unchanged alloc and execute allocation, reallocation and destruction. |

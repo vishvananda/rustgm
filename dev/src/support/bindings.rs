@@ -101,9 +101,11 @@ pub enum LangItem {
     PanicNounwind,
     TransmuteTrait,
     TransmuteOpts,
+    TypeInfo,
+    TypeId,
 }
 impl LangItem {
-    pub const ALL: [Self; 85] = [
+    pub const ALL: [Self; 87] = [
         Self::Sized,
         Self::MetaSized,
         Self::PointeeSized,
@@ -189,6 +191,8 @@ impl LangItem {
         Self::PanicNounwind,
         Self::TransmuteTrait,
         Self::TransmuteOpts,
+        Self::TypeInfo,
+        Self::TypeId,
     ];
     #[must_use]
     pub const fn index(self) -> usize {
@@ -278,6 +282,8 @@ impl LangItem {
             Self::PanicNounwind => 82,
             Self::TransmuteTrait => 83,
             Self::TransmuteOpts => 84,
+            Self::TypeInfo => 85,
+            Self::TypeId => 86,
         }
     }
     /// Attribute decoding only; uses must resolve the registered declaration.
@@ -367,6 +373,8 @@ impl LangItem {
             "panic_nounwind" => Some(Self::PanicNounwind),
             "transmute_trait" => Some(Self::TransmuteTrait),
             "transmute_opts" => Some(Self::TransmuteOpts),
+            "type_info" => Some(Self::TypeInfo),
+            "type_id" => Some(Self::TypeId),
             "offset_of" => Some(Self::OffsetOf),
             _ => None,
         }
