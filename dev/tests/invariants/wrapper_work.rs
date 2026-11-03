@@ -2,6 +2,21 @@
 use super::*;
 
 #[test]
+fn terminal_results_need_no_graph_storage_and_still_pay_validation_work() -> Result<(), String> {
+    with_storage(
+        0,
+        |_| Ok(TypeId::primitive(Primitive::Usize)),
+        |machine, ty| {
+            machine.validate_result(scalar(7), ty)?;
+            assert_eq!(machine.slots, 0);
+            assert_eq!(machine.work.peak_slots, 0);
+            assert_eq!(machine.work.steps, 1);
+            Ok(())
+        },
+    )
+}
+
+#[test]
 fn typed_result_validation_scales_with_shared_nodes_and_preserves_compressed_repeats()
 -> Result<(), String> {
     let mut observations = Vec::new();

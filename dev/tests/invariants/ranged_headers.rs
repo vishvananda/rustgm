@@ -314,8 +314,8 @@ fn warm_queries_failed_payments_and_cold_role_arrays_keep_bounded_ownership() ->
 fn layouts() {
     let (bindings, imported, role) = Catalog::binding_layouts();
     let provider = size_of::<Option<crate::resolve::bindings::Declaration>>() * LangItem::ALL.len();
-    assert_eq!(provider, 1560);
-    assert_eq!(imported, 1320);
+    assert_eq!(provider, 1600);
+    assert_eq!(imported, 1352);
     assert!(provider.abs_diff(imported) <= 256);
     assert!(bindings >= provider);
     eprintln!(

@@ -160,7 +160,7 @@ const CASES: &[(&str, &str, i32, i32, bool, &str)] = &[
         1,
         1,
         false,
-        "numeric references, function or wide-pointer words require supported validity proof",
+        "constant reference is null",
     ),
     (
         "slice-payload",

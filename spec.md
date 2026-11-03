@@ -5338,3 +5338,12 @@ physical metadata is not a caller's sizing proof. General nominal metadata must
 carry genuine structs, enums, unions, generics, constructors and policies through
 validated remapping before imported source roles can execute. See
 [the source wrapper checkpoint](docs/pa31-source-wrappers-checkpoint.md).
+
+Terminal constant results pay validation work without allocating a graph queue
+or visited table. Demand pointer/layout checks only for actual pointer values;
+scalar and callable terminals must not speculate about physical layouts. Keep
+reference backing/escape checks on the terminal path. Products, repeated arrays
+and images retain the shared typed graph traversal and its live-capacity payer.
+The unchanged nested-readiness invariant must still reject overlapping execution
+at the maximum budget that admits either initializer alone. See the
+[CI repair](docs/source-wrappers-ci-repair.md).

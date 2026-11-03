@@ -106,8 +106,10 @@
         "--emit-constants": 1
       },
       "native_valid": false,
-      "reason": "symbolic pointer read requires one complete provenance word",
-      "original_path": "obj/parallel/pa27/default-enum-bytes/inputs/option-invalid-numeric-reference.rs"
+      "reason": "constant reference is unaligned",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/inputs/option-invalid-numeric-reference.rs",
+      "previous_frontend_boundary": "symbolic pointer read requires one complete provenance word",
+      "diagnostic_change": "Scoped typed pointer validation now diagnoses the selected null/alignment violation before the former provenance-word guard. Original source and required rejection are unchanged."
     },
     {
       "name": "option-expired-reference",
@@ -284,8 +286,10 @@
         "--emit-constants": 1
       },
       "native_valid": false,
-      "reason": "symbolic pointer read requires one complete provenance word",
-      "original_path": "obj/parallel/pa27/default-enum-bytes/extra-inputs/invalid-function-word.rs"
+      "reason": "numeric function words lack callable provenance",
+      "original_path": "obj/parallel/pa27/default-enum-bytes/extra-inputs/invalid-function-word.rs",
+      "previous_frontend_boundary": "symbolic pointer read requires one complete provenance word",
+      "diagnostic_change": "Typed pointer decoding now distinguishes missing callable provenance from numeric reference validity. Original source and required rejection are unchanged."
     },
     {
       "name": "unaligned-reference",

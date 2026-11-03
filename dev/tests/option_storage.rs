@@ -49,7 +49,7 @@ const CASES: &[(&str, &str, i32, bool, &str)] = &[
         "pa27/tests/spec/option-niche/option-invalid-numeric-reference.rs",
         1,
         false,
-        "numeric references, function or wide-pointer words require supported validity proof",
+        "constant reference is unaligned",
     ),
     (
         "option-expired-reference",
@@ -189,7 +189,7 @@ const CASES: &[(&str, &str, i32, bool, &str)] = &[
         "pa27/tests/spec/option-niche/invalid-function-word.rs",
         1,
         false,
-        "numeric references, function or wide-pointer words require supported validity proof",
+        "numeric function words lack callable provenance",
     ),
     (
         "one-past-reference",

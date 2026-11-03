@@ -96,7 +96,7 @@ const CASES: &[Case] = &[
         1,
         [0, 1, 1],
         false,
-        "numeric references, function or wide-pointer words require supported validity proof",
+        "constant reference is null",
     ),
     (
         "local-escape",

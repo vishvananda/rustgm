@@ -64,7 +64,9 @@
       "native_valid": false,
       "family": "retained-tag",
       "original_evidence_path": "obj/parallel/pa27/default-tag-enum-bytes/inputs/selected-null-reference.rs",
-      "reason": "symbolic pointer read requires one complete provenance word"
+      "reason": "constant reference is null",
+      "previous_frontend_boundary": "symbolic pointer read requires one complete provenance word",
+      "diagnostic_change": "Scoped typed pointer validation now diagnoses the selected null/alignment violation before the former provenance-word guard. Original source and required rejection are unchanged."
     }
   ],
   "layout_observations": [

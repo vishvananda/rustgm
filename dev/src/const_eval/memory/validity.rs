@@ -31,8 +31,11 @@ impl Machine<'_, '_> {
         let layout = self.reference_extent(value, referent)?;
         match Reader::new(self.evaluator.facts()).view(value)? {
             View::Address { bits } => {
-                if bits == 0 || !bits.is_multiple_of(u64::from(layout.align)) {
-                    return Err("constant reference is null or unaligned".into());
+                if bits == 0 {
+                    return Err("constant reference is null".into());
+                }
+                if !bits.is_multiple_of(u64::from(layout.align)) {
+                    return Err("constant reference is unaligned".into());
                 }
             }
             View::Reference(_) => {
@@ -116,6 +119,20 @@ impl Machine<'_, '_> {
         root: Constant,
         ty: TypeId,
     ) -> Result<(), Failure> {
+        let view = Reader::new(self.evaluator.facts()).view(root)?;
+        match view {
+            View::Product { .. } | View::Repeat { .. } | View::Image { .. } => {}
+            _ => {
+                // A terminal value needs no graph queue or visited table. Keep
+                // pointer and backing validation while avoiding artificial
+                // temporary peaks on every scalar function/initializer return.
+                self.charge(1)?;
+                if matches!(view, View::Reference(_) | View::Address { .. }) {
+                    self.result_reference(root, ValueType::root(ty))?;
+                }
+                return self.result_reference_storage(ty, root);
+            }
+        }
         let previous = self.slots;
         let result = (|| {
             let mut pending = Vec::new();
@@ -145,21 +162,24 @@ impl Machine<'_, '_> {
                     }
                 }
             }
-            let (answer, work) =
-                Reader::new(self.evaluator.facts()).shared_reference_work(ty, root)?;
-            self.charge(work)?;
-            match answer {
-                crate::types::interior_mutability::Answer::Ordinary => Ok(()),
-                crate::types::interior_mutability::Answer::Interior => Err(Failure::Fault(
-                    "constant reference cannot escape with interior mutable allocation backing",
-                )),
-                crate::types::interior_mutability::Answer::Unresolved => {
-                    Err("constant reference storage requires completed type and value facts".into())
-                }
-            }
+            self.result_reference_storage(ty, root)
         })();
         self.slots = previous;
         result
+    }
+
+    fn result_reference_storage(&mut self, ty: TypeId, root: Constant) -> Result<(), Failure> {
+        let (answer, work) = Reader::new(self.evaluator.facts()).shared_reference_work(ty, root)?;
+        self.charge(work)?;
+        match answer {
+            crate::types::interior_mutability::Answer::Ordinary => Ok(()),
+            crate::types::interior_mutability::Answer::Interior => Err(Failure::Fault(
+                "constant reference cannot escape with interior mutable allocation backing",
+            )),
+            crate::types::interior_mutability::Answer::Unresolved => {
+                Err("constant reference storage requires completed type and value facts".into())
+            }
+        }
     }
 
     fn reserve_result_work(

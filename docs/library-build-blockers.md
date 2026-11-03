@@ -45,8 +45,14 @@ with actual fields, variants, generics, constructors and policies, then qualify
 fresh imported consumers. Continue actual source MaybeUninit storage/validity and
 that artifact work; full panic/intrinsic graphs, other hooks and all original
 core/alloc/std artifacts remain required. No whole PA is completed here.
-Predecessor938a65897 full CI41553049490 passed every gate; new full CI follows
-main integration.
+Predecessor938a65897 full CI41553049490 passed every gate. Full CI41565945979
+on32cc2375d failed two private guards and three integration tables. The
+[focused repair](source-wrappers-ci-repair.md) passes13 controls, PA12 125/125,
+four independent unchanged rejections and12 CLI stage checks. Terminal values
+avoid graph allocations; the original shared-budget regression remains unchanged.
+CLIca6ad4cb repeats the same LIB-123 core frontier in19.10s with every input,
+configuration binding and finite limit preserved. Full successor CI follows
+main integration; no release pass is inferred from these local checks.
 
 FullCI41054298940 exposed twelve private regressions: four real Provided consumer
 failures and eight stale cold From-role size assertions. Sourcefbf4242c7 repairs

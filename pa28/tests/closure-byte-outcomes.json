@@ -55,12 +55,14 @@
       "native_valid": false,
       "contract": "reference capture cannot be materialized from numeric zero bytes",
       "original_path": "obj/parallel/pa27/closure-byte-backing/inputs/null-reference.rs",
-      "reason": "one complete provenance word",
+      "reason": "constant reference is null",
       "frontend_views": {
         "--emit-types": 0,
         "--emit-lowir": 1,
         "--emit-constants": 1
-      }
+      },
+      "previous_frontend_boundary": "one complete provenance word",
+      "diagnostic_change": "Scoped typed pointer validation now diagnoses the selected null/alignment violation before the former provenance-word guard. Original source and required rejection are unchanged."
     },
     {
       "name": "owned-destructor-raw-transfer",
