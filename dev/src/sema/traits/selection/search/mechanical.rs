@@ -3,5 +3,5 @@ pub(super) enum Pending {
     Direct(crate::sema::traits::callables::Matched),
     Forward(super::forwarding::Pending),
     Unsize(super::unsizing::Pending),
-    Captures(super::upvar_markers::Pending),
+    Components(super::component_markers::Pending),
 }

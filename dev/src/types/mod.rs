@@ -286,6 +286,11 @@ impl Default for Store {
             .map(|kind| {
                 let mut properties = Properties::default();
                 properties.set(Property::Sized, *kind != Kind::Primitive(Primitive::Str));
+                // Startup contains only Never, unit and the primitive types.
+                properties.set(
+                    Property::TrivialCopy,
+                    *kind != Kind::Primitive(Primitive::Str),
+                );
                 properties
             })
             .collect();
@@ -698,6 +703,7 @@ impl Store {
             }
             _ => {}
         }
+        result.set(Property::TrivialCopy, self.trivial_copy_kind(kind)?);
         Ok(result)
     }
 }

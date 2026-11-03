@@ -100,20 +100,15 @@ impl Search<'_> {
                 infer::Constructor::Function { .. }
                 | infer::Constructor::FunctionItem(..)
                 | infer::Constructor::FunctionItemArgs(..)
-                | infer::Constructor::Closure(..),
+                | infer::Constructor::Closure(..)
+                | infer::Constructor::Tuple,
             ) => Ok(true),
-            Some(infer::Constructor::Tuple) => frame
-                .inputs
-                .context
-                .arity(&facts.types, frame.goal.subject())
-                .map(|arity| arity == Some(0))
-                .map_err(inference),
             _ => Ok(false),
         }
     }
 
     /// Compiler-defined Copy/Clone markers for unit and actual function items/pointers.
-    /// Nonempty tuples require child proofs; signature inputs/results need not Copy.
+    /// Tuples retain child proofs; signature inputs/results need not Copy.
     pub(super) fn source_builtin_marker_result(
         &mut self,
         facts: &mut Declarations,
@@ -143,6 +138,17 @@ impl Search<'_> {
             Some(crate::types::Kind::Closure { .. })
         ) {
             return self.start_capture_markers(facts, frame, goal).map(Some);
+        }
+        if let Some(crate::types::Kind::Tuple(fields)) = facts.types.kind(goal.ty) {
+            return self
+                .start_component_markers(
+                    facts,
+                    frame,
+                    goal,
+                    super::component_markers::Components::List(fields),
+                    goal.bound,
+                )
+                .map(Some);
         }
         Ok(Some(self.complete_source_builtin(frame, goal, false)))
     }

@@ -140,8 +140,8 @@ impl Search<'_> {
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Option<Frame>, String> {
-        if matches!(frame.language.as_deref(), Some(Callable::Captures(_))) {
-            return self.capture_marker_child(facts, frame);
+        if matches!(frame.language.as_deref(), Some(Callable::Components(_))) {
+            return self.component_marker_child(facts, frame);
         }
         if matches!(frame.language.as_deref(), Some(Callable::Unsize(_))) {
             return self.unsizing_child(facts, frame);

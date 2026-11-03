@@ -28,13 +28,16 @@ impl Checker<'_> {
             .origin
             .require_diagnostic()
             .map_err(|e| Error::at(crate::resolve::unit::FileId(0), 0, e))?;
+        self.facts.union_work.fields += 1;
+        if self.facts.source_bindings.is_some() {
+            return self.validate_source_union_field(field.ty, source, proof, &mut scratch.seen);
+        }
         let manually_drop = self
             .report
             .resolution
             .library_types
             .get(LibraryType::ManuallyDrop)
             .map(|nominal| nominal.definition);
-        self.facts.union_work.fields += 1;
         let mut copy_bound = None;
         scratch.work.push(field.ty);
         while let Some(ty) = scratch.work.pop() {

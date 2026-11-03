@@ -480,6 +480,7 @@ fn owner_kind(
                             crate::support::bindings::LangItem::Sync,
                             crate::support::bindings::LangItem::Unpin,
                             crate::support::bindings::LangItem::UnsafeUnpin,
+                            crate::support::bindings::LangItem::BikeshedGuaranteedNoDrop,
                         ]
                         .into_iter()
                         .any(|role| {

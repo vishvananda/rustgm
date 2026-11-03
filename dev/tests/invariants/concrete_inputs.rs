@@ -125,3 +125,48 @@ fn trait_arguments_and_projected_inputs_remain_part_of_closedness() -> Result<()
     assert!(!concrete(&store, projected)?);
     Ok(())
 }
+
+#[test]
+fn trivial_union_shape_is_a_compact_cached_fact_without_trait_or_value_permission()
+-> Result<(), &'static str> {
+    assert_eq!(size_of::<super::Properties>(), 4);
+    let mut store = Store::default();
+    let element = TypeId::primitive(Primitive::U16);
+    assert_eq!(store.trivial_copy(TypeId::NEVER), Some(true));
+    assert_eq!(store.trivial_copy(TypeId::UNIT), Some(true));
+    assert_eq!(
+        store.trivial_copy(TypeId::primitive(Primitive::Str)),
+        Some(false)
+    );
+    let mut deep = element;
+    for _ in 0..4096 {
+        deep = store.intern(Kind::Array {
+            element: deep,
+            length: 1,
+        })?;
+        assert_eq!(store.trivial_copy(deep), Some(true));
+    }
+    let before = store.interned_extent();
+    for _ in 0..4096 {
+        assert_eq!(store.trivial_copy(deep), Some(true));
+    }
+    assert_eq!(store.interned_extent(), before);
+    let fields = store.intern_list(&[element; 3])?;
+    let short = store.intern(Kind::Tuple(fields))?;
+    assert_eq!(store.trivial_copy(short), Some(true));
+    let fields = store.intern_list(&[element; 4])?;
+    let long = store.intern(Kind::Tuple(fields))?;
+    assert_eq!(store.trivial_copy(long), Some(false));
+    let mutable = store.intern(Kind::Reference {
+        mutable: true,
+        region: RegionId::STATIC,
+        referent: element,
+    })?;
+    let empty = store.intern(Kind::Array {
+        element: mutable,
+        length: 0,
+    })?;
+    assert_eq!(store.trivial_copy(mutable), Some(false));
+    assert_eq!(store.trivial_copy(empty), Some(false));
+    Ok(())
+}

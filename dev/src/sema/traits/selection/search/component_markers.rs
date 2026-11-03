@@ -1,9 +1,39 @@
-//! A closure's copying marker requires each stored capture's actual source trait.
+//! Structural marker proofs retain every component's scoped canonical evidence.
 use super::mechanical::Pending as Language;
 use super::{
     Action, Decision, Declarations, Frame, Goal, Node, Predicate, Search, Source, inference,
 };
-use crate::types::{Kind, infer::Instantiation};
+use crate::types::{
+    Kind, ListId, Store, TypeId, infer::Instantiation, parameters::predicates::Bound,
+};
+
+#[derive(Clone, Copy)]
+pub(super) enum Components {
+    List(ListId),
+    Element(TypeId),
+}
+impl Components {
+    fn len(self, store: &Store) -> Result<usize, String> {
+        match self {
+            Self::List(list) => store
+                .list(list)
+                .map(<[TypeId]>::len)
+                .ok_or_else(|| "missing marker components".into()),
+            Self::Element(_) => Ok(1),
+        }
+    }
+    fn get(self, store: &Store, index: usize) -> Result<TypeId, String> {
+        match self {
+            Self::List(list) => store
+                .list(list)
+                .and_then(|fields| fields.get(index))
+                .copied()
+                .ok_or_else(|| "missing marker component".into()),
+            Self::Element(ty) if index == 0 => Ok(ty),
+            Self::Element(_) => Err("marker element index exceeds its recipe".into()),
+        }
+    }
+}
 
 pub(super) struct Pending {
     goals: Vec<Goal>,
@@ -19,10 +49,10 @@ impl Pending {
     }
 }
 impl Frame {
-    fn capture_markers(&mut self) -> Result<&mut Pending, String> {
+    fn component_markers(&mut self) -> Result<&mut Pending, String> {
         match self.language.as_deref_mut() {
-            Some(Language::Captures(pending)) => Ok(pending),
-            _ => Err("missing stored-capture marker frontier".into()),
+            Some(Language::Components(pending)) => Ok(pending),
+            _ => Err("missing component marker frontier".into()),
         }
     }
 }
@@ -47,11 +77,17 @@ impl Search<'_> {
         let Some(Kind::Tuple(fields)) = facts.types.kind(environment) else {
             return Err("closure marker requires its typed capture tuple".into());
         };
-        let count = facts
-            .types
-            .list(fields)
-            .ok_or("missing stored capture types")?
-            .len();
+        self.start_component_markers(facts, frame, goal, Components::List(fields), goal.bound)
+    }
+    pub(super) fn start_component_markers(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+        goal: Predicate,
+        components: Components,
+        bound: Bound,
+    ) -> Result<Action, String> {
+        let count = components.len(&facts.types)?;
         frame
             .inputs
             .context
@@ -63,25 +99,18 @@ impl Search<'_> {
         let mut goals = Vec::new();
         goals
             .try_reserve_exact(count)
-            .map_err(|_| "capture marker allocation failed")?;
+            .map_err(|_| "component marker allocation failed")?;
         let mut substitution =
             Instantiation::new(&mut frame.inputs.context, &facts.types, &[]).map_err(inference)?;
         for index in 0..count {
-            let ty = *facts
-                .types
-                .list(fields)
-                .and_then(|f| f.get(index))
-                .ok_or("stored capture type disappeared")?;
+            let ty = components.get(&facts.types, index)?;
             goals.push(
                 frame
                     .inputs
                     .context
                     .instantiate_predicate(
                         &mut facts.types,
-                        Predicate {
-                            ty,
-                            bound: goal.bound,
-                        },
+                        Predicate { ty, bound },
                         &mut substitution,
                     )
                     .map_err(inference)?,
@@ -90,8 +119,8 @@ impl Search<'_> {
         let mut children = Vec::new();
         children
             .try_reserve_exact(count)
-            .map_err(|_| "capture proof allocation failed")?;
-        frame.language = Some(Box::new(Language::Captures(Pending {
+            .map_err(|_| "component proof allocation failed")?;
+        frame.language = Some(Box::new(Language::Components(Pending {
             goals,
             cursor: 0,
             children,
@@ -101,14 +130,14 @@ impl Search<'_> {
         })));
         Ok(Action::Descend)
     }
-    pub(super) fn capture_marker_child(
+    pub(super) fn component_marker_child(
         &mut self,
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Option<Frame>, String> {
         let first = frame.available_region().max(self.query.allocations.floor());
-        let Some(Language::Captures(pending)) = frame.language.as_deref_mut() else {
-            return Err("missing capture marker child frontier".into());
+        let Some(Language::Components(pending)) = frame.language.as_deref_mut() else {
+            return Err("missing component marker child frontier".into());
         };
         if let Some(slot) = pending.suspended.take() {
             let mut child = self
@@ -116,14 +145,14 @@ impl Search<'_> {
                 .suspended
                 .get_mut(slot)
                 .and_then(Option::take)
-                .ok_or("missing retained capture proof")?;
+                .ok_or("missing retained component proof")?;
             child.refresh(facts, &mut frame.inputs.context)?;
             return Ok(Some(child));
         }
         let goal = pending
             .goals
             .get(pending.cursor)
-            .ok_or("missing next capture goal")?;
+            .ok_or("missing next component goal")?;
         let mut child = Frame::new(facts, &mut frame.inputs.context, goal, first)?;
         child.scope = frame.scope;
         child.inference = if frame.inference == super::frames::Inference::Disabled {
@@ -133,20 +162,20 @@ impl Search<'_> {
         };
         Ok(Some(child))
     }
-    pub(super) fn accept_capture_marker(
+    pub(super) fn accept_component_marker(
         &mut self,
         facts: &mut Declarations,
         frame: &mut Frame,
         decision: Decision,
     ) -> Result<(), String> {
         if let Decision::Proven(index) = decision {
-            let Some(Language::Captures(pending)) = frame.language.as_deref_mut() else {
-                return Err("missing completed capture marker frontier".into());
+            let Some(Language::Components(pending)) = frame.language.as_deref_mut() else {
+                return Err("missing completed component marker frontier".into());
             };
             let goal = pending
                 .goals
                 .get(pending.cursor)
-                .ok_or("missing current capture goal")?;
+                .ok_or("missing current component goal")?;
             frame
                 .inputs
                 .context
@@ -155,11 +184,11 @@ impl Search<'_> {
             pending.children.push(index);
             pending.cursor += 1;
         } else {
-            frame.capture_markers()?.stopped = Some(decision);
+            frame.component_markers()?.stopped = Some(decision);
         }
         Ok(())
     }
-    pub(super) fn accept_partial_capture_marker(
+    pub(super) fn accept_partial_component_marker(
         &mut self,
         facts: &mut Declarations,
         frame: &mut Frame,
@@ -167,17 +196,17 @@ impl Search<'_> {
     ) -> Result<(), String> {
         child.publish(facts, &mut frame.inputs.context)?;
         let slot = self.query.retain_partial(child)?;
-        let pending = frame.capture_markers()?;
+        let pending = frame.component_markers()?;
         pending.suspended = Some(slot);
         pending.publish = true;
         Ok(())
     }
-    pub(super) fn complete_capture_markers(
+    pub(super) fn complete_component_markers(
         &mut self,
         facts: &mut Declarations,
         frame: &mut Frame,
     ) -> Result<Action, String> {
-        let pending = frame.capture_markers()?;
+        let pending = frame.component_markers()?;
         if let Some(decision) = pending.stopped {
             return Ok(Action::Complete(decision));
         }

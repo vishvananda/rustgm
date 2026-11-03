@@ -67,9 +67,9 @@ impl Search<'_> {
         }
         if matches!(
             parent.language.as_deref(),
-            Some(super::mechanical::Pending::Captures(_))
+            Some(super::mechanical::Pending::Components(_))
         ) {
-            return self.accept_partial_capture_marker(facts, parent, child);
+            return self.accept_partial_component_marker(facts, parent, child);
         }
         if matches!(
             parent.language.as_deref(),

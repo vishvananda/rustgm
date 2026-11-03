@@ -89,3 +89,49 @@ fn source_wrappers_native_preserve_actual_destructors_layout_and_owned_field_mov
     }
     Ok(())
 }
+
+#[test]
+fn source_no_drop_requires_actual_component_proofs_and_keeps_ownership_checks() -> TestResult {
+    let accepted = "header manual-union mutable-reference-union nested-components copy-premise manual-premise reference-premise nominal-copy fallback-shared-reference fallback-scalar-without-copy header-unsafe header-constant header-members header-auto marker-long-tuple fallback-scalar-array native-relay fallback-copy-tuple";
+    let rejected = "wrong-target generic-type generic-lifetime generic-const duplicate-role zero-array-noncopy ordinary-nondrop manual-lookalike role-lookalike explicit-impl fallback-manual fallback-mutable-reference bound-scalar-without-copy borrow-escape no-copy-grant fallback-long-tuple marker-empty-array";
+
+    let cases = accepted
+        .split_whitespace()
+        .map(|name| (name, true))
+        .chain(rejected.split_whitespace().map(|name| (name, false)));
+    let mut count = 0;
+    for (name, accepted) in cases {
+        let source = std::fs::read_to_string(
+            root()?.join(format!("pa31/tests/spec/source-no-drop/{name}.rs")),
+        )?;
+        let result = lower(&source);
+        assert_eq!(
+            result.is_ok(),
+            accepted,
+            "{name}: {:?}",
+            result.err().map(|error| error.to_string())
+        );
+        count += 1;
+    }
+    assert_eq!(count, 35);
+    Ok(())
+}
+#[test]
+#[ignore = "requires the pinned CPPGM backend and host C linker"]
+fn source_no_drop_native_relay_executes_actual_mutation_and_owned_source_fields() -> TestResult {
+    let root = root()?;
+    let folder = root
+        .join("obj/parallel/source-no-drop-native")
+        .join(std::process::id().to_string());
+    std::fs::create_dir_all(&folder)?;
+    let fixture = root.join("pa31/tests/spec/source-no-drop/native-relay");
+    crate::ffi_program::check(
+        &root,
+        &folder,
+        "native-relay",
+        &lower(&std::fs::read_to_string(fixture.with_extension("rs"))?)?,
+        &std::fs::read_to_string(fixture.with_extension("c"))?,
+        "8\n",
+    )?;
+    Ok(())
+}

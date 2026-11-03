@@ -80,7 +80,7 @@ impl Catalog {
     }
 }
 
-const TRAIT_ROLES: [LangItem; 20] = [
+const TRAIT_ROLES: [LangItem; 21] = [
     LangItem::Clone,
     LangItem::Copy,
     LangItem::LegacyReceiver,
@@ -101,6 +101,7 @@ const TRAIT_ROLES: [LangItem; 20] = [
     LangItem::UnsafeUnpin,
     LangItem::ConstParamTy,
     LangItem::From,
+    LangItem::BikeshedGuaranteedNoDrop,
 ];
 
 pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
@@ -137,7 +138,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         let header = header(report, facts, declaration, role)?;
         let self_type = header.self_type;
         match role {
-            LangItem::From => {}
+            LangItem::From | LangItem::BikeshedGuaranteedNoDrop => {}
             LangItem::ConstParamTy => parameter_types::validate(
                 report,
                 facts,
@@ -322,11 +323,20 @@ fn header<'a>(
 ) -> Result<super::headers::Trait<'a>, Error> {
     let error = |message| Declarations::error(report, declaration.origin, message);
     let header = super::headers::Trait::source(report, facts, declaration).map_err(error)?;
-    if role == LangItem::From {
-        // This role constrains the trait's target and arity, not its methods,
-        // safety or constness. Its numeric consumer supplies no trait proof.
+    if matches!(role, LangItem::From | LangItem::BikeshedGuaranteedNoDrop) {
+        if role == LangItem::BikeshedGuaranteedNoDrop && header.written.parameters != 0 {
+            return Err(error(
+                "source NoDrop requires zero written generic parameters",
+            ));
+        }
+        // These registry contracts preserve actual trait methods and flags.
+        // Membership and execution require their separate checked consumers.
         header
-            .profile(&facts.types, header.flags, 1)
+            .profile(
+                &facts.types,
+                header.flags,
+                usize::from(role == LangItem::From),
+            )
             .map_err(error)?;
         return Ok(header);
     }

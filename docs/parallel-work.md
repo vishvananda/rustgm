@@ -1,5 +1,14 @@
 # Parallel library bootstrap implementation
 
+Root's [NoDrop checkpoint](pa31-no-drop-checkpoint.md) qualifies35 real source
+outcomes and native `8` with19 private/5 production controls and125 PA12 cases.
+The source field shortcut now consumes a globally shared compact type fact;
+old caller/child proofs and strict bounds remain. General nominal transport and
+actual MaybeUninit execution remain required. Full repair CI41572102514 passes
+every gate. Root remains alone in the same warm btrfs tree with the existing
+five-minute, two-thread, output-cap and150GiB reserve policies; no new worker or
+worktree is needed.
+
 Current state (2026-11-02): the user resumed work with Root alone. Both former
 workers remain stopped and their compiler commits are integrated into main.
 The existing warm integration worktree now lives at

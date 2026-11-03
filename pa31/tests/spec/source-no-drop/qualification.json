@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "scope": "Local actual source NoDrop and union field admission; whole assignments and imported/library artifacts remain required",
+  "contract_sha256": "7c23d9c3d52949d71f278e4bfb292d9228c53ba0d65ef60041d1c00c6e565f46",
+  "original_body_outcomes": 35,
+  "independent_object_outcomes": 35,
+  "native_stdout": "8\n",
+  "constant_cli_observations": 66,
+  "constant_cli_exclusions_require_full_cfg": [
+    "borrow-escape",
+    "no-copy-grant"
+  ],
+  "candidate_sha256": "a716191eacdaeee150445f36f4d81147d78e2cb6098ee24ad82d3f87f7481d26",
+  "private_exact_tests": 19,
+  "production_exact_tests": 5,
+  "pa12_text_cases": 125,
+  "shared_shape_depths": [
+    8,
+    32,
+    64
+  ],
+  "shared_shape_declarations": [
+    8,
+    32,
+    64
+  ],
+  "field_work": "one query per field, independent of shared depth; type facts precomputed in existing four-byte Properties",
+  "performance_observations": 56,
+  "performance_sha256": "d2068a0f7c30bde13bb9243a376c3ee187ec5a6b9e7d99a095ac58db486557af",
+  "wall_time_claim": "Two local calibrated attempts retained; first is noisy, second improves the shared synthetic input beyond A/A spread. No whole-crate throughput claim.",
+  "prior_full_ci": {
+    "commit": "1e9b3c514ec9663933b4ae9d89ffb17c77d70a98",
+    "run": 41572102514,
+    "conclusion": "success"
+  },
+  "checks": [
+    {
+      "kind": "combined",
+      "receipt": "obj/qualification/fast/1793683257531974532/receipt.json",
+      "sha256": "469f4f28f14f2acd0220841848c9e603318b5f39125f6ade0c8e99f1d492c363",
+      "state": "passed",
+      "seconds": 154.85404353300692
+    },
+    {
+      "kind": "independent",
+      "receipt": "obj/parallel/source-no-drop-v1/reference-v4/receipt.json",
+      "sha256": "176a46fb2ac2e6acf42cb213b604b6d2805c03e79ab0b348054be7e95a2f1708",
+      "state": "passed",
+      "seconds": 1.9170868190121837
+    },
+    {
+      "kind": "joined",
+      "receipt": "obj/parallel/source-no-drop-v1/joined-v3/receipt.json",
+      "sha256": "77b07c8ea6ae21e2d173ce917f48c6670c2e381b0a6c0ca040d294c6c63bb263",
+      "state": "passed",
+      "seconds": 31.532032811024692
+    }
+  ],
+  "remaining": [
+    "actual MaybeUninit identity/storage/method/intrinsic execution",
+    "general PA29 nominal and role transport with fresh imported consumers",
+    "whole original core/alloc/std artifacts",
+    "whole-assignment release requirements"
+  ],
+  "earlier_performance_sha256": "fc07fc1965385a73953ed73fe0224932bf5b21181b0ee63860a91a2804cfa620"
+}

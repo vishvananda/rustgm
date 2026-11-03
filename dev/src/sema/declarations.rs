@@ -507,7 +507,6 @@ impl Checker<'_> {
         self.complete_deferred_declarations(&mut steps, work_limit)?;
         self.complete_nominals(&mut steps, work_limit)?;
         super::compiler_items::phantom::complete(self.report, &mut self.facts)?;
-        super::compiler_items::wrappers::complete(self.report, &mut self.facts)?;
         super::compiler_items::pointee::prepare(self.report, &mut self.facts)?;
         super::compiler_items::discriminant::prepare(self.report, &mut self.facts)?;
         super::compiler_items::site_records::complete(self.report, &mut self.facts)?;

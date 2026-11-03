@@ -142,6 +142,7 @@ pub(super) fn validate(
                     | LangItem::Unsize
                     | LangItem::PointeeTrait
                     | LangItem::DiscriminantKind
+                    | LangItem::BikeshedGuaranteedNoDrop
             )
         } else {
             matches!(

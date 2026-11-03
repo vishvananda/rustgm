@@ -6,6 +6,7 @@ mod nullable_members;
 mod outlives;
 mod readiness;
 mod sizedness;
+mod union_eligibility;
 mod unions;
 mod validation;
 use super::{
@@ -62,6 +63,10 @@ impl Checker<'_> {
         self.validate_storage()?;
         self.complete_nominal_sizes()?;
         self.complete_size_rechecks(steps, limit)?;
+        // Union marker queries consume completed source wrapper identities and
+        // policies. All field templates and sizing prerequisites now exist;
+        // constructors and executable bodies retain their later proofs.
+        crate::sema::compiler_items::wrappers::complete(self.report, &mut self.facts)?;
         self.validate_fields()?;
         self.nominal_defaults()?;
         self.lifetime_variances()?;

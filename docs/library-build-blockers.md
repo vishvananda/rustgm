@@ -15,6 +15,16 @@ PA21–PA24 have implemented/release-evidence status; PA1–PA20 retain
 implemented-draft. PA25–PA44 remain planned. No additional assignment or whole
 upstream library has been completed.
 
+The [source NoDrop checkpoint](pa31-no-drop-checkpoint.md) now qualifies a
+LIB-123 prerequisite:35 independent source outcomes, full original CFG proof,
+real Rust/CPPGM native `8`, private19/production5, PA12 125/125 and66 CLI views.
+The pinned union shortcut is a shared four-byte type-property bit, eliminating
+per-declaration type walks; field-query counts remain independent of shared
+array depth. Genuine source MaybeUninit methods/storage/intrinsics and general
+PA29 nominal/role transport stay open. The last original core frontier remains
+mem/maybe_uninit.rs352; no new artifact or original-source advance is inferred.
+Full predecessor repair CI41572102514 on1e9b3c514 passes every gate.
+
 Use the [current execution plan](library-bootstrap-acceleration.md) to choose work:
 real artifact/source consumers, demanded imported-body proof and consolidated
 qualification. The existing complete assignment and upstream gates remain required.

@@ -16,6 +16,14 @@ old cycle; both units and the complete contract below remain required.
 
 ## Required implementation
 
+The [source NoDrop checkpoint](../docs/pa31-no-drop-checkpoint.md) qualifies the
+actual trait and union Copy fallback through canonical component proofs and real
+native relay execution. Field queries consume a compact shared type fact for
+the pinned structural shortcut; it grants no trait, value or API permission.
+Source wrapper completion precedes its union consumers. Actual MaybeUninit
+storage/method/intrinsic execution and general PA29 imported transport remain
+required; this does not activate PA31.
+
 The [optimization-intent packet](tests/spec/source-optimize/README.md) freezes
 real size/speed/none semantics, executable owners, feature and macro-envelope
 authority, hard duplicates and none/inline conflicts. The source producer retains

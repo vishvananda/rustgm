@@ -1,5 +1,5 @@
 //! Compact independent type facts; structural children combine dependency flags.
-use super::RegionId;
+use super::{Kind, Primitive, RegionId, Store};
 
 #[derive(Clone, Copy)]
 pub(super) enum Property {
@@ -16,6 +16,7 @@ pub(super) enum Property {
     Nominals,
     ProjectedSizes,
     AnonymousCallables,
+    TrivialCopy,
 }
 impl Property {
     const fn mask(self) -> u16 {
@@ -90,3 +91,31 @@ impl Properties {
 #[cfg(test)]
 #[path = "../../tests/invariants/concrete_inputs.rs"]
 mod tests;
+
+impl Store {
+    /// A syntactic union-field shortcut, never source Copy or value validity evidence.
+    pub(crate) fn trivial_copy(&self, ty: super::TypeId) -> Option<bool> {
+        self.properties
+            .get(ty.0 as usize)
+            .map(|properties| properties.has(Property::TrivialCopy))
+    }
+    pub(super) fn trivial_copy_kind(&self, kind: Kind) -> Result<bool, &'static str> {
+        Ok(match kind {
+            Kind::Never
+            | Kind::FunctionItem { .. }
+            | Kind::Pointer { .. }
+            | Kind::Reference { mutable: false, .. } => true,
+            Kind::Primitive(primitive) => primitive != Primitive::Str,
+            Kind::Array { element, .. }
+            | Kind::ArrayTerm { element, .. }
+            | Kind::Pattern { base: element, .. } => self
+                .trivial_copy(element)
+                .ok_or("missing trivial-copy type child")?,
+            Kind::Tuple(list) => {
+                let fields = self.list(list).ok_or("missing trivial-copy tuple fields")?;
+                fields.len() <= 3 && fields.iter().all(|&ty| self.trivial_copy(ty) == Some(true))
+            }
+            _ => false,
+        })
+    }
+}

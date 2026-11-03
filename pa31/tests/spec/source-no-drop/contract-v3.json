@@ -1,0 +1,231 @@
+{
+  "schema": 1,
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "purpose": "Actual source NoDrop identity, canonical child/Copy proof, union field shortcut/fallback and unchanged ownership authority",
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir/src/lang_items.rs": "af62146fd0255b1b8baea76309e13eb00ff5b9a8ffe110348beba4deb3569690",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir_analysis/src/check/check.rs": "f88983f311efa4e83ae8683365ab4ba1b59f47d82c6ffa6197f30c48f9cd1987",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_next_trait_solver/src/solve/trait_goals.rs": "7cabb49dd1dfdd7f5c4bfc4b31289a173cacf5c25bc0958c904c43d55ab45e96",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_middle/src/ty/sty.rs": "a12e057125ba016a73cb5f3105606176f92096c74cb40284744dad8aff0a60a3",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/marker.rs": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575"
+  },
+  "cases": [
+    {
+      "name": "header",
+      "path": "pa31/tests/spec/source-no-drop/header.rs",
+      "sha256": "f89a4ecb95bff9ea0ba2783b1baf25146498dbc225df8b8ff8f62cd504ca4737",
+      "status": 0
+    },
+    {
+      "name": "wrong-target",
+      "path": "pa31/tests/spec/source-no-drop/wrong-target.rs",
+      "sha256": "5100b93f39bdace4d950b89dd183376fe99ba04243de5c3f9c23e4aff65644af",
+      "status": 1
+    },
+    {
+      "name": "generic-type",
+      "path": "pa31/tests/spec/source-no-drop/generic-type.rs",
+      "sha256": "dfb4735186a2e3e9c29fa2f4b74750dc37cd0d3f6ef43c64e3ea5c1de9f30dd3",
+      "status": 1
+    },
+    {
+      "name": "generic-lifetime",
+      "path": "pa31/tests/spec/source-no-drop/generic-lifetime.rs",
+      "sha256": "52ff35b30b7d016f6c005ba3bfd55dd1c73f10042bfd016d3612429945eaa87a",
+      "status": 1
+    },
+    {
+      "name": "generic-const",
+      "path": "pa31/tests/spec/source-no-drop/generic-const.rs",
+      "sha256": "c84d8d387feae2f93cc83277ebd80fc21c18a39fc2a79bb5c33a859730be28d1",
+      "status": 1
+    },
+    {
+      "name": "duplicate-role",
+      "path": "pa31/tests/spec/source-no-drop/duplicate-role.rs",
+      "sha256": "011ca308c13a7bdcaaa0aa60a489e5a2834d6496c988839fb8a469353d42f15b",
+      "status": 1
+    },
+    {
+      "name": "manual-union",
+      "path": "pa31/tests/spec/source-no-drop/manual-union.rs",
+      "sha256": "642a799206908df3cbd8ea1e98c87d4ef7460db69ef953407db3061b91087d40",
+      "status": 0
+    },
+    {
+      "name": "mutable-reference-union",
+      "path": "pa31/tests/spec/source-no-drop/mutable-reference-union.rs",
+      "sha256": "d715cccc7556f8f5cd84dbab1bc76bb4fc80507e6036a3403cf48633a74cdcda",
+      "status": 0
+    },
+    {
+      "name": "nested-components",
+      "path": "pa31/tests/spec/source-no-drop/nested-components.rs",
+      "sha256": "b23aadc4433bec48adb1593656c5a9ac41a7b35d4cdc87beeba7209e44f1fed9",
+      "status": 0
+    },
+    {
+      "name": "zero-array-noncopy",
+      "path": "pa31/tests/spec/source-no-drop/zero-array-noncopy.rs",
+      "sha256": "07e36a3c5676140cc854bbd88f0ee95b109d5b0ec72a70b9990943986cb36aa9",
+      "status": 1
+    },
+    {
+      "name": "ordinary-nondrop",
+      "path": "pa31/tests/spec/source-no-drop/ordinary-nondrop.rs",
+      "sha256": "94ea60ae2993f43e0f64acfeb002a3cfb142e6c6b74c3b824371c98a78fc7f42",
+      "status": 1
+    },
+    {
+      "name": "copy-premise",
+      "path": "pa31/tests/spec/source-no-drop/copy-premise.rs",
+      "sha256": "b0744088c7a04725e6eff54ece032a4a1ea46e9890666de92d7fd70336478639",
+      "status": 0
+    },
+    {
+      "name": "manual-premise",
+      "path": "pa31/tests/spec/source-no-drop/manual-premise.rs",
+      "sha256": "9da1533b8e1a5aa6e639ca81294331d32d96b088c35424bc314590c56ca9e38a",
+      "status": 0
+    },
+    {
+      "name": "reference-premise",
+      "path": "pa31/tests/spec/source-no-drop/reference-premise.rs",
+      "sha256": "edcc5a9919096263b7ccb1308417c4d9c4d43522e94c9c33fd41ba9709a5364c",
+      "status": 0
+    },
+    {
+      "name": "nominal-copy",
+      "path": "pa31/tests/spec/source-no-drop/nominal-copy.rs",
+      "sha256": "464961e5c3ce063d5cbec4f062c5463c99d134620081676669247ca8e4ffce64",
+      "status": 0
+    },
+    {
+      "name": "manual-lookalike",
+      "path": "pa31/tests/spec/source-no-drop/manual-lookalike.rs",
+      "sha256": "c3f396f6b9400e01decd18eb52a9a251d003f3d4d76ea8b48c076933e1c4f36a",
+      "status": 1
+    },
+    {
+      "name": "role-lookalike",
+      "path": "pa31/tests/spec/source-no-drop/role-lookalike.rs",
+      "sha256": "2c1ba6c607d0323bd2879cd0831cc92eb5b91269f70d78888ec62d0753340888",
+      "status": 1
+    },
+    {
+      "name": "explicit-impl",
+      "path": "pa31/tests/spec/source-no-drop/explicit-impl.rs",
+      "sha256": "7e4a97d212f19dd5e48b0a7aef5f125604f741b34dcf431dd90b78fd3ab53789",
+      "status": 1
+    },
+    {
+      "name": "fallback-manual",
+      "path": "pa31/tests/spec/source-no-drop/fallback-manual.rs",
+      "sha256": "bfde2a4896d70933320d4ba894e5f2df294181f02c896ef410a523111b6cb983",
+      "status": 1
+    },
+    {
+      "name": "fallback-mutable-reference",
+      "path": "pa31/tests/spec/source-no-drop/fallback-mutable-reference.rs",
+      "sha256": "07ea4825bb5a774b6f3fb71a398dbf1a72075cdf0980ec8d10185cdab0c5d88a",
+      "status": 1
+    },
+    {
+      "name": "fallback-shared-reference",
+      "path": "pa31/tests/spec/source-no-drop/fallback-shared-reference.rs",
+      "sha256": "48d5713ba0c1000a68e91ed5776397c924e62a9570d1b3c8e455cea0f4c38fad",
+      "status": 0
+    },
+    {
+      "name": "fallback-scalar-without-copy",
+      "path": "pa31/tests/spec/source-no-drop/fallback-scalar-without-copy.rs",
+      "sha256": "5cf1500e276573617cb5c4dded29966afd3ff3020125e7bd17b380953e0ca789",
+      "status": 0
+    },
+    {
+      "name": "bound-scalar-without-copy",
+      "path": "pa31/tests/spec/source-no-drop/bound-scalar-without-copy.rs",
+      "sha256": "01491c1591e349d7bd915f463080d33cd200d334493bb47aeb71cabc88793b8b",
+      "status": 1
+    },
+    {
+      "name": "borrow-escape",
+      "path": "pa31/tests/spec/source-no-drop/borrow-escape.rs",
+      "sha256": "2764a32cb363825b288f37be38242e2873693a66e2368ce6cde00de7e36cfaf2",
+      "status": 1
+    },
+    {
+      "name": "no-copy-grant",
+      "path": "pa31/tests/spec/source-no-drop/no-copy-grant.rs",
+      "sha256": "e9c3310f117ded4a5d54958e9f56666e9ba3416c75930638941d1fccbe60ebba",
+      "status": 1
+    },
+    {
+      "name": "header-unsafe",
+      "path": "pa31/tests/spec/source-no-drop/header-unsafe.rs",
+      "sha256": "790f9328de1a973b299cc194d7e757d2d4e92d4dc39e0fcee0ca99f913db4f19",
+      "status": 0
+    },
+    {
+      "name": "header-constant",
+      "path": "pa31/tests/spec/source-no-drop/header-constant.rs",
+      "sha256": "6fa1f07b801c10b3de85467b35ff4b476d74c3ad9634f7df8885a94f0e267078",
+      "status": 0
+    },
+    {
+      "name": "header-members",
+      "path": "pa31/tests/spec/source-no-drop/header-members.rs",
+      "sha256": "57f7d8b3d6a0b73c850347fb3aef2e0190e4c8338b296d27e41948d1d9104f92",
+      "status": 0
+    },
+    {
+      "name": "header-auto",
+      "path": "pa31/tests/spec/source-no-drop/header-auto.rs",
+      "sha256": "94c4cdf39d78a10fddf70eccf58fda808dabd834f0fbfb25d1d914b559b400f8",
+      "status": 0
+    },
+    {
+      "name": "fallback-long-tuple",
+      "path": "pa31/tests/spec/source-no-drop/fallback-long-tuple.rs",
+      "sha256": "503583584a29268b1e72d6b005d9fc82d87a95ec585f56ed66924c099d7224eb",
+      "status": 1
+    },
+    {
+      "name": "marker-long-tuple",
+      "path": "pa31/tests/spec/source-no-drop/marker-long-tuple.rs",
+      "sha256": "c1e5dd997fdb78f33d689bb830c14b2c86cdab367ee00ba99333606bb6601a3f",
+      "status": 0
+    },
+    {
+      "name": "fallback-scalar-array",
+      "path": "pa31/tests/spec/source-no-drop/fallback-scalar-array.rs",
+      "sha256": "de061907cebc1c6ebff9200c05829c54b8bd765486a9461febb2f93da92a44b6",
+      "status": 0
+    },
+    {
+      "name": "marker-empty-array",
+      "path": "pa31/tests/spec/source-no-drop/marker-empty-array.rs",
+      "sha256": "9a570e18b58cb1b96397db7b944c983a49e199201dd42cb72795d1662e56ba3a",
+      "status": 1
+    },
+    {
+      "name": "native-relay",
+      "path": "pa31/tests/spec/source-no-drop/native-relay.rs",
+      "sha256": "5a12297dcff16218f95f6e5aaea9874cc2b0a27853aba24cc419f93179044828",
+      "status": 0
+    },
+    {
+      "name": "fallback-copy-tuple",
+      "path": "pa31/tests/spec/source-no-drop/fallback-copy-tuple.rs",
+      "sha256": "976bd8c9fa1b5f6ff8dc2eb198b043f6f5276c10419152d09fa838ffd7ab66cb",
+      "status": 0
+    }
+  ],
+  "native": {
+    "name": "native-relay",
+    "observer": "pa31/tests/spec/source-no-drop/native-relay.c",
+    "observer_sha256": "98de485557e7f93b4655d809b590827ae8d4465e89e808322882d2ddd92014be",
+    "stdout": "8\n"
+  },
+  "correction": "The v2 prediction incorrectly rejected a four-u8 tuple. Pinned Rust supplies conditional tuple Copy from its actual element proofs. The negative now has four u16 elements lacking source Copy, and the unchanged four-u8 source remains a required positive."
+}

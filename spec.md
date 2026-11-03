@@ -5347,3 +5347,20 @@ and images retain the shared typed graph traversal and its live-capacity payer.
 The unchanged nested-readiness invariant must still reject overlapping execution
 at the maximum budget that admits either initializer alone. See the
 [CI repair](docs/source-wrappers-ci-repair.md).
+
+Source NoDrop field rules consume the exact completed language identity and
+ordinary source Copy/component proofs. Reuse the existing suspended component
+frontier, retaining caller scope and every child debt; a builtin marker proof
+supplies no executable method or const permission. Complete source wrapper
+policies after field/sizing producers and before union queries, rather than
+bypassing a pending ledger or repeating completion later.
+
+Pure structural field shortcuts belong in canonical type facts. Compute the
+pinned trivial-Copy shape once from immediate child facts in the existing compact
+Properties bits. Keep it separate from actual source trait membership and value
+validity. Do not rebuild a graph walk or allocation table per declaration: many
+unions can share one deep type DAG. Read the fact directly and retain actual
+membership proofs only within their valid caller. The
+[NoDrop checkpoint](docs/pa31-no-drop-checkpoint.md) records independent source,
+native and depth/declaration work controls, unchanged four-byte type properties,
+and calibrated immutable A/B observations without overstating noisy wall time.
