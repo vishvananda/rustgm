@@ -80,9 +80,12 @@ Evidence receipts (SHA-256; generated data stays in obj):
 
 Full predecessor CI[41801911308](https://github.com/vishvananda/rustgm/actions/runs/41801911308)
 on975b32666 is terminal success with every gate green. The eight stale layout
-assertions are resolved. A full successor must be dispatched after publishing
-this compiler, without superseding a live manual run; local focused qualification
-is not substituted for full release or assignment qualification.
+assertions are resolved. Compiler eccbae6ed is integrated and published on main.
+Successor full[41814580339](https://github.com/vishvananda/rustgm/actions/runs/41814580339)
+is confirmed live on that compiler; do not supersede it while live. Local focused
+qualification is not a full release or assignment qualification. The earlier
+redundant41814340248 was explicitly cancelled on the previous head after the
+initial push failed; it supplies no evidence for this compiler.
 
 Next inventory the architecture-specific target-feature request family together
 under PA41/31, with PA28 owning reached intrinsic/lowering operations and PA29
@@ -92,3 +95,9 @@ instructions. Whole PA25–PA44 and original core/alloc/std artifacts remain ope
 Root continues alone in the existing warm btrfs tree, without another worktree
 or cache, under unchanged five-minute/two-thread/16GiB/150GiB guards and scoped
 cleanup. Keep only current and immediate-predecessor comparison CLIs.
+
+The superseded LLVM comparison CLI454eb435 is retired after publication.
+Current c1510a1d and immediate predecessor14fc5fcf remain pinned with warm caches,
+all source inputs, diagnostics and observations. Retirement receipt
+`obj/parallel/negative-coherence-v1/retirement-v1.json`, SHA-256
+`a492267acc3534ed3e191dfe177fc917fea72401d8ca7624c8f4fbcaabfb133f`.
