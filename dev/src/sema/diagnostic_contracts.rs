@@ -152,6 +152,7 @@ fn warning(
 pub(super) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     let mut definitions: Option<HashMap<NodeKey, DefId>> = None;
     let mut allowances = report.macro_allowances();
+    let mut directive_requests = directive_profiles::Requests::default();
     for (file, unit) in report.package.units.iter().enumerate() {
         if unit.include_context.is_some() {
             continue;
@@ -178,7 +179,14 @@ pub(super) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), E
                 else {
                     continue;
                 };
-                if directive_profiles::defer(report, facts, file, attribute, forest)? {
+                if directive_profiles::defer(
+                    report,
+                    facts,
+                    file,
+                    attribute,
+                    forest,
+                    &mut directive_requests,
+                )? {
                     continue;
                 }
                 let Some(mode) = Mode::attribute(attribute, forest, unit.source.text()) else {

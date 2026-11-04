@@ -1,0 +1,513 @@
+{
+  "contract": "documentation feature gates v1",
+  "editions": [
+    2021,
+    2024
+  ],
+  "lint_cap": "allow",
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_ast_passes/src/feature_gate.rs": "add3ec12cc0532b8f4bdd8fe6bbd6b8ab8123cd618c0d2042e2b93ab023ca414",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_attr_parsing/src/attributes/doc.rs": "f7e20efc86952ba938b535decc30e440c25a566432b5a57a970783827d8fb1da",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_attr_parsing/src/attributes/cfg.rs": "adf576a3cb236924a0aef38be27ef6c81df6237faca1d052c62b0f12bd7379d6",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_feature/src/unstable.rs": "12a8e6610e58950117521e333e06368bd068ca3b3c4b5017829aa71c2ea410bb",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_feature/src/removed.rs": "686afa1afba77ed9fd4c101cf5e3f28fb1e217c7a8ec6c0f34cc9d61b35fcfb7"
+  },
+  "cases": [
+    {
+      "name": "cfg-request",
+      "path": "pa40/tests/spec/documentation-gates/cfg-request.rs",
+      "sha256": "0d583cb60304ddbd00fbb35be54eadf0ff6dfb458f39b35ec316449c309b519f",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "notable-request",
+      "path": "pa40/tests/spec/documentation-gates/notable-request.rs",
+      "sha256": "710ab381f621797744065c151be24a940ea80e0b1174ac99855299557190f7a4",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-false",
+      "path": "pa40/tests/spec/documentation-gates/cfg-false.rs",
+      "sha256": "5efdf75f23b92716f6d5d1e38e6f6144a0cb66e4563b5ddbd49818290e815130",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-true",
+      "path": "pa40/tests/spec/documentation-gates/cfg-true.rs",
+      "sha256": "8c46aa535844075c0f1ac2365c1e6bc2ba4cf45f6650115831fe0b9ce0622377",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-bool",
+      "path": "pa40/tests/spec/documentation-gates/cfg-bool.rs",
+      "sha256": "ec8caeca221e875de8ea06a94628627791631ac6fb40d11ce091157159ba7d1e",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-named",
+      "path": "pa40/tests/spec/documentation-gates/cfg-named.rs",
+      "sha256": "5279e43c9b1e79cbd4ad5af983a7758c7dac36ccd5a228759b4284c4f374c77c",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-value",
+      "path": "pa40/tests/spec/documentation-gates/cfg-value.rs",
+      "sha256": "dd29264669315e6ca1c138488638c81d15efb0c7aef8e29745601479cb37c0e7",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-nested",
+      "path": "pa40/tests/spec/documentation-gates/cfg-nested.rs",
+      "sha256": "3a57a86c02764f7ccf83a0c6f22b125aa30080e5797ebadd2b9b17ef948c751b",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-duplicate",
+      "path": "pa40/tests/spec/documentation-gates/cfg-duplicate.rs",
+      "sha256": "538dc92c38d97768990a6bdf4252fe6d6b3dfa6c87bd8d71080c4ac438bb93de",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-auto-word",
+      "path": "pa40/tests/spec/documentation-gates/cfg-auto-word.rs",
+      "sha256": "386ffd916c6e68a3a405c79fd65098becbdc3fbfdd776e66c366909babf4651c",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-auto-false",
+      "path": "pa40/tests/spec/documentation-gates/cfg-auto-false.rs",
+      "sha256": "c055ccca0dc3cdcecc817fbe0b954e669c7f02c5c2a789dc3adcd6b372a7ad63",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-auto-true",
+      "path": "pa40/tests/spec/documentation-gates/cfg-auto-true.rs",
+      "sha256": "5ad6781115aeab0b3dd5f4ae9ed251c3751c23d3cce1fab2a8629f1f3ea2412d",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-auto-hide",
+      "path": "pa40/tests/spec/documentation-gates/cfg-auto-hide.rs",
+      "sha256": "dd72aa360fbc56d6185fe2c05df155af0aded9004da09c6ccf298cb32db9369a",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-auto-show",
+      "path": "pa40/tests/spec/documentation-gates/cfg-auto-show.rs",
+      "sha256": "9e60d1e17f31bb7d2a84c1b6e7f28ee261358e3ce7760872d1aa737083d8a2b3",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-empty",
+      "path": "pa40/tests/spec/documentation-gates/cfg-empty.rs",
+      "sha256": "9cc8e7b08b5b57b16269713b85d2d7da121fc3f1f2e9eafb5a84ea6e788ea713",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-many",
+      "path": "pa40/tests/spec/documentation-gates/cfg-many.rs",
+      "sha256": "ea8186e850c79983e5593f193b227fec3aac747a39bd05d19babf86b1650cc48",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-unknown-op",
+      "path": "pa40/tests/spec/documentation-gates/cfg-unknown-op.rs",
+      "sha256": "a1fee69e86a3c948e69a3829896e878b3829ac9fb719f4840020f5d4a85e23ee",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-not-two",
+      "path": "pa40/tests/spec/documentation-gates/cfg-not-two.rs",
+      "sha256": "92897b69e42662eb2fdf24ac8b6fd7b17fcb5cf85f85ff880aafc7a382e72a7d",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-integer",
+      "path": "pa40/tests/spec/documentation-gates/cfg-integer.rs",
+      "sha256": "19dda485be986657d750e4b23834b21d1f6ae2488540daf286b71f896c4ef617",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-integer-value",
+      "path": "pa40/tests/spec/documentation-gates/cfg-integer-value.rs",
+      "sha256": "4662d38dc43bd0f13e9f210e0077ebc40fd907d719be93e328a1932a8f5007db",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-word",
+      "path": "pa40/tests/spec/documentation-gates/cfg-word.rs",
+      "sha256": "fadedd3a9cb3c51cb79524fa2dcc1960003881c716b27c7ab2a4eccde181d781",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-equals",
+      "path": "pa40/tests/spec/documentation-gates/cfg-equals.rs",
+      "sha256": "106fefccb7475c7d65f5b0849819d28e3a858ae9cc418990b06bfd545333ef78",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-auto-number",
+      "path": "pa40/tests/spec/documentation-gates/cfg-auto-number.rs",
+      "sha256": "0cf81c8b974c2f98bbdfa2d876bce6d4a51c8800e8ecb39a0869a35aba6b160b",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-auto-unknown",
+      "path": "pa40/tests/spec/documentation-gates/cfg-auto-unknown.rs",
+      "sha256": "0906cb7cd995bc8573adb5cf68b5cad01691ae1c9872bafe489d44c5c1f58923",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-bad-escape",
+      "path": "pa40/tests/spec/documentation-gates/cfg-bad-escape.rs",
+      "sha256": "8db12fa5a4c1ebb63558f652bbeb64319d9c613d6cdab76846b3661fc4f4b54b",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-suffix",
+      "path": "pa40/tests/spec/documentation-gates/cfg-suffix.rs",
+      "sha256": "6668c4ecd599ab1aa7a3b7e068cc6f8db3541b2276c090cbae8b63fea0d7452c",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "notable-trait",
+      "path": "pa40/tests/spec/documentation-gates/notable-trait.rs",
+      "sha256": "91e65ada912a395f3bf08bd855cac7cf058f51b982fcfe7be0f9344adb86fe16",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "notable-fn",
+      "path": "pa40/tests/spec/documentation-gates/notable-fn.rs",
+      "sha256": "cf5a05dde2314eb26a96c59e0a591a0ba1805ea142be6a4d4f6a7309bb0f6177",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "notable-argument",
+      "path": "pa40/tests/spec/documentation-gates/notable-argument.rs",
+      "sha256": "7ad0f0d0251cd78de82548808101fd75c82d81082ae3848bafd4f8e4c8362600",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "notable-value",
+      "path": "pa40/tests/spec/documentation-gates/notable-value.rs",
+      "sha256": "867ef51fd6cb0a75ace190741ab37c96b93b2c942420a82c89cd3d1ca4e5ab86",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "notable-duplicate",
+      "path": "pa40/tests/spec/documentation-gates/notable-duplicate.rs",
+      "sha256": "82d2e90777926518f646a798f3a55936719f8f8edb3166bfe1526a6bbbeec3d7",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-missing",
+      "path": "pa40/tests/spec/documentation-gates/cfg-missing.rs",
+      "sha256": "edde9116f845c600acf003539448715c110c71b5432bc13f157659c1b49c9e7e",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-wrong-feature",
+      "path": "pa40/tests/spec/documentation-gates/cfg-wrong-feature.rs",
+      "sha256": "bc1e486ee55847bf2778e8618601c6d66db62315c9f4de37b1acdbda668dd8ff",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-unsafe",
+      "path": "pa40/tests/spec/documentation-gates/cfg-unsafe.rs",
+      "sha256": "7e4ca5de0b16cb6438ff7a098f8b9f28ccbd4c91b3b7b1b6a97c4cfd15c14746",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-removed",
+      "path": "pa40/tests/spec/documentation-gates/cfg-removed.rs",
+      "sha256": "227f6382f7634c407249e8a6f815e1c0df317856fd03bcff480a9958f0925cb7",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-macro-allowed",
+      "path": "pa40/tests/spec/documentation-gates/cfg-macro-allowed.rs",
+      "sha256": "314256a8bf7669f0f5bda323773359e2c44cce002e589ae9af6932a6adeb2811",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-macro-wrong-allowance",
+      "path": "pa40/tests/spec/documentation-gates/cfg-macro-wrong-allowance.rs",
+      "sha256": "0a270eddce528400bcbe4865a76713d85d690a29545d901dd9c9a1e7e7619e16",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "cfg-captured-caller",
+      "path": "pa40/tests/spec/documentation-gates/cfg-captured-caller.rs",
+      "sha256": "791813e8e6547d912c4e2b7e29f89e985ad0f7891a18e5c19611ee321e41df8f",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "auto-missing",
+      "path": "pa40/tests/spec/documentation-gates/auto-missing.rs",
+      "sha256": "ef07b21e5d83436a4cc6f0276fdcfa04a83661dbae2235bc9ce2fd7e28df3945",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "auto-wrong-feature",
+      "path": "pa40/tests/spec/documentation-gates/auto-wrong-feature.rs",
+      "sha256": "062d0f05834cdebf152db4ee868d3202179254ade48294c60765893ed00138fb",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "auto-unsafe",
+      "path": "pa40/tests/spec/documentation-gates/auto-unsafe.rs",
+      "sha256": "e862c3758bb25e3f76385fa127204af1593b00dbf8cd0e521f0e7fcbc3c6687a",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "auto-removed",
+      "path": "pa40/tests/spec/documentation-gates/auto-removed.rs",
+      "sha256": "ae9937ab175663725a619a284dd61d96cf6c3aed13a1e4abff0c94bc3c504cab",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "auto-macro-allowed",
+      "path": "pa40/tests/spec/documentation-gates/auto-macro-allowed.rs",
+      "sha256": "30ce53a291d583fdd5684010d498d1703adbb051a5cf31b7cd6be0a7b85b40b2",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "auto-macro-wrong-allowance",
+      "path": "pa40/tests/spec/documentation-gates/auto-macro-wrong-allowance.rs",
+      "sha256": "5198543a17564f0e9a4671b1d34b22d5cc5fe4592090a7271fbfe2416033ef6f",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "auto-captured-caller",
+      "path": "pa40/tests/spec/documentation-gates/auto-captured-caller.rs",
+      "sha256": "011694c472d23a7fb076a1dc4133c11c0d3024f50cff07a63dc7bd31a57807b1",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "notable-missing",
+      "path": "pa40/tests/spec/documentation-gates/notable-missing.rs",
+      "sha256": "c3959fe739379176decec472379869c46d5910658057000d8ba7b3c3bc895e1c",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "notable-wrong-feature",
+      "path": "pa40/tests/spec/documentation-gates/notable-wrong-feature.rs",
+      "sha256": "34b5e5452dc408e1b3d7b423fbf56643fe2d1b7e41364dfc08a630fba0edc7cc",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "notable-unsafe",
+      "path": "pa40/tests/spec/documentation-gates/notable-unsafe.rs",
+      "sha256": "a67de9d6c80f8844e9c37470a19ef0c18f5fed99be4cdcada9bf202e092aadf8",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "notable-removed",
+      "path": "pa40/tests/spec/documentation-gates/notable-removed.rs",
+      "sha256": "38d4c225c24b497ab15f1189ead76e151762e23066207da0caaccbea2158f0b1",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "notable-macro-allowed",
+      "path": "pa40/tests/spec/documentation-gates/notable-macro-allowed.rs",
+      "sha256": "f36d6ca46d8e94916b9a484ea90362091df0eb5f27dbc0adeaa9c728fe7bcc12",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "notable-macro-wrong-allowance",
+      "path": "pa40/tests/spec/documentation-gates/notable-macro-wrong-allowance.rs",
+      "sha256": "cddde21339c09ef913dae6211529150cb10bf63a45325c870010259105ce30b6",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "notable-captured-caller",
+      "path": "pa40/tests/spec/documentation-gates/notable-captured-caller.rs",
+      "sha256": "f0b3420de70290a2c74357b862646e6099ee41ae90c83a1f2fabc969f234f6a6",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "removed-doc_auto_cfg",
+      "path": "pa40/tests/spec/documentation-gates/removed-doc_auto_cfg.rs",
+      "sha256": "f173bedc6aa7035974c65a3ca9d3e627522d67b55aea75e2655178bdd6c896da",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "removed-doc_cfg_hide",
+      "path": "pa40/tests/spec/documentation-gates/removed-doc_cfg_hide.rs",
+      "sha256": "f460390e3d63bcab49abf6a19c4c65dbad6c0cfab50dbb41e255cc41fd860328",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "removed-doc_spotlight",
+      "path": "pa40/tests/spec/documentation-gates/removed-doc_spotlight.rs",
+      "sha256": "c17c54138e2676c78b03b36bf53eef3d724792d21055ef55fb204d400721fa7e",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "removed-rustgm_unknown_doc_feature",
+      "path": "pa40/tests/spec/documentation-gates/removed-rustgm_unknown_doc_feature.rs",
+      "sha256": "5b72fcaa01767409a769cfe737d3b76610a303499804a5704dc3ae94399977ae",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "no-type-permission",
+      "path": "pa40/tests/spec/documentation-gates/no-type-permission.rs",
+      "sha256": "acd428d02735403f367635634ae14e669a8f2764cec1cae916f549233a35bcc2",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "no-unsafe-permission",
+      "path": "pa40/tests/spec/documentation-gates/no-unsafe-permission.rs",
+      "sha256": "23eddc3619809d3159d454c108de1b3996575ae3bf3a24256ed4e5f98537c8ef",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "disabled-literal",
+      "path": "pa40/tests/spec/documentation-gates/disabled-literal.rs",
+      "sha256": "bf7ad90c9196d4f0eda7dc167c01db449673d0a1a809f6becd1916c879e12bae",
+      "rustc_status": 1,
+      "required_status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "native-control",
+      "path": "pa40/tests/spec/documentation-gates/native-control.rs",
+      "sha256": "cfa7ceaa5bf7084434ce39750973721f9466484fa4b6d892c88f6dee17d3ef4b",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "native",
+      "path": "pa40/tests/spec/documentation-gates/native.rs",
+      "sha256": "0c80aee4a205e8f1c546cc4106ff99ae979977ea7dd765e2e6db4c8d94a02a4e",
+      "rustc_status": 0,
+      "required_status": 0,
+      "source_provider": false
+    }
+  ],
+  "native": {
+    "case": "native",
+    "control": "native-control",
+    "observer": "pa40/tests/spec/documentation-gates/observer.c",
+    "observer_sha256": "5a121249750c23a4e84af081ef8f93edafbfc7cf81023ce0ca6e3928fa0dde34",
+    "stdout": "7 9\n"
+  },
+  "scope": "Hard source/macro permissions and program semantics remain mandatory. Documentation rendering, broader option lint parity and metadata transport remain required."
+}

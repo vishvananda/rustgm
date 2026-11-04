@@ -3,46 +3,17 @@ use crate::support::hash::{HashMap, HashSet};
 use crate::{
     lex::{
         keyword,
-        token::{Kind, LexError, Punctuation},
+        token::{LexError, Punctuation},
     },
-    literal::{self, Value},
-    syntax::token_tree::{Delimiter, Forest, TreeKind, TreeRange, error},
+    syntax::token_tree::{Forest, TreeRange, error},
 };
 use std::borrow::Cow;
 mod predicates;
 mod resource_limits;
 pub use resource_limits::SourceContractLimits;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum CfgGate {
-    UbChecks,
-    TargetHasAtomic,
-    Sanitize,
-    FloatReliability,
-}
-impl CfgGate {
-    pub(crate) fn named(name: &str) -> Option<Self> {
-        match name {
-            "ub_checks" => Some(Self::UbChecks),
-            "target_has_atomic_load_store" => Some(Self::TargetHasAtomic),
-            "sanitize" => Some(Self::Sanitize),
-            "target_has_reliable_f16"
-            | "target_has_reliable_f16_math"
-            | "target_has_reliable_f128"
-            | "target_has_reliable_f128_math" => Some(Self::FloatReliability),
-            _ => None,
-        }
-    }
-}
-#[derive(Clone, Copy, Debug)]
-pub struct CfgUse {
-    pub span: crate::syntax::token_tree::Span,
-    pub gate: CfgGate,
-}
-pub(crate) struct Evaluation {
-    pub value: bool,
-    pub uses: Vec<CfgUse>,
-}
+pub(crate) use crate::syntax::configuration::Evaluation;
+pub use crate::syntax::configuration::{CfgGate, CfgUse};
 
 const TARGET_VALUES: &[(&str, &str)] = &[
     ("panic", "abort"),
@@ -200,24 +171,7 @@ pub(super) fn string<'source>(
     source: &'source str,
     index: u32,
 ) -> Result<Cow<'source, str>, LexError> {
-    let offset = forest.offset(index);
-    let token = forest
-        .token(index)
-        .ok_or_else(|| error(offset, "expected cfg string"))?;
-    if !matches!(token.kind, Kind::String | Kind::RawString) {
-        return Err(error(offset, "expected cfg string"));
-    }
-    let Some(Value::String(bytes)) = literal::interpret(source, token)? else {
-        return Err(error(offset, "expected cfg string"));
-    };
-    match bytes {
-        Cow::Borrowed(bytes) => std::str::from_utf8(bytes)
-            .map(Cow::Borrowed)
-            .map_err(|_| error(offset, "invalid cfg string encoding")),
-        Cow::Owned(bytes) => String::from_utf8(bytes)
-            .map(Cow::Owned)
-            .map_err(|_| error(offset, "invalid cfg string encoding")),
-    }
+    crate::syntax::configuration::string(forest, source, index)
 }
 
 /// Validate every operand, even when its truth value cannot change the result.

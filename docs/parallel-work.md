@@ -1,6 +1,20 @@
 # Parallel library bootstrap implementation
 
-Current original-core frontier is LIB-134: doc_cfg at original lib.rs124.
+Current original-core frontier is LIB-135: intra_doc_pointers at original lib.rs135.
+The [documentation gate checkpoint](pa40-documentation-gates-checkpoint.md)
+qualifies source/macro/query authority and shared flat cfg parsing. Private21,
+production19,PA2 142/142,PA5 231/231,PA8 126/126,264 candidate outcomes and actual
+native7 9 pass. All nine offset_of regressions from predecessor CI41770919155
+are fixed by preserving strict inactive diagnostic metadata behavior. CLIe6f104b1
+reaches LIB-135 in19.31s/375opens with all722 hashes unchanged. config.rs is
+explicitly requalified for shared syntax ownership; fifteen values, five other
+source pins, all options, capAllow and finite limits remain unchanged. Strict
+diagnostics/output, transport and original artifacts remain required. Root stays
+alone with the existing warm btrfs caches and unchanged five-minute/two-thread/
+16GiB/150GiB guards. No worker/tree or whole PA release is added.
+
+
+Previous original-core frontier was LIB-134: doc_cfg at original lib.rs124.
 The [const/macro diagnostic checkpoint](pa40-diagnostic-directives-checkpoint.md)
 qualifies both diagnostic-only requests under authenticated Allow, preserving
 hard semantics and allocating no rendering tables. Private3/production10,

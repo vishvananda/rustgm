@@ -2,6 +2,7 @@
 pub mod ast;
 pub mod attribute;
 pub(crate) mod compound;
+pub mod configuration;
 pub mod cursor;
 pub mod defaultness;
 pub mod edition_context;

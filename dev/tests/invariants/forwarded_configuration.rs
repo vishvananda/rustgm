@@ -1,11 +1,11 @@
 //! Typed metadata relocation records demanded token spans once per occurrence.
 use super::*;
 use crate::{
-    lex::token::Token,
+    lex::token::{Kind, Token},
     syntax::{
         attribute::{Attribute, Input, Style},
         interpolation::{Nonterminal, Slice, Splice},
-        token_tree::ForestBuilder,
+        token_tree::{ForestBuilder, Span},
     },
 };
 type Result<T = ()> = std::result::Result<T, crate::lex::token::LexError>;

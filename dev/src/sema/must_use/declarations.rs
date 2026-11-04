@@ -22,6 +22,7 @@ use crate::{
 struct AnnotationState {
     coverage: bool,
     documentation: crate::sema::documentation_labels::Draft,
+    documentation_options: crate::sema::documentation_options::Draft,
     insignificant_dtor: bool,
 }
 
@@ -265,6 +266,15 @@ fn consume_annotation(
                 forest,
                 allowances,
                 &mut flags.documentation,
+            )?;
+        }
+        Some(Consumer::Documentation) => {
+            flags.documentation_options.consume(
+                report,
+                facts,
+                (declaration, attribute),
+                forest,
+                allowances,
             )?;
         }
         Some(Consumer::Coverage) => {

@@ -21,6 +21,7 @@ pub mod destructors;
 mod diagnostic_contracts;
 pub(crate) mod dispatch;
 mod documentation_labels;
+mod documentation_options;
 pub mod dyn_compat;
 pub mod entry;
 pub mod foreign;

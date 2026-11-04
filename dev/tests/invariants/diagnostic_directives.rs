@@ -29,7 +29,7 @@ fn report(source: &str, config: &Config) -> Result<Report> {
 }
 #[test]
 fn capped_directives_match_independent_edition_outcomes() -> Result {
-    let cases = crate::test_source::fixture("pa40/tests/spec/diagnostic-directives/cases-v3.tsv")?;
+    let cases = crate::test_source::fixture("pa40/tests/spec/diagnostic-directives/cases-v4.tsv")?;
     let mut count = 0;
     for row in cases.lines() {
         let columns: Vec<_> = row.split('\t').collect();
@@ -107,6 +107,26 @@ fn attribute_lexical_validity_is_separate_from_suffix_policy() -> Result {
     for source in [r#""\q"suffix"#, r#""\u{d800}"u8"#, r#"b"\u{41}""#] {
         let token = token(source)?;
         assert!(literal::validate_attribute_text(source, token).is_err());
+    }
+    Ok(())
+}
+
+#[test]
+fn inactive_diagnostic_directives_preserve_strict_compilation() -> Result {
+    for name in ["const-missing-feature", "macro-missing-feature"] {
+        let source = crate::test_source::fixture(&format!(
+            "pa40/tests/spec/diagnostic-directives/{name}.rs"
+        ))?;
+        let report = report(&source, &Config::default())?;
+        let facts = crate::sema::declarations::analyze(&report)?;
+        assert!(
+            facts
+                .must_use_contracts
+                .as_deref()
+                .and_then(|table| table.diagnostics.as_deref())
+                .is_none()
+        );
+        crate::pipeline::analyze(&report, facts)?;
     }
     Ok(())
 }

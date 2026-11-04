@@ -85,6 +85,11 @@ separates diagnostic-only requests from semantic permissions. Its explicit cappe
 profile preserves hard literal, unsafe, const/trait and macro-matching checks;
 custom error text, uncapped diagnostics and imported metadata remain required.
 
+The unpublished [documentation feature packet](tests/spec/documentation-gates/README.md)
+preserves genuine doc_cfg/doc_notable_trait and nested cfg-query permissions.
+Its shared syntax parser validates metadata without using predicates to remove
+program items. Documentation rendering and full strict diagnostics remain open.
+
 The unpublished [explicit Allow cap checkpoint](../docs/pa40-lint-cap-allow-checkpoint.md)
 keeps strict policy as the default while permitting an authenticated compilation
 to suppress optional diagnostics. Hard semantic checks and witnessed expectation

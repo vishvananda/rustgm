@@ -1556,7 +1556,18 @@ expression literal interpretation. Under the authenticated Allow bring-up profil
 defer diagnostic option rendering without allocating rendering tables or weakening
 actual const/trait/unsafe/macro checks. Custom hard-error text is not suppressed by
 rustc's lint cap: its rendering and imported metadata remain explicit unfinished
-requirements, with uncapped directive use currently rejected rather than qualified.
+requirements, with feature-enabled uncapped directive use currently rejected rather
+than qualified. Without the actual crate feature, ignore diagnostic metadata in
+strict compilation too; internal macro allowances do not enable these handlers.
+Keep this diagnostic-only request state separate from semantic permissions.
+Documentation options have distinct hard feature and token-origin cfg gates.
+The [documentation packet](pa40/tests/spec/documentation-gates/README.md) uses the
+syntax-owned cfg grammar and a flat occurrence collector shared with expansion.
+Metadata validation performs no configuration lookup and cannot remove program
+owners. Preserve malformed-predicate and literal failures independently of caps;
+cache crate gate queries only within the shared owner walk, retaining each actual
+macro occurrence's permission. Broader documentation diagnostics/output and
+imported metadata remain required.
 The manifest's `public-dependency` Cargo feature controls
 retained target graph edges; it grants no host Rust or compiler-query capability.
 Unsupported host edge modifiers, tools, workspace inheritance and other unstable

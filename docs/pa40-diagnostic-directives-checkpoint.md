@@ -74,3 +74,12 @@ at these sizes. These observations do not prove a speedup or broad performance
 closure. Measurement receipt
 `obj/parallel/diagnostic-directives-v1/measurement-v1/receipt.json`, SHA-256
 `6b6b7cb62c191f590eb5511c46fbad90dd32f4e8a79ceb70ab7a80cd79bdca5b`.
+
+The [documentation/inactive-handler successor](pa40-documentation-gates-checkpoint.md)
+repairs nine strict original offset_of regressions found by full CI41770919155.
+The enabled-handler rendering boundary must not reject a handler whose actual
+crate feature is absent. Version4 independently qualifies strict inactive
+successes while keeping rendering/optional warning parity and hard checks separate.
+The successor records diagnostic-only feature presence in the unchanged8-byte
+word, with no operation permissions. This historical snapshot does not establish
+a full CI pass.

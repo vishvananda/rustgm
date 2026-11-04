@@ -73,7 +73,15 @@ pub(in crate::resolve) enum Feature {
     AdtConstParams = 56,
     CfgFloatReliability = 57,
     AbiUnadjusted = 58,
+    DocCfg = 59,
+    DocNotableTrait = 60,
+    DiagnosticConst = 61,
+    DiagnosticUnmatched = 62,
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/documentation_options.rs"]
+mod documentation;
 
 impl Feature {
     pub(super) const fn cpu_gate(gate: crate::support::cpu_features::Gate) -> Self {
@@ -115,6 +123,10 @@ impl Request {
             // This is a pinned language feature, not a library instability.
             // Documentation metadata grants no type, body or execution authority.
             "rustdoc_internals" => Self::Capability(Feature::RustdocInternals),
+            "doc_cfg" => Self::Capability(Feature::DocCfg),
+            "doc_notable_trait" => Self::Capability(Feature::DocNotableTrait),
+            "diagnostic_on_const" => Self::Capability(Feature::DiagnosticConst),
+            "diagnostic_on_unmatched_args" => Self::Capability(Feature::DiagnosticUnmatched),
             "never_type" => Self::Capability(Feature::NeverType),
             "stmt_expr_attributes" => Self::Capability(Feature::ExpressionAttributes),
             "const_trait_impl" => Self::Capability(Feature::ConstTrait),
@@ -160,11 +172,7 @@ impl Request {
             }
             // This pinned Rust request only enables an advisory lint. Its
             // producer stays deferred and grants no trait/upcasting permission.
-            // These requests only customize failed-operation diagnostics. The
-            // explicit capped profile defers rendering, never semantic checks.
-            "multiple_supertrait_upcastable"
-            | "diagnostic_on_const"
-            | "diagnostic_on_unmatched_args" => Self::NoCapability,
+            "multiple_supertrait_upcastable" => Self::NoCapability,
             _ => Self::Capability(Feature::cpu_gate(
                 crate::support::cpu_features::Gate::named(name)?,
             )),
@@ -191,6 +199,10 @@ impl Features {
             || self.has(Feature::CfgSanitize)
             || self.has(Feature::CfgFloatReliability)
             || self.has(Feature::AbiUnadjusted)
+            || self.has(Feature::DocCfg)
+            || self.has(Feature::DocNotableTrait)
+            || self.has(Feature::DiagnosticConst)
+            || self.has(Feature::DiagnosticUnmatched)
             || self.has(Feature::BuiltinSyntax)
             || self.has(Feature::OffsetOfEnum)
             || self.has(Feature::DeprecatedSuggestion)
