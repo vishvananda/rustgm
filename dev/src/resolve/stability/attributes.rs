@@ -16,7 +16,7 @@ use std::num::{NonZeroU32, NonZeroUsize};
 
 pub(in crate::resolve) fn collect(
     library: Option<&Library>,
-    draft: &mut Option<Draft>,
+    draft: &mut Option<Draft<'_>>,
     unit: &Unit,
     key: NodeKey,
     attribute: Attribute,
@@ -103,7 +103,7 @@ pub(in crate::resolve) fn collect(
 
 /// Publish the policy and its sparse feature relationships as one prepaid transaction.
 fn publish_policy(
-    draft: &mut Draft,
+    draft: &mut Draft<'_>,
     key: NodeKey,
     span: crate::syntax::token_tree::Span,
     mut policy: Policy,
@@ -141,7 +141,7 @@ fn publish_policy(
 /// API placement records a declaration, without granting const-call permission.
 fn record_comptime(
     library: Option<&Library>,
-    draft: &mut Option<Draft>,
+    draft: &mut Option<Draft<'_>>,
     unit: &Unit,
     key: NodeKey,
     attribute: Attribute,
@@ -172,7 +172,7 @@ fn parse(
     attribute: Attribute,
     forest: &Forest,
     stable: bool,
-    work: &mut Draft,
+    work: &mut Draft<'_>,
 ) -> Result<
     (
         Policy,
@@ -244,7 +244,7 @@ fn arguments<'a>(
     attribute: Attribute,
     forest: &Forest,
     stable: bool,
-    work: &mut Draft,
+    work: &mut Draft<'_>,
 ) -> Result<Arguments<'a>, Error> {
     let error = |message| Error::at(key.file, attribute.span.start, message);
     let Input::Delimited(group) = attribute.input else {

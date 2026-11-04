@@ -13,7 +13,7 @@ use crate::{
 
 pub(in crate::resolve) fn collect(
     library: Option<&Library>,
-    draft: &mut Option<Draft>,
+    draft: &mut Option<Draft<'_>>,
     unit: &Unit,
     key: NodeKey,
     attribute: Attribute,
@@ -71,7 +71,7 @@ pub(in crate::resolve) fn collect(
 }
 
 pub(in crate::resolve) fn finish(
-    draft: &mut Option<Draft>,
+    draft: &mut Option<Draft<'_>>,
     key: NodeKey,
     pending: Option<ModuleCompatibility>,
 ) -> Result<(), Error> {

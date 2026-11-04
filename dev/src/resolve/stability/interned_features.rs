@@ -16,7 +16,7 @@ pub(super) struct Index {
 #[cfg(test)]
 #[path = "../../../tests/invariants/shared_feature_names.rs"]
 mod tests;
-impl Draft {
+impl Draft<'_> {
     /// The returned first policy belongs to this draft, before the next publication.
     pub(super) fn feature(
         &mut self,

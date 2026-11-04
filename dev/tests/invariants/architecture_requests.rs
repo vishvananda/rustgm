@@ -85,7 +85,7 @@ fn foreign_requests_retain_no_cpu_permissions_or_ordinary_binding_owner() -> Res
     }
     assert_eq!(size_of::<super::Features>(), 16);
     assert_eq!(size_of::<super::MacroFeatures>(), 1);
-    assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 192);
+    assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 200);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     Ok(())
 }

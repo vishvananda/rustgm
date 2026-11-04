@@ -9,9 +9,10 @@ use crate::resolve::{
 pub(in crate::resolve) fn complete(
     package: &Package,
     facts: &Resolution,
-    draft: Option<Draft>,
+    draft: Option<Draft<'_>>,
+    pending: Option<&super::Library>,
 ) -> Result<Option<Inventory>, Error> {
-    let Some(library) = package.library.as_deref() else {
+    let Some(library) = package.library.as_deref().or(pending) else {
         return Ok(None);
     };
     if library.inventory.is_some() {
@@ -60,20 +61,22 @@ pub(in crate::resolve) fn complete(
     };
     super::fn_allowances::finish(package, facts, &mut draft, &mut owners.consts)?;
     validate_type_boundary(package, facts, &mut draft)?;
-    Ok(Some(Inventory {
-        policies: draft.policies,
-        relationships: draft.relationships,
+    let mut inventory = Inventory {
+        policies: std::mem::take(&mut draft.policies),
+        relationships: std::mem::take(&mut draft.relationships),
         declarations: owners.declarations,
         imports: owners.imports,
         consts: owners.consts,
         steps: draft.steps,
-    }))
+    };
+    draft.retain_inventory(library, &mut inventory)?;
+    Ok(Some(inventory))
 }
 
 fn validate_type_boundary(
     package: &Package,
     facts: &Resolution,
-    draft: &mut Draft,
+    draft: &mut Draft<'_>,
 ) -> Result<(), Error> {
     // Local declarations are checked in the same scope inventory. Merely naming
     // an in-crate API is not a cross-crate unstable-feature use (rustc stability.rs).

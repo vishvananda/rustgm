@@ -66,6 +66,7 @@ struct State {
     failed: Option<Exhaustion>,
     limits: SourceContractLimits,
     witness_bytes: usize,
+    inventory_bytes: usize,
 }
 #[derive(Clone, Copy)]
 enum Exhaustion {
@@ -115,6 +116,7 @@ impl State {
                     .and_then(|editions| bytes.checked_add(editions))
             })
             .and_then(|bytes| bytes.checked_add(self.witness_bytes))
+            .and_then(|bytes| bytes.checked_add(self.inventory_bytes))
             .and_then(|bytes| bytes.checked_add(extra));
         if self.failed.is_none()
             && bytes.is_none_or(|bytes| bytes > self.limits.retained_bytes() as usize)
@@ -386,6 +388,22 @@ impl Contracts {
             .try_borrow_mut()
             .map_err(|_| "reentrant source macro contract query")?
             .charge(steps, bytes)
+    }
+    /// One inventory's conservative live reservation shares this source payer.
+    /// Updating it supplies costs only, never a declaration or macro permission.
+    pub(in crate::resolve) fn inventory_charge(
+        &self,
+        steps: usize,
+        bytes: usize,
+        retained: usize,
+    ) -> Result<(), &'static str> {
+        let mut state = self
+            .0
+            .try_borrow_mut()
+            .map_err(|_| "reentrant library inventory accounting")?;
+        state.charge(steps, bytes)?;
+        state.inventory_bytes = retained;
+        state.payload(0)
     }
     pub(in crate::resolve) fn edition(
         &self,

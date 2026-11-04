@@ -44,7 +44,7 @@ pub(super) struct Frame {
     pub role: Role,
 }
 impl Frame {
-    pub fn inherit(&mut self, draft: &Draft, parent: Self) {
+    pub fn inherit(&mut self, draft: &Draft<'_>, parent: Self) {
         self.regular = self.regular.or_else(|| draft.inherit(parent.regular));
         if self.constant.is_some() {
             return;

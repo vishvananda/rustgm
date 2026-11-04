@@ -2,7 +2,10 @@
 
 `contract.json` freezes the exact defaults, three finite CLI inputs and source
 controls before observation. The options govern macro contract work, attempted
-allocation volume and retained memo payload. Zero is a real limit and no value
+allocation volume and retained memo payload. Library inventory capture/completion
+uses the same configured payer when an authenticated SourceCore/LocalMacros
+owner exists; its retained policy storage survives later memo checks. See the
+[inventory-budget packet](../inventory-budget/README.md). Zero is a real limit and no value
 means unlimited. Explicit requests never scale themselves from source input.
 
 Ordinary defaults are unchanged. Resource policy grants no feature, macro role,

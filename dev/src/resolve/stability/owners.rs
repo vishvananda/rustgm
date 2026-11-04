@@ -23,20 +23,39 @@ pub(super) struct Owners {
 pub(super) fn collect(
     package: &Package,
     facts: &Resolution,
-    draft: &mut Draft,
+    draft: &mut Draft<'_>,
 ) -> Result<Owners, Error> {
     draft.finish_comptime()?;
-    let count = facts
-        .scopes
-        .len()
-        .saturating_add(facts.definitions.len())
-        .saturating_add(facts.imports.len());
+    // Allocate each table on its own axis. Declarations are filled in their
+    // paid pass; reserving their capacity does not visit their elements.
     draft.charge(
-        count,
-        count.saturating_mul(4 * (size_of::<Frame>() + size_of::<Option<PolicyId>>())),
+        facts.scopes.len().saturating_add(facts.imports.len()),
+        facts
+            .scopes
+            .len()
+            .saturating_mul(size_of::<Frame>())
+            .saturating_add(
+                facts
+                    .definitions
+                    .len()
+                    .saturating_mul(size_of::<Option<PolicyId>>()),
+            )
+            .saturating_add(
+                facts
+                    .imports
+                    .len()
+                    .saturating_mul(size_of::<Option<PolicyId>>()),
+            ),
     )?;
+    let growth =
+        crate::support::retained::Growth::map::<(NodeKey, bool), ()>(0, 0, draft.policies.len());
+    draft.charge(growth.work, growth.bytes)?;
     let mut scopes = vec![Frame::default(); facts.scopes.len()];
+    // Every used key names an actual captured policy. Reserve that finite upper
+    // bound once so inserts cannot hide repeated hash-table growth.
     let mut used = HashSet::default();
+    used.try_reserve(draft.policies.len())
+        .map_err(|_| Error::unlocated("library policy ownership allocation failed"))?;
     modules(package, facts, draft, &mut scopes, &mut used)?;
     definition_scopes(package, facts, draft, &mut scopes, &mut used)?;
     // Lexical scope IDs are append-only and parent-first. Module scopes were
@@ -85,12 +104,22 @@ pub(super) fn collect(
 fn declaration_rows(
     package: &Package,
     facts: &Resolution,
-    draft: &mut Draft,
+    draft: &mut Draft<'_>,
     scopes: &[Frame],
     has_const: bool,
 ) -> Result<Owners, Error> {
     draft.charge(facts.definitions.len(), 0)?;
     let mut declarations = Vec::with_capacity(facts.definitions.len());
+    if has_const {
+        draft.charge(
+            0,
+            facts
+                .definitions
+                .len()
+                .saturating_mul(size_of::<Option<PolicyId>>())
+                .saturating_add(size_of::<ConstPolicies>()),
+        )?;
+    }
     let mut constants = has_const.then(|| Vec::with_capacity(facts.definitions.len()));
     let mut implicit = Vec::new();
     for (index, definition) in facts.definitions.iter().enumerate() {
@@ -183,7 +212,7 @@ fn declaration_scope(
 fn definition_scopes(
     package: &Package,
     facts: &Resolution,
-    draft: &mut Draft,
+    draft: &mut Draft<'_>,
     scopes: &mut [Frame],
     used: &mut HashSet<(NodeKey, bool)>,
 ) -> Result<(), Error> {
@@ -254,7 +283,7 @@ fn definition_scopes(
 fn modules(
     package: &Package,
     facts: &Resolution,
-    draft: &mut Draft,
+    draft: &mut Draft<'_>,
     scopes: &mut [Frame],
     used: &mut HashSet<(NodeKey, bool)>,
 ) -> Result<(), Error> {
@@ -317,7 +346,11 @@ fn modules(
     Ok(())
 }
 
-fn underlying(package: &Package, mut key: NodeKey, draft: &mut Draft) -> Result<NodeKey, Error> {
+fn underlying(
+    package: &Package,
+    mut key: NodeKey,
+    draft: &mut Draft<'_>,
+) -> Result<NodeKey, Error> {
     // The module root keeps its attribute wrapper; the existing claims pass
     // indexes the underlying owner. Follow only these retained wrapper edges.
     while let Kind::Attributed { value, .. } =
@@ -331,7 +364,7 @@ fn underlying(package: &Package, mut key: NodeKey, draft: &mut Draft) -> Result<
 
 fn import_attributes(
     package: &Package,
-    draft: &mut Draft,
+    draft: &mut Draft<'_>,
     used: &mut HashSet<(NodeKey, bool)>,
 ) -> Result<(), Error> {
     // Only annotated import groups need an auxiliary leaf lookup. A group is
@@ -409,7 +442,7 @@ pub(super) fn reachable(
     package: &Package,
     facts: &Resolution,
     owners: &Owners,
-    draft: &mut Draft,
+    draft: &mut Draft<'_>,
 ) -> Result<(), Error> {
     use crate::resolve::model::Access;
     let seen = super::visit_public_bindings(facts, draft, |target, draft| {

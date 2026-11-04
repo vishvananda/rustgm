@@ -58,7 +58,7 @@ fn const_and_unsupported_owner_annotations_remain_rejected() -> Result {
     }
     Ok(())
 }
-fn seeded() -> Result<(Report, usize, Draft)> {
+fn seeded() -> Result<(Report, usize, Draft<'static>)> {
     let report = report("regular")?;
     let index = report
         .resolution

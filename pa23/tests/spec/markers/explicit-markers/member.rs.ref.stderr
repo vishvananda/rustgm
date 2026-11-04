@@ -1,1 +1,1 @@
-ERROR: file 0: 9: auto trait implementations cannot declare members
+ERROR: file 0: 9: auto or negative trait implementations cannot declare members

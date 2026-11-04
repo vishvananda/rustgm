@@ -112,11 +112,19 @@ pub(in crate::resolve) fn finish(
     facts: &mut Resolution,
     values: Option<&crate::resolve::expansion::metavalues::Values>,
 ) -> Result<(), Error> {
-    let mut library = None;
+    let mut library = if package.library.is_some()
+        || package.macro_context().map_err(Error::unlocated)?.is_some()
+    {
+        Some(crate::resolve::stability::Draft::for_package(package)?)
+    } else {
+        None
+    };
     let mut extra = super::diagnostic_extras::Draft::with_values(values);
     let claims = claims(package, facts, &mut library, &mut extra, values)?;
-    crate::resolve::stability::fn_allowances::prepare_library(package, &mut library)?;
-    let mut inventory = crate::resolve::stability::complete(package, facts, library)?;
+    let pending_library =
+        crate::resolve::stability::fn_allowances::prepare_library(package, &mut library)?;
+    let mut inventory =
+        crate::resolve::stability::complete(package, facts, library, pending_library.as_deref())?;
     let mut reserved = reserve_all(package, facts, &claims)?;
     let column = extra
         .seal(&mut package.names)
@@ -130,6 +138,9 @@ pub(in crate::resolve) fn finish(
         ));
     }
     // Both drafts are complete before either owner publishes new state.
+    if let Some(library) = pending_library {
+        package.library = Some(library);
+    }
     if let (Some(library), Some(inventory)) = (package.library.as_deref_mut(), inventory.as_mut()) {
         library
             .prepare_request_order(inventory)
@@ -498,7 +509,7 @@ struct ClaimSources<'a> {
 fn claims(
     package: &Package,
     facts: &Resolution,
-    library: &mut Option<crate::resolve::stability::Draft>,
+    library: &mut Option<crate::resolve::stability::Draft<'_>>,
     extra: &mut super::diagnostic_extras::Draft<'_>,
     values: Option<&crate::resolve::expansion::metavalues::Values>,
 ) -> Result<HashMap<NodeKey, Vec<Claim>>, Error> {
@@ -522,7 +533,7 @@ fn claims(
 
 fn owner_claims(
     sources: &ClaimSources<'_>,
-    library: &mut Option<crate::resolve::stability::Draft>,
+    library: &mut Option<crate::resolve::stability::Draft<'_>>,
     extra: &mut super::diagnostic_extras::Draft<'_>,
     file: FileId,
     owner: &crate::expand::crate_syntax::Owner,

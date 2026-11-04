@@ -16,6 +16,12 @@ old cycle; both units and the complete contract below remain required.
 
 ## Required implementation
 
+The [inventory-budget checkpoint](../docs/pa31-inventory-budget-checkpoint.md)
+shares authenticated source/inventory work and retained storage without granting
+permission. Standalone fallback and finite sticky failures remain required.
+The original core frontier is now const inherent-impl policy and member eligibility,
+owned with PA25/19; real const-bound proof and PA29 transport remain necessary.
+
 The [negative-coherence packet](tests/spec/negative-coherence/README.md) covers
 actual with_negative_coherence/negative_impls permission and strict type/trait
 owners. PA20 owns typed overlap/refutation proofs; PA29 owns imported policy.

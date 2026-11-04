@@ -113,8 +113,8 @@ fn ordinary_admission_inspects_no_syntax_and_language_requests_stay_packed() -> 
         240 + size_of::<Option<Box<crate::resolve::stability::Library>>>()
             + size_of::<crate::expand::marks::Marks>()
     );
-    // The cold provider includes 112 bytes of contracts and a second permission word.
-    assert_eq!(size_of::<super::super::SourceCore>(), 192);
+    // The cold provider includes 120 bytes of contracts (including inventory retention) and a second permission word.
+    assert_eq!(size_of::<super::super::SourceCore>(), 200);
     Ok(())
 }
 

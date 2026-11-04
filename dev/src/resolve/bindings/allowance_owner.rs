@@ -114,6 +114,13 @@ impl Source {
     }
 }
 impl Package {
+    /// The authenticated cost owner grants no feature, macro or library permission.
+    pub(in crate::resolve) fn source_contract_payer(
+        &self,
+    ) -> Result<Option<&panic_contracts::Contracts>, &'static str> {
+        Ok(self.macro_context()?.map(MacroContext::contracts))
+    }
+
     pub(in crate::resolve) fn macro_context(
         &self,
     ) -> Result<Option<MacroContext<'_>>, &'static str> {

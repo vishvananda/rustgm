@@ -38,8 +38,8 @@ fn source_auto_and_refutation_layouts_are_measured() {
     assert_eq!(size_of::<crate::syntax::item::Item>(), 64);
     assert_eq!(size_of::<crate::sema::associated::OwnerKind>(), 20);
     assert_eq!(size_of::<crate::sema::associated::Owner>(), 32);
-    // The cold provider includes 112 bytes of contracts and a second permission word.
-    assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 192);
+    // The cold provider includes 120 bytes of contracts (including inventory retention) and a second permission word.
+    assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 200);
     assert_eq!(size_of::<Option<usize>>(), size_of::<Option<Choice>>());
     assert_eq!(
         size_of::<Option<usize>>(),

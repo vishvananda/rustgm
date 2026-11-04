@@ -8,7 +8,7 @@ use crate::{
 pub(crate) trait Budget {
     fn charge(&mut self, steps: usize, bytes: usize) -> Result<(), Error>;
 }
-impl Budget for Draft {
+impl Budget for Draft<'_> {
     fn charge(&mut self, steps: usize, bytes: usize) -> Result<(), Error> {
         self.charge(steps, bytes)
     }

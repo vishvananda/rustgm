@@ -194,9 +194,9 @@ fn immutable_limit_layout_is_cold_and_default_records_remain_dense() {
     );
     assert_eq!(size_of::<SourceContractLimits>(), 12);
     assert_eq!(size_of::<Config>(), 80);
-    assert_eq!(size_of::<State>(), 104);
-    assert_eq!(size_of::<Contracts>(), 112);
-    assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 192);
+    assert_eq!(size_of::<State>(), 112);
+    assert_eq!(size_of::<Contracts>(), 120);
+    assert_eq!(size_of::<crate::resolve::bindings::SourceCore>(), 200);
     assert_eq!(size_of::<Package>(), 256);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);

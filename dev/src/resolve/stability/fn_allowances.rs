@@ -44,7 +44,7 @@ pub(super) struct Grants {
 
 pub(in crate::resolve) fn collect(
     package: &Package,
-    draft: &mut Option<Draft>,
+    draft: &mut Option<Draft<'_>>,
     owner: NodeKey,
     effect: usize,
     attribute: Attribute,
@@ -130,22 +130,22 @@ pub(in crate::resolve) fn collect(
 }
 
 pub(in crate::resolve) fn prepare_library(
-    package: &mut Package,
-    draft: &mut Option<Draft>,
-) -> Result<(), Error> {
+    package: &Package,
+    draft: &mut Option<Draft<'_>>,
+) -> Result<Option<Box<Library>>, Error> {
     if package.library.is_none()
         && let Some(draft) = draft.as_mut().filter(|draft| draft.fn_allowances.is_some())
     {
         draft.charge(1, size_of::<Library>())?;
-        package.library = Some(Box::new(Library::default()));
+        return Ok(Some(Box::new(Library::default())));
     }
-    Ok(())
+    Ok(None)
 }
 
 pub(super) fn finish(
     package: &Package,
     facts: &Resolution,
-    draft: &mut Draft,
+    draft: &mut Draft<'_>,
     consts: &mut Option<Box<ConstPolicies>>,
 ) -> Result<(), Error> {
     let Some(mut pending) = draft.fn_allowances.take() else {

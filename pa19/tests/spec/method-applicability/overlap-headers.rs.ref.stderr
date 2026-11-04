@@ -1,1 +1,1 @@
-ERROR: file 0: 53: user trait overlap obligations require trait coherence
+ERROR: file 0: 53: duplicate inherent method in overlapping implementations

@@ -13,7 +13,7 @@ pub(super) fn consume(
     package: &Package,
     facts: &Resolution,
     definition: &Definition,
-    draft: &mut Draft,
+    draft: &mut Draft<'_>,
     used: &mut HashSet<(NodeKey, bool)>,
 ) -> Result<bool, Error> {
     if definition.kind != DefKind::Variant {

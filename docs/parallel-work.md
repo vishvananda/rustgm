@@ -8,9 +8,12 @@ Negative-coherence successor full run41814580339 on eccbae6ed is terminal failur
 seven stale global declarations-size assertions,2650 other private tests and all
 regular integrations passing. All seven exact assertions are corrected and pass
 focused qualification; ordinary/dense checks remain exact. Subsequent full gates
-were skipped. Successor full run41820005554 is confirmed live on published
-architecture-request compiler7adb3ba08; poll that exact handle and do not
-supersede it while live.
+were skipped. Successor full run41820005554 on architecture-request compiler
+7adb3ba08 is terminal failure: all2659 private tests and all regular integrations
+pass, but two old PA19/23 diagnostic sidecars differ after the negative-coherence
+improvement. Both independently remain Rust rejections; scoped generator updates
+and full affected text suites now pass. Successor full qualification is pending
+publication of the inventory-budget checkpoint; do not claim skipped gates passed.
 The redundant41814340248 on the old head was explicitly cancelled after the
 initial push failed; it is not qualification evidence for the new compiler.
 Predecessor run41781814852 on1f5a2b8d0 also passes every gate.
@@ -22,7 +25,24 @@ concurrency cancels the earlier manual run. Source checkpoints may continue with
 focused evidence and push-triggered fast CI; dispatch successor full qualification
 only after its predecessor is terminal. No whole PA release is inferred.
 
-Current original-core frontier is LIB-141: the stability owner inventory's resource guard.
+Current original-core frontier is LIB-142: const inherent-impl policy/eligibility.
+The [inventory-budget checkpoint](pa31-inventory-budget-checkpoint.md) closes
+LIB-141 with one authenticated cumulative source/inventory payer, finite sticky
+work/storage guards, persistent retained policy accounting and prepaid owner
+arrays/used-policy capacity. Final private59/production5 pass in182.27s; PA19
+1193/1193 and PA23 415/415 pass after two independently justified scoped diagnostic
+regenerations. Three source controls, ordinary LowIR and all fifteen configuration
+constants match the predecessor; all six configuration pins remain unchanged.
+CLI041e3026 clears the guard in18.34s/375opens and reports const stability at
+file138 byte554. The first-open map points to cycle.rs21's const inherent impl;
+confirm the retained owner and implement real enclosing-impl/member constness and
+bounds under PA25/19/31, preserving PA29 transport duties. All722 hashes, options,
+Allow cap and declared finite limits remain unchanged; inventory coverage is now
+cumulative. The96 A/A/ABBA observations establish no speedup amid host noise.
+No original artifact or whole assignment is completed. Root stays alone in the
+existing warm btrfs tree with current/predecessor pins and scoped cleanup.
+
+Previous original-core frontier was LIB-141: the stability owner inventory's resource guard.
 The [architecture-request checkpoint](pa41-architecture-requests-checkpoint.md)
 qualifies all17 pinned non-x86 requests without enabling host CPU features or
 creating ordinary binding/library-policy rows. Private17/production48/native1,

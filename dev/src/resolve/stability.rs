@@ -1,6 +1,7 @@
 //! Local library availability is distinct from language and const-call permission.
 mod attributes;
 pub(in crate::resolve) mod availability_imports;
+mod budget;
 mod compatibility_notes;
 mod constness;
 mod exported_scopes;
@@ -11,11 +12,9 @@ mod inventory;
 mod owners;
 mod relationships;
 mod request_order;
-use super::{
-    model::DefId,
-    package::Error,
-    unit::{FileId, NodeKey},
-};
+#[cfg(test)]
+use super::unit::FileId;
+use super::{model::DefId, package::Error, unit::NodeKey};
 use crate::support::hash::HashMap;
 pub(crate) use exported_scopes::{Budget as PublicBudget, visit as visit_public_bindings};
 use std::num::{NonZeroU32, NonZeroUsize};
@@ -102,11 +101,18 @@ impl Library {
     /// Account the existing cold policy owner before a second semantic phase
     /// allocates temporary reachability tables. No new persistent field is needed.
     pub(crate) fn charge_retained(&self, budget: &mut impl PublicBudget) -> Result<(), Error> {
-        use crate::support::retained::{sum, vector};
         let inventory = self
             .inventory
             .as_ref()
             .ok_or_else(|| Error::unlocated("library inventory is incomplete"))?;
+        self.charge_inventory_retained(inventory, budget)
+    }
+    fn charge_inventory_retained(
+        &self,
+        inventory: &Inventory,
+        budget: &mut impl PublicBudget,
+    ) -> Result<(), Error> {
+        use crate::support::retained::{sum, vector};
         budget.charge(
             self.requests.len().saturating_add(inventory.policies.len()),
             sum([
@@ -258,7 +264,8 @@ pub(super) enum FunctionMarker {
     NonConstMember,
 }
 #[derive(Default)]
-pub(super) struct Draft {
+pub(super) struct Draft<'a> {
+    payer: Option<&'a super::bindings::panic_contracts::Contracts>,
     policies: Vec<Policy>,
     relationships: Vec<relationships::Relationship>,
     features: interned_features::Index,
@@ -269,7 +276,7 @@ pub(super) struct Draft {
     steps: usize,
     bytes: usize,
 }
-impl Draft {
+impl Draft<'_> {
     fn attribute(&self, key: NodeKey, kind: PolicyKind) -> Option<PolicyId> {
         self.attributes.get(&(key, kind)).copied()
     }
@@ -309,18 +316,6 @@ impl Draft {
     fn is_comptime(&mut self, key: NodeKey) -> Result<bool, Error> {
         self.has_marker(key, FunctionMarker::Comptime)
     }
-    fn charge(&mut self, steps: usize, bytes: usize) -> Result<(), Error> {
-        self.steps = self.steps.saturating_add(steps);
-        self.bytes = self.bytes.saturating_add(bytes);
-        if self.steps > 1_000_000 || self.bytes > 64 * 1024 * 1024 {
-            return Err(Error::at(
-                FileId(0),
-                0,
-                "library stability inventory exceeds its work or storage budget",
-            ));
-        }
-        Ok(())
-    }
     fn inherit(&self, policy: Option<PolicyId>) -> Option<PolicyId> {
         policy.filter(|id| self.policies[id.get() - 1].level.unstable())
     }
@@ -354,7 +349,7 @@ mod implication_tests;
 #[cfg(test)]
 pub(crate) const fn member_marker_layouts() -> (usize, usize, usize, usize) {
     (
-        size_of::<Draft>(),
+        size_of::<Draft<'_>>(),
         size_of::<constness::Role>(),
         size_of::<constness::Frame>(),
         size_of::<(NodeKey, FunctionMarker)>(),

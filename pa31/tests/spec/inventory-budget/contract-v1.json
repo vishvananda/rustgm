@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "cases": [
+    {
+      "path": "pa31/tests/spec/inventory-budget/local.rs",
+      "sha256": "781bf9309ef51edfc6ffe8263ef0e4a6a361d0348021af15a7611b32d58ba1df",
+      "names_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/inventory-budget/provider.rs",
+      "sha256": "ee53a4b43d8a5261dfb3606a2763c4aadec3bf87a728944536af5ed8ee4e254f",
+      "names_status": 0
+    },
+    {
+      "path": "pa31/tests/spec/inventory-budget/standalone.rs",
+      "sha256": "676705c654df7735e335c1e93f60699a2cbf4ae1ed5bdf4a39d7fa289c62b25a",
+      "names_status": 0
+    }
+  ],
+  "default_limits": {
+    "work": 1000000,
+    "attempted_bytes": 67108864,
+    "retained_bytes": 67108864
+  },
+  "configured_limits": {
+    "work": 14500624,
+    "attempted_bytes": 1073741824,
+    "retained_bytes": 67108864
+  },
+  "boundaries": [
+    "cumulative work",
+    "cumulative attempted storage",
+    "persistent inventory plus macro memo storage",
+    "sticky first failure",
+    "ordinary records unchanged",
+    "standalone fallback unchanged"
+  ]
+}

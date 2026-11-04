@@ -608,6 +608,18 @@ their validation after configured expansion; unknown requests grant no capabilit
 Retain regular, const and default-body API stability as distinct declaration facts,
 separate from callable effects and each caller's proof. Compute owner inheritance
 and feature indexes once, then check actual uses without whole-crate rescanning.
+When a library has an authenticated SourceCore or local macro cost owner, capture
+and completion borrow that existing payer. Inventory work and attempted storage
+accumulate with earlier source work under its immutable configured limits;
+accounting supplies no semantic permission. Retained inventory storage stays in
+the cold source meter across later macro memo checks. Prepay a conservative live
+draft bound, release capture-only indexes at completion, then keep the completed
+policy/declaration/import/const storage reserved. Standalone staged libraries
+without that cost owner retain their finite fallback; ordinary records gain no
+policy or permission fields. Reserve owner tables by their scope, declaration
+and import axes, and prepay the used-policy set before insertion. The
+[inventory-budget checkpoint](docs/pa31-inventory-budget-checkpoint.md) records
+qualified bounds, scope/layout controls and the unchanged original inputs.
 Represent required unstable features as non-type clauses with Store-owned canonical
 identities. Keep item assumptions separate from immutable crate enabling and
 regular API permission; a lint cap supplies none of these proofs. Staged libraries

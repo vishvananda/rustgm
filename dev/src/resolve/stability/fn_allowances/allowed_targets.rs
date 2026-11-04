@@ -9,7 +9,7 @@ use crate::{
 pub(super) fn collect(
     package: &Package,
     facts: &Resolution,
-    draft: &mut Draft,
+    draft: &mut Draft<'_>,
 ) -> Result<HashSet<DefId>, Error> {
     draft.charge(
         facts.definitions.len().saturating_mul(2),

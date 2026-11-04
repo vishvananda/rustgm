@@ -35,7 +35,7 @@ impl Pending {
         usize::from(self.implied_by.is_some()) + usize::from(self.old_name.is_some())
     }
 }
-impl Draft {
+impl Draft<'_> {
     /// Complete the declaration projection and all root requests together, before owners publish.
     pub(super) fn check_feature_requests(
         &mut self,
