@@ -1,0 +1,47 @@
+{
+  "cases": [
+    {
+      "name": "escaped-duplicate",
+      "path": "pa31/tests/spec/stability-symbols/escaped-duplicate.rs",
+      "sha256": "e7f455ab832781b852c0aa6c6f75d3df4c84dc33936d47f88d3588f202804e27",
+      "status": 0
+    },
+    {
+      "name": "const-and-default",
+      "path": "pa31/tests/spec/stability-symbols/const-and-default.rs",
+      "sha256": "d5c7d8d682adc05ee0640af9f00b8cd8757cbfa8cafe397aaab85609996a6b53",
+      "status": 0
+    },
+    {
+      "name": "late-conflict",
+      "path": "pa31/tests/spec/stability-symbols/late-conflict.rs",
+      "sha256": "cbdc6b9fd931d34c5e194281a829d420db3589e76b7598b59478f5bfe556cbd8",
+      "status": 1
+    },
+    {
+      "name": "invalid-before-conflict",
+      "path": "pa31/tests/spec/stability-symbols/invalid-before-conflict.rs",
+      "sha256": "e2a01a22aae6baec54e9f98d22889bf00a5095848eb70dc2e6fa72017e14340e",
+      "status": 1
+    }
+  ],
+  "repeated": {
+    "seed": "pa31/tests/spec/stability-symbols/repeated.rs",
+    "seed_sha256": "f96c5bb209f896d7e2458cf2da185455d5db824f255175f4332ba9b19d987af6",
+    "feature": "shared_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "counts": [
+      16,
+      64,
+      256,
+      4096
+    ],
+    "status": 0,
+    "function_template": "#[stable(feature=\"{feature}\",since=\"1.0.0\")]pub fn f{i}()->u8{{7}}\n"
+  },
+  "requirements": [
+    "Preserve every policy owner, axis, release and relationship even when spelling is shared.",
+    "Keep conflicts at completion after all source attributes validate.",
+    "Keep 1000000 work and 67108864 storage limits.",
+    "No new metadata authority, public API, const, or body permission."
+  ]
+}

@@ -7,6 +7,7 @@ use crate::{
     },
     support::hash::{HashMap, HashSet},
 };
+use std::rc::Rc;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Kind {
@@ -42,20 +43,13 @@ impl Draft {
         imported: Option<&super::availability_imports::Imports>,
         requests: &[Box<str>],
     ) -> Result<(), Error> {
-        let storage = crate::support::retained::new_map::<&str, PolicyId>(self.policies.len());
         self.charge(
-            self.policies
+            requests
                 .iter()
-                .map(|policy| policy.feature.len().saturating_add(1))
+                .map(|name| name.len().saturating_add(1))
                 .sum::<usize>()
-                .saturating_add(
-                    requests
-                        .iter()
-                        .map(|name| name.len().saturating_add(1))
-                        .sum::<usize>(),
-                )
                 .saturating_add(self.relationship_work()),
-            storage,
+            0,
         )?;
         let has_renames = self
             .relationships
@@ -70,13 +64,20 @@ impl Draft {
                 crate::support::retained::new_map::<&str, ()>(requests.len()),
             )?;
         }
-        let features = self.feature_index(package)?;
+        if let Some(id) = self.features.conflict {
+            return Err(super::owners::error(
+                package,
+                self.policies[id.get() - 1].origin,
+                "conflicting library feature definitions",
+            ));
+        }
+        let features = &self.features.definitions;
         let requested_names: HashSet<_> = if has_renames {
             requests.iter().map(AsRef::as_ref).collect()
         } else {
             HashSet::default()
         };
-        self.validate_relationships(package, &features, imported, &requested_names)?;
+        self.validate_relationships(package, features, imported, &requested_names)?;
         // These are also language gates: using them needs no local unstable API.
         // This does not add either name to `features` or validate an implied_by target.
         let aggregate_language = package
@@ -124,34 +125,10 @@ impl Draft {
             })
             .sum()
     }
-    /// Reuse the feature-definition pass, retaining the first unstable declaration.
-    /// Both regular and const annotations define library features in the pinned compiler.
-    pub(super) fn feature_index(
-        &self,
-        package: &Package,
-    ) -> Result<HashMap<&str, PolicyId>, Error> {
-        let mut features = HashMap::<&str, PolicyId>::default();
-        for (index, policy) in self.policies.iter().enumerate() {
-            if let Some(previous) = features.get(policy.feature.as_ref()) {
-                if release(&policy.level) != release(&self.policies[previous.get() - 1].level) {
-                    return Err(super::owners::error(
-                        package,
-                        policy.origin,
-                        "conflicting library feature definitions",
-                    ));
-                }
-            } else {
-                let id = PolicyId::new(index + 1)
-                    .ok_or_else(|| Error::unlocated("library feature policy space exhausted"))?;
-                features.insert(&policy.feature, id);
-            }
-        }
-        Ok(features)
-    }
     pub(super) fn validate_relationships(
         &self,
         package: &Package,
-        features: &HashMap<&str, PolicyId>,
+        features: &HashMap<Rc<str>, PolicyId>,
         imported: Option<&super::availability_imports::Imports>,
         requests: &HashSet<&str>,
     ) -> Result<(), Error> {
@@ -194,7 +171,7 @@ impl Draft {
 }
 // Since::Current follows this compiler's pinned Rust 1.98.0 language profile,
 // independently of the host used to build RustGM; retain its original wire spelling.
-fn release(level: &Level) -> Option<(u16, u16, u16)> {
+pub(super) fn release(level: &Level) -> Option<(u16, u16, u16)> {
     let since = match level {
         Level::Stable(since) | Level::StableWithCompatibility { since, .. } => since,
         Level::Unstable { .. } => return None,

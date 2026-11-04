@@ -90,7 +90,12 @@ fn exact_relationships_preserve_regular_const_owners_and_unrestricted_old_string
             let policy = &inventory.policies[edge.policy.get() - 1];
             assert_eq!(policy.kind, kind);
             if edge.kind == relationships::Kind::OldName {
-                assert!(!inventory.policies.iter().any(|p| p.feature == edge.name));
+                assert!(
+                    !inventory
+                        .policies
+                        .iter()
+                        .any(|p| p.feature.as_ref() == edge.name.as_ref())
+                );
             }
         }
         assert!(library.predicate_requests()?.is_empty());

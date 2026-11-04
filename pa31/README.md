@@ -28,6 +28,13 @@ local and actual imported consumers. Its canonical feature projection preserves
 first-declaration, collision, const and release-version behavior; full authenticated
 relationship transport and original library artifacts remain required.
 
+The [shared feature inventory](../docs/pa31-shared-feature-inventory-checkpoint.md)
+reuses one capture-time canonical index and immutable spelling data without
+merging policy owners or permissions. Deferred conflicts, const/default policy,
+old wire fences and the original inventory limits remain intact. Its4096-function
+crate completes source/type checking; original core's remaining inventory phases,
+backend-reliability cfg contract and actual library artifacts remain required.
+
 The [language-item declaration packet](tests/spec/compiler-language-claims/README.md)
 checks shared target, generic and foreign-only rules for the remaining raw-source
 inventory. Profiling hooks keep actual bodies; declaration recognition alone

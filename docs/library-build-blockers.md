@@ -15,23 +15,26 @@ PA21–PA24 have implemented/release-evidence status; PA1–PA20 retain
 implemented-draft. PA25–PA44 remain planned. No additional assignment or whole
 upstream library has been completed.
 
-Current original-core frontier is LIB-130: stability inventory work/storage
-budget exhaustion after clearing macro-valued language identities. The
-[language-value checkpoint](pa31-language-values-checkpoint.md) passes23 private/
-28 production,45 independent Rust outcomes,90 CLI phases and actual native9 11.
-Its22 panic_const declarations append without changing prior ordinals and retain
-all unimplemented compiler assertion/runtime/metadata boundaries. CLI17eb46c0
-observes the unlocated inventory error in18.94s/375opens with all722 source hashes,
-six configuration hashes and finite limits unchanged. An immutable-binary debugger probe locates bulk feature-index prepayment:
-1,215,235 work/15,628,251 storage bytes, so the1,000,000 work limit fails before
-index construction or owner passes. No quadratic behavior is established.
-Measure repeated feature processing and remaining phase costs before changing
-limits; preserve policy authority and accurate paid storage. Ordinary bodies/syntax/facts remain unchanged.
-The default-body predecessor167968ee0 is on main with full CI41748017598 still
-in progress and its fast job passing. No full successor qualification is inferred.
-Actual imported body-policy transport, full Drop/Pin and original core/alloc/std
-artifacts remain required; no new whole PA is complete. Root remains alone under
-the existing btrfs/five-minute/two-thread/16GiB/150GiB rules.
+Current original-core frontier is LIB-131: the internal
+`cfg_target_has_reliable_f16_f128` request at original lib.rs90. The
+[shared-feature checkpoint](pa31-shared-feature-inventory-checkpoint.md) clears
+LIB-130's feature-index prepayment by reusing capture-time canonical spelling
+and first-policy data. All25 private/27 production, eight independent Rust cases,
+274 CLI phase outcomes and native7/7 9 pass;272 paired views exactly match the
+previous compiler. A real4096-function source completes type analysis at606746
+charged work under unchanged1,000,000-work/64MiB inventory limits. Ordinary
+records stay fixed; no reliable wall-time speedup is claimed. CLI18271678 reaches
+the next request in18.77s/375opens with all722 source hashes, six configuration
+hashes and finite limits unchanged. Its debugger observes837493 work/12659641
+bytes before owner/reachability processing, so later inventory costs remain open.
+Next implement the four genuinely gated backend-reliability cfg predicates,
+including math variants, without inventing f16/f128 capability or library API
+permission. PA41/34/31 own it. Updating config.rs requires an explicitly
+requalified configuration binding, preserving old manifests and actual values.
+Full predecessor CI41748017598 passes every gate. Full successor qualification,
+complete Drop/Pin, imported nominal/value/body-policy transport and original
+core/alloc/std artifacts remain required. Root stays alone under unchanged
+btrfs/five-minute/two-thread/16GiB/150GiB guards; no whole PA is released.
 
 
 
@@ -415,7 +418,8 @@ actual native hints and the future authenticated MIR-import obligation.
 | LIB-127 | Source declaration/request contract qualified; transport required | Renamed unstable library feature identity and actual hard former-name rejection | PA31 source policy +PA29 authenticated relationship metadata +PA40 hard diagnostics / original ops/mod.rs197 | Root only | [Checkpoint](pa31-renamed-feature-checkpoint.md):44 independent programs including actual fresh rustc rlib consumers,11 private/27 production,82 CLI phase checks and native7. First unstable declaration, canonical collisions, const policies and release consistency preserve the pinned rules; no alias enables an API. CLIfc5d8d12 clears the original declaration and reaches LIB-128. Actual RustGM relationship transport/fresh consumers remain required. |
 | LIB-128 | Local source policy qualified; imported inheritance and full Drop/Pin required | Actual unstable provided/default-body policy on stable API and selected inheritance | PA31 source/callable policy +PA26 actual implementation/default selection +PA25 const contexts +PA29 provided-body/policy transport +PA39 destruction / original ops/drop.rs242 Drop::drop | Root only | [Checkpoint](pa31-default-body-stability-checkpoint.md):48 independent Rust outcomes including five real imported clients,12 private/27 production,86 candidate CLI checks and real native7 9. CLI6bc0e520 clears the attribute frontier. Actual RustGM imported inheritance and full original Drop/Pin remain required; no body or permission is synthesized. |
 | LIB-129 | Macro-valued identity and panic family declarations qualified; semantics/transport required | Expand genuine macro-valued language-item attributes before identity reservation | PA8 macro/attribute expansion +PA31 authenticated source language identities / original panicking.rs172 | Root only | [Checkpoint](pa31-language-values-checkpoint.md):45 independent outcomes,23 private/28 production,90 CLI phase checks and real native9 11. All22 panic_const functions have genuine declaration profiles at append-only ordinals187–208; real compiler assertion/panic consumers and authenticated transport remain required. CLI17eb46c0 clears this frontier with unchanged inputs/configuration/limits. |
-| LIB-130 | Current original-core inventory budget frontier | Measure stability inventory work and storage, remove redundant algorithms/over-reservation with actual ownership preserved | PA31 library policy inventory +PA32 original core +shared performance architecture | Root only | CLI17eb46c0 reports library stability inventory exceeds its work or storage budget at file0 byte0,18.9350s/375opens/all722 source and six configuration hashes unchanged. The same immutable CLI debugger probe identifies feature-index bulk prepayment at1,215,235 charged work/15,628,251 bytes, before index construction or owner passes. Storage stays below64MiB; repeated feature processing and remaining phase costs need measurement. No quadratic behavior is established. Keep the existing limits while selecting a justified fix. |
+| LIB-130 | Feature-index budget frontier cleared; later inventory phases required | Canonical capture-time library-feature data and actual paid work/storage | PA31 library policy inventory +PA32 original core +shared performance architecture | Root only | [Checkpoint](pa31-shared-feature-inventory-checkpoint.md):25 private/27 production, eight independent cases,274 CLI outcomes and272 byte-identical predecessor pairs. A real4096-function crate type-checks at606746 work. CLI18271678 clears the original prepayment at unchanged limits and reaches LIB-131; debugger sees837493 work/12659641 bytes. Owner/reachability and final inventory costs remain required. |
+| LIB-131 | Current original-core feature-request blocker | Genuine cfg_target_has_reliable_f16_f128 feature and four gated backend capability predicates | PA41 target-specific closure +PA34 configuration/build profile +PA31 source feature identity / original lib.rs90 | Root only | CLI18271678 reports an unlocated unsupported/undefined feature request; an immutable-binary debugger probe identifies cfg_target_has_reliable_f16_f128. Pinned rustc_feature unstable.rs and builtin_attrs.rs specify all four normal/math f16/f128 predicates. Implement real query gating and macro allowances without fabricating capability. config.rs is a pinned configuration source: requalify its binding explicitly while preserving the original sources, options and limits. |
 | Remaining raw language-item semantic inventory | Declarations checked;98 builtin semantic profiles explicitly unsupported | Actual operators, associated hooks, async/drop/pinning, field reflection, ranges and weak memory hooks | Earliest actual PA23–PA31/40/41 consumer units +PA29 transport / compiler-language-claims packet | Root only | The pinned100-name raw inventory is not a cfg-active blocker count. Shared target/arity/foreign validation and135 independent cases are qualified, but unsupported semantic consumers stop explicitly before ordinary checking can infer absence. Implement each actual builtin relation/runtime contract and add genuine source/native/imported consumers before removing its fence. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |

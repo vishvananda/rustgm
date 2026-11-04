@@ -885,6 +885,20 @@ Rust language version, independently of the host compiler. Keep each actual poli
 const eligibility, metadata provenance and unencoded-relationship fence. See the
 [renamed-feature packet](pa31/tests/spec/renamed-features/README.md).
 
+Build the canonical library-feature index during policy capture and reuse it at
+completion. Share validated spelling data while retaining each actual policy's
+owner, kind, release and relationship identity. Keep release conflicts deferred
+to the original completion boundary; a later malformed attribute must retain its
+prior error precedence. Borrow temporary parsed argument text rather than
+allocating since/issue strings. Prepay lookup bytes, unique validation/copy/
+insertion, map growth and retained-spelling rehash work before mutation. Failed
+payment publishes no canonical entry. Drop the cold index after its final phase;
+no extra map belongs in the completed inventory or ordinary body/AST records.
+The [shared-feature checkpoint](docs/pa31-shared-feature-inventory-checkpoint.md)
+qualifies the unchanged resource limits, real4096-function source/type consumer,
+paired output equality and calibrated measurements. Preserve exact source and
+configuration provenance when refreshing original-library observations.
+
 Default-body stability is a third direct policy axis, distinct from regular API
 and const stability. Capture all three with a single typed owner/axis index;
 retain exact source policy identity without adding fields to ordinary syntax or

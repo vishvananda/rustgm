@@ -1,21 +1,22 @@
 # Parallel library bootstrap implementation
 
-Current original-core frontier is LIB-130: the library stability inventory's
-work/storage budget after genuine macro-valued language-item expansion. The
-[language-value checkpoint](pa31-language-values-checkpoint.md) passes23 private/
-28 production,45 independent outcomes,90 CLI phases and real native9 11. All22
-panic_const identities append without changing earlier ordinals or granting
-unimplemented compiler semantics. CLI17eb46c0 takes18.94s/375opens with all722
-inputs/configuration/limits unchanged. The same binary debugger probe identifies work exhaustion in feature-index bulk
-prepayment:1,215,235 steps/15,628,251 bytes, before index construction and owner
-passes. Measure repeated feature processing and remaining costs; preserve its
-1,000,000-work/64MiB limits while selecting the fix. No quadratic behavior is
-established. Default-body predecessor167968ee0
-is on main; full CI41748017598 remains in progress with fast passing. No full
-successor pass or original library artifact is inferred. Full Drop/Pin, imported
-body/value/policy transport and actual libraries remain required. Root stays
-alone in the warm btrfs tree under unchanged five-minute/two-thread/16GiB/150GiB
-guards, warm caches and scoped cleanup.
+Current original-core frontier is LIB-131: cfg_target_has_reliable_f16_f128
+at original lib.rs90. The [shared-feature checkpoint](pa31-shared-feature-inventory-checkpoint.md)
+reuses one capture-time canonical index and spelling data while preserving each
+policy owner/axis and deferred conflict. All25 private/27 production, eight
+independent cases,274 CLI outcomes and272 identical predecessor pairs pass,
+with real native7/7 9. A4096-function source type-checks at606746 charged work
+under the unchanged1,000,000-work/64MiB inventory limits. CLI18271678 clears the
+old feature-index boundary with all722 inputs/configuration/limits unchanged,
+18.77s/375opens. A diagnostic probe identifies the next feature and837493 work/
+12659641 bytes before owner/reachability processing; later inventory costs stay
+required. Next implement all four genuine backend-reliability cfg gates and macro
+allowances, preserving actual float/math capability truth. config.rs is a pinned
+configuration source, so explicitly requalify that binding without rewriting old
+manifests or source bundles. Full predecessor CI41748017598 is terminal success.
+No full successor pass, whole PA or original library artifact is inferred. Root
+stays alone in the warm btrfs tree under unchanged five-minute/two-thread/16GiB/
+150GiB guards, warm caches and scoped cleanup.
 
 Prior original-core frontier: LIB-125, `type_info` in mem/type_info.rs13.
 The published b9 header compiler clears the preceding declaration frontier with

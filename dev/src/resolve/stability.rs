@@ -6,6 +6,7 @@ mod constness;
 mod exported_scopes;
 pub(crate) mod fn_allowances;
 mod inheritance;
+mod interned_features;
 mod inventory;
 mod owners;
 mod relationships;
@@ -18,6 +19,7 @@ use super::{
 use crate::support::hash::HashMap;
 pub(crate) use exported_scopes::{Budget as PublicBudget, visit as visit_public_bindings};
 use std::num::{NonZeroU32, NonZeroUsize};
+use std::rc::Rc;
 
 /// A validated library release annotation, retained independently of callability.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -59,7 +61,7 @@ impl Level {
 #[derive(Debug)]
 pub struct Policy {
     pub(crate) kind: PolicyKind,
-    pub feature: Box<str>,
+    pub feature: Rc<str>,
     pub level: Level,
     pub origin: NodeKey,
 }
@@ -259,6 +261,7 @@ pub(super) enum FunctionMarker {
 pub(super) struct Draft {
     policies: Vec<Policy>,
     relationships: Vec<relationships::Relationship>,
+    features: interned_features::Index,
     attributes: HashMap<(NodeKey, PolicyKind), PolicyId>,
     import_attributes: HashMap<NodeKey, PolicyId>,
     function_markers: Vec<(NodeKey, FunctionMarker)>,

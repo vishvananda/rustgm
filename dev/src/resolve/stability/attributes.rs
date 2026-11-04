@@ -11,6 +11,7 @@ use crate::{
         token_tree::Forest,
     },
 };
+use std::borrow::Cow;
 use std::num::{NonZeroU32, NonZeroUsize};
 
 pub(in crate::resolve) fn collect(
@@ -80,7 +81,7 @@ pub(in crate::resolve) fn collect(
             "duplicate or conflicting library stability",
         ));
     }
-    let (policy, relationships) = parse(
+    let (policy, relationships, first) = parse(
         unit,
         key,
         attribute,
@@ -88,7 +89,15 @@ pub(in crate::resolve) fn collect(
         matches!(name, "stable" | "rustc_const_stable"),
         draft,
     )?;
-    publish_policy(draft, key, attribute.span, policy, relationships, kind)?;
+    publish_policy(
+        draft,
+        key,
+        attribute.span,
+        policy,
+        relationships,
+        kind,
+        first,
+    )?;
     Ok(true)
 }
 
@@ -100,6 +109,7 @@ fn publish_policy(
     mut policy: Policy,
     relationships: super::relationships::Pending,
     kind: PolicyKind,
+    first: Option<super::PolicyId>,
 ) -> Result<(), Error> {
     policy.kind = kind;
     let id = NonZeroUsize::new(draft.policies.len() + 1)
@@ -110,7 +120,9 @@ fn publish_policy(
         4 * (size_of::<Policy>() + size_of::<((NodeKey, PolicyKind), NonZeroUsize)>()),
     )?;
     draft.prepay_relationships(relationships.len())?;
+    draft.reserve_feature(first)?;
     draft.policies.push(policy);
+    draft.publish_feature(id, first);
     for (kind, name) in relationships.entries() {
         if let Some(name) = name {
             draft
@@ -161,7 +173,14 @@ fn parse(
     forest: &Forest,
     stable: bool,
     work: &mut Draft,
-) -> Result<(Policy, super::relationships::Pending), Error> {
+) -> Result<
+    (
+        Policy,
+        super::relationships::Pending,
+        Option<super::PolicyId>,
+    ),
+    Error,
+> {
     let error = |message| Error::at(key.file, attribute.span.start, message);
     let Arguments {
         feature,
@@ -171,16 +190,9 @@ fn parse(
         implied_by,
         old_name,
     } = arguments(unit, key, attribute, forest, stable, work)?;
-    let feature: Box<str> = feature.ok_or_else(|| error("library stability requires feature"))?;
-    work.charge(
-        feature
-            .len()
-            .saturating_add(implied_by.as_deref().map_or(0, str::len)),
-        0,
-    )?;
-    if !identifier(&feature) {
-        return Err(error("library feature must be an identifier"));
-    }
+    let feature = feature.ok_or_else(|| error("library stability requires feature"))?;
+    let (feature, first) = work.feature(&feature, key.file, attribute.span.start)?;
+    work.charge(implied_by.as_deref().map_or(0, str::len), 0)?;
     if implied_by.as_deref().is_some_and(|name| !identifier(name)) {
         return Err(error("implied library feature must be an identifier"));
     }
@@ -198,7 +210,10 @@ fn parse(
                     .map_err(|_| error("invalid unstable library issue"))?,
             )
         };
-        Level::Unstable { issue, reason }
+        Level::Unstable {
+            issue,
+            reason: reason.map(|value| value.into_owned().into_boxed_str()),
+        }
     };
     Ok((
         Policy {
@@ -208,28 +223,29 @@ fn parse(
             origin: key,
         },
         super::relationships::Pending {
-            implied_by,
-            old_name,
+            implied_by: implied_by.map(|value| value.into_owned().into_boxed_str()),
+            old_name: old_name.map(|value| value.into_owned().into_boxed_str()),
         },
+        first,
     ))
 }
 #[derive(Default)]
-struct Arguments {
-    feature: Option<Box<str>>,
-    since: Option<Box<str>>,
-    issue: Option<Box<str>>,
-    reason: Option<Box<str>>,
-    implied_by: Option<Box<str>>,
-    old_name: Option<Box<str>>,
+struct Arguments<'a> {
+    feature: Option<Cow<'a, str>>,
+    since: Option<Cow<'a, str>>,
+    issue: Option<Cow<'a, str>>,
+    reason: Option<Cow<'a, str>>,
+    implied_by: Option<Cow<'a, str>>,
+    old_name: Option<Cow<'a, str>>,
 }
-fn arguments(
-    unit: &Unit,
+fn arguments<'a>(
+    unit: &'a Unit,
     key: NodeKey,
     attribute: Attribute,
     forest: &Forest,
     stable: bool,
     work: &mut Draft,
-) -> Result<Arguments, Error> {
+) -> Result<Arguments<'a>, Error> {
     let error = |message| Error::at(key.file, attribute.span.start, message);
     let Input::Delimited(group) = attribute.input else {
         return Err(error("library stability requires named string arguments"));
@@ -273,12 +289,15 @@ fn arguments(
                 "library stability argument requires a string literal",
             ));
         };
-        *slot = Some(
-            std::str::from_utf8(&bytes)
-                .map_err(|_| error("invalid library stability string"))?
-                .to_owned()
-                .into_boxed_str(),
-        );
+        *slot = Some(match bytes {
+            Cow::Borrowed(bytes) => Cow::Borrowed(
+                std::str::from_utf8(bytes)
+                    .map_err(|_| error("invalid library stability string"))?,
+            ),
+            Cow::Owned(bytes) => Cow::Owned(
+                String::from_utf8(bytes).map_err(|_| error("invalid library stability string"))?,
+            ),
+        });
         cursor += 3;
         if cursor < range.end {
             if !forest.punctuation(cursor, Punctuation::Comma) {
@@ -290,7 +309,7 @@ fn arguments(
     Ok(arguments)
 }
 
-fn identifier(name: &str) -> bool {
+pub(super) fn identifier(name: &str) -> bool {
     let mut chars = name.chars();
     chars
         .next()
