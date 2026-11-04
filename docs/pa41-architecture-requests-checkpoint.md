@@ -80,6 +80,13 @@ borrows parsed names once and allocates no request-only library rows.
 Root continues alone in the existing warm btrfs tree under unchanged five-minute,
 two-thread,16GiB absolute output and150GiB reserve guards, with scoped cleanup.
 Only the current and immediate-predecessor immutable CLIs need remain pinned.
-A successor full qualification can be dispatched after publication because the
-previous run is terminal; record the exact new handle and never supersede it
-while live. Whole PA25–PA44 and original core/alloc/std remain unfinished.
+Compiler7adb3ba08 is integrated and published on main. Successor full
+[41820005554](https://github.com/vishvananda/rustgm/actions/runs/41820005554)
+is confirmed live on that compiler; poll that exact handle and never supersede
+it while live. Whole PA25–PA44 and original core/alloc/std remain unfinished.
+
+The superseded unsized-source CLI14fc5fcf is retired after publication. Current
+ad230642 and immediate predecessorc1510a1d remain pinned, together with warm
+caches, all source inputs, diagnostics and raw observations. Retirement receipt
+`obj/parallel/architecture-requests-v1/retirement-v1.json`, SHA-256
+`9af381c701276fe8cd70a0debefb6887101a86c0af4adf06a3b71afb2aa545a0`.

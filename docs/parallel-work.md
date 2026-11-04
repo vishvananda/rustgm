@@ -8,7 +8,9 @@ Negative-coherence successor full run41814580339 on eccbae6ed is terminal failur
 seven stale global declarations-size assertions,2650 other private tests and all
 regular integrations passing. All seven exact assertions are corrected and pass
 focused qualification; ordinary/dense checks remain exact. Subsequent full gates
-were skipped. No successor is yet dispatched for the architecture-request compiler.
+were skipped. Successor full run41820005554 is confirmed live on published
+architecture-request compiler7adb3ba08; poll that exact handle and do not
+supersede it while live.
 The redundant41814340248 on the old head was explicitly cancelled after the
 initial push failed; it is not qualification evidence for the new compiler.
 Predecessor run41781814852 on1f5a2b8d0 also passes every gate.
