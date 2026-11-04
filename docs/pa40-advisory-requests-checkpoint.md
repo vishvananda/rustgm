@@ -65,3 +65,9 @@ ratios0.972/1.077/1.089 do not establish a reliable timing effect or speedup.
 No allocation, ordinary binding mode or feature-word growth is introduced.
 Measurement receipt `obj/parallel/advisory-requests-v1/measurement-v1/receipt.json`,
 SHA-256 `850411e66395f667d609069f18ba9d7dfdadf8beaa518aedd09a38941aad1260`.
+
+CI cadence: full predecessor41776106178 was canceled during independent Rust
+qualification after release/course, native and debug checks completed; no full
+predecessor pass is inferred. Current manual full run41779219834 on54ae77027
+must reach a terminal result before the next manual full dispatch. Focused source
+checkpoints and ordinary fast CI can continue without replacing it.

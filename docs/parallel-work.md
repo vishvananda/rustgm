@@ -1,5 +1,14 @@
 # Parallel library bootstrap implementation
 
+Full qualification cadence: run41779219834 on54ae77027 is the current manual
+qualification. Do not dispatch another manual full run until it is terminal:
+check.yml's event-specific concurrency cancels an older manual run when replaced.
+The earlier41776106178 completed release/course, native and debug steps but was
+canceled during independent Rust qualification; it is not a full pass. New source
+checkpoints may continue with focused evidence and push-triggered fast CI. Use
+periodic/manual full qualification after the current run completes, preserving
+its actual terminal result rather than continuously superseding long checks.
+
 Current original-core frontier is LIB-136: link_cfg at original lib.rs138.
 The [advisory request checkpoint](pa40-advisory-requests-checkpoint.md) qualifies
 both documentation/provenance requests without operation permissions or new
