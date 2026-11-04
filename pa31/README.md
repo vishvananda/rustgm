@@ -407,6 +407,14 @@ substitution or permission inferred from parsing.
 
 ## Completion and review
 
+The [forced dyn contracts](tests/spec/forced-dyn-policy/README.md) require the
+actual trait principal/supertrait restriction independently of language-item
+spelling. Preserve ordinary impl/generic/static use, lazy unused aliases and
+marker-only objects. Share authenticated defining headers and cached typed
+rejections, preserving feature/name allowance, failed budgets and exact sizing
+wire flags. General policy transport and actual Field/reflection consumers are
+required independently of accepting the annotation.
+
 The [fundamental source contracts](tests/spec/fundamental-policy/README.md)
 separate real struct argument locality from trait compatible-world reasoning.
 Preserve the distinct fundamental feature, actual macro-name allowance, source

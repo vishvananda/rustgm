@@ -43,7 +43,7 @@ fn fundamental_policy_authenticates_defining_identity_and_source_image() -> Test
             .map(|(i, _)| u32::try_from(i).map(DefId))
             .transpose()?
             .ok_or("fundamental owner")?;
-        assert!(super::policy(&facts, id)?);
+        assert!(super::fundamental_policy(&facts, id)?);
         assert!(matches!(
             facts.fundamental_contract(&report, id)?,
             ContractKnowledge::KnownPresent(_)
@@ -86,7 +86,7 @@ fn failed_queries_keep_the_shared_source_budget_exhausted() -> TestResult {
     assert!(
         crate::sema::header_attributes::charge_source_contract_query(&facts, usize::MAX).is_err()
     );
-    assert!(facts.require_fundamental_transport(&report).is_err());
+    assert!(facts.require_declaration_policy_transport(&report).is_err());
     assert!(crate::sema::header_attributes::charge_source_contract_query(&facts, 0).is_err());
     Ok(())
 }

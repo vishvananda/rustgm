@@ -158,7 +158,9 @@ fn validate_profile(
     facts: &Declarations,
     identity: &CrateIdentity,
 ) -> Result<(), Error> {
-    facts.require_fundamental_transport(report).map_err(error)?;
+    facts
+        .require_declaration_policy_transport(report)
+        .map_err(error)?;
     crate::sema::coherence_policy::require_transport(facts).map_err(error)?;
     facts
         .require_incoherent_target_transport(report)

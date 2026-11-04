@@ -25,10 +25,10 @@ mod legacy_indices;
 pub(in crate::sema) use legacy_indices::consume as consume_legacy_indices;
 mod nonconst_members;
 pub(in crate::sema) use nonconst_members::consume as consume_nonconst_member;
-mod fundamental;
+mod definition_policy;
 mod incoherent_targets;
-pub(in crate::sema) use fundamental::{
-    consume as consume_fundamental, policy as fundamental_policy,
+pub(in crate::sema) use definition_policy::{
+    consume as consume_declaration_policy, forced_dyn_policy, fundamental_policy,
 };
 pub(super) mod skipped_traits;
 pub(in crate::sema) use incoherent_targets::consume as consume_incoherent_target;
@@ -55,7 +55,7 @@ struct Promises {
     legacy: Option<Box<legacy_indices::Marker>>,
     dispatch: Option<Box<skipped_traits::Marker>>,
     optimization: Option<Box<optimization::Marker>>,
-    fundamental: Option<Box<fundamental::Marker>>,
+    policy: Option<Box<definition_policy::Marker>>,
 }
 struct Owner {
     key: NodeKey,
@@ -72,7 +72,7 @@ pub(super) struct Headers {
     first_incoherent_target: Option<DefId>,
     first_skipped_trait: Option<DefId>,
     first_optimization: Option<NodeKey>,
-    first_fundamental: Option<DefId>,
+    first_policy: Option<DefId>,
     bytes: Cell<usize>,
     pub(super) steps: Cell<usize>,
 }
@@ -166,7 +166,7 @@ pub(in crate::sema) fn bind_definition(
     let member = nonconst_members::is_trait_member(facts, definition);
     if (!admitted(report, declaration)
         && !incoherent_targets::marked(facts, declaration)
-        && !fundamental::marked(facts, declaration))
+        && !definition_policy::marked(facts, declaration))
         || (report.package.source_core().is_none()
             && !member
             && !facts
@@ -205,7 +205,7 @@ pub(in crate::sema) fn bind_definition(
     incoherent_targets::bind(report, facts, definition, declaration)?;
     skipped_traits::bind(report, facts, definition, declaration)?;
     optimization::bind(report, facts, definition, declaration)?;
-    fundamental::bind(report, facts, definition, declaration)?;
+    definition_policy::bind(report, facts, definition, declaration)?;
     if !admitted(report, declaration) {
         return Ok(());
     }

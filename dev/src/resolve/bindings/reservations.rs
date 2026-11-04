@@ -671,7 +671,11 @@ fn attribute_claim(
         if sources.package.source_core().is_none()
             && matches!(
                 claim,
-                Claim::Header(HeaderAttribute::Fundamental | HeaderAttribute::Specialization)
+                Claim::Header(
+                    HeaderAttribute::Fundamental
+                        | HeaderAttribute::Specialization
+                        | HeaderAttribute::DynIncompatible
+                )
             )
         {
             return Ok(None);

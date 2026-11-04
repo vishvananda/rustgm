@@ -124,11 +124,13 @@ pub(super) fn validate(
         };
         if matches!(
             attribute,
-            HeaderAttribute::Specialization | HeaderAttribute::Fundamental
+            HeaderAttribute::Specialization
+                | HeaderAttribute::Fundamental
+                | HeaderAttribute::DynIncompatible
         ) {
-            // Every actual trait owns this policy, independently of a language
-            // role. The shared semantic annotation producer checks its complete
-            // source/gate/target contract; retain sizing's existing role view.
+            // The actual declaration owns its policy independently of a language
+            // role. Semantic producers validate the source/gate/target contract;
+            // retain existing role views for their typed provider consumers.
             if role.is_some() {
                 flags.0 |= attribute.bit();
                 reserved.steps = reserved.steps.saturating_add(1);
@@ -143,29 +145,19 @@ pub(super) fn validate(
                 "source header attribute requires one actual language role",
             ));
         };
-        let allowed = if *attribute == HeaderAttribute::DynIncompatible {
-            matches!(
-                role,
-                LangItem::Sized
-                    | LangItem::Destruct
-                    | LangItem::Unsize
-                    | LangItem::PointeeTrait
-                    | LangItem::DiscriminantKind
-                    | LangItem::BikeshedGuaranteedNoDrop
-                    | LangItem::TransmuteTrait
-            )
-        } else if *attribute == HeaderAttribute::Coinductive && role == LangItem::TransmuteTrait {
-            claims
-                .iter()
-                .any(|claim| matches!(claim, Claim::DenyImplementations))
-        } else {
-            matches!(
-                role,
-                LangItem::Sized | LangItem::MetaSized | LangItem::PointeeSized
-            ) && claims
-                .iter()
-                .any(|claim| matches!(claim, Claim::DenyImplementations))
-        };
+        let allowed =
+            if *attribute == HeaderAttribute::Coinductive && role == LangItem::TransmuteTrait {
+                claims
+                    .iter()
+                    .any(|claim| matches!(claim, Claim::DenyImplementations))
+            } else {
+                matches!(
+                    role,
+                    LangItem::Sized | LangItem::MetaSized | LangItem::PointeeSized
+                ) && claims
+                    .iter()
+                    .any(|claim| matches!(claim, Claim::DenyImplementations))
+            };
         if !allowed {
             return Err(error(
                 "source header attribute is outside the supported actual-role profile",

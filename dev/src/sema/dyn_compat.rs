@@ -16,6 +16,7 @@ use crate::{
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Rule {
+    Forced,
     Sized,
     Constant,
     GenericAssociated,
@@ -53,6 +54,7 @@ impl std::error::Error for Error {}
 impl Rule {
     const fn message(self) -> &'static str {
         match self {
+            Self::Forced => "actual source trait requires dyn incompatibility",
             Self::Sized => "requires Self: Sized",
             Self::Constant => "has an associated constant",
             Self::GenericAssociated => "has a dispatchable generic associated type",

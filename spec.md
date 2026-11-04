@@ -263,6 +263,21 @@ solver/object requirements and must not be inferred from fundamental acceptance.
 The [fundamental checkpoint](docs/pa31-fundamental-policy-checkpoint.md) records
 the independently qualified local profile and explicitly required import closure.
 
+Forced dyn incompatibility is an independent policy on an actual trait. Share
+the existing defining-header owner and fixed policy witnesses with fundamental,
+while preserving their distinct targets, feature/name-token permissions and
+semantics. A restriction grants no deny-impl, specialization, auto-trait,
+coinductive, intrinsic or source-body capability. Check the actual principal and
+supertrait graph using the existing demand-driven dyn query. Retain forced
+rejection as a typed incompatible contract so shared ancestors and repeated
+demands reuse the cached failure; do not flatten inherited member prefixes.
+Preserve lazy unused aliases and the absence of a principal in marker-only auto
+objects. Shared failed source payment cannot become policy absence. Existing
+exact sizing-role wire flags remain supported; general unencoded policy must
+fail publication rather than disappear. The
+[forced-dyn checkpoint](docs/pa31-forced-dyn-policy-checkpoint.md) records the
+source contract, independent observations and remaining transport/Field work.
+
 Implement obligations required by the pinned language and actual consumer.
 Keep declaration checking, value validity, optional optimization and advisory
 lint claims distinct. A documented niche guarantee does not invent a field

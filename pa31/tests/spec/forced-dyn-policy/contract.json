@@ -1,0 +1,326 @@
+{
+  "schema": 1,
+  "profile": {
+    "rust": "1.98.0",
+    "edition": 2024,
+    "cap_lints": "allow",
+    "binding_mode": "actual Source provider"
+  },
+  "cases": [
+    {
+      "name": "declaration",
+      "path": "pa31/tests/spec/forced-dyn-policy/declaration.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "a0424194a1dc700b1669c7e293dc64ade103c629762ac5d8f485fee3c1e5727d"
+    },
+    {
+      "name": "unsafe-trait",
+      "path": "pa31/tests/spec/forced-dyn-policy/unsafe-trait.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "87d81b61be910be98e2c158485e434517d4aaa26bcc508d26e71cd521320a079"
+    },
+    {
+      "name": "generic-trait",
+      "path": "pa31/tests/spec/forced-dyn-policy/generic-trait.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "e41c86c15c59aca2a466b10c769df56d35acd037d544a0bb79a33850d90eeb65"
+    },
+    {
+      "name": "method-trait",
+      "path": "pa31/tests/spec/forced-dyn-policy/method-trait.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "7a29ec82ab055b474214ab1cec5105b180318d57ea54d8e8048396a7d2b04510"
+    },
+    {
+      "name": "ordinary-impl",
+      "path": "pa31/tests/spec/forced-dyn-policy/ordinary-impl.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "cc5fbfa01e100acbd7be424cbf2c11f79ed91eaef81e78357c45633f62caae2d"
+    },
+    {
+      "name": "generic-bound",
+      "path": "pa31/tests/spec/forced-dyn-policy/generic-bound.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "fd3b0ee2362aecbe20a7c0aa2afc3836fbc70aeb4fb46a5f950f7e509cdcd733"
+    },
+    {
+      "name": "direct-object",
+      "path": "pa31/tests/spec/forced-dyn-policy/direct-object.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "562db611eb8218b44a2b1a925e13c94e90be8bbb893c96271e7306956a0e6987"
+    },
+    {
+      "name": "raw-object",
+      "path": "pa31/tests/spec/forced-dyn-policy/raw-object.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "24478b5ef4ec9f90e388d7e5cf659014ea208ee46c6c26733f8213c126c6d40e"
+    },
+    {
+      "name": "alias-object",
+      "path": "pa31/tests/spec/forced-dyn-policy/alias-object.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 1,
+      "sha256": "4653e112900ae69287c481a5e2cf624ecc429ef51f6a2336f1c74c61df2b5c6b",
+      "correction": "Pinned rustc accepts an unused object alias; require its real demand before dyn checking.",
+      "required_gap": true,
+      "required_work": "PA21: defer actual dyn compatibility through the existing alias requirement DAG to genuine uses; retain early Self-supertrait and ordinary binding checks."
+    },
+    {
+      "name": "generic-object",
+      "path": "pa31/tests/spec/forced-dyn-policy/generic-object.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "f3c584574400b901d10ab8a44fb9f7e50b0ee1d679c4c86fdb88f1eaed5c2f4d"
+    },
+    {
+      "name": "self-sized-optout",
+      "path": "pa31/tests/spec/forced-dyn-policy/self-sized-optout.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "db3bebc1db3093e3a3d724f8d86765754ae39bc7943067c599267a504066198a"
+    },
+    {
+      "name": "supertrait-object",
+      "path": "pa31/tests/spec/forced-dyn-policy/supertrait-object.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "4f9975fdcaa8a06be807025803b19e9de30af154994700eeccd995836edc3c8b"
+    },
+    {
+      "name": "deep-supertrait",
+      "path": "pa31/tests/spec/forced-dyn-policy/deep-supertrait.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "b4e4b4149502bf45dcab103c5534daa40c22b7414c470ae5bd1fea59b063aa2b"
+    },
+    {
+      "name": "diamond-supertrait",
+      "path": "pa31/tests/spec/forced-dyn-policy/diamond-supertrait.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "6d26bef533d377bdc9482609a549d0d0428aa394bef2876cd599c363a281db1b"
+    },
+    {
+      "name": "supertrait-declaration",
+      "path": "pa31/tests/spec/forced-dyn-policy/supertrait-declaration.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "69e2f9fe9f4a26a89ebeaea1b6f95bfcb1f55907837cc4b92871d759206af593"
+    },
+    {
+      "name": "ordinary-object",
+      "path": "pa31/tests/spec/forced-dyn-policy/ordinary-object.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "a44468d63570ad80dbf52605cdcde7eb076c787434bd885727e7d8b3fbc8fa87"
+    },
+    {
+      "name": "name-lookalike",
+      "path": "pa31/tests/spec/forced-dyn-policy/name-lookalike.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "5ca81e1378f4c64248cda46cf014bff22476f0af1bb6b29427f565cb08c3f114"
+    },
+    {
+      "name": "scope-opponent",
+      "path": "pa31/tests/spec/forced-dyn-policy/scope-opponent.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "06deeb0ca31e821d5e596ed1f6a20cfd0c5311271d895377ca9b0c140ae855d9"
+    },
+    {
+      "name": "scope-restriction",
+      "path": "pa31/tests/spec/forced-dyn-policy/scope-restriction.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "e2077e80fbc7d533832fe4b10f14497aa2e282dbab6340600235540e6255fd01"
+    },
+    {
+      "name": "fundamental-alone",
+      "path": "pa31/tests/spec/forced-dyn-policy/fundamental-alone.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "83e90ef69222fab0d3b36aff52064c8ef27bb6119b22bdc823e462f81bb393bd"
+    },
+    {
+      "name": "both-policies",
+      "path": "pa31/tests/spec/forced-dyn-policy/both-policies.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "1525c519c9ea76f923b4ed89ef6c0a960edbcc5a9827e71f8fa243d943828239"
+    },
+    {
+      "name": "both-policies-object",
+      "path": "pa31/tests/spec/forced-dyn-policy/both-policies-object.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "6e4b5de2193c7e393ef59053d3e149bd7b71003282b6e93d22254d7fe1051fb3"
+    },
+    {
+      "name": "duplicate",
+      "path": "pa31/tests/spec/forced-dyn-policy/duplicate.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "b09c82069ea644ed50c773fb18dfd89e8e61105ef1b4382192fa73e13b116638"
+    },
+    {
+      "name": "wrong-list",
+      "path": "pa31/tests/spec/forced-dyn-policy/wrong-list.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "8950fc4d9380a7999162b9ce7e418405091b70634ba86b59fb70534ad191b755"
+    },
+    {
+      "name": "wrong-value",
+      "path": "pa31/tests/spec/forced-dyn-policy/wrong-value.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "007215ddb4bf5b6117a35a737bad55c8f8e1aebeac1a7eb748b9c66df9836d94"
+    },
+    {
+      "name": "unsafe-wrapper",
+      "path": "pa31/tests/spec/forced-dyn-policy/unsafe-wrapper.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "8f993f1c9de31c899f6e610f23edafa9d6603b44f69addf6b8ed478b8c66e44e"
+    },
+    {
+      "name": "wrong-struct",
+      "path": "pa31/tests/spec/forced-dyn-policy/wrong-struct.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "3687337b4774b1a69ee4e3f1a7b2458efedc0746cd1610e0c8b2ec535cba4edf"
+    },
+    {
+      "name": "wrong-enum",
+      "path": "pa31/tests/spec/forced-dyn-policy/wrong-enum.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "f445a91aeeb48e0ce24e39eb59b81cad4bb7456c1a5ac4045ccb186030687942"
+    },
+    {
+      "name": "wrong-union",
+      "path": "pa31/tests/spec/forced-dyn-policy/wrong-union.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "a70e86d841ef534ace717fdb001fefd3dd130d333bcd199efd184c2223b536df"
+    },
+    {
+      "name": "wrong-function",
+      "path": "pa31/tests/spec/forced-dyn-policy/wrong-function.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "036616e518221371b5887b7be88ce01fceae2b01782008e8e2fb045a0899412b"
+    },
+    {
+      "name": "wrong-module",
+      "path": "pa31/tests/spec/forced-dyn-policy/wrong-module.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "d9725b4af67647a3d71b18e80bca7fb6d3d24e66fcc80b00a4a5c1396b7d9d9d"
+    },
+    {
+      "name": "wrong-alias",
+      "path": "pa31/tests/spec/forced-dyn-policy/wrong-alias.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "3e54bb188487806d9dcab39ec7e480ede2bf1ac28a1e88c3067604cc4d1edbfa"
+    },
+    {
+      "name": "wrong-const",
+      "path": "pa31/tests/spec/forced-dyn-policy/wrong-const.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "4c0052376a706ec736f8d55217b7c4d7ae01127853ec601d9631ce2722f62e85"
+    },
+    {
+      "name": "wrong-method",
+      "path": "pa31/tests/spec/forced-dyn-policy/wrong-method.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "9c70c532bcd42a13019d9c0ca4b07cb124b2b17e1823dbd268672d60510cc796"
+    },
+    {
+      "name": "wrong-impl",
+      "path": "pa31/tests/spec/forced-dyn-policy/wrong-impl.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "ab37af0532970037a5ee9aa183ef8614db7844d6f984119c1c2182f93c54623d"
+    },
+    {
+      "name": "missing-feature",
+      "path": "pa31/tests/spec/forced-dyn-policy/missing-feature.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "5a4949eb056a02ed3761054defa67c6c550e9a1f781de3b8ed8a5c388c524748"
+    },
+    {
+      "name": "cfg-removed",
+      "path": "pa31/tests/spec/forced-dyn-policy/cfg-removed.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "f2562b10693e037c037530bd53726de5f8f4bec36a543ae7d6dfb414f6ad3080"
+    },
+    {
+      "name": "literal-allowance",
+      "path": "pa31/tests/spec/forced-dyn-policy/literal-allowance.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "8ee90371c49b4f3fa8f708e8193dc4c3c3220f8a4939c453160ef5bee19440f3"
+    },
+    {
+      "name": "forwarded-opponent",
+      "path": "pa31/tests/spec/forced-dyn-policy/forwarded-opponent.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "b369fa9affd7d339f1516d1f47d54442ed1ee84e1a09db806fdb90e9f20c958a"
+    },
+    {
+      "name": "native-operation",
+      "path": "pa31/tests/spec/forced-dyn-policy/native-operation.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "d24aa91ff25b2de4c7dbf3298c75bf7bbb83d9caeed73768c36a42f3c9877b99"
+    },
+    {
+      "name": "auto-object",
+      "path": "pa31/tests/spec/forced-dyn-policy/auto-object.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 1,
+      "sha256": "df32f5132eda026b9f4ba9ab8ddc190870fd2360d81ab439e24d1ea5b6399d14",
+      "required_gap": true,
+      "required_work": "PA20/23/31: actual custom source auto-trait producer, structural/coinductive proof and marker-only identity."
+    },
+    {
+      "name": "auto-declaration",
+      "path": "pa31/tests/spec/forced-dyn-policy/auto-declaration.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 1,
+      "sha256": "c0ed6c418a0beb6948b4a74434fe90b3dfbe51909044d23c30542188b3682b8f",
+      "required_gap": true,
+      "required_work": "PA20/31: actual custom source auto-trait declaration producer; do not replace an auto trait with an ordinary principal."
+    },
+    {
+      "name": "alias-object-used",
+      "path": "pa31/tests/spec/forced-dyn-policy/alias-object-used.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "619a153418a18b66985e0496078ebeadb337269f319b26f59a4618ba803477aa"
+    }
+  ],
+  "auxiliary": [
+    {
+      "path": "pa31/tests/spec/forced-dyn-policy/observer.c",
+      "sha256": "d37122e0af6175eecf35db51c6498e4a3fbf01ce674e9dc38ca7c3eb036ba7d1"
+    }
+  ],
+  "native_expected_stdout": "7\n9\n"
+}

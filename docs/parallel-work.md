@@ -1,5 +1,13 @@
 # Parallel library bootstrap implementation
 
+Full CI41889087416 on05d3a187b is terminal success with every gate passing,
+including full native, debug, independent Rust and const-machine qualification.
+The current forced-dyn public gate passes in50.82s; cold private harness linking
+exceeded the guard twice, with scopes stopped. Public API graph/normal/native
+controls were moved unchanged to the existing integration target; private
+owner/budget/publication probes still require the new compiler's full CI.
+Current full successor qualification is separate from predecessor success.
+
 Full CI41883125825 one821b5767 is terminal failure:2680 private checks pass,
 one older capability-matrix expectation still rejects the now-supported ordinary
 specialization trait declaration. Its pinned Rust outcome was already0. The
@@ -57,7 +65,24 @@ concurrency cancels the earlier manual run. Source checkpoints may continue with
 focused evidence and push-triggered fast CI; dispatch successor full qualification
 only after its predecessor is terminal. No whole PA release is inferred.
 
-Current original-core frontier is LIB-147: actual Field forced-dyn policy.
+Current original-core frontier is LIB-150: actual library-request accounting.
+The [forced-dyn checkpoint](pa31-forced-dyn-policy-checkpoint.md) qualifies40
+current source cases,34 fundamental and43 specialization controls, PA23415/415,
+typed cached shared-supertrait rejection and real generic/native Rust7/9.
+The43 independent cases retain three valid alias/custom-auto gaps under
+LIB-148/149. One existing source header, two bounded witnesses and its sticky
+payer hold distinct policies; general transport stays fenced and sizing wire
+remains supported. CLI4a3107d3 clears Field's annotation and reaches library
+request work budget exceeded at file0:0 in18.29s/375opens. All722 input hashes,
+six pins, fifteen values, original options/capAllow and finite limits remain
+unchanged. request_order.rs incorrectly applies metadata's one-million ceiling
+to accumulated source inventory work. Fix the actual caller/payer and shared
+ordering kernel without raising limits or restarting failed payment. Private
+qualification, alias debt, custom autos, Field/TransmuteFrom, general transport
+and every original core/alloc/std artifact remain required. Root remains alone
+in guarded warm btrfs scratch.
+
+Previous original-core frontier was LIB-147: actual Field forced-dyn policy.
 The [fundamental checkpoint](pa31-fundamental-policy-checkpoint.md) passes
 private10 and production34+43 in128.68s/145.52s, plus PA201389/1389 and actual
 native Rust7/9. Thirty-four source and twelve genuine two-crate independent

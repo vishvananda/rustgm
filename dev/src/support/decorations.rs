@@ -12,7 +12,7 @@ pub(crate) enum Consumer {
     Linkage,
     NativeLink,
     StrictCoherence,
-    Fundamental,
+    DeclarationPolicy,
     TargetFeature,
     SafetyLint,
     Documentation,
@@ -82,7 +82,6 @@ impl Consumer {
             | "rustc_deny_explicit_impl"
             | "rustc_diagnostic_item"
             | "rustc_coinductive"
-            | "rustc_dyn_incompatible_trait"
             | "rustc_trivial_field_reads"
             | "rustc_nonnull_optimization_guaranteed"
             | "rustc_never_returns_null_ptr"
@@ -120,7 +119,7 @@ impl Consumer {
             "rustc_non_const_trait_method" => Self::NonConstTraitMethod,
             "link" => Self::NativeLink,
             "rustc_strict_coherence" => Self::StrictCoherence,
-            "fundamental" => Self::Fundamental,
+            "fundamental" | "rustc_dyn_incompatible_trait" => Self::DeclarationPolicy,
             "no_mangle" | "export_name" | "link_name" => Self::Linkage,
             "target_feature" => Self::TargetFeature,
             "allow" | "warn" | "deny" | "forbid" | "expect" | "deprecated" => Self::SafetyLint,

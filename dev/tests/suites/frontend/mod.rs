@@ -37,6 +37,8 @@ mod extern_editions;
 mod feature_requests;
 #[path = "../../helpers/ffi_program.rs"]
 pub(crate) mod ffi_program;
+#[path = "../../forced_dyn_contracts.rs"]
+mod forced_dyn_contracts;
 #[path = "../../fragments.rs"]
 mod fragments;
 #[path = "../../fundamental_contracts.rs"]

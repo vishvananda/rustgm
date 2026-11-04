@@ -280,8 +280,8 @@ fn consume_annotation(
                 allowances,
             )?;
         }
-        Some(Consumer::Fundamental) => {
-            crate::sema::header_attributes::consume_fundamental(
+        Some(Consumer::DeclarationPolicy) => {
+            crate::sema::header_attributes::consume_declaration_policy(
                 report,
                 facts,
                 (owner, declaration),
