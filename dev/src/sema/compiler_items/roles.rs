@@ -516,6 +516,7 @@ pub(super) fn nominal_completed(
             | LangItem::TransmuteOpts
             | LangItem::TypeInfo
             | LangItem::TypeId
+            | LangItem::Pin
     ) {
         return Err(Error::unlocated("invalid completed nominal readiness role"));
     }
@@ -555,16 +556,33 @@ pub(super) fn complete_nominal(
             | LangItem::TransmuteOpts
             | LangItem::TypeInfo
             | LangItem::TypeId
+            | LangItem::Pin
     ) {
         return Err(Error::unlocated("invalid completed nominal role"));
     }
+    record_completion(facts, role, declaration)
+}
+
+/// Only the authenticated ordinary inherent-member producer calls this gate.
+pub(super) fn complete_pin_constructor(
+    facts: &mut Declarations,
+    declaration: Declaration,
+) -> Result<(), Error> {
+    record_completion(facts, LangItem::PinNewUnchecked, declaration)
+}
+
+fn record_completion(
+    facts: &mut Declarations,
+    role: LangItem,
+    declaration: Declaration,
+) -> Result<(), Error> {
     let catalog = facts
         .source_bindings
         .as_deref()
-        .ok_or_else(|| Error::unlocated("source nominal catalog disappeared"))?;
+        .ok_or_else(|| Error::unlocated("source completion catalog disappeared"))?;
     if catalog.language(role) != Some(declaration) {
         return Err(Error::unlocated(
-            "completed nominal role belongs to another declaration",
+            "completed source role belongs to another declaration",
         ));
     }
     let fresh = catalog.traits.is_none();
@@ -576,7 +594,7 @@ pub(super) fn complete_nominal(
     let catalog = facts
         .source_bindings
         .as_deref_mut()
-        .ok_or_else(|| Error::unlocated("source nominal catalog disappeared"))?;
+        .ok_or_else(|| Error::unlocated("source completion catalog disappeared"))?;
     let ledger = catalog.traits.get_or_insert_with(|| {
         Box::new(Validated {
             roles: RoleSet::EMPTY,
@@ -587,7 +605,7 @@ pub(super) fn complete_nominal(
         })
     });
     if ledger.roles.contains(role) {
-        return Err(Error::unlocated("source nominal role was completed twice"));
+        return Err(Error::unlocated("source role was completed twice"));
     }
     ledger.roles.insert(role);
     Ok(())

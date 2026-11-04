@@ -16,6 +16,11 @@ pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Res
             // or implicit use/clone operation; those have separate typed consumers.
             continue;
         }
+        if matches!(role, LangItem::Pin | LangItem::PinNewUnchecked) {
+            // Actual nominal/member completion is separate from pinned receivers,
+            // implicit pin construction and async state-machine permission.
+            continue;
+        }
         if matches!(role, LangItem::CompilerMove | LangItem::CompilerCopy) {
             // These hooks keep their actual ordinary bodies. Current codegen emits no
             // profiling annotations; an invoked hook must still execute its source body.

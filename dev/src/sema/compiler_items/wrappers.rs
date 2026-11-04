@@ -9,10 +9,11 @@ use crate::{
         aggregate::{self, FieldDestruction},
     },
 };
-const ROLES: [LangItem; 3] = [
+const ROLES: [LangItem; 4] = [
     LangItem::ManuallyDrop,
     LangItem::MaybeDangling,
     LangItem::MaybeUninit,
+    LangItem::Pin,
 ];
 fn nominal_kind(role: LangItem) -> aggregate::Kind {
     if role == LangItem::MaybeUninit {
@@ -48,6 +49,10 @@ fn claim(
     let written = ast.items[index as usize];
     let shape = if role == LangItem::MaybeUninit {
         actual.kind == DefKind::Struct && matches!(written.kind, ItemKind::Union { .. })
+    } else if role == LangItem::Pin {
+        // The pinned declaration profile imposes no additional generic arity,
+        // field or representation rule. Actual consumers validate their inputs.
+        actual.kind == DefKind::Struct && matches!(written.kind, ItemKind::Struct { .. })
     } else {
         actual.kind == DefKind::Struct
             && matches!(written.kind, ItemKind::Struct { .. })
@@ -80,9 +85,9 @@ pub(in crate::sema) fn register(
                 "source wrapper requires its completed structure fields",
             ));
         }
-        if role == LangItem::MaybeUninit {
-            // Union storage already suppresses destruction of unselected fields.
-            // This identity grants no value validity or executable API permission.
+        if matches!(role, LangItem::MaybeUninit | LangItem::Pin) {
+            // Union storage already suppresses unselected fields. Pin retains
+            // ordinary field destruction; identity grants no API/Copy permission.
             continue;
         }
         let growth = facts.aggregates.nominal_policy_growth(item);
@@ -130,7 +135,7 @@ pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Re
                 LangItem::MaybeDangling => {
                     facts.aggregates.permits_dangling_pointers(item) != Some(true)
                 }
-                LangItem::MaybeUninit => false,
+                LangItem::MaybeUninit | LangItem::Pin => false,
                 _ => true,
             }
         {

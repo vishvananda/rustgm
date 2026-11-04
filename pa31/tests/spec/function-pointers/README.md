@@ -48,7 +48,8 @@ Broader demanded method signatures, const effects, imported role/body transport
 and all real library graphs remain required. Declaration acceptance alone is
 not execution qualification for those profiles. Unsupported imports retain
 their existing explicit fence. Private forged-body/descriptor/lifetime tests
-compile under strict all-target Clippy; execution awaits successor full CI.
+compile under strict all-target Clippy and execute successfully in full
+CI41929736419 onf94868db5.
 
 [The checkpoint](../../../../docs/pa31-function-pointer-checkpoint.md) records
 the qualification receipts, performance observations, retained failed attempts

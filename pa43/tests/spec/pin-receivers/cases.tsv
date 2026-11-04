@@ -1,0 +1,11 @@
+pa43/tests/spec/pin-receivers/ordinary-self.rs	0
+pa43/tests/spec/pin-receivers/shared-self.rs	0
+pa43/tests/spec/pin-receivers/unique-self.rs	0
+pa43/tests/spec/pin-receivers/missing-deref.rs	1
+pa43/tests/spec/pin-receivers/missing-legacy.rs	1
+pa43/tests/spec/pin-receivers/ordinary-wrapper.rs	0
+pa43/tests/spec/pin-receivers/nested-reference.rs	0
+pa43/tests/spec/pin-receivers/wrong-self-arguments.rs	1
+pa43/tests/spec/pin-receivers/named-lifetime.rs	0
+pa43/tests/spec/pin-receivers/actual-constructor-bound.rs	0
+pa43/tests/spec/pin-receivers/missing-constructor-bound.rs	1

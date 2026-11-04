@@ -17,6 +17,13 @@ loans and destruction order. The upstream helper's written placeholder body is
 not its real implementation. Declaration-only acceptance does not qualify any
 of these consumers; see the [original probe](../docs/pa31-function-pointer-checkpoint.md).
 
+The [Pin source packet](../pa31/tests/spec/pin-source/README.md) implements the
+nominal/ordinary constructor producer with actual body, borrow/const and field
+drop controls. It grants no Copy or destructor suppression. This assignment
+still requires real receiver/Deref/LegacyReceiver proof, Unpin, unsafe projection,
+future state ownership and cancellation. The real AsyncDrop source frontier is
+unchanged by establishing that prerequisite.
+
 The maintainer implements compiler responsibilities in `dev/src/` and introduces
 typed interfaces before text views. Follow [spec.md](../spec.md), the pinned Rust
 Reference and CPPGM's efficient representation principles. Parse once, retain

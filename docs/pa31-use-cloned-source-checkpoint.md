@@ -98,7 +98,8 @@ The published f01aa47d4 repair passes all-target Clippy locally; its manual full
 [CI41918191470](https://github.com/vishvananda/rustgm/actions/runs/41918191470)
 is now terminal success with every gate, including private glob-payer controls,
 native, debug, independent Rust and const-machine qualification. The UseCloned
-push also passes; full execution of this newer source checkpoint remains pending.
+push also passes; full41929736419 onf94868db5 now also qualifies this source checkpoint and its
+private lifecycle control.
 No private execution is inferred from metadata compilation. The subsequent
 [function-pointer checkpoint](pa31-function-pointer-checkpoint.md) clears the
 next original-source frontier while retaining the use/capture requirements above.

@@ -102,8 +102,10 @@ scratch, including the failed private metadata compile.
 Full [CI41918191470](https://github.com/vishvananda/rustgm/actions/runs/41918191470)
 onf01aa47d4 is terminal success with every gate, including private glob-payer
 controls, native, debug, independent Rust and const-machine qualification.
-The UseCloned push also passes. These precede this checkpoint; successor full
-execution remains pending. No whole PA after24 or original core/alloc/std
+The UseCloned push also passes. Full
+[CI41929736419](https://github.com/vishvananda/rustgm/actions/runs/41929736419)
+onf94868db5 now passes every gate for this checkpoint, including both private
+shim controls and the UseCloned lifecycle control. No whole PA after24 or original core/alloc/std
 artifact is complete. LIB-148 aliases, LIB-149 custom autos, LIB-152 use/capture
 operations, wider pointer profiles, Field/TransmuteFrom and general transport
 remain required. Root works alone in guarded warm btrfs scratch, preserving

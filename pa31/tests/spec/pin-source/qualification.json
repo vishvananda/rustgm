@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "scope": "Actual local Pin nominal and ordinary constructor producer; genuine parent Deref bound, receiver/projection/async/transport consumers remain required",
+  "receipts": {
+    "obj/qualification/fast/1793835244177672083/receipt.json": {
+      "sha256": "7a6035754401e19bcf735e3bf6f61d47c21279aa34b2c81654b0c282d07310cb",
+      "state": "passed"
+    },
+    "obj/parallel/pin-source-v1/reference-v2/receipt.json": {
+      "sha256": "773cfc9a207947a3f807e51558fca95605893aae7553ffeb6eb2eba1897e70e7",
+      "state": "passed"
+    },
+    "obj/parallel/pin-source-v1/private-compile-v2/receipt.json": {
+      "sha256": "63655def56d5f18978b1f2f9307a3ba7f13f61e07dffe7ae507025459b541927",
+      "state": "passed"
+    },
+    "obj/parallel/pin-source-v1/qualification-v2/receipt.json": {
+      "sha256": "eaec06976346fa7919f7471a21dfd2c4041d8c1602f2fe9b3c7c2de5eb761ef5",
+      "state": "passed"
+    },
+    "obj/parallel/pin-source-v1/measurement-v4/receipt.json": {
+      "sha256": "a472d27f7596223274f3bd833991af5b92e172ec5fc585bb231071192137b290",
+      "state": "passed"
+    },
+    "obj/parallel/pin-source-v1/ordinary-scaling-v1/receipt.json": {
+      "sha256": "719ff3fb5bad7134fe54fc53843680238838c79d95cd5d462af5ded4acddecb7",
+      "state": "passed"
+    }
+  },
+  "candidate_source_cases": 25,
+  "independent_source_cases": 25,
+  "candidate_native_companions": 1,
+  "pa19_text_cases": 1193,
+  "private_execution": "pending full CI; all-target/all-feature strict Clippy compiles three controls",
+  "candidate_cli_sha256": "4003bfd267e208f16816688776a42987045795a993aa7d61eb996a5743f891e5",
+  "predecessor_cli_sha256": "1c5be3cac59548ec774f606e0649005259373dc24dcd32e5d8fad46be4009970",
+  "configuration_snapshot_sha256": "86c36cf133e802357dedce4d7afadb0d5960235d8ad849a77556903a5e15f96d",
+  "original_core": {
+    "infrastructure_failure": false,
+    "classification": "observed original-core blocker",
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "4003bfd267e208f16816688776a42987045795a993aa7d61eb996a5743f891e5",
+    "expected_cli_source": "explicit caller input",
+    "status": 1,
+    "first_error": "ERROR: file 246: 1138: source compiler language item semantic contract is not implemented",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 17.027235343994107,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "6dd1a28933f93915d3a0335d142c77f7abf55a2245df5282cf43b7564bbf0797",
+      "whole-core.openat": "357bcc55857ab79128e87da2b41253267152935ea42ec7d7ae589d050bfe844d",
+      "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+    },
+    "receipt_sha256": "0ac85da278bfe3363c48af2fbfbdd8a0e4b326fd0ff2c0b65451a510416ce42b"
+  },
+  "whole_assignment_released": false,
+  "original_library_artifact": false,
+  "history": {
+    "interim_qualification": "obj/parallel/pin-source-v1/qualification-v1/receipt.json",
+    "interim_cli_sha256": "41f02b51ae364272e5238262246a5c7dcc1552b82cf4521d912608e91fed5b26",
+    "interim_core_measurement": "obj/parallel/pin-source-v1/core-measure-v1/receipt.json",
+    "note": "Retain initial 23 outcomes, extended real lifetime-frame controls and every raw timing observation. Historical core A/A/ABBA belongs to interim CLI, not final candidate."
+  }
+}

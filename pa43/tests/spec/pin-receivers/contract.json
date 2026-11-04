@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "edition": 2024,
+  "scope": "Required actual receiver/Deref/LegacyReceiver contracts, not candidate semantic qualification",
+  "cases": [
+    {
+      "name": "ordinary-self",
+      "path": "pa43/tests/spec/pin-receivers/ordinary-self.rs",
+      "sha256": "0b2de454e84063a0007c2c64d7cb9088256ec739d2448410f3b0a4f00ed57c3c",
+      "rustc_status": 0
+    },
+    {
+      "name": "shared-self",
+      "path": "pa43/tests/spec/pin-receivers/shared-self.rs",
+      "sha256": "f8d34da01fda012c8628027eabf70e8556f9e7740f2cd49f7e4fb97be2cb8d6c",
+      "rustc_status": 0
+    },
+    {
+      "name": "unique-self",
+      "path": "pa43/tests/spec/pin-receivers/unique-self.rs",
+      "sha256": "c116b0930ed362398eb9d5c3ab341d6500d11708546f4913164f7d5d0e2c9c11",
+      "rustc_status": 0
+    },
+    {
+      "name": "missing-deref",
+      "path": "pa43/tests/spec/pin-receivers/missing-deref.rs",
+      "sha256": "bfddea3b9be9403066ea4d2cd79ba6e47bda9d166de0e8e894c1379a43061dda",
+      "rustc_status": 1
+    },
+    {
+      "name": "missing-legacy",
+      "path": "pa43/tests/spec/pin-receivers/missing-legacy.rs",
+      "sha256": "6766d937c2a5fbd135eeaf0fa55aa9c1daee68a3b38b8e3f27cb6a2e6b625115",
+      "rustc_status": 1
+    },
+    {
+      "name": "ordinary-wrapper",
+      "path": "pa43/tests/spec/pin-receivers/ordinary-wrapper.rs",
+      "sha256": "aba5277b402280856c48cf6c08971803c73f49da95bc802216d3974bbaef85a4",
+      "rustc_status": 0
+    },
+    {
+      "name": "nested-reference",
+      "path": "pa43/tests/spec/pin-receivers/nested-reference.rs",
+      "sha256": "0b4575f38c86aaa4c0ce4af30dab4b528fcf0787ff1acfe9b8f2f7a43868c3fc",
+      "rustc_status": 0
+    },
+    {
+      "name": "wrong-self-arguments",
+      "path": "pa43/tests/spec/pin-receivers/wrong-self-arguments.rs",
+      "sha256": "e38ee68a67ba9a32fdc9a2f3ffac08886758651e6c8c246b58ed53b27d9bd790",
+      "rustc_status": 1
+    },
+    {
+      "name": "named-lifetime",
+      "path": "pa43/tests/spec/pin-receivers/named-lifetime.rs",
+      "sha256": "5400a50c387ae2d9b30178c2dab95a2ff65dfd134e3367ac5e69c930760bf868",
+      "rustc_status": 0
+    },
+    {
+      "name": "actual-constructor-bound",
+      "path": "pa43/tests/spec/pin-receivers/actual-constructor-bound.rs",
+      "sha256": "1da84a6141ceffd38ef620108a5ae9b4c5f506fa8ec77045feaa689ea237b085",
+      "rustc_status": 0
+    },
+    {
+      "name": "missing-constructor-bound",
+      "path": "pa43/tests/spec/pin-receivers/missing-constructor-bound.rs",
+      "sha256": "9500bfbbbf2aa0aff637aca91a06343d955a27c0483a66208c0a6133f57b263b",
+      "rustc_status": 1
+    }
+  ],
+  "auxiliary": [],
+  "history": {
+    "reference_v1": "obj/parallel/pin-source-v1/receiver-reference-v1/receipt.json",
+    "reference_v1_sha256": "52c264d25416e47a355c2bc4f97a5e87bb986300f2ded6c77528bb95a0dd2b64",
+    "extension": "Retain all nine outcomes; explicitly require the real Pin constructor parent Deref bound and its genuine missing-bound opponent."
+  }
+}

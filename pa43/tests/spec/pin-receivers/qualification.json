@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "scope": "Independent expected outcomes and candidate first-error observations; no receiver semantic qualification",
+  "independent_rust_outcomes": 11,
+  "required_rust_positive_paths": [
+    "ordinary-self",
+    "shared-self",
+    "unique-self",
+    "ordinary-wrapper",
+    "nested-reference",
+    "named-lifetime",
+    "actual-constructor-bound"
+  ],
+  "candidate_semantics_qualified": false,
+  "candidate_cli_sha256": "4003bfd267e208f16816688776a42987045795a993aa7d61eb996a5743f891e5",
+  "reference_receipt_sha256": "bc5d5dcf13028d215cc47815142b016d3709fd68012e1f55bf5b635347052b9a",
+  "candidate_receipt_sha256": "1bc74454c60131c899456c436210285bbac8cf1996725af6ccb59efcdf4ab42a",
+  "first_prerequisite": "Actual source Deref/Target, LIB-155",
+  "whole_assignment_released": false
+}

@@ -24,7 +24,7 @@
   "candidate_native_companions": 2,
   "independent_native_companions": 3,
   "required_operation_cases_unimplemented": 17,
-  "private_execution": "pending full CI; all-target strict Clippy passes",
+  "private_execution": "passed full CI41929736419 onf94868db5",
   "candidate_cli_sha256": "8e7af0548d132ab7379b5e8f1f469067734220957fb766e5c36fda063dead74c",
   "original_core": {
     "status": 1,
@@ -34,5 +34,11 @@
     "inputs_unchanged": true
   },
   "whole_assignment_released": false,
-  "original_library_artifact": false
+  "original_library_artifact": false,
+  "full_ci": {
+    "url": "https://github.com/vishvananda/rustgm/actions/runs/41929736419",
+    "head": "f94868db576884a7075b8a2243da2bdbe635b683",
+    "status": "completed",
+    "conclusion": "success"
+  }
 }

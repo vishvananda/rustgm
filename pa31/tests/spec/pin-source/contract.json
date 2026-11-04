@@ -1,0 +1,174 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "edition": 2024,
+  "scope": "Actual local Pin nominal/new_unchecked source bodies; receiver, implicit pin and async consumers remain required",
+  "cases": [
+    {
+      "name": "actual-header",
+      "path": "pa31/tests/spec/pin-source/actual-header.rs",
+      "sha256": "8f259b8a6841abbb4c1ebfca513a858c9c026d30fdd27478e1f637d432450a1a",
+      "rustc_status": 0
+    },
+    {
+      "name": "zero-parameters",
+      "path": "pa31/tests/spec/pin-source/zero-parameters.rs",
+      "sha256": "b465b079f86a9bd5736343e2329b3e4e8e9a2b72d1545481c9bf2f93604f555a",
+      "rustc_status": 0
+    },
+    {
+      "name": "two-parameters",
+      "path": "pa31/tests/spec/pin-source/two-parameters.rs",
+      "sha256": "2e6e5c926006762d3bdd538feb57dc4711d6716c704548c241356d1eb6b00aa5",
+      "rustc_status": 0
+    },
+    {
+      "name": "lifetime-parameter",
+      "path": "pa31/tests/spec/pin-source/lifetime-parameter.rs",
+      "sha256": "13e3d5291d58d218a76068a7f720e06637d1634754c562cfd4c0c88da039b77a",
+      "rustc_status": 0
+    },
+    {
+      "name": "const-parameter",
+      "path": "pa31/tests/spec/pin-source/const-parameter.rs",
+      "sha256": "8e0730314c88188983976678e61bb155484bfd7c840b1a9b48191fbf6512db9f",
+      "rustc_status": 0
+    },
+    {
+      "name": "two-fields",
+      "path": "pa31/tests/spec/pin-source/two-fields.rs",
+      "sha256": "9570d991d7fb3301aa8b7da3050c18db03311682ae951f13d26b30fe76527f4c",
+      "rustc_status": 0
+    },
+    {
+      "name": "wrong-target",
+      "path": "pa31/tests/spec/pin-source/wrong-target.rs",
+      "sha256": "9504da8070f8f19d14ab135a88b8c6a32ee184c81d46d57bc68e80c888042203",
+      "rustc_status": 1
+    },
+    {
+      "name": "union-target",
+      "path": "pa31/tests/spec/pin-source/union-target.rs",
+      "sha256": "c5a7a1df40b629485fc370235abc0e06433b9e893b525bc93468a14a4c2c2ddf",
+      "rustc_status": 1
+    },
+    {
+      "name": "duplicate",
+      "path": "pa31/tests/spec/pin-source/duplicate.rs",
+      "sha256": "5c12694195ce2a91d1128141b6c7e74445747fe890865e96ce52d6ffdc0d3691",
+      "rustc_status": 1
+    },
+    {
+      "name": "constructor-free",
+      "path": "pa31/tests/spec/pin-source/constructor-free.rs",
+      "sha256": "96c8821f7c1aec8be7adc89896670a8d13e5a72400b30df8919606d69081a128",
+      "rustc_status": 1
+    },
+    {
+      "name": "constructor-trait",
+      "path": "pa31/tests/spec/pin-source/constructor-trait.rs",
+      "sha256": "635dd8ad24528eabfca9809332e640cc8d11c24956e745fa45df5bd3c295c7a2",
+      "rustc_status": 1
+    },
+    {
+      "name": "constructor-other-owner",
+      "path": "pa31/tests/spec/pin-source/constructor-other-owner.rs",
+      "sha256": "f080bc20f872804047cdba625851f9e78ec3f32a5d8e9b74dba3e82fe58b29f1",
+      "rustc_status": 0
+    },
+    {
+      "name": "constructor-without-pin",
+      "path": "pa31/tests/spec/pin-source/constructor-without-pin.rs",
+      "sha256": "897fa665c4bb824d6e5df84878796e32087ab293a5911ee105eb4d2375bcb484",
+      "rustc_status": 0
+    },
+    {
+      "name": "constructor-body-type",
+      "path": "pa31/tests/spec/pin-source/constructor-body-type.rs",
+      "sha256": "2185fb10741538dd91a11576ea4a4aec8d0327840ac03f9dd733b065b2d9c149",
+      "rustc_status": 1
+    },
+    {
+      "name": "unsafe-call",
+      "path": "pa31/tests/spec/pin-source/unsafe-call.rs",
+      "sha256": "b07fca804e4e2c428443667ea1a0325e57eaa3eb672eb2eb61c3597ae33df467",
+      "rustc_status": 1
+    },
+    {
+      "name": "real-call",
+      "path": "pa31/tests/spec/pin-source/real-call.rs",
+      "sha256": "1bb06894c04825c81ff9181024aff18efb3dbbe0cb0ed9277b9e0e1ded9b11c8",
+      "rustc_status": 0
+    },
+    {
+      "name": "const-constructor",
+      "path": "pa31/tests/spec/pin-source/const-constructor.rs",
+      "sha256": "02feb6a6bb3fdec4048e61b5238c0bce4deb40cb46b953fb520d72916ec33d10",
+      "rustc_status": 0
+    },
+    {
+      "name": "nonconst-constructor",
+      "path": "pa31/tests/spec/pin-source/nonconst-constructor.rs",
+      "sha256": "a1ab4368b1ce624ff7e69a2d9e05f3f0e16c40ad56ff1012015b1fe200d51c42",
+      "rustc_status": 1
+    },
+    {
+      "name": "no-copy",
+      "path": "pa31/tests/spec/pin-source/no-copy.rs",
+      "sha256": "938a713180420af0bea1a53a7dbcd43287f2045e6ebf2e9ca55e8536c6dc5565",
+      "rustc_status": 1
+    },
+    {
+      "name": "unique-reference",
+      "path": "pa31/tests/spec/pin-source/unique-reference.rs",
+      "sha256": "897df59fad78aeb1c71b57a1e5b800e6c6ded59574fea81c323481d2c1cb00e2",
+      "rustc_status": 1
+    },
+    {
+      "name": "borrow-escape",
+      "path": "pa31/tests/spec/pin-source/borrow-escape.rs",
+      "sha256": "8319bad8581cb5380c7a0c4299252eadb1086dceff1b392da78f003e36342dfd",
+      "rustc_status": 1
+    },
+    {
+      "name": "ordinary-name",
+      "path": "pa31/tests/spec/pin-source/ordinary-name.rs",
+      "sha256": "44971f153509db9d4e65ac55d0b3bed8e4e199093426465ec3813bcd72e18fee",
+      "rustc_status": 0
+    },
+    {
+      "name": "native-ordinary-body",
+      "path": "pa31/tests/spec/pin-source/native-ordinary-body.rs",
+      "sha256": "e91df57051f3ede754c7f6610f48bf042c801fbca4d41e1e74eb80796447cd0f",
+      "rustc_status": 0,
+      "native_stdout": "record=5\nscalar=7\nrecord=5\nborrowed=9\nrecord=5\nrecord=3\nowned=8\n"
+    },
+    {
+      "name": "constructor-unused-lifetime",
+      "path": "pa31/tests/spec/pin-source/constructor-unused-lifetime.rs",
+      "sha256": "69df8523825665e622161c1a30cddbf34d49df3e0200b1919350f091f07b8d3e",
+      "rustc_status": 0
+    },
+    {
+      "name": "constructor-impl-lifetime",
+      "path": "pa31/tests/spec/pin-source/constructor-impl-lifetime.rs",
+      "sha256": "4333d5eae00e955497132b4dd2c9c508e3d425fe18d853c10bb3a29db22e4a4c",
+      "rustc_status": 0
+    }
+  ],
+  "auxiliary": [
+    {
+      "path": "pa31/tests/spec/pin-source/foundation.rs",
+      "sha256": "5ea59c5d57cc0f53cbae3aa5de08cb172f032752b29a15a9f93b24c46e025346"
+    },
+    {
+      "path": "pa31/tests/spec/pin-source/observer.c",
+      "sha256": "b7f90662de68b3df71f64d5604c2ac0cff9914a1549c2ff94669739d545d4e30"
+    }
+  ],
+  "history": {
+    "reference_v1": "obj/parallel/pin-source-v1/reference-v1/receipt.json",
+    "reference_v1_sha256": "0f2b04c0d03ad34f5a3632b2d9060a0fb432a70b0cd8d8d73904506e3ba617ec",
+    "extension": "Retain the initial 23 unchanged predictions; add actual unused and impl-owned lifetime frames. Declaration signatures are distinct from relocated callable signatures."
+  }
+}

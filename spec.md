@@ -424,6 +424,30 @@ do not add dense fields or a second global registry. Broader demanded signatures
 const and authenticated PA29 transport remain required and explicitly fenced
 where unsupported. Declaration completion alone cannot supply their execution.
 
+The source `pin` role completes through actual struct identity, typed fields and
+the existing nominal ledger. Its pinned declaration rule adds no generic-arity,
+field-count or representation requirement. Preserve ordinary field destruction;
+role identity supplies neither Copy nor a drop-suppression policy. The actual
+`new_unchecked` inherent method retains its source body, generic/lifetime domain,
+unsafe/const effects and ordinary proof path. Authenticate its real owner and
+declaration item in its source/body lifetime frame. Public callable signatures
+relocate early/late coordinates and cannot be compared directly to declaration
+signatures. Unused named lifetimes may extend the completed body domain after
+signature formation. A zero domain consumes the declaration transaction's
+completed empty scheme, never a lookup-created fallback. Publish the existing
+cold completion bit only after those producer facts exist. Do not allocate a
+second contract map or grow ordinary type/body records.
+
+The [Pin source packet](pa31/tests/spec/pin-source/README.md) distinguishes this
+producer from required pinning consumers. Rust-valid unused alternate declarations
+do not qualify an implicit pin-construction profile. Such a consumer must check
+the actual Pin owner, selected constructor, operands and result. Pinned receiver
+validity requires genuine Deref/LegacyReceiver or applicable receiver-feature
+proof and exact Self/lifetime identity; merely unwrapping a known nominal is
+insufficient. Actual Unpin, unsafe projection, async formation, cancellation and
+destruction keep their own obligations. Unsupported metadata retains its fence;
+local declaration completion grants no imported execution permission.
+
 The SourceCore expansion view is `--emit-expanded-crate` (or its count form),
 which runs actual configured expansion and binding completion. The PA7
 `--emit-expanded` session has no source context and must reject source options.

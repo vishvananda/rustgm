@@ -31,6 +31,12 @@ ABI/safety and higher-ranked/scoped lifetime contracts. Broader demanded method
 profiles, const and metadata remain required. Original core now stops at the
 real AsyncDrop declaration; see PA42/43's source-signature/destruction boundary.
 
+The [Pin source packet](tests/spec/pin-source/README.md) qualifies an actual
+prerequisite: nominal identity and ordinary `new_unchecked` source bodies retain
+real unsafe/const, move/borrow and field-destruction checks. Pinned receivers,
+implicit pin construction, Unpin/projection, async/future behavior and PA29
+transport remain required. This does not move the original AsyncDrop frontier.
+
 The [request-order checkpoint](../docs/pa31-request-order-checkpoint.md) extends
 the same cumulative source payer through the shared checked ordering kernel.
 Metadata and ordinary lookup keep their finite default limits. The original

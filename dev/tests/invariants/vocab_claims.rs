@@ -135,6 +135,8 @@ fn unimplemented_builtin_claims_stop_before_granting_layout_drop_or_auto_trait_s
                 | LangItem::UseCloned
                 | LangItem::FnPtrTrait
                 | LangItem::FnPtrAddr
+                | LangItem::Pin
+                | LangItem::PinNewUnchecked
         ) {
             continue;
         }

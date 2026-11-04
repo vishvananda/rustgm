@@ -8,9 +8,22 @@ all1193 PA19 text cases and strict all-target Clippy. CLI1c5be3ca advances uncha
 destruction/transport requirements. Wider FnPtr profiles and LIB-152's17 demanded
 use/capture operations remain required. No whole assignment after PA24 or original
 library artifact is complete. Full41918191470 onf01aa47d4 is terminal success with
-every gate; the new pointer checkpoint still requires successor full execution.
+every gate; full41929736419 onf94868db5 now also qualifies the pointer checkpoint.
 Root remains alone in the same warm btrfs tree; no worker/worktree/cache or
 resource limit is added. Current/predecessor pins and scoped cleanup remain.
+
+The [Pin source prerequisite](pa31-pin-source-checkpoint.md) now passes25 complete
+source/body outcomes, real constructor/mutation/field-drop native equality,
+1193 PA19 cases and strict all-target Clippy. CLI4003bfd2 preserves original core's
+LIB-154 boundary and every input/configuration/limit in17.0272s. Ordinary1024/4096
+paired blocks retain B/A0.986/1.066, including the6.6% overhead observation;
+there is no general speedup/regression-absence claim. Eleven
+independent receiver controls expose LIB-155 actual source Deref/Target as an
+earlier prerequisite than receiver proof. Keep all seven Rust-positive gaps and
+the genuine Future/async/destruction/transport work. No worker, tree, cache,
+resource change or whole PA release is added. Full41929736419 onf94868db5 is
+terminal success with every gate. It precedes the Pin checkpoint; successor full
+execution of its three private controls remains pending.
 
 [Full CI41906009661](https://github.com/vishvananda/rustgm/actions/runs/41906009661)
 oncc864ba92 is terminal success with every gate, including release/course,

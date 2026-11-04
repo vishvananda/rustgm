@@ -2,6 +2,7 @@
 mod binding_views;
 mod calls;
 mod frozen_effects;
+pub(in crate::sema) mod pinning;
 pub(crate) mod pointers;
 mod vocab_semantics;
 pub(in crate::sema) use frozen_effects::Prepared as ImportedCallEffects;

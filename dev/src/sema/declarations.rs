@@ -522,6 +522,7 @@ impl Checker<'_> {
         self.validate_associated_type_bounds()?;
         self.validate_required_family_bounds()?;
         self.validate_signatures()?;
+        super::compiler_items::pinning::complete(self.report, &mut self.facts)?;
         self.validate_trait_implementations()?;
         self.validate_const_parameter_types()?;
         self.validate_trait_impl_owners()?;
