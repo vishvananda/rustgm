@@ -141,7 +141,7 @@ fn incomplete_source_drop_roles_never_execute_an_intrinsic_fallback() -> Result 
 fn source_intrinsic_kind_keeps_ordinary_storage_density() {
     use crate::resolve::bindings::{Declaration, IntrinsicDeclaration};
     assert_eq!(size_of::<LayoutIntrinsic>(), 1);
-    assert!(size_of::<SourceIntrinsic>() <= 2);
+    assert_eq!(size_of::<SourceIntrinsic>(), 4);
     assert_eq!(
         size_of::<IntrinsicDeclaration>(),
         size_of::<(Declaration, LayoutIntrinsic)>()

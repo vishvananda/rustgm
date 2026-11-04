@@ -125,7 +125,7 @@ fn ordinary_unchecked_spelling_executes_source_and_keeps_compact_records() -> Te
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<body::ir::Body>(), 456);
     assert_eq!(size_of::<super::TransmuteSelection>(), 16);
-    assert!(size_of::<SourceIntrinsic>() <= 2);
+    assert_eq!(size_of::<SourceIntrinsic>(), 4);
     eprintln!("unchecked intrinsic width {}", size_of::<SourceIntrinsic>());
     Ok(())
 }

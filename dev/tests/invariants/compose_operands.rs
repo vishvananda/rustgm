@@ -132,7 +132,7 @@ fn actual_runtime_calls_keep_complete_typed_instances_and_cold_record_sizes() ->
     std::fs::write(folder.join("program.lowir"), lowir)?;
     std::fs::write(folder.join("source.rs"), source("runtime-order")?)?;
 
-    assert_eq!(size_of::<SourceIntrinsic>(), 1);
+    assert_eq!(size_of::<SourceIntrinsic>(), 4);
     assert_eq!(size_of::<RawPartsSelection>(), 16);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     Ok(())

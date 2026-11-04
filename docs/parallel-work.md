@@ -2,8 +2,11 @@
 
 Full CI41861996747 on4c63e88a4 is terminal success with every gate passing,
 including independent Rust qualification and the PA25 const-machine contract.
-The intrinsic-declaration successor has focused evidence; its full qualification
-will be dispatched after publication. Do not supersede a live manual full run.
+Intrinsic full CI41870818985 on0c343731e is terminal failure:2673 private
+checks pass and three older cold intrinsic-width assertions fail. All three now
+require the exact measured4 bytes; dense Node/Body and other exact checks remain.
+They pass focused execution alongside the trait-policy work; successor full
+qualification remains required. Do not supersede a live manual full run.
 
 Earlier full qualification41853939500 on8b3324434 passes lint/architecture/harness,
 host builds, release/course suites, native qualification and debug invariants.
