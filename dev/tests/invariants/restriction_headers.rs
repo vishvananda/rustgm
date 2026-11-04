@@ -221,13 +221,13 @@ fn observe_layouts() {
     assert_eq!(size_of::<crate::syntax::item::ItemKind>(), 28);
     assert_eq!(size_of::<crate::syntax::item::Item>(), 64);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
-    assert_eq!(size_of::<crate::resolve::bindings::policy::Features>(), 8);
+    assert_eq!(size_of::<crate::resolve::bindings::policy::Features>(), 16);
     assert_eq!(
         size_of::<crate::resolve::bindings::policy::MacroFeatures>(),
         1
     );
     // The cold policy includes the immutable source-contract limit snapshot.
-    assert_eq!(size_of::<crate::resolve::bindings::Source>(), 192);
+    assert_eq!(size_of::<crate::resolve::bindings::Source>(), 200);
     assert_eq!(size_of::<Package>(), 256);
     // Inline import work adds one lineage pointer and nine usize counters.
     assert_eq!(size_of::<Report>(), 3096);

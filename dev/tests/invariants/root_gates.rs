@@ -45,10 +45,10 @@ fn ordinary_requests_do_not_allocate_a_provider_or_library_policy() -> Result {
         assert!(!package.uses_source_bindings());
         assert!(package.library.is_none());
     }
-    assert_eq!(size_of::<Features>(), 8);
+    assert_eq!(size_of::<Features>(), 16);
     assert_eq!(size_of::<MacroFeatures>(), 1);
-    // The cold provider adds 112 bytes of macro-contract state to its 72-byte base.
-    assert_eq!(size_of::<SourceCore>(), 184);
+    // The cold provider includes 112 bytes of contracts and a second permission word.
+    assert_eq!(size_of::<SourceCore>(), 192);
     assert_eq!(size_of::<Package>(), 256);
     Ok(())
 }
@@ -181,7 +181,7 @@ fn compiler_root_options_preserve_independent_requests_in_both_source_modes() ->
         }
     }
     assert_eq!(size_of::<MacroFeatures>(), 1);
-    assert_eq!(size_of::<Features>(), 8);
+    assert_eq!(size_of::<Features>(), 16);
     assert_eq!(size_of::<Package>(), 256);
     Ok(())
 }

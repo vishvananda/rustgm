@@ -450,3 +450,16 @@ the caller's actual sizing obligations on the iterative solver stack. General
 nominal transport/imported consumers remain required. The unchanged original core
 now reaches source MaybeUninit, whose union storage, masks and unsafe operations
 remain hook-closure work; this component does not release the whole assignment.
+
+## Maintainer owned unsized parameter source checkpoint
+
+The genuine unsized_fn_params crate permission admits well-formed owned function
+parameters through the existing original-body move, loan and Sized proofs.
+Ordinary locals/results, nested bindings and owned capture environments stay
+sized. Compound unsized temporaries are rejected independently of type-fact
+deduplication. A shared cold index recognizes actual direct parameter bindings.
+See [source predictions](tests/spec/unsized-parameters/README.md) and the
+[qualified checkpoint](../docs/pa26-unsized-parameter-source-checkpoint.md).
+Concrete DST ABI, allocation/destruction/address profiles and imported ownership
+remain required. Unchanged str::len and println positives retain their required
+library boundaries. This does not complete PA26 or build original core.

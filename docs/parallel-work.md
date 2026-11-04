@@ -1,8 +1,9 @@
 # Parallel library bootstrap implementation
 
 Full qualification cadence: run41787601690 on6f1e3eb3d is terminal success
-with every gate passing. LLVM successor run41795595365 on3d4b3ae9d is live;
-poll that exact handle and do not supersede it.
+with every gate passing. LLVM successor run41795595365 on3d4b3ae9d failed eight stale cold-layout
+assertions. All eight now pass focused qualification; ordinary layouts retain
+exact checks. The unsized-parameter successor full run awaits publication.
 Predecessor run41781814852 on1f5a2b8d0 also passes every gate.
 Earlier41779219834 failed storage admission at7.9GiB against the8GiB CI
 reserve. CI retains assertions/overflow checks without host debug symbols and
@@ -12,7 +13,21 @@ concurrency cancels the earlier manual run. Source checkpoints may continue with
 focused evidence and push-triggered fast CI; dispatch successor full qualification
 only after its predecessor is terminal. No whole PA release is inferred.
 
-Current original-core frontier is LIB-138: unsized_fn_params at original lib.rs165.
+Current original-core frontier is LIB-139: with_negative_coherence at original lib.rs166.
+The [unsized parameter source checkpoint](pa26-unsized-parameter-source-checkpoint.md)
+qualifies actual crate permission, direct owned parameters, original-body moves,
+loans and the remaining Sized restrictions. Private11/production48/native2,
+PA22 356/356,62 matching source observations and actual generic/destructor7 9
+pass. Two str::len observations and the original println native remain explicit
+Rust-positive library gaps. CLI14fc5fcf reaches LIB-139 in17.97s/375opens with
+all722 input hashes, six configuration pins, fifteen equal constants, options,
+capAllow and finite limits unchanged. Concrete unsized ABI and imported ownership
+remain required. All eight stale cold-layout assertions from LLVM full CI are
+corrected with exact ordinary-record checks retained. Inventory actual negative
+coherence next under PA25/31/29. No whole PA or original artifact is established.
+Root stays alone in the existing warm btrfs tree with unchanged guards/cleanup.
+
+Previous original-core frontier was LIB-138: unsized_fn_params at original lib.rs165.
 The [LLVM linkage checkpoint](pa28-llvm-linkage-checkpoint.md) qualifies genuine
 foreign-item crate/macro authority and typed scalar ctpop/bitreverse/bswap kernels,
 with no ordinary C fallback. Private8/production9/native2, PA8 126/126, PA10 81/81,

@@ -1,0 +1,228 @@
+{
+  "profile": "Rust 1.98.0, Linux x86-64, cap-lints=allow",
+  "editions": [
+    2021,
+    2024
+  ],
+  "predicted_before_qualification": true,
+  "cases": [
+    {
+      "name": "request",
+      "path": "pa26/tests/spec/unsized-parameters/request.rs",
+      "status": 0,
+      "sha256": "fabfaf66aa9a6340945436b63609574ecde65c5ac4d62957d52b421af22dca03"
+    },
+    {
+      "name": "str",
+      "path": "pa26/tests/spec/unsized-parameters/str.rs",
+      "status": 0,
+      "sha256": "03264ff81a5838711b934c833cfc66976cb0effe2e500e97d9d4acfb32b347bd"
+    },
+    {
+      "name": "slice",
+      "path": "pa26/tests/spec/unsized-parameters/slice.rs",
+      "status": 0,
+      "sha256": "a3d73a24249392e06b19d511b7534d19172a412804098d70a7333dedba74b496"
+    },
+    {
+      "name": "generic",
+      "path": "pa26/tests/spec/unsized-parameters/generic.rs",
+      "status": 0,
+      "sha256": "bac75ac94693387eae90bdd97935794f23df995d37fd2108a492e6eade091eac"
+    },
+    {
+      "name": "generic-borrow",
+      "path": "pa26/tests/spec/unsized-parameters/generic-borrow.rs",
+      "status": 0,
+      "sha256": "2deaaf80bb85533aa47213a728a507bccbc2124d20b68e49599169737f026eca"
+    },
+    {
+      "name": "missing-str",
+      "path": "pa26/tests/spec/unsized-parameters/missing-str.rs",
+      "status": 1,
+      "sha256": "571c012df8882b62715f4755b8eb21cabd332453cdfbace443eb310be50533ed"
+    },
+    {
+      "name": "missing-slice",
+      "path": "pa26/tests/spec/unsized-parameters/missing-slice.rs",
+      "status": 1,
+      "sha256": "8ecc2b204143086428d869becf66950ae514b5190cc461740a826151967459e3"
+    },
+    {
+      "name": "missing-generic",
+      "path": "pa26/tests/spec/unsized-parameters/missing-generic.rs",
+      "status": 1,
+      "sha256": "fc4dca09829037c74142a3fc7383dbffefcc23bc061bf8b855bf9dc6ee49b688"
+    },
+    {
+      "name": "result",
+      "path": "pa26/tests/spec/unsized-parameters/result.rs",
+      "status": 1,
+      "sha256": "7135f4b94b20729750a28980fc3e1393242c96432828fc1ca028aa086b79962f"
+    },
+    {
+      "name": "local",
+      "path": "pa26/tests/spec/unsized-parameters/local.rs",
+      "status": 1,
+      "sha256": "227ff70085a057d8e9454ccbb57e6ffb4484ecc6fcf237fc38964f3685725a56"
+    },
+    {
+      "name": "tuple-pattern",
+      "path": "pa26/tests/spec/unsized-parameters/tuple-pattern.rs",
+      "status": 1,
+      "sha256": "84b3aa39f66b4ff7775361c4f58c8b25ac829a2c36ee7f74906bd585e73344a8"
+    },
+    {
+      "name": "shared-move",
+      "path": "pa26/tests/spec/unsized-parameters/shared-move.rs",
+      "status": 1,
+      "sha256": "2c6413ccc9babf0e5494bbe7045046c072fb2c021b1cae25de1f9e9544975c2f"
+    },
+    {
+      "name": "mutable-move",
+      "path": "pa26/tests/spec/unsized-parameters/mutable-move.rs",
+      "status": 1,
+      "sha256": "8551385301115900a557b605e3c784b456368d7cbc53f98e701db953d2787f3f"
+    },
+    {
+      "name": "double-move",
+      "path": "pa26/tests/spec/unsized-parameters/double-move.rs",
+      "status": 1,
+      "sha256": "f6845ec223df9eb29fbc437150693756973c0bb4522352d5a9c6a5db284dbcb1"
+    },
+    {
+      "name": "borrow-after-move",
+      "path": "pa26/tests/spec/unsized-parameters/borrow-after-move.rs",
+      "status": 1,
+      "sha256": "1f8fea7834c1205ee4ceae7cad6a9c4c4ea9256a963612287022c6e06a6a74f6"
+    },
+    {
+      "name": "forward",
+      "path": "pa26/tests/spec/unsized-parameters/forward.rs",
+      "status": 0,
+      "sha256": "176c70cac2df48806188135ec102ec23fec013a47e697fe55bdb9c502180641a"
+    },
+    {
+      "name": "return-reference",
+      "path": "pa26/tests/spec/unsized-parameters/return-reference.rs",
+      "status": 1,
+      "sha256": "e0dc96aa3347136c2298bf634e0844b6c7b36b0449249ffdfd376fa1eda878c6"
+    },
+    {
+      "name": "wildcard",
+      "path": "pa26/tests/spec/unsized-parameters/wildcard.rs",
+      "status": 0,
+      "sha256": "59b6f63aec732181dd17c0a41b6e25541a1eadf83fe9f3f8db96dfe1a1357fa3"
+    },
+    {
+      "name": "macro-allowance",
+      "path": "pa26/tests/spec/unsized-parameters/macro-allowance.rs",
+      "status": 1,
+      "sha256": "13caeb42e09f9af55d147036e164a269269f52ba5bdd2f2634f92dbac15e3d17"
+    },
+    {
+      "name": "macro-request",
+      "path": "pa26/tests/spec/unsized-parameters/macro-request.rs",
+      "status": 0,
+      "sha256": "a0b6136680641fc7aef1cbc4cb44d718c3a123e2903331b8352c5e9be93eb16f"
+    },
+    {
+      "name": "pointer-type",
+      "path": "pa26/tests/spec/unsized-parameters/pointer-type.rs",
+      "status": 0,
+      "sha256": "2c7d089fdcda9733f9c2c9df4a6bb2c5b5701f39e7a7711752b6a867c1557d26"
+    },
+    {
+      "name": "sized-bound",
+      "path": "pa26/tests/spec/unsized-parameters/sized-bound.rs",
+      "status": 1,
+      "sha256": "7d77a118524553cb6ff8452c329d51b6508e39b0e9c04c361732c4aa60593165"
+    },
+    {
+      "name": "removed-locals",
+      "path": "pa26/tests/spec/unsized-parameters/removed-locals.rs",
+      "status": 1,
+      "sha256": "724e41f2eb4da9b3b8ee1c7332ed851e90e04c742f622b3ac08657c251dc4f76"
+    },
+    {
+      "name": "borrowed-capture",
+      "path": "pa26/tests/spec/unsized-parameters/borrowed-capture.rs",
+      "status": 0,
+      "sha256": "1b1a4c10bdb3a4c1f3c7d9ff750f7c049d860029e5d0c938b008111c5f9790f9"
+    },
+    {
+      "name": "owned-capture",
+      "path": "pa26/tests/spec/unsized-parameters/owned-capture.rs",
+      "status": 1,
+      "sha256": "ed0631067be729508a3a2b3ff9692030b98278e043e344e338679eea547710b4"
+    },
+    {
+      "name": "enum-field",
+      "path": "pa26/tests/spec/unsized-parameters/enum-field.rs",
+      "status": 1,
+      "sha256": "56b50d140e5d67521a10e6d9dec054e87438a23348d31716a1e134608381df89"
+    },
+    {
+      "name": "array-element",
+      "path": "pa26/tests/spec/unsized-parameters/array-element.rs",
+      "status": 1,
+      "sha256": "46a84fbb0f22896ce98fe1b2706ca9244012ea03d3da4fa6e12cc5cd05c4a9a5"
+    },
+    {
+      "name": "reference-control",
+      "path": "pa26/tests/spec/unsized-parameters/reference-control.rs",
+      "status": 0,
+      "sha256": "217971389cfde467342abc3330e3f741e582003c6042e12173e52769b4fdf52a"
+    },
+    {
+      "name": "discard",
+      "path": "pa26/tests/spec/unsized-parameters/discard.rs",
+      "status": 0,
+      "sha256": "99cfe3ebb9edb0db2a2c40e44c74e2b8492d1cb63b3440cfff7d6f2ed23e0325"
+    },
+    {
+      "name": "non-place-block",
+      "path": "pa26/tests/spec/unsized-parameters/non-place-block.rs",
+      "status": 1,
+      "sha256": "ed2e20b987e5b94d6a17dc5e1712c28a4b5e13e16d37a18ad723480b5a7830b5"
+    },
+    {
+      "name": "non-place-if",
+      "path": "pa26/tests/spec/unsized-parameters/non-place-if.rs",
+      "status": 1,
+      "sha256": "8eafc2a5f6f96c15928fb4b56176eb107430558de2e8849c7028fd3ea4acf8b1"
+    },
+    {
+      "name": "parentheses",
+      "path": "pa26/tests/spec/unsized-parameters/parentheses.rs",
+      "status": 0,
+      "sha256": "3fded0145b576f97393f1091fa543e17d20887699ffa328288ae754b5030bcaa"
+    }
+  ],
+  "required": [
+    "actual crate feature permission; macro allowance alone is insufficient",
+    "by-value parameter ownership; mutable/shared borrows cannot move unsized referents",
+    "ordinary locals/results/captures and explicit Sized bounds remain sized",
+    "typed data and metadata ABI, forwarding, destruction, function addresses and fresh imported consumers"
+  ],
+  "required_positive_boundary": {
+    "case": "reference-control",
+    "reason": "Ordinary str::len fallback method metadata is not implemented; preserve this independent Rust-positive source as required PA26 library work."
+  },
+  "native": {
+    "path": "pa26/tests/spec/unsized-parameters/native.rs",
+    "stdout": "7\n9\n",
+    "role": "Actual generic original with ?Sized input, sized specialization and automatic destruction; concrete unsized ABI remains required."
+  },
+  "native_ffi": {
+    "path": "pa30/tests/spec/unsized-parameters/native.rs",
+    "observer": "pa30/tests/spec/unsized-parameters/observer.c",
+    "stdout": "7\n9\n",
+    "role": "PA30 external C observer for the actual generic original, sized specialization and automatic destruction; concrete unsized ABI remains required."
+  },
+  "files": {
+    "pa26/tests/spec/unsized-parameters/native.rs": "dd18d527ac01b035d8cb43a1a4d420ca348188919e8547ae09a0af72620c983d",
+    "pa30/tests/spec/unsized-parameters/native.rs": "bfd63ee51f7910896b943adcf8cb9a116d199a2ddde39d2dacd185c2c8c6adc7",
+    "pa30/tests/spec/unsized-parameters/observer.c": "53489d43d5c3a8b5dc933e3dea8ca3cabee42b202b21e16db38108211439d6cd"
+  }
+}

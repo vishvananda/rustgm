@@ -79,6 +79,7 @@ pub(in crate::resolve) enum Feature {
     DiagnosticUnmatched = 62,
     LinkCfg = 63,
     LinkLlvmIntrinsics = 64,
+    UnsizedFnParams = 65,
 }
 
 #[cfg(test)]
@@ -130,6 +131,7 @@ impl Request {
             // Documentation metadata grants no type, body or execution authority.
             "rustdoc_internals" => Self::Capability(Feature::RustdocInternals),
             "link_llvm_intrinsics" => Self::Capability(Feature::LinkLlvmIntrinsics),
+            "unsized_fn_params" => Self::Capability(Feature::UnsizedFnParams),
             "link_cfg" => Self::Capability(Feature::LinkCfg),
             "doc_cfg" => Self::Capability(Feature::DocCfg),
             "doc_notable_trait" => Self::Capability(Feature::DocNotableTrait),
@@ -209,6 +211,7 @@ impl Features {
             || self.has(Feature::CfgSanitize)
             || self.has(Feature::CfgFloatReliability)
             || self.has(Feature::AbiUnadjusted)
+            || self.has(Feature::UnsizedFnParams)
             || self.has(Feature::LinkLlvmIntrinsics)
             || self.has(Feature::LinkCfg)
             || self.has(Feature::DocCfg)

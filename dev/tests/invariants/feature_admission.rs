@@ -104,8 +104,8 @@ fn ordinary_admission_inspects_no_syntax_and_language_requests_stay_packed() -> 
     // The empty ordinary path must not even demand a valid loaded root.
     package.units.clear();
     assert_eq!(counted(&package)?, Work::default());
-    // The cold request word includes cfg_target_has_atomic at bit32.
-    assert_eq!(size_of::<super::super::policy::Features>(), 8);
+    // The cold request set spans two words for genuine language permissions.
+    assert_eq!(size_of::<super::super::policy::Features>(), 16);
     assert_eq!(size_of::<Position>(), 1);
     // Cold library-policy and token-mark pointers extend the 240-byte base.
     assert_eq!(
@@ -113,8 +113,8 @@ fn ordinary_admission_inspects_no_syntax_and_language_requests_stay_packed() -> 
         240 + size_of::<Option<Box<crate::resolve::stability::Library>>>()
             + size_of::<crate::expand::marks::Marks>()
     );
-    // The cold provider adds 112 bytes of macro-contract state to its 72-byte base.
-    assert_eq!(size_of::<super::super::SourceCore>(), 184);
+    // The cold provider includes 112 bytes of contracts and a second permission word.
+    assert_eq!(size_of::<super::super::SourceCore>(), 192);
     Ok(())
 }
 

@@ -64,6 +64,7 @@ mod selected_arguments;
 mod slots;
 mod text;
 mod trait_goals;
+mod unsized_operands;
 mod unsizing;
 use super::{
     declarations,
@@ -265,6 +266,7 @@ pub(super) struct Scratch {
     call_types: Option<Box<calls::CallTypes>>,
 }
 pub(super) struct Checker<'a> {
+    unsized_parameters: super::unsized_parameters::Draft,
     pattern_queries: Option<Box<super::constants::Scratch>>,
     pub(super) availability: super::traits::implementations::Availability,
     report: &'a Report,
@@ -378,6 +380,7 @@ impl<'a> Checker<'a> {
             report,
             facts,
             pattern_queries: None,
+            unsized_parameters: super::unsized_parameters::Draft::default(),
             state: State {
                 closures: None,
                 closure_children: Vec::new(),
@@ -1121,7 +1124,11 @@ impl Checker<'_> {
             let id = self.state.bindings[index];
             if let Some(term) = self.state.locals.remove(id.0 as usize) {
                 let ty = solved.types[term.0 as usize];
-                if !self.body_is_sized(body, ty)? {
+                if !self.body_is_sized(body, ty)?
+                    && !self
+                        .unsized_parameters
+                        .binding(self.report, self.facts, id)?
+                {
                     return Err(self.error(body, "local bindings must be sized"));
                 }
                 self.facts.definitions[id.0 as usize] = Some(ty);
@@ -1147,6 +1154,7 @@ impl Checker<'_> {
             let term = self.term(node)?;
             let key = self.key(node);
             let ty = solved.types[term.0 as usize];
+            self.require_sized_operand(node, ty)?;
             let conditions = (
                 ty,
                 self.state.type_annotations.contains(&node),

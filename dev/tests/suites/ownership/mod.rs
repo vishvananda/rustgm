@@ -91,3 +91,6 @@ mod template_ownership;
 mod temporary_scopes;
 #[path = "../../value_liveness.rs"]
 mod value_liveness;
+
+#[path = "../../unsized_calls.rs"]
+mod unsized_calls;

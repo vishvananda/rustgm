@@ -110,7 +110,7 @@ fn local_owner_keeps_ordinary_prelude_and_no_source_roles_or_features() -> TestR
     assert!(!report.package.permits_source_rust_call());
     assert_eq!(size_of::<Option<Box<Source>>>(), size_of::<usize>());
     assert_eq!(size_of::<Package>(), 256);
-    assert_eq!(size_of::<policy::Features>(), 8);
+    assert_eq!(size_of::<policy::Features>(), 16);
     assert_eq!(size_of::<policy::MacroFeatures>(), 1);
     eprintln!(
         "cfg cold layouts Features={} CfgGate={} CfgUse={} ConfiguredUse={}",

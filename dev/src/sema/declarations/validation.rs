@@ -37,6 +37,7 @@ impl Checker<'_> {
     }
     pub(super) fn validate_signatures(&mut self) -> Result<(), Error> {
         let mut allowances = self.report.macro_allowances();
+        let mut unsized_parameters = crate::sema::unsized_parameters::Draft::default();
         for index in 0..self.facts.functions.len() {
             let function = self.facts.functions[index];
             self.validate_trait_method(&function)?;
@@ -82,6 +83,7 @@ impl Checker<'_> {
                     ));
                 }
                 if !(shape.sized
+                    || (index < count && unsized_parameters.enabled(self.report)?)
                     || (function.body.is_none()
                         && self
                             .facts

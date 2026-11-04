@@ -128,3 +128,9 @@ sidecars together. Run all active earlier suites, lint, file/architecture audits
 and affected scaling measurements. Record independent checks before setting
 status active in `assignments.json` and adding the stage to the root report.
 Student export is a later operation: this repository owns the full solution.
+
+The [unsized source observer](tests/spec/unsized-parameters/README.md) executes
+a real ?Sized original, sized specialization and automatic destructor through
+ordinary C observations7 then9, independently compared with Rust. Concrete
+unsized parameter ABI, owned allocation handoff and cross-crate transport remain
+required; PA26 owns the source permission and ownership rules.

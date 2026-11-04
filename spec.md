@@ -5627,3 +5627,13 @@ local canonical index as a trusted type. Retain old metadata boundaries until
 the complete nominal/value and operation contract is transported. Share common
 declaration target/arity facts without replacing dedicated trait, projection or
 execution proof. See the [source qualification](docs/pa31-type-reflection-source-checkpoint.md).
+
+Owned unsized function parameters require actual crate permission and direct
+parameter identity. A lazy pass-local, prepaid index is shared across body
+checks; ordinary sized bindings build no index. Keep parameter ownership
+separate from ordinary locals/results, nested bindings, capture environments
+and explicit Sized duties. Check each compound unsized expression before
+published-type deduplication: equal types do not imply equal place authority.
+Imported by-value contracts retain mandatory Sized goals until genuine
+permission, metadata ABI and ownership proof are transported. A source feature
+request cannot authorize a borrowed-reference substitute for an owned DST.

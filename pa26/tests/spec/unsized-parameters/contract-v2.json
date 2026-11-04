@@ -1,0 +1,185 @@
+{
+  "profile": "Rust 1.98.0, Linux x86-64, cap-lints=allow",
+  "editions": [
+    2021,
+    2024
+  ],
+  "predicted_before_qualification": true,
+  "cases": [
+    {
+      "name": "request",
+      "path": "pa26/tests/spec/unsized-parameters/request.rs",
+      "status": 0
+    },
+    {
+      "name": "str",
+      "path": "pa26/tests/spec/unsized-parameters/str.rs",
+      "status": 0
+    },
+    {
+      "name": "slice",
+      "path": "pa26/tests/spec/unsized-parameters/slice.rs",
+      "status": 0
+    },
+    {
+      "name": "generic",
+      "path": "pa26/tests/spec/unsized-parameters/generic.rs",
+      "status": 0
+    },
+    {
+      "name": "generic-borrow",
+      "path": "pa26/tests/spec/unsized-parameters/generic-borrow.rs",
+      "status": 0
+    },
+    {
+      "name": "missing-str",
+      "path": "pa26/tests/spec/unsized-parameters/missing-str.rs",
+      "status": 1
+    },
+    {
+      "name": "missing-slice",
+      "path": "pa26/tests/spec/unsized-parameters/missing-slice.rs",
+      "status": 1
+    },
+    {
+      "name": "missing-generic",
+      "path": "pa26/tests/spec/unsized-parameters/missing-generic.rs",
+      "status": 1
+    },
+    {
+      "name": "result",
+      "path": "pa26/tests/spec/unsized-parameters/result.rs",
+      "status": 1
+    },
+    {
+      "name": "local",
+      "path": "pa26/tests/spec/unsized-parameters/local.rs",
+      "status": 1
+    },
+    {
+      "name": "tuple-pattern",
+      "path": "pa26/tests/spec/unsized-parameters/tuple-pattern.rs",
+      "status": 1
+    },
+    {
+      "name": "shared-move",
+      "path": "pa26/tests/spec/unsized-parameters/shared-move.rs",
+      "status": 1
+    },
+    {
+      "name": "mutable-move",
+      "path": "pa26/tests/spec/unsized-parameters/mutable-move.rs",
+      "status": 1
+    },
+    {
+      "name": "double-move",
+      "path": "pa26/tests/spec/unsized-parameters/double-move.rs",
+      "status": 1
+    },
+    {
+      "name": "borrow-after-move",
+      "path": "pa26/tests/spec/unsized-parameters/borrow-after-move.rs",
+      "status": 1
+    },
+    {
+      "name": "forward",
+      "path": "pa26/tests/spec/unsized-parameters/forward.rs",
+      "status": 0
+    },
+    {
+      "name": "return-reference",
+      "path": "pa26/tests/spec/unsized-parameters/return-reference.rs",
+      "status": 1
+    },
+    {
+      "name": "wildcard",
+      "path": "pa26/tests/spec/unsized-parameters/wildcard.rs",
+      "status": 0
+    },
+    {
+      "name": "macro-allowance",
+      "path": "pa26/tests/spec/unsized-parameters/macro-allowance.rs",
+      "status": 1
+    },
+    {
+      "name": "macro-request",
+      "path": "pa26/tests/spec/unsized-parameters/macro-request.rs",
+      "status": 0
+    },
+    {
+      "name": "pointer-type",
+      "path": "pa26/tests/spec/unsized-parameters/pointer-type.rs",
+      "status": 0
+    },
+    {
+      "name": "sized-bound",
+      "path": "pa26/tests/spec/unsized-parameters/sized-bound.rs",
+      "status": 1
+    },
+    {
+      "name": "removed-locals",
+      "path": "pa26/tests/spec/unsized-parameters/removed-locals.rs",
+      "status": 1
+    },
+    {
+      "name": "borrowed-capture",
+      "path": "pa26/tests/spec/unsized-parameters/borrowed-capture.rs",
+      "status": 0
+    },
+    {
+      "name": "owned-capture",
+      "path": "pa26/tests/spec/unsized-parameters/owned-capture.rs",
+      "status": 1
+    },
+    {
+      "name": "enum-field",
+      "path": "pa26/tests/spec/unsized-parameters/enum-field.rs",
+      "status": 1
+    },
+    {
+      "name": "array-element",
+      "path": "pa26/tests/spec/unsized-parameters/array-element.rs",
+      "status": 1
+    },
+    {
+      "name": "reference-control",
+      "path": "pa26/tests/spec/unsized-parameters/reference-control.rs",
+      "status": 0
+    },
+    {
+      "name": "discard",
+      "path": "pa26/tests/spec/unsized-parameters/discard.rs",
+      "status": 0
+    },
+    {
+      "name": "non-place-block",
+      "path": "pa26/tests/spec/unsized-parameters/non-place-block.rs",
+      "status": 1
+    },
+    {
+      "name": "non-place-if",
+      "path": "pa26/tests/spec/unsized-parameters/non-place-if.rs",
+      "status": 1
+    },
+    {
+      "name": "parentheses",
+      "path": "pa26/tests/spec/unsized-parameters/parentheses.rs",
+      "status": 0
+    }
+  ],
+  "required": [
+    "actual crate feature permission; macro allowance alone is insufficient",
+    "by-value parameter ownership; mutable/shared borrows cannot move unsized referents",
+    "ordinary locals/results/captures and explicit Sized bounds remain sized",
+    "typed data and metadata ABI, forwarding, destruction, function addresses and fresh imported consumers"
+  ],
+  "required_positive_boundary": {
+    "case": "reference-control",
+    "reason": "Ordinary str::len fallback method metadata is not implemented; preserve this independent Rust-positive source as required PA26 library work."
+  },
+  "native": {
+    "path": "pa26/tests/spec/unsized-parameters/native.rs",
+    "stdout": "7\n9\n",
+    "role": "Actual generic original with ?Sized input, sized specialization and automatic destruction; concrete unsized ABI remains required."
+  }
+}
