@@ -71,6 +71,12 @@ The unpublished [hidden glob reexport checkpoint](../docs/pa40-hidden-glob-reexp
 adds completed resolver events, exact public import chains and namespace-sensitive
 expectations, with the next unchanged original-core boundary recorded explicitly.
 
+The [cost-owner successor](../docs/pa40-glob-payer-checkpoint.md) preserves each
+import/diagnostic payer and shares validation through existing canonical source
+selections. It retains exact destination/glob/source witnesses and both uncapped
+and Allow behavior without increasing limits. Original core advances to the
+UseCloned semantic contract; no library artifact or PA40 release is inferred.
+
 The unpublished [ineffective unstable trait impl checkpoint](../docs/pa40-ineffective-unstable-impl-checkpoint.md)
 adds genuine resolved header events, exact unstable-attribute witnesses and
 header-only expectation completion, with imported transport remaining explicit.

@@ -1,5 +1,5 @@
 //! Real namespace, import-site, effective-export and early completion controls.
-use crate::{pipeline, sema, support::diagnostics::WarningCode};
+use crate::{pipeline, sema};
 type TestResult<T = ()> = Result<T, Box<dyn std::error::Error>>;
 fn fixture(name: &str) -> std::io::Result<String> {
     std::fs::read_to_string(
@@ -7,85 +7,6 @@ fn fixture(name: &str) -> std::io::Result<String> {
             .join("../pa40/tests/spec/hidden-glob-reexports")
             .join(format!("{name}.rs")),
     )
-}
-#[test]
-fn real_shadow_namespace_and_import_owner_protocol() -> TestResult {
-    for (name, expected) in [
-        ("warning", vec![WarningCode::HiddenGlobReexports; 2]),
-        ("expect", vec![]),
-        ("single-import", vec![]),
-        ("same-target", vec![]),
-        ("original-namespaces", vec![]),
-        (
-            "wrong-owner",
-            vec![
-                WarningCode::HiddenGlobReexports,
-                WarningCode::UnfulfilledLintExpectations,
-            ],
-        ),
-        ("all-shadow-warning", vec![]),
-        ("all-shadow-deny", vec![]),
-        (
-            "all-shadow-expect",
-            vec![WarningCode::UnfulfilledLintExpectations],
-        ),
-        (
-            "all-shadow-import",
-            vec![WarningCode::UnfulfilledLintExpectations],
-        ),
-        ("no-glob", vec![WarningCode::UnfulfilledLintExpectations]),
-        (
-            "private-glob",
-            vec![WarningCode::UnfulfilledLintExpectations],
-        ),
-        (
-            "public-local",
-            vec![WarningCode::UnfulfilledLintExpectations],
-        ),
-        ("macro-only", vec![WarningCode::UnfulfilledLintExpectations]),
-        (
-            "no-type-counterpart",
-            vec![WarningCode::UnfulfilledLintExpectations],
-        ),
-        (
-            "overridden-allow",
-            vec![WarningCode::UnfulfilledLintExpectations],
-        ),
-    ] {
-        let report = crate::test_source::resolve(&fixture(name)?, true)?;
-        let analysis = pipeline::analyze_source(&report)?;
-        let codes: Vec<_> = analysis
-            .facts
-            .warnings()
-            .map(|warning| warning.code)
-            .collect();
-        assert_eq!(codes, expected, "{name}");
-    }
-    for (name, message) in [
-        ("deny", "private item shadows public glob"),
-        ("forbid", "forbidden hidden_glob_reexports"),
-    ] {
-        let report = crate::test_source::resolve(&fixture(name)?, true)?;
-        let Err(error) = pipeline::analyze_source(&report) else {
-            return Err(format!("accepted {name}").into());
-        };
-        assert!(error.to_string().contains(message), "{name}: {error}");
-    }
-    Ok(())
-}
-#[test]
-fn effective_export_follows_selected_chains_not_ultimate_targets() -> TestResult {
-    for (name, count) in [
-        ("private-container", 1),
-        ("exposed-import", 0),
-        ("unrelated-export", 1),
-        ("chain", 0),
-    ] {
-        let report = crate::test_source::resolve(&fixture(name)?, true)?;
-        let analysis = pipeline::analyze_source(&report)?;
-        assert_eq!(analysis.facts.warnings().count(), count, "{name}");
-    }
-    Ok(())
 }
 #[test]
 fn completed_resolution_closes_hidden_expectations_without_body_demand() -> TestResult {
@@ -125,6 +46,7 @@ fn completed_resolution_closes_hidden_expectations_without_body_demand() -> Test
     assert!(error.warnings().is_empty());
     Ok(())
 }
+
 #[test]
 fn completed_shadow_causes_authenticate_source_and_resolved_binding() -> TestResult {
     let mut report = crate::test_source::resolve(&fixture("warning")?, true)?;

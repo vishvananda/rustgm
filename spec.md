@@ -455,6 +455,24 @@ Close this early lint at completed name resolution without additional body
 demands. The [finite checkpoint](docs/pa40-hidden-glob-reexports-checkpoint.md)
 records namespace, effective visibility, work/storage and original-source controls.
 
+Import lineage and lint diagnostics keep their own cumulative cost histories.
+Do not transfer all prior resolver allocations into the lint producer's separate
+storage ceiling. Prepay new diagnostic vector growth, witness construction and
+publication with the existing lint owner; import traversal stays paid by its
+original meter. Check both failed owners and the actual cap even before an empty
+result, and publish no partial cause vector. Keep all exact source and binding
+witnesses under both uncapped and Allow policies.
+
+During one immutable exported-import walk, memoize complete selected-source
+identities from the existing lineage intern table. Each destination still checks
+its actual edge and target and records its own exported glob before reusing that
+source proof. Authenticate a new selection against the exact current binding
+before publishing its memo. The memo is local to that walk: source ordinals alone
+cannot authorize reuse after a changed resolution. Fan-out does not require a
+second visited entry for every destination that shares the same source selection.
+Pay growth and failed attempts before mutation, retaining missing-edge and stale
+selection errors and the original finite limits.
+
 Import fan-out shares immutable selected-source records within the existing cold
 lineage owner. Each destination/import edge keeps a checked dense source index.
 Intern the complete selection: source scope, name, namespace, hygiene context,

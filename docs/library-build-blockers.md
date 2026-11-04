@@ -1,5 +1,13 @@
 # Library build blocker tracker
 
+[Full CI41906009661](https://github.com/vishvananda/rustgm/actions/runs/41906009661)
+oncc864ba92 is terminal success with every gate, including release/course,
+native, debug, independent Rust, const-machine and private request-payer checks.
+It qualifies the preceding request-order/Destruct repair. The current
+[glob-payer checkpoint](pa40-glob-payer-checkpoint.md) passes six public tests
+and PA6259/259 in59.39s, plus eight independent outcomes and24 unchanged legacy
+CLI contracts; four new private payer/cache controls require successor full CI.
+
 [Full CI41900207733](https://github.com/vishvananda/rustgm/actions/runs/41900207733)
 on75033d317 is terminal failure:2612 private checks pass and79 share one
 Destruct role-flag transport fence failure; one linking failure has the same
@@ -7,8 +15,7 @@ cause. All ten fundamental/forced-dyn controls pass. One frontend expectation
 still required an already implemented unsupported Tuple-header boundary.
 The [request-order successor](pa31-request-order-checkpoint.md) repairs the
 existing encoded-role fence and requires actual callback lowering. Its public
-13-test gate passes in140.76s; new private payer checks and complete successor
-release/native/debug/independent qualification still require CI.
+13-test gate passes in140.76s; its original successor qualification is now the terminal successful run above.
 
 Earlier full CI41889087416 on05d3a187b is terminal success with every gate
 passing, including release/course, native, debug, independent Rust and
@@ -55,25 +62,23 @@ oracles already use. The runner now scopes that setting to its rustc child;
 all15 whole-program outcomes pass even with parent RUSTC_BOOTSTRAP=0. The later
 PA25 const-machine stage was skipped in that run; the successor above passes it.
 
-Current original-core frontier is LIB-151: source lint-policy storage.
-The [request-order checkpoint](pa31-request-order-checkpoint.md) clears LIB-150
-using the actual source payer and existing fallible ordering kernel. Source
-history, sticky failed work and attempted/retained scratch are preserved; the
-metadata and ordinary lookup limits stay finite. All five independently valid
-libraries pass; the131072-function regression exceeds the old metadata ceiling
-and still rejects exhausted source work. Actual source-callable exports and
-full-staged callback lowering pass, alongside feature/forced-dyn controls.
-CLI21c9b6ca preserves all722 source/package hashes, six pins, fifteen values,
-original options/capAllow and finite limits, and reaches source lint-policy
-storage budget exceeded in18.616s/375opens. An unchanged-binary trace identifies
-complete_hidden_globs transferring all4069745 steps/56637440 attempted lineage
-bytes into an already44446065-byte lint producer. Keep the import meter and
-failed attempts, but account actual new diagnostic work/witness storage under
-its own owner. Preserve allow/deny/expect and source/cap identity; no guard
-increase or witness deletion. Unrelated warning parity remains deferred.
+Current original-core frontier is LIB-152: actual UseCloned semantics.
+The [glob-payer checkpoint](pa40-glob-payer-checkpoint.md) clears LIB-151 without
+raising a guard. Import and diagnostic histories retain their actual owners;
+new causes prepay allocation and publish transactionally. Export validation
+reuses existing canonical source selections within each immutable walk while
+checking every destination and recording each exported glob. The262144-edge/
+16384-function source now compiles uncapped and Allow, with real warning/expect
+opponents, stale-source/new-walk private controls and exact legacy output checks.
+CLIa3e2a61a preserves all722 source/package hashes, six pins, fifteen values,
+original options/capAllow and finite limits, and reaches file71 byte16409 in
+17.2104s/375opens. The first-open map and exact byte context identify clone.rs427's
+actual #[lang="use_cloned"] trait UseCloned:Clone. Confirm the pinned producer
+and genuine Clone/use/capture consumers under PA31/20/26/24/29. Do not merely
+add the role to a skip list, fabricate Copy/Clone proof or replace source bodies.
 LIB-148 alias demand, LIB-149 custom autos, Field/TransmuteFrom, general transport,
 whole assignments and every original core/alloc/std artifact remain required.
-Root remains alone in guarded warm btrfs scratch.
+Root remains alone in guarded warm btrfs scratch with current/predecessor pins.
 
 Previous original-core frontier was LIB-147: forced dyn policy on the actual Field trait.
 The [fundamental checkpoint](pa31-fundamental-policy-checkpoint.md) clears the
@@ -680,11 +685,12 @@ actual native hints and the future authenticated MIR-import obligation.
 | LIB-144 | Complete name vocabulary and finite typed headers qualified; required operations/prerequisites retained | Intrinsic declarations, exact signatures, reached semantics and transport | PA28 +PA31 source authority +PA41 target operations +PA29 transport +PA26/30/33 language-role producers | Root only | [Checkpoint](pa28-intrinsic-declarations-checkpoint.md):315 names,296 new identities/100 profiles,668 independent outcomes;660 candidate matches. Six valid named-role headers and two valid CTFE/runtime calls remain explicit positive gaps. Private7/production659/native7 9, all722 inputs, six pins, fifteen values and finite limits preserved. CLI35259595 advances to LIB-145. Whole assignments and original artifacts remain required. |
 | LIB-145 | Local trait policy/Min checks and native dispatch qualified; quantified/imported closure required | Ordinary rustc_specialization_trait, actual impl authority and always-applicable conditions | PA20 +PA31 source owners +PA29 policy/body transport | Root only | [Checkpoint](pa31-applicable-traits-checkpoint.md):private10/production43,44 independent outcomes with one retained valid quantified gap; actual marked-supertrait/ordinary Rust7 9. Existing sizing-role metadata remains supported; general unencoded policy is fenced. All722 inputs, six pins, fifteen values and finite limits preserved. CLI5829cc20 advances to LIB-146; whole assignments/artifacts remain required. |
 | LIB-146 | Local source owner policy qualified; general transport/compatible-world closure required | Fundamental policy on actual nominals/traits, beginning FieldRepresentingType | PA20 coherence +PA26 language-role consumers +PA31 annotation authority +PA29 trait/nominal transport | Root only | [Checkpoint](pa31-fundamental-policy-checkpoint.md): private10/production34+43 and PA201389/1389,34 independent source and12 genuine two-crate Rust outcomes, actual native7 9. Existing sizing wire stays supported; unencoded general policy is fenced. Paid iterative locality visits shared subtrees once, keeps parameter order and allocates no ordinary-root traversal state. All722 inputs, six pins, fifteen values and finite limits remain unchanged. CLI5675aaaf advances to LIB-147. |
-| LIB-147 | Finite local policy/native qualified; alias/custom-auto/general transport closure required | General forced dyn incompatibility and actual defining trait ownership | PA23 trait objects +PA26 Field consumers +PA31 authority +PA29 policy transport | Root only | [Checkpoint](pa31-forced-dyn-policy-checkpoint.md): public6/40 new+34 fundamental+43 specialization cases, PA23415/415 and actual native7 9;50.82s gate. One shared header/payer and cached typed inherited rejection replace the role allowlist. All43 independent outcomes retained; three valid gaps are LIB-148/149. Private owner/budget probes require CI after local cold-harness timeout. CLI4a3107d3 advances unchanged722-input core to LIB-150. Full Field semantics and original artifacts remain. |
+| LIB-147 | Finite local policy/native qualified; alias/custom-auto/general transport closure required | General forced dyn incompatibility and actual defining trait ownership | PA23 trait objects +PA26 Field consumers +PA31 authority +PA29 policy transport | Root only | [Checkpoint](pa31-forced-dyn-policy-checkpoint.md): public6/40 new+34 fundamental+43 specialization cases, PA23415/415 and actual native7 9;50.82s gate. One shared header/payer and cached typed inherited rejection replace the role allowlist. All43 independent outcomes retained; three valid gaps are LIB-148/149. The owner/budget probes pass in full CI41906009661 after the earlier local cold-harness timeout. CLI4a3107d3 advances unchanged722-input core to LIB-150. Full Field semantics and original artifacts remain. |
 | LIB-148 | Required valid Rust gap found by the forced-dyn contract | Lazy unused object aliases and real demanded formation | PA21 alias requirement DAG +PA23 actual dyn compatibility/bindings +PA31 source contracts | Root only | Pinned Rust accepts forced-dyn-policy/alias-object.rs and rejects alias-object-used.rs. Current candidate rejects both, with the early eager object-use validator. Preserve the Rust0 requirement in required-cases.tsv. Reuse the typed alias dependency/instantiation graph for real declaration/body uses and scoped substitutions; retain Rust's early Self-supertrait and binding-name rules. No source/rendered-text rescanning or unused-alias waiver that forgets real uses. Broader alias/object formation remains required. |
 | LIB-149 | Required valid Rust gaps found by the forced-dyn contract | Genuine custom source auto-trait declarations, structural proof and marker-only objects | PA20 auto/coinductive proof +PA23 marker identities +PA31 actual source producer +PA29 transport | Root only | Pinned Rust accepts auto-declaration.rs and auto-object.rs; candidate explicitly lacks custom source auto traits. Both remain Rust0 requirements in required-cases.tsv. Preserve actual auto/unsafe/negative/default structural semantics and canonical object-marker identity; do not turn the declaration into an ordinary principal or infer body/const/intrinsic permission. General source transport and complete ordinary/core artifacts remain open. |
-| LIB-150 | Observed original-core request-order frontier cleared; complete source/transport requirements remain | Request ordering and lookup charge the actual cumulative caller | PA31 library stability/inventory +PA29 checked ordering kernel +PA20 feature predicate/API consumers | Root only | [Checkpoint](pa31-request-order-checkpoint.md): shared caller-paid kernel, preserved history/sticky failure, prepaid transactional index ordering and retained scratch. Public13 and five independent source scales pass;131072 functions cross the old1M ceiling. Default metadata/ordinary lookup limits remain. CLI21c9b6ca advances unchanged722-input core to LIB-151; new private boundary tests and full successor CI remain required. |
-| LIB-151 | Current original-core frontend frontier; exact failing handoff traced | Whole import-lineage debt is transferred into the separate lint producer | PA12 resolution provenance +PA40 allow-deny-expect/diagnostics +PA31 source identity/payload owners | Root only | CLI21c9b6ca clears request ordering and reaches source lint storage in18.616s/375opens with identical722 inputs/options/pins/capAllow/limits. Two unchanged-binary probes identify complete_hidden_globs adding4069745 steps/56637440 bytes to prior5094035 steps/44446065 bytes:101083505 bytes exceed64MiB. Keep the actual import meter/debt and account new diagnostic work/retained cause witnesses under the proper owner. Preserve source/cap identity, deferred expectations and hard failures. No limit increase or unrelated warning-parity work. |
+| LIB-150 | Observed original-core request-order frontier cleared; complete source/transport requirements remain | Request ordering and lookup charge the actual cumulative caller | PA31 library stability/inventory +PA29 checked ordering kernel +PA20 feature predicate/API consumers | Root only | [Checkpoint](pa31-request-order-checkpoint.md): shared caller-paid kernel, preserved history/sticky failure, prepaid transactional index ordering and retained scratch. Public13 and five independent source scales pass;131072 functions cross the old1M ceiling. Default metadata/ordinary lookup limits remain. CLI21c9b6ca advances unchanged722-input core to LIB-151; private boundary checks and every full qualification gate pass in CI41906009661; later import/lint work has its own qualification. |
+| LIB-151 | Observed original-core storage frontier cleared; successor private/full CI required | Separate import/diagnostic payers and canonical selected-source export validation | PA6 imports/provenance +PA40 diagnostics/expectations +PA31 cost/source owners | Root only | [Checkpoint](pa40-glob-payer-checkpoint.md): original histories remain finite; new diagnostic allocations prepay before publication. One immutable walk memoizes actual interned selections, validates each destination and exports every glob. Source262144 contributions/16384 functions passes uncapped/Allow; eight Rust outcomes,24 exact legacy CLI triples, public6/PA6259 pass. CLIa3e2a61a advances unchanged722-input core to LIB-152. New private sticky/cap/source-sharing controls and full successor CI remain required. |
+| LIB-152 | Current original-core frontend frontier | Genuine UseCloned source role and demanded Clone/use/capture semantics | PA31 actual source contract +PA20 trait proof +PA26 Clone hooks +PA24 capture/use extensions +PA29 transport / clone.rs427 | Root only | CLIa3e2a61a clears lint/import budgets and reaches source compiler language item semantic contract is not implemented at file71 byte16409. The first-open map and exact source bytes identify actual trait UseCloned:Clone and #[lang="use_cloned"]. Establish pinned target/header/feature/macro/Clone semantics and actual demanded consumers with independent/native opponents; preserve ordinary versus imported identity and metadata fences. Do not add a bare require_supported skip, infer Copy/Clone proof from the role or substitute source bodies. All722 hashes/options/pins/capAllow/limits remain fixed; no original crate artifact exists. |
 | Remaining raw language-item semantic inventory | Declarations checked;98 builtin semantic profiles explicitly unsupported | Actual operators, associated hooks, async/drop/pinning, field reflection, ranges and weak memory hooks | Earliest actual PA23–PA31/40/41 consumer units +PA29 transport / compiler-language-claims packet | Root only | The pinned100-name raw inventory is not a cfg-active blocker count. Shared target/arity/foreign validation and135 independent cases are qualified, but unsupported semantic consumers stop explicitly before ordinary checking can infer absence. Implement each actual builtin relation/runtime contract and add genuine source/native/imported consumers before removing its fence. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
@@ -857,7 +863,7 @@ concrete; a private Ready state is not an executable result.
 
 | Owner | Issues and owning assignments | Next observable exit |
 | --- | --- | --- |
-| Root, direct compiler owner; sole worker | LIB-151 import/lint cost handoff; PA12/40/31 | Two unchanged-binary probes identify the complete_hidden_globs transfer:56.6MB of import lineage debt added to an existing44.4MB lint producer. Preserve original import accounting; pay actual diagnostic work/witness storage under its owner, with source/cap identity, sticky failures and allow/deny/expect intact. Verify unchanged core again. Keep payer private/full CI, LIB-148 alias debt, LIB-149 custom autos, Field/TransmuteFrom, imports and all unfinished requirements. Root stays alone in guarded warm btrfs scratch. |
+| Root, direct compiler owner; sole worker | LIB-152 actual UseCloned contract; PA31/20/26/24/29 | CLIa3e2a61a clears import/lint cost accounting and reaches clone.rs427 UseCloned at file71 byte16409 with identical722 hashes/configuration/limits. Research the pinned source and implement actual producer/proof/use semantics with independent/native controls; retain transport and cap/feature/borrow boundaries. Keep new private/full CI, LIB-148 alias debt, LIB-149 autos, Field/TransmuteFrom and every unfinished assignment/artifact requirement. Root stays alone in guarded warm btrfs scratch. |
 | `const_call_review`, stopped at user request | Confusables/MustNotSuspend source handoff complete and integrated | No queued job, build or source edit. Root owns continuation. |
 | `lint_expectations`, stopped at user request | SourceFrom/v9 component69 and native26 complete; read-only merge review integrated | No queued job, build or source edit. Root owns continuation. |
 | Root, retained formatting/panic lane | LIB-029/021/034/055/057/073/077, PA25–28/31 | Finite Debug array/native consumer and exact borrowed-call repair are qualified. Full original Count/Formatter/write/runtime parity, other derive families, metadata and original crate consumers remain required when an actual source demand reaches them. |

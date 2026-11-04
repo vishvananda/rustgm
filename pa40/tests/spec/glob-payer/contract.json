@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "ownership": [
+    "PA6 import names/provenance",
+    "PA40 lint policy and actual diagnostics",
+    "PA31 source/cost identity"
+  ],
+  "source_generation": [
+    "Start with #![expect(hidden_glob_reexports)] followed by newline and mod base{.",
+    "Append pub mod leaf{index}{} for index in range(fanout_width), then } and newline.",
+    "Append pub mod fanout{index}{pub use super::base::*;mod leaf0{}} and newline for index in range(fanout_width).",
+    "Append #[doc=\"retained\"]pub fn owner{index}(){} and newline for index in range(attributed_functions)."
+  ],
+  "cases": [
+    {
+      "fanout_width": 8,
+      "attributed_functions": 32,
+      "sha256": "8c8c9d9cf0991f6176729f63d0adc142701a249827dbe53ab0afa946396931f0",
+      "rustc_status": 0,
+      "candidate_required_status": 0,
+      "caps": [
+        "uncapped",
+        "allow"
+      ]
+    },
+    {
+      "fanout_width": 32,
+      "attributed_functions": 128,
+      "sha256": "7c05d7f9cb3d03b86da4c2590f5c82916f8c46484f502bb5f49fdcb13e4299b9",
+      "rustc_status": 0,
+      "candidate_required_status": 0,
+      "caps": [
+        "uncapped",
+        "allow"
+      ]
+    },
+    {
+      "fanout_width": 128,
+      "attributed_functions": 1024,
+      "sha256": "67ad872e604dcd5ebb6b9f0a9fd03169a4b9d3e8ea8ffdc60f60878d9bf659c4",
+      "rustc_status": 0,
+      "candidate_required_status": 0,
+      "caps": [
+        "uncapped",
+        "allow"
+      ]
+    },
+    {
+      "fanout_width": 512,
+      "attributed_functions": 16384,
+      "sha256": "83892c950fc4012782e1cd0acad686e1f6e732bcb2b48d9b4a82aaa900fe813e",
+      "rustc_status": 0,
+      "candidate_required_status": 0,
+      "caps": [
+        "uncapped",
+        "allow"
+      ]
+    }
+  ],
+  "requirements": [
+    "Use completed expanded name resolution or --emit-types; plain --emit-names alone does not exercise this producer.",
+    "Both uncapped and Allow compilations complete the actual source with no warnings. The uncapped root expectation is fulfilled from real namespace causes; Allow keeps its witnessed expectation deferred, never fulfilled.",
+    "Import work/attempted allocations remain cumulative under their existing finite payer. Earlier resolver history is not added to a separate smaller lint budget.",
+    "The existing lint producer prepays new Cause vector growth, copied slots, source witnesses and publication before allocation or mutation. Failed attempts remain sticky and publish no partial cause vector.",
+    "Keep exact source/import/counterpart identity, deterministic event ordering, allow/deny/forbid/expect, empty/forged/exhausted opponents and ordinary record widths.",
+    "The retained declaration/binding graph has fanout_width squared contributions: scaling is measured against actual output, not assumed linear in fanout_width."
+  ]
+}

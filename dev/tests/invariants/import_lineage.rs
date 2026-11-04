@@ -302,3 +302,50 @@ fn restricted_namespace_aliases_share_snapshots_and_pay_linear_growth() -> TestR
     }
     Ok(())
 }
+
+#[test]
+fn fanout_exports_memoize_canonical_sources_and_revalidate_each_new_walk() -> TestResult {
+    use std::fmt::Write as _;
+    for width in [8, 32, 128] {
+        let mut source = String::from("mod base {");
+        for index in 0..width {
+            write!(source, "pub mod item{index}{{}}")?;
+        }
+        source.push('}');
+        for index in 0..width {
+            write!(source, "pub mod fanout{index}{{pub use super::base::*;}}")?;
+        }
+        let mut report = expand(&source)?;
+        let mut work = report.imports.take().ok_or("actual import work")?;
+        let owner = report.resolution.imports[0].node;
+        let before = work.lineage_budget;
+        let exported = work.exported_globs(&report.resolution, owner)?;
+        // Every distinct public glob is exported even when sources are shared.
+        assert_eq!(exported.len(), width);
+        assert!(work.lineage_budget.bytes - before.bytes < 1024 * width + 8192);
+        assert!(work.lineage_budget.steps - before.steps < 8 * width * width + 1000 * width);
+        let lineage = work.lineage.as_deref().ok_or("selected source owner")?;
+        assert_eq!(lineage.sources.len(), width);
+        let selected = lineage.sources.first().ok_or("actual source")?;
+        let key = selected.key.ok_or("actual selected namespace")?;
+        report.resolution.bindings.insert_key(
+            key,
+            Binding {
+                ambiguous: true,
+                ..selected.binding
+            },
+        )?;
+        // The completed memo belongs to one immutable traversal, never a later
+        // resolution state with identical source ordinals and changed bindings.
+        let error = work
+            .exported_globs(&report.resolution, owner)
+            .err()
+            .ok_or("stale source proof was reused")?;
+        assert!(
+            error
+                .to_string()
+                .contains("completed import source selection changed")
+        );
+    }
+    Ok(())
+}

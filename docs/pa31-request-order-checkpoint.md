@@ -1,5 +1,11 @@
 # PA31 cumulative request-ordering checkpoint
 
+[Full CI41906009661](https://github.com/vishvananda/rustgm/actions/runs/41906009661)
+oncc864ba92 is now terminal success with every qualification gate, including the
+new private request-payer controls and the repaired Destruct export paths. The
+[glob-payer successor](pa40-glob-payer-checkpoint.md) clears the storage frontier
+below and records the current unchanged original-core semantic blocker.
+
 Qualified 2026-11-04. LIB-150's original-core request-ordering frontier is
 cleared. This does not complete PA31 or produce a core, alloc or std artifact.
 Root works alone in the existing btrfs checkout, with two build/test threads,

@@ -25,9 +25,13 @@ pub(super) struct Lineage {
 }
 impl Lineage {
     fn source(&self, edge: Edge) -> Option<&Source> {
-        self.edges
-            .get(&edge)
-            .and_then(|index| self.sources.get(*index as usize))
+        self.indexed_source(edge).map(|(_, source)| source)
+    }
+    fn indexed_source(&self, edge: Edge) -> Option<(u32, &Source)> {
+        let index = *self.edges.get(&edge)?;
+        self.sources
+            .get(index as usize)
+            .map(|source| (index, source))
     }
     /// Fan-out shares exact immutable selections, including their binding snapshot.
     /// Replacements retain old versions so a changed source cannot repair stale edges.
@@ -161,7 +165,9 @@ impl Work {
         }
         Ok(())
     }
-    /// Each public scope and imported binding chain is visited at most once.
+    /// Each public scope and canonical selected-source chain is checked once.
+    /// The selection cache belongs only to this immutable resolution walk;
+    /// every destination still validates its edge/target and exports its glob.
     pub(in crate::resolve) fn exported_globs(
         &mut self,
         facts: &Resolution,
@@ -229,31 +235,24 @@ impl Work {
         owner: NodeKey,
         mut key: BindingKey,
         mut binding: Binding,
-        visited: &mut HashSet<Edge>,
+        visited: &mut HashSet<u32>,
         exported: &mut HashSet<u32>,
     ) -> Result<(), Error> {
         while let Some(index) = imported(binding.origin) {
             self.lineage_budget.charge(owner, 1, 0)?;
-            if binding.access != Access::Public
-                || binding.ambiguous
-                || visited.contains(&(key, index))
-            {
+            if binding.access != Access::Public || binding.ambiguous {
                 return Ok(());
             }
-            let growth = Growth::map::<Edge, ()>(visited.len(), visited.capacity(), 1);
-            self.lineage_budget
-                .charge(owner, 1 + growth.work, growth.bytes)?;
-            visited.insert((key, index));
             if matches!(binding.origin, Origin::Glob(_)) && !exported.contains(&index) {
                 let growth = Growth::map::<u32, ()>(exported.len(), exported.capacity(), 1);
                 self.lineage_budget
                     .charge(owner, 1 + growth.work, growth.bytes)?;
                 exported.insert(index);
             }
-            let source = self
+            let (selected, source) = self
                 .lineage
                 .as_ref()
-                .and_then(|lineage| lineage.source((key, index)))
+                .and_then(|lineage| lineage.indexed_source((key, index)))
                 .ok_or_else(|| {
                     Error::at(owner.file, 0, "exported import source lineage is required")
                 })?;
@@ -264,6 +263,9 @@ impl Work {
                     "exported import target lineage changed",
                 ));
             }
+            if visited.contains(&selected) {
+                return Ok(());
+            }
             if let Some(source_key) = source.key {
                 if facts.bindings.get_key(source_key) != Some(&source.binding) {
                     return Err(Error::at(
@@ -272,13 +274,19 @@ impl Work {
                         "completed import source selection changed",
                     ));
                 }
-                key = source_key;
             } else if source.binding.origin != Origin::Direct {
                 return Err(Error::at(
                     owner.file,
                     0,
                     "imported source cannot be an unproved terminal",
                 ));
+            }
+            let growth = Growth::map::<u32, ()>(visited.len(), visited.capacity(), 1);
+            self.lineage_budget
+                .charge(owner, 1 + growth.work, growth.bytes)?;
+            visited.insert(selected);
+            if let Some(source_key) = source.key {
+                key = source_key;
             }
             binding = source.binding;
         }

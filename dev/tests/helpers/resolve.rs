@@ -15,6 +15,10 @@ impl Sources for NoFiles {
     }
 }
 pub fn resolve(source: &str, expanded: bool) -> Result<Report, String> {
+    resolve_config(source, expanded, &Config::default())
+}
+
+pub fn resolve_config(source: &str, expanded: bool, config: &Config) -> Result<Report, String> {
     let mut report = resolve::expansion::analyze(
         InputFile {
             identity: "lib.rs".into(),
@@ -22,7 +26,7 @@ pub fn resolve(source: &str, expanded: bool) -> Result<Report, String> {
             source: SourceFile::new(source.as_bytes().to_vec())?,
         },
         &mut NoFiles,
-        &Config::default(),
+        config,
     )
     .map_err(|error| error.to_string())?;
     if expanded {

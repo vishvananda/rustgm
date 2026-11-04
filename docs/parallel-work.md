@@ -1,5 +1,13 @@
 # Parallel library bootstrap implementation
 
+[Full CI41906009661](https://github.com/vishvananda/rustgm/actions/runs/41906009661)
+oncc864ba92 is terminal success with every gate, including release/course,
+native, debug, independent Rust, const-machine and private request-payer checks.
+It qualifies the preceding request-order/Destruct repair. The current
+[glob-payer checkpoint](pa40-glob-payer-checkpoint.md) passes six public tests
+and PA6259/259 in59.39s, plus eight independent outcomes and24 unchanged legacy
+CLI contracts; four new private payer/cache controls require successor full CI.
+
 [Full CI41900207733](https://github.com/vishvananda/rustgm/actions/runs/41900207733)
 on75033d317 is terminal failure:2612 private checks pass and79 share one
 Destruct role-flag transport fence failure; one linking failure has the same
@@ -7,8 +15,7 @@ cause. All ten fundamental/forced-dyn controls pass. One frontend expectation
 still required an already implemented unsupported Tuple-header boundary.
 The [request-order successor](pa31-request-order-checkpoint.md) repairs the
 existing encoded-role fence and requires actual callback lowering. Its public
-13-test gate passes in140.76s; new private payer checks and complete successor
-release/native/debug/independent qualification still require CI.
+13-test gate passes in140.76s; its original successor qualification is now the terminal successful run above.
 
 Earlier full CI41889087416 on05d3a187b is terminal success with every gate
 passing, including native, debug, independent Rust and const-machine checks.
@@ -74,25 +81,23 @@ concurrency cancels the earlier manual run. Source checkpoints may continue with
 focused evidence and push-triggered fast CI; dispatch successor full qualification
 only after its predecessor is terminal. No whole PA release is inferred.
 
-Current original-core frontier is LIB-151: source lint-policy storage.
-The [request-order checkpoint](pa31-request-order-checkpoint.md) clears LIB-150
-using the actual source payer and existing fallible ordering kernel. Source
-history, sticky failed work and attempted/retained scratch are preserved; the
-metadata and ordinary lookup limits stay finite. All five independently valid
-libraries pass; the131072-function regression exceeds the old metadata ceiling
-and still rejects exhausted source work. Actual source-callable exports and
-full-staged callback lowering pass, alongside feature/forced-dyn controls.
-CLI21c9b6ca preserves all722 source/package hashes, six pins, fifteen values,
-original options/capAllow and finite limits, and reaches source lint-policy
-storage budget exceeded in18.616s/375opens. An unchanged-binary trace identifies
-complete_hidden_globs transferring all4069745 steps/56637440 attempted lineage
-bytes into an already44446065-byte lint producer. Keep the import meter and
-failed attempts, but account actual new diagnostic work/witness storage under
-its own owner. Preserve allow/deny/expect and source/cap identity; no guard
-increase or witness deletion. Unrelated warning parity remains deferred.
+Current original-core frontier is LIB-152: actual UseCloned semantics.
+The [glob-payer checkpoint](pa40-glob-payer-checkpoint.md) clears LIB-151 without
+raising a guard. Import and diagnostic histories retain their actual owners;
+new causes prepay allocation and publish transactionally. Export validation
+reuses existing canonical source selections within each immutable walk while
+checking every destination and recording each exported glob. The262144-edge/
+16384-function source now compiles uncapped and Allow, with real warning/expect
+opponents, stale-source/new-walk private controls and exact legacy output checks.
+CLIa3e2a61a preserves all722 source/package hashes, six pins, fifteen values,
+original options/capAllow and finite limits, and reaches file71 byte16409 in
+17.2104s/375opens. The first-open map and exact byte context identify clone.rs427's
+actual #[lang="use_cloned"] trait UseCloned:Clone. Confirm the pinned producer
+and genuine Clone/use/capture consumers under PA31/20/26/24/29. Do not merely
+add the role to a skip list, fabricate Copy/Clone proof or replace source bodies.
 LIB-148 alias demand, LIB-149 custom autos, Field/TransmuteFrom, general transport,
 whole assignments and every original core/alloc/std artifact remain required.
-Root remains alone in guarded warm btrfs scratch.
+Root remains alone in guarded warm btrfs scratch with current/predecessor pins.
 
 Previous original-core frontier was LIB-147: actual Field forced-dyn policy.
 The [fundamental checkpoint](pa31-fundamental-policy-checkpoint.md) passes

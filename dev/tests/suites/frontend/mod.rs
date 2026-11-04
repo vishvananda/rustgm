@@ -43,6 +43,8 @@ mod forced_dyn_contracts;
 mod fragments;
 #[path = "../../fundamental_contracts.rs"]
 mod fundamental_contracts;
+#[path = "../../glob_provenance.rs"]
+mod glob_provenance;
 #[path = "../../glue_provider.rs"]
 mod glue_provider;
 #[path = "../../hygiene.rs"]

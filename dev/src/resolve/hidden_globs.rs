@@ -150,27 +150,23 @@ impl Work {
         });
         Ok(result)
     }
-}
-impl Report {
-    pub(super) fn complete_hidden_globs(&mut self, mut work: Work) -> Result<(), Error> {
-        let root = &self.package.modules[0];
-        let owner = NodeKey {
-            file: root.file,
-            node: root.root,
-        };
-        let candidates = work.hidden_candidates(&self.resolution, owner)?;
-        if candidates.is_empty() {
-            return Ok(());
-        }
-        let exported = work.exported_globs(&self.resolution, owner)?;
+    fn hidden_causes(
+        &mut self,
+        package: &Package,
+        facts: &Resolution,
+        owner: NodeKey,
+        candidates: Vec<(BindingKey, Binding)>,
+        producer: &Producer,
+    ) -> Result<Vec<Cause>, Error> {
+        let exported = self.exported_globs(facts, owner)?;
         let mut causes = Vec::new();
         let mut last = None;
         for (key, candidate) in candidates {
-            work.lineage_budget.charge(owner, 1, 0)?;
+            self.lineage_budget.charge(owner, 1, 0)?;
             if last == Some(key) {
                 continue;
             }
-            let Some(winner) = self.resolution.bindings.get_key(key).copied() else {
+            let Some(winner) = facts.bindings.get_key(key).copied() else {
                 continue;
             };
             if winner.access == Access::Public || winner.ambiguous {
@@ -182,56 +178,88 @@ impl Report {
             if !exported.contains(&index) {
                 continue;
             }
-            let Some(site) = Work::private_owner(&self.resolution, winner) else {
+            let Some(site) = Self::private_owner(facts, winner) else {
                 continue;
             };
-            let glob = &self.resolution.imports[index as usize];
+            let glob = &facts.imports[index as usize];
             if glob.access != Access::Public {
                 continue;
             }
-            let counterpart = work.counterpart(site, key, index)?;
-            let declaration = self.resolution.definitions[counterpart.1.target.0 as usize]
-                .node
-                .map(|source| Witness::new(&self.package, source));
+            let counterpart = self.counterpart(site, key, index)?;
             let growth = Growth::vector::<Cause>(causes.len(), causes.capacity(), 1);
-            work.lineage_budget
-                .charge(site, 1 + growth.work, growth.bytes)?;
+            // Resolver traversal remains paid by its existing lineage meter.
+            // Only new diagnostic storage/copy/witness work belongs here.
+            producer.diagnostic_payload(site, 6 + growth.work, growth.bytes)?;
+            let declaration = facts.definitions[counterpart.1.target.0 as usize]
+                .node
+                .map(|source| Witness::new(package, source));
             causes.push(Cause {
                 key,
                 winner,
                 counterpart,
                 declaration,
                 glob: index,
-                owner: Witness::new(&self.package, site),
-                reexport: Witness::new(&self.package, glob.node),
+                owner: Witness::new(package, site),
+                reexport: Witness::new(package, glob.node),
             });
             last = Some(key);
         }
+        Ok(causes)
+    }
+}
+impl Report {
+    pub(super) fn complete_hidden_globs(&mut self, mut work: Work) -> Result<(), Error> {
+        let root = &self.package.modules[0];
+        let owner = NodeKey {
+            file: root.file,
+            node: root.root,
+        };
+        // Check failed history even when the new scan has no candidates.
+        work.lineage_budget.charge(owner, 1, 0)?;
+        if let Some(producer) = self.lint_producer() {
+            producer.validate_cap(&self.package, owner)?;
+        }
+        let candidates = work.hidden_candidates(&self.resolution, owner)?;
+        if candidates.is_empty() {
+            return Ok(());
+        }
+        let pending = if self.lint_producer().is_none() {
+            Some(Producer::capped(0, 0, self.package.lint_cap(), owner)?)
+        } else {
+            None
+        };
+        let producer = self
+            .lint_producer()
+            .or(pending.as_ref())
+            .ok_or_else(|| Error::at(owner.file, 0, "hidden glob source producer is required"))?;
+        let causes =
+            work.hidden_causes(&self.package, &self.resolution, owner, candidates, producer)?;
         if causes.is_empty() {
             return Ok(());
         }
-        if self.attribute_effects.is_none() {
-            let producer = Producer::new(0, 0);
-            producer.diagnostic_read(owner, size_of::<Effects>())?;
-            let mut effects = Effects::default();
-            effects.policy = Some(producer);
-            self.attribute_effects = Some(Box::new(effects));
+        let bytes = size_of::<Vec<Cause>>()
+            + if self.attribute_effects.is_none() {
+                size_of::<Effects>()
+            } else {
+                0
+            };
+        producer.diagnostic_read(owner, bytes)?;
+        let effects = self.attribute_effects.get_or_insert_default();
+        if let Some(pending) = pending {
+            effects.policy = Some(pending);
         }
-        let effects = self
-            .attribute_effects
-            .as_deref_mut()
-            .ok_or_else(|| Error::at(owner.file, 0, "hidden glob source producer is required"))?;
-        let producer = effects.policy.get_or_insert_with(|| Producer::new(0, 0));
-        producer.diagnostic_payload(
-            owner,
-            work.lineage_budget.steps,
-            work.lineage_budget.bytes + size_of::<Vec<Cause>>(),
-        )?;
+        let producer = effects
+            .policy
+            .as_mut()
+            .ok_or_else(|| Error::at(owner.file, 0, "hidden glob source producer disappeared"))?;
         producer.hidden_globs = Some(Box::new(causes));
         Ok(())
     }
 }
 
+#[cfg(test)]
+#[path = "../../tests/invariants/glob_payer.rs"]
+mod payer_tests;
 #[cfg(test)]
 #[path = "../../tests/invariants/reexport_shadows.rs"]
 mod tests;
