@@ -1,7 +1,12 @@
 # Parallel library bootstrap implementation
 
-Full qualification cadence: run41779219834 on54ae77027 is the current manual
-qualification. Do not dispatch another manual full run until it is terminal:
+Full qualification cadence: run41779219834 on54ae77027 terminated at PA25's
+storage admission: 7.9GiB free against the unchanged8GiB CI reserve. Earlier
+release/course, native, debug and independent Rust steps passed. This is not a
+full pass. Qualification now omits host debug symbols while retaining debug
+assertions/overflow checks, and retires the completed dev cache after debug
+invariants; release outputs stay available for independent/component checks.
+Do not dispatch another manual full run until the current one is terminal:
 check.yml's event-specific concurrency cancels an older manual run when replaced.
 The earlier41776106178 completed release/course, native and debug steps but was
 canceled during independent Rust qualification; it is not a full pass. New source

@@ -45,6 +45,11 @@ jobs:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    env:
+      # Keep debug assertions and overflow checks without multi-GiB symbol files.
+      CARGO_PROFILE_DEV_DEBUG: '0'
+      CARGO_PROFILE_TEST_DEBUG: '0'
+      CARGO_BUILD_JOBS: '2'
     steps:
       - uses: actions/checkout@v6
       - name: Pinned Rust
@@ -61,6 +66,11 @@ jobs:
           make test-maintainer-native
       - name: Debug invariants
         run: make test-debug-invariants
+      - name: Retire completed debug build cache
+        run: |
+          cargo clean --manifest-path dev/Cargo.toml --profile dev
+          make tidy
+          df -h .
       - name: Independent Rust qualification
         run: make test-rustc
       - name: PA25 const-machine candidate contract
