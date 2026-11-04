@@ -21,8 +21,11 @@ shares authenticated source/inventory work and retained storage without granting
 permission. Standalone fallback and finite sticky failures remain required.
 The [const inherent checkpoint](../docs/pa25-inherent-block-checkpoint.md)
 qualifies actual group/member policy and PA25 runtime/const eligibility without
-merging them. Original core now reaches tuple-field stability ownership;
-actual field policy and PA29 transport remain required.
+merging them. The [field-policy checkpoint](../docs/pa31-field-policy-checkpoint.md)
+adds direct/inherited aggregate field policy and repairs wider const-call
+regressions while preserving imported-policy fences. Original core now reaches
+unsupported intrinsic declarations; real operation contracts and PA29 transport
+remain required.
 
 The [negative-coherence packet](tests/spec/negative-coherence/README.md) covers
 actual with_negative_coherence/negative_impls permission and strict type/trait

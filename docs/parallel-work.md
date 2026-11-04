@@ -15,8 +15,11 @@ improvement. Both independently remain Rust rejections; scoped generator updates
 and full affected text suites now pass. Successor full qualification41829269372
 on published inventory-budget compiler dcea5401c is terminal success with every
 gate passing, including full release/course, native, debug, independent and
-component qualification. The const-inherent successor passes focused qualification; its full release
-qualification will follow publication.
+component qualification. Const-inherent full CI41845495353 on638524643 is terminal failure:2662 private
+checks pass, five private regressions and four linking regressions fail. Native,
+debug and independent gates were skipped. The field-owner successor now passes the known regressions and widened
+protocol/constructor controls. Focused success alone does not establish full
+release qualification.
 The redundant41814340248 on the old head was explicitly cancelled after the
 initial push failed; it is not qualification evidence for the new compiler.
 Predecessor run41781814852 on1f5a2b8d0 also passes every gate.
@@ -28,23 +31,34 @@ concurrency cancels the earlier manual run. Source checkpoints may continue with
 focused evidence and push-triggered fast CI; dispatch successor full qualification
 only after its predecessor is terminal. No whole PA release is inferred.
 
-Current original-core frontier is LIB-143: tuple-field library stability ownership.
-The [const inherent checkpoint](pa25-inherent-block-checkpoint.md) clears LIB-142
-with actual implicit method constness, exact feature/macro authority, distinct
-group/API policy, typed public exposure and real conditional bounds. Ordinary
-const callers share scoped facts without a compiler Catalog; runtime instances
-and CTFE keep separate execution contexts. Final private104/production5 pass
-in200.40s and a separate native gate matches Rust's7/9. All51 independent source
-outcomes, four original upstream files, ordinary/member LowIR controls, fifteen
-configuration values, upstream attribution and harness checks pass. All six
-configuration pins remain unchanged. The96 immutable A/A/ABBA observations are
-retained without a speedup claim. CLIfcaa05c0 clears the old owner in17.87s/375opens
-and reports file42 byte1399. The first-open map points to num/saturating.rs38's
-annotated tuple field. Confirm its retained owner and implement real field
-policy/inheritance/visibility/use checks under PA31/12/29. All722 input hashes,
-options, Allow cap and finite source limits are unchanged. Authenticated imports,
-whole assignments and original core/alloc/std artifacts remain required.
-Root remains alone in the warm btrfs tree with scoped cleanup and unchanged guards.
+Current original-core frontier is LIB-144: unsupported intrinsic declarations.
+The [field-policy checkpoint](pa31-field-policy-checkpoint.md) clears LIB-143
+with actual configured field/parent identity, direct/inherited regular policy,
+stable variant inheritance and typed field consumers. It also repairs all five
+private and four linking regressions from const-inherent full CI41845495353.
+Final private130/production7 pass in176.44s; two native comparisons pass in33.09s
+with actual Rust7/9 output. All24 field and51 const-inherent outcomes match the
+independent contracts. Ordinary/member LowIR controls, upstream attribution,
+harness checks, fifteen configuration values and all six configuration pins pass.
+The96 immutable A/A/ABBA observations retain the added checking's cost without a
+speedup claim. CLIfbfd6d1c reaches file53 byte477 in24.52s/375opens; all722 input
+hashes, options, Allow cap and finite source limits remain unchanged. The
+first-open map points to intrinsics/simd/scalable.rs14's sve_tuple_create2 and
+its five-declaration create/get/set family. Confirm the retained owner and
+inventory the complete active unsupported intrinsic set under PA28/41/31/29.
+Declaration validity and selected-target execution permission are separate;
+required reached operations still need real semantics. Authenticated field and
+const-policy imports, whole assignments and original core/alloc/std artifacts
+and consumers remain required. Root stays alone in the warm btrfs tree with
+unchanged guards, current/predecessor pins and scoped cleanup.
+
+Previous original-core frontier was LIB-143: aggregate field stability ownership.
+The source/native checkpoint above resolves its tuple/named/union/variant field
+owners. Inventory120 and Library160 are cold; dense fields, Node36, Body456 and
+Declarations7104 stay unchanged. Full CI on638524643 failed after2662 passing
+private checks; the known five private/four linking failures now pass focused
+qualification. Successor full qualification will follow publication. No whole
+assignment or original artifact is inferred.
 
 Previous original-core frontier was LIB-141: the stability owner inventory's resource guard.
 The [architecture-request checkpoint](pa41-architecture-requests-checkpoint.md)

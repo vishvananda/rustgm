@@ -104,7 +104,7 @@ fn combined_lists_are_exact_lexical_data_and_failed_queries_remain_unpaid() -> T
             .const_body_allows(row.definition, &feature, &mut exhausted)
             .is_err()
     );
-    assert_eq!(size_of::<crate::resolve::stability::Inventory>(), 112);
+    assert_eq!(size_of::<crate::resolve::stability::Inventory>(), 120);
     assert_eq!(size_of::<ConstPolicies>(), 56);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     Ok(())

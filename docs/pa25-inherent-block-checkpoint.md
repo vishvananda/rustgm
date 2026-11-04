@@ -34,8 +34,10 @@ signature and conditional premises remain required. Caller-input accounting
 uses the ordinary bounded partial attribute payer when no compiler Catalog
 exists; this never completes source contracts or supplies execution permission.
 
-Runtime lowering materializes its checked generic original in runtime mode.
-CTFE uses its separate materialization and reached-call checks. This permits
+Runtime lowering materializes conditionally const generic functions in runtime
+mode. The later field-owner successor preserves unconditional const-function
+and actual aggregate-constructor capability. CTFE uses its separate
+materialization and reached-call checks. This permits
 `Holder<Ordinary>::read()` at runtime while rejecting that same nonconst trait
 implementation in a constant initializer. Original unused const bodies still
 receive defining checks. The native regression exercises both paths in one
@@ -88,6 +90,14 @@ requirements, original library declaration/body checking and real core/alloc/std
 artifacts and consumers remain required. Original-source opens are not compiled
 files or an artifact. Root works alone in the warm btrfs checkout with unchanged
 five-minute, two-thread,16GiB output and150GiB free-space guards.
+
+Full CI41845495353 on638524643 subsequently exposed five private and four
+linking regressions after2662 passing private checks. Broader qualification is
+failed, not pending: native/debug/independent checks were skipped. The successor
+repairs trait-default policy requirements, ordinary source-use consumption,
+imported API absence and unconditional const-body reuse. Its own qualification
+must establish those repairs; this checkpoint's earlier focused evidence is
+retained unchanged.
 
 ## Evidence
 

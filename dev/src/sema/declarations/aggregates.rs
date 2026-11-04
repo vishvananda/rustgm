@@ -332,6 +332,16 @@ impl Checker<'_> {
                 continue;
             }
             let key = self.unattributed(NodeKey { node, ..group.key });
+            if let Some(inventory) = self
+                .report
+                .package
+                .library_policy()
+                .and_then(crate::resolve::stability::Library::staged_inventory)
+            {
+                inventory
+                    .field_declaration(key, group.key)
+                    .map_err(|error| self.error(key, error))?;
+            }
             let Kind::FieldDefinition { name, ty, .. } = self.kind(key) else {
                 return Err(self.error(key, "invalid field definition"));
             };

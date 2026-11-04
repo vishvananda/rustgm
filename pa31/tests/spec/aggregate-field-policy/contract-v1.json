@@ -1,0 +1,155 @@
+{
+  "schema": 1,
+  "status": "required; implementation pending",
+  "profile": {
+    "rust": "1.98.0",
+    "edition": 2024,
+    "cap_lints": "allow"
+  },
+  "cases": [
+    {
+      "name": "tuple-direct-stable",
+      "path": "pa31/tests/spec/aggregate-field-policy/tuple-direct-stable.rs",
+      "status": 0,
+      "sha256": "1116bab479f47c9716f1684dbe109c09844e1889e1c9f6b6f57dbba3910b404d"
+    },
+    {
+      "name": "named-direct-stable",
+      "path": "pa31/tests/spec/aggregate-field-policy/named-direct-stable.rs",
+      "status": 0,
+      "sha256": "c34b11869a270b468cc03aba7db4fe5cddf9bab0ca2524a461607a0344c7377a"
+    },
+    {
+      "name": "union-direct-stable",
+      "path": "pa31/tests/spec/aggregate-field-policy/union-direct-stable.rs",
+      "status": 0,
+      "sha256": "6e5d4319addc6ce9e67b23fcb2cea738089cded6e6ce6d5b007662388ea83793"
+    },
+    {
+      "name": "generic-tuple",
+      "path": "pa31/tests/spec/aggregate-field-policy/generic-tuple.rs",
+      "status": 0,
+      "sha256": "b5e0a78a0a6a54cbd3eca9bf891b6687d0542aae4554f1da0ff01070cde41d33"
+    },
+    {
+      "name": "tuple-inherits-stable",
+      "path": "pa31/tests/spec/aggregate-field-policy/tuple-inherits-stable.rs",
+      "status": 0,
+      "sha256": "e9f4b403bbc8fc8a770b467f5c78edcbf7d2a70bb2482cd988e0413bd56fc793"
+    },
+    {
+      "name": "named-inherits-stable",
+      "path": "pa31/tests/spec/aggregate-field-policy/named-inherits-stable.rs",
+      "status": 0,
+      "sha256": "597f6593e278ee93a59cbad5512d5d05984911bb532ea0276d58fd1fc4302f08"
+    },
+    {
+      "name": "private-field",
+      "path": "pa31/tests/spec/aggregate-field-policy/private-field.rs",
+      "status": 0,
+      "sha256": "0ab16925763acedf41d40e63c4cdb34691cc72d4090587316ad7b026d10802f4"
+    },
+    {
+      "name": "private-unmarked-owner",
+      "path": "pa31/tests/spec/aggregate-field-policy/private-unmarked-owner.rs",
+      "status": 0,
+      "sha256": "2d04d9f05efac39ce0b05debc798b2fe4383692297646bef276b3371189d214b"
+    },
+    {
+      "name": "tuple-direct-unstable",
+      "path": "pa31/tests/spec/aggregate-field-policy/tuple-direct-unstable.rs",
+      "status": 0,
+      "sha256": "e50e803436b6c1a608cc6ce25924869df562096a0fb8645334ab4465a7d3afd7"
+    },
+    {
+      "name": "same-crate-stable-body",
+      "path": "pa31/tests/spec/aggregate-field-policy/same-crate-stable-body.rs",
+      "status": 0,
+      "sha256": "098587630d92e596c516eb40f29d6ead322302b51f8ba36f8db34b8092e10c6f"
+    },
+    {
+      "name": "const-body-regular-field",
+      "path": "pa31/tests/spec/aggregate-field-policy/const-body-regular-field.rs",
+      "status": 0,
+      "sha256": "3f7e5df9de971dbe5994cca02bde3193cebd2a766edff05be0c3faac591e7473"
+    },
+    {
+      "name": "enum-explicit-variant",
+      "path": "pa31/tests/spec/aggregate-field-policy/enum-explicit-variant.rs",
+      "status": 0,
+      "sha256": "570ff5f66ffe850ff0e5f0e932319dfdbb65cac672469b51e806e923edf0e115"
+    },
+    {
+      "name": "enum-inherited-variant",
+      "path": "pa31/tests/spec/aggregate-field-policy/enum-inherited-variant.rs",
+      "status": 0,
+      "sha256": "b988192d5585687f711f12046b0f02c4a086f884e244c921e8078ab561605c09"
+    },
+    {
+      "name": "enum-named-field",
+      "path": "pa31/tests/spec/aggregate-field-policy/enum-named-field.rs",
+      "status": 0,
+      "sha256": "a80d466808953ba27c3e142d272b04cf474c78ecf1d43caad2da22156caf63a3"
+    },
+    {
+      "name": "duplicate-field",
+      "path": "pa31/tests/spec/aggregate-field-policy/duplicate-field.rs",
+      "status": 1,
+      "sha256": "38a1ced405e599ef42fcf7e52fa71b4e5167e89dbdac085ded89ca980d660989"
+    },
+    {
+      "name": "conflicting-field",
+      "path": "pa31/tests/spec/aggregate-field-policy/conflicting-field.rs",
+      "status": 1,
+      "sha256": "88292e2087f337579253d07c2f4f8a61866cf914f0d32ae33cdb51605a6c3e36"
+    },
+    {
+      "name": "const-stable-field",
+      "path": "pa31/tests/spec/aggregate-field-policy/const-stable-field.rs",
+      "status": 1,
+      "sha256": "486f25123bd2d5235b0bb51c8f8a50c3ce56fa1122cb273c4d02e862657ee15f"
+    },
+    {
+      "name": "const-unstable-field",
+      "path": "pa31/tests/spec/aggregate-field-policy/const-unstable-field.rs",
+      "status": 1,
+      "sha256": "40960fae58137fc399dab708a3b9e5f786e431e38f0fbcbaf01c43ccc70c06d5"
+    },
+    {
+      "name": "field-needs-staged-api",
+      "path": "pa31/tests/spec/aggregate-field-policy/field-needs-staged-api.rs",
+      "status": 1,
+      "sha256": "5ad2ae27dfa00f0c6acc7e2688f6810b1c216d946718e8458bf2211b33bc5872"
+    },
+    {
+      "name": "inactive-field",
+      "path": "pa31/tests/spec/aggregate-field-policy/inactive-field.rs",
+      "status": 0,
+      "sha256": "75aa3b42f805b6be28d3e89569d023218be388a4c509d5314880500b74cf8d8b"
+    },
+    {
+      "name": "macro-owned-field",
+      "path": "pa31/tests/spec/aggregate-field-policy/macro-owned-field.rs",
+      "status": 0,
+      "sha256": "c40f4ba1390ab12bffc9960ff361f5f66cccd43788f7ae65df471d2eb465014c"
+    },
+    {
+      "name": "macro-captured-type",
+      "path": "pa31/tests/spec/aggregate-field-policy/macro-captured-type.rs",
+      "status": 0,
+      "sha256": "ea50b795375af6e00abea8e6317e8b680a79a0396353e0892b42db3521d698c7"
+    },
+    {
+      "name": "two-fields-distinct-policy",
+      "path": "pa31/tests/spec/aggregate-field-policy/two-fields-distinct-policy.rs",
+      "status": 0,
+      "sha256": "d981e2597513098729f91e76a624027834e88cf28494d2924951f8b5347a7d72"
+    },
+    {
+      "name": "wrong-statement-owner",
+      "path": "pa31/tests/spec/aggregate-field-policy/wrong-statement-owner.rs",
+      "status": 1,
+      "sha256": "b9317f82dfa1c04b7d3b23a516f70c2d4e91228cd3e8406549b599ba208f8428"
+    }
+  ]
+}

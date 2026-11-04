@@ -61,6 +61,22 @@ pub(crate) fn check_instance(
     catalog.check_const_call(DefId(item.0))
 }
 
+/// Declaration classification only; every reached CTFE call still pays its debts.
+pub(crate) fn conditional_bounds(
+    facts: &mut Declarations,
+    definition: DefId,
+) -> Result<bool, &'static str> {
+    // Registered aggregate constructors are unconditionally const; their
+    // nominal type parameters are not const-function conditional premises.
+    if facts.members.constructors.contains_key(&definition) {
+        return Ok(false);
+    }
+    if let Some(catalog) = facts.source_bindings.as_deref() {
+        return catalog.requires_const_payment(definition);
+    }
+    Ok(declared_effect(facts, definition)? == Effect::Conditional)
+}
+
 /// The owning declaration calls this once, after freezing its full environment
 /// and completing its actual signature. Inherited clauses remain part of it.
 pub(in crate::sema) fn record(

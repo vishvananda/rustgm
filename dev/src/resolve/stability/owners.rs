@@ -18,6 +18,7 @@ pub(super) struct Owners {
     pub declarations: Vec<Option<PolicyId>>,
     pub imports: Vec<Option<PolicyId>>,
     pub consts: Option<Box<ConstPolicies>>,
+    pub fields: Option<Box<super::record_policies::Fields>>,
 }
 
 pub(super) fn collect(
@@ -76,6 +77,7 @@ pub(super) fn collect(
             scopes[index].constant.is_some() || const_function(scope, &scopes[index], &scopes);
     }
     let mut owners = declaration_rows(package, facts, draft, &scopes, has_const)?;
+    owners.fields = super::record_policies::collect(package, facts, &owners, draft, &mut used)?;
     import_attributes(package, draft, &mut used)?;
     owners.imports = facts
         .imports
@@ -109,7 +111,7 @@ fn declaration_rows(
     has_const: bool,
 ) -> Result<Owners, Error> {
     draft.charge(facts.definitions.len(), 0)?;
-    let mut declarations = Vec::with_capacity(facts.definitions.len());
+    let mut declarations: Vec<Option<PolicyId>> = Vec::with_capacity(facts.definitions.len());
     if has_const {
         draft.charge(
             0,
@@ -146,6 +148,14 @@ fn declaration_rows(
             definition
                 .node
                 .and_then(|key| draft.attribute(key, PolicyKind::Regular))
+                .or_else(|| {
+                    // Variants inherit stable as well as unstable enum policy.
+                    // The resolved nominal owner precedes its actual children.
+                    (definition.kind == DefKind::Variant)
+                        .then(|| facts.scopes[definition.scope.0 as usize].nominal_self)
+                        .flatten()
+                        .and_then(|owner| declarations.get(owner.0 as usize).copied().flatten())
+                })
                 .or_else(|| draft.inherit(scopes[definition.scope.0 as usize].regular))
         };
         declarations.push(regular);
@@ -169,6 +179,7 @@ fn declaration_rows(
     Ok(Owners {
         declarations,
         imports: Vec::new(),
+        fields: None,
         consts: constants.map(|declarations| {
             Box::new(ConstPolicies {
                 declarations,
@@ -464,20 +475,7 @@ pub(super) fn reachable(
             },
             _ => false,
         };
-        let implicit = if definition.kind == DefKind::Function {
-            let rows = owners.consts.as_deref().map(|rows| &rows.implicit);
-            let count = rows.map_or(0, Vec::len);
-            draft.charge(
-                usize::try_from(usize::BITS - count.leading_zeros())
-                    .unwrap_or(usize::MAX)
-                    .saturating_add(1),
-                0,
-            )?;
-            rows.is_some_and(|rows| rows.binary_search_by_key(&target.0, |id| id.0).is_ok())
-        } else {
-            false
-        };
-        if (needs_const || implicit)
+        if needs_const
             && owners
                 .consts
                 .as_deref()

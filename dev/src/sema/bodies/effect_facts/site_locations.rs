@@ -117,6 +117,16 @@ impl Checker<'_> {
             return Ok(false);
         };
         let definition = crate::resolve::model::DefId(item.0);
+        // A known nonconst free function will fail const eligibility. Do not
+        // demand a dormant imported caller-ABI inventory before that owning
+        // diagnostic. Abstract/default members retain their separate selection.
+        if self.facts.source_bindings.is_none()
+            && self.callee_use_effect()? != crate::support::constness::Constness::Ordinary
+            && !self.facts.is_const_function(definition)
+            && self.facts.associated.owner(definition).is_none()
+        {
+            return Ok(false);
+        }
         let tracked = self
             .facts
             .checked_caller_tracking(self.report, definition)?;

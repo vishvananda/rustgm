@@ -243,7 +243,7 @@ pub(super) fn closed_request(
         return Err("const member changed its current signature or result");
     }
     let effect = match (facts.source_bindings.as_deref(), source_use) {
-        (Some(_), Some(use_)) => use_.effect_for(facts, source)?,
+        (_, Some(use_)) => use_.effect_for(facts, source)?,
         (None, None) => ordinary_effect(report, facts, body, source, work)?,
         _ => return Err("const member has no current source use"),
     };

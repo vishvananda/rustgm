@@ -620,6 +620,15 @@ policy or permission fields. Reserve owner tables by their scope, declaration
 and import axes, and prepay the used-policy set before insertion. The
 [inventory-budget checkpoint](docs/pa31-inventory-budget-checkpoint.md) records
 qualified bounds, scope/layout controls and the unchanged original inputs.
+Aggregate and variant fields inherit stable as well as unstable regular policy
+from their actual parent. Retain one prepaid cold field/parent/policy index;
+the typed field producer authenticates each configured source field against it.
+Direct policy overrides inheritance; unknown rows and copied parents are errors.
+Keep const-marker target rejection, visibility, ordinary field semantics and
+imported availability distinct. Charge growth before publication and retained
+capacity in the shared inventory meter. Add no per-field hot policy column or
+sibling scan at use sites. The [field checkpoint](docs/pa31-field-policy-checkpoint.md)
+records actual source/native controls and remaining transport requirements.
 Represent required unstable features as non-type clauses with Store-owned canonical
 identities. Keep item assumptions separate from immutable crate enabling and
 regular API permission; a lint cap supplies none of these proofs. Staged libraries
@@ -4919,8 +4928,11 @@ Ordinary const callers reuse the existing scoped effect facts under one cold
 global owner without constructing a compiler Catalog. Their partial attribute
 budget pays caller-input work without granting completed source contracts.
 Preserve the checked defining body's constant context. Executable lowering
-materializes runtime instances in runtime mode; CTFE materializes separately
-and retains every concrete conditional bound and reached-call check. See the
+materializes conditionally const function instances in runtime mode; unconditional
+const functions and registered aggregate constructors retain their capability.
+Classify actual inherited declared clauses, reusing prepared source summaries;
+a constructor is no const-function conditional contract. CTFE materializes
+separately and retains every concrete conditional bound and reached-call check. See the
 [const inherent checkpoint](docs/pa25-inherent-block-checkpoint.md).
 Function pointers carry no const-call permission, even when their original
 value was a const function or constructor. Eligibility checks consume selected

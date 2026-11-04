@@ -1,0 +1,7 @@
+{
+  "source": "native.rs",
+  "source_sha256": "d113678066bd7a5c0f1a2f2505b563b8e47fd05b82e065c0d952cd61b1f2458b",
+  "status": 0,
+  "expected_stdout": "7\n9\n",
+  "rust": "1.98.0"
+}

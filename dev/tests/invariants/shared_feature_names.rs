@@ -141,7 +141,7 @@ fn large_repeated_feature_crate_stays_inside_the_original_inventory_limits() -> 
     std::fs::write(folder.join("large-work.txt"), inventory.steps().to_string())?;
     pipeline::analyze_source(&report)?;
     assert_eq!(size_of::<super::super::Policy>(), 56);
-    assert_eq!(size_of::<super::super::Inventory>(), 112);
+    assert_eq!(size_of::<super::super::Inventory>(), 120);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     Ok(())

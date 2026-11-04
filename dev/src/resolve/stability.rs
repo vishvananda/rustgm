@@ -10,6 +10,7 @@ mod inheritance;
 mod interned_features;
 mod inventory;
 mod owners;
+mod record_policies;
 mod relationships;
 mod request_order;
 #[cfg(test)]
@@ -123,6 +124,10 @@ impl Library {
                 vector(&inventory.relationships),
                 vector(&inventory.declarations),
                 vector(&inventory.imports),
+                inventory
+                    .fields
+                    .as_deref()
+                    .map_or(0, record_policies::Fields::bytes),
                 inventory.consts.as_deref().map_or(0, |consts| {
                     size_of::<constness::ConstPolicies>()
                         .saturating_add(vector(&consts.declarations))
@@ -192,6 +197,7 @@ pub struct Inventory {
     declarations: Vec<Option<PolicyId>>,
     imports: Vec<Option<PolicyId>>,
     consts: Option<Box<constness::ConstPolicies>>,
+    fields: Option<Box<record_policies::Fields>>,
     steps: usize,
 }
 impl Inventory {

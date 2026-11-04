@@ -114,8 +114,8 @@ fn default_api_and_const_policy_axes_are_direct_distinct_and_never_inherited_as_
             assert!(inventory.consts.is_none(), "{name}");
         }
     }
-    assert_eq!(size_of::<Library>(), 152);
-    assert_eq!(size_of::<Inventory>(), 112);
+    assert_eq!(size_of::<Library>(), 160);
+    assert_eq!(size_of::<Inventory>(), 120);
     assert_eq!(size_of::<Policy>(), 56);
     assert_eq!(size_of::<crate::syntax::ast::Node>(), 36);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);

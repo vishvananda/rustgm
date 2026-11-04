@@ -78,7 +78,8 @@ impl Checker<'_> {
             .as_deref()
             .is_none_or(|imports| !imports.has_availability())
             && owner.is_none()
-            && self.callee_use_effect()? == crate::support::constness::Constness::Ordinary
+            && (self.facts.source_bindings.is_none()
+                || self.callee_use_effect()? == crate::support::constness::Constness::Ordinary)
         {
             return Ok(());
         }

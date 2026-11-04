@@ -57,6 +57,7 @@ pub(in crate::resolve) fn complete(
             declarations: vec![None; facts.definitions.len()],
             imports: vec![None; facts.imports.len()],
             consts: None,
+            fields: None,
         }
     };
     super::fn_allowances::finish(package, facts, &mut draft, &mut owners.consts)?;
@@ -67,6 +68,7 @@ pub(in crate::resolve) fn complete(
         declarations: owners.declarations,
         imports: owners.imports,
         consts: owners.consts,
+        fields: owners.fields,
         steps: draft.steps,
     };
     draft.retain_inventory(library, &mut inventory)?;

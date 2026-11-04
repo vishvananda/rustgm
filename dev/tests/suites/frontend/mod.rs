@@ -79,6 +79,8 @@ mod provider_traits;
 pub(crate) mod qualify;
 #[path = "../../quota_options.rs"]
 mod quota_options;
+#[path = "../../record_availability.rs"]
+mod record_availability;
 #[path = "../../resolution.rs"]
 mod resolution;
 #[path = "../../selected_references.rs"]

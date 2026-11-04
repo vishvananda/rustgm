@@ -94,7 +94,7 @@ fn actual_const_inventory_distinguishes_group_policy_and_function_eligibility() 
     }
     assert_eq!(size_of::<Frame>(), 24);
     assert_eq!(size_of::<Role>(), 2);
-    assert_eq!(size_of::<Inventory>(), 112);
+    assert_eq!(size_of::<Inventory>(), 120);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
     Ok(())
 }

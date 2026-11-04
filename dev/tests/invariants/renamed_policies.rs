@@ -113,8 +113,8 @@ fn exact_relationships_preserve_regular_const_owners_and_unrestricted_old_string
             .len(),
         1
     );
-    assert_eq!(size_of::<Library>(), 152);
-    assert_eq!(size_of::<Inventory>(), 112);
+    assert_eq!(size_of::<Library>(), 160);
+    assert_eq!(size_of::<Inventory>(), 120);
     assert_eq!(size_of::<Policy>(), 56);
     assert_eq!(size_of::<crate::resolve::package::Package>(), 256);
     assert_eq!(size_of::<crate::body::ir::Body>(), 456);
