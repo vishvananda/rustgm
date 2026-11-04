@@ -282,9 +282,18 @@ Module wrappers with inner attributes retain every affected outer owner in a
 paid queue keyed by the actual module item. Replay those owners when its scope
 is created; the nearest wrapper alone does not own all declaration attributes.
 Do not recover this association with a per-module scan of every file owner.
-This first consumer owns source diagnostic identities; other attribute-expression
-consumers retain their own PA8/31/40 contracts. No computed name creates a role,
-feature allowance, const body or imported execution permission.
+Language-item and diagnostic identities share this source-owned expression
+mechanism. Language claims decode the completed string under their actual owner
+and then run the same feature, declaration-target, generic-arity and duplicate
+validators as literal claims. Direct strings remain borrowed and demand no value
+column. The [language-value packet](pa31/tests/spec/language-values/README.md)
+binds actual macro scope, shadowing and opaque forwarding, the complete original
+panic_const declaration family and retained compiler assertion/runtime/metadata
+requirements. Previous language-item ordinals remain fixed. Cold completion
+storage covers the actual vocabulary with paid word-wise work; ordinary records
+do not grow. Other attribute-expression consumers retain their own PA8/31/40
+contracts. No computed name grants feature allowance, const body or imported
+execution permission.
 The SourceCore expansion view is `--emit-expanded-crate` (or its count form),
 which runs actual configured expansion and binding completion. The PA7
 `--emit-expanded` session has no source context and must reject source options.

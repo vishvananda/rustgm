@@ -114,7 +114,7 @@ pub(in crate::resolve) fn finish(
 ) -> Result<(), Error> {
     let mut library = None;
     let mut extra = super::diagnostic_extras::Draft::with_values(values);
-    let claims = claims(package, facts, &mut library, &mut extra)?;
+    let claims = claims(package, facts, &mut library, &mut extra, values)?;
     crate::resolve::stability::fn_allowances::prepare_library(package, &mut library)?;
     let mut inventory = crate::resolve::stability::complete(package, facts, library)?;
     let mut reserved = reserve_all(package, facts, &claims)?;
@@ -489,12 +489,24 @@ fn parents(package: &Package, facts: &Resolution) -> HashMap<ScopeId, DefId> {
         .collect()
 }
 
+struct ClaimSources<'a> {
+    package: &'a Package,
+    facts: &'a Resolution,
+    values: Option<&'a crate::resolve::expansion::metavalues::Values>,
+}
+
 fn claims(
     package: &Package,
     facts: &Resolution,
     library: &mut Option<crate::resolve::stability::Draft>,
     extra: &mut super::diagnostic_extras::Draft<'_>,
+    values: Option<&crate::resolve::expansion::metavalues::Values>,
 ) -> Result<HashMap<NodeKey, Vec<Claim>>, Error> {
+    let sources = ClaimSources {
+        package,
+        facts,
+        values,
+    };
     let mut result: HashMap<NodeKey, Vec<Claim>> = HashMap::default();
     for (file, unit) in package.units.iter().enumerate() {
         let file = FileId(
@@ -502,21 +514,21 @@ fn claims(
                 .map_err(|_| Error::at(FileId(0), 0, "source file space exhausted"))?,
         );
         for owner in unit.configured.owners.iter().filter(|o| o.enabled) {
-            owner_claims(package, facts, library, extra, file, owner, &mut result)?;
+            owner_claims(&sources, library, extra, file, owner, &mut result)?;
         }
     }
     Ok(result)
 }
 
 fn owner_claims(
-    package: &Package,
-    facts: &Resolution,
+    sources: &ClaimSources<'_>,
     library: &mut Option<crate::resolve::stability::Draft>,
     extra: &mut super::diagnostic_extras::Draft<'_>,
     file: FileId,
     owner: &crate::expand::crate_syntax::Owner,
     result: &mut HashMap<NodeKey, Vec<Claim>>,
 ) -> Result<(), Error> {
+    let (package, facts) = (sources.package, sources.facts);
     let unit = package.unit(file);
     let mut node = owner.node;
     while let Kind::Attributed { value, .. } = unit.configured.ast.node(node).kind {
@@ -605,7 +617,7 @@ fn owner_claims(
             }
             continue;
         }
-        if let Some(claim) = attribute_claim(unit, file, attribute, forest)? {
+        if let Some(claim) = attribute_claim(sources, key, attribute, forest)? {
             result.entry(key).or_default().push(claim);
         }
     }
@@ -628,11 +640,12 @@ fn record_builtin_claim(
 
 /// Decode one declaration claim after its complete macro/stability header was checked.
 fn attribute_claim(
-    unit: &Unit,
-    file: FileId,
+    sources: &ClaimSources<'_>,
+    key: NodeKey,
     attribute: Attribute,
     forest: &Forest,
 ) -> Result<Option<Claim>, Error> {
+    let (file, unit) = (key.file, sources.package.unit(key.file));
     let error = |message| Error::at(file, attribute.span.start, message);
     let name = attribute.name(forest, unit.source.text());
     if let Some(claim) = name
@@ -644,7 +657,7 @@ fn attribute_claim(
         return Ok(Some(claim));
     }
     let claim = match name {
-        Some("lang") => language_claim(unit, file, attribute, forest)?,
+        Some("lang") => language_claim(sources, key, attribute, forest)?,
         Some("panic_handler") => {
             if attribute.input != Input::Empty || attribute.unsafe_wrapper {
                 return Err(error("panic_handler requires a word attribute"));
@@ -669,11 +682,48 @@ fn attribute_claim(
 }
 
 fn language_claim(
-    unit: &Unit,
-    file: FileId,
+    sources: &ClaimSources<'_>,
+    key: NodeKey,
     attribute: Attribute,
     forest: &Forest,
 ) -> Result<Claim, Error> {
+    let error = |message| Error::at(key.file, attribute.span.start, message);
+    if attribute.unsafe_wrapper {
+        return Err(error("language identity cannot use an unsafe wrapper"));
+    }
+    let unit = sources.package.unit(key.file);
+    let bytes = if let Some(root) = sources
+        .values
+        .map(|values| values.completed(sources.package, key, attribute))
+        .transpose()?
+        .flatten()
+    {
+        let Kind::Literal(index) = unit.configured.ast.node(root).kind else {
+            return Err(error("lang requires one string literal"));
+        };
+        let crate::literal::Value::String(bytes) = unit
+            .literal(index)
+            .map_err(|e| Error::at(key.file, e.offset, e.message))?
+        else {
+            return Err(error("lang requires one string literal"));
+        };
+        bytes
+    } else {
+        language_string(unit, key.file, attribute, forest)?
+    };
+    let name =
+        std::str::from_utf8(&bytes).map_err(|_| error("language item name requires UTF-8"))?;
+    Ok(Claim::Language(LangItem::from_name(name).ok_or_else(
+        || error("unsupported source language item"),
+    )?))
+}
+
+fn language_string<'a>(
+    unit: &'a Unit,
+    file: FileId,
+    attribute: Attribute,
+    forest: &Forest,
+) -> Result<std::borrow::Cow<'a, [u8]>, Error> {
     let error = |message| Error::at(file, attribute.span.start, message);
     let Input::Equals(range) = attribute.input else {
         return Err(error("lang requires a string literal"));
@@ -690,11 +740,7 @@ fn language_claim(
     else {
         return Err(error("lang requires a string literal"));
     };
-    let name =
-        std::str::from_utf8(&bytes).map_err(|_| error("language item name requires UTF-8"))?;
-    Ok(Claim::Language(LangItem::from_name(name).ok_or_else(
-        || error("unsupported source language item"),
-    )?))
+    Ok(bytes)
 }
 
 pub(super) fn error(package: &Package, key: NodeKey, message: &'static str) -> Error {

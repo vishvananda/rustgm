@@ -1,18 +1,19 @@
 # Parallel library bootstrap implementation
 
-Current original-core frontier is LIB-129, `lang = stringify!($lang)` in the
-actual panic-function macro at panicking.rs172. The
-[default-body checkpoint](pa31-default-body-stability-checkpoint.md) passes12
-private/27 production,48 independent outcomes,86 CLI phases and actual native7 9.
-CLI6bc0e520 clears LIB-128 with all722 source/configuration/limits unchanged,
-18.77s/375opens. Local default/override bodies remain genuine; complete imported
-body-policy transport and original Drop/Pin semantics remain required. Prior
-full CI41742788707 failed an older promotion expectation, now repaired with both
-original conflict and distinct-feature owner negatives; successor full CI remains
-required. Root stays alone in the warm btrfs tree with unchanged five-minute/
-two-thread/16GiB/150GiB rules and scoped cleanup. Next implement real macro-valued
-attribute expansion before language-item reservation. No original artifact or
-whole PA has completed.
+Current original-core frontier is LIB-130: the library stability inventory's
+work/storage budget after genuine macro-valued language-item expansion. The
+[language-value checkpoint](pa31-language-values-checkpoint.md) passes23 private/
+28 production,45 independent outcomes,90 CLI phases and real native9 11. All22
+panic_const identities append without changing earlier ordinals or granting
+unimplemented compiler semantics. CLI17eb46c0 takes18.94s/375opens with all722
+inputs/configuration/limits unchanged. Next measure the inventory's failing
+phase/dimension and remove repeated work or over-reservation; preserve its
+1,000,000-work/64MiB limits until understood. Default-body predecessor167968ee0
+is on main; full CI41748017598 remains in progress with fast passing. No full
+successor pass or original library artifact is inferred. Full Drop/Pin, imported
+body/value/policy transport and actual libraries remain required. Root stays
+alone in the warm btrfs tree under unchanged five-minute/two-thread/16GiB/150GiB
+guards, warm caches and scoped cleanup.
 
 Prior original-core frontier: LIB-125, `type_info` in mem/type_info.rs13.
 The published b9 header compiler clears the preceding declaration frontier with

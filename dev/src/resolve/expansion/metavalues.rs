@@ -92,8 +92,8 @@ impl Values {
 }
 
 impl<S: Sources> Engine<'_, S> {
-    /// Source diagnostic identity is the first consumer. Other attributes keep
-    /// their own validators until their expression contracts are implemented.
+    /// Language and diagnostic identities share actual scoped expression expansion.
+    /// Other attributes retain their owning validators and expression contracts.
     pub(super) fn expand_attribute_values(
         &mut self,
         visit: Visit,
@@ -123,7 +123,10 @@ impl<S: Sources> Engine<'_, S> {
             let attribute = configured.attribute.attribute;
             let forest = &unit.configured.ast.attributes[configured.capture as usize].forest;
             if configured.attribute.effect != Effect::Keep
-                || attribute.name(forest, unit.source.text()) != Some("rustc_diagnostic_item")
+                || !matches!(
+                    attribute.name(forest, unit.source.text()),
+                    Some("rustc_diagnostic_item" | "lang")
+                )
             {
                 continue;
             }

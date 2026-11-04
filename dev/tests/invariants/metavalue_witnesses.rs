@@ -260,3 +260,151 @@ fn expanded_diagnostic_identity_keeps_ordinary_executable_body() -> TestResult {
     )?;
     Ok(())
 }
+
+fn language_fixture(name: &str) -> Result<String, std::io::Error> {
+    crate::test_source::fixture(&format!("pa31/tests/spec/language-values/{name}.rs"))
+}
+#[test]
+fn language_value_claims_preserve_all_frozen_outcomes_and_real_role_identities() -> TestResult {
+    use crate::support::bindings::LangItem;
+    let table = crate::test_source::fixture("pa31/tests/spec/language-values/cases-v1.tsv")?;
+    assert_eq!(table.lines().count(), 45);
+    for line in table.lines() {
+        let [name, path, status, types, roles]: [_; 5] = line
+            .split('\t')
+            .collect::<Vec<_>>()
+            .try_into()
+            .map_err(|_| "five case columns")?;
+        let text = crate::test_source::fixture(path)?;
+        let result = crate::test_source::source_provider(&text, "language_values");
+        assert_eq!(
+            result.is_ok(),
+            status == "0",
+            "{name}: {:?}",
+            result.as_ref().err()
+        );
+        let Ok(report) = result else { continue };
+        let bindings = report
+            .resolution
+            .source_bindings
+            .as_deref()
+            .ok_or("bindings")?;
+        for name in roles.split(',').filter(|name| !name.is_empty()) {
+            let role = LangItem::from_name(name).ok_or("actual role")?;
+            assert!(bindings.language(role).is_some(), "{name}");
+        }
+        let analyzed = crate::pipeline::analyze_source(&report);
+        assert_eq!(
+            analyzed.is_ok(),
+            types == "0",
+            "{name}: {:?}",
+            analyzed.err().map(|e| e.to_string())
+        );
+    }
+    for line in crate::test_source::fixture("pa31/tests/spec/language-values/roles-v1.tsv")?.lines()
+    {
+        let [_, name, ordinal]: [_; 3] = line
+            .split('\t')
+            .collect::<Vec<_>>()
+            .try_into()
+            .map_err(|_| "role columns")?;
+        let role = LangItem::from_name(name).ok_or("panic role")?;
+        assert_eq!(role.index(), ordinal.parse::<usize>()?);
+        assert_eq!(
+            role.declaration_profile()
+                .ok_or("declaration profile")?
+                .generics,
+            crate::support::bindings::GenericRequirement::Any
+        );
+    }
+    Ok(())
+}
+#[test]
+fn language_values_keep_sparse_literals_and_reject_changed_actual_owner() -> TestResult {
+    for name in ["literal", "cfg-removed"] {
+        let report = provider(&language_fixture(name)?)?;
+        assert!(
+            report
+                .attribute_effects
+                .as_deref()
+                .is_none_or(|effects| effects.values.is_none())
+        );
+    }
+    let mut report = provider(&language_fixture("stringified")?)?;
+    let values = report
+        .attribute_effects
+        .as_deref()
+        .and_then(|effects| effects.values.as_deref())
+        .ok_or("values")?;
+    assert_eq!(values.entries.len(), 1);
+    let value = values.entries.values().next().ok_or("value")?;
+    let unit = &mut report.package.units[value.owner.file.0 as usize];
+    let mut owner = value.owner;
+    while let Kind::Attributed { value, .. } = unit.configured.ast.node(owner.node).kind {
+        owner.node = value;
+    }
+    let index = unit.owner_indices[value.owner.node.get() as usize]
+        .ok_or("owner")?
+        .get() as usize
+        - 1;
+    unit.configured.owners[index].enabled = false;
+    assert!(
+        values
+            .completed(&report.package, owner, value.attribute)
+            .is_err()
+    );
+    report.package.units[owner.file.0 as usize]
+        .configured
+        .owners[index]
+        .enabled = true;
+    assert!(
+        values
+            .completed(&report.package, owner, value.attribute)?
+            .is_some()
+    );
+    report.package.units[owner.file.0 as usize]
+        .configured
+        .effects[value.effect]
+        .attribute
+        .attribute
+        .unsafe_wrapper = true;
+    assert!(
+        values
+            .completed(&report.package, owner, value.attribute)
+            .is_err()
+    );
+    Ok(())
+}
+#[test]
+fn macro_valued_language_hooks_lower_the_actual_ordinary_marker_bodies() -> TestResult {
+    let report = provider(&language_fixture("native-marker-bodies")?)?;
+    let crate::pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = crate::pipeline::analyze_source(&report)?;
+    let program = crate::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        crate::lower::Roots {
+            entry: None,
+            exports: &[],
+        },
+        prepared,
+    )?;
+    for name in ["observed_move", "observed_copy"] {
+        assert!(
+            program
+                .symbols
+                .iter()
+                .any(|symbol| symbol.name == name && symbol.body.is_some())
+        );
+    }
+    let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../obj/parallel/language-values-v1/native");
+    std::fs::create_dir_all(&folder)?;
+    crate::lowir::writer::write(
+        &program,
+        &mut std::fs::File::create(folder.join("marker-bodies.lowir"))?,
+    )?;
+    Ok(())
+}

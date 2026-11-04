@@ -1,0 +1,468 @@
+{
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir/src/lang_items.rs": "af62146fd0255b1b8baea76309e13eb00ff5b9a8ffe110348beba4deb3569690",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_expand/src/expand.rs": "e4010a4b44933cb44c07ae47d64266591fcd1d6c1e7384074d067fbad6df23e8",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/panicking.rs": "805a33d479ebcdf2c640f43fb01b7a6707038bc248b4830d15f30a8a60d40303"
+  },
+  "role_table_sha256": "2396c3d1f11db0f4200854d80d1d6637d71e2eaa4bb90ad18ededff7d7b26a72",
+  "cases": [
+    {
+      "name": "literal",
+      "path": "pa31/tests/spec/language-values/literal.rs",
+      "sha256": "def15eb509c1c2a11d6fbfa0c6ef982da38b86183cfebb5ff5970c676c05dc1c",
+      "status": 0,
+      "types_status": 0,
+      "roles": [
+        "compiler_move"
+      ]
+    },
+    {
+      "name": "stringified",
+      "path": "pa31/tests/spec/language-values/stringified.rs",
+      "sha256": "06a2d0cc2425396524f1742450ef2ec1816e3115e0d5b2fc78f5a850b01549e8",
+      "status": 0,
+      "types_status": 0,
+      "roles": [
+        "compiler_move"
+      ]
+    },
+    {
+      "name": "nested",
+      "path": "pa31/tests/spec/language-values/nested.rs",
+      "sha256": "3a7d473de82ccd0282896ae9c39a67b86114af0fd95ba20150b47471c0e2c6a7",
+      "status": 0,
+      "types_status": 0,
+      "roles": [
+        "compiler_move"
+      ]
+    },
+    {
+      "name": "forwarded",
+      "path": "pa31/tests/spec/language-values/forwarded.rs",
+      "sha256": "6bcb4c080044266ee605a9ce69778312558212f91e07665be21a5cb4598f29b4",
+      "status": 0,
+      "types_status": 0,
+      "roles": [
+        "compiler_move"
+      ]
+    },
+    {
+      "name": "alias",
+      "path": "pa31/tests/spec/language-values/alias.rs",
+      "sha256": "6d263edb4bfdb9ad16ef74620b956710a413aacf920dc31b3ff7a5ee0503425d",
+      "status": 0,
+      "types_status": 0,
+      "roles": [
+        "compiler_move"
+      ]
+    },
+    {
+      "name": "shadow",
+      "path": "pa31/tests/spec/language-values/shadow.rs",
+      "sha256": "f5597beafd5c94357d7af7dc05101b364d8a48d72a1d6722445da64ce2b7abab",
+      "status": 0,
+      "types_status": 0,
+      "roles": [
+        "compiler_move"
+      ]
+    },
+    {
+      "name": "opaque",
+      "path": "pa31/tests/spec/language-values/opaque.rs",
+      "sha256": "65b418c0dd98cbc86c86b486381c1d3314f4009fa40ebd6bb4a4ab1a855987b3",
+      "status": 0,
+      "types_status": 0,
+      "roles": [
+        "compiler_move"
+      ]
+    },
+    {
+      "name": "cfg-removed",
+      "path": "pa31/tests/spec/language-values/cfg-removed.rs",
+      "sha256": "265b5083b625b0059af307790e1dcae5472f804baf7cdaba5528cb3609c68f03",
+      "status": 0,
+      "types_status": 0,
+      "roles": []
+    },
+    {
+      "name": "number",
+      "path": "pa31/tests/spec/language-values/number.rs",
+      "sha256": "62a0f123e1d980425fa0fd4a1f3383d629a61b643fc4d8fc7cf6be9047e53e45",
+      "status": 1,
+      "types_status": 1,
+      "roles": []
+    },
+    {
+      "name": "byte-string",
+      "path": "pa31/tests/spec/language-values/byte-string.rs",
+      "sha256": "945a6db5be31a037697cbb92c092a06dcd1ff0f72d1ae6d1170b4b2dbcb76258",
+      "status": 1,
+      "types_status": 1,
+      "roles": []
+    },
+    {
+      "name": "block",
+      "path": "pa31/tests/spec/language-values/block.rs",
+      "sha256": "e8d5ca04975d8c0fb328f7d1199787bc6d76ae46121d72226ff830ae1cd157ab",
+      "status": 1,
+      "types_status": 1,
+      "roles": []
+    },
+    {
+      "name": "multiple",
+      "path": "pa31/tests/spec/language-values/multiple.rs",
+      "sha256": "f6fc1b81fe1bd6dcf3f0e176cd4fde42793906c30eb3d210d30ff252871aa0b0",
+      "status": 1,
+      "types_status": 1,
+      "roles": []
+    },
+    {
+      "name": "missing-macro",
+      "path": "pa31/tests/spec/language-values/missing-macro.rs",
+      "sha256": "c7de4d54934b588ca79b399ae0851aab5e375d29a747f13eb09910564afc3b58",
+      "status": 1,
+      "types_status": 1,
+      "roles": []
+    },
+    {
+      "name": "unknown-role",
+      "path": "pa31/tests/spec/language-values/unknown-role.rs",
+      "sha256": "514106f1776aa1e0b9b9dee937dcb8d795b6010dff2d982980b999d16c1dd5ae",
+      "status": 1,
+      "types_status": 1,
+      "roles": []
+    },
+    {
+      "name": "missing-feature",
+      "path": "pa31/tests/spec/language-values/missing-feature.rs",
+      "sha256": "9df3cf50e25b2375ba2f8eb2c63df45490c84aeb3d999d2cb7f4d63553a14bb6",
+      "status": 1,
+      "types_status": 1,
+      "roles": []
+    },
+    {
+      "name": "wrong-arity",
+      "path": "pa31/tests/spec/language-values/wrong-arity.rs",
+      "sha256": "ec7f214496fb13c948282073e5b034a39d0205e44732f055a4313da3e5e9c947",
+      "status": 1,
+      "types_status": 1,
+      "roles": []
+    },
+    {
+      "name": "wrong-target",
+      "path": "pa31/tests/spec/language-values/wrong-target.rs",
+      "sha256": "68654ab768459c4b1aecae1ce6123706801c6e4a96d99e4e3bbbf9ff329ea4c8",
+      "status": 1,
+      "types_status": 1,
+      "roles": []
+    },
+    {
+      "name": "unsafe-wrapper",
+      "path": "pa31/tests/spec/language-values/unsafe-wrapper.rs",
+      "sha256": "4610a0a8e337d3d1de7f833f45c9de79c3c3e75a8d7f16e6960ce9cd63a10e8c",
+      "status": 1,
+      "types_status": 1,
+      "roles": []
+    },
+    {
+      "name": "duplicate",
+      "path": "pa31/tests/spec/language-values/duplicate.rs",
+      "sha256": "4ca56737127ad30fc26f98e8d396d6cb410072e173b46a0a43c889fabdddf42d",
+      "status": 1,
+      "types_status": 1,
+      "roles": []
+    },
+    {
+      "name": "literal-panic_const_add_overflow",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_add_overflow.rs",
+      "sha256": "e384f247fb7ee9ac58ed7f1e1da1b0e50ac37910a7060964cebb64a840e1759f",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_add_overflow"
+      ]
+    },
+    {
+      "name": "literal-panic_const_sub_overflow",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_sub_overflow.rs",
+      "sha256": "d210e56fa4cd95f8057fc126fe0cc8b196b1b3fca20614a2dec344bf8daca4ad",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_sub_overflow"
+      ]
+    },
+    {
+      "name": "literal-panic_const_mul_overflow",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_mul_overflow.rs",
+      "sha256": "a73e41e9f9569fd159ca476bf8e76a182349fac17ac6a1e06a8676be4534acd6",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_mul_overflow"
+      ]
+    },
+    {
+      "name": "literal-panic_const_div_overflow",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_div_overflow.rs",
+      "sha256": "186bfeb97d2df8288bd02c7266dbf74105d76cf70348b377d3ff815f977de5ab",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_div_overflow"
+      ]
+    },
+    {
+      "name": "literal-panic_const_rem_overflow",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_rem_overflow.rs",
+      "sha256": "13cff9b1ede06c7381dae93a91144b6cbb6383ba146ee2dd9d75af583fc368fe",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_rem_overflow"
+      ]
+    },
+    {
+      "name": "literal-panic_const_neg_overflow",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_neg_overflow.rs",
+      "sha256": "f21ad354fced05a2781746fb748bb6cfa7fcc2b1c71fda103fe847192ec93de5",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_neg_overflow"
+      ]
+    },
+    {
+      "name": "literal-panic_const_shr_overflow",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_shr_overflow.rs",
+      "sha256": "2c7ef65e083a7f8c6e42a5b9f8f9f35f8288338ed4b75d372dbbad88edd4e643",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_shr_overflow"
+      ]
+    },
+    {
+      "name": "literal-panic_const_shl_overflow",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_shl_overflow.rs",
+      "sha256": "02259ced323ea0b1f0a8b6111e77b50466e18fddd0bac6f07405772210e63748",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_shl_overflow"
+      ]
+    },
+    {
+      "name": "literal-panic_const_div_by_zero",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_div_by_zero.rs",
+      "sha256": "38581d9e912fbeee26de0b544baadf8e82dd7c808540edad094a833775b16065",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_div_by_zero"
+      ]
+    },
+    {
+      "name": "literal-panic_const_rem_by_zero",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_rem_by_zero.rs",
+      "sha256": "b9605fa08ddc469fbafe9de4a8eb46b22127a6d86a49e3697fbda5a074be5d21",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_rem_by_zero"
+      ]
+    },
+    {
+      "name": "literal-panic_const_coroutine_resumed",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_coroutine_resumed.rs",
+      "sha256": "b7188f5d62ed977ed220c4f65b4e83075960796e24c4665a3bbb20df4f665bff",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_coroutine_resumed"
+      ]
+    },
+    {
+      "name": "literal-panic_const_async_fn_resumed",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_async_fn_resumed.rs",
+      "sha256": "74b8a84d0373f846388762715a8d83a18afee93df2841d209606f9611e30bfd0",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_async_fn_resumed"
+      ]
+    },
+    {
+      "name": "literal-panic_const_async_gen_fn_resumed",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_async_gen_fn_resumed.rs",
+      "sha256": "d3edaedc19a24f8c3732d64a766418353e776ac72063a617f5e92ff6f8897bbc",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_async_gen_fn_resumed"
+      ]
+    },
+    {
+      "name": "literal-panic_const_gen_fn_none",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_gen_fn_none.rs",
+      "sha256": "de35ebc2a9829cf62a56ef76190249ce04b49b705e810d55322d4797e507e5d5",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_gen_fn_none"
+      ]
+    },
+    {
+      "name": "literal-panic_const_coroutine_resumed_panic",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_coroutine_resumed_panic.rs",
+      "sha256": "cd96158896711b5c35b52f6650dc6e561b6ce79a2b8960a505b91a935f618c83",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_coroutine_resumed_panic"
+      ]
+    },
+    {
+      "name": "literal-panic_const_async_fn_resumed_panic",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_async_fn_resumed_panic.rs",
+      "sha256": "3bdd69876735a4788039ec8ec0fb9894de27d8145dc02696996698a13e6aa337",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_async_fn_resumed_panic"
+      ]
+    },
+    {
+      "name": "literal-panic_const_async_gen_fn_resumed_panic",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_async_gen_fn_resumed_panic.rs",
+      "sha256": "aa9009e0399fc433ec0ab02e4d495efb2c47c4ec3ddba8635321d7b32af7ec2a",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_async_gen_fn_resumed_panic"
+      ]
+    },
+    {
+      "name": "literal-panic_const_gen_fn_none_panic",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_gen_fn_none_panic.rs",
+      "sha256": "86577321c4acd79c04e40bda1c7453b85767ca674671701dddc89436d2259cb6",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_gen_fn_none_panic"
+      ]
+    },
+    {
+      "name": "literal-panic_const_coroutine_resumed_drop",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_coroutine_resumed_drop.rs",
+      "sha256": "a719ad1039ab36d13deee7c8758802a2b0d034fc79fc7d4ca74c16a61feddfe6",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_coroutine_resumed_drop"
+      ]
+    },
+    {
+      "name": "literal-panic_const_async_fn_resumed_drop",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_async_fn_resumed_drop.rs",
+      "sha256": "83cf82fa02d1d9fc03ab6b6e9304f283dee155a38c6b9e94de6a72ed5f265ae0",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_async_fn_resumed_drop"
+      ]
+    },
+    {
+      "name": "literal-panic_const_async_gen_fn_resumed_drop",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_async_gen_fn_resumed_drop.rs",
+      "sha256": "1d5f95fa0861dea090a2d4b85b741fff37b3e2c17afd7a799d11ae702b8e7c64",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_async_gen_fn_resumed_drop"
+      ]
+    },
+    {
+      "name": "literal-panic_const_gen_fn_none_drop",
+      "path": "pa31/tests/spec/language-values/literal-panic_const_gen_fn_none_drop.rs",
+      "sha256": "e4d9a893f4f20aa9db7b9eeeb63def6f1160fbcff5166c7a74e02fbb17a6c57f",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_gen_fn_none_drop"
+      ]
+    },
+    {
+      "name": "repeated-panic-family",
+      "path": "pa31/tests/spec/language-values/repeated-panic-family.rs",
+      "sha256": "aebdb72f4ab4330312a7f1064edb6ab10fab19cec5f3d00d0b8eae7a08f7719f",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_add_overflow",
+        "panic_const_sub_overflow",
+        "panic_const_mul_overflow",
+        "panic_const_div_overflow",
+        "panic_const_rem_overflow",
+        "panic_const_neg_overflow",
+        "panic_const_shr_overflow",
+        "panic_const_shl_overflow",
+        "panic_const_div_by_zero",
+        "panic_const_rem_by_zero",
+        "panic_const_coroutine_resumed",
+        "panic_const_async_fn_resumed",
+        "panic_const_async_gen_fn_resumed",
+        "panic_const_gen_fn_none",
+        "panic_const_coroutine_resumed_panic",
+        "panic_const_async_fn_resumed_panic",
+        "panic_const_async_gen_fn_resumed_panic",
+        "panic_const_gen_fn_none_panic",
+        "panic_const_coroutine_resumed_drop",
+        "panic_const_async_fn_resumed_drop",
+        "panic_const_async_gen_fn_resumed_drop",
+        "panic_const_gen_fn_none_drop"
+      ]
+    },
+    {
+      "name": "panic-wrong-target",
+      "path": "pa31/tests/spec/language-values/panic-wrong-target.rs",
+      "sha256": "e51d04cea5bdcc8441a813c291dd8224ba039e027b855e0b3ad2d0b251f55efe",
+      "status": 1,
+      "types_status": 1,
+      "roles": []
+    },
+    {
+      "name": "panic-generic-any",
+      "path": "pa31/tests/spec/language-values/panic-generic-any.rs",
+      "sha256": "2cb5dcc0c895ba9b7c58d5e0732e0377c4363d9a2d4642de2dfb80e462961967",
+      "status": 0,
+      "types_status": 1,
+      "roles": [
+        "panic_const_add_overflow"
+      ]
+    },
+    {
+      "name": "native-marker-bodies",
+      "path": "pa31/tests/spec/language-values/native-marker-bodies.rs",
+      "sha256": "73b1a9bed5e1051eeff4acd1534125c3ffc90816b6d5bdf1d05b22755b6af07f",
+      "status": 0,
+      "types_status": 0,
+      "roles": [
+        "compiler_move",
+        "compiler_copy"
+      ]
+    }
+  ],
+  "native": {
+    "case": "native-marker-bodies",
+    "observer": "pa31/tests/spec/compiler-language-claims/observer.c",
+    "observer_sha256": "8a98f828ee87a046baedb22c43a515165b6b9271ecfe582c2953e0add31cf1cf",
+    "stdout": "9 11\n"
+  },
+  "requirements": [
+    "Expand real scoped macro values before language-item reservation.",
+    "Validate configured owner, literal kind, feature, target, arity and duplicate claims.",
+    "Keep old language-item ordinals and all unimplemented panic assertion/runtime/metadata requirements."
+  ]
+}

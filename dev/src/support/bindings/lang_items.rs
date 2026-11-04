@@ -237,5 +237,27 @@ language_items! {
         MemCmp = 184 => "memcmp_fn", ForeignFunction, GenericRequirement::Any;
         Bcmp = 185 => "bcmp_fn", ForeignFunction, GenericRequirement::Any;
         StrLen = 186 => "strlen_fn", ForeignFunction, GenericRequirement::Any;
+        PanicAddOverflow = 187 => "panic_const_add_overflow", Function, GenericRequirement::Any;
+        PanicSubOverflow = 188 => "panic_const_sub_overflow", Function, GenericRequirement::Any;
+        PanicMulOverflow = 189 => "panic_const_mul_overflow", Function, GenericRequirement::Any;
+        PanicDivOverflow = 190 => "panic_const_div_overflow", Function, GenericRequirement::Any;
+        PanicRemOverflow = 191 => "panic_const_rem_overflow", Function, GenericRequirement::Any;
+        PanicNegOverflow = 192 => "panic_const_neg_overflow", Function, GenericRequirement::Any;
+        PanicShrOverflow = 193 => "panic_const_shr_overflow", Function, GenericRequirement::Any;
+        PanicShlOverflow = 194 => "panic_const_shl_overflow", Function, GenericRequirement::Any;
+        PanicDivZero = 195 => "panic_const_div_by_zero", Function, GenericRequirement::Any;
+        PanicRemZero = 196 => "panic_const_rem_by_zero", Function, GenericRequirement::Any;
+        PanicCoroutineResumed = 197 => "panic_const_coroutine_resumed", Function, GenericRequirement::Any;
+        PanicAsyncFnResumed = 198 => "panic_const_async_fn_resumed", Function, GenericRequirement::Any;
+        PanicAsyncGenFnResumed = 199 => "panic_const_async_gen_fn_resumed", Function, GenericRequirement::Any;
+        PanicGenFnNone = 200 => "panic_const_gen_fn_none", Function, GenericRequirement::Any;
+        PanicCoroutineResumedPanic = 201 => "panic_const_coroutine_resumed_panic", Function, GenericRequirement::Any;
+        PanicAsyncFnResumedPanic = 202 => "panic_const_async_fn_resumed_panic", Function, GenericRequirement::Any;
+        PanicAsyncGenFnResumedPanic = 203 => "panic_const_async_gen_fn_resumed_panic", Function, GenericRequirement::Any;
+        PanicGenFnNonePanic = 204 => "panic_const_gen_fn_none_panic", Function, GenericRequirement::Any;
+        PanicCoroutineResumedDrop = 205 => "panic_const_coroutine_resumed_drop", Function, GenericRequirement::Any;
+        PanicAsyncFnResumedDrop = 206 => "panic_const_async_fn_resumed_drop", Function, GenericRequirement::Any;
+        PanicAsyncGenFnResumedDrop = 207 => "panic_const_async_gen_fn_resumed_drop", Function, GenericRequirement::Any;
+        PanicGenFnNoneDrop = 208 => "panic_const_gen_fn_none_drop", Function, GenericRequirement::Any;
     }
 }

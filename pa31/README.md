@@ -33,6 +33,14 @@ checks shared target, generic and foreign-only rules for the remaining raw-sourc
 inventory. Profiling hooks keep actual bodies; declaration recognition alone
 does not supply builtin semantics, metadata transport or original artifacts.
 
+The [macro-valued language-item packet](tests/spec/language-values/README.md)
+shares the actual source-owned attribute expansion path with diagnostic names.
+Claims still require real feature, target, arity and duplicate validation. Its
+22 appended panic_const declarations retain every older ordinal and grant no
+unimplemented compiler assertion, const-panic or runtime permission. Real marker
+bodies supply independent native controls; full panic consumers and metadata
+remain required.
+
 The [type-reflection source checkpoint](../docs/pa31-type-reflection-source-checkpoint.md)
 qualifies actual `type_info`/`type_id` declaration targets and unrestricted generic
 forms, while retaining intrinsic/provenance and old-metadata boundaries. Its

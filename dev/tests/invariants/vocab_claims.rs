@@ -84,8 +84,8 @@ fn pinned_declaration_targets_formals_and_weak_only_policy_match_all_source_outc
 }
 #[test]
 fn append_only_vocabulary_preserves_ordinals_spellings_and_checked_profiles() -> TestResult {
-    assert_eq!(LangItem::ALL.len(), 187);
-    assert_eq!(LangItem::DECLARATIONS.len(), 100);
+    assert_eq!(LangItem::ALL.len(), 209);
+    assert_eq!(LangItem::DECLARATIONS.len(), 122);
     for (index, role) in LangItem::ALL.into_iter().enumerate() {
         assert_eq!(role.index(), index);
         assert_eq!(role.declaration_profile().is_some(), index >= 87);
@@ -213,7 +213,7 @@ fn measure_appended_cold_storage_without_widening_ordinary_records() -> TestResu
     let node = size_of::<crate::syntax::ast::Node>();
     let node_facts = size_of::<crate::sema::model::NodeFacts>();
     let sizes = format!(
-        r#"{{"roles":187,"catalog":{catalog},"reservations":{reservations},"provider":{provider},"imported":{imported},"role_set":{role_set},"body":{body},"node":{node},"node_facts":{node_facts}}}"#
+        r#"{{"roles":209,"catalog":{catalog},"reservations":{reservations},"provider":{provider},"imported":{imported},"role_set":{role_set},"body":{body},"node":{node},"node_facts":{node_facts}}}"#
     );
     println!("{sizes}");
     let folder = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))

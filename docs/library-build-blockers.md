@@ -15,20 +15,21 @@ PA21–PA24 have implemented/release-evidence status; PA1–PA20 retain
 implemented-draft. PA25–PA44 remain planned. No additional assignment or whole
 upstream library has been completed.
 
-Current original-core frontier is LIB-129: macro-valued lang identity in
-`#[lang = stringify!($lang)]`, panicking.rs172 (file188 byte7851). The
-[default-body checkpoint](pa31-default-body-stability-checkpoint.md) clears the
-LIB-128 attribute frontier with12 private/27 production tests,48 independent
-Rust outcomes,86 CLI phase checks and actual native `7 9`. CLI6bc0e520 takes
-18.77s/375 opens with all722 source hashes, six configuration hashes and finite
-limits unchanged. Local provided/override bodies retain actual execution;
-imported body-policy transport and full original Drop/Pin remain required.
-Default policies share the cold owner/axis index without growing ordinary records.
-Prior e338 full CI41742788707 failed one stale promotion expectation; both
-original conflict and distinct-feature owner regressions now pass independently
-and in the focused batch. Successor full qualification remains required. No
-original core/alloc/std artifact or whole PA is complete. Root remains alone
-under the existing btrfs/five-minute/two-thread/16GiB/150GiB rules.
+Current original-core frontier is LIB-130: stability inventory work/storage
+budget exhaustion after clearing macro-valued language identities. The
+[language-value checkpoint](pa31-language-values-checkpoint.md) passes23 private/
+28 production,45 independent Rust outcomes,90 CLI phases and actual native9 11.
+Its22 panic_const declarations append without changing prior ordinals and retain
+all unimplemented compiler assertion/runtime/metadata boundaries. CLI17eb46c0
+observes the unlocated inventory error in18.94s/375opens with all722 source hashes,
+six configuration hashes and finite limits unchanged. Measure the failing stage
+and budget dimension before changing limits; prioritize algorithmic improvements
+and accurate paid storage. Ordinary bodies/syntax/facts remain unchanged.
+The default-body predecessor167968ee0 is on main with full CI41748017598 still
+in progress and its fast job passing. No full successor qualification is inferred.
+Actual imported body-policy transport, full Drop/Pin and original core/alloc/std
+artifacts remain required; no new whole PA is complete. Root remains alone under
+the existing btrfs/five-minute/two-thread/16GiB/150GiB rules.
 
 
 
@@ -411,7 +412,8 @@ actual native hints and the future authenticated MIR-import obligation.
 | LIB-126 | Source declaration frontier cleared; debug/transport required | Actual compiler_move/compiler_copy profiling markers | PA31 declarations +PA40 compiler/debug instrumentation +PA29 authenticated metadata / original profiling.rs12 | Root only | [Shared declaration checkpoint](pa31-language-declarations-checkpoint.md):17 private/19 production,135 independent outcomes,239 CLI phase checks and real native9 11. Actual bodies execute; no annotation/no-op is invented. CLI50b48197 clears the original claim and reaches LIB-127 with all722 sources/configuration/limits unchanged. Debug annotation policy and authenticated transport remain required. |
 | LIB-127 | Source declaration/request contract qualified; transport required | Renamed unstable library feature identity and actual hard former-name rejection | PA31 source policy +PA29 authenticated relationship metadata +PA40 hard diagnostics / original ops/mod.rs197 | Root only | [Checkpoint](pa31-renamed-feature-checkpoint.md):44 independent programs including actual fresh rustc rlib consumers,11 private/27 production,82 CLI phase checks and native7. First unstable declaration, canonical collisions, const policies and release consistency preserve the pinned rules; no alias enables an API. CLIfc5d8d12 clears the original declaration and reaches LIB-128. Actual RustGM relationship transport/fresh consumers remain required. |
 | LIB-128 | Local source policy qualified; imported inheritance and full Drop/Pin required | Actual unstable provided/default-body policy on stable API and selected inheritance | PA31 source/callable policy +PA26 actual implementation/default selection +PA25 const contexts +PA29 provided-body/policy transport +PA39 destruction / original ops/drop.rs242 Drop::drop | Root only | [Checkpoint](pa31-default-body-stability-checkpoint.md):48 independent Rust outcomes including five real imported clients,12 private/27 production,86 candidate CLI checks and real native7 9. CLI6bc0e520 clears the attribute frontier. Actual RustGM imported inheritance and full original Drop/Pin remain required; no body or permission is synthesized. |
-| LIB-129 | Current original-core source blocker | Expand genuine macro-valued language-item attributes before identity reservation | PA8 macro/attribute expansion +PA31 authenticated source language identities / original panicking.rs172 | Root only | CLI6bc0e520 reaches lang=stringify!($lang) in the actual panic-function macro, file188 byte7851,18.7710s/375opens/all722 source and six configuration hashes unchanged. Preserve expanded-token provenance, real language-item validation and actual panic bodies; do not treat raw source spelling as identity authority. |
+| LIB-129 | Macro-valued identity and panic family declarations qualified; semantics/transport required | Expand genuine macro-valued language-item attributes before identity reservation | PA8 macro/attribute expansion +PA31 authenticated source language identities / original panicking.rs172 | Root only | [Checkpoint](pa31-language-values-checkpoint.md):45 independent outcomes,23 private/28 production,90 CLI phase checks and real native9 11. All22 panic_const functions have genuine declaration profiles at append-only ordinals187–208; real compiler assertion/panic consumers and authenticated transport remain required. CLI17eb46c0 clears this frontier with unchanged inputs/configuration/limits. |
+| LIB-130 | Current original-core inventory budget frontier | Measure stability inventory work and storage, remove redundant algorithms/over-reservation with actual ownership preserved | PA31 library policy inventory +PA32 original core +shared performance architecture | Root only | CLI17eb46c0 reports library stability inventory exceeds its work or storage budget at file0 byte0,18.9350s/375opens/all722 source and six configuration hashes unchanged. This unlocated diagnostic does not establish the failing phase or dimension. Keep the1,000,000-work/64MiB inventory limits; measure counters and scaling before choosing the fix. |
 | Remaining raw language-item semantic inventory | Declarations checked;98 builtin semantic profiles explicitly unsupported | Actual operators, associated hooks, async/drop/pinning, field reflection, ranges and weak memory hooks | Earliest actual PA23–PA31/40/41 consumer units +PA29 transport / compiler-language-claims packet | Root only | The pinned100-name raw inventory is not a cfg-active blocker count. Shared target/arity/foreign validation and135 independent cases are qualified, but unsupported semantic consumers stop explicitly before ordinary checking can infer absence. Implement each actual builtin relation/runtime contract and add genuine source/native/imported consumers before removing its fence. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
