@@ -1,5 +1,12 @@
 # Parallel library bootstrap implementation
 
+Current scheduling is the user-authorized
+[three-agent core plan](parallel/core-critical-path.md): integrator owns
+Deref/receivers and joins; two6.1-sol/high workers own async signatures and real
+PA29 source transport in isolated btrfs checkouts. This supersedes historical
+root-only/stopped-worker notes below. Keep two heavy jobs,150GiB reserve,
+16GiB output caps and five-minute local batches. No worker publishes main.
+
 The [function-pointer checkpoint](pa31-function-pointer-checkpoint.md) passes38
 complete source/body-proof outcomes, actual typed address-shim native equality,
 all1193 PA19 text cases and strict all-target Clippy. CLI1c5be3ca advances unchanged
