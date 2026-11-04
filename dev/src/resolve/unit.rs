@@ -77,6 +77,7 @@ impl Unit {
                 effect.attribute.effect,
                 crate::expand::configured::Effect::Keep
                     | crate::expand::configured::Effect::ExpandedDerive
+                    | crate::expand::configured::Effect::ConditionalLink(_)
             )
             .then(|| {
                 (
@@ -86,6 +87,12 @@ impl Unit {
                 )
             })
         })
+    }
+    pub(crate) fn native_link_condition(&self, effect: usize) -> Option<bool> {
+        match self.configured.effects.get(effect)?.attribute.effect {
+            crate::expand::configured::Effect::ConditionalLink(value) => Some(value),
+            _ => None,
+        }
     }
     pub(crate) fn word_attribute(
         &self,

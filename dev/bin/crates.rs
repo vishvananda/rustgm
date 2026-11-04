@@ -9,6 +9,7 @@ pub struct Options {
     pub disambiguator: Option<String>,
     pub library: bool,
     pub metadata: Option<String>,
+    pub native_links: Option<String>,
     pub externs: Vec<String>,
     pub dependency_metadata: Vec<String>,
     pub source_core: Option<String>,
@@ -16,6 +17,13 @@ pub struct Options {
     pub source_profile: Option<rustgm::lower::instances::SourcePublication>,
 }
 impl Options {
+    pub fn select_native_output(&mut self, path: Option<String>) -> Result<(), String> {
+        if self.native_links.is_some() {
+            return Err("duplicate --native-links-output".into());
+        }
+        self.native_links = Some(path.ok_or("--native-links-output requires a path")?);
+        Ok(())
+    }
     pub fn select_source_profile(&mut self, value: Option<&str>) -> Result<(), String> {
         if self.source_profile.is_some() {
             return Err("duplicate --source-profile".into());
@@ -76,6 +84,16 @@ impl Options {
         Ok(())
     }
     pub fn validate(&self, mode: &str, count: bool, output: Option<&str>) -> Result<(), String> {
+        if let Some(path) = &self.native_links {
+            if mode != "--emit-lowir" || count {
+                return Err("--native-links-output requires LowIR output without counting".into());
+            }
+            for other in output.into_iter().chain(self.metadata.as_deref()) {
+                if absolute(path)? == absolute(other)? {
+                    return Err("native link manifest and other output paths must differ".into());
+                }
+            }
+        }
         if self.source_profile.is_some()
             && (self.source_core.is_none()
                 || self.source_client.is_some()

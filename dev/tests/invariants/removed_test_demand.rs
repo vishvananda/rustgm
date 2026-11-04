@@ -222,6 +222,7 @@ fn corrupt(report: &mut Report, file: FileId, ordinal: usize, opponent: usize) -
                 crate::expand::configured::Effect::Cfg(value)
                 | crate::expand::configured::Effect::CfgAttr(value) => *value = !*value,
                 crate::expand::configured::Effect::Keep
+                | crate::expand::configured::Effect::ConditionalLink(_)
                 | crate::expand::configured::Effect::ExpandedDerive => {
                     return Err("expected actual cfg effect".into());
                 }

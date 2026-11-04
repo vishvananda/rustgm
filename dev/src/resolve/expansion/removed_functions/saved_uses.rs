@@ -73,13 +73,15 @@ pub(super) fn checked<'report>(
     let index = used.effect as usize;
     let effect = unit.configured.effects.get(index).ok_or_else(fail)?;
     let owner = owner(unit, index, file, work)?;
-    if !matches!(effect.attribute.effect, Effect::Cfg(_) | Effect::CfgAttr(_))
-        || unit
-            .configured
-            .ast
-            .attributes
-            .get(effect.capture as usize)
-            .is_none()
+    if !matches!(
+        effect.attribute.effect,
+        Effect::Cfg(_) | Effect::CfgAttr(_) | Effect::ConditionalLink(_)
+    ) || unit
+        .configured
+        .ast
+        .attributes
+        .get(effect.capture as usize)
+        .is_none()
         || used.predicate.span.start > used.predicate.span.end
         || used.predicate.span.end as usize > unit.source.text().len()
     {
@@ -178,7 +180,10 @@ impl Witness {
     ) -> Result<Self, Error> {
         let owner = owner(unit, effect, file, work)?;
         let entry = &unit.configured.effects[effect];
-        if !matches!(entry.attribute.effect, Effect::Cfg(_) | Effect::CfgAttr(_)) {
+        if !matches!(
+            entry.attribute.effect,
+            Effect::Cfg(_) | Effect::CfgAttr(_) | Effect::ConditionalLink(_)
+        ) {
             return Err(Error::at(
                 file,
                 0,

@@ -518,6 +518,9 @@ fn emit_lowir(
             .map_err(|error| semantic_error(&facts.retain_error_warnings(error)))?;
         (lowir, None)
     };
+    let native_links =
+        crate::link_manifest::prepare(&report, &facts, crates.native_links.as_deref())
+            .map_err(|message| failure_message(&facts, message))?;
     if let Some(path) = &crates.metadata {
         let interface = interface
             .as_ref()
@@ -529,6 +532,8 @@ fn emit_lowir(
         )
         .map_err(|error| failure_message(&facts, error.to_string()))?;
     }
+    crate::link_manifest::write(&native_links, crates.native_links.as_deref())
+        .map_err(|message| failure_message(&facts, message))?;
     emit_warnings(&facts)?;
     drop(facts);
     drop(report);

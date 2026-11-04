@@ -113,6 +113,7 @@ fn attributes(source: &str, report: &Report, output: &mut impl Write) -> io::Res
             Effect::ExpandedDerive => write!(output, "expanded-derive")?,
             Effect::Cfg(value) => write!(output, "cfg={value}")?,
             Effect::CfgAttr(value) => write!(output, "cfg_attr={value}")?,
+            Effect::ConditionalLink(value) => write!(output, "link_cfg={value}")?,
         }
         write!(output, " ")?;
         if matches!(attribute.input, Input::Doc(_)) {

@@ -13,6 +13,11 @@ identities and dependency edges are distinct from the function-only family.
 
 Required families: multi-crate dependencies; symbol identity; visibility; deterministic exports.
 
+`spec/conditional-native-links/contract-v2.json` inventories the conditional-link
+source and real C library/observer fixtures. Private source controls and the
+`ffi_dependencies` native integration consume them. This is a maintainer
+checkpoint inventory; whole PA29 still requires its release manifest and checks.
+
 Put required regressions here, in the earliest assignment owning all their
 features. Register every maintainer input in the checkpoint inventory. The
 reviewed assignment release must publish `manifest.json` and references together;

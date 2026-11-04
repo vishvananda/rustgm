@@ -15,18 +15,21 @@ PA21–PA24 have implemented/release-evidence status; PA1–PA20 retain
 implemented-draft. PA25–PA44 remain planned. No additional assignment or whole
 upstream library has been completed.
 
-Current original-core frontier is LIB-136: link_cfg at original lib.rs138.
-The [advisory request checkpoint](pa40-advisory-requests-checkpoint.md) qualifies
-intra_doc_pointers and strict_provenance_lints without operation permissions,
-feature-word growth or new binding modes. Private4/production10,PA8 126/126,
-72 independent/candidate outcomes and actual native pointer round-trip7 9 pass.
-Annotated/control/predecessor ordinary LowIR bytes match. CLI871c6abd reaches
-LIB-136 in20.69s/375opens with all722 hashes, six configuration pins, options,
-capAllow and finite limits unchanged. Strict explicit provenance producers and
-Rustdoc output/transport remain required. Inspect actual link_cfg feature checks,
-predicate validation and library selection next; link_llvm_intrinsics needs its
-own declared/lowering proof. No whole PA or original artifact is established.
-Root remains alone with the existing warm btrfs tree and unchanged resource guards.
+Current original-core frontier is LIB-137: link_llvm_intrinsics at original lib.rs139.
+The [conditional-native-link checkpoint](pa29-conditional-native-links-checkpoint.md)
+qualifies actual source cfg/feature/provenance checks, selected static native
+execution7 9, dynamic metadata codec and explicit external manifest transport.
+Final private6/native1, production9, PA8 126/126,94 independent/candidate outcomes,
+backend/harness checks and all fifteen equal configuration constants pass.
+CLI02117cec reaches LIB-137 in29.18s/375opens with all722 original
+hashes, options, explicit Allow cap and finite limits unchanged. The two driver
+source pins are explicitly requalified; four other pins stay unchanged. Static
+archive bundling/modifiers, fresh dynamic consumers and broader transport remain
+required. LLVM intrinsics need genuine signature/operation lowering, not ordinary
+C linkage. No whole PA or original artifact is established. Root stays alone in
+the warm btrfs tree with the existing guards, current pins and scoped cleanup.
+
+Previous original-core frontier was LIB-136: link_cfg at original lib.rs138.
 
 Previous original-core frontier was LIB-135: intra_doc_pointers at original lib.rs135.
 The [documentation gate checkpoint](pa40-documentation-gates-checkpoint.md)
@@ -461,7 +464,8 @@ actual native hints and the future authenticated MIR-import obligation.
 | LIB-133 | Capped compilation qualified; strict diagnostics/transport required | Diagnostic-only const and macro requests, hard lexical/unsafe/const/trait/macro checks | PA40 directives +PA31 source identity +PA25 semantic const proof +PA29 transport / original lib.rs122–123 | Root only | [Checkpoint](pa40-diagnostic-directives-checkpoint.md): private3/production10,PA2 142/142,PA8 126/126,118 independent/candidate outcomes and native7 9 pass. No capability or rendering table is installed. Ordinary LowIR equals the predecessor. CLI72fdb01b clears both requests and reaches LIB-134 with original inputs/configuration/limits unchanged. Uncapped diagnostic parity and imported text remain required. |
 | LIB-134 | Capped local documentation gates qualified; strict output/transport required | Actual doc_cfg/doc_notable_trait, attribute macro authority and independent cfg-query permissions | PA40 documentation +PA5 shared cfg syntax +PA31 actual source +PA29 transport / original lib.rs124–125 | Root only | [Checkpoint](pa40-documentation-gates-checkpoint.md): private21/production19,PA2/5/8,146 independent documentation outcomes,118 diagnostic outcomes and actual native7 9. Flat shared parsing preserves all cfg operands and forwarding. Nine predecessor offset_of CI regressions are repaired. Config source identity explicitly requalified with fifteen equal values. CLIe6f104b1 reaches LIB-135 with original722 inputs/options/limits unchanged. |
 | LIB-135 | Compilation requests qualified; Rustdoc/strict producers required | Genuine intra_doc_pointers and strict_provenance_lints requests with no operation capability | PA40 documentation/lints +PA31 source identity +PA27 actual pointer semantics / original lib.rs135,159 | Root only | [Checkpoint](pa40-advisory-requests-checkpoint.md): private4/production10,PA8 126/126,72 independent/candidate outcomes and native pointer round-trip7 9 pass. No feature-word or binding-mode growth. Strict producer boundaries retain required positive warn/expect cases. CLI871c6abd reaches LIB-136 with original inputs/configuration/limits unchanged. |
-| LIB-136 | Current original-core request blocker | Actual conditional native link directive semantics | PA29 native dependency metadata/linking +PA5 cfg grammar +PA31 source feature authority / original lib.rs138 | Root only | Immutable CLI871c6abd and bounded debugger identify link_cfg. Pinned rustc link_attrs.rs384 checks the actual crate feature and parses one cfg predicate. Implement conditional library selection without changing foreign declaration visibility or mistaking LLVM intrinsic names for ordinary C linkage. |
+| LIB-136 | Local conditional linking/native and dynamic codec qualified; full transport required | Actual link_cfg permission, cfg selection and distinct dependency plan | PA29 native dependency metadata/linking +PA5 cfg grammar +PA31 source authority / original lib.rs138 | Root only | [Checkpoint](pa29-conditional-native-links-checkpoint.md): private6/native1, production9, PA8 126/126,94 source outcomes, actual native7 9 and unchanged LowIR. Static bundling, modifiers and fresh dynamic consumers remain required. CLI02117cec reaches LIB-137 with original inputs/configuration/limits unchanged. |
+| LIB-137 | Current original-core request blocker | Genuine LLVM intrinsic declaration permission, signatures and operation lowering | PA28 intrinsic consumers +PA30 linkage/ABI +PA31 source authority / original lib.rs139 | Root only | Bounded debugger identifies link_llvm_intrinsics after original input verification. Keep LLVM names separate from ordinary C linkage; implement actual typed/native operations and negative permission/signature controls. |
 | Remaining raw language-item semantic inventory | Declarations checked;98 builtin semantic profiles explicitly unsupported | Actual operators, associated hooks, async/drop/pinning, field reflection, ranges and weak memory hooks | Earliest actual PA23–PA31/40/41 consumer units +PA29 transport / compiler-language-claims packet | Root only | The pinned100-name raw inventory is not a cfg-active blocker count. Shared target/arity/foreign validation and135 independent cases are qualified, but unsupported semantic consumers stop explicitly before ordinary checking can infer absence. Implement each actual builtin relation/runtime contract and add genuine source/native/imported consumers before removing its fence. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |

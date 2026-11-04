@@ -1,4 +1,5 @@
 //! Versioned little-endian metadata validates bounded tables before inference.
+mod link_envelope;
 mod nominals;
 mod ordinary_columns;
 mod originals;
@@ -29,6 +30,12 @@ const PROFILE: [u8; 3] = [TARGET_LINUX_X86_64, LANGUAGE_RUST_1_98_EDITION_2024, 
 /// # Errors
 /// Rejects metadata that exceeds the bounded artifact size.
 pub fn encode(interface: &Interface) -> Result<Vec<u8>, &'static str> {
+    if interface.native_links().is_some() {
+        return link_envelope::encode(interface);
+    }
+    encode_core(interface)
+}
+fn encode_core(interface: &Interface) -> Result<Vec<u8>, &'static str> {
     if interface.source_descriptor().is_some() {
         return packet_envelope::encode(interface);
     }
@@ -108,6 +115,9 @@ pub fn decode(bytes: &[u8]) -> Result<Interface, &'static str> {
     let mut input = Reader::new(bytes);
     decode_header(&mut input)?;
     let tag = input.u8()?;
+    if tag == link_envelope::TAG {
+        return link_envelope::decode(&mut input);
+    }
     if tag == packet_envelope::TAG {
         return packet_envelope::decode(&mut input);
     }

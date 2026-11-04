@@ -4,6 +4,7 @@ pub mod builtin;
 pub mod config;
 pub mod configured;
 pub mod crate_syntax;
+mod link_conditions;
 pub mod macros;
 pub mod marks;
 pub mod registry;

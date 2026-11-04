@@ -1,5 +1,6 @@
 mod budget_options;
 mod crates;
+mod link_manifest;
 mod modules;
 use rustgm::{
     expand::{self, config::Config},
@@ -99,6 +100,7 @@ fn options() -> Result<Options, String> {
                 options.crates.disambiguator =
                     Some(args.next().ok_or("--crate-disambiguator requires an ID")?);
             }
+            "--native-links-output" => options.crates.select_native_output(args.next())?,
             "--metadata-output" => {
                 options.crates.metadata =
                     Some(args.next().ok_or("--metadata-output requires a path")?);

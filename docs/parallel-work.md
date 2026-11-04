@@ -1,30 +1,29 @@
 # Parallel library bootstrap implementation
 
-Full qualification cadence: run41779219834 on54ae77027 terminated at PA25's
-storage admission: 7.9GiB free against the unchanged8GiB CI reserve. Earlier
-release/course, native, debug and independent Rust steps passed. This is not a
-full pass. Qualification now omits host debug symbols while retaining debug
-assertions/overflow checks, and retires the completed dev cache after debug
-invariants; release outputs stay available for independent/component checks.
-Do not dispatch another manual full run until the current one is terminal:
-check.yml's event-specific concurrency cancels an older manual run when replaced.
-The earlier41776106178 completed release/course, native and debug steps but was
-canceled during independent Rust qualification; it is not a full pass. New source
-checkpoints may continue with focused evidence and push-triggered fast CI. Use
-periodic/manual full qualification after the current run completes, preserving
-its actual terminal result rather than continuously superseding long checks.
+Full qualification cadence: run41781814852 on1f5a2b8d0 passes every gate.
+Its predecessor41779219834 failed storage admission at7.9GiB against the8GiB CI
+reserve. CI retains assertions/overflow checks without host debug symbols and
+retires the correct completed dev cache before independent/component checks.
+Do not supersede a live manual full qualification: check.yml's event-specific
+concurrency cancels the earlier manual run. Source checkpoints may continue with
+focused evidence and push-triggered fast CI; dispatch successor full qualification
+only after its predecessor is terminal. No whole PA release is inferred.
 
-Current original-core frontier is LIB-136: link_cfg at original lib.rs138.
-The [advisory request checkpoint](pa40-advisory-requests-checkpoint.md) qualifies
-both documentation/provenance requests without operation permissions or new
-binding modes. Private4/production10,PA8 126/126,72 independent/candidate outcomes
-and native pointer round-trip7 9 pass. Ordinary LowIR bytes equal the predecessor.
-CLI871c6abd reaches LIB-136 in20.69s/375opens with all722 hashes, six configuration
-pins, options, capAllow and finite limits unchanged. Implement actual conditional
-link metadata and its independent gates/predicates next. Strict provenance
-producers, Rustdoc output, imported transport and original artifacts remain open.
-Root stays alone in the existing warm btrfs tree, with no new worker/cache/tree,
-five-minute/two-thread/16GiB/150GiB guards and scoped cleanup. No whole PA is released.
+Current original-core frontier is LIB-137: link_llvm_intrinsics at original lib.rs139.
+The [conditional-native-link checkpoint](pa29-conditional-native-links-checkpoint.md)
+qualifies actual source cfg/feature/provenance checks, selected static native
+execution7 9, dynamic metadata codec and explicit external manifest transport.
+Final private6/native1, production9, PA8 126/126,94 independent/candidate outcomes,
+backend/harness checks and all fifteen equal configuration constants pass.
+CLI02117cec reaches LIB-137 in29.18s/375opens with all722 original
+hashes, options, explicit Allow cap and finite limits unchanged. The two driver
+source pins are explicitly requalified; four other pins stay unchanged. Static
+archive bundling/modifiers, fresh dynamic consumers and broader transport remain
+required. LLVM intrinsics need genuine signature/operation lowering, not ordinary
+C linkage. No whole PA or original artifact is established. Root stays alone in
+the warm btrfs tree with the existing guards, current pins and scoped cleanup.
+
+Previous original-core frontier was LIB-136: link_cfg at original lib.rs138.
 
 
 Previous original-core frontier was LIB-135: intra_doc_pointers at original lib.rs135.

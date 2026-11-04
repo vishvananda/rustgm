@@ -95,6 +95,7 @@ pub struct Interface {
     storage: Option<Storage>,
     public_names: Option<Box<PublicNames>>,
     generic_payload: Option<Box<super::generics::Payload>>,
+    native_links: Option<Box<crate::support::linker_libraries::Plan>>,
     atoms: usize,
     names: usize,
 }
@@ -110,10 +111,48 @@ impl PartialEq for Interface {
             && self.storage == other.storage
             && self.public_names == other.public_names
             && self.generic_payload == other.generic_payload
+            && self.native_links == other.native_links
     }
 }
 impl Eq for Interface {}
 impl Interface {
+    #[must_use]
+    pub fn native_links(&self) -> Option<&crate::support::linker_libraries::Plan> {
+        self.native_links.as_deref()
+    }
+    /// Attach only this crate's own dependencies; imported plans stay with their owner.
+    /// # Errors
+    /// Rejects duplicate attachments or combined interface budget exhaustion.
+    pub fn with_native_links(
+        mut self,
+        plan: crate::support::linker_libraries::Plan,
+    ) -> Result<Self, &'static str> {
+        if self.native_links.is_some() {
+            return Err("duplicate native dependency metadata");
+        }
+        if plan.libraries().is_empty() {
+            return Ok(self);
+        }
+        let atoms = self.atoms.saturating_add(plan.libraries().len());
+        let names = plan.libraries().iter().fold(self.names, |bytes, library| {
+            bytes.saturating_add(library.name().len())
+        });
+        if atoms > MAX_COMPONENTS || names > MAX_NAME_BYTES {
+            return Err("native metadata exceeds combined profile budget");
+        }
+        if self.generic_payload.as_deref().is_some_and(|payload| {
+            self.base_retained_bytes()
+                .saturating_add(payload.peak_bytes())
+                .saturating_add(plan.allocation_bytes())
+                > super::MAX_BYTES
+        }) {
+            return Err("native dependencies exceed combined generic storage budget");
+        }
+        self.atoms = atoms;
+        self.names = names;
+        self.native_links = Some(Box::new(plan));
+        Ok(self)
+    }
     /// Publish a bounded canonical table before any resolver/inference allocation.
     /// # Errors
     /// Rejects duplicates, foreign definitions and profile storage bounds.
@@ -225,10 +264,8 @@ impl Interface {
         }
         functions.sort_unstable_by(|left, right| left.definition.cmp(&right.definition));
         let mut components = 0usize;
-        let mut bytes = identity
-            .name()
-            .len()
-            .saturating_add(identity.disambiguator().len());
+        // Both identity components already satisfy the 64-byte constructor bound.
+        let mut bytes = identity.name().len() + identity.disambiguator().len();
         for dependency in &dependencies {
             bytes = bytes
                 .saturating_add(dependency.name().len())
@@ -302,6 +339,7 @@ impl Interface {
             storage,
             public_names: None,
             generic_payload: None,
+            native_links: None,
             atoms: components,
             names: bytes,
         })

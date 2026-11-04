@@ -52,6 +52,15 @@ but its name and the second library's dependency alias remain inaccessible.
 Metadata is written only after the ordinary semantic, body,
 ownership and lowering gates succeed. `--crate-name` alone retains legacy names.
 
+Native dependencies have a separate output: add `--native-links-output links.json`
+and pass `--native-links links.json` to `scripts/backend.py`, with repeated
+`--native-search DIRECTORY` and `--native-object FILE` arguments as needed.
+Conditional `#[link(..., cfg(PREDICATE))]` requires the actual `link_cfg` crate
+feature. The condition selects only the library dependency; foreign declarations
+remain visible and retain their safety. Dynamic dependencies have a versioned
+metadata envelope, while static archive bundling/publication remains explicitly
+unfinished. See [the conditional-link packet](tests/spec/conditional-native-links/README.md).
+
 `tests/transitive-metadata-outcomes.json` declares the three-crate source/native
 controls. `scripts/check_transitive_metadata.py` qualifies direct aliases,
 inventory-only failures, duplicate/reordered inputs, missing and malformed

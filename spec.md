@@ -1575,6 +1575,25 @@ bindings; optional provenance casts retain their existing legality and unsafe
 checks. Under an explicit Allow cap preserve deferred expectations, not fake
 producer events. Reject unsupported strict explicit provenance producers honestly;
 keep required positive warn/expect and rendering/transport qualification open.
+Native library dependencies are separate from foreign symbol identities and
+LowIR. Evaluate a link predicate with the compilation's actual immutable cfg
+inputs only after its complete owner survives cfg removal. Retain the result on
+that configured attribute; preserve demanded query gates, capture ordinals and
+token origins through the existing provenance checks. A false link condition
+cannot remove declarations, grant unsafe permission, or suppress malformed link
+metadata. Macro allowances do not substitute for the `link_cfg` crate request.
+Keep dependency records sparse, bounded and in source order, with no ordinary
+per-function row or library-name insertion into the symbol namespace. Sort mixed
+cfg uses at most once per owner, never a growing crate-wide prefix.
+The external native manifest is explicit filesystem transport consumed only by
+the LowIR backend bridge; missing transport must fail before publishing outputs.
+Each crate artifact owns only its local dynamic dependencies. Final linking
+visits each imported artifact once, without repeatedly copying transitive plans.
+An optional versioned envelope preserves old metadata bytes for crates without
+dependencies, rejects nested envelopes and enforces combined budgets. Static
+archive bundling, modifiers and other kinds retain explicit required boundaries;
+do not translate LLVM intrinsic names into ordinary C linkage.
+
 The manifest's `public-dependency` Cargo feature controls
 retained target graph edges; it grants no host Rust or compiler-query capability.
 Unsupported host edge modifiers, tools, workspace inheritance and other unstable

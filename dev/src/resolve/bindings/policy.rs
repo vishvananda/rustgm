@@ -77,6 +77,7 @@ pub(in crate::resolve) enum Feature {
     DocNotableTrait = 60,
     DiagnosticConst = 61,
     DiagnosticUnmatched = 62,
+    LinkCfg = 63,
 }
 
 #[cfg(test)]
@@ -123,6 +124,7 @@ impl Request {
             // This is a pinned language feature, not a library instability.
             // Documentation metadata grants no type, body or execution authority.
             "rustdoc_internals" => Self::Capability(Feature::RustdocInternals),
+            "link_cfg" => Self::Capability(Feature::LinkCfg),
             "doc_cfg" => Self::Capability(Feature::DocCfg),
             "doc_notable_trait" => Self::Capability(Feature::DocNotableTrait),
             "diagnostic_on_const" => Self::Capability(Feature::DiagnosticConst),
@@ -200,6 +202,7 @@ impl Features {
             || self.has(Feature::CfgSanitize)
             || self.has(Feature::CfgFloatReliability)
             || self.has(Feature::AbiUnadjusted)
+            || self.has(Feature::LinkCfg)
             || self.has(Feature::DocCfg)
             || self.has(Feature::DocNotableTrait)
             || self.has(Feature::DiagnosticConst)

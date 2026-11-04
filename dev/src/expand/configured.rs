@@ -13,6 +13,8 @@ pub enum Effect {
     Keep,
     Cfg(bool),
     CfgAttr(bool),
+    /// Retained dependency selection never disables foreign declarations.
+    ConditionalLink(bool),
     /// This exact list installed all of its real source derive expansions.
     ExpandedDerive,
 }
@@ -104,7 +106,14 @@ impl ConfiguredUses {
     pub(crate) fn append_reserved(&mut self, incoming: &mut Self) {
         self.entries.append(&mut incoming.entries);
     }
-    fn record(&mut self, effect: u32, uses: Vec<config::CfgUse>) -> Result<(), LexError> {
+    pub(crate) fn order_by_effect(&mut self) {
+        self.entries.sort_by_key(|used| used.effect);
+    }
+    pub(crate) fn record(
+        &mut self,
+        effect: u32,
+        uses: Vec<config::CfgUse>,
+    ) -> Result<(), LexError> {
         self.reserve(uses.len())?;
         self.entries.extend(
             uses.into_iter()

@@ -1,0 +1,361 @@
+{
+  "contract": "conditional native link metadata v2",
+  "editions": [
+    2021,
+    2024
+  ],
+  "lint_cap": "allow",
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_attr_parsing/src/attributes/link_attrs.rs": "3d3a9cedb10983974874b9a29402be331ed58e3602c018c17b6c37a713c27389",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_attr_parsing/src/attributes/cfg.rs": "adf576a3cb236924a0aef38be27ef6c81df6237faca1d052c62b0f12bd7379d6",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_feature/src/unstable.rs": "12a8e6610e58950117521e333e06368bd068ca3b3c4b5017829aa71c2ea410bb"
+  },
+  "cases": [
+    {
+      "name": "request",
+      "path": "pa29/tests/spec/conditional-native-links/request.rs",
+      "sha256": "6bf7319147596f2372afdff7324f4bbd6677d40562a28086a796f7c4ae968c91",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "stable-dylib",
+      "path": "pa29/tests/spec/conditional-native-links/stable-dylib.rs",
+      "sha256": "4c54eb6701dac39fce331487ba093e5e606c8f95bdad17cdc5e104196c710d85",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "stable-static",
+      "path": "pa29/tests/spec/conditional-native-links/stable-static.rs",
+      "sha256": "ddec342b64734e9fc63eb6b21e4b124937d10de67c18fb049d6d1d0e45df5db3",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "cfg-all",
+      "path": "pa29/tests/spec/conditional-native-links/cfg-all.rs",
+      "sha256": "20514c5129da90260564d9a17184bf8d86c3cf4658b69a10f012ee5255deb537",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "cfg-any",
+      "path": "pa29/tests/spec/conditional-native-links/cfg-any.rs",
+      "sha256": "96cea5ca74a6d5c8ed3a7c096a62258538f246038cfd444ba909b4dda5a8b2aa",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "cfg-true",
+      "path": "pa29/tests/spec/conditional-native-links/cfg-true.rs",
+      "sha256": "bb3d5bebb3b79b0f0a5ed12acf01affc830d9174b9e14bb731066e18c22527fe",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "cfg-false",
+      "path": "pa29/tests/spec/conditional-native-links/cfg-false.rs",
+      "sha256": "03953a00de1516d010dea0832979cb18e2de22b278fa5c7b7b06fe9244a17d75",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "cfg-unix",
+      "path": "pa29/tests/spec/conditional-native-links/cfg-unix.rs",
+      "sha256": "e0ee3b51ac580f397f35fdbf345ba85ceb031c2e6396bc2016ac97622a99b8be",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "cfg-windows",
+      "path": "pa29/tests/spec/conditional-native-links/cfg-windows.rs",
+      "sha256": "b859316a0b39f2af85eee1f8efc347b5f4fe5379a4eb4561c3141024b74a0613",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "cfg-custom",
+      "path": "pa29/tests/spec/conditional-native-links/cfg-custom.rs",
+      "sha256": "c53da2d8f23837d4b5447b4cf8240e12a26d64ad1b5014f12110a0713b1231d2",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "cfg-nested",
+      "path": "pa29/tests/spec/conditional-native-links/cfg-nested.rs",
+      "sha256": "15b20fd15b41c4fa66ad527a31c1294fa610dd80e0d2bfeaa8f12fea9f0a8329",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "cfg-empty",
+      "path": "pa29/tests/spec/conditional-native-links/cfg-empty.rs",
+      "sha256": "77fc9239520357e6588287bb8efffe21f0f389b22c50d283c096447136e0153e",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "cfg-many",
+      "path": "pa29/tests/spec/conditional-native-links/cfg-many.rs",
+      "sha256": "2ecc5c3c6e4d529629d97506449ac8f3c4cc33376e921edf98de8a5fabf2aa53",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "cfg-unknown",
+      "path": "pa29/tests/spec/conditional-native-links/cfg-unknown.rs",
+      "sha256": "65e2763ce272c6d9df87a874797e478f74eae4fc5f2158d45291b7c9636d19fb",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "cfg-not-arity",
+      "path": "pa29/tests/spec/conditional-native-links/cfg-not-arity.rs",
+      "sha256": "64d60347f8c65e302f142f01da85ecbec29c120da358a7499ddef864e3f8194d",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "cfg-integer",
+      "path": "pa29/tests/spec/conditional-native-links/cfg-integer.rs",
+      "sha256": "d54b48007182e93f8a81d9c2cb9f03b2b39270602d5749a61cc7a663e2cce70b",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "cfg-string-suffix",
+      "path": "pa29/tests/spec/conditional-native-links/cfg-string-suffix.rs",
+      "sha256": "40ebc1d6c60f1828e455b8f9fe2e3b4a216e42da7bbe1b28ea2fa5f60513002c",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "cfg-duplicate",
+      "path": "pa29/tests/spec/conditional-native-links/cfg-duplicate.rs",
+      "sha256": "505c44e50137f2f94584c44609519cd014b9f7567a2d3a9fd7ca7d82bfc54e4e",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "name-duplicate",
+      "path": "pa29/tests/spec/conditional-native-links/name-duplicate.rs",
+      "sha256": "bc0ab9c6d7832716bd7469b1c17e61d1eb43359974863a8ea55c949f57d94774",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "name-empty",
+      "path": "pa29/tests/spec/conditional-native-links/name-empty.rs",
+      "sha256": "514df1616a74c495d779481a9a34094a18f48e94fc8c5c4ee6fc1a83dde46329",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "name-null",
+      "path": "pa29/tests/spec/conditional-native-links/name-null.rs",
+      "sha256": "eaef0b0e7c7c243e4eb11c864db99a96acdcfa8c44418258d6670f95e1bfe229",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "name-integer",
+      "path": "pa29/tests/spec/conditional-native-links/name-integer.rs",
+      "sha256": "f62d5b1840d4d76260e500054630fb5bd576749697f99c9b22499cdb25b9d066",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "kind-unknown",
+      "path": "pa29/tests/spec/conditional-native-links/kind-unknown.rs",
+      "sha256": "21a37780b6e0b9e98ba22d302fced1f5e1cba323f6e6929e3ef9415ec213b4ba",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "kind-integer",
+      "path": "pa29/tests/spec/conditional-native-links/kind-integer.rs",
+      "sha256": "b068de768f9e56f4ea28ad94b2f91b157e9c0a8af8bf34df69c1ed3b1f519c04",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "unknown-option",
+      "path": "pa29/tests/spec/conditional-native-links/unknown-option.rs",
+      "sha256": "ed1a0ae58bcfb7b335ab4b137fa3da93370c65d6187ed5ee7650924b0ebb106f",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "kind-framework",
+      "path": "pa29/tests/spec/conditional-native-links/kind-framework.rs",
+      "sha256": "67973cfcd3e5eb54b7c10fa548d497210797d040f78ee933a414b313789c521c",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "kind-framework-off",
+      "path": "pa29/tests/spec/conditional-native-links/kind-framework-off.rs",
+      "sha256": "3d5b22fa304f8ac702aad3c8c00aacc9905e6f275514363fdf53b0ddedbbf16e",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "missing-feature-on",
+      "path": "pa29/tests/spec/conditional-native-links/missing-feature-on.rs",
+      "sha256": "f89ed1a286037fec88243cefc1126c02fdef3d638abaa4aad00eddaa92ef4edd",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "missing-feature-off",
+      "path": "pa29/tests/spec/conditional-native-links/missing-feature-off.rs",
+      "sha256": "49360b8af899478f9ad76ca3262bd7eea2b5ca7c06e8661b707b878beff7e201",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "macro-allowance-not-crate-feature",
+      "path": "pa29/tests/spec/conditional-native-links/macro-allowance-not-crate-feature.rs",
+      "sha256": "9729a54e57694969a39aa3865efcb16025fc563399a7b32242db9393f45d0f0a",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "macro-genuine-crate-feature",
+      "path": "pa29/tests/spec/conditional-native-links/macro-genuine-crate-feature.rs",
+      "sha256": "49129d285022c184f6305d81ddb93a87a8be71bbdb373f4b01556f17405eadb3",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "forwarded-meta",
+      "path": "pa29/tests/spec/conditional-native-links/forwarded-meta.rs",
+      "sha256": "86cf5c32c4285209527dec7ff224f6025e3576f5ef8f69810d7756ae647ea9aa",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "removed-before",
+      "path": "pa29/tests/spec/conditional-native-links/removed-before.rs",
+      "sha256": "c4a966b9f1305ac67cc0b444a057e7ee1c40ad56452cbdc5a98acdcc835c6005",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "removed-after",
+      "path": "pa29/tests/spec/conditional-native-links/removed-after.rs",
+      "sha256": "587b50c3e912f96e2ccab7faf5ab2402e5b0759e16dc083061a4d020a9b24a8e",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "wrong-owner-name",
+      "path": "pa29/tests/spec/conditional-native-links/wrong-owner-name.rs",
+      "sha256": "94490c63f6f5971da4ef8d863181797c596724738380c9a57c10119f0875c2e8",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "wrong-owner-cfg",
+      "path": "pa29/tests/spec/conditional-native-links/wrong-owner-cfg.rs",
+      "sha256": "e602aeda0d1849476d1ca90bbb08343967cdd6e0f1de52e6dc91172d9ae93eb0",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "wrong-owner-missing",
+      "path": "pa29/tests/spec/conditional-native-links/wrong-owner-missing.rs",
+      "sha256": "e86b920d6c809f1de2160f8d33095d62507227298a76bd407c1ae9a4c9d35d08",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "unsafe-wrapper",
+      "path": "pa29/tests/spec/conditional-native-links/unsafe-wrapper.rs",
+      "sha256": "d5d1ecea3c145db741af405cac498ee7185f08c5b2eca43499b9c71f51043a16",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "off-declaration-still-visible",
+      "path": "pa29/tests/spec/conditional-native-links/off-declaration-still-visible.rs",
+      "sha256": "3fe832d0073bfc40d4f8ec7ce3bf38d4639fd4e6b868474f688aeef0bb5a1d0f",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "off-declaration-unsafe-required",
+      "path": "pa29/tests/spec/conditional-native-links/off-declaration-unsafe-required.rs",
+      "sha256": "876e020da4355196ecaab6d441aa56d06fab747e06e2e330d5be3287eb6d2608",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "off-name-still-validates",
+      "path": "pa29/tests/spec/conditional-native-links/off-name-still-validates.rs",
+      "sha256": "9eb3a5e25039b8bfcf7a2e6ddba2bde65ff6aebc92b2592bba00b9bfc3c26de4",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "predicate-ub_checks-missing",
+      "path": "pa29/tests/spec/conditional-native-links/predicate-ub_checks-missing.rs",
+      "sha256": "f3397ceb9fbd6ddaea0ad645caa553364c82699b92518741319cc6280338e8a8",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "predicate-ub_checks-allowed",
+      "path": "pa29/tests/spec/conditional-native-links/predicate-ub_checks-allowed.rs",
+      "sha256": "c59f9b75ea14a7042daf3fb32b5a196a1a45d3af445ce9ca8720530cbf5abc00",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "predicate-target_has_atomic-missing",
+      "path": "pa29/tests/spec/conditional-native-links/predicate-target_has_atomic-missing.rs",
+      "sha256": "c5f00f332a6371a782ae883cfea347d85ae1ad3344166bd5dd2ae2e1f8aab92d",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "predicate-target_has_atomic-allowed",
+      "path": "pa29/tests/spec/conditional-native-links/predicate-target_has_atomic-allowed.rs",
+      "sha256": "0869b784058b59c9741a69d43fc0f6753c99fbb238de8867d1fb1306ef7fd225",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "native",
+      "path": "pa29/tests/spec/conditional-native-links/native.rs",
+      "sha256": "0e58f0d7053528a123e2e67b875e805964dd536a3b473f614185fce177f4c885",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "native-control",
+      "path": "pa29/tests/spec/conditional-native-links/native-control.rs",
+      "sha256": "8737f8a2766de2a45210bd3ad38f2d83aa7617a43f1ebc695db0a654bfd7e4fe",
+      "rustc_status": 0,
+      "required_status": 0
+    }
+  ],
+  "native": {
+    "case": "native",
+    "control": "native-control",
+    "library_source": "pa29/tests/spec/conditional-native-links/selected.c",
+    "observer": "pa29/tests/spec/conditional-native-links/observer.c",
+    "selected_libraries": [
+      {
+        "name": "selected_native",
+        "kind": "static"
+      }
+    ],
+    "stdout": "7 9\n",
+    "library_source_sha256": "6f5ea83afda048ab1ca01ebf507fe846fec924f019a75f1da53312d1a4d1c126",
+    "observer_sha256": "77d3a90b293a0ab840d57b9234f0fc0c492d965ef7af4ef7020bef808df2aab2"
+  },
+  "required": "Keep actual crate feature and cfg/query checks; false library cfg never removes foreign declarations. Selected native dependencies must reach native execution and authenticated crate metadata. Keep archive bundling, broader link kinds/modifiers and imported controls as required until qualified.",
+  "reference_setup": "Build selected_native archive before metadata checks and pass its native search directory; a referenced static library is a required compiler input even for metadata. No source or outcome changes."
+}

@@ -8,6 +8,8 @@ import shutil
 import subprocess
 import sys
 
+import native_links
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -97,15 +99,18 @@ def build(source, output):
     build_many([source], output)
 
 
-def build_many(sources, output):
+def build_many(sources, output, *, native_plan=None, native_search=(), native_objects=()):
     if not sources:
         raise ValueError("executable bridge requires at least one LowIR input")
     if any(not source.is_file() for source in sources):
         raise ValueError("LowIR input does not exist")
     if len(sources) > 1025:
         raise ValueError("LowIR input count exceeds crate profile budget")
-    if len(sources) > 1:
-        build_objects(sources, output)
+    if len(native_search) > 1024 or len(native_objects) > 1024:
+        raise ValueError("native search/object count exceeds profile budget")
+    if len(sources) > 1 or native_plan is not None or native_search or native_objects:
+        libraries = native_links.load(native_plan) if native_plan is not None else []
+        build_objects(sources, output, libraries=libraries, search=native_search, native_objects=native_objects)
         return
     tools = load_tools()
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -118,7 +123,7 @@ def build_many(sources, output):
     invoke([tools["lowir2native"], "-O0", "-o", str(output), *units])
 
 
-def build_objects(sources, output):
+def build_objects(sources, output, *, libraries=(), search=(), native_objects=()):
     # The executable reader concatenates symbols instead of merging declarations.
     # Separate units therefore require the explicit reviewed ELF object profile.
     tools = load_tools(("lowir", "cppgm++"))
@@ -130,7 +135,10 @@ def build_objects(sources, output):
         object_file = output.with_suffix(f".unit-{index}.o")
         emit_object(validated, object_file, tools)
         objects.append(str(object_file))
-    invoke(["cc", *objects, "-lm", "-o", str(output)])
+    for path in native_objects:
+        verify_object(path)
+        objects.append(str(path))
+    invoke(["cc", *objects, *native_links.arguments(libraries, search), "-lm", "-o", str(output)])
 
 
 def build_object(source, output):
@@ -188,6 +196,9 @@ def main():
     parser.add_argument("--test", action="store_true")
     parser.add_argument("--test-object", action="store_true")
     parser.add_argument("--emit-object", action="store_true")
+    parser.add_argument("--native-links", type=Path)
+    parser.add_argument("--native-search", type=Path, action="append", default=[])
+    parser.add_argument("--native-object", type=Path, action="append", default=[])
     parser.add_argument("source", nargs="*", type=Path)
     parser.add_argument("-o", type=Path)
     args = parser.parse_args()
@@ -202,11 +213,15 @@ def main():
             test_object()
         elif args.source and args.o:
             if args.emit_object:
+                if args.native_links or args.native_search or args.native_object:
+                    raise ValueError("native dependencies require final executable linking")
                 if len(args.source) != 1:
                     raise ValueError("object bridge requires exactly one LowIR input")
                 build_object(args.source[0].resolve(), args.o.resolve())
             else:
-                build_many([source.resolve() for source in args.source], args.o.resolve())
+                build_many([source.resolve() for source in args.source], args.o.resolve(),
+                           native_plan=args.native_links, native_search=args.native_search,
+                           native_objects=[path.resolve() for path in args.native_object])
         else:
             parser.error("use --configure, --configure-object, --test, --test-object, or SOURCE -o OUTPUT")
         return 0

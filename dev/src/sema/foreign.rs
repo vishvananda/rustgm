@@ -43,8 +43,21 @@ pub struct Registry {
     names: SymbolNames,
     items: HashMap<DefId, Item>,
     export_names: HashMap<SymbolNameId, DefId>,
+    native_links: Option<Box<crate::support::linker_libraries::Plan>>,
 }
 impl Registry {
+    #[must_use]
+    pub fn native_links(&self) -> Option<&crate::support::linker_libraries::Plan> {
+        self.native_links.as_deref()
+    }
+    pub(crate) fn add_native_library(
+        &mut self,
+        library: crate::support::linker_libraries::Library,
+    ) -> Result<(), &'static str> {
+        self.native_links
+            .get_or_insert_with(Box::default)
+            .push(library)
+    }
     #[must_use]
     pub fn names(&self) -> &SymbolNames {
         &self.names

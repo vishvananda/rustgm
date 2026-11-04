@@ -1,6 +1,8 @@
 //! Maintainer integration suites for linking.
 #[path = "../../crate_linking.rs"]
 mod crate_linking;
+#[path = "../../ffi_dependencies.rs"]
+mod ffi_dependencies;
 #[path = "../../foreign_conventions.rs"]
 mod foreign_conventions;
 #[path = "../../foreign_declarations.rs"]

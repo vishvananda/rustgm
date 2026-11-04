@@ -139,6 +139,15 @@ pub(crate) fn export_with_originals(
     } else {
         interface
     };
+    let interface = if let Some(plan) = facts
+        .foreign
+        .as_deref()
+        .and_then(crate::sema::foreign::Registry::native_links)
+    {
+        interface.with_native_links(plan.clone()).map_err(error)?
+    } else {
+        interface
+    };
     let linkage = facts.crates.get_or_insert_default();
     linkage.set_identity(identity).map_err(error)?;
     roots.sort_unstable_by_key(|definition| definition.0);

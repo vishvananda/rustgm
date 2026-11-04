@@ -68,7 +68,7 @@ jobs:
         run: make test-debug-invariants
       - name: Retire completed debug build cache
         run: |
-          cargo clean --manifest-path dev/Cargo.toml --profile dev
+          cargo clean --manifest-path dev/Cargo.toml --target-dir obj/rust --profile dev
           make tidy
           df -h .
       - name: Independent Rust qualification

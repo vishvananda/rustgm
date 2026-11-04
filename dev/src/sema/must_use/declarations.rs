@@ -24,6 +24,7 @@ struct AnnotationState {
     documentation: crate::sema::documentation_labels::Draft,
     documentation_options: crate::sema::documentation_options::Draft,
     insignificant_dtor: bool,
+    native_links: crate::sema::link_dependencies::Draft,
 }
 
 impl AnnotationState {
@@ -267,6 +268,11 @@ fn consume_annotation(
                 allowances,
                 &mut flags.documentation,
             )?;
+        }
+        Some(Consumer::NativeLink) => {
+            flags
+                .native_links
+                .consume(report, facts, declaration, attribute, effect, forest)?;
         }
         Some(Consumer::Documentation) => {
             flags.documentation_options.consume(

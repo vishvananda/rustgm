@@ -381,6 +381,21 @@ pub fn build_source_library_profile(
                 ),
             }
             .map_err(|error| facts.retain_error_warnings(error))?;
+            let interface = if interface.native_links().is_none() {
+                if let Some(plan) = facts
+                    .foreign
+                    .as_deref()
+                    .and_then(crate::sema::foreign::Registry::native_links)
+                {
+                    interface
+                        .with_native_links(plan.clone())
+                        .map_err(|message| diagnostic(report, None, message.into()))?
+                } else {
+                    interface
+                }
+            } else {
+                interface
+            };
             Ok((program, interface))
         },
         Construction::Complete,

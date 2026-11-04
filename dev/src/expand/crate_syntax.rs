@@ -222,6 +222,16 @@ fn configure_owner<L>(
         }
     }
     let mut uses = attributes.take_cfg_uses();
+    if attributes.enabled() {
+        super::link_conditions::configure(
+            ast,
+            &mut effects[first..],
+            source,
+            config,
+            inputs,
+            &mut uses,
+        )?;
+    }
     let first = u32::try_from(first)
         .map_err(|_| crate::syntax::token_tree::error(0, "cfg effect overflow"))?;
     if let Some(uses) = &mut uses {
@@ -266,6 +276,7 @@ pub fn write_configuration<L>(
                 Effect::ExpandedDerive => writeln!(output, " expanded-derive")?,
                 Effect::Cfg(value) => writeln!(output, " cfg={value}")?,
                 Effect::CfgAttr(value) => writeln!(output, " cfg_attr={value}")?,
+                Effect::ConditionalLink(value) => writeln!(output, " link_cfg={value}")?,
             }
         }
     }
