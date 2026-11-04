@@ -54,7 +54,9 @@ Receipt `obj/parallel/llvm-linkage-v1/measurement-v1/receipt.json`, SHA-256
 `a5a3b2b0e14cfdc2174e57a944cd21bf76c97ceeb739878840addd6d910b406e`.
 
 Full predecessor qualification [41787601690](https://github.com/vishvananda/rustgm/actions/runs/41787601690)
-on6f1e3eb3d passes every gate. Successor full CI remains pending publication.
+on6f1e3eb3d passes every gate. Successor full qualification
+[41795595365](https://github.com/vishvananda/rustgm/actions/runs/41795595365)
+is running on compiler commit3d4b3ae9d; poll that exact handle.
 Root works alone in the existing warm btrfs tree, under five-minute/two-thread/
 16GiB/150GiB guards. Successful native outputs are pruned while inputs,
 diagnostics, current immutable binaries, receipts and observations remain.
