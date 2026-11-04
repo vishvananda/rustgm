@@ -75,8 +75,10 @@ Full predecessor qualification [41781814852](https://github.com/vishvananda/rust
 on1f5a2b8d0 passes every gate. The earlier failure was the CI disk reserve,
 not a PA25 mismatch. CI now omits host debug symbols while preserving assertions
 and retires the correct completed dev cache, retaining release outputs and the
-8GiB reserve. Successor full qualification remains pending when this checkpoint
-is committed. Root stays alone in the warm btrfs tree with five-minute/two-thread/
+8GiB reserve. Successor full qualification
+[41787601690](https://github.com/vishvananda/rustgm/actions/runs/41787601690)
+is running on compiler commit6f1e3eb3d; do not supersede it while live.
+Root stays alone in the warm btrfs tree with five-minute/two-thread/
 16GiB/150GiB guards. Successful generated native outputs are pruned; inputs,
 diagnostics, immutable current pins, receipts and raw observations are retained.
 

@@ -1,7 +1,9 @@
 # Parallel library bootstrap implementation
 
-Full qualification cadence: run41781814852 on1f5a2b8d0 passes every gate.
-Its predecessor41779219834 failed storage admission at7.9GiB against the8GiB CI
+Full qualification cadence: run41787601690 on6f1e3eb3d is the current manual
+qualification. Poll that exact run; do not replace it while live. Predecessor
+run41781814852 on1f5a2b8d0 passes every gate.
+Earlier41779219834 failed storage admission at7.9GiB against the8GiB CI
 reserve. CI retains assertions/overflow checks without host debug symbols and
 retires the correct completed dev cache before independent/component checks.
 Do not supersede a live manual full qualification: check.yml's event-specific
