@@ -1,0 +1,638 @@
+{
+  "feature": "cfg_target_has_reliable_f16_f128",
+  "predicates": [
+    "target_has_reliable_f16",
+    "target_has_reliable_f16_math",
+    "target_has_reliable_f128",
+    "target_has_reliable_f128_math"
+  ],
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_feature/src/unstable.rs": "12a8e6610e58950117521e333e06368bd068ca3b3c4b5017829aa71c2ea410bb",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_feature/src/builtin_attrs.rs": "0c503aa7399200dc3eaec7aaa8ab39da4d756d6f6f69d0abb7f0a0a0176cf6eb",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_session/src/config/cfg.rs": "08e4e085cbd6c4e313ff0475ac6acf783829d314dc6e58e49fc54eca761b9844",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/lib.rs": "8a9151b8ad506d061b6f17e2e26468551024d122c3c741a3f26ac9796c3d169f"
+  },
+  "backend_contract_sha256": "075eca252917d5fd35d64e63775107096bafe1b9e95390df3437f9c7b44fe7ff",
+  "frontend_scalar_vocabulary_sha256": "f2c09a345768cc77c415cd0f3a7b86c811741cba3314c527c30dc81e6d54b738",
+  "cases": [
+    {
+      "name": "request-alone",
+      "path": "pa41/tests/spec/float-reliability-cfg/request-alone.rs",
+      "sha256": "9c4148c7b94c7abd264a8a7794450dac9e79d33a10712cf861ccdde08516acfe",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f16-missing",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16-missing.rs",
+      "sha256": "3a94e221573217b870ced48fc416927633ba64deb2b8e53ec16fa5db532aaf65",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f16-enabled",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16-enabled.rs",
+      "sha256": "126bb1378abd141157e9803d9bec38f8b72c63018c6e4991442e2810b68bf1ea",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f16-short-circuit",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16-short-circuit.rs",
+      "sha256": "97c6f33e04119f84ad90fe0a62c6c9882458e2993c8cb79b7638ca0b6eb31f0b",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f16-wrong-feature",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16-wrong-feature.rs",
+      "sha256": "78bd60762104660eff4bb4feb21337794d456368715deee7c77f8ee79f0fca5b",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f16-valued-missing",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16-valued-missing.rs",
+      "sha256": "1e13a92abeb601fac8f14bc8f4a57dcc16142c21c7e8e4dba6a27e2945014ff8",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f16-valued-enabled",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16-valued-enabled.rs",
+      "sha256": "ebb89eb4ea2028d210ff5adc7ce217047084c4884c4d8ce23bca52018b57af50",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f16-removed-first",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16-removed-first.rs",
+      "sha256": "2515a5ce3d93f09af5e9c87514b78ccb4a05881c35f51913d6177c46ae271790",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f16-feature-first",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16-feature-first.rs",
+      "sha256": "f9d1e4943001496a5a0beed225f615c9793c1f85e75db8206020897b6bd17b28",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f16-disabled-inner",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16-disabled-inner.rs",
+      "sha256": "cee3b2ac898c767c9e96937063f16430bcb4ab0d0b0b887d9edad86fb368f542",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f16-cfg-attr-off",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16-cfg-attr-off.rs",
+      "sha256": "6e17cc8b75e846bfc904d4df94faa76d1fe5ac84f033f8b5eb9a618e0adb866e",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f16-macro-missing",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16-macro-missing.rs",
+      "sha256": "49f1c4c3cc4939d3637dd3675f328fa9074ad23f26186474250dc3506c548ef9",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f16-macro-enabled",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16-macro-enabled.rs",
+      "sha256": "ad730b3274f01e65d3fc6c4cd99f5366991f60ae3a369cd4a6a9e77c39af9719",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f16-captured",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16-captured.rs",
+      "sha256": "3c547667261a7c348deffe2f50f4c1689bd6f9a6c2bdf2f794594a77b4dcf588",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f16-captured-missing",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16-captured-missing.rs",
+      "sha256": "8fab7fed0dd0d5a8ef4806b1c3f6e8a8bdec459462806732c1e948d4b88f8595",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f16-allowance",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16-allowance.rs",
+      "sha256": "6954dc955861bbfd3342e088bb9445c8a21083f9232d69a467facb9299dc576f",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f16-caller-capture",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16-caller-capture.rs",
+      "sha256": "3f8af02a0b4e818bef45aefcd6c0a38c6fd26df1f9c8cef222a2549aebd475cd",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f16-malformed",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16-malformed.rs",
+      "sha256": "dceca65841ececd4e1157157460b73f5f1ed2ffb0eed05a4e8b71c81836bd3cb",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f16_math-missing",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16_math-missing.rs",
+      "sha256": "e390b03ee6674461a70303176d338c06b225d4cd7d1e255bef5e3ef8bbba5fc3",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f16_math-enabled",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16_math-enabled.rs",
+      "sha256": "f365305b0fa402b7305a021e4a24cf5fc31237b869b0e1be024f9a3893049c4f",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f16_math-short-circuit",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16_math-short-circuit.rs",
+      "sha256": "07c3ef53ce6c621462f7f281a670a36869954d11d79e9d4ddc62a2b59d307551",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f16_math-wrong-feature",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16_math-wrong-feature.rs",
+      "sha256": "859bd1d8252499596bf40346e350fb5cd53965b6b7703f2bd1559734fa65450b",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f16_math-valued-missing",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16_math-valued-missing.rs",
+      "sha256": "63d732986018581ac80a7437e42f13da0cb30397a6a54229f8f95cdbab5b3376",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f16_math-valued-enabled",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16_math-valued-enabled.rs",
+      "sha256": "b431347f8a9cde52fea6600c126d217acc94312e4059d3728abc758880c68007",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f16_math-removed-first",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16_math-removed-first.rs",
+      "sha256": "18f33f0410f36850d712d2f3a2be223a004c50c98737b7a8872a907814f99558",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f16_math-feature-first",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16_math-feature-first.rs",
+      "sha256": "17f6809e71b1e6b6960abe6e643cc59e9c5783b82471858a06aa0f64ee107fec",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f16_math-disabled-inner",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16_math-disabled-inner.rs",
+      "sha256": "2a6d09e2466bf237454a98d6ee3c43901cae19eaa3ed618095a78215d394ce04",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f16_math-cfg-attr-off",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16_math-cfg-attr-off.rs",
+      "sha256": "bf82dc8644abe86a570d7fa597973627a012440f7098ef1e3629b886bf9e6c4b",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f16_math-macro-missing",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16_math-macro-missing.rs",
+      "sha256": "9cd82b12013649baac8e1d141595cfaf2e1a95027a09041de9e8e7bd0ee22364",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f16_math-macro-enabled",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16_math-macro-enabled.rs",
+      "sha256": "057857cf4bb1acde1d595ba1005da7b887d2bda8c812e3f4579dc090afe48304",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f16_math-captured",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16_math-captured.rs",
+      "sha256": "64d83df37507ea6e4034f9e0e84d3b7d8e9a152ae6f0eeffd38edeb5e309bdb8",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f16_math-captured-missing",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16_math-captured-missing.rs",
+      "sha256": "ce07e244610cc914e5aae89a3c4cc3bf19466d47c8cdd77d34e30aea7125cb6c",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f16_math-allowance",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16_math-allowance.rs",
+      "sha256": "64f75fd23682c8bdb8089169bb5d25bef017e9080933418014bb56b19943bfc0",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f16_math-caller-capture",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16_math-caller-capture.rs",
+      "sha256": "f20bdea6da11c115bab3b56af4d349b41e20ccd82389739ae125e76899d93085",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f16_math-malformed",
+      "path": "pa41/tests/spec/float-reliability-cfg/f16_math-malformed.rs",
+      "sha256": "926cad7c3dc99e1512407362655f88d2d87597e2ee3d2c1a769d0e0facddad65",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f128-missing",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128-missing.rs",
+      "sha256": "28abc26cc7959b37d6260604770a8862d591f6b24dea5f6aa4550ac8f45b328f",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f128-enabled",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128-enabled.rs",
+      "sha256": "6918345c73b30f58217f5666e11a80049a631a25d593941f2d472006ba58a16c",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f128-short-circuit",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128-short-circuit.rs",
+      "sha256": "414e45441d66f3cec7a6113c075c4f53e164e32cf221d9ebbb95ab4ec8512290",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f128-wrong-feature",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128-wrong-feature.rs",
+      "sha256": "aeac38a3313d5eb208f2115f9ebf553875f0a76bf9fb723ea7bb4dbb2b4591a6",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f128-valued-missing",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128-valued-missing.rs",
+      "sha256": "ae88a50f9871365135094d94eabe1b546b5830eb1108169c4d1cab8964d311b4",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f128-valued-enabled",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128-valued-enabled.rs",
+      "sha256": "5ab91332f48fd87740ce44b6fa2975c7dd71abe416e32e30aaec16562684b2d6",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f128-removed-first",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128-removed-first.rs",
+      "sha256": "04739aeaa491bb36ecfdeb8f07c052f416c070d8473c4ddef4529cf7583e19ea",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f128-feature-first",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128-feature-first.rs",
+      "sha256": "2ccad6700c813574e4f0d50f109d88b0ba434d8b61226fc94021374851aec24a",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f128-disabled-inner",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128-disabled-inner.rs",
+      "sha256": "4fd6446d2c14ecb692b9ed53664d77801feb84e14a17b119f6d9e2115a10e9e1",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f128-cfg-attr-off",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128-cfg-attr-off.rs",
+      "sha256": "c2546e44e39847f1b2ef136f3aaafa1e51fa8ff2f0bc4db00c1e269b6d299938",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f128-macro-missing",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128-macro-missing.rs",
+      "sha256": "622d4337cfd0e7567a43b911159e6ad20185788c4724308dac75d050cb3d7deb",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f128-macro-enabled",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128-macro-enabled.rs",
+      "sha256": "c0e8a263f03d67a34ade0a64a2464bc934fe66b1cc0c2f27efcf6b5bbe9cd029",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f128-captured",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128-captured.rs",
+      "sha256": "da3f180a43d85b4aaacabd0c54e02c07e915c9574ad1dfa42372f11bcdd4f2fd",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f128-captured-missing",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128-captured-missing.rs",
+      "sha256": "1bada13a6851a109defce5507ee1208d6de0019545f32bf93e498c8aec93482f",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f128-allowance",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128-allowance.rs",
+      "sha256": "e5df8b678ce00f6751a7b0f08764b88ff7a7fa76a29bddff56cff84ab32193e5",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f128-caller-capture",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128-caller-capture.rs",
+      "sha256": "198ad39d524363770a91328cca70f5d9fbfa8704bdfd4559de80ea014827b9e4",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f128-malformed",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128-malformed.rs",
+      "sha256": "dab555d91faf79c6664902829d9a9b7fdf3b5ffa733822e0cde2038d0bb732c1",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f128_math-missing",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128_math-missing.rs",
+      "sha256": "6decd1cab7a76ec86ab9f8aa878cc7f69103c6866a9f7d661f46d1625d16296d",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f128_math-enabled",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128_math-enabled.rs",
+      "sha256": "d09ef61e1c7b2bf045fa56b8f9e51e67be63e1574c5089e5fb0446687e8bff52",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f128_math-short-circuit",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128_math-short-circuit.rs",
+      "sha256": "5782cd112d69a6c46922ab1d1d7f13dc8de6df2202fb990c241fa762f1ed067e",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f128_math-wrong-feature",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128_math-wrong-feature.rs",
+      "sha256": "e548224dbb15368130556a58b6a98c9b1f926cc50ec323956fd47bd804eda3a3",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f128_math-valued-missing",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128_math-valued-missing.rs",
+      "sha256": "23a542d7c90073cc071dd0b97c64fd66359ac765b4aa0e7bfb253419ad3d441b",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f128_math-valued-enabled",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128_math-valued-enabled.rs",
+      "sha256": "fbbe8e22069e43f2d10b093089d3e40c897843e7640f695dc7a7ff4a8e40310c",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f128_math-removed-first",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128_math-removed-first.rs",
+      "sha256": "75419db60ca8a2e37e178d0b3fdd8599a2bca2dd1fd7e96fe6f6b11c4d63f362",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f128_math-feature-first",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128_math-feature-first.rs",
+      "sha256": "cc1da717cfb1f6bee6030a38a6018029702b9798721ac893e2a251a27c423dff",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f128_math-disabled-inner",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128_math-disabled-inner.rs",
+      "sha256": "3997d29d38983994b703d91ace21a56b4f9d2b1e00eb9cde2e18e0ba1a499e48",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f128_math-cfg-attr-off",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128_math-cfg-attr-off.rs",
+      "sha256": "0a6131abf78798fbde838a51f34e842d4326b8278f83d1a785d2f217bfee1d35",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f128_math-macro-missing",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128_math-macro-missing.rs",
+      "sha256": "012d5d4137d39573226a68ed2771f86e9e507a534d4ff20bfbe9234b1d42aa74",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f128_math-macro-enabled",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128_math-macro-enabled.rs",
+      "sha256": "0260e8f030b6e3a77f6434e038385e0d23c1ab3b9ad792ab3074178966cf4421",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f128_math-captured",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128_math-captured.rs",
+      "sha256": "dbd06608c06e2e9a443b6f1452dab7f998fb4e47cb4fc4f800464f650a0e46dd",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f128_math-captured-missing",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128_math-captured-missing.rs",
+      "sha256": "7dc20be3e01006a583445d222094bf5eb4afca6cef32a0010cbc33395dd343ec",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f128_math-allowance",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128_math-allowance.rs",
+      "sha256": "3114fd5cabb35c23c457d6ea9f81d8f3791e8e6a79043b11dab782de83d5ff71",
+      "status": 0,
+      "source_provider": false
+    },
+    {
+      "name": "f128_math-caller-capture",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128_math-caller-capture.rs",
+      "sha256": "405022394cc2fdd1bfc3fc86d6c672cede390d913dda51c1b39bebe4bb456f0b",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "f128_math-malformed",
+      "path": "pa41/tests/spec/float-reliability-cfg/f128_math-malformed.rs",
+      "sha256": "4db41be723fdb72b3d9bde2ecb078c0a5fd0698238dc074d9bbd03cce4cd7f6c",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "not-f16-permission",
+      "path": "pa41/tests/spec/float-reliability-cfg/not-f16-permission.rs",
+      "sha256": "9e5f8dda4565769ad21b36bf360d69ded5e8d159ed9cdbb2ab9f54aa23d198d2",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "not-f128-permission",
+      "path": "pa41/tests/spec/float-reliability-cfg/not-f128-permission.rs",
+      "sha256": "dc9d62bdc6e8f3bc868d920bca9d40ba4e901d192963d1a3585e7f4cb470e490",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "unknown-feature",
+      "path": "pa41/tests/spec/float-reliability-cfg/unknown-feature.rs",
+      "sha256": "a583a1fed699457cc7fb335ef918f5d969e6980dbc5313966e9dd32d93bca3ec",
+      "status": 1,
+      "source_provider": false
+    },
+    {
+      "name": "configuration-snapshot",
+      "path": "pa41/tests/spec/float-reliability-cfg/configuration-snapshot.rs",
+      "sha256": "641cfad58c8a6b97e8922fd2545b5c920a0478a450027fe914513fec10426282",
+      "status": 0,
+      "source_provider": true
+    },
+    {
+      "name": "native-target-values",
+      "path": "pa41/tests/spec/float-reliability-cfg/native-target-values-v2.rs",
+      "sha256": "9103280ac4a03e5fae9ced6e4098c7cb0dde718142422ea68d5b0825a9d0ad9b",
+      "status": 0,
+      "source_provider": true
+    }
+  ],
+  "editions": [
+    2021,
+    2024
+  ],
+  "native": {
+    "case": "native-target-values",
+    "observer": "pa41/tests/spec/float-reliability-cfg/observer.c",
+    "observer_sha256": "7496228c8575f72918fd3734352888d2e3e1c090b4aae23a953122dd2808dd9e",
+    "rustgm_stdout": "0 0 0 0\n",
+    "rustc_stdout_rule": "Four 0/1 values from the same compiler --print cfg snapshot in predicate order; backend capabilities are intentionally separate."
+  },
+  "configuration_snapshot": {
+    "case": "configuration-snapshot",
+    "fields": [
+      [
+        "RELIABLE_F16",
+        "target_has_reliable_f16"
+      ],
+      [
+        "RELIABLE_F16_MATH",
+        "target_has_reliable_f16_math"
+      ],
+      [
+        "RELIABLE_F128",
+        "target_has_reliable_f128"
+      ],
+      [
+        "RELIABLE_F128_MATH",
+        "target_has_reliable_f128_math"
+      ],
+      [
+        "UNIX",
+        "unix"
+      ],
+      [
+        "WINDOWS",
+        "windows"
+      ],
+      [
+        "SSE2",
+        "target_feature=\"sse2\""
+      ],
+      [
+        "X64",
+        "target_arch=\"x86_64\""
+      ],
+      [
+        "WIDTH64",
+        "target_pointer_width=\"64\""
+      ],
+      [
+        "ABORT",
+        "panic=\"abort\""
+      ],
+      [
+        "ATOMIC64",
+        "target_has_atomic=\"64\""
+      ],
+      [
+        "ATOMIC128",
+        "target_has_atomic=\"128\""
+      ],
+      [
+        "ATOMIC_LOAD",
+        "target_has_atomic_load_store=\"64\""
+      ],
+      [
+        "UB",
+        "ub_checks"
+      ],
+      [
+        "SANITIZER",
+        "sanitize=\"cfi\""
+      ]
+    ],
+    "rustgm_values": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "requirements": [
+    "All four queries require their real feature or macro allowance, even when false.",
+    "Caller predicate provenance does not inherit macro-written allowance.",
+    "The fixed CPPGM bridge has no reliable f16/f128 value or math type; user --cfg cannot replace target facts.",
+    "Feature permission and target truth remain separate; f16/f128 source type gates remain independent."
+  ],
+  "predecessor_contract_sha256": "72587ad261e78e06a0c633c9374b29df8d7daccdf160db9f24268e9b01f2c545",
+  "setup_correction": "v1 native fixture put an inner feature attribute after declarations. v2 moves only that attribute to the root header; all predictions and 73 other inputs are unchanged."
+}

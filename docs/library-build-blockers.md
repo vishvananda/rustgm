@@ -15,27 +15,24 @@ PA21–PA24 have implemented/release-evidence status; PA1–PA20 retain
 implemented-draft. PA25–PA44 remain planned. No additional assignment or whole
 upstream library has been completed.
 
-Current original-core frontier is LIB-131: the internal
-`cfg_target_has_reliable_f16_f128` request at original lib.rs90. The
-[shared-feature checkpoint](pa31-shared-feature-inventory-checkpoint.md) clears
-LIB-130's feature-index prepayment by reusing capture-time canonical spelling
-and first-policy data. All25 private/27 production, eight independent Rust cases,
-274 CLI phase outcomes and native7/7 9 pass;272 paired views exactly match the
-previous compiler. A real4096-function source completes type analysis at606746
-charged work under unchanged1,000,000-work/64MiB inventory limits. Ordinary
-records stay fixed; no reliable wall-time speedup is claimed. CLI18271678 reaches
-the next request in18.77s/375opens with all722 source hashes, six configuration
-hashes and finite limits unchanged. Its debugger observes837493 work/12659641
-bytes before owner/reachability processing, so later inventory costs remain open.
-Next implement the four genuinely gated backend-reliability cfg predicates,
-including math variants, without inventing f16/f128 capability or library API
-permission. PA41/34/31 own it. Updating config.rs requires an explicitly
-requalified configuration binding, preserving old manifests and actual values.
-Full predecessor CI41748017598 passes every gate. Full successor qualification,
-complete Drop/Pin, imported nominal/value/body-policy transport and original
-core/alloc/std artifacts remain required. Root stays alone under unchanged
-btrfs/five-minute/two-thread/16GiB/150GiB guards; no whole PA is released.
-
+Current original-core frontier is LIB-132: abi_unadjusted at original lib.rs108.
+The [float-reliability cfg checkpoint](pa41-float-reliability-checkpoint.md) clears
+LIB-131 with genuine shared feature/macro permissions for all four float/math
+queries. Their actual fixed-backend values stay false. All12 private/19 production,
+PA8 126/126,150 independent and150 candidate edition/type outcomes pass, with
+actual source-executable native0 0 0 0. Fifteen predecessor/candidate configuration
+constants match byte for byte. The changed config.rs source hash is explicitly
+requalified; all722 original inputs, the other five configuration pins, actual
+target facts, options, capAllow and finite limits stay unchanged. CLId98d1584
+reaches the new request in19.38s/375opens; its bounded immutable-binary debugger
+probe identifies abi_unadjusted. Implement the actual convention contract under
+PA28/31 with PA29 identity/transport; do not alias it to an existing ABI merely
+to admit a feature. LIB-130's later inventory costs, full Drop/Pin, source macro
+metadata export, imported nominal/value/body-policy transport and original
+core/alloc/std artifacts remain required. No whole PA is released. Root remains
+alone in the warm btrfs tree under unchanged five-minute/two-thread/16GiB/150GiB
+guards. Full predecessor CI41755882002 is terminal success across every gate;
+no full successor pass is inferred.
 
 
 The [MaybeUninit constant checkpoint](pa31-maybe-uninit-const-checkpoint.md)
@@ -419,7 +416,8 @@ actual native hints and the future authenticated MIR-import obligation.
 | LIB-128 | Local source policy qualified; imported inheritance and full Drop/Pin required | Actual unstable provided/default-body policy on stable API and selected inheritance | PA31 source/callable policy +PA26 actual implementation/default selection +PA25 const contexts +PA29 provided-body/policy transport +PA39 destruction / original ops/drop.rs242 Drop::drop | Root only | [Checkpoint](pa31-default-body-stability-checkpoint.md):48 independent Rust outcomes including five real imported clients,12 private/27 production,86 candidate CLI checks and real native7 9. CLI6bc0e520 clears the attribute frontier. Actual RustGM imported inheritance and full original Drop/Pin remain required; no body or permission is synthesized. |
 | LIB-129 | Macro-valued identity and panic family declarations qualified; semantics/transport required | Expand genuine macro-valued language-item attributes before identity reservation | PA8 macro/attribute expansion +PA31 authenticated source language identities / original panicking.rs172 | Root only | [Checkpoint](pa31-language-values-checkpoint.md):45 independent outcomes,23 private/28 production,90 CLI phase checks and real native9 11. All22 panic_const functions have genuine declaration profiles at append-only ordinals187–208; real compiler assertion/panic consumers and authenticated transport remain required. CLI17eb46c0 clears this frontier with unchanged inputs/configuration/limits. |
 | LIB-130 | Feature-index budget frontier cleared; later inventory phases required | Canonical capture-time library-feature data and actual paid work/storage | PA31 library policy inventory +PA32 original core +shared performance architecture | Root only | [Checkpoint](pa31-shared-feature-inventory-checkpoint.md):25 private/27 production, eight independent cases,274 CLI outcomes and272 byte-identical predecessor pairs. A real4096-function crate type-checks at606746 work. CLI18271678 clears the original prepayment at unchanged limits and reaches LIB-131; debugger sees837493 work/12659641 bytes. Owner/reachability and final inventory costs remain required. |
-| LIB-131 | Current original-core feature-request blocker | Genuine cfg_target_has_reliable_f16_f128 feature and four gated backend capability predicates | PA41 target-specific closure +PA34 configuration/build profile +PA31 source feature identity / original lib.rs90 | Root only | CLI18271678 reports an unlocated unsupported/undefined feature request; an immutable-binary debugger probe identifies cfg_target_has_reliable_f16_f128. Pinned rustc_feature unstable.rs and builtin_attrs.rs specify all four normal/math f16/f128 predicates. Implement real query gating and macro allowances without fabricating capability. config.rs is a pinned configuration source: requalify its binding explicitly while preserving the original sources, options and limits. |
+| LIB-131 | Local query/gate/execution qualified; metadata transport required | Four genuine float/math cfg predicates, shared feature and actual macro permission, unchanged backend truth | PA41 target closure +PA34 configuration/build profile +PA31 source authority +PA29 transport / original lib.rs90 | Root only | [Checkpoint](pa41-float-reliability-checkpoint.md):12 private/19 production,PA8 126/126,150 independent and150 candidate edition/type outcomes, actual source native0 0 0 0 and identical15-value predecessor snapshot. CLId98d1584 clears the request with original722 inputs/limits unchanged and an explicitly requalified config.rs hash. Source macro/name metadata export remains closed and required. |
+| LIB-132 | Current original-core feature-request blocker | Actual abi_unadjusted request, distinct source calling convention and independently proved ABI effects | PA28 ABI/compiler intrinsics +PA31 source identity +PA29 convention transport / original lib.rs108 | Root only | CLId98d1584 reports the next unlocated unsupported/undefined request; a bounded immutable-binary debugger probe identifies abi_unadjusted. Freeze pinned declaration, call/function-pointer, feature/macro, target ABI and metadata requirements before admission. Existing Abi only represents Rust/RustCall/C; a name-only alias does not implement this feature. |
 | Remaining raw language-item semantic inventory | Declarations checked;98 builtin semantic profiles explicitly unsupported | Actual operators, associated hooks, async/drop/pinning, field reflection, ranges and weak memory hooks | Earliest actual PA23–PA31/40/41 consumer units +PA29 transport / compiler-language-claims packet | Root only | The pinned100-name raw inventory is not a cfg-active blocker count. Shared target/arity/foreign validation and135 independent cases are qualified, but unsupported semantic consumers stop explicitly before ordinary checking can infer absence. Implement each actual builtin relation/runtime contract and add genuine source/native/imported consumers before removing its fence. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |

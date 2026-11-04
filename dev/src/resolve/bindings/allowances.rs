@@ -10,6 +10,7 @@ pub enum KnownFeature {
     CfgUbChecks,
     CfgTargetHasAtomic,
     CfgSanitize,
+    CfgFloatReliability,
 }
 impl KnownFeature {
     #[must_use]
@@ -21,6 +22,7 @@ impl KnownFeature {
             Self::CfgUbChecks => "cfg_ub_checks",
             Self::CfgTargetHasAtomic => "cfg_target_has_atomic",
             Self::CfgSanitize => "cfg_sanitize",
+            Self::CfgFloatReliability => "cfg_target_has_reliable_f16_f128",
         }))
     }
     pub(super) const fn mask(self) -> u8 {

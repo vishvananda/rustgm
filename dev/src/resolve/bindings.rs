@@ -70,6 +70,9 @@ impl super::package::Package {
             crate::expand::config::CfgGate::UbChecks => return Ok(self.requested_cfg_ub_checks()),
             crate::expand::config::CfgGate::TargetHasAtomic => policy::Feature::CfgTargetHasAtomic,
             crate::expand::config::CfgGate::Sanitize => policy::Feature::CfgSanitize,
+            crate::expand::config::CfgGate::FloatReliability => {
+                policy::Feature::CfgFloatReliability
+            }
         };
         if let Some(source) = self.staged_consumer() {
             source.require_package(self)?;

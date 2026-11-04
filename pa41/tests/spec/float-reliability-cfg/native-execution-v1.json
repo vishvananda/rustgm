@@ -1,0 +1,23 @@
+{
+  "contract": "source executable float reliability v1",
+  "source": "pa41/tests/spec/float-reliability-cfg/native-source-executable.rs",
+  "source_sha256": "60de422b426790015cd876aa32a38d7ac0fa513f454a1e10595999ae6ae60287",
+  "unchanged_function_prefix": "pa41/tests/spec/float-reliability-cfg/native-target-values-v2.rs",
+  "unchanged_function_prefix_sha256": "9103280ac4a03e5fae9ced6e4098c7cb0dde718142422ea68d5b0825a9d0ad9b",
+  "observer": "pa41/tests/spec/float-reliability-cfg/reporter.c",
+  "observer_sha256": "ba50aab5ddd01fe59e1cc69b4b26f232a1febaf7781fb67856daae39b36b02b3",
+  "rustc_metadata_status": 0,
+  "rustgm_stdout": "0 0 0 0\n",
+  "source_provider": true,
+  "editions": [
+    2021,
+    2024
+  ],
+  "publication_boundary": {
+    "source": "pa41/tests/spec/float-reliability-cfg/native-target-values-v2.rs",
+    "mode": "SourceCore library LowIR and metadata publication",
+    "status": 1,
+    "message": "source macro/semantic-name provenance metadata is not implemented",
+    "completion": "Not implemented; source executable execution grants no publication/transport authority."
+  }
+}

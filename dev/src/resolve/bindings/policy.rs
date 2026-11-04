@@ -71,6 +71,7 @@ pub(in crate::resolve) enum Feature {
     OptimizeAttribute = 54,
     TransparentUnions = 55,
     AdtConstParams = 56,
+    CfgFloatReliability = 57,
 }
 
 impl Feature {
@@ -127,6 +128,7 @@ impl Request {
             "cfg_ub_checks" => Self::Capability(Feature::CfgUbChecks),
             "cfg_target_has_atomic" => Self::Capability(Feature::CfgTargetHasAtomic),
             "cfg_sanitize" => Self::Capability(Feature::CfgSanitize),
+            "cfg_target_has_reliable_f16_f128" => Self::Capability(Feature::CfgFloatReliability),
             "builtin_syntax" => Self::Capability(Feature::BuiltinSyntax),
             "offset_of_enum" => Self::Capability(Feature::OffsetOfEnum),
             "deprecated_suggestion" => Self::Capability(Feature::DeprecatedSuggestion),
@@ -181,6 +183,7 @@ impl Features {
             || self.has(Feature::SimdFfi)
             || self.has(Feature::CfgTargetHasAtomic)
             || self.has(Feature::CfgSanitize)
+            || self.has(Feature::CfgFloatReliability)
             || self.has(Feature::BuiltinSyntax)
             || self.has(Feature::OffsetOfEnum)
             || self.has(Feature::DeprecatedSuggestion)

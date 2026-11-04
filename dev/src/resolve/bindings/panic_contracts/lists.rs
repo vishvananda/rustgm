@@ -160,6 +160,7 @@ pub(super) fn collect(
         KnownFeature::CfgUbChecks,
         KnownFeature::CfgTargetHasAtomic,
         KnownFeature::CfgSanitize,
+        KnownFeature::CfgFloatReliability,
     ] {
         work.charge(feature.name().spelling().len(), 0)
             .map_err(error)?;

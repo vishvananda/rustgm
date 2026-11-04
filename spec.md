@@ -1049,6 +1049,19 @@ implementation hash change in its derived original-core manifest. Hardware,
 CLI target inputs, source bytes and finite limits are separate invariants; do
 not conceal a corrected target fact behind an ad-hoc --cfg override.
 
+The four target_has_reliable_f16/f16_math/f128/f128_math queries share the
+actual cfg_target_has_reliable_f16_f128 gate and genuine definition-site macro
+allowances. Reuse demanded-use provenance and the paid macro-frame memo; caller
+captures gain no permission. The query feature enables neither float language
+feature nor arithmetic. Target truth stays owned by the selected backend: all
+four values remain false for the fixed CPPGM profile and cannot be forged through
+custom cfg. Preserve the packed feature word and existing ordinary records.
+The [float-reliability checkpoint](docs/pa41-float-reliability-checkpoint.md)
+qualifies both source editions, actual source-body execution, bounded repeated
+queries and byte-identical predecessor/candidate configuration constants. A
+configuration-source edit still requires a new explicitly requalified manifest;
+retain old source/configuration bindings and the source macro metadata fence.
+
 Source auto-trait selection preserves explicit positive and negative identities.
 A refutation is not positive evidence, and an applicable explicit implementation
 family replaces its structural default even when its conditions are unpaid.

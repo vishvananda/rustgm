@@ -1,6 +1,20 @@
 # Parallel library bootstrap implementation
 
-Current original-core frontier is LIB-131: cfg_target_has_reliable_f16_f128
+Current original-core frontier is LIB-132: abi_unadjusted at original lib.rs108.
+The [float-reliability checkpoint](pa41-float-reliability-checkpoint.md) qualifies
+all four genuine cfg query gates and macro permissions with unchanged false
+backend values. Private12/production19,PA8 126/126,150 independent/candidate
+edition outcomes and actual source native0 0 0 0 pass. Fifteen configuration
+constants match the predecessor byte for byte. config.rs receives an explicitly
+requalified binding; original722 inputs, five other configuration pins, options
+and limits stay unchanged. CLId98d1584 reaches the new request in19.38s/375opens;
+a bounded debugger probe identifies its exact name. Source macro metadata
+publication, later inventory costs and all original artifacts remain required.
+Root stays alone in the existing warm btrfs tree with unchanged five-minute,
+two-thread,16GiB/150GiB guards; no new worker, cache or worktree is queued.
+
+
+Prior original-core frontier was LIB-131: cfg_target_has_reliable_f16_f128
 at original lib.rs90. The [shared-feature checkpoint](pa31-shared-feature-inventory-checkpoint.md)
 reuses one capture-time canonical index and spelling data while preserving each
 policy owner/axis and deferred conflict. All25 private/27 production, eight

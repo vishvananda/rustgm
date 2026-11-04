@@ -10,6 +10,10 @@ fn usage(width: usize, calls: usize, gate: CfgGate) -> Result<usize> {
         ),
         CfgGate::UbChecks => ("cfg_ub_checks", "ub_checks"),
         CfgGate::Sanitize => ("cfg_sanitize", "sanitize=\"cfi\""),
+        CfgGate::FloatReliability => (
+            "cfg_target_has_reliable_f16_f128",
+            "target_has_reliable_f16",
+        ),
     };
     let list = std::iter::once(feature.to_owned())
         .chain((1..width).map(|i| format!("fixture_feature_{i}")))
@@ -52,6 +56,7 @@ fn cfg_expansion_repeated_queries_do_not_repeat_growing_allowance_header_walks()
         CfgGate::UbChecks,
         CfgGate::TargetHasAtomic,
         CfgGate::Sanitize,
+        CfgGate::FloatReliability,
     ] {
         let base = usage(8, 1, gate)?;
         let repeated = usage(8, 32, gate)?

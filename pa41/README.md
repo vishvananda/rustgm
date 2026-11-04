@@ -12,6 +12,13 @@ Target attributes and assembly contracts against explicit backend capabilities.
 
 ### Required core prerequisite
 
+The [float-reliability cfg packet](tests/spec/float-reliability-cfg/README.md)
+implements the four genuine backend capability queries and shared feature/macro
+gating. Fixed target truth remains unchanged, including false f16/f128 math
+capabilities. Its [checkpoint](../docs/pa41-float-reliability-checkpoint.md)
+qualifies real source execution and an explicit configuration-source rebind.
+Broader target closure, library transport and assignment release remain required.
+
 The [SIMD lane-limit packet](tests/spec/simd-lane-limit/README.md) adds actual
 rustc_simd_monomorphize_lane_limit validation and concrete lane enforcement to
 this existing SIMD contract. Preserve source ownership, feature/macro authority,

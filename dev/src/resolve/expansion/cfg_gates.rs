@@ -95,6 +95,7 @@ fn feature(gate: CfgGate) -> KnownFeature {
         CfgGate::UbChecks => KnownFeature::CfgUbChecks,
         CfgGate::TargetHasAtomic => KnownFeature::CfgTargetHasAtomic,
         CfgGate::Sanitize => KnownFeature::CfgSanitize,
+        CfgGate::FloatReliability => KnownFeature::CfgFloatReliability,
     }
 }
 fn missing(site: Location, gate: CfgGate) -> Error {
@@ -104,6 +105,9 @@ fn missing(site: Location, gate: CfgGate) -> Error {
         match gate {
             CfgGate::UbChecks => {
                 "cfg(ub_checks) requires cfg_ub_checks or its actual macro allowance"
+            }
+            CfgGate::FloatReliability => {
+                "float reliability cfg requires cfg_target_has_reliable_f16_f128 or its actual macro allowance"
             }
             CfgGate::Sanitize => {
                 "cfg(sanitize) requires cfg_sanitize or its actual macro allowance"
@@ -160,3 +164,7 @@ pub(super) fn validate_attributes(report: &Report) -> Result<(), Error> {
 #[cfg(test)]
 #[path = "../../../tests/invariants/cfg_gate_work.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/float_capabilities.rs"]
+mod reliability;
