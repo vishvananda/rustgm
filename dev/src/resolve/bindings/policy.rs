@@ -11,7 +11,7 @@ use crate::{
 };
 
 #[derive(Default)]
-pub(in crate::resolve) struct Features(u64);
+pub(in crate::resolve) struct Features([u64; 2]);
 #[derive(Clone, Copy)]
 pub(in crate::resolve) enum Feature {
     NoCore,
@@ -78,11 +78,16 @@ pub(in crate::resolve) enum Feature {
     DiagnosticConst = 61,
     DiagnosticUnmatched = 62,
     LinkCfg = 63,
+    LinkLlvmIntrinsics = 64,
 }
 
 #[cfg(test)]
 #[path = "../../../tests/invariants/documentation_options.rs"]
 mod documentation;
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/llvm_linkage.rs"]
+mod llvm;
 
 impl Feature {
     pub(super) const fn cpu_gate(gate: crate::support::cpu_features::Gate) -> Self {
@@ -124,6 +129,7 @@ impl Request {
             // This is a pinned language feature, not a library instability.
             // Documentation metadata grants no type, body or execution authority.
             "rustdoc_internals" => Self::Capability(Feature::RustdocInternals),
+            "link_llvm_intrinsics" => Self::Capability(Feature::LinkLlvmIntrinsics),
             "link_cfg" => Self::Capability(Feature::LinkCfg),
             "doc_cfg" => Self::Capability(Feature::DocCfg),
             "doc_notable_trait" => Self::Capability(Feature::DocNotableTrait),
@@ -184,7 +190,8 @@ impl Request {
 }
 impl Features {
     pub(in crate::resolve) fn has(&self, feature: Feature) -> bool {
-        self.0 & (1_u64 << feature as u8) != 0
+        let index = feature as usize;
+        self.0[index / 64] & (1_u64 << (index % 64)) != 0
     }
     fn needs_local_owner(&self) -> bool {
         self.has(Feature::AdtConstParams)
@@ -202,6 +209,7 @@ impl Features {
             || self.has(Feature::CfgSanitize)
             || self.has(Feature::CfgFloatReliability)
             || self.has(Feature::AbiUnadjusted)
+            || self.has(Feature::LinkLlvmIntrinsics)
             || self.has(Feature::LinkCfg)
             || self.has(Feature::DocCfg)
             || self.has(Feature::DocNotableTrait)
@@ -225,7 +233,8 @@ impl Features {
             || self.has(Feature::MetavariableExpressions)
     }
     fn insert(&mut self, feature: Feature) {
-        self.0 |= 1_u64 << feature as u8;
+        let index = feature as usize;
+        self.0[index / 64] |= 1_u64 << (index % 64);
     }
     pub(super) fn macros(&self) -> MacroFeatures {
         MacroFeatures(

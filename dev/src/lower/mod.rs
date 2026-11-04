@@ -2,6 +2,7 @@
 mod address;
 pub mod alignment;
 mod arithmetic;
+mod bit_kernels;
 mod casts;
 mod cleanup;
 pub mod constant_view;
@@ -12,6 +13,7 @@ mod function;
 pub mod instances;
 mod intrinsics;
 pub mod linkage;
+mod llvm_calls;
 pub(crate) mod local_runtime;
 mod remainder;
 mod roots;

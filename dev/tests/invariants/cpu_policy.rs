@@ -495,7 +495,7 @@ fn cold_rows_cumulative_failures_and_common_pending_map_cost_are_measured() -> T
         size_of::<crate::body::ir::Body>(),
         size_of::<Report>()
     );
-    assert_eq!(crate::resolve::bindings::cpu_request_layouts().0, 8);
+    assert_eq!(crate::resolve::bindings::cpu_request_layouts().0, 16);
     assert_eq!(crate::resolve::bindings::cpu_request_layouts().1, 1);
     eprintln!(
         "request layouts={:?}",

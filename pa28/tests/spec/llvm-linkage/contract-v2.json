@@ -1,0 +1,339 @@
+{
+  "contract": "LLVM linkage and signed/unsigned scalar unary operations v2",
+  "editions": [
+    2021,
+    2024
+  ],
+  "lint_cap": "allow",
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_ast_passes/src/feature_gate.rs": "add3ec12cc0532b8f4bdd8fe6bbd6b8ab8123cd618c0d2042e2b93ab023ca414",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_feature/src/unstable.rs": "12a8e6610e58950117521e333e06368bd068ca3b3c4b5017829aa71c2ea410bb",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/stdarch/crates/core_arch/src/x86/bmi2.rs": "5855774bf39112321ddc3a2cf66389bea97f0acf17e1b787b654349b03d9a9f9"
+  },
+  "semantics": "https://www.llvm.org/docs/LangRef.html#bit-manipulation-intrinsics",
+  "cases": [
+    {
+      "name": "request",
+      "path": "pa28/tests/spec/llvm-linkage/request.rs",
+      "sha256": "0c37f3911437a0bf462049a23c462175c17c870a0d6ef3169d8ce889643fd411",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "gated-unused",
+      "path": "pa28/tests/spec/llvm-linkage/gated-unused.rs",
+      "sha256": "53cfd6b6e3aa52d9fece4407fa4858337c2af758ddc220babc508cfacff5fa1e",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "missing-unused",
+      "path": "pa28/tests/spec/llvm-linkage/missing-unused.rs",
+      "sha256": "bed0b1c31aae2f4567cf4bf43c66c1f71c7645c09623252bc8811626f78221c0",
+      "rustc_metadata_status": 1,
+      "required_body_status": 1
+    },
+    {
+      "name": "missing-used",
+      "path": "pa28/tests/spec/llvm-linkage/missing-used.rs",
+      "sha256": "164df0ac523789ade41567369c64d4d949f004682771028a132b291c69186179",
+      "rustc_metadata_status": 1,
+      "required_body_status": 1
+    },
+    {
+      "name": "used",
+      "path": "pa28/tests/spec/llvm-linkage/used.rs",
+      "sha256": "70f0d97abd1083fac277f99b0d15e3e459eccd716edceae57e45fdd9ad47477e",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "missing-unsafe",
+      "path": "pa28/tests/spec/llvm-linkage/missing-unsafe.rs",
+      "sha256": "4d81b563417dc25732813ef5446d0c2313bb8a96fd57cd877c065f460252ca55",
+      "rustc_metadata_status": 1,
+      "required_body_status": 1
+    },
+    {
+      "name": "safe-declaration",
+      "path": "pa28/tests/spec/llvm-linkage/safe-declaration.rs",
+      "sha256": "95faabd257f98f239202cf51616f0942c652187cf31188061a089c2d5e5327aa",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "runtime-only",
+      "path": "pa28/tests/spec/llvm-linkage/runtime-only.rs",
+      "sha256": "9ec6c621192dd0f2d2bcd6bf793bd87745595b4b85c40ae5cf0806edd2154c5d",
+      "rustc_metadata_status": 1,
+      "required_body_status": 1
+    },
+    {
+      "name": "unknown-unused",
+      "path": "pa28/tests/spec/llvm-linkage/unknown-unused.rs",
+      "sha256": "cdc98ece53cd090f198e010f379dddaa16c30805424a69435e5424e96bce3914",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "prefix-without-feature",
+      "path": "pa28/tests/spec/llvm-linkage/prefix-without-feature.rs",
+      "sha256": "b07033755af308e16c58b6b0fc5caa31a8d1239058d54028a50302752b2bf8fb",
+      "rustc_metadata_status": 1,
+      "required_body_status": 1
+    },
+    {
+      "name": "uppercase-ordinary",
+      "path": "pa28/tests/spec/llvm-linkage/uppercase-ordinary.rs",
+      "sha256": "f588acf8d1c69d6bdc1fc6d84b8924f5bfb2ccf0c0a38a31109a67350444c2c6",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "similar-ordinary",
+      "path": "pa28/tests/spec/llvm-linkage/similar-ordinary.rs",
+      "sha256": "f557f945fea7b249db483a2aad63c6e49a15b191d4c580504de741f678f7e18e",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "rust-owner-ignored",
+      "path": "pa28/tests/spec/llvm-linkage/rust-owner-ignored.rs",
+      "sha256": "80b32cd527658de6b38f8181f3ce353879bd373f24dc2335870b2dcfa78dfd98",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "duplicate-ordinary-first",
+      "path": "pa28/tests/spec/llvm-linkage/duplicate-ordinary-first.rs",
+      "sha256": "f216912e55219fbd3fe53cb8b61277aed2742c7bb0d86ec63fcb825b3d282ebe",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "duplicate-llvm-first",
+      "path": "pa28/tests/spec/llvm-linkage/duplicate-llvm-first.rs",
+      "sha256": "de7ea77ef91ad29dee719f11b97f9da5310573c89a68c8957b6664b0b8955cdd",
+      "rustc_metadata_status": 1,
+      "required_body_status": 1
+    },
+    {
+      "name": "removed",
+      "path": "pa28/tests/spec/llvm-linkage/removed.rs",
+      "sha256": "819e161955813cbdc40b6ae378a5241fe0dcffe6092f9b98d8ec10465f3efb25",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "cfg-attribute-missing",
+      "path": "pa28/tests/spec/llvm-linkage/cfg-attribute-missing.rs",
+      "sha256": "13e41d59c005cf499603bed53845add8ad0c8e359679de3fc36ef0c927a04b31",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "static-missing",
+      "path": "pa28/tests/spec/llvm-linkage/static-missing.rs",
+      "sha256": "5176d35bf0db0e5a72f6d8209db372833f02f4635de08708ae2a395a03df9504",
+      "rustc_metadata_status": 1,
+      "required_body_status": 1
+    },
+    {
+      "name": "static-allowed",
+      "path": "pa28/tests/spec/llvm-linkage/static-allowed.rs",
+      "sha256": "901549df32206e7344c5d9b9f74389da2b5d393113db7256da85b462c3c86704",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "macro-granted-item",
+      "path": "pa28/tests/spec/llvm-linkage/macro-granted-item.rs",
+      "sha256": "96405c889328870ab31c991b52d6f88ba2639fcd09ed3593ac139ba31463290c",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "macro-missing-item",
+      "path": "pa28/tests/spec/llvm-linkage/macro-missing-item.rs",
+      "sha256": "03e5642d58835c244fbe01343ed9a11c893aecaf6c81be0998adc275342afe95",
+      "rustc_metadata_status": 1,
+      "required_body_status": 1
+    },
+    {
+      "name": "macro-captured-item",
+      "path": "pa28/tests/spec/llvm-linkage/macro-captured-item.rs",
+      "sha256": "8034ebc9b0452f62e0777bad623b092e9d38701891132f4e23342be94027de6d",
+      "rustc_metadata_status": 1,
+      "required_body_status": 1
+    },
+    {
+      "name": "macro-captured-meta",
+      "path": "pa28/tests/spec/llvm-linkage/macro-captured-meta.rs",
+      "sha256": "6f310322837935eb0c363811bb12f811373642c7801188e82e452dda54a031a7",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "unused-request-other-feature",
+      "path": "pa28/tests/spec/llvm-linkage/unused-request-other-feature.rs",
+      "sha256": "be851b69ff1040d76363d916aa99501c7bff3bb475e3bdd5eff31248c58df474",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "request-no-float-permission",
+      "path": "pa28/tests/spec/llvm-linkage/request-no-float-permission.rs",
+      "sha256": "36dac83c19c60703364f0b3c45fcb7e8ad510803f9a875e8eebe85ff5695139e",
+      "rustc_metadata_status": 1,
+      "required_body_status": 1
+    },
+    {
+      "name": "ctpop-8",
+      "path": "pa28/tests/spec/llvm-linkage/ctpop-8.rs",
+      "sha256": "2521a6f1138e710534fb905eee4e0266d2291c3f7318bb5d94f6a4abd0eb8426",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "ctpop-16",
+      "path": "pa28/tests/spec/llvm-linkage/ctpop-16.rs",
+      "sha256": "05042607af26b18d6241db1bbda151192e219db1b8b7beae519a97b801f2040c",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "ctpop-32",
+      "path": "pa28/tests/spec/llvm-linkage/ctpop-32.rs",
+      "sha256": "5d36471cdd9fdf6dc83779b6c1d2d1afc56dc7d3500e4c539cc00c4ff511a59a",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "ctpop-64",
+      "path": "pa28/tests/spec/llvm-linkage/ctpop-64.rs",
+      "sha256": "80f718137e1fcbf61cc03543e7dd3eab40e7a7326e2bcfef2f025885f6417b33",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "ctpop-128",
+      "path": "pa28/tests/spec/llvm-linkage/ctpop-128.rs",
+      "sha256": "945499cc5ce1a71610a07c75ab41d931d78ec556ae35f7e280b0866acd2b0e83",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "bitreverse-8",
+      "path": "pa28/tests/spec/llvm-linkage/bitreverse-8.rs",
+      "sha256": "c0c643ef11556019f9c25fe6170670ab2aaf484d49d66fb21ed33b7984da553c",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "bitreverse-16",
+      "path": "pa28/tests/spec/llvm-linkage/bitreverse-16.rs",
+      "sha256": "3ddceb2510778ceccd6fb21e4ec9fe1b54b3729ade481769644f7e189ea0ea41",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "bitreverse-32",
+      "path": "pa28/tests/spec/llvm-linkage/bitreverse-32.rs",
+      "sha256": "cae3fc9adc9386bd0af08b9609f4a379b7edc3d117a45685542a0d98c6124490",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "bitreverse-64",
+      "path": "pa28/tests/spec/llvm-linkage/bitreverse-64.rs",
+      "sha256": "570f4ec1acb6cc5f9dbda046b6dc9448f7b7712d815472d13b2cda8a93e64a4a",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "bitreverse-128",
+      "path": "pa28/tests/spec/llvm-linkage/bitreverse-128.rs",
+      "sha256": "ddb8500d65c6a3810993fc5a63fed55f98d5c1e1636a8f62010aaf61e6d195ce",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "bswap-16",
+      "path": "pa28/tests/spec/llvm-linkage/bswap-16.rs",
+      "sha256": "4f6d4d88ac7aa9bd19598339dcaa58729767a466839b49b7e9d0d2e1a43880db",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "bswap-32",
+      "path": "pa28/tests/spec/llvm-linkage/bswap-32.rs",
+      "sha256": "53229b12b7ab85aaecd58d8c724c52b3c66ca8c4b3ea84cc90d691f169efd38a",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "bswap-64",
+      "path": "pa28/tests/spec/llvm-linkage/bswap-64.rs",
+      "sha256": "f44ea991dce03b9f6f4a12c5c28fe4f24eb16f85edec04ce671e95d07a54c5bf",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "bswap-128",
+      "path": "pa28/tests/spec/llvm-linkage/bswap-128.rs",
+      "sha256": "be433f69742bb63f6d6359e7f4e511f52d589e9b4204c76ac86ee2e86e19e2e8",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "function-pointer",
+      "path": "pa28/tests/spec/llvm-linkage/function-pointer.rs",
+      "sha256": "43a90a8eab1568bd5575f46aecb6a36a5a22d2b70e1fbbb21291ba8b0cad8937",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "unadjusted",
+      "path": "pa28/tests/spec/llvm-linkage/unadjusted.rs",
+      "sha256": "f02bb33bc3cda2a21d56e193d7cbe6885f3c81b4aeb6429035b7e1d7a2f8e204",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    },
+    {
+      "name": "named-reference-lookalike",
+      "path": "pa28/tests/spec/llvm-linkage/named-reference-lookalike.rs",
+      "sha256": "f8313bb722dd62759092f1d3b8fb8993d9a415fae56146ec439bdfb8d9ea3dd4",
+      "rustc_metadata_status": 0,
+      "required_body_status": 0
+    }
+  ],
+  "native_unary_families": [
+    "ctpop",
+    "bitreverse",
+    "bswap"
+  ],
+  "required_remaining": [
+    "LLVM zero-poison/immediate operands",
+    "vectors and target-specific operations",
+    "cross-crate intrinsic identity and function addresses",
+    "LLVM static use diagnostics"
+  ],
+  "native": {
+    "case": "pa28/tests/spec/llvm-linkage/native.rs",
+    "sha256": "9a8d0d79cdf291220b940114540872f889e5f836a5b5f0737068f9da988a756c",
+    "control": "pa28/tests/spec/llvm-linkage/native-control.rs",
+    "control_sha256": "7aa7fd8dc558e2d07f18572fb27efdc59ad4c67d3d0a7b6ad2a887b65d5eb57f",
+    "observer": "pa28/tests/spec/llvm-linkage/observer.c",
+    "observer_sha256": "c0c120fee16f7613242e9ff71d036de53ca6077fb38a3a1b7a79017f2df20850",
+    "stdout": "1\n",
+    "comparisons": 56,
+    "operations": 14
+  },
+  "native_signed": {
+    "case": "pa28/tests/spec/llvm-linkage/native-signed.rs",
+    "sha256": "9374d02596e51be8bbb25966db7dd96e7959538b1920088cf748997d78971b9a",
+    "comparisons": 56,
+    "operations": 14,
+    "stdout": "1\n"
+  }
+}

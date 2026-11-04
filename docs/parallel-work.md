@@ -1,8 +1,8 @@
 # Parallel library bootstrap implementation
 
-Full qualification cadence: run41787601690 on6f1e3eb3d is the current manual
-qualification. Poll that exact run; do not replace it while live. Predecessor
-run41781814852 on1f5a2b8d0 passes every gate.
+Full qualification cadence: run41787601690 on6f1e3eb3d is terminal success
+with every gate passing. LLVM successor full qualification awaits publication.
+Predecessor run41781814852 on1f5a2b8d0 also passes every gate.
 Earlier41779219834 failed storage admission at7.9GiB against the8GiB CI
 reserve. CI retains assertions/overflow checks without host debug symbols and
 retires the correct completed dev cache before independent/component checks.
@@ -11,7 +11,21 @@ concurrency cancels the earlier manual run. Source checkpoints may continue with
 focused evidence and push-triggered fast CI; dispatch successor full qualification
 only after its predecessor is terminal. No whole PA release is inferred.
 
-Current original-core frontier is LIB-137: link_llvm_intrinsics at original lib.rs139.
+Current original-core frontier is LIB-138: unsized_fn_params at original lib.rs165.
+The [LLVM linkage checkpoint](pa28-llvm-linkage-checkpoint.md) qualifies genuine
+foreign-item crate/macro authority and typed scalar ctpop/bitreverse/bswap kernels,
+with no ordinary C fallback. Private8/production9/native2, PA8 126/126, PA10 81/81,
+86 independent/candidate outcomes,168 native comparisons and all fifteen equal
+configuration constants pass. CLI454eb435 reaches LIB-138 in16.62s/375opens,
+with all722 original hashes, all six configuration source pins, options, capAllow
+and finite limits unchanged. Actual unsized source/ownership and ABI/transport
+are next under PA26/30/29/31. Other LLVM operations/address/import profiles remain
+required. Ordinary dev-fast measurements show possible modest overhead amid
+noise (paired B/A1.112/1.056); no speedup is claimed. No whole PA or original
+library artifact is established. Root stays alone in the warm btrfs tree with
+unchanged resource guards and scoped cleanup.
+
+Previous original-core frontier was LIB-137: link_llvm_intrinsics at original lib.rs139.
 The [conditional-native-link checkpoint](pa29-conditional-native-links-checkpoint.md)
 qualifies actual source cfg/feature/provenance checks, selected static native
 execution7 9, dynamic metadata codec and explicit external manifest transport.

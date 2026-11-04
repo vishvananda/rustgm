@@ -336,7 +336,7 @@ impl<'a> Checker<'a> {
         Ok(checker)
     }
     fn from_facts(report: &'a Report, mut facts: Declarations) -> Result<Self, Error> {
-        let linkage_sources = foreign::collect(report, &mut facts.foreign)
+        let linkage_sources = foreign::collect(report, &mut facts)
             .map_err(|error| facts.retain_error_warnings(error))?;
         let target_feature_sources = super::target_features::collect(report, &mut facts)
             .map_err(|error| facts.retain_error_warnings(report.diagnostic(error)))?;

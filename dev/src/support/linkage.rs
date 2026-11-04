@@ -21,6 +21,7 @@ pub enum Linkage {
 #[derive(Default)]
 pub struct SymbolNames {
     names: Names,
+    llvm: Option<Box<super::llvm_symbols::Catalog>>,
 }
 impl SymbolNames {
     /// # Errors
@@ -29,7 +30,9 @@ impl SymbolNames {
         if spelling.is_empty() || spelling.contains('\0') {
             return Err("external symbol spelling must be nonempty and NUL-free");
         }
-        self.names.intern_exact(spelling).map(SymbolNameId)
+        let id = SymbolNameId(self.names.intern_exact(spelling)?);
+        self.record_llvm(id, spelling, &mut |_| Ok(()))?;
+        Ok(id)
     }
     pub(crate) fn find_exact_paid(
         &self,
@@ -53,9 +56,42 @@ impl SymbolNames {
         if spelling.is_empty() || spelling.contains('\0') {
             return Err("external symbol spelling must be nonempty and NUL-free");
         }
-        self.names
-            .intern_exact_paid(spelling, pay)
-            .map(SymbolNameId)
+        let id = SymbolNameId(self.names.intern_exact_paid(spelling, pay)?);
+        self.record_llvm(id, spelling, pay)?;
+        Ok(id)
+    }
+    fn record_llvm(
+        &mut self,
+        id: SymbolNameId,
+        spelling: &str,
+        pay: &mut impl FnMut(super::retained::Growth) -> Result<(), &'static str>,
+    ) -> Result<(), &'static str> {
+        if self
+            .llvm
+            .as_deref()
+            .and_then(|catalog| catalog.get(id))
+            .is_some()
+        {
+            return Ok(());
+        }
+        let Some(intrinsic) = super::llvm_symbols::Intrinsic::named(spelling) else {
+            return Ok(());
+        };
+        if self.llvm.is_none() {
+            pay(super::retained::Growth {
+                work: 1,
+                bytes: size_of::<super::llvm_symbols::Catalog>(),
+            })?;
+            self.llvm = Some(Box::default());
+        }
+        self.llvm
+            .as_mut()
+            .ok_or("missing reserved LLVM symbol owner")?
+            .record(id, intrinsic, pay)
+    }
+    #[must_use]
+    pub fn llvm(&self, id: SymbolNameId) -> Option<super::llvm_symbols::Intrinsic> {
+        self.llvm.as_deref()?.get(id)
     }
     #[must_use]
     pub fn get(&self, id: SymbolNameId) -> Option<&str> {

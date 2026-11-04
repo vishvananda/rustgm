@@ -8,6 +8,15 @@ Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The
 
 Memory and numeric intrinsics, atomics and volatile operations.
 
+The [LLVM linkage packet](tests/spec/llvm-linkage/README.md) separates actual
+foreign-item feature/macro authority, exact LLVM identity and typed operation
+lowering. The initial unary families cover population count, bit reversal and
+byte swapping for primitive signed/unsigned integers through128 bits. Preserve
+ordinary safety and const rules, normalize integer aliases/views, and never emit
+an unsupported LLVM name as an ordinary C import. Vectors, other operations,
+immediate/poison contracts, full metadata/address profiles and the remaining
+assignment requirements stay open.
+
 The [unadjusted ABI packet](../pa31/tests/spec/unadjusted-request/README.md) and
 [checkpoint](../docs/pa28-unadjusted-abi-checkpoint.md) retain a distinct source
 calling convention, actual feature/macro authority and scalar native calls.

@@ -29,6 +29,9 @@ pub fn select(
     let spelling = names
         .and_then(|names| names.get(id))
         .ok_or("missing exact symbol spelling in its owning pool")?;
+    if spelling.starts_with("llvm.") {
+        return Err("LLVM intrinsic identity cannot use ordinary native linkage");
+    }
     if !spelling
         .bytes()
         .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'.' | b'$'))

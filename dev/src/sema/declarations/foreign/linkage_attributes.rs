@@ -27,9 +27,11 @@ pub(in crate::sema::declarations) struct Attributes {
 }
 pub(in crate::sema::declarations) fn collect(
     report: &Report,
-    registry: &mut Option<Box<Registry>>,
+    facts: &mut crate::sema::model::Declarations,
 ) -> Result<HashMap<NodeKey, Attributes>, Error> {
     let mut sources = HashMap::default();
+    let mut permissions = super::llvm_permissions::Draft::default();
+    let mut allowances = report.macro_allowances();
     for (file, unit) in report.package.units.iter().enumerate() {
         if unit.include_context.is_some() {
             continue;
@@ -79,8 +81,23 @@ pub(in crate::sema::declarations) fn collect(
                     }
                     selected.no_mangle = true;
                 } else {
-                    let id =
-                        exact(unit.source.text(), forest, attribute, registry).map_err(error)?;
+                    let id = exact(unit.source.text(), forest, attribute, &mut facts.foreign)
+                        .map_err(error)?;
+                    if name == "link_name"
+                        && selected.link.is_none()
+                        && facts
+                            .foreign
+                            .as_deref()
+                            .and_then(|registry| registry.names().llvm(id))
+                            .is_some()
+                    {
+                        permissions.require(
+                            report,
+                            facts,
+                            NodeKey { file, node },
+                            &mut allowances,
+                        )?;
+                    }
                     let slot = if name == "link_name" {
                         &mut selected.link
                     } else {

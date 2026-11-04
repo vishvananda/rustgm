@@ -66,7 +66,7 @@ fn advisory_requests_preserve_independent_source_outcomes_and_strict_boundaries(
 }
 #[test]
 fn advisory_requests_leave_language_feature_word_and_binding_mode_unchanged() -> Result {
-    assert_eq!(size_of::<super::Features>(), 8);
+    assert_eq!(size_of::<super::Features>(), 16);
     let source = "#![feature(intra_doc_pointers,strict_provenance_lints)]pub fn answer()->u8{7}";
     let report = report(source, &Config::default(), false)?;
     assert!(!report.package.uses_source_bindings());

@@ -1594,6 +1594,23 @@ dependencies, rejects nested envelopes and enforces combined budgets. Static
 archive bundling, modifiers and other kinds retain explicit required boundaries;
 do not translate LLVM intrinsic names into ordinary C linkage.
 
+LLVM exact names have a cold typed catalog in the existing symbol-name owner.
+Classify a reserved name during interning and reuse its operation/width fact;
+ordinary foreign records gain no per-function field. Check the first actual
+foreign link name against the item's crate feature or authenticated item-span
+macro allowance. Query permission once per pass, share the allowance session,
+and construct any foreign-owner index once rather than rescanning declarations
+or growing macro headers for each use. The crate-level permission set has two
+fixed u64 words: the real LLVM gate crosses bit63; the compact macro grammar
+mask stays one byte and no function/body row gains feature storage.
+At demand, validate normalized input/result integer widths and the existing ABI,
+then emit one typed shim per selected callable. The scalar unary kernels use
+parallel bit-group transforms with logarithmic work in the fixed width, preserving
+logical shifts and ordinary signed/unsigned result views. Reached unsupported
+operations and LLVM storage cannot fall through to the native C symbol path.
+The [LLVM packet](pa28/tests/spec/llvm-linkage/README.md) retains the required
+vector, target, floating, immediate/poison, address and imported consumers.
+
 The manifest's `public-dependency` Cargo feature controls
 retained target graph edges; it grants no host Rust or compiler-query capability.
 Unsupported host edge modifiers, tools, workspace inheritance and other unstable

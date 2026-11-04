@@ -338,6 +338,12 @@ impl super::package::Package {
             "unadjusted-ABI client identity changed",
         )
     }
+    pub(crate) fn requested_llvm_linkage(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::LinkLlvmIntrinsics,
+            "LLVM linkage client identity changed",
+        )
+    }
     pub(crate) fn requested_link_cfg(&self) -> Result<bool, &'static str> {
         self.requested_expression_feature(
             policy::Feature::LinkCfg,

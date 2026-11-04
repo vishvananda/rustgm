@@ -19,6 +19,8 @@ mod library_nominals;
 mod library_roots;
 #[path = "../../linkage_symbols.rs"]
 mod linkage_symbols;
+#[path = "../../llvm_calls.rs"]
+mod llvm_calls;
 #[path = "../../metadata_codec.rs"]
 mod metadata_codec;
 #[path = "../../harness/native_references.rs"]

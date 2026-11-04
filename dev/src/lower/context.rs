@@ -730,6 +730,13 @@ impl<'a> Context<'a> {
             if let Some(&symbol) = self.imported_symbols.get(&definition) {
                 return Ok(symbol);
             }
+            if let crate::support::linkage::Naming::Exact(name) = function.naming
+                && let Some(intrinsic) = self
+                    .foreign
+                    .and_then(|registry| registry.names().llvm(name))
+            {
+                return self.demand_llvm(instance, function, intrinsic);
+            }
             let signature = self.signature(function.signature)?;
             let name = super::linkage::select(
                 self.foreign.map(crate::sema::foreign::Registry::names),

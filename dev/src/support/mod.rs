@@ -14,6 +14,7 @@ pub mod language_hooks;
 pub mod library_types;
 pub mod linkage;
 pub mod linker_libraries;
+pub mod llvm_symbols;
 pub mod marker_traits;
 pub mod names;
 pub(crate) mod quoted;

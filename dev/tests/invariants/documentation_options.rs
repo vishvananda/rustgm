@@ -29,7 +29,7 @@ fn report(source: &str, config: &Config) -> Result<Report> {
 }
 #[test]
 fn documentation_gates_match_independent_source_and_macro_outcomes() -> Result {
-    assert_eq!(size_of::<super::Features>(), 8);
+    assert_eq!(size_of::<super::Features>(), 16);
     let cases = crate::test_source::fixture("pa40/tests/spec/documentation-gates/cases-v2.tsv")?;
     let mut count = 0;
     for row in cases.lines() {

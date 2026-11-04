@@ -15,7 +15,21 @@ PA21–PA24 have implemented/release-evidence status; PA1–PA20 retain
 implemented-draft. PA25–PA44 remain planned. No additional assignment or whole
 upstream library has been completed.
 
-Current original-core frontier is LIB-137: link_llvm_intrinsics at original lib.rs139.
+Current original-core frontier is LIB-138: unsized_fn_params at original lib.rs165.
+The [LLVM linkage checkpoint](pa28-llvm-linkage-checkpoint.md) qualifies genuine
+foreign-item crate/macro authority and typed scalar ctpop/bitreverse/bswap kernels,
+with no ordinary C fallback. Private8/production9/native2, PA8 126/126, PA10 81/81,
+86 independent/candidate outcomes,168 native comparisons and all fifteen equal
+configuration constants pass. CLI454eb435 reaches LIB-138 in16.62s/375opens,
+with all722 original hashes, all six configuration source pins, options, capAllow
+and finite limits unchanged. Actual unsized source/ownership and ABI/transport
+are next under PA26/30/29/31. Other LLVM operations/address/import profiles remain
+required. Ordinary dev-fast measurements show possible modest overhead amid
+noise (paired B/A1.112/1.056); no speedup is claimed. No whole PA or original
+library artifact is established. Root stays alone in the warm btrfs tree with
+unchanged resource guards and scoped cleanup.
+
+Previous original-core frontier was LIB-137: link_llvm_intrinsics at original lib.rs139.
 The [conditional-native-link checkpoint](pa29-conditional-native-links-checkpoint.md)
 qualifies actual source cfg/feature/provenance checks, selected static native
 execution7 9, dynamic metadata codec and explicit external manifest transport.
@@ -465,7 +479,8 @@ actual native hints and the future authenticated MIR-import obligation.
 | LIB-134 | Capped local documentation gates qualified; strict output/transport required | Actual doc_cfg/doc_notable_trait, attribute macro authority and independent cfg-query permissions | PA40 documentation +PA5 shared cfg syntax +PA31 actual source +PA29 transport / original lib.rs124–125 | Root only | [Checkpoint](pa40-documentation-gates-checkpoint.md): private21/production19,PA2/5/8,146 independent documentation outcomes,118 diagnostic outcomes and actual native7 9. Flat shared parsing preserves all cfg operands and forwarding. Nine predecessor offset_of CI regressions are repaired. Config source identity explicitly requalified with fifteen equal values. CLIe6f104b1 reaches LIB-135 with original722 inputs/options/limits unchanged. |
 | LIB-135 | Compilation requests qualified; Rustdoc/strict producers required | Genuine intra_doc_pointers and strict_provenance_lints requests with no operation capability | PA40 documentation/lints +PA31 source identity +PA27 actual pointer semantics / original lib.rs135,159 | Root only | [Checkpoint](pa40-advisory-requests-checkpoint.md): private4/production10,PA8 126/126,72 independent/candidate outcomes and native pointer round-trip7 9 pass. No feature-word or binding-mode growth. Strict producer boundaries retain required positive warn/expect cases. CLI871c6abd reaches LIB-136 with original inputs/configuration/limits unchanged. |
 | LIB-136 | Local conditional linking/native and dynamic codec qualified; full transport required | Actual link_cfg permission, cfg selection and distinct dependency plan | PA29 native dependency metadata/linking +PA5 cfg grammar +PA31 source authority / original lib.rs138 | Root only | [Checkpoint](pa29-conditional-native-links-checkpoint.md): private6/native1, production9, PA8 126/126,94 source outcomes, actual native7 9 and unchanged LowIR. Static bundling, modifiers and fresh dynamic consumers remain required. CLI02117cec reaches LIB-137 with original inputs/configuration/limits unchanged. |
-| LIB-137 | Current original-core request blocker | Genuine LLVM intrinsic declaration permission, signatures and operation lowering | PA28 intrinsic consumers +PA30 linkage/ABI +PA31 source authority / original lib.rs139 | Root only | Bounded debugger identifies link_llvm_intrinsics after original input verification. Keep LLVM names separate from ordinary C linkage; implement actual typed/native operations and negative permission/signature controls. |
+| LIB-137 | Local LLVM authority/scalar kernels qualified; broad operations/import required | Genuine LLVM intrinsic declaration permission, signatures and operation lowering | PA28 intrinsic consumers +PA30 linkage/ABI +PA31 source authority / original lib.rs139 | Root only | [Checkpoint](pa28-llvm-linkage-checkpoint.md): private8/production9/native2, PA8/10,86 source outcomes,168 native comparisons. Reserved LLVM names never fall back to C. General target/vector/float/immediate/poison/address/transport remains required. CLI454eb435 reaches LIB-138 with all original inputs/configuration/limits unchanged. |
+| LIB-138 | Current original-core request blocker | Actual unsized_fn_params permission, by-value DST ownership and ABI | PA26 unsized storage/ownership +PA30 ABI +PA29 transport +PA31 source authority / original lib.rs165 | Root only | Bounded debugger identifies unsized_fn_params after all722 original hashes are verified. Inventory actual declarations and reached bodies; retain Sized rules and implement owned unsized parameters without replacing them with ordinary references. |
 | Remaining raw language-item semantic inventory | Declarations checked;98 builtin semantic profiles explicitly unsupported | Actual operators, associated hooks, async/drop/pinning, field reflection, ranges and weak memory hooks | Earliest actual PA23–PA31/40/41 consumer units +PA29 transport / compiler-language-claims packet | Root only | The pinned100-name raw inventory is not a cfg-active blocker count. Shared target/arity/foreign validation and135 independent cases are qualified, but unsupported semantic consumers stop explicitly before ordinary checking can infer absence. Implement each actual builtin relation/runtime contract and add genuine source/native/imported consumers before removing its fence. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
