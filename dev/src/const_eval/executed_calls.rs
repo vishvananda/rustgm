@@ -40,10 +40,12 @@ impl Machine<'_, '_> {
         else {
             return Ok(Selected::Unrelated);
         };
-        if catalog.intrinsic_kind(crate::resolve::model::DefId(item.0))?
-            != Some(crate::support::bindings::SourceIntrinsic::ConstEvalSelect)
-        {
-            return Ok(Selected::Unrelated);
+        match catalog.intrinsic_kind(crate::resolve::model::DefId(item.0))? {
+            Some(crate::support::bindings::SourceIntrinsic::Declaration(_)) => {
+                return Err("source intrinsic constant execution is not implemented".into());
+            }
+            Some(crate::support::bindings::SourceIntrinsic::ConstEvalSelect) => {}
+            _ => return Ok(Selected::Unrelated),
         }
         // Validation has a fixed number of graph/header/list lookups. Charge
         // the attempt before inspecting a possibly invalid current use.

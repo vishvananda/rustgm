@@ -92,6 +92,9 @@ impl Ordinary {
                     && kind != crate::support::bindings::SourceIntrinsic::ColdPath
                 {
                     return Err(match kind {
+                        crate::support::bindings::SourceIntrinsic::Declaration(_) => {
+                            "source intrinsic executable lowering is not implemented"
+                        }
                         crate::support::bindings::SourceIntrinsic::Layout(_) => {
                             "source layout intrinsic runtime lowering is not implemented"
                         }

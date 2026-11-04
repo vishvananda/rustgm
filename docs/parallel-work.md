@@ -1,12 +1,17 @@
 # Parallel library bootstrap implementation
 
-Latest full qualification41853939500 on8b3324434 passes lint/architecture/harness,
+Full CI41861996747 on4c63e88a4 is terminal success with every gate passing,
+including independent Rust qualification and the PA25 const-machine contract.
+The intrinsic-declaration successor has focused evidence; its full qualification
+will be dispatched after publication. Do not supersede a live manual full run.
+
+Earlier full qualification41853939500 on8b3324434 passes lint/architecture/harness,
 host builds, release/course suites, native qualification and debug invariants.
 Its only failed stage is the independent upstream runner: newly imported feature
 fixtures need the pinned oracle's explicit RUSTC_BOOTSTRAP=1, as the other Rust
 oracles already use. The runner now scopes that setting to its rustc child;
 all15 whole-program outcomes pass even with parent RUSTC_BOOTSTRAP=0. The later
-PA25 const-machine stage was skipped and remains pending successor full CI.
+PA25 const-machine stage was skipped in that run; the successor above passes it.
 
 Full qualification cadence: run41787601690 on6f1e3eb3d is terminal success
 with every gate passing. LLVM successor run41795595365 on3d4b3ae9d failed eight stale cold-layout
@@ -39,7 +44,25 @@ concurrency cancels the earlier manual run. Source checkpoints may continue with
 focused evidence and push-triggered fast CI; dispatch successor full qualification
 only after its predecessor is terminal. No whole PA release is inferred.
 
-Current original-core frontier is LIB-144: unsupported intrinsic declarations.
+Current original-core frontier is LIB-145: ordinary trait-header policy.
+The [intrinsic declaration checkpoint](pa28-intrinsic-declarations-checkpoint.md)
+recognizes all315 pinned names with296 unique new identities sharing100 typed
+profiles. All668 independent outcomes match rustc; RustGM matches660, preserving
+six named-role header prerequisites and two valid reached-operation gaps.
+Private7/production659 header cases, legacy-layout/wire controls and actual
+native7/9 pass; focused gates take132.49s and55.41s. Typed recipes prepay bounded
+work, allocate no matching graph and add no ordinary direct CTFE lookup.
+All722 original inputs, six configuration pins, fifteen values, options and finite
+limits remain unchanged. CLI35259595 reaches file74 byte892 in31.00s/375opens.
+The first-open map points to cmp/bytewise.rs20's ordinary BytewiseEq trait with
+rustc_specialization_trait. Confirm retained owner; inventory ordinary trait
+annotations and implement their real feature, owner, solver and transport rules
+under PA20/31/29. Do not assign a fabricated language role. Required intrinsic
+kernels, VaList/Box/Pointee profiles, target operations, authenticated transport,
+whole assignments and original library artifacts remain open. Root remains alone
+in the warm btrfs tree, with unchanged guards and current/predecessor pins.
+
+Previous original-core frontier was LIB-144: unsupported intrinsic declarations.
 The [field-policy checkpoint](pa31-field-policy-checkpoint.md) clears LIB-143
 with actual configured field/parent identity, direct/inherited regular policy,
 stable variant inheritance and typed field consumers. It also repairs all five

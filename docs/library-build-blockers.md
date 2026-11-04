@@ -15,15 +15,38 @@ PA21–PA24 have implemented/release-evidence status; PA1–PA20 retain
 implemented-draft. PA25–PA44 remain planned. No additional assignment or whole
 upstream library has been completed.
 
-Latest full qualification41853939500 on8b3324434 passes lint/architecture/harness,
+Full CI41861996747 on4c63e88a4 is terminal success with every gate passing,
+including independent Rust qualification and the PA25 const-machine contract.
+The intrinsic-declaration successor has focused evidence; its full qualification
+will be dispatched after publication. Do not supersede a live manual full run.
+
+Earlier full qualification41853939500 on8b3324434 passes lint/architecture/harness,
 host builds, release/course suites, native qualification and debug invariants.
 Its only failed stage is the independent upstream runner: newly imported feature
 fixtures need the pinned oracle's explicit RUSTC_BOOTSTRAP=1, as the other Rust
 oracles already use. The runner now scopes that setting to its rustc child;
 all15 whole-program outcomes pass even with parent RUSTC_BOOTSTRAP=0. The later
-PA25 const-machine stage was skipped and remains pending successor full CI.
+PA25 const-machine stage was skipped in that run; the successor above passes it.
 
-Current original-core frontier is LIB-144: unsupported intrinsic declarations.
+Current original-core frontier is LIB-145: ordinary trait-header policy.
+The [intrinsic declaration checkpoint](pa28-intrinsic-declarations-checkpoint.md)
+recognizes all315 pinned names with296 unique new identities sharing100 typed
+profiles. All668 independent outcomes match rustc; RustGM matches660, preserving
+six named-role header prerequisites and two valid reached-operation gaps.
+Private7/production659 header cases, legacy-layout/wire controls and actual
+native7/9 pass; focused gates take132.49s and55.41s. Typed recipes prepay bounded
+work, allocate no matching graph and add no ordinary direct CTFE lookup.
+All722 original inputs, six configuration pins, fifteen values, options and finite
+limits remain unchanged. CLI35259595 reaches file74 byte892 in31.00s/375opens.
+The first-open map points to cmp/bytewise.rs20's ordinary BytewiseEq trait with
+rustc_specialization_trait. Confirm retained owner; inventory ordinary trait
+annotations and implement their real feature, owner, solver and transport rules
+under PA20/31/29. Do not assign a fabricated language role. Required intrinsic
+kernels, VaList/Box/Pointee profiles, target operations, authenticated transport,
+whole assignments and original library artifacts remain open. Root remains alone
+in the warm btrfs tree, with unchanged guards and current/predecessor pins.
+
+Previous original-core frontier was LIB-144: unsupported intrinsic declarations.
 The [field-policy checkpoint](pa31-field-policy-checkpoint.md) clears LIB-143
 with actual configured field/parent identity, direct/inherited regular policy,
 stable variant inheritance and typed field consumers. It also repairs all five
@@ -572,7 +595,8 @@ actual native hints and the future authenticated MIR-import obligation.
 | LIB-141 | Cumulative inventory payer and owner-array accounting qualified | Stability ownership inventory work, attempted/retained storage and budget ownership | PA31 library availability/const policy +PA29 publication/import producers | Root only | [Checkpoint](pa31-inventory-budget-checkpoint.md): private59/production5, PA19 1193/1193 and PA23 415/415, three Rust-positive source controls, ordinary LowIR and fifteen equal configuration constants. Limits stay finite/unchanged; source/inventory coverage is cumulative with sticky failures and persistent retained rows. CLI041e3026 reaches LIB-142 in18.34s with all722 input hashes unchanged. No whole assignment or library artifact is completed. |
 | LIB-142 | Local source/policy/conditional-call/native checkpoint qualified; imported closure retained | Const inherent-impl owner policy and actual member const eligibility | PA25 const items/calls +PA19 method headers +PA31 library policy +PA29 transport | Root only | [Checkpoint](pa25-inherent-block-checkpoint.md): private104/production5/native1,51 independent source outcomes and real mixed CTFE/runtime7/9. Public exposure uses one typed nominal index; ordinary const facts use one cold owner without fabricated source authority. Original defining checks and actual CTFE requirements remain. CLIfcaa05c0 reaches LIB-143 in17.87s with all722 inputs, six pins, fifteen configuration values and finite limits unchanged. General imported policy/calls and original artifacts remain required. |
 | LIB-143 | Local field/variant policy and actual typed/native consumers qualified; imports required | Named/tuple/union/variant-field availability and actual parent identity | PA31 availability +PA12 fields +PA29 policy transport | Root only | [Checkpoint](pa31-field-policy-checkpoint.md): private130/production7/native2,24 independent field and51 const-inherent outcomes. One prepaid cold source/parent/policy map authenticates actual typed fields; stable variants inherit parent policy. All known prior CI regressions pass focused checks; full successor qualification remains separate. CLIfbfd6d1c reaches LIB-144 with all722 inputs, six pins, fifteen values and finite limits unchanged. Imported policy and original artifacts remain required. |
-| LIB-144 | Current original-core frontend frontier | Unsupported intrinsic declaration inventory, starting with scalable SVE tuple create/get/set | PA28 intrinsic declarations/consumers +PA41 target/scalable operations +PA31 source authority +PA29 transport / file53:477, first-open map intrinsics/simd/scalable.rs14 | Root only | Confirm retained owner; inventory all cfg-active unsupported rustc_intrinsic declarations against the pinned compiler, not only sve_tuple_create2. Validate actual name/signature/generics/safety/attributes, distinguish declaration recognition from reached operations and target permission, and implement required CTFE/runtime consumers. The five SVE declarations are generic and present in core's x86 source graph; an unknown-name noop or blanket execution grant is insufficient. Preserve finite source budgets, real backend capability boundaries, metadata fences and original artifacts. |
+| LIB-144 | Complete name vocabulary and finite typed headers qualified; required operations/prerequisites retained | Intrinsic declarations, exact signatures, reached semantics and transport | PA28 +PA31 source authority +PA41 target operations +PA29 transport +PA26/30/33 language-role producers | Root only | [Checkpoint](pa28-intrinsic-declarations-checkpoint.md):315 names,296 new identities/100 profiles,668 independent outcomes;660 candidate matches. Six valid named-role headers and two valid CTFE/runtime calls remain explicit positive gaps. Private7/production659/native7 9, all722 inputs, six pins, fifteen values and finite limits preserved. CLI35259595 advances to LIB-145. Whole assignments and original artifacts remain required. |
+| LIB-145 | Current original-core frontend frontier | Ordinary trait-header policy, beginning with rustc_specialization_trait on BytewiseEq | PA20 specialization/trait rules +PA31 actual source attributes/owners +PA29 policy transport / file74:892, first-open map cmp/bytewise.rs20 | Root only | Confirm retained owner, inventory ordinary trait annotations and validate their real feature/target/duplicate/solver policy. Consume actual typed trait identities rather than requiring or fabricating a language role. Preserve source min-specialization rules, const bounds, finite budgets, exact rejections and old metadata fences; qualify original-source replay and ordinary native controls. |
 | Remaining raw language-item semantic inventory | Declarations checked;98 builtin semantic profiles explicitly unsupported | Actual operators, associated hooks, async/drop/pinning, field reflection, ranges and weak memory hooks | Earliest actual PA23–PA31/40/41 consumer units +PA29 transport / compiler-language-claims packet | Root only | The pinned100-name raw inventory is not a cfg-active blocker count. Shared target/arity/foreign validation and135 independent cases are qualified, but unsupported semantic consumers stop explicitly before ordinary checking can infer absence. Implement each actual builtin relation/runtime contract and add genuine source/native/imported consumers before removing its fence. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |

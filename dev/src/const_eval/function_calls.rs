@@ -38,9 +38,19 @@ impl Machine<'_, '_> {
         }
         crate::sema::compiler_items::check_const_drop_glue(self.evaluator.facts(), target)?;
         if !default && let Some(catalog) = self.evaluator.facts().source_bindings.as_deref() {
-            if matches!(form, Form::Selected { .. })
-                && catalog.intrinsic_kind(definition)?.is_some()
-            {
+            // Direct calls already passed the reached intrinsic dispatch lookup.
+            let intrinsic = if matches!(form, Form::Direct) {
+                None
+            } else {
+                catalog.intrinsic_kind(definition)?
+            };
+            if matches!(
+                intrinsic,
+                Some(crate::support::bindings::SourceIntrinsic::Declaration(_))
+            ) {
+                return Err("source intrinsic constant execution is not implemented".into());
+            }
+            if matches!(form, Form::Selected { .. }) && intrinsic.is_some() {
                 return Err(
                     "source intrinsic selected callback execution is not implemented".into(),
                 );
@@ -63,7 +73,7 @@ impl Machine<'_, '_> {
                 return Err("source const payment changed its declaration effect".into());
             }
             catalog.check_const_call(definition)?;
-            if matches!(form, Form::Invoke) && catalog.intrinsic_kind(definition)?.is_some() {
+            if matches!(form, Form::Invoke) && intrinsic.is_some() {
                 return Err("source intrinsic Invoke execution is not implemented".into());
             }
         }

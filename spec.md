@@ -217,6 +217,19 @@ includes declaration and owning crate; familiar names are not implementation
 evidence. Transport checked generic/const bodies and their retained contracts
 through deterministic crate metadata with indexed external-to-local remapping.
 
+Intrinsic declaration recognition consumes the pinned compiler's complete name
+inventory. Retain a distinct typed identity for each name while sharing immutable
+signature recipes. Check owned generic counts, canonical parameter identities,
+Rust ABI, safety, structure, real nominal language identities and bound-region
+relationships once, before publishing the reserved signature. Prepay bounded
+recipe work through the existing source ledger; never traverse an arbitrary
+actual type graph or grow ordinary nodes to carry this cold declaration data.
+Recognition grants no executable operation or target capability. Reached calls
+without a kernel must fail before an authored body could stand in for intrinsic
+semantics; old metadata profiles must reject unencoded contracts. Preserve the
+ordinary intrinsic reification prohibition. The [declaration checkpoint](docs/pa28-intrinsic-declarations-checkpoint.md)
+retains independent outcomes, required positive gaps and scaling evidence.
+
 Implement obligations required by the pinned language and actual consumer.
 Keep declaration checking, value validity, optional optimization and advisory
 lint claims distinct. A documented niche guarantee does not invent a field

@@ -46,6 +46,8 @@ pub(in crate::sema) use transmute_sizes::require_equal as require_transmute_size
 mod compose_pointer;
 mod displacement;
 mod intrinsic_contracts;
+mod prototype_matcher;
+mod prototype_validation;
 pub(crate) use displacement::OffsetSelection;
 mod compare_intrinsic;
 mod inhabited_names;

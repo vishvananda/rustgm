@@ -110,6 +110,9 @@ fn signature(
     kind: SourceIntrinsic,
 ) -> Result<(), &'static str> {
     match kind {
+        SourceIntrinsic::Declaration(identity) => {
+            super::prototype_validation::validate(facts, function, identity)
+        }
         SourceIntrinsic::UncheckedSub | SourceIntrinsic::SubWithOverflow => {
             super::subtraction_contract::validate(facts, function, kind)
         }
@@ -269,6 +272,7 @@ impl Catalog {
         if matches!(
             entry.kind,
             SourceIntrinsic::ArithOffset
+                | SourceIntrinsic::Declaration(_)
                 | SourceIntrinsic::UncheckedSub
                 | SourceIntrinsic::SubWithOverflow
                 | SourceIntrinsic::ColdPath

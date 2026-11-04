@@ -1,0 +1,17 @@
+pa28/tests/spec/intrinsic-declarations/positive/contract_check_ensures.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/field_representing_type_actual_type_id.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/size_of_type_id.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/type_id.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/type_id_eq.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/type_id_field_representing_type.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/type_id_fields.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/type_id_variants.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/type_of.rs	0
+pa28/tests/spec/intrinsic-declarations/negative/nominal-field_representing_type_actual_type_id.rs	1
+pa28/tests/spec/intrinsic-declarations/negative/nominal-size_of_type_id.rs	1
+pa28/tests/spec/intrinsic-declarations/negative/nominal-type_id.rs	1
+pa28/tests/spec/intrinsic-declarations/negative/nominal-type_id_eq.rs	1
+pa28/tests/spec/intrinsic-declarations/negative/nominal-type_id_field_representing_type.rs	1
+pa28/tests/spec/intrinsic-declarations/negative/nominal-type_id_fields.rs	1
+pa28/tests/spec/intrinsic-declarations/negative/nominal-type_id_variants.rs	1
+pa28/tests/spec/intrinsic-declarations/negative/nominal-type_of.rs	1

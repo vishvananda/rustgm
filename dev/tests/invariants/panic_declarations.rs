@@ -217,7 +217,7 @@ fn appended_claims_preserve_ordinary_storage_ordinals_and_closed_wire_profiles()
         24
     );
     assert_eq!(size_of::<LangItem>(), 1);
-    assert_eq!(size_of::<SourceIntrinsic>(), 1);
+    assert_eq!(size_of::<SourceIntrinsic>(), 4);
     assert_eq!(size_of::<Intrinsic>(), 1);
     let ordinary = crate::sema::bodies::analyze(&report, facts)?;
     assert!(ordinary.source_bindings.is_none());

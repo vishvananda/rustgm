@@ -8,6 +8,14 @@ Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The
 
 Memory and numeric intrinsics, atomics and volatile operations.
 
+The [pinned declaration packet](tests/spec/intrinsic-declarations/README.md) and
+[checkpoint](../docs/pa28-intrinsic-declarations-checkpoint.md) cover the complete
+315-name compiler vocabulary, unique identities and shared typed signature
+profiles. Declaration validity remains separate from actual CTFE/native kernels,
+target permission, source language-role prerequisites and authenticated metadata.
+Complete all retained positive gaps and operation families; recognition alone
+does not implement this assignment or build an upstream library.
+
 The [LLVM linkage packet](tests/spec/llvm-linkage/README.md) separates actual
 foreign-item feature/macro authority, exact LLVM identity and typed operation
 lowering. The initial unary families cover population count, bit reversal and

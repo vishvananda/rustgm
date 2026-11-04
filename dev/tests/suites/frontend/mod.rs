@@ -73,6 +73,8 @@ pub(crate) mod observed_program;
 mod option_environment;
 #[path = "../../pattern_editions.rs"]
 mod pattern_editions;
+#[path = "../../prototype_contracts.rs"]
+mod prototype_contracts;
 #[path = "../../provider_traits.rs"]
 mod provider_traits;
 #[path = "../../helpers/qualify.rs"]

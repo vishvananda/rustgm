@@ -15,8 +15,10 @@ pub enum Mode {
 
 mod lang_contracts;
 mod lang_items;
+pub(crate) mod prototype_specs;
 pub(crate) use lang_contracts::{DeclarationProfile, DeclarationTarget, GenericRequirement};
 pub use lang_items::LangItem;
+pub use prototype_specs::Declaration as IntrinsicDeclaration;
 
 /// Actual compiler intrinsics, separate from bootstrap ordinary library APIs.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
@@ -58,6 +60,7 @@ pub enum SourceIntrinsic {
     SubWithOverflow,
     ColdPath,
     TransmuteUnchecked,
+    Declaration(IntrinsicDeclaration),
 }
 impl SourceIntrinsic {
     /// Declaration attribute decoding only; consumers retain the actual `DefId`.
@@ -96,7 +99,9 @@ impl SourceIntrinsic {
         } else if name == "ub_checks" {
             Some(Self::UbChecks)
         } else {
-            LayoutIntrinsic::from_name(name).map(Self::Layout)
+            LayoutIntrinsic::from_name(name)
+                .map(Self::Layout)
+                .or_else(|| IntrinsicDeclaration::from_name(name).map(Self::Declaration))
         }
     }
 }

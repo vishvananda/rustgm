@@ -1,0 +1,15 @@
+pa28/tests/spec/intrinsic-declarations/positive/contract_check_ensures.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/field_representing_type_actual_type_id.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/size_of_type_id.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/type_id.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/type_id_eq.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/type_id_field_representing_type.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/type_id_fields.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/type_id_variants.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/type_id_vtable.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/type_of.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/va_arg.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/va_copy.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/va_end.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/va_start.rs	0
+pa28/tests/spec/intrinsic-declarations/positive/write_box_via_move.rs	0

@@ -148,16 +148,34 @@ fn source_pair_lowers_real_field_access_without_granting_reflection_intrinsics()
         source.push_str(
             "\n#[rustc_intrinsic] const fn type_of(_:Identity)->Reflected{Reflected{kind:7}}\n",
         );
+        source.push_str(
+            "\n#[unsafe(no_mangle)]pub fn reflected_identity(value:Identity)->u8{type_of(value).kind}\n",
+        );
         let attempted = test_source::source_provider(&source, "type_reflection");
         let error = match attempted {
             Ok(report) => pipeline::analyze_source(&report)
+                .and_then(|analysis| {
+                    let pipeline::Analysis {
+                        mut facts,
+                        prepared,
+                    } = analysis;
+                    crate::lower::instances::build_roots_prepared(
+                        &report,
+                        &mut facts,
+                        crate::lower::Roots {
+                            entry: None,
+                            exports: &[],
+                        },
+                        prepared,
+                    )
+                })
                 .err()
-                .ok_or("unsupported reflection intrinsic accepted")?
+                .ok_or("unimplemented reflection operation executed its authored body")?
                 .to_string(),
             Err(error) => error,
         };
         let expected = if authorized {
-            "unsupported source intrinsic"
+            "source intrinsic executable lowering is not implemented"
         } else {
             "intrinsic binding requires explicit source features"
         };

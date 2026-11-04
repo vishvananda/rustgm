@@ -92,6 +92,7 @@ impl Stage {
                     matches!(
                         kind,
                         crate::support::bindings::SourceIntrinsic::ArithOffset
+                            | crate::support::bindings::SourceIntrinsic::Declaration(_)
                             | crate::support::bindings::SourceIntrinsic::UncheckedSub
                             | crate::support::bindings::SourceIntrinsic::SubWithOverflow
                             | crate::support::bindings::SourceIntrinsic::ColdPath

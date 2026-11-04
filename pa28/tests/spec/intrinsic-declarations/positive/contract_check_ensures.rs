@@ -1,0 +1,14 @@
+#![feature(no_core,lang_items,intrinsics,rustc_attrs)]
+#![no_core]
+#![allow(internal_features,dead_code,unused_variables)]
+#[lang="pointee_sized"]pub trait PointeeSized{}
+#[lang="meta_sized"]pub trait MetaSized:PointeeSized{}
+#[lang="sized"]pub trait Sized:MetaSized{}
+#[lang="legacy_receiver"]pub trait LegacyReceiver:PointeeSized{}
+impl<T:PointeeSized> LegacyReceiver for &T{}
+#[lang="clone"]pub trait Clone:Sized{#[lang="clone_fn"]fn clone(&self)->Self;}
+#[lang="copy"]pub trait Copy:Clone{}
+#[lang="Option"]pub enum Option<T>{#[lang="None"]None,#[lang="Some"]Some(T)}
+#[rustc_intrinsic]
+pub fn contract_check_ensures<T0,T1>(a0:Option<T0>,a1:T1)->T1;
+fn main(){}

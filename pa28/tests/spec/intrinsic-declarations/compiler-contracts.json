@@ -1,0 +1,7431 @@
+{
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "compiler_source_sha256": "a912d003b71e1cc0655dfec3fc381167ec8c3da955eb28b411713b594beec060",
+  "compiler_source": "compiler/rustc_hir_analysis/src/check/intrinsic.rs",
+  "contracts": [
+    {
+      "name": "abort",
+      "safe": true,
+      "existing": true,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [],
+        "output": [
+          "never"
+        ]
+      },
+      "rustc_line": 296
+    },
+    {
+      "name": "add_with_overflow",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "tuple",
+          [
+            [
+              "parameter",
+              0
+            ],
+            [
+              "scalar",
+              "bool"
+            ]
+          ]
+        ]
+      },
+      "rustc_line": 537
+    },
+    {
+      "name": "aggregate_raw_ptr",
+      "safe": true,
+      "existing": true,
+      "signature": {
+        "types": 3,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            1
+          ],
+          [
+            "parameter",
+            2
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 695
+    },
+    {
+      "name": "align_of",
+      "safe": true,
+      "existing": true,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [],
+        "output": [
+          "scalar",
+          "usize"
+        ]
+      },
+      "rustc_line": 300
+    },
+    {
+      "name": "align_of_val",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ]
+        ],
+        "output": [
+          "scalar",
+          "usize"
+        ]
+      },
+      "rustc_line": 301
+    },
+    {
+      "name": "amdgpu_dispatch_ptr",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [],
+        "output": [
+          "pointer",
+          false,
+          [
+            "unit"
+          ]
+        ]
+      },
+      "rustc_line": 297
+    },
+    {
+      "name": "arith_offset",
+      "safe": false,
+      "existing": true,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "scalar",
+            "isize"
+          ]
+        ],
+        "output": [
+          "pointer",
+          false,
+          [
+            "parameter",
+            0
+          ]
+        ]
+      },
+      "rustc_line": 365
+    },
+    {
+      "name": "assert_inhabited",
+      "safe": true,
+      "existing": true,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 310
+    },
+    {
+      "name": "assert_mem_uninitialized_valid",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 310
+    },
+    {
+      "name": "assert_zero_valid",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 310
+    },
+    {
+      "name": "assume",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "bool"
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 601
+    },
+    {
+      "name": "atomic_and",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 1,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 803
+    },
+    {
+      "name": "atomic_cxchg",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 2,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "tuple",
+          [
+            [
+              "parameter",
+              0
+            ],
+            [
+              "scalar",
+              "bool"
+            ]
+          ]
+        ]
+      },
+      "rustc_line": 789
+    },
+    {
+      "name": "atomic_cxchgweak",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 2,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "tuple",
+          [
+            [
+              "parameter",
+              0
+            ],
+            [
+              "scalar",
+              "bool"
+            ]
+          ]
+        ]
+      },
+      "rustc_line": 789
+    },
+    {
+      "name": "atomic_fence",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 1,
+        "inputs": [],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 809
+    },
+    {
+      "name": "atomic_load",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 1,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 795
+    },
+    {
+      "name": "atomic_max",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 1,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 798
+    },
+    {
+      "name": "atomic_min",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 1,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 798
+    },
+    {
+      "name": "atomic_nand",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 1,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 803
+    },
+    {
+      "name": "atomic_or",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 1,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 803
+    },
+    {
+      "name": "atomic_singlethreadfence",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 1,
+        "inputs": [],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 809
+    },
+    {
+      "name": "atomic_store",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 1,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 796
+    },
+    {
+      "name": "atomic_umax",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 1,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 798
+    },
+    {
+      "name": "atomic_umin",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 1,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 798
+    },
+    {
+      "name": "atomic_xadd",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 1,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 803
+    },
+    {
+      "name": "atomic_xchg",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 1,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 798
+    },
+    {
+      "name": "atomic_xor",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 1,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 803
+    },
+    {
+      "name": "atomic_xsub",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 1,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 803
+    },
+    {
+      "name": "autodiff",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 4,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            1
+          ],
+          [
+            "parameter",
+            2
+          ]
+        ],
+        "output": [
+          "parameter",
+          3
+        ]
+      },
+      "rustc_line": 295
+    },
+    {
+      "name": "bitreverse",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 533
+    },
+    {
+      "name": "black_box",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 683
+    },
+    {
+      "name": "breakpoint",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 299
+    },
+    {
+      "name": "bswap",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 533
+    },
+    {
+      "name": "caller_location",
+      "safe": true,
+      "existing": true,
+      "signature": null,
+      "rustc_line": 308
+    },
+    {
+      "name": "carrying_mul_add",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "tuple",
+          [
+            [
+              "parameter",
+              1
+            ],
+            [
+              "parameter",
+              0
+            ]
+          ]
+        ]
+      },
+      "rustc_line": 541
+    },
+    {
+      "name": "carryless_mul",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 590
+    },
+    {
+      "name": "catch_unwind",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "function",
+            true,
+            [
+              [
+                "pointer",
+                true,
+                [
+                  "parameter",
+                  0
+                ]
+              ]
+            ],
+            [
+              "unit"
+            ]
+          ],
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "function",
+            true,
+            [
+              [
+                "pointer",
+                true,
+                [
+                  "parameter",
+                  0
+                ]
+              ],
+              [
+                "pointer",
+                true,
+                [
+                  "scalar",
+                  "u8"
+                ]
+              ]
+            ],
+            [
+              "unit"
+            ]
+          ]
+        ],
+        "output": [
+          "scalar",
+          "bool"
+        ]
+      },
+      "rustc_line": 641
+    },
+    {
+      "name": "ceilf128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 505
+    },
+    {
+      "name": "ceilf16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 502
+    },
+    {
+      "name": "ceilf32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 503
+    },
+    {
+      "name": "ceilf64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 504
+    },
+    {
+      "name": "cold_path",
+      "safe": true,
+      "existing": true,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 603
+    },
+    {
+      "name": "compare_bytes",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "scalar",
+              "u8"
+            ]
+          ],
+          [
+            "pointer",
+            false,
+            [
+              "scalar",
+              "u8"
+            ]
+          ],
+          [
+            "scalar",
+            "usize"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "i32"
+        ]
+      },
+      "rustc_line": 391
+    },
+    {
+      "name": "const_allocate",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "usize"
+          ],
+          [
+            "scalar",
+            "usize"
+          ]
+        ],
+        "output": [
+          "pointer",
+          true,
+          [
+            "scalar",
+            "u8"
+          ]
+        ]
+      },
+      "rustc_line": 550
+    },
+    {
+      "name": "const_deallocate",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "scalar",
+              "u8"
+            ]
+          ],
+          [
+            "scalar",
+            "usize"
+          ],
+          [
+            "scalar",
+            "usize"
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 553
+    },
+    {
+      "name": "const_eval_select",
+      "safe": true,
+      "existing": true,
+      "signature": {
+        "types": 4,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            1
+          ],
+          [
+            "parameter",
+            2
+          ]
+        ],
+        "output": [
+          "parameter",
+          3
+        ]
+      },
+      "rustc_line": 687
+    },
+    {
+      "name": "const_make_global",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "scalar",
+              "u8"
+            ]
+          ]
+        ],
+        "output": [
+          "pointer",
+          false,
+          [
+            "scalar",
+            "u8"
+          ]
+        ]
+      },
+      "rustc_line": 559
+    },
+    {
+      "name": "contract_check_ensures",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "language",
+            "Option",
+            [
+              [
+                "parameter",
+                0
+              ]
+            ]
+          ],
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 702
+    },
+    {
+      "name": "contract_check_requires",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 701
+    },
+    {
+      "name": "copy",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "scalar",
+            "usize"
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 379
+    },
+    {
+      "name": "copy_nonoverlapping",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "scalar",
+            "usize"
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 379
+    },
+    {
+      "name": "copysignf128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ],
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 495
+    },
+    {
+      "name": "copysignf16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ],
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 492
+    },
+    {
+      "name": "copysignf32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ],
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 493
+    },
+    {
+      "name": "copysignf64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ],
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 494
+    },
+    {
+      "name": "cosf128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 420
+    },
+    {
+      "name": "cosf16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 417
+    },
+    {
+      "name": "cosf32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 418
+    },
+    {
+      "name": "cosf64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 419
+    },
+    {
+      "name": "ctlz",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "scalar",
+          "u32"
+        ]
+      },
+      "rustc_line": 529
+    },
+    {
+      "name": "ctlz_nonzero",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "scalar",
+          "u32"
+        ]
+      },
+      "rustc_line": 529
+    },
+    {
+      "name": "ctpop",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "scalar",
+          "u32"
+        ]
+      },
+      "rustc_line": 529
+    },
+    {
+      "name": "cttz",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "scalar",
+          "u32"
+        ]
+      },
+      "rustc_line": 529
+    },
+    {
+      "name": "cttz_nonzero",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "scalar",
+          "u32"
+        ]
+      },
+      "rustc_line": 529
+    },
+    {
+      "name": "discriminant_value",
+      "safe": true,
+      "existing": true,
+      "signature": null,
+      "rustc_line": 621
+    },
+    {
+      "name": "disjoint_bitor",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 575
+    },
+    {
+      "name": "exact_div",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 575
+    },
+    {
+      "name": "exp2f128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 435
+    },
+    {
+      "name": "exp2f16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 432
+    },
+    {
+      "name": "exp2f32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 433
+    },
+    {
+      "name": "exp2f64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 434
+    },
+    {
+      "name": "expf128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 430
+    },
+    {
+      "name": "expf16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 427
+    },
+    {
+      "name": "expf32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 428
+    },
+    {
+      "name": "expf64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 429
+    },
+    {
+      "name": "fabs",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 466
+    },
+    {
+      "name": "fadd_algebraic",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 594
+    },
+    {
+      "name": "fadd_fast",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 591
+    },
+    {
+      "name": "fdiv_algebraic",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 594
+    },
+    {
+      "name": "fdiv_fast",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 591
+    },
+    {
+      "name": "field_offset",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [],
+        "output": [
+          "scalar",
+          "usize"
+        ]
+      },
+      "rustc_line": 306
+    },
+    {
+      "name": "field_representing_type_actual_type_id",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "language",
+            "TypeId",
+            []
+          ]
+        ],
+        "output": [
+          "language",
+          "TypeId",
+          []
+        ]
+      },
+      "rustc_line": 351
+    },
+    {
+      "name": "float_to_int_unchecked",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 599
+    },
+    {
+      "name": "floorf128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 500
+    },
+    {
+      "name": "floorf16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 497
+    },
+    {
+      "name": "floorf32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 498
+    },
+    {
+      "name": "floorf64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 499
+    },
+    {
+      "name": "fmaf128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ],
+          [
+            "scalar",
+            "f128"
+          ],
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 455
+    },
+    {
+      "name": "fmaf16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ],
+          [
+            "scalar",
+            "f16"
+          ],
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 452
+    },
+    {
+      "name": "fmaf32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ],
+          [
+            "scalar",
+            "f32"
+          ],
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 453
+    },
+    {
+      "name": "fmaf64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ],
+          [
+            "scalar",
+            "f64"
+          ],
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 454
+    },
+    {
+      "name": "fmul_algebraic",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 594
+    },
+    {
+      "name": "fmul_fast",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 591
+    },
+    {
+      "name": "fmuladdf128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ],
+          [
+            "scalar",
+            "f128"
+          ],
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 462
+    },
+    {
+      "name": "fmuladdf16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ],
+          [
+            "scalar",
+            "f16"
+          ],
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 459
+    },
+    {
+      "name": "fmuladdf32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ],
+          [
+            "scalar",
+            "f32"
+          ],
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 460
+    },
+    {
+      "name": "fmuladdf64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ],
+          [
+            "scalar",
+            "f64"
+          ],
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 461
+    },
+    {
+      "name": "forget",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 313
+    },
+    {
+      "name": "frem_algebraic",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 594
+    },
+    {
+      "name": "frem_fast",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 591
+    },
+    {
+      "name": "fsub_algebraic",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 594
+    },
+    {
+      "name": "fsub_fast",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 591
+    },
+    {
+      "name": "gpu_launch_sized_workgroup_mem",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [],
+        "output": [
+          "pointer",
+          true,
+          [
+            "parameter",
+            0
+          ]
+        ]
+      },
+      "rustc_line": 309
+    },
+    {
+      "name": "is_val_statically_known",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "scalar",
+          "bool"
+        ]
+      },
+      "rustc_line": 685
+    },
+    {
+      "name": "log10f128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 445
+    },
+    {
+      "name": "log10f16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 442
+    },
+    {
+      "name": "log10f32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 443
+    },
+    {
+      "name": "log10f64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 444
+    },
+    {
+      "name": "log2f128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 450
+    },
+    {
+      "name": "log2f16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 447
+    },
+    {
+      "name": "log2f32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 448
+    },
+    {
+      "name": "log2f64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 449
+    },
+    {
+      "name": "logf128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 440
+    },
+    {
+      "name": "logf16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 437
+    },
+    {
+      "name": "logf32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 438
+    },
+    {
+      "name": "logf64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 439
+    },
+    {
+      "name": "maximum_number_nsz_f128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ],
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 483
+    },
+    {
+      "name": "maximum_number_nsz_f16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ],
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 480
+    },
+    {
+      "name": "maximum_number_nsz_f32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ],
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 481
+    },
+    {
+      "name": "maximum_number_nsz_f64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ],
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 482
+    },
+    {
+      "name": "maximumf128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ],
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 490
+    },
+    {
+      "name": "maximumf16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ],
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 487
+    },
+    {
+      "name": "maximumf32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ],
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 488
+    },
+    {
+      "name": "maximumf64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ],
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 489
+    },
+    {
+      "name": "minimum_number_nsz_f128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ],
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 471
+    },
+    {
+      "name": "minimum_number_nsz_f16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ],
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 468
+    },
+    {
+      "name": "minimum_number_nsz_f32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ],
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 469
+    },
+    {
+      "name": "minimum_number_nsz_f64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ],
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 470
+    },
+    {
+      "name": "minimumf128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ],
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 478
+    },
+    {
+      "name": "minimumf16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ],
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 475
+    },
+    {
+      "name": "minimumf32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ],
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 476
+    },
+    {
+      "name": "minimumf64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ],
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 477
+    },
+    {
+      "name": "mul_with_overflow",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "tuple",
+          [
+            [
+              "parameter",
+              0
+            ],
+            [
+              "scalar",
+              "bool"
+            ]
+          ]
+        ]
+      },
+      "rustc_line": 537
+    },
+    {
+      "name": "needs_drop",
+      "safe": true,
+      "existing": true,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [],
+        "output": [
+          "scalar",
+          "bool"
+        ]
+      },
+      "rustc_line": 321
+    },
+    {
+      "name": "nontemporal_store",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 668
+    },
+    {
+      "name": "offload",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 3,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "array",
+            [
+              "scalar",
+              "u32"
+            ],
+            3
+          ],
+          [
+            "array",
+            [
+              "scalar",
+              "u32"
+            ],
+            3
+          ],
+          [
+            "scalar",
+            "u32"
+          ],
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          2
+        ]
+      },
+      "rustc_line": 352
+    },
+    {
+      "name": "offset",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 364
+    },
+    {
+      "name": "offset_of",
+      "safe": true,
+      "existing": true,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "u32"
+          ],
+          [
+            "scalar",
+            "u32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "usize"
+        ]
+      },
+      "rustc_line": 305
+    },
+    {
+      "name": "overflow_checks",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [],
+        "output": [
+          "scalar",
+          "bool"
+        ]
+      },
+      "rustc_line": 698
+    },
+    {
+      "name": "powf128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ],
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 425
+    },
+    {
+      "name": "powf16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ],
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 422
+    },
+    {
+      "name": "powf32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ],
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 423
+    },
+    {
+      "name": "powf64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ],
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 424
+    },
+    {
+      "name": "powif128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ],
+          [
+            "scalar",
+            "i32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 410
+    },
+    {
+      "name": "powif16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ],
+          [
+            "scalar",
+            "i32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 407
+    },
+    {
+      "name": "powif32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ],
+          [
+            "scalar",
+            "i32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 408
+    },
+    {
+      "name": "powif64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ],
+          [
+            "scalar",
+            "i32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 409
+    },
+    {
+      "name": "prefetch_read_data",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 1,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 315
+    },
+    {
+      "name": "prefetch_read_instruction",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 1,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 315
+    },
+    {
+      "name": "prefetch_write_data",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 1,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 315
+    },
+    {
+      "name": "prefetch_write_instruction",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 1,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 315
+    },
+    {
+      "name": "ptr_guaranteed_cmp",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ]
+        ],
+        "output": [
+          "scalar",
+          "u8"
+        ]
+      },
+      "rustc_line": 543
+    },
+    {
+      "name": "ptr_mask",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "scalar",
+            "usize"
+          ]
+        ],
+        "output": [
+          "pointer",
+          false,
+          [
+            "parameter",
+            0
+          ]
+        ]
+      },
+      "rustc_line": 372
+    },
+    {
+      "name": "ptr_metadata",
+      "safe": true,
+      "existing": true,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 696
+    },
+    {
+      "name": "ptr_offset_from",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ]
+        ],
+        "output": [
+          "scalar",
+          "isize"
+        ]
+      },
+      "rustc_line": 563
+    },
+    {
+      "name": "ptr_offset_from_unsigned",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ]
+        ],
+        "output": [
+          "scalar",
+          "usize"
+        ]
+      },
+      "rustc_line": 569
+    },
+    {
+      "name": "raw_eq",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "reference",
+            false,
+            0,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "reference",
+            false,
+            1,
+            [
+              "parameter",
+              0
+            ]
+          ]
+        ],
+        "output": [
+          "scalar",
+          "bool"
+        ]
+      },
+      "rustc_line": 672
+    },
+    {
+      "name": "read_via_copy",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 605
+    },
+    {
+      "name": "return_address",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [],
+        "output": [
+          "pointer",
+          false,
+          [
+            "unit"
+          ]
+        ]
+      },
+      "rustc_line": 811
+    },
+    {
+      "name": "rotate_left",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "scalar",
+            "u32"
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 579
+    },
+    {
+      "name": "rotate_right",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "scalar",
+            "u32"
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 579
+    },
+    {
+      "name": "round_ties_even_f128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 515
+    },
+    {
+      "name": "round_ties_even_f16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 512
+    },
+    {
+      "name": "round_ties_even_f32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 513
+    },
+    {
+      "name": "round_ties_even_f64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 514
+    },
+    {
+      "name": "roundf128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 520
+    },
+    {
+      "name": "roundf16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 517
+    },
+    {
+      "name": "roundf32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 518
+    },
+    {
+      "name": "roundf64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 519
+    },
+    {
+      "name": "rustc_peek",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 307
+    },
+    {
+      "name": "saturating_add",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 589
+    },
+    {
+      "name": "saturating_sub",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 589
+    },
+    {
+      "name": "select_unpredictable",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "bool"
+          ],
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 602
+    },
+    {
+      "name": "simd_add",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 709
+    },
+    {
+      "name": "simd_and",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 709
+    },
+    {
+      "name": "simd_arith_offset",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 724
+    },
+    {
+      "name": "simd_as",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 759
+    },
+    {
+      "name": "simd_bitmask",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 764
+    },
+    {
+      "name": "simd_bitreverse",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 725
+    },
+    {
+      "name": "simd_bswap",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 725
+    },
+    {
+      "name": "simd_carryless_mul",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 709
+    },
+    {
+      "name": "simd_cast",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 759
+    },
+    {
+      "name": "simd_cast_ptr",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 759
+    },
+    {
+      "name": "simd_ceil",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 725
+    },
+    {
+      "name": "simd_ctlz",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 725
+    },
+    {
+      "name": "simd_ctpop",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 725
+    },
+    {
+      "name": "simd_cttz",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 725
+    },
+    {
+      "name": "simd_div",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 709
+    },
+    {
+      "name": "simd_eq",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 706
+    },
+    {
+      "name": "simd_expose_provenance",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 759
+    },
+    {
+      "name": "simd_extract",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "scalar",
+            "u32"
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 755
+    },
+    {
+      "name": "simd_extract_dyn",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "scalar",
+            "u32"
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 755
+    },
+    {
+      "name": "simd_fabs",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 725
+    },
+    {
+      "name": "simd_fcos",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 725
+    },
+    {
+      "name": "simd_fexp",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 725
+    },
+    {
+      "name": "simd_fexp2",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 725
+    },
+    {
+      "name": "simd_flog",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 725
+    },
+    {
+      "name": "simd_flog10",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 725
+    },
+    {
+      "name": "simd_flog2",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 725
+    },
+    {
+      "name": "simd_floor",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 725
+    },
+    {
+      "name": "simd_fma",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 745
+    },
+    {
+      "name": "simd_fsin",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 725
+    },
+    {
+      "name": "simd_fsqrt",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 725
+    },
+    {
+      "name": "simd_funnel_shl",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 745
+    },
+    {
+      "name": "simd_funnel_shr",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 745
+    },
+    {
+      "name": "simd_gather",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 3,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            1
+          ],
+          [
+            "parameter",
+            2
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 748
+    },
+    {
+      "name": "simd_ge",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 706
+    },
+    {
+      "name": "simd_gt",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 706
+    },
+    {
+      "name": "simd_insert",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "scalar",
+            "u32"
+          ],
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 752
+    },
+    {
+      "name": "simd_insert_dyn",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "scalar",
+            "u32"
+          ],
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 752
+    },
+    {
+      "name": "simd_le",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 706
+    },
+    {
+      "name": "simd_lt",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 706
+    },
+    {
+      "name": "simd_masked_load",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 3,
+        "consts": 1,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            1
+          ],
+          [
+            "parameter",
+            2
+          ]
+        ],
+        "output": [
+          "parameter",
+          2
+        ]
+      },
+      "rustc_line": 749
+    },
+    {
+      "name": "simd_masked_store",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 3,
+        "consts": 1,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            1
+          ],
+          [
+            "parameter",
+            2
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 750
+    },
+    {
+      "name": "simd_maximum_number_nsz",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 709
+    },
+    {
+      "name": "simd_minimum_number_nsz",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 709
+    },
+    {
+      "name": "simd_mul",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 709
+    },
+    {
+      "name": "simd_ne",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 706
+    },
+    {
+      "name": "simd_neg",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 725
+    },
+    {
+      "name": "simd_or",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 709
+    },
+    {
+      "name": "simd_reduce_add_ordered",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 769
+    },
+    {
+      "name": "simd_reduce_add_unordered",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 772
+    },
+    {
+      "name": "simd_reduce_all",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "scalar",
+          "bool"
+        ]
+      },
+      "rustc_line": 768
+    },
+    {
+      "name": "simd_reduce_and",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 772
+    },
+    {
+      "name": "simd_reduce_any",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "scalar",
+          "bool"
+        ]
+      },
+      "rustc_line": 768
+    },
+    {
+      "name": "simd_reduce_max",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 772
+    },
+    {
+      "name": "simd_reduce_min",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 772
+    },
+    {
+      "name": "simd_reduce_mul_ordered",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 769
+    },
+    {
+      "name": "simd_reduce_mul_unordered",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 772
+    },
+    {
+      "name": "simd_reduce_or",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 772
+    },
+    {
+      "name": "simd_reduce_xor",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 772
+    },
+    {
+      "name": "simd_relaxed_fma",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 745
+    },
+    {
+      "name": "simd_rem",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 709
+    },
+    {
+      "name": "simd_round",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 725
+    },
+    {
+      "name": "simd_round_ties_even",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 725
+    },
+    {
+      "name": "simd_saturating_add",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 709
+    },
+    {
+      "name": "simd_saturating_sub",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 709
+    },
+    {
+      "name": "simd_scatter",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 3,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            1
+          ],
+          [
+            "parameter",
+            2
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 751
+    },
+    {
+      "name": "simd_select",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            1
+          ],
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 765
+    },
+    {
+      "name": "simd_select_bitmask",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            1
+          ],
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 765
+    },
+    {
+      "name": "simd_shl",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 709
+    },
+    {
+      "name": "simd_shr",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 709
+    },
+    {
+      "name": "simd_shuffle",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 3,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          2
+        ]
+      },
+      "rustc_line": 779
+    },
+    {
+      "name": "simd_shuffle_const_generic",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 1,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 780
+    },
+    {
+      "name": "simd_splat",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 758
+    },
+    {
+      "name": "simd_sub",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 709
+    },
+    {
+      "name": "simd_trunc",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 725
+    },
+    {
+      "name": "simd_with_exposed_provenance",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 759
+    },
+    {
+      "name": "simd_xor",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 709
+    },
+    {
+      "name": "sinf128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 415
+    },
+    {
+      "name": "sinf16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 412
+    },
+    {
+      "name": "sinf32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 413
+    },
+    {
+      "name": "sinf64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 414
+    },
+    {
+      "name": "size_of",
+      "safe": true,
+      "existing": true,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [],
+        "output": [
+          "scalar",
+          "usize"
+        ]
+      },
+      "rustc_line": 300
+    },
+    {
+      "name": "size_of_type_id",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "language",
+            "TypeId",
+            []
+          ]
+        ],
+        "output": [
+          "language",
+          "Option",
+          [
+            [
+              "scalar",
+              "usize"
+            ]
+          ]
+        ]
+      },
+      "rustc_line": 304
+    },
+    {
+      "name": "size_of_val",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ]
+        ],
+        "output": [
+          "scalar",
+          "usize"
+        ]
+      },
+      "rustc_line": 301
+    },
+    {
+      "name": "slice_get_unchecked",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 3,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            1
+          ],
+          [
+            "scalar",
+            "usize"
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 371
+    },
+    {
+      "name": "sqrtf128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 405
+    },
+    {
+      "name": "sqrtf16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 402
+    },
+    {
+      "name": "sqrtf32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 403
+    },
+    {
+      "name": "sqrtf64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 404
+    },
+    {
+      "name": "sub_with_overflow",
+      "safe": true,
+      "existing": true,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "tuple",
+          [
+            [
+              "parameter",
+              0
+            ],
+            [
+              "scalar",
+              "bool"
+            ]
+          ]
+        ]
+      },
+      "rustc_line": 537
+    },
+    {
+      "name": "sve_cast",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 782
+    },
+    {
+      "name": "sve_tuple_create2",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 783
+    },
+    {
+      "name": "sve_tuple_create3",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 784
+    },
+    {
+      "name": "sve_tuple_create4",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 785
+    },
+    {
+      "name": "sve_tuple_get",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 1,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 786
+    },
+    {
+      "name": "sve_tuple_set",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 1,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 787
+    },
+    {
+      "name": "three_way_compare",
+      "safe": true,
+      "existing": true,
+      "signature": null,
+      "rustc_line": 535
+    },
+    {
+      "name": "transmute",
+      "safe": false,
+      "existing": true,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 314
+    },
+    {
+      "name": "transmute_unchecked",
+      "safe": false,
+      "existing": true,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          1
+        ]
+      },
+      "rustc_line": 314
+    },
+    {
+      "name": "truncf128",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f128"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f128"
+        ]
+      },
+      "rustc_line": 510
+    },
+    {
+      "name": "truncf16",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f16"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f16"
+        ]
+      },
+      "rustc_line": 507
+    },
+    {
+      "name": "truncf32",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f32"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f32"
+        ]
+      },
+      "rustc_line": 508
+    },
+    {
+      "name": "truncf64",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "scalar",
+            "f64"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "f64"
+        ]
+      },
+      "rustc_line": 509
+    },
+    {
+      "name": "type_id",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [],
+        "output": [
+          "language",
+          "TypeId",
+          []
+        ]
+      },
+      "rustc_line": 324
+    },
+    {
+      "name": "type_id_eq",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "language",
+            "TypeId",
+            []
+          ],
+          [
+            "language",
+            "TypeId",
+            []
+          ]
+        ],
+        "output": [
+          "scalar",
+          "bool"
+        ]
+      },
+      "rustc_line": 325
+    },
+    {
+      "name": "type_id_field_representing_type",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "language",
+            "TypeId",
+            []
+          ],
+          [
+            "scalar",
+            "usize"
+          ],
+          [
+            "scalar",
+            "usize"
+          ]
+        ],
+        "output": [
+          "language",
+          "TypeId",
+          []
+        ]
+      },
+      "rustc_line": 326
+    },
+    {
+      "name": "type_id_fields",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "language",
+            "TypeId",
+            []
+          ],
+          [
+            "scalar",
+            "usize"
+          ]
+        ],
+        "output": [
+          "scalar",
+          "usize"
+        ]
+      },
+      "rustc_line": 329
+    },
+    {
+      "name": "type_id_variants",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "language",
+            "TypeId",
+            []
+          ]
+        ],
+        "output": [
+          "scalar",
+          "usize"
+        ]
+      },
+      "rustc_line": 330
+    },
+    {
+      "name": "type_id_vtable",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "language",
+            "TypeId",
+            []
+          ],
+          [
+            "language",
+            "TypeId",
+            []
+          ]
+        ],
+        "output": [
+          "language",
+          "Option",
+          [
+            [
+              "language",
+              "DynMetadata",
+              [
+                [
+                  "pointer",
+                  false,
+                  [
+                    "unit"
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ]
+      },
+      "rustc_line": 331
+    },
+    {
+      "name": "type_name",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [],
+        "output": [
+          "reference",
+          false,
+          "static",
+          [
+            "scalar",
+            "str"
+          ]
+        ]
+      },
+      "rustc_line": 323
+    },
+    {
+      "name": "type_of",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "language",
+            "TypeId",
+            []
+          ]
+        ],
+        "output": [
+          "language",
+          "TypeInfo",
+          []
+        ]
+      },
+      "rustc_line": 345
+    },
+    {
+      "name": "typed_swap_nonoverlapping",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 617
+    },
+    {
+      "name": "ub_checks",
+      "safe": true,
+      "existing": true,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [],
+        "output": [
+          "scalar",
+          "bool"
+        ]
+      },
+      "rustc_line": 698
+    },
+    {
+      "name": "unaligned_volatile_load",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 522
+    },
+    {
+      "name": "unaligned_volatile_store",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 525
+    },
+    {
+      "name": "unchecked_add",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 583
+    },
+    {
+      "name": "unchecked_div",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 575
+    },
+    {
+      "name": "unchecked_funnel_shl",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ],
+          [
+            "scalar",
+            "u32"
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 580
+    },
+    {
+      "name": "unchecked_funnel_shr",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ],
+          [
+            "scalar",
+            "u32"
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 580
+    },
+    {
+      "name": "unchecked_mul",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 583
+    },
+    {
+      "name": "unchecked_rem",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 575
+    },
+    {
+      "name": "unchecked_shl",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 578
+    },
+    {
+      "name": "unchecked_shr",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 2,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            1
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 578
+    },
+    {
+      "name": "unchecked_sub",
+      "safe": false,
+      "existing": true,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 583
+    },
+    {
+      "name": "unreachable",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [],
+        "output": [
+          "never"
+        ]
+      },
+      "rustc_line": 298
+    },
+    {
+      "name": "va_arg",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "reference",
+            true,
+            2,
+            [
+              "language",
+              "VaList",
+              [
+                [
+                  "region",
+                  0
+                ]
+              ]
+            ]
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 666
+    },
+    {
+      "name": "va_copy",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "reference",
+            false,
+            2,
+            [
+              "language",
+              "VaList",
+              [
+                [
+                  "region",
+                  0
+                ]
+              ]
+            ]
+          ]
+        ],
+        "output": [
+          "language",
+          "VaList",
+          [
+            [
+              "region",
+              0
+            ]
+          ]
+        ]
+      },
+      "rustc_line": 657
+    },
+    {
+      "name": "va_end",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "reference",
+            true,
+            2,
+            [
+              "language",
+              "VaList",
+              [
+                [
+                  "region",
+                  0
+                ]
+              ]
+            ]
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 662
+    },
+    {
+      "name": "va_start",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "reference",
+            true,
+            2,
+            [
+              "language",
+              "VaList",
+              [
+                [
+                  "region",
+                  0
+                ]
+              ]
+            ]
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 662
+    },
+    {
+      "name": "variant_count",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [],
+        "output": [
+          "scalar",
+          "usize"
+        ]
+      },
+      "rustc_line": 300
+    },
+    {
+      "name": "volatile_copy_memory",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "scalar",
+            "usize"
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 385
+    },
+    {
+      "name": "volatile_copy_nonoverlapping_memory",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "scalar",
+            "usize"
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 385
+    },
+    {
+      "name": "volatile_load",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "parameter",
+              0
+            ]
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 522
+    },
+    {
+      "name": "volatile_set_memory",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "scalar",
+            "u8"
+          ],
+          [
+            "scalar",
+            "usize"
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 395
+    },
+    {
+      "name": "volatile_store",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 525
+    },
+    {
+      "name": "vtable_align",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "unit"
+            ]
+          ]
+        ],
+        "output": [
+          "scalar",
+          "usize"
+        ]
+      },
+      "rustc_line": 689
+    },
+    {
+      "name": "vtable_size",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 0,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            false,
+            [
+              "unit"
+            ]
+          ]
+        ],
+        "output": [
+          "scalar",
+          "usize"
+        ]
+      },
+      "rustc_line": 689
+    },
+    {
+      "name": "wrapping_add",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 586
+    },
+    {
+      "name": "wrapping_mul",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 586
+    },
+    {
+      "name": "wrapping_sub",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "parameter",
+            0
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "parameter",
+          0
+        ]
+      },
+      "rustc_line": 586
+    },
+    {
+      "name": "write_box_via_move",
+      "safe": true,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "owned_box",
+            [
+              "language",
+              "MaybeUninit",
+              [
+                [
+                  "parameter",
+                  0
+                ]
+              ]
+            ]
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "owned_box",
+          [
+            "language",
+            "MaybeUninit",
+            [
+              [
+                "parameter",
+                0
+              ]
+            ]
+          ]
+        ]
+      },
+      "rustc_line": 609
+    },
+    {
+      "name": "write_bytes",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "scalar",
+            "u8"
+          ],
+          [
+            "scalar",
+            "usize"
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 395
+    },
+    {
+      "name": "write_via_move",
+      "safe": false,
+      "existing": false,
+      "signature": {
+        "types": 1,
+        "consts": 0,
+        "inputs": [
+          [
+            "pointer",
+            true,
+            [
+              "parameter",
+              0
+            ]
+          ],
+          [
+            "parameter",
+            0
+          ]
+        ],
+        "output": [
+          "unit"
+        ]
+      },
+      "rustc_line": 606
+    }
+  ],
+  "extraction_errors": []
+}
