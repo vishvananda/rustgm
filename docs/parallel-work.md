@@ -1,5 +1,17 @@
 # Parallel library bootstrap implementation
 
+The [UseCloned source checkpoint](pa31-use-cloned-source-checkpoint.md) passes27
+complete source/body-proof controls, two ordinary-source native comparisons,
+all467 PA24 text cases and strict all-target Clippy. CLI8e7af054 advances unchanged
+722-input source admission to LIB-153 FnPtr/FnPtrAddr, marker.rs1136,18.6176s/
+375opens. LIB-152's17 demanded operation cases, typed generic/capture/const
+semantics and transport remain required. No whole assignment after PA24 or
+original library artifact is complete. Full41913720633 failed at three new test
+error adapters; published f01aa47d4 repairs them and manual41918191470 is being
+observed without replacement. Root remains alone in the same warm btrfs tree;
+no worker/worktree/cache or resource limit is added. Current/predecessor pins
+and scoped cleanup remain in force.
+
 [Full CI41906009661](https://github.com/vishvananda/rustgm/actions/runs/41906009661)
 oncc864ba92 is terminal success with every gate, including release/course,
 native, debug, independent Rust, const-machine and private request-payer checks.

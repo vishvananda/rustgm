@@ -1,0 +1,376 @@
+{
+  "schema": 1,
+  "profile": {
+    "rustc": "1.98.0",
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": 2024,
+    "lint_cap": "allow",
+    "panic": "abort"
+  },
+  "ownership": [
+    "PA31 source identities/headers",
+    "PA20 normal trait proof",
+    "PA26 Clone hooks",
+    "PA24 capture/use operations",
+    "PA29 authenticated transport"
+  ],
+  "cases": [
+    {
+      "name": "foundation-control",
+      "path": "pa31/tests/spec/use-cloned/foundation-control.rs",
+      "sha256": "5eb9aa9fe95a12c309247c17cdf6d09d1d052712c7739faee55359b58d2a656f",
+      "rustc_status": 0,
+      "required_operation": false
+    },
+    {
+      "name": "declaration",
+      "path": "pa31/tests/spec/use-cloned/declaration.rs",
+      "sha256": "5fb5f20c99b0b19a66bcbf86e3dc6335277a2c321a5ad26aebc5e83f4a5e155c",
+      "rustc_status": 0,
+      "required_operation": false
+    },
+    {
+      "name": "no-supertrait",
+      "path": "pa31/tests/spec/use-cloned/no-supertrait.rs",
+      "sha256": "a10fe9df07408e7ff02a2cf71e55f2050993ee04524d83ed9fc6a2f655c5a44e",
+      "rustc_status": 0,
+      "required_operation": false
+    },
+    {
+      "name": "generic-trait",
+      "path": "pa31/tests/spec/use-cloned/generic-trait.rs",
+      "sha256": "cdaa27c703a8d77ae16d0f05f34c9e0bc5b787d2aea58a93d1a881dc66705e98",
+      "rustc_status": 0,
+      "required_operation": false
+    },
+    {
+      "name": "member-trait",
+      "path": "pa31/tests/spec/use-cloned/member-trait.rs",
+      "sha256": "db69560008e8f68422c427b638ac1b0cdc333e33e2cb48171c1fc2950f35784c",
+      "rustc_status": 0,
+      "required_operation": false
+    },
+    {
+      "name": "unsafe-trait",
+      "path": "pa31/tests/spec/use-cloned/unsafe-trait.rs",
+      "sha256": "9bfd5bbfdd236b7a09dd98398e0f70608cf1356834cf97cda643543e1b55f68d",
+      "rustc_status": 0,
+      "required_operation": false
+    },
+    {
+      "name": "const-trait",
+      "path": "pa31/tests/spec/use-cloned/const-trait.rs",
+      "sha256": "fa7c582c6e125073209af56ba7af6f31204872be0a11008614d5e59c7b5135f0",
+      "rustc_status": 0,
+      "required_operation": false
+    },
+    {
+      "name": "duplicate-role",
+      "path": "pa31/tests/spec/use-cloned/duplicate-role.rs",
+      "sha256": "a4f4360cb309bfecbdf351bbba712be54623950165a567bbc804ad24b85b6228",
+      "rustc_status": 1,
+      "required_operation": false
+    },
+    {
+      "name": "wrong-struct",
+      "path": "pa31/tests/spec/use-cloned/wrong-struct.rs",
+      "sha256": "6706a0d35c52a71009478cc1fba674cb8af48f53107cd5f16c148751150ba5cb",
+      "rustc_status": 1,
+      "required_operation": false
+    },
+    {
+      "name": "wrong-enum",
+      "path": "pa31/tests/spec/use-cloned/wrong-enum.rs",
+      "sha256": "0fd49d913b66a6305c15af5951ee4d728cb77645b0752c77237379252deaf42d",
+      "rustc_status": 1,
+      "required_operation": false
+    },
+    {
+      "name": "wrong-function",
+      "path": "pa31/tests/spec/use-cloned/wrong-function.rs",
+      "sha256": "42e8027453ff018d4a92c8b80902d6dc565f381b698722cb10b1a11cb5b1a601",
+      "rustc_status": 1,
+      "required_operation": false
+    },
+    {
+      "name": "ordinary-no-marker",
+      "path": "pa31/tests/spec/use-cloned/ordinary-no-marker.rs",
+      "sha256": "f6c7c8af534c2686c26573128415506acedbccc3f8650fcc5459a139630b515d",
+      "rustc_status": 0,
+      "required_operation": false
+    },
+    {
+      "name": "actual-implementation",
+      "path": "pa31/tests/spec/use-cloned/actual-implementation.rs",
+      "sha256": "9bb3da519bb1a4ae3c8ee8859948276f6c202e693ba8fdd11fb4150b48ba2aed",
+      "rustc_status": 0,
+      "required_operation": false
+    },
+    {
+      "name": "missing-implementation",
+      "path": "pa31/tests/spec/use-cloned/missing-implementation.rs",
+      "sha256": "7245b6c522868c0e86cf03639341b3dc08acfe35fb927f2b0b83757dd9fcb9cf",
+      "rustc_status": 1,
+      "required_operation": false
+    },
+    {
+      "name": "missing-clone-super",
+      "path": "pa31/tests/spec/use-cloned/missing-clone-super.rs",
+      "sha256": "65a94ad46c249b64f6bd9c87845d897dcc6e6e6103632bdf609d6efd01887d17",
+      "rustc_status": 1,
+      "required_operation": false
+    },
+    {
+      "name": "unsafe-impl-on-safe",
+      "path": "pa31/tests/spec/use-cloned/unsafe-impl-on-safe.rs",
+      "sha256": "e010ecd28c32317a9b71b1322573ab23b569d4eb59affc9ec033a02277cca0cb",
+      "rustc_status": 1,
+      "required_operation": false
+    },
+    {
+      "name": "safe-impl-on-unsafe",
+      "path": "pa31/tests/spec/use-cloned/safe-impl-on-unsafe.rs",
+      "sha256": "0c341efb3567294f13a2893b1758aa40552d9f459f80e716e4f199afc176066f",
+      "rustc_status": 1,
+      "required_operation": false
+    },
+    {
+      "name": "generic-clone-absence",
+      "path": "pa31/tests/spec/use-cloned/generic-clone-absence.rs",
+      "sha256": "237c19648df159761b820d3a5a4e598328ba7a5a9499d5f01d68d53edbded46c",
+      "rustc_status": 1,
+      "required_operation": false
+    },
+    {
+      "name": "source-native",
+      "path": "pa31/tests/spec/use-cloned/source-native.rs",
+      "sha256": "8ce436acdc8806c60e0d3de88e993d7cdbd18623b5de6753f959f5abec8dacda",
+      "rustc_status": 0,
+      "required_operation": false,
+      "native_stdout": "9\n7\n"
+    },
+    {
+      "name": "object-safe-no-super",
+      "path": "pa31/tests/spec/use-cloned/object-safe-no-super.rs",
+      "sha256": "105dcece7e561257cd36d6c0def6c2dcf69242b6858bdcd0132b57408fdf7cba",
+      "rustc_status": 0,
+      "required_operation": false
+    },
+    {
+      "name": "clone-super-object",
+      "path": "pa31/tests/spec/use-cloned/clone-super-object.rs",
+      "sha256": "9a6795e14258725abdf8ae98c688757a7bda0b8208123aefa78a1344a87802fd",
+      "rustc_status": 1,
+      "required_operation": false
+    },
+    {
+      "name": "dot-clone",
+      "path": "pa31/tests/spec/use-cloned/dot-clone.rs",
+      "sha256": "9d034a59e166021de5d2ca3a12d419b2d17ece2650b9d41967ca1be349b67aa1",
+      "rustc_status": 0,
+      "required_operation": true
+    },
+    {
+      "name": "dot-copy-before-clone",
+      "path": "pa31/tests/spec/use-cloned/dot-copy-before-clone.rs",
+      "sha256": "7e721c3ca030f5fe8a035c408128dfe36901263bb8395122e783ec4f4314ea15",
+      "rustc_status": 0,
+      "required_operation": true
+    },
+    {
+      "name": "dot-move-no-marker",
+      "path": "pa31/tests/spec/use-cloned/dot-move-no-marker.rs",
+      "sha256": "3261b5f8ee6d7d82817c79f5dff5278dfce0120675579bf998f8f2fe9335d7ae",
+      "rustc_status": 0,
+      "required_operation": true
+    },
+    {
+      "name": "dot-move-reuse",
+      "path": "pa31/tests/spec/use-cloned/dot-move-reuse.rs",
+      "sha256": "6bb01772cd23233e271499ab161e57d0688d05d7d6b5a68120444a0e5df85ddf",
+      "rustc_status": 1,
+      "required_operation": true
+    },
+    {
+      "name": "dot-no-feature",
+      "path": "pa31/tests/spec/use-cloned/dot-no-feature.rs",
+      "sha256": "9e6919bdaf29518bc548a4be235b0c1ce8f130e68b3165c182b1bc17b9f442d1",
+      "rustc_status": 1,
+      "required_operation": true
+    },
+    {
+      "name": "dot-generic-bounded",
+      "path": "pa31/tests/spec/use-cloned/dot-generic-bounded.rs",
+      "sha256": "87c02bd92cbf0c1993b05d78e3e61719669d50faeb8a700131d75ce993e740c6",
+      "rustc_status": 0,
+      "required_operation": true
+    },
+    {
+      "name": "dot-generic-unbounded",
+      "path": "pa31/tests/spec/use-cloned/dot-generic-unbounded.rs",
+      "sha256": "33e27ef4e1694bddf7541e61371be914d2483cdc0ce802614acbc1522f51456f",
+      "rustc_status": 0,
+      "required_operation": true
+    },
+    {
+      "name": "dot-raw-field",
+      "path": "pa31/tests/spec/use-cloned/dot-raw-field.rs",
+      "sha256": "47dbfdb277ac3381bd916c89fb0af83ca5830bdda671c57eba1296790d1f19e8",
+      "rustc_status": 0,
+      "required_operation": true
+    },
+    {
+      "name": "dot-borrowed-clone",
+      "path": "pa31/tests/spec/use-cloned/dot-borrowed-clone.rs",
+      "sha256": "60630727266c8c9781cc7f10d525501d5ffc54f4d59ba5a24c2e98cb758b88ae",
+      "rustc_status": 0,
+      "required_operation": true
+    },
+    {
+      "name": "dot-borrowed-move",
+      "path": "pa31/tests/spec/use-cloned/dot-borrowed-move.rs",
+      "sha256": "61998e8afafc31d35ab6b642f8fc2315fea7befe80b63eedc7c97a9ce6e6f5b5",
+      "rustc_status": 1,
+      "required_operation": true
+    },
+    {
+      "name": "use-closure-clone",
+      "path": "pa31/tests/spec/use-cloned/use-closure-clone.rs",
+      "sha256": "c67234d3d68a2e8b9b9e9fca5927a24f35e6d4d777f23733249ee429d12a4ca2",
+      "rustc_status": 0,
+      "required_operation": true
+    },
+    {
+      "name": "use-closure-move",
+      "path": "pa31/tests/spec/use-cloned/use-closure-move.rs",
+      "sha256": "036be132b1369a000d4add70ada6052c675a989d53873111c50a966222c84e69",
+      "rustc_status": 0,
+      "required_operation": true
+    },
+    {
+      "name": "use-closure-move-reuse",
+      "path": "pa31/tests/spec/use-cloned/use-closure-move-reuse.rs",
+      "sha256": "002bb271ae2df02798290318ad9d62cd6680018978bfe212bf6bf12413a8b777",
+      "rustc_status": 1,
+      "required_operation": true
+    },
+    {
+      "name": "use-closure-copy",
+      "path": "pa31/tests/spec/use-cloned/use-closure-copy.rs",
+      "sha256": "cd0a2b653a96e51c6bfac18deb90d82a8899dc677bf015b076bdb1c979bd05b3",
+      "rustc_status": 0,
+      "required_operation": true
+    },
+    {
+      "name": "use-closure-twice",
+      "path": "pa31/tests/spec/use-cloned/use-closure-twice.rs",
+      "sha256": "a4df1ed9818874ad737f8b0ab00c3cf2cd2a0bc9c8ecc689af1f5b777dc469ac",
+      "rustc_status": 1,
+      "required_operation": true
+    },
+    {
+      "name": "use-closure-no-feature",
+      "path": "pa31/tests/spec/use-cloned/use-closure-no-feature.rs",
+      "sha256": "45d5952cb7f7b26304050d144a71a8d5cf6e850b5cd4979d4252a20bf47d0750",
+      "rustc_status": 1,
+      "required_operation": true
+    },
+    {
+      "name": "use-closure-borrowed",
+      "path": "pa31/tests/spec/use-cloned/use-closure-borrowed.rs",
+      "sha256": "c644eb52a34bcdb2b7999826d558c8974754f8116fa07048a9516fb8cbee2d06",
+      "rustc_status": 0,
+      "required_operation": true
+    },
+    {
+      "name": "operations-native",
+      "path": "pa31/tests/spec/use-cloned/operations-native.rs",
+      "sha256": "c9e7db4a6c159d27a591a5b863564b783eb43832000e8163ae78807b015a8bda",
+      "rustc_status": 0,
+      "required_operation": true,
+      "native_stdout": "9\n7\n7\n9\n7\n9\n7\n7\n",
+      "observer": "operations-observer.c"
+    },
+    {
+      "name": "marker-is-not-copy",
+      "path": "pa31/tests/spec/use-cloned/marker-is-not-copy.rs",
+      "sha256": "b538576f700844866d0923284fcfc6504a0612ba842b161e4abd031398975a0f",
+      "rustc_status": 1,
+      "required_operation": false
+    },
+    {
+      "name": "unused-invalid-member-body",
+      "path": "pa31/tests/spec/use-cloned/unused-invalid-member-body.rs",
+      "sha256": "9a3796d93de4a99bf892d757d2b7936e7b405a33cf23ef19cb83ad77d6475f0f",
+      "rustc_status": 1,
+      "required_operation": false
+    },
+    {
+      "name": "missing-required-member",
+      "path": "pa31/tests/spec/use-cloned/missing-required-member.rs",
+      "sha256": "918fba51e808e0a6e599d405c89062457326d661aab5026d935a129985accd7e",
+      "rustc_status": 1,
+      "required_operation": false
+    },
+    {
+      "name": "mixed-generics",
+      "path": "pa31/tests/spec/use-cloned/mixed-generics.rs",
+      "sha256": "b2108e8ebb937454bb6f254d84cdc639c21c693134d02e855930c47e69bd8b9a",
+      "rustc_status": 0,
+      "required_operation": false
+    },
+    {
+      "name": "nonclone-ordinary-impl",
+      "path": "pa31/tests/spec/use-cloned/nonclone-ordinary-impl.rs",
+      "sha256": "513d6ece5d9bdd9f3c15bfb9c9b6d28f94c094c6e9f0bc90a7a909a1d7e36a7f",
+      "rustc_status": 0,
+      "required_operation": false
+    },
+    {
+      "name": "provided-native",
+      "path": "pa31/tests/spec/use-cloned/provided-native.rs",
+      "sha256": "29f0660ce23e607e15a80aba8153904eca248f020e1437449ceee2351cd35edd",
+      "rustc_status": 0,
+      "required_operation": false,
+      "native_stdout": "9\n7\n"
+    }
+  ],
+  "auxiliary": [
+    {
+      "path": "pa31/tests/spec/use-cloned/foundation.rs",
+      "sha256": "9fe06f3f7fe7b498e4fe34630ee4d425dfd8582aac65c79afa2d132ff18b3c79"
+    },
+    {
+      "path": "pa31/tests/spec/use-cloned/callables.rs",
+      "sha256": "732d1f34d8945e04cd8461b5a6c1a9f60607a413675e53b8d1a1c38232f8323a"
+    },
+    {
+      "path": "pa31/tests/spec/use-cloned/observer.c",
+      "sha256": "22804d9aee37e21ed7d21e512d6340bb7e7bfa2d2ddbddb3a729d1926b6b615b"
+    },
+    {
+      "path": "pa31/tests/spec/use-cloned/operations-observer.c",
+      "sha256": "576e3d0fdf14673214f3d6ff74940dc114294adc2470fd7f7f60c6a315d9559e"
+    }
+  ],
+  "requirements": [
+    "Actual source marker identity is a normal trait contract, never a Copy/Clone/auto-trait implementation proof.",
+    "Use expressions and closure formation choose Copy, then actual Clone when UseCloned is proved, otherwise move. Generic bodies retain their original choice.",
+    "Feature and actual keyword/macro authority, borrow/move/init checks, source body effects, one-time operand evaluation, exact capture paths, const-call effects and imported identity remain distinct.",
+    "General role/body transport must fail explicitly until its actual checked profile exists.",
+    "All required operations remain part of the compiler goal even while current source-declaration work advances original core."
+  ],
+  "hypothesis_history": {
+    "v1": "obj/parallel/use-cloned-v1/reference-v1/receipt.json",
+    "v1_sha256": "120452ed01991accd55b1d4539568a869e054060753cf0ce5ac5fc2522ffa19c",
+    "correction": "Move-fallback consumers need the real role even without an impl. Shared-reference captures require the actual Clone/Copy implementations in this no_core foundation. The original 101/ICE is retained as an oracle failure, never a language rejection.",
+    "v2": "obj/parallel/use-cloned-v1/reference-v2/receipt.json",
+    "v2_sha256": "313014fed0d05a6bee21040473199f61aaa0dcd7d4dae10213a7538a402d6cdf",
+    "native_v1": "obj/parallel/use-cloned-v1/qualification-v1/receipt.json",
+    "native_v1_sha256": "54394b689dfc581f4c6e251a99316ec42eba23774538ffd5b42caaba1a67398f",
+    "native_correction": "Metadata acceptance does not prove codegen readiness. Object generation demands the actual source Freeze language item in the no_core foundation. Outcome predictions and required operations are unchanged.",
+    "v3": "obj/parallel/use-cloned-v1/reference-v3/receipt.json",
+    "v3_sha256": "8805ef2750086502cb4f30238a7aed549c792f525c50b18f911513b1a7a892da",
+    "glue_correction": "Native codegen also requires the actual Destruct and drop_glue source contracts; use the same checked declarations as existing qualified PA31 providers. No UseCloned outcome prediction changed."
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "scope": "canonical source producer and ordinary-body/native controls; operations and transport remain required",
+  "receipts": {
+    "reference-v4/receipt.json": {
+      "sha256": "aaaf17dec3c23786dd5fb6c4c35822c59d932cee7537e5c207700e4938612320",
+      "state": "passed"
+    },
+    "qualification-v2/receipt.json": {
+      "sha256": "33aa0c7ac8a64540a7cf10c444a806a143d0aa990bd12e53173011d2d8dd5a00",
+      "state": "passed"
+    },
+    "measurement-v1/receipt.json": {
+      "sha256": "aa9347374a06fee656ba33a0ec8f637c581131d85dae4cb4ad8cb72a82787975",
+      "state": "passed"
+    },
+    "private-compile-v1/receipt.json": {
+      "sha256": "9b8d05d95b694745c90c17954837498e5d84db3e9f3e491c0a960e73fad59e52",
+      "state": "passed"
+    }
+  },
+  "candidate_source_cases": 27,
+  "independent_source_cases": 45,
+  "candidate_native_companions": 2,
+  "independent_native_companions": 3,
+  "required_operation_cases_unimplemented": 17,
+  "private_execution": "pending full CI; all-target strict Clippy passes",
+  "candidate_cli_sha256": "8e7af0548d132ab7379b5e8f1f469067734220957fb766e5c36fda063dead74c",
+  "original_core": {
+    "status": 1,
+    "first_error": "ERROR: file 81: 44269: source compiler language item semantic contract is not implemented",
+    "total_seconds": 18.617571484006476,
+    "opened_source_count": 375,
+    "inputs_unchanged": true
+  },
+  "whole_assignment_released": false,
+  "original_library_artifact": false
+}

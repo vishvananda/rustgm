@@ -7,6 +7,12 @@ use crate::{
 
 pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Result<(), Error> {
     for role in LangItem::DECLARATIONS {
+        if role == LangItem::UseCloned {
+            // Reserve the actual ordinary trait, then require its canonical header
+            // completion in roles::validate. This supplies no implementation proof
+            // or implicit use/clone operation; those have separate typed consumers.
+            continue;
+        }
         if matches!(role, LangItem::CompilerMove | LangItem::CompilerCopy) {
             // These hooks keep their actual ordinary bodies. Current codegen emits no
             // profiling annotations; an invoked hook must still execute its source body.

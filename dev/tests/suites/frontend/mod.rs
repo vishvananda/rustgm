@@ -23,6 +23,8 @@ mod edition_origins;
 mod edition_packages;
 #[path = "../../edition_tokens.rs"]
 mod edition_tokens;
+#[path = "../../ergonomic_contracts.rs"]
+mod ergonomic_contracts;
 #[path = "../../expanded_cli.rs"]
 mod expanded_cli;
 #[path = "../../expansion_install.rs"]

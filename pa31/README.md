@@ -16,6 +16,14 @@ old cycle; both units and the complete contract below remain required.
 
 ## Required implementation
 
+The [UseCloned source checkpoint](../docs/pa31-use-cloned-source-checkpoint.md)
+authenticates the actual canonical trait and preserves ordinary impl, member,
+Clone and Copy obligations. Two real source native companions match pinned Rust.
+Its use-expression/capture/const/metadata consumers remain explicit required work;
+source admission alone does not complete LIB-152 or this assignment. Unchanged
+original core now reaches FnPtr/FnPtrAddr, whose actual proof/address behavior is
+tracked separately from declaration acceptance.
+
 The [request-order checkpoint](../docs/pa31-request-order-checkpoint.md) extends
 the same cumulative source payer through the shared checked ordering kernel.
 Metadata and ordinary lookup keep their finite default limits. The original

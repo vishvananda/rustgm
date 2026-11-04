@@ -80,9 +80,10 @@ impl Catalog {
     }
 }
 
-const TRAIT_ROLES: [LangItem; 22] = [
+const TRAIT_ROLES: [LangItem; 23] = [
     LangItem::Clone,
     LangItem::Copy,
+    LangItem::UseCloned,
     LangItem::LegacyReceiver,
     LangItem::TrivialClone,
     LangItem::Tuple,
@@ -139,7 +140,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         let header = header(report, facts, declaration, role)?;
         let self_type = header.self_type;
         match role {
-            LangItem::From | LangItem::BikeshedGuaranteedNoDrop => {}
+            LangItem::From | LangItem::BikeshedGuaranteedNoDrop | LangItem::UseCloned => {}
             LangItem::TransmuteTrait => {
                 super::transmutability::validate_trait(
                     report,
@@ -333,6 +334,14 @@ fn header<'a>(
 ) -> Result<super::headers::Trait<'a>, Error> {
     let error = |message| Declarations::error(report, declaration.origin, message);
     let header = super::headers::Trait::source(report, facts, declaration).map_err(error)?;
+    if role == LangItem::UseCloned {
+        // The pinned role has no extra flags, members, generic-arity or supertrait
+        // restrictions. Authenticate its canonical Self and source-owned inputs;
+        // ordinary trait checking retains all actual bounds and required bodies.
+        // In particular, role membership cannot invent Clone or Copy evidence.
+        header.canonical_inputs(facts).map_err(error)?;
+        return Ok(header);
+    }
     if matches!(role, LangItem::From | LangItem::BikeshedGuaranteedNoDrop) {
         if role == LangItem::BikeshedGuaranteedNoDrop && header.written.parameters != 0 {
             return Err(error(

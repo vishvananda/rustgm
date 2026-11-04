@@ -377,6 +377,27 @@ storage covers the actual vocabulary with paid word-wise work; ordinary records
 do not grow. Other attribute-expression consumers retain their own PA8/31/40
 contracts. No computed name grants feature allowance, const body or imported
 execution permission.
+
+The source `use_cloned` role reserves an actual ordinary trait, then completes
+through the existing role ledger only after its canonical Self, declaration
+owner and source inputs authenticate. The pinned generic requirement is
+unrestricted, not zero parameters. Preserve actual flags, members and written
+bounds; the standard library's Clone supertrait is a source requirement, not an
+invented restriction on every declaration of this role. Normal trait selection,
+provided bodies and original-body ownership proofs remain mandatory. Neither
+role reservation nor completion supplies Copy, Clone or auto-trait evidence.
+The [UseCloned packet](pa31/tests/spec/use-cloned/README.md) retains the separate
+operation and transport requirements. A use expression or capture must choose
+Copy, then real Clone when UseCloned is proved, otherwise move, from the original
+generic environment. Retain that typed choice through instantiation; do not
+reclassify an unbounded generic body from its later concrete type. Clone must
+execute the selected real method, with one operand evaluation and ordinary
+borrow/const checks. Use-closure formation owns its selected capture value;
+closure call kind still follows its body. Keyword/macro permission and imported
+identity need their own authenticated consumers. Unimplemented operations and
+unencoded transport must fail explicitly. Reuse borrowed canonical headers and
+the cold completion set; do not add ordinary node/body fields or reparse output.
+
 The SourceCore expansion view is `--emit-expanded-crate` (or its count form),
 which runs actual configured expansion and binding completion. The PA7
 `--emit-expanded` session has no source context and must reject source options.

@@ -128,7 +128,10 @@ fn unimplemented_builtin_claims_stop_before_granting_layout_drop_or_auto_trait_s
             continue;
         };
         let role = LangItem::from_name(name).ok_or("known role")?;
-        if matches!(role, LangItem::CompilerMove | LangItem::CompilerCopy) {
+        if matches!(
+            role,
+            LangItem::CompilerMove | LangItem::CompilerCopy | LangItem::UseCloned
+        ) {
             continue;
         }
         let report = test_source::source_provider(&input(&case)?, "language_claims")?;
@@ -143,6 +146,59 @@ fn unimplemented_builtin_claims_stop_before_granting_layout_drop_or_auto_trait_s
     }
     Ok(())
 }
+
+#[test]
+fn ergonomic_role_requires_actual_completed_header_and_keeps_transport_closed() -> TestResult {
+    use crate::sema::compiler_items::{Catalog, headers::Trait};
+    let source = test_source::fixture("pa31/tests/spec/use-cloned/source-native.rs")?;
+    let report = test_source::source_provider(&source, "ergonomic_source")?;
+    let pending = Catalog::reserve(&report)?.ok_or("reserved source catalog")?;
+    assert!(pending.language(LangItem::UseCloned).is_some());
+    assert!(pending.validated_language(LangItem::UseCloned).is_err());
+    let pipeline::Analysis { mut facts, .. } = pipeline::analyze_source(&report)?;
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("completed catalog")?;
+    let declaration = catalog
+        .validated_language(LangItem::UseCloned)?
+        .ok_or("actual source role")?;
+    let header = Trait::source(&report, &facts, declaration)?;
+    assert!(!header.flags.auto_);
+    assert!(!header.flags.unsafe_);
+    assert!(!header.flags.constant);
+    assert!(header.canonical_inputs(&facts)?.len() > 0);
+    assert_ne!(
+        Some(declaration),
+        catalog.validated_language(LangItem::Clone)?
+    );
+    let provider = report
+        .package
+        .source_core()
+        .ok_or("source provider")?
+        .provider
+        .clone();
+    let error = crate::sema::crates::authored_export::Stage::begin_module_conversions(
+        &report, &mut facts, &provider,
+    )
+    .err()
+    .ok_or("unencoded ergonomic contract exported")?;
+    assert_eq!(
+        error,
+        "source compiler language contract transport is not implemented"
+    );
+    let catalog = facts.source_bindings.as_deref_mut().ok_or("catalog")?;
+    catalog
+        .traits
+        .as_deref_mut()
+        .ok_or("role completion")?
+        .roles
+        .remove(LangItem::UseCloned);
+    assert!(catalog.validated_language(LangItem::UseCloned).is_err());
+    assert!(catalog.validated_language(LangItem::Clone)?.is_some());
+    Ok(())
+}
+
 #[test]
 fn profiling_hooks_execute_actual_ordinary_bodies_and_fence_unencoded_transport() -> TestResult {
     let source = source("ordinary-marker-bodies")?;
