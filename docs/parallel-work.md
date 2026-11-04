@@ -3,7 +3,8 @@
 Full qualification cadence: run41787601690 on6f1e3eb3d is terminal success
 with every gate passing. LLVM successor run41795595365 on3d4b3ae9d failed eight stale cold-layout
 assertions. All eight now pass focused qualification; ordinary layouts retain
-exact checks. The unsized-parameter successor full run awaits publication.
+exact checks. Successor full run41801911308 is live on975b32666; poll that exact handle
+and do not supersede it while live.
 Predecessor run41781814852 on1f5a2b8d0 also passes every gate.
 Earlier41779219834 failed storage admission at7.9GiB against the8GiB CI
 reserve. CI retains assertions/overflow checks without host debug symbols and

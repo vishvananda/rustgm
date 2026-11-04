@@ -65,7 +65,9 @@ the genuine bit64 expanded Features8→16, SourceCore184→192 and Source192→2
 The focused correction retains exact ordinary-record and one-byte macro checks;
 all eight failures now pass. Other regular integration tests in that run pass;
 subsequent course/native/debug/full gates were not established by that failed
-run. Successor full qualification is pending publication.
+run. Successor full qualification
+[41801911308](https://github.com/vishvananda/rustgm/actions/runs/41801911308)
+is running on compiler commit975b32666; do not supersede it while live.
 
 Next inventory genuine negative-coherence use under PA25 trait/coherence,
 PA31 source authority and PA29 imported assumptions. Do not classify it as an
