@@ -8,6 +8,13 @@ Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The
 
 Const functions, statics, promotions and symbolic allocation provenance.
 
+The [const inherent checkpoint](../docs/pa25-inherent-block-checkpoint.md)
+implements actual implicit members, exact source authority, generic conditional
+bounds and distinct runtime/CTFE materializations. Its51 independently checked
+language/library outcomes and real mixed-call native consumer preserve unused
+body, ordinary-impl and missing-bound opponents. Authenticated imports and the
+rest of this assignment remain required.
+
 The [canonical aggregate const-value boundary](../docs/pa25-aggregate-const-values.md)
 provides typed products, nominal variant identities, compressed repeats and
 evaluator/reader integration for the original core `Assume` dependency. Suspended

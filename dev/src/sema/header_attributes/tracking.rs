@@ -99,8 +99,15 @@ impl Declarations {
         work: usize,
         bytes: usize,
     ) -> Result<(), &'static str> {
-        super::charge_source_retention(self, work, bytes)
-            .map_err(|_| "caller inputs exceed source work/storage budget")
+        let result = if self.source_bindings.is_some() {
+            super::charge_source_retention(self, work, bytes)
+        } else {
+            // Ordinary headers have a real attribute budget but do not claim
+            // the provider-wide source inventory is complete. Costs grant no
+            // header, trait selection or execution permission.
+            super::charge_attribute_retention(self, work, bytes)
+        };
+        result.map_err(|_| "caller inputs exceed source work/storage budget")
     }
 
     /// Header data only; callers still prove the exact call/body/instance.

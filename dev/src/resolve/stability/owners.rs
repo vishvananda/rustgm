@@ -184,7 +184,7 @@ fn const_function(scope: &crate::resolve::model::Scope, frame: &Frame, scopes: &
             && scope.parent.is_some_and(|parent| {
                 matches!(
                     scopes[parent.0 as usize].role,
-                    Role::Trait(true) | Role::Impl(true)
+                    Role::Trait(true) | Role::Impl(true) | Role::InherentImpl(true)
                 )
             })
 }
@@ -242,12 +242,10 @@ fn definition_scopes(
             role = Role::NonConstMember;
         }
         let explicit = draft.attribute(key, PolicyKind::Const);
-        let parent = facts.scopes[scope.0 as usize]
-            .parent
-            .map(|p| scopes[p.0 as usize].role);
-        let const_member = matches!(role, Role::Function(_))
-            && matches!(parent, Some(Role::Trait(true) | Role::Impl(true)));
-        if explicit.is_some() && !role.accepts_const() && !const_member {
+        // Direct function annotations require actual written constness (or a
+        // checked comptime marker). Implicit member eligibility is a separate
+        // fact; only the container's unstable policy is inherited.
+        if explicit.is_some() && !role.accepts_const() {
             return Err(error(
                 package,
                 key,
@@ -466,7 +464,20 @@ pub(super) fn reachable(
             },
             _ => false,
         };
-        if needs_const
+        let implicit = if definition.kind == DefKind::Function {
+            let rows = owners.consts.as_deref().map(|rows| &rows.implicit);
+            let count = rows.map_or(0, Vec::len);
+            draft.charge(
+                usize::try_from(usize::BITS - count.leading_zeros())
+                    .unwrap_or(usize::MAX)
+                    .saturating_add(1),
+                0,
+            )?;
+            rows.is_some_and(|rows| rows.binary_search_by_key(&target.0, |id| id.0).is_ok())
+        } else {
+            false
+        };
+        if (needs_const || implicit)
             && owners
                 .consts
                 .as_deref()

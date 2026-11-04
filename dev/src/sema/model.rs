@@ -359,6 +359,7 @@ pub struct UnionWork {
 pub struct Declarations {
     pub(super) must_use_contracts: Option<Box<super::must_use::Contracts>>,
     pub(crate) source_bindings: Option<Box<super::compiler_items::Catalog>>,
+    pub(super) local_call_contexts: Option<Box<super::bodies::CallContexts>>,
     pub(super) source_computations: Option<Box<super::constants::Computations>>,
     pub crates: Option<Box<super::crates::Linkage>>,
     pub foreign: Option<Box<super::foreign::Registry>>,
@@ -658,6 +659,7 @@ impl Declarations {
         Self {
             must_use_contracts: None,
             source_bindings: catalog,
+            local_call_contexts: None,
             source_computations: None,
             crates: None,
             foreign: None,

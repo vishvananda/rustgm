@@ -67,9 +67,7 @@ impl SourceCallUse {
     ) -> Result<Option<LocationId>, &'static str> {
         self.effect_for(facts, owner)?;
         let contexts = facts
-            .source_bindings
-            .as_deref()
-            .and_then(|catalog| catalog.call_contexts.as_deref())
+            .call_contexts()
             .ok_or("caller site has no current source context")?;
         let key = (self.0.get(), node.get(), callable.0);
         Ok(contexts
@@ -122,13 +120,13 @@ impl Checker<'_> {
         let tracked = self
             .facts
             .checked_caller_tracking(self.report, definition)?;
-        let intrinsic = self
-            .facts
-            .source_bindings
-            .as_deref()
-            .ok_or_else(|| self.error(node, "caller site lost its source catalog"))?
-            .intrinsic_kind(definition)
-            .map_err(|error| self.error(node, error))?;
+        let intrinsic = if let Some(catalog) = self.facts.source_bindings.as_deref() {
+            catalog
+                .intrinsic_kind(definition)
+                .map_err(|error| self.error(node, error))?
+        } else {
+            None
+        };
         if tracked || intrinsic == Some(SourceIntrinsic::CallerLocation) {
             return Ok(true);
         }
@@ -313,17 +311,12 @@ impl Checker<'_> {
         let Some(context) = context else {
             return Ok(());
         };
-        let contexts = self
-            .facts
-            .source_bindings
-            .as_deref()
-            .and_then(|catalog| catalog.call_contexts.as_deref())
-            .ok_or_else(|| {
-                self.error(
-                    self.state.body.node,
-                    "caller sites lost their current owner",
-                )
-            })?;
+        let contexts = self.facts.call_contexts().ok_or_else(|| {
+            self.error(
+                self.state.body.node,
+                "caller sites lost their current owner",
+            )
+        })?;
         if warm {
             if contexts.sites[contexts.site_range(context)] != *sites {
                 return Err(self.error(self.state.body.node, "warm caller site inventory changed"));
@@ -351,9 +344,7 @@ impl Checker<'_> {
             .map_err(|e| self.error(self.state.body.node, e))?;
         if !warm {
             self.facts
-                .source_bindings
-                .as_deref_mut()
-                .and_then(|catalog| catalog.call_contexts.as_deref_mut())
+                .call_contexts_mut()
                 .ok_or_else(|| {
                     Declarations::error(
                         self.report,
@@ -369,11 +360,7 @@ impl Checker<'_> {
     pub(super) fn commit_caller_sites(&mut self, sites: &[Site], warm: bool) {
         if !warm
             && !sites.is_empty()
-            && let Some(contexts) = self
-                .facts
-                .source_bindings
-                .as_deref_mut()
-                .and_then(|catalog| catalog.call_contexts.as_deref_mut())
+            && let Some(contexts) = self.facts.call_contexts_mut()
         {
             contexts.sites.extend_from_slice(sites);
         }

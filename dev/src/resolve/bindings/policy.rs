@@ -204,6 +204,7 @@ impl Features {
     }
     fn needs_local_owner(&self) -> bool {
         self.has(Feature::AdtConstParams)
+            || self.has(Feature::ConstTrait)
             || self.has(Feature::NegativeImpls)
             || self.has(Feature::PreludeImport)
             || self.has(Feature::OptimizeAttribute)

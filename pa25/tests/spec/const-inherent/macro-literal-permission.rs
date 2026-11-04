@@ -1,0 +1,1 @@
+#![feature(allow_internal_unstable)]struct Value;#[allow_internal_unstable(const_trait_impl)]macro_rules! make{()=>{const impl Value{fn read()->u8{7}}};}make!();const SEVEN:u8=Value::read();fn main(){}

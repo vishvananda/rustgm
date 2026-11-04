@@ -16,6 +16,7 @@ pub(super) enum Role {
     NonConstMember,
     Trait(bool),
     Impl(bool),
+    InherentImpl(bool),
 }
 impl Role {
     pub fn of(kind: ItemKind) -> Self {
@@ -24,16 +25,22 @@ impl Role {
             ItemKind::Trait { constant, .. } => Self::Trait(constant),
             ItemKind::Impl {
                 constant,
-                trait_path: Some(_),
+                trait_path,
                 ..
-            } => Self::Impl(constant),
+            } => {
+                if trait_path.is_some() {
+                    Self::Impl(constant)
+                } else {
+                    Self::InherentImpl(constant)
+                }
+            }
             _ => Self::Other,
         }
     }
     pub fn accepts_const(self) -> bool {
         matches!(
             self,
-            Self::Function(true) | Self::Trait(true) | Self::Impl(true)
+            Self::Function(true) | Self::Trait(true) | Self::Impl(_) | Self::InherentImpl(_)
         )
     }
 }
@@ -49,11 +56,18 @@ impl Frame {
         if self.constant.is_some() {
             return;
         }
-        if matches!(self.role, Role::Function(true)) {
+        if matches!(self.role, Role::Function(true))
+            || matches!(self.role, Role::Function(false))
+                && matches!(parent.role, Role::InherentImpl(true))
+        {
             self.constant = draft.inherit(self.regular);
         }
         if matches!(self.role, Role::Function(_))
-            && matches!(parent.role, Role::Trait(true) | Role::Impl(true))
+            && (matches!(
+                parent.role,
+                Role::Trait(true) | Role::Impl(true) | Role::InherentImpl(true)
+            ) || matches!(self.role, Role::Function(true))
+                && matches!(parent.role, Role::InherentImpl(false)))
         {
             self.constant = self.constant.or_else(|| draft.inherit(parent.constant));
         }
@@ -107,3 +121,7 @@ impl Inventory {
         self.const_safe(definition)
     }
 }
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/block_policies.rs"]
+mod tests;

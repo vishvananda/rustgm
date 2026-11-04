@@ -7,7 +7,10 @@ use crate::{
         stability::{Inventory, PublicBudget, visit_public_bindings},
     },
     sema::model::Declarations,
-    support::{hash::HashSet, retained},
+    support::{
+        hash::{HashMap, HashSet},
+        retained,
+    },
     types::{
         GenericArgs, ItemId, Kind, TypeId,
         arguments::Argument,
@@ -50,6 +53,7 @@ struct Interfaces<'a> {
     inventory: &'a Inventory,
     pending: Vec<Task>,
     seen: HashSet<Task>,
+    inherent: HashMap<DefId, Vec<DefId>>,
 }
 pub(super) fn check(report: &Report, facts: &Declarations) -> Result<Cost, Error> {
     check_with_limits(report, facts, 1_000_000, 64 * 1024 * 1024)
@@ -84,7 +88,9 @@ fn check_with_limits(
         inventory,
         pending: Vec::new(),
         seen: HashSet::default(),
+        inherent: HashMap::default(),
     };
+    interfaces.index_inherent(&mut budget)?;
     visit_public_bindings(&report.resolution, &mut budget, |definition, budget| {
         interfaces.enqueue(Task::Declaration(definition), budget)
     })?;
@@ -99,6 +105,87 @@ fn check_with_limits(
     Ok(budget.cost)
 }
 impl Interfaces<'_> {
+    fn index_inherent(&mut self, budget: &mut Budget) -> Result<(), Error> {
+        let facts = self.facts;
+        for (index, owner) in facts.associated.owners().iter().enumerate() {
+            budget.charge(1, 0)?;
+            if owner.source.is_none()
+                || !matches!(
+                    owner.kind,
+                    super::associated::OwnerKind::Impl {
+                        trait_type: None,
+                        ..
+                    }
+                )
+            {
+                continue;
+            }
+            let schema = facts
+                .associated
+                .schema(owner.self_definition)
+                .ok_or_else(|| Error::unlocated("inherent interface lost its completed target"))?;
+            let target = match facts.types.kind(schema.self_type) {
+                Some(Kind::Adt(item, _)) => Some(DefId(item.0)),
+                Some(_) => None,
+                None => return Err(Error::unlocated("inherent interface target is missing")),
+            };
+            let owner = super::associated::OwnerId(
+                u32::try_from(index)
+                    .map_err(|_| Error::unlocated("inherent interface owner overflow"))?,
+            );
+            for &member in facts
+                .associated
+                .owner_members(owner)
+                .ok_or_else(|| Error::unlocated("inherent interface members are missing"))?
+            {
+                budget.charge(1, 0)?;
+                if self
+                    .report
+                    .resolution
+                    .definitions
+                    .get(member.0 as usize)
+                    .is_none_or(|member| member.access != Access::Public)
+                {
+                    continue;
+                }
+                if let Some(target) = target {
+                    self.retain_inherent(target, member, budget)?;
+                } else {
+                    self.enqueue(Task::Declaration(member), budget)?;
+                }
+            }
+        }
+        Ok(())
+    }
+    fn retain_inherent(
+        &mut self,
+        target: DefId,
+        member: DefId,
+        budget: &mut Budget,
+    ) -> Result<(), Error> {
+        let old = self.inherent.get(&target);
+        let mut growth = retained::Growth::vector::<DefId>(
+            old.map_or(0, Vec::len),
+            old.map_or(0, Vec::capacity),
+            1,
+        );
+        if old.is_none() {
+            growth.include(retained::Growth::map::<DefId, Vec<DefId>>(
+                self.inherent.len(),
+                self.inherent.capacity(),
+                1,
+            ));
+        }
+        budget.charge(growth.work.saturating_add(1), growth.bytes)?;
+        self.inherent
+            .try_reserve(usize::from(old.is_none()))
+            .map_err(|_| Error::unlocated("inherent interface index allocation failed"))?;
+        let rows = self.inherent.entry(target).or_default();
+        rows.try_reserve(1)
+            .map_err(|_| Error::unlocated("inherent interface row allocation failed"))?;
+        rows.push(member);
+        Ok(())
+    }
     fn enqueue(&mut self, task: Task, budget: &mut Budget) -> Result<(), Error> {
         budget.charge(1, 0)?;
         if self.seen.contains(&task) {
@@ -132,12 +219,28 @@ impl Interfaces<'_> {
         let Some(node) = actual.node else {
             return Ok(());
         };
+        if let Some(members) = self.inherent.remove(&id) {
+            budget.charge(members.len().saturating_add(1), 0)?;
+            for member in members {
+                self.enqueue(Task::Declaration(member), budget)?;
+            }
+        }
         if actual.access == Access::Public {
             if self.inventory.declaration(id).is_none() {
                 return Err(Declarations::error(
                     self.report,
                     node,
                     "public declaration exposed by an API has missing library stability attribute",
+                ));
+            }
+            if actual.kind == DefKind::Function
+                && self.facts.is_const_function(id)
+                && self.inventory.const_declaration(id).is_none()
+            {
+                return Err(Declarations::error(
+                    self.report,
+                    node,
+                    "public const member exposed by an API has missing const library stability attribute",
                 ));
             }
             self.enqueue(Task::Schema(id), budget)?;

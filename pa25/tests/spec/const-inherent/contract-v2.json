@@ -1,0 +1,148 @@
+{
+  "schema": 1,
+  "profile": {
+    "edition": 2024,
+    "rust": "1.98.0",
+    "cap_lints": "allow"
+  },
+  "cases": [
+    {
+      "name": "value-and-borrow",
+      "path": "pa25/tests/spec/const-inherent/value-and-borrow.rs",
+      "status": 0,
+      "sha256": "da6f8c3c42a6b7ca9bb453b79cdba1511e73938a13d8d59982e28049569d6a4c"
+    },
+    {
+      "name": "runtime-member",
+      "path": "pa25/tests/spec/const-inherent/runtime-member.rs",
+      "status": 0,
+      "sha256": "103404d0b4d70ec9008afd6e007b577bdf0b9e97de45b1a256500dd6188ac986"
+    },
+    {
+      "name": "conditional-const-bound",
+      "path": "pa25/tests/spec/const-inherent/conditional-const-bound.rs",
+      "status": 0,
+      "sha256": "874a7eb89b99b5810ece6e88bf560b7a9d4d63ac4994daec66788979ecf67773"
+    },
+    {
+      "name": "conditional-runtime-bound",
+      "path": "pa25/tests/spec/const-inherent/conditional-runtime-bound.rs",
+      "status": 0,
+      "sha256": "80f0c2a9a9e7b87e1fc472946f3c327e50d8bac8be31946a0969b09f90b978f0"
+    },
+    {
+      "name": "conditional-nonconst-impl",
+      "path": "pa25/tests/spec/const-inherent/conditional-nonconst-impl.rs",
+      "status": 1,
+      "sha256": "298a39acfc761093cc8324a9018e4bfe335a6273360e647135d1076fcc33a1e3"
+    },
+    {
+      "name": "missing-inherited-bound",
+      "path": "pa25/tests/spec/const-inherent/missing-inherited-bound.rs",
+      "status": 1,
+      "sha256": "fb9882b460ab922d3f7abd62a0e192f223915bb45546130c575e8ed66ab114f0"
+    },
+    {
+      "name": "ordinary-bound-not-const",
+      "path": "pa25/tests/spec/const-inherent/ordinary-bound-not-const.rs",
+      "status": 1,
+      "sha256": "2bf47b234d95cc5436637442fb42453717c3f125d6f9cd442588c7980f6a1c98"
+    },
+    {
+      "name": "ordinary-impl-not-const",
+      "path": "pa25/tests/spec/const-inherent/ordinary-impl-not-const.rs",
+      "status": 1,
+      "sha256": "39ac4d8b3330343188ee7633fbdbbf4523cbd8652b3ed1e474797176f937cdd5"
+    },
+    {
+      "name": "redundant-const",
+      "path": "pa25/tests/spec/const-inherent/redundant-const.rs",
+      "status": 1,
+      "sha256": "0360bf2d6cf9aa6ca4c358aa04b7deb749722e9bbb6b0213d3948c289328d216"
+    },
+    {
+      "name": "async-member",
+      "path": "pa25/tests/spec/const-inherent/async-member.rs",
+      "status": 1,
+      "sha256": "2f8396de5612784045b86199d04e42e4baf1deaab511ec0342f6419d66c9a8f5"
+    },
+    {
+      "name": "unused-runtime-body",
+      "path": "pa25/tests/spec/const-inherent/unused-runtime-body.rs",
+      "status": 1,
+      "sha256": "20facae8f49d43e082584221d31e2e500231027454556656a9afda36b7f15aab"
+    },
+    {
+      "name": "nested-function-not-const",
+      "path": "pa25/tests/spec/const-inherent/nested-function-not-const.rs",
+      "status": 1,
+      "sha256": "bc093bf4aa7e42542d6d0ec944853ddf9bbd63633233820e16866cc533eae407"
+    },
+    {
+      "name": "missing-feature",
+      "path": "pa25/tests/spec/const-inherent/missing-feature.rs",
+      "status": 1,
+      "sha256": "a176282c5ae94b78076116fc324a6c9ddd6af9085d7ea75071a9b6d94102daf8"
+    },
+    {
+      "name": "macro-owned-block",
+      "path": "pa25/tests/spec/const-inherent/macro-owned-block.rs",
+      "status": 0,
+      "sha256": "6a9b675d94f4d694d16495fd77c7f83056538593aec387730e24a8b9c60ff7d7"
+    },
+    {
+      "name": "inactive-invalid-block",
+      "path": "pa25/tests/spec/const-inherent/inactive-invalid-block.rs",
+      "status": 0,
+      "sha256": "dc3a93e3fd7e87977ead37843718f2e30be0d7a5942028545e0494c488b3cd46"
+    },
+    {
+      "name": "upstream-const-impl-inherent",
+      "path": "pa25/tests/spec/const-inherent/upstream/const-impl-inherent.rs",
+      "status": 0,
+      "sha256": "51ebb27a1a9e1f39df8c5617a8b826dd39a6a5d977242c96eca3b8fb30fc345f"
+    },
+    {
+      "name": "upstream-const-impl-inherent-bounds",
+      "path": "pa25/tests/spec/const-inherent/upstream/const-impl-inherent-bounds.rs",
+      "status": 0,
+      "sha256": "9538606b72f3586d00227741efb52896073b14f88ca2038eb05fd0d9efc6e0b0"
+    },
+    {
+      "name": "upstream-const-impl-inherent-double-const",
+      "path": "pa25/tests/spec/const-inherent/upstream/const-impl-inherent-double-const.rs",
+      "status": 1,
+      "sha256": "39ab01401f27e0013555831e22ba1532bdee6fd6f1b55f5872a249d780ac2287"
+    },
+    {
+      "name": "upstream-ice-149083-async-in-const-impl",
+      "path": "pa25/tests/spec/const-inherent/upstream/ice-149083-async-in-const-impl.rs",
+      "status": 1,
+      "sha256": "8f04cd7c1c2e0f37a53a3091275fe35d1672928e1d0cb130cd44a44cb0ee0ebb"
+    },
+    {
+      "name": "macro-literal-permission",
+      "path": "pa25/tests/spec/const-inherent/macro-literal-permission.rs",
+      "status": 0,
+      "sha256": "6884e5de04740dc506b4d57753f6393e7afe92314792d2ec3f5d889acb25f80e"
+    },
+    {
+      "name": "macro-captured-no-permission",
+      "path": "pa25/tests/spec/const-inherent/macro-captured-no-permission.rs",
+      "status": 1,
+      "sha256": "d5fd50bee4a38815c268276689a750b3b3c50cddf2b4a1287b5d3b8182e10736"
+    }
+  ],
+  "boundaries": [
+    "actual inherited const member identity",
+    "conditional generic const obligations",
+    "ordinary use of nonconst trait impl",
+    "unused body validity",
+    "redundant const and async rejection",
+    "nested items keep own constness",
+    "cfg and macro owner provenance",
+    "regular and const library policy remain distinct",
+    "imported policy and original library artifacts remain required"
+  ],
+  "predecessor_contract_sha256": "c91892368d70e29f9cfaaaeebd2c4308bb057df0a7b3b792c336686d47da948d"
+}

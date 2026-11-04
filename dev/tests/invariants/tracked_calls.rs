@@ -433,3 +433,22 @@ fn unused_tracked_calls_type_without_location_but_reached_calls_require_actual_d
     );
     Ok(())
 }
+
+#[test]
+fn ordinary_default_inputs_pay_actual_attribute_budget_without_source_catalog_authority()
+-> Result<(), Box<dyn std::error::Error>> {
+    let source = crate::test_source::fixture(
+        "pa25/tests/spec/const-inherent/upstream/const-impl-inherent-bounds.rs",
+    )?;
+    let report = crate::test_source::resolve(&source, true)?;
+    let analysis = crate::pipeline::analyze_source(&report)?;
+    assert!(analysis.facts.source_bindings.is_none());
+    assert!(
+        crate::sema::header_attributes::charge_source_retention(&analysis.facts, 1, 0).is_err()
+    );
+    analysis.facts.charge_caller_inputs(7, 11)?;
+    assert!(
+        crate::sema::header_attributes::charge_source_retention(&analysis.facts, 1, 0).is_err()
+    );
+    Ok(())
+}

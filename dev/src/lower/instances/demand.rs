@@ -545,6 +545,10 @@ pub(super) fn specialize(
         cleanup,
     )
     .map_err(error)?;
+    // This demand comes from executable code. The checked original retains
+    // its const obligations; CTFE materializes separately with its own caller.
+    // A conditional trait premise permits an ordinary impl at runtime.
+    materialized.body.const_context = false;
     materialized.resolve(facts).map_err(|e| error(&e))?;
     facts.prepare_opaque_storage().map_err(error)?;
     body::promote::instance(

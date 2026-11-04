@@ -13,9 +13,10 @@ were skipped. Successor full run41820005554 on architecture-request compiler
 pass, but two old PA19/23 diagnostic sidecars differ after the negative-coherence
 improvement. Both independently remain Rust rejections; scoped generator updates
 and full affected text suites now pass. Successor full qualification41829269372
-is confirmed live on published inventory-budget compiler dcea5401c; poll that
-exact handle and do not supersede it while live. Native/debug/component and full
-release gates remain pending; do not claim predecessor skipped gates passed.
+on published inventory-budget compiler dcea5401c is terminal success with every
+gate passing, including full release/course, native, debug, independent and
+component qualification. The const-inherent successor passes focused qualification; its full release
+qualification will follow publication.
 The redundant41814340248 on the old head was explicitly cancelled after the
 initial push failed; it is not qualification evidence for the new compiler.
 Predecessor run41781814852 on1f5a2b8d0 also passes every gate.
@@ -27,22 +28,23 @@ concurrency cancels the earlier manual run. Source checkpoints may continue with
 focused evidence and push-triggered fast CI; dispatch successor full qualification
 only after its predecessor is terminal. No whole PA release is inferred.
 
-Current original-core frontier is LIB-142: const inherent-impl policy/eligibility.
-The [inventory-budget checkpoint](pa31-inventory-budget-checkpoint.md) closes
-LIB-141 with one authenticated cumulative source/inventory payer, finite sticky
-work/storage guards, persistent retained policy accounting and prepaid owner
-arrays/used-policy capacity. Final private59/production5 pass in182.27s; PA19
-1193/1193 and PA23 415/415 pass after two independently justified scoped diagnostic
-regenerations. Three source controls, ordinary LowIR and all fifteen configuration
-constants match the predecessor; all six configuration pins remain unchanged.
-CLI041e3026 clears the guard in18.34s/375opens and reports const stability at
-file138 byte554. The first-open map points to cycle.rs21's const inherent impl;
-confirm the retained owner and implement real enclosing-impl/member constness and
-bounds under PA25/19/31, preserving PA29 transport duties. All722 hashes, options,
-Allow cap and declared finite limits remain unchanged; inventory coverage is now
-cumulative. The96 A/A/ABBA observations establish no speedup amid host noise.
-No original artifact or whole assignment is completed. Root stays alone in the
-existing warm btrfs tree with current/predecessor pins and scoped cleanup.
+Current original-core frontier is LIB-143: tuple-field library stability ownership.
+The [const inherent checkpoint](pa25-inherent-block-checkpoint.md) clears LIB-142
+with actual implicit method constness, exact feature/macro authority, distinct
+group/API policy, typed public exposure and real conditional bounds. Ordinary
+const callers share scoped facts without a compiler Catalog; runtime instances
+and CTFE keep separate execution contexts. Final private104/production5 pass
+in200.40s and a separate native gate matches Rust's7/9. All51 independent source
+outcomes, four original upstream files, ordinary/member LowIR controls, fifteen
+configuration values, upstream attribution and harness checks pass. All six
+configuration pins remain unchanged. The96 immutable A/A/ABBA observations are
+retained without a speedup claim. CLIfcaa05c0 clears the old owner in17.87s/375opens
+and reports file42 byte1399. The first-open map points to num/saturating.rs38's
+annotated tuple field. Confirm its retained owner and implement real field
+policy/inheritance/visibility/use checks under PA31/12/29. All722 input hashes,
+options, Allow cap and finite source limits are unchanged. Authenticated imports,
+whole assignments and original core/alloc/std artifacts remain required.
+Root remains alone in the warm btrfs tree with scoped cleanup and unchanged guards.
 
 Previous original-core frontier was LIB-141: the stability owner inventory's resource guard.
 The [architecture-request checkpoint](pa41-architecture-requests-checkpoint.md)

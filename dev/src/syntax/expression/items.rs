@@ -287,6 +287,7 @@ impl Parser<'_, '_> {
             kind: ItemKind::Module { items: None },
         };
         let mut inner = crate::syntax::item::AttributeRange::default();
+        let mut const_keyword = None;
         let foreign_keyword =
             if self.item_scope == Scope::External && self.cursor.at_word(Word::Type)? {
                 self.cursor.peek(0)?.map(|token| Span {
@@ -338,7 +339,16 @@ impl Parser<'_, '_> {
             self.value_item(&mut item, Safety::Default)?
         } else {
             let restriction = self.impl_restriction()?;
-            let constant = self.eat_word(Word::Const)?;
+            let constant = if self.cursor.at_word(Word::Const)? {
+                let token = self.required()?;
+                const_keyword = Some(Span {
+                    start: token.start,
+                    end: token.end,
+                });
+                true
+            } else {
+                false
+            };
             let asynchronous = self.eat_word(Word::Async)?;
             let unsafe_ = self.eat_word(Word::Unsafe)?;
             let safe = self.cursor.at_word(Word::Safe)?
@@ -480,7 +490,7 @@ impl Parser<'_, '_> {
             }
         };
         self.validate_item(&item, intrinsic)?;
-        let node = self.item_node(start, item, modifier, foreign_keyword)?;
+        let node = self.item_node(start, item, modifier, foreign_keyword, const_keyword)?;
         let node = self.attach(inner, node)?;
         self.attach(attrs, node)
     }
@@ -538,6 +548,7 @@ impl Parser<'_, '_> {
         item: Item,
         modifier: Option<MethodModifier>,
         foreign_keyword: Option<Span>,
+        const_keyword: Option<Span>,
     ) -> Result<NodeId, LexError> {
         let id = u32::try_from(self.ast.items.len()).map_err(|_| error(start, "too many items"))?;
         self.ast.items.push(item);
@@ -553,6 +564,22 @@ impl Parser<'_, '_> {
             } else {
                 self.ast.record_defaultness(id, node, modifier.span)?;
             }
+        } else if matches!(
+            item.kind,
+            ItemKind::Impl {
+                constant: true,
+                trait_path: None,
+                ..
+            }
+        ) {
+            let keyword = const_keyword
+                .ok_or_else(|| error(start, "const implementation lost its qualifier"))?;
+            self.ast.record_typed_gate_site(
+                id,
+                node,
+                keyword,
+                crate::syntax::gate_sites::Kind::ConstInherent,
+            )?;
         } else if let Some(keyword) = foreign_keyword {
             self.ast.record_gate_site(id, node, keyword)?;
         } else if matches!(item.kind, ItemKind::TraitAlias { .. }) {

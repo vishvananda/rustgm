@@ -23,7 +23,7 @@ fn walk(
         for site in sites.entries().iter().filter(|site| {
             matches!(
                 site.kind,
-                Kind::TraitAlias | Kind::ForeignType | Kind::FinalFunction
+                Kind::TraitAlias | Kind::ForeignType | Kind::FinalFunction | Kind::ConstInherent
             )
         }) {
             let key = NodeKey {
@@ -41,6 +41,18 @@ fn walk(
                         "final_associated_functions",
                         None,
                         "final method requires final_associated_functions or exact token allowance",
+                    )),
+                    None,
+                ],
+                ItemKind::Impl {
+                    constant: true,
+                    trait_path: None,
+                    ..
+                } if site.kind == Kind::ConstInherent => [
+                    Some((
+                        "const_trait_impl",
+                        Some(true),
+                        "const inherent implementation requires const_trait_impl or exact token allowance",
                     )),
                     None,
                 ],

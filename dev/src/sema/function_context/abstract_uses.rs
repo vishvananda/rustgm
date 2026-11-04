@@ -42,11 +42,6 @@ impl<'a> DefiningCalls<'a> {
         owner: NodeKey,
         mut charge: impl FnMut(usize) -> Result<(), &'static str>,
     ) -> Result<Self, &'static str> {
-        if facts.source_bindings.is_none() {
-            return Err(
-                "abstract const-trait defining-call facts outside source provider are not implemented",
-            );
-        }
         charge(5)?;
         let context = facts.function_context(definition, owner)?;
         let trait_definition = match context {

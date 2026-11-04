@@ -187,7 +187,7 @@ fn scope_walk_rejects_unknown_definition_sites_and_counts_failed_work() -> TestR
     // Includes the sparse SIMD and coherence owners once per compilation.
     assert_eq!(
         size_of::<Declarations>(),
-        7048 + size_of::<Vec<()>>() + 3 * size_of::<usize>()
+        7048 + size_of::<Vec<()>>() + 4 * size_of::<usize>()
     );
     assert_eq!(size_of::<crate::resolve::model::Scope>(), 32);
     Ok(())

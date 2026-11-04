@@ -85,11 +85,7 @@ impl Checker<'_> {
     }
 
     fn invocation_effect(&self) -> Result<crate::support::constness::Constness, Error> {
-        if self.facts.source_bindings.is_some() {
-            self.callee_use_effect()
-        } else {
-            Ok(crate::support::constness::Constness::Ordinary)
-        }
+        self.callee_use_effect()
     }
 
     fn select_invocation(

@@ -4907,8 +4907,21 @@ publish this representation until its actual codec is implemented. See the
 [SIMD checkpoint](docs/source-simd-layout-checkpoint.md) for native evidence
 and the exact supported lane and ABI profile.
 
-Retain const-function permission by resolved declaration identity and propagate
-the enclosing constant context into the typed body and its specializations.
+Retain const-function permission by resolved declaration identity. A const
+inherent impl supplies implicit constness only to its actual direct methods;
+ordinary impl policy, nested declarations and stable API annotations supply no
+constness. Validate the exact const keyword's genuine feature/macro authority.
+Keep group const stability distinct from method eligibility and actual caller
+proofs. Index public inherent members once by their completed nominal target,
+then add their interface edges only when that nominal becomes reachable through
+the existing typed public worklist. Prepay the index and visit each edge once.
+Ordinary const callers reuse the existing scoped effect facts under one cold
+global owner without constructing a compiler Catalog. Their partial attribute
+budget pays caller-input work without granting completed source contracts.
+Preserve the checked defining body's constant context. Executable lowering
+materializes runtime instances in runtime mode; CTFE materializes separately
+and retains every concrete conditional bound and reached-call check. See the
+[const inherent checkpoint](docs/pa25-inherent-block-checkpoint.md).
 Function pointers carry no const-call permission, even when their original
 value was a const function or constructor. Eligibility checks consume selected
 CFG operations before demanded evaluation. Both conditional branches participate;

@@ -249,7 +249,7 @@ fn actual_source_receiver_and_path_sites_retain_their_identifier_context() -> Te
     // The new coherence pointer belongs to the compilation-wide owner.
     assert_eq!(
         size_of::<crate::sema::model::Declarations>(),
-        7048 + size_of::<Vec<()>>() + 3 * size_of::<usize>()
+        7048 + size_of::<Vec<()>>() + 4 * size_of::<usize>()
     );
     Ok(())
 }

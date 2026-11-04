@@ -47,6 +47,15 @@ const MAX_ROWS: usize = 1_000_000;
 const MAX_RETAINED: usize = 16 * 1024 * 1024;
 const MAX_TRANSIENT: usize = 32 * 1024 * 1024;
 impl CallContexts {
+    fn slot<'a>(
+        catalog: &'a mut Option<Box<crate::sema::compiler_items::Catalog>>,
+        local: &'a mut Option<Box<Self>>,
+    ) -> &'a mut Option<Box<Self>> {
+        match catalog.as_deref_mut() {
+            Some(catalog) => &mut catalog.call_contexts,
+            None => local,
+        }
+    }
     fn bytes(&self, capacity: usize) -> Result<usize, &'static str> {
         capacity
             .checked_mul(size_of::<Descriptor>())
@@ -135,14 +144,24 @@ impl CallContexts {
         Ok(row)
     }
 }
+impl Declarations {
+    pub(in crate::sema) fn call_contexts(&self) -> Option<&CallContexts> {
+        match self.source_bindings.as_deref() {
+            Some(catalog) => catalog.call_contexts.as_deref(),
+            None => self.local_call_contexts.as_deref(),
+        }
+    }
+    fn call_contexts_slot(&mut self) -> &mut Option<Box<CallContexts>> {
+        CallContexts::slot(&mut self.source_bindings, &mut self.local_call_contexts)
+    }
+    pub(in crate::sema) fn call_contexts_mut(&mut self) -> Option<&mut CallContexts> {
+        self.call_contexts_slot().as_deref_mut()
+    }
+}
 impl SourceCallUse {
     fn descriptor(self, facts: &Declarations) -> Result<&Descriptor, &'static str> {
         facts
-            .source_bindings
-            .as_deref()
-            .ok_or("source call use has no current source catalog")?
-            .call_contexts
-            .as_deref()
+            .call_contexts()
             .and_then(|contexts| contexts.rows.get((self.0.get() - 1) as usize))
             .ok_or("source call use has no current body descriptor")
     }
@@ -280,6 +299,9 @@ impl Checker<'_> {
         node: crate::syntax::ast::NodeId,
         solved: &Solved,
     ) -> Result<(), Error> {
+        if self.facts.source_bindings.is_none() {
+            return Ok(());
+        }
         let crate::syntax::ast::Kind::Call { callee, .. } = self.kind(node) else {
             return Ok(());
         };
@@ -320,10 +342,10 @@ impl Checker<'_> {
         Ok(())
     }
     pub(super) fn publish_calls(&mut self, solved: &Solved) -> Result<(), Error> {
-        if self.facts.source_bindings.is_none() {
+        let effect = self.callee_use_effect()?;
+        if self.facts.source_bindings.is_none() && effect == Constness::Ordinary {
             return self.publish_ordinary_calls(solved);
         }
-        let effect = self.callee_use_effect()?;
         let mut allowances = self.report.macro_allowances();
         let (any, mut source_use) = self.existing_call_context(solved, effect, &mut allowances)?;
         // Charge all commit ports before retaining a descriptor or changing a node.
@@ -331,33 +353,14 @@ impl Checker<'_> {
             .map_err(|e| self.error(self.state.body.node, e))?;
         let warm = source_use.is_some();
         if any && !warm {
-            if self
-                .facts
-                .source_bindings
-                .as_deref()
-                .is_some_and(|catalog| catalog.call_contexts.is_none())
-            {
-                // The current call-context budget includes its enclosing owner.
-                // A source client has no local source-header retention producer.
+            if self.facts.call_contexts().is_none() {
                 charge(&mut self.state.steps, 1)
                     .map_err(|error| self.error(self.state.body.node, error))?;
-                self.facts
-                    .source_bindings
-                    .as_deref_mut()
-                    .ok_or_else(|| {
-                        Declarations::error(
-                            self.report,
-                            self.state.body,
-                            "source catalog disappeared",
-                        )
-                    })?
-                    .call_contexts = Some(Box::default());
+                *self.facts.call_contexts_slot() = Some(Box::default());
             }
             source_use = Some(
                 self.facts
-                    .source_bindings
-                    .as_deref_mut()
-                    .and_then(|catalog| catalog.call_contexts.as_deref_mut())
+                    .call_contexts_mut()
                     .ok_or_else(|| {
                         Declarations::error(
                             self.report,
@@ -376,9 +379,7 @@ impl Checker<'_> {
         if any && !warm {
             let actual = self
                 .facts
-                .source_bindings
-                .as_deref_mut()
-                .and_then(|catalog| catalog.call_contexts.as_deref_mut())
+                .call_contexts_mut()
                 .ok_or_else(|| {
                     Declarations::error(
                         self.report,

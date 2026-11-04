@@ -20,6 +20,7 @@ pub enum Kind {
     TraitAlias,
     ForeignType,
     FinalFunction,
+    ConstInherent,
 }
 impl Kind {
     pub(crate) const fn is_defaultness(self) -> bool {
@@ -66,10 +67,21 @@ impl Declaration {
                 .items
                 .get(self.item as usize)
                 .and_then(|item| Kind::item(item.kind))
-                != Some(if self.kind == Kind::FinalFunction {
-                    Kind::Function
-                } else {
-                    self.kind
+                != Some(match self.kind {
+                    Kind::FinalFunction => Kind::Function,
+                    Kind::ConstInherent => Kind::Implementation,
+                    _ => self.kind,
+                })
+            || self.kind == Kind::ConstInherent
+                && !ast.items.get(self.item as usize).is_some_and(|item| {
+                    matches!(
+                        item.kind,
+                        ItemKind::Impl {
+                            constant: true,
+                            trait_path: None,
+                            ..
+                        }
+                    )
                 })
             || if self.kind == Kind::TraitAlias {
                 self.span.end <= self.span.start || self.span != node.span
@@ -77,7 +89,7 @@ impl Declaration {
                 self.span.end.checked_sub(self.span.start)
                     != Some(match self.kind {
                         Kind::ForeignType => 4,
-                        Kind::FinalFunction => 5,
+                        Kind::FinalFunction | Kind::ConstInherent => 5,
                         _ => 7,
                     })
             }

@@ -219,7 +219,7 @@ fn mutable_iteration_keeps_ordinary_record_sizes_and_records_lazy_catalog_cost()
     // SIMD and coherence pointers; dense nodes and body rows are unchanged.
     assert_eq!(
         size_of::<Declarations>(),
-        7048 + size_of::<Vec<()>>() + 3 * size_of::<usize>()
+        7048 + size_of::<Vec<()>>() + 4 * size_of::<usize>()
     );
     assert_eq!(size_of::<types::Kind>(), 24);
     assert_eq!(size_of::<types::infer::Context>(), 400);

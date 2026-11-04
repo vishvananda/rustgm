@@ -22,9 +22,7 @@ impl ProtocolPlanId {
         node: NodeKey,
     ) -> Result<Plan, &'static str> {
         let plan = facts
-            .source_bindings
-            .as_deref()
-            .and_then(|catalog| catalog.call_contexts.as_deref())
+            .call_contexts()
             .and_then(|contexts| contexts.plans.get((self.0.get() - 1) as usize))
             .copied()
             .ok_or("Try plan has no current source call context")?;
@@ -138,14 +136,9 @@ impl Checker<'_> {
         })?;
         let count = self.state.call_types.protocol_plans.len();
         crate::sema::header_attributes::charge_source_contract_query(self.facts, 1)?;
-        let contexts = self
-            .facts
-            .source_bindings
-            .as_deref()
-            .and_then(|catalog| catalog.call_contexts.as_deref())
-            .ok_or_else(|| {
-                self.error(self.state.body.node, "Try calls lost their current context")
-            })?;
+        let contexts = self.facts.call_contexts().ok_or_else(|| {
+            self.error(self.state.body.node, "Try calls lost their current context")
+        })?;
         let (copy_work, growth) = contexts
             .protocol_growth(count)
             .map_err(|e| self.error(self.state.body.node, e))?;
@@ -213,18 +206,18 @@ impl Checker<'_> {
         }
         let report = self.report;
         let owner = self.state.body;
-        let contexts = self
-            .facts
-            .source_bindings
-            .as_deref_mut()
-            .and_then(|catalog| catalog.call_contexts.as_deref_mut())
-            .ok_or_else(|| {
-                Declarations::error(
-                    report,
-                    owner,
-                    "Try publication lost its current call context",
-                )
-            })?;
+        let contexts = CallContexts::slot(
+            &mut self.facts.source_bindings,
+            &mut self.facts.local_call_contexts,
+        )
+        .as_deref_mut()
+        .ok_or_else(|| {
+            Declarations::error(
+                report,
+                owner,
+                "Try publication lost its current call context",
+            )
+        })?;
         contexts
             .reserve_protocol(new_count)
             .map_err(|e| Declarations::error(report, owner, e))?;

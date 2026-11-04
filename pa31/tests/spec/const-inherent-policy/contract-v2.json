@@ -1,0 +1,161 @@
+{
+  "schema": 1,
+  "profile": {
+    "edition": 2024,
+    "rust": "1.98.0",
+    "cap_lints": "allow"
+  },
+  "cases": [
+    {
+      "name": "unstable-block",
+      "path": "pa31/tests/spec/const-inherent-policy/unstable-block.rs",
+      "status": 0,
+      "sha256": "38dc378e3ff10fc325b3e8c522546d4f26a0a050d437d1aad829c0cd72ddf4e6"
+    },
+    {
+      "name": "stable-block",
+      "path": "pa31/tests/spec/const-inherent-policy/stable-block.rs",
+      "status": 1,
+      "sha256": "2314c25624259198615d92d6022d362fd2e1a5e153604fdf1546c29a5945bd2e"
+    },
+    {
+      "name": "unmarked-block",
+      "path": "pa31/tests/spec/const-inherent-policy/unmarked-block.rs",
+      "status": 1,
+      "sha256": "db2c20b4a69fdadaac5f23ce9ef3a286293b3c1e206cfd735abc5ad544a1283b"
+    },
+    {
+      "name": "runtime-use-unstable",
+      "path": "pa31/tests/spec/const-inherent-policy/runtime-use-unstable.rs",
+      "status": 0,
+      "sha256": "19b8b8f36c05ef3cbca90de9efe7b76804285c64658a3e806c6e871ac3d25805"
+    },
+    {
+      "name": "stable-body-unstable-callee",
+      "path": "pa31/tests/spec/const-inherent-policy/stable-body-unstable-callee.rs",
+      "status": 1,
+      "sha256": "691a968ac90fd86e44173bc7356bb86c010dcceabef50ba20bdf4afc03834069"
+    },
+    {
+      "name": "stable-body-stable-callee",
+      "path": "pa31/tests/spec/const-inherent-policy/stable-body-stable-callee.rs",
+      "status": 1,
+      "sha256": "7fb108e3297524f552f3d3d3f3fb396894c50a61004bf0e15c0264d1ea8b084e"
+    },
+    {
+      "name": "ordinary-impl-annotation",
+      "path": "pa31/tests/spec/const-inherent-policy/ordinary-impl-annotation.rs",
+      "status": 0,
+      "sha256": "050c2442a0c21bd2ced1a7a5c5934a56c2804b590ad1795f7c80b184eb741cf2"
+    },
+    {
+      "name": "ordinary-function-annotation",
+      "path": "pa31/tests/spec/const-inherent-policy/ordinary-function-annotation.rs",
+      "status": 1,
+      "sha256": "e41f5addb28632da698756544f7c2bcfc42ba1a240330d964fa5503d96451f57"
+    },
+    {
+      "name": "struct-annotation",
+      "path": "pa31/tests/spec/const-inherent-policy/struct-annotation.rs",
+      "status": 1,
+      "sha256": "adb106eb760cae350138479e823cb56864edbba7de213137a5b5643df669cc86"
+    },
+    {
+      "name": "const-member-override",
+      "path": "pa31/tests/spec/const-inherent-policy/const-member-override.rs",
+      "status": 1,
+      "sha256": "7bb7483d1a1bf5c5852ac01f9fb353ce7615a5cc2567a98ab52b628d6e8c7f39"
+    },
+    {
+      "name": "unstable-member-override",
+      "path": "pa31/tests/spec/const-inherent-policy/unstable-member-override.rs",
+      "status": 1,
+      "sha256": "ff5fefcb83677a061e1933ed587f59109ef871cb9ca4792d709578245a074590"
+    },
+    {
+      "name": "nested-owner-no-permission",
+      "path": "pa31/tests/spec/const-inherent-policy/nested-owner-no-permission.rs",
+      "status": 1,
+      "sha256": "eda5cc4d482acefbb6e92976802d820dd7b149f173bfd16b459f81ada2fc638e"
+    },
+    {
+      "name": "redundant-member-const",
+      "path": "pa31/tests/spec/const-inherent-policy/redundant-member-const.rs",
+      "status": 1,
+      "sha256": "a1efa62d2bb767055477a119b217a5d3b2e16dbd2dc2d7082be16492ec130052"
+    },
+    {
+      "name": "macro-owned-policy",
+      "path": "pa31/tests/spec/const-inherent-policy/macro-owned-policy.rs",
+      "status": 0,
+      "sha256": "986c0db9c4f03903941d8fc6dc0a820700a33bd5ba4e0c03b0252a25da277406"
+    },
+    {
+      "name": "inactive-invalid-owner",
+      "path": "pa31/tests/spec/const-inherent-policy/inactive-invalid-owner.rs",
+      "status": 0,
+      "sha256": "cbd9843db8d5969a5db946a616f8a9927234a58a01a5b3fdd3f0420cdea2c6cf"
+    },
+    {
+      "name": "ordinary-group-const-member",
+      "path": "pa31/tests/spec/const-inherent-policy/ordinary-group-const-member.rs",
+      "status": 0,
+      "sha256": "b4485e2a891f823718a11cad4c68fbc0f5fb1c8f6aed234314f75958c7ad8d3d"
+    },
+    {
+      "name": "ordinary-group-const-call-rejected",
+      "path": "pa31/tests/spec/const-inherent-policy/ordinary-group-const-call-rejected.rs",
+      "status": 1,
+      "sha256": "800bb14a89a5770b8ff0bd192b00261b39df2edb01240570f71874fd94d8e201"
+    },
+    {
+      "name": "implicit-member-stable-annotation",
+      "path": "pa31/tests/spec/const-inherent-policy/implicit-member-stable-annotation.rs",
+      "status": 1,
+      "sha256": "e1f52e3628705bc743c62f70909b2287c92dab1e1713a809bccd71e4edfabd18"
+    },
+    {
+      "name": "implicit-member-unstable-annotation",
+      "path": "pa31/tests/spec/const-inherent-policy/implicit-member-unstable-annotation.rs",
+      "status": 1,
+      "sha256": "65e4be9aec7900eeff62e481a7bb46b1c426039caafec4ca4c317d7212e5eb99"
+    },
+    {
+      "name": "ordinary-trait-impl-group",
+      "path": "pa31/tests/spec/const-inherent-policy/ordinary-trait-impl-group.rs",
+      "status": 0,
+      "sha256": "4875a79862df7288980583ea52b760dcfc1f2876b653cfb66e93acd22751821d"
+    },
+    {
+      "name": "ordinary-trait-impl-stable-group",
+      "path": "pa31/tests/spec/const-inherent-policy/ordinary-trait-impl-stable-group.rs",
+      "status": 1,
+      "sha256": "dd4f368123db81a25ebc064447e2c7ac37f8376bc981c788faae4065f776c6fe"
+    },
+    {
+      "name": "private-unmarked-inherent",
+      "path": "pa31/tests/spec/const-inherent-policy/private-unmarked-inherent.rs",
+      "status": 0,
+      "sha256": "038e2d1de0cf2c8e87a32d6cd652ab22bb942c33543210ae35daba5ec13023a5"
+    }
+  ],
+  "boundaries": [
+    "actual inherited const member identity",
+    "conditional generic const obligations",
+    "ordinary use of nonconst trait impl",
+    "unused body validity",
+    "redundant const and async rejection",
+    "nested items keep own constness",
+    "cfg and macro owner provenance",
+    "regular and const library policy remain distinct",
+    "imported policy and original library artifacts remain required"
+  ],
+  "native": {
+    "path": "pa31/tests/spec/const-inherent-policy/native.rs",
+    "sha256": "36ad9d6db1d64ba9782e80aa89d1fe5a12066848b7f53b60e73c1ebe363b9906",
+    "observer": "pa31/tests/spec/const-inherent-policy/observer.c",
+    "expected_stdout": "7\n9\n"
+  },
+  "predecessor_contract_sha256": "378b9bbae385076621ccdbe1a534d68a5602705650bc70ac39c2e4906be91cf2",
+  "prediction_review": "Five initial predictions corrected from pinned Rust1.98 observations; original corpus and logs retained. Stable groups do not confer member const stability; ordinary containers may carry policy without conferring eligibility."
+}

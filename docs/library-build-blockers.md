@@ -15,24 +15,27 @@ PA21–PA24 have implemented/release-evidence status; PA1–PA20 retain
 implemented-draft. PA25–PA44 remain planned. No additional assignment or whole
 upstream library has been completed.
 
-Current original-core frontier is LIB-142: const inherent-impl policy/eligibility.
-The [inventory-budget checkpoint](pa31-inventory-budget-checkpoint.md) closes
-LIB-141 with one authenticated cumulative source/inventory payer, finite sticky
-work/storage guards, persistent retained policy accounting and prepaid owner
-arrays/used-policy capacity. Final private59/production5 pass in182.27s; PA19
-1193/1193 and PA23 415/415 pass after two independently justified scoped diagnostic
-regenerations. Three source controls, ordinary LowIR and all fifteen configuration
-constants match the predecessor; all six configuration pins remain unchanged.
-CLI041e3026 clears the guard in18.34s/375opens and reports const stability at
-file138 byte554. The first-open map points to cycle.rs21's const inherent impl;
-confirm the retained owner and implement real enclosing-impl/member constness and
-bounds under PA25/19/31, preserving PA29 transport duties. All722 hashes, options,
-Allow cap and declared finite limits remain unchanged; inventory coverage is now
-cumulative. The96 A/A/ABBA observations establish no speedup amid host noise.
-No original artifact or whole assignment is completed. Root stays alone in the
-existing warm btrfs tree with current/predecessor pins and scoped cleanup.
-Full CI41829269372 is confirmed live on published compiler dcea5401c; preserve
-that run and report actual pending gates until it finishes.
+Current original-core frontier is LIB-143: tuple-field library stability ownership.
+The [const inherent checkpoint](pa25-inherent-block-checkpoint.md) clears LIB-142
+with actual implicit method constness, exact feature/macro authority, distinct
+group/API policy, typed public exposure and real conditional bounds. Ordinary
+const callers share scoped facts without a compiler Catalog; runtime instances
+and CTFE keep separate execution contexts. Final private104/production5 pass
+in200.40s and a separate native gate matches Rust's7/9. All51 independent source
+outcomes, four original upstream files, ordinary/member LowIR controls, fifteen
+configuration values, upstream attribution and harness checks pass. All six
+configuration pins remain unchanged. The96 immutable A/A/ABBA observations are
+retained without a speedup claim. CLIfcaa05c0 clears the old owner in17.87s/375opens
+and reports file42 byte1399. The first-open map points to num/saturating.rs38's
+annotated tuple field. Confirm its retained owner and implement real field
+policy/inheritance/visibility/use checks under PA31/12/29. All722 input hashes,
+options, Allow cap and finite source limits are unchanged. Authenticated imports,
+whole assignments and original core/alloc/std artifacts remain required.
+Root remains alone in the warm btrfs tree with scoped cleanup and unchanged guards.
+
+Predecessor full CI41829269372 on published inventory-budget compiler dcea5401c
+is terminal success with every gate passing. Const-inherent full qualification
+will follow focused publication; no whole assignment is released.
 
 Previous original-core frontier was LIB-141: the stability owner inventory's resource guard.
 The [architecture-request checkpoint](pa41-architecture-requests-checkpoint.md)
@@ -552,7 +555,8 @@ actual native hints and the future authenticated MIR-import obligation.
 | LIB-139 | Local explicit-negative/strict source profile and paid reference debts qualified; wider consumers/transport required | Genuine negative coherence permission and proof-backed exclusion | PA20 solving/coherence +PA31 source authority +PA29 imported assumptions / original lib.rs166 | Root only | [Checkpoint](pa31-negative-coherence-source-checkpoint.md): private9/production48/native2, PA20 1389/1389,82 matching source outcomes and actual dispatch7 9. Two macro-only syntax allowance observations remain explicit required positives; quantified conditional consumers and strict-owner transport remain required. CLIc1510a1d reaches LIB-140 with all original inputs/configuration/limits unchanged. |
 | LIB-140 | Non-x86 request/selected-target separation qualified; wider operations/transport required | Architecture-specific target-feature request family and real selected-target consumers | PA41 target contracts +PA31 source authority +PA28 reached operations +PA29 transport / original lib.rs171 | Root only | [Checkpoint](pa41-architecture-requests-checkpoint.md): private17/production48/native1, PA8 126/126,112 matching outcomes and actual baseline/configuration7 9. All17 requests enable no CPU facts or ordinary library rows. CLIad230642 reaches LIB-141 with original inputs/configuration/limits unchanged. Earlier macro-only permissions, instructions and wider transport remain required. |
 | LIB-141 | Cumulative inventory payer and owner-array accounting qualified | Stability ownership inventory work, attempted/retained storage and budget ownership | PA31 library availability/const policy +PA29 publication/import producers | Root only | [Checkpoint](pa31-inventory-budget-checkpoint.md): private59/production5, PA19 1193/1193 and PA23 415/415, three Rust-positive source controls, ordinary LowIR and fifteen equal configuration constants. Limits stay finite/unchanged; source/inventory coverage is cumulative with sticky failures and persistent retained rows. CLI041e3026 reaches LIB-142 in18.34s with all722 input hashes unchanged. No whole assignment or library artifact is completed. |
-| LIB-142 | Current original-core frontend frontier | Const inherent-impl owner policy and real member const eligibility | PA25 const items/calls +PA19 method headers +PA31 library policy +PA29 transport / file138:554, first-open map cycle.rs21 | Root only | Confirm actual retained owner. Role::of currently excludes inherent impls from const-policy owners; the candidate source is const impl<I: [const] Clone> Cycle<I>. Reduce actual block/member identity, generic const bounds, ordinary/nonconst opponents, macro/cfg provenance and independent regular/const stability. A library annotation must never fabricate const eligibility. Preserve source/artifact fences and complete original core/alloc/std builds. |
+| LIB-142 | Local source/policy/conditional-call/native checkpoint qualified; imported closure retained | Const inherent-impl owner policy and actual member const eligibility | PA25 const items/calls +PA19 method headers +PA31 library policy +PA29 transport | Root only | [Checkpoint](pa25-inherent-block-checkpoint.md): private104/production5/native1,51 independent source outcomes and real mixed CTFE/runtime7/9. Public exposure uses one typed nominal index; ordinary const facts use one cold owner without fabricated source authority. Original defining checks and actual CTFE requirements remain. CLIfcaa05c0 reaches LIB-143 in17.87s with all722 inputs, six pins, fifteen configuration values and finite limits unchanged. General imported policy/calls and original artifacts remain required. |
+| LIB-143 | Current original-core frontend frontier | Actual named/tuple/variant-field library stability ownership and API consumers | PA31 source availability +PA12 fields/layout +PA29 field-policy transport / file42:1399, first-open map num/saturating.rs38 | Root only | Confirm retained owner. The first-open source has a stable annotation on the public tuple field of Saturating<T>. Add actual field identity, direct/inherited regular policy, const-target rejection, public visibility and real field/constructor/pattern consumers. Preserve macro/cfg source authority and metadata fences; consuming an unused attribute alone is insufficient. |
 | Remaining raw language-item semantic inventory | Declarations checked;98 builtin semantic profiles explicitly unsupported | Actual operators, associated hooks, async/drop/pinning, field reflection, ranges and weak memory hooks | Earliest actual PA23–PA31/40/41 consumer units +PA29 transport / compiler-language-claims packet | Root only | The pinned100-name raw inventory is not a cfg-active blocker count. Shared target/arity/foreign validation and135 independent cases are qualified, but unsupported semantic consumers stop explicitly before ordinary checking can infer absence. Implement each actual builtin relation/runtime contract and add genuine source/native/imported consumers before removing its fence. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |

@@ -9,11 +9,7 @@ impl Checker<'_> {
         callee: NodeId,
         receiver: TermId,
     ) -> Result<(), Error> {
-        let Some(owner) = self
-            .state
-            .environment_owner
-            .filter(|_| self.facts.source_bindings.is_some())
-        else {
+        let Some(owner) = self.state.environment_owner else {
             return Ok(());
         };
         self.state

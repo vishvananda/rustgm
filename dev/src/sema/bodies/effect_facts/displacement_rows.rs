@@ -26,9 +26,7 @@ impl OffsetPlanId {
         node: NodeKey,
     ) -> Result<Plan, &'static str> {
         let plan = facts
-            .source_bindings
-            .as_deref()
-            .and_then(|catalog| catalog.call_contexts.as_deref())
+            .call_contexts()
             .and_then(|contexts| contexts.offsets.as_deref())
             .and_then(|rows| rows.rows.get(self.index() as usize))
             .copied()
@@ -124,17 +122,12 @@ impl Checker<'_> {
                 "offset calls lost their source-use context",
             )
         })?;
-        let contexts = self
-            .facts
-            .source_bindings
-            .as_deref()
-            .and_then(|catalog| catalog.call_contexts.as_deref())
-            .ok_or_else(|| {
-                self.error(
-                    self.state.body.node,
-                    "offset calls lost their current context",
-                )
-            })?;
+        let contexts = self.facts.call_contexts().ok_or_else(|| {
+            self.error(
+                self.state.body.node,
+                "offset calls lost their current context",
+            )
+        })?;
         let growth = contexts
             .offset_growth(count)
             .map_err(|e| self.error(self.state.body.node, e))?;
@@ -213,14 +206,14 @@ impl Checker<'_> {
         }
         let report = self.report;
         let owner = self.state.body;
-        let contexts = self
-            .facts
-            .source_bindings
-            .as_deref_mut()
-            .and_then(|catalog| catalog.call_contexts.as_deref_mut())
-            .ok_or_else(|| {
-                Declarations::error(report, owner, "offset publication lost its current context")
-            })?;
+        let contexts = CallContexts::slot(
+            &mut self.facts.source_bindings,
+            &mut self.facts.local_call_contexts,
+        )
+        .as_deref_mut()
+        .ok_or_else(|| {
+            Declarations::error(report, owner, "offset publication lost its current context")
+        })?;
         contexts
             .reserve_offsets(count)
             .map_err(|e| Declarations::error(report, owner, e))?;

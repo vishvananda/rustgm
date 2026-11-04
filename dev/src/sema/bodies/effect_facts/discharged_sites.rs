@@ -38,9 +38,7 @@ pub(in crate::sema::bodies) fn call_safety_scratch(
     count: usize,
 ) -> Result<(), &'static str> {
     let retained = facts
-        .source_bindings
-        .as_deref()
-        .and_then(|catalog| catalog.call_contexts.as_deref())
+        .call_contexts()
         .map_or(Ok(size_of::<CallContexts>()), |contexts| {
             contexts.bytes(contexts.rows.capacity())
         })?;
@@ -60,9 +58,7 @@ impl SourceCallUse {
     ) -> Result<CallSafety, &'static str> {
         self.effect_for(facts, owner)?;
         let rows = facts
-            .source_bindings
-            .as_deref()
-            .and_then(|catalog| catalog.call_contexts.as_deref())
+            .call_contexts()
             .and_then(|contexts| contexts.safety.as_deref());
         let key = (self.0.get(), node.get(), signature.0);
         Ok(rows
@@ -180,14 +176,9 @@ impl Checker<'_> {
         let Some(context) = context else {
             return Ok(());
         };
-        let contexts = self
-            .facts
-            .source_bindings
-            .as_deref_mut()
-            .and_then(|catalog| catalog.call_contexts.as_deref_mut())
-            .ok_or_else(|| {
-                Error::unlocated("unsafe call publication lost its source context owner")
-            })?;
+        let contexts = self.facts.call_contexts_mut().ok_or_else(|| {
+            Error::unlocated("unsafe call publication lost its source context owner")
+        })?;
         if sites.is_empty() && contexts.safety.is_none() {
             return Ok(());
         }
@@ -262,9 +253,7 @@ impl Checker<'_> {
             && !sites.is_empty()
             && let Some(rows) = self
                 .facts
-                .source_bindings
-                .as_deref_mut()
-                .and_then(|catalog| catalog.call_contexts.as_deref_mut())
+                .call_contexts_mut()
                 .and_then(|contexts| contexts.safety.as_deref_mut())
         {
             rows.sites.extend_from_slice(sites);

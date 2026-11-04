@@ -29,6 +29,28 @@ impl Checker<'_> {
         let ItemKind::Function { body, flags, .. } = self.item(key)?.kind else {
             return Err(self.error(key, "invalid function owner"));
         };
+        if flags.constant
+            && self
+                .facts
+                .associated
+                .owner(id)
+                .and_then(|owner| self.facts.associated.get(owner))
+                .is_some_and(|owner| {
+                    matches!(
+                        owner.kind,
+                        crate::sema::associated::OwnerKind::Impl {
+                            constant: true,
+                            trait_type: None,
+                            ..
+                        }
+                    )
+                })
+        {
+            return Err(self.error(
+                key,
+                "redundant const qualifier in const inherent implementation",
+            ));
+        }
         if self.facts.is_comptime_function(id) {
             self.facts.validate_comptime_parameters(self.report, id)?;
         }

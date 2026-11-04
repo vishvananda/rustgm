@@ -229,6 +229,42 @@
       "adaptation": "none; original bytes retained",
       "oracle": "compile-fail",
       "owning_assignment": "pa2"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/traits/const-traits/const-impl-inherent.rs",
+      "destination": "pa25/tests/spec/const-inherent/upstream/const-impl-inherent.rs",
+      "sha256": "51ebb27a1a9e1f39df8c5617a8b826dd39a6a5d977242c96eca3b8fb30fc345f",
+      "adaptation": "none; original bytes retained",
+      "oracle": "check-pass",
+      "owning_assignment": "pa25"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/traits/const-traits/const-impl-inherent-bounds.rs",
+      "destination": "pa25/tests/spec/const-inherent/upstream/const-impl-inherent-bounds.rs",
+      "sha256": "9538606b72f3586d00227741efb52896073b14f88ca2038eb05fd0d9efc6e0b0",
+      "adaptation": "none; original bytes retained",
+      "oracle": "check-pass",
+      "owning_assignment": "pa25"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/traits/const-traits/const-impl-inherent-double-const.rs",
+      "destination": "pa25/tests/spec/const-inherent/upstream/const-impl-inherent-double-const.rs",
+      "sha256": "39ab01401f27e0013555831e22ba1532bdee6fd6f1b55f5872a249d780ac2287",
+      "adaptation": "none; original bytes retained",
+      "oracle": "compile-fail",
+      "owning_assignment": "pa25"
+    },
+    {
+      "repository": "rust",
+      "path": "tests/ui/traits/const-traits/ice-149083-async-in-const-impl.rs",
+      "destination": "pa25/tests/spec/const-inherent/upstream/ice-149083-async-in-const-impl.rs",
+      "sha256": "8f04cd7c1c2e0f37a53a3091275fe35d1672928e1d0cb130cd44a44cb0ee0ebb",
+      "adaptation": "none; original bytes retained",
+      "oracle": "compile-fail",
+      "owning_assignment": "pa25"
     }
   ]
 }

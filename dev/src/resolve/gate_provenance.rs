@@ -34,6 +34,7 @@ fn parsed<'a>(
                 != Some(match declaration.kind {
                     Kind::ForeignType => "type",
                     Kind::FinalFunction => "final",
+                    Kind::ConstInherent => "const",
                     _ => "default",
                 })
     {

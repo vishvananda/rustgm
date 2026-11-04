@@ -125,3 +125,6 @@ mod test_removal_lints;
 
 #[path = "../../wrapper_sources.rs"]
 mod wrapper_sources;
+
+#[path = "../../group_execution.rs"]
+mod group_execution;

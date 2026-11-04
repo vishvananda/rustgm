@@ -18,7 +18,7 @@ fn semantic_form(
 ) -> Result<(), Error> {
     let message = match declaration.kind {
         Kind::Function => return Ok(()),
-        Kind::TraitAlias | Kind::ForeignType | Kind::FinalFunction => {
+        Kind::TraitAlias | Kind::ForeignType | Kind::FinalFunction | Kind::ConstInherent => {
             return Err(Error::at(
                 file,
                 declaration.span.start,

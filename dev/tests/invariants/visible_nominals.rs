@@ -161,3 +161,29 @@ fn shared_interfaces_keep_bounded_visitation_and_prepaid_failure_paths() -> Resu
     );
     Ok(())
 }
+
+#[test]
+fn indexed_inherent_methods_add_linear_public_edges_and_preserve_failed_queries() -> Result {
+    use std::fmt::Write as _;
+    let mut observations = Vec::new();
+    for width in [8, 32, 128] {
+        let mut source = format!(
+            "{ROOT}#![feature(const_trait_impl)]{STABLE}pub struct Value;#[rustc_const_unstable(feature=\"const_api\",issue=\"none\")]const impl Value{{"
+        );
+        for index in 0..width {
+            write!(source, "{STABLE}pub fn f{index}()->u8{{7}}")?;
+        }
+        source.push('}');
+        let (report, facts) = checked(&source)?;
+        let cost = check(&report, &facts)?;
+        assert!(cost.steps < 1024 * width + 8192, "{width}: {cost:?}");
+        assert!(cost.bytes < 4096 * width + 65536, "{width}: {cost:?}");
+        assert!(check_with_limits(&report, &facts, cost.steps - 1, usize::MAX).is_err());
+        assert_eq!(check(&report, &facts)?.steps, cost.steps);
+        observations.push(cost.steps);
+    }
+    let first = observations[1] - observations[0];
+    let second = observations[2] - observations[1];
+    assert!(first > 0 && second <= 6 * first, "{observations:?}");
+    Ok(())
+}
