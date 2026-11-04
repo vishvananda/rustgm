@@ -127,6 +127,9 @@ impl Stage {
     ) -> Result<s::AvailabilityRows, &'static str> {
         self.require_attribute_context(report, facts)
             .map_err(|_| "availability collection lost its actual source owner")?;
+        if inventory.has_default_body_policies() {
+            return Err("source default-body stability requires complete policy transport");
+        }
         if inventory.has_relationships() {
             return Err("source feature relationships require complete wider policy transport");
         }
@@ -482,6 +485,9 @@ impl Stage {
             kind: match policy.kind {
                 PolicyKind::Regular => s::AvailabilityKind::Regular,
                 PolicyKind::Const => s::AvailabilityKind::Const,
+                PolicyKind::DefaultBody => {
+                    return Err("source default-body stability requires complete policy transport");
+                }
             },
             feature: policy.feature.to_string(),
             level,

@@ -83,7 +83,7 @@ fn seeded() -> Result<(Report, usize, Draft)> {
         origin: policy.origin,
     });
     draft.attributes.insert(
-        policy.origin,
+        (policy.origin, policy.kind),
         std::num::NonZeroUsize::new(1).ok_or("policy id")?,
     );
     Ok((report, index, draft))

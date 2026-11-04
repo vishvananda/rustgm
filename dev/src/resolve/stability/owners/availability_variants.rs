@@ -1,5 +1,6 @@
 //! Regular availability belongs to an actual indexed enum variant, never an expression.
 use super::{Draft, Error, Package};
+use crate::resolve::stability::PolicyKind;
 use crate::{
     resolve::{
         model::{DefKind, Definition, Resolution},
@@ -21,8 +22,8 @@ pub(super) fn consume(
     let key = definition
         .node
         .ok_or_else(|| Error::unlocated("variant availability has no source owner"))?;
-    let regular = draft.attributes.get(&key).copied();
-    if regular.is_none() && !draft.const_attributes.contains_key(&key) {
+    let regular = draft.attribute(key, PolicyKind::Regular);
+    if regular.is_none() && draft.attribute(key, PolicyKind::Const).is_none() {
         return Ok(true);
     }
     draft.charge(12, 0)?;
@@ -63,7 +64,7 @@ pub(super) fn consume(
             "variant availability changed its actual resolved source owner",
         ));
     }
-    if draft.const_attributes.contains_key(&key) {
+    if draft.attribute(key, PolicyKind::Const).is_some() {
         return Err(error(
             "const library stability is not supported on enum variants",
         ));

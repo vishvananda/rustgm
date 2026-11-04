@@ -83,17 +83,22 @@ fn source_marker_keeps_const_unsafe_and_promotion_boundaries_distinct() -> TestR
         "unsafe-call",
         "parent-policy",
         "regular-fallback",
+        "regular-fallback-owner",
     ] {
         let source = input(name)?;
         let outcome = report(&source, name)
             .and_then(|r| pipeline::analyze_source(&r).map(|_| ()).map_err(Into::into));
         assert!(outcome.is_err(), "{name}");
-        if matches!(name, "parent-policy" | "regular-fallback") {
+        let expected = match name {
+            "parent-policy" | "regular-fallback-owner" => {
+                Some("promotable const stability belongs to another declaration")
+            }
+            "regular-fallback" => Some("conflicting library feature definitions"),
+            _ => None,
+        };
+        if let Some(expected) = expected {
             let message = outcome.err().ok_or("wrong owner was accepted")?.to_string();
-            assert!(
-                message.contains("promotable const stability belongs to another declaration"),
-                "{name}: {message}"
-            );
+            assert!(message.contains(expected), "{name}: {message}");
         }
     }
     let source = input("borrow-required")?;

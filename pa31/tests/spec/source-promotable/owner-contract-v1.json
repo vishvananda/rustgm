@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "reason": "Preserve the original mixed stable/unstable conflict rejection and add a distinct-feature source that reaches the actual promotable direct-const-owner boundary. No result prediction is relaxed.",
+  "predecessor_contract_sha256": "5cb59606f5a5c032b461511da59860def891d073ae6e72491c888bf89f7a01e9",
+  "cases": [
+    {
+      "name": "regular-fallback",
+      "path": "pa31/tests/spec/source-promotable/regular-fallback.rs",
+      "sha256": "c198f1069a34a4a4f655c4f6ed2c33810974c3877e68ea4802b6415964e91c0e",
+      "status": 1
+    },
+    {
+      "name": "regular-fallback-owner",
+      "path": "pa31/tests/spec/source-promotable/regular-fallback-owner.rs",
+      "sha256": "c61f375a0ecc668bb955a09fed1c77807119c303a28bb6308bb743aaf9253ae7",
+      "status": 1
+    }
+  ]
+}

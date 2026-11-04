@@ -1,0 +1,322 @@
+{
+  "schema": 1,
+  "scope": "Actual default-body policy declarations, local provided/override behavior and cross-crate inheritance gates. No fake body or global permission. Full imported body-policy transport remains required.",
+  "rustc_revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_attr_parsing/src/attributes/stability.rs": "bee682c77346b06730e1499eb7a50c7b1489c1bc7e3f686b5d89fab909b3506e",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_passes/src/stability.rs": "1f1a590646e7938cd5eb42bc3aa170d1afa4156474d24942bf246736cfc4e167",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_passes/src/lib_features.rs": "0fd879e4a7997ebae4be9a6fc2bea3f403db4820f5d6e5a11ea406c01832bf73",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_middle/src/middle/stability.rs": "b37b2cfa27b73a8a4b77bdcc0f09b9f06d5bebe42be212c7f56d325c1c5f45b2",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_hir_analysis/src/check/check.rs": "f88983f311efa4e83ae8683365ab4ba1b59f47d82c6ffa6197f30c48f9cd1987"
+  },
+  "cases": [
+    {
+      "name": "declaration",
+      "path": "pa31/tests/spec/default-body-stability/declaration.rs",
+      "sha256": "46c61da65a9f0995a2254813aeac157a574e8c478cc961d15ab4ce16ab258f69",
+      "status": 0
+    },
+    {
+      "name": "requested",
+      "path": "pa31/tests/spec/default-body-stability/requested.rs",
+      "sha256": "dffd123d815bead3ac63d65bf3d53eb89854aee9b0dc3ec37d068b762cbc80eb",
+      "status": 0
+    },
+    {
+      "name": "local-inherit",
+      "path": "pa31/tests/spec/default-body-stability/setup-v2/local-inherit.rs",
+      "sha256": "5b49f7c13967e12c6c71f07c1cb44d8ccd3fc4741fd6482e16ee33b567dc7d33",
+      "status": 0
+    },
+    {
+      "name": "local-override",
+      "path": "pa31/tests/spec/default-body-stability/setup-v2/local-override.rs",
+      "sha256": "b38167bf3616b6207b0c5e0ab9e037b4a0a9f8d9c6054123120f828d7577b1fb",
+      "status": 0
+    },
+    {
+      "name": "local-inherit-used",
+      "path": "pa31/tests/spec/default-body-stability/setup-v2/local-inherit-used.rs",
+      "sha256": "32503dfad39f4d271eaecd7f3a4389d30ba08247a63195b264da5c2e578f91e8",
+      "status": 0
+    },
+    {
+      "name": "required-method",
+      "path": "pa31/tests/spec/default-body-stability/required-method.rs",
+      "sha256": "f8efa126d025c0a608baf0565468f9a15a5f1f99bdab64536a13c83e6d9144d1",
+      "status": 0
+    },
+    {
+      "name": "required-not-supplied",
+      "path": "pa31/tests/spec/default-body-stability/setup-v2/required-not-supplied.rs",
+      "sha256": "30a30b3e8553de2eeb4a1bf0eb30a78b1db6ab19c894fd7944ffee440dc03e4f",
+      "status": 1
+    },
+    {
+      "name": "required-overridden",
+      "path": "pa31/tests/spec/default-body-stability/setup-v2/required-overridden.rs",
+      "sha256": "b68bd02fd8afb328863ea6f9d47c80b0f96d2a9b7cbc837030ea586d6efd3868",
+      "status": 0
+    },
+    {
+      "name": "target-free-function",
+      "path": "pa31/tests/spec/default-body-stability/target-free-function.rs",
+      "sha256": "0d51f4814ed8e035a859222653348a966bd39263229f25ce6c716107223dcc17",
+      "status": 0
+    },
+    {
+      "name": "target-struct",
+      "path": "pa31/tests/spec/default-body-stability/target-struct.rs",
+      "sha256": "8e4ae6fa5de1230f95ff8e9fc9665132da1fab2dc6263da92db59cf371954222",
+      "status": 0
+    },
+    {
+      "name": "target-trait",
+      "path": "pa31/tests/spec/default-body-stability/target-trait.rs",
+      "sha256": "3eaa30c5b59f33a286727213138bf1e730bb322f1aca2266c1c00f2f7efc3114",
+      "status": 0
+    },
+    {
+      "name": "target-module",
+      "path": "pa31/tests/spec/default-body-stability/target-module.rs",
+      "sha256": "7b989fa961412924b95075ad436d529c6e8f54f35eca1456496760ccbba68b19",
+      "status": 0
+    },
+    {
+      "name": "target-constant",
+      "path": "pa31/tests/spec/default-body-stability/target-constant.rs",
+      "sha256": "9110a7c13cec8d303ecf2c8354d4888cee3476391dbf7b845d27608d186b71bc",
+      "status": 0
+    },
+    {
+      "name": "target-alias",
+      "path": "pa31/tests/spec/default-body-stability/target-alias.rs",
+      "sha256": "8d3b6eaa46591f909fa7db76d518a756eb5511af089bb5a34132be581a51ad7f",
+      "status": 0
+    },
+    {
+      "name": "inherent",
+      "path": "pa31/tests/spec/default-body-stability/setup-v2/inherent.rs",
+      "sha256": "fa136f1579c5a71dda8e357275cff8b6f52f7a6709847a350e59ea25cf464221",
+      "status": 0
+    },
+    {
+      "name": "override-annotation",
+      "path": "pa31/tests/spec/default-body-stability/setup-v2/override-annotation.rs",
+      "sha256": "9e3f76d54a53fd394f5e4c1ea2d5a242853c46acf472efceb578b873ae638e58",
+      "status": 0
+    },
+    {
+      "name": "associated-constant",
+      "path": "pa31/tests/spec/default-body-stability/setup-v2/associated-constant.rs",
+      "sha256": "c30a3462d2437a7f5cb7f7571c27b15cf2121c7e82210f3e49494170a3433fbe",
+      "status": 0
+    },
+    {
+      "name": "associated-type",
+      "path": "pa31/tests/spec/default-body-stability/setup-v2/associated-type.rs",
+      "sha256": "64d5dabc07edc78f48d5b059e6377f48fb3f7e16f521dfeee862294255a78882",
+      "status": 0
+    },
+    {
+      "name": "both-axes",
+      "path": "pa31/tests/spec/default-body-stability/both-axes.rs",
+      "sha256": "30ee025267c75d9a55f048ad499d4b4dedf1f3a67419d6a3815dfbd8235467ee",
+      "status": 0
+    },
+    {
+      "name": "body-old-name",
+      "path": "pa31/tests/spec/default-body-stability/body-old-name.rs",
+      "sha256": "1bfc0af786fede34f4ae4e31c06533b29096623b348d4bb27863d412617023df",
+      "status": 0
+    },
+    {
+      "name": "body-old-request",
+      "path": "pa31/tests/spec/default-body-stability/body-old-request.rs",
+      "sha256": "113df6f1021be0f87e10ea1f26e7562b457e47689867380bdd2889febc5444d8",
+      "status": 1
+    },
+    {
+      "name": "body-implied",
+      "path": "pa31/tests/spec/default-body-stability/body-implied.rs",
+      "sha256": "4c2ed99ba9ed377f6b371c235b46d88f1ef9ae9782aa9e6895d0bbefd6bdfe12",
+      "status": 0
+    },
+    {
+      "name": "duplicate",
+      "path": "pa31/tests/spec/default-body-stability/duplicate.rs",
+      "sha256": "08d6bd1b65a31fb0875c4384ff8884e10bacbf042a67522f6776f7b260f2a14d",
+      "status": 1
+    },
+    {
+      "name": "missing-feature",
+      "path": "pa31/tests/spec/default-body-stability/missing-feature.rs",
+      "sha256": "98a2cf8e71707e98b2fb2b61dbbdf0ce49a3487b6dbbf7434f0bc75f228b5d4f",
+      "status": 1
+    },
+    {
+      "name": "missing-issue",
+      "path": "pa31/tests/spec/default-body-stability/missing-issue.rs",
+      "sha256": "88dbeca01f6d1064322b8d24aafe50fbd191735834936848c8163e8e6bca061c",
+      "status": 1
+    },
+    {
+      "name": "invalid-issue",
+      "path": "pa31/tests/spec/default-body-stability/invalid-issue.rs",
+      "sha256": "8f02629491cd4849c0cafcd92f9dfdd066de12ecffe2a88751adcbfbc5cd4630",
+      "status": 1
+    },
+    {
+      "name": "nonstring",
+      "path": "pa31/tests/spec/default-body-stability/nonstring.rs",
+      "sha256": "8bd32bb532117a2e6dfd7e43b5f17d3d0493856bc12f5dc484cdde95afefe5f5",
+      "status": 1
+    },
+    {
+      "name": "bare",
+      "path": "pa31/tests/spec/default-body-stability/bare.rs",
+      "sha256": "9d3d5b592e8e6ecb7b5b62d8edb417c8c5a328c9fbcc14a0ca606a087317e9eb",
+      "status": 1
+    },
+    {
+      "name": "unsafe-wrapper",
+      "path": "pa31/tests/spec/default-body-stability/unsafe-wrapper.rs",
+      "sha256": "665d2de4ed70e18e66422df5d266b9e16a867fa7bb882a7c4b772f64bd0127e1",
+      "status": 1
+    },
+    {
+      "name": "invalid-body",
+      "path": "pa31/tests/spec/default-body-stability/invalid-body.rs",
+      "sha256": "c4760811cfbac9671c2fb1cb4858a1ab5d3dced73d34fd213c7c6322166069b9",
+      "status": 1
+    },
+    {
+      "name": "does-not-grant-const",
+      "path": "pa31/tests/spec/default-body-stability/setup-v2/does-not-grant-const.rs",
+      "sha256": "4c7f76ca7c6e83dea5c13c2f2752b1d36fe8d6bad69b32bcd9af9cc42d3414da",
+      "status": 1
+    },
+    {
+      "name": "cfg-removed",
+      "path": "pa31/tests/spec/default-body-stability/cfg-removed.rs",
+      "sha256": "5a6e40aec1ebbe6ccb66f9cfa659b3424b0e6bc42b037d067b01f7f2e96c025a",
+      "status": 0
+    },
+    {
+      "name": "ordinary-native",
+      "path": "pa31/tests/spec/default-body-stability/setup-v2/ordinary-native.rs",
+      "sha256": "f3f2c216357bacc078165f6722d26b04cb0dfbe6d3e95c3d06dddddda3dd8293",
+      "status": 0
+    },
+    {
+      "name": "provider",
+      "path": "pa31/tests/spec/default-body-stability/setup-v2/provider.rs",
+      "sha256": "5b49f7c13967e12c6c71f07c1cb44d8ccd3fc4741fd6482e16ee33b567dc7d33",
+      "status": 0
+    },
+    {
+      "name": "external-inherit",
+      "path": "pa31/tests/spec/default-body-stability/external-inherit.rs",
+      "sha256": "f2d0f47b861b1c02c006d5fd09a5013f857f8b44897fb855e7101c1fbea05521",
+      "status": 1,
+      "extern_provider": "provider"
+    },
+    {
+      "name": "external-enabled",
+      "path": "pa31/tests/spec/default-body-stability/external-enabled.rs",
+      "sha256": "41dd5bf5d24d798fc2a392baa624ca8ae4babc1ddbabb574ff5b91164dfacf5b",
+      "status": 0,
+      "extern_provider": "provider"
+    },
+    {
+      "name": "external-override",
+      "path": "pa31/tests/spec/default-body-stability/external-override.rs",
+      "sha256": "965ad905ba25afa52952fcc2f50829b700c1ebfb1de24dd2480795981c1ccb1a",
+      "status": 0,
+      "extern_provider": "provider"
+    },
+    {
+      "name": "external-unused",
+      "path": "pa31/tests/spec/default-body-stability/external-unused.rs",
+      "sha256": "849ab65e7d8e6dc2d7d4557e503ba0bd42838d78dcb08fb52eeffdd417b61d49",
+      "status": 1,
+      "extern_provider": "provider"
+    },
+    {
+      "name": "external-existing-impl",
+      "path": "pa31/tests/spec/default-body-stability/external-existing-impl.rs",
+      "sha256": "ebbd99ad4ad422dd2845ef417b6094841849f60a93353584676008e8f9cafb5f",
+      "status": 0,
+      "extern_provider": "provider"
+    },
+    {
+      "name": "target-field",
+      "path": "pa31/tests/spec/default-body-stability/setup-v3/target-field.rs",
+      "sha256": "a34630de9a4c32603c26e9ed90c7c08c38c4840fe2aa1b270a013cfc73339e4f",
+      "status": 0
+    },
+    {
+      "name": "target-variant",
+      "path": "pa31/tests/spec/default-body-stability/setup-v3/target-variant.rs",
+      "sha256": "d19dfe4e07554be479a39599e4020f57437683beebcd91f2cff4de18edbe0bd8",
+      "status": 0
+    },
+    {
+      "name": "target-generic-default",
+      "path": "pa31/tests/spec/default-body-stability/setup-v3/target-generic-default.rs",
+      "sha256": "22ad498004d29d4674375063a6c1239cf531efe7ed672d08de7c41612b61f385",
+      "status": 0
+    },
+    {
+      "name": "target-generic-required",
+      "path": "pa31/tests/spec/default-body-stability/setup-v3/target-generic-required.rs",
+      "sha256": "713c058959e027a7fc1b2145932417aa315f40990151302143edde085c2b1fbd",
+      "status": 1
+    },
+    {
+      "name": "target-generic-constant",
+      "path": "pa31/tests/spec/default-body-stability/setup-v3/target-generic-constant.rs",
+      "sha256": "50b3ca72a08e538e96892abbb21ef0f621386a121a7ee178efbd460818f027a0",
+      "status": 1
+    },
+    {
+      "name": "target-root",
+      "path": "pa31/tests/spec/default-body-stability/setup-v3/target-root.rs",
+      "sha256": "98ac7c6b97bcc1c6c350a6661972afc3847fefcd72cc41303112523856742f72",
+      "status": 0
+    },
+    {
+      "name": "not-staged",
+      "path": "pa31/tests/spec/default-body-stability/setup-v3/not-staged.rs",
+      "sha256": "94dcba4a77890a563340b24c6751ce4fa136ba964d54db7be216fcd3c43a3f8a",
+      "status": 1
+    },
+    {
+      "name": "source-provider",
+      "path": "pa31/tests/spec/default-body-stability/setup-v3/source-provider.rs",
+      "sha256": "364538c9fb2db4f8d98481c7aa73d01515d1553013d58019d4ac085ca5dfff1e",
+      "status": 0,
+      "source_provider": true
+    },
+    {
+      "name": "source-provider-requested",
+      "path": "pa31/tests/spec/default-body-stability/setup-v3/source-provider-requested.rs",
+      "sha256": "37314dd3da0eaf1295a29e911085390be12b1b1a2ad39a331a0602dd2dca9107",
+      "status": 0,
+      "source_provider": true
+    }
+  ],
+  "native": {
+    "case": "ordinary-native",
+    "observer": "pa31/tests/spec/default-body-stability/observer.c",
+    "observer_sha256": "d63f2e01a043fafe8072ae01357ea83130cdfff9c0566f471449c1e3456ee7db",
+    "status": 0,
+    "stdout": "7 9\n",
+    "stderr": ""
+  },
+  "predecessor": {
+    "contract_sha256": "f6206f667164ed88a4bd74c86bf9de71fbe7a4f339364500116acc8057cf9f39",
+    "receipt_sha256": "06282cb836d7380d9fdaf22adb379c7562e0d27a1e10dc294bfb25194791ec0e",
+    "reason": "Add broad actual target, noninheritance and source-provider controls before candidate qualification."
+  }
+}

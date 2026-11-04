@@ -87,7 +87,7 @@ pub(in crate::resolve) fn finish(
     work.charge(1, size_of::<ModuleCompatibility>())?;
     let policy = work
         .attributes
-        .get(&key)
+        .get(&(key, PolicyKind::Regular))
         .and_then(|id| work.policies.get_mut(id.get() - 1))
         .ok_or_else(error)?;
     if policy.kind != PolicyKind::Regular || policy.origin != key {

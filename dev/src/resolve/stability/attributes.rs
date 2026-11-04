@@ -1,5 +1,5 @@
 //! Validate retained attribute syntax once while the binding owner pass visits it.
-use super::{Draft, Level, Library, Policy, Since};
+use super::{Draft, Level, Library, Policy, PolicyKind, Since};
 use crate::{
     lex::token::Punctuation,
     resolve::{
@@ -26,12 +26,10 @@ pub(in crate::resolve) fn collect(
     if record_comptime(library, draft, unit, key, attribute, name)? {
         return Ok(false);
     }
-    let extended = matches!(
-        name,
-        "rustc_default_body_unstable" | "allow_internal_unstable" | "allow_internal_unsafe"
-    );
+    let extended = matches!(name, "allow_internal_unstable" | "allow_internal_unsafe");
     if unit.include_context.is_some() {
         return Ok(extended
+            || name == "rustc_default_body_unstable"
             || name == "rustc_allow_const_fn_unstable"
             || matches!(
                 name,
@@ -50,9 +48,14 @@ pub(in crate::resolve) fn collect(
             "const, default-body and macro library stability contracts are not implemented",
         ));
     }
-    let constant = matches!(name, "rustc_const_stable" | "rustc_const_unstable");
-    if !constant && !matches!(name, "stable" | "unstable") {
-        return Ok(false);
+    let kind = match name {
+        "stable" | "unstable" => PolicyKind::Regular,
+        "rustc_const_stable" | "rustc_const_unstable" => PolicyKind::Const,
+        "rustc_default_body_unstable" => PolicyKind::DefaultBody,
+        _ => return Ok(false),
+    };
+    if kind == PolicyKind::DefaultBody {
+        super::inheritance::validate_target(unit, key, attribute)?;
     }
     if attribute.unsafe_wrapper {
         return Err(Error::at(
@@ -70,13 +73,7 @@ pub(in crate::resolve) fn collect(
     }
     let draft = draft.get_or_insert_with(Draft::default);
     draft.charge(1, 0)?;
-    if (if constant {
-        &draft.const_attributes
-    } else {
-        &draft.attributes
-    })
-    .contains_key(&key)
-    {
+    if draft.attribute(key, kind).is_some() {
         return Err(Error::at(
             key.file,
             attribute.span.start,
@@ -91,7 +88,7 @@ pub(in crate::resolve) fn collect(
         matches!(name, "stable" | "rustc_const_stable"),
         draft,
     )?;
-    publish_policy(draft, key, attribute.span, policy, relationships, constant)?;
+    publish_policy(draft, key, attribute.span, policy, relationships, kind)?;
     Ok(true)
 }
 
@@ -102,19 +99,15 @@ fn publish_policy(
     span: crate::syntax::token_tree::Span,
     mut policy: Policy,
     relationships: super::relationships::Pending,
-    constant: bool,
+    kind: PolicyKind,
 ) -> Result<(), Error> {
-    policy.kind = if constant {
-        super::PolicyKind::Const
-    } else {
-        super::PolicyKind::Regular
-    };
+    policy.kind = kind;
     let id = NonZeroUsize::new(draft.policies.len() + 1)
         .ok_or_else(|| Error::at(key.file, span.start, "library policy space exhausted"))?;
     // Conservative geometric slot charges, including replacement storage.
     draft.charge(
         1,
-        4 * (size_of::<Policy>() + size_of::<(NodeKey, NonZeroUsize)>()),
+        4 * (size_of::<Policy>() + size_of::<((NodeKey, PolicyKind), NonZeroUsize)>()),
     )?;
     draft.prepay_relationships(relationships.len())?;
     draft.policies.push(policy);
@@ -129,11 +122,7 @@ fn publish_policy(
                 });
         }
     }
-    if constant {
-        draft.const_attributes.insert(key, id);
-    } else {
-        draft.attributes.insert(key, id);
-    }
+    draft.attributes.insert((key, kind), id);
     Ok(())
 }
 

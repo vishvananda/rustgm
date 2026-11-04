@@ -876,6 +876,21 @@ Rust language version, independently of the host compiler. Keep each actual poli
 const eligibility, metadata provenance and unencoded-relationship fence. See the
 [renamed-feature packet](pa31/tests/spec/renamed-features/README.md).
 
+Default-body stability is a third direct policy axis, distinct from regular API
+and const stability. Capture all three with a single typed owner/axis index;
+retain exact source policy identity without adding fields to ordinary syntax or
+bodies. The pinned attribute target list includes bodyless declarations; do not
+manufacture bodies or reject valid targets by assuming only provided methods.
+Default-body policy is not inherited API instability or const eligibility. Local
+implementation bodies and explicit overrides use the ordinary checked pipeline.
+Only external inheritance requires the body feature; an existing provider-side
+impl remains callable through its stable API. Old profiles without complete body
+policy and provided-original transport must reject publication. The
+[default-body packet](pa31/tests/spec/default-body-stability/README.md) binds
+local/native controls and real cross-crate reference consumers. The
+[qualified source checkpoint](docs/pa31-default-body-stability-checkpoint.md)
+retains the required imported consumers and original Drop/Pin boundary.
+
 The explicit source Provided-contract profile uses tag 11, row version 1. Retain
 one advisory-column owner, the complete Provided family and numbering, actual
 namespace bindings, and positive policy that supported headers have no written

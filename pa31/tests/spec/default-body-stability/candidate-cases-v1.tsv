@@ -1,0 +1,48 @@
+declaration	pa31/tests/spec/default-body-stability/declaration.rs	0	False	
+requested	pa31/tests/spec/default-body-stability/requested.rs	0	False	
+local-inherit	pa31/tests/spec/default-body-stability/setup-v2/local-inherit.rs	0	False	
+local-override	pa31/tests/spec/default-body-stability/setup-v2/local-override.rs	0	False	
+local-inherit-used	pa31/tests/spec/default-body-stability/setup-v2/local-inherit-used.rs	0	False	
+required-method	pa31/tests/spec/default-body-stability/required-method.rs	0	False	
+required-not-supplied	pa31/tests/spec/default-body-stability/setup-v2/required-not-supplied.rs	1	False	
+required-overridden	pa31/tests/spec/default-body-stability/setup-v2/required-overridden.rs	0	False	
+target-free-function	pa31/tests/spec/default-body-stability/target-free-function.rs	0	False	
+target-struct	pa31/tests/spec/default-body-stability/target-struct.rs	0	False	
+target-trait	pa31/tests/spec/default-body-stability/target-trait.rs	0	False	
+target-module	pa31/tests/spec/default-body-stability/target-module.rs	0	False	
+target-constant	pa31/tests/spec/default-body-stability/target-constant.rs	0	False	
+target-alias	pa31/tests/spec/default-body-stability/target-alias.rs	0	False	
+inherent	pa31/tests/spec/default-body-stability/setup-v2/inherent.rs	0	False	
+override-annotation	pa31/tests/spec/default-body-stability/setup-v2/override-annotation.rs	0	False	
+associated-constant	pa31/tests/spec/default-body-stability/setup-v2/associated-constant.rs	0	False	
+associated-type	pa31/tests/spec/default-body-stability/setup-v2/associated-type.rs	0	False	
+both-axes	pa31/tests/spec/default-body-stability/both-axes.rs	0	False	
+body-old-name	pa31/tests/spec/default-body-stability/body-old-name.rs	0	False	
+body-old-request	pa31/tests/spec/default-body-stability/body-old-request.rs	1	False	
+body-implied	pa31/tests/spec/default-body-stability/body-implied.rs	0	False	
+duplicate	pa31/tests/spec/default-body-stability/duplicate.rs	1	False	
+missing-feature	pa31/tests/spec/default-body-stability/missing-feature.rs	1	False	
+missing-issue	pa31/tests/spec/default-body-stability/missing-issue.rs	1	False	
+invalid-issue	pa31/tests/spec/default-body-stability/invalid-issue.rs	1	False	
+nonstring	pa31/tests/spec/default-body-stability/nonstring.rs	1	False	
+bare	pa31/tests/spec/default-body-stability/bare.rs	1	False	
+unsafe-wrapper	pa31/tests/spec/default-body-stability/unsafe-wrapper.rs	1	False	
+invalid-body	pa31/tests/spec/default-body-stability/invalid-body.rs	1	False	
+does-not-grant-const	pa31/tests/spec/default-body-stability/setup-v2/does-not-grant-const.rs	1	False	
+cfg-removed	pa31/tests/spec/default-body-stability/cfg-removed.rs	0	False	
+ordinary-native	pa31/tests/spec/default-body-stability/setup-v2/ordinary-native.rs	0	False	
+provider	pa31/tests/spec/default-body-stability/setup-v2/provider.rs	0	False	
+external-inherit	pa31/tests/spec/default-body-stability/external-inherit.rs	1	False	provider
+external-enabled	pa31/tests/spec/default-body-stability/external-enabled.rs	0	False	provider
+external-override	pa31/tests/spec/default-body-stability/external-override.rs	0	False	provider
+external-unused	pa31/tests/spec/default-body-stability/external-unused.rs	1	False	provider
+external-existing-impl	pa31/tests/spec/default-body-stability/external-existing-impl.rs	0	False	provider
+target-field	pa31/tests/spec/default-body-stability/setup-v3/target-field.rs	0	False	
+target-variant	pa31/tests/spec/default-body-stability/setup-v3/target-variant.rs	0	False	
+target-generic-default	pa31/tests/spec/default-body-stability/setup-v3/target-generic-default.rs	0	False	
+target-generic-required	pa31/tests/spec/default-body-stability/setup-v3/target-generic-required.rs	1	False	
+target-generic-constant	pa31/tests/spec/default-body-stability/setup-v3/target-generic-constant.rs	1	False	
+target-root	pa31/tests/spec/default-body-stability/setup-v3/target-root.rs	0	False	
+not-staged	pa31/tests/spec/default-body-stability/setup-v3/not-staged.rs	1	False	
+source-provider	pa31/tests/spec/default-body-stability/setup-v3/source-provider.rs	0	True	
+source-provider-requested	pa31/tests/spec/default-body-stability/setup-v3/source-provider-requested.rs	0	True	

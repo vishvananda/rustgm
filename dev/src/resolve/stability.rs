@@ -5,6 +5,7 @@ mod compatibility_notes;
 mod constness;
 mod exported_scopes;
 pub(crate) mod fn_allowances;
+mod inheritance;
 mod inventory;
 mod owners;
 mod relationships;
@@ -24,10 +25,11 @@ pub enum Since {
     Current,
     Version { major: u16, minor: u16, patch: u16 },
 }
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub(crate) enum PolicyKind {
     Regular,
     Const,
+    DefaultBody,
 }
 /// Regular API policy; const and provided-body contracts have separate consumers.
 #[derive(Debug)]
@@ -185,6 +187,11 @@ pub struct Inventory {
     steps: usize,
 }
 impl Inventory {
+    pub(crate) fn has_default_body_policies(&self) -> bool {
+        self.policies
+            .iter()
+            .any(|policy| policy.kind == PolicyKind::DefaultBody)
+    }
     /// Observe a completed local row; missing rows are not known absence.
     pub(crate) fn local_declaration(&self, id: DefId) -> Result<Option<&Policy>, &'static str> {
         let row = self
@@ -252,15 +259,17 @@ pub(super) enum FunctionMarker {
 pub(super) struct Draft {
     policies: Vec<Policy>,
     relationships: Vec<relationships::Relationship>,
-    attributes: HashMap<NodeKey, PolicyId>,
+    attributes: HashMap<(NodeKey, PolicyKind), PolicyId>,
     import_attributes: HashMap<NodeKey, PolicyId>,
-    const_attributes: HashMap<NodeKey, PolicyId>,
     function_markers: Vec<(NodeKey, FunctionMarker)>,
     fn_allowances: Option<Box<fn_allowances::Pending>>,
     steps: usize,
     bytes: usize,
 }
 impl Draft {
+    fn attribute(&self, key: NodeKey, kind: PolicyKind) -> Option<PolicyId> {
+        self.attributes.get(&(key, kind)).copied()
+    }
     fn record_marker(&mut self, key: NodeKey, marker: FunctionMarker) -> Result<(), Error> {
         let growth = crate::support::retained::Growth::vector::<(NodeKey, FunctionMarker)>(
             self.function_markers.len(),
@@ -352,3 +361,7 @@ pub(crate) const fn member_marker_layouts() -> (usize, usize, usize, usize) {
 #[cfg(test)]
 #[path = "../../tests/invariants/renamed_policies.rs"]
 mod renamed_tests;
+
+#[cfg(test)]
+#[path = "../../tests/invariants/inherited_policies.rs"]
+mod default_tests;

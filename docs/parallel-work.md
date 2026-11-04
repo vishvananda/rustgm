@@ -1,17 +1,18 @@
 # Parallel library bootstrap implementation
 
-Current original-core frontier is LIB-128, rustc_default_body_unstable on the
-provided Drop::drop body in ops/drop.rs242. The
-[renamed-feature checkpoint](pa31-renamed-feature-checkpoint.md) passes11 private/
-27 production,44 independent Rust programs,82 CLI phase checks and actual native7.
-CLIfc5d8d12 clears old_name with all722 sources/configuration/limits unchanged,
-19.96s/375opens. Canonical definitions and request indexes preserve actual hard
-rename rules; old metadata fences retain full relationship transport requirements.
-Next implement genuine provided/default-body policy and selected inheritance/use,
-keeping stable API permission, explicit overrides and destruction independent.
-Root remains alone in the same warm btrfs tree under unchanged five-minute/
-two-thread/16GiB/150GiB guards and scoped cleanup. Full predecessor CI41739306105
-on a83ea4a15 passes every gate. Original core/alloc/std artifacts remain required.
+Current original-core frontier is LIB-129, `lang = stringify!($lang)` in the
+actual panic-function macro at panicking.rs172. The
+[default-body checkpoint](pa31-default-body-stability-checkpoint.md) passes12
+private/27 production,48 independent outcomes,86 CLI phases and actual native7 9.
+CLI6bc0e520 clears LIB-128 with all722 source/configuration/limits unchanged,
+18.77s/375opens. Local default/override bodies remain genuine; complete imported
+body-policy transport and original Drop/Pin semantics remain required. Prior
+full CI41742788707 failed an older promotion expectation, now repaired with both
+original conflict and distinct-feature owner negatives; successor full CI remains
+required. Root stays alone in the warm btrfs tree with unchanged five-minute/
+two-thread/16GiB/150GiB rules and scoped cleanup. Next implement real macro-valued
+attribute expansion before language-item reservation. No original artifact or
+whole PA has completed.
 
 Prior original-core frontier: LIB-125, `type_info` in mem/type_info.rs13.
 The published b9 header compiler clears the preceding declaration frontier with

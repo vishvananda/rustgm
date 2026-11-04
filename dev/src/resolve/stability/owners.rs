@@ -1,7 +1,7 @@
 //! Scope and import ownership comes from the resolved graph, never name spelling.
 mod availability_variants;
 use super::{
-    Draft, PolicyId,
+    Draft, PolicyId, PolicyKind,
     constness::{ConstPolicies, Frame, Role},
 };
 use crate::{
@@ -69,12 +69,9 @@ pub(super) fn collect(
                 .or_else(|| draft.inherit(scopes[import.scope.0 as usize].regular))
         })
         .collect();
-    if let Some((_, policy)) = draft.policies.iter().enumerate().find(|(index, policy)| {
-        let constant = draft
-            .const_attributes
-            .get(&policy.origin)
-            .is_some_and(|id| id.get() == index + 1);
-        !used.contains(&(policy.origin, constant))
+    if let Some(policy) = draft.policies.iter().find(|policy| {
+        policy.kind != PolicyKind::DefaultBody
+            && !used.contains(&(policy.origin, policy.kind == PolicyKind::Const))
     }) {
         return Err(error(
             package,
@@ -119,7 +116,7 @@ fn declaration_rows(
         } else {
             definition
                 .node
-                .and_then(|key| draft.attributes.get(&key).copied())
+                .and_then(|key| draft.attribute(key, PolicyKind::Regular))
                 .or_else(|| draft.inherit(scopes[definition.scope.0 as usize].regular))
         };
         declarations.push(regular);
@@ -215,7 +212,7 @@ fn definition_scopes(
         {
             role = Role::NonConstMember;
         }
-        let explicit = draft.const_attributes.get(&key).copied();
+        let explicit = draft.attribute(key, PolicyKind::Const);
         let parent = facts.scopes[scope.0 as usize]
             .parent
             .map(|p| scopes[p.0 as usize].role);
@@ -234,19 +231,19 @@ fn definition_scopes(
                 | ItemKind::MacroRules { .. }
                 | ItemKind::DeclarativeMacro { .. }
         ) {
-            if draft.attributes.contains_key(&key) {
+            if draft.attribute(key, PolicyKind::Regular).is_some() {
                 used.insert((key, false));
             }
             continue;
         }
-        if draft.attributes.contains_key(&key) {
+        if draft.attribute(key, PolicyKind::Regular).is_some() {
             used.insert((key, false));
         }
         if explicit.is_some() {
             used.insert((key, true));
         }
         scopes[scope.0 as usize] = Frame {
-            regular: draft.attributes.get(&key).copied(),
+            regular: draft.attribute(key, PolicyKind::Regular),
             constant: explicit,
             role,
         };
@@ -271,15 +268,14 @@ fn modules(
             },
             draft,
         )?;
-        let inner = draft.attributes.get(&root).copied();
+        let inner = draft.attribute(root, PolicyKind::Regular);
         let declaration = module
             .declaration
             .map(|key| underlying(package, key, draft))
             .transpose()?;
         let outer = declaration
             .filter(|key| *key != root)
-            .and_then(|key| draft.attributes.get(&key))
-            .copied();
+            .and_then(|key| draft.attribute(key, PolicyKind::Regular));
         if inner.is_some() && outer.is_some() {
             return Err(error(
                 package,
@@ -344,11 +340,13 @@ fn import_attributes(
         draft.attributes.len(),
         draft.attributes.len() * size_of::<(NodeKey, PolicyId)>(),
     )?;
-    let entries: Vec<_> = draft
-        .attributes
-        .iter()
-        .map(|(&key, &id)| (key, id))
-        .collect();
+    let mut entries = Vec::with_capacity(draft.attributes.len());
+    entries.extend(
+        draft
+            .attributes
+            .iter()
+            .filter_map(|(&(key, kind), &id)| (kind == PolicyKind::Regular).then_some((key, id))),
+    );
     let mut pending = Vec::new();
     for (key, id) in entries {
         let unit = package.unit(key.file);

@@ -16,6 +16,12 @@ old cycle; both units and the complete contract below remain required.
 
 ## Required implementation
 
+The [default-body packet](tests/spec/default-body-stability/README.md) specifies
+rustc_default_body_unstable as direct body policy, separate from stable API and
+const eligibility. Real local provided/override execution and external inherited
+use have different rules. Imported policy/body composition, full Drop/Pin behavior
+and original library artifacts remain required.
+
 The [renamed-feature packet](tests/spec/renamed-features/README.md) specifies
 old_name declarations and hard former-name request rejection, with independent
 local and actual imported consumers. Its canonical feature projection preserves
