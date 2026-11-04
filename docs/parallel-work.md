@@ -1,6 +1,21 @@
 # Parallel library bootstrap implementation
 
-Current original-core frontier is LIB-132: abi_unadjusted at original lib.rs108.
+Current original-core frontier is LIB-133: diagnostic_on_const at original lib.rs122.
+The [unadjusted ABI checkpoint](pa28-unadjusted-abi-checkpoint.md) qualifies distinct
+source conventions, actual feature/macro authority and scalar/reified/generic
+native calls. Private7/production6,PA8 126/126,PA10 81/81 and60 independent/candidate
+edition outcomes pass. CLIc5bc7790 reaches the next request in18.21s/375opens with
+original722 inputs, six configuration-source pins, options and limits unchanged.
+The bounded probe identifies the feature. Raw aggregate ABI signatures differ
+from C; aggregate/SIMD lowering, LLVM intrinsic operations and transport remain
+required. Next inventory real const-diagnostic forms, preserving const-trait/API
+proof and prioritizing compilation over nonessential rendering. Full predecessor
+CI41759874254 passes every gate; no original artifact or whole PA is established.
+Root stays alone with the existing warm btrfs caches and unchanged five-minute,
+two-thread,16GiB/150GiB guards. No worker or new worktree/cache is queued.
+
+
+Prior original-core frontier was LIB-132: abi_unadjusted at original lib.rs108.
 The [float-reliability checkpoint](pa41-float-reliability-checkpoint.md) qualifies
 all four genuine cfg query gates and macro permissions with unchanged false
 backend values. Private12/production19,PA8 126/126,150 independent/candidate

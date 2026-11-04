@@ -1196,7 +1196,7 @@ invariant assumption or empty lifetime contract. Final whole-declaration checks
 remain required independently of these early producers.
 
 Ordinary `rustc_nounwind` functions consume the checked current target and their
-actual calling convention. C is non-unwinding; Rust and rust-call require the
+actual calling convention. C and unadjusted are non-unwinding; Rust and rust-call require the
 fixed target's abort policy. Read that immutable fact from the same configuration
 owner as cfg, never from a user-defined option or environment. Match supported
 ABIs exhaustively so a future unwind ABI needs an explicit boundary rule.
@@ -1207,6 +1207,20 @@ extra body/node field or per-call scan is needed in the current abort profile.
 PA39 still requires actual unwind boundaries, cleanup and transport. The
 [ordinary nounwind checkpoint](docs/pa31-ordinary-nounwind-checkpoint.md) retains
 the original unlikely source and the separate real ColdPath dependency.
+
+Unadjusted ABI identity is distinct from Rust, C and rust-call in declaration
+facts, type interning, generic substitution and reified pointers. Its actual
+abi_unadjusted request or introduced macro authority is required. Reuse completed
+literal payloads for opaque ABI grammar, retaining a transparent constructor's
+source context and preserving payload provenance. A forwarded whole item grants
+no new allowance. Share one permission session over the existing header columns;
+root permission skips the scan. Ordinary node and calling-convention rows stay
+fixed. The [unadjusted ABI checkpoint](docs/pa28-unadjusted-abi-checkpoint.md)
+qualifies scalar source execution and records independent raw-versus-C aggregate
+signatures. Reject unsupported aggregate/SIMD lowering before accidental C or
+hidden-result substitution, and reject unencoded convention metadata. Those
+positive aggregate/intrinsic/transport requirements remain open; scalar backend
+compatibility does not establish them.
 
 Source unchecked_sub/sub_with_overflow use their actual generic Copy declaration
 and checked caller/instance, with integer kernels selected only after concrete

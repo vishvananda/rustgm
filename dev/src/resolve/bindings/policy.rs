@@ -72,6 +72,7 @@ pub(in crate::resolve) enum Feature {
     TransparentUnions = 55,
     AdtConstParams = 56,
     CfgFloatReliability = 57,
+    AbiUnadjusted = 58,
 }
 
 impl Feature {
@@ -107,6 +108,7 @@ impl Request {
             "prelude_import" => Self::Capability(Feature::PreludeImport),
             "must_not_suspend" => Self::Capability(Feature::MustNotSuspend),
             "no_core" => Self::Capability(Feature::NoCore),
+            "abi_unadjusted" => Self::Capability(Feature::AbiUnadjusted),
             "lang_items" => Self::Capability(Feature::LangItems),
             "intrinsics" => Self::Capability(Feature::Intrinsics),
             "rustc_attrs" => Self::Capability(Feature::RustcAttributes),
@@ -184,6 +186,7 @@ impl Features {
             || self.has(Feature::CfgTargetHasAtomic)
             || self.has(Feature::CfgSanitize)
             || self.has(Feature::CfgFloatReliability)
+            || self.has(Feature::AbiUnadjusted)
             || self.has(Feature::BuiltinSyntax)
             || self.has(Feature::OffsetOfEnum)
             || self.has(Feature::DeprecatedSuggestion)
@@ -424,3 +427,7 @@ fn features(unit: &Unit) -> Result<(Features, Option<Box<Library>>), Error> {
 #[cfg(test)]
 #[path = "../../../tests/invariants/root_gates.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/unadjusted_abi.rs"]
+mod abi_tests;

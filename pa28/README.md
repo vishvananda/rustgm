@@ -8,6 +8,14 @@ Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The
 
 Memory and numeric intrinsics, atomics and volatile operations.
 
+The [unadjusted ABI packet](../pa31/tests/spec/unadjusted-request/README.md) and
+[checkpoint](../docs/pa28-unadjusted-abi-checkpoint.md) retain a distinct source
+calling convention, actual feature/macro authority and scalar native calls.
+Complete the separately retained aggregate/SIMD, original LLVM intrinsic and
+metadata transport requirements. Raw aggregate signatures differ from C; neither
+an ABI alias nor ordinary C classification can replace that work. PA31 owns the
+source-provider prerequisites and PA29 owns authenticated convention transport.
+
 The [source subtraction checkpoint](../docs/pa28-source-subtraction-checkpoint.md)
 qualifies genuine unchecked_sub/sub_with_overflow source signatures, concrete
 runtime/CTFE kernels, symbolic forwarding and ordinary ColdPath fallback. Preserve

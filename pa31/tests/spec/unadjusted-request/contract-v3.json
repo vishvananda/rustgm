@@ -1,0 +1,275 @@
+{
+  "feature": "abi_unadjusted",
+  "editions": [
+    2021,
+    2024
+  ],
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_feature/src/unstable.rs": "12a8e6610e58950117521e333e06368bd068ca3b3c4b5017829aa71c2ea410bb",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_abi/src/extern_abi.rs": "9f5c34bdefe16966c7724a756a0049c8aad033c39fd102f7e1b8d4d8f7cc4055",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_ty_utils/src/abi.rs": "9dbb00313730ce82abdbbc02dd8e7fce4fd766454b73f06c16c82b78c1c7b841",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_target/src/spec/abi_map.rs": "32b33f020703b0f700ed4361065de3280da13ce2df76c046198decf2ae708496"
+  },
+  "cases": [
+    {
+      "name": "known",
+      "path": "pa31/tests/spec/unadjusted-request/known.rs",
+      "sha256": "b8b6abf67c1bc45aef63cc2a6609486982c9b50190cdfeefbc9b53900b84676f",
+      "rustc_status": 0,
+      "current_types_status": 0,
+      "required_types_status": 0
+    },
+    {
+      "name": "duplicate",
+      "path": "pa31/tests/spec/unadjusted-request/duplicate.rs",
+      "sha256": "1fe15aaebadea699d4ae39c7c48562cbfa982d70398e4596a6370fb54a36238b",
+      "rustc_status": 0,
+      "current_types_status": 0,
+      "required_types_status": 0
+    },
+    {
+      "name": "configured",
+      "path": "pa31/tests/spec/unadjusted-request/configured.rs",
+      "sha256": "344d4c383e6967ad23f985cd340198e075889a1cc68c0551b5a7ab8099d47b59",
+      "rustc_status": 0,
+      "current_types_status": 0,
+      "required_types_status": 0
+    },
+    {
+      "name": "inactive-unknown",
+      "path": "pa31/tests/spec/unadjusted-request/inactive-unknown.rs",
+      "sha256": "981a5b82ad2865729fee218fa7180434819120612dd66bf23b20e7519ea3621f",
+      "rustc_status": 0,
+      "current_types_status": 0,
+      "required_types_status": 0
+    },
+    {
+      "name": "unknown",
+      "path": "pa31/tests/spec/unadjusted-request/unknown.rs",
+      "sha256": "5d8326a57220d4a05b4e4ce613277e6436e1a5b9fd3b4cf65452faaa364f26e1",
+      "rustc_status": 1,
+      "current_types_status": 1,
+      "required_types_status": 1
+    },
+    {
+      "name": "unrelated-unknown",
+      "path": "pa31/tests/spec/unadjusted-request/unrelated-unknown.rs",
+      "sha256": "c2c0a5ca8e583e6c4c97cca813b29f0b6af494e98de77749d0ad3ab382cce9a8",
+      "rustc_status": 1,
+      "current_types_status": 1,
+      "required_types_status": 1
+    },
+    {
+      "name": "ordinary-c",
+      "path": "pa31/tests/spec/unadjusted-request/ordinary-c.rs",
+      "sha256": "5936bce35f250e937fe0bd8ea73c8650241c7ea74fe37c28f1bd8c5c5a88dd32",
+      "rustc_status": 0,
+      "current_types_status": 0,
+      "required_types_status": 0
+    },
+    {
+      "name": "removed-function",
+      "path": "pa31/tests/spec/unadjusted-request/removed-function.rs",
+      "sha256": "2991437a546a1d5ab1d962db3c02b4cebe5f04772b1a52563e06608b9b9ee5ef",
+      "rustc_status": 0,
+      "current_types_status": 0,
+      "required_types_status": 0
+    },
+    {
+      "name": "removed-without-request",
+      "path": "pa31/tests/spec/unadjusted-request/removed-without-request.rs",
+      "sha256": "415baa659f5a59baab3a236a2d5a78b14dc63e7049875ef866e056484d04d542",
+      "rustc_status": 0,
+      "current_types_status": 0,
+      "required_types_status": 0
+    },
+    {
+      "name": "removed-module",
+      "path": "pa31/tests/spec/unadjusted-request/removed-module.rs",
+      "sha256": "9e7814953eaa8e1e4eed5851e3593ce6700f269f6195aa9e8e166cbcd43225d4",
+      "rustc_status": 0,
+      "current_types_status": 0,
+      "required_types_status": 0
+    },
+    {
+      "name": "active-function",
+      "path": "pa31/tests/spec/unadjusted-request/active-function.rs",
+      "sha256": "11479b7c0d3aa47aed485f10c5a6c87f5c80edd7c39ae51ace85c0c31a02029f",
+      "rustc_status": 0,
+      "current_types_status": 0,
+      "required_types_status": 0
+    },
+    {
+      "name": "active-pointer",
+      "path": "pa31/tests/spec/unadjusted-request/active-pointer.rs",
+      "sha256": "71328f7f852aeb2b07fd1d2972494e02cef7e49452a39830c8c982a1c753e650",
+      "rustc_status": 0,
+      "current_types_status": 0,
+      "required_types_status": 0
+    },
+    {
+      "name": "active-foreign",
+      "path": "pa31/tests/spec/unadjusted-request/active-foreign.rs",
+      "sha256": "3b1f04aa6ac349fee73db499b32f83b01306526e343c6767ebb087d19f0f06cf",
+      "rustc_status": 0,
+      "current_types_status": 0,
+      "required_types_status": 0
+    },
+    {
+      "name": "active-generic",
+      "path": "pa31/tests/spec/unadjusted-request/active-generic.rs",
+      "sha256": "29b01279aa55f5e3950a63ca4d3d0c192bffcf53414d1ef91c86419c11fcd71a",
+      "rustc_status": 0,
+      "current_types_status": 0,
+      "required_types_status": 0
+    },
+    {
+      "name": "missing-feature",
+      "path": "pa31/tests/spec/unadjusted-request/missing-feature.rs",
+      "sha256": "f24135565ad9dcf22cccb8cb28bd0bc5cfdb2246835da0859033d53b86b94cb7",
+      "rustc_status": 1,
+      "current_types_status": 1,
+      "required_types_status": 1
+    },
+    {
+      "name": "wrong-feature",
+      "path": "pa31/tests/spec/unadjusted-request/wrong-feature.rs",
+      "sha256": "2235b703d3e9abc6249b925ccaaf3911122c5bd0972b65646beda3fef1b696a6",
+      "rustc_status": 1,
+      "current_types_status": 1,
+      "required_types_status": 1
+    },
+    {
+      "name": "unknown-abi",
+      "path": "pa31/tests/spec/unadjusted-request/unknown-abi.rs",
+      "sha256": "67840ea2ebf3bc4461d6bd747667701a4a124e7d43b8b7191bbefb89f3854430",
+      "rustc_status": 1,
+      "current_types_status": 1,
+      "required_types_status": 1
+    },
+    {
+      "name": "variadic",
+      "path": "pa31/tests/spec/unadjusted-request/variadic.rs",
+      "sha256": "e472c8ef2a5a37eef0b994a11966c5e567c6224eb8adaa92918b6a5e718383c9",
+      "rustc_status": 1,
+      "current_types_status": 1,
+      "required_types_status": 1
+    },
+    {
+      "name": "rust-pointer-mismatch",
+      "path": "pa31/tests/spec/unadjusted-request/rust-pointer-mismatch.rs",
+      "sha256": "a70b0d74274fc6119aef11cc6e00d8a07571dc80a6e4c7302ab52345cf41f71d",
+      "rustc_status": 1,
+      "current_types_status": 1,
+      "required_types_status": 1
+    },
+    {
+      "name": "c-pointer-mismatch",
+      "path": "pa31/tests/spec/unadjusted-request/c-pointer-mismatch.rs",
+      "sha256": "e5e87de961138b87e6180cbb84b91ef12191b44b54306b900a9131599c3c79b9",
+      "rustc_status": 1,
+      "current_types_status": 1,
+      "required_types_status": 1
+    },
+    {
+      "name": "native-control",
+      "path": "pa31/tests/spec/unadjusted-request/native-control.rs",
+      "sha256": "7c9d822c5083de2ecd972884b6bfb051936d6ebfd789f816f2023bbb8365e31f",
+      "rustc_status": 0,
+      "current_types_status": 0,
+      "required_types_status": 0,
+      "source_provider": true
+    },
+    {
+      "name": "native-request",
+      "path": "pa31/tests/spec/unadjusted-request/native-request.rs",
+      "sha256": "b32fd16dcd8020ce34fcdddbfcb2b9e3e27e53305bd1ab65f69f4544fa9f2147",
+      "rustc_status": 0,
+      "current_types_status": 0,
+      "required_types_status": 0,
+      "source_provider": true
+    },
+    {
+      "name": "macro-allowed",
+      "path": "pa31/tests/spec/unadjusted-request/macro-allowed.rs",
+      "sha256": "55c8bfb57d6d8533164d3ca4e65514484f79d793430eaf6e3286934228d14e87",
+      "rustc_status": 0,
+      "current_types_status": 0,
+      "required_types_status": 0
+    },
+    {
+      "name": "macro-caller",
+      "path": "pa31/tests/spec/unadjusted-request/macro-caller.rs",
+      "sha256": "e982dd9a31472d22e15c93ea729fd8bcce2dbfcb2fc2c5b34a87d6e34f79959c",
+      "rustc_status": 1,
+      "current_types_status": 1,
+      "required_types_status": 1
+    },
+    {
+      "name": "macro-captured-enabled",
+      "path": "pa31/tests/spec/unadjusted-request/macro-captured-enabled.rs",
+      "sha256": "2886cfc5b0a4e75249e560838859f2e95ccb09b87fa23fbb4ab601396063dc01",
+      "rustc_status": 0,
+      "current_types_status": 0,
+      "required_types_status": 0
+    },
+    {
+      "name": "raw-abi",
+      "path": "pa31/tests/spec/unadjusted-request/raw-abi.rs",
+      "sha256": "390e878ca045d701614b8c6383f45e0961ac5c9622569893a1b2793c6a16e228",
+      "rustc_status": 0,
+      "current_types_status": 0,
+      "required_types_status": 0
+    },
+    {
+      "name": "escaped-abi",
+      "path": "pa31/tests/spec/unadjusted-request/escaped-abi.rs",
+      "sha256": "84d4dda54ba9402e42ab66215c3ac2e7c1d12cd85e437d3a78bb35d75b85eadd",
+      "rustc_status": 0,
+      "current_types_status": 0,
+      "required_types_status": 0
+    },
+    {
+      "name": "aggregate-declaration",
+      "path": "pa31/tests/spec/unadjusted-request/aggregate-declaration.rs",
+      "sha256": "1be097e6c262e3276d9181c9c5b8029c54f152fc8b5cf29e1092048d5d727caf",
+      "rustc_status": 0,
+      "current_types_status": 0,
+      "required_types_status": 0
+    },
+    {
+      "name": "native-unadjusted",
+      "path": "pa31/tests/spec/unadjusted-request/native-unadjusted-v3.rs",
+      "sha256": "ddc36b3f4e420a07e04c92b653fe83a5edfdc98fddb1d3c1d7b62c213839668b",
+      "rustc_status": 0,
+      "current_types_status": 0,
+      "required_types_status": 0,
+      "source_provider": true
+    }
+  ],
+  "completion": "Distinct typed ABI and genuine source feature/macro authority; scalar native calls. Full aggregate/SIMD lowering, original LLVM intrinsic operations and authenticated metadata transport remain required; their positive Rust contracts must not be erased.",
+  "native": {
+    "request": "native-request",
+    "control": "native-control",
+    "reporter": "pa31/tests/spec/unadjusted-request/reporter.c",
+    "reporter_sha256": "c871f581ac1e15c7a5746c8ed359c512d423c114285c17051c20165968b7a91f",
+    "observer": "pa31/tests/spec/unadjusted-request/observer.c",
+    "observer_sha256": "f877bf9cad3658cf6d89883139d387e02ce4d530f187d9cd231fb44c7269ada9",
+    "stdout": "7\n",
+    "lowir_equal": true
+  },
+  "predecessor_contract_sha256": "90935789a1edc7dd05f0797d884b921be7d9d55474d943560a25db2839381a71",
+  "scalar_native": {
+    "case": "native-unadjusted",
+    "reporter": "pa31/tests/spec/unadjusted-request/scalar-reporter.c",
+    "reporter_sha256": "4f6b37420f3c98ab94ef1dc4e06373b9e0c034967c6267ba5e343b6f143a5d0c",
+    "observer": "pa31/tests/spec/unadjusted-request/scalar-observer.c",
+    "observer_sha256": "4ad19037ca785d50cafc01c5ac5877ea8b9f6665e34d45a1aadc20dee5318e89",
+    "rustc_stdout": "255 18446744073709551615 80000000000000000000000000000001 1.50 -2.25 1\n",
+    "rustgm_stdout": "255 18446744073709551615 80000000000000000000000000000001 1.50 -2.25 1 37 41\n",
+    "scope": "Fixed x86_64 primitive scalar calls and return values; C observer interoperation qualified independently for these exact signatures. Generic and reified pointer calls execute in the source executable.",
+    "source_caller": "pa31/tests/spec/unadjusted-request/source-caller.c",
+    "source_caller_sha256": "94c6421be6f0b74cc2d560a98f35fef3a2a310192365e4b8b1aa203625a33993",
+    "source_entry_stdout": "255 18446744073709551615 80000000000000000000000000000001 1.50 -2.25 1 37 41\n"
+  }
+}

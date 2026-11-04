@@ -84,7 +84,7 @@ pub(in crate::sema) fn consume_tracking(
 fn aborting_abi(abi: crate::types::callable::Abi) -> bool {
     use crate::types::callable::Abi;
     match abi {
-        Abi::C => true,
+        Abi::C | Abi::Unadjusted => true,
         Abi::Rust | Abi::RustCall => crate::resolve::package::Package::target_aborts_panics(),
     }
 }

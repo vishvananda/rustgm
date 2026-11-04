@@ -16,6 +16,12 @@ old cycle; both units and the complete contract below remain required.
 
 ## Required implementation
 
+The [unadjusted ABI packet](tests/spec/unadjusted-request/README.md) binds actual
+abi_unadjusted feature/macro authority to a distinct convention. PA28 owns the
+scalar/aggregate/intrinsic ABI consumers, PA8 owns opaque grammar and PA29 owns
+transport. Its qualified scalar path advances the original source frontier;
+aggregate/vector calls and authenticated convention metadata remain required.
+
 The [default-body packet](tests/spec/default-body-stability/README.md) specifies
 rustc_default_body_unstable as direct body policy, separate from stable API and
 const eligibility. Real local provided/override execution and external inherited

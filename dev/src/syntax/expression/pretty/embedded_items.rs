@@ -1,5 +1,5 @@
 //! Items nested in an assertion condition use their parsed declaration facts.
-use super::{Action, Kind, LexError, Node, View, Writer, error};
+use super::{Action, Kind, LexError, Node, NodeId, View, Writer, error};
 use crate::syntax::{
     ast::List,
     item::{Abi, GenericFlavor, Item, ItemKind, Safety, Shape, Visibility},
@@ -267,6 +267,7 @@ impl<'a> Writer<'a> {
             } => {
                 self.enqueue(&[W(" { "), view.sequence(items, " "), W(" }")])?;
                 if let Some(abi) = abi {
+                    let abi = abi_literal(view, abi)?;
                     self.enqueue(&[W(" "), view.n(abi)])?;
                 }
                 self.enqueue(&[W(if unsafe_ { "unsafe extern" } else { "extern" })])?;
@@ -392,7 +393,10 @@ impl<'a> Writer<'a> {
         match abi {
             Abi::Rust => Ok(()),
             Abi::Extern(None) => self.enqueue(&[W("extern ")]),
-            Abi::Extern(Some(value)) => self.enqueue(&[W("extern "), view.n(value), W(" ")]),
+            Abi::Extern(Some(value)) => {
+                let value = abi_literal(view, value)?;
+                self.enqueue(&[W("extern "), view.n(value), W(" ")])
+            }
         }
     }
     fn named_header(
@@ -463,4 +467,12 @@ fn safety(safety: Safety) -> &'static str {
         Safety::Safe => "safe ",
         Safety::Unsafe => "unsafe ",
     }
+}
+
+fn abi_literal(view: View<'_>, value: NodeId) -> Result<NodeId, LexError> {
+    Ok(if let Kind::Group(literal) = view.node(value)?.kind {
+        literal
+    } else {
+        value
+    })
 }

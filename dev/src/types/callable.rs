@@ -10,6 +10,7 @@ pub enum Abi {
     Rust,
     RustCall,
     C,
+    Unadjusted,
 }
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash)]
 pub struct Convention {
@@ -23,6 +24,10 @@ impl Convention {
     };
     pub const C: Self = Self {
         abi: Abi::C,
+        variadic: false,
+    };
+    pub const UNADJUSTED: Self = Self {
+        abi: Abi::Unadjusted,
         variadic: false,
     };
     pub const RUST_CALL: Self = Self {

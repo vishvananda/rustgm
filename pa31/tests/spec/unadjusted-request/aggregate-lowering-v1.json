@@ -1,0 +1,17 @@
+{
+  "source": "pa31/tests/spec/unadjusted-request/aggregate-demanded.rs",
+  "sha256": "f94e63f8ed9f513a584af69f5e602feb3b6d80374746d64c05dc95899a626e47",
+  "observer": "pa31/tests/spec/unadjusted-request/aggregate-observer.c",
+  "observer_sha256": "3ea15826360b740ce1d503e0c644f2bf3e8613db9c13efd962c40f1206531fe8",
+  "editions": [
+    2021,
+    2024
+  ],
+  "rustc_status": 0,
+  "required_rustgm_types_status": 0,
+  "required_rustgm_lowir_status": 0,
+  "current_rustgm_lowir_status": 1,
+  "current_boundary": "unadjusted aggregate/SIMD ABI lowering is not implemented",
+  "native_stdout": "17\n",
+  "comparison": "The unadjusted raw and C by_c LLVM signatures must differ; by_c uses byval while raw does not. C observer invokes only the real C wrapper observed. Full raw aggregate lowering remains required; do not alias it to the C ABI."
+}

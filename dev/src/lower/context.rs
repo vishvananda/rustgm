@@ -479,6 +479,7 @@ impl<'a> Context<'a> {
         }
         let mut native = Vec::new();
         let result_type = self.representation(result)?;
+        self.require_unadjusted_scalar(convention, result, result_type)?;
         if convention.abi == crate::types::callable::Abi::C
             && (matches!(result_type, Representation::Object(_))
                 || (!matches!(result_type, Representation::ScalarObject(_))
@@ -495,6 +496,7 @@ impl<'a> Context<'a> {
             .ok_or("missing parameter list")?
         {
             let representation = self.representation(*parameter)?;
+            self.require_unadjusted_scalar(convention, *parameter, representation)?;
             if convention.abi == crate::types::callable::Abi::C
                 && (self.indirect_argument(*parameter)?.is_some()
                     || matches!(representation, Representation::Object(_))

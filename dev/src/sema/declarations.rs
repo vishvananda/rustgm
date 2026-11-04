@@ -1,4 +1,5 @@
 //! Demand aliases and function signatures through an iterative dependency graph.
+mod abi_features;
 mod abstract_types;
 mod aggregates;
 mod annotations;
@@ -445,6 +446,7 @@ impl Checker<'_> {
             .saturating_mul(16)
     }
     fn run(&mut self) -> Result<(), Error> {
+        abi_features::validate(self.report)?;
         self.prepare_feature_policy()?;
         self.validate_foreign_blocks()?;
         self.reserve_member_parents()?;

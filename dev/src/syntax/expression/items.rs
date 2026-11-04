@@ -709,6 +709,22 @@ impl Parser<'_, '_> {
     }
 
     pub(super) fn abi(&mut self) -> Result<Option<NodeId>, LexError> {
+        if let Some(splice) = self.splice()?
+            && splice.syntax_kind() == Some(F::Literal)
+        {
+            let constructor = self
+                .cursor
+                .end()
+                .checked_sub(6)
+                .ok_or_else(|| error(0, "ABI constructor lost its extern token"))?;
+            splice.string_literal()?;
+            let value = self
+                .interpolated(&[F::Literal])?
+                .ok_or_else(|| error(constructor, "ABI literal capture disappeared"))?;
+            // A transparent ABI constructor retains the actual extern token.
+            // The underlying literal keeps its original payload and provenance.
+            return self.node(constructor, Kind::Group(value)).map(Some);
+        }
         if self
             .cursor
             .peek(0)?

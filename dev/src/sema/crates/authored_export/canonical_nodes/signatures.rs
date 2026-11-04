@@ -221,6 +221,9 @@ impl Stage {
                 crate::types::callable::Abi::Rust => g::Convention::Rust,
                 crate::types::callable::Abi::RustCall => g::Convention::RustCall,
                 crate::types::callable::Abi::C => g::Convention::C,
+                crate::types::callable::Abi::Unadjusted => {
+                    return Err("unadjusted ABI source metadata is not implemented");
+                }
             },
             variadic: parts.convention.variadic,
         })

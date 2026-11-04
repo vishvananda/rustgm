@@ -2,6 +2,20 @@
 use super::{Context, MemorySpan, Representation, SignatureId, Type, TypeId};
 use crate::{abi::classification, lowir::boundary};
 impl Context<'_> {
+    pub(super) fn require_unadjusted_scalar(
+        &self,
+        convention: crate::types::callable::Convention,
+        ty: TypeId,
+        representation: Representation,
+    ) -> Result<(), &'static str> {
+        if convention.abi == crate::types::callable::Abi::Unadjusted
+            && (!matches!(representation, Representation::Scalar(_))
+                || self.non_scalar_boundary(ty)?)
+        {
+            return Err("unadjusted aggregate/SIMD ABI lowering is not implemented");
+        }
+        Ok(())
+    }
     pub(super) fn non_scalar_boundary(&self, ty: TypeId) -> Result<bool, &'static str> {
         let head = self.types.storage_head(ty)?;
         Ok(head != TypeId::UNIT

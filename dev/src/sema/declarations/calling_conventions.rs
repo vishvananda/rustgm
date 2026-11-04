@@ -73,8 +73,13 @@ pub(in crate::sema) fn callable_convention(
             variadic: false,
         });
     };
-    let key = NodeKey { node, ..key };
     let unit = report.package.unit(key.file);
+    let node = if let Kind::Group(literal) = unit.configured.ast.node(node).kind {
+        literal
+    } else {
+        node
+    };
+    let key = NodeKey { node, ..key };
     let Kind::Literal(index) = unit.configured.ast.node(node).kind else {
         return Err(Declarations::error(
             report,
@@ -96,6 +101,7 @@ pub(in crate::sema) fn callable_convention(
         b"Rust" => Abi::Rust,
         b"rust-call" if report.package.permits_source_rust_call() => Abi::RustCall,
         b"C" => Abi::C,
+        b"unadjusted" => Abi::Unadjusted,
         _ => return Err(Declarations::error(report, key, "unsupported callable ABI")),
     };
     Ok(Convention {
