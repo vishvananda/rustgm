@@ -31,6 +31,8 @@ Allow cap and declared finite limits remain unchanged; inventory coverage is now
 cumulative. The96 A/A/ABBA observations establish no speedup amid host noise.
 No original artifact or whole assignment is completed. Root stays alone in the
 existing warm btrfs tree with current/predecessor pins and scoped cleanup.
+Full CI41829269372 is confirmed live on published compiler dcea5401c; preserve
+that run and report actual pending gates until it finishes.
 
 Previous original-core frontier was LIB-141: the stability owner inventory's resource guard.
 The [architecture-request checkpoint](pa41-architecture-requests-checkpoint.md)

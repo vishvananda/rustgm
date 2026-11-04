@@ -67,7 +67,9 @@ The course generator regenerated only their stderr sidecars and scoped provenanc
 batches; source bytes, empty stdout and exit1 stay unchanged. The final affected
 text gate passes PA19 1193/1193 and PA23 415/415 in42.35s with its10 registration/CLI
 controls, format, architecture and strict production Clippy. Successor full
-release/native/debug/component qualification remains required in CI.
+release/native/debug/component qualification is running in
+[full CI41829269372](https://github.com/vishvananda/rustgm/actions/runs/41829269372)
+on published compiler dcea5401c; poll that exact handle without superseding it.
 
 ## Measured behavior
 

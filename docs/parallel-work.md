@@ -12,8 +12,10 @@ were skipped. Successor full run41820005554 on architecture-request compiler
 7adb3ba08 is terminal failure: all2659 private tests and all regular integrations
 pass, but two old PA19/23 diagnostic sidecars differ after the negative-coherence
 improvement. Both independently remain Rust rejections; scoped generator updates
-and full affected text suites now pass. Successor full qualification is pending
-publication of the inventory-budget checkpoint; do not claim skipped gates passed.
+and full affected text suites now pass. Successor full qualification41829269372
+is confirmed live on published inventory-budget compiler dcea5401c; poll that
+exact handle and do not supersede it while live. Native/debug/component and full
+release gates remain pending; do not claim predecessor skipped gates passed.
 The redundant41814340248 on the old head was explicitly cancelled after the
 initial push failed; it is not qualification evidence for the new compiler.
 Predecessor run41781814852 on1f5a2b8d0 also passes every gate.
