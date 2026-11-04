@@ -166,13 +166,14 @@ impl Request {
             "transparent_unions" => Self::Capability(Feature::TransparentUnions),
             "pattern_type_macro" => Self::Library(Feature::PatternTypeMacro),
             "pattern_types" => Self::Capability(Feature::PatternTypes),
-            // Requests do not authorize the unsupported live const-drop operation.
-            "const_destruct" | "const_precise_live_drops" | "asm_experimental_arch" => {
-                Self::NoCapability
-            }
-            // This pinned Rust request only enables an advisory lint. Its
-            // producer stays deferred and grants no trait/upcasting permission.
-            "multiple_supertrait_upcastable" => Self::NoCapability,
+            // Requests alone grant no operation permission. Const-drop/assembly
+            // execution and documentation/advisory producers need their own proof.
+            "const_destruct"
+            | "const_precise_live_drops"
+            | "asm_experimental_arch"
+            | "multiple_supertrait_upcastable"
+            | "intra_doc_pointers"
+            | "strict_provenance_lints" => Self::NoCapability,
             _ => Self::Capability(Feature::cpu_gate(
                 crate::support::cpu_features::Gate::named(name)?,
             )),
@@ -447,3 +448,7 @@ mod tests;
 #[cfg(test)]
 #[path = "../../../tests/invariants/unadjusted_abi.rs"]
 mod abi_tests;
+
+#[cfg(test)]
+#[path = "../../../tests/invariants/advisory_requests.rs"]
+mod advisory;

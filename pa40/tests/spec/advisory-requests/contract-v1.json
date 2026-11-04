@@ -1,0 +1,389 @@
+{
+  "contract": "documentation and optional provenance requests v1",
+  "editions": [
+    2021,
+    2024
+  ],
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/src/librustdoc/passes/collect_intra_doc_links.rs": "e8ff8efbfb4da9da7e4337200f23a36661d2d475cb584cd29a97648932270edc",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_lint/src/implicit_provenance_casts.rs": "b669ca7ed8cc5295bc241538946064b480ad0f425942c30bcd7a515aa8375a66",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_feature/src/unstable.rs": "12a8e6610e58950117521e333e06368bd068ca3b3c4b5017829aa71c2ea410bb"
+  },
+  "cases": [
+    {
+      "name": "links-request",
+      "path": "pa40/tests/spec/advisory-requests/links-request.rs",
+      "sha256": "45517e247da0f4a2a218c8ed562feaab1b7553d43ab724a39b972ca556a6b52a",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "uncapped",
+      "source_provider": false
+    },
+    {
+      "name": "links-raw-request",
+      "path": "pa40/tests/spec/advisory-requests/links-raw-request.rs",
+      "sha256": "b3ca6b2da94a987381c2a72e8269298c3aebb72cce0c1936614c7696d228c6f0",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "allow",
+      "source_provider": false
+    },
+    {
+      "name": "links-conditional-request",
+      "path": "pa40/tests/spec/advisory-requests/links-conditional-request.rs",
+      "sha256": "7453e2ea14f3b56aabff27f9a65d2979c8520200e159dd21505a9a026ab06db2",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "allow",
+      "source_provider": false
+    },
+    {
+      "name": "links-removed-request",
+      "path": "pa40/tests/spec/advisory-requests/links-removed-request.rs",
+      "sha256": "c737b1d6af23365248e82bca483a3ce2ea4b2213ddb6c7314780483ffecf8817",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "uncapped",
+      "source_provider": false
+    },
+    {
+      "name": "links-no-float-permission",
+      "path": "pa40/tests/spec/advisory-requests/links-no-float-permission.rs",
+      "sha256": "b1e399fbc6014c3ea6fa3ab01b12345655fc4afafb57de392df4f8774ba81232",
+      "rustc_status": 1,
+      "required_status": 1,
+      "current_status": 1,
+      "lint_cap": "allow",
+      "source_provider": false
+    },
+    {
+      "name": "links-no-unsafe-permission",
+      "path": "pa40/tests/spec/advisory-requests/links-no-unsafe-permission.rs",
+      "sha256": "d98475ea5608b5e1605326a6efd464a5820b3689deccb563bbb383e83dd99e55",
+      "rustc_status": 1,
+      "required_status": 1,
+      "current_status": 1,
+      "lint_cap": "allow",
+      "source_provider": false
+    },
+    {
+      "name": "links-no-core-permission",
+      "path": "pa40/tests/spec/advisory-requests/links-no-core-permission.rs",
+      "sha256": "e1de77fe48721c0ccadf1e9e55cda3de37906884cac66c2af3685337ee36a600",
+      "rustc_status": 1,
+      "required_status": 1,
+      "current_status": 1,
+      "lint_cap": "allow",
+      "source_provider": false
+    },
+    {
+      "name": "provenance-request",
+      "path": "pa40/tests/spec/advisory-requests/provenance-request.rs",
+      "sha256": "1a7b1a645e137c8a48de973951160148932513bc2cc2e036b8c1a098c6683ac4",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "uncapped",
+      "source_provider": false
+    },
+    {
+      "name": "provenance-raw-request",
+      "path": "pa40/tests/spec/advisory-requests/provenance-raw-request.rs",
+      "sha256": "cacc3264201aeb1b7a6e170147da272e3c9ba3b914b7beab177ba7beed794adb",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "allow",
+      "source_provider": false
+    },
+    {
+      "name": "provenance-conditional-request",
+      "path": "pa40/tests/spec/advisory-requests/provenance-conditional-request.rs",
+      "sha256": "78984f6c73f2a4268c702f23dbe73e90c4020715540b62b712c48e9b2e5f2245",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "allow",
+      "source_provider": false
+    },
+    {
+      "name": "provenance-removed-request",
+      "path": "pa40/tests/spec/advisory-requests/provenance-removed-request.rs",
+      "sha256": "b3f0d7b7fe44d18b65a36fd53c4b94374df7bd997147069b09f80f52bbb04c06",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "uncapped",
+      "source_provider": false
+    },
+    {
+      "name": "provenance-no-float-permission",
+      "path": "pa40/tests/spec/advisory-requests/provenance-no-float-permission.rs",
+      "sha256": "db369cf4b4617d3fb67e7230db74e0e05458800d60c46580c3e415d8e1e5d432",
+      "rustc_status": 1,
+      "required_status": 1,
+      "current_status": 1,
+      "lint_cap": "allow",
+      "source_provider": false
+    },
+    {
+      "name": "provenance-no-unsafe-permission",
+      "path": "pa40/tests/spec/advisory-requests/provenance-no-unsafe-permission.rs",
+      "sha256": "4ed460e60044b43dbe6bef8f787c1301c34025f37ecddc35f40ff3191e613f51",
+      "rustc_status": 1,
+      "required_status": 1,
+      "current_status": 1,
+      "lint_cap": "allow",
+      "source_provider": false
+    },
+    {
+      "name": "provenance-no-core-permission",
+      "path": "pa40/tests/spec/advisory-requests/provenance-no-core-permission.rs",
+      "sha256": "293aeef9dba4164a479a3644c0aa21df87147593fb950ec89253bfa9c9cddb67",
+      "rustc_status": 1,
+      "required_status": 1,
+      "current_status": 1,
+      "lint_cap": "allow",
+      "source_provider": false
+    },
+    {
+      "name": "raw-pointer-links",
+      "path": "pa40/tests/spec/advisory-requests/raw-pointer-links.rs",
+      "sha256": "3eccace8c243faaf2bd2a6836cd1ab50e91f03dd4dbef9adc681aed7ccc870c7",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "uncapped",
+      "source_provider": false
+    },
+    {
+      "name": "raw-pointer-links-without-request",
+      "path": "pa40/tests/spec/advisory-requests/raw-pointer-links-without-request.rs",
+      "sha256": "88589a372cbfcedd651affd5d34c30e41ed909f1f2a3ef32cce9b0eff0609a07",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "uncapped",
+      "source_provider": false
+    },
+    {
+      "name": "unresolved-doc-link",
+      "path": "pa40/tests/spec/advisory-requests/unresolved-doc-link.rs",
+      "sha256": "b1e5c513a06f69b528e2b0a041bca0a56ad87f533fdaec3998dca09773944ffb",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "uncapped",
+      "source_provider": false
+    },
+    {
+      "name": "casts-default",
+      "path": "pa40/tests/spec/advisory-requests/casts-default.rs",
+      "sha256": "98ff5ea8e3aa8cfa7453aab1effb1396091c2b2aa74c416b7ca1e4572adfda9d",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "uncapped",
+      "source_provider": false
+    },
+    {
+      "name": "casts-without-request",
+      "path": "pa40/tests/spec/advisory-requests/casts-without-request.rs",
+      "sha256": "8936e7f5a568e69a73da65e844b3b9f1736380c4b7bbbf002ad41172b36e66ed",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "uncapped",
+      "source_provider": false
+    },
+    {
+      "name": "both-default",
+      "path": "pa40/tests/spec/advisory-requests/both-default.rs",
+      "sha256": "d8da3e4dfdbe42533a23951773b85083576090b972902d1a78c43bf57ecf1c4c",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "uncapped",
+      "source_provider": false
+    },
+    {
+      "name": "casts-allow-capped",
+      "path": "pa40/tests/spec/advisory-requests/casts-allow-capped.rs",
+      "sha256": "7faaa453f06f0a77c47563d16c65ff998ee594eba6873169a6203a0a860ca14b",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "allow",
+      "source_provider": false
+    },
+    {
+      "name": "casts-allow-strict",
+      "path": "pa40/tests/spec/advisory-requests/casts-allow-strict.rs",
+      "sha256": "7faaa453f06f0a77c47563d16c65ff998ee594eba6873169a6203a0a860ca14b",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "uncapped",
+      "source_provider": false
+    },
+    {
+      "name": "casts-warn-capped",
+      "path": "pa40/tests/spec/advisory-requests/casts-warn-capped.rs",
+      "sha256": "add47bf932a7e7d2ecbdb68b3b8643c490661d2770d29e0b815af4d26e4d2cca",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "allow",
+      "source_provider": false
+    },
+    {
+      "name": "casts-warn-strict",
+      "path": "pa40/tests/spec/advisory-requests/casts-warn-strict.rs",
+      "sha256": "add47bf932a7e7d2ecbdb68b3b8643c490661d2770d29e0b815af4d26e4d2cca",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 1,
+      "lint_cap": "uncapped",
+      "source_provider": false
+    },
+    {
+      "name": "casts-deny-capped",
+      "path": "pa40/tests/spec/advisory-requests/casts-deny-capped.rs",
+      "sha256": "c4b8045f6f19ec4853d3df6545b0aceb583b3a0927b2dc418c136a869d65cd82",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "allow",
+      "source_provider": false
+    },
+    {
+      "name": "casts-deny-strict",
+      "path": "pa40/tests/spec/advisory-requests/casts-deny-strict.rs",
+      "sha256": "c4b8045f6f19ec4853d3df6545b0aceb583b3a0927b2dc418c136a869d65cd82",
+      "rustc_status": 1,
+      "required_status": 1,
+      "current_status": 1,
+      "lint_cap": "uncapped",
+      "source_provider": false
+    },
+    {
+      "name": "casts-forbid-capped",
+      "path": "pa40/tests/spec/advisory-requests/casts-forbid-capped.rs",
+      "sha256": "b323737e804dd1956a46aa831ca2659ac0f56ca647b1b9a358e2b875f2c46fca",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "allow",
+      "source_provider": false
+    },
+    {
+      "name": "casts-forbid-strict",
+      "path": "pa40/tests/spec/advisory-requests/casts-forbid-strict.rs",
+      "sha256": "b323737e804dd1956a46aa831ca2659ac0f56ca647b1b9a358e2b875f2c46fca",
+      "rustc_status": 1,
+      "required_status": 1,
+      "current_status": 1,
+      "lint_cap": "uncapped",
+      "source_provider": false
+    },
+    {
+      "name": "casts-expect-capped",
+      "path": "pa40/tests/spec/advisory-requests/casts-expect-capped.rs",
+      "sha256": "7ac85ed0c2dc19e3863591a7fa861609e2776b3f165ce342417d5e420e814a57",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "allow",
+      "source_provider": false
+    },
+    {
+      "name": "casts-expect-strict",
+      "path": "pa40/tests/spec/advisory-requests/casts-expect-strict.rs",
+      "sha256": "7ac85ed0c2dc19e3863591a7fa861609e2776b3f165ce342417d5e420e814a57",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 1,
+      "lint_cap": "uncapped",
+      "source_provider": false
+    },
+    {
+      "name": "source-provider",
+      "path": "pa40/tests/spec/advisory-requests/source-provider.rs",
+      "sha256": "7f44df80dc77dce645556a3c887bd5cc68595cb7d12372f3f030013cb55d12c0",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "allow",
+      "source_provider": true
+    },
+    {
+      "name": "unknown-intra_doc_pointer",
+      "path": "pa40/tests/spec/advisory-requests/unknown-intra_doc_pointer.rs",
+      "sha256": "1862dccd4b1735c5b479afa20306f2e6505ad2ccba57172bdf4d2550b93e1594",
+      "rustc_status": 1,
+      "required_status": 1,
+      "current_status": 1,
+      "lint_cap": "allow",
+      "source_provider": false
+    },
+    {
+      "name": "unknown-strict_provenance_lint",
+      "path": "pa40/tests/spec/advisory-requests/unknown-strict_provenance_lint.rs",
+      "sha256": "31202e3c72e5dcffe773341dd0bf29a375591c74fda40128508c149582f4533f",
+      "rustc_status": 1,
+      "required_status": 1,
+      "current_status": 1,
+      "lint_cap": "allow",
+      "source_provider": false
+    },
+    {
+      "name": "unknown-rustgm_unknown_advisory",
+      "path": "pa40/tests/spec/advisory-requests/unknown-rustgm_unknown_advisory.rs",
+      "sha256": "699afab5bf45eb95e9365b44caa02c717a268b2313c8247943de47e9c480fb37",
+      "rustc_status": 1,
+      "required_status": 1,
+      "current_status": 1,
+      "lint_cap": "allow",
+      "source_provider": false
+    },
+    {
+      "name": "native-control",
+      "path": "pa40/tests/spec/advisory-requests/native-control.rs",
+      "sha256": "a85dc6067b36080ac4338dc24423ede62ff89cb72a079edc2411e97d0548b585",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "uncapped",
+      "source_provider": false
+    },
+    {
+      "name": "native",
+      "path": "pa40/tests/spec/advisory-requests/native.rs",
+      "sha256": "4e52e048d578f5cbe56e977a934695b45518acc883f4134b0cd6d3bad1f5fa10",
+      "rustc_status": 0,
+      "required_status": 0,
+      "current_status": 0,
+      "lint_cap": "uncapped",
+      "source_provider": false
+    }
+  ],
+  "scope": "Recognize genuine documentation/advisory requests without operation permissions. Keep Rustdoc output, strict provenance producers and exact diagnostics required. Capped expectations remain witnessed debt, not fulfilled events.",
+  "strict_boundaries": {
+    "required_success_cases": [
+      "casts-warn-strict",
+      "casts-expect-strict"
+    ],
+    "current_status": 1
+  },
+  "native": {
+    "case": "native",
+    "control": "native-control",
+    "observer": "pa40/tests/spec/advisory-requests/observer.c",
+    "observer_sha256": "06859963b1fbacd29ac13a107dc7783e12fa103941f191f2532356874eed1c51",
+    "stdout": "7 9\n"
+  }
+}

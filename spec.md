@@ -1568,6 +1568,13 @@ owners. Preserve malformed-predicate and literal failures independently of caps;
 cache crate gate queries only within the shared owner walk, retaining each actual
 macro occurrence's permission. Broader documentation diagnostics/output and
 imported metadata remain required.
+The [advisory request packet](pa40/tests/spec/advisory-requests/README.md) recognizes
+intra_doc_pointers and strict_provenance_lints without operation permissions or
+binding-mode changes. Rustdoc pointer-link resolution does not create program
+bindings; optional provenance casts retain their existing legality and unsafe
+checks. Under an explicit Allow cap preserve deferred expectations, not fake
+producer events. Reject unsupported strict explicit provenance producers honestly;
+keep required positive warn/expect and rendering/transport qualification open.
 The manifest's `public-dependency` Cargo feature controls
 retained target graph edges; it grants no host Rust or compiler-query capability.
 Unsupported host edge modifiers, tools, workspace inheritance and other unstable

@@ -1,6 +1,19 @@
 # Parallel library bootstrap implementation
 
-Current original-core frontier is LIB-135: intra_doc_pointers at original lib.rs135.
+Current original-core frontier is LIB-136: link_cfg at original lib.rs138.
+The [advisory request checkpoint](pa40-advisory-requests-checkpoint.md) qualifies
+both documentation/provenance requests without operation permissions or new
+binding modes. Private4/production10,PA8 126/126,72 independent/candidate outcomes
+and native pointer round-trip7 9 pass. Ordinary LowIR bytes equal the predecessor.
+CLI871c6abd reaches LIB-136 in20.69s/375opens with all722 hashes, six configuration
+pins, options, capAllow and finite limits unchanged. Implement actual conditional
+link metadata and its independent gates/predicates next. Strict provenance
+producers, Rustdoc output, imported transport and original artifacts remain open.
+Root stays alone in the existing warm btrfs tree, with no new worker/cache/tree,
+five-minute/two-thread/16GiB/150GiB guards and scoped cleanup. No whole PA is released.
+
+
+Previous original-core frontier was LIB-135: intra_doc_pointers at original lib.rs135.
 The [documentation gate checkpoint](pa40-documentation-gates-checkpoint.md)
 qualifies source/macro/query authority and shared flat cfg parsing. Private21,
 production19,PA2 142/142,PA5 231/231,PA8 126/126,264 candidate outcomes and actual

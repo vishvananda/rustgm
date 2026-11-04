@@ -101,3 +101,8 @@ attribute errors, macro execution identity, pending expectations and sticky
 work/storage limits. Wide retained headers and many invocations must not create
 unnecessary Cartesian validation work for a suppressed event; the uncapped
 diagnostic path retains its full checks.
+
+The unpublished [documentation/provenance request packet](tests/spec/advisory-requests/README.md)
+qualifies genuine metadata-only requests without enabling pointer operations or
+weakening unsafe checks. Optional strict provenance producers and Rustdoc output
+remain required, with honest boundaries under the uncapped profile.

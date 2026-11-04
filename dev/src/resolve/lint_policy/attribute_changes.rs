@@ -332,6 +332,15 @@ fn deferred_lint(
             attribute,
             "unsupported lint expectation requires an implemented lint producer",
         ));
+    } else if setting.level != Level::Allow
+        && range.end == range.start + 1
+        && forest.name(setting.unit.source.text(), range.start) == Some("implicit_provenance_casts")
+    {
+        return Err(invalid(
+            key,
+            attribute,
+            "strict provenance lint producer is not implemented",
+        ));
     }
     Ok(())
 }
