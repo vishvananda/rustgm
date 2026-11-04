@@ -6,9 +6,11 @@ work/storage budget after genuine macro-valued language-item expansion. The
 28 production,45 independent outcomes,90 CLI phases and real native9 11. All22
 panic_const identities append without changing earlier ordinals or granting
 unimplemented compiler semantics. CLI17eb46c0 takes18.94s/375opens with all722
-inputs/configuration/limits unchanged. Next measure the inventory's failing
-phase/dimension and remove repeated work or over-reservation; preserve its
-1,000,000-work/64MiB limits until understood. Default-body predecessor167968ee0
+inputs/configuration/limits unchanged. The same binary debugger probe identifies work exhaustion in feature-index bulk
+prepayment:1,215,235 steps/15,628,251 bytes, before index construction and owner
+passes. Measure repeated feature processing and remaining costs; preserve its
+1,000,000-work/64MiB limits while selecting the fix. No quadratic behavior is
+established. Default-body predecessor167968ee0
 is on main; full CI41748017598 remains in progress with fast passing. No full
 successor pass or original library artifact is inferred. Full Drop/Pin, imported
 body/value/policy transport and actual libraries remain required. Root stays

@@ -64,6 +64,21 @@ policy ownership and every hard check. Keep the existing1,000,000-work/64MiB
 inventory limits until the failure is understood; raising a limit is not an
 algorithmic improvement.
 
+A subsequent debugger observation of the same immutable CLI identifies the
+failing dimension:1,215,235 charged work and15,628,251 storage bytes. The failure
+is the bulk payment in Draft::check_feature_requests, before feature-index
+construction or owner/reachability processing. The64MiB storage limit is not
+exhausted. Source and binary hashes remain unchanged. A breakpoint on the actual
+error branch, with offsets verified from the immutable binary's disassembly,
+captures counters without rebuilding, changing limits or modifying the binary
+on disk. This diagnostic observation is not another successful source build.
+Receipt `obj/parallel/language-values-v1/inventory-probe-v1/receipt.json`, SHA-256
+`bf71b2752b692d8ff35a8bbe1d1f51a602d5307c5ca437aba42e22ec6acf9dca`.
+The same directory retains the stack, disassembly, parsed counters and tool hash.
+Next measure repeated feature-string parsing/validation/indexing and remaining
+phase costs, preserving first-definition, relationship and request semantics.
+The current loops are linear; this observation does not establish quadratic work.
+
 The initial Vec/Cow implementation mismatch remains a failed compiler check,
 not source-language evidence. The final path preserves borrowed literals.
 The [default-body predecessor](pa31-default-body-stability-checkpoint.md) is on
