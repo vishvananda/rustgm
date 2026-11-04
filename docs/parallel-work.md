@@ -1,5 +1,13 @@
 # Parallel library bootstrap implementation
 
+Latest full qualification41853939500 on8b3324434 passes lint/architecture/harness,
+host builds, release/course suites, native qualification and debug invariants.
+Its only failed stage is the independent upstream runner: newly imported feature
+fixtures need the pinned oracle's explicit RUSTC_BOOTSTRAP=1, as the other Rust
+oracles already use. The runner now scopes that setting to its rustc child;
+all15 whole-program outcomes pass even with parent RUSTC_BOOTSTRAP=0. The later
+PA25 const-machine stage was skipped and remains pending successor full CI.
+
 Full qualification cadence: run41787601690 on6f1e3eb3d is terminal success
 with every gate passing. LLVM successor run41795595365 on3d4b3ae9d failed eight stale cold-layout
 assertions. All eight now pass focused qualification; ordinary layouts retain

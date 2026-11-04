@@ -15,6 +15,14 @@ PA21–PA24 have implemented/release-evidence status; PA1–PA20 retain
 implemented-draft. PA25–PA44 remain planned. No additional assignment or whole
 upstream library has been completed.
 
+Latest full qualification41853939500 on8b3324434 passes lint/architecture/harness,
+host builds, release/course suites, native qualification and debug invariants.
+Its only failed stage is the independent upstream runner: newly imported feature
+fixtures need the pinned oracle's explicit RUSTC_BOOTSTRAP=1, as the other Rust
+oracles already use. The runner now scopes that setting to its rustc child;
+all15 whole-program outcomes pass even with parent RUSTC_BOOTSTRAP=0. The later
+PA25 const-machine stage was skipped and remains pending successor full CI.
+
 Current original-core frontier is LIB-144: unsupported intrinsic declarations.
 The [field-policy checkpoint](pa31-field-policy-checkpoint.md) clears LIB-143
 with actual configured field/parent identity, direct/inherited regular policy,

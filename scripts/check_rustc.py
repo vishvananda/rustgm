@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Independent whole-program outcomes; raw lexer fragments are not programs."""
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -22,7 +23,8 @@ def main():
         path = ROOT / item["destination"]
         result = subprocess.run(["rustc", "--edition=2024", "--crate-name", "upstream_check",
                                  "--emit=metadata", "-o", str(output / "check.rmeta"), str(path)],
-                                capture_output=True, timeout=30)
+                                capture_output=True, timeout=30,
+                                env={**os.environ, "RUSTC_BOOTSTRAP": "1"})
         wanted = 0 if item["oracle"] == "check-pass" else 1
         (output / (path.stem + ".stderr")).write_bytes(result.stderr)
         if result.returncode != wanted:
