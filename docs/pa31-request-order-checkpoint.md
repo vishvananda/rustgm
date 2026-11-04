@@ -93,6 +93,26 @@ to compilation stays deferred. LIB-148 unused alias demand, LIB-149 custom auto
 traits, Field/TransmuteFrom semantics, general imports and all remaining
 assignment and original library requirements remain open.
 
+An unchanged-binary GDB probe identifies the actual failing handoff:
+`Report::complete_hidden_globs` passes the entire incoming import lineage
+budget into `Producer::diagnostic_payload`. The transfer adds4069745 steps and
+56637440 bytes to the lint producer, whose earlier charges are5094035 steps
+and44446065 bytes. The resulting9163780 work is below10M, but101083505 bytes
+exceed64MiB. This is not evidence that the retained diagnostic causes need that
+much storage. Preserve the import payer and all failed attempts, then account
+the actual new diagnostic work/witness storage under its proper owner. PA12
+resolution provenance joins PA40/31 ownership. An immutable lint cap may suppress
+unneeded diagnostics, but source/cap identity, deferred expectations and genuine
+hard failures must not be bypassed. Broad warning-parity work stays deferred.
+
+Both probes use this exact immutable CLI and original command/options, verifying
+all722 inputs before and after; no rebuild, debug profile or limit change is
+involved. Raw counters and call stacks are in `lint-trace-v1` and
+`lint-transfer-v1`. The first probe's printed file/node labels are physical ABI
+argument slots, not validated NodeKey field labels; its separate interpretation
+records that limitation. The work/storage offsets and second probe's actual
+transfer arguments are checked against the executable's disassembly.
+
 ## Retained receipts
 
 - `obj/qualification/fast/1793823229178289040/receipt.json`:
@@ -103,6 +123,10 @@ assignment and original library requirements remain open.
   f501b4018f3ed8b4e1641684adb6d78dcf43b2a54593a09bb3601d7c36d96231.
 - `obj/parallel/request-order-v1/measurement-v1/receipt.json`:
   1de21f1417f7b0b0eaa9dcb2b8d648a3da5ac6a785df07420fbe1e9e56dcb8fc.
+- `obj/parallel/request-order-v1/lint-trace-v1/receipt.json`:
+  91320aecf1fd29203b425d7998964a5ab542f2c14a8ae6e5dfe886f113ad29a8.
+- `obj/parallel/request-order-v1/lint-transfer-v1/receipt.json`:
+  3e34df4e83f20da2905fa43180b7e723019aa8bf4aa020dbe26a2871db08a00f.
 
 Failed predecessor discovery, CI logs and all raw observations stay in the same
 scratch root. Current/predecessor immutable CLIs are21c9b6ca/4a3107d3; superseded

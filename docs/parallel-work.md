@@ -84,9 +84,12 @@ and still rejects exhausted source work. Actual source-callable exports and
 full-staged callback lowering pass, alongside feature/forced-dyn controls.
 CLI21c9b6ca preserves all722 source/package hashes, six pins, fifteen values,
 original options/capAllow and finite limits, and reaches source lint-policy
-storage budget exceeded in18.616s/375opens. Identify the actual failing storage
-charge and collection/payload axes; do not raise a guard, discard witnesses or
-weaken allow/deny/expect. Compilation takes priority over unrelated lint parity.
+storage budget exceeded in18.616s/375opens. An unchanged-binary trace identifies
+complete_hidden_globs transferring all4069745 steps/56637440 attempted lineage
+bytes into an already44446065-byte lint producer. Keep the import meter and
+failed attempts, but account actual new diagnostic work/witness storage under
+its own owner. Preserve allow/deny/expect and source/cap identity; no guard
+increase or witness deletion. Unrelated warning parity remains deferred.
 LIB-148 alias demand, LIB-149 custom autos, Field/TransmuteFrom, general transport,
 whole assignments and every original core/alloc/std artifact remain required.
 Root remains alone in guarded warm btrfs scratch.
