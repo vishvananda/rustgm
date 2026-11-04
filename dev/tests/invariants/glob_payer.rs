@@ -46,10 +46,13 @@ fn distinct_paid_histories_do_not_become_one_smaller_budget() -> TestResult {
         .take()
         .ok_or("actual completed import work")?;
     let producer = report.lint_producer().ok_or("source policy owner")?;
-    producer.diagnostic_read(key, 40 * 1024 * 1024)?;
+    producer
+        .diagnostic_read(key, 40 * 1024 * 1024)
+        .map_err(Error::from)?;
     let before = producer.work();
     work.lineage_budget
-        .charge(key, 3_000_000, 40 * 1024 * 1024)?;
+        .charge(key, 3_000_000, 40 * 1024 * 1024)
+        .map_err(Error::from)?;
     let lineage = work.lineage_budget;
     let candidates = work.hidden_candidates(&report.resolution, key)?;
     let causes = work.hidden_causes(
@@ -77,7 +80,9 @@ fn failed_new_diagnostic_allocations_are_sticky_and_publish_no_prefix() -> TestR
     let key = root(&report);
     let mut work = report.imports.take().ok_or("actual import work")?;
     let producer = report.lint_producer().ok_or("source policy owner")?;
-    producer.diagnostic_read(key, 64 * 1024 * 1024 - producer.work().bytes)?;
+    producer
+        .diagnostic_read(key, 64 * 1024 * 1024 - producer.work().bytes)
+        .map_err(Error::from)?;
     for _ in 0..2 {
         let before = producer.work();
         let candidates = work.hidden_candidates(&report.resolution, key)?;

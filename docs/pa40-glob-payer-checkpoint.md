@@ -107,6 +107,21 @@ independent Rust and const-machine checks. It qualifies the preceding request
 payer/Destruct transport repair, including its private controls; the current
 glob implementation still needs its own full successor CI.
 
+Full successor [41913720633](https://github.com/vishvananda/rustgm/actions/runs/41913720633)
+on7b382cb6d is terminal failure at all-target Clippy: three new private-test
+`?` sites lacked conversion from the internal lint violation to the existing
+resolver error. Fast smoke passes. The repair uses the same `Error::from`
+adapter as neighboring tests and changes no compiler behavior or assertions.
+The exact private execution attempt is retained at
+`obj/qualification/fast/1793827850090215099/receipt.json`: its monolithic
+Clippy/link producer reaches the five-minute limit, so it proves no execution
+result. Do not repeat that cold link locally or infer a full CI pass.
+Strict all-target/all-feature Clippy without linking then passes in157.86s,
+including the repaired private code; its source-bound receipt is
+`obj/parallel/glob-payer-v1/ci-repair-v1/receipt.json`, SHA256
+89241fc8bf5163fbfbec037cae0cc0f5eaed3255d04265fa42e23da481d96e8c.
+Private execution and the remaining full gates stay pending successor CI.
+
 - `obj/qualification/fast/1793825808490872114/receipt.json`:
   7068208adc8991a2c3ed7862dd5a6b8cf38be01b681ffc1e93154fd28029a3f4.
 - `obj/parallel/glob-payer-v1/reference-v1/receipt.json`:
