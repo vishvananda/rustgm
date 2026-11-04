@@ -66,6 +66,12 @@ impl Checker<'_> {
         }
         crate::sema::specialization::prepare_graph(&mut self.facts, self.report)
             .map_err(|error| self.implementation_error(None, error))?;
+        crate::sema::specialization::verify_applicable_impls(
+            &mut self.facts,
+            self.report,
+            &headers,
+        )
+        .map_err(|error| self.implementation_error(None, error))?;
         crate::sema::specialization::conformance_order(&self.facts, &mut headers)
             .map_err(|error| self.implementation_error(None, error))?;
         let members = Members::new(self.report, &self.facts);

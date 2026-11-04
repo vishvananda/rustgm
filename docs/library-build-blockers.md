@@ -31,7 +31,27 @@ oracles already use. The runner now scopes that setting to its rustc child;
 all15 whole-program outcomes pass even with parent RUSTC_BOOTSTRAP=0. The later
 PA25 const-machine stage was skipped in that run; the successor above passes it.
 
-Current original-core frontier is LIB-145: ordinary trait-header policy.
+Current original-core frontier is LIB-146: nominal fundamental policy.
+The [ordinary applicable-trait checkpoint](pa31-applicable-traits-checkpoint.md)
+clears LIB-145's language-role restriction for actual specialization traits.
+Private10/production43 pass in157.31s/190.07s; the original marked-supertrait and
+ordinary native paths match rustc7/9. All44 independent outcomes match rustc;
+43 match RustGM, with valid quantified elaboration retained under PA20.
+One source-marker owner, typed predicate worklist and shared cumulative budget
+supply actual impl authority and always-applicable checks, without a new registry
+or ordinary body field. Existing exact sizing-role wire flags remain supported;
+general unencoded policy stays fenced. All722 source/package hashes, six pins,
+fifteen values, capAllow, options and finite limits remain unchanged.
+CLI5829cc20 advances to file79 byte252 in28.12s/375opens; the first-open map points
+to field.rs11's FieldRepresentingType and fundamental annotation. Confirm the
+retained nominal owner and implement actual trait/type fundamental semantics,
+feature/macro authority, coherence and transport under PA20/26/31/29. No sizing
+language role may stand in for that general policy. Broader coinductive/dyn
+policy, quantified/projection constraints, intrinsic kernels, authenticated body
+transport, whole assignments and original core/alloc/std artifacts remain open.
+Root stays alone in the warm btrfs tree with unchanged guards and scoped cleanup.
+
+Previous original-core frontier was LIB-145: ordinary trait-header policy.
 The [intrinsic declaration checkpoint](pa28-intrinsic-declarations-checkpoint.md)
 recognizes all315 pinned names with296 unique new identities sharing100 typed
 profiles. All668 independent outcomes match rustc; RustGM matches660, preserving
@@ -599,7 +619,8 @@ actual native hints and the future authenticated MIR-import obligation.
 | LIB-142 | Local source/policy/conditional-call/native checkpoint qualified; imported closure retained | Const inherent-impl owner policy and actual member const eligibility | PA25 const items/calls +PA19 method headers +PA31 library policy +PA29 transport | Root only | [Checkpoint](pa25-inherent-block-checkpoint.md): private104/production5/native1,51 independent source outcomes and real mixed CTFE/runtime7/9. Public exposure uses one typed nominal index; ordinary const facts use one cold owner without fabricated source authority. Original defining checks and actual CTFE requirements remain. CLIfcaa05c0 reaches LIB-143 in17.87s with all722 inputs, six pins, fifteen configuration values and finite limits unchanged. General imported policy/calls and original artifacts remain required. |
 | LIB-143 | Local field/variant policy and actual typed/native consumers qualified; imports required | Named/tuple/union/variant-field availability and actual parent identity | PA31 availability +PA12 fields +PA29 policy transport | Root only | [Checkpoint](pa31-field-policy-checkpoint.md): private130/production7/native2,24 independent field and51 const-inherent outcomes. One prepaid cold source/parent/policy map authenticates actual typed fields; stable variants inherit parent policy. All known prior CI regressions pass focused checks; full successor qualification remains separate. CLIfbfd6d1c reaches LIB-144 with all722 inputs, six pins, fifteen values and finite limits unchanged. Imported policy and original artifacts remain required. |
 | LIB-144 | Complete name vocabulary and finite typed headers qualified; required operations/prerequisites retained | Intrinsic declarations, exact signatures, reached semantics and transport | PA28 +PA31 source authority +PA41 target operations +PA29 transport +PA26/30/33 language-role producers | Root only | [Checkpoint](pa28-intrinsic-declarations-checkpoint.md):315 names,296 new identities/100 profiles,668 independent outcomes;660 candidate matches. Six valid named-role headers and two valid CTFE/runtime calls remain explicit positive gaps. Private7/production659/native7 9, all722 inputs, six pins, fifteen values and finite limits preserved. CLI35259595 advances to LIB-145. Whole assignments and original artifacts remain required. |
-| LIB-145 | Current original-core frontend frontier | Ordinary trait-header policy, beginning with rustc_specialization_trait on BytewiseEq | PA20 specialization/trait rules +PA31 actual source attributes/owners +PA29 policy transport / file74:892, first-open map cmp/bytewise.rs20 | Root only | Confirm retained owner, inventory ordinary trait annotations and validate their real feature/target/duplicate/solver policy. Consume actual typed trait identities rather than requiring or fabricating a language role. Preserve source min-specialization rules, const bounds, finite budgets, exact rejections and old metadata fences; qualify original-source replay and ordinary native controls. |
+| LIB-145 | Local trait policy/Min checks and native dispatch qualified; quantified/imported closure required | Ordinary rustc_specialization_trait, actual impl authority and always-applicable conditions | PA20 +PA31 source owners +PA29 policy/body transport | Root only | [Checkpoint](pa31-applicable-traits-checkpoint.md):private10/production43,44 independent outcomes with one retained valid quantified gap; actual marked-supertrait/ordinary Rust7 9. Existing sizing-role metadata remains supported; general unencoded policy is fenced. All722 inputs, six pins, fifteen values and finite limits preserved. CLI5829cc20 advances to LIB-146; whole assignments/artifacts remain required. |
+| LIB-146 | Current original-core frontend frontier | Fundamental policy on actual nominals/traits, beginning FieldRepresentingType | PA20 coherence +PA26 language-role consumers +PA31 actual annotation owner/authority +PA29 trait/nominal policy transport / file79:252, first-open map field.rs11 | Root only | Confirm actual owner, inventory general fundamental/coinductive/dyn policy and validate feature, macro allowance, target, duplicates, real coherence/selection consequences and import/export. Do not require or fabricate a sizing-language role, silently ignore policy, or grant compiler-intrinsic capability to a normal nominal. Preserve existing source role profiles, budgets, negative coherence and exact independent/native controls. |
 | Remaining raw language-item semantic inventory | Declarations checked;98 builtin semantic profiles explicitly unsupported | Actual operators, associated hooks, async/drop/pinning, field reflection, ranges and weak memory hooks | Earliest actual PA23–PA31/40/41 consumer units +PA29 transport / compiler-language-claims packet | Root only | The pinned100-name raw inventory is not a cfg-active blocker count. Shared target/arity/foreign validation and135 independent cases are qualified, but unsupported semantic consumers stop explicitly before ordinary checking can infer absence. Implement each actual builtin relation/runtime contract and add genuine source/native/imported consumers before removing its fence. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |

@@ -1,15 +1,24 @@
 //! A completed local trait row owns source identity even when the marker is absent.
+use super::retention_work::Budget;
 use crate::{
     resolve::{expansion::Report, model::DefId, package::Error, unit::NodeKey},
     sema::model::Declarations,
     support::{hash::HashMap, source::OriginalImage},
     syntax::{ast::Kind, item::ItemKind, token_tree::Span},
 };
-use std::{cell::Cell, sync::Arc};
+use std::sync::Arc;
 #[derive(Clone, Copy)]
-struct Work {
-    steps: usize,
-    bytes: usize,
+pub(super) enum Policy {
+    Unsafe,
+    Applicable,
+}
+impl Policy {
+    pub(super) const fn name(self) -> &'static str {
+        match self {
+            Self::Unsafe => "rustc_unsafe_specialization_marker",
+            Self::Applicable => "rustc_specialization_trait",
+        }
+    }
 }
 #[derive(Clone, Copy)]
 pub(super) struct Marker {
@@ -28,38 +37,24 @@ pub(super) struct Row {
     pub syntax: ItemKind,
     pub owners: Vec<Owner>,
     pub marker: Option<Marker>,
+    pub applicable: Option<Marker>,
 }
+#[derive(Default)]
 pub(in crate::sema) struct LocalMarkers {
     pub(super) sources: HashMap<NodeKey, Row>,
     pub(super) definitions: HashMap<DefId, NodeKey>,
     pub(super) complete: bool,
-    work: Cell<Work>,
-}
-impl Default for LocalMarkers {
-    fn default() -> Self {
-        Self {
-            sources: HashMap::default(),
-            definitions: HashMap::default(),
-            complete: false,
-            work: Cell::new(Work {
-                steps: 0,
-                bytes: size_of::<Self>(),
-            }),
-        }
-    }
+    pub(super) has_applicable: bool,
+    work: Budget,
 }
 impl LocalMarkers {
     pub(super) fn charge(&self, steps: usize, bytes: usize) -> Result<(), &'static str> {
-        let old = self.work.get();
-        let work = Work {
-            steps: old.steps.saturating_add(steps),
-            bytes: old.bytes.saturating_add(bytes),
-        };
-        self.work.set(work);
-        if work.steps > 10_000_000 || work.bytes > 64 * 1024 * 1024 {
-            return Err("specialization marker work or storage budget exceeded");
-        }
-        Ok(())
+        self.work
+            .charge(steps, bytes)
+            .map_err(|_| "specialization marker work or storage budget exceeded")
+    }
+    pub(super) fn budget(&self) -> Result<Budget, &'static str> {
+        self.work.alias()
     }
     pub(super) fn row<'a>(
         &'a mut self,
@@ -83,6 +78,7 @@ impl LocalMarkers {
                     syntax,
                     owners: Vec::new(),
                     marker: None,
+                    applicable: None,
                     image: Arc::clone(report.package.unit(key.file).source.original_image()),
                 },
             );
@@ -93,13 +89,8 @@ impl LocalMarkers {
     }
     #[cfg(test)]
     pub(in crate::sema) fn storage(&self) -> (usize, usize, usize, usize) {
-        let work = self.work.get();
-        (
-            self.sources.len(),
-            self.sources.capacity(),
-            work.steps,
-            work.bytes,
-        )
+        let (steps, bytes) = self.work.usage();
+        (self.sources.len(), self.sources.capacity(), steps, bytes)
     }
 }
 pub(super) fn trait_syntax(report: &Report, key: NodeKey) -> Result<ItemKind, Error> {

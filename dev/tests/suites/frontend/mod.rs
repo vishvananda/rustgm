@@ -1,4 +1,6 @@
 //! Maintainer integration suites for frontend.
+#[path = "../../applicable_contracts.rs"]
+mod applicable_contracts;
 #[path = "../../callback_provider.rs"]
 mod callback_provider;
 #[path = "../../capped_cli.rs"]

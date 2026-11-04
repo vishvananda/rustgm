@@ -52,6 +52,7 @@ pub(super) fn validate(
         let mut permitted = Basis::default();
         permitted.conditions(parent, budget)?;
         well_formed(facts, forest, relation, &mut permitted, budget)?;
+        super::applicable_rules::permit(facts, report, &actual, &mut permitted, budget)?;
         permitted.elaborate(facts, budget)?;
         budget.charge(actual.regions.len(), 0)?;
         if !actual.regions.is_subset(&permitted.regions) {
@@ -85,9 +86,17 @@ fn structural(
     relation: &Relation,
     budget: &Budget,
 ) -> Result<(), &'static str> {
+    structural_arguments(facts, relation.parent_arguments, budget)
+}
+pub(super) fn structural_arguments(
+    facts: &Declarations,
+    arguments: GenericArgs,
+    budget: &Budget,
+) -> Result<(), &'static str> {
+    let argument_id = arguments;
     let arguments = facts
         .types
-        .arguments(relation.parent_arguments)
+        .arguments(argument_id)
         .ok_or("specialization mapping disappeared")?;
     budget.charge(arguments.len(), 0)?;
     for argument in arguments {
@@ -112,16 +121,19 @@ fn structural(
             );
         }
     }
-    let paths =
-        Multiplicities::arguments(&facts.types, relation.parent_arguments, |steps, bytes| {
-            budget.charge(steps, bytes)
-        })?;
+    let paths = Multiplicities::arguments(&facts.types, argument_id, |steps, bytes| {
+        budget.charge(steps, bytes)
+    })?;
     if paths.repeated(|steps, bytes| budget.charge(steps, bytes))? {
         return Err("minimal specializing implementation repeats a parameter");
     }
     Ok(())
 }
-fn additional(facts: &Declarations, report: &Report, clause: Clause) -> Result<(), String> {
+pub(super) fn additional(
+    facts: &Declarations,
+    report: &Report,
+    clause: Clause,
+) -> Result<(), String> {
     let Clause::Predicate(predicate) = clause else {
         return Err("higher-ranked minimal specialization clauses are not implemented".into());
     };
@@ -156,7 +168,7 @@ fn additional(facts: &Declarations, report: &Report, clause: Clause) -> Result<(
     }
     Err("minimal specialization introduces a non-marker predicate".into())
 }
-fn identity_arguments(
+pub(super) fn identity_arguments(
     facts: &mut Declarations,
     owner: DefId,
     budget: &Budget,
@@ -200,6 +212,14 @@ fn well_formed(
         .get(&relation.child)
         .ok_or("missing child specialization vertex")?;
     let predicate = forest.vertices[child.index()].witness.predicate;
+    well_formed_predicate(facts, predicate, permitted, budget)
+}
+pub(super) fn well_formed_predicate(
+    facts: &mut Declarations,
+    predicate: crate::types::parameters::predicates::Predicate,
+    permitted: &mut Basis,
+    budget: &Budget,
+) -> Result<(), &'static str> {
     let mut roots = Vec::new();
     let count = predicate
         .bound

@@ -230,6 +230,20 @@ semantics; old metadata profiles must reject unencoded contracts. Preserve the
 ordinary intrinsic reification prohibition. The [declaration checkpoint](docs/pa28-intrinsic-declarations-checkpoint.md)
 retains independent outcomes, required positive gaps and scaling evidence.
 
+Ordinary `rustc_specialization_trait` policy belongs to the actual trait,
+independently of language-item identity. Reuse the configured-owner annotation
+walk, source witnesses and typed specialization basis. Implementations require
+their real specialization request or impl-token allowance even without an overlap;
+crate Min checks remain mandatory when requested alongside Full. Verify their
+complete inputs and own conditions, allowing well-formed requirements and the
+elaborated consequences of other always-applicable traits. Unsafe marker policy
+takes precedence, as in the pinned compiler. Share cumulative payment across
+annotation queries and implementation verification; never restart a failed
+ledger or use an impl's own Self:Trait as a premise. Preserve existing sizing-role
+wire flags, while ordinary unencoded trait policy fails publication/import.
+The [applicable-trait checkpoint](docs/pa31-applicable-traits-checkpoint.md) retains
+quantified-predicate work and the other assignment requirements explicitly.
+
 Implement obligations required by the pinned language and actual consumer.
 Keep declaration checking, value validity, optional optimization and advisory
 lint claims distinct. A documented niche guarantee does not invent a field

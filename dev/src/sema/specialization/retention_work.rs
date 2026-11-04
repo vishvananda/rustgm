@@ -6,6 +6,14 @@ struct Work {
     bytes: usize,
 }
 pub(super) struct Budget(Rc<Cell<Work>>);
+impl Default for Budget {
+    fn default() -> Self {
+        Self(Rc::new(Cell::new(Work {
+            steps: 0,
+            bytes: 2 * size_of::<usize>() + size_of::<Cell<Work>>(),
+        })))
+    }
+}
 impl Budget {
     pub(super) fn new(owners: usize) -> Result<Self, &'static str> {
         // Conservative logical bookkeeping, not an allocator-usage measurement.

@@ -122,6 +122,16 @@ pub(super) fn validate(
         let Claim::Header(attribute) = claim else {
             continue;
         };
+        if *attribute == HeaderAttribute::Specialization {
+            // Every actual trait owns this policy, independently of a language
+            // role. The shared semantic annotation producer checks its complete
+            // source/gate/target contract; retain sizing's existing role view.
+            if role.is_some() {
+                flags.0 |= attribute.bit();
+                reserved.steps = reserved.steps.saturating_add(1);
+            }
+            continue;
+        }
         if !source.features.has(Feature::RustcAttributes) {
             return Err(error("source role header attribute requires rustc_attrs"));
         }

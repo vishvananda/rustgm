@@ -26,6 +26,7 @@ pub(crate) enum Consumer {
     InsignificantDestructor,
     NonExhaustive,
     UnsafeSpecialization,
+    SpecializationTrait,
     MarkerTrait,
     DerivedImplementation,
     CallerTracking,
@@ -80,7 +81,6 @@ impl Consumer {
             | "rustc_deny_explicit_impl"
             | "rustc_diagnostic_item"
             | "fundamental"
-            | "rustc_specialization_trait"
             | "rustc_coinductive"
             | "rustc_dyn_incompatible_trait"
             | "rustc_trivial_field_reads"
@@ -134,6 +134,7 @@ impl Consumer {
             "marker" => Self::MarkerTrait,
             "automatically_derived" => Self::DerivedImplementation,
             "rustc_unsafe_specialization_marker" => Self::UnsafeSpecialization,
+            "rustc_specialization_trait" => Self::SpecializationTrait,
             "rustc_paren_sugar" => Self::TraitParentheses,
             "rustc_coherence_is_core" | "rustc_preserve_ub_checks" => Self::CrateOptions,
             "rustc_on_unimplemented" => Self::TraitDiagnostics,

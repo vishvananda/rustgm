@@ -1,0 +1,329 @@
+{
+  "schema": 1,
+  "profile": {
+    "rust": "1.98.0",
+    "edition": 2024,
+    "cap_lints": "allow",
+    "binding_mode": "actual Source provider"
+  },
+  "cases": [
+    {
+      "name": "declaration",
+      "path": "pa31/tests/spec/applicable-traits/declaration.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "d4778f80dd355209d596ea13ccb449df167a8164327b6a0b983417d0f0d20cf7"
+    },
+    {
+      "name": "declaration-with-method",
+      "path": "pa31/tests/spec/applicable-traits/declaration-with-method.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "0f8d86aa4387b0535445335612c008b7479ea85cf1d6f226960d87a9d9227e1f"
+    },
+    {
+      "name": "no-min-declaration",
+      "path": "pa31/tests/spec/applicable-traits/no-min-declaration.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "76477349a7cf4bbc0e03f619d2eb26e2ac1ae9aed5962f6d7492854a9b1379e9"
+    },
+    {
+      "name": "impl-concrete",
+      "path": "pa31/tests/spec/applicable-traits/impl-concrete.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "66a00cf18d04c91005ce529040d5115144c5e08ca7f38b6c298dfc89481af3db"
+    },
+    {
+      "name": "impl-blanket",
+      "path": "pa31/tests/spec/applicable-traits/impl-blanket.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "0d9178f12a0582958d02b50ac6720077c7c3bed0eff03a10aa8f7cb53694cfed"
+    },
+    {
+      "name": "impl-nominal",
+      "path": "pa31/tests/spec/applicable-traits/impl-nominal.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "4aaf2dd8abea802e076690e8cb3724d587f2f7ee895e0ea5e51fcf76df6bc21e"
+    },
+    {
+      "name": "impl-with-method",
+      "path": "pa31/tests/spec/applicable-traits/impl-with-method.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "7a65463949ac1aa96a3a836fd51ecac8e437acd170f8ff9fbe284dff9a58618c"
+    },
+    {
+      "name": "impl-generic-trait",
+      "path": "pa31/tests/spec/applicable-traits/impl-generic-trait.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "ace1f390eaa89ab0748025e6e4108c359a23e88fd07080323c63c539f4dbb476"
+    },
+    {
+      "name": "ordinary-bound-invalid",
+      "path": "pa31/tests/spec/applicable-traits/ordinary-bound-invalid.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "45aefa04c4844534554e73db8bb9aa9ec0c23065342c54b6e32329200f8f53e2"
+    },
+    {
+      "name": "impl-no-min",
+      "path": "pa31/tests/spec/applicable-traits/impl-no-min.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "d3bb89d3f84692da2cf931b30eeca6c5f89915797af7fd5681556e779a3261dd"
+    },
+    {
+      "name": "full-permits-bound",
+      "path": "pa31/tests/spec/applicable-traits/full-permits-bound.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "d270c59baaa5b1836266edae2bfd4caece8c4fa6b4235f248bf6d383fa2f7bc7"
+    },
+    {
+      "name": "full-and-min-check-bound",
+      "path": "pa31/tests/spec/applicable-traits/full-and-min-check-bound.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "fc054242c9d79878c2cb8dc8cc9d4475dc7600df2f4e9c7ce1563e29d4abea85"
+    },
+    {
+      "name": "repeated-trait-input",
+      "path": "pa31/tests/spec/applicable-traits/repeated-trait-input.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "6f129984964618939834e2996c81bd1d4683dfb0d4ef2f7e7f27f04d40462f74"
+    },
+    {
+      "name": "repeated-nested-input",
+      "path": "pa31/tests/spec/applicable-traits/repeated-nested-input.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "8c4309b372121005a366bf0e22355a49d4cfd7ee8514e19855561c44b4cc1385"
+    },
+    {
+      "name": "static-input",
+      "path": "pa31/tests/spec/applicable-traits/static-input.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "9a8e9d33207f469b04478d1866cdc8548181175f748809efa4ee37d7e9b8c0ad"
+    },
+    {
+      "name": "lifetime-input",
+      "path": "pa31/tests/spec/applicable-traits/lifetime-input.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "9ab6d28daced46806d56fa38e71e5fa62e5598772da31c4dca05dab2176078cd"
+    },
+    {
+      "name": "const-input",
+      "path": "pa31/tests/spec/applicable-traits/const-input.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "1f2d4c9ee70d431dc5b55ff886034859161ff72c46f11fd7de695364749953d5"
+    },
+    {
+      "name": "repeated-const-input",
+      "path": "pa31/tests/spec/applicable-traits/repeated-const-input.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "144058d2ea3dcf5bf4f0903c88c9eb2100f668d140c49d0d4c4d4187d7fb4e05"
+    },
+    {
+      "name": "marked-premise",
+      "path": "pa31/tests/spec/applicable-traits/marked-premise.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "14899e9ec82281c6655ab739f1045c7fd78496335be359d663fe65ee1e3dbe7b"
+    },
+    {
+      "name": "static-bound",
+      "path": "pa31/tests/spec/applicable-traits/static-bound.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "f95d1ede596ac71037c18c396eea071e9968ee8ea54db62c7bc1df351183185e"
+    },
+    {
+      "name": "conditional-supertrait-impl",
+      "path": "pa31/tests/spec/applicable-traits/conditional-supertrait-impl.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "8e1d733837a37292095be2906b96601c263aeed50b93843669d2fdfef370a665"
+    },
+    {
+      "name": "concrete-supertrait-impl",
+      "path": "pa31/tests/spec/applicable-traits/concrete-supertrait-impl.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "35f48ece45f90816fc50cff0fb3a755dbf80e1014d3fff430faa45eb450ec121"
+    },
+    {
+      "name": "unsafe-priority",
+      "path": "pa31/tests/spec/applicable-traits/unsafe-priority.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "6d00ab482f2ef258974abcdb65290833aaf4a2193feb4ba25c0a265db607392e"
+    },
+    {
+      "name": "wrong-target-function",
+      "path": "pa31/tests/spec/applicable-traits/wrong-target-function.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "fddea5c5d0a202104c6c618c8a2ea23bae050d96c4c625dfdc810a7b7f06899a"
+    },
+    {
+      "name": "wrong-target-struct",
+      "path": "pa31/tests/spec/applicable-traits/wrong-target-struct.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "bc84c459ea22eb3de6f2aaf8ca5a9009c4ce3ba75fa29c1e4635905ba12a2103"
+    },
+    {
+      "name": "wrong-target-impl",
+      "path": "pa31/tests/spec/applicable-traits/wrong-target-impl.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "6597588f243908606dcadd85d76bdde151b3bfc0063d759362c62ba292362dda"
+    },
+    {
+      "name": "wrong-target-alias",
+      "path": "pa31/tests/spec/applicable-traits/wrong-target-alias.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "c285dd0f425b970465012f32d63d02c92ac9268ad9932ee0de68767462a93c06"
+    },
+    {
+      "name": "wrong-list",
+      "path": "pa31/tests/spec/applicable-traits/wrong-list.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "0062f01f432a528b0b924142a80a570e6fcbe9dce509daf18c61f8ff7ea063d7"
+    },
+    {
+      "name": "wrong-value",
+      "path": "pa31/tests/spec/applicable-traits/wrong-value.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "47f63f949f036a19667dfdfe88df0d538321b030ce83ae186a8d0622fbfcdb39"
+    },
+    {
+      "name": "unsafe-wrapper",
+      "path": "pa31/tests/spec/applicable-traits/unsafe-wrapper.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "18151e00ef010c5a515d953a99f5d80cdd571855224e3b5c7d40a2ba87deedba"
+    },
+    {
+      "name": "missing-feature",
+      "path": "pa31/tests/spec/applicable-traits/missing-feature.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "cc3c0ba950538a66f245fe6b60927214472c7fb3254cb74c424d08fd2af988ee"
+    },
+    {
+      "name": "duplicate",
+      "path": "pa31/tests/spec/applicable-traits/duplicate.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "72fd38434269a04065a3cbecd5fba78341b702727a5ebd352ddcc5849f5d006a"
+    },
+    {
+      "name": "cfg-removed",
+      "path": "pa31/tests/spec/applicable-traits/cfg-removed.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "506db636af38138d15c2fc515b070d75bbafe518a179a05979d7df040185c70d"
+    },
+    {
+      "name": "inner-outer",
+      "path": "pa31/tests/spec/applicable-traits/inner-outer.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "195d0695637a3271d523cbe30e83a02434d62b00dd107b9552d04ac9e95d77a0"
+    },
+    {
+      "name": "alias-target",
+      "path": "pa31/tests/spec/applicable-traits/alias-target.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "100c1691185ec91f4ceb647c2fc83732d4a0ae4037202f606759035ebec2b824"
+    },
+    {
+      "name": "selected-operation",
+      "path": "pa31/tests/spec/applicable-traits/selected-operation.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "9a94af4ae8fc570cd434e10e9b686fd6da4f0ca836da837503d43fbf61500327"
+    },
+    {
+      "name": "unmarked-opponent",
+      "path": "pa31/tests/spec/applicable-traits/unmarked-opponent.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "9fff99eebc926a0af8537efc1e1e8488f4e0d3429266619e7a1e724f89064c69"
+    },
+    {
+      "name": "supertrait-operation",
+      "path": "pa31/tests/spec/applicable-traits/supertrait-operation.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "6dd636ac4d4509841ffea5783a76075980828b1121c46f759701dcc345b5a730"
+    },
+    {
+      "name": "literal-allowance",
+      "path": "pa31/tests/spec/applicable-traits/literal-allowance.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "af5e27795351cf25f8831fc3427e1a5a211c1e8a649201e95493e2f3d9761876"
+    },
+    {
+      "name": "forwarded-opponent",
+      "path": "pa31/tests/spec/applicable-traits/forwarded-opponent.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "e672a9af7ade5882d6ad41171521266f94fff066591f56d359a7ccfdf6dad2d6"
+    },
+    {
+      "name": "sizing-impl-blanket",
+      "path": "pa31/tests/spec/applicable-traits/sizing-impl-blanket.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "a1e780f043264f0dea91796bbbeced5087be53c62207ede7dd901f70d10102f5"
+    },
+    {
+      "name": "sizing-impl-generic-trait",
+      "path": "pa31/tests/spec/applicable-traits/sizing-impl-generic-trait.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "08013bd4d613c2b2d95a646180c697a7a6b0b0456f8ff3787d6260cc9a655e58"
+    },
+    {
+      "name": "sizing-marked-premise",
+      "path": "pa31/tests/spec/applicable-traits/sizing-marked-premise.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "e2a9dc0bb73ba91f558a49dc2b9f675f0a8a429d9e696d11cb06e0747d151ac7"
+    },
+    {
+      "name": "quantified-applicability",
+      "path": "pa31/tests/spec/applicable-traits/quantified-applicability.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "required_gap": true,
+      "ownership": "PA20 quantified minimal-specialization predicates; PA31 declaration policy",
+      "sha256": "17f1f1e352c143d7619eb0e0d211708c6c4ffbf6c60cfa8b114194624725ea34"
+    }
+  ],
+  "prediction_review": "Minimal no_core Sized was deliberately unmarked: its bounds cannot be specialized on. Preserve those rejections and add actual marked-Sized counterparts. Duplicate specialization-trait attributes are hard errors in this pin. Initial mismatch evidence is retained.",
+  "native_expected_stdout": "7\n9\n",
+  "auxiliary": [
+    {
+      "path": "pa31/tests/spec/applicable-traits/observer.c",
+      "sha256": "6d2d0e8b03d6810021d60631b10f8f1ec3870206eb96d9496ad59f2d4b3a52b8"
+    }
+  ]
+}

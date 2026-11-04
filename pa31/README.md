@@ -133,6 +133,14 @@ signatures, generic parameters, duplicate/missing items and feature gates. One
 typed registry must drive semantic selection, const eligibility, capability
 queries and lowering; path spelling alone grants no compiler privilege.
 
+The [ordinary specialization-trait packet](tests/spec/applicable-traits/README.md)
+and [checkpoint](../docs/pa31-applicable-traits-checkpoint.md) attach policy to
+actual traits and validate all their implementations, including non-overlapping
+ones. Preserve real feature/macro authority, always-applicable conditions,
+supertraits, unsafe-marker precedence and existing sizing metadata. Complete the
+retained quantified and general imported-policy requirements under PA20/29;
+local declaration/dispatch evidence does not complete these assignments.
+
 Inventory the active compiler contract of Rust 1.98.0 source revision
 `88d9e12ae178fab0fb5cc050a94da85685d449ea`: `no_core`, internal attributes,
 builtin macros/derives, layout properties and unstable language features.

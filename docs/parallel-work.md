@@ -47,7 +47,27 @@ concurrency cancels the earlier manual run. Source checkpoints may continue with
 focused evidence and push-triggered fast CI; dispatch successor full qualification
 only after its predecessor is terminal. No whole PA release is inferred.
 
-Current original-core frontier is LIB-145: ordinary trait-header policy.
+Current original-core frontier is LIB-146: nominal fundamental policy.
+The [ordinary applicable-trait checkpoint](pa31-applicable-traits-checkpoint.md)
+clears LIB-145's language-role restriction for actual specialization traits.
+Private10/production43 pass in157.31s/190.07s; the original marked-supertrait and
+ordinary native paths match rustc7/9. All44 independent outcomes match rustc;
+43 match RustGM, with valid quantified elaboration retained under PA20.
+One source-marker owner, typed predicate worklist and shared cumulative budget
+supply actual impl authority and always-applicable checks, without a new registry
+or ordinary body field. Existing exact sizing-role wire flags remain supported;
+general unencoded policy stays fenced. All722 source/package hashes, six pins,
+fifteen values, capAllow, options and finite limits remain unchanged.
+CLI5829cc20 advances to file79 byte252 in28.12s/375opens; the first-open map points
+to field.rs11's FieldRepresentingType and fundamental annotation. Confirm the
+retained nominal owner and implement actual trait/type fundamental semantics,
+feature/macro authority, coherence and transport under PA20/26/31/29. No sizing
+language role may stand in for that general policy. Broader coinductive/dyn
+policy, quantified/projection constraints, intrinsic kernels, authenticated body
+transport, whole assignments and original core/alloc/std artifacts remain open.
+Root stays alone in the warm btrfs tree with unchanged guards and scoped cleanup.
+
+Previous original-core frontier was LIB-145: ordinary trait-header policy.
 The [intrinsic declaration checkpoint](pa28-intrinsic-declarations-checkpoint.md)
 recognizes all315 pinned names with296 unique new identities sharing100 typed
 profiles. All668 independent outcomes match rustc; RustGM matches660, preserving

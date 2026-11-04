@@ -1,5 +1,5 @@
 //! Missing or imported trait state is Unknown, never a local marker absence.
-use super::annotation_store::{self as store, Marker};
+use super::annotation_store::{self as store, Marker, Policy};
 use crate::{
     resolve::{
         expansion::Report,
@@ -15,9 +15,46 @@ pub(in crate::sema) fn marker(
     report: &Report,
     definition: DefId,
 ) -> Result<bool, Error> {
-    Ok(read(facts, report, definition)?.is_some())
+    Ok(read(facts, report, definition)?.0.is_some())
 }
-fn read(facts: &Declarations, report: &Report, definition: DefId) -> Result<Option<Marker>, Error> {
+pub(in crate::sema) fn applicable(
+    facts: &Declarations,
+    report: &Report,
+    definition: DefId,
+) -> Result<bool, Error> {
+    if report
+        .resolution
+        .definitions
+        .get(definition.0 as usize)
+        .is_some_and(|d| d.node.is_none())
+        && let Some(catalog) = facts.source_bindings.as_deref()
+        && let Some(kind) = catalog.sizing_kind(definition).map_err(Error::unlocated)?
+    {
+        crate::sema::header_attributes::charge_source_contract_query(facts, 8)?;
+        let role = catalog
+            .validated_role(kind)
+            .map_err(Error::unlocated)?
+            .ok_or_else(|| Error::unlocated("missing actual imported sizing role"))?;
+        let mut steps = 0;
+        let header =
+            crate::sema::compiler_items::headers::Trait::current(report, facts, role, &mut steps);
+        crate::sema::header_attributes::charge_source_contract_query(
+            facts,
+            steps.saturating_sub(8),
+        )?;
+        let header = header.map_err(Error::unlocated)?;
+        return Ok(header
+            .attributes
+            .contains(crate::resolve::bindings::HeaderAttribute::Specialization));
+    }
+    let (marker, applicable) = read(facts, report, definition)?;
+    Ok(applicable.is_some() && marker.is_none())
+}
+fn read(
+    facts: &Declarations,
+    report: &Report,
+    definition: DefId,
+) -> Result<(Option<Marker>, Option<Marker>), Error> {
     let unknown = || Error::unlocated("specialization marker is unknown or untransported");
     let actual = report
         .resolution
@@ -94,11 +131,14 @@ fn read(facts: &Declarations, report: &Report, definition: DefId) -> Result<Opti
         }
     }
     if let Some(marker) = row.marker {
-        validate_marker(report, marker)?;
+        validate_marker(report, marker, Policy::Unsafe)?;
     }
-    Ok(row.marker)
+    if let Some(marker) = row.applicable {
+        validate_marker(report, marker, Policy::Applicable)?;
+    }
+    Ok((row.marker, row.applicable))
 }
-fn validate_marker(report: &Report, marker: Marker) -> Result<(), Error> {
+fn validate_marker(report: &Report, marker: Marker, policy: Policy) -> Result<(), Error> {
     let error = |message| Error::at(marker.owner.file, marker.span.start, message);
     let unit = report.package.unit(marker.owner.file);
     let owner = unit
@@ -115,7 +155,7 @@ fn validate_marker(report: &Report, marker: Marker) -> Result<(), Error> {
         || attribute.span != marker.span
         || attribute.input != Input::Empty
         || attribute.unsafe_wrapper
-        || attribute.name(forest, unit.source.text()) != Some("rustc_unsafe_specialization_marker")
+        || attribute.name(forest, unit.source.text()) != Some(policy.name())
         || forest
             .tree(attribute.path.start)
             .is_none_or(|tree| tree.span != marker.name)
@@ -124,7 +164,15 @@ fn validate_marker(report: &Report, marker: Marker) -> Result<(), Error> {
             "specialization marker actual source contract changed",
         ));
     }
-    if !crate::sema::parentheses::feature(
+    if matches!(policy, Policy::Applicable) {
+        crate::resolve::bindings::root_options::require_internal(
+            report,
+            &mut report.macro_allowances(),
+            marker.owner.file,
+            attribute,
+            forest,
+        )?;
+    } else if !crate::sema::parentheses::feature(
         report,
         &mut report.macro_allowances(),
         (marker.owner.file, marker.name),
@@ -132,6 +180,7 @@ fn validate_marker(report: &Report, marker: Marker) -> Result<(), Error> {
     )? {
         return Err(error("specialization marker feature origin changed"));
     }
+
     Ok(())
 }
 
@@ -165,13 +214,35 @@ impl Declarations {
             .must_use_contracts
             .as_deref()
             .is_some_and(|owner| owner.specialization.is_some())
-            && let Some(marker) = read(self, report, definition)?
         {
-            return Err(report.diagnostic(Error::at(
-                marker.owner.file,
-                marker.span.start,
-                "source unsafe-specialization-marker contract transport is not implemented",
-            )));
+            let (unsafe_, applicable) = read(self, report, definition)?;
+            // Existing closed profiles encode sizing's role-owned specialization
+            // flag and require its exact deny-impl contract. General trait policy
+            // and unsafe marker priority still need their wider wire protocol.
+            if unsafe_.is_none()
+                && applicable.is_some()
+                && self
+                    .source_bindings
+                    .as_deref()
+                    .map(|catalog| catalog.sizing_kind(definition))
+                    .transpose()
+                    .map_err(Error::unlocated)?
+                    .flatten()
+                    .is_some()
+            {
+                return Ok(view);
+            }
+            if let Some(marker) = unsafe_.or(applicable) {
+                return Err(report.diagnostic(Error::at(
+                    marker.owner.file,
+                    marker.span.start,
+                    if unsafe_.is_some() {
+                        "source unsafe-specialization-marker contract transport is not implemented"
+                    } else {
+                        "source specialization-trait contract transport is not implemented"
+                    },
+                )));
+            }
         }
         Ok(view)
     }

@@ -2,6 +2,7 @@
 mod annotation_reads;
 mod annotation_rows;
 mod annotation_store;
+mod applicable_rules;
 mod argument_closure;
 mod forest_edges;
 mod forest_order;
@@ -23,9 +24,11 @@ mod registry_graph;
 mod retention_work;
 #[path = "specialization/ancestor_target.rs"]
 mod selected_member;
+pub(in crate::sema) use annotation_reads::applicable;
 pub(in crate::sema) use annotation_reads::marker;
 pub(in crate::sema) use annotation_rows::{bind_trait, consume, finish, observe_owner, prepare};
 pub(in crate::sema) use annotation_store::LocalMarkers;
+pub(in crate::sema) use applicable_rules::verify as verify_applicable_impls;
 pub(in crate::sema) use registry_graph::Graph;
 
 pub(in crate::sema) use graph_pairs::{compare, remembered, requested};

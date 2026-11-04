@@ -1,5 +1,5 @@
 //! The existing configured-owner and definition passes produce all local rows once.
-use super::annotation_store::{self as store, Marker, Owner};
+use super::annotation_store::{self as store, Marker, Owner, Policy};
 use crate::{
     resolve::{
         expansion::Report,
@@ -91,17 +91,23 @@ pub(in crate::sema) fn consume(
     effect: usize,
 ) -> Result<(), Error> {
     let error = |message| Error::at(owner.file, attribute.span.start, message);
-    if attribute.input != Input::Empty || attribute.unsafe_wrapper {
-        return Err(error(
-            "rustc_unsafe_specialization_marker requires word form",
-        ));
-    }
     store::trait_syntax(report, declaration)?;
     let unit = report.package.unit(owner.file);
     let (retained, forest) = unit
         .retained_attributes(effect..effect + 1)
         .next()
         .ok_or_else(|| error("specialization marker lost retained capture"))?;
+    let policy = match attribute.name(forest, unit.source.text()) {
+        Some("rustc_unsafe_specialization_marker") => Policy::Unsafe,
+        Some("rustc_specialization_trait") => Policy::Applicable,
+        _ => return Err(error("unknown specialization trait policy")),
+    };
+    if attribute.input != Input::Empty || attribute.unsafe_wrapper {
+        return Err(error(match policy {
+            Policy::Unsafe => "rustc_unsafe_specialization_marker requires word form",
+            Policy::Applicable => "rustc_specialization_trait requires word form",
+        }));
+    }
     let name = forest
         .tree(attribute.path.start)
         .ok_or_else(|| error("specialization marker lost name token"))?
@@ -109,7 +115,15 @@ pub(in crate::sema) fn consume(
     if retained.span != attribute.span || retained.path != attribute.path {
         return Err(error("specialization marker capture changed"));
     }
-    if !crate::sema::parentheses::feature(
+    if matches!(policy, Policy::Applicable) {
+        crate::resolve::bindings::root_options::require_internal(
+            report,
+            &mut report.macro_allowances(),
+            owner.file,
+            attribute,
+            forest,
+        )?;
+    } else if !crate::sema::parentheses::feature(
         report,
         &mut report.macro_allowances(),
         (owner.file, name),
@@ -124,15 +138,25 @@ pub(in crate::sema) fn consume(
     let table = store::owner(facts)?;
     table.charge(1, 0).map_err(error)?;
     let row = table.row(report, declaration)?;
-    if row.marker.is_some() {
-        return Err(error("duplicate rustc_unsafe_specialization_marker"));
+    let slot = match policy {
+        Policy::Unsafe => &mut row.marker,
+        Policy::Applicable => &mut row.applicable,
+    };
+    if slot.is_some() {
+        return Err(error(match policy {
+            Policy::Unsafe => "duplicate rustc_unsafe_specialization_marker",
+            Policy::Applicable => "duplicate rustc_specialization_trait",
+        }));
     }
-    row.marker = Some(Marker {
+    *slot = Some(Marker {
         owner,
         effect,
         span: attribute.span,
         name,
     });
+    if matches!(policy, Policy::Applicable) {
+        table.has_applicable = true;
+    }
     Ok(())
 }
 pub(in crate::sema) fn bind_trait(

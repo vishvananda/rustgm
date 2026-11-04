@@ -462,7 +462,7 @@ fn consume_other(
         Some(Consumer::NonExhaustive) => {
             non_exhaustive::consume(report, facts, owner, declaration, attribute, effect)?;
         }
-        Some(Consumer::UnsafeSpecialization) => {
+        Some(Consumer::UnsafeSpecialization | Consumer::SpecializationTrait) => {
             crate::sema::specialization::consume(
                 report,
                 facts,
