@@ -80,6 +80,7 @@ pub(in crate::resolve) enum Feature {
     LinkCfg = 63,
     LinkLlvmIntrinsics = 64,
     UnsizedFnParams = 65,
+    NegativeCoherence = 66,
 }
 
 #[cfg(test)]
@@ -132,6 +133,7 @@ impl Request {
             "rustdoc_internals" => Self::Capability(Feature::RustdocInternals),
             "link_llvm_intrinsics" => Self::Capability(Feature::LinkLlvmIntrinsics),
             "unsized_fn_params" => Self::Capability(Feature::UnsizedFnParams),
+            "with_negative_coherence" => Self::Capability(Feature::NegativeCoherence),
             "link_cfg" => Self::Capability(Feature::LinkCfg),
             "doc_cfg" => Self::Capability(Feature::DocCfg),
             "doc_notable_trait" => Self::Capability(Feature::DocNotableTrait),
@@ -197,6 +199,7 @@ impl Features {
     }
     fn needs_local_owner(&self) -> bool {
         self.has(Feature::AdtConstParams)
+            || self.has(Feature::NegativeImpls)
             || self.has(Feature::PreludeImport)
             || self.has(Feature::OptimizeAttribute)
             || self.has(Feature::MustNotSuspend)
@@ -211,6 +214,7 @@ impl Features {
             || self.has(Feature::CfgSanitize)
             || self.has(Feature::CfgFloatReliability)
             || self.has(Feature::AbiUnadjusted)
+            || self.has(Feature::NegativeCoherence)
             || self.has(Feature::UnsizedFnParams)
             || self.has(Feature::LinkLlvmIntrinsics)
             || self.has(Feature::LinkCfg)

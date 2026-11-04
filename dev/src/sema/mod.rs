@@ -79,3 +79,5 @@ pub(crate) mod displacement_plans;
 pub(crate) mod protocol_plans;
 
 mod unsized_parameters;
+
+mod coherence_policy;

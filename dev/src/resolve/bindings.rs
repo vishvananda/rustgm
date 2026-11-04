@@ -338,6 +338,18 @@ impl super::package::Package {
             "unadjusted-ABI client identity changed",
         )
     }
+    pub(crate) fn requested_negative_impls(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::NegativeImpls,
+            "negative implementation client identity changed",
+        )
+    }
+    pub(crate) fn requested_negative_coherence(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::NegativeCoherence,
+            "negative coherence client identity changed",
+        )
+    }
     pub(crate) fn requested_unsized_parameters(&self) -> Result<bool, &'static str> {
         self.requested_expression_feature(
             policy::Feature::UnsizedFnParams,
@@ -425,10 +437,6 @@ impl super::package::Package {
             Source::Staged(source) => &source.features,
             Source::LocalMacros(_) => return None,
         })
-    }
-    pub(crate) fn permits_source_negative_impls(&self) -> bool {
-        self.source_features()
-            .is_some_and(|features| features.has(policy::Feature::NegativeImpls))
     }
     /// This admits declaration syntax; it does not establish callable evidence.
     pub(crate) fn permits_source_freeze_impls(&self) -> bool {

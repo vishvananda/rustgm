@@ -67,9 +67,9 @@ all eight failures now pass. Other regular integration tests in that run pass;
 subsequent course/native/debug/full gates were not established by that failed
 run. Successor full qualification
 [41801911308](https://github.com/vishvananda/rustgm/actions/runs/41801911308)
-is running on compiler commit975b32666; do not supersede it while live.
+is terminal success on compiler commit975b32666, with every gate green.
 
-Next inventory genuine negative-coherence use under PA25 trait/coherence,
+Next inventory genuine negative-coherence use under PA20 solving/coherence,
 PA31 source authority and PA29 imported assumptions. Do not classify it as an
 advisory request or grant closed-world negative evidence without proof.
 PA25–PA44, whole PA26 and original core/alloc/std artifacts remain unfinished.

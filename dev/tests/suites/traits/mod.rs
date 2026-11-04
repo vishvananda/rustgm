@@ -84,3 +84,9 @@ mod witness_sources;
 
 #[path = "../../self_constructors.rs"]
 mod self_constructors;
+
+#[path = "../../negative_coherence.rs"]
+mod negative_coherence;
+
+#[path = "../../harness/observed_program.rs"]
+pub(crate) mod observed_program;

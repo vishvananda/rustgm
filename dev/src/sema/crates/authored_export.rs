@@ -335,6 +335,7 @@ impl Stage {
         facts.require_incoherent_target_transport(report)?;
         facts.require_dispatch_policy_transport(report)?;
         facts.require_optimization_transport(report)?;
+        crate::sema::coherence_policy::require_transport(facts)?;
         facts.aggregates.require_simd_limit_transport()?;
         if let Some(producer) = report.lint_producer() {
             producer

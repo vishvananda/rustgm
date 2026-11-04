@@ -295,8 +295,11 @@ impl Checker<'_> {
             == crate::sema::traits::implementations::Polarity::Negative;
         if negative {
             self.validate_negative_header(owner, source, predicate)?;
+        } else {
+            // A negative header denies this trait application. It cannot owe
+            // the positive trait's supertraits, members or physical abilities.
+            self.validate_trait_impl_contract(owner, source, predicate)?;
         }
-        self.validate_trait_impl_contract(owner, source, predicate)?;
         Ok(negative)
     }
 

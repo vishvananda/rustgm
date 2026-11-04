@@ -57,7 +57,7 @@ impl Search<'_> {
         while let Some(Clause::UnstableFeature(id)) =
             conditions.clauses.get(conditions.cursor).copied()
         {
-            if self.query.purpose == crate::sema::traits::implementations::Purpose::Coherence {
+            if self.query.purpose != crate::sema::traits::implementations::Purpose::Use {
                 // A compatible future caller can request this feature. This
                 // private absence query exports no evidence or API permission.
                 trial.inputs.context.account_work(1).map_err(inference)?;

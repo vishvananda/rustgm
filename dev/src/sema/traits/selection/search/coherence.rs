@@ -9,6 +9,26 @@ pub(in crate::sema) fn may_overlap(
     context: &mut Context,
     goal: &Goal,
 ) -> Result<bool, String> {
+    may_overlap_with(
+        facts,
+        context,
+        goal,
+        crate::sema::coherence_policy::Mode::Stable,
+        |_, _, _, _| Ok(false),
+    )
+}
+pub(in crate::sema) fn may_overlap_with(
+    facts: &mut Declarations,
+    context: &mut Context,
+    goal: &Goal,
+    mode: crate::sema::coherence_policy::Mode,
+    pay: impl FnOnce(
+        &mut Declarations,
+        &mut Context,
+        &crate::types::lifetime_proof::Obligations,
+        &[crate::types::TypeId],
+    ) -> Result<bool, String>,
+) -> Result<bool, String> {
     let empty = Assumptions::default();
     let caller = Caller {
         assumptions: &empty,
@@ -18,15 +38,29 @@ pub(in crate::sema) fn may_overlap(
     };
     let first = Frame::new(facts, context, goal, caller.first_region)?;
     let mut search = Search::new(caller, Availability::Declarations);
-    search.query.purpose = crate::sema::traits::implementations::Purpose::Coherence;
+    search.query.purpose = if mode.negative() {
+        crate::sema::traits::implementations::Purpose::NegativeCoherence
+    } else {
+        crate::sema::traits::implementations::Purpose::Coherence
+    };
     let progress = search.begin(facts, first)?;
     context
         .account_work(search.query.steps)
         .map_err(|e| e.to_string())?;
-    Ok(
-        !matches!(progress, continuation::Progress::Ready(Decision::Absent))
-            || search.query.cycles != 0,
-    )
+    if search.query.cycles != 0 {
+        return Ok(true);
+    }
+    match progress {
+        continuation::Progress::Ready(Decision::Absent) if mode.implicit() => Ok(false),
+        continuation::Progress::Ready(Decision::Refuted(node)) if mode.negative() => {
+            let expected = search.query.nodes[node].goal;
+            let refutation = search.refutation(facts, node, expected)?;
+            refutation
+                .disjoint_with(|proof, sized| pay(facts, context, proof, sized))
+                .map(|disjoint| !disjoint)
+        }
+        _ => Ok(true),
+    }
 }
 
 #[cfg(test)]

@@ -15,7 +15,23 @@ PA21–PA24 have implemented/release-evidence status; PA1–PA20 retain
 implemented-draft. PA25–PA44 remain planned. No additional assignment or whole
 upstream library has been completed.
 
-Current original-core frontier is LIB-139: with_negative_coherence at original lib.rs166.
+Current original-core frontier is LIB-140: aarch64_unstable_target_feature at original lib.rs171.
+The [negative-coherence source checkpoint](pa31-negative-coherence-source-checkpoint.md)
+qualifies genuine crate permission, actual strict owners, typed negative exclusion,
+rigid intersection inputs and paid generic-reference lifetime/Sized debts.
+Private9/production48/native2, PA20 1389/1389,82 matching source observations and
+actual positive dispatch7 9 pass. Two separate macro-only syntax allowance
+observations remain explicit Rust-positive PA31 gaps. CLIc1510a1d reaches LIB-140
+in16.49s/375opens; all722 input hashes, six configuration pins, fifteen equal
+constants, ordinary LowIR bytes, options, capAllow and finite limits match.
+Quantified conditional consumers and authenticated strict-owner transport remain
+required under PA20/31/29. PA25 owns constants, correcting the earlier queue's
+trait/coherence label. Inventory architecture-specific feature requests together
+under PA41/31, retaining PA28 operation and PA29 transport duties. No whole PA
+or original core/alloc/std artifact is established. Root continues alone in the
+same warm btrfs tree with unchanged guards and scoped cleanup.
+
+Previous original-core frontier was LIB-139: with_negative_coherence at original lib.rs166.
 The [unsized parameter source checkpoint](pa26-unsized-parameter-source-checkpoint.md)
 qualifies actual crate permission, direct owned parameters, original-body moves,
 loans and the remaining Sized restrictions. Private11/production48/native2,
@@ -26,7 +42,7 @@ all722 input hashes, six configuration pins, fifteen equal constants, options,
 capAllow and finite limits unchanged. Concrete unsized ABI and imported ownership
 remain required. All eight stale cold-layout assertions from LLVM full CI are
 corrected with exact ordinary-record checks retained. Inventory actual negative
-coherence next under PA25/31/29. No whole PA or original artifact is established.
+coherence next under PA20/31/29. No whole PA or original artifact is established.
 Root stays alone in the existing warm btrfs tree with unchanged guards/cleanup.
 
 Previous original-core frontier was LIB-138: unsized_fn_params at original lib.rs165.
@@ -495,7 +511,8 @@ actual native hints and the future authenticated MIR-import obligation.
 | LIB-136 | Local conditional linking/native and dynamic codec qualified; full transport required | Actual link_cfg permission, cfg selection and distinct dependency plan | PA29 native dependency metadata/linking +PA5 cfg grammar +PA31 source authority / original lib.rs138 | Root only | [Checkpoint](pa29-conditional-native-links-checkpoint.md): private6/native1, production9, PA8 126/126,94 source outcomes, actual native7 9 and unchanged LowIR. Static bundling, modifiers and fresh dynamic consumers remain required. CLI02117cec reaches LIB-137 with original inputs/configuration/limits unchanged. |
 | LIB-137 | Local LLVM authority/scalar kernels qualified; broad operations/import required | Genuine LLVM intrinsic declaration permission, signatures and operation lowering | PA28 intrinsic consumers +PA30 linkage/ABI +PA31 source authority / original lib.rs139 | Root only | [Checkpoint](pa28-llvm-linkage-checkpoint.md): private8/production9/native2, PA8/10,86 source outcomes,168 native comparisons. Reserved LLVM names never fall back to C. General target/vector/float/immediate/poison/address/transport remains required. CLI454eb435 reaches LIB-138 with all original inputs/configuration/limits unchanged. |
 | LIB-138 | Local source permission/ownership and sized native specialization qualified; concrete DST ABI/transport required | Actual unsized_fn_params permission, by-value DST ownership and ABI | PA26 unsized ownership/library boundaries +PA30 ABI +PA29 transport +PA31 source authority / original lib.rs165 | Root only | [Checkpoint](pa26-unsized-parameter-source-checkpoint.md): private11/production48/native2, PA22 356/356,62 matching source observations and actual generic/destructor7 9. Str::len/println positives stay required. Concrete ABI, allocation/destruction/address and imported ownership remain required. CLI14fc5fcf reaches LIB-139 with all original inputs/configuration/limits unchanged. |
-| LIB-139 | Current original-core request blocker | Genuine negative coherence permission and proof-backed exclusion | PA25 trait/coherence +PA31 source authority +PA29 imported assumptions / original lib.rs166 | Root only | Bounded debugger identifies with_negative_coherence after original722-source verification. Inventory overlap/negative evidence and macro/consumer rules; preserve open-world and crate-owner proof boundaries. |
+| LIB-139 | Local explicit-negative/strict source profile and paid reference debts qualified; wider consumers/transport required | Genuine negative coherence permission and proof-backed exclusion | PA20 solving/coherence +PA31 source authority +PA29 imported assumptions / original lib.rs166 | Root only | [Checkpoint](pa31-negative-coherence-source-checkpoint.md): private9/production48/native2, PA20 1389/1389,82 matching source outcomes and actual dispatch7 9. Two macro-only syntax allowance observations remain explicit required positives; quantified conditional consumers and strict-owner transport remain required. CLIc1510a1d reaches LIB-140 with all original inputs/configuration/limits unchanged. |
+| LIB-140 | Current original-core request blocker | Architecture-specific target-feature request family and real selected-target consumers | PA41 target contracts +PA31 source authority +PA28 reached operations +PA29 transport / original lib.rs171 | Root only | Bounded debugger identifies aarch64_unstable_target_feature after original722-source verification. Inventory the target-feature request family together; preserve cfg-inactive declarations, actual attribute/span permissions and host target validation. An unrelated architecture request grants no instructions or target truth. |
 | Remaining raw language-item semantic inventory | Declarations checked;98 builtin semantic profiles explicitly unsupported | Actual operators, associated hooks, async/drop/pinning, field reflection, ranges and weak memory hooks | Earliest actual PA23–PA31/40/41 consumer units +PA29 transport / compiler-language-claims packet | Root only | The pinned100-name raw inventory is not a cfg-active blocker count. Shared target/arity/foreign validation and135 independent cases are qualified, but unsupported semantic consumers stop explicitly before ordinary checking can infer absence. Implement each actual builtin relation/runtime contract and add genuine source/native/imported consumers before removing its fence. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |

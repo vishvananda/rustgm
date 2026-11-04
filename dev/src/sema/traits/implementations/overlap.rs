@@ -24,12 +24,37 @@ pub(in crate::sema) fn possible(
     let mut inputs = inputs::Inputs::default();
     let (a, mut left_inputs) = inputs.head(facts, &mut context, left)?;
     let (b, mut right_inputs) = inputs.head(facts, &mut context, right)?;
+    let mode = crate::sema::coherence_policy::predicate(facts, left.0);
     let possible = match context.equate_predicate_shapes(&facts.types, &a, &b) {
         Ok(()) => {
             inputs.conditions(facts, &mut context, left.1, &mut left_inputs)?;
             inputs.conditions(facts, &mut context, right.1, &mut right_inputs)?;
             !disjointness::has_unsized(facts, &mut context, &inputs)?
-                && !inputs.has_absent_local_trait(facts, &mut context)?
+                && !inputs.excluded(facts, &mut context, &[&left_inputs, &right_inputs], mode)?
+        }
+        Err(infer::Error::Mismatch | infer::Error::Occurs) => false,
+        Err(error) => return Err(error.to_string()),
+    };
+    Ok((possible, context.steps))
+}
+
+/// The same complete owner conditions also govern inherent method ambiguity.
+pub(in crate::sema) fn inherent(
+    facts: &mut Declarations,
+    left: DefId,
+    right: DefId,
+) -> Result<(bool, usize), String> {
+    let mut context = Context::default();
+    let mut inputs = inputs::Inputs::default();
+    let (a, mut first) = inputs.target(facts, &mut context, left)?;
+    let (b, mut second) = inputs.target(facts, &mut context, right)?;
+    let mode = crate::sema::coherence_policy::inherent(facts, left);
+    let possible = match context.equate_shape(&facts.types, a, b) {
+        Ok(()) => {
+            inputs.conditions(facts, &mut context, left, &mut first)?;
+            inputs.conditions(facts, &mut context, right, &mut second)?;
+            !disjointness::has_unsized(facts, &mut context, &inputs)?
+                && !inputs.excluded(facts, &mut context, &[&first, &second], mode)?
         }
         Err(infer::Error::Mismatch | infer::Error::Occurs) => false,
         Err(error) => return Err(error.to_string()),
@@ -66,7 +91,7 @@ pub(in crate::sema) fn reference_comparison(
     }
     let mut context = Context::default();
     let mut inputs = inputs::Inputs::default();
-    let goal = inputs.instantiate(facts, &mut context, header)?;
+    let (goal, bindings) = inputs.instantiate(facts, &mut context, header)?;
     let candidate = primitive_methods::candidate(facts, &mut context, &goal, false)
         .map_err(|e| e.to_string())?;
     let Candidate::Conditional { prerequisite, .. } = candidate else {
@@ -75,7 +100,17 @@ pub(in crate::sema) fn reference_comparison(
     if disjointness::has_unsized(facts, &mut context, &inputs)? {
         return Ok((false, context.steps));
     }
-    let possible = selection::may_overlap(facts, &mut context, &prerequisite)?;
+    let mode = crate::sema::coherence_policy::predicate(facts, header.0);
+    if mode.negative() {
+        inputs::Inputs::freeze(facts, &mut context, &[&bindings])?;
+    }
+    let possible = selection::may_overlap_with(
+        facts,
+        &mut context,
+        &prerequisite,
+        mode,
+        |facts, context, proof, sized| inputs.pay_negative(facts, context, proof, sized),
+    )?;
     Ok((possible, context.steps))
 }
 

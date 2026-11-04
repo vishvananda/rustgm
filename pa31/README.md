@@ -16,6 +16,12 @@ old cycle; both units and the complete contract below remain required.
 
 ## Required implementation
 
+The [negative-coherence packet](tests/spec/negative-coherence/README.md) covers
+actual with_negative_coherence/negative_impls permission and strict type/trait
+owners. PA20 owns typed overlap/refutation proofs; PA29 owns imported policy.
+Conditional lifetime/Sized debts must be paid from actual header premises.
+Ordinary-use guards, auto-negative legality and metadata fences remain distinct.
+
 The [unadjusted ABI packet](tests/spec/unadjusted-request/README.md) binds actual
 abi_unadjusted feature/macro authority to a distinct convention. PA28 owns the
 scalar/aggregate/intrinsic ABI consumers, PA8 owns opaque grammar and PA29 owns

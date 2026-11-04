@@ -106,7 +106,7 @@ fn local_owner_keeps_ordinary_prelude_and_no_source_roles_or_features() -> TestR
     assert!(report.package.source_client().is_none());
     assert!(report.package.source_features().is_none());
     assert!(report.resolution.source_bindings.is_none());
-    assert!(!report.package.permits_source_negative_impls());
+    assert!(!report.package.requested_negative_impls()?);
     assert!(!report.package.permits_source_rust_call());
     assert_eq!(size_of::<Option<Box<Source>>>(), size_of::<usize>());
     assert_eq!(size_of::<Package>(), 256);

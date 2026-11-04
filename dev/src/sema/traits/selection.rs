@@ -38,7 +38,6 @@ pub(in crate::sema) use result_templates::symbolic_result;
 pub(in crate::sema) use search::callable_layouts;
 #[cfg(test)]
 pub(crate) use search::copy_trace;
-pub(in crate::sema) use search::may_overlap;
 #[cfg(test)]
 pub(in crate::sema) use search::specialization_layouts;
 pub(in crate::sema) use search::{
@@ -47,6 +46,7 @@ pub(in crate::sema) use search::{
     begin_refining, begin_refining_untouched, begin_scoped_refining,
 };
 pub(in crate::sema) use search::{copying_predicate, no_drop_predicate};
+pub(in crate::sema) use search::{may_overlap, may_overlap_with};
 use std::sync::Arc;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

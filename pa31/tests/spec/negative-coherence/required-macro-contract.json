@@ -1,0 +1,23 @@
+{
+  "profile": "Rust 1.98.0, Linux x86-64, cap-lints=allow, panic abort",
+  "editions": [
+    2021,
+    2024
+  ],
+  "predicted_before_qualification": true,
+  "cases": [
+    {
+      "name": "required-macro-generated",
+      "path": "pa31/tests/spec/negative-coherence/required-macro-generated.rs",
+      "required_status": 0,
+      "sha256": "2495069bf7c0b85b0eb85c7dde74fd4a7a563cf3120afd646ddd30cff69069b9"
+    },
+    {
+      "name": "required-macro-forwarded",
+      "path": "pa31/tests/spec/negative-coherence/required-macro-forwarded.rs",
+      "required_status": 1,
+      "sha256": "653164866e76486ddc3a9c04714284b265547ce1f1223897f3661ac96d8f90d9"
+    }
+  ],
+  "required": "Actual negative ! through trait-path span allowance; a captured whole impl keeps caller authority."
+}

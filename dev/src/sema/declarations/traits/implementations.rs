@@ -125,13 +125,7 @@ impl Checker<'_> {
                 .owner(definition)
                 .and_then(|id| self.facts.associated.get(id))
                 .is_some_and(|owner| matches!(owner.kind, OwnerKind::Trait { auto_: true, .. }));
-        if negative && !auto_ {
-            return Err(self.error(
-                owner.source,
-                "negative non-auto trait selection is not implemented",
-            ));
-        }
-        if auto_ {
+        if auto_ || negative {
             self.trait_bound(path)?;
             if self
                 .facts
@@ -142,7 +136,7 @@ impl Checker<'_> {
             {
                 return Err(self.error(
                     owner.source,
-                    "auto trait implementations cannot declare members",
+                    "auto or negative trait implementations cannot declare members",
                 ));
             }
             return Ok(());

@@ -94,3 +94,6 @@ mod value_liveness;
 
 #[path = "../../unsized_calls.rs"]
 mod unsized_calls;
+
+#[path = "../../harness/observed_program.rs"]
+pub(crate) mod observed_program;

@@ -10,7 +10,13 @@ impl Checker<'_> {
         source: NodeKey,
         negative: bool,
     ) -> Result<(), Error> {
-        if negative && !self.report.package.permits_source_negative_impls() {
+        if negative
+            && !self
+                .report
+                .package
+                .requested_negative_impls()
+                .map_err(|error| self.error(source, error))?
+        {
             return Err(self.error(
                 source,
                 "negative trait implementations require trait coherence",
@@ -24,6 +30,24 @@ impl Checker<'_> {
         source: NodeKey,
         predicate: Predicate,
     ) -> Result<(), Error> {
+        let automatic = matches!(
+            predicate.bound,
+            crate::types::parameters::predicates::Bound::Auto(_)
+        ) || predicate
+            .bound
+            .trait_parts()
+            .and_then(|(app, _)| self.facts.types.trait_application(app))
+            .and_then(|app| self.facts.associated.owner(DefId(app.item.0)))
+            .and_then(|id| self.facts.associated.get(id))
+            .is_some_and(|owner| {
+                matches!(
+                    owner.kind,
+                    crate::sema::associated::OwnerKind::Trait { auto_: true, .. }
+                )
+            });
+        if !automatic {
+            return Ok(());
+        }
         let error = |message| {
             Error::at(
                 source.file,

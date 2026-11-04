@@ -110,6 +110,10 @@ lifetime-bearing results must retain unused declaration debts after normalizatio
 
 ### Coherence and recursive obligations
 
+The unstable [negative-coherence packet](../pa31/tests/spec/negative-coherence/README.md)
+belongs to this solver's architecture, with PA31 owning source permission and
+PA29 owning transport. It does not change this assignment's stable public profile.
+
 Validate all impls, including unused ones, for orphan legality and overlap within
 the supported crate and builtin-trait profile. Keep local trait/type identity and
 covered parameter rules explicit. Compare full type and const argument equations;

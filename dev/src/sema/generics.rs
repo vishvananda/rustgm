@@ -119,6 +119,7 @@ pub struct Predicate {
 }
 #[derive(Default)]
 pub struct Generics {
+    pub(super) coherence: Option<Box<super::coherence_policy::Policy>>,
     pub(crate) builtin_requirements:
         HashMap<crate::resolve::unit::NodeKey, super::model::BuiltinRequirements>,
     builtin_formations: Option<Box<builtin_formation::Builtins>>,

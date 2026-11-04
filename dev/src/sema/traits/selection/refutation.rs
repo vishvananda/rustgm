@@ -26,6 +26,17 @@ pub(in crate::sema) struct Conditional {
     pub(super) sized: Vec<crate::types::TypeId>,
 }
 impl Refutation {
+    /// A declaration's intersection can pay scoped debts using only its actual
+    /// header premises. This result remains separate from positive evidence.
+    pub(in crate::sema) fn disjoint_with(
+        self,
+        pay: impl FnOnce(&super::Obligations, &[crate::types::TypeId]) -> Result<bool, String>,
+    ) -> Result<bool, String> {
+        match self {
+            Self::DebtFree(_) => Ok(true),
+            Self::Conditional(conditional) => pay(&conditional.proof, &conditional.sized),
+        }
+    }
     pub(super) fn validate(
         &self,
         goal: super::Predicate,

@@ -41,6 +41,7 @@ pub(in crate::sema) enum Availability {
 pub(in crate::sema) enum Purpose {
     Use,
     Coherence,
+    NegativeCoherence,
 }
 pub struct Implementation {
     pub owner: DefId,
@@ -338,6 +339,9 @@ impl Implementations {
         context.account_work(bucket.map_or(0, Vec::len))?;
         for &index in bucket.into_iter().flatten() {
             let entry = &self.entries[index];
+            if purpose == Purpose::Coherence && entry.status.negative() {
+                continue;
+            }
             if purpose == Purpose::Use && entry.status.polarity() == Polarity::Reservation {
                 continue;
             }

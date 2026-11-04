@@ -3,8 +3,8 @@
 Full qualification cadence: run41787601690 on6f1e3eb3d is terminal success
 with every gate passing. LLVM successor run41795595365 on3d4b3ae9d failed eight stale cold-layout
 assertions. All eight now pass focused qualification; ordinary layouts retain
-exact checks. Successor full run41801911308 is live on975b32666; poll that exact handle
-and do not supersede it while live.
+exact checks. Successor full run41801911308 on975b32666 is terminal success with every gate green.
+No successor is yet dispatched for the negative-coherence compiler.
 Predecessor run41781814852 on1f5a2b8d0 also passes every gate.
 Earlier41779219834 failed storage admission at7.9GiB against the8GiB CI
 reserve. CI retains assertions/overflow checks without host debug symbols and
@@ -14,7 +14,23 @@ concurrency cancels the earlier manual run. Source checkpoints may continue with
 focused evidence and push-triggered fast CI; dispatch successor full qualification
 only after its predecessor is terminal. No whole PA release is inferred.
 
-Current original-core frontier is LIB-139: with_negative_coherence at original lib.rs166.
+Current original-core frontier is LIB-140: aarch64_unstable_target_feature at original lib.rs171.
+The [negative-coherence source checkpoint](pa31-negative-coherence-source-checkpoint.md)
+qualifies genuine crate permission, actual strict owners, typed negative exclusion,
+rigid intersection inputs and paid generic-reference lifetime/Sized debts.
+Private9/production48/native2, PA20 1389/1389,82 matching source observations and
+actual positive dispatch7 9 pass. Two separate macro-only syntax allowance
+observations remain explicit Rust-positive PA31 gaps. CLIc1510a1d reaches LIB-140
+in16.49s/375opens; all722 input hashes, six configuration pins, fifteen equal
+constants, ordinary LowIR bytes, options, capAllow and finite limits match.
+Quantified conditional consumers and authenticated strict-owner transport remain
+required under PA20/31/29. PA25 owns constants, correcting the earlier queue's
+trait/coherence label. Inventory architecture-specific feature requests together
+under PA41/31, retaining PA28 operation and PA29 transport duties. No whole PA
+or original core/alloc/std artifact is established. Root continues alone in the
+same warm btrfs tree with unchanged guards and scoped cleanup.
+
+Previous original-core frontier was LIB-139: with_negative_coherence at original lib.rs166.
 The [unsized parameter source checkpoint](pa26-unsized-parameter-source-checkpoint.md)
 qualifies actual crate permission, direct owned parameters, original-body moves,
 loans and the remaining Sized restrictions. Private11/production48/native2,
@@ -25,7 +41,7 @@ all722 input hashes, six configuration pins, fifteen equal constants, options,
 capAllow and finite limits unchanged. Concrete unsized ABI and imported ownership
 remain required. All eight stale cold-layout assertions from LLVM full CI are
 corrected with exact ordinary-record checks retained. Inventory actual negative
-coherence next under PA25/31/29. No whole PA or original artifact is established.
+coherence next under PA20/31/29. No whole PA or original artifact is established.
 Root stays alone in the existing warm btrfs tree with unchanged guards/cleanup.
 
 Previous original-core frontier was LIB-138: unsized_fn_params at original lib.rs165.

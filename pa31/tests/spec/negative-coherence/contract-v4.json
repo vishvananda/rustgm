@@ -1,0 +1,239 @@
+{
+  "profile": "Rust 1.98.0, Linux x86-64, cap-lints=allow",
+  "editions": [
+    2021,
+    2024
+  ],
+  "predicted_before_qualification": true,
+  "cases": [
+    {
+      "name": "request",
+      "path": "pa31/tests/spec/negative-coherence/request.rs",
+      "required_status": 0,
+      "sha256": "0d7437de1e228221f657595f90eb32de12d96164b0ac96ffa3140ea69e2f55cd"
+    },
+    {
+      "name": "strict-negative",
+      "path": "pa31/tests/spec/negative-coherence/strict-negative.rs",
+      "required_status": 0,
+      "sha256": "c692a598e70d29d6896958dffec88b3f7e35addb134339315e540dfe8dc27f8f"
+    },
+    {
+      "name": "strict-absence",
+      "path": "pa31/tests/spec/negative-coherence/strict-absence.rs",
+      "required_status": 1,
+      "sha256": "6b6c9d7f8f5f2c18f21acf4d681eb23a9e45662f9e63917177bb69a50b444445"
+    },
+    {
+      "name": "stable-absence",
+      "path": "pa31/tests/spec/negative-coherence/stable-absence.rs",
+      "required_status": 0,
+      "sha256": "088daacb7ba561a3d407123bed1d279c67b349fab7bf2a8f93e8a0ddd70eb7ad"
+    },
+    {
+      "name": "strict-missing-feature",
+      "path": "pa31/tests/spec/negative-coherence/strict-missing-feature.rs",
+      "required_status": 1,
+      "sha256": "1e162f572913ebb7b40b8f564f1c71a5bea4c9cb5cc375b14808004c8b1a6a80"
+    },
+    {
+      "name": "strict-missing-internal",
+      "path": "pa31/tests/spec/negative-coherence/strict-missing-internal.rs",
+      "required_status": 1,
+      "sha256": "0849a727bc4fb43688e2d619d26fddd98fe842fcfd7ef82182b4418316d38daf"
+    },
+    {
+      "name": "strict-wrong-owner",
+      "path": "pa31/tests/spec/negative-coherence/strict-wrong-owner.rs",
+      "required_status": 1,
+      "sha256": "c40da85ca6dfaa5c227ee0282ba2426c5667cd365d3cc167935f92d285b49438"
+    },
+    {
+      "name": "strict-arguments",
+      "path": "pa31/tests/spec/negative-coherence/strict-arguments.rs",
+      "required_status": 1,
+      "sha256": "b077299cec5ed3c67e940f808b273a6cf52fe064388103517812ed5ad0f5f0a5"
+    },
+    {
+      "name": "strict-duplicate",
+      "path": "pa31/tests/spec/negative-coherence/strict-duplicate.rs",
+      "required_status": 1,
+      "sha256": "390847856730609f694d95422c4c5c420746dd57197b0b0c056c082c4dde17f6"
+    },
+    {
+      "name": "negative-not-positive",
+      "path": "pa31/tests/spec/negative-coherence/negative-not-positive.rs",
+      "required_status": 1,
+      "sha256": "12207c13f6d44e1b30be35cd68ec298553f929bee01a05124db8f28c92544175"
+    },
+    {
+      "name": "positive-negative-conflict",
+      "path": "pa31/tests/spec/negative-coherence/positive-negative-conflict.rs",
+      "required_status": 1,
+      "sha256": "ca46e563b80ee51b4176cde05290165e30f59ad6193d10a618436d4a2762c9be"
+    },
+    {
+      "name": "generic-reference",
+      "path": "pa31/tests/spec/negative-coherence/generic-reference.rs",
+      "required_status": 0,
+      "sha256": "0d880c40a855325ccbbe6e34e2f31e84817085ef1c80c874ee3b73d8298fce8d"
+    },
+    {
+      "name": "specific-reference-is-not-universal",
+      "path": "pa31/tests/spec/negative-coherence/specific-reference-is-not-universal.rs",
+      "required_status": 1,
+      "sha256": "506fccb2d45a122bc941ead29379626e186ba1ff1677d290aa7eef076c4abdba"
+    },
+    {
+      "name": "mutable-does-not-refute-shared",
+      "path": "pa31/tests/spec/negative-coherence/mutable-does-not-refute-shared.rs",
+      "required_status": 1,
+      "sha256": "b1c2915d24436a16b108597646a00f4dfc25ab3cc87d8f3cc84ca3202448bcb7"
+    },
+    {
+      "name": "reference-requires-unsized-coverage",
+      "path": "pa31/tests/spec/negative-coherence/reference-requires-unsized-coverage.rs",
+      "required_status": 1,
+      "sha256": "2b9d8b80a83c207b40409668fda56c8bd066a53ffce797b8c79459579322f0b9"
+    },
+    {
+      "name": "supertrait-refutation",
+      "path": "pa31/tests/spec/negative-coherence/supertrait-refutation.rs",
+      "required_status": 0,
+      "sha256": "aeb10307bad0ccda5729ef6b17c062960a6146e713af57c1eef264321236482f"
+    },
+    {
+      "name": "double-negative",
+      "path": "pa31/tests/spec/negative-coherence/double-negative.rs",
+      "required_status": 0,
+      "sha256": "619e90fce2f9ef29b8127e59dc82e17b758315e559f11603f4f0c9a6340e4f35"
+    },
+    {
+      "name": "trait-alias",
+      "path": "pa31/tests/spec/negative-coherence/trait-alias.rs",
+      "required_status": 0,
+      "sha256": "8a86f9778a02a578a316bbc2cc1e07f19743d5dd470ee18bb218d0c59ec95fa7"
+    },
+    {
+      "name": "inherent-negative",
+      "path": "pa31/tests/spec/negative-coherence/inherent-negative.rs",
+      "required_status": 0,
+      "sha256": "7b3d8313c610046c850765246da7e03f014329091c1000a8d875f985e16f1835"
+    },
+    {
+      "name": "inherent-no-negative",
+      "path": "pa31/tests/spec/negative-coherence/inherent-no-negative.rs",
+      "required_status": 1,
+      "sha256": "3046d811799216f531c079b20c1d73cc97758600ac38713da3a0d62a391369d2"
+    },
+    {
+      "name": "internal-macro-without-crate",
+      "path": "pa31/tests/spec/negative-coherence/internal-macro-without-crate.rs",
+      "required_status": 1,
+      "sha256": "ee0d3035258f076731433540d23ca7e82efc3b8734505263c6de765dfc0e1cc2"
+    },
+    {
+      "name": "removed-marker",
+      "path": "pa31/tests/spec/negative-coherence/removed-marker.rs",
+      "required_status": 0,
+      "sha256": "aeda181af1ffe80603d1203fd93d53a6fd2724be60c4f2a8188e5ce61127bf23"
+    },
+    {
+      "name": "generic-trait-correlations",
+      "path": "pa31/tests/spec/negative-coherence/generic-trait-correlations.rs",
+      "required_status": 0,
+      "sha256": "f7926b1bafb986d5ed8e428e3125238a86e430ec509b58e72a39a87b9984f0dc"
+    },
+    {
+      "name": "generic-unrelated-arguments",
+      "path": "pa31/tests/spec/negative-coherence/generic-unrelated-arguments.rs",
+      "required_status": 1,
+      "sha256": "06f0a14cbf26506eb1a6ed9c9e70338ad2eb03b8463fc9338e35ff8d40aba5f9"
+    },
+    {
+      "name": "specific-reference-unused",
+      "path": "pa31/tests/spec/negative-coherence/specific-reference-unused.rs",
+      "required_status": 0,
+      "sha256": "21441577ede245e548d0ab9873c538b2d5fd0e57ed16e7a482efc1f8d302aa8b"
+    },
+    {
+      "name": "conditional-user-negative",
+      "path": "pa31/tests/spec/negative-coherence/conditional-user-negative.rs",
+      "required_status": 0,
+      "sha256": "3b725fe4a81527bae42c1ef8796d334b90423c9d6072a5a965d3ec27d1f6ff36"
+    },
+    {
+      "name": "specialized-user-negative",
+      "path": "pa31/tests/spec/negative-coherence/specialized-user-negative.rs",
+      "required_status": 0,
+      "sha256": "889f00d0b99ed14962da6b54eba10e744fbf5cd003a200474129afd968746318"
+    },
+    {
+      "name": "specialized-auto-negative",
+      "path": "pa31/tests/spec/negative-coherence/specialized-auto-negative.rs",
+      "required_status": 1,
+      "sha256": "247f246be4ce4bd7eca9cf1571586cb0a79419597bf6af290281f18aff99601a"
+    },
+    {
+      "name": "strengthened-auto-negative",
+      "path": "pa31/tests/spec/negative-coherence/strengthened-auto-negative.rs",
+      "required_status": 1,
+      "sha256": "6d96517bc5264982428ca2df420a67a4e1a99b641e5ffc2e7840e94a2d52c4ef"
+    },
+    {
+      "name": "negative-without-supertrait",
+      "path": "pa31/tests/spec/negative-coherence/negative-without-supertrait.rs",
+      "required_status": 0,
+      "sha256": "4af95298a4359703c0d333ea419ae7d0a8f1210476d54728f57fd941b92892a0"
+    },
+    {
+      "name": "negative-missing-trait-members",
+      "path": "pa31/tests/spec/negative-coherence/negative-missing-trait-members.rs",
+      "required_status": 0,
+      "sha256": "a79e3694e3d49e515e09e4258aba08aa31129d1b9facdaccd12c22d05fbb3320"
+    },
+    {
+      "name": "negative-with-members",
+      "path": "pa31/tests/spec/negative-coherence/negative-with-members.rs",
+      "required_status": 1,
+      "sha256": "e2c16dd2037be4d104567cdc12a9eaad5c271fb38442b2074789d1aa90093401"
+    },
+    {
+      "name": "negative-unsafe-trait",
+      "path": "pa31/tests/spec/negative-coherence/negative-unsafe-trait.rs",
+      "required_status": 0,
+      "sha256": "5c534b229193129a46c2a5813c63b7b6c504328196b3071e602b8320c348bbb0"
+    },
+    {
+      "name": "negative-unsafe-impl",
+      "path": "pa31/tests/spec/negative-coherence/negative-unsafe-impl.rs",
+      "required_status": 1,
+      "sha256": "275eb2ef0d1cbde7a9fe811869146ae035912e5254c85cb76f4f6fab61d0cf01"
+    },
+    {
+      "name": "negative-argument-bound",
+      "path": "pa31/tests/spec/negative-coherence/negative-argument-bound.rs",
+      "required_status": 0,
+      "sha256": "cd088d5fd1572d1501b84eea38b2259d462442adad8939a88ca2089ef23fba16"
+    },
+    {
+      "name": "negative-self-bound",
+      "path": "pa31/tests/spec/negative-coherence/negative-self-bound.rs",
+      "required_status": 0,
+      "sha256": "495ef83462ccb4220610601c2ea5b0e0d57483aa47ea3ea34d2626218356c3d2"
+    }
+  ],
+  "native": {
+    "path": "pa31/tests/spec/negative-coherence/native.rs",
+    "observer": "pa31/tests/spec/negative-coherence/observer.c",
+    "stdout": "7\n9\n"
+  },
+  "required": [
+    "actual crate gate; strict marker and owner permissions",
+    "explicit negative proof distinct from local absence and positive evidence",
+    "universally frozen unresolved overlap inputs; repeated type/trait argument correlation",
+    "negative header legality, source/imported authority, scoped debts and lifetimes",
+    "native selected implementation behavior and fresh imported consumers"
+  ],
+  "oracle_review": "V1 predicted two attributes as allowed; independent Rust and primary allowed-target/duplicate parser rules establish hard rejection. Source bytes unchanged; V2 corrects those four edition predictions."
+}

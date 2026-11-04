@@ -17,7 +17,7 @@ impl Search<'_> {
         {
             return Ok(false);
         }
-        if self.query.purpose != Purpose::Coherence {
+        if self.query.purpose == Purpose::Use {
             return Err("reservation cannot complete ordinary trait selection".into());
         }
         // The caller has checked ordinary impl conditions. This private query

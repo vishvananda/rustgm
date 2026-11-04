@@ -36,6 +36,7 @@ impl AnnotationState {
 
 pub(in crate::sema) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
     crate::sema::specialization::prepare(report, facts)?;
+    crate::sema::coherence_policy::prepare(report, facts)?;
     let mut by_source = HashMap::default();
     let mut pointer_markers = HashMap::default();
     let mut mir_boundaries = crate::sema::inlining::MirBoundaries::default();
@@ -267,6 +268,16 @@ fn consume_annotation(
                 forest,
                 allowances,
                 &mut flags.documentation,
+            )?;
+        }
+        Some(Consumer::StrictCoherence) => {
+            crate::sema::coherence_policy::consume(
+                report,
+                facts,
+                declaration,
+                attribute,
+                forest,
+                allowances,
             )?;
         }
         Some(Consumer::NativeLink) => {
@@ -558,6 +569,7 @@ fn bind_definitions(
 ) -> Result<(), Error> {
     mir_boundaries.prepare_binding(report, facts)?;
     if !pointer_markers.is_empty()
+        || crate::sema::coherence_policy::pending(facts)
         || report
             .lint_producer()
             .is_some_and(Producer::has_impl_annotations)
@@ -574,6 +586,7 @@ fn bind_definitions(
     }
     if !by_source.is_empty()
         || !pointer_markers.is_empty()
+        || crate::sema::coherence_policy::pending(facts)
         || !mir_boundaries.is_empty()
         || report
             .lint_producer()
@@ -592,26 +605,13 @@ fn bind_definitions(
             crate::sema::associated::reserved_impls::bind(report, facts, index, definition)?;
             bind_macro_helpers(report, facts, index, definition)?;
             if let Some(key) = definition.node {
-                crate::sema::header_attributes::bind_definition(
-                    report,
-                    facts,
-                    DefId(u32::try_from(index).map_err(|_| {
-                        Error::at(key.file, 0, "too many source header definitions")
-                    })?),
-                    key,
-                )?;
-            }
-            if let Some(key) = definition.node {
-                crate::sema::specialization::bind_trait(
-                    report,
-                    facts,
-                    DefId(
-                        u32::try_from(index).map_err(|_| {
-                            Error::at(key.file, 0, "too many specialization traits")
-                        })?,
-                    ),
-                    key,
-                )?;
+                let id = DefId(
+                    u32::try_from(index)
+                        .map_err(|_| Error::at(key.file, 0, "too many source definitions"))?,
+                );
+                crate::sema::coherence_policy::bind(facts, id, definition)?;
+                crate::sema::header_attributes::bind_definition(report, facts, id, key)?;
+                crate::sema::specialization::bind_trait(report, facts, id, key)?;
             }
             let Some(&contract) = definition.node.as_ref().and_then(|key| by_source.get(key))
             else {

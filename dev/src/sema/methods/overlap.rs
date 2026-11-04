@@ -28,13 +28,17 @@ pub(in crate::sema) fn possible(
     right: DefId,
 ) -> Result<(bool, usize), &'static str> {
     let mut probe = Probe::default();
-    let left = probe.header(facts, left)?;
-    let right = probe.header(facts, right)?;
-    let possible = match probe.context.equate_shape(&facts.types, left, right) {
+    let first = probe.header(facts, left)?;
+    let second = probe.header(facts, right)?;
+    let possible = match probe.context.equate_shape(&facts.types, first, second) {
         Ok(()) => {
             let possible = probe.obligations(facts)?;
             if possible && probe.trait_obligations {
-                return Err("user trait overlap obligations require trait coherence");
+                let (possible, work) =
+                    crate::sema::traits::implementations::overlap::inherent(facts, left, right)
+                        .map_err(|_| "inherent trait coherence proof failed")?;
+                probe.context.account_work(work).map_err(inference_error)?;
+                return Ok((possible, probe.context.steps));
             }
             possible
         }

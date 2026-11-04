@@ -150,6 +150,20 @@ future MIR/backend optimizers must consume authenticated local/imported intent
 before selecting optimization or inlining. The [source optimization packet](pa31/tests/spec/source-optimize/README.md)
 records primary and independent evidence; it does not complete PA31/40/29.
 
+Explicit negative coherence is a declaration query, separate from positive trait
+use. Select stable, negative or strict mode from the real crate request and
+actual configured type/trait owner. Unify complete headers first, then freeze
+unknown intersection inputs as rigid source parameters before proving a
+negative. Retain argument correlations, Sized coverage, supertraits and scoped
+lifetime debts. Pay debts only from those headers' own premises through the
+existing relation solver; a missing implementation, cutoff or unpaid negative
+is not proof. Do not run positive member/supertrait/physical-capability checks on
+a negative impl. Keep auto's separate applicability rules and ordinary-use
+refutation guards. Store strict owners sparsely through the shared attribute
+and definition walks; existing metadata profiles must reject unencoded policy.
+The [negative-coherence packet](pa31/tests/spec/negative-coherence/README.md)
+records independent source predictions and the remaining transport boundary.
+
 Attribute feature queries follow the pinned gate's actual construct span.
 Unstable builtin attributes use their retained `#` through `]` envelope: an
 allowing macro can generate `#[$meta]` while the captured name keeps its caller

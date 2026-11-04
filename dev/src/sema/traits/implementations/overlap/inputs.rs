@@ -22,6 +22,7 @@ pub(super) struct Inputs {
 pub(super) struct Header {
     substitution: Instantiation,
     lifetimes: substitute::Bound,
+    bindings: Vec<(crate::types::parameters::ParameterId, Argument)>,
 }
 impl Inputs {
     pub fn instantiate(
@@ -29,10 +30,10 @@ impl Inputs {
         facts: &mut Declarations,
         context: &mut Context,
         input: (Predicate, DefId),
-    ) -> Result<infer::predicates::Predicate, String> {
+    ) -> Result<(infer::predicates::Predicate, Header), String> {
         let (goal, mut header) = self.head(facts, context, input)?;
         self.conditions(facts, context, input.1, &mut header)?;
-        Ok(goal)
+        Ok((goal, header))
     }
 
     pub fn head(
@@ -41,6 +42,49 @@ impl Inputs {
         context: &mut Context,
         (predicate, owner): (Predicate, DefId),
     ) -> Result<(infer::predicates::Predicate, Header), String> {
+        let mut header = self.header(facts, context, owner)?;
+        let predicate = header.lifetimes.predicate(&mut facts.types, predicate)?;
+        context
+            .account_work(header.lifetimes.steps)
+            .map_err(|e| e.to_string())?;
+        let goal = context
+            .instantiate_predicate(&mut facts.types, predicate, &mut header.substitution)
+            .map_err(|e| e.to_string())?;
+        self.formed
+            .extend(goal.arguments().filter_map(|arg| match arg {
+                Argument::Type(ty) => Some(ty),
+                _ => None,
+            }));
+        Ok((goal, header))
+    }
+    pub fn target(
+        &mut self,
+        facts: &mut Declarations,
+        context: &mut Context,
+        owner: DefId,
+    ) -> Result<(TermId, Header), String> {
+        let target = facts
+            .associated
+            .schema(owner)
+            .ok_or("missing inherent coherence header")?
+            .self_type;
+        let mut header = self.header(facts, context, owner)?;
+        let target = header.lifetimes.apply(&mut facts.types, target)?;
+        context
+            .account_work(header.lifetimes.steps)
+            .map_err(|e| e.to_string())?;
+        let target = context
+            .instantiate_with(&mut facts.types, target, &mut header.substitution)
+            .map_err(|e| e.to_string())?;
+        self.formed.push(target);
+        Ok((target, header))
+    }
+    fn header(
+        &mut self,
+        facts: &mut Declarations,
+        context: &mut Context,
+        owner: DefId,
+    ) -> Result<Header, String> {
         let ids = facts.generics.parameter_ids(&facts.types, owner)?;
         let mut bindings = Vec::with_capacity(ids.len());
         for id in ids {
@@ -57,28 +101,84 @@ impl Inputs {
             }
             bindings.push((id, argument));
         }
-        let mut substitution =
+        let substitution =
             Instantiation::new(context, &facts.types, &bindings).map_err(|e| e.to_string())?;
-        let mut lifetimes = self.lifetimes(facts, owner)?;
-        let predicate = lifetimes.predicate(&mut facts.types, predicate)?;
-        context
-            .account_work(lifetimes.steps)
-            .map_err(|e| e.to_string())?;
-        let goal = context
-            .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
-            .map_err(|e| e.to_string())?;
-        self.formed
-            .extend(goal.arguments().filter_map(|arg| match arg {
-                Argument::Type(ty) => Some(ty),
-                _ => None,
-            }));
-        Ok((
-            goal,
-            Header {
-                substitution,
-                lifetimes,
-            },
-        ))
+        let lifetimes = self.lifetimes(facts, owner)?;
+        Ok(Header {
+            substitution,
+            lifetimes,
+            bindings,
+        })
+    }
+    /// Freeze the common intersection with actual source parameters as rigid
+    /// representatives. A negative impl may not specialize an unknown input.
+    pub fn freeze(
+        facts: &mut Declarations,
+        context: &mut Context,
+        headers: &[&Header],
+    ) -> Result<(), String> {
+        for header in headers {
+            for &(id, argument) in &header.bindings {
+                context.account_work(1).map_err(|e| e.to_string())?;
+                match argument {
+                    Argument::Type(term)
+                        if context
+                            .head(&facts.types, term)
+                            .map_err(|e| e.to_string())?
+                            .is_none() =>
+                    {
+                        let ty = facts.types.intern(crate::types::Kind::Parameter(id))?;
+                        let rigid = context.known(&facts.types, ty).map_err(|e| e.to_string())?;
+                        context
+                            .equate(&facts.types, term, rigid)
+                            .map_err(|e| e.to_string())?;
+                    }
+                    Argument::Const(term) => match context.resolved_const(&mut facts.types, term) {
+                        Err(infer::Error::Unresolved) => {
+                            let value = facts
+                                .types
+                                .intern_const(crate::types::arguments::ConstKind::Parameter(id))?;
+                            let rigid = context
+                                .known_const(&facts.types, value)
+                                .map_err(|e| e.to_string())?;
+                            context
+                                .equate_consts(term, rigid)
+                                .map_err(|e| e.to_string())?;
+                        }
+                        Ok(_) => {}
+                        Err(error) => return Err(error.to_string()),
+                    },
+                    _ => {}
+                }
+            }
+        }
+        Ok(())
+    }
+    pub fn excluded(
+        &self,
+        facts: &mut Declarations,
+        context: &mut Context,
+        headers: &[&Header],
+        mode: crate::sema::coherence_policy::Mode,
+    ) -> Result<bool, String> {
+        if mode.implicit() && self.has_absent_local_trait(facts, context)? {
+            return Ok(true);
+        }
+        if mode.negative() {
+            Self::freeze(facts, context, headers)?;
+            for goal in &self.traits {
+                if !crate::sema::traits::selection::may_overlap_with(
+                    facts,
+                    context,
+                    goal,
+                    crate::sema::coherence_policy::Mode::Strict,
+                    |facts, context, proof, sized| self.pay_negative(facts, context, proof, sized),
+                )? {
+                    return Ok(true);
+                }
+            }
+        }
+        Ok(false)
     }
 
     /// Materialize assumptions only after both actual heads can intersect.
@@ -282,6 +382,21 @@ impl Inputs {
             &facts.lifetimes.nominal_requirements,
             &facts.lifetimes.callables,
         );
+        let mut parameters = crate::support::hash::HashSet::default();
+        for &ty in formed
+            .iter()
+            .chain(outlives.iter().map(|(ty, _)| ty))
+            .chain(proof.types.iter().map(|(ty, _)| ty))
+        {
+            for &parameter in queries.components(ty)?.scalars.parameters {
+                context.account_work(1).map_err(|e| e.to_string())?;
+                if parameters.insert(parameter) {
+                    constraints
+                        .parameter(parameter)
+                        .map_err(|e| e.to_string())?;
+                }
+            }
+        }
         for &(a, b) in &self.regions {
             constraints.assume(a, b).map_err(|e| e.to_string())?;
         }
@@ -294,6 +409,48 @@ impl Inputs {
         proof.require(&mut constraints, &mut queries)?;
         constraints.solve().map_err(|e| e.to_string())?;
         Ok(())
+    }
+
+    pub fn pay_negative(
+        &self,
+        facts: &mut Declarations,
+        context: &mut Context,
+        proof: &Obligations,
+        sized: &[TypeId],
+    ) -> Result<bool, String> {
+        if !sized.is_empty() {
+            let mut assumed = crate::support::hash::HashSet::default();
+            let growth =
+                crate::support::retained::Growth::map::<TypeId, ()>(0, 0, self.sized.len());
+            context
+                .account_work(growth.work.saturating_add(growth.bytes))
+                .map_err(|e| e.to_string())?;
+            assumed
+                .try_reserve(self.sized.len())
+                .map_err(|_| "negative coherence Sized premises allocation failed")?;
+            for &term in &self.sized {
+                if let Some(ty) = resolved(facts, context, term)? {
+                    assumed.insert(ty);
+                }
+            }
+            let mut shapes = crate::sema::nominals::Proof::new(None);
+            for &ty in sized {
+                context.account_work(1).map_err(|e| e.to_string())?;
+                if !assumed.contains(&ty)
+                    && !shapes.prove(
+                        facts,
+                        Predicate {
+                            ty,
+                            bound: Bound::Sized,
+                        },
+                    )?
+                {
+                    return Ok(false);
+                }
+            }
+        }
+        self.prove(facts, context, proof)?;
+        Ok(true)
     }
 }
 

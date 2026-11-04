@@ -30,7 +30,7 @@ pub(in crate::sema) fn possible(
     };
     let mut context = Context::default();
     let mut inputs = Inputs::default();
-    let goal = inputs.instantiate(facts, &mut context, source)?;
+    let (goal, bindings) = inputs.instantiate(facts, &mut context, source)?;
     let subject = match declaration.kind {
         Blanket::Identity => goal.subject(),
         Blanket::MutableReference => match context.head(&facts.types, goal.subject()) {
@@ -48,6 +48,16 @@ pub(in crate::sema) fn possible(
         ItemId(canonical.get(Trait::Iterator).definition.0),
         Vec::new(),
     );
-    let possible = crate::sema::traits::selection::may_overlap(facts, &mut context, &prerequisite)?;
+    let mode = crate::sema::coherence_policy::predicate(facts, source.0);
+    if mode.negative() {
+        Inputs::freeze(facts, &mut context, &[&bindings])?;
+    }
+    let possible = crate::sema::traits::selection::may_overlap_with(
+        facts,
+        &mut context,
+        &prerequisite,
+        mode,
+        |facts, context, proof, sized| inputs.pay_negative(facts, context, proof, sized),
+    )?;
     Ok((possible, context.steps))
 }
