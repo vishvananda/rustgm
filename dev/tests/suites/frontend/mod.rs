@@ -39,6 +39,8 @@ mod feature_requests;
 pub(crate) mod ffi_program;
 #[path = "../../fragments.rs"]
 mod fragments;
+#[path = "../../fundamental_contracts.rs"]
+mod fundamental_contracts;
 #[path = "../../glue_provider.rs"]
 mod glue_provider;
 #[path = "../../hygiene.rs"]

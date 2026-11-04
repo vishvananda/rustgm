@@ -244,6 +244,25 @@ wire flags, while ordinary unencoded trait policy fails publication/import.
 The [applicable-trait checkpoint](docs/pa31-applicable-traits-checkpoint.md) retains
 quantified-predicate work and the other assignment requirements explicitly.
 
+Fundamental policy belongs to the actual struct or trait and uses its distinct
+`fundamental` feature or genuine attribute-name macro allowance; `rustc_attrs`
+and sizing-language identity are not substitutes. Reuse the configured header
+owner, source image and shared sticky contract ledger. Nominal orphan locality
+looks through all type arguments of a foreign fundamental wrapper in source
+order, preserving an uncovered parameter before the first local type. A local
+nominal remains local regardless of its marker, and a fundamental trait object
+does not become a transparent nominal. Memoize shared visited type subtrees
+once per foreign-wrapper traversal, with paid storage and an allocation-free
+ordinary root path. Separately, closed fundamental trait obligations may exclude
+future upstream implementations; open/downstream inputs remain possible.
+Internal consumers reuse completed typed declarations, not repeated AST scans.
+Existing exact sizing-role wire flags stay supported; publication of unencoded
+general nominal/trait policy must fail explicitly until authenticated transport
+is implemented. General coinductive and forced-dyn policy have their own real
+solver/object requirements and must not be inferred from fundamental acceptance.
+The [fundamental checkpoint](docs/pa31-fundamental-policy-checkpoint.md) records
+the independently qualified local profile and explicitly required import closure.
+
 Implement obligations required by the pinned language and actual consumer.
 Keep declaration checking, value validity, optional optimization and advisory
 lint claims distinct. A documented niche guarantee does not invent a field

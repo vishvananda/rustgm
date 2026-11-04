@@ -1,0 +1,256 @@
+{
+  "schema": 1,
+  "profile": {
+    "rust": "1.98.0",
+    "edition": 2024,
+    "cap_lints": "allow",
+    "binding_mode": "actual Source provider"
+  },
+  "cases": [
+    {
+      "name": "unit",
+      "path": "pa31/tests/spec/fundamental-policy/unit.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "5ed2abc65d8de3c935210c3d66c0ca5a75b9ff92b8968201eb7d26704daf56e0"
+    },
+    {
+      "name": "tuple",
+      "path": "pa31/tests/spec/fundamental-policy/tuple.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "510595bae87ece56a795b1949963ba3b92db519540fc44f6b6cbcada271de6f5"
+    },
+    {
+      "name": "named",
+      "path": "pa31/tests/spec/fundamental-policy/named.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "ca0f70169c360398519900424de6e40381a3957cd7c60622729a4af90293e809"
+    },
+    {
+      "name": "trait",
+      "path": "pa31/tests/spec/fundamental-policy/trait.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "26ba9a3a133062a031c1f1189c54d570babe3c1ca36cd4d351d2e52815a350c1"
+    },
+    {
+      "name": "trait-with-method",
+      "path": "pa31/tests/spec/fundamental-policy/trait-with-method.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "cdba57f4b65ab90d3f652fad347e607cf23adc5cd6e41849caa6b7ed8039c794"
+    },
+    {
+      "name": "trait-impl",
+      "path": "pa31/tests/spec/fundamental-policy/trait-impl.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "db911f37986b351fa411c857186e7ec5bc4f063b2bdb765aba429e8981b5733e"
+    },
+    {
+      "name": "generic-trait",
+      "path": "pa31/tests/spec/fundamental-policy/generic-trait.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "585ea2ab83633504fe3d20ef65856f79297a7ab189f5333fbb8c91e0a72aa9fe"
+    },
+    {
+      "name": "unsized-struct",
+      "path": "pa31/tests/spec/fundamental-policy/unsized-struct.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "b06adbeb453b575cae6daf61e0aefe824da69799505199c1ac4a49673578d386"
+    },
+    {
+      "name": "const-struct",
+      "path": "pa31/tests/spec/fundamental-policy/const-struct.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "06dde4e116af164b7b14e416adc351456e71ddbb22b324e1721ab13ab6215d7a"
+    },
+    {
+      "name": "reference-struct",
+      "path": "pa31/tests/spec/fundamental-policy/reference-struct.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "e1cee5163b1907e06bf06f0fb65d1ca3db649c3e31bdaa0e9cfa6ea218d4c4f7"
+    },
+    {
+      "name": "no-rustc-attrs",
+      "path": "pa31/tests/spec/fundamental-policy/no-rustc-attrs.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "5ed2abc65d8de3c935210c3d66c0ca5a75b9ff92b8968201eb7d26704daf56e0"
+    },
+    {
+      "name": "wrong-enum",
+      "path": "pa31/tests/spec/fundamental-policy/wrong-enum.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "d555b7757f0d4de735aa464139973848638eab5a4604d96faab026452f950153"
+    },
+    {
+      "name": "wrong-union",
+      "path": "pa31/tests/spec/fundamental-policy/wrong-union.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "8d00743772cab48c9bb340dc85addf63c013d2817c882c94bcf1a09093773dd8"
+    },
+    {
+      "name": "wrong-function",
+      "path": "pa31/tests/spec/fundamental-policy/wrong-function.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "4bbdca6b0faed95ae316d782f77176dc1388da50a01f0e912f4a7427a4b64e13"
+    },
+    {
+      "name": "wrong-alias",
+      "path": "pa31/tests/spec/fundamental-policy/wrong-alias.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "47a0e290ad08d03eb534e143318f60f38f380382cbb6c0c3792ac4b723ed56f5"
+    },
+    {
+      "name": "wrong-module",
+      "path": "pa31/tests/spec/fundamental-policy/wrong-module.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "fd281517edcf3a9db4cb057b70b13cc08f21323b8813a7fccab91c24d805b200"
+    },
+    {
+      "name": "wrong-impl",
+      "path": "pa31/tests/spec/fundamental-policy/wrong-impl.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "0c3b80f984b88c9065ffd795f8f5f64d480884710a278d18375765fe763d8afb"
+    },
+    {
+      "name": "wrong-method",
+      "path": "pa31/tests/spec/fundamental-policy/wrong-method.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "c60ffb3a9473339780e65a92e2d6838d68e08e294f6f8c8d797996d03bfc640f"
+    },
+    {
+      "name": "wrong-field",
+      "path": "pa31/tests/spec/fundamental-policy/wrong-field.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "c7ba6a81d7761f4ada17993f818eecf5cbda12e60d4c6b8b534ac186d3e08929"
+    },
+    {
+      "name": "wrong-const",
+      "path": "pa31/tests/spec/fundamental-policy/wrong-const.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "8f53359076647d48c08e1a1f9b65966677f518770a974d1389647f6e700b5ef3"
+    },
+    {
+      "name": "wrong-list",
+      "path": "pa31/tests/spec/fundamental-policy/wrong-list.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "9bc649b25fb0cdb09e4b19e6390fc83feeb1bd949d9a9e3be21e87a8a0fdcf3c"
+    },
+    {
+      "name": "wrong-value",
+      "path": "pa31/tests/spec/fundamental-policy/wrong-value.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "4f9159e125e7927181a011b2c0233d26b8d4445f6d4faf5d34154c02a1a38eec"
+    },
+    {
+      "name": "unsafe-wrapper",
+      "path": "pa31/tests/spec/fundamental-policy/unsafe-wrapper.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "204440f6381f275c64ac21cdf7749cdfec28451a5972610f3adb943d910ec5de"
+    },
+    {
+      "name": "duplicate",
+      "path": "pa31/tests/spec/fundamental-policy/duplicate.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "fb8e707b4961800c823501910b081d040e6a723f5fddbe01a680b9da7bf05e61"
+    },
+    {
+      "name": "missing-feature",
+      "path": "pa31/tests/spec/fundamental-policy/missing-feature.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "7fd0a29bf01de287ce66770125a8e1f9ca5a5ba5a70e2ded5f8e00843adfe917"
+    },
+    {
+      "name": "rustc-attrs-insufficient",
+      "path": "pa31/tests/spec/fundamental-policy/rustc-attrs-insufficient.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "c35fe5816dd7bdd877e763329d40cdb6419311aaf0cf6871fd6efea6f1307bcf"
+    },
+    {
+      "name": "cfg-removed",
+      "path": "pa31/tests/spec/fundamental-policy/cfg-removed.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "52399f32f3da183ca32c1ff32451a4c448d635ad522fa990fd6cb5b33b5d20ac"
+    },
+    {
+      "name": "literal-allowance",
+      "path": "pa31/tests/spec/fundamental-policy/literal-allowance.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "ab098cad49787ebb9ad12f3a61a5614780a875fc8a6571e1c32eb7ac38c10a2d"
+    },
+    {
+      "name": "forwarded-opponent",
+      "path": "pa31/tests/spec/fundamental-policy/forwarded-opponent.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "a834ab54ac7f240ae3a2a9fff021d13fcbd1e32d53d4ff34b58e87fad5c5dbd6"
+    },
+    {
+      "name": "trait-local-absence",
+      "path": "pa31/tests/spec/fundamental-policy/trait-local-absence.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "b2ffedf5904421b2ca5b291740dbc60aeccec0fbb2832a10d9780f5ef6dab609"
+    },
+    {
+      "name": "ordinary-local-absence",
+      "path": "pa31/tests/spec/fundamental-policy/ordinary-local-absence.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "b8369e8d4342304db849fdbe3cde086e00ac09325801b5f9b0809f0605bde4b4"
+    },
+    {
+      "name": "trait-real-overlap",
+      "path": "pa31/tests/spec/fundamental-policy/trait-real-overlap.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "f25e5fc9e80709290cb4234a5734812eedfce3963f299c0429b919d97d1684d6"
+    },
+    {
+      "name": "trait-object-overlap",
+      "path": "pa31/tests/spec/fundamental-policy/trait-object-overlap.rs",
+      "expected_rustc": 1,
+      "expected_candidate": 1,
+      "sha256": "c4c4c6effd2260e14f212cba02b24e8eef4e3b61a7edc20a13b5e4416834f127"
+    },
+    {
+      "name": "native-operation",
+      "path": "pa31/tests/spec/fundamental-policy/native-operation.rs",
+      "expected_rustc": 0,
+      "expected_candidate": 0,
+      "sha256": "5581e2c08d277386df0924f14969f2998b49162f68b5c8e7798476d79e9e4b90"
+    }
+  ],
+  "auxiliary": [
+    {
+      "path": "pa31/tests/spec/fundamental-policy/observer.c",
+      "sha256": "d37122e0af6175eecf35db51c6498e4a3fbf01ce674e9dc38ca7c3eb036ba7d1"
+    }
+  ],
+  "native_expected_stdout": "7\n9\n"
+}

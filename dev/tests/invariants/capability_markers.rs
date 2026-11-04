@@ -60,10 +60,10 @@ fn scoped_source_capabilities_match_the_independent_valid_invalid_and_unsupporte
     for (name, accepted) in [
         ("scoped-sizing", true),
         ("fundamental-request-only", true),
-        ("user-fundamental", false),
-        ("lookalike-fundamental", false),
+        ("user-fundamental", true),
+        ("lookalike-fundamental", true),
         ("user-coinductive", false),
-        ("user-specialization", false),
+        ("user-specialization", true),
         ("missing-fundamental-gate", false),
         ("malformed-coinductive", false),
         ("sizing-explicit-impl", false),
@@ -80,13 +80,7 @@ fn scoped_source_capabilities_match_the_independent_valid_invalid_and_unsupporte
         assert_eq!(result.is_ok(), accepted, "{name}: {result:?}");
         if let Err(error) = result {
             let message = error.to_string();
-            if matches!(
-                name,
-                "user-fundamental"
-                    | "lookalike-fundamental"
-                    | "user-coinductive"
-                    | "user-specialization"
-            ) {
+            if name == "user-coinductive" {
                 assert!(
                     message.contains("actual language role")
                         || message.contains("actual-role profile"),

@@ -122,7 +122,10 @@ pub(super) fn validate(
         let Claim::Header(attribute) = claim else {
             continue;
         };
-        if *attribute == HeaderAttribute::Specialization {
+        if matches!(
+            attribute,
+            HeaderAttribute::Specialization | HeaderAttribute::Fundamental
+        ) {
             // Every actual trait owns this policy, independently of a language
             // role. The shared semantic annotation producer checks its complete
             // source/gate/target contract; retain sizing's existing role view.
@@ -134,10 +137,6 @@ pub(super) fn validate(
         }
         if !source.features.has(Feature::RustcAttributes) {
             return Err(error("source role header attribute requires rustc_attrs"));
-        }
-        if *attribute == HeaderAttribute::Fundamental && !source.features.has(Feature::Fundamental)
-        {
-            return Err(error("source fundamental attribute requires fundamental"));
         }
         let Some(role) = role else {
             return Err(error(

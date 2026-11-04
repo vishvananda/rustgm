@@ -140,6 +140,12 @@ impl super::package::Package {
         let (minimal, full) = self.specialization_requests()?;
         Ok(full || function && minimal)
     }
+    pub(crate) fn requested_fundamental(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::Fundamental,
+            "fundamental client identity changed",
+        )
+    }
     pub(crate) fn requested_alias_feature(&self, constant: bool) -> Result<bool, &'static str> {
         let feature = if constant {
             policy::Feature::ConstTrait

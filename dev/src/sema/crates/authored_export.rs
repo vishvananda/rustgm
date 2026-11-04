@@ -332,6 +332,7 @@ impl Stage {
         identity: &CrateIdentity,
         mode: ExportMode,
     ) -> Result<Self, &'static str> {
+        facts.require_fundamental_transport(report)?;
         facts.require_incoherent_target_transport(report)?;
         facts.require_dispatch_policy_transport(report)?;
         facts.require_optimization_transport(report)?;

@@ -280,6 +280,16 @@ fn consume_annotation(
                 allowances,
             )?;
         }
+        Some(Consumer::Fundamental) => {
+            crate::sema::header_attributes::consume_fundamental(
+                report,
+                facts,
+                (owner, declaration),
+                (attribute, effect),
+                forest,
+                allowances,
+            )?;
+        }
         Some(Consumer::NativeLink) => {
             flags
                 .native_links

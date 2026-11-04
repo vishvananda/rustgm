@@ -665,6 +665,17 @@ fn attribute_claim(
         .map_err(error)?
         .flatten()
     {
+        // These ordinary declaration policies have semantic owner producers.
+        // A provider also retains its existing role view; an ordinary crate
+        // must not acquire a source-provider requirement merely by using them.
+        if sources.package.source_core().is_none()
+            && matches!(
+                claim,
+                Claim::Header(HeaderAttribute::Fundamental | HeaderAttribute::Specialization)
+            )
+        {
+            return Ok(None);
+        }
         return Ok(Some(claim));
     }
     let claim = match name {

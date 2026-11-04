@@ -99,7 +99,7 @@ impl Checker<'_> {
         ) {
             let (local, parameter) = self.orphan_type(source, ty)?;
             if local {
-                return if uncovered {
+                return if uncovered || parameter {
                     Err(self.error(
                         source,
                         "uncovered parameter precedes the first local implementation type",
@@ -114,50 +114,137 @@ impl Checker<'_> {
     }
 
     fn orphan_type(&self, source: NodeKey, mut ty: TypeId) -> Result<(bool, bool), Error> {
+        let mut pending = Vec::new();
+        let mut visited = crate::support::hash::HashSet::default();
+        let mut uncovered = false;
         for _ in 0..1_000_000 {
+            // Local/nonfundamental roots retain their allocation-free path.
+            // A foreign fundamental DAG visits each shared subtree once. Any
+            // earlier local result already returned; repeated uncovered facts
+            // are idempotent, preserving left-to-right orphan ordering.
+            if !visited.is_empty() && !self.orphan_visit(source, &mut visited, ty)? {
+                if let Some(next) = pending.pop() {
+                    ty = next;
+                    continue;
+                }
+                return Ok((false, uncovered));
+            }
             match self.facts.types.kind(ty) {
-                Some(Kind::Reference { referent, .. }) => ty = referent,
-                Some(Kind::Adt(item, _)) => {
-                    return local_nominal(self.report, item)
-                        .map(|local| (local, false))
-                        .map_err(|e| self.error(source, e));
+                Some(Kind::Reference { referent, .. }) => {
+                    ty = referent;
+                    continue;
+                }
+                Some(Kind::Adt(item, arguments)) => {
+                    if local_nominal(self.report, item).map_err(|e| self.error(source, e))? {
+                        return Ok((true, uncovered));
+                    }
+                    if crate::sema::header_attributes::fundamental_policy(
+                        &self.facts,
+                        DefId(item.0),
+                    )
+                    .map_err(|e| self.error(source, e))?
+                    {
+                        if visited.is_empty() {
+                            self.orphan_visit(source, &mut visited, ty)?;
+                        }
+                        let arguments = self.facts.types.arguments(arguments).ok_or_else(|| {
+                            self.error(source, "fundamental nominal lost its arguments")
+                        })?;
+                        let growth = crate::support::retained::Growth::vector::<TypeId>(
+                            pending.len(),
+                            pending.capacity(),
+                            arguments.len(),
+                        );
+                        crate::sema::header_attributes::charge_source_retention(
+                            &self.facts,
+                            growth.work + arguments.len(),
+                            growth.bytes,
+                        )?;
+                        pending.try_reserve(arguments.len()).map_err(|_| {
+                            self.error(source, "fundamental orphan traversal allocation failed")
+                        })?;
+                        let first = pending.len();
+                        pending.extend(arguments.filter_map(|a| match a {
+                            Argument::Type(ty) => Some(ty),
+                            _ => None,
+                        }));
+                        pending[first..].reverse();
+                    }
                 }
                 Some(Kind::Dynamic { shape, .. }) => {
-                    let shape = self
-                        .facts
-                        .types
-                        .dynamic_shape(shape)
-                        .ok_or_else(|| self.error(source, "invalid object ownership shape"))?;
-                    let owner = shape
-                        .principal
-                        .and_then(|item| self.facts.associated.owner(DefId(item.0)))
-                        .and_then(|owner| self.facts.associated.get(owner));
-                    let local = if let Some(owner) = owner {
-                        if owner.source.is_none() {
-                            self.facts
-                                .associated
-                                .require_imported(*owner)
-                                .map_err(|e| self.error(source, e))?;
-                            false
-                        } else {
-                            matches!(
-                                owner
-                                    .source_owner()
-                                    .map_err(|e| self.error(source, e))?
-                                    .kind,
-                                crate::sema::associated::OwnerKind::Trait { .. }
-                            )
-                        }
-                    } else {
-                        false
-                    };
-                    return Ok((local, false));
+                    if self.orphan_dynamic(source, shape)? {
+                        return Ok((true, uncovered));
+                    }
                 }
-                Some(Kind::Parameter(_) | Kind::Projection(_)) => return Ok((false, true)),
-                Some(_) => return Ok((false, false)),
+                Some(Kind::Parameter(_) | Kind::Projection(_)) => uncovered = true,
+                Some(_) => (),
                 None => return Err(self.error(source, "invalid implementation ownership type")),
+            }
+            if let Some(next) = pending.pop() {
+                ty = next;
+            } else {
+                return Ok((false, uncovered));
             }
         }
         Err(self.error(source, "implementation ownership work budget exceeded"))
+    }
+
+    fn orphan_visit(
+        &self,
+        source: NodeKey,
+        visited: &mut crate::support::hash::HashSet<TypeId>,
+        ty: TypeId,
+    ) -> Result<bool, Error> {
+        let growth = crate::support::retained::Growth::map::<TypeId, ()>(
+            visited.len(),
+            visited.capacity(),
+            usize::from(!visited.contains(&ty)),
+        );
+        crate::sema::header_attributes::charge_source_retention(
+            &self.facts,
+            growth.work + 1,
+            growth.bytes,
+        )?;
+        if visited.contains(&ty) {
+            return Ok(false);
+        }
+        visited
+            .try_reserve(1)
+            .map_err(|_| self.error(source, "fundamental orphan visited allocation failed"))?;
+        visited.insert(ty);
+        Ok(true)
+    }
+
+    fn orphan_dynamic(
+        &self,
+        source: NodeKey,
+        shape: crate::types::dynamic::ShapeId,
+    ) -> Result<bool, Error> {
+        let shape = self
+            .facts
+            .types
+            .dynamic_shape(shape)
+            .ok_or_else(|| self.error(source, "invalid object ownership shape"))?;
+        let owner = shape
+            .principal
+            .and_then(|item| self.facts.associated.owner(DefId(item.0)))
+            .and_then(|owner| self.facts.associated.get(owner));
+        let Some(owner) = owner else {
+            return Ok(false);
+        };
+        if owner.source.is_none() {
+            self.facts
+                .associated
+                .require_imported(*owner)
+                .map_err(|e| self.error(source, e))?;
+            return Ok(false);
+        }
+        Ok(matches!(
+            owner
+                .source_owner()
+                .map_err(|e| self.error(source, e))?
+                .kind,
+            crate::sema::associated::OwnerKind::Trait { .. }
+        ))
     }
 }

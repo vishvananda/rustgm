@@ -407,6 +407,13 @@ substitution or permission inferred from parsing.
 
 ## Completion and review
 
+The [fundamental source contracts](tests/spec/fundamental-policy/README.md)
+separate real struct argument locality from trait compatible-world reasoning.
+Preserve the distinct fundamental feature, actual macro-name allowance, source
+owner, ordinary runtime behavior and existing sizing metadata. General policy
+transport and original nominal/callable declaration/body graphs remain required;
+no sizing-language role or compiler operation may stand in for an ordinary owner.
+
 Publish the semantic/lowering boundary, nonempty `tests/manifest.json`, text
 formats and generated references together after independent outcome review.
 Until then, this assignment must fail explicitly and stays outside pass totals.

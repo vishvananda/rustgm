@@ -1,5 +1,15 @@
 # Parallel library bootstrap implementation
 
+Full CI41883125825 one821b5767 is terminal failure:2680 private checks pass,
+one older capability-matrix expectation still rejects the now-supported ordinary
+specialization trait declaration. Its pinned Rust outcome was already0. The
+current fundamental checkpoint accepts that declaration and the two newly
+supported fundamental declarations; the full exact capability matrix passes in
+the focused ten-test gate. The earlier intrinsic-width failures do not recur.
+Native/debug/independent successor gates remain required; a focused check is not
+a full release. The failed full log is retained under the applicable-trait
+observation directory. There is now no live manual full run to supersede.
+
 Full CI41861996747 on4c63e88a4 is terminal success with every gate passing,
 including independent Rust qualification and the PA25 const-machine contract.
 Intrinsic full CI41870818985 on0c343731e is terminal failure:2673 private
@@ -47,7 +57,24 @@ concurrency cancels the earlier manual run. Source checkpoints may continue with
 focused evidence and push-triggered fast CI; dispatch successor full qualification
 only after its predecessor is terminal. No whole PA release is inferred.
 
-Current original-core frontier is LIB-146: nominal fundamental policy.
+Current original-core frontier is LIB-147: actual Field forced-dyn policy.
+The [fundamental checkpoint](pa31-fundamental-policy-checkpoint.md) passes
+private10 and production34+43 in128.68s/145.52s, plus PA201389/1389 and actual
+native Rust7/9. Thirty-four source and twelve genuine two-crate independent
+outcomes match pinned Rust. The latter define required general transport work;
+candidate metadata currently fences unencoded policy and preserves exact sizing.
+One existing header owner retains the real annotation, feature/name allowance,
+source image and sticky ledger. The paid iterative orphan traversal keeps
+parameter/local ordering and visits shared subtrees once without allocating on
+ordinary roots. CLI5675aaaf reaches file79 byte5981 in18.68s/375opens, mapping to
+field.rs157's actual unsafe Field trait and rustc_dyn_incompatible_trait. All722
+inputs, six pins, fifteen values, capAllow, original options and finite limits
+are unchanged. Implement genuine general trait object restriction and actual
+Field consumers, preserving separate coinductive/fundamental meaning. Whole
+assignments, general policy/body transport and original core/alloc/std artifacts
+remain required. Root stays alone in the guarded warm btrfs tree.
+
+Previous original-core frontier was LIB-146: nominal fundamental policy.
 The [ordinary applicable-trait checkpoint](pa31-applicable-traits-checkpoint.md)
 clears LIB-145's language-role restriction for actual specialization traits.
 Private10/production43 pass in157.31s/190.07s; the original marked-supertrait and

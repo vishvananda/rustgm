@@ -313,8 +313,8 @@ impl Inputs {
         Ok(mapping)
     }
 
-    /// Only local, fully closed applications can establish compatible-world
-    /// absence. Open/foreign/projected conditions remain possible.
+    /// Closed local or fundamental traits exclude future upstream impls.
+    /// Open inputs still admit downstream implementations and remain possible.
     pub fn has_absent_local_trait(
         &self,
         facts: &mut Declarations,
@@ -342,7 +342,9 @@ impl Inputs {
             let local = facts.associated.owner(DefId(item.0)).and_then(|id| facts.associated.get(id))
                 .is_some_and(|owner| owner.source.is_some() && matches!(owner.kind,
                     crate::sema::associated::OwnerKind::Trait { definition, .. } if definition == DefId(item.0)));
-            if local && !crate::sema::traits::selection::may_overlap(facts, context, goal)? {
+            if (local || crate::sema::header_attributes::fundamental_policy(facts, DefId(item.0))?)
+                && !crate::sema::traits::selection::may_overlap(facts, context, goal)?
+            {
                 return Ok(true);
             }
         }
