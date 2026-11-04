@@ -1,5 +1,6 @@
 //! Declaration-bound diagnostic text never supplies a trait or execution proof.
 mod attribute_directives;
+mod directive_profiles;
 mod obligation_failure;
 #[path = "diagnostic_contracts/message_literals.rs"]
 mod template_text;
@@ -159,6 +160,14 @@ pub(super) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), E
             u32::try_from(file)
                 .map_err(|_| Error::at(FileId(0), 0, "too many diagnostic files"))?,
         );
+        for capture in &unit.configured.ast.attributes {
+            directive_profiles::validate_literals(
+                file,
+                unit.source.text(),
+                capture.attribute,
+                &capture.forest,
+            )?;
+        }
         for owner in unit.configured.owners.iter().filter(|owner| owner.enabled) {
             let key = NodeKey {
                 file,
@@ -169,6 +178,9 @@ pub(super) fn collect(report: &Report, facts: &mut Declarations) -> Result<(), E
                 else {
                     continue;
                 };
+                if directive_profiles::defer(report, facts, file, attribute, forest)? {
+                    continue;
+                }
                 let Some(mode) = Mode::attribute(attribute, forest, unit.source.text()) else {
                     continue;
                 };

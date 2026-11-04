@@ -10,6 +10,32 @@ pub mod value;
 use crate::lex::token::{Kind, LexError, Token};
 pub use value::Value;
 
+/// Check textual attribute tokens without imposing expression suffix rules.
+/// Numeric option interpretation belongs to the owning attribute's policy.
+pub(crate) fn validate_attribute_text(source: &str, token: Token) -> Result<(), LexError> {
+    if !matches!(
+        token.kind,
+        Kind::Character
+            | Kind::Byte
+            | Kind::String
+            | Kind::ByteString
+            | Kind::CString
+            | Kind::RawString
+            | Kind::RawByteString
+            | Kind::RawCString
+    ) {
+        return Ok(());
+    }
+    let error = |message| LexError {
+        offset: token.start,
+        message,
+    };
+    let spelling = source
+        .get(token.start as usize..token.end as usize)
+        .ok_or_else(|| error("invalid attribute literal span"))?;
+    text::validate_attribute(spelling, token.kind).map_err(error)
+}
+
 /// Interpret only an already classified integer token's digits and suffix.
 /// No numeric magnitude is needed by a macro-generated identifier.
 pub(crate) fn integer_symbol(source: &str, token: Token) -> Result<&str, LexError> {

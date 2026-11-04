@@ -6,6 +6,16 @@ use super::{
 use crate::lex::token::Kind;
 
 pub(super) fn decode(spelling: &str, kind: Kind) -> Result<Value<'_>, &'static str> {
+    decode_body(spelling, kind, false)
+}
+
+/// Attribute suffix validity is a diagnostic policy; escape validity is not.
+pub(super) fn validate_attribute(spelling: &str, kind: Kind) -> Result<(), &'static str> {
+    decode_body(spelling, kind, true)?;
+    Ok(())
+}
+
+fn decode_body(spelling: &str, kind: Kind, allow_suffix: bool) -> Result<Value<'_>, &'static str> {
     let flavor = Flavor {
         encoding: match kind {
             Kind::Byte | Kind::ByteString | Kind::RawByteString => Encoding::Bytes,
@@ -29,7 +39,7 @@ pub(super) fn decode(spelling: &str, kind: Kind) -> Result<Value<'_>, &'static s
     } else {
         0
     };
-    if close + 1 + hashes != spelling.len() {
+    if !allow_suffix && close + 1 + hashes != spelling.len() {
         return Err("suffix on non-numeric literal");
     }
     let content = &spelling[open + 1..close];

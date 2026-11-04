@@ -99,7 +99,7 @@ enum Request {
     Capability(Feature),
     /// A requested library instability still requires its actual declaration inventory.
     Library(Feature),
-    /// This target-independent request grants no assembly binding or lowering.
+    /// A diagnostic or target-independent request grants no semantic capability.
     NoCapability,
 }
 impl Request {
@@ -160,7 +160,11 @@ impl Request {
             }
             // This pinned Rust request only enables an advisory lint. Its
             // producer stays deferred and grants no trait/upcasting permission.
-            "multiple_supertrait_upcastable" => Self::NoCapability,
+            // These requests only customize failed-operation diagnostics. The
+            // explicit capped profile defers rendering, never semantic checks.
+            "multiple_supertrait_upcastable"
+            | "diagnostic_on_const"
+            | "diagnostic_on_unmatched_args" => Self::NoCapability,
             _ => Self::Capability(Feature::cpu_gate(
                 crate::support::cpu_features::Gate::named(name)?,
             )),

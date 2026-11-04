@@ -1548,6 +1548,15 @@ unsafe, API and CTFE checks. Unknown optional expectations may remain witnessed
 debt under the explicit cap, never fulfilled or evidence of strict completion.
 Capped source observations require separate manifests recording the effective
 cap and cannot close an uncapped library goal. Other cap levels remain required.
+The [const/macro diagnostic packet](pa40/tests/spec/diagnostic-directives/README.md)
+recognizes diagnostic-only requests without installing semantic capabilities.
+Check textual literal validity from retained attribute forests, including disabled
+owners and nested configuration input; keep optional suffix policy separate from
+expression literal interpretation. Under the authenticated Allow bring-up profile,
+defer diagnostic option rendering without allocating rendering tables or weakening
+actual const/trait/unsafe/macro checks. Custom hard-error text is not suppressed by
+rustc's lint cap: its rendering and imported metadata remain explicit unfinished
+requirements, with uncapped directive use currently rejected rather than qualified.
 The manifest's `public-dependency` Cargo feature controls
 retained target graph edges; it grants no host Rust or compiler-query capability.
 Unsupported host edge modifiers, tools, workspace inheritance and other unstable

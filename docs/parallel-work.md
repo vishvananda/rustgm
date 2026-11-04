@@ -1,6 +1,20 @@
 # Parallel library bootstrap implementation
 
-Current original-core frontier is LIB-133: diagnostic_on_const at original lib.rs122.
+Current original-core frontier is LIB-134: doc_cfg at original lib.rs124.
+The [const/macro diagnostic checkpoint](pa40-diagnostic-directives-checkpoint.md)
+qualifies both diagnostic-only requests under authenticated Allow, preserving
+hard semantics and allocating no rendering tables. Private3/production10,
+PA2 142/142,PA8 126/126,118 independent/candidate outcomes and native7 9 pass.
+Ordinary annotated/control/predecessor LowIR bytes match. CLI72fdb01b reaches
+LIB-134 in18.76s/375opens with all722 hashes, six configuration pins, options and
+limits unchanged. Inventory doc_cfg with doc_notable_trait next. Strict custom
+diagnostics, transport and original artifacts remain required. Full predecessor
+CI41767321465 passes every gate. Root stays alone with existing warm btrfs caches,
+no new worker/tree, unchanged five-minute/two-thread/16GiB/150GiB guards and scoped
+cleanup. No whole PA or original library is established.
+
+
+Previous original-core frontier was LIB-133: diagnostic_on_const at original lib.rs122.
 The [unadjusted ABI checkpoint](pa28-unadjusted-abi-checkpoint.md) qualifies distinct
 source conventions, actual feature/macro authority and scalar/reified/generic
 native calls. Private7/production6,PA8 126/126,PA10 81/81 and60 independent/candidate

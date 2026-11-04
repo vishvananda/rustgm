@@ -80,6 +80,11 @@ retains actual replacement metadata and enforces its source feature gate.
 Suggestion rendering and broader diagnostic parity are deferred while the
 immediate work prioritizes library compilation.
 
+The unpublished [const/macro diagnostic packet](tests/spec/diagnostic-directives/README.md)
+separates diagnostic-only requests from semantic permissions. Its explicit capped
+profile preserves hard literal, unsafe, const/trait and macro-matching checks;
+custom error text, uncapped diagnostics and imported metadata remain required.
+
 The unpublished [explicit Allow cap checkpoint](../docs/pa40-lint-cap-allow-checkpoint.md)
 keeps strict policy as the default while permitting an authenticated compilation
 to suppress optional diagnostics. Hard semantic checks and witnessed expectation

@@ -1,0 +1,384 @@
+{
+  "contract": "capped diagnostic-only directives v2",
+  "editions": [
+    2021,
+    2024
+  ],
+  "lint_cap": "allow",
+  "primary": {
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_attr_parsing/src/attributes/diagnostic/on_const.rs": "023f1c70047feb7fa71cbc12947bf9c7c1f4cba1297d3e588e6efab824505002",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_attr_parsing/src/attributes/diagnostic/on_unmatched_args.rs": "5a340b3b2399af1a1714c51118fc4aec533c80df0e139b2800182bd6f398290f",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_attr_parsing/src/attributes/diagnostic/mod.rs": "e69762bb2ef0079cbd7d61fec14e1500640f50e9e597562bf4ab0ce047987efc",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_feature/src/unstable.rs": "12a8e6610e58950117521e333e06368bd068ca3b3c4b5017829aa71c2ea410bb",
+    "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/compiler/rustc_feature/src/removed.rs": "686afa1afba77ed9fd4c101cf5e3f28fb1e217c7a8ec6c0f34cc9d61b35fcfb7"
+  },
+  "cases": [
+    {
+      "name": "const-request",
+      "path": "pa40/tests/spec/diagnostic-directives/const-request.rs",
+      "sha256": "273e36a9b638269e126408773dd53448c93acbc4a580e33e4965915ee812433c",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "const-valid",
+      "path": "pa40/tests/spec/diagnostic-directives/const-valid.rs",
+      "sha256": "166213cb4411d6662e1c091cc02311f7ac804413c7ac71a1c2562a3efcf875ea",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "const-missing-feature",
+      "path": "pa40/tests/spec/diagnostic-directives/const-missing-feature.rs",
+      "sha256": "d9ff856021687cfeaa7a49e6350e550c0e4d775a5e4221c16d42bd103edf6b52",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "const-word",
+      "path": "pa40/tests/spec/diagnostic-directives/const-word.rs",
+      "sha256": "a31cfb23b655a21b9fd2964a722244db5f53b75d4b4ef72b494ce7ab22a9c978",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "const-empty",
+      "path": "pa40/tests/spec/diagnostic-directives/const-empty.rs",
+      "sha256": "224205cb9f0ac6c68a6455c163263047f24cf7461a4219d60da6e1285bd7a0a9",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "const-value",
+      "path": "pa40/tests/spec/diagnostic-directives/const-value.rs",
+      "sha256": "8f9c8198fcb67eaadd55aa78e811668df4fcddcc2d4906a6fafaa11a472b1e61",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "const-integer",
+      "path": "pa40/tests/spec/diagnostic-directives/const-integer.rs",
+      "sha256": "4a83798adf1644643529004fce9b42c9b51ca31fe73cf4ff5f8fbc2346e8efbc",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "const-bytes",
+      "path": "pa40/tests/spec/diagnostic-directives/const-bytes.rs",
+      "sha256": "41e1bff8c79312d19228a1677f3289c833b235283acdcda984b6bf74c90447e4",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "const-duplicates",
+      "path": "pa40/tests/spec/diagnostic-directives/const-duplicates.rs",
+      "sha256": "91c28eb23fc12348a714c7608c725da9f79866f4ed63e62d0ce49246cb4519f1",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "const-unknown-key",
+      "path": "pa40/tests/spec/diagnostic-directives/const-unknown-key.rs",
+      "sha256": "dbf37e90c8de6d9e0408f3ec94306b82753fabfd991dd36c9925b0b2f5e8de41",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "const-format",
+      "path": "pa40/tests/spec/diagnostic-directives/const-format.rs",
+      "sha256": "a411979a23f3685e3f6cf6303f160f7b6ae268226dd7d1fa32bfcb056689fa9f",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "const-bad-brace",
+      "path": "pa40/tests/spec/diagnostic-directives/const-bad-brace.rs",
+      "sha256": "e2aadfb7aa70f0cbd971ebeef0017173b956039ee8cdbb90ced8817da5468c39",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "const-escaped",
+      "path": "pa40/tests/spec/diagnostic-directives/const-escaped.rs",
+      "sha256": "4cfc25de27bc0c52d9720e3772de58c2e5c5ad7668e2b2707b92d42304515231",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "const-bad-escape",
+      "path": "pa40/tests/spec/diagnostic-directives/const-bad-escape.rs",
+      "sha256": "aa6c641d5f3be7ffc74ad76067f58bd9c5d3f9f184645d050168c3eab92bdf4e",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "const-bad-unicode",
+      "path": "pa40/tests/spec/diagnostic-directives/const-bad-unicode.rs",
+      "sha256": "301208d74e4ece129f44e32776ed9d4066d05ec673a229464d02fe81fc9925ba",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "const-suffix",
+      "path": "pa40/tests/spec/diagnostic-directives/const-suffix.rs",
+      "sha256": "293e1f026d349b190ce2bfe58a86dfd2f3eb7563c526956b5dfa7fc4afd15c7a",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "const-unsafe",
+      "path": "pa40/tests/spec/diagnostic-directives/const-unsafe.rs",
+      "sha256": "ab92d9038fbd1974d6487ff3b983963e82cc97e08db8a5d29166da2931d8a973",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "const-wrong-target",
+      "path": "pa40/tests/spec/diagnostic-directives/const-wrong-target.rs",
+      "sha256": "2ff3f907bcf65aaf73e1ae5932e039fefff92ed899b078a6396d9392d1d2b74a",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "const-removed",
+      "path": "pa40/tests/spec/diagnostic-directives/const-removed-v2.rs",
+      "sha256": "73c88f6d4ff98c812bdfcdce38e721ee0a936374dd390c6ba72a4acbf64b2d93",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "const-disabled-literal",
+      "path": "pa40/tests/spec/diagnostic-directives/const-disabled-literal-v2.rs",
+      "sha256": "e7177ebb2da57334267420663728d892c588bb415cde398e27203b699f8ab1b7",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "const-denied-capped",
+      "path": "pa40/tests/spec/diagnostic-directives/const-denied-capped.rs",
+      "sha256": "9bc43df02777895dea57c1cda727f0cb3e7e188e59b422ac99a8e5cf34212ad5",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "const-no-other-permission",
+      "path": "pa40/tests/spec/diagnostic-directives/const-no-other-permission.rs",
+      "sha256": "dc5ee2ef2d84c0ccf16efbc0b1c5bec6c4faf0361e74c6c9672ee1ba5630af52",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "macro-request",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-request.rs",
+      "sha256": "6674d3cd077b5c51da67b45343c06893a45d7fc1523769152afc1f8ca57e6577",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "macro-valid",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-valid.rs",
+      "sha256": "0f139d98a5dc31c55ffcb93951d8f52a60bda99855adcd73047cad3cf7427a94",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "macro-missing-feature",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-missing-feature.rs",
+      "sha256": "c344b69dd2b75388e20349df8978c4824e34f215fc0f4ab5939517bc64c8bf38",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "macro-word",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-word.rs",
+      "sha256": "58505c869ac1bfa92062368accf767f454c33bc8864db386f7c56d8eb70c02ef",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "macro-empty",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-empty.rs",
+      "sha256": "abc09c7b0171fe5f31f0d38642d03674a8c4c1429d6558f748b4b48027b4cb52",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "macro-value",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-value.rs",
+      "sha256": "cba3cdfde29ad18949bd040a840b75885d1abe6683de25949946655e4e262f3b",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "macro-integer",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-integer.rs",
+      "sha256": "0866af30d6af823a3bb07d691907459ad5b7163f05cdc1cbad9bb0722c7bab76",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "macro-bytes",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-bytes.rs",
+      "sha256": "8ecae55fbcc547eb315d658d45029297140ed00d0db57f58e994f634cfdb6cf7",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "macro-duplicates",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-duplicates.rs",
+      "sha256": "c794c22051aedce6b4f9ba0ee438b4c26939e711f3764f3e096798c27b24dcc8",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "macro-unknown-key",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-unknown-key.rs",
+      "sha256": "7c3de140ba68c5a2e2cccdc12473cda42cabfb6f55d9d16a5da80346adbd1535",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "macro-format",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-format.rs",
+      "sha256": "66abb40b4c57644b69504b2d4a1d0bb10dd9526c4e56dd4545083bfff3a517ea",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "macro-bad-brace",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-bad-brace.rs",
+      "sha256": "216ce6a43ab7a3da9690b2ffbcc2f36de562ebf95468228e8d31d36c121c28ae",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "macro-escaped",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-escaped.rs",
+      "sha256": "3b42feebc691119af831c3d3cc36ae638d67ef300d8da5e2ec6cd3706ab4d027",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "macro-bad-escape",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-bad-escape.rs",
+      "sha256": "79b7de214d3563e558e3fb57962b9a27e501e15b662e84af57aaef65b110354f",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "macro-bad-unicode",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-bad-unicode.rs",
+      "sha256": "0f71b0abfd1e7ebb7990445edbcc2f6bdbfac83e7501b1e6e5a00dc13b07422f",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "macro-suffix",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-suffix.rs",
+      "sha256": "c7c4c857648a0a55742f2e9a5172a4430d240d3c9db624580bfea569c6385d16",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "macro-unsafe",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-unsafe.rs",
+      "sha256": "1e0af57188ffe212a7f77744025e221beb47081a0c4518fef7ca5183df8e88e4",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "macro-wrong-target",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-wrong-target.rs",
+      "sha256": "86972a332577485993d7ad35b730025a25dac9a8ec859b72ae434344f96ab7f4",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "macro-removed",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-removed-v2.rs",
+      "sha256": "be82c22dc9975d5ff22a128445e5b4d3232fca5b500ebea24fe76ab0e68f7edf",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "macro-disabled-literal",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-disabled-literal-v2.rs",
+      "sha256": "55df38518bbc03f837b4869f1738236ad4ec92f69e887169a3972f82c5278e4e",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "macro-denied-capped",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-denied-capped.rs",
+      "sha256": "a43e2e51028e6645e35350ec0f5933dfd48b103db15e33e3e69bec6cb386dbef",
+      "rustc_status": 0,
+      "required_status": 0
+    },
+    {
+      "name": "macro-no-other-permission",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-no-other-permission.rs",
+      "sha256": "5a13f18ae6957fa9b1a4ecfab82e9a64976646c79b7feeba2a9cacd67d36b4e1",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "unknown-feature",
+      "path": "pa40/tests/spec/diagnostic-directives/unknown-feature.rs",
+      "sha256": "57c1162fabbde4375e1f33b0f24f7d3fdcd61b6c63022f58e2d3e3ea7dc5d949",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "removed-old-spelling",
+      "path": "pa40/tests/spec/diagnostic-directives/removed-old-spelling.rs",
+      "sha256": "06875940192162f597b86f05f91b04f8ce356c87da6074eb9f63be9420176f15",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "const-does-not-grant-const-impl",
+      "path": "pa40/tests/spec/diagnostic-directives/const-does-not-grant-const-impl.rs",
+      "sha256": "691faa527652245899a9f0d60bbaaebcb4e01f19a286da1106d115d98a2f718e",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "const-does-not-grant-unsafe",
+      "path": "pa40/tests/spec/diagnostic-directives/const-does-not-grant-unsafe.rs",
+      "sha256": "bfc16054795cad6c8d7f09b503ab3e0d19dca62aa48e020d0e47c3332d422596",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "macro-mismatch-is-hard",
+      "path": "pa40/tests/spec/diagnostic-directives/macro-mismatch-is-hard.rs",
+      "sha256": "bdc8c9b5e78e1a8457a03223edbeb63a6be07b91c0c0f6e04d7ed58e09ba2617",
+      "rustc_status": 1,
+      "required_status": 1
+    },
+    {
+      "name": "native",
+      "path": "pa40/tests/spec/diagnostic-directives/native.rs",
+      "sha256": "76c821091bdd8bd0cd2c47792724affd734970eb4eb7da83bdb76ce67a6d009b",
+      "rustc_status": 0,
+      "required_status": 0
+    }
+  ],
+  "scope": "Recognize diagnostic-only requests; preserve hard literal/unsafe/const/trait/macro errors under authenticated Allow cap. Custom error text and strict diagnostics remain required, not inferred from suppression.",
+  "strict_boundary": {
+    "required_status": 0,
+    "current_status": 1,
+    "message": "uncapped const/macro diagnostic directive profile is not implemented",
+    "cases": [
+      "const-valid",
+      "macro-valid"
+    ]
+  },
+  "native": {
+    "case": "native",
+    "observer": "pa40/tests/spec/diagnostic-directives/observer.c",
+    "observer_sha256": "73886fda3aab66dd1a71d0845b7e9561f4b7b24929631b1ce7aa256a3420d13e",
+    "stdout": "7 9\n"
+  },
+  "corrections": "v1 independent oracle disproved suffix hard errors and exposed invalid disabled fixture ownership; v1 evidence is retained."
+}
