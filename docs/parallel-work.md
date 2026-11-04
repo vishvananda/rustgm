@@ -4,8 +4,11 @@ Full qualification cadence: run41787601690 on6f1e3eb3d is terminal success
 with every gate passing. LLVM successor run41795595365 on3d4b3ae9d failed eight stale cold-layout
 assertions. All eight now pass focused qualification; ordinary layouts retain
 exact checks. Successor full run41801911308 on975b32666 is terminal success with every gate green.
-Negative-coherence successor full run41814580339 is confirmed live on published
-compiler eccbae6ed; poll that exact handle and do not supersede it while live.
+Negative-coherence successor full run41814580339 on eccbae6ed is terminal failure:
+seven stale global declarations-size assertions,2650 other private tests and all
+regular integrations passing. All seven exact assertions are corrected and pass
+focused qualification; ordinary/dense checks remain exact. Subsequent full gates
+were skipped. No successor is yet dispatched for the architecture-request compiler.
 The redundant41814340248 on the old head was explicitly cancelled after the
 initial push failed; it is not qualification evidence for the new compiler.
 Predecessor run41781814852 on1f5a2b8d0 also passes every gate.
@@ -17,7 +20,26 @@ concurrency cancels the earlier manual run. Source checkpoints may continue with
 focused evidence and push-triggered fast CI; dispatch successor full qualification
 only after its predecessor is terminal. No whole PA release is inferred.
 
-Current original-core frontier is LIB-140: aarch64_unstable_target_feature at original lib.rs171.
+Current original-core frontier is LIB-141: the stability owner inventory's resource guard.
+The [architecture-request checkpoint](pa41-architecture-requests-checkpoint.md)
+qualifies all17 pinned non-x86 requests without enabling host CPU features or
+creating ordinary binding/library-policy rows. Private17/production48/native1,
+PA8 126/126,112 matching source observations and actual baseline/configuration
+execution7 9 pass. CLIad230642 clears the remaining core target-request group
+in18.21s/375opens; all722 input hashes, six configuration pins, fifteen constants,
+ordinary/annotated LowIR bytes, options and declared finite limits match.
+A bounded probe identifies the separate fixed1M stability-inventory guard:
+836965 work plus238065 owner-table preflight work reaches1075030, while charged
+bytes43128704 remain below64MiB. This is a resource frontier, not Rust rejection
+or a completed artifact. Review the whole PA31 owner/policy pipeline and its
+budget ownership with reduced scaling tests; preserve PA29 transport duties.
+All seven stale global-size assertions from predecessor full CI41814580339 are
+corrected, with exact dense/per-definition checks retained. Earlier target
+macro permission, selected instruction and imported-policy requirements remain.
+No whole PA or original library is completed. Root remains alone in the warm
+btrfs tree with unchanged guards and scoped cleanup.
+
+Previous original-core frontier was LIB-140: aarch64_unstable_target_feature at original lib.rs171.
 The [negative-coherence source checkpoint](pa31-negative-coherence-source-checkpoint.md)
 qualifies genuine crate permission, actual strict owners, typed negative exclusion,
 rigid intersection inputs and paid generic-reference lifetime/Sized debts.

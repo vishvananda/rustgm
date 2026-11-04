@@ -82,8 +82,11 @@ Full predecessor CI[41801911308](https://github.com/vishvananda/rustgm/actions/r
 on975b32666 is terminal success with every gate green. The eight stale layout
 assertions are resolved. Compiler eccbae6ed is integrated and published on main.
 Successor full[41814580339](https://github.com/vishvananda/rustgm/actions/runs/41814580339)
-is confirmed live on that compiler; do not supersede it while live. Local focused
-qualification is not a full release or assignment qualification. The earlier
+is terminal failure on seven stale global declarations-size assertions;2650 other
+private tests and all regular integrations pass. The exact corrections and focused
+proof are in the [architecture checkpoint](pa41-architecture-requests-checkpoint.md).
+Subsequent full gates were skipped; local focused qualification is not a full
+release or assignment qualification. The earlier
 redundant41814340248 was explicitly cancelled on the previous head after the
 initial push failed; it supplies no evidence for this compiler.
 

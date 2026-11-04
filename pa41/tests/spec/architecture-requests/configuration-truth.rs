@@ -1,0 +1,2 @@
+#![feature(aarch64_unstable_target_feature,aarch64_ver_target_feature,arm_target_feature,avr_target_feature,bpf_target_feature,csky_target_feature,hexagon_target_feature,loongarch_target_feature,m68k_target_feature,mips_target_feature,nvptx_target_feature,powerpc_target_feature,riscv_target_feature,s390x_target_feature,sparc_target_feature,wasm_target_feature,xtensa_target_feature)]
+const HOST:bool=cfg!(target_arch="x86_64");const FOREIGN:bool=cfg!(target_arch="aarch64");const BASE:bool=cfg!(target_feature="sse2");const AVX:bool=cfg!(target_feature="avx2");fn main(){}

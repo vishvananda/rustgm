@@ -1,0 +1,398 @@
+{
+  "profile": "Rust 1.98.0, Linux x86-64, panic abort, cap-lints=allow",
+  "editions": [
+    2021,
+    2024
+  ],
+  "predicted_before_qualification": true,
+  "foreign_requests": [
+    "aarch64_unstable_target_feature",
+    "aarch64_ver_target_feature",
+    "arm_target_feature",
+    "avr_target_feature",
+    "bpf_target_feature",
+    "csky_target_feature",
+    "hexagon_target_feature",
+    "loongarch_target_feature",
+    "m68k_target_feature",
+    "mips_target_feature",
+    "nvptx_target_feature",
+    "powerpc_target_feature",
+    "riscv_target_feature",
+    "s390x_target_feature",
+    "sparc_target_feature",
+    "wasm_target_feature",
+    "xtensa_target_feature"
+  ],
+  "original_core_requests": [
+    "aarch64_unstable_target_feature",
+    "arm_target_feature",
+    "avx10_target_feature",
+    "clflushopt_target_feature",
+    "hexagon_target_feature",
+    "loongarch_target_feature",
+    "mips_target_feature",
+    "movrs_target_feature",
+    "nvptx_target_feature",
+    "powerpc_target_feature",
+    "riscv_target_feature",
+    "rtm_target_feature",
+    "s390x_target_feature",
+    "wasm_target_feature",
+    "x86_amx_intrinsics"
+  ],
+  "cases": [
+    {
+      "name": "request-aarch64_unstable_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/request-aarch64_unstable_target_feature.rs",
+      "required_status": 0,
+      "sha256": "3ffdc63e71cd8a14ec545d7f0bc32bc1c3ac2f0d228258697a698b99fe26b736"
+    },
+    {
+      "name": "foreign-aarch64_unstable_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/foreign-aarch64_unstable_target_feature.rs",
+      "required_status": 1,
+      "sha256": "cb2b7fa07019d11b6f16262b8e501fa3aa60294cd4c125ef42d4ae3e777b632b"
+    },
+    {
+      "name": "request-aarch64_ver_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/request-aarch64_ver_target_feature.rs",
+      "required_status": 0,
+      "sha256": "e91d95c6be647e59e3e8e0856bce88fdb3e926aead4ba6a4c948b28ff01f73dd"
+    },
+    {
+      "name": "foreign-aarch64_ver_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/foreign-aarch64_ver_target_feature.rs",
+      "required_status": 1,
+      "sha256": "44bf8400e9965d0f910d90f51ffa36f40fcf9f9d2b7179fb3de14161c49f68c8"
+    },
+    {
+      "name": "request-arm_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/request-arm_target_feature.rs",
+      "required_status": 0,
+      "sha256": "cb010aff59ba2fefc47e0720b58f4cb49925f4877a66bcf8dcf5a9d112e0abf1"
+    },
+    {
+      "name": "foreign-arm_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/foreign-arm_target_feature.rs",
+      "required_status": 1,
+      "sha256": "57f4e66ca6b4075288a1ca0f444165f2074c0e957a0820d84ab8f3588a88419a"
+    },
+    {
+      "name": "request-avr_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/request-avr_target_feature.rs",
+      "required_status": 0,
+      "sha256": "39dce10aee617ef327a0a71ac3c2f52e4a2f71a4b32c0e60c29ef90ebba138be"
+    },
+    {
+      "name": "foreign-avr_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/foreign-avr_target_feature.rs",
+      "required_status": 1,
+      "sha256": "d85292987065fc8a6fe595d853d7150acdb772b21dbf7ac246a5805b5d47a773"
+    },
+    {
+      "name": "request-bpf_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/request-bpf_target_feature.rs",
+      "required_status": 0,
+      "sha256": "2880b1068a6ff0b8e79d8ec54e34f09ed101a6dbde61b5d948dbf7c7b5e34d05"
+    },
+    {
+      "name": "foreign-bpf_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/foreign-bpf_target_feature.rs",
+      "required_status": 1,
+      "sha256": "d5a7289ea26875db5da1b866cdd8dacf09d0d5c101dc5ec3bfa02078e44b2bb3"
+    },
+    {
+      "name": "request-csky_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/request-csky_target_feature.rs",
+      "required_status": 0,
+      "sha256": "4bd0d6b5a91de49c3097062ba0db846ef564079ab5270fd22d9c25a739d54f39"
+    },
+    {
+      "name": "foreign-csky_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/foreign-csky_target_feature.rs",
+      "required_status": 1,
+      "sha256": "39035d521a6c96c800fa02331b0bfa2567fe11d9b64a510363ab542e54f528c1"
+    },
+    {
+      "name": "request-hexagon_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/request-hexagon_target_feature.rs",
+      "required_status": 0,
+      "sha256": "218fc736fbf9b0fae169357fb0579a0d82e469828a0189ad3377fb96c81767e9"
+    },
+    {
+      "name": "foreign-hexagon_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/foreign-hexagon_target_feature.rs",
+      "required_status": 1,
+      "sha256": "8265b4418f0fe70f9c122731f9dc05db9f342b9523f13f0afde44ea40fc8ab1b"
+    },
+    {
+      "name": "request-loongarch_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/request-loongarch_target_feature.rs",
+      "required_status": 0,
+      "sha256": "01e16b7eb7108b2fcb27c070eaabe03f70436ac2c29b5126515767a3ae55cd1b"
+    },
+    {
+      "name": "foreign-loongarch_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/foreign-loongarch_target_feature.rs",
+      "required_status": 1,
+      "sha256": "262714fe684f13dcc963e9fd5d2923c8aa4369704b106249123121969e62f774"
+    },
+    {
+      "name": "request-m68k_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/request-m68k_target_feature.rs",
+      "required_status": 0,
+      "sha256": "2d06b58ff32f22b230ec527fa0c3d460d98abe6f58691407340cd6ddfb1182f3"
+    },
+    {
+      "name": "foreign-m68k_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/foreign-m68k_target_feature.rs",
+      "required_status": 1,
+      "sha256": "e0ba2f1196e7afb0932300724b45002d32f154d8f31a94d225320ff86da55857"
+    },
+    {
+      "name": "request-mips_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/request-mips_target_feature.rs",
+      "required_status": 0,
+      "sha256": "3de6249f99572700617a78067a0b16d19060261ce9eeb25648512aae6fab74b4"
+    },
+    {
+      "name": "foreign-mips_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/foreign-mips_target_feature.rs",
+      "required_status": 1,
+      "sha256": "b259fd5c0552c095f7385a24c1f1265bfe46add301b4c602aa83fb6d8ab790f2"
+    },
+    {
+      "name": "request-nvptx_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/request-nvptx_target_feature.rs",
+      "required_status": 0,
+      "sha256": "6b57d53195b28adaffb3dd6117996aafd0fc807300b12967413b37b7c998cc04"
+    },
+    {
+      "name": "foreign-nvptx_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/foreign-nvptx_target_feature.rs",
+      "required_status": 1,
+      "sha256": "2b3a44412308e275501fe88a0dc6635e3493cc8224b6c926502b7233571943b3"
+    },
+    {
+      "name": "request-powerpc_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/request-powerpc_target_feature.rs",
+      "required_status": 0,
+      "sha256": "7c12cad72075f926837ddb9c06451088d867bef48598bbd7380c2f97077c6b40"
+    },
+    {
+      "name": "foreign-powerpc_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/foreign-powerpc_target_feature.rs",
+      "required_status": 1,
+      "sha256": "c7f291fdaa932aea9887b6baeddf65ec636575477741b503abdbeeedbd339035"
+    },
+    {
+      "name": "request-riscv_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/request-riscv_target_feature.rs",
+      "required_status": 0,
+      "sha256": "92e297c714397066a7c4e179ff4e16deef69cd6b3a47ef579ae50cc1d572f9be"
+    },
+    {
+      "name": "foreign-riscv_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/foreign-riscv_target_feature.rs",
+      "required_status": 1,
+      "sha256": "a30ff6ee470cae07076a9b8974c5b3245f5adccf04d037aee4c368de15ab70ef"
+    },
+    {
+      "name": "request-s390x_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/request-s390x_target_feature.rs",
+      "required_status": 0,
+      "sha256": "0d4b917aa161d5e594c582817199be824dfd31883d20fe4b8f866e8f090add64"
+    },
+    {
+      "name": "foreign-s390x_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/foreign-s390x_target_feature.rs",
+      "required_status": 1,
+      "sha256": "9012855f13d3af7de27b2899b3ad9c82c26ea4e0f737ebef951a5746845891f1"
+    },
+    {
+      "name": "request-sparc_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/request-sparc_target_feature.rs",
+      "required_status": 0,
+      "sha256": "459841fb109a67e3bbee1871a40829071491015fe9e6ad57e13678b92353bafb"
+    },
+    {
+      "name": "foreign-sparc_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/foreign-sparc_target_feature.rs",
+      "required_status": 1,
+      "sha256": "d6308c0ffab9f09a683251e979d0afde47e93dbfd4de8a8e407bcba1825c3c16"
+    },
+    {
+      "name": "request-wasm_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/request-wasm_target_feature.rs",
+      "required_status": 0,
+      "sha256": "935d00ee5cffe2e8a38081424ddba4d527b8995f95f7c507707a429fb4d288ed"
+    },
+    {
+      "name": "foreign-wasm_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/foreign-wasm_target_feature.rs",
+      "required_status": 1,
+      "sha256": "6ab5536d2c85afb1c59bc4aebf579721e7905c859410571619a03c6974b1c960"
+    },
+    {
+      "name": "request-xtensa_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/request-xtensa_target_feature.rs",
+      "required_status": 0,
+      "sha256": "836cfd496806758f405d921e28bd7c82c700ba395ed81183b6c5c4325521b6e0"
+    },
+    {
+      "name": "foreign-xtensa_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/foreign-xtensa_target_feature.rs",
+      "required_status": 1,
+      "sha256": "f0244007b61f7eb482c26e5cb7d8c18017f835a50a0bd508f85bfcf9893520f2"
+    },
+    {
+      "name": "wrong-avx10_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/wrong-avx10_target_feature.rs",
+      "required_status": 1,
+      "sha256": "5f7f671f022b24aca548688b36b0d1333e5dbbe31cb1849d5b27ec05be389373"
+    },
+    {
+      "name": "enabled-avx10_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/enabled-avx10_target_feature.rs",
+      "required_status": 0,
+      "sha256": "47258f1390c856348901a4e14c840c6d39acfd3c54c346fdc587f67540ef1e88"
+    },
+    {
+      "name": "wrong-clflushopt_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/wrong-clflushopt_target_feature.rs",
+      "required_status": 1,
+      "sha256": "b3f0b2e7f32e33cf42d0d0926a8bb0722d0bb1141a358de323db9ff146282adb"
+    },
+    {
+      "name": "enabled-clflushopt_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/enabled-clflushopt_target_feature.rs",
+      "required_status": 0,
+      "sha256": "fe3951c3f5c6cba72495680b993cdea5e56c69192518d7c7f7707f470580ea8e"
+    },
+    {
+      "name": "wrong-movrs_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/wrong-movrs_target_feature.rs",
+      "required_status": 1,
+      "sha256": "efd7031dc4a3cfb0b9f9ed22bf9ff3e82bc7b1a54ee7926b374fe642b0e07390"
+    },
+    {
+      "name": "enabled-movrs_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/enabled-movrs_target_feature.rs",
+      "required_status": 0,
+      "sha256": "ed4f3e5fb1f269f09c4e97a6abd845c0ea2eab0d4927145c753df2249467ff75"
+    },
+    {
+      "name": "wrong-rtm_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/wrong-rtm_target_feature.rs",
+      "required_status": 1,
+      "sha256": "315166834b04ba3e1d5dfb250abf6f4fae94c2db6a28b5c8bf8a3ca4236edb2a"
+    },
+    {
+      "name": "enabled-rtm_target_feature",
+      "path": "pa41/tests/spec/architecture-requests/enabled-rtm_target_feature.rs",
+      "required_status": 0,
+      "sha256": "688b8693feda6fa82fb65812355b8504af9a322f4f4d0f819ec5fab8bb8f28c4"
+    },
+    {
+      "name": "wrong-x86_amx_intrinsics",
+      "path": "pa41/tests/spec/architecture-requests/wrong-x86_amx_intrinsics.rs",
+      "required_status": 1,
+      "sha256": "cb05a1c4e6dbcf1911c2fe39cb509c466807c8f83608aa2b16937151d41b7608"
+    },
+    {
+      "name": "enabled-x86_amx_intrinsics",
+      "path": "pa41/tests/spec/architecture-requests/enabled-x86_amx_intrinsics.rs",
+      "required_status": 0,
+      "sha256": "8474fa75de951d1db76a49d75a4cbcfc209195fb12858278370bb3a17fd45707"
+    },
+    {
+      "name": "all-foreign",
+      "path": "pa41/tests/spec/architecture-requests/all-foreign.rs",
+      "required_status": 0,
+      "sha256": "e5eaf961329d0b69169c9e52a8ff27b091a192cc6a9ce6ed13b3815c830594fc"
+    },
+    {
+      "name": "original-core-family",
+      "path": "pa41/tests/spec/architecture-requests/original-core-family.rs",
+      "required_status": 0,
+      "sha256": "ef3c6dc7d92044c04ffa865ee71f3ea404bae47f3e9d780aa073a081175cffec"
+    },
+    {
+      "name": "unknown-request",
+      "path": "pa41/tests/spec/architecture-requests/unknown-request.rs",
+      "required_status": 1,
+      "sha256": "0ec3c8baca7c1cb06c84e0c7473a39729c064a79db0abe5bc9506986580da3ae"
+    },
+    {
+      "name": "misspelled-request",
+      "path": "pa41/tests/spec/architecture-requests/misspelled-request.rs",
+      "required_status": 1,
+      "sha256": "d7ffb7c4a2f973ad3864d625b939f11cc9ba004ba37ed9ad476711896bafadd8"
+    },
+    {
+      "name": "inactive-foreign-attribute",
+      "path": "pa41/tests/spec/architecture-requests/inactive-foreign-attribute.rs",
+      "required_status": 0,
+      "sha256": "e26e6ef08ba45baa17f809b3e259a3ad740f1789845f6bb3740d0828d6c2034b"
+    },
+    {
+      "name": "inactive-x86-attribute",
+      "path": "pa41/tests/spec/architecture-requests/inactive-x86-attribute.rs",
+      "required_status": 0,
+      "sha256": "f3ec87fcbee124bbf35679080f74210530bb2de51c0f50b8868a34e301c79df1"
+    },
+    {
+      "name": "wrong-owner",
+      "path": "pa41/tests/spec/architecture-requests/wrong-owner.rs",
+      "required_status": 1,
+      "sha256": "4e7c14446b8e3464b8175b859e9b9329a6de7d36dd567b6dd57e308ce0196544"
+    },
+    {
+      "name": "shared-name-selected-target",
+      "path": "pa41/tests/spec/architecture-requests/shared-name-selected-target.rs",
+      "required_status": 0,
+      "sha256": "9a428a243bf9feee18e56ba6d382c0e380a91191e06448a1c3fe09adab7d28ae"
+    },
+    {
+      "name": "unsafe-still-required",
+      "path": "pa41/tests/spec/architecture-requests/unsafe-still-required.rs",
+      "required_status": 1,
+      "sha256": "3f89a3cac3f9295821abaca37a3fec80a32e3245e0bc19ebba99891d41c78434"
+    },
+    {
+      "name": "const-still-required",
+      "path": "pa41/tests/spec/architecture-requests/const-still-required.rs",
+      "required_status": 1,
+      "sha256": "fb61ee61fa6ed05df24c1b57f79cdcd6c6b475cdc2422848895ca9ab4e3e1cc4"
+    },
+    {
+      "name": "unrelated-macro-allowance",
+      "path": "pa41/tests/spec/architecture-requests/unrelated-macro-allowance.rs",
+      "required_status": 1,
+      "sha256": "f842ce4cad21826b8fe5a86977cd0e0cd182bb9d549c2f07869013b02284db9d"
+    },
+    {
+      "name": "configuration-truth",
+      "path": "pa41/tests/spec/architecture-requests/configuration-truth.rs",
+      "required_status": 0,
+      "sha256": "d6972dde7febfa5c499ab14994d252e3b1c6f1edaee255cac6ccb539c3c1b611"
+    }
+  ],
+  "files": {
+    "pa41/tests/spec/architecture-requests/native.rs": "de337516c3accdce1db00b38b2bacd5624e217df2f72b78ec186875dafeac585",
+    "pa41/tests/spec/architecture-requests/native-control.rs": "597512a9eb79bcd284f4e10fdcb5114faf4925bc700a38fe3eebdd5654e9f275",
+    "pa41/tests/spec/architecture-requests/observer.c": "2a66602cc0387a22f3bac55de3e197ba6fd43ce00e80526f7cdb2c30e0470093"
+  },
+  "native": {
+    "path": "pa41/tests/spec/architecture-requests/native.rs",
+    "observer": "pa41/tests/spec/architecture-requests/observer.c",
+    "stdout": "7\n9\n"
+  },
+  "required": [
+    "selected-target table remains authoritative",
+    "requests grant no CPU features, unsafe/const permission or target truth",
+    "existing x86 gates, actual attribute/span authority and imports retain their contracts",
+    "actual scalar native dispatch and configuration remain equal to ordinary control"
+  ]
+}

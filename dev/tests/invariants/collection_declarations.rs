@@ -305,11 +305,11 @@ fn collection_layout_preserves_scalar_owners_and_padded_derive_entries() {
         size_of::<Properties>(),
         size_of::<(ItemId, Declaration)>()
     );
-    // The compilation-wide owner has an interned-policy Vec, request-progress
-    // pointer and sparse SIMD-policy pointer; dense nodes and body rows are unchanged.
+    // The compilation-wide owner has an interned-policy Vec and cold request,
+    // SIMD and coherence pointers; dense nodes and body rows are unchanged.
     assert_eq!(
         size_of::<crate::sema::model::Declarations>(),
-        7048 + size_of::<Vec<()>>() + 2 * size_of::<usize>()
+        7048 + size_of::<Vec<()>>() + 3 * size_of::<usize>()
     );
     assert_eq!(size_of::<Type>(), 24);
     assert_eq!(

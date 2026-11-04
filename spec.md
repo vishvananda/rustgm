@@ -23,6 +23,14 @@ with real-crate acceptance beginning after core and expanding with alloc/std.
 Rustc-private binary/metadata compatibility
 and a drop-in Cargo/rustc interface remain separate objectives.
 
+Classify target-feature language requests against the fixed selected target.
+Pinned foreign-architecture requests have no consumers on x86-64 and need no
+ordinary binding owner or library instability rows. Keep their explicit known
+set separate from selected-target attribute validity, genuine x86 gate bits,
+body requirements, cfg truth and instruction support. Unknown spellings still
+fail. The [architecture-request packet](pa41/tests/spec/architecture-requests/README.md)
+checks source opposition and ordinary native/configuration equivalence.
+
 Use the shared typed `support::edition::Edition` and select each rule's defining
 context explicitly. Select a macro's expression fragment grammar
 once from its defining edition, retaining the completed fragment kind for matching

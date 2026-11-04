@@ -91,6 +91,10 @@ mod documentation;
 #[path = "../../../tests/invariants/llvm_linkage.rs"]
 mod llvm;
 
+#[cfg(test)]
+#[path = "../../../tests/invariants/architecture_requests.rs"]
+mod targets;
+
 impl Feature {
     pub(super) const fn cpu_gate(gate: crate::support::cpu_features::Gate) -> Self {
         use crate::support::cpu_features::Gate;
@@ -186,6 +190,7 @@ impl Request {
             | "multiple_supertrait_upcastable"
             | "intra_doc_pointers"
             | "strict_provenance_lints" => Self::NoCapability,
+            _ if crate::support::cpu_features::foreign_request(name) => Self::NoCapability,
             _ => Self::Capability(Feature::cpu_gate(
                 crate::support::cpu_features::Gate::named(name)?,
             )),

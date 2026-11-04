@@ -215,11 +215,11 @@ fn mutable_iteration_keeps_ordinary_record_sizes_and_records_lazy_catalog_cost()
         size_of::<types::infer::Context>(),
         size_of::<types::Store>()
     );
-    // The compilation-wide owner has an interned-policy Vec, request-progress
-    // pointer and sparse SIMD-policy pointer; dense nodes and body rows are unchanged.
+    // The compilation-wide owner has an interned-policy Vec and cold request,
+    // SIMD and coherence pointers; dense nodes and body rows are unchanged.
     assert_eq!(
         size_of::<Declarations>(),
-        7048 + size_of::<Vec<()>>() + 2 * size_of::<usize>()
+        7048 + size_of::<Vec<()>>() + 3 * size_of::<usize>()
     );
     assert_eq!(size_of::<types::Kind>(), 24);
     assert_eq!(size_of::<types::infer::Context>(), 400);

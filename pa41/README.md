@@ -12,6 +12,13 @@ Target attributes and assembly contracts against explicit backend capabilities.
 
 ### Required core prerequisite
 
+The [architecture-request packet](tests/spec/architecture-requests/README.md)
+separates pinned non-x86 language requests from the selected x86-64 feature table.
+Unknown requests and active foreign attributes remain errors; x86 gate, body,
+cfg and safety contracts retain their own authority. Requests alone add no
+target truth, instruction support or ordinary provider/library-policy owner.
+Its scalar native/configuration controls do not complete target closure.
+
 The [float-reliability cfg packet](tests/spec/float-reliability-cfg/README.md)
 implements the four genuine backend capability queries and shared feature/macro
 gating. Fixed target truth remains unchanged, including false f16/f128 math

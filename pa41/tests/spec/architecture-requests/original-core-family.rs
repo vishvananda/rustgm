@@ -1,0 +1,2 @@
+#![feature(aarch64_unstable_target_feature,arm_target_feature,avx10_target_feature,clflushopt_target_feature,hexagon_target_feature,loongarch_target_feature,mips_target_feature,movrs_target_feature,nvptx_target_feature,powerpc_target_feature,riscv_target_feature,rtm_target_feature,s390x_target_feature,wasm_target_feature,x86_amx_intrinsics)]
+pub fn answer()->u32{7}

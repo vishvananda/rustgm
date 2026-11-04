@@ -67,6 +67,8 @@ mod modules;
 mod name_storage;
 #[path = "../../harness/native_references.rs"]
 pub(crate) mod native_references;
+#[path = "../../harness/observed_program.rs"]
+pub(crate) mod observed_program;
 #[path = "../../option_environment.rs"]
 mod option_environment;
 #[path = "../../pattern_editions.rs"]
@@ -83,6 +85,8 @@ mod resolution;
 mod selected_references;
 #[path = "../../syntax_transfer.rs"]
 mod syntax_transfer;
+#[path = "../../target_requests.rs"]
+mod target_requests;
 #[path = "../../temporary_editions.rs"]
 mod temporary_editions;
 #[path = "../../textual_scopes.rs"]
