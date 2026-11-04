@@ -114,7 +114,7 @@ fn prove(
         &contract,
         body,
         None,
-        token,
+        token.map(crate::body::factories::Permit::Primitive),
     )?)
 }
 #[test]

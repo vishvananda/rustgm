@@ -55,7 +55,7 @@ impl Staged {
 }
 enum Original<'a> {
     Ordinary,
-    Factory(crate::body::primitive_methods::Permit),
+    Factory(crate::body::factories::Permit),
     Adapter(usize, &'a crate::body::adapters::Template),
 }
 impl Builder {
@@ -440,6 +440,76 @@ impl Builder {
                 node: Some(body.source.into()),
                 message: message.into(),
             })?;
+        self.push_validated_factory(
+            facts,
+            templates,
+            body,
+            input,
+            budget,
+            crate::body::factories::Permit::Primitive(permit),
+        )
+    }
+    pub(super) fn push_fn_pointer_factory(
+        &mut self,
+        facts: &mut Declarations,
+        templates: &templates::Checked<'_>,
+        selected: crate::sema::compiler_items::pointers::Address,
+        body: Body,
+        input: &Contract,
+        budget: &mut usize,
+    ) -> Result<usize, borrow::Error> {
+        let permit =
+            crate::body::pointers::validate(facts, selected, &body, input).map_err(|message| {
+                borrow::Error {
+                    node: Some(body.source.into()),
+                    message: message.into(),
+                }
+            })?;
+        self.push_validated_factory(
+            facts,
+            templates,
+            body,
+            input,
+            budget,
+            crate::body::factories::Permit::FunctionPointer(permit),
+        )
+    }
+    fn push_validated_factory(
+        &mut self,
+        facts: &mut Declarations,
+        templates: &templates::Checked<'_>,
+        body: Body,
+        input: &Contract,
+        budget: &mut usize,
+        permit: crate::body::factories::Permit,
+    ) -> Result<usize, borrow::Error> {
+        // Source mode needs this exact generated body's Copy/cleanup decisions;
+        // its compiler permit is not physical Copy or caller-scope permission.
+        let prepared = if facts.uses_source_copy() {
+            let mut prepared = input.clone();
+            crate::body::copy_requirements::prepare(facts, &body, &mut prepared).map_err(
+                |message| borrow::Error {
+                    node: Some(body.source.into()),
+                    message,
+                },
+            )?;
+            *budget = budget.saturating_add(
+                prepared
+                    .retained_bytes()
+                    .saturating_sub(input.retained_bytes()),
+            );
+            if *budget > 64_000_000 {
+                return Err(borrow::Error {
+                    node: Some(body.source.into()),
+                    message: "factory source contracts exceed their retained instance budget"
+                        .into(),
+                });
+            }
+            Some(prepared)
+        } else {
+            None
+        };
+        let input = prepared.as_ref().unwrap_or(input);
         let mut query = crate::types::destruction::NeedsDrop::new(
             facts
                 .destructors

@@ -1,0 +1,269 @@
+{
+  "schema": 1,
+  "profile": {
+    "rustc": "1.98.0",
+    "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+    "edition": 2024,
+    "lint_cap": "allow",
+    "panic": "abort"
+  },
+  "ownership": [
+    "PA31 actual role/member declarations",
+    "PA20 real trait selection",
+    "PA26 compiler method shim",
+    "PA27 pointer and unsafe/ABI distinctions",
+    "PA29 authenticated transport"
+  ],
+  "cases": [
+    {
+      "name": "foundation-control",
+      "path": "pa31/tests/spec/function-pointers/foundation-control.rs",
+      "sha256": "b5f91f88454edc2a5974d41ed5224a57a59188b66857ad51af9776f062724339",
+      "rustc_status": 0
+    },
+    {
+      "name": "declaration",
+      "path": "pa31/tests/spec/function-pointers/declaration.rs",
+      "sha256": "97a88d03df19f5ab9f959d42f630eb4eddef4831d1b7fa91e922d8efdbac3393",
+      "rustc_status": 0
+    },
+    {
+      "name": "empty-trait",
+      "path": "pa31/tests/spec/function-pointers/empty-trait.rs",
+      "sha256": "d8106483865473867dfbfc5db1b6e8be079e9a0bb74cffba0d3d976a37f2306b",
+      "rustc_status": 0
+    },
+    {
+      "name": "no-supertraits",
+      "path": "pa31/tests/spec/function-pointers/no-supertraits.rs",
+      "sha256": "8652ffbcaaff3febf1d20e35d1c3a85e181a971d3bdb0aa334303b104169f9a4",
+      "rustc_status": 0
+    },
+    {
+      "name": "generic-trait",
+      "path": "pa31/tests/spec/function-pointers/generic-trait.rs",
+      "sha256": "6478c135e69dadea9710a93bd4b4db1674c83a7ae155f441db515c23958088fe",
+      "rustc_status": 1
+    },
+    {
+      "name": "unsafe-trait",
+      "path": "pa31/tests/spec/function-pointers/unsafe-trait.rs",
+      "sha256": "9ca21e575f45f6bb2a73b8129a7b8deef2d62dfff3fa54674ca248e67c1a5bb4",
+      "rustc_status": 0
+    },
+    {
+      "name": "const-trait",
+      "path": "pa31/tests/spec/function-pointers/const-trait.rs",
+      "sha256": "779f6b012837a8d59543b5b472102e4946dbe174ddf55750f936003737b1a399",
+      "rustc_status": 0
+    },
+    {
+      "name": "duplicate-role",
+      "path": "pa31/tests/spec/function-pointers/duplicate-role.rs",
+      "sha256": "9d4e8912f847069f2798a4d56a0a58e2d2dc45ef6eca189082a790a4b043ea55",
+      "rustc_status": 1
+    },
+    {
+      "name": "wrong-trait-target",
+      "path": "pa31/tests/spec/function-pointers/wrong-trait-target.rs",
+      "sha256": "20639e28fb2ea16ea76aebb7230b1014927911db95f1b48654b8d961bc2bce8a",
+      "rustc_status": 1
+    },
+    {
+      "name": "wrong-method-target",
+      "path": "pa31/tests/spec/function-pointers/wrong-method-target.rs",
+      "sha256": "e74afb767bab8348a1b1ae5589d83439621b650978722c3943d200ecf353fb25",
+      "rustc_status": 1
+    },
+    {
+      "name": "provided-method",
+      "path": "pa31/tests/spec/function-pointers/provided-method.rs",
+      "sha256": "818089fbdc94a61a146553bbb8de414ac407ac2050a2fedef3ec598770eeb94e",
+      "rustc_status": 1
+    },
+    {
+      "name": "orphan-method",
+      "path": "pa31/tests/spec/function-pointers/orphan-method.rs",
+      "sha256": "b33ffddf2c9031aba0772b8263cd4d1ede60914b709e662345213605b49017b6",
+      "rustc_status": 0
+    },
+    {
+      "name": "generic-method",
+      "path": "pa31/tests/spec/function-pointers/generic-method.rs",
+      "sha256": "885c29c99b1bb607bfad35ac511ec92a8be793328b069bda3ac8405f18673fe4",
+      "rustc_status": 0
+    },
+    {
+      "name": "borrowed-method",
+      "path": "pa31/tests/spec/function-pointers/borrowed-method.rs",
+      "sha256": "67551ca6ddb82f320889d5cc46d9ab3a4b4e939b7e9c32aadcba01df9a43f46e",
+      "rustc_status": 0
+    },
+    {
+      "name": "other-result",
+      "path": "pa31/tests/spec/function-pointers/other-result.rs",
+      "sha256": "044277b1fc9287f335069e9b29bcd538d733778cc18e0609fad4b39710bf04f1",
+      "rustc_status": 0
+    },
+    {
+      "name": "extra-member",
+      "path": "pa31/tests/spec/function-pointers/extra-member.rs",
+      "sha256": "62903c278641e341419aee3b6cb5f02c6ed7774792e4ebbff01408681c2cfea8",
+      "rustc_status": 0
+    },
+    {
+      "name": "safe-pointer",
+      "path": "pa31/tests/spec/function-pointers/safe-pointer.rs",
+      "sha256": "fcb303bd8f39fbf8ccbfb4c8d790b2535d8dbfea7668552356da7aaae6485e1b",
+      "rustc_status": 0
+    },
+    {
+      "name": "unsafe-pointer",
+      "path": "pa31/tests/spec/function-pointers/unsafe-pointer.rs",
+      "sha256": "06f123f358b8b80d878dc187a668c7779c0fa1128624f4aa967a09a6f40d922b",
+      "rustc_status": 0
+    },
+    {
+      "name": "c-pointer",
+      "path": "pa31/tests/spec/function-pointers/c-pointer.rs",
+      "sha256": "3fc9edb6c03471e7232d8554ccdd66d0400735b88882966316ae549befc3e32c",
+      "rustc_status": 0
+    },
+    {
+      "name": "unsafe-c-pointer",
+      "path": "pa31/tests/spec/function-pointers/unsafe-c-pointer.rs",
+      "sha256": "b36b35baab0ec5b51312f548fc87279b49107157f99215acdd2331002e91e6b3",
+      "rustc_status": 0
+    },
+    {
+      "name": "hrtb-pointer",
+      "path": "pa31/tests/spec/function-pointers/hrtb-pointer.rs",
+      "sha256": "b23609a8decf1be52ec3c8bbf2d69e0af7da8fd2e8b5125aa44f866ef9808d2a",
+      "rustc_status": 0
+    },
+    {
+      "name": "noncopy-signature",
+      "path": "pa31/tests/spec/function-pointers/noncopy-signature.rs",
+      "sha256": "26bfb9622a42c7750d379e7337935d89b15e31600bd83507ca6101b2483a75f8",
+      "rustc_status": 0
+    },
+    {
+      "name": "function-item",
+      "path": "pa31/tests/spec/function-pointers/function-item.rs",
+      "sha256": "72144c75b44405bf1bbb559499442ab0e8ffed688181dbaabbcd35f439af84e8",
+      "rustc_status": 1
+    },
+    {
+      "name": "closure",
+      "path": "pa31/tests/spec/function-pointers/closure.rs",
+      "sha256": "a2626f0261689262835453e3427099dc1ed3a50ef57b84e85e9811f509a21cae",
+      "rustc_status": 1
+    },
+    {
+      "name": "raw-pointer",
+      "path": "pa31/tests/spec/function-pointers/raw-pointer.rs",
+      "sha256": "0f383a2b708f7d38cc0f7ff986089b9ce228f6c333614597d5b5f2ef67fb68e7",
+      "rustc_status": 1
+    },
+    {
+      "name": "reference-pointer",
+      "path": "pa31/tests/spec/function-pointers/reference-pointer.rs",
+      "sha256": "91f1fc25cf1195b753a9bea3a4d03d34229e43a9f63639094d1239b1375eaee3",
+      "rustc_status": 1
+    },
+    {
+      "name": "ordinary-name",
+      "path": "pa31/tests/spec/function-pointers/ordinary-name.rs",
+      "sha256": "4d5ea31023108b8d5783522c80cd280a6553b7ff0b8b8bce8f95522d998287ba",
+      "rustc_status": 1
+    },
+    {
+      "name": "explicit-impl",
+      "path": "pa31/tests/spec/function-pointers/explicit-impl.rs",
+      "sha256": "d9c7ee868cebafbeb5cbfbc0614954bf465cacd0956686845efd7cf5053c8dd6",
+      "rustc_status": 1
+    },
+    {
+      "name": "generic-bound",
+      "path": "pa31/tests/spec/function-pointers/generic-bound.rs",
+      "sha256": "0ae5d0ae9c0403834e2665d685b93906a8b5915107550e1613dcc38c6fb82927",
+      "rustc_status": 0
+    },
+    {
+      "name": "generic-unbounded",
+      "path": "pa31/tests/spec/function-pointers/generic-unbounded.rs",
+      "sha256": "e7a58c1be59eed8c441331f643ae9d47b520a6e0ead0072a0082462a0ce549e0",
+      "rustc_status": 1
+    },
+    {
+      "name": "safe-address",
+      "path": "pa31/tests/spec/function-pointers/safe-address.rs",
+      "sha256": "25e2ab99a0122003c9fbad518b1962df27855bbdc91ebfb16090c271bc84d0cd",
+      "rustc_status": 0
+    },
+    {
+      "name": "unsafe-address",
+      "path": "pa31/tests/spec/function-pointers/unsafe-address.rs",
+      "sha256": "1e447b35e2f0a511ed71a55b14ee6b8e3162b3ddd9edc13bd0c1d03317b127fc",
+      "rustc_status": 0
+    },
+    {
+      "name": "qualified-address",
+      "path": "pa31/tests/spec/function-pointers/qualified-address.rs",
+      "sha256": "eaef3d5bb0d7853f16dc0f46e1bb8a40e897ea95a8530369df7b40fefa0de545",
+      "rustc_status": 0
+    },
+    {
+      "name": "reified-address",
+      "path": "pa31/tests/spec/function-pointers/reified-address.rs",
+      "sha256": "8c267365093f447ed7334c39db140135a358721e9fa1ec521366e11033fee15f",
+      "rustc_status": 0
+    },
+    {
+      "name": "missing-actual-addr",
+      "path": "pa31/tests/spec/function-pointers/missing-actual-addr.rs",
+      "sha256": "15896c6d4317471998f978ebb7ac87965ffe9ee540468b03b9327dd4e079b2a1",
+      "rustc_status": 1
+    },
+    {
+      "name": "generic-instantiation",
+      "path": "pa31/tests/spec/function-pointers/generic-instantiation.rs",
+      "sha256": "0dd7c71ad53280d03c66e5b345a4f231f22af599edf0c33c85dde47f7df00aa6",
+      "rustc_status": 0
+    },
+    {
+      "name": "const-call",
+      "path": "pa31/tests/spec/function-pointers/const-call.rs",
+      "sha256": "5ea641043cd00c44752771f2b73ffb7888b56c5c900134be1350da979d42a3c7",
+      "rustc_status": 1
+    },
+    {
+      "name": "native-address",
+      "path": "pa31/tests/spec/function-pointers/native-address.rs",
+      "sha256": "0923bbdc05fd1799fb8a2c04483239884ac71683f72361cd95edd01b5aaf1ee5",
+      "rustc_status": 0,
+      "native_stdout": "1\n1\n1\n1\n1\n1\n1\n0\n1\n"
+    }
+  ],
+  "auxiliary": [
+    {
+      "path": "pa31/tests/spec/function-pointers/foundation.rs",
+      "sha256": "47ab84ecaf2ffd02a36cb994ea59e6aa74383676fd2f434e3731ecc6b1adfb05"
+    },
+    {
+      "path": "pa31/tests/spec/function-pointers/observer.c",
+      "sha256": "6a44fb113a99116239dba9bc342a2b0516a322bf260a5574d7cf28a84c742ca2"
+    }
+  ],
+  "requirements": [
+    "Preserve exact source role/member ownership, canonical Self, signatures, declared bounds, flags and feature/impl restrictions.",
+    "Function-pointer evidence excludes function items, closures, references and raw pointers; actual caller assumptions and ordinary impl selection remain distinct.",
+    "Address conversion never invokes the pointed-to function. Retain actual signature, ABI/safety, ordinary caller/borrow/const proof, one evaluation and genuine generic/reified method behavior.",
+    "Unknown, reserved, completed and imported roles remain distinct. General transport is required and old unencoded profiles must fail."
+  ],
+  "history": {
+    "reference_v1": "obj/parallel/fn-ptr-v1/reference-v1/receipt.json",
+    "reference_v1_sha256": "31be3288369734f53c7bd192b7ccffbd5f5ec5f9746f66920ac8e48f7c6355ec",
+    "extension": "Freeze stronger HRTB/early-lifetime and one-time receiver controls. Sequence observer calls before reading counters; no source outcome is weakened."
+  }
+}

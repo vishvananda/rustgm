@@ -8,6 +8,12 @@ Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The
 
 Operators, indexing, iteration, question-mark, built-in derives and formatting.
 
+The [source function-pointer checkpoint](../docs/pa31-function-pointer-checkpoint.md)
+also qualifies actual FnPtr evidence and the ordinary FnPtrAddr hook: read and
+cast the pointer once without calling it, through full ownership/lifetime proof.
+Wider demanded method profiles, const and imported transport remain required.
+This finite checkpoint does not complete the assignment.
+
 The maintainer implements this responsibility in `dev/src/` and introduces its
 typed interface before generating text views. Consult `spec.md`, the pinned
 Rust Reference, and the existing CPPGM implementation for efficient algorithms.

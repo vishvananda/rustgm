@@ -80,10 +80,11 @@ impl Catalog {
     }
 }
 
-const TRAIT_ROLES: [LangItem; 23] = [
+const TRAIT_ROLES: [LangItem; 24] = [
     LangItem::Clone,
     LangItem::Copy,
     LangItem::UseCloned,
+    LangItem::FnPtrTrait,
     LangItem::LegacyReceiver,
     LangItem::TrivialClone,
     LangItem::Tuple,
@@ -140,7 +141,10 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         let header = header(report, facts, declaration, role)?;
         let self_type = header.self_type;
         match role {
-            LangItem::From | LangItem::BikeshedGuaranteedNoDrop | LangItem::UseCloned => {}
+            LangItem::From
+            | LangItem::BikeshedGuaranteedNoDrop
+            | LangItem::UseCloned
+            | LangItem::FnPtrTrait => {}
             LangItem::TransmuteTrait => {
                 super::transmutability::validate_trait(
                     report,
@@ -198,6 +202,24 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
         }
         complete.roles.insert(role);
     }
+    complete_dependent_roles(report, facts, &mut complete)?;
+    publish(report, facts, complete, &callables)
+}
+
+/// Member and helper families consume the actual ordinary trait completions.
+fn complete_dependent_roles(
+    report: &Report,
+    facts: &mut Declarations,
+    complete: &mut Validated,
+) -> Result<(), Error> {
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or_else(|| Error::unlocated("dependent source roles lost their actual catalog"))?;
+    if let Some(declaration) = catalog.language(LangItem::FnPtrAddr) {
+        super::pointers::validate_member(report, facts, declaration)?;
+        complete.roles.insert(LangItem::FnPtrAddr);
+    }
     if let Some(declaration) = catalog.language(LangItem::DropGlue) {
         glue::validate(report, facts, catalog, declaration, complete.roles)?;
         complete.roles.insert(LangItem::DropGlue);
@@ -208,7 +230,7 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
             complete.roles.insert(role);
         }
     }
-    publish(report, facts, complete, &callables)
+    Ok(())
 }
 
 /// Early metadata and later callable/marker completion share one owner, but
@@ -334,9 +356,10 @@ fn header<'a>(
 ) -> Result<super::headers::Trait<'a>, Error> {
     let error = |message| Declarations::error(report, declaration.origin, message);
     let header = super::headers::Trait::source(report, facts, declaration).map_err(error)?;
-    if role == LangItem::UseCloned {
-        // The pinned role has no extra flags, members, generic-arity or supertrait
-        // restrictions. Authenticate its canonical Self and source-owned inputs;
+    if matches!(role, LangItem::UseCloned | LangItem::FnPtrTrait) {
+        // Reservation already checked each role's target and generic arity.
+        // Authenticate its canonical Self and source-owned inputs without inventing
+        // additional flags, member or supertrait restrictions;
         // ordinary trait checking retains all actual bounds and required bodies.
         // In particular, role membership cannot invent Clone or Copy evidence.
         header.canonical_inputs(facts).map_err(error)?;

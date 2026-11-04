@@ -65,6 +65,7 @@ impl Search<'_> {
             || source_destruct_goal(facts, frame)?
             || Self::source_no_drop_goal(facts, &frame.goal)?
             || Self::source_builtin_marker_goal(facts, frame)?
+            || Self::source_fn_pointer_goal(facts, &frame.goal)?
             || Self::source_refinement_marker_goal(facts, frame)?;
         if !source_rule {
             return Ok(false);

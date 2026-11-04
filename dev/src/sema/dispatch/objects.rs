@@ -13,6 +13,9 @@ pub(super) enum Method {
     Object {
         proof: Obligations,
     },
+    FunctionPointer {
+        proof: Obligations,
+    },
     Language {
         descriptor: crate::sema::primitive_methods::Descriptor,
         proof: Obligations,
@@ -65,7 +68,11 @@ impl Dispatcher {
             }
             _ => false,
         };
-        if !language && !matches!(facts.types.kind(predicate.ty), Some(Kind::Dynamic { .. })) {
+        let fn_pointer = crate::sema::compiler_items::pointers::application(facts, predicate)?;
+        if !language
+            && !fn_pointer
+            && !matches!(facts.types.kind(predicate.ty), Some(Kind::Dynamic { .. }))
+        {
             return self
                 .implementation_using(facts, predicate, preparation)
                 .map(|(owner, arguments, proof)| Method::Implementation {
@@ -101,6 +108,9 @@ impl Dispatcher {
         )?;
         self.provisional_size |= evidence.provisional_size;
         match evidence.source {
+            selection::Source::Builtin if fn_pointer => Ok(Method::FunctionPointer {
+                proof: evidence.proof,
+            }),
             selection::Source::Implementation { owner, arguments } => Ok(Method::Implementation {
                 owner,
                 arguments,

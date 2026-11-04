@@ -96,9 +96,12 @@ and original hashes remain in the packet's history and scratch receipts.
 Full glob predecessor CI41913720633 failed on three private-test error adapters.
 The published f01aa47d4 repair passes all-target Clippy locally; its manual full
 [CI41918191470](https://github.com/vishvananda/rustgm/actions/runs/41918191470)
-is being observed without replacement. It has passed lint/architecture/harness
-and host-build checks; later full gates and this new source checkpoint still
-require terminal evidence. No private execution or full successor pass is inferred
-from metadata compilation. Root stays alone in warm btrfs scratch with unchanged
+is now terminal success with every gate, including private glob-payer controls,
+native, debug, independent Rust and const-machine qualification. The UseCloned
+push also passes; full execution of this newer source checkpoint remains pending.
+No private execution is inferred from metadata compilation. The subsequent
+[function-pointer checkpoint](pa31-function-pointer-checkpoint.md) clears the
+next original-source frontier while retaining the use/capture requirements above.
+Root stays alone in warm btrfs scratch with unchanged
 five-minute, two-thread,16GiB/150GiB guards. Generated native/object files are
 pruned; source/LowIR inputs, observations, ICE, receipts and current pins remain.

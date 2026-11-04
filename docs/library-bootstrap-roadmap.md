@@ -133,7 +133,10 @@ library builds. Their actual blockers determine the order of remaining work.
    selected serde_json alloc graph. Preserve the earlier core-only crate checks
    as regression gates.
 6. Build PA36's std graph and default-feature serde_json, then procedural derives.
-   Async and full unwinding do not gate the initial abort-profile target.
+   Broad async and full unwinding releases do not gate the initial abort-profile
+   target. Actual active async declarations still require their genuine source
+   signatures and consumers: LIB-154 is the original AsyncDrop source boundary,
+   owned by PA31/42/43/26/29, not an exemption for later assignment numbers.
 
 These are implementation checkpoints, not changes to cumulative release order.
 PA35 owns upstream crate acceptance even when its core-only checks are developed

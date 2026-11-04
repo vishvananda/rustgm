@@ -398,6 +398,32 @@ identity need their own authenticated consumers. Unimplemented operations and
 unencoded transport must fail explicitly. Reuse borrowed canonical headers and
 the cold completion set; do not add ordinary node/body fields or reparse output.
 
+Source FnPtr evidence belongs to the completed actual `fn_ptr_trait`, not its
+spelling or a reserved claim. Check canonical Self and zero trait arity; prepare
+the actual required `fn_ptr_addr` method before authenticating its parent,
+membership and callable. Preserve normal declaration bounds, flags and generic
+rules, including Rust-valid unused alternative method declarations. Builtin
+selection accepts actual function pointers with their complete signature,
+safety, ABI and binders, retaining current inference, formation and real caller
+obligations. Function items, closures, references and raw pointers receive no
+such evidence directly. Do not require the pointer's arguments/results to Copy.
+
+The [function-pointer packet](pa31/tests/spec/function-pointers/README.md)
+qualifies the ordinary standard address method through a demanded typed body:
+one read of the actual Self pointer and a cast to `*const ()`, never a call.
+Authenticate the exact selected method, source, scoped signature and closed
+receiver. Abstract free caller lifetimes into an independent body contract
+without erasing higher-ranked binders or changing the selected owner signature.
+Only exact body/contract validation produces the private factory permit. Keep
+primitive and function-pointer permits distinct inside the shared typed enum;
+neither grants an ordinary template, const or caller lifetime exemption.
+Reuse the existing instance worklist/memo, budget, ownership and cleanup gates.
+Source factories prepare their own Copy/cleanup contracts and charge retained
+growth rather than substituting physical Copy. Borrow canonical producer data;
+do not add dense fields or a second global registry. Broader demanded signatures,
+const and authenticated PA29 transport remain required and explicitly fenced
+where unsupported. Declaration completion alone cannot supply their execution.
+
 The SourceCore expansion view is `--emit-expanded-crate` (or its count form),
 which runs actual configured expansion and binding completion. The PA7
 `--emit-expanded` session has no source context and must reject source options.

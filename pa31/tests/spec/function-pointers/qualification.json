@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "scope": "Actual local source FnPtr evidence and standard ordinary FnPtrAddr shim; wider demanded signatures, const and imported profiles remain required",
+  "receipts": {
+    "obj/qualification/fast/1793831938403582610/receipt.json": {
+      "sha256": "479fc8dfb0f1d79b295035fb1da832dd607e95f280061b693ac6842feeab35d9",
+      "state": "passed"
+    },
+    "obj/parallel/fn-ptr-v1/reference-v2/receipt.json": {
+      "sha256": "6f7e9daaf9d60f48c5da4bf6f2c5efc2a289caa8e45bbcc8599b85d41c182bd6",
+      "state": "passed"
+    },
+    "obj/parallel/fn-ptr-v1/qualification-v1/receipt.json": {
+      "sha256": "540829964391c935b4b89943df240d7f2338c4e9171e98a5aff41a7b0f06ac06",
+      "state": "passed"
+    },
+    "obj/parallel/fn-ptr-v1/measurement-v1/receipt.json": {
+      "sha256": "d0504b598726d3625bcc5e1f13dbd0fb78ea1c469e3524a1fbe2efd0a901322f",
+      "state": "passed"
+    },
+    "obj/parallel/fn-ptr-v1/private-compile-v2/receipt.json": {
+      "sha256": "e9eaeb3dba64e796404a467bf1108829e59e1bcd1f978ea8a228c8919c0a83f9",
+      "state": "passed"
+    }
+  },
+  "candidate_source_cases": 38,
+  "independent_source_cases": 38,
+  "candidate_native_companions": 1,
+  "native_stdout": "1\n1\n1\n1\n1\n1\n1\n0\n1\n",
+  "pa19_text_cases": 1193,
+  "private_execution": "pending full CI; all-target/all-feature strict Clippy compiles the controls",
+  "candidate_cli_sha256": "1c5be3cac59548ec774f606e0649005259373dc24dcd32e5d8fad46be4009970",
+  "predecessor_cli_sha256": "8e7af0548d132ab7379b5e8f1f469067734220957fb766e5c36fda063dead74c",
+  "configuration_snapshot_sha256": "86c36cf133e802357dedce4d7afadb0d5960235d8ad849a77556903a5e15f96d",
+  "original_core": {
+    "infrastructure_failure": false,
+    "classification": "observed original-core blocker",
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "1c5be3cac59548ec774f606e0649005259373dc24dcd32e5d8fad46be4009970",
+    "expected_cli_source": "explicit caller input",
+    "status": 1,
+    "first_error": "ERROR: file 246: 1138: source compiler language item semantic contract is not implemented",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 16.374170169990975,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "6dd1a28933f93915d3a0335d142c77f7abf55a2245df5282cf43b7564bbf0797",
+      "whole-core.openat": "f036a9196c62af9cc464ec548adca6a8be220b9b7c9be94b096a7687a59e158e",
+      "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+    },
+    "receipt_sha256": "28acab65aa9c1c0bc9e7d2523b3c992e47ca1ee35ead0660d60c8a53e3fe0cbf"
+  },
+  "whole_assignment_released": false,
+  "original_library_artifact": false
+}

@@ -69,6 +69,7 @@ impl Checker<'_> {
             );
         }
         for role in [
+            crate::support::bindings::LangItem::FnPtrAddr,
             crate::support::bindings::LangItem::RangeMin,
             crate::support::bindings::LangItem::RangeMax,
             crate::support::bindings::LangItem::RangeSub,

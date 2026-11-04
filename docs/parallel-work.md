@@ -1,24 +1,25 @@
 # Parallel library bootstrap implementation
 
-The [UseCloned source checkpoint](pa31-use-cloned-source-checkpoint.md) passes27
-complete source/body-proof controls, two ordinary-source native comparisons,
-all467 PA24 text cases and strict all-target Clippy. CLI8e7af054 advances unchanged
-722-input source admission to LIB-153 FnPtr/FnPtrAddr, marker.rs1136,18.6176s/
-375opens. LIB-152's17 demanded operation cases, typed generic/capture/const
-semantics and transport remain required. No whole assignment after PA24 or
-original library artifact is complete. Full41913720633 failed at three new test
-error adapters; published f01aa47d4 repairs them and manual41918191470 is being
-observed without replacement. Root remains alone in the same warm btrfs tree;
-no worker/worktree/cache or resource limit is added. Current/predecessor pins
-and scoped cleanup remain in force.
+The [function-pointer checkpoint](pa31-function-pointer-checkpoint.md) passes38
+complete source/body-proof outcomes, actual typed address-shim native equality,
+all1193 PA19 text cases and strict all-target Clippy. CLI1c5be3ca advances unchanged
+722-input source admission to LIB-154 AsyncDrop, future/async_drop.rs29,
+16.3742s/375opens. PA31/42/43/26/29 own its actual source/signature/future/Pin/
+destruction/transport requirements. Wider FnPtr profiles and LIB-152's17 demanded
+use/capture operations remain required. No whole assignment after PA24 or original
+library artifact is complete. Full41918191470 onf01aa47d4 is terminal success with
+every gate; the new pointer checkpoint still requires successor full execution.
+Root remains alone in the same warm btrfs tree; no worker/worktree/cache or
+resource limit is added. Current/predecessor pins and scoped cleanup remain.
 
 [Full CI41906009661](https://github.com/vishvananda/rustgm/actions/runs/41906009661)
 oncc864ba92 is terminal success with every gate, including release/course,
 native, debug, independent Rust, const-machine and private request-payer checks.
-It qualifies the preceding request-order/Destruct repair. The current
+It qualifies the preceding request-order/Destruct repair. The later
 [glob-payer checkpoint](pa40-glob-payer-checkpoint.md) passes six public tests
 and PA6259/259 in59.39s, plus eight independent outcomes and24 unchanged legacy
-CLI contracts; four new private payer/cache controls require successor full CI.
+CLI contracts; all four private payer/cache controls now pass in full41918191470
+after the f01aa47d4 test error-adapter repair.
 
 [Full CI41900207733](https://github.com/vishvananda/rustgm/actions/runs/41900207733)
 on75033d317 is terminal failure:2612 private checks pass and79 share one

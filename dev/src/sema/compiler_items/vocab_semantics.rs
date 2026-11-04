@@ -7,7 +7,10 @@ use crate::{
 
 pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Result<(), Error> {
     for role in LangItem::DECLARATIONS {
-        if role == LangItem::UseCloned {
+        if matches!(
+            role,
+            LangItem::UseCloned | LangItem::FnPtrTrait | LangItem::FnPtrAddr
+        ) {
             // Reserve the actual ordinary trait, then require its canonical header
             // completion in roles::validate. This supplies no implementation proof
             // or implicit use/clone operation; those have separate typed consumers.

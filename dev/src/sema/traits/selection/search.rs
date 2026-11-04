@@ -10,6 +10,7 @@ mod callables;
 mod cloning;
 mod component_markers;
 mod no_drop;
+mod pointers;
 mod transmutability;
 pub(in crate::sema) use cloning::copying_predicate;
 pub(in crate::sema) use no_drop::no_drop_predicate;

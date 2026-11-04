@@ -104,8 +104,9 @@ original core/alloc/std artifacts remain required.
 [Full CI41906009661](https://github.com/vishvananda/rustgm/actions/runs/41906009661)
 oncc864ba92 is terminal success with every gate: release/course, native, debug,
 independent Rust and const-machine checks. It qualifies the preceding request
-payer/Destruct transport repair, including its private controls; the current
-glob implementation still needs its own full successor CI.
+payer/Destruct transport repair, including its private controls. The later
+glob implementation is now fully qualified by41918191470 after the test repair
+described below.
 
 Full successor [41913720633](https://github.com/vishvananda/rustgm/actions/runs/41913720633)
 on7b382cb6d is terminal failure at all-target Clippy: three new private-test
@@ -120,7 +121,11 @@ Strict all-target/all-feature Clippy without linking then passes in157.86s,
 including the repaired private code; its source-bound receipt is
 `obj/parallel/glob-payer-v1/ci-repair-v1/receipt.json`, SHA256
 89241fc8bf5163fbfbec037cae0cc0f5eaed3255d04265fa42e23da481d96e8c.
-Private execution and the remaining full gates stay pending successor CI.
+Successor [41918191470](https://github.com/vishvananda/rustgm/actions/runs/41918191470)
+onf01aa47d4 is terminal success with every gate, including all four new private
+payer/cache controls, release/course, native, debug, independent Rust and the
+const-machine contract. This closes the prior pending full-execution evidence;
+the earlier failed and timed-out receipts remain historical evidence.
 
 - `obj/qualification/fast/1793825808490872114/receipt.json`:
   7068208adc8991a2c3ed7862dd5a6b8cf38be01b681ffc1e93154fd28029a3f4.

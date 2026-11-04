@@ -10,6 +10,16 @@ implementation priority, source pins and the migration of unreleased numbers.
 
 Async functions/blocks, suspension liveness and future state machines.
 
+The unchanged original-core probe now reaches LIB-154, the real AsyncDrop trait
+in `library/core/src/future/async_drop.rs:29`. Its required async method takes
+`Pin<&mut Self>`, and the same file declares `async_drop_in_place`. PA31 owns
+source role/header authority; this assignment owns actual async signatures,
+future identity and state-machine behavior; PA43 owns their pinning, cancellation
+and destruction. These source prerequisites can block the initial core profile
+before the broad async release. Preserve real signatures and required bodies;
+an accepted attribute or empty future is not implementation. See the
+[probe evidence](../docs/pa31-function-pointer-checkpoint.md).
+
 The maintainer implements compiler responsibilities in `dev/src/` and introduces
 typed interfaces before text views. Follow [spec.md](../spec.md), the pinned Rust
 Reference and CPPGM's efficient representation principles. Parse once, retain

@@ -52,6 +52,15 @@ waived because its broader PA number is later. All required unused original
 bodies/initializers still pay semantic checks; demand selects code generation
 and fresh instance proof, not which invalid source is ignored.
 
+The 2026-11-04 unchanged-core probe makes that boundary concrete: after genuine
+FnPtr evidence/address lowering it reaches actual AsyncDrop in
+`core/src/future/async_drop.rs`. PA31 source identity and PA42 async-signature/
+future formation are prerequisites for this source even in the abort profile;
+PA43/26 retain actual Pin/destructor consumers and PA29 their transport. Broader
+async release need not precede all core work, but neither its later PA number
+nor an empty placeholder body permits skipping an active source contract.
+LIB-154 records this dependency; the unit graph is not being marked complete.
+
 ## Assignment status decisions
 
 PA21–PA24 are now **implemented**, with explicit release-evidence links in

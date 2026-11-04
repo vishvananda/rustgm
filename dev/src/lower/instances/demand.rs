@@ -263,6 +263,23 @@ impl Budget {
             .map_err(|e| diagnostic(report, e.node, e.message))?;
         Ok((index, family))
     }
+    fn fn_pointer_factory(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        templates: &Checked<'_>,
+        program: &mut proof::Builder,
+        selected: crate::sema::compiler_items::pointers::Address,
+    ) -> Result<(usize, BodyKey), Error> {
+        let (body, input) = body::pointers::build(report, facts, selected)?;
+        let family = body.key();
+        self.enter(family, &body, &input)
+            .map_err(|e| diagnostic(report, Some(body.source.into()), e.into()))?;
+        let index = program
+            .push_fn_pointer_factory(facts, templates, selected, body, &input, &mut self.bytes)
+            .map_err(|e| diagnostic(report, e.node, e.message))?;
+        Ok((index, family))
+    }
     fn enter(&mut self, item: BodyKey, body: &Body, input: &Contract) -> Result<(), &'static str> {
         let active = self.active.entry(item).or_default();
         if *active >= 128 {
@@ -446,7 +463,25 @@ impl Traversal<'_> {
             }
         };
         let error = |e: &str| diagnostic(report, Some(source), e.into());
-        let index = if let Some(selected) = facts
+        let fn_pointer =
+            crate::sema::compiler_items::pointers::address(facts, instance).map_err(error)?;
+        let index = if let Some(selected) = fn_pointer {
+            if self.instances.contains_key(&instance) {
+                return Ok(());
+            }
+            let (index, family) = self.budget.fn_pointer_factory(
+                report,
+                facts,
+                templates,
+                &mut self.program,
+                selected,
+            )?;
+            self.instances.insert(instance, index);
+            self.budget
+                .push_work(facts, &mut self.work, Work::Leave(family))
+                .map_err(error)?;
+            index
+        } else if let Some(selected) = facts
             .primitive_methods
             .as_deref()
             .and_then(|registry| registry.get(instance))

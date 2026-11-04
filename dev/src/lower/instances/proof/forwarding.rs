@@ -8,7 +8,7 @@ use crate::{
 };
 
 pub(super) enum Bridge {
-    Factory(crate::body::primitive_methods::Permit),
+    Factory(crate::body::factories::Permit),
     Adapter(usize),
 }
 impl Builder {

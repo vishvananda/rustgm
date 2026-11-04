@@ -279,6 +279,15 @@ impl Dispatcher {
                     self.selected.insert(ty, ty);
                     return Ok(ty);
                 }
+                objects::Method::FunctionPointer { proof } => {
+                    let instance = crate::types::instance::Instance::new(&facts.types, ty)?;
+                    crate::sema::compiler_items::pointers::address(facts, instance)?.ok_or(
+                        "source function-pointer dispatch lacks its actual address member",
+                    )?;
+                    self.extend_evidence(proof)?;
+                    self.selected.insert(ty, ty);
+                    return Ok(ty);
+                }
                 objects::Method::Language { descriptor, proof } => {
                     objects::retain_language(facts, method, ty, descriptor)?;
                     self.extend_evidence(proof)?;

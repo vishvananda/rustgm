@@ -21,8 +21,15 @@ authenticates the actual canonical trait and preserves ordinary impl, member,
 Clone and Copy obligations. Two real source native companions match pinned Rust.
 Its use-expression/capture/const/metadata consumers remain explicit required work;
 source admission alone does not complete LIB-152 or this assignment. Unchanged
-original core now reaches FnPtr/FnPtrAddr, whose actual proof/address behavior is
-tracked separately from declaration acceptance.
+original core cleared UseCloned and then reached FnPtr/FnPtrAddr.
+
+The [function-pointer checkpoint](../docs/pa31-function-pointer-checkpoint.md)
+now qualifies their actual source ownership, builtin pointer evidence and
+standard typed address shim with38 complete source outcomes and native Rust
+equality. Address conversion does not invoke the pointer and preserves actual
+ABI/safety and higher-ranked/scoped lifetime contracts. Broader demanded method
+profiles, const and metadata remain required. Original core now stops at the
+real AsyncDrop declaration; see PA42/43's source-signature/destruction boundary.
 
 The [request-order checkpoint](../docs/pa31-request-order-checkpoint.md) extends
 the same cumulative source payer through the shared checked ordering kernel.

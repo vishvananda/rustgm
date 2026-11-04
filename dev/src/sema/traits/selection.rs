@@ -242,6 +242,19 @@ pub(in crate::sema) fn may_have_subject(
     let Some(subject) = subject else {
         return Ok(true);
     };
+    if matches!(
+        subject,
+        super::heads::Subject::Rigid(super::heads::Head::Function)
+    ) && facts
+        .source_bindings
+        .as_deref()
+        .and_then(|catalog| catalog.language(crate::support::bindings::LangItem::FnPtrTrait))
+        .is_some_and(|role| role.definition.0 == item.0)
+    {
+        // Exclusion only: actual declaration completion and full pointer evidence
+        // still belong to ordinary source trait selection.
+        return Ok(true);
+    }
     if (facts
         .associated
         .operation(DefId(item.0))

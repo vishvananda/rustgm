@@ -51,7 +51,7 @@ pub(crate) struct Verifier {
 #[derive(Clone, Copy)]
 enum Original<'a> {
     Ordinary,
-    Factory(crate::body::primitive_methods::Permit),
+    Factory(crate::body::factories::Permit),
     Adapter(&'a Proved, &'a crate::body::adapters::Template),
 }
 impl Original<'_> {
@@ -165,7 +165,7 @@ impl Verifier {
         contract: &regions::Body,
         body: Body,
         catalog: Option<&mut glue::Catalog<'_>>,
-        factory: Option<crate::body::primitive_methods::Permit>,
+        factory: Option<crate::body::factories::Permit>,
     ) -> Result<Proved, Error> {
         self.prove_inner(
             environment,

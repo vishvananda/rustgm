@@ -10,6 +10,13 @@ implementation priority, source pins and the migration of unreleased numbers.
 
 Borrowing across suspension, pinning, cancellation and advanced async forms.
 
+LIB-154 binds this work to original core's AsyncDrop and compiler-replaced
+`async_drop_in_place`, alongside PA31 role authority and PA42 async signatures.
+Preserve actual Pin receiver, Copy/destructor exclusion, completion, cancellation,
+loans and destruction order. The upstream helper's written placeholder body is
+not its real implementation. Declaration-only acceptance does not qualify any
+of these consumers; see the [original probe](../docs/pa31-function-pointer-checkpoint.md).
+
 The maintainer implements compiler responsibilities in `dev/src/` and introduces
 typed interfaces before text views. Follow [spec.md](../spec.md), the pinned Rust
 Reference and CPPGM's efficient representation principles. Parse once, retain
