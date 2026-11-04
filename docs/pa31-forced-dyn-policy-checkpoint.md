@@ -1,5 +1,12 @@
 # Forced dyn policy checkpoint
 
+The [request-order successor](pa31-request-order-checkpoint.md) records this
+compiler's terminal full-CI result and repairs the overly narrow Destruct
+transport fence. All ten private fundamental/forced-dyn controls pass in that
+run;79 other private and one linking failure share that fence. The successor's
+focused export/consumer passes, with full successor qualification still required.
+The source callback provider's obsolete unsupported expectation is also repaired.
+
 The pinned source profile permits rustc_dyn_incompatible_trait on an actual
 trait, with rustc_attrs or genuine name-token macro authority. It does not
 require a sizing/language role. Wrong targets, malformed input, duplicate and

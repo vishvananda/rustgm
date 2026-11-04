@@ -141,10 +141,14 @@ pub(in crate::resolve) fn finish(
     if let Some(library) = pending_library {
         package.library = Some(library);
     }
-    if let (Some(library), Some(inventory)) = (package.library.as_deref_mut(), inventory.as_mut()) {
-        library
-            .prepare_request_order(inventory)
-            .map_err(|error| Error::at(FileId(0), 0, error))?;
+    if let Some(inventory) = inventory.as_mut()
+        && let Some(mut library) = package.library.take()
+    {
+        let result = package
+            .source_contract_payer()
+            .and_then(|payer| library.prepare_request_order(inventory, payer));
+        package.library = Some(library);
+        result.map_err(|error| Error::at(FileId(0), 0, error))?;
     }
     facts.source_bindings = reserved;
     if let (Some(library), Some(inventory)) = (package.library.as_deref_mut(), inventory) {

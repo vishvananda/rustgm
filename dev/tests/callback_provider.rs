@@ -88,18 +88,11 @@ fn source_selector_ctfe_ignores_placeholder_and_malformed_header_diagnoses_safel
 }
 
 #[test]
-fn original_staged_provider_retains_its_explicit_unsupported_profile() -> TestResult {
+fn original_staged_provider_uses_its_actual_declared_trait_policies() -> TestResult {
     // Pinned rustc accepts and executes this unchanged full-staged provider.
-    // Library stability now completes; Tuple's remaining internal header
-    // attributes still need their actual source-role implementation.
-    let error = lower(&source("literal-attributed-declaration", "rs")?)
-        .err()
-        .ok_or("full-staged provider support changed; review its retained boundary")?;
-    let message = error.to_string();
-    assert!(
-        message.ends_with("source header attribute is outside the supported actual-role profile"),
-        "{message}"
-    );
+    // Completed policies are consumed as actual source facts; the historical
+    // unsupported Tuple-header boundary has been implemented.
+    lower(&source("literal-attributed-declaration", "rs")?)?;
     Ok(())
 }
 

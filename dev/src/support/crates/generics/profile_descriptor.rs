@@ -3,6 +3,7 @@ mod binding_order;
 mod compatibility_profile;
 mod safety_profile;
 pub(crate) use binding_order::sort as canonical_order;
+pub(crate) use binding_order::sort_paid as canonical_order_paid;
 #[path = "namespace_paths.rs"]
 mod callable_paths;
 #[path = "column_storage.rs"]

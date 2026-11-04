@@ -405,6 +405,22 @@ impl Contracts {
         state.inventory_bytes = retained;
         state.payload(0)
     }
+    /// Ordering's synchronous scratch is additional to the retained inventory.
+    /// Comparisons only borrow labels; no persistent owner grows while that
+    /// scratch is live. Failed preflight remains sticky in this same source.
+    pub(in crate::resolve) fn inventory_order_charge(
+        &self,
+        steps: usize,
+        attempted: usize,
+        transient: usize,
+    ) -> Result<(), &'static str> {
+        let mut state = self
+            .0
+            .try_borrow_mut()
+            .map_err(|_| "reentrant library request ordering")?;
+        state.charge(steps, attempted)?;
+        state.payload(transient)
+    }
     pub(in crate::resolve) fn edition(
         &self,
         frame: Frame,

@@ -1,10 +1,20 @@
 # Library build blocker tracker
 
-Full CI41889087416 on05d3a187b is terminal success with every gate passing,
-including release/course, native, debug, independent Rust and const-machine
-qualification. The current forced-dyn source has a passing50.82s public gate;
-its cold private harness timed out and its full successor qualification remains
-required. This does not complete any original library or whole assignment.
+[Full CI41900207733](https://github.com/vishvananda/rustgm/actions/runs/41900207733)
+on75033d317 is terminal failure:2612 private checks pass and79 share one
+Destruct role-flag transport fence failure; one linking failure has the same
+cause. All ten fundamental/forced-dyn controls pass. One frontend expectation
+still required an already implemented unsupported Tuple-header boundary.
+The [request-order successor](pa31-request-order-checkpoint.md) repairs the
+existing encoded-role fence and requires actual callback lowering. Its public
+13-test gate passes in140.76s; new private payer checks and complete successor
+release/native/debug/independent qualification still require CI.
+
+Earlier full CI41889087416 on05d3a187b is terminal success with every gate
+passing, including release/course, native, debug, independent Rust and
+const-machine qualification. It precedes forced-dyn/request-order changes and
+does not qualify their complete successor. No original library or additional
+whole assignment is complete.
 
 Full CI41883125825 one821b5767 is terminal failure:2680 private checks pass and
 one stale capability expectation rejects user-specialization, whose independent
@@ -45,19 +55,22 @@ oracles already use. The runner now scopes that setting to its rustc child;
 all15 whole-program outcomes pass even with parent RUSTC_BOOTSTRAP=0. The later
 PA25 const-machine stage was skipped in that run; the successor above passes it.
 
-Current original-core frontier is LIB-150: library request ordering/accounting.
-The [forced-dyn checkpoint](pa31-forced-dyn-policy-checkpoint.md) clears Field's
-actual annotation without a language-role allowlist. The50.82s public gate passes
-40 current/43 independent Rust cases,34 fundamental and43 specialization cases,
-PA23415/415, typed cached diamond rejection and actual generic/native inputs.
-Native output matches Rust7/9. Three valid alias/custom-auto cases remain required
-under LIB-148/149. Private owner/budget probes still need this compiler's CI run.
-CLI4a3107d3 keeps all722 original input hashes, six pins, fifteen values, capAllow,
-original options and finite limits, and reaches library request work budget
-exceeded at file0:0 in18.29s/375opens. request_order.rs applies a metadata ceiling
-to cumulative source inventory work. Reuse the actual source payer/checked sort
-kernel and charge attempted work on failure; no limit increase or fresh ledger.
-General transport, actual Field semantics and all core/alloc/std artifacts remain.
+Current original-core frontier is LIB-151: source lint-policy storage.
+The [request-order checkpoint](pa31-request-order-checkpoint.md) clears LIB-150
+using the actual source payer and existing fallible ordering kernel. Source
+history, sticky failed work and attempted/retained scratch are preserved; the
+metadata and ordinary lookup limits stay finite. All five independently valid
+libraries pass; the131072-function regression exceeds the old metadata ceiling
+and still rejects exhausted source work. Actual source-callable exports and
+full-staged callback lowering pass, alongside feature/forced-dyn controls.
+CLI21c9b6ca preserves all722 source/package hashes, six pins, fifteen values,
+original options/capAllow and finite limits, and reaches source lint-policy
+storage budget exceeded in18.616s/375opens. Identify the actual failing storage
+charge and collection/payload axes; do not raise a guard, discard witnesses or
+weaken allow/deny/expect. Compilation takes priority over unrelated lint parity.
+LIB-148 alias demand, LIB-149 custom autos, Field/TransmuteFrom, general transport,
+whole assignments and every original core/alloc/std artifact remain required.
+Root remains alone in guarded warm btrfs scratch.
 
 Previous original-core frontier was LIB-147: forced dyn policy on the actual Field trait.
 The [fundamental checkpoint](pa31-fundamental-policy-checkpoint.md) clears the
@@ -667,7 +680,8 @@ actual native hints and the future authenticated MIR-import obligation.
 | LIB-147 | Finite local policy/native qualified; alias/custom-auto/general transport closure required | General forced dyn incompatibility and actual defining trait ownership | PA23 trait objects +PA26 Field consumers +PA31 authority +PA29 policy transport | Root only | [Checkpoint](pa31-forced-dyn-policy-checkpoint.md): public6/40 new+34 fundamental+43 specialization cases, PA23415/415 and actual native7 9;50.82s gate. One shared header/payer and cached typed inherited rejection replace the role allowlist. All43 independent outcomes retained; three valid gaps are LIB-148/149. Private owner/budget probes require CI after local cold-harness timeout. CLI4a3107d3 advances unchanged722-input core to LIB-150. Full Field semantics and original artifacts remain. |
 | LIB-148 | Required valid Rust gap found by the forced-dyn contract | Lazy unused object aliases and real demanded formation | PA21 alias requirement DAG +PA23 actual dyn compatibility/bindings +PA31 source contracts | Root only | Pinned Rust accepts forced-dyn-policy/alias-object.rs and rejects alias-object-used.rs. Current candidate rejects both, with the early eager object-use validator. Preserve the Rust0 requirement in required-cases.tsv. Reuse the typed alias dependency/instantiation graph for real declaration/body uses and scoped substitutions; retain Rust's early Self-supertrait and binding-name rules. No source/rendered-text rescanning or unused-alias waiver that forgets real uses. Broader alias/object formation remains required. |
 | LIB-149 | Required valid Rust gaps found by the forced-dyn contract | Genuine custom source auto-trait declarations, structural proof and marker-only objects | PA20 auto/coinductive proof +PA23 marker identities +PA31 actual source producer +PA29 transport | Root only | Pinned Rust accepts auto-declaration.rs and auto-object.rs; candidate explicitly lacks custom source auto traits. Both remain Rust0 requirements in required-cases.tsv. Preserve actual auto/unsafe/negative/default structural semantics and canonical object-marker identity; do not turn the declaration into an ordinary principal or infer body/const/intrinsic permission. General source transport and complete ordinary/core artifacts remain open. |
-| LIB-150 | Current original-core frontend frontier | Request ordering and lookup must charge the real cumulative owner | PA31 library stability/inventory +PA29 checked ordering kernel +PA20 feature predicate/API consumers / original file0:0 | Root only | request_order.rs initializes metadata Work with inventory.steps, then caps it at MAX_COMPONENTS=1,000,000 despite Draft having used the configured source payer. Core clears Field and reaches this error under unchanged14,500,624 work /1GiB attempted /64MiB retained limits. Fix ordering and caller lookup accounting coherently, with actual prepaid scratch, cumulative sticky failed work, transactional publication and normal default-profile opponents. Reuse the checked kernel; no budget reset, global cap increase, fake inventory or source/configuration change. |
+| LIB-150 | Observed original-core request-order frontier cleared; complete source/transport requirements remain | Request ordering and lookup charge the actual cumulative caller | PA31 library stability/inventory +PA29 checked ordering kernel +PA20 feature predicate/API consumers | Root only | [Checkpoint](pa31-request-order-checkpoint.md): shared caller-paid kernel, preserved history/sticky failure, prepaid transactional index ordering and retained scratch. Public13 and five independent source scales pass;131072 functions cross the old1M ceiling. Default metadata/ordinary lookup limits remain. CLI21c9b6ca advances unchanged722-input core to LIB-151; new private boundary tests and full successor CI remain required. |
+| LIB-151 | Current original-core frontend frontier | Actual source lint-policy storage accounting and retained source witnesses | PA40 lint policy/allow-deny-expect +PA31 source identity/payload owners / original file0:0 | Root only | CLI21c9b6ca clears request ordering and reaches source lint policy storage budget exceeded in18.616s/375opens, preserving all722 hashes/options/pins/capAllow/finite limits. Trace the actual failed payment and capacity/payload axes before implementation. Reuse typed owners and existing growth accounting; preserve source/attribute identity, sticky attempted work and required policies. Do not increase limits, drop witnesses or spend effort on unrelated diagnostic parity. |
 | Remaining raw language-item semantic inventory | Declarations checked;98 builtin semantic profiles explicitly unsupported | Actual operators, associated hooks, async/drop/pinning, field reflection, ranges and weak memory hooks | Earliest actual PA23–PA31/40/41 consumer units +PA29 transport / compiler-language-claims packet | Root only | The pinned100-name raw inventory is not a cfg-active blocker count. Shared target/arity/foreign validation and135 independent cases are qualified, but unsupported semantic consumers stop explicitly before ordinary checking can infer absence. Implement each actual builtin relation/runtime contract and add genuine source/native/imported consumers before removing its fence. |
 | Original core semantic checking and body export | Not reached end to end. | Check every required declaration/body and produce the real crate artifact. |
 | Original core object and consumer | No successful build. | Link and execute an independent consumer using its actual generic implementations. |
@@ -840,7 +854,7 @@ concrete; a private Ready state is not an executable result.
 
 | Owner | Issues and owning assignments | Next observable exit |
 | --- | --- | --- |
-| Root, direct compiler owner; sole worker | LIB-150 real library-request ordering/payer boundary; PA31/29/20 | CLI4a3107d3 clears Field's actual restriction and reaches the request-order budget error with identical722 inputs/configuration/limits. Fix the shared caller/payer boundary, sticky failures, transactional sort and exact focused controls. Keep LIB-148 alias debt, LIB-149 real custom autos, Field/TransmuteFrom consumers, imports and every unfinished requirement. Root stays alone in guarded warm btrfs scratch. |
+| Root, direct compiler owner; sole worker | LIB-151 actual source lint-policy storage; PA40/31 | CLI21c9b6ca clears the request-order payer error and reaches source lint-policy storage with identical722 inputs/configuration/limits. Trace the failed payment and actual retained/growth axes; preserve source witnesses and allow/deny/expect without a limit increase. Keep new payer tests/full CI, LIB-148 alias debt, LIB-149 real custom autos, Field/TransmuteFrom, imports and every unfinished assignment requirement. Root stays alone in guarded warm btrfs scratch. |
 | `const_call_review`, stopped at user request | Confusables/MustNotSuspend source handoff complete and integrated | No queued job, build or source edit. Root owns continuation. |
 | `lint_expectations`, stopped at user request | SourceFrom/v9 component69 and native26 complete; read-only merge review integrated | No queued job, build or source edit. Root owns continuation. |
 | Root, retained formatting/panic lane | LIB-029/021/034/055/057/073/077, PA25–28/31 | Finite Debug array/native consumer and exact borrowed-call repair are qualified. Full original Count/Formatter/write/runtime parity, other derive families, metadata and original crate consumers remain required when an actual source demand reaches them. |

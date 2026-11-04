@@ -1,12 +1,21 @@
 # Parallel library bootstrap implementation
 
-Full CI41889087416 on05d3a187b is terminal success with every gate passing,
-including full native, debug, independent Rust and const-machine qualification.
-The current forced-dyn public gate passes in50.82s; cold private harness linking
-exceeded the guard twice, with scopes stopped. Public API graph/normal/native
-controls were moved unchanged to the existing integration target; private
-owner/budget/publication probes still require the new compiler's full CI.
-Current full successor qualification is separate from predecessor success.
+[Full CI41900207733](https://github.com/vishvananda/rustgm/actions/runs/41900207733)
+on75033d317 is terminal failure:2612 private checks pass and79 share one
+Destruct role-flag transport fence failure; one linking failure has the same
+cause. All ten fundamental/forced-dyn controls pass. One frontend expectation
+still required an already implemented unsupported Tuple-header boundary.
+The [request-order successor](pa31-request-order-checkpoint.md) repairs the
+existing encoded-role fence and requires actual callback lowering. Its public
+13-test gate passes in140.76s; new private payer checks and complete successor
+release/native/debug/independent qualification still require CI.
+
+Earlier full CI41889087416 on05d3a187b is terminal success with every gate
+passing, including native, debug, independent Rust and const-machine checks.
+It precedes forced-dyn/request-order changes. The subsequent terminal full run
+above executes all ten original private policy controls successfully but fails
+other paths; complete successor qualification remains distinct from that local
+policy success and the current public gate.
 
 Full CI41883125825 one821b5767 is terminal failure:2680 private checks pass,
 one older capability-matrix expectation still rejects the now-supported ordinary
@@ -65,22 +74,22 @@ concurrency cancels the earlier manual run. Source checkpoints may continue with
 focused evidence and push-triggered fast CI; dispatch successor full qualification
 only after its predecessor is terminal. No whole PA release is inferred.
 
-Current original-core frontier is LIB-150: actual library-request accounting.
-The [forced-dyn checkpoint](pa31-forced-dyn-policy-checkpoint.md) qualifies40
-current source cases,34 fundamental and43 specialization controls, PA23415/415,
-typed cached shared-supertrait rejection and real generic/native Rust7/9.
-The43 independent cases retain three valid alias/custom-auto gaps under
-LIB-148/149. One existing source header, two bounded witnesses and its sticky
-payer hold distinct policies; general transport stays fenced and sizing wire
-remains supported. CLI4a3107d3 clears Field's annotation and reaches library
-request work budget exceeded at file0:0 in18.29s/375opens. All722 input hashes,
-six pins, fifteen values, original options/capAllow and finite limits remain
-unchanged. request_order.rs incorrectly applies metadata's one-million ceiling
-to accumulated source inventory work. Fix the actual caller/payer and shared
-ordering kernel without raising limits or restarting failed payment. Private
-qualification, alias debt, custom autos, Field/TransmuteFrom, general transport
-and every original core/alloc/std artifact remain required. Root remains alone
-in guarded warm btrfs scratch.
+Current original-core frontier is LIB-151: source lint-policy storage.
+The [request-order checkpoint](pa31-request-order-checkpoint.md) clears LIB-150
+using the actual source payer and existing fallible ordering kernel. Source
+history, sticky failed work and attempted/retained scratch are preserved; the
+metadata and ordinary lookup limits stay finite. All five independently valid
+libraries pass; the131072-function regression exceeds the old metadata ceiling
+and still rejects exhausted source work. Actual source-callable exports and
+full-staged callback lowering pass, alongside feature/forced-dyn controls.
+CLI21c9b6ca preserves all722 source/package hashes, six pins, fifteen values,
+original options/capAllow and finite limits, and reaches source lint-policy
+storage budget exceeded in18.616s/375opens. Identify the actual failing storage
+charge and collection/payload axes; do not raise a guard, discard witnesses or
+weaken allow/deny/expect. Compilation takes priority over unrelated lint parity.
+LIB-148 alias demand, LIB-149 custom autos, Field/TransmuteFrom, general transport,
+whole assignments and every original core/alloc/std artifact remain required.
+Root remains alone in guarded warm btrfs scratch.
 
 Previous original-core frontier was LIB-147: actual Field forced-dyn policy.
 The [fundamental checkpoint](pa31-fundamental-policy-checkpoint.md) passes

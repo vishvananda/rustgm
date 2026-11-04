@@ -32,6 +32,7 @@ pub use availability::{
 };
 pub use bodies::*;
 pub(crate) use descriptor::canonical_order;
+pub(crate) use descriptor::canonical_order_paid;
 pub use descriptor::{
     BindingSource, Columns, Descriptor, ImplementationDomain, ModuleBindingRow, ModuleContractRows,
     ModuleContractView, ModuleNamespace, ModuleRow, ModuleVisibility, Profile, TraitDomainRow,

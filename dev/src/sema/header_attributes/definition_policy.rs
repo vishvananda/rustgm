@@ -424,17 +424,18 @@ impl Declarations {
                         "declaration policy publication requires its completed source contract",
                     );
                 }
-                let sizing = self
+                let transported = self
                     .source_bindings
                     .as_deref()
-                    .map(|c| c.sizing_kind(id))
+                    .map(|catalog| match policy {
+                        Policy::Fundamental => catalog.sizing_kind(id).map(|kind| kind.is_some()),
+                        Policy::ForcedDyn => catalog.forces_dyn_incompatible(id),
+                    })
                     .transpose()?
-                    .flatten();
-                if matches!(m.syntax, ItemKind::Trait { .. })
-                    && sizing.is_some()
-                    && (policy == Policy::Fundamental
-                        || sizing == Some(crate::support::bindings::LangItem::Sized))
-                {
+                    .unwrap_or(false);
+                // Existing role flags retain their actual wire/profile checks,
+                // including Destruct. General unencoded policy stays fenced.
+                if matches!(m.syntax, ItemKind::Trait { .. }) && transported {
                     continue;
                 }
                 return Err(policy.transport_error());

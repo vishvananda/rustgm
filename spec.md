@@ -681,6 +681,13 @@ policy or permission fields. Reserve owner tables by their scope, declaration
 and import axes, and prepay the used-policy set before insertion. The
 [inventory-budget checkpoint](docs/pa31-inventory-budget-checkpoint.md) records
 qualified bounds, scope/layout controls and the unchanged original inputs.
+Request canonicalization borrows that same authenticated source payer; it must
+not apply the metadata ceiling to already-paid source inventory work. Reuse the
+fallible index-sort kernel with a caller-owned charge callback. Pay comparison
+bytes, index work and attempted scratch, checking scratch in addition to the
+retained inventory. Publish the final label permutation only after all fallible
+work succeeds. Preserve sticky failed debt, default metadata and ordinary lookup
+limits, finite cardinality and the inventory's original cumulative history.
 Aggregate and variant fields inherit stable as well as unstable regular policy
 from their actual parent. Retain one prepaid cold field/parent/policy index;
 the typed field producer authenticates each configured source field against it.

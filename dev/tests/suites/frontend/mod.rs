@@ -49,6 +49,8 @@ mod glue_provider;
 mod hygiene;
 #[path = "../../interpolation.rs"]
 mod interpolation;
+#[path = "../../inventory_ordering.rs"]
+mod inventory_ordering;
 #[path = "../../keyed_parameters.rs"]
 mod keyed_parameters;
 #[path = "../../lexer.rs"]
@@ -91,6 +93,8 @@ mod quota_options;
 mod record_availability;
 #[path = "../../resolution.rs"]
 mod resolution;
+#[path = "../../helpers/resolve.rs"]
+pub(crate) mod resolve;
 #[path = "../../selected_references.rs"]
 mod selected_references;
 #[path = "../../syntax_transfer.rs"]

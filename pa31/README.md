@@ -16,6 +16,11 @@ old cycle; both units and the complete contract below remain required.
 
 ## Required implementation
 
+The [request-order checkpoint](../docs/pa31-request-order-checkpoint.md) extends
+the same cumulative source payer through the shared checked ordering kernel.
+Metadata and ordinary lookup keep their finite default limits. The original
+core frontier is now source lint-policy storage; no library artifact is claimed.
+
 The [inventory-budget checkpoint](../docs/pa31-inventory-budget-checkpoint.md)
 shares authenticated source/inventory work and retained storage without granting
 permission. Standalone fallback and finite sticky failures remain required.

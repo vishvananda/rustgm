@@ -5,6 +5,15 @@ inventories using their existing authenticated source cost owner. Standalone
 staged libraries retain their existing finite fallback. A cost payer grants no
 API feature, language item, macro allowance or const permission.
 
+The [ordering contract](ordering.json) generates actual function declarations
+from the unchanged provider seed. Its largest source inventory exceeds the
+metadata-only work ceiling but fits the original configured source limits.
+Request sorting must borrow that same finite payer, including failed work and
+attempted scratch storage, before publishing the label permutation. Source work
+history is never reset. Ordinary metadata ordering and request lookup retain
+their original finite limits. Private tests interrupt every paid ordering step
+and check unpublished labels, sticky debt and retained inventory storage.
+
 The private boundary tests predeclare these requirements: inventory and earlier
 source work accumulate under one configured work/attempted-storage limit;
 retained library storage survives later macro memo checks; all three first

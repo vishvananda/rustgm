@@ -1,6 +1,7 @@
 //! Generic originals are validated data; ordinary proof still precedes execution.
 mod attachment;
 pub(crate) use source::canonical_order;
+pub(crate) use source::canonical_order_paid;
 mod calls;
 mod graph;
 mod legacy_payload;

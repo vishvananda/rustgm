@@ -1,12 +1,11 @@
 //! The CLI preserves actual forced restriction, gates and ordinary trait behavior.
+use crate::resolve as test_source;
 use rustgm::{
     pipeline,
     resolve::model::{DefId, DefKind},
     sema::dyn_compat::{Error, Queries, Rule},
 };
 use std::fmt::Write as _;
-#[path = "helpers/resolve.rs"]
-mod test_source;
 type TestResult = Result<(), Box<dyn std::error::Error>>;
 fn source(name: &str) -> Result<String, std::io::Error> {
     std::fs::read_to_string(

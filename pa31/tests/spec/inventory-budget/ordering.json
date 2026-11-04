@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "ownership": [
+    "PA31 source-declarations",
+    "PA29 finite metadata ordering"
+  ],
+  "seed": "pa31/tests/spec/inventory-budget/provider.rs",
+  "seed_sha256": "ee53a4b43d8a5261dfb3606a2763c4aadec3bf87a728944536af5ed8ee4e254f",
+  "generation": "Append pub fn item_{index:05}(){} followed by newline for index in range(count).",
+  "source_contract_limits": {
+    "work_limit": 14500624,
+    "attempted_bytes": 1073741824,
+    "retained_bytes": 67108864
+  },
+  "cases": [
+    {
+      "count": 1024,
+      "sha256": "6787bbf72769fbc82ee465d3bff1d3fbe8b0ad87faf9b72a3088a56ca3e3bbe8",
+      "rustc_status": 0
+    },
+    {
+      "count": 4096,
+      "sha256": "98c0149d4698aa8da1c9d5ad8e5fed57098ea9befc8ae7c59176d120daf5c79a",
+      "rustc_status": 0
+    },
+    {
+      "count": 32768,
+      "sha256": "9e8544b4271099cb0cd46f5de3d2f0e8f174e7634c985706bb42a2847dbca3aa",
+      "rustc_status": 0
+    },
+    {
+      "count": 65536,
+      "sha256": "a712c34cbed52114e54f8a5ae58bab262037a5fbe7043e106cc4930326e23ffa",
+      "rustc_status": 0
+    },
+    {
+      "count": 131072,
+      "sha256": "af798940879e2f6ab321f0b450fd7316bf859fd8f80625eba9db13d74f415620",
+      "rustc_status": 0
+    }
+  ],
+  "requirements": [
+    "All inputs are valid Rust 1.98.0 edition2024 source libraries, independent expected status0.",
+    "The131072-function input completes an actual inventory above1000000 work under its unchanged source payer.",
+    "A1000000 source limit must still fail; failed debt cannot be reset.",
+    "Metadata default work/cardinality and ordinary lookup limits remain finite and unchanged.",
+    "Request labels are reordered only after all fallible work succeeds; sorting scratch adds to retained inventory storage."
+  ]
+}
