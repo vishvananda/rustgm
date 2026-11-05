@@ -1,0 +1,184 @@
+{
+  "schema": 1,
+  "toolchain": "1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "frozen_before_candidate_execution": true,
+  "cases": [
+    {
+      "file": "nominal.rs",
+      "sha256": "f6a34d3b4958e4f1747fee3f3d89c767962771ae0c28919769700d49ee1399e1",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": null
+    },
+    {
+      "file": "non-generic.rs",
+      "sha256": "216c925bb4057b0159f91605aff0e431907a20570961b7d0cc3a0c1b748e1706",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": null
+    },
+    {
+      "file": "two-fields.rs",
+      "sha256": "63167175afeacd9ad3b6dad5c26d72f3026a7461f044eeab66e051f9c108f9d4",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": null
+    },
+    {
+      "file": "wrong-target.rs",
+      "sha256": "0867e57413dc57ac0af0f8e3c4f020f954edbe6d1e95c9804376c321515a7971",
+      "expected_status": 1,
+      "semantic_cause": "can only be applied to structs",
+      "native": null
+    },
+    {
+      "file": "duplicate.rs",
+      "sha256": "eccef015ec90b643c9520f77553dd4a3f5995c425d947df1f03538108d72ab74",
+      "expected_status": 1,
+      "semantic_cause": "duplicate lang item",
+      "native": null
+    },
+    {
+      "file": "unpin-negative.rs",
+      "sha256": "ca4d47bf222cbfe5848a5caff7b0bcd992cb6e2c9ff925749f08bd2c43fdf96b",
+      "expected_status": 1,
+      "semantic_cause": "Unpin",
+      "native": null
+    },
+    {
+      "file": "unsafe-unpin-negative.rs",
+      "sha256": "b94438ed88e6e20252e355b5a833c7514282958efc9aa759e9b71af7c825d0e8",
+      "expected_status": 1,
+      "semantic_cause": "UnsafeUnpin",
+      "native": null
+    },
+    {
+      "file": "freeze-negative.rs",
+      "sha256": "31106b52f10ad494519dc0cb52d16b5464aec01283e80d5962a06109a2f6c188",
+      "expected_status": 1,
+      "semantic_cause": "Freeze",
+      "native": null
+    },
+    {
+      "file": "nested-unsafe-unpin-negative.rs",
+      "sha256": "d7d4d21e556c6f10f6048be5d9284b32fc689dda03c44d98dd933325e38ca741",
+      "expected_status": 1,
+      "semantic_cause": "UnsafeUnpin",
+      "native": null
+    },
+    {
+      "file": "sync-override.rs",
+      "sha256": "5eb9b2fc39a0becb592b1b00e401bc0e0d669a3c6ed7da0732ca729ececafb33",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": null
+    },
+    {
+      "file": "sync-without-impl.rs",
+      "sha256": "9d39b44835b79a8d7d84855226a64fc5c58d03ce6140e099490a7d2ad71fb8e4",
+      "expected_status": 1,
+      "semantic_cause": "Sync",
+      "native": null
+    },
+    {
+      "file": "unpin-without-impl.rs",
+      "sha256": "4836107dee3411111944466f7985434594758091f5ff6e4800e04d805836cdc7",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": null
+    },
+    {
+      "file": "unsafe-unpin-without-impl.rs",
+      "sha256": "8051e9312907687901241499d8731bc6917e5fb7e1461d631b39597f4ccaddc5",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": null
+    },
+    {
+      "file": "shared-not-unique.rs",
+      "sha256": "dc328a7ee6b8b1d4ad6552f54cfbe3d0ed19ae6b360fc5177b5ab46e62e4970a",
+      "expected_status": 1,
+      "semantic_cause": "cannot borrow",
+      "native": null
+    },
+    {
+      "file": "shared-plain-not-unique.rs",
+      "sha256": "01d797af116929a1baf6753ec862e76c9942d053394ded5a1a330288d0b00221",
+      "expected_status": 1,
+      "semantic_cause": "cannot borrow",
+      "native": null
+    },
+    {
+      "file": "same-name.rs",
+      "sha256": "b9fea6e25ac4b5eaa73690043a8e672b60022e0a817cf3f985bebf9bede0444e",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": null
+    },
+    {
+      "file": "direct-freeze.rs",
+      "sha256": "33dfaf3ec1f21a2f46228193ace7e4e7842dd4bac4de983d17445220821fd280",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": null
+    },
+    {
+      "file": "copy-explicit.rs",
+      "sha256": "727291223643ded52c965308c4bc68ae6e80abdf433f98a7ca45218295276ca4",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": null
+    },
+    {
+      "file": "runtime.rs",
+      "sha256": "0534696283f8c001dafc91b3028c9121cb5c6c0e460c1c74cd1f4a021ea6bd13",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": "runtime"
+    },
+    {
+      "file": "layout.rs",
+      "sha256": "fbb575820e66f7e9552d4503baec67dc2b19d58182cbd76b262b2079de885ccb",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": "layout"
+    },
+    {
+      "file": "direct-layout.rs",
+      "sha256": "d19b034d46ca611db97a0d55c9342ad02c205294347bbffb9c6e09e084d68556",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": "layout"
+    },
+    {
+      "file": "field-drop.rs",
+      "sha256": "eba72176a2062f40e12b28f1647d2913d61c135ce6d0720da35bdf57c7f23234",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": "drop"
+    }
+  ],
+  "observers": {
+    "runtime": {
+      "file": "runtime-observer.c",
+      "sha256": "2d4d0290f692e457f9e5fbb1dec40f59b20c0441959c18bd77db42285c06bf70",
+      "expected_stdout": "23 23 23\n"
+    },
+    "layout": {
+      "file": "layout-observer.c",
+      "sha256": "5d2464cc9c259fc154cbb57d7247efa5c4b3a13153b3037dc46bf5df01ec5be8",
+      "expected_stdout": "8 16 16 8\n"
+    },
+    "drop": {
+      "file": "drop-observer.c",
+      "sha256": "7c3d771263fe0505ddf6c675d6bb1d4e561a65c7cfbb1c1a116850accf70b6ac",
+      "expected_stdout": "drop=31\n"
+    }
+  },
+  "prediction_correction": {
+    "prior_manifest": "obj/parallel/unsafe-pinned-v1/reference-v1/predictions.json",
+    "reason": "Expected rejection and source unchanged; rustc says can only be applied to structs rather than must be applied to a struct. All22 statuses and4 native outputs matched."
+  }
+}

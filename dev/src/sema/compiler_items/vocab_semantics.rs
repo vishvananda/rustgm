@@ -7,7 +7,7 @@ use crate::{
 
 pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Result<(), Error> {
     for role in LangItem::DECLARATIONS {
-        if role == LangItem::UnsafeCell {
+        if matches!(role, LangItem::UnsafeCell | LangItem::UnsafePinned) {
             // The authenticated nominal producer installs interior storage with
             // the actual shape. Ordinary trait and body proofs remain required.
             continue;

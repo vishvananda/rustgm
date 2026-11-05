@@ -16,6 +16,14 @@ old cycle; both units and the complete contract below remain required.
 
 ## Required implementation
 
+The [UnsafePinned source packet](tests/spec/unsafe-pinned-source/README.md)
+qualifies actual nominal identity, interior storage and niche suppression,
+including a direct-field owner. Its22 independent source outcomes and4 native
+observers preserve real trait implementations, normal loans and field cleanup.
+Noalias/retag optimization, complete constant mutation, full Pin/async behavior
+and authenticated interior-storage metadata remain required. This finite source
+contract does not release this assignment or build original core by itself.
+
 The [UseCloned source checkpoint](../docs/pa31-use-cloned-source-checkpoint.md)
 authenticates the actual canonical trait and preserves ordinary impl, member,
 Clone and Copy obligations. Two real source native companions match pinned Rust.

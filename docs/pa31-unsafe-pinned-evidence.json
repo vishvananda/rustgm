@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "state": "local-source-native-qualified",
+  "scope": "Actual UnsafePinned source identity, shared storage, niche suppression and ordinary traits/loans/destruction; no whole PA or library artifact",
+  "code": {
+    "dev/src/sema/compiler_items/roles.rs": "1e7157e22ab07bf6f4a1e3cf34d33e1be2fe9f2d07aee9e6b831df7cc92e9782",
+    "dev/src/sema/compiler_items/vocab_semantics.rs": "0144735ffbf21fdc875305787aa5ffc1bf9133a24e0d35c4e88d30486aea7338",
+    "dev/src/sema/compiler_items/wrappers.rs": "174c2b5cb36fa8a010c773a9bfb2ba9aef2b86b9587c2d45c99f5ab78301c520",
+    "dev/tests/cell_sources.rs": "2c7841ac8bfc97de5b1c89299b38e8deae7044d7075c561f89be328366842fa8",
+    "dev/tests/invariants/vocab_claims.rs": "85ee33ef02283c957ceab49dddb7ad994996950cbd536e27dc815897c644576f"
+  },
+  "packet": {
+    "pa31/tests/spec/unsafe-pinned-source/README.md": "91309f34b5d48e38d08ca9ba4f3868209a59873032efe24761c39bffa73de3ed",
+    "pa31/tests/spec/unsafe-pinned-source/cases.tsv": "2b1b5b4e8118a803b5bebb2cd6c6dde1eabdc5e82e817de7153dfb8c194b0ebb",
+    "pa31/tests/spec/unsafe-pinned-source/copy-explicit.rs": "727291223643ded52c965308c4bc68ae6e80abdf433f98a7ca45218295276ca4",
+    "pa31/tests/spec/unsafe-pinned-source/direct-freeze.rs": "33dfaf3ec1f21a2f46228193ace7e4e7842dd4bac4de983d17445220821fd280",
+    "pa31/tests/spec/unsafe-pinned-source/direct-layout.rs": "d19b034d46ca611db97a0d55c9342ad02c205294347bbffb9c6e09e084d68556",
+    "pa31/tests/spec/unsafe-pinned-source/drop-observer.c": "7c3d771263fe0505ddf6c675d6bb1d4e561a65c7cfbb1c1a116850accf70b6ac",
+    "pa31/tests/spec/unsafe-pinned-source/duplicate.rs": "eccef015ec90b643c9520f77553dd4a3f5995c425d947df1f03538108d72ab74",
+    "pa31/tests/spec/unsafe-pinned-source/field-drop.rs": "eba72176a2062f40e12b28f1647d2913d61c135ce6d0720da35bdf57c7f23234",
+    "pa31/tests/spec/unsafe-pinned-source/freeze-negative.rs": "31106b52f10ad494519dc0cb52d16b5464aec01283e80d5962a06109a2f6c188",
+    "pa31/tests/spec/unsafe-pinned-source/layout-observer.c": "5d2464cc9c259fc154cbb57d7247efa5c4b3a13153b3037dc46bf5df01ec5be8",
+    "pa31/tests/spec/unsafe-pinned-source/layout.rs": "fbb575820e66f7e9552d4503baec67dc2b19d58182cbd76b262b2079de885ccb",
+    "pa31/tests/spec/unsafe-pinned-source/nested-unsafe-unpin-negative.rs": "d7d4d21e556c6f10f6048be5d9284b32fc689dda03c44d98dd933325e38ca741",
+    "pa31/tests/spec/unsafe-pinned-source/nominal.rs": "f6a34d3b4958e4f1747fee3f3d89c767962771ae0c28919769700d49ee1399e1",
+    "pa31/tests/spec/unsafe-pinned-source/non-generic.rs": "216c925bb4057b0159f91605aff0e431907a20570961b7d0cc3a0c1b748e1706",
+    "pa31/tests/spec/unsafe-pinned-source/predictions.json": "a07d9ca160bb46e896a73a96d5f332fe8b79bbe44d909f2d16fb5b38ac3fcef9",
+    "pa31/tests/spec/unsafe-pinned-source/runtime-observer.c": "2d4d0290f692e457f9e5fbb1dec40f59b20c0441959c18bd77db42285c06bf70",
+    "pa31/tests/spec/unsafe-pinned-source/runtime.rs": "0534696283f8c001dafc91b3028c9121cb5c6c0e460c1c74cd1f4a021ea6bd13",
+    "pa31/tests/spec/unsafe-pinned-source/same-name.rs": "b9fea6e25ac4b5eaa73690043a8e672b60022e0a817cf3f985bebf9bede0444e",
+    "pa31/tests/spec/unsafe-pinned-source/shared-not-unique.rs": "dc328a7ee6b8b1d4ad6552f54cfbe3d0ed19ae6b360fc5177b5ab46e62e4970a",
+    "pa31/tests/spec/unsafe-pinned-source/shared-plain-not-unique.rs": "01d797af116929a1baf6753ec862e76c9942d053394ded5a1a330288d0b00221",
+    "pa31/tests/spec/unsafe-pinned-source/sync-override.rs": "5eb9b2fc39a0becb592b1b00e401bc0e0d669a3c6ed7da0732ca729ececafb33",
+    "pa31/tests/spec/unsafe-pinned-source/sync-without-impl.rs": "9d39b44835b79a8d7d84855226a64fc5c58d03ce6140e099490a7d2ad71fb8e4",
+    "pa31/tests/spec/unsafe-pinned-source/two-fields.rs": "63167175afeacd9ad3b6dad5c26d72f3026a7461f044eeab66e051f9c108f9d4",
+    "pa31/tests/spec/unsafe-pinned-source/unpin-negative.rs": "ca4d47bf222cbfe5848a5caff7b0bcd992cb6e2c9ff925749f08bd2c43fdf96b",
+    "pa31/tests/spec/unsafe-pinned-source/unpin-without-impl.rs": "4836107dee3411111944466f7985434594758091f5ff6e4800e04d805836cdc7",
+    "pa31/tests/spec/unsafe-pinned-source/unsafe-unpin-negative.rs": "b94438ed88e6e20252e355b5a833c7514282958efc9aa759e9b71af7c825d0e8",
+    "pa31/tests/spec/unsafe-pinned-source/unsafe-unpin-without-impl.rs": "8051e9312907687901241499d8731bc6917e5fb7e1461d631b39597f4ccaddc5",
+    "pa31/tests/spec/unsafe-pinned-source/wrong-target.rs": "0867e57413dc57ac0af0f8e3c4f020f954edbe6d1e95c9804376c321515a7971"
+  },
+  "primary_sources": {
+    "compiler/rustc_hir/src/lang_items.rs": "af62146fd0255b1b8baea76309e13eb00ff5b9a8ffe110348beba4deb3569690",
+    "compiler/rustc_ty_utils/src/layout.rs": "453f25100465cde1949dd27aa4a0ad1abba6e3ab484fbb1d7f2e2e4ced61e8e9",
+    "library/core/src/pin/unsafe_pinned.rs": "6a64fd2393340ccad0398b46fbadf7a79a4077ae04e9d8f6f7208840e47b185e",
+    "library/core/src/marker.rs": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575"
+  },
+  "independent": {
+    "receipt": "obj/parallel/unsafe-pinned-v1/reference-v2/receipt.json",
+    "sha256": "dafa9ef351dae8ca57cf56afdb7847ad91c8b6929ad956c677bd9b8fb513743b",
+    "outcomes": 22,
+    "native_observers": 4
+  },
+  "qualification": {
+    "receipt": "obj/parallel/unsafe-pinned-v1/qualification-v1/receipt.json",
+    "sha256": "f838a5f884f7520ade4386d8090121436f18a3f2715df7169eac98bbde7bb669",
+    "gates": [
+      {
+        "path": "obj/qualification/fast/1793864345073789746/receipt.json",
+        "sha256": "9dd17a2238ee44d54845c41430026ca3cf25c7463aacf95c0c22bc08f12b0793"
+      },
+      {
+        "path": "obj/qualification/fast/1793864575983941166/receipt.json",
+        "sha256": "3d9502ba9ed14bf9fc87d8a1992ac78335bbeeeb779aa68096a079b67ec2a17c"
+      }
+    ],
+    "public_tests": 7,
+    "pa12_cases": 125,
+    "native_tests": 2,
+    "new_native_observers": 4,
+    "preceding_cell_native_observers": 4
+  },
+  "algorithm": "Reuse one existing source wrapper/nominal ledger and transactional interior-storage publication, existing retained set and storage/niche/cache consumers. No new traversal, map, dense field, parser or environment access. Constant role queries; failed/valid queries retain existing cumulative charges.",
+  "pending": [
+    "Joined immutable CLI/core observation and ordinary comparable performance control",
+    "Complete shared-derived constant mutation and wider niche/DST closure",
+    "Authenticated interior-storage metadata transport",
+    "Full Pin/projection/async/cancellation and actual original core/alloc/std artifacts",
+    "Complete assignment publication/release checks"
+  ]
+}

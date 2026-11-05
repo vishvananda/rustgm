@@ -18,19 +18,23 @@ fn fixture(name: &str) -> TestResult<String> {
         "pa31/tests/spec/unsafe-cell-source/{name}"
     )))?)
 }
+fn pinned_fixture(name: &str) -> TestResult<String> {
+    Ok(std::fs::read_to_string(root()?.join(format!(
+        "pa31/tests/spec/unsafe-pinned-source/{name}"
+    )))?)
+}
 
-#[test]
-fn actual_cell_outcomes_preserve_source_traits_and_ordinary_borrows() -> TestResult {
+fn check_outcomes(read: fn(&str) -> TestResult<String>, expected: usize) -> TestResult {
     let mut count = 0;
     let mut failures = Vec::new();
-    for line in fixture("cases.tsv")?.lines() {
+    for line in read("cases.tsv")?.lines() {
         let (name, status) = line.split_once('\t').ok_or("two case columns")?;
         let accepted = match status {
             "0" => true,
             "1" => false,
             _ => return Err("invalid semantic prediction".into()),
         };
-        let outcome = lower(&fixture(name)?);
+        let outcome = lower(&read(name)?);
         if accepted != outcome.is_ok() {
             failures.push(format!("{name}: {:?}", outcome.err()));
         } else if let Err(error) = outcome {
@@ -42,9 +46,14 @@ fn actual_cell_outcomes_preserve_source_traits_and_ordinary_borrows() -> TestRes
         }
         count += 1;
     }
-    assert_eq!(count, 15);
+    assert_eq!(count, expected);
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     Ok(())
+}
+
+#[test]
+fn actual_cell_outcomes_preserve_source_traits_and_ordinary_borrows() -> TestResult {
+    check_outcomes(fixture, 15)
 }
 
 #[test]
@@ -116,6 +125,94 @@ fn actual_cell_native_preserves_aliasing_niches_and_ordinary_cleanup() -> TestRe
             name,
             &lower(&fixture(&format!("{name}.rs"))?)?,
             &fixture(observer)?,
+            expected,
+        )?;
+    }
+    Ok(())
+}
+
+#[test]
+fn actual_unsafe_pinned_keeps_source_traits_and_ordinary_borrows() -> TestResult {
+    check_outcomes(pinned_fixture, 22)
+}
+
+#[test]
+fn pinned_storage_uses_its_actual_owner_and_retains_field_cleanup() -> TestResult {
+    for name in ["nominal.rs", "direct-layout.rs"] {
+        let source = report(&pinned_fixture(name)?)?;
+        let facts = sema::declarations::analyze(&source)?;
+        let actual = source
+            .resolution
+            .source_bindings
+            .as_deref()
+            .ok_or("source roles")?
+            .language(LangItem::UnsafePinned)
+            .ok_or("actual UnsafePinned declaration")?;
+        let item = ItemId(actual.definition.0);
+        assert_eq!(
+            facts.aggregates.shared_mutation(item),
+            Some(aggregate::SharedMutation::Interior)
+        );
+        assert_eq!(
+            facts.aggregates.destruction(item),
+            Some(aggregate::FieldDestruction::Fields)
+        );
+        let shape = facts.aggregates.get(item).ok_or("actual fields")?;
+        assert_eq!(shape.kind, aggregate::Kind::Struct);
+        assert_eq!(facts.aggregates.variants(shape).len(), 1);
+        assert_eq!(size_of::<rustgm::types::Kind>(), 24);
+        assert_eq!(size_of::<rustgm::body::ir::Body>(), 456);
+    }
+    let source = report(&pinned_fixture("same-name.rs")?)?;
+    let facts = sema::declarations::analyze(&source)?;
+    let ordinary = source
+        .resolution
+        .definitions
+        .iter()
+        .position(|definition| source.package.names.get(definition.name) == "Anchor")
+        .ok_or("ordinary lookalike")?;
+    assert_eq!(
+        facts
+            .aggregates
+            .shared_mutation(ItemId(u32::try_from(ordinary)?)),
+        Some(aggregate::SharedMutation::Ordinary)
+    );
+    let program = lower(&pinned_fixture("runtime.rs")?)?;
+    assert!(
+        program
+            .globals
+            .iter()
+            .any(|global| global.span.bytes == 4 && !global.readonly)
+    );
+    assert!(
+        program
+            .globals
+            .iter()
+            .any(|global| global.span.bytes == 4 && global.readonly)
+    );
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the pinned CPPGM backend and host C linker"]
+fn actual_unsafe_pinned_native_preserves_aliasing_niches_and_field_drop() -> TestResult {
+    let root = root()?;
+    let folder = root
+        .join("obj/parallel/unsafe-pinned-native")
+        .join(std::process::id().to_string());
+    std::fs::create_dir_all(&folder)?;
+    for (name, observer, expected) in [
+        ("runtime", "runtime-observer.c", "23 23 23\n"),
+        ("layout", "layout-observer.c", "8 16 16 8\n"),
+        ("direct-layout", "layout-observer.c", "8 16 16 8\n"),
+        ("field-drop", "drop-observer.c", "drop=31\n"),
+    ] {
+        crate::ffi_program::check(
+            &root,
+            &folder,
+            name,
+            &lower(&pinned_fixture(&format!("{name}.rs"))?)?,
+            &pinned_fixture(observer)?,
             expected,
         )?;
     }

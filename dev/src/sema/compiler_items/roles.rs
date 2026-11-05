@@ -546,6 +546,7 @@ pub(super) fn nominal_completed(
             | LangItem::TypeId
             | LangItem::Pin
             | LangItem::UnsafeCell
+            | LangItem::UnsafePinned
     ) {
         return Err(Error::unlocated("invalid completed nominal readiness role"));
     }
@@ -587,6 +588,7 @@ pub(super) fn complete_nominal(
             | LangItem::TypeId
             | LangItem::Pin
             | LangItem::UnsafeCell
+            | LangItem::UnsafePinned
     ) {
         return Err(Error::unlocated("invalid completed nominal role"));
     }

@@ -1324,7 +1324,7 @@ queries and byte-identical predecessor/candidate configuration constants. A
 configuration-source edit still requires a new explicitly requalified manifest;
 retain old source/configuration bindings and the source macro metadata fence.
 
-Actual source UnsafeCell publishes its paid interior-storage identity in the
+Actual source UnsafeCell and UnsafePinned publish their paid interior-storage identity in the
 same one-time transaction as its real field shape. Reuse the existing owned
 storage query, writable-global, promotion and niche consumers; do not infer
 Copy, Sync, Freeze or destruction policy from the role. Ordinary shared and
@@ -1336,6 +1336,13 @@ explicit representations and the separately selected historical course profile.
 General scalar/multifield niches and authenticated interior policy transport
 remain required. The [source packet](pa31/tests/spec/unsafe-cell-source/README.md)
 retains the original native layout failure and independent opponents.
+UnsafePinned uses this same policy before layout, including a direct field with
+no inner UnsafeCell. The role does not refute Freeze, Unpin or UnsafeUnpin:
+actual source implementations supply those trait proofs. Shared-to-mutable
+borrows and field destruction remain ordinary. Current lowering emits no
+Rust noalias/retag promises; adding those requires authenticated UnsafePinned
+coverage and UnsafeUnpin proof. See the
+[independent source packet](pa31/tests/spec/unsafe-pinned-source/README.md).
 
 Source auto-trait selection preserves explicit positive and negative identities.
 A refutation is not positive evidence, and an applicable explicit implementation
