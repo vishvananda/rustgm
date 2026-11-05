@@ -7,6 +7,19 @@ use crate::{
 
 pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Result<(), Error> {
     for role in LangItem::DECLARATIONS {
+        if role == LangItem::AsyncDropInPlace {
+            // Authenticate its ordinary source declaration; generated future
+            // storage and cleanup execution have a separate demanded boundary.
+            continue;
+        }
+        if matches!(
+            role,
+            LangItem::Mul | LangItem::Rem | LangItem::BitXor | LangItem::BitAnd | LangItem::Shr
+        ) {
+            // Actual ordinary headers complete here. A demanded operation still
+            // requires the shared operator contract and normal typed call proof.
+            continue;
+        }
         if matches!(
             role,
             LangItem::UseCloned | LangItem::FnPtrTrait | LangItem::FnPtrAddr
@@ -18,7 +31,7 @@ pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Res
         }
         if matches!(
             role,
-            LangItem::Future | LangItem::FutureOutput | LangItem::FuturePoll
+            LangItem::Future | LangItem::FutureOutput | LangItem::FuturePoll | LangItem::AsyncDrop
         ) {
             // Genuine ordinary declarations are completed by the Future producer.
             // Polling and future state machines remain separate demanded consumers.

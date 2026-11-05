@@ -265,6 +265,7 @@ fn prepare_catalog(
         bindings: Bindings::Imported(bindings),
         sizing: None,
         destruction_registration: None,
+        async_destruction_registration: None,
         traits: None,
         call_effects: None,
         call_contexts: None,

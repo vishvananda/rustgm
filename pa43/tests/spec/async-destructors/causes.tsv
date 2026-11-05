@@ -1,0 +1,14 @@
+pa31/tests/spec/async-drop-source/specialized-target.rs	E0366	without specialization
+pa31/tests/spec/async-drop-source/repeated-parameters.rs	E0366	without specialization
+pa31/tests/spec/async-drop-source/strengthened-trait.rs	E0367	Drop impl adds type requirements
+pa31/tests/spec/async-drop-source/blanket-target.rs	E0120	AsyncDrop requires a local struct or enum target
+pa31/tests/spec/async-drop-source/strengthened-region.rs	E0367	Drop impl adds lifetime requirements
+pa31/tests/spec/async-drop-source/specialized-const.rs	E0366	without specialization
+pa31/tests/spec/async-drop-source/copy-exclusion.rs	E0184	cannot implement both source Copy and Drop
+pa31/tests/spec/async-drop-source/copy-missing-sync.rs	`AsyncDrop` impl without `Drop` impl	AsyncDrop requires a synchronous Drop implementation
+pa43/tests/spec/async-destructors/actual-missing-sync.rs	`AsyncDrop` impl without `Drop` impl	AsyncDrop requires a synchronous Drop implementation
+pa31/tests/spec/async-drop-source/negative-impl.rs	negative `Drop` impls are not supported	AsyncDrop requires a positive implementation
+pa31/tests/spec/async-drop-source/no-feature-specialized.rs	E0366	without specialization
+pa31/tests/spec/async-drop-source/no-feature-blanket.rs	E0120	AsyncDrop requires a local struct or enum target
+pa31/tests/spec/async-drop-source/no-feature-strengthened.rs	E0367	Drop impl adds type requirements
+pa31/tests/spec/async-drop-source/ordinary-drop-const-impl.rs	not `const`	Drop requires a positive safe impl without trait arguments

@@ -1,0 +1,9 @@
+pa43/tests/spec/async-drop-helper/actual.rs	0	generated future state and polling
+pa43/tests/spec/async-drop-helper/unsafe-call.rs	1	-
+pa43/tests/spec/async-drop-helper/wrong-output.rs	1	-
+pa43/tests/spec/async-drop-helper/reified.rs	0	generated future state and polling
+pa43/tests/spec/async-drop-helper/invalid-body.rs	1	-
+pa43/tests/spec/async-drop-helper/alternate-output.rs	0	actual async unit output
+pa43/tests/spec/async-drop-helper/safe-unused.rs	0	unsafe Rust borrow signature
+pa43/tests/spec/async-drop-helper/ordinary-unused.rs	0	actual async unit output
+pa43/tests/spec/async-drop-helper/unmarked-ordinary.rs	0	ordinary

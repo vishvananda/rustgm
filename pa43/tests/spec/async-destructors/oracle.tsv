@@ -1,0 +1,9 @@
+pa43/tests/spec/async-destructors/oracle/actual-method.rs	0
+pa43/tests/spec/async-destructors/oracle/actual-missing-sync.rs	1
+pa43/tests/spec/async-destructors/oracle/actual-wrong-output.rs	1
+pa43/tests/spec/async-destructors/oracle/actual-wrong-receiver.rs	1
+pa43/tests/spec/async-destructors/oracle/actual-unsafe.rs	1
+pa43/tests/spec/async-destructors/oracle/actual-invalid-body.rs	1
+pa43/tests/spec/async-destructors/oracle/explicit-call.rs	0
+pa43/tests/spec/async-destructors/oracle/reify-call.rs	0
+pa43/tests/spec/async-destructors/oracle/actual-generic.rs	0

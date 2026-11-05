@@ -421,6 +421,12 @@ impl Dependencies {
             // Actual evaluated origins remain in their caller namespace until
             // this single crossing into the proved executable target map.
             let instance = caller.map_or(instance, |body| body.callable_target(instance));
+            if let Some(element) =
+                crate::sema::compiler_items::source_async_drop_glue(report, facts, instance)
+                    .map_err(|error| error.to_string())?
+            {
+                object_types.push(element);
+            }
             if let Some(selection) = crate::sema::compiler_items::source_drop_glue(facts, instance)?
             {
                 object_types.push(selection.element);

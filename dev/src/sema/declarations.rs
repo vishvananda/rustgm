@@ -471,6 +471,7 @@ impl Checker<'_> {
         self.prepare_source_call_contracts(&mut steps, work_limit)?;
         self.prepare_destructors(destructors, &mut steps, work_limit)?;
         self.prepare_trait_implementations(&mut steps, work_limit)?;
+        self.prepare_async_destructors()?;
         self.prepare_early_implementations(&mut steps, work_limit)?;
         self.prepare_inherent_owners(&mut steps, work_limit)?;
         self.index_inherent_methods()?;
@@ -519,6 +520,7 @@ impl Checker<'_> {
             .map_err(|e| Error::at(FileId(0), 0, e))?;
         self.trait_defaults()?;
         self.validate_destructors()?;
+        self.validate_async_destructors()?;
         self.validate_owner_bounds()?;
         self.validate_associated_type_bounds()?;
         self.validate_required_family_bounds()?;

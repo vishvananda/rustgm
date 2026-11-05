@@ -81,6 +81,7 @@ pub(in crate::resolve) enum Feature {
     LinkLlvmIntrinsics = 64,
     UnsizedFnParams = 65,
     NegativeCoherence = 66,
+    AsyncDrop = 67,
 }
 
 #[cfg(test)]
@@ -147,6 +148,7 @@ impl Request {
             "stmt_expr_attributes" => Self::Capability(Feature::ExpressionAttributes),
             "const_trait_impl" => Self::Capability(Feature::ConstTrait),
             "min_adt_const_params" | "adt_const_params" => Self::Library(Feature::AdtConstParams),
+            "async_drop" => Self::Library(Feature::AsyncDrop),
             "unboxed_closures" => Self::Capability(Feature::UnboxedClosures),
             "auto_traits" => Self::Capability(Feature::AutoTraits),
             "negative_impls" => Self::Capability(Feature::NegativeImpls),
@@ -204,6 +206,7 @@ impl Features {
     }
     fn needs_local_owner(&self) -> bool {
         self.has(Feature::AdtConstParams)
+            || self.has(Feature::AsyncDrop)
             || self.has(Feature::Fundamental)
             || self.has(Feature::ConstTrait)
             || self.has(Feature::NegativeImpls)

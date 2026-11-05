@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "baseline": "05185a6e848ee094e44264c393cdbf9c6270f87c",
+  "roles": [
+    "Mul",
+    "Rem",
+    "BitXor",
+    "BitAnd",
+    "Shr"
+  ],
+  "qualifier_receipt": {
+    "path": "obj/parallel/source-transport/operators/gate2/receipt.json",
+    "sha256": "04e9aabc56b482187e93ff669b0d17193e610d454c33059f237c5b1796eebf3f",
+    "state": "passed"
+  },
+  "sources": {
+    "path": "obj/parallel/source-transport/operators/gate2/sources.json",
+    "sha256": "05353e31362d9145b7c9316416c9f2ab7342f168e91fa388189584f75744054e"
+  },
+  "artifacts": {
+    "path": "obj/parallel/source-transport/operators/gate2/fingerprints.json",
+    "sha256": "e99a4fa7d799e751dfe0e6f587d5c9726b17b83317b881889be321f5e9ac5bee"
+  },
+  "predictions_sha256": "2a3eb49c5c6a7c6ae1a824d0593cc235819bcaac250fb185b00b51a986e91dae",
+  "runtime_input_predictions_sha256": "945a84a1f42180882c1f6fa3872829bab406d18516804c28f69e89988fe8c994",
+  "independent": {
+    "path": "obj/parallel/source-transport/operators/reference-v3/receipt.json",
+    "sha256": "5151d430f559c2b81ce5a7fa6281582c5feab26304522d497f3deb435e5924eb",
+    "cases": 49,
+    "state": "passed"
+  },
+  "independent_runtime_input": {
+    "path": "obj/parallel/source-transport/operators/input-reference/receipt.json",
+    "sha256": "8cef0e8cd6fd3e5ca98cae6b5ce5a3246a964426aeae8f765aa0aaa8ad174865",
+    "state": "passed"
+  },
+  "native": {
+    "custom_default_stdout": "11 13 15 17 19 42 44 46 48 50\n",
+    "runtime_operand_stdout": "23\n",
+    "backend_lock_sha256": "f60c0760f39f1f554486f5a1eb990d2c0fef663fbd1bff944cd1eef8a014a581",
+    "backend_commit": "b7c6b8e72"
+  },
+  "bounded_work": {
+    "base": 1004,
+    "uses": [
+      8,
+      32,
+      128
+    ],
+    "additional_steps": [
+      200,
+      800,
+      3200
+    ],
+    "per_use": 25
+  },
+  "local_failure": {
+    "path": "obj/parallel/source-transport/operators/reference-v1/receipt.json",
+    "reason": "no_core primitive object codegen requires out-of-scope panic_const_mul/rem/shr helpers; source preserved, primitive independent emission explicitly frozen to metadata before candidate; custom native remains mandatory"
+  },
+  "remaining": [
+    "complete primitive panic codegen/const closure",
+    "source metadata transport and broader demanded profiles",
+    "assignment operators and Index",
+    "full original core and async destruction"
+  ],
+  "private_release": "CI-owned; no cold private link attempted"
+}

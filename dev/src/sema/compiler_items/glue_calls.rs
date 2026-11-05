@@ -2,6 +2,7 @@
 use crate::{
     resolve::{model::DefId, unit::NodeKey},
     sema::model::Declarations,
+    support::bindings::LangItem,
     types::{Kind, TypeId, arguments::Argument, instance::Instance},
 };
 #[cfg(test)]
@@ -23,6 +24,15 @@ pub(crate) fn check_const_drop_glue(
     facts: &Declarations,
     instance: Instance,
 ) -> Result<(), &'static str> {
+    if let Some(Kind::FunctionItem { item, .. }) = facts.types.kind(instance.ty())
+        && let Some(catalog) = facts.source_bindings.as_deref()
+        && catalog
+            .language(LangItem::AsyncDropInPlace)
+            .is_some_and(|declaration| declaration.definition.0 == item.0)
+    {
+        catalog.validated_language(LangItem::AsyncDropInPlace)?;
+        return Err("compiler-owned async destruction constant execution is not implemented");
+    }
     if matches!(facts.types.kind(instance.ty()), Some(Kind::FunctionItem { item, .. })
         if super::drop_glue_member(facts, DefId(item.0))?)
     {

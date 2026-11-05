@@ -90,3 +90,5 @@ mod negative_coherence;
 
 #[path = "../../harness/observed_program.rs"]
 pub(crate) mod observed_program;
+#[path = "../../opfamily.rs"]
+mod opfamily;

@@ -3,6 +3,8 @@
 mod applicable_contracts;
 #[path = "../../async_signatures.rs"]
 mod async_signatures;
+#[path = "../../asynccleanup.rs"]
+mod asynccleanup;
 #[path = "../../callback_addresses.rs"]
 mod callback_addresses;
 #[path = "../../callback_provider.rs"]
@@ -51,6 +53,8 @@ mod forced_dyn_contracts;
 mod fragments;
 #[path = "../../fundamental_contracts.rs"]
 mod fundamental_contracts;
+#[path = "../../future_helpers.rs"]
+mod future_helpers;
 #[path = "../../future_source.rs"]
 mod future_source;
 #[path = "../../glob_provenance.rs"]

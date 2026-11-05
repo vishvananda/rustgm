@@ -1,21 +1,40 @@
-# Core critical-path lanes, 2026-11-04
+# Core critical-path lanes, 2026-11-05
 
 The user authorized three agents: the integrator and two `gpt-6.1-sol` workers
 at high reasoning. This supersedes older stopped-worker and root-only scheduling
 notes, not semantic, release or resource requirements. Keep original core/alloc/
 std sources and the full assignment goal. No new whole assignment is complete.
 
-Baseline is published main63f9177dc. The actual original-core first error remains
+The initial baseline was published main63f9177dc. Its original-core first error was
 LIB-154 AsyncDrop at future/async_drop.rs29, file246 byte1138, with all722 inputs
 and the existing target/configuration/cap/finite limits preserved. LIB-155 is
 the independently demonstrated source Deref/Target prerequisite. Use the frozen
 Pin source and receiver packets, not source substitutions or empty futures.
 
+Current joined checkpoint: workers8623b6368 and1321a2862 plus Root's helper
+consumer pass67 exact public tests,1193 PA19 cases, strict selected Clippy and
+native operator/transport/ordinary-Drop observers. Immutable CLI a39bdeda
+advances unchanged722-input admission to LIB-158 AddAssign, ops/arith.rs768,
+file84 byte22308. Genuine async runtime and every original artifact remain due.
+Both workers have handed off and are stopped with resumable warm trees; their
+completed lanes below are history until the next scoped task is assigned.
+
+On2026-11-05, main05185a6e8 integrates the completed source nominal lane with
+actual Future/async signatures, Deref/receivers and current CPPGM backend.
+Full41953070184 on99c365903 is terminal success; transport successor41960117386
+is running. Transport passes44 focused cases, fresh serialized native execution
+and unchanged722-input core observation. Root now owns the compiler async helper
+selection/CFG boundary and integration; the async worker owns genuine AsyncDrop
+trait and nominal/companion/coverage rules. The freed transport worker reuses its
+existing tree/cache for Mul/Rem/BitXor/BitAnd/Shr source contracts and real typed
+operator consumers. These actual upstream roles follow the async declarations;
+sharing the existing operator kernel avoids serial one-spelling checkpoints.
+
 | Lane | Checkout | Ownership | Executable milestone |
 | --- | --- | --- | --- |
 | Integrator | `/mnt/vizier/rustgm-scratch/rustgm-pa26-work` | Source Deref/Target, receiver proof, shared registry/pipeline joins, original core and main publication | Actual source dereference and Pin receivers with genuine Deref/LegacyReceiver, exact Self/regions and native/independent controls; then join AsyncDrop prerequisites |
 | Async signatures | `/mnt/vizier/rustgm-scratch/rustgm-async-work` | Future/Output producers, async signature and opaque capture/result formation; PA31/42 | Actual Future/Output source and async signatures retain real opaque identity, equality, lifetimes/generics and required declaration/body validation; runtime state/destruction requirements stay explicit |
-| Source transport | `/mnt/vizier/rustgm-scratch/rustgm-pa29-work` | PA29 actual source nominal/member/body transport, export/import proof | Separately serialized real provider and fresh generic/native consumer, including actual nominal constructor/ownership and policy identity; no shared-store or in-memory-only qualification |
+| Source operators, following completed transport | `/mnt/vizier/rustgm-scratch/rustgm-pa29-work` | PA31 actual Mul/Rem/BitXor/BitAnd/Shr declarations and ordinary typed binary consumers | Real source trait/generic/Output/method proof, default/opponent controls and current-backend native execution through the existing operator kernel; assignment/index operators remain later work |
 
 Workers own their new modules, fixtures and lane checkpoint documents. Propose
 central type/body enum, declaration scheduler, source-role ledger, shared

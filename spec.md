@@ -132,6 +132,16 @@ explicit transport requirements; matching layouts grant no type identity.
 
 ### Upstream library boundary
 
+AsyncDrop source implementations share ordinary nominal/trait/lifetime coverage
+with synchronous Drop while retaining a separate cold family. Source feature
+async_drop preserves its actual library request identity; only the synchronous
+companion condition depends on that request. Ordinary and const Drop keep their
+actual declaration flags. Async methods never enter synchronous call-denial or
+receiver indexes. Compiler-owned async helpers authenticate actual headers and
+selected types; neither the written placeholder nor a missing direct async entry
+proves runnable cleanup or recursive absence. Generated state/poll/cancellation
+and authenticated transport remain required before executable publication.
+
 Source language-item vocabulary is append-only and driven by one declarative
 inventory. Preserve existing ordinals and diagnostic-only spellings. Validate
 new targets, written own/associated-owner generic counts and foreign-only policy

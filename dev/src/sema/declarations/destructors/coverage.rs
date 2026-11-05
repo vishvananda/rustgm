@@ -8,6 +8,15 @@ use crate::types::{
 
 use crate::sema::destructors::Coverage;
 
+#[derive(Clone, Copy)]
+pub(super) struct NominalContract {
+    pub owner: DefId,
+    pub scope: DefId,
+    pub item: ItemId,
+    pub source: crate::resolve::unit::NodeKey,
+    pub parameters: u32,
+}
+
 impl Checker<'_> {
     pub(super) fn drop_target_coverage(
         &mut self,
@@ -129,26 +138,48 @@ impl Checker<'_> {
         &mut self,
         index: usize,
     ) -> Result<Option<crate::sema::traits::obligations::Obligations>, super::Error> {
+        let implementation = &self.facts.destructors.implementations()[index];
+        if self
+            .facts
+            .derives
+            .get(&implementation.item)
+            .is_some_and(|properties| properties.properties().copy)
+        {
+            return Err(self.error(
+                implementation.source,
+                "a type cannot implement both Copy and Drop",
+            ));
+        }
+        let contract = NominalContract {
+            owner: implementation.self_definition,
+            scope: implementation.method,
+            item: implementation.item,
+            source: implementation.source,
+            parameters: implementation.parameters,
+        };
+        self.validate_destructor_traits(contract)
+    }
+
+    pub(super) fn validate_destructor_traits(
+        &mut self,
+        contract: NominalContract,
+    ) -> Result<Option<crate::sema::traits::obligations::Obligations>, super::Error> {
         use crate::types::parameters::{
             ParameterKind,
             predicates::{Bound, Predicate},
         };
-        let implementation = &self.facts.destructors.implementations()[index];
-        let (owner, method, item, key) = (
-            implementation.self_definition,
-            implementation.method,
-            implementation.item,
-            implementation.source,
-        );
-        if self
+        let NominalContract {
+            owner,
+            scope,
+            item,
+            source: key,
+            parameters: count,
+        } = contract;
+        let coverage = self
             .facts
-            .derives
-            .get(&item)
-            .is_some_and(|properties| properties.properties().copy)
-        {
-            return Err(self.error(key, "a type cannot implement both Copy and Drop"));
-        }
-        let coverage = &implementation.coverage;
+            .destructors
+            .coverage(owner, item)
+            .ok_or_else(|| self.error(key, "missing registered destructor coverage"))?;
         let mut substitution = crate::types::substitute::Bound::joint_captured(
             &self.facts.types,
             ItemId(owner.0),
@@ -159,7 +190,7 @@ impl Checker<'_> {
         let mut requirements = self
             .facts
             .generics
-            .predicates_in_scope(method)
+            .predicates_in_scope(scope)
             .map(|p| p.value.ordinary())
             .collect::<Result<Vec<_>, _>>()
             .map_err(|e| self.error(key, e))?;
@@ -184,7 +215,6 @@ impl Checker<'_> {
             .environments
             .get(&DefId(item.0))
             .cloned();
-        let count = self.facts.destructors.implementations()[index].parameters;
         let mut proof = crate::sema::nominals::Proof::for_declaration(environment, count, 1);
         for requirement in requirements {
             let requirement = substitution
@@ -200,7 +230,7 @@ impl Checker<'_> {
         let Some(mut obligations) = proof.take_trait_proof() else {
             return Ok(None);
         };
-        self.restore_drop_proof(index, &mut obligations)
+        self.restore_drop_proof(&contract, &mut obligations)
             .map_err(|e| self.error(key, e))?;
         Ok(Some(obligations))
     }
@@ -210,11 +240,14 @@ impl Checker<'_> {
     /// Coverage proves in nominal coordinates; the Drop graph retains impl coordinates.
     fn restore_drop_proof(
         &mut self,
-        index: usize,
+        contract: &NominalContract,
         proof: &mut crate::sema::traits::obligations::Obligations,
     ) -> Result<(), &'static str> {
-        let implementation = &self.facts.destructors.implementations()[index];
-        let coverage = &implementation.coverage;
+        let coverage = self
+            .facts
+            .destructors
+            .coverage(contract.owner, contract.item)
+            .ok_or("missing registered destructor coverage")?;
         let arguments = self
             .facts
             .types
@@ -224,7 +257,7 @@ impl Checker<'_> {
             .facts
             .generics
             .parameters
-            .get(&implementation.self_definition)
+            .get(&contract.owner)
             .map_or(&[][..], Vec::as_slice);
         if parameters.len() != arguments.len() {
             return Err("Drop coverage argument arity mismatch");

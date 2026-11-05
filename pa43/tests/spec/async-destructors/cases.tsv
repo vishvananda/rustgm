@@ -1,0 +1,11 @@
+pa43/tests/spec/async-destructors/unused-renamed.rs	0
+pa43/tests/spec/async-destructors/actual-method.rs	0
+pa43/tests/spec/async-destructors/actual-missing-sync.rs	1
+pa43/tests/spec/async-destructors/actual-wrong-output.rs	1
+pa43/tests/spec/async-destructors/actual-wrong-receiver.rs	1
+pa43/tests/spec/async-destructors/actual-unsafe.rs	1
+pa43/tests/spec/async-destructors/actual-invalid-body.rs	1
+pa43/tests/spec/async-destructors/explicit-call.rs	0
+pa43/tests/spec/async-destructors/reify-call.rs	0
+pa43/tests/spec/async-destructors/actual-generic.rs	0
+pa43/tests/spec/async-destructors/unused-static.rs	0

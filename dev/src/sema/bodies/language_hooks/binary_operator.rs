@@ -30,7 +30,12 @@ impl Checker<'_> {
                 | Punctuation::Or
                 | Punctuation::Plus
                 | Punctuation::Minus
-                | Punctuation::Slash),
+                | Punctuation::Slash
+                | Punctuation::Star
+                | Punctuation::Percent
+                | Punctuation::Caret
+                | Punctuation::And
+                | Punctuation::ShiftRight),
             ..
         } = self.kind(node)
         else {
@@ -106,7 +111,12 @@ impl Checker<'_> {
                 | Punctuation::Or
                 | Punctuation::Plus
                 | Punctuation::Minus
-                | Punctuation::Slash,
+                | Punctuation::Slash
+                | Punctuation::Star
+                | Punctuation::Percent
+                | Punctuation::Caret
+                | Punctuation::And
+                | Punctuation::ShiftRight,
             right,
             ..
         } = self.kind(node)
@@ -227,7 +237,12 @@ impl Checker<'_> {
                 | Punctuation::Or
                 | Punctuation::Plus
                 | Punctuation::Minus
-                | Punctuation::Slash,
+                | Punctuation::Slash
+                | Punctuation::Star
+                | Punctuation::Percent
+                | Punctuation::Caret
+                | Punctuation::And
+                | Punctuation::ShiftRight,
             left,
             right,
         } = self.kind(node)

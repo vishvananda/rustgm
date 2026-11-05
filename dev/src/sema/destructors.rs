@@ -26,6 +26,20 @@ pub struct Implementation {
     pub coverage: Coverage,
 }
 
+/// Only nominal coverage is new; ordinary associated owners retain all source,
+/// target, bounds and selected-member facts for async implementations.
+pub struct AsyncImplementation {
+    pub self_definition: DefId,
+    pub item: ItemId,
+    pub coverage: Coverage,
+}
+
+#[derive(Clone, Copy)]
+pub(super) struct LifetimeContract<'a> {
+    pub parameters: u32,
+    pub bounds: &'a [Pair],
+}
+
 #[derive(Default)]
 pub struct Destructors {
     declared: HashSet<ItemId>,
@@ -34,8 +48,39 @@ pub struct Destructors {
     self_types: HashMap<DefId, usize>,
     items: HashMap<ItemId, usize>,
     instances: HashMap<TypeId, crate::types::instance::Instance>,
+    asynchronous: Option<Box<HashMap<ItemId, AsyncImplementation>>>,
 }
 impl Destructors {
+    pub(super) fn coverage(&self, owner: DefId, item: ItemId) -> Option<&Coverage> {
+        if let Some(implementation) = self.item(item).filter(|i| i.self_definition == owner) {
+            return Some(&implementation.coverage);
+        }
+        self.async_item(item)
+            .filter(|i| i.self_definition == owner)
+            .map(|i| &i.coverage)
+    }
+    pub fn async_implementations(&self) -> impl Iterator<Item = &AsyncImplementation> {
+        self.asynchronous
+            .iter()
+            .flat_map(|entries| entries.values())
+    }
+    #[must_use]
+    pub fn async_item(&self, item: ItemId) -> Option<&AsyncImplementation> {
+        self.asynchronous
+            .as_deref()
+            .and_then(|entries| entries.get(&item))
+    }
+    pub(super) fn insert_async(
+        &mut self,
+        implementation: AsyncImplementation,
+    ) -> Result<(), &'static str> {
+        let entries = self.asynchronous.get_or_insert_with(Box::default);
+        if entries.contains_key(&implementation.item) {
+            return Err("conflicting AsyncDrop implementations for the same nominal type");
+        }
+        entries.insert(implementation.item, implementation);
+        Ok(())
+    }
     pub(in crate::sema) fn declare(&mut self, item: ItemId) {
         self.declared.insert(item);
     }
@@ -85,7 +130,7 @@ impl Destructors {
 /// target argument is universal. Paths through unused slots may not strengthen
 /// the nominal type's declared or field-implied requirements.
 pub(super) fn check_bounds(
-    implementation: &Implementation,
+    implementation: LifetimeContract<'_>,
     arguments: &[RegionId],
     assumptions: &crate::types::outlives::Requirements<'_>,
     types: &crate::types::Store,
@@ -137,7 +182,7 @@ pub(super) fn check_bounds(
             .assume(resolve(a)?, resolve(b)?)
             .map_err(|e| e.to_string())?;
     }
-    for &(a, b) in &implementation.bounds {
+    for &(a, b) in implementation.bounds {
         graph
             .require(resolve(a)?, resolve(b)?, 0)
             .map_err(|e| e.to_string())?;

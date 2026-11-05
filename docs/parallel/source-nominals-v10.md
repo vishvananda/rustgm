@@ -183,3 +183,8 @@ and unknown associated-type headers retain their exact checks. The actual
 unannotated Struct has KnownAbsent advisory facts only after source/semantic
 owner authentication. These are test expectation repairs; compiler behavior and
 reference bytes remain unchanged. Complete successor qualification remains due.
+
+Successor41964272575 on8c29aeae3 now passes every full gate, including private,
+regular/course, native, debug, independent Rust and const-machine checks. This
+qualifies the source transport checkpoint and the13 expectation repairs; it
+precedes the separately joined AsyncDrop/operator checkpoint.

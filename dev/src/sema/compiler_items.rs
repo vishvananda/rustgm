@@ -12,6 +12,12 @@ pub(in crate::sema) mod phantom;
 pub(in crate::sema) mod wrappers;
 pub(in crate::sema) use binding_views::Role;
 pub(in crate::sema) use calls::Effect as CallEffect;
+pub(in crate::sema) mod async_cleanup;
+mod async_glue;
+mod async_registration;
+pub(crate) use async_glue::{
+    require_runtime_body as require_async_glue_body, source_async_drop_glue,
+};
 pub(crate) mod const_payments;
 mod copying;
 mod explicit_cleanup;
@@ -131,6 +137,7 @@ pub(crate) struct Catalog {
     bindings: binding_views::Bindings,
     sizing: Option<[DefId; 3]>,
     destruction_registration: Option<DefId>,
+    async_destruction_registration: Option<DefId>,
     traits: Option<Box<roles::Validated>>,
     call_effects: Option<Box<crate::support::hash::HashMap<DefId, calls::Effect>>>,
     pub(in crate::sema) call_contexts: Option<Box<super::bodies::CallContexts>>,
@@ -227,6 +234,7 @@ impl Catalog {
             ),
             sizing: None,
             destruction_registration: None,
+            async_destruction_registration: None,
             traits: None,
             call_effects: None,
             call_contexts: None,

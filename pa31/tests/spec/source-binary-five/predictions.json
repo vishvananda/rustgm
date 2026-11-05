@@ -1,0 +1,316 @@
+{
+  "schema": 1,
+  "frozen_before_candidate": true,
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "rustc": "1.98.0",
+  "declarations": [
+    {
+      "role": "Mul",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/arith.rs",
+      "source_sha256": "a495c8c9838be09ce2c239462153a6221b6f471aa2efe43ce437e83581636c91",
+      "slice_start": 8757,
+      "slice_end": 9559,
+      "slice_sha256": "d71a69552bb4f27b95dbe035f3a5a09bf471edc833d7cba2f2d042c40dc2bba1"
+    },
+    {
+      "role": "Rem",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/arith.rs",
+      "source_sha256": "a495c8c9838be09ce2c239462153a6221b6f471aa2efe43ce437e83581636c91",
+      "slice_start": 16226,
+      "slice_end": 17054,
+      "slice_sha256": "3e003323773efb6885e6768a2a72d4e106b5661d7a781917081ebc0564916fc3"
+    },
+    {
+      "role": "BitXor",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/bit.rs",
+      "source_sha256": "4f0dab1c9c85c900d231e29d3f0c5e55c7b1fe87a762e48c4988d64bd1955d57",
+      "slice_start": 9706,
+      "slice_end": 10523,
+      "slice_sha256": "ed81679c23b9bb801d9cb8dda15c866a4a872b73debc09d3747e3359bc221f62"
+    },
+    {
+      "role": "BitAnd",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/bit.rs",
+      "source_sha256": "4f0dab1c9c85c900d231e29d3f0c5e55c7b1fe87a762e48c4988d64bd1955d57",
+      "slice_start": 3656,
+      "slice_end": 4473,
+      "slice_sha256": "13bffa48e76b8cbb08133b2a593c1cdc7179e08eefab0b0de37330570423a8d7"
+    },
+    {
+      "role": "Shr",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/bit.rs",
+      "source_sha256": "4f0dab1c9c85c900d231e29d3f0c5e55c7b1fe87a762e48c4988d64bd1955d57",
+      "slice_start": 16452,
+      "slice_end": 17183,
+      "slice_sha256": "77b00912370476e049361d5c37fcb3a936392e85942d251c5e27c454cc848fe8"
+    }
+  ],
+  "cases": [
+    {
+      "file": "runtime.rs",
+      "accepted": true,
+      "sha256": "9b6a149978a3e35b591a6692023b0cd5fc8f64ee606aecb63d2ab86cd6587fd7"
+    },
+    {
+      "file": "mul-wrong-rhs.rs",
+      "accepted": false,
+      "sha256": "d278827af075d9c50b8be667225b292179885727bda935a5c2f82eeb40dca221",
+      "rustc_error": "E0308"
+    },
+    {
+      "file": "mul-wrong-output.rs",
+      "accepted": false,
+      "sha256": "59f72ff0cf17fb6dd7fae767a9cc0a9d66133f08ad0bf7f517d59d38f8a8ee26",
+      "rustc_error": "E0308"
+    },
+    {
+      "file": "mul-missing-impl.rs",
+      "accepted": false,
+      "sha256": "ba0b41f4118eee934477c8c3b6e58b0a06a7fda41d00dae995ae353d6df1f2ba"
+    },
+    {
+      "file": "mul-lookalike.rs",
+      "accepted": false,
+      "sha256": "bd9b5844bd6126a567823aff712fff6e900dc71af1ff35fb39fa3e0916a85bd8"
+    },
+    {
+      "file": "mul-unsafe.rs",
+      "accepted": false,
+      "sha256": "12f1875389a0c4688784abf9692e139269498d88ece923a9440451f2c4576273",
+      "rustc_error": "E0133"
+    },
+    {
+      "file": "mul-unused-default.rs",
+      "accepted": true,
+      "sha256": "7a0af82e18c5c4cf710ec9ec00f29c41351e22eb326d084023996627d852beef"
+    },
+    {
+      "file": "mul-unused-output.rs",
+      "accepted": true,
+      "sha256": "acf4123ff206808b315a3b85003b45c3b4874867c3ae6e49651e6d256ae99032"
+    },
+    {
+      "file": "rem-wrong-rhs.rs",
+      "accepted": false,
+      "sha256": "99dd38c2100e7718a42c91cb6e1187650ee6de13e2a0d5ddbb3e964f61e720da",
+      "rustc_error": "E0308"
+    },
+    {
+      "file": "rem-wrong-output.rs",
+      "accepted": false,
+      "sha256": "16ac2f34c248842ecc18e3c771ba699a120fcb09e6a366549ca81ddaf392f354",
+      "rustc_error": "E0308"
+    },
+    {
+      "file": "rem-missing-impl.rs",
+      "accepted": false,
+      "sha256": "bcfd26212d8c14dfd5e55144eb5cc76a8fc18d0cf0f36af929a9a6e2af2f2efe"
+    },
+    {
+      "file": "rem-lookalike.rs",
+      "accepted": false,
+      "sha256": "60baa63869d5031c10cc3afa5442d10312e58801db5b09e6510d0615fe23fb1e"
+    },
+    {
+      "file": "rem-unsafe.rs",
+      "accepted": false,
+      "sha256": "aa558460255dc6eae7ad1284e4285ca9d34555c120f3355a6f4de9867b5e07f3",
+      "rustc_error": "E0133"
+    },
+    {
+      "file": "rem-unused-default.rs",
+      "accepted": true,
+      "sha256": "ff9c61edbe1578061003c978afd4fffc1c0f48f620ffd1dc005d45ad2c7c80c2"
+    },
+    {
+      "file": "rem-unused-output.rs",
+      "accepted": true,
+      "sha256": "8cfee752c7dc0f401c60eb24000b58607bb6d990f54e3c51668e0eab1c6fb6d4"
+    },
+    {
+      "file": "bitxor-wrong-rhs.rs",
+      "accepted": false,
+      "sha256": "4086bf360c6eed4c86c10fbd639752ebf095cecfe12555941ad4f96fa9926601",
+      "rustc_error": "E0308"
+    },
+    {
+      "file": "bitxor-wrong-output.rs",
+      "accepted": false,
+      "sha256": "a152f3383786f83ed0c5350f442cc386c2c854ce77d13ee6b0fa54acaa24ca7d",
+      "rustc_error": "E0308"
+    },
+    {
+      "file": "bitxor-missing-impl.rs",
+      "accepted": false,
+      "sha256": "ad7d3668b014f712a07ca66a829224af5b439c633fe6f7d2b4a7d3e2947ca786"
+    },
+    {
+      "file": "bitxor-lookalike.rs",
+      "accepted": false,
+      "sha256": "9c33a90ce26f013d737bc6fe35c45b4b2936aa6a2f6f8b32c3b486c16431f9aa"
+    },
+    {
+      "file": "bitxor-unsafe.rs",
+      "accepted": false,
+      "sha256": "5c0caadca132337e6a0febf60647597f7c43b2fa90fe9cffbaf3608ee19a5594",
+      "rustc_error": "E0133"
+    },
+    {
+      "file": "bitxor-unused-default.rs",
+      "accepted": true,
+      "sha256": "9f2e86b604cd386c60fe5b5f2ca4c21499bae507e393ab9969a0c811e91cb1e2"
+    },
+    {
+      "file": "bitxor-unused-output.rs",
+      "accepted": true,
+      "sha256": "407cf9584e8b38375d6a6ffe4c7eeff1253369ed11981cd272222e5ade096c51"
+    },
+    {
+      "file": "bitand-wrong-rhs.rs",
+      "accepted": false,
+      "sha256": "4a4375c1169078a443e921e40e5580f1c949f48497779fae2e3c6c3eb880bd03",
+      "rustc_error": "E0308"
+    },
+    {
+      "file": "bitand-wrong-output.rs",
+      "accepted": false,
+      "sha256": "f360a7c8e3205ec4c0389c8a96005350a2e2a6e40269d7df686e6951bca323a3",
+      "rustc_error": "E0308"
+    },
+    {
+      "file": "bitand-missing-impl.rs",
+      "accepted": false,
+      "sha256": "d45caa4a5db125b202512b1ca7eb1d08cf91fdd120a2e92283eaed8b36444ce8"
+    },
+    {
+      "file": "bitand-lookalike.rs",
+      "accepted": false,
+      "sha256": "d0c5ec795975f1896b780f00c2d61f472fd858d8a6ce0fee0e6130bf258f22d9"
+    },
+    {
+      "file": "bitand-unsafe.rs",
+      "accepted": false,
+      "sha256": "915237c546a61bf4fc4028deef94624596401b6d0d7cc1f8f88cb0c480d937d1",
+      "rustc_error": "E0133"
+    },
+    {
+      "file": "bitand-unused-default.rs",
+      "accepted": true,
+      "sha256": "b75df38a39835bc9cfe6ba43002ea27e4c5772b033f05b8afcf9ae4a4476044a"
+    },
+    {
+      "file": "bitand-unused-output.rs",
+      "accepted": true,
+      "sha256": "99652f423f21568994890d9a3681496ca4bc269358459f191bb21e9b3e99d018"
+    },
+    {
+      "file": "shr-wrong-rhs.rs",
+      "accepted": false,
+      "sha256": "b9a88c162740c65390b61d92d31b765db2f0c4a42f7d0e774bf3584e22f6d29d",
+      "rustc_error": "E0308"
+    },
+    {
+      "file": "shr-wrong-output.rs",
+      "accepted": false,
+      "sha256": "89a3e997237eefe1862337c672df25de0b033b906e744f4ad59741e978cbd081",
+      "rustc_error": "E0308"
+    },
+    {
+      "file": "shr-missing-impl.rs",
+      "accepted": false,
+      "sha256": "012162d2dbeedbf52b3d78807b447d6738f60bc463ce2b38a4dd70f414289090"
+    },
+    {
+      "file": "shr-lookalike.rs",
+      "accepted": false,
+      "sha256": "d6770889bc2f8de3b99a27b72ead26b351a60bc608f24bfea88d368a0f3b5a8d"
+    },
+    {
+      "file": "shr-unsafe.rs",
+      "accepted": false,
+      "sha256": "12b77ba364b5d9e4223c613bf6649403d8b68e3b61e6643c33dfecf1e56db31a",
+      "rustc_error": "E0133"
+    },
+    {
+      "file": "shr-unused-default.rs",
+      "accepted": true,
+      "sha256": "378f8394563bac14f869db2b62e73812abf44d79bab45669f82672488032e2fb"
+    },
+    {
+      "file": "shr-unused-output.rs",
+      "accepted": true,
+      "sha256": "598dd7748de99a1063d9a9f58c980d3879565b361183fae046dd81ebcaed8b1f"
+    },
+    {
+      "file": "primitive.rs",
+      "accepted": true,
+      "sha256": "965e29bb003cd5f221b9c3b42bdb2016194c22758192644c5436be744959f988",
+      "reference_emit": "metadata"
+    },
+    {
+      "file": "bool-mul.rs",
+      "accepted": false,
+      "sha256": "c8f6a20318a10e0ce9ddec7e1a03ace4a192e23a48982172af7cd1ca5385af2d"
+    },
+    {
+      "file": "bool-rem.rs",
+      "accepted": false,
+      "sha256": "5f20859bdd986a0f8647092e0dec9874633a4f843308e622130d60ec84b78779"
+    },
+    {
+      "file": "bool-shr.rs",
+      "accepted": false,
+      "sha256": "43c2eacb386dc1ace44c72c36d269102e6edde944e932ea91b9654860f098c31"
+    },
+    {
+      "file": "mismatched-mul.rs",
+      "accepted": false,
+      "sha256": "613f872b965dc15d32235a556cae259da8a6ec2cf4b9b47f7f3ffdea58c1b39c"
+    },
+    {
+      "file": "bound-8.rs",
+      "accepted": true,
+      "sha256": "dbc44a3516d3c2892713244517c8e701b136251f7c1b6ef2687c7e3df2039b85"
+    },
+    {
+      "file": "bound-32.rs",
+      "accepted": true,
+      "sha256": "6e3b1b11572a008ba502b38da5143b104b1db659f2280ca6553c36072b4a772b"
+    },
+    {
+      "file": "bound-128.rs",
+      "accepted": true,
+      "sha256": "a503fc30ab85be86e1773bafd0c525063eacc8bc33c6c794a9bd07085a3fa474"
+    },
+    {
+      "file": "mul-single.rs",
+      "accepted": true,
+      "sha256": "e0ddd419de65af6d10630fdf1697ab093b14e2416a0883dd7c3ce8b22a358517"
+    },
+    {
+      "file": "rem-single.rs",
+      "accepted": true,
+      "sha256": "cd3e420c864b7cf938d44194c2748fd96c56a8a02349a2bf5e0e4722adc59196"
+    },
+    {
+      "file": "bitxor-single.rs",
+      "accepted": true,
+      "sha256": "2a6a77c8d272fad5fd09a47ea06b2fc9818be2cd44cd7dd5acc647e94133f051"
+    },
+    {
+      "file": "bitand-single.rs",
+      "accepted": true,
+      "sha256": "b86c11a9630177337fa8018d0cf808e6cb435b2b511f2a8e8abb548bcaff8283"
+    },
+    {
+      "file": "shr-single.rs",
+      "accepted": true,
+      "sha256": "5e244dc0f09edcea6aba440d82abbd986629c13867367b180fc2685530e6b268"
+    }
+  ],
+  "native_stdout": "11 13 15 17 19 42 44 46 48 50\n",
+  "observer_sha256": "46220f73d672919060b3f796f75f8ed206fa518f70c17bf62ed7f52adfb5f76d",
+  "refreeze_before_candidate": "Independent v1 custom native observer passed; primitive codegen requires out-of-scope panic_const language items. Preserve source unchanged and qualify primitive well-typedness with metadata emission; custom native object qualification remains mandatory.",
+  "isolated_positive_expectation": "Before candidate execution, append one positive per isolated actual role so an incorrect Hook-to-role mapping cannot be hidden by several operators sharing a custom body shape."
+}

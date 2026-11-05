@@ -1,0 +1,356 @@
+{
+  "schema": 1,
+  "rustc": "1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "edition": 2024,
+  "scope": "Source AsyncDrop declaration and nominal coverage, without runtime permission",
+  "cases": [
+    {
+      "name": "unused-empty",
+      "path": "pa31/tests/spec/async-drop-source/unused-empty.rs",
+      "status": 0,
+      "sha256": "96aaf89c11a0cf02ab3d4b03c8c5ee7a0401f34657d85793777955f29353f335",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/unused-empty.rs",
+      "oracle_sha256": "96aaf89c11a0cf02ab3d4b03c8c5ee7a0401f34657d85793777955f29353f335"
+    },
+    {
+      "name": "unused-ordinary",
+      "path": "pa31/tests/spec/async-drop-source/unused-ordinary.rs",
+      "status": 0,
+      "sha256": "d46323e12abd806e99c8cfc3017235404f04bcb5a265dd46ab535b7da6507a9a",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/unused-ordinary.rs",
+      "oracle_sha256": "d46323e12abd806e99c8cfc3017235404f04bcb5a265dd46ab535b7da6507a9a"
+    },
+    {
+      "name": "unused-renamed",
+      "path": "pa43/tests/spec/async-destructors/unused-renamed.rs",
+      "status": 0,
+      "sha256": "a6e9c52580693ae05ca596127526d979e637d0d882557dab9aedf9d1c07abf29",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa43/tests/spec/async-destructors/unused-renamed.rs",
+      "oracle_sha256": "a6e9c52580693ae05ca596127526d979e637d0d882557dab9aedf9d1c07abf29"
+    },
+    {
+      "name": "ordinary-impl",
+      "path": "pa31/tests/spec/async-drop-source/ordinary-impl.rs",
+      "status": 0,
+      "sha256": "eb7dd351fbf89adc462e55035947366197537b62ae22f004ec4b2bc719ce4a48",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/ordinary-impl.rs",
+      "oracle_sha256": "eb7dd351fbf89adc462e55035947366197537b62ae22f004ec4b2bc719ce4a48"
+    },
+    {
+      "name": "ordinary-wrong-output",
+      "path": "pa31/tests/spec/async-drop-source/ordinary-wrong-output.rs",
+      "status": 1,
+      "sha256": "91819073b512cd14493425f8aa8835f4e5cc6a705bcbdd4c5b84636374b9f91e",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/ordinary-wrong-output.rs",
+      "oracle_sha256": "91819073b512cd14493425f8aa8835f4e5cc6a705bcbdd4c5b84636374b9f91e"
+    },
+    {
+      "name": "generic-coverage",
+      "path": "pa31/tests/spec/async-drop-source/generic-coverage.rs",
+      "status": 0,
+      "sha256": "5ae64e16a53857386c6adcb3aec70555d3ecddf5236ecf0b605ce662157ecbff",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/generic-coverage.rs",
+      "oracle_sha256": "5ae64e16a53857386c6adcb3aec70555d3ecddf5236ecf0b605ce662157ecbff"
+    },
+    {
+      "name": "specialized-target",
+      "path": "pa31/tests/spec/async-drop-source/specialized-target.rs",
+      "status": 1,
+      "sha256": "d895bd6a29a5a3fb47318b5c1250e37f6311fe4070b4eca431da32a95e1e3b52",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/specialized-target.rs",
+      "oracle_sha256": "d895bd6a29a5a3fb47318b5c1250e37f6311fe4070b4eca431da32a95e1e3b52",
+      "rustc_cause": "E0366",
+      "candidate_cause": "without specialization"
+    },
+    {
+      "name": "repeated-parameters",
+      "path": "pa31/tests/spec/async-drop-source/repeated-parameters.rs",
+      "status": 1,
+      "sha256": "13aca5f7c0e5eab6d8b267c823d88a49aa774899d05454019cbc66ea3fbda12e",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/repeated-parameters.rs",
+      "oracle_sha256": "13aca5f7c0e5eab6d8b267c823d88a49aa774899d05454019cbc66ea3fbda12e",
+      "rustc_cause": "E0366",
+      "candidate_cause": "without specialization"
+    },
+    {
+      "name": "strengthened-trait",
+      "path": "pa31/tests/spec/async-drop-source/strengthened-trait.rs",
+      "status": 1,
+      "sha256": "2f86174659fa0e9552bda6ac826a276fb2ad826ef1344463ff8dd903f3046204",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/strengthened-trait.rs",
+      "oracle_sha256": "2f86174659fa0e9552bda6ac826a276fb2ad826ef1344463ff8dd903f3046204",
+      "rustc_cause": "E0367",
+      "candidate_cause": "Drop impl adds type requirements"
+    },
+    {
+      "name": "nominal-trait",
+      "path": "pa31/tests/spec/async-drop-source/nominal-trait.rs",
+      "status": 0,
+      "sha256": "cc3a637160f86fd01c198c617e3aeac63f2a94c9cc20e68c0dd715ad4ce7e44e",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/nominal-trait.rs",
+      "oracle_sha256": "cc3a637160f86fd01c198c617e3aeac63f2a94c9cc20e68c0dd715ad4ce7e44e"
+    },
+    {
+      "name": "blanket-target",
+      "path": "pa31/tests/spec/async-drop-source/blanket-target.rs",
+      "status": 1,
+      "sha256": "52fcc6882ff70c9e8638ec09cfe42dfc5d1bc6008f4d42b020dc2f5542b98335",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/blanket-target.rs",
+      "oracle_sha256": "52fcc6882ff70c9e8638ec09cfe42dfc5d1bc6008f4d42b020dc2f5542b98335",
+      "rustc_cause": "E0120",
+      "candidate_cause": "AsyncDrop requires a local struct or enum target"
+    },
+    {
+      "name": "strengthened-region",
+      "path": "pa31/tests/spec/async-drop-source/strengthened-region.rs",
+      "status": 1,
+      "sha256": "29b531a6dceb25fd96d98fff02fc297bf856125157ae4c57256850abd24daa42",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/strengthened-region.rs",
+      "oracle_sha256": "29b531a6dceb25fd96d98fff02fc297bf856125157ae4c57256850abd24daa42",
+      "rustc_cause": "E0367",
+      "candidate_cause": "Drop impl adds lifetime requirements"
+    },
+    {
+      "name": "nominal-region",
+      "path": "pa31/tests/spec/async-drop-source/nominal-region.rs",
+      "status": 0,
+      "sha256": "432c5f38988c9b769117843ea6ef9736d698a25484b5f6fc35ea7702c830f367",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/nominal-region.rs",
+      "oracle_sha256": "432c5f38988c9b769117843ea6ef9736d698a25484b5f6fc35ea7702c830f367"
+    },
+    {
+      "name": "const-coverage",
+      "path": "pa31/tests/spec/async-drop-source/const-coverage.rs",
+      "status": 0,
+      "sha256": "a04c1acd9378ef7b8c2600070116230cc21f5e18b4198ee5dd9d9c50c10321e4",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/const-coverage.rs",
+      "oracle_sha256": "a04c1acd9378ef7b8c2600070116230cc21f5e18b4198ee5dd9d9c50c10321e4"
+    },
+    {
+      "name": "specialized-const",
+      "path": "pa31/tests/spec/async-drop-source/specialized-const.rs",
+      "status": 1,
+      "sha256": "76a4dec7cda71d975194221360236fdb5e7af48bb36c9154164d540368cbe671",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/specialized-const.rs",
+      "oracle_sha256": "76a4dec7cda71d975194221360236fdb5e7af48bb36c9154164d540368cbe671",
+      "rustc_cause": "E0366",
+      "candidate_cause": "without specialization"
+    },
+    {
+      "name": "copy-exclusion",
+      "path": "pa31/tests/spec/async-drop-source/copy-exclusion.rs",
+      "status": 1,
+      "sha256": "22ca399d283f357448fe412c380d2f001eaeb46675e70ef322deac8434414a20",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/copy-exclusion.rs",
+      "oracle_sha256": "22ca399d283f357448fe412c380d2f001eaeb46675e70ef322deac8434414a20",
+      "rustc_cause": "E0184",
+      "candidate_cause": "cannot implement both source Copy and Drop"
+    },
+    {
+      "name": "copy-missing-sync",
+      "path": "pa31/tests/spec/async-drop-source/copy-missing-sync.rs",
+      "status": 1,
+      "sha256": "c567f1cb32d1aca7cdca2d9f571bbebec297fcee80d23e5aaaced4d410652909",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/copy-missing-sync.rs",
+      "oracle_sha256": "c567f1cb32d1aca7cdca2d9f571bbebec297fcee80d23e5aaaced4d410652909",
+      "rustc_cause": "`AsyncDrop` impl without `Drop` impl",
+      "candidate_cause": "AsyncDrop requires a synchronous Drop implementation"
+    },
+    {
+      "name": "actual-method",
+      "path": "pa43/tests/spec/async-destructors/actual-method.rs",
+      "status": 0,
+      "sha256": "6fab5d13fcb7476aacb2bd57974891c14f77b1ff4e1b048d78d5f4ef5dd14778",
+      "oracle_profile": "pinned-standard-core",
+      "oracle_path": "pa43/tests/spec/async-destructors/oracle/actual-method.rs",
+      "oracle_sha256": "f218657787fe9dadbf64ec10a5cb38e7e691e392f0cde4e1366a16bda2c178ff"
+    },
+    {
+      "name": "actual-missing-sync",
+      "path": "pa43/tests/spec/async-destructors/actual-missing-sync.rs",
+      "status": 1,
+      "sha256": "71174f95884de2ffa37eea2e455217544f5b349d8191c21a7eb74e4300cc8c21",
+      "oracle_profile": "pinned-standard-core",
+      "oracle_path": "pa43/tests/spec/async-destructors/oracle/actual-missing-sync.rs",
+      "oracle_sha256": "65833bccde7476ef938cc7d2af8f34f1c5feae5d714578884db40762e3ac9500",
+      "rustc_cause": "`AsyncDrop` impl without `Drop` impl",
+      "candidate_cause": "AsyncDrop requires a synchronous Drop implementation"
+    },
+    {
+      "name": "actual-wrong-output",
+      "path": "pa43/tests/spec/async-destructors/actual-wrong-output.rs",
+      "status": 1,
+      "sha256": "27bdada27de314b9652d06e8482845bf8ac4788c96409e6982707d1638e0c543",
+      "oracle_profile": "pinned-standard-core",
+      "oracle_path": "pa43/tests/spec/async-destructors/oracle/actual-wrong-output.rs",
+      "oracle_sha256": "f389cd86f64af3ec01b0e1811749b636a670a6c75dc831726cfbc9acfdbb9b5a"
+    },
+    {
+      "name": "actual-wrong-receiver",
+      "path": "pa43/tests/spec/async-destructors/actual-wrong-receiver.rs",
+      "status": 1,
+      "sha256": "5bc50a7f9feda635a165f3386bb71d3265e525aecb03bf3bbe765b3ddcde5e69",
+      "oracle_profile": "pinned-standard-core",
+      "oracle_path": "pa43/tests/spec/async-destructors/oracle/actual-wrong-receiver.rs",
+      "oracle_sha256": "559c3425440355a3e9e0cd635e199a5c9cd409d60c54f02977fbe043e9e3c972"
+    },
+    {
+      "name": "actual-unsafe",
+      "path": "pa43/tests/spec/async-destructors/actual-unsafe.rs",
+      "status": 1,
+      "sha256": "ccf493712d2a0d4c00c5c759acc0d74980c92c47020694171e75d7ffb4a0eb8d",
+      "oracle_profile": "pinned-standard-core",
+      "oracle_path": "pa43/tests/spec/async-destructors/oracle/actual-unsafe.rs",
+      "oracle_sha256": "0ea0b83e1e25d4065b9a0456ec4b5c377f0f277e8e0409360c1909ee952705c1"
+    },
+    {
+      "name": "actual-invalid-body",
+      "path": "pa43/tests/spec/async-destructors/actual-invalid-body.rs",
+      "status": 1,
+      "sha256": "17b31f44b6277c96843d0d0e3c2d09269d3c6eaf70dd4ccc8520fe90388e5111",
+      "oracle_profile": "pinned-standard-core",
+      "oracle_path": "pa43/tests/spec/async-destructors/oracle/actual-invalid-body.rs",
+      "oracle_sha256": "2b17ecd21c9ead7e9b5c02d8c53f814068ff315349a013f02ad1361e6920197b"
+    },
+    {
+      "name": "explicit-call",
+      "path": "pa43/tests/spec/async-destructors/explicit-call.rs",
+      "status": 0,
+      "sha256": "efdf4da30313ddd8a62f16847e569d11d757418c3c3f5e292eff143369fe5ea8",
+      "oracle_profile": "pinned-standard-core",
+      "oracle_path": "pa43/tests/spec/async-destructors/oracle/explicit-call.rs",
+      "oracle_sha256": "89bed3f4e72dab6a45e4e9695f0a1f3f17e149a3107e74b2b46d60eee0e243fd"
+    },
+    {
+      "name": "reify-call",
+      "path": "pa43/tests/spec/async-destructors/reify-call.rs",
+      "status": 0,
+      "sha256": "896fe5c3f50e80355d4f615cc0e85a64af0cde2fbcd2f60d8ab12fb91c644821",
+      "oracle_profile": "pinned-standard-core",
+      "oracle_path": "pa43/tests/spec/async-destructors/oracle/reify-call.rs",
+      "oracle_sha256": "543e160e8cbd2e37396846ce5eb98160e6ee631fb892d6705b070efa8f00108b"
+    },
+    {
+      "name": "actual-generic",
+      "path": "pa43/tests/spec/async-destructors/actual-generic.rs",
+      "status": 0,
+      "sha256": "088c454991ff6bdb29811d3f98974ba8b27942451096a3ab3b815c7e45e466ec",
+      "oracle_profile": "pinned-standard-core",
+      "oracle_path": "pa43/tests/spec/async-destructors/oracle/actual-generic.rs",
+      "oracle_sha256": "b4d71ec995aa7b86b994f8f082fe7dce2885601b6641fa232033b7f987803545"
+    },
+    {
+      "name": "negative-impl",
+      "path": "pa31/tests/spec/async-drop-source/negative-impl.rs",
+      "status": 1,
+      "sha256": "57c48acd26bb18bb20432f166ab9dc609969e2398a3769183cca12e0e8ea7559",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/negative-impl.rs",
+      "oracle_sha256": "57c48acd26bb18bb20432f166ab9dc609969e2398a3769183cca12e0e8ea7559",
+      "rustc_cause": "negative `Drop` impls are not supported",
+      "candidate_cause": "AsyncDrop requires a positive implementation"
+    },
+    {
+      "name": "unused-static",
+      "path": "pa43/tests/spec/async-destructors/unused-static.rs",
+      "status": 0,
+      "sha256": "3846df865c2a8bb1cdbe5b5a65dd8130891653d5c2554a56bb5b8c7e21698e1c",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa43/tests/spec/async-destructors/unused-static.rs",
+      "oracle_sha256": "3846df865c2a8bb1cdbe5b5a65dd8130891653d5c2554a56bb5b8c7e21698e1c"
+    },
+    {
+      "name": "no-feature-missing-sync",
+      "path": "pa31/tests/spec/async-drop-source/no-feature-missing-sync.rs",
+      "status": 0,
+      "sha256": "4857d82a458df8303f018f27914d69d871920ab6ba7ed6529863dcb05f5cc075",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/no-feature-missing-sync.rs",
+      "oracle_sha256": "4857d82a458df8303f018f27914d69d871920ab6ba7ed6529863dcb05f5cc075"
+    },
+    {
+      "name": "no-feature-specialized",
+      "path": "pa31/tests/spec/async-drop-source/no-feature-specialized.rs",
+      "status": 1,
+      "sha256": "e7ed2636d08492740d2ef4790119da7bf0df5986c38d8dc7a4370dda27eeebd9",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/no-feature-specialized.rs",
+      "oracle_sha256": "e7ed2636d08492740d2ef4790119da7bf0df5986c38d8dc7a4370dda27eeebd9",
+      "rustc_cause": "E0366",
+      "candidate_cause": "without specialization"
+    },
+    {
+      "name": "no-feature-blanket",
+      "path": "pa31/tests/spec/async-drop-source/no-feature-blanket.rs",
+      "status": 1,
+      "sha256": "a767f2199643a298bbd6b04b8772c9dc624ef6608c3c45ef8a05bccb17e3f127",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/no-feature-blanket.rs",
+      "oracle_sha256": "a767f2199643a298bbd6b04b8772c9dc624ef6608c3c45ef8a05bccb17e3f127",
+      "rustc_cause": "E0120",
+      "candidate_cause": "AsyncDrop requires a local struct or enum target"
+    },
+    {
+      "name": "no-feature-strengthened",
+      "path": "pa31/tests/spec/async-drop-source/no-feature-strengthened.rs",
+      "status": 1,
+      "sha256": "70c5ccc7d8f4e3eb5e7662026144e95b9027409d3a58bd18c0d0b67e5ca4428c",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/no-feature-strengthened.rs",
+      "oracle_sha256": "70c5ccc7d8f4e3eb5e7662026144e95b9027409d3a58bd18c0d0b67e5ca4428c",
+      "rustc_cause": "E0367",
+      "candidate_cause": "Drop impl adds type requirements"
+    },
+    {
+      "name": "no-feature-copy",
+      "path": "pa31/tests/spec/async-drop-source/no-feature-copy.rs",
+      "status": 0,
+      "sha256": "3bae1db441fb7f85de468c8a34352aad2a58865a3ee447c1240b5f55a82417f8",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/no-feature-copy.rs",
+      "oracle_sha256": "3bae1db441fb7f85de468c8a34352aad2a58865a3ee447c1240b5f55a82417f8"
+    },
+    {
+      "name": "ordinary-drop-const-impl",
+      "path": "pa31/tests/spec/async-drop-source/ordinary-drop-const-impl.rs",
+      "status": 1,
+      "sha256": "54988f6f1325ce6186d1951d9b88284965c95e0e0ec7c2b6bbd4de1f3dd20829",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/ordinary-drop-const-impl.rs",
+      "oracle_sha256": "54988f6f1325ce6186d1951d9b88284965c95e0e0ec7c2b6bbd4de1f3dd20829",
+      "rustc_cause": "not `const`",
+      "candidate_cause": "Drop requires a positive safe impl without trait arguments"
+    },
+    {
+      "name": "ordinary-drop-runtime",
+      "path": "pa31/tests/spec/async-drop-source/ordinary-drop-runtime.rs",
+      "status": 0,
+      "sha256": "aa5e15743067da7312adf9ddeeb3f65a03aae65ab71d6eb56e0b968fdddb1ac3",
+      "oracle_profile": "exact-source",
+      "oracle_path": "pa31/tests/spec/async-drop-source/ordinary-drop-runtime.rs",
+      "oracle_sha256": "aa5e15743067da7312adf9ddeeb3f65a03aae65ab71d6eb56e0b968fdddb1ac3"
+    }
+  ],
+  "ordinary_runtime": {
+    "source": "pa31/tests/spec/async-drop-source/ordinary-drop-runtime.rs",
+    "observer": "pa31/tests/spec/pin-source/observer.c",
+    "stdout": "record=5\nscalar=7\nrecord=5\nborrowed=9\nrecord=5\nrecord=3\nowned=8\n"
+  }
+}

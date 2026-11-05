@@ -42,6 +42,7 @@ impl Checker<'_> {
             crate::support::bindings::LangItem::Deref,
             crate::support::bindings::LangItem::DerefMut,
             crate::support::bindings::LangItem::Future,
+            crate::support::bindings::LangItem::AsyncDrop,
         ] {
             let Some(declaration) = catalog.language(role) else {
                 continue;
@@ -72,6 +73,7 @@ impl Checker<'_> {
             );
         }
         for role in [
+            crate::support::bindings::LangItem::AsyncDropInPlace,
             crate::support::bindings::LangItem::FnPtrAddr,
             crate::support::bindings::LangItem::FuturePoll,
             crate::support::bindings::LangItem::RangeMin,

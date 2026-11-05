@@ -338,6 +338,13 @@ impl super::package::Package {
             "aggregate const-parameter client identity changed",
         )
     }
+    /// The language request also retains its genuine library API feature grant.
+    pub(crate) fn requested_async_drop(&self) -> Result<bool, &'static str> {
+        self.requested_expression_feature(
+            policy::Feature::AsyncDrop,
+            "async destruction client identity changed",
+        )
+    }
     pub(crate) fn requested_unadjusted_abi(&self) -> Result<bool, &'static str> {
         self.requested_expression_feature(
             policy::Feature::AbiUnadjusted,

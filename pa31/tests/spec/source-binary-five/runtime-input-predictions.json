@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "frozen_before_candidate": true,
+  "source": "runtime-input.rs",
+  "source_sha256": "b5cbb73623b40cc9e85c796b4039fb1d7474098597fa8cd37ab49cf20bc9e60b",
+  "observer": "input-observer.c",
+  "observer_sha256": "452da508c1bd095eedd3dc76a5744c922c7ab212af3482ec920b13f008d7c734",
+  "accepted": true,
+  "native_stdout": "23\n",
+  "semantics": "actual C runtime operand data crosses source Word*Arg into the selected Mul body rhs field load and returns23; no panic closure added"
+}

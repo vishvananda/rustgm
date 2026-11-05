@@ -228,6 +228,12 @@ fn complete_dependent_roles(
     {
         complete.roles.insert(role);
     }
+    if let Some(role) = super::async_glue::complete(report, facts, catalog)? {
+        complete.roles.insert(role);
+    }
+    if let Some(role) = super::async_cleanup::complete(report, facts, catalog)? {
+        complete.roles.insert(role);
+    }
     if let Some(declaration) = catalog.language(LangItem::FnPtrAddr) {
         super::pointers::validate_member(report, facts, declaration)?;
         complete.roles.insert(LangItem::FnPtrAddr);
@@ -405,9 +411,9 @@ fn header<'a>(
             .map_err(error)?;
         return Ok(header);
     }
-    // Clone may be an ordinary or const source trait. Preserve that actual
+    // Clone and Drop may be ordinary or const source traits. Preserve the actual
     // declaration fact; role admission supplies no executable const capability.
-    let constant = if role == LangItem::Clone {
+    let constant = if matches!(role, LangItem::Clone | LangItem::Drop) {
         header.flags.constant
     } else {
         matches!(
@@ -415,7 +421,6 @@ fn header<'a>(
             LangItem::FnOnce
                 | LangItem::FnMut
                 | LangItem::Fn
-                | LangItem::Drop
                 | LangItem::Destruct
                 | LangItem::TrivialClone
         )

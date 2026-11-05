@@ -44,6 +44,11 @@ fn requested_operator(report: &Report, site: NodeKey, hook: Hook) -> Result<Oper
         Hook::BitOr => Operator::BitOr,
         Hook::Add => Operator::Add,
         Hook::Sub => Operator::Sub,
+        Hook::Mul => Operator::Mul,
+        Hook::Rem => Operator::Rem,
+        Hook::BitXor => Operator::BitXor,
+        Hook::BitAnd => Operator::BitAnd,
+        Hook::Shr => Operator::Shr,
         Hook::Div => Operator::Div,
         _ => {
             return Err(Declarations::error(

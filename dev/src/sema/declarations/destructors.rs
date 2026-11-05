@@ -1,4 +1,5 @@
 //! Elaborate destructor targets once and retain their lifetime environments.
+mod asynchronous;
 mod coverage;
 mod headers;
 mod receivers;
@@ -148,7 +149,10 @@ impl Checker<'_> {
                 .symbolic_requirements(implementation.target)
                 .map_err(|e| self.error(key, e))?;
             crate::sema::destructors::check_bounds(
-                implementation,
+                crate::sema::destructors::LifetimeContract {
+                    parameters: implementation.parameters,
+                    bounds: &implementation.bounds,
+                },
                 &arguments,
                 &assumptions,
                 &self.facts.types,

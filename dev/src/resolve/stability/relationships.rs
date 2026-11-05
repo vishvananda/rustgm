@@ -79,14 +79,18 @@ impl Draft<'_> {
         };
         self.validate_relationships(package, features, imported, &requested_names)?;
         // These are also language gates: using them needs no local unstable API.
-        // This does not add either name to `features` or validate an implied_by target.
+        // This does not add those names to `features` or validate an implied_by target.
         let aggregate_language = package
             .requested_aggregate_const_parameters()
+            .map_err(|message| Error::at(FileId(0), 0, message))?;
+        let async_destruction = package
+            .requested_async_drop()
             .map_err(|message| Error::at(FileId(0), 0, message))?;
         for name in requests {
             let known = features.contains_key(name.as_ref())
                 || (aggregate_language
-                    && matches!(name.as_ref(), "min_adt_const_params" | "adt_const_params"));
+                    && matches!(name.as_ref(), "min_adt_const_params" | "adt_const_params"))
+                || (async_destruction && name.as_ref() == "async_drop");
             if !known
                 && !imported
                     .map(|imports| imports.has_feature(name))

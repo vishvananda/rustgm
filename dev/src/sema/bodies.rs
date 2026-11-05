@@ -2069,7 +2069,16 @@ impl Checker<'_> {
         if self.facts.source_bindings.is_some()
             && matches!(
                 op,
-                Op::ShiftLeft | Op::Or | Op::Plus | Op::Minus | Op::Slash
+                Op::ShiftLeft
+                    | Op::Or
+                    | Op::Plus
+                    | Op::Minus
+                    | Op::Slash
+                    | Op::Star
+                    | Op::Percent
+                    | Op::Caret
+                    | Op::And
+                    | Op::ShiftRight
             )
         {
             let hook = language_hooks::binary_hook(op)

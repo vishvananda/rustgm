@@ -168,6 +168,7 @@ fn function_body(
     function: &crate::sema::model::Function,
     query: Option<&mut crate::types::destruction::NeedsDrop>,
 ) -> Result<Body, Error> {
+    crate::sema::compiler_items::require_async_glue_body(report, facts, function)?;
     if facts.async_body_output(report, function)?.is_some() {
         return Err(report.body_error(
             function.node,
