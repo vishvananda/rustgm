@@ -108,6 +108,32 @@ fn checked(label: &str, command: &mut Command, folder: &Path) -> Result<Vec<u8>>
 }
 
 #[test]
+fn ordinary_nested_open_obligations_remain_possible_after_canonical_queries() -> Result {
+    for (name, source, accepted) in [
+        (
+            "closed",
+            "trait Demand{}trait Relation{}struct Known<T>(T);impl<T:Demand> Relation for T{}impl<T> Relation for Known<T>{}fn main(){}",
+            true,
+        ),
+        (
+            "nested_open",
+            "trait Demand{}trait Dependency<A>{}trait Relation{}struct Known<T>(T);impl<T> Demand for Known<T> where Known<T>:Dependency<T>{}impl<T:Demand> Relation for T{}impl<T> Relation for Known<T>{}fn main(){}",
+            false,
+        ),
+    ] {
+        crate::qualify::qualify(
+            &format!("parallel/ordinary-coherence/{name}"),
+            source,
+            accepted,
+        )?;
+        let report = test_source::resolve(source, true)?;
+        let result = pipeline::analyze_source(&report);
+        assert_eq!(result.is_ok(), accepted, "{name}: {:?}", result.err());
+    }
+    Ok(())
+}
+
+#[test]
 #[ignore = "requires current locked CPPGM object backend and host C compiler"]
 fn real_receiver_methods_execute_once_with_generic_and_raw_pointer_contracts() -> Result {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"))

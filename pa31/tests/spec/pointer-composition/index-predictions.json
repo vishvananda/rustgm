@@ -16,6 +16,10 @@
     {
       "file": "standard-observer.c",
       "sha256": "5441229a84891da62fbf51835c603d22687f008bb309724e5936a3661db75abb"
+    },
+    {
+      "file": "runtime-index-foundation.rs",
+      "sha256": "f32b1238a614167ae642a63ac0bd3d828c751bb8efa4740413297926807cab33"
     }
   ],
   "candidate": {
@@ -35,5 +39,19 @@
     "diagnostic": "fully_perform",
     "attempts": "obj/parallel/index-foundation-repair-v1/reference-v1 through reference-v6",
     "required": "Full no_core original-source indexing/const/borrow/metadata parity remains required; standard-core companion is narrower evidence."
+  },
+  "unstaged_runtime_foundation": {
+    "protocol": "Actual const Index/IndexMut traits, ordinary non-const array implementations, no library stability attributes",
+    "runtime_metadata_expected": 0,
+    "const_opponent_metadata_expected": 1,
+    "candidate_runtime_original_lowir": "positive",
+    "candidate_const_opponent": "trait obligation requires an unambiguous matching assumption or implementation",
+    "independent_reference": {
+      "packet": "obj/parallel/enum-deferred-join-v1/runtime-foundation-reference",
+      "runtime_source_sha256": "cd2f76f228b5cdeae69e4f06e7d7890892dd8e0c36b5c5b4f7825c1899d57d09",
+      "const_opponent_source_sha256": "c129fd77dd55a22c5fe37629b0d2ac050343fc22c8e7904022915dff13de4259",
+      "const_opponent_diagnostic": "E0277: [u8; 3]: const Index<usize> is not satisfied"
+    },
+    "qualification": "These runtime and const-opponent metadata checks do not qualify the distinct full no_core const helper packet above."
   }
 }

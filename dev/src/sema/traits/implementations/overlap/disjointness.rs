@@ -65,7 +65,10 @@ pub(in crate::sema) fn absence_closed(
                     crate::sema::associated::OwnerKind::Trait { definition: id, .. }
                     if id == definition)
         });
-    if !(local || crate::sema::header_attributes::fundamental_policy(facts, definition)?) {
+    if !(local
+        || facts.associated.closed_language_trait(definition)
+        || crate::sema::header_attributes::fundamental_policy(facts, definition)?)
+    {
         return Ok(false);
     }
     if closed_inputs(facts, context, goal)? {

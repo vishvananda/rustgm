@@ -46,6 +46,83 @@ impl Selected<'_> {
         Ok(visited.insert(index).then_some(index))
     }
 }
+/// Source operation descriptors do not authorize an ordinary callable original.
+fn require_source_body(
+    facts: &Declarations,
+    instance: Instance,
+    item: ItemId,
+) -> Result<(), &'static str> {
+    // Actual helpers still follow ordinary original/materialized proofs.
+    // The typed descriptor only gates their later cleanup adapter.
+    crate::sema::compiler_items::source_drop_glue(facts, instance)?;
+    if let Some(kind) = facts
+        .source_bindings
+        .as_deref()
+        .map(|c| c.intrinsic_kind(DefId(item.0)))
+        .transpose()?
+        .flatten()
+        && kind != crate::support::bindings::SourceIntrinsic::ColdPath
+        && !facts
+            .source_bindings
+            .as_deref()
+            .ok_or("source vararg fallback catalog is missing")?
+            .vararg_fallback(facts, instance)?
+    {
+        return Err(match kind {
+            crate::support::bindings::SourceIntrinsic::Declaration(_) => {
+                "source intrinsic executable lowering is not implemented"
+            }
+            crate::support::bindings::SourceIntrinsic::Layout(_) => {
+                "source layout intrinsic runtime lowering is not implemented"
+            }
+            crate::support::bindings::SourceIntrinsic::NeedsDrop => {
+                "source needs_drop intrinsic must be evaluated in a const block"
+            }
+            crate::support::bindings::SourceIntrinsic::OffsetOf => {
+                "source offset_of intrinsic must be evaluated in a const block"
+            }
+            crate::support::bindings::SourceIntrinsic::ConstEvalSelect => {
+                "source callback selection requires its proved reached runtime operation"
+            }
+            crate::support::bindings::SourceIntrinsic::ArithOffset => {
+                "source arith_offset requires an authenticated direct call"
+            }
+            crate::support::bindings::SourceIntrinsic::Transmute
+            | crate::support::bindings::SourceIntrinsic::TransmuteUnchecked => {
+                "source transmute requires its proved direct runtime operation"
+            }
+            crate::support::bindings::SourceIntrinsic::ThreeWayCompare => {
+                "three_way_compare requires its proved direct scalar comparison operation"
+            }
+            crate::support::bindings::SourceIntrinsic::DiscriminantValue => {
+                "source discriminant requires its proved direct reference operation"
+            }
+            crate::support::bindings::SourceIntrinsic::AggregateRawPtr => {
+                "source aggregate_raw_ptr requires its proved direct composition operation"
+            }
+            crate::support::bindings::SourceIntrinsic::PtrMetadata => {
+                "source ptr_metadata requires its proved direct pointer operation"
+            }
+            crate::support::bindings::SourceIntrinsic::CallerLocation => {
+                "source caller_location requires its proved direct caller operation"
+            }
+            crate::support::bindings::SourceIntrinsic::Abort => {
+                "source abort requires its proved reached runtime operation"
+            }
+            crate::support::bindings::SourceIntrinsic::UbChecks => {
+                "source ub_checks requires its proved direct runtime operation"
+            }
+            crate::support::bindings::SourceIntrinsic::UncheckedSub
+            | crate::support::bindings::SourceIntrinsic::SubWithOverflow => {
+                "source subtraction requires its actual checked direct operation"
+            }
+            crate::support::bindings::SourceIntrinsic::ColdPath => {
+                "source cold_path requires its genuine source fallback"
+            }
+        });
+    }
+    Ok(())
+}
 impl Ordinary {
     fn adapter_source(
         &self,
@@ -81,75 +158,7 @@ impl Ordinary {
         Ok(Some(match facts.types.kind(instance.ty()) {
             Some(Kind::FunctionItem { item, .. }) => {
                 crate::body::coroutines::require_ordinary_original(facts, DefId(item.0))?;
-                // Actual helpers still follow ordinary original/materialized proofs.
-                // The typed descriptor only gates their later cleanup adapter.
-                crate::sema::compiler_items::source_drop_glue(facts, instance)?;
-                if let Some(kind) = facts
-                    .source_bindings
-                    .as_deref()
-                    .map(|c| c.intrinsic_kind(DefId(item.0)))
-                    .transpose()?
-                    .flatten()
-                    && kind != crate::support::bindings::SourceIntrinsic::ColdPath
-                    && !facts
-                        .source_bindings
-                        .as_deref()
-                        .ok_or("source vararg fallback catalog is missing")?
-                        .vararg_fallback(facts, instance)?
-                {
-                    return Err(match kind {
-                        crate::support::bindings::SourceIntrinsic::Declaration(_) => {
-                            "source intrinsic executable lowering is not implemented"
-                        }
-                        crate::support::bindings::SourceIntrinsic::Layout(_) => {
-                            "source layout intrinsic runtime lowering is not implemented"
-                        }
-                        crate::support::bindings::SourceIntrinsic::NeedsDrop => {
-                            "source needs_drop intrinsic must be evaluated in a const block"
-                        }
-                        crate::support::bindings::SourceIntrinsic::OffsetOf => {
-                            "source offset_of intrinsic must be evaluated in a const block"
-                        }
-                        crate::support::bindings::SourceIntrinsic::ConstEvalSelect => {
-                            "source callback selection requires its proved reached runtime operation"
-                        }
-                        crate::support::bindings::SourceIntrinsic::ArithOffset => {
-                            "source arith_offset requires an authenticated direct call"
-                        }
-                        crate::support::bindings::SourceIntrinsic::Transmute
-                        | crate::support::bindings::SourceIntrinsic::TransmuteUnchecked => {
-                            "source transmute requires its proved direct runtime operation"
-                        }
-                        crate::support::bindings::SourceIntrinsic::ThreeWayCompare => {
-                            "three_way_compare requires its proved direct scalar comparison operation"
-                        }
-                        crate::support::bindings::SourceIntrinsic::DiscriminantValue => {
-                            "source discriminant requires its proved direct reference operation"
-                        }
-                        crate::support::bindings::SourceIntrinsic::AggregateRawPtr => {
-                            "source aggregate_raw_ptr requires its proved direct composition operation"
-                        }
-                        crate::support::bindings::SourceIntrinsic::PtrMetadata => {
-                            "source ptr_metadata requires its proved direct pointer operation"
-                        }
-                        crate::support::bindings::SourceIntrinsic::CallerLocation => {
-                            "source caller_location requires its proved direct caller operation"
-                        }
-                        crate::support::bindings::SourceIntrinsic::Abort => {
-                            "source abort requires its proved reached runtime operation"
-                        }
-                        crate::support::bindings::SourceIntrinsic::UbChecks => {
-                            "source ub_checks requires its proved direct runtime operation"
-                        }
-                        crate::support::bindings::SourceIntrinsic::UncheckedSub
-                        | crate::support::bindings::SourceIntrinsic::SubWithOverflow => {
-                            "source subtraction requires its actual checked direct operation"
-                        }
-                        crate::support::bindings::SourceIntrinsic::ColdPath => {
-                            "source cold_path requires its genuine source fallback"
-                        }
-                    });
-                }
+                require_source_body(facts, instance, item)?;
                 if templates.get(item).is_none()
                     && facts
                         .foreign

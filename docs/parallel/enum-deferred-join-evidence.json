@@ -1,0 +1,216 @@
+{
+  "state": "qualified-development-checkpoint",
+  "compiler_head_before_ci_repairs": "a3a2b959c",
+  "source_sha256": {
+    "dev/src/sema/associated/language.rs": "a183227aba06f41171624d35a662d8afe2fbeabc85686ba25e40a64fbd71c3c7",
+    "dev/src/sema/traits/implementations/overlap/disjointness.rs": "3d854d6293ce7484c4d057854a227357792d2702fd4fddf1cb2d9945160f484b",
+    "dev/src/lower/instances/demand.rs": "359b94166347aa99cc7308ea02bd02e43f89e508db17c856542872a9db3e5718",
+    "dev/tests/arbitrary_methods.rs": "283bce8863d33b6648d5c5a0ce32717d2400114ce778187794306b5267d53405",
+    "dev/tests/idxops.rs": "5bef664498f88c043202128c59fae3f9e2972c24adc1754fb2ff5acfc5439ef2",
+    "dev/tests/invariants/asm_effect_contracts.rs": "a34f57ae107e87f4163c4c49da35c0587991636e105acfb2813664c6617a0b53",
+    "dev/tests/invariants/compose_operands.rs": "2689190a22f1a69b6a8e9bc134efae500cfcaa2d7c2daf0bd5ab879a62150cad",
+    "pa31/tests/spec/pointer-composition/runtime-index-foundation.rs": "f32b1238a614167ae642a63ac0bd3d828c751bb8efa4740413297926807cab33",
+    "pa31/tests/spec/pointer-composition/index-predictions.json": "143b7b08b65547209746b6461d9d323ede24b9d2bb91b56095ed0867a9334c06"
+  },
+  "backend": {
+    "commit": "b7c6b8e72595a524e1b3f147212d69c02b257dd8",
+    "lock_sha256": "f60c0760f39f1f554486f5a1eb990d2c0fef663fbd1bff944cd1eef8a014a581"
+  },
+  "qualification": {
+    "path": "obj/parallel/enum-deferred-join-v1/qualification-v2/receipt.json",
+    "sha256": "acc469e59e13ad1c843a1b47b0f120e7a9cdb32d76698cd087392a2fc146298c",
+    "seconds": 39.280462184979115,
+    "cli_sha256": "70b47f57b9d04b5f751793f8742553d0bead85e6dd5222f906f5c99038296527",
+    "baseline": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/receiver-va-future-join-v1/cli/b553a3bf34eb5e5c14aa7ff90684bb05de46447396e7dec7789985d131bffc2a/rustgm",
+      "sha256": "b553a3bf34eb5e5c14aa7ff90684bb05de46447396e7dec7789985d131bffc2a"
+    },
+    "metadata_v10": {
+      "bytes": 7118,
+      "sha256": "86b0e0a80de3160fbc18973e3ea9cf781513a6206547f55a35b78e2df636f03b"
+    },
+    "original_core": {
+      "infrastructure_failure": false,
+      "classification": "observed original-core blocker",
+      "lint_cap": "allow",
+      "source_contract_limits": {
+        "work": 14500624,
+        "attempted_bytes": 1073741824,
+        "retained_bytes": 67108864
+      },
+      "expected_cli_sha256": "70b47f57b9d04b5f751793f8742553d0bead85e6dd5222f906f5c99038296527",
+      "expected_cli_source": "explicit caller input",
+      "status": 1,
+      "first_error": "ERROR: file 85: 361: source compiler language item semantic contract is not implemented",
+      "inputs_unchanged": true,
+      "opened_source_count": 375,
+      "total_seconds": 18.32624164101435,
+      "raw_sha256": {
+        "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": "691dbcc93706dd4613e16b674a5e58377c9f061b7dab5c657da110b43fc564e6",
+        "whole-core.openat": "7531ef84f4f8134240d7146c7505f943182c39a240ec5379153d48996dd5ff45",
+        "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+      },
+      "receipt_sha256": "963fa58656dff99e70bbd04f7428286566f01b85011f209af1a3ac9fb03b5215"
+    }
+  },
+  "gates": {
+    "joined": {
+      "path": "obj/qualification/fast/1793884782585737157/receipt.json",
+      "sha256": "8398e467f76bbde9bbf2068f89f021df2a0feef44ed405b79d3ffc563db7874b",
+      "scope": "41 exact tests and all2707 PA12/19/20 text cases; predates only final idxops const opponent assertion",
+      "source_difference_from_current": [
+        "dev/tests/idxops.rs"
+      ],
+      "seconds": 73.61
+    },
+    "index": {
+      "path": "obj/qualification/fast/1793885778135982390/receipt.json",
+      "sha256": "10686c9cf89b4c631ac8395519f0f789137f11030d3fa670be0dd739583accd4",
+      "scope": "Actual unstaged ordinary original reaches LowIR; ordinary impl in const expression rejects",
+      "source_difference_from_current": [],
+      "seconds": 35.4
+    },
+    "native": {
+      "path": "obj/qualification/fast/1793886117959036554/receipt.json",
+      "sha256": "a9e2e8347b3981296e70929d038212aa0b16fbad4bd137cf588eca077bb2cfe7",
+      "scope": "4 exact tests,17 native observers",
+      "source_difference_from_current": [],
+      "seconds": 57.88
+    },
+    "elision": {
+      "path": "obj/qualification/fast/1793886394213376400/receipt.json",
+      "sha256": "aedd111ea7c4eda2f639738c86a0a5f6d22063521e936f91e772e2ea4c32898a",
+      "scope": "Previously failing omitted-input canonical reference comparison regression",
+      "source_difference_from_current": [],
+      "seconds": 41.85
+    }
+  },
+  "independent_runtime_index": {
+    "path": "obj/parallel/enum-deferred-join-v1/runtime-foundation-reference/receipt.json",
+    "sha256": "bf3eb96cb43983ba13269b278ba1580704dcbc74112f13d4ab2f37468354106f",
+    "result": {
+      "state": "passed",
+      "rows": [
+        {
+          "file": "runtime.rs",
+          "sha256": "cd2f76f228b5cdeae69e4f06e7d7890892dd8e0c36b5c5b4f7825c1899d57d09",
+          "status": 0,
+          "expected": 0
+        },
+        {
+          "file": "const-opponent.rs",
+          "sha256": "c129fd77dd55a22c5fe37629b0d2ac050343fc22c8e7904022915dff13de4259",
+          "status": 1,
+          "expected": 1
+        }
+      ]
+    },
+    "qualification": "Pinned independent Rust runtime metadata accepts; const opponent E0277 rejects. Distinct full no_core const helper ICE remains unqualified."
+  },
+  "performance": {
+    "path": "obj/parallel/enum-deferred-join-v1/performance-v1/receipt.json",
+    "sha256": "dc15c8721af0ab10a2c858d33615615c213cada12858b798feac2e89a0184b0c",
+    "seconds": 21.993028240976855,
+    "observations": 54,
+    "scales": [
+      {
+        "family": "ordinary",
+        "width": 1024,
+        "source_sha256": "783d30852ce081f6699ac8404584e6dcf01e511e14716df7497cb67f5d1ace96",
+        "blocks": [
+          {
+            "AA_second_over_first": 0.9152500788029619,
+            "ABBA_B_over_A": 1.1774238163047384
+          },
+          {
+            "AA_second_over_first": 1.1402650258756453,
+            "ABBA_B_over_A": 0.7443853565592162
+          },
+          {
+            "AA_second_over_first": 0.9435849337207523,
+            "ABBA_B_over_A": 1.0133022743937654
+          }
+        ],
+        "candidate_median_seconds": 0.19877883300068788,
+        "paired_median_B_over_A": 1.0133022743937654
+      },
+      {
+        "family": "ordinary",
+        "width": 4096,
+        "source_sha256": "9f5ca894e474569a5033b27b8508936790ca745d34c1e370abe066fbf4086bba",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.1859350542706402,
+            "ABBA_B_over_A": 1.0385254015945398
+          },
+          {
+            "AA_second_over_first": 1.0101906492019317,
+            "ABBA_B_over_A": 0.8674399172796871
+          },
+          {
+            "AA_second_over_first": 0.99900372381275,
+            "ABBA_B_over_A": 0.9871697010997891
+          }
+        ],
+        "candidate_median_seconds": 0.8305982379824854,
+        "paired_median_B_over_A": 0.9871697010997891
+      },
+      {
+        "family": "source-deref",
+        "width": 1,
+        "source_sha256": "a8d1ba6308aec550d17a0bf8223d03d2b3f7e36a45f078b9f5e06aaf050b54fe",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.2124629228338129,
+            "ABBA_B_over_A": 1.0165250379589703
+          },
+          {
+            "AA_second_over_first": 0.9784037543124056,
+            "ABBA_B_over_A": 0.9110067155477328
+          },
+          {
+            "AA_second_over_first": 1.0183222838655543,
+            "ABBA_B_over_A": 0.8701735497091623
+          }
+        ],
+        "candidate_median_seconds": 0.050363156013190746,
+        "paired_median_B_over_A": 0.9110067155477328
+      }
+    ],
+    "interpretation": "Exclusive immutable A/A-calibrated paired common-control ABBA with all observations and byte equality retained. This is not full-library throughput evidence or a broad speedup/regression-absence claim.",
+    "retired_pin": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/operations-va-join-v1/cli/567ed867cb81f3164d8a17c326af223cd685d3a18ba39d434d5da8ee5c7c5b00",
+      "sha256": "567ed867cb81f3164d8a17c326af223cd685d3a18ba39d434d5da8ee5c7c5b00",
+      "policy": "Keep only current70b4 and immediate predecessorb553; retain source, diagnostics, receipts and hashes."
+    }
+  },
+  "prior_full_ci": {
+    "run": 42026473570,
+    "head": "ab270066666f5aee70e16d87a54ec038c85cf3bf",
+    "state": "terminal-failure",
+    "private": {
+      "pass": 2686,
+      "fail": 25,
+      "ignored": 3
+    },
+    "public_failures": 6,
+    "skipped": "later native/debug/independent",
+    "failed_log_sha256": "3b610dc439fa9eca8255e4cb1c7c7ed29ece05f500f729eb77d526508698d790",
+    "required": "Private repaired cases and full successor qualification remain pending."
+  },
+  "retained_failures": {
+    "qualification-v1": "Relative-vs-absolute path handling failed before compiler observation; corrected v2 resolves all receipt paths.",
+    "private-selection-1793886332996232035": "Root accidentally selected an integration identity with --lib-case; explicitly SIGTERM-stopped at private Clippy, status143. No semantic observation; corrected public gate passes.",
+    "index-first": "Actual const trait protocol was required; ordinary trait prototype rejected.",
+    "index-assertion": "Compiler correctly rejected const use; test expected wording const rather than actual trait-obligation diagnostic. Only assertion corrected.",
+    "integrated-clippy": "Ordinary::select101 lines; cohesive same-module source-operation policy factoring preserves all gates."
+  },
+  "remaining": [
+    "No original core/alloc/std artifact or whole assignment after24 is complete.",
+    "Actual AsyncFn roles, supertraits, GAT/future/output consumers, implicit function/closure adapters and transport remain.",
+    "Selected authored future applications, constructor/poll/drop/state/await/cancellation and future body transport remain.",
+    "Actual const destruction selected leaves, definition/runtime effects, CTFE cleanup/unit results and original helper/metadata closure remain.",
+    "Full canonical/source/imported trait compatible-world knowability and broader enum ABIs remain required."
+  ]
+}

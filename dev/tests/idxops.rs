@@ -196,6 +196,46 @@ fn source_fixture_index_foundation_retains_real_constant_slice_access() -> Resul
     }
     Ok(())
 }
+#[test]
+fn ordinary_index_foundation_keeps_unstaged_runtime_original_proof() -> Result {
+    let mut source = test_source::fixture(
+        "pa31/tests/spec/source-header-transport/semantic-provider-qualified.rs",
+    )?;
+    source.push_str("impl Clone for usize{fn clone(&self)->Self{*self}}impl Copy for usize{}");
+    source.push_str(&test_source::fixture(
+        "pa31/tests/spec/pointer-composition/runtime-index-foundation.rs",
+    )?);
+    source.push_str(
+        "#[unsafe(no_mangle)]pub extern \"C\" fn probe()->u8{let values=[7u8,8u8,9u8];values[2]}",
+    );
+    let report = test_source::source_provider(&source, "runtime_index_foundation")?;
+    let pipeline::Analysis {
+        mut facts,
+        prepared,
+    } = pipeline::analyze_source(&report)?;
+    let program = rustgm::lower::instances::build_roots_prepared(
+        &report,
+        &mut facts,
+        rustgm::lower::Roots {
+            entry: None,
+            exports: &[],
+        },
+        prepared,
+    )?;
+    assert!(!program.symbols.is_empty());
+    source.push_str("const BAD:u8={let values=[7u8,8u8,9u8];values[2]};");
+    let report = test_source::source_provider(&source, "runtime_index_const_opponent")?;
+    let error = pipeline::analyze_source(&report)
+        .err()
+        .ok_or("ordinary runtime impl acquired const indexing permission")?;
+    assert!(
+        error
+            .to_string()
+            .contains("trait obligation requires an unambiguous matching"),
+        "{error}"
+    );
+    Ok(())
+}
 fn checked(label: &str, command: &mut Command, folder: &Path) -> Result<Vec<u8>> {
     let output = command.output()?;
     std::fs::write(folder.join(format!("{label}.stderr")), &output.stderr)?;

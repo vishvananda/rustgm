@@ -3211,7 +3211,10 @@ contracts constrain this possibility; absence of Copy/Clone on a foreign type
 head is not itself a negative coherence fact.
 
 Implicit absence additionally needs a local/fundamental trait and orphan-closed
-inputs at every ordinary nested trait goal. A nonfundamental nominal root stays
+inputs at every ordinary nested trait goal. The source-free canonical language
+inventory has a pinned compiler-owned implementation world; recognize it only
+through its actual schema and lack of a source/imported owner. Actual source
+and imported traits retain ordinary orphan rules. A nonfundamental nominal root stays
 upstream regardless of its unknown arguments: inspect that root once, rather
 than materializing and recursively walking every generic subtree. References
 retain their actual referent locality; unknown/fundamental/open roots remain

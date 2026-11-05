@@ -1,22 +1,21 @@
 # Parallel library bootstrap implementation
 
-The current [Receiver/Va/future join](parallel/receiver-va-future-join.md) qualifies
-actual type-only receivers, genuine source cursor execution and future capture/
-storage prerequisites. Root's32 public/2582 text controls and13 native observers
-pass; unchanged original core reaches actual AsyncFn at ops/async_function.rs11,
-file85 byte361 under immutable CLIb553. Root owns that source/consumer family,
-the source worker owns explicit-integer enum C ABI/const cursor prerequisites,
-and the future worker owns real deferred-body/runtime families. Warm trees,
-two heavy jobs,16GiB caps,150GiB reserve and five-minute local batches persist.
-No whole assignment after24 or original library artifact is complete. The older
-chronological notes below are history, not the latest frontier or lane ownership.
+The current [enum/deferred join](parallel/enum-deferred-join.md) qualifies
+actual fieldless enum ABI, authored deferred originals and canonical-inventory/
+fixture CI repairs. All41 joined tests/2707 text cases,17 native observers and
+the final runtime Index const opponent/elision regressions pass. CLI70b47 keeps
+original core at LIB-169 AsyncFn, ops/async_function.rs11/file85:361, with all722
+inputs/configuration/caps/limits unchanged. Full42026473570 onab270 is terminal
+failure; private repaired cases and complete successor qualification remain pending.
+No original library artifact or whole assignment after24 is complete.
 
-Current scheduling is the user-authorized
-[three-agent core plan](parallel/core-critical-path.md): integrator owns
-the build and joins; two6.1-sol/high workers own actual Index/IndexMut places and
-authenticated compiler-operation metadata in isolated warm btrfs checkouts.
-This supersedes historical root-only/stopped-worker notes below. Keep two heavy jobs,150GiB reserve,
-16GiB output caps and five-minute local batches. No worker publishes main.
+Root owns actual AsyncFn roles, future/output/GAT consumers and ordinary implicit
+callable evidence. The two existing6.1-sol/high workers own selected future
+application/constructor/poll/drop families and genuine const destruction/CTFE
+cleanup. Their explicit-integer enum ABI and deferred original checkpoints are
+joined. Warm btrfs trees, two heavy jobs,16GiB caps,150GiB reserve and five-minute
+local batches persist. No worker publishes main. The historical notes below do
+not supersede these current owners or the original core/alloc/std goal.
 
 The [function-pointer checkpoint](pa31-function-pointer-checkpoint.md) passes38
 complete source/body-proof outcomes, actual typed address-shim native equality,

@@ -36,6 +36,15 @@ impl Declarations {
     }
 }
 impl Inventory {
+    /// Source-free canonical traits have a pinned compiler-owned implementation
+    /// world. Actual source/imported owners retain ordinary orphan rules instead.
+    pub(in crate::sema) fn closed_language_trait(&self, definition: DefId) -> bool {
+        self.owner(definition).is_none()
+            && self.language.as_deref().is_some_and(|language| {
+                language.imported.is_none() && language.schemas.contains_key(&definition)
+            })
+    }
+
     /// Publish validated real source identities without synthetic members, schemas
     /// or function bodies. The ordinary inventory remains their sole owner.
     pub(in crate::sema) fn register_source_callables(

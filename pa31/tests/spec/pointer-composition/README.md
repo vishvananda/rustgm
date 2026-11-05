@@ -12,8 +12,13 @@ transport remain explicit pending boundaries.
 Index/IndexMut declarations and generic implementation bodies used by the
 maintainer's original pointer/assembly fixture contexts. They retain real
 indexing and ordinary selected trait, output, borrow and const checks. The
-array-only assembly context needs just the first file. The pointer context
-already supplies the actual Pointee/Metadata foundation for the second.
+pointer context already supplies the actual Pointee/Metadata foundation for the
+second file. The unstaged array-only assembly context instead uses
+`runtime-index-foundation.rs`: the actual const trait protocol, ordinary
+non-const generic array implementations and real indexing bodies, without
+library stability attributes. Its ordinary runtime original reaches LowIR;
+using those implementations in a constant rejects. The runtime-order pointer
+fixture has no indexing and keeps its original provider without these helpers.
 `index-predictions.json` binds those inputs and the independent companion.
 
 Pinned Rust1.98 no_core attempts retain an upstream `fully_perform` ICE101;

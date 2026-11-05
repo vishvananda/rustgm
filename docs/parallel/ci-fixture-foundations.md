@@ -1,5 +1,15 @@
 # Private fixture foundations and exact cold storage
 
+The latest [enum/deferred join](enum-deferred-join.md) supersedes the fixture
+contexts below: full42026473570 proves the four cold-size/recipe repairs pass,
+but exposes25 private and six public failures. Source-free canonical inventory
+coherence closure and unstaged runtime Index fixtures are repaired with actual
+bodies. All six public failures pass focused checks; private successor execution
+remains pending. Full no_core const-helper parity remains unqualified.
+
+The following records the preceding failed run and first repair attempt.
+
+
 Full CI42008769160 on775a9cfa7 is terminal failure:2704 private tests pass,
 7 fail and3 are ignored. All regular integrations pass. All three new symbolic
 operation forgery/cold/warm controls pass; their earlier Clippy-only repairs
