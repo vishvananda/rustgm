@@ -49,22 +49,27 @@ impl Engine {
             .contract
             .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
             .map_err(error)?;
-        let regions = self
+        let mut regions = self
             .paid_child_regions(facts, &concrete.body, &concrete.contract, instance, result)
             .map_err(|e| report.body_error(e.source.unwrap_or(source.into()), e.message))?;
+        let mut contract = std::borrow::Cow::Borrowed(&concrete.contract);
         self.prove_loans(
             report,
             facts,
             &concrete.body,
             &concrete.destruction,
-            &environment,
-            &regions,
+            &mut super::LoanInput {
+                parameters: &environment,
+                contract: &mut contract,
+                regions: &mut regions,
+                purpose: super::ProofPurpose::Code,
+            },
         )?;
         let (code, uses) = self
             .finish_code(
                 facts,
                 &concrete.body,
-                &concrete.contract,
+                &contract,
                 &regions,
                 super::ProofPurpose::Code,
             )
@@ -73,7 +78,7 @@ impl Engine {
             Some(
                 self.retained_source(
                     code.as_ref(),
-                    std::sync::Arc::new(concrete.contract.clone()),
+                    std::sync::Arc::new(contract.into_owned()),
                     uses,
                 )
                 .map_err(error)?,

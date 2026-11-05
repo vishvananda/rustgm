@@ -1,7 +1,6 @@
 //! Context parents complete original proofs without becoming runtime candidates.
 use super::{
-    Checked, Contract, Contracts, Environment, Error, HashMap, State, Templates, loans, owners,
-    regions,
+    Checked, Contract, Contracts, Environment, Error, HashMap, State, Templates, owners, regions,
 };
 use crate::types::{ItemId, TypeId, variance::Variances};
 use std::{collections::HashSet, hash::BuildHasher};
@@ -43,6 +42,45 @@ pub(crate) fn verify<'a, S: BuildHasher>(
             position,
         );
     }
+    let mut batch = prepare_using(
+        environment,
+        variances,
+        contracts,
+        templates,
+        context,
+        custom,
+        false,
+    )?;
+    batch.complete_ordinary(environment, position)?;
+    batch.finish(environment.types)
+}
+pub(crate) fn prepare<'a, S: BuildHasher>(
+    environment: &mut Environment<'_, S>,
+    variances: &Variances,
+    contracts: &Contracts<'_>,
+    templates: &'a Templates,
+    context: &'a Contexts,
+    custom: &[ItemId],
+) -> Result<super::Batch<'a>, Error> {
+    prepare_using(
+        environment,
+        variances,
+        contracts,
+        templates,
+        context,
+        custom,
+        true,
+    )
+}
+fn prepare_using<'a, S: BuildHasher>(
+    environment: &mut Environment<'_, S>,
+    variances: &Variances,
+    contracts: &Contracts<'_>,
+    templates: &'a Templates,
+    context: &'a Contexts,
+    custom: &[ItemId],
+    staged: bool,
+) -> Result<super::Batch<'a>, Error> {
     let contexts = &context.bodies;
     let count = templates
         .len()
@@ -75,7 +113,7 @@ pub(crate) fn verify<'a, S: BuildHasher>(
     }
     let proof_inputs = overlaid.as_ref().unwrap_or(&inputs);
     source_regions(environment, variances, contracts, templates, context)?;
-    let mut regions = regions::check_nested_bodies(
+    let regions = regions::check_nested_bodies(
         environment.types,
         variances,
         contracts,
@@ -93,19 +131,7 @@ pub(crate) fn verify<'a, S: BuildHasher>(
         node: e.source,
         message: e.message,
     })?;
-    let mut loans = loans::templates::verify_iter(
-        environment,
-        templates.iter().chain(&contexts.bodies),
-        count,
-        &regions,
-        custom,
-        position,
-    )?;
-    // Context rows paid the original component, but remain absent from every
-    // checked lookup and observed executable-template row.
-    regions.bodies.truncate(templates.len());
-    loans.truncate(templates.len());
-    let contracts = templates
+    let raw = templates
         .iter()
         .map(|template| {
             inputs
@@ -114,20 +140,40 @@ pub(crate) fn verify<'a, S: BuildHasher>(
                 .cloned()
                 .ok_or_else(|| error("checked template lost its original context contract"))
         })
-        .collect::<Result<Vec<Contract>, Error>>()?;
-    Ok(Checked {
+        .collect::<Result<Vec<_>, _>>()?;
+    let proof_contracts = if staged {
+        Some(
+            templates
+                .iter()
+                .chain(&contexts.bodies)
+                .map(|template| {
+                    proof_inputs
+                        .get(&template.body.key())
+                        .map(|input| (*input).clone())
+                        .ok_or_else(|| error("original context lost its actual proof input"))
+                })
+                .collect::<Result<Vec<_>, _>>()?,
+        )
+    } else {
+        None
+    };
+    super::Batch::new(
         templates,
-        state: State {
-            future_arena: super::future_arena(environment.types, templates, &anonymous)?,
+        Some(contexts),
+        State {
+            future_arena: None,
             index,
             closures,
             anonymous,
             regions,
-            loans,
-            contracts,
+            loans: Vec::new(),
+            contracts: raw,
         },
-    })
+        proof_contracts,
+        custom,
+    )
 }
+
 fn check_budget(
     contracts: &Contracts<'_>,
     templates: &Templates,

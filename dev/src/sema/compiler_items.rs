@@ -21,8 +21,10 @@ pub(crate) use async_glue::{
     recipe as async_operation_recipe, require_runtime_body as require_async_glue_body,
     source_async_drop_glue,
 };
+mod cdrop;
 pub(crate) mod const_payments;
 mod copying;
+pub(crate) use cdrop::prove_cleanup_requirements;
 mod explicit_cleanup;
 mod glue_calls;
 pub(in crate::sema) mod headers;

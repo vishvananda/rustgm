@@ -104,3 +104,6 @@ mod vaops;
 
 #[path = "../../cetags.rs"]
 mod cetags;
+
+#[path = "../../ctdrop.rs"]
+mod ctdrop;

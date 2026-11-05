@@ -85,9 +85,15 @@ impl CheckedInput {
     }
 }
 #[derive(Clone, Copy, PartialEq, Eq)]
-enum ProofPurpose {
+pub(super) enum ProofPurpose {
     Original,
     Code,
+}
+pub(super) struct LoanInput<'a, 'input> {
+    pub(super) parameters: &'a Arc<Environment>,
+    pub(super) contract: &'a mut std::borrow::Cow<'input, Contract>,
+    pub(super) regions: &'a mut borrow::regions::Body,
+    pub(super) purpose: ProofPurpose,
 }
 #[derive(Clone, Copy)]
 struct ProofInput<'a> {
@@ -921,9 +927,24 @@ impl Engine {
             };
             result.map_err(|e| report.body_error(body.source, e))?;
         }
-        let contract = prepared.as_ref().unwrap_or(input.contract);
-        let regions = Self::source_regions(report, facts, body, contract)?;
-        self.prove_loans(report, facts, body, destruction, input.parameters, &regions)?;
+        let mut contract = prepared.take().map_or(
+            std::borrow::Cow::Borrowed(input.contract),
+            std::borrow::Cow::Owned,
+        );
+        let mut regions = Self::source_regions(report, facts, body, &contract)?;
+        self.prove_loans(
+            report,
+            facts,
+            body,
+            destruction,
+            &mut LoanInput {
+                parameters: input.parameters,
+                contract: &mut contract,
+                regions: &mut regions,
+                purpose: input.purpose,
+            },
+        )?;
+        let contract = contract.as_ref();
         #[cfg(test)]
         if input.purpose == ProofPurpose::Code {
             materialized_bodies::record(
@@ -939,17 +960,8 @@ impl Engine {
             .map_err(|e| report.body_error(body.source, e))?;
         let retained = if uses.needed {
             Some(
-                self.retained_source(
-                    code.as_ref(),
-                    Arc::new(prepared.ok_or_else(|| {
-                        report.body_error(
-                            body.source,
-                            "source const-call retention has no proved contract",
-                        )
-                    })?),
-                    uses,
-                )
-                .map_err(|e| report.body_error(body.source, e))?,
+                self.retained_source(code.as_ref(), Arc::new(contract.clone()), uses)
+                    .map_err(|e| report.body_error(body.source, e))?,
             )
         } else {
             None
@@ -987,8 +999,7 @@ impl Engine {
         facts: &mut Declarations,
         body: &Body,
         destruction: &body::drops::Requirements,
-        parameters: &Arc<Environment>,
-        regions: &borrow::regions::Body,
+        input: &mut LoanInput<'_, '_>,
     ) -> Result<(), Error> {
         let source = body.source;
         let custom = facts
@@ -1012,23 +1023,8 @@ impl Engine {
             .loans
             .as_mut()
             .ok_or_else(|| report.body_error(source, "missing constant loan verifier"))?;
-        let mut copies = crate::types::copy::Copies::default();
-        loans
-            .body(
-                &mut borrow::Environment {
-                    types: &facts.types,
-                    definitions: &facts.aggregates,
-                    derives: &facts.derives,
-                    source_copy: facts.uses_source_copy(),
-                    copies: &mut copies,
-                },
-                body,
-                destruction,
-                parameters,
-                regions,
-                &|ty, field| body::drops::nominal_position(facts, ty, field),
-            )
-            .map_err(|e| report.body_error(e.node.unwrap_or(source.into()), e.message))?;
+        super::cdrop::one(facts, body, destruction, input, loans)
+            .map_err(|e| report.body_error(source, e))?;
         Ok(())
     }
 }

@@ -1,0 +1,10 @@
+{
+  "cases": [
+    {
+      "file": "count2.rs",
+      "source_sha256": "a8f2ba8d677d2a1f49ca9e0633d4a242954a868739ec70750008b30b96420896",
+      "expected_code": 0,
+      "prediction": "corrected whitespace setup; exact runtime const Drop effect produces41; debug assertions and overflow checks disabled explicitly"
+    }
+  ]
+}

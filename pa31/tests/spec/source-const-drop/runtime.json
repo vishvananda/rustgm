@@ -1,0 +1,28 @@
+{
+  "cases": [
+    {
+      "file": "rtonce.rs",
+      "source_sha256": "e943ea955d34e9adf3919b6131f3ae3cc81f83ca39bb436f64e923568aabbc60",
+      "expected_code": 0,
+      "prediction": "distinguish unconditional vs actual conditional runtime materialization, nonconst Drop effect47, const-call rejection and ordinary Copy premise"
+    },
+    {
+      "file": "rtcnt.rs",
+      "source_sha256": "2cfe99057f74ac5bbcc0325f0ec442a53d51755e82b22839bde5ad8f04169899",
+      "expected_code": 0,
+      "prediction": "distinguish unconditional vs actual conditional runtime materialization, nonconst Drop effect47, const-call rejection and ordinary Copy premise"
+    },
+    {
+      "file": "rtneg.rs",
+      "source_sha256": "4fc26102430d900865914dbb21719a4aca169f7b149218f6fbce950577f7d4d5",
+      "expected_code": 1,
+      "prediction": "distinguish unconditional vs actual conditional runtime materialization, nonconst Drop effect47, const-call rejection and ordinary Copy premise"
+    },
+    {
+      "file": "cpbnd.rs",
+      "source_sha256": "9236e75edaebd1a5d9ddb17be8a73573167a87cbf2ac8924d9851f02c3ade024",
+      "expected_code": 0,
+      "prediction": "distinguish unconditional vs actual conditional runtime materialization, nonconst Drop effect47, const-call rejection and ordinary Copy premise"
+    }
+  ]
+}

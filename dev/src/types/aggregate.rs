@@ -112,6 +112,9 @@ pub struct Definitions {
     simd_limits: Option<Box<lane_limits::Limits>>,
 }
 impl Definitions {
+    pub(crate) fn existing_arena_identity(&self) -> Option<&super::arena::Identity> {
+        self.identity.as_ref()
+    }
     pub(crate) fn arena_identity(&mut self) -> super::arena::Identity {
         self.identity
             .get_or_insert_with(super::arena::Identity::new)

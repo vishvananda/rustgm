@@ -53,6 +53,7 @@ impl Role {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Claim {
     NoDrop,
+    SelectedDestruct(crate::support::constness::Constness),
     ConditionalDestruct,
     ProjectedDestruct,
     PendingCopy,
@@ -63,12 +64,14 @@ impl Claim {
             Self::PendingCopy => 0,
             Self::ConditionalDestruct | Self::ProjectedDestruct => 1,
             Self::NoDrop => 2,
+            Self::SelectedDestruct(_) => 3,
         }
     }
 }
 pub(super) struct Claims {
     values: HashMap<TypeId, Claim>,
     pub(super) unsupported: bool,
+    selected: Option<crate::types::arena::Identity>,
 }
 impl Claims {
     pub(super) fn new(
@@ -86,6 +89,7 @@ impl Claims {
         let mut result = Self {
             values: HashMap::default(),
             unsupported: false,
+            selected: None,
         };
         let mut clauses = environment.trait_clauses()?;
         loop {
@@ -201,7 +205,12 @@ impl Claims {
             .require_projection_header(DefId(application.item.0))
             .map(|_| ())
     }
-    fn insert(&mut self, ty: TypeId, claim: Claim, work: &mut Work) -> Result<(), &'static str> {
+    pub(super) fn insert(
+        &mut self,
+        ty: TypeId,
+        claim: Claim,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
         work.charge(1)?;
         if let Some(old) = self.values.get_mut(&ty) {
             if claim.priority() > old.priority() {
@@ -223,6 +232,33 @@ impl Claims {
         self.values.insert(ty, claim);
         if self.retained_bytes() > 8 * 1024 * 1024 {
             return Err("defining cleanup claims exceed storage budget");
+        }
+        Ok(())
+    }
+    pub(super) fn select(
+        &mut self,
+        types: &mut crate::types::Store,
+        ty: TypeId,
+        effect: crate::support::constness::Constness,
+        work: &mut Work,
+    ) -> Result<(), &'static str> {
+        self.insert(ty, Claim::SelectedDestruct(effect), work)?;
+        self.selected = Some(types.arena_identity());
+        Ok(())
+    }
+    pub(super) fn require_selected(
+        &self,
+        types: &crate::types::Store,
+        actual: crate::support::constness::Constness,
+        expected: crate::support::constness::Constness,
+    ) -> Result<(), &'static str> {
+        if actual != expected
+            || self
+                .selected
+                .as_ref()
+                .is_none_or(|arena| !types.has_identity(arena))
+        {
+            return Err("selected const cleanup changed its actual effect or type arena");
         }
         Ok(())
     }

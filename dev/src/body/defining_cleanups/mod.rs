@@ -1,6 +1,8 @@
 //! Defining Conditional cleanup legality is separate from executable const permission.
 mod claims;
 mod preparation;
+mod proofs;
+pub(crate) use proofs::select;
 #[cfg(test)]
 #[path = "../../../tests/invariants/destruct_contracts.rs"]
 mod tests;
@@ -94,6 +96,17 @@ impl State {
     }
 }
 impl Prepared {
+    fn effect(&self) -> crate::support::constness::Constness {
+        if matches!(
+            self.definition.context,
+            FunctionContext::ConstTraitDefault { .. }
+        ) {
+            crate::support::constness::Constness::Conditional
+        } else {
+            crate::support::constness::Constness::Const
+        }
+    }
+
     pub(crate) fn checks_cleanup(&self) -> bool {
         self.const_context
             || matches!(
@@ -123,6 +136,11 @@ impl Prepared {
     ) -> Result<Requirement, &'static str> {
         work.charge(1)?;
         match self.claims.get(ty) {
+            Some(claims::Claim::SelectedDestruct(effect)) => {
+                self.claims.require_selected(types, effect, self.effect())?;
+                self.role.require()?;
+                return Ok(Requirement::Declared);
+            }
             Some(claims::Claim::NoDrop) => return Ok(Requirement::Declared),
             Some(claims::Claim::ConditionalDestruct) => {
                 self.role.require()?;
@@ -188,6 +206,15 @@ pub(crate) fn definition(
     if !default && !generic_const_function(facts, definition) {
         return Ok(None);
     }
+    active_definition(facts, definition, source, steps, default)
+}
+fn active_definition(
+    facts: &Declarations,
+    definition: DefId,
+    source: BodyOrigin,
+    steps: &mut usize,
+    default: bool,
+) -> Result<Option<Definition>, &'static str> {
     let header = facts
         .function_header(definition)?
         .ok_or("defining cleanup function header is pending")?;

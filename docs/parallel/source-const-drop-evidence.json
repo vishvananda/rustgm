@@ -1,0 +1,351 @@
+{
+  "state": "qualified intermediate const-definition checkpoint; continuing required cleanup consumers",
+  "base": "5dc74570d648a59645f03485050f6eda22fffbc5",
+  "branch": "implement/source-va-const-20261105",
+  "source_files": {
+    "dev/src/body/defining_cleanups/claims.rs": "7303ac038ebbb5842d6d0ef0d4a38e5fb22479f72785dcfa8f4e756651f9d9be",
+    "dev/src/body/defining_cleanups/mod.rs": "73ace58223c470f938954128941e700d1328273d979e6fe0cfe7bbcaeb64e93f",
+    "dev/src/body/defining_cleanups/proofs.rs": "07f4282b0fad1b7e29b48ffb123cf189270f52fe24189b1852196748730645e3",
+    "dev/src/borrow/check.rs": "a68bf56ee522dce3bfb14890c9234f6b15df40d3a745594ba1fb0e9e45faecc1",
+    "dev/src/borrow/check/cstage.rs": "bc43879f17da3c336b418d24f57d96e7e7a5ac4d7dab7b42a106a542e4ce742f",
+    "dev/src/borrow/check/incremental.rs": "63419570cd5cb2eba801a22dab0254430ba940d5c7062d4485275e212afa07f2",
+    "dev/src/borrow/check/incremental/cstage.rs": "29b85eee54cda742a231ec0bfbc852df94af9183bfb8f0638c4ac88fe3c22d72",
+    "dev/src/borrow/destruction/schedule.rs": "546a11cf2e8b1e4b5300e9cb439eebc86b71bb12a7eb5877954ab90727fd66bf",
+    "dev/src/borrow/loans.rs": "bea38a98a9376eac687eb03de879504e7881fec7974f288ca9f026a86107b518",
+    "dev/src/borrow/loans/seal.rs": "08eeb6e68cf519356efc361a66c5a3ac1bb35e228ee46830ce2d9805399d93e7",
+    "dev/src/borrow/loans/templates.rs": "949b31bdb99bbe1c3a25a9829d6673f25f066dba295f10aa0a35ea1f209d9652",
+    "dev/src/borrow/loans/templates/staged.rs": "2dc5ce6eb719efb08856f31135f6db2fffda6ce9d73bc03550009a3c1a3d6f82",
+    "dev/src/borrow/templates.rs": "f39f5e76615737077773133c2b9293b18125dfc23735cce687ef0508850fd365",
+    "dev/src/borrow/templates/context.rs": "4266f952c83d7d937bc39e83f9f5b14cd486d175b90b37ab1123006f758da1d6",
+    "dev/src/borrow/templates/staged.rs": "d07c4d01745e3b5323cfd22fcd431782a62a63915e02be98694405684f0aedf4",
+    "dev/src/lower/instances.rs": "142ec33b5dd59f8d49123f42d1c00fdfb5ba80a7a8a3bf06274bed9e7f2c9963",
+    "dev/src/lower/instances/proof.rs": "8ae4246364834a1812923f6d577ccbc9db9d72bbedba614a9346ad0949798f11",
+    "dev/src/pipeline/cdrop.rs": "13194af12681fbe53f59b297521d172a8b221316e62d5828f5968e14409e4f10",
+    "dev/src/pipeline/execution.rs": "e98a6d63c1328a5f39a0b7fe11f91dcd5acb7834956c51505de30dd558ef2221",
+    "dev/src/pipeline/execution/anonymous.rs": "8f2d6ed3e92f01636176ab5d134a2bd0f060fa07ca0677f9d4508e13106a814c",
+    "dev/src/pipeline/execution/defining_heads.rs": "23b53753755f2c28749d063513db5d1e7189a160e44067a43f0a9a84e771bfda",
+    "dev/src/pipeline/execution/parent_children.rs": "ce1f8b797f926b3dfa9064ab983d7e6f005366dd22c0451e9db2a0bf7a732206",
+    "dev/src/pipeline/mod.rs": "ab83791725a8703774c65126ea4a00cf438c1d229e8e1480eb985350a194d053",
+    "dev/src/sema/compiler_items.rs": "59d5520733640246f96d8563f8a1af3a74b391a834ef03223dfc3287d44c59d6",
+    "dev/src/sema/compiler_items/cdrop.rs": "0b19e0480129c3815ac6b75129844f6df873b2c5257d9040d94c48a8541e82a5",
+    "dev/src/sema/compiler_items/roles/destructibility.rs": "43285787eb3e48f046f50033f5cbd1234aaeb79f98423cebbaa124941d71a2d9",
+    "dev/src/sema/declarations/destructors/coverage.rs": "d61e35f0b5cac21ad28e2c6057988f098325f520293d688500d6cb64e22491b2",
+    "dev/src/sema/traits/selection/search.rs": "8259c0b284708d98e5b4495aa2a653ecc29c0fb88a18a2297cbdc06482529a6e",
+    "dev/src/sema/traits/selection/search/component_markers.rs": "767151e21c6d3c6b0c24ce828f05ad1e742e087823c8257d161dd7abc8e9d116",
+    "dev/src/sema/traits/selection/search/cparts.rs": "f65b0c429564e674dda5448c09ede6be836f55b6f2f4a43854a74091d99ef9bf",
+    "dev/src/sema/traits/selection/search/destructibility.rs": "6dd8cd81fd0bfe2249f06d0220b7785bdcc30caa46ed428b17d29299c8378dc9",
+    "dev/src/types/aggregate.rs": "d93bd680fb4b084e4d89bd63290283ce24fcca968f22c3b1f0b827d2c43f3563",
+    "dev/tests/ctdrop.rs": "98d114ec3d9d9a8267bb7aeaf7cda726e12b2daa0578a14f0ee0c0f35b67c9b0",
+    "dev/tests/invariants/clseal.rs": "94d1140e4a259eab4b1c6c1797faeb808ddb50e21727333be08230709d850301",
+    "dev/tests/suites/traits/mod.rs": "54af4ee40cd76755482ac7d58f9c422f93ec6b13ca589f9bb9965dcc2d8305ac",
+    "dev/tests/vactx.rs": "a6412b4dca49581778ca5b3aaad8512e73da22cb15faf7ff02101fb2c65e4cdc",
+    "pa31/tests/spec/source-const-drop/README.md": "85d7761945cf64c312562195f64e3ded8e91c59f050b464f9d297274a46c40ed",
+    "pa31/tests/spec/source-const-drop/active.json": "a83df839cbc787464fee4f652a1374ad392a86d23cbaf0c78aa0c040499de1be",
+    "pa31/tests/spec/source-const-drop/array0.rs": "92fc880a4d1300dcee820d39ba2e70cb43452346d693bc2825b6ac82074063f6",
+    "pa31/tests/spec/source-const-drop/arrayc.rs": "bdc7e35cf4fc01929271e9592a6631838a4ac01f6cd0619c681f5651af3e97fb",
+    "pa31/tests/spec/source-const-drop/arrayn.rs": "d4acd44e81484cbbd9f1a3f31153b5b499b40ed660c5d0e09b0ceeace349f96d",
+    "pa31/tests/spec/source-const-drop/borrow.rs": "cebc50db6ada9698632520c1f04ee286cf83d9bfe8958144aecd700eeef8c213",
+    "pa31/tests/spec/source-const-drop/clone.rs": "8100f012e41c68010336faebb68a7f4dadd659450e7eba113d1e759c3b43899b",
+    "pa31/tests/spec/source-const-drop/clone2.rs": "a80d327bf8a7488645c47ac9fec4c8026df1c4e9c06bed3cb1bc5cee8e04d539",
+    "pa31/tests/spec/source-const-drop/cond.rs": "cdd2ee3efea98d6a6ef2a107b5e9345b5c1daa610a8e8e75d7e8ab1fe091c9bd",
+    "pa31/tests/spec/source-const-drop/cond2.rs": "1bb547971adc0e80816cab2be8028edb1982f81314938b0d2d3b99f66c9a5c0f",
+    "pa31/tests/spec/source-const-drop/cond3.rs": "a895bce9d029a73532f7ac0e85927ac97e3ae456babebae413614d2587a24bc6",
+    "pa31/tests/spec/source-const-drop/count.c": "a5dcaadf2f1f4e282d369c7bbb378cb74a38b96a6a3096ed7ddea87a095ee03c",
+    "pa31/tests/spec/source-const-drop/count.rs": "bbc22af8eb42f0d7cc05af5c686fc31d3b6d26a129d6b655167afcda4ff1a892",
+    "pa31/tests/spec/source-const-drop/count2.rs": "a8f2ba8d677d2a1f49ca9e0633d4a242954a868739ec70750008b30b96420896",
+    "pa31/tests/spec/source-const-drop/cover.json": "7a1a3535205c695323ce3a691fbe8b0733ae49455d3435091f3a71a3b9d2f39e",
+    "pa31/tests/spec/source-const-drop/cover2.json": "06cfd4054fb7a8f4d69a1045ec8886b3439484cf1dcc312061f1ee4c698fe1c6",
+    "pa31/tests/spec/source-const-drop/cpbnd.rs": "9236e75edaebd1a5d9ddb17be8a73573167a87cbf2ac8924d9851f02c3ade024",
+    "pa31/tests/spec/source-const-drop/ctinst.rs": "e9167137707c46a04a7c35a4a5d7134a471236f01442176d40b74d0e35a5b848",
+    "pa31/tests/spec/source-const-drop/ebad.rs": "6ca898aa87faccf3de62c70c1bff035f7487c7ac0855402e266c5de4f61c3862",
+    "pa31/tests/spec/source-const-drop/egood.rs": "b483e3974d5046cb34c5dceae055df8cbf3c8f7c9c000d91b33182accd05219c",
+    "pa31/tests/spec/source-const-drop/empty.rs": "b3883c330b27bda461aae086c58e778efba23b82308cfbe20e249144d4ca537a",
+    "pa31/tests/spec/source-const-drop/evinit.rs": "30e7f56e366f561847df298ec226e1173281581dbff92d18b55a09cb5086776d",
+    "pa31/tests/spec/source-const-drop/fake.rs": "68c509e6b241b66674dc5523b27cef5bbb07d4a1e4225a6b2ceacab7f68e17a5",
+    "pa31/tests/spec/source-const-drop/field2.rs": "c2a2856dd20372780df58513303cffb18ea394b77f36d6640d3f729ea7527f4b",
+    "pa31/tests/spec/source-const-drop/fieldc.rs": "b8451a96cf897365f6e41a6d0aa779ab223000e60b56a6a3a5f9991070fd6f1a",
+    "pa31/tests/spec/source-const-drop/fieldn.rs": "41f7de8e24ee0dc3ef0f7d9ac341ceb7af8f6f6eab0adc51f27ed25255111a08",
+    "pa31/tests/spec/source-const-drop/flneg2.rs": "43cca00d7a01c5911ca57e7c838ec44ab7893bffa4552fbe0af6eab9834315ee",
+    "pa31/tests/spec/source-const-drop/followup.json": "c31b90c0f4e5a0cc51d0cd351b06a79bed3824cc58489cdbb778637cb24b7857",
+    "pa31/tests/spec/source-const-drop/foo.rs": "fc9b863a145a9b690e9de67e3de68fa1ea189ec045dc914dccb976f58c2c91d6",
+    "pa31/tests/spec/source-const-drop/foo2.rs": "3b8576d7dad1b3b3c43e70a9aee375496fac5184d7874c677e31f50c6cd8b22f",
+    "pa31/tests/spec/source-const-drop/fstrg2.rs": "d6f2ad841d51965aa916a60d2b8bda1e7fe24948a929575149c77c482793139a",
+    "pa31/tests/spec/source-const-drop/fstrng.rs": "b2ed37266d9f2c167cb48950613f536d05b3ec265b6b9f7ff54e51c760962211",
+    "pa31/tests/spec/source-const-drop/hold.rs": "2db4c70418a73a5cc0305eb4889baca32bd3dd92384a3375826b53e2a3d829b7",
+    "pa31/tests/spec/source-const-drop/inact.rs": "b8998b003dbec3e5beaec82f338bb26bb6b9d8e806757ecb5cb1011feac182e9",
+    "pa31/tests/spec/source-const-drop/initc.rs": "5b97614bafd71de4c5a6042931a7d2bd7b8c5e720ffad8fbf1d2c12b3329677c",
+    "pa31/tests/spec/source-const-drop/initn.rs": "89721e863cf1d4cd4222c635d327c835fd8ddbbb164cc555ccd3a3295478d8fb",
+    "pa31/tests/spec/source-const-drop/manual.rs": "6781d802d4990596276229d6200eb3505483c40c2d85dedf93ced1f2d712ef85",
+    "pa31/tests/spec/source-const-drop/more.json": "e61abb40efed98e0b00a6afffc8989d85cb52df9489372b25fc36a116dc3cc1e",
+    "pa31/tests/spec/source-const-drop/moved.rs": "1e9ce9d25a68cd67e7a6237f34b60b385c16aba9caa34cfa6ac77c042704bad9",
+    "pa31/tests/spec/source-const-drop/native.json": "3155a1e80414b902e28e164f433a10c2e168a756480cba985392dfe83f82bf3d",
+    "pa31/tests/spec/source-const-drop/native2.json": "a1ae00fd3d402267235e3c7f6ad537c937c2db4da4d9bfcb054abce16884cfb7",
+    "pa31/tests/spec/source-const-drop/noncal.rs": "f4c40a353601c79ea45874eaf5d1e6d9e8856cd6ab8e7a0ee53b55a80dd5fafc",
+    "pa31/tests/spec/source-const-drop/ord.rs": "f9ba939cdf7bae91c4ff932473984ec1c725e61858ab1a40e031bec486fe0c64",
+    "pa31/tests/spec/source-const-drop/original/drop.rs": "1d91c5e4e5868e8d2e6860da6fb5353f69172623a8ea7b9d7969e1ebd0fe7055",
+    "pa31/tests/spec/source-const-drop/original/sources.json": "fa50c33343347267d19a3cedca164166971427eec78c3e5aa93066e2a27b0644",
+    "pa31/tests/spec/source-const-drop/othr.rs": "3a0fb55c5cbb0aabdc851f8065dd298fa03427b644c061729f41dd3ae33c1f2e",
+    "pa31/tests/spec/source-const-drop/ownc.rs": "56ef2b073965c49756444643cd896615777a86e90954d6584688d47eab92e1f3",
+    "pa31/tests/spec/source-const-drop/ownc2.rs": "4b30a1a20c8f904e511aacfa4c9ebff2bcdf5ca1401450d4c5aced1e700162ba",
+    "pa31/tests/spec/source-const-drop/ownn.rs": "04ed299b97d7ed6372906bbae363ba31d6b866fa12ade847b27ab7b5e1b0b264",
+    "pa31/tests/spec/source-const-drop/ownn2.rs": "053d115f2e3965d828563034ecf50b09e7d2e934190d72aa5315ec3ed8259569",
+    "pa31/tests/spec/source-const-drop/part.rs": "d354b3d038fa1caa4e6d33ad9991db3ad9713715cd32300b602bb8ec197e743f",
+    "pa31/tests/spec/source-const-drop/plain.rs": "4eec9b1785c88b247bd60916017def1abb69f3bc99a7d56fbf9cb27fadd4ec67",
+    "pa31/tests/spec/source-const-drop/plain2.rs": "1211eb44d499d38ea04c583fb229c270de8ecc9f5ebe57ed757dcbdf0a3aa2d0",
+    "pa31/tests/spec/source-const-drop/predictions.json": "b7b20342037c030fbc6ff87d5d0980b75f8542085fe5515c092ff2a943a63178",
+    "pa31/tests/spec/source-const-drop/reach.rs": "ab179140d95dbe17f5ee0c47581b9b4f43574e53c41287aaaf48ed16f1660654",
+    "pa31/tests/spec/source-const-drop/rtcnt.c": "33d699070a5c6be36f6b2214f02bc2288eda4d809e42afa2dfc20608d1c55b65",
+    "pa31/tests/spec/source-const-drop/rtcnt.rs": "2cfe99057f74ac5bbcc0325f0ec442a53d51755e82b22839bde5ad8f04169899",
+    "pa31/tests/spec/source-const-drop/rtinst.rs": "1fb8339881390b0c6cdfef5c2d9eaa05a63a7f968d4366c92e14d297c4c776dc",
+    "pa31/tests/spec/source-const-drop/rtneg.rs": "4fc26102430d900865914dbb21719a4aca169f7b149218f6fbce950577f7d4d5",
+    "pa31/tests/spec/source-const-drop/rtonce.rs": "e943ea955d34e9adf3919b6131f3ae3cc81f83ca39bb436f64e923568aabbc60",
+    "pa31/tests/spec/source-const-drop/runtime.json": "99c78c55c8880e962f33b6f39c433d98e9d027918079a1035c729fc875e2a840",
+    "pa31/tests/spec/source-const-drop/setup1/borrow.rs": "7c935aba813d0d297b5343e3ee18dfc187fd5b1f26d1f3440f021b8b51dd3422",
+    "pa31/tests/spec/source-const-drop/setup1/cond.rs": "21e8e68bae2fcf13da172f456977c6fef6b7aa823273cd57719179e7987415eb",
+    "pa31/tests/spec/source-const-drop/setup1/empty.rs": "5fd774a05eb715c7dbef5be89a94f5a3dd5c3b9263ad4091ad7e81ec2a70299b",
+    "pa31/tests/spec/source-const-drop/setup1/evinit.rs": "a53b98d7c14d1b75759ccd5678b0c00d7085a596a325101db1907ece64fd3317",
+    "pa31/tests/spec/source-const-drop/setup1/fieldc.rs": "dfe37a626d7e90daccdb74fe00ea7ee84d9dea146daef7cc40008622449c5bd0",
+    "pa31/tests/spec/source-const-drop/setup1/fieldn.rs": "dec31dc11fb1a4871d1de6df26cb8e64eb9bc8768d4b33f3846b236329347534",
+    "pa31/tests/spec/source-const-drop/setup1/inact.rs": "64428748d976bc8ad0361c8dfee33b293959654505c38669aeefc930df125954",
+    "pa31/tests/spec/source-const-drop/setup1/initc.rs": "cd3a1645f4c6c855d8f45a602818affc8d8faf99f798dd186d692525182ab743",
+    "pa31/tests/spec/source-const-drop/setup1/initn.rs": "5b38b4a20b29b80f64e30a8817c9357577194194de1e05a9d534ddb1fc1a20eb",
+    "pa31/tests/spec/source-const-drop/setup1/moved.rs": "c93b6be9754e93080a15b59a00367496be2273bdeb31f97d9f09aa27a1b35401",
+    "pa31/tests/spec/source-const-drop/setup1/noncal.rs": "1bbe9b5cdcd2d43a3996ff341af61977000c35f3fbb8c1e20882613b32e31caa",
+    "pa31/tests/spec/source-const-drop/setup1/ownc.rs": "df91a3dfa9db820cd0d882c6e6504a912f4b093876f7078c7eca9fa6636f61c5",
+    "pa31/tests/spec/source-const-drop/setup1/ownn.rs": "5c0028f59b91e0aa2edbb925d89fbb697e0bcbe754a07c899d45eccf811620ed",
+    "pa31/tests/spec/source-const-drop/setup1/plain.rs": "8fcc30221bb703955fea637fc2a344ecc20a4491a74d2e5fe80235e91394947b",
+    "pa31/tests/spec/source-const-drop/setup1/predictions.json": "f7350f7de28de0f46da4493460c90b8598dc9b7de51ea2d8a5042cda27c68bb1",
+    "pa31/tests/spec/source-const-drop/setup1/reach.rs": "b7adcae2dfe5f75822846ca603c22d0f430130b01f92790bb622765f5ce85ad1",
+    "pa31/tests/spec/source-const-drop/strng2.rs": "1aa00902beb66a96cb8aba25e9078d6e02d1e1e40898ed850297e7382200b34a",
+    "pa31/tests/spec/source-const-drop/strong.rs": "0797b6c82a7ad9397082eadcd8b66e51e5661d758ac49c1e828cb74945e95e6a",
+    "pa31/tests/spec/source-const-drop/tuplec.rs": "dde2aa221c5a8c13174981d1c48bbdf4f930ea5fdbb4efebef995a0a9203bff1",
+    "pa31/tests/spec/source-const-drop/tuplen.rs": "c046f02706b9bead1fc458be54c21302d75b6adca1244262719631e46ad86e7d",
+    "pa31/tests/spec/source-const-drop/unco.rs": "2b8aa20112294c1179f7cb4ac73f5585b4f16c7d8ef1cd5d8cfddbff27923fa4",
+    "pa31/tests/spec/source-const-drop/unco2.rs": "75f73ca3cf93b0c15023338f24630b35f8420a329cb0c9646451b166453c847b",
+    "pa31/tests/spec/source-const-drop/union.rs": "053932c7e82e94fd57f9c102faa32390cf38b82da8121825078c329dc1de60f1",
+    "pa31/tests/spec/source-const-drop/work.json": "4abac70b9e8fa3a3b434c3991e7441307f3c897a7c21915f0bb0da3a19d839d3",
+    "pa31/tests/spec/source-const-drop/work0.rs": "25adbe4297c018dc90d543419225636fcc9beaaa32d04ef7300406482ddaa619",
+    "pa31/tests/spec/source-const-drop/work128.rs": "756cedf3b119f352238fefc6e44d06d076166eee4fc08a94da515c4c5063c0c4",
+    "pa31/tests/spec/source-const-drop/work32.rs": "cf4f67861b3ab81de4eb654991e2e03730d8435444427436528f2adb2bbfecb6",
+    "pa31/tests/spec/source-const-drop/work8.rs": "ac8986feb8d8498eb9983df9eb2a01eb42bc1d2eb8b48f38e27c765a66c95a8e"
+  },
+  "upstream_manifest": {
+    "path": "third_party/sources.json",
+    "sha256": "19506a9cad903387acead1df9702cb27214dd99e4d096a105f95690266734901"
+  },
+  "handoff": {
+    "path": "docs/parallel/source-const-drop.md",
+    "sha256": "75c1e73d6cd398638a28fef82718dc98a0fe426488d747814b7b5fd8cb487346"
+  },
+  "gate": {
+    "path": "obj/parallel/source-transport/va-const/gate7/receipt.json",
+    "sha256": "a5c7fa9d984e8ded27d0cbfba5db6c9d493bfc0afcf8c4e264c8c8c9ff37fcf3"
+  },
+  "source_map": {
+    "path": "obj/parallel/source-transport/va-const/gate7/sources.json",
+    "sha256": "3a789da634b3894e7ed12c5bbf977cdddd98710a5b6384ed21dbca61207186ba"
+  },
+  "native_qualification": {
+    "path": "obj/parallel/source-transport/va-const/qualification-v1/receipt.json",
+    "sha256": "7b57f05051142d355a0b91874907b79dba5de21cd5b2a8ef16fbfddaa2ec8893"
+  },
+  "reference_history": {
+    "1": {
+      "path": "obj/parallel/source-transport/va-const/reference-v1/receipt.json",
+      "sha256": "674bf9b2965cd44a686dae5af230b6879148d19cdecfc675a54fd34c240b97a2"
+    },
+    "2": {
+      "path": "obj/parallel/source-transport/va-const/reference-v2/receipt.json",
+      "sha256": "53b642f24161d1f56ae5c88b76f5f09edadbdde0a6b04037db29d15038c14db9"
+    },
+    "3": {
+      "path": "obj/parallel/source-transport/va-const/reference-v3/receipt.json",
+      "sha256": "edcc064f204dd10c2b280fb8ede9195c57a3095a0b204ec3a57cb79e39bc29fc"
+    },
+    "4": {
+      "path": "obj/parallel/source-transport/va-const/reference-v4/receipt.json",
+      "sha256": "4aff1077e1a39fdc5e5a2a25e9caff3d56f96c7fe5f8a6a7ec3166d6b421c274"
+    },
+    "5": {
+      "path": "obj/parallel/source-transport/va-const/reference-v5/receipt.json",
+      "sha256": "7305e37ed324316312d56b1c3da5c5f53a3bb6b546b061d201361174471d174b"
+    },
+    "6": {
+      "path": "obj/parallel/source-transport/va-const/reference-v6/receipt.json",
+      "sha256": "5c35f54c49721b205d999fd6f7e92b6c6dd52a5dba27a15d0360d491e637b741"
+    },
+    "7": {
+      "path": "obj/parallel/source-transport/va-const/reference-v7/receipt.json",
+      "sha256": "cb47589ae6eab98c61e2fa61119771d2db2ab033c62abe7174b47abe8733bd6f"
+    },
+    "8": {
+      "path": "obj/parallel/source-transport/va-const/reference-v8/receipt.json",
+      "sha256": "a29ddd9ef1b0decf89ea0cc0d53e47e3e30b1b84f5ac3c800f435a62fe81aab1"
+    },
+    "9": {
+      "path": "obj/parallel/source-transport/va-const/reference-v9/receipt.json",
+      "sha256": "7560f196bacf5f9bd040b95a46cbd1de8c25c3f7a2460da18e243e4a67eefdc3"
+    },
+    "10": {
+      "path": "obj/parallel/source-transport/va-const/reference-v10/receipt.json",
+      "sha256": "4d47ecef3fe78c7ca65f0658d9ee04d3617ea047c0feaaee63d7965a20fd0982"
+    },
+    "11": {
+      "path": "obj/parallel/source-transport/va-const/reference-v11/receipt.json",
+      "sha256": "5752ea14178b9ac81ce3a4c349132479ad3bada2f32452c3d6593a43f2c49299"
+    }
+  },
+  "development_history": {
+    "gate1": {
+      "path": "obj/parallel/source-transport/va-const/gate1/receipt.json",
+      "sha256": "60a002c06430eb0e4229ceecfb662f0837cf988dd25ebd9f117eced474451021"
+    },
+    "gate2": {
+      "path": "obj/parallel/source-transport/va-const/gate2/receipt.json",
+      "sha256": "add748e076e8d02628e62c94d4760f666dd6515906926619876db9ef0e1e193e"
+    },
+    "gate3": {
+      "path": "obj/parallel/source-transport/va-const/gate3/receipt.json",
+      "sha256": "4270d99fdaae20e418a93837e05eb6362921be133e47d3e83db43e5771474225"
+    },
+    "gate4": {
+      "path": "obj/parallel/source-transport/va-const/gate4/receipt.json",
+      "sha256": "0e0bd6758733656e1e290874c6c0b63485df716be0aa3831f86378efcfb0ebab"
+    },
+    "gate5": {
+      "path": "obj/parallel/source-transport/va-const/gate5/receipt.json",
+      "sha256": "de3c17e0c521ab74babab39181711bdbd972bfba1848c553ca2fabb2bf3684df"
+    },
+    "gate6": {
+      "path": "obj/parallel/source-transport/va-const/gate6/receipt.json",
+      "sha256": "28536daf967a0bf80b66d972cd7ced3ade1eeedb1c587224d84aaa7113e5f6f7"
+    },
+    "gate7": {
+      "path": "obj/parallel/source-transport/va-const/gate7/receipt.json",
+      "sha256": "a5c7fa9d984e8ded27d0cbfba5db6c9d493bfc0afcf8c4e264c8c8c9ff37fcf3"
+    },
+    "static1": {
+      "path": "obj/parallel/source-transport/va-const/static1/receipt.json",
+      "sha256": "49cc78f74a3aa0623873b79f2c6d11cd55f9748f72915295b520d62c9bce73f9"
+    },
+    "static2": {
+      "path": "obj/parallel/source-transport/va-const/static2/receipt.json",
+      "sha256": "66f5e9e54f64e6f3374a4d5ff9a00d464c529a7718d7325f67a12f6f2da13c36"
+    },
+    "static3": {
+      "path": "obj/parallel/source-transport/va-const/static3/receipt.json",
+      "sha256": "85641c016599cc91bd2a2bedf868c9151345df39bcc2256022aed982791ff819"
+    },
+    "static4": {
+      "path": "obj/parallel/source-transport/va-const/static4/receipt.json",
+      "sha256": "edb5c90d616ae3ca267c95d5330bbbe1b6a88e87f4cf546739a72175378ec6b2"
+    },
+    "static5": {
+      "path": "obj/parallel/source-transport/va-const/static5/receipt.json",
+      "sha256": "9d49666feddf8caac75832a74abbd710e731ef3212d973a10151a0f65310d88b"
+    },
+    "static6": {
+      "path": "obj/parallel/source-transport/va-const/static6/receipt.json",
+      "sha256": "043520eafaad27b270b1dbb2bbb934cefe6db22cd981ca023f848f4a7a18f02a"
+    },
+    "static7": {
+      "path": "obj/parallel/source-transport/va-const/static7/receipt.json",
+      "sha256": "473312117f739d599bef73ddaac37d11dec1715cd94173323ad0a716ee2a5044"
+    }
+  },
+  "observed_outcomes": {
+    "original_cldef": "positive: real source const definition/static proof/native lowering",
+    "original_clcall": "Rust-positive required interpreter cleanup scheduling; rejected before Code snapshot",
+    "actual_partial_struct": "Rust E0493; live_type obligation remains even with no physical cleanup node",
+    "native_count2": 41,
+    "native_conditional_runtime_rtcnt": 47,
+    "native_artifacts": "LowIR/object/executable/commands/stdout/stderr hashes captured before storage pruning in qualification receipt",
+    "reference_setup_corrections": [
+      "obsolete impl const spelling",
+      "invalid struct [const] bound",
+      "missing actual const Drop Destruct prerequisites",
+      "extern string whitespace setup"
+    ],
+    "corrected_semantic_predictions": [
+      "zero-length array still needs const Destruct for element",
+      "partial Struct E0493",
+      "ordinary Copy does not entail demanded const Destruct"
+    ],
+    "no_parity_claim_for_named_gaps": true
+  },
+  "validation": {
+    "gate7_all_exit_codes_zero": true,
+    "regular_ctdrop_tests": 9,
+    "native_observers": 2,
+    "private_forgery_tests_authored_ci_pending": 2,
+    "old_controls": [
+      "vactx",
+      "vaops",
+      "cetags",
+      "mutops",
+      "idxops"
+    ],
+    "full_private_release": "Root CI pending",
+    "performance": "bounded canonical work only; no A/B wall-time claim"
+  },
+  "canonical_work": {
+    "baseline": 706,
+    "widths": [
+      8,
+      32,
+      128
+    ],
+    "growth": [
+      713,
+      2849,
+      11393
+    ]
+  },
+  "sizes_64bit": {
+    "defining_state_and_prepared": 112,
+    "claims": 48,
+    "symbolic_verifier": 576,
+    "incremental_verifier": 528,
+    "seal": 40,
+    "concrete_prepared": 952,
+    "symbolic_prepared": 784,
+    "row": 1008,
+    "batch": 792,
+    "loan_input": 32,
+    "body_nodefacts_code_wire": "unchanged"
+  },
+  "required_followons": [
+    "selected enum/precise leaf cleanup with actual variant/initialization facts",
+    "unconditional const generic runtime-instance original witness",
+    "real interpreter cleanup scheduling and execution",
+    "actual const Drop callee execution and VaList cursor init/read/copy/end/early exit/cleanup",
+    "unit-result conditional const payment",
+    "full unchanged standard module/macro/provided Drop+Pin closure",
+    "complete imported variadic operation/local profile"
+  ],
+  "integration": {
+    "future_arena": "Root a3a2 witness: staging State constructors None; authenticate only successful Batch::finish after all loans; pass current Store, preserve retained/suspended checks",
+    "component_markers_sha256": "767151e21c6d3c6b0c24ce828f05ad1e742e087823c8257d161dd7abc8e9d116",
+    "component_markers": "retain shared paid start_component_queries and start_component_predicates; union Root AsyncCallable completion",
+    "other_joins": [
+      "borrow/templates.rs",
+      "borrow/templates/context.rs",
+      "lower/instances.rs",
+      "lower/instances/proof.rs",
+      "pipeline/execution.rs and anonymous/defining_heads/parent_children",
+      "module registrations",
+      "trait suite registration",
+      "upstream manifest append"
+    ],
+    "backend_or_schema_changes": false
+  },
+  "backend_source": "b7c6b8e72595a524e1b3f147212d69c02b257dd8",
+  "reference_toolchain": {
+    "rustc": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "sysroot": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu",
+    "drivers": {
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c"
+    }
+  }
+}

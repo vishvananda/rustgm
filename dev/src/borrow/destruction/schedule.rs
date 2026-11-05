@@ -31,9 +31,6 @@ impl<'a> Schedule<'a> {
             cleanups: Cleanups::Symbolic(cleanups),
         }
     }
-    pub(crate) const fn is_symbolic(self) -> bool {
-        matches!(self.cleanups, Cleanups::Symbolic(_))
-    }
     pub(crate) fn cleanups(self) -> impl Iterator<Item = Cleanup> + 'a {
         let (concrete, symbolic): (&[super::Cleanup], &[Cleanup]) = match self.cleanups {
             Cleanups::Concrete(cleanups) => (cleanups, &[]),

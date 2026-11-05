@@ -1,5 +1,6 @@
 //! Coordinate defining-body proofs without reversing semantic phase dependencies.
 mod asyncbody;
+pub(crate) mod cdrop;
 pub(crate) mod execution;
 pub use asyncbody::future_application;
 mod marked_definitions;

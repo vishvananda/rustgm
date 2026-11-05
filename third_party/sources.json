@@ -265,6 +265,15 @@
       "adaptation": "none; original bytes retained",
       "oracle": "compile-fail",
       "owning_assignment": "pa25"
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/ops/drop.rs",
+      "destination": "pa31/tests/spec/source-const-drop/original/drop.rs",
+      "sha256": "1d91c5e4e5868e8d2e6860da6fb5353f69172623a8ea7b9d7969e1ebd0fe7055",
+      "adaptation": "none; full original bytes retained separately from finite required-member authored controls",
+      "oracle": "required full provided Drop/Pin source closure; not a passing consumer claim",
+      "owning_assignment": "pa31"
     }
   ]
 }

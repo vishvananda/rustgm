@@ -88,6 +88,35 @@ impl Search<'_> {
         bound: Bound,
     ) -> Result<Action, String> {
         let count = components.len(&facts.types)?;
+        self.start_component_queries(facts, frame, goal, count, |store, index| {
+            Ok(Predicate {
+                ty: components.get(store, index)?,
+                bound,
+            })
+        })
+    }
+    pub(super) fn start_component_predicates(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+        goal: Predicate,
+        predicates: &[Predicate],
+    ) -> Result<Action, String> {
+        self.start_component_queries(facts, frame, goal, predicates.len(), |_, index| {
+            predicates
+                .get(index)
+                .copied()
+                .ok_or_else(|| "missing component predicate".into())
+        })
+    }
+    fn start_component_queries(
+        &mut self,
+        facts: &mut Declarations,
+        frame: &mut Frame,
+        goal: Predicate,
+        count: usize,
+        predicate: impl Fn(&Store, usize) -> Result<Predicate, String>,
+    ) -> Result<Action, String> {
         frame
             .inputs
             .context
@@ -103,16 +132,12 @@ impl Search<'_> {
         let mut substitution =
             Instantiation::new(&mut frame.inputs.context, &facts.types, &[]).map_err(inference)?;
         for index in 0..count {
-            let ty = components.get(&facts.types, index)?;
+            let predicate = predicate(&facts.types, index)?;
             goals.push(
                 frame
                     .inputs
                     .context
-                    .instantiate_predicate(
-                        &mut facts.types,
-                        Predicate { ty, bound },
-                        &mut substitution,
-                    )
+                    .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
                     .map_err(inference)?,
             );
         }

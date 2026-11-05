@@ -1,4 +1,5 @@
 //! The executable boundary combines owned access, storage, contracts and loans.
+mod cstage;
 pub(crate) mod incremental;
 mod static_targets;
 pub(crate) use static_targets::solved as solved_callables;
@@ -352,75 +353,22 @@ fn prove_cleanup<S: BuildHasher>(
     catalog: &mut super::destruction::glue::Catalog<'_>,
     structure: structure::Use<'_, '_>,
 ) -> Result<Option<super::destruction::Plan>, Error> {
-    use super::{destruction, ownership::initialization};
-    let parameters = super::permissions::check(environment, contract)?;
-    let mut copies = parameters
-        .as_ref()
-        .map(|e| Copies::in_environment(std::sync::Arc::clone(e)));
-    let mut scoped_regions = parameters.map(|e| drop_regions.scoped(e));
-    let error = |node, message: &str| Error {
-        node,
-        message: message.into(),
-    };
-    let (shared, slot) = match structure {
-        structure::Use::Shared(shared) => (Some(shared), None),
-        structure::Use::Keep(slot) => (None, Some(slot)),
-        structure::Use::Own => (None, None),
-    };
-    let order = if shared.is_some() {
-        None
-    } else {
-        super::order::Order::new(body)
-    };
-    let mut copy_view = super::copy_view::CopyView::checked(
-        copies.as_mut().unwrap_or(environment.copies),
+    let prepared = cstage::prepare(
+        environment,
+        reused,
         body,
         contract,
-        environment.source_copy,
-    )
-    .map_err(|message| error(Some(body.source.into()), message))?;
-    let init = if let Some(shared) = shared {
-        initialization::analyze_shared(
-            environment.types,
-            environment.definitions,
-            environment.derives,
-            &mut copy_view,
-            body,
-            shared.order,
-            shared.storage,
-        )
-    } else {
-        initialization::analyze_ordered(
-            environment.types,
-            environment.definitions,
-            environment.derives,
-            &mut copy_view,
-            body,
-            order.as_ref(),
-        )
-    }
-    .map_err(|e| error(Some(e.node), e.message))?;
-    let plan = destruction::select_reusing(catalog, &init, &mut reused.transitions)
-        .map_err(|e| error(Some(e.node), e.message))?;
-    loans::check_destruction(
-        environment.types,
-        environment.definitions,
-        &mut reused.components,
-        scoped_regions.as_mut().unwrap_or(drop_regions),
-        &init,
+        catalog,
+        structure,
+        None,
+    )?;
+    cstage::finish(
+        environment,
+        reused,
+        drop_regions,
+        prepared,
         contract,
-        &plan,
+        None,
+        cstage::RegionUse::Initial,
     )
-    .map_err(|e| error(Some(e.node), e.message))?;
-    if let Some(slot) = slot
-        && let std::borrow::Cow::Owned(storage) = init.storage
-    {
-        *slot = Some(structure::Proved { order, storage });
-    }
-    // Keep no event tape when no runtime cleanup remains, after proving liveness.
-    Ok(plan.cleanups.iter().any(|c| c.node.is_some()).then(|| {
-        let mut plan = plan;
-        plan.shrink_to_fit();
-        plan
-    }))
 }

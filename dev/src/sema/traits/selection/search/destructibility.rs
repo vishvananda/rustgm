@@ -37,16 +37,20 @@ impl Search<'_> {
             }
             Err(error) => return Err(inference(error)),
         };
-        // These values own no destructor, regardless of their pointee/signature
-        // arguments. This proves the Destruct bound, never a const call or Drop
-        // body. Nominal, aggregate and captured closure cleanup stays separate.
         if !crate::sema::compiler_items::destruct_predicate(facts, goal)? {
-            return Err("source const destruction eligibility is not implemented".into());
+            return Ok(None);
         }
         frame.require_nominal_formed(facts, goal.ty)?;
         let shape = self.query.builtins.physical_shape(facts, goal.ty)?;
         if !shape.well_formed {
             return Ok(Some(Action::Complete(Decision::Absent)));
+        }
+        if goal
+            .bound
+            .trait_parts()
+            .is_some_and(|(_, effect)| effect != crate::support::constness::Constness::Ordinary)
+        {
+            return self.const_destruct_components(facts, frame, goal).map(Some);
         }
         Ok(Some(self.complete_source_builtin(frame, goal, false)))
     }

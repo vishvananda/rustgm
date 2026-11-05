@@ -1,0 +1,40 @@
+{
+  "cases": [
+    {
+      "file": "egood.rs",
+      "expected_code": 0,
+      "source_sha256": "b483e3974d5046cb34c5dceae055df8cbf3c8f7c9c000d91b33182accd05219c",
+      "prediction": "exact initialized active components and ordinary-vs-const conditional application"
+    },
+    {
+      "file": "ebad.rs",
+      "expected_code": 1,
+      "source_sha256": "6ca898aa87faccf3de62c70c1bff035f7487c7ac0855402e266c5de4f61c3862",
+      "prediction": "exact initialized active components and ordinary-vs-const conditional application"
+    },
+    {
+      "file": "part.rs",
+      "expected_code": 0,
+      "source_sha256": "d354b3d038fa1caa4e6d33ad9991db3ad9713715cd32300b602bb8ec197e743f",
+      "prediction": "exact initialized active components and ordinary-vs-const conditional application"
+    },
+    {
+      "file": "hold.rs",
+      "expected_code": 0,
+      "source_sha256": "2db4c70418a73a5cc0305eb4889baca32bd3dd92384a3375826b53e2a3d829b7",
+      "prediction": "exact initialized active components and ordinary-vs-const conditional application"
+    },
+    {
+      "file": "rtinst.rs",
+      "expected_code": 0,
+      "source_sha256": "1fb8339881390b0c6cdfef5c2d9eaa05a63a7f968d4366c92e14d297c4c776dc",
+      "prediction": "exact initialized active components and ordinary-vs-const conditional application"
+    },
+    {
+      "file": "ctinst.rs",
+      "expected_code": 1,
+      "source_sha256": "e9167137707c46a04a7c35a4a5d7134a471236f01442176d40b74d0e35a5b848",
+      "prediction": "exact initialized active components and ordinary-vs-const conditional application"
+    }
+  ]
+}

@@ -147,6 +147,12 @@ pub(crate) fn destruct_predicate(
                         | Kind::Reference { .. }
                         | Kind::Function { .. }
                         | Kind::FunctionItem { .. }
+                        | Kind::Adt(..)
+                        | Kind::Tuple(_)
+                        | Kind::Array { .. }
+                        | Kind::ArrayTerm { .. }
+                        | Kind::Slice(_)
+                        | Kind::Closure { .. }
                 )
             )))
 }

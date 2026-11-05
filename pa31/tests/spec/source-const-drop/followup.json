@@ -1,0 +1,10 @@
+{
+  "cases": [
+    {
+      "file": "cond2.rs",
+      "expected_code": 0,
+      "source_sha256": "1bb547971adc0e80816cab2be8028edb1982f81314938b0d2d3b99f66c9a5c0f",
+      "prediction": "conditional const Drop uses normal const Destruct premise; correcting invalid struct [const] bound"
+    }
+  ]
+}

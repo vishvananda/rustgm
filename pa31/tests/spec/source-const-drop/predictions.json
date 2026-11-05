@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "base": "actual sizing/Destruct/Copy/Drop cutout; actual Drop member stable policy retained",
+  "cases": [
+    {
+      "file": "plain.rs",
+      "expected_code": 0,
+      "source_sha256": "4eec9b1785c88b247bd60916017def1abb69f3bc99a7d56fbf9cb27fadd4ec67",
+      "prediction": "accepted"
+    },
+    {
+      "file": "ownc.rs",
+      "expected_code": 0,
+      "source_sha256": "56ef2b073965c49756444643cd896615777a86e90954d6584688d47eab92e1f3",
+      "prediction": "accepted"
+    },
+    {
+      "file": "ownn.rs",
+      "expected_code": 1,
+      "source_sha256": "04ed299b97d7ed6372906bbae363ba31d6b866fa12ade847b27ab7b5e1b0b264",
+      "prediction": "non-const destruction/call rejected"
+    },
+    {
+      "file": "fieldc.rs",
+      "expected_code": 0,
+      "source_sha256": "b8451a96cf897365f6e41a6d0aa779ab223000e60b56a6a3a5f9991070fd6f1a",
+      "prediction": "accepted"
+    },
+    {
+      "file": "fieldn.rs",
+      "expected_code": 1,
+      "source_sha256": "41f7de8e24ee0dc3ef0f7d9ac341ceb7af8f6f6eab0adc51f27ed25255111a08",
+      "prediction": "non-const destruction/call rejected"
+    },
+    {
+      "file": "initc.rs",
+      "expected_code": 0,
+      "source_sha256": "5b97614bafd71de4c5a6042931a7d2bd7b8c5e720ffad8fbf1d2c12b3329677c",
+      "prediction": "accepted"
+    },
+    {
+      "file": "initn.rs",
+      "expected_code": 1,
+      "source_sha256": "89721e863cf1d4cd4222c635d327c835fd8ddbbb164cc555ccd3a3295478d8fb",
+      "prediction": "non-const destruction/call rejected"
+    },
+    {
+      "file": "inact.rs",
+      "expected_code": 0,
+      "source_sha256": "b8998b003dbec3e5beaec82f338bb26bb6b9d8e806757ecb5cb1011feac182e9",
+      "prediction": "accepted"
+    },
+    {
+      "file": "moved.rs",
+      "expected_code": 0,
+      "source_sha256": "1e9ce9d25a68cd67e7a6237f34b60b385c16aba9caa34cfa6ac77c042704bad9",
+      "prediction": "accepted"
+    },
+    {
+      "file": "borrow.rs",
+      "expected_code": 0,
+      "source_sha256": "cebc50db6ada9698632520c1f04ee286cf83d9bfe8958144aecd700eeef8c213",
+      "prediction": "accepted"
+    },
+    {
+      "file": "empty.rs",
+      "expected_code": 0,
+      "source_sha256": "b3883c330b27bda461aae086c58e778efba23b82308cfbe20e249144d4ca537a",
+      "prediction": "accepted"
+    },
+    {
+      "file": "evinit.rs",
+      "expected_code": 1,
+      "source_sha256": "30e7f56e366f561847df298ec226e1173281581dbff92d18b55a09cb5086776d",
+      "prediction": "non-const destruction/call rejected"
+    },
+    {
+      "file": "reach.rs",
+      "expected_code": 0,
+      "source_sha256": "ab179140d95dbe17f5ee0c47581b9b4f43574e53c41287aaaf48ed16f1660654",
+      "prediction": "accepted"
+    },
+    {
+      "file": "noncal.rs",
+      "expected_code": 1,
+      "source_sha256": "f4c40a353601c79ea45874eaf5d1e6d9e8856cd6ab8e7a0ee53b55a80dd5fafc",
+      "prediction": "non-const destruction/call rejected"
+    },
+    {
+      "file": "cond.rs",
+      "expected_code": 0,
+      "source_sha256": "cdd2ee3efea98d6a6ef2a107b5e9345b5c1daa610a8e8e75d7e8ab1fe091c9bd",
+      "prediction": "accepted"
+    }
+  ],
+  "supersedes": "setup1: outdated impl const syntax; no semantic result"
+}

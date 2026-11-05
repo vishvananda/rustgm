@@ -41,14 +41,19 @@ impl Engine {
             None
         };
         Original::validate_parts_charged(facts, body, contract).map_err(identity_error)?;
-        let regions = Self::source_regions(report, facts, body, contract)?;
+        let mut contract = std::borrow::Cow::Borrowed(contract);
+        let mut regions = Self::source_regions(report, facts, body, &contract)?;
         self.prove_loans(
             report,
             facts,
             body,
             &template.destruction,
-            &template.environment,
-            &regions,
+            &mut super::LoanInput {
+                parameters: &template.environment,
+                contract: &mut contract,
+                regions: &mut regions,
+                purpose,
+            },
         )?;
         if matches!(body.owner, Owner::AsyncBody { .. }) {
             let arena = source_arena.as_ref().ok_or_else(|| {
@@ -70,12 +75,16 @@ impl Engine {
             });
         }
         let (code, uses) = self
-            .finish_code(facts, body, contract, &regions, purpose)
+            .finish_code(facts, body, &contract, &regions, purpose)
             .map_err(|e| report.body_error(body.source, e))?;
         let retained = if uses.needed {
             Some(
-                self.retained_source(code.as_ref(), std::sync::Arc::new(contract.clone()), uses)
-                    .map_err(|e| report.body_error(body.source, e))?,
+                self.retained_source(
+                    code.as_ref(),
+                    std::sync::Arc::new(contract.into_owned()),
+                    uses,
+                )
+                .map_err(|e| report.body_error(body.source, e))?,
             )
         } else {
             None

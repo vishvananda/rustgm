@@ -216,7 +216,11 @@ impl Checker<'_> {
             .get(&DefId(item.0))
             .cloned();
         let mut proof = crate::sema::nominals::Proof::for_declaration(environment, count, 1);
-        for requirement in requirements {
+        let constant = self.const_drop_coverage_owner(owner, item, scope);
+        for mut requirement in requirements {
+            if constant && let Bound::MaybeConstTrait(application) = requirement.bound {
+                requirement.bound = Bound::Trait(application);
+            }
             let requirement = substitution
                 .predicate(&mut self.facts.types, requirement)
                 .map_err(|e| self.error(key, e))?;
@@ -237,6 +241,23 @@ impl Checker<'_> {
 }
 
 impl Checker<'_> {
+    fn const_drop_coverage_owner(&self, owner: DefId, item: ItemId, scope: DefId) -> bool {
+        self.facts
+            .destructors
+            .self_type(owner)
+            .is_some_and(|actual| actual.item == item && actual.method == scope)
+            && self
+                .facts
+                .associated
+                .owner(owner)
+                .and_then(|id| self.facts.associated.get(id))
+                .is_some_and(|owner| {
+                    matches!(
+                        owner.kind,
+                        crate::sema::associated::OwnerKind::Impl { constant: true, .. }
+                    )
+                })
+    }
     /// Coverage proves in nominal coordinates; the Drop graph retains impl coordinates.
     fn restore_drop_proof(
         &mut self,

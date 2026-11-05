@@ -603,6 +603,33 @@ impl Builder {
         original: Original<'_>,
     ) -> Result<usize, borrow::Error> {
         let contract = self.regions(facts, &body, input)?;
+        if facts.source_bindings.is_some()
+            && body.const_context
+            && body.instance.is_none()
+            && matches!(original, Original::Ordinary)
+            && self.recipes.is_some()
+        {
+            let mut proof = crate::pipeline::cdrop::ordinary(
+                facts,
+                body,
+                input,
+                contract,
+                &mut self.verifier,
+                &mut self.recipes,
+            )?;
+            proof
+                .resolve_callables(&mut facts.types)
+                .map_err(|message| borrow::Error {
+                    node: Some(input.source.into()),
+                    message: message.into(),
+                })?;
+            let index = self.bodies.len();
+            self.bodies.push(proof);
+            if let (Some(pending), Some(requirements)) = (&mut self.program.drops, requirements) {
+                pending.bodies.push(requirements);
+            }
+            return Ok(index);
+        }
         let owned_cleanup = self.program.drops.is_some();
         let mut catalog = owned_cleanup
             .then(|| self.recipes.take())

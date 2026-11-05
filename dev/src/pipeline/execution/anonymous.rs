@@ -170,16 +170,21 @@ impl Engine {
             &template.body,
         )
         .map_err(|e| report.body_error(e.source.unwrap_or(source.into()), e.message))?;
-        let Some(regions) = region else {
+        let Some(mut regions) = region else {
             return Ok(true);
         };
+        let mut contract = std::borrow::Cow::Borrowed(contract);
         self.prove_loans(
             report,
             facts,
             &template.body,
             &template.destruction,
-            &template.environment,
-            &regions,
+            &mut super::LoanInput {
+                parameters: &template.environment,
+                contract: &mut contract,
+                regions: &mut regions,
+                purpose: super::ProofPurpose::Original,
+            },
         )?;
         Ok(false)
     }

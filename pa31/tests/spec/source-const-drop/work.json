@@ -1,0 +1,28 @@
+{
+  "cases": [
+    {
+      "file": "work0.rs",
+      "expected_code": 0,
+      "source_sha256": "25adbe4297c018dc90d543419225636fcc9beaaa32d04ef7300406482ddaa619",
+      "prediction": "independent unused const bodies with actual selected const Drop; finite per-demand width"
+    },
+    {
+      "file": "work8.rs",
+      "expected_code": 0,
+      "source_sha256": "ac8986feb8d8498eb9983df9eb2a01eb42bc1d2eb8b48f38e27c765a66c95a8e",
+      "prediction": "independent unused const bodies with actual selected const Drop; finite per-demand width"
+    },
+    {
+      "file": "work32.rs",
+      "expected_code": 0,
+      "source_sha256": "cf4f67861b3ab81de4eb654991e2e03730d8435444427436528f2adb2bbfecb6",
+      "prediction": "independent unused const bodies with actual selected const Drop; finite per-demand width"
+    },
+    {
+      "file": "work128.rs",
+      "expected_code": 0,
+      "source_sha256": "756cedf3b119f352238fefc6e44d06d076166eee4fc08a94da515c4c5063c0c4",
+      "prediction": "independent unused const bodies with actual selected const Drop; finite per-demand width"
+    }
+  ]
+}

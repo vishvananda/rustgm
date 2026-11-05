@@ -258,17 +258,17 @@ fn actual_cursor_demands_have_bounded_canonical_work() -> Result {
 }
 
 #[test]
-fn rust_positive_const_cursor_requirements_keep_their_current_gaps() -> Result {
-    // These are retained Rust-positive requirements, not semantic parity negatives.
-    for (name, gap) in [
-        ("cldef", "constant evaluation cannot run destructors"),
-        ("clcall", "constant evaluation cannot run destructors"),
-    ] {
-        let error = program(name)
-            .err()
-            .ok_or("nominal const cleanup boundary changed; qualify it")?;
-        assert!(error.to_string().contains(gap), "{name}: {error}");
-    }
+fn const_cursor_definition_compiles_and_reached_cleanup_remains_required() -> Result {
+    program("cldef")?;
+    let error = program("clcall")
+        .err()
+        .ok_or("interpreter cleanup boundary changed; qualify it")?;
+    assert!(
+        error
+            .to_string()
+            .contains("constant interpreter cleanup scheduling is not implemented"),
+        "{error}"
+    );
     Ok(())
 }
 

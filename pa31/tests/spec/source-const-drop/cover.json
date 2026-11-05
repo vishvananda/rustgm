@@ -1,0 +1,52 @@
+{
+  "cases": [
+    {
+      "file": "clone.rs",
+      "expected_code": 0,
+      "source_sha256": "8100f012e41c68010336faebb68a7f4dadd659450e7eba113d1e759c3b43899b",
+      "prediction": "conditional const Drop runtime coverage; preserve unrelated ordinary constraints and actual trait identity"
+    },
+    {
+      "file": "strong.rs",
+      "expected_code": 1,
+      "source_sha256": "0797b6c82a7ad9397082eadcd8b66e51e5661d758ac49c1e828cb74945e95e6a",
+      "prediction": "conditional const Drop runtime coverage; preserve unrelated ordinary constraints and actual trait identity"
+    },
+    {
+      "file": "foo.rs",
+      "expected_code": 0,
+      "source_sha256": "fc9b863a145a9b690e9de67e3de68fa1ea189ec045dc914dccb976f58c2c91d6",
+      "prediction": "conditional const Drop runtime coverage; preserve unrelated ordinary constraints and actual trait identity"
+    },
+    {
+      "file": "fstrng.rs",
+      "expected_code": 1,
+      "source_sha256": "b2ed37266d9f2c167cb48950613f536d05b3ec265b6b9f7ff54e51c760962211",
+      "prediction": "conditional const Drop runtime coverage; preserve unrelated ordinary constraints and actual trait identity"
+    },
+    {
+      "file": "ord.rs",
+      "expected_code": 1,
+      "source_sha256": "f9ba939cdf7bae91c4ff932473984ec1c725e61858ab1a40e031bec486fe0c64",
+      "prediction": "conditional const Drop runtime coverage; preserve unrelated ordinary constraints and actual trait identity"
+    },
+    {
+      "file": "othr.rs",
+      "expected_code": 1,
+      "source_sha256": "3a0fb55c5cbb0aabdc851f8065dd298fa03427b644c061729f41dd3ae33c1f2e",
+      "prediction": "conditional const Drop runtime coverage; preserve unrelated ordinary constraints and actual trait identity"
+    },
+    {
+      "file": "unco.rs",
+      "expected_code": 1,
+      "source_sha256": "2b8aa20112294c1179f7cb4ac73f5585b4f16c7d8ef1cd5d8cfddbff27923fa4",
+      "prediction": "conditional const Drop runtime coverage; preserve unrelated ordinary constraints and actual trait identity"
+    },
+    {
+      "file": "fake.rs",
+      "expected_code": 0,
+      "source_sha256": "68c509e6b241b66674dc5523b27cef5bbb07d4a1e4225a6b2ceacab7f68e17a5",
+      "prediction": "conditional const Drop runtime coverage; preserve unrelated ordinary constraints and actual trait identity"
+    }
+  ]
+}

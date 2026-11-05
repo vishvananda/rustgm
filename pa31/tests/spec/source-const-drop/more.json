@@ -1,0 +1,82 @@
+{
+  "cases": [
+    {
+      "file": "plain2.rs",
+      "expected_code": 0,
+      "source_sha256": "1211eb44d499d38ea04c583fb229c270de8ecc9f5ebe57ed757dcbdf0a3aa2d0",
+      "prediction": "const Destruct proof: actual source primitive const result; preserves original unit payment gap"
+    },
+    {
+      "file": "ownc2.rs",
+      "expected_code": 0,
+      "source_sha256": "4b30a1a20c8f904e511aacfa4c9ebff2bcdf5ca1401450d4c5aced1e700162ba",
+      "prediction": "const Destruct proof: actual source primitive const result; preserves original unit payment gap"
+    },
+    {
+      "file": "ownn2.rs",
+      "expected_code": 1,
+      "source_sha256": "053d115f2e3965d828563034ecf50b09e7d2e934190d72aa5315ec3ed8259569",
+      "prediction": "const Destruct proof: actual source primitive const result; preserves original unit payment gap"
+    },
+    {
+      "file": "field2.rs",
+      "expected_code": 0,
+      "source_sha256": "c2a2856dd20372780df58513303cffb18ea394b77f36d6640d3f729ea7527f4b",
+      "prediction": "const Destruct proof: actual source primitive const result; preserves original unit payment gap"
+    },
+    {
+      "file": "flneg2.rs",
+      "expected_code": 1,
+      "source_sha256": "43cca00d7a01c5911ca57e7c838ec44ab7893bffa4552fbe0af6eab9834315ee",
+      "prediction": "const Destruct proof: actual source primitive const result; preserves original unit payment gap"
+    },
+    {
+      "file": "cond3.rs",
+      "expected_code": 0,
+      "source_sha256": "a895bce9d029a73532f7ac0e85927ac97e3ae456babebae413614d2587a24bc6",
+      "prediction": "const Destruct proof: actual source primitive const result; preserves original unit payment gap"
+    },
+    {
+      "file": "manual.rs",
+      "expected_code": 0,
+      "source_sha256": "6781d802d4990596276229d6200eb3505483c40c2d85dedf93ced1f2d712ef85",
+      "prediction": "suppressions/actual structural const Destruct; zero array predicted vacuous"
+    },
+    {
+      "file": "union.rs",
+      "expected_code": 0,
+      "source_sha256": "053932c7e82e94fd57f9c102faa32390cf38b82da8121825078c329dc1de60f1",
+      "prediction": "suppressions/actual structural const Destruct; zero array predicted vacuous"
+    },
+    {
+      "file": "tuplec.rs",
+      "expected_code": 0,
+      "source_sha256": "dde2aa221c5a8c13174981d1c48bbdf4f930ea5fdbb4efebef995a0a9203bff1",
+      "prediction": "suppressions/actual structural const Destruct; zero array predicted vacuous"
+    },
+    {
+      "file": "tuplen.rs",
+      "expected_code": 1,
+      "source_sha256": "c046f02706b9bead1fc458be54c21302d75b6adca1244262719631e46ad86e7d",
+      "prediction": "suppressions/actual structural const Destruct; zero array predicted vacuous"
+    },
+    {
+      "file": "arrayc.rs",
+      "expected_code": 0,
+      "source_sha256": "bdc7e35cf4fc01929271e9592a6631838a4ac01f6cd0619c681f5651af3e97fb",
+      "prediction": "suppressions/actual structural const Destruct; zero array predicted vacuous"
+    },
+    {
+      "file": "arrayn.rs",
+      "expected_code": 1,
+      "source_sha256": "d4acd44e81484cbbd9f1a3f31153b5b499b40ed660c5d0e09b0ceeace349f96d",
+      "prediction": "suppressions/actual structural const Destruct; zero array predicted vacuous"
+    },
+    {
+      "file": "array0.rs",
+      "expected_code": 0,
+      "source_sha256": "92fc880a4d1300dcee820d39ba2e70cb43452346d693bc2825b6ac82074063f6",
+      "prediction": "suppressions/actual structural const Destruct; zero array predicted vacuous"
+    }
+  ]
+}

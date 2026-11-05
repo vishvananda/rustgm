@@ -1,4 +1,5 @@
 //! Generic bodies share ordinary proofs with scoped moves and abstract cleanup.
+mod staged;
 use super::Analysis;
 use crate::support::hash::HashMap;
 use crate::{
@@ -16,6 +17,7 @@ use crate::{
         outlives::LiveRegions,
     },
 };
+pub(crate) use staged::Prepared;
 
 /// Prove moves, initialization, abstract destruction and loans in every template.
 /// Provenance and promotion must already be checked on these retained bodies.
@@ -107,6 +109,7 @@ pub(crate) struct Verifier {
     needed: NeedsDrop,
     drops: Regions,
     components: LiveRegions,
+    owner: Option<std::sync::Arc<()>>,
 }
 impl Verifier {
     pub(crate) fn new(custom: &[crate::types::ItemId]) -> Result<Self, &'static str> {
@@ -115,6 +118,7 @@ impl Verifier {
             needed: NeedsDrop::new(custom.iter().copied()),
             drops: Regions::new(custom.iter().copied())?,
             components: LiveRegions::default(),
+            owner: None,
         })
     }
     pub(crate) fn body<S: std::hash::BuildHasher>(
@@ -129,6 +133,51 @@ impl Verifier {
             crate::body::drops::MemberQuery,
         ) -> Result<crate::body::drops::MemberPosition, &'static str>,
     ) -> Result<Analysis, Error> {
+        let prepared = self.prepare_body(
+            environment,
+            body,
+            destruction,
+            parameters,
+            contract,
+            position,
+        )?;
+        self.finish_initial(environment, prepared, contract)
+    }
+    pub(crate) fn prepare<'a, S: std::hash::BuildHasher>(
+        &mut self,
+        environment: &mut crate::borrow::Environment<'_, S>,
+        body: &'a crate::body::ir::Body,
+        destruction: &crate::body::drops::Requirements,
+        parameters: &std::sync::Arc<crate::types::parameters::environment::Environment>,
+        contract: &regions::Body,
+        position: &impl Fn(
+            crate::types::TypeId,
+            crate::body::drops::MemberQuery,
+        ) -> Result<crate::body::drops::MemberPosition, &'static str>,
+    ) -> Result<Prepared<'a>, Error> {
+        staged::require_arenas(environment, body)?;
+        self.owner.get_or_insert_with(|| std::sync::Arc::new(()));
+        self.prepare_body(
+            environment,
+            body,
+            destruction,
+            parameters,
+            contract,
+            position,
+        )
+    }
+    fn prepare_body<'a, S: std::hash::BuildHasher>(
+        &mut self,
+        environment: &mut crate::borrow::Environment<'_, S>,
+        body: &'a crate::body::ir::Body,
+        destruction: &crate::body::drops::Requirements,
+        parameters: &std::sync::Arc<crate::types::parameters::environment::Environment>,
+        contract: &regions::Body,
+        position: &impl Fn(
+            crate::types::TypeId,
+            crate::body::drops::MemberQuery,
+        ) -> Result<crate::body::drops::MemberPosition, &'static str>,
+    ) -> Result<Prepared<'a>, Error> {
         let mut defining = crate::body::defining_cleanups::Work::new(1_000_000);
         if let Some(state) = contract.builtins.as_deref().and_then(|r| r.defining()) {
             state
@@ -164,61 +213,44 @@ impl Verifier {
             node: Some(e.node),
             message: e.message.into(),
         })?;
-        let analysis = if no_cleanup(destruction) {
-            // Scoped requirements prove the absence of destruction. Moves from
-            // custom-Drop containers still need their independent legality check.
+        let plan = if no_cleanup(destruction) {
             facts
                 .destructor_moves(environment.types, |item| self.custom.contains(&item))
                 .map_err(|e| Error {
                     node: Some(e.node),
                     message: e.message.into(),
                 })?;
-            super::check(
-                environment.types,
-                &mut self.components,
-                body,
-                contract,
-                &facts.ownership,
-                &facts.storage,
-            )
+            None
         } else {
             let mut needed = self.needed.scoped(std::sync::Arc::clone(&parameters));
-            let mut drops = self.drops.scoped(parameters);
-            let plan = symbolic::select(
-                environment.types,
-                environment.definitions,
-                &mut needed,
-                &mut facts,
-                |item| self.custom.contains(&item),
-                position,
-            )
-            .map_err(|e| Error {
-                node: Some(e.node),
-                message: e.message.into(),
-            })?;
-            super::check_schedule(
-                environment.types,
-                environment.definitions,
-                &mut self.components,
-                &mut drops,
-                &facts,
-                contract,
-                plan.schedule(),
+            Some(
+                symbolic::select(
+                    environment.types,
+                    environment.definitions,
+                    &mut needed,
+                    &mut facts,
+                    |item| self.custom.contains(&item),
+                    position,
+                )
+                .map_err(|e| Error {
+                    node: Some(e.node),
+                    message: e.message.into(),
+                })?,
             )
         };
-        analysis
-            .map(|mut analysis| {
-                analysis.steps = analysis.steps.saturating_add(defining.steps);
-                analysis
-            })
-            .map_err(|e| Error {
-                node: Some(e.node),
-                message: e.message.into(),
-            })
+        Ok(Prepared::new(
+            environment,
+            facts,
+            plan,
+            parameters,
+            contract,
+            self.owner.clone(),
+            defining.steps,
+        ))
     }
 }
 
-fn no_cleanup(requirements: &crate::body::drops::Requirements) -> bool {
+pub(crate) fn no_cleanup(requirements: &crate::body::drops::Requirements) -> bool {
     !requirements.locals.contains(&true)
         && !requirements.values.contains(&true)
         && !requirements.projections.contains(&true)

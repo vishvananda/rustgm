@@ -1,5 +1,7 @@
 //! Owned immutable bodies let demand discovery append proofs without revisiting earlier CFGs.
 mod completed_scope;
+mod cstage;
+pub(crate) use cstage::with_const_original;
 mod parents;
 use super::{Checked, Environment, Error};
 use crate::{
@@ -47,6 +49,7 @@ pub(crate) struct Verifier {
     drops: Option<crate::types::destruction::regions::Regions>,
     /// Substitution-invariant facts shared by instances of one template.
     structures: super::structure::Cache,
+    const_owner: Option<std::sync::Arc<()>>,
 }
 #[derive(Clone, Copy)]
 enum Original<'a> {
@@ -151,6 +154,7 @@ impl Verifier {
         Ok(Self {
             reused: super::Reused::default(),
             structures: super::structure::Cache::default(),
+            const_owner: None,
             drops: methods
                 .map(|methods| {
                     crate::types::destruction::regions::Regions::new(methods.iter().map(|m| m.item))

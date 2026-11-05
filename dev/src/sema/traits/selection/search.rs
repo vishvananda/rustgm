@@ -33,6 +33,7 @@ mod completed_proofs;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/classification_trace.rs"]
 pub(crate) mod copy_trace;
+mod cparts;
 mod destructibility;
 #[cfg(test)]
 #[path = "../../../../tests/invariants/marker_evidence.rs"]

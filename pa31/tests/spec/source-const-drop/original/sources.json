@@ -1,0 +1,5 @@
+{
+  "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/drop.rs",
+  "sha256": "1d91c5e4e5868e8d2e6860da6fb5353f69172623a8ea7b9d7969e1ebd0fe7055",
+  "status": "unchanged original module; full provided Drop/Pin closure remains required"
+}

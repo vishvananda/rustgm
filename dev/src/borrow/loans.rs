@@ -5,6 +5,7 @@ mod formed;
 pub(crate) use formed::Formed;
 mod inspection;
 mod legality;
+pub(crate) mod seal;
 mod state;
 use state::Set;
 pub mod templates;
@@ -613,8 +614,7 @@ pub(crate) fn check_schedule(
     }
     if body.const_context
         && plan.cleanups().any(|cleanup| cleanup.access)
-        && (!plan.is_symbolic()
-            || body.instance.is_some()
+        && (body.instance.is_some()
             || contract
                 .builtins
                 .as_deref()
@@ -622,9 +622,9 @@ pub(crate) fn check_schedule(
     {
         return Err(error("constant evaluation cannot run destructors"));
     }
-    // An original symbolic body must still authenticate its exact prepared
-    // defining state and every active conditional cleanup below. Concrete
-    // schedules, including ones with a copied carrier, retain the CTFE fence.
+    // Actual originals authenticate the same prepared defining eligibility for
+    // symbolic and concrete plans. Code publication independently fences reached
+    // interpreter cleanup until it has a real execution schedule.
     let defining_steps = legality::steps(types, body, contract, Some(plan)).map_err(error)?;
     let uses =
         liveness::cleanup::analyze_schedule(types, definitions, components, drops, facts, plan)

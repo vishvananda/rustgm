@@ -26,8 +26,7 @@ pub use super::transported_source::SourceInspection;
 pub(crate) use super::transported_source::TraitInspection;
 pub use crate::sema::crates::authored_export::SourceWork;
 use crate::{
-    body::{self, regions::Contracts},
-    borrow,
+    body, borrow,
     resolve::{expansion::Report, model::DefId, package::Error},
     sema::model::Declarations,
 };
@@ -562,36 +561,15 @@ fn inspect_staged<S, R>(
             .map_err(|e| diagnostic(report, None, e.into()))?;
     }
 
-    let contracts = Contracts {
-        bodies: inputs,
-        callables: &facts.lifetimes.callables,
-        nominal_requirements: &facts.lifetimes.nominal_requirements,
-    };
     let custom = facts
         .destructors
         .implementations()
         .iter()
         .map(|i| i.item)
         .collect::<Vec<_>>();
-    let mut copies = crate::types::copy::Copies::default();
-    let mut environment = borrow::Environment {
-        types: &facts.types,
-        definitions: &facts.aggregates,
-        derives: &facts.derives,
-        source_copy: facts.uses_source_copy(),
-        copies: &mut copies,
-    };
-    let checked = borrow::templates::verify_with_context(
-        &mut environment,
-        &facts.lifetimes.variances,
-        &contracts,
-        &templates,
-        &contexts,
-        &custom,
-        |ty, field| body::drops::nominal_position(facts, ty, field),
-    )
-    .map_err(|e| diagnostic(report, e.node, e.message))?;
-    let inputs = contracts.bodies;
+    let (checked, inputs) =
+        crate::pipeline::cdrop::templates(facts, inputs, &templates, &contexts, &custom)
+            .map_err(|e| diagnostic(report, None, e))?;
     publish_closure_conditions(facts, &checked).map_err(|e| diagnostic(report, None, e.into()))?;
     publish_source_opaque_heads(facts, &checked)
         .map_err(|(source, message)| diagnostic(report, Some(source.into()), message.into()))?;

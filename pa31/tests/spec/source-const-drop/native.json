@@ -1,0 +1,10 @@
+{
+  "cases": [
+    {
+      "file": "count.rs",
+      "source_sha256": "bbc22af8eb42f0d7cc05af5c686fc31d3b6d26a129d6b655167afcda4ff1a892",
+      "expected_code": 0,
+      "prediction": "actual const Drop definition and ordinary runtime C pointer effect; output41; debug assertions disabled explicitly, checked pointer instrumentation remains required"
+    }
+  ]
+}

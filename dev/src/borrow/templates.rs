@@ -1,5 +1,7 @@
 //! A sealed proof retains the exact immutable templates checked under their assumptions.
 mod context;
+mod staged;
+pub(crate) use staged::Batch;
 mod owners;
 #[path = "templates/suspended.rs"]
 mod retained;
@@ -16,7 +18,9 @@ use crate::{
     },
     types::{ItemId, TypeId, closure::ClosureId, variance::Variances},
 };
-pub(crate) use context::{Contexts, verify as verify_with_context};
+pub(crate) use context::{
+    Contexts, prepare as prepare_with_context, verify as verify_with_context,
+};
 use std::hash::BuildHasher;
 
 pub struct Checked<'a> {
@@ -310,7 +314,6 @@ pub fn verify<'a, S: BuildHasher>(
             node: e.source,
             message: e.message,
         })?;
-    let loans = loans::templates::verify(environment, templates, &regions, custom, position)?;
     let mut inputs: HashMap<_, _> = templates
         .inputs(&contracts.bodies)
         .map(|c| (c.key, c))
@@ -327,16 +330,21 @@ pub fn verify<'a, S: BuildHasher>(
                 })
         })
         .collect::<Result<Vec<_>, _>>()?;
-    Ok(Checked {
+    let mut batch = Batch::new(
         templates,
-        state: State {
-            future_arena: future_arena(environment.types, templates, &anonymous)?,
+        None,
+        State {
+            future_arena: None,
             index,
             closures,
             anonymous,
             regions,
-            loans,
+            loans: Vec::new(),
             contracts,
         },
-    })
+        None,
+        custom,
+    )?;
+    batch.complete_ordinary(environment, position)?;
+    batch.finish(environment.types)
 }
