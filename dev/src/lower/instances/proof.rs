@@ -653,11 +653,6 @@ impl Builder {
         requirements: Option<drops::Requirements>,
         original: Original<'_>,
     ) -> Result<usize, borrow::Error> {
-        self.require_current_store(&facts.types)
-            .map_err(|message| borrow::Error {
-                node: Some(body.source.into()),
-                message: message.into(),
-            })?;
         let contract = self.regions(facts, &body, input)?;
         if let Original::Ordinary(report) = original
             && facts.source_bindings.is_some()
@@ -765,6 +760,11 @@ impl Builder {
         body: &Body,
         input: &Contract,
     ) -> Result<borrow::regions::Body, borrow::Error> {
+        self.require_current_store(&facts.types)
+            .map_err(|message| borrow::Error {
+                node: Some(body.source.into()),
+                message: message.into(),
+            })?;
         input
             .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
             .map_err(|message| borrow::Error {

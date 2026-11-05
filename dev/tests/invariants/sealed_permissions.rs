@@ -89,7 +89,7 @@ fn control(mode: &str) -> TestResult {
             .iter()
             .find(|input| input.key == body.key())
             .ok_or("actual caller contract")?;
-        let index = builder.push(&mut fixture.facts, &checked, body, input, None)?;
+        let index = builder.push(&report, &mut fixture.facts, &checked, body, input, None)?;
         current = Some(index);
     }
     let current = current.ok_or("actual sealed caller index")?;

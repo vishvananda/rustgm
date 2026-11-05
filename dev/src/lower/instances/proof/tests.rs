@@ -337,8 +337,7 @@ fn assembly_rejects_unproved_bodies_and_inconsistent_cleanup() -> TestResult {
     f.program.bodies.clear();
     let recipes = body::drops::glue::Cache::new(&[])?.into_recipes();
     assert!(incremental::with_checked(f.program, vec![], Some(recipes), |_| ()).is_err());
-    let (report, mut f) =
-        fixture_with_report("struct D;impl Drop for D{fn drop(&mut self){}}fn main(){let d=D;}")?;
+    let mut f = fixture("struct D;impl Drop for D{fn drop(&mut self){}}fn main(){let d=D;}")?;
     f.program.bodies.clear();
     let recipes = body::drops::glue::Cache::new(&[])?.into_recipes();
     assert!(incremental::with_checked(f.program, vec![], Some(recipes), |_| ()).is_err());
