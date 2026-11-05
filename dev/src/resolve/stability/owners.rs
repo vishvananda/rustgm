@@ -160,7 +160,13 @@ fn declaration_rows(
         };
         declarations.push(regular);
         if let Some(constants) = &mut constants {
-            let policy = scope.and_then(|id| scopes[id.0 as usize].constant);
+            let policy = if definition.kind == DefKind::Module {
+                definition
+                    .members
+                    .and_then(|id| scopes[id.0 as usize].constant)
+            } else {
+                scope.and_then(|id| scopes[id.0 as usize].constant)
+            };
             constants.push(policy);
             if definition.kind == DefKind::Function
                 && policy.is_none()
@@ -260,7 +266,7 @@ fn definition_scopes(
             return Err(error(
                 package,
                 key,
-                "const library stability requires a const function, const trait or const trait implementation",
+                "const library stability requires a const function or an allowed declaration owner",
             ));
         }
         if matches!(
@@ -324,6 +330,12 @@ fn modules(
         if inner.is_some() {
             used.insert((root, false));
         }
+        if index == 0
+            && let Some(constant) = draft.attribute(root, PolicyKind::Const)
+        {
+            used.insert((root, true));
+            scopes[facts.module_scopes[index].0 as usize].constant = Some(constant);
+        }
         if outer.is_some()
             && let Some(key) = declaration
         {
@@ -383,12 +395,9 @@ fn import_attributes(
         draft.attributes.len() * size_of::<(NodeKey, PolicyId)>(),
     )?;
     let mut entries = Vec::with_capacity(draft.attributes.len());
-    entries.extend(
-        draft
-            .attributes
-            .iter()
-            .filter_map(|(&(key, kind), &id)| (kind == PolicyKind::Regular).then_some((key, id))),
-    );
+    entries.extend(draft.attributes.iter().filter_map(|(&(key, kind), &id)| {
+        matches!(kind, PolicyKind::Regular | PolicyKind::Const).then_some((key, id))
+    }));
     let mut pending = Vec::new();
     for (key, id) in entries {
         let unit = package.unit(key.file);
@@ -398,7 +407,18 @@ fn import_attributes(
         let ItemKind::Use(tree) = unit.configured.ast.items[index as usize].kind else {
             continue;
         };
-        used.insert((key, false));
+        let constant = draft
+            .policies
+            .get(id.get() - 1)
+            .ok_or_else(|| error(package, key, "import policy lost its actual declaration"))?
+            .kind
+            == PolicyKind::Const;
+        used.insert((key, constant));
+        if constant {
+            // Rust retains the annotation, but it supplies no target constness
+            // or const API override through this import alias.
+            continue;
+        }
         pending.push(tree);
         while let Some(node) = pending.pop() {
             draft.charge(1, 4 * size_of::<(NodeKey, PolicyId)>())?;

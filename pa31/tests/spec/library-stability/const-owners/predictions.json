@@ -1,0 +1,221 @@
+{
+  "schema": 1,
+  "toolchain": "1.98.0",
+  "edition": "2024",
+  "frozen_before_candidate_observation": true,
+  "cases": [
+    {
+      "name": "ordinary-trait",
+      "path": "pa31/tests/spec/library-stability/const-owners/ordinary-trait.rs",
+      "sha256": "49de663c27a23bf22a3e006604f18277f754a6d4b6b6633930d0e8560354e8fb",
+      "expected_status": 0,
+      "cause": ""
+    },
+    {
+      "name": "ordinary-trait-stable",
+      "path": "pa31/tests/spec/library-stability/const-owners/ordinary-trait-stable.rs",
+      "sha256": "7f52b495ff329d3791a05609729e77fd8d08560d16eff0783b43c0005fe1aa5f",
+      "expected_status": 0,
+      "cause": ""
+    },
+    {
+      "name": "ordinary-trait-unstable-api",
+      "path": "pa31/tests/spec/library-stability/const-owners/ordinary-trait-unstable-api.rs",
+      "sha256": "a2d8fe4ae15146f411c391db92e775c9171c23611f4e9f2869765461dd56dfed",
+      "expected_status": 0,
+      "cause": ""
+    },
+    {
+      "name": "const-trait",
+      "path": "pa31/tests/spec/library-stability/const-owners/const-trait.rs",
+      "sha256": "6d7d4ee7972a2010d1d3a98774de82ee0ebc9d091e2860156d8796fd91e65639",
+      "expected_status": 0,
+      "cause": ""
+    },
+    {
+      "name": "ordinary-call-in-const",
+      "path": "pa31/tests/spec/library-stability/const-owners/ordinary-call-in-const.rs",
+      "sha256": "678f7def2bee21bedf9457211d7d3c0b56a38554302acf0d72278514b664fc95",
+      "expected_status": 1,
+      "cause": "const"
+    },
+    {
+      "name": "ordinary-const-impl",
+      "path": "pa31/tests/spec/library-stability/const-owners/ordinary-const-impl.rs",
+      "sha256": "9081ff02b568f21d50663ff3fa602e3dbcb75210fb0f57c75c597e090649c7f4",
+      "expected_status": 1,
+      "cause": "const"
+    },
+    {
+      "name": "ordinary-const-bound",
+      "path": "pa31/tests/spec/library-stability/const-owners/ordinary-const-bound.rs",
+      "sha256": "38887c1e66cde9a48af06aae9ed5278d21770a03abe3f0e9fd512deea1186710",
+      "expected_status": 1,
+      "cause": "const"
+    },
+    {
+      "name": "ordinary-member-annotation",
+      "path": "pa31/tests/spec/library-stability/const-owners/ordinary-member-annotation.rs",
+      "sha256": "309026bdf487d7a2e2520f751963a51876bbc79401781f85b15e8e61c0d14d0b",
+      "expected_status": 1,
+      "cause": "const"
+    },
+    {
+      "name": "const-member-annotation",
+      "path": "pa31/tests/spec/library-stability/const-owners/const-member-annotation.rs",
+      "sha256": "e8b5f0ebd826f94107659fa4e3dd5c4ea07a26af38e9e28540054ae25311bf00",
+      "expected_status": 1,
+      "cause": "const"
+    },
+    {
+      "name": "ordinary-function",
+      "path": "pa31/tests/spec/library-stability/const-owners/ordinary-function.rs",
+      "sha256": "6157b4ed437824108306bc788341710d450eee9a890cb477f8159bf86fcd4047",
+      "expected_status": 1,
+      "cause": "const"
+    },
+    {
+      "name": "const-function",
+      "path": "pa31/tests/spec/library-stability/const-owners/const-function.rs",
+      "sha256": "7539885890bf7dcf1d5cbb93b48049e64110305f092de5dc7a934dbb51c83e5a",
+      "expected_status": 0,
+      "cause": ""
+    },
+    {
+      "name": "constant",
+      "path": "pa31/tests/spec/library-stability/const-owners/constant.rs",
+      "sha256": "bf81652275fc32c65f95ecc5ae98b02c7f79900e0b21ba7481c12992644d005f",
+      "expected_status": 0,
+      "cause": ""
+    },
+    {
+      "name": "static",
+      "path": "pa31/tests/spec/library-stability/const-owners/static.rs",
+      "sha256": "d5876332d65212fcd2909b22769f052c26f44d36539c7ba86d909957e6ff29e8",
+      "expected_status": 0,
+      "cause": ""
+    },
+    {
+      "name": "import",
+      "path": "pa31/tests/spec/library-stability/const-owners/import.rs",
+      "sha256": "f205863c32c8794d054c6f6b5f43009fcff10f836cf2e08f9e075361b804497d",
+      "expected_status": 0,
+      "cause": ""
+    },
+    {
+      "name": "import-const-call",
+      "path": "pa31/tests/spec/library-stability/const-owners/import-const-call.rs",
+      "sha256": "471a59cfd1eea63ae92a7a3ff5599ae3e584a6a1a836295c08e921545b45a9df",
+      "expected_status": 1,
+      "cause": "const"
+    },
+    {
+      "name": "crate",
+      "path": "pa31/tests/spec/library-stability/const-owners/crate.rs",
+      "sha256": "9cf4a5d463b79432cd6e10aac9c0a33a7979b88d40267157c6e72c02118ba1a5",
+      "expected_status": 0,
+      "cause": ""
+    },
+    {
+      "name": "struct",
+      "path": "pa31/tests/spec/library-stability/const-owners/struct.rs",
+      "sha256": "8ec7cc2aaab18ddc7cbc12ce945bdc2c7a0e902208261267684ccedb52fdbd73",
+      "expected_status": 1,
+      "cause": "attribute"
+    },
+    {
+      "name": "enum",
+      "path": "pa31/tests/spec/library-stability/const-owners/enum.rs",
+      "sha256": "4df4deb444188d84da99439d6797ae7c2be8b1861a656d9b4d437ce5f5b040ca",
+      "expected_status": 1,
+      "cause": "attribute"
+    },
+    {
+      "name": "variant",
+      "path": "pa31/tests/spec/library-stability/const-owners/variant.rs",
+      "sha256": "a7c7bbd97b6b62d3a763a49d647cd748f50f009455f42c6795e1da3df52f5190",
+      "expected_status": 1,
+      "cause": "attribute"
+    },
+    {
+      "name": "module",
+      "path": "pa31/tests/spec/library-stability/const-owners/module.rs",
+      "sha256": "2333781edcd7fbe90f09fdcf153a713ad07065380fbc4b7ff755c3596af25f9e",
+      "expected_status": 1,
+      "cause": "attribute"
+    },
+    {
+      "name": "alias",
+      "path": "pa31/tests/spec/library-stability/const-owners/alias.rs",
+      "sha256": "fd25300946f39262aba90c95b6d0708fa7f5cb1dd8ab3b0b0a3f104df80d8c67",
+      "expected_status": 1,
+      "cause": "attribute"
+    },
+    {
+      "name": "original-retained",
+      "path": "pa31/tests/spec/source-assign-ten/ordinary-retained-policy.rs",
+      "sha256": "01ce4af1f2b62089b1897931d4e4756497eaedeb787913d39639ab52e1f0803b",
+      "expected_status": 0,
+      "cause": ""
+    },
+    {
+      "name": "ordinary-inherent",
+      "path": "pa31/tests/spec/library-stability/const-owners/ordinary-inherent.rs",
+      "sha256": "492f6b87dd05a3a17babdb541901844130043e34d0dbfda4d8185f84ee21f147",
+      "expected_status": 0,
+      "cause": ""
+    },
+    {
+      "name": "ordinary-impl",
+      "path": "pa31/tests/spec/library-stability/const-owners/ordinary-impl.rs",
+      "sha256": "02d809f34e13239829bd33c1bf757e8ce2ef2490b64bb4169d4e1be61faef469",
+      "expected_status": 0,
+      "cause": ""
+    },
+    {
+      "name": "associated-items",
+      "path": "pa31/tests/spec/library-stability/const-owners/associated-items.rs",
+      "sha256": "50affcbe327875c1ebf5c09e815c569030c298a9b1843e2ca94b1c80225dbafb",
+      "expected_status": 0,
+      "cause": ""
+    }
+  ],
+  "primary_sources": [
+    "compiler/rustc_attr_parsing/src/attributes/stability.rs",
+    "compiler/rustc_passes/src/stability.rs"
+  ],
+  "native": [
+    {
+      "name": "ordinary-trait",
+      "source": "pa31/tests/spec/library-stability/const-owners/ordinary-trait.rs",
+      "observer": "pa31/tests/spec/library-stability/const-owners/observer.c",
+      "expected_stdout": "7\n",
+      "source_sha256": "49de663c27a23bf22a3e006604f18277f754a6d4b6b6633930d0e8560354e8fb",
+      "observer_sha256": "e03c6bb681d103ee78d1e2de5f65c2711b91bbe7278716d3190f2eb7d746ca96"
+    },
+    {
+      "name": "ordinary-inherent",
+      "source": "pa31/tests/spec/library-stability/const-owners/ordinary-inherent.rs",
+      "observer": "pa31/tests/spec/library-stability/const-owners/observer.c",
+      "expected_stdout": "7\n",
+      "source_sha256": "492f6b87dd05a3a17babdb541901844130043e34d0dbfda4d8185f84ee21f147",
+      "observer_sha256": "e03c6bb681d103ee78d1e2de5f65c2711b91bbe7278716d3190f2eb7d746ca96"
+    },
+    {
+      "name": "ordinary-impl",
+      "source": "pa31/tests/spec/library-stability/const-owners/ordinary-impl.rs",
+      "observer": "pa31/tests/spec/library-stability/const-owners/observer.c",
+      "expected_stdout": "7\n",
+      "source_sha256": "02d809f34e13239829bd33c1bf757e8ce2ef2490b64bb4169d4e1be61faef469",
+      "observer_sha256": "e03c6bb681d103ee78d1e2de5f65c2711b91bbe7278716d3190f2eb7d746ca96"
+    },
+    {
+      "name": "original-retained",
+      "source": "pa31/tests/spec/source-assign-ten/ordinary-retained-policy.rs",
+      "observer": "pa31/tests/spec/source-assign-ten/constant-observer.c",
+      "expected_stdout": "23\n",
+      "source_sha256": "01ce4af1f2b62089b1897931d4e4756497eaedeb787913d39639ab52e1f0803b",
+      "observer_sha256": "ebdfd591c3b44ccec13a7c5ecb60981e8f7b90b50db7d8a18eff40ffa586047a"
+    }
+  ]
+}

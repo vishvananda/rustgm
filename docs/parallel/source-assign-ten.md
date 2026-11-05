@@ -1,5 +1,11 @@
 # Ten source compound assignment operators
 
+The [owner-policy successor](../../docs/pa31-const-policy-owners.md)
+closes the original ordinary-trait annotation gap without changing its source.
+All138 inventory cases now match Rust. The earlier137-target/one-gap records
+below describe their original checkpoint, not a retained current rejection.
+
+
 Baseline is joined main c509736bb23b7e7918c6c2e04f588c1c7bd130af. The existing
 operator contract and ordinary source binary machinery now cover all ten
 assignment roles as one mutable-place consumer cluster. Root approved the exact

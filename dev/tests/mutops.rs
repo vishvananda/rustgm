@@ -62,7 +62,6 @@ fn program(name: &str) -> Result<Program> {
 fn cause_matches(kind: &str, error: &str) -> bool {
     let message = error.to_lowercase();
     let words: &[&str] = match kind {
-        "source_policy" => &["const library stability requires a const function"],
         "role" => &[
             "requires its actual trait",
             "requires its actual language declaration",

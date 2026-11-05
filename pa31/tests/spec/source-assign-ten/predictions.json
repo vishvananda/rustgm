@@ -2020,11 +2020,11 @@
         "emit": "metadata"
       },
       "candidate": {
-        "accepted": false,
-        "cause": "source_policy",
-        "category": "source_policy"
+        "accepted": true,
+        "cause": "positive",
+        "category": "positive"
       },
-      "requirement": "PA31/40: actual ordinary declaration const-stability policy admission; current placement fence is a Rust-positive gap, not semantic parity"
+      "requirement": "PA31/40 source policy owner repair; original source/reference outcome unchanged, ordinary trait remains nonconst."
     }
   ],
   "pre_candidate_corrections": [

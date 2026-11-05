@@ -1,5 +1,11 @@
 # Actual source compound assignment families
 
+The [owner-policy successor](../../../../docs/pa31-const-policy-owners.md)
+closes the original ordinary-trait annotation gap without changing its source.
+All138 inventory cases now match Rust. The earlier137-target/one-gap records
+below describe their original checkpoint, not a retained current rejection.
+
+
 This planned PA31 packet covers AddAssign, SubAssign, MulAssign, DivAssign,
 RemAssign, BitXorAssign, BitAndAssign, BitOrAssign, ShlAssign and ShrAssign.
 `predictions.json` freezes the independent outcomes and source fingerprints;

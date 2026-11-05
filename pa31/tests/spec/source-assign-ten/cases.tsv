@@ -135,4 +135,4 @@ provided-effect.rs	0	positive	actual provided ordinary method body mutates sourc
 provided-unsafe.rs	1	unsafe	unsafe source static access in actual provided defining body
 provided-const.rs	1	const	ordinary provided implementation has no const execution permission
 provided-copy.rs	0	positive	provided Copy-bound method remains ordinary selected body
-ordinary-retained-policy.rs	1	source_policy	Rust permits ordinary trait retaining const-stability annotation
+ordinary-retained-policy.rs	0	positive	Rust permits ordinary trait retaining const-stability annotation

@@ -11,6 +11,13 @@ and the existing target/configuration/cap/finite limits preserved. LIB-155 is
 the independently demonstrated source Deref/Target prerequisite. Use the frozen
 Pin source and receiver packets, not source substitutions or empty futures.
 
+The [owner-policy successor](../pa31-const-policy-owners.md) closes LIB-163:
+25 independent outcomes and4 new natives pass; all138 assignment cases now
+match Rust. CLI6b04fb51 preserves every original input/profile/limit and the same
+Index frontier in a concurrent28.0193s observation. Full41977516901 on5e43db750
+is terminal success for the prior operator/storage join. The current owner repair
+needs separate successor CI; full policy transport and original artifacts remain.
+
 Current joined checkpoint: Root6d581dab6 and operator5d21dc789 pass12 exact
 public controls,1193 PA19 cases, strict selected Clippy/audits and13 current
 backend native observers. CLIadb64d8b advances unchanged722-input source admission

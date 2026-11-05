@@ -211,3 +211,129 @@ fn local_unstable_calls_and_stable_overrides_execute() -> Result {
     }
     Ok(())
 }
+
+#[test]
+fn const_policy_targets_and_call_permissions_match_the_actual_owners() -> Result {
+    let rows = crate::resolve::fixture("pa31/tests/spec/library-stability/const-owners/cases.tsv")?;
+    let mut failures = Vec::new();
+    let mut count = 0;
+    for row in rows.lines() {
+        let mut fields = row.split('\t');
+        let name = fields.next().ok_or("case name")?;
+        let path = fields.next().ok_or("source path")?;
+        let status = fields.next().ok_or("expected status")?;
+        assert!(matches!(status, "0" | "1") && fields.next().is_none());
+        let outcome = crate::provider_traits::lower(&crate::resolve::fixture(path)?);
+        if outcome.is_ok() != (status == "0") {
+            failures.push(format!("{name}: {:?}", outcome.err()));
+        } else if let Err(error) = outcome {
+            assert!(
+                !error
+                    .to_string()
+                    .contains("semantic contract is not implemented"),
+                "{name}: {error}"
+            );
+        }
+        count += 1;
+    }
+    assert_eq!(count, 25);
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    Ok(())
+}
+
+#[test]
+fn inherited_const_policy_never_changes_the_actual_callable_constness() -> Result {
+    use rustgm::resolve::stability::Library;
+    for (name, constant_container) in [
+        ("ordinary-trait", false),
+        ("ordinary-inherent", false),
+        ("ordinary-impl", false),
+        ("const-trait", true),
+    ] {
+        let source = crate::resolve::fixture(&format!(
+            "pa31/tests/spec/library-stability/const-owners/{name}.rs"
+        ))?;
+        let report = crate::provider_traits::report(&source)?;
+        let analysis = rustgm::pipeline::analyze_source(&report)?;
+        let function = analysis
+            .facts
+            .functions
+            .iter()
+            .find(|function| {
+                function.body.is_some()
+                    && report
+                        .package
+                        .names
+                        .get(report.resolution.definitions[function.definition.0 as usize].name)
+                        == "read"
+            })
+            .ok_or("actual provided function")?;
+        assert!(!analysis.facts.is_const_function(function.definition));
+        let owner = analysis
+            .facts
+            .associated
+            .owner(function.definition)
+            .and_then(|id| analysis.facts.associated.get(id))
+            .ok_or("actual callable owner")?;
+        assert_eq!(
+            matches!(
+                owner.kind,
+                rustgm::sema::associated::OwnerKind::Trait { constant: true, .. }
+                    | rustgm::sema::associated::OwnerKind::Impl { constant: true, .. }
+            ),
+            constant_container
+        );
+        let inventory = report
+            .package
+            .library_policy()
+            .and_then(Library::inventory)
+            .ok_or("actual policy inventory")?;
+        assert_eq!(
+            inventory
+                .const_declaration(function.definition)
+                .ok_or("inherited policy")?
+                .feature
+                .as_ref(),
+            "marker_const"
+        );
+        assert_eq!(size_of_val(inventory), 120);
+        assert_eq!(size_of::<rustgm::body::ir::Body>(), 456);
+    }
+    Ok(())
+}
+
+#[test]
+#[ignore = "requires the pinned CPPGM backend and host C linker"]
+fn ordinary_annotated_trait_and_impl_bodies_execute_without_const_permission() -> Result {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .ok_or("root")?;
+    let folder = root
+        .join("obj/parallel/const-policy-owners-native")
+        .join(std::process::id().to_string());
+    std::fs::create_dir_all(&folder)?;
+    for name in ["ordinary-trait", "ordinary-inherent", "ordinary-impl"] {
+        let source = crate::resolve::fixture(&format!(
+            "pa31/tests/spec/library-stability/const-owners/{name}.rs"
+        ))?;
+        crate::ffi_program::check(
+            root,
+            &folder,
+            name,
+            &crate::provider_traits::lower(&source)?,
+            &crate::resolve::fixture("pa31/tests/spec/library-stability/const-owners/observer.c")?,
+            "7\n",
+        )?;
+    }
+    let original =
+        crate::resolve::fixture("pa31/tests/spec/source-assign-ten/ordinary-retained-policy.rs")?;
+    crate::ffi_program::check(
+        root,
+        &folder,
+        "original-retained",
+        &crate::provider_traits::lower(&original)?,
+        &crate::resolve::fixture("pa31/tests/spec/source-assign-ten/constant-observer.c")?,
+        "23\n",
+    )?;
+    Ok(())
+}

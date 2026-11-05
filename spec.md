@@ -811,6 +811,15 @@ their validation after configured expansion; unknown requests grant no capabilit
 Retain regular, const and default-body API stability as distinct declaration facts,
 separate from callable effects and each caller's proof. Compute owner inheritance
 and feature indexes once, then check actual uses without whole-crate rescanning.
+Const API policy targets are distinct from semantic constness: actual ordinary
+traits, const/static declarations and crate roots can own policy, while a const
+annotation on an import supplies no target override. Associated functions,
+constants and types inherit the real container's unstable policy without gaining
+const execution. Direct function annotations still require actual written
+constness or authenticated comptime eligibility; keep forbidden target checks.
+Reuse the existing optional const axis and parent-first scope traversal. The
+[owner-policy checkpoint](docs/pa31-const-policy-owners.md) retains the original
+provided-body compilation failure and its unchanged source/native successor.
 When a library has an authenticated SourceCore or local macro cost owner, capture
 and completion borrow that existing payer. Inventory work and attempted storage
 accumulate with earlier source work under its immutable configured limits;

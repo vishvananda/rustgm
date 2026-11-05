@@ -17,12 +17,16 @@ pub(super) enum Role {
     Trait(bool),
     Impl(bool),
     InherentImpl(bool),
+    Value,
+    Type,
 }
 impl Role {
     pub fn of(kind: ItemKind) -> Self {
         match kind {
             ItemKind::Function { flags, .. } => Self::Function(flags.constant),
             ItemKind::Trait { constant, .. } => Self::Trait(constant),
+            ItemKind::Const { .. } | ItemKind::Static { .. } => Self::Value,
+            ItemKind::TypeAlias { .. } => Self::Type,
             ItemKind::Impl {
                 constant,
                 trait_path,
@@ -40,7 +44,11 @@ impl Role {
     pub fn accepts_const(self) -> bool {
         matches!(
             self,
-            Self::Function(true) | Self::Trait(true) | Self::Impl(_) | Self::InherentImpl(_)
+            Self::Function(true)
+                | Self::Trait(_)
+                | Self::Impl(_)
+                | Self::InherentImpl(_)
+                | Self::Value
         )
     }
 }
@@ -62,13 +70,15 @@ impl Frame {
         {
             self.constant = draft.inherit(self.regular);
         }
-        if matches!(self.role, Role::Function(_))
-            && (matches!(
-                parent.role,
-                Role::Trait(true) | Role::Impl(true) | Role::InherentImpl(true)
-            ) || matches!(self.role, Role::Function(true))
-                && matches!(parent.role, Role::InherentImpl(false)))
-        {
+        // Associated API policy follows its actual container, independently of
+        // whether that member is a semantically const callable.
+        if matches!(
+            self.role,
+            Role::Function(_) | Role::NonConstMember | Role::Value | Role::Type
+        ) && matches!(
+            parent.role,
+            Role::Trait(_) | Role::Impl(_) | Role::InherentImpl(_)
+        ) {
             self.constant = self.constant.or_else(|| draft.inherit(parent.constant));
         }
     }

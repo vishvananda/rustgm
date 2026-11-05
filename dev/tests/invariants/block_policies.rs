@@ -47,7 +47,11 @@ fn actual_const_inventory_distinguishes_group_policy_and_function_eligibility() 
             true,
             Some("inherent_const_api"),
         ),
-        ("ordinary-impl-annotation", false, None),
+        (
+            "ordinary-impl-annotation",
+            false,
+            Some("inherent_const_api"),
+        ),
         ("private-unmarked-inherent", true, None),
     ] {
         let report = test_source::resolve(&source(name)?, true)?;

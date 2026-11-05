@@ -1,0 +1,205 @@
+{
+  "schema": 1,
+  "base_commit": "5e43db750093e43ce28b739ec84604bff2bbda4c",
+  "compiler_source_fingerprint_sha256": "065ebaa9074f855af9018e62183656cfc7b93c3eb9e294f2c1db160d32c8806a",
+  "cli_sha256": "6b04fb514306444fed0e332f827f4537aae91e59c32e815aabf5d01ebc576756",
+  "baseline": {
+    "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/core-operators-cell-v1/cli/adb64d8ba36cc861b56e21f3f1a0198d8420c8af069f987a2ec457ab25960f9c/rustgm",
+    "sha256": "adb64d8ba36cc861b56e21f3f1a0198d8420c8af069f987a2ec457ab25960f9c"
+  },
+  "backend_lock_sha256": "f60c0760f39f1f554486f5a1eb990d2c0fef663fbd1bff944cd1eef8a014a581",
+  "packet_files": {
+    "pa31/tests/spec/library-stability/const-owners/README.md": "3701f36b07f4831696e20a5c9194329f5f396370e036262d04ef505b3a7e8738",
+    "pa31/tests/spec/library-stability/const-owners/alias.rs": "fd25300946f39262aba90c95b6d0708fa7f5cb1dd8ab3b0b0a3f104df80d8c67",
+    "pa31/tests/spec/library-stability/const-owners/associated-items.rs": "50affcbe327875c1ebf5c09e815c569030c298a9b1843e2ca94b1c80225dbafb",
+    "pa31/tests/spec/library-stability/const-owners/cases.tsv": "0b7056d3e6ac6ab502f88894e3934f723ab555fd107bae947193e41c48ddc19f",
+    "pa31/tests/spec/library-stability/const-owners/const-function.rs": "7539885890bf7dcf1d5cbb93b48049e64110305f092de5dc7a934dbb51c83e5a",
+    "pa31/tests/spec/library-stability/const-owners/const-member-annotation.rs": "e8b5f0ebd826f94107659fa4e3dd5c4ea07a26af38e9e28540054ae25311bf00",
+    "pa31/tests/spec/library-stability/const-owners/const-trait.rs": "6d7d4ee7972a2010d1d3a98774de82ee0ebc9d091e2860156d8796fd91e65639",
+    "pa31/tests/spec/library-stability/const-owners/constant.rs": "bf81652275fc32c65f95ecc5ae98b02c7f79900e0b21ba7481c12992644d005f",
+    "pa31/tests/spec/library-stability/const-owners/crate.rs": "9cf4a5d463b79432cd6e10aac9c0a33a7979b88d40267157c6e72c02118ba1a5",
+    "pa31/tests/spec/library-stability/const-owners/enum.rs": "4df4deb444188d84da99439d6797ae7c2be8b1861a656d9b4d437ce5f5b040ca",
+    "pa31/tests/spec/library-stability/const-owners/import-const-call.rs": "471a59cfd1eea63ae92a7a3ff5599ae3e584a6a1a836295c08e921545b45a9df",
+    "pa31/tests/spec/library-stability/const-owners/import.rs": "f205863c32c8794d054c6f6b5f43009fcff10f836cf2e08f9e075361b804497d",
+    "pa31/tests/spec/library-stability/const-owners/module.rs": "2333781edcd7fbe90f09fdcf153a713ad07065380fbc4b7ff755c3596af25f9e",
+    "pa31/tests/spec/library-stability/const-owners/observer.c": "e03c6bb681d103ee78d1e2de5f65c2711b91bbe7278716d3190f2eb7d746ca96",
+    "pa31/tests/spec/library-stability/const-owners/ordinary-call-in-const.rs": "678f7def2bee21bedf9457211d7d3c0b56a38554302acf0d72278514b664fc95",
+    "pa31/tests/spec/library-stability/const-owners/ordinary-const-bound.rs": "38887c1e66cde9a48af06aae9ed5278d21770a03abe3f0e9fd512deea1186710",
+    "pa31/tests/spec/library-stability/const-owners/ordinary-const-impl.rs": "9081ff02b568f21d50663ff3fa602e3dbcb75210fb0f57c75c597e090649c7f4",
+    "pa31/tests/spec/library-stability/const-owners/ordinary-function.rs": "6157b4ed437824108306bc788341710d450eee9a890cb477f8159bf86fcd4047",
+    "pa31/tests/spec/library-stability/const-owners/ordinary-impl.rs": "02d809f34e13239829bd33c1bf757e8ce2ef2490b64bb4169d4e1be61faef469",
+    "pa31/tests/spec/library-stability/const-owners/ordinary-inherent.rs": "492f6b87dd05a3a17babdb541901844130043e34d0dbfda4d8185f84ee21f147",
+    "pa31/tests/spec/library-stability/const-owners/ordinary-member-annotation.rs": "309026bdf487d7a2e2520f751963a51876bbc79401781f85b15e8e61c0d14d0b",
+    "pa31/tests/spec/library-stability/const-owners/ordinary-trait-stable.rs": "7f52b495ff329d3791a05609729e77fd8d08560d16eff0783b43c0005fe1aa5f",
+    "pa31/tests/spec/library-stability/const-owners/ordinary-trait-unstable-api.rs": "a2d8fe4ae15146f411c391db92e775c9171c23611f4e9f2869765461dd56dfed",
+    "pa31/tests/spec/library-stability/const-owners/ordinary-trait.rs": "49de663c27a23bf22a3e006604f18277f754a6d4b6b6633930d0e8560354e8fb",
+    "pa31/tests/spec/library-stability/const-owners/predictions.json": "98017b07328a09be7151384f9cc0b17ff42100da5a50f679afd2f9998e405910",
+    "pa31/tests/spec/library-stability/const-owners/static.rs": "d5876332d65212fcd2909b22769f052c26f44d36539c7ba86d909957e6ff29e8",
+    "pa31/tests/spec/library-stability/const-owners/struct.rs": "8ec7cc2aaab18ddc7cbc12ce945bdc2c7a0e902208261267684ccedb52fdbd73",
+    "pa31/tests/spec/library-stability/const-owners/variant.rs": "a7c7bbd97b6b62d3a763a49d647cd748f50f009455f42c6795e1da3df52f5190"
+  },
+  "original_retained_source_sha256": "01ce4af1f2b62089b1897931d4e4756497eaedeb787913d39639ab52e1f0803b",
+  "receipts": {
+    "obj/qualification/fast/1793860463542478853/receipt.json": "6632ebf985b04de9baef24c1bf8c1554b671939e29c80f046b161de4908cf1f1",
+    "obj/qualification/fast/1793860700828022210/receipt.json": "90171049c015cb4810c0df80791101a3af79b809c93ec2d4dd4f6b5119fba8dd",
+    "obj/parallel/const-policy-owners-v1/qualification-v1/receipt.json": "bbc7aff559584de4f35510e1fce87c15f7ef414535c4230fa240ceb85f4218f8",
+    "obj/parallel/const-policy-owners-v1/qualification-v1/core/result.json": "3e8dabf707e596f1e834a59f64e600ec66e417f372a0d5a997576df1633e924f",
+    "obj/parallel/const-policy-owners-v1/reference-v3/receipt.json": "dc17461a7676ff98c0e0de38665ec18c00acdcb15263bdbf6caf700796d27d7b",
+    "obj/parallel/const-policy-owners-v1/performance-v1/receipt.json": "0cd784c5b6d108b34e2c711615e9fe717fb1c036918754d08d25c5c03d26bdfb",
+    "obj/parallel/const-policy-owners-v1/performance-v2/receipt.json": "a56c8004110317c2f106f2e9b12c9de3152bcea1dd363bced78f1728c592bd6f",
+    "obj/parallel/const-policy-owners-v1/performance-v3/receipt.json": "744ab940bf0e86608cc4b2f364bcef7a243a165fb558a3f5c8b5c0f85bda203e"
+  },
+  "independent_cases": 25,
+  "new_native_observers": 4,
+  "assignment_parity_targets": 138,
+  "performance": {
+    "changed_path": [
+      {
+        "family": "annotated",
+        "width": 8,
+        "source_sha256": "cdd80ad78c823b28c8fe52022079c0c9fa5f8887f31a39e192b883995e36d312",
+        "blocks": [
+          {
+            "AA_second_over_first": 0.9412013996012775,
+            "ABBA_B_over_A": 1.0548350420494605
+          },
+          {
+            "AA_second_over_first": 1.0599082764936005,
+            "ABBA_B_over_A": 0.9860006434470581
+          },
+          {
+            "AA_second_over_first": 1.1275014807386743,
+            "ABBA_B_over_A": 1.0847786502343955
+          }
+        ],
+        "paired_median_B_over_A": 1.0548350420494605,
+        "candidate_median_seconds": 0.04173518801690079
+      },
+      {
+        "family": "annotated",
+        "width": 32,
+        "source_sha256": "d64c0799c9d4793dd8477f1f0ec0cc6565e7378aa1932e138e17168d21ce6837",
+        "blocks": [
+          {
+            "AA_second_over_first": 0.9341827896361813,
+            "ABBA_B_over_A": 1.004603470900812
+          },
+          {
+            "AA_second_over_first": 0.9803183728536569,
+            "ABBA_B_over_A": 1.0141186929950965
+          },
+          {
+            "AA_second_over_first": 1.0182421639973418,
+            "ABBA_B_over_A": 1.0608007472936472
+          }
+        ],
+        "paired_median_B_over_A": 1.0141186929950965,
+        "candidate_median_seconds": 0.07896287148469128
+      },
+      {
+        "family": "annotated",
+        "width": 128,
+        "source_sha256": "803f280478e8935113bf4e33d37f18580bfc5134582133b2f12d581cd1c05dd3",
+        "blocks": [
+          {
+            "AA_second_over_first": 0.9350398886900969,
+            "ABBA_B_over_A": 1.065691346873331
+          },
+          {
+            "AA_second_over_first": 1.031379040138824,
+            "ABBA_B_over_A": 1.0494507609830206
+          },
+          {
+            "AA_second_over_first": 1.0184075177263747,
+            "ABBA_B_over_A": 1.0476414517921768
+          }
+        ],
+        "paired_median_B_over_A": 1.0494507609830206,
+        "candidate_median_seconds": 0.2394792049890384
+      }
+    ],
+    "ordinary_from_failed_setup": {
+      "state": "failed",
+      "scales": [
+        {
+          "family": "ordinary",
+          "width": 1024,
+          "source_sha256": "783d30852ce081f6699ac8404584e6dcf01e511e14716df7497cb67f5d1ace96",
+          "blocks": [
+            {
+              "AA_second_over_first": 0.9899950644431401,
+              "ABBA_B_over_A": 1.0137887149545164
+            },
+            {
+              "AA_second_over_first": 1.1436830241957547,
+              "ABBA_B_over_A": 1.0392013488301761
+            },
+            {
+              "AA_second_over_first": 0.9747563856173113,
+              "ABBA_B_over_A": 1.0507887381460193
+            }
+          ],
+          "paired_median_B_over_A": 1.0392013488301761,
+          "candidate_median_seconds": 0.22897555699455552
+        },
+        {
+          "family": "ordinary",
+          "width": 4096,
+          "source_sha256": "9f5ca894e474569a5033b27b8508936790ca745d34c1e370abe066fbf4086bba",
+          "blocks": [
+            {
+              "AA_second_over_first": 1.4201689045270236,
+              "ABBA_B_over_A": 0.9621542996886729
+            },
+            {
+              "AA_second_over_first": 0.9993668799999106,
+              "ABBA_B_over_A": 0.8670276604941061
+            },
+            {
+              "AA_second_over_first": 0.973424173436818,
+              "ABBA_B_over_A": 1.027117820161389
+            }
+          ],
+          "paired_median_B_over_A": 0.9621542996886729,
+          "candidate_median_seconds": 0.854199935507495
+        }
+      ],
+      "reason": "Ordinary controls completed and preserved equality; later annotated invocation setup failed. Corrected changed-path batch is independently passed, no blanket failed-run success inferred."
+    }
+  },
+  "original_core": {
+    "infrastructure_failure": false,
+    "classification": "observed original-core blocker",
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "6b04fb514306444fed0e332f827f4537aae91e59c32e815aabf5d01ebc576756",
+    "expected_cli_source": "explicit caller input",
+    "status": 1,
+    "first_error": "ERROR: file 92: 1801: source compiler language item semantic contract is not implemented",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 28.019331820018124,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "cca7c4a826ad470a10141a6ca20649738b57d34060c1a7b008b3d2251a82df44",
+      "whole-core.openat": "1b4e20103da5b5a4caf777adcb76a172ddb682fee5b7768e05615371d2b0e8ad",
+      "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+    },
+    "receipt_sha256": "3e8dabf707e596f1e834a59f64e600ec66e417f372a0d5a997576df1633e924f"
+  },
+  "preceding_full_ci": {
+    "run": 41977516901,
+    "commit": "5e43db750",
+    "state": "success"
+  },
+  "required": [
+    "Full policy/body transport",
+    "Complete Index/IndexMut",
+    "Async state/poll/ownership",
+    "Original core/alloc/std artifacts and independent real consumers"
+  ]
+}
