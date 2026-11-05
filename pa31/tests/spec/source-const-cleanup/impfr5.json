@@ -1,0 +1,27 @@
+{
+  "prediction": "frozen before reference/candidate",
+  "retained_originals": [
+    "impro3.rs",
+    "impro4.rs"
+  ],
+  "cases": [
+    {
+      "file": "impro5.rs",
+      "source_sha256": "4c72d82ae83ba89a7dc6c861ab512d448c7ae688204cb6d2296a833624fb6c98",
+      "expected_code": 0,
+      "cause": "separate one-field source nominal unwrap with genuine unconditional const premise; no tuple transport prerequisite"
+    },
+    {
+      "file": "impcn5.rs",
+      "source_sha256": "1429bc7a98cd468e171ce782f746f2deb30084f080013edd417e965f88b8614b",
+      "expected_code": 0,
+      "cause": "separate one-field source nominal unwrap with genuine unconditional const premise; no tuple transport prerequisite"
+    },
+    {
+      "file": "impcp5.rs",
+      "source_sha256": "651e2b4a269f0d74c39425ba9c9b901713560730b9cff46c4e53fbecbd10d2be",
+      "expected_code": 0,
+      "cause": "separate one-field source nominal unwrap with genuine unconditional const premise; no tuple transport prerequisite"
+    }
+  ]
+}

@@ -265,7 +265,7 @@
         "25.9",
         "28.6"
       ],
-      "exit": "Implement actual const-closure creation/invocation/storage and retained conditional/open callback and cleanup cases."
+      "exit": "Implement actual const-closure creation/invocation/storage and retained conditional/open callback and cleanup cases. Retain the Rust-positive composite conditional Destruct provider impro3.rs and its exact PA25/31 proof/cleanup requirement in docs/parallel/source-const-repair.md."
     },
     {
       "id": "hook-closure",
@@ -489,7 +489,7 @@
         "26.9",
         "28.6"
       ],
-      "exit": "Execute genuine source callbacks, library helpers and panic handler through Abort; imported consumers use authenticated transport."
+      "exit": "Execute genuine source callbacks, library helpers and panic handler through Abort; imported consumers use authenticated transport. Close genuine composite conditional Destruct definition eligibility (impro3.rs) without borrowing consumer precision policy or weakening the const cleanup/Code boundary; PA25/31 evidence is in docs/parallel/source-const-repair.md."
     },
     {
       "id": "core-artifact",

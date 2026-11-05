@@ -148,12 +148,10 @@ fn ordinary_destruct_evidence_does_not_pay_const_or_conditional_goals() -> Resul
         parameters::predicates::{Bound, Predicate},
         traits::Application,
     };
-    // An ordinary proof for an owned nominal cannot stand in for const cleanup.
-    // Concrete builtin values have a separate no-destructor language rule.
-    let source = SOURCE.replace(
-        "#[lang=\"drop\"]pub const trait Drop{fn drop(&mut self);}",
-        "#[lang=\"destruct\"]#[rustc_deny_explicit_impl]pub const trait Destruct:PointeeSized{}",
-    ).replace("const_trait_impl", "const_trait_impl,rustc_attrs") + "struct Nominal(u8);";
+    // Confinement admits nominal goals; only actual fields and const Drop proof pay them.
+    let source = SOURCE.replace("const_trait_impl", "const_trait_impl,rustc_attrs")
+        + "#[lang=\"destruct\"]#[rustc_deny_explicit_impl]pub const trait Destruct:PointeeSized{}"
+        + "struct Nominal(u8);impl Drop for Nominal{fn drop(&mut self){}}struct Dropless(u8);";
     let modified = report_source(&source)?;
     let mut facts = sema::declarations::analyze(&modified)?;
     let nominal = modified
@@ -173,6 +171,13 @@ fn ordinary_destruct_evidence_does_not_pay_const_or_conditional_goals() -> Resul
         item: ItemId(declaration.definition.0),
         arguments: GenericArgs::EMPTY,
     })?;
+    let dropless = modified
+        .resolution
+        .definitions
+        .iter()
+        .position(|d| modified.package.names.get(d.name) == "Dropless")
+        .and_then(|i| facts.definitions[i])
+        .ok_or("actual dropless type")?;
     for bound in [
         Bound::ConstTrait(application),
         Bound::MaybeConstTrait(application),
@@ -186,7 +191,15 @@ fn ordinary_destruct_evidence_does_not_pay_const_or_conditional_goals() -> Resul
             },
             false
         )?);
-        assert!(!destruct_predicate(
+        assert!(state.prove(
+            &mut facts,
+            Predicate {
+                ty: dropless,
+                bound
+            },
+            false
+        )?);
+        assert!(destruct_predicate(
             &facts,
             Predicate { ty: nominal, bound }
         )?);

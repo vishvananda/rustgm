@@ -1023,7 +1023,7 @@ impl Engine {
             .loans
             .as_mut()
             .ok_or_else(|| report.body_error(source, "missing constant loan verifier"))?;
-        super::cdrop::one(facts, body, destruction, input, loans)
+        super::cdrop::one(report, facts, body, destruction, input, loans)
             .map_err(|e| report.body_error(source, e))?;
         Ok(())
     }

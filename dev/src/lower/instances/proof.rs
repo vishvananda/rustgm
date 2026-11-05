@@ -54,7 +54,7 @@ impl Staged {
     }
 }
 enum Original<'a> {
-    Ordinary,
+    Ordinary(&'a crate::resolve::expansion::Report),
     Factory(crate::body::factories::Permit),
     Adapter(usize, &'a crate::body::adapters::Template),
 }
@@ -156,7 +156,7 @@ impl Builder {
         input: &Contract,
     ) -> Result<usize, crate::resolve::package::Error> {
         let index = self
-            .push(facts, originals.checked, body, input, None)
+            .push(report, facts, originals.checked, body, input, None)
             .map_err(|e| super::diagnostic(report, e.node, e.message))?;
         let proved = &self.bodies[index];
         originals.collector.original(facts, proved, input)?;
@@ -411,6 +411,7 @@ impl Builder {
     }
     pub(super) fn push(
         &mut self,
+        report: &crate::resolve::expansion::Report,
         facts: &mut Declarations,
         templates: &templates::Checked<'_>,
         body: Body,
@@ -423,7 +424,7 @@ impl Builder {
             body,
             input,
             requirements,
-            Original::Ordinary,
+            Original::Ordinary(report),
         )
     }
     pub(super) fn push_factory(
@@ -603,13 +604,21 @@ impl Builder {
         original: Original<'_>,
     ) -> Result<usize, borrow::Error> {
         let contract = self.regions(facts, &body, input)?;
-        if facts.source_bindings.is_some()
+        if let Original::Ordinary(report) = original
+            && facts.source_bindings.is_some()
             && body.const_context
             && body.instance.is_none()
-            && matches!(original, Original::Ordinary)
+            && matches!(
+                body.owner,
+                crate::body::ir::Owner::Function {
+                    execution: None,
+                    ..
+                }
+            )
             && self.recipes.is_some()
         {
             let mut proof = crate::pipeline::cdrop::ordinary(
+                report,
                 facts,
                 body,
                 input,

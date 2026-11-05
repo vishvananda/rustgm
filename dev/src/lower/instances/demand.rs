@@ -635,6 +635,7 @@ pub(super) fn specialize(
     body::constants::instance(report, facts, &materialized.body)?;
     program
         .push(
+            report,
             facts,
             templates,
             materialized.body,

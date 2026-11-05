@@ -13,6 +13,7 @@ use crate::{
 type Result<T> = std::result::Result<T, String>;
 
 pub(super) fn one(
+    report: &crate::resolve::expansion::Report,
     facts: &mut Declarations,
     body: &Body,
     destruction: &body::drops::Requirements,
@@ -57,10 +58,17 @@ pub(super) fn one(
         )
     })
     .map_err(|e| e.message)?;
+    let precise = precise_live_drops(report, facts)?;
     let active = plan.active().next().is_some();
     let eligible = plan.active_const()?;
     if eligible {
-        body::defining_cleanups::select(facts, body, contract.to_mut(), plan.eligibility())?;
+        body::defining_cleanups::select(
+            facts,
+            body,
+            contract.to_mut(),
+            plan.eligibility(),
+            precise,
+        )?;
         **regions = recheck(facts, body, contract)?;
     }
     with_environment(facts, &mut copies, |environment| {
@@ -77,6 +85,7 @@ pub(super) fn one(
     Ok(())
 }
 pub(crate) fn templates<'a>(
+    report: &crate::resolve::expansion::Report,
     facts: &mut Declarations,
     inputs: Vec<Contract>,
     templates: &'a Templates,
@@ -131,6 +140,10 @@ pub(crate) fn templates<'a>(
         })?;
         (batch, contracts.bodies)
     };
+    let precise = precise_live_drops(report, facts).map_err(|message| borrow::Error {
+        node: None,
+        message,
+    })?;
     loop {
         let row = with_environment(facts, &mut copies, |environment| {
             batch.next(environment, &|ty, field| {
@@ -146,8 +159,14 @@ pub(crate) fn templates<'a>(
                 node: Some(plan.body().source.into()),
                 message,
             };
-            body::defining_cleanups::select(facts, plan.body(), contract, plan.eligibility())
-                .map_err(error)?;
+            body::defining_cleanups::select(
+                facts,
+                plan.body(),
+                contract,
+                plan.eligibility(),
+                precise,
+            )
+            .map_err(error)?;
             contract
                 .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
                 .map_err(|e| error(e.into()))?;
@@ -198,6 +217,7 @@ fn with_environment<T>(
 
 /// The native owner and its recipe cache retain the real initialized concrete plan.
 pub(crate) fn ordinary(
+    report: &crate::resolve::expansion::Report,
     facts: &mut Declarations,
     body: Body,
     input: &Contract,
@@ -222,11 +242,18 @@ pub(crate) fn ordinary(
         });
         *cache = Some(catalog.into_cache());
         let plan = plan?;
+        let precise = precise_live_drops(report, facts).map_err(|message| error(&message))?;
         let mut selected = None;
         if plan.eligibility().next().is_some() {
             let mut contract = input.clone();
-            body::defining_cleanups::select(facts, body, &mut contract, plan.eligibility())
-                .map_err(|e| error(&e))?;
+            body::defining_cleanups::select(
+                facts,
+                body,
+                &mut contract,
+                plan.eligibility(),
+                precise,
+            )
+            .map_err(|e| error(&e))?;
             regions = recheck(facts, body, &contract).map_err(|e| error(&e))?;
             selected = Some(contract);
         }
@@ -236,4 +263,14 @@ pub(crate) fn ordinary(
             verifier.finish_const_original(environment, plan, &regions, selected.is_some())
         })
     })
+}
+
+fn precise_live_drops(
+    report: &crate::resolve::expansion::Report,
+    facts: &Declarations,
+) -> Result<bool> {
+    if let Some(catalog) = facts.source_bindings.as_deref() {
+        catalog.require_provider_report(report)?;
+    }
+    Ok(report.package.requested_const_precise_live_drops()?)
 }

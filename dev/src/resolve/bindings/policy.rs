@@ -86,6 +86,7 @@ pub(in crate::resolve) enum Feature {
     ConstCVariadic = 69,
     ArbitrarySelfTypes = 70,
     ArbitrarySelfTypesPointers = 71,
+    ConstPreciseLiveDrops = 72,
 }
 
 #[cfg(test)]
@@ -157,6 +158,7 @@ impl Request {
             "const_trait_impl" => Self::Capability(Feature::ConstTrait),
             "c_variadic" => Self::Capability(Feature::CVariadic),
             "const_c_variadic" => Self::Library(Feature::ConstCVariadic),
+            "const_precise_live_drops" => Self::Capability(Feature::ConstPreciseLiveDrops),
             "min_adt_const_params" | "adt_const_params" => Self::Library(Feature::AdtConstParams),
             "async_drop" => Self::Library(Feature::AsyncDrop),
             "unboxed_closures" => Self::Capability(Feature::UnboxedClosures),
@@ -197,7 +199,6 @@ impl Request {
             // Requests alone grant no operation permission. Const-drop/assembly
             // execution and documentation/advisory producers need their own proof.
             "const_destruct"
-            | "const_precise_live_drops"
             | "asm_experimental_arch"
             | "multiple_supertrait_upcastable"
             | "intra_doc_pointers"
@@ -219,6 +220,7 @@ impl Features {
             || self.has(Feature::AsyncDrop)
             || self.has(Feature::CVariadic)
             || self.has(Feature::ConstCVariadic)
+            || self.has(Feature::ConstPreciseLiveDrops)
             || self.has(Feature::Fundamental)
             || self.has(Feature::ConstTrait)
             || self.has(Feature::NegativeImpls)

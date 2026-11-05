@@ -3,7 +3,7 @@ use super::{Arc, Body, Contract, Declarations, Owner, Prepared, State, Work, cla
 use crate::{
     body::regions::{BuiltinRequirements, Proof},
     types::{
-        GenericArgs, ItemId, TypeId,
+        GenericArgs, ItemId,
         parameters::predicates::{Bound, Predicate},
         traits::Application,
     },
@@ -12,23 +12,29 @@ pub(crate) fn select(
     facts: &mut Declarations,
     body: &Body,
     contract: &mut Contract,
-    subjects: impl Iterator<Item = Result<TypeId, &'static str>>,
+    subjects: impl Iterator<Item = Result<super::Subject, &'static str>>,
+    precise: bool,
 ) -> Result<(), String> {
     let mut work = Work::new(1_000_000);
     let mut prepared = prepare(facts, body, contract, &mut work)?;
     let role = prepared.role;
     let environment = Arc::clone(&prepared.environment);
-    let application = facts.types.intern_trait_application(Application {
-        item: ItemId(role.require()?.0),
-        arguments: GenericArgs::EMPTY,
-    })?;
     let effect = prepared.effect();
     let mut selected = Vec::new();
     let mut seen = crate::support::hash::HashSet::default();
     for subject in subjects {
         work.charge(1)?;
-        let ty = subject?;
+        let subject = subject?;
+        let ty = subject.ty;
         if prepared.requirement(&facts.types, ty, &mut work).is_ok() {
+            continue;
+        }
+        if precise && !subject.access {
+            if body.source.source().is_none() {
+                return Err(
+                    "imported const precise live-drop definition policy is not implemented".into(),
+                );
+            }
             continue;
         }
         if let Some(crate::types::Kind::Adt(item, _)) = facts.types.kind(ty)
@@ -50,6 +56,10 @@ pub(crate) fn select(
     if selected.is_empty() {
         return Ok(());
     }
+    let application = facts.types.intern_trait_application(Application {
+        item: ItemId(role.require()?.0),
+        arguments: GenericArgs::EMPTY,
+    })?;
     let first = crate::body::dispatch::copy_frontier(facts, contract)?;
     let goals = selected
         .iter()

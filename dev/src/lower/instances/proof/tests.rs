@@ -337,7 +337,8 @@ fn assembly_rejects_unproved_bodies_and_inconsistent_cleanup() -> TestResult {
     f.program.bodies.clear();
     let recipes = body::drops::glue::Cache::new(&[])?.into_recipes();
     assert!(incremental::with_checked(f.program, vec![], Some(recipes), |_| ()).is_err());
-    let mut f = fixture("struct D;impl Drop for D{fn drop(&mut self){}}fn main(){let d=D;}")?;
+    let (report, mut f) =
+        fixture_with_report("struct D;impl Drop for D{fn drop(&mut self){}}fn main(){let d=D;}")?;
     f.program.bodies.clear();
     let recipes = body::drops::glue::Cache::new(&[])?.into_recipes();
     assert!(incremental::with_checked(f.program, vec![], Some(recipes), |_| ()).is_err());
@@ -346,7 +347,8 @@ fn assembly_rejects_unproved_bodies_and_inconsistent_cleanup() -> TestResult {
 
 #[test]
 fn assembly_cannot_erase_a_completed_destruction_proof() -> TestResult {
-    let mut f = fixture("struct D;impl Drop for D{fn drop(&mut self){}}fn main(){let d=D;}")?;
+    let (report, mut f) =
+        fixture_with_report("struct D;impl Drop for D{fn drop(&mut self){}}fn main(){let d=D;}")?;
     let checked = originals(&mut f.facts, &f.templates, &f.inputs)?;
     let (mut builder, bodies) = super::Builder::new(f.program)?;
     for body in bodies {
@@ -355,7 +357,7 @@ fn assembly_cannot_erase_a_completed_destruction_proof() -> TestResult {
             .iter()
             .find(|input| input.key == body.key())
             .ok_or("missing ordinary contract")?;
-        builder.push(&mut f.facts, &checked, body, input, None)?;
+        builder.push(&report, &mut f.facts, &checked, body, input, None)?;
     }
     builder.program.drops = None;
     builder.recipes = None;

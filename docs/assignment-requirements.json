@@ -210,7 +210,7 @@
       "contract": "Actual source const calls, selectors and cleanup",
       "implementation": "partial",
       "implemented": "Reached source-layout/needs_drop/selector/caller paths supported for qualified actual contexts",
-      "remaining": "Const drop glue, nonempty/open conditional callback payments, richer default/const/source contexts remain",
+      "remaining": "Const drop glue, nonempty/open conditional callback payments, richer default/const/source contexts remain; the independently Rust-positive impro3.rs composite conditional Destruct definition remains rejected before export (PA25/31), separately from unconditional premises and imported precision policy",
       "source": [
         "dev/src/const_eval/entry_policy.rs",
         "dev/src/const_eval/selector_sites.rs",
@@ -222,7 +222,8 @@
       ],
       "evidence": [
         "docs/pa31-const-select-ctfe-progress.md",
-        "docs/pa28-source-needs-drop.md"
+        "docs/pa28-source-needs-drop.md",
+        "docs/parallel/source-const-repair.md"
       ],
       "publication": "unpublished assignment contract; no active manifest/oracle claim",
       "units": [

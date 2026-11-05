@@ -1,0 +1,23 @@
+{
+  "prediction": "frozen before reference and candidate",
+  "cases": [
+    {
+      "file": "improv.rs",
+      "source_sha256": "49cabbf56c8cf48eb48d342a839c4c9fa4eaf5798f4e25a10dd58b16bce8f4b5",
+      "expected_code": 0,
+      "cause": "ordinary generic tuple field moves with genuine declared conditional Destruct premises; consumer request cannot pay imported definition policy"
+    },
+    {
+      "file": "impcn.rs",
+      "source_sha256": "91a6673bbca99fe3b32d174f9da005c54e570866a38548f0e3d85583de1757d3",
+      "expected_code": 0,
+      "cause": "ordinary generic tuple field moves with genuine declared conditional Destruct premises; consumer request cannot pay imported definition policy"
+    },
+    {
+      "file": "impcp.rs",
+      "source_sha256": "3232117b90200905dabe8dae5b2662268c6dd2ae3aa711a336dbb50d2418e417",
+      "expected_code": 0,
+      "cause": "ordinary generic tuple field moves with genuine declared conditional Destruct premises; consumer request cannot pay imported definition policy"
+    }
+  ]
+}

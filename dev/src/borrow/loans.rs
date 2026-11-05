@@ -585,6 +585,10 @@ pub fn check_destruction(
     contract: &regions::Body,
     plan: &super::destruction::Plan,
 ) -> Result<Analysis, Error> {
+    require_no_const_cleanup(
+        facts.body(),
+        super::destruction::schedule::Schedule::concrete(plan),
+    )?;
     check_schedule(
         types,
         definitions,
@@ -594,6 +598,18 @@ pub fn check_destruction(
         contract,
         super::destruction::schedule::Schedule::concrete(plan),
     )
+}
+pub(crate) fn require_no_const_cleanup(
+    body: &Body,
+    plan: super::destruction::schedule::Schedule<'_>,
+) -> Result<(), Error> {
+    if body.const_context && plan.cleanups().any(|cleanup| cleanup.access) {
+        return Err(Error {
+            node: body.source.into(),
+            message: "constant evaluation cannot run destructors",
+        });
+    }
+    Ok(())
 }
 pub(crate) fn check_schedule(
     types: &Store,

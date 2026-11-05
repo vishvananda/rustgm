@@ -1,0 +1,24 @@
+{
+  "prediction": "frozen before reference/candidate",
+  "required_original": "impro3.rs",
+  "cases": [
+    {
+      "file": "impro4.rs",
+      "source_sha256": "66660faff050f637006f99296e179320bb9d86000b236d58a49ba7484ede5fc0",
+      "expected_code": 0,
+      "cause": "separate explicit unconditional const Destruct premises; conditional composite original remains required"
+    },
+    {
+      "file": "impcn4.rs",
+      "source_sha256": "48a9aec447cd3c515d620ad094efeed5ec6fe3ee49b54d1e9e9df0b8a9e4e39c",
+      "expected_code": 0,
+      "cause": "separate explicit unconditional const Destruct premises; conditional composite original remains required"
+    },
+    {
+      "file": "impcp4.rs",
+      "source_sha256": "ffaddf0be7901804af559187641f41413e54d6d423c0aa1334c5b39b4e8e9581",
+      "expected_code": 0,
+      "cause": "separate explicit unconditional const Destruct premises; conditional composite original remains required"
+    }
+  ]
+}

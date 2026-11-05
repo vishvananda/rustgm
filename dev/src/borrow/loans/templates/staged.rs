@@ -59,11 +59,21 @@ impl<'a> Prepared<'a> {
         )?;
         Ok(prepared.checks_cleanup())
     }
-    pub(crate) fn eligibility(&self) -> impl Iterator<Item = Result<TypeId, &'static str>> + '_ {
+    pub(crate) fn eligibility(
+        &self,
+    ) -> impl Iterator<Item = Result<crate::body::defining_cleanups::Subject, &'static str>> + '_
+    {
         self.plan
             .iter()
             .flat_map(|plan| plan.schedule().cleanups())
-            .filter_map(|cleanup| cleanup.live_type.map(Ok))
+            .filter_map(|cleanup| {
+                cleanup.live_type.map(|ty| {
+                    Ok(crate::body::defining_cleanups::Subject {
+                        ty,
+                        access: cleanup.access,
+                    })
+                })
+            })
     }
     pub(crate) fn active(&self) -> impl Iterator<Item = Result<TypeId, &'static str>> + '_ {
         self.plan
