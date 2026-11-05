@@ -1,0 +1,192 @@
+{
+  "schema": 1,
+  "state": "joined-source-native-core-frontier-qualified",
+  "commits": {
+    "unsafe_pinned": "8b14dbb73",
+    "index": "114c938d05f226aca422c224812dfa9b52b0d3c2",
+    "worker_index": "88dbef6bebde806e8277c307e9b9b141fae951d9"
+  },
+  "qualification": {
+    "path": "obj/parallel/source-index-pinned-v1/qualification-v1/receipt.json",
+    "sha256": "76034cc619449eb0898263123718a68792c6bd454902449599058378f3a1bab3",
+    "regular": {
+      "path": "obj/qualification/fast/1793864874385440298/receipt.json",
+      "sha256": "a55d5e5f40080b662db92e84417fa46ffe4a50b581255ca5666339847767c7c4"
+    },
+    "native": {
+      "path": "obj/qualification/fast/1793865167369323899/receipt.json",
+      "sha256": "48b90680fe6d0bf24676af30c2c0e65433eaf7af165a69e6a4cb04d1b1dfc3c8"
+    },
+    "seconds": 39.665547627955675
+  },
+  "cli": {
+    "path": "obj/parallel/source-index-pinned-v1/cli/d1dc3c12fadb4a1eb3f49b87b2cb99453b97404a0d79677621f39bd531b8e756/rustgm",
+    "sha256": "d1dc3c12fadb4a1eb3f49b87b2cb99453b97404a0d79677621f39bd531b8e756"
+  },
+  "backend_lock_sha256": "f60c0760f39f1f554486f5a1eb990d2c0fef663fbd1bff944cd1eef8a014a581",
+  "original_core": {
+    "infrastructure_failure": false,
+    "classification": "observed original-core blocker",
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "d1dc3c12fadb4a1eb3f49b87b2cb99453b97404a0d79677621f39bd531b8e756",
+    "expected_cli_source": "explicit caller input",
+    "status": 1,
+    "first_error": "ERROR: file 121: 12986: source compiler language item semantic contract is not implemented",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 19.455204159021378,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "e43f3153bb2afde2e4a2f90ae19471a2ccb0027859f1d2eb12e4bd9b54ea3ecc",
+      "whole-core.openat": "4d7c4a5ee454d5d49eb9fa35f4f7131b1d6bd9a290b37764b3a8b5e0b16c49ed",
+      "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+    },
+    "receipt_sha256": "0cfecd4c304816b4448f3a1a7ad1c055eef359a5f2f18c4b6f7b256c88b46bda",
+    "frontier": "LIB-165",
+    "path": "library/core/src/ffi/va_list.rs",
+    "source_sha256": "0eafd01f996b0e06644887453fb5229a0c4f359345888ce7fc554b157dbdb974",
+    "line": 316,
+    "file": 121,
+    "byte": 12986,
+    "actual_contract": "#[lang=\"va_arg_safe\"] pub impl(self) unsafe trait VaArgSafe: Copy {}",
+    "input_count": 722,
+    "pins": 6,
+    "configuration_values": 15
+  },
+  "performance": {
+    "path": "obj/parallel/source-index-pinned-v1/performance-v1/receipt.json",
+    "sha256": "7c53d0a2b75c95789e92f220e6d444d0f0c151bab9338aa9d416bc18e35b65ac",
+    "seconds": 29.89542033500038,
+    "observations": 90,
+    "scales": [
+      {
+        "family": "ordinary",
+        "width": 1024,
+        "source_sha256": "783d30852ce081f6699ac8404584e6dcf01e511e14716df7497cb67f5d1ace96",
+        "blocks": [
+          {
+            "AA_second_over_first": 0.9979573342839361,
+            "ABBA_B_over_A": 0.9925967294904473
+          },
+          {
+            "AA_second_over_first": 0.9131138902074492,
+            "ABBA_B_over_A": 0.9539562655304996
+          },
+          {
+            "AA_second_over_first": 0.9636878700935932,
+            "ABBA_B_over_A": 0.9333693059878824
+          }
+        ],
+        "paired_median_B_over_A": 0.9539562655304996,
+        "candidate_median_seconds": 0.2214785960095469
+      },
+      {
+        "family": "ordinary",
+        "width": 4096,
+        "source_sha256": "9f5ca894e474569a5033b27b8508936790ca745d34c1e370abe066fbf4086bba",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.157563000980126,
+            "ABBA_B_over_A": 0.9925300280561135
+          },
+          {
+            "AA_second_over_first": 1.126622914861127,
+            "ABBA_B_over_A": 0.880774161987405
+          },
+          {
+            "AA_second_over_first": 0.927495576859562,
+            "ABBA_B_over_A": 1.0485126587518323
+          }
+        ],
+        "paired_median_B_over_A": 0.9925300280561135,
+        "candidate_median_seconds": 0.8441841939929873
+      },
+      {
+        "family": "source-cell",
+        "width": 8,
+        "source_sha256": "42b4a44e00b50becab0ebf1f469963e62116dfa10f6e788d50c8e6f17582486a",
+        "blocks": [
+          {
+            "AA_second_over_first": 0.9650739518121365,
+            "ABBA_B_over_A": 0.8008963654999885
+          },
+          {
+            "AA_second_over_first": 1.0815514552793202,
+            "ABBA_B_over_A": 0.9723647858449032
+          },
+          {
+            "AA_second_over_first": 0.9689282706887687,
+            "ABBA_B_over_A": 0.9935741118636169
+          }
+        ],
+        "paired_median_B_over_A": 0.9723647858449032,
+        "candidate_median_seconds": 0.040822334500262514
+      },
+      {
+        "family": "source-cell",
+        "width": 32,
+        "source_sha256": "3f6ed190052bfcecb990bc9978fa92ea7a56b4a733295420b355203c51797e8b",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.0463545980336963,
+            "ABBA_B_over_A": 0.9967297522399463
+          },
+          {
+            "AA_second_over_first": 1.0182967776750045,
+            "ABBA_B_over_A": 0.9952301196052514
+          },
+          {
+            "AA_second_over_first": 0.8965708434531986,
+            "ABBA_B_over_A": 1.0291952821408297
+          }
+        ],
+        "paired_median_B_over_A": 0.9967297522399463,
+        "candidate_median_seconds": 0.09189088200218976
+      },
+      {
+        "family": "source-cell",
+        "width": 128,
+        "source_sha256": "71a5af29c9e0a79a0b259108b07c2539fdb875f1294b2ccc0d525e593f043fc4",
+        "blocks": [
+          {
+            "AA_second_over_first": 0.9992296110672098,
+            "ABBA_B_over_A": 1.0303640787137576
+          },
+          {
+            "AA_second_over_first": 1.0241916537451599,
+            "ABBA_B_over_A": 0.9773933144472383
+          },
+          {
+            "AA_second_over_first": 1.0057711205174873,
+            "ABBA_B_over_A": 0.9955173420591799
+          }
+        ],
+        "paired_median_B_over_A": 0.9955173420591799,
+        "candidate_median_seconds": 0.33889505951083265
+      }
+    ],
+    "interpretation": "Exclusive identical frozen inputs, immutable A/B, A/A and paired ABBA, every output equal. Ordinary4096 retains one+4.85% block and A/A noise. Common source-cell controls and bounded actual Index work do not establish broad crate throughput or no-regression."
+  },
+  "preceding_full_ci": {
+    "head": "f80061152f5230a1d5a6240d276daf165ad63d40",
+    "run": 41986761978,
+    "status": "terminal-success-all-gates"
+  },
+  "current_fast_ci": {
+    "head": "114c938d05f226aca422c224812dfa9b52b0d3c2",
+    "run": 41990324740,
+    "status": "terminal-success"
+  },
+  "remaining": [
+    "LIB-165 actual VaArgSafe/VaList and real C variadic consumers",
+    "Index marked raw implicit receiver policy3 cases, including2 Rust-positive gaps",
+    "Full runtime futures/poll/await/Pin/cancellation/cleanup",
+    "Shared-derived CTFE mutation, broader layouts and authenticated nominal/body/policy metadata",
+    "All original core/alloc/std artifacts, real consumers and complete assignment/release requirements"
+  ]
+}

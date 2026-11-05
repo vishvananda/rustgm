@@ -11,6 +11,17 @@ and the existing target/configuration/cap/finite limits preserved. LIB-155 is
 the independently demonstrated source Deref/Target prerequisite. Use the frozen
 Pin source and receiver packets, not source substitutions or empty futures.
 
+The [Index/UnsafePinned successor](source-index-pinned.md) is published on
+main114c938d0. Nine public controls/1193 PA19 cases and24 native observers pass;
+original core advances unchanged to LIB-165 VaArgSafe at ffi/va_list.rs316,
+file121 byte12986,19.4552s/375opens. All722 inputs, six pins,15 values,cap and
+finite limits are preserved. All138 assignments now match; Index has70 parity
+cases plus3 marked-raw profile cases (2 Rust-positive gaps). No original library
+artifact or whole PA after24 is complete. Full41986761978 onf800 and current
+push41990324740 are terminal success; joined full successor is distinct.
+The source worker now owns VaArgSafe/VaList and real variadic consumers, reusing
+its same warm tree/cache. The other worker completes compiler-operation metadata.
+
 The [owner-policy successor](../pa31-const-policy-owners.md) closes LIB-163:
 25 independent outcomes and4 new natives pass; all138 assignment cases now
 match Rust. CLI6b04fb51 preserves every original input/profile/limit and the same
@@ -56,7 +67,7 @@ sharing the existing operator kernel avoids serial one-spelling checkpoints.
 | --- | --- | --- | --- |
 | Integrator | `/mnt/vizier/rustgm-scratch/rustgm-pa26-work` | Shared type/body/protocol review, CI, original core and main publication | Preserve actual helpers/opaque/Pin/trait/ownership proof and integrate real consumers; follow unchanged core admission through checking/export and executable artifacts |
 | Future/state foundation, following source contracts | `/mnt/vizier/rustgm-scratch/rustgm-async-work` | Propose real constructor/poll/capture/drop data and authentic generic compiler-operation export recipe; PA31/42/43/29 | Concrete typed API/identity joins precede central edits. Deferred symbolic recipe publication and executable state/poll are distinct. Full await/cancellation/recursive cleanup and original artifacts remain requirements |
-| Index/IndexMut, following the ten assignment families | `/mnt/vizier/rustgm-scratch/rustgm-pa29-work` | PA31 actual shared/mutable indexing and returned-reference place consumers | Real Idx/Output/parent/lifetime and const/safety/body proof, ordinary Places/evaluation/loans, primitive eligibility and native effects; no synthetic Output or role-based unwrapping |
+| VaArgSafe/VaList, following Index/storage | `/mnt/vizier/rustgm-scratch/rustgm-pa29-work` | PA31 actual vararg-safe trait/nominal identity, PA30 ABI/definitions and PA28 operations | Actual sealed Copy-supertrait and VaList fields/target layout, existing forced-indirect ABI, unsafe/const/borrow/cursor lifecycle and real native C interoperability; no synthetic layout or role-skip |
 
 Workers own their new modules, fixtures and lane checkpoint documents. Propose
 central type/body enum, declaration scheduler, source-role ledger, shared

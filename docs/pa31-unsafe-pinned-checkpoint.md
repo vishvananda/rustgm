@@ -32,3 +32,7 @@ hashes and scope are bound in [evidence](pa31-unsafe-pinned-evidence.json).
 Join with Index before observing original core again. The last qualified core
 frontier is still LIB-162 Index from the preceding CLI; this checkpoint does not
 claim a new whole-core attempt. Joint performance and full CI remain separate.
+
+Joined Index/storage qualification is now recorded in docs/parallel/source-index-pinned.md;
+original core advances unchanged to actual VaArgSafe. This remains source admission,
+not a whole checked library artifact or assignment release.

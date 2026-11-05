@@ -42,3 +42,7 @@ receive a new unchanged-core observation and performance check; neither has
 been inferred from this source qualification. Full Pin,
 projection, async/cancellation, shared-derived constant mutation, wider niches,
 optimizer permissions and authenticated interior-storage metadata remain required.
+
+Joined Index/storage qualification is now recorded in docs/parallel/source-index-pinned.md;
+original core advances unchanged to actual VaArgSafe. This remains source admission,
+not a whole checked library artifact or assignment release.
