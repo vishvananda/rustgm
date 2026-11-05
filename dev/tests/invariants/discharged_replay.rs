@@ -16,9 +16,10 @@ fn pending(checker: &mut Checker<'_>, solved: &Solved, source: SourceCallUse) ->
             solved.types[term.0 as usize],
         )?;
         if kind != CallSafety::Safe {
-            pending
-                .rows
-                .push(super::super::super::safety::Record { node, kind });
+            pending.rows.push(super::super::super::safety::Record {
+                node,
+                kind: super::super::super::safety::PendingKind::Discharged(kind),
+            });
         }
     }
     checker.state.call_types.safety = Some(Box::new(pending));

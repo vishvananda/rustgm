@@ -30,6 +30,7 @@ impl Checker<'_> {
             .language(Hook::Index)
             .is_none()
             && !crate::sema::compiler_items::dereferencing::available(self.facts)
+            && !crate::sema::compiler_items::index_available(self.facts)
         {
             return Ok(());
         }
@@ -70,6 +71,7 @@ impl Checker<'_> {
             .language(Hook::Index)
             .is_none()
             && !crate::sema::compiler_items::dereferencing::available(self.facts)
+            && !crate::sema::compiler_items::index_available(self.facts)
         {
             return Ok(());
         }
@@ -89,8 +91,12 @@ impl Checker<'_> {
                         .is_some_and(|selected| selected.kind == Selection::Index(Hook::Index))
                     {
                         let old = self.term(node)?;
-                        let new =
-                            self.language_operator(node, Hook::IndexMut, value, Some(index))?;
+                        let new = if self.facts.source_bindings.is_some() {
+                            let subject = self.autoderef(node, self.term(value)?)?;
+                            self.source_index_operator(node, value, index, subject, true)?
+                        } else {
+                            self.language_operator(node, Hook::IndexMut, value, Some(index))?
+                        };
                         self.equate(node, old, new)?;
                     }
                     node = value;

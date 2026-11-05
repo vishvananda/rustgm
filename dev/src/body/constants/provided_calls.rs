@@ -239,9 +239,14 @@ pub(super) fn closed_request(
     else {
         return Err("const member lost its typed Call operation");
     };
-    if signature != call.signature || node.ty != Some(call.result) {
+    if signature != call.signature {
         return Err("const member changed its current signature or result");
     }
+    let indexed = if node.ty == Some(call.result) {
+        None
+    } else {
+        Some(index_result(report, facts, call, node.ty, work)?)
+    };
     let effect = match (facts.source_bindings.as_deref(), source_use) {
         (_, Some(use_)) => use_.effect_for(facts, source)?,
         (None, None) => ordinary_effect(report, facts, body, source, work)?,
@@ -250,7 +255,10 @@ pub(super) fn closed_request(
     if !closed_effect(report, facts, body, source, effect, work)? {
         return Ok(false);
     }
-    let definition = closed_member(facts, call, work)?;
+    let definition = match indexed {
+        Some(definition) => definition,
+        None => closed_member(facts, call, work)?,
+    };
     work.charge(2)?;
     if let Some(method) = facts.methods.calls.get(&call.site) {
         if method.method != definition || method.callable != call.target {
@@ -268,6 +276,93 @@ pub(super) fn closed_request(
         direct_source(report, facts, call, definition, work)?;
     }
     Ok(true)
+}
+
+/// A retained Index call produces a reference before its source expression forms
+/// a place. This relation is separate from ordinary direct call results.
+fn index_result(
+    report: &crate::resolve::expansion::Report,
+    facts: &Declarations,
+    call: Call,
+    node_type: Option<crate::types::TypeId>,
+    work: &mut Work,
+) -> Result<DefId, &'static str> {
+    work.charge(15)?;
+    let definition = closed_member(facts, call, work)?;
+    let method = facts
+        .methods
+        .calls
+        .get(&call.site)
+        .ok_or("const index result lacks its actual selected method")?;
+    if method.method != definition || method.callable != call.target || method.dereferences != 0 {
+        return Err("const index result changed its actual selected callable");
+    }
+    let indexed = report
+        .package
+        .units
+        .get(call.site.file.0 as usize)
+        .and_then(|unit| unit.configured.ast.nodes.get(call.site.node.get() as usize))
+        .is_some_and(|node| matches!(node.kind, crate::syntax::ast::Kind::Index { .. }));
+    if !indexed {
+        return Err("const member changed its current signature or result");
+    }
+    let owner = facts
+        .associated
+        .trait_owner(definition)
+        .ok_or("const index method lacks its actual trait owner")?;
+    let catalog = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("const index result lacks its actual source catalog")?;
+    let mutable = if catalog
+        .language(crate::support::bindings::LangItem::Index)
+        .is_some_and(|d| d.definition == owner)
+    {
+        false
+    } else if catalog
+        .language(crate::support::bindings::LangItem::IndexMut)
+        .is_some_and(|d| d.definition == owner)
+    {
+        true
+    } else {
+        return Err("const index result belongs to another actual language trait");
+    };
+    let Some(Kind::Function {
+        parameters, result, ..
+    }) = facts.types.kind(call.signature)
+    else {
+        return Err("const index result lost its actual call signature");
+    };
+    let Some([receiver, _]) = facts.types.list(parameters) else {
+        return Err("const index result changed its actual parameter list");
+    };
+    if method.borrow != Some(*receiver) || method.receiver != *receiver || result != call.result {
+        return Err("const index result changed its actual receiver borrow or call result");
+    }
+    let Some(Kind::Reference {
+        mutable: receiver_mutable,
+        region: receiver_region,
+        ..
+    }) = facts.types.kind(*receiver)
+    else {
+        return Err("const index result lost its borrowed receiver");
+    };
+    let Some(Kind::Reference {
+        mutable: result_mutable,
+        region: result_region,
+        referent,
+    }) = facts.types.kind(call.result)
+    else {
+        return Err("const index result lost its actual reference result");
+    };
+    if receiver_mutable != mutable
+        || result_mutable != mutable
+        || receiver_region != result_region
+        || node_type != Some(referent)
+    {
+        return Err("const index result changed its checked mutability, lifetime or referent");
+    }
+    Ok(definition)
 }
 
 fn ordinary_effect(

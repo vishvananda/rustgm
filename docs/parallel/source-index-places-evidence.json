@@ -1,0 +1,405 @@
+{
+  "schema": 1,
+  "baseline": "5d21dc7898800c457222125614e8374022de1106",
+  "branch": "implement/source-index-20261105",
+  "roles": [
+    "Index",
+    "IndexMut"
+  ],
+  "static_receipt": {
+    "path": "obj/parallel/source-transport/indexing/static9/receipt.json",
+    "sha256": "2f12109b0accab3db8168da069c37989a563791c7c1e0f1238420c04e54652b5",
+    "state": "passed"
+  },
+  "qualifier_receipt": {
+    "path": "obj/parallel/source-transport/indexing/gate4/receipt.json",
+    "sha256": "042c79c2ba979c30209f0e243909153c8310be4672101eed96f4e1bb89043525",
+    "state": "passed"
+  },
+  "source_map": {
+    "path": "obj/parallel/source-transport/indexing/gate4/sources.json",
+    "sha256": "63920e54820fe0834e9d33cb46755a739e00748d37f66af251b93a747bff211d"
+  },
+  "artifacts": {
+    "path": "obj/parallel/source-transport/indexing/gate4/fingerprints.json",
+    "sha256": "3ddc0b058e255e1afbb01b565b3322c3f7821a17040b0090a2fc644ab7120a45"
+  },
+  "public_harness": {
+    "path": "obj/rust/dev-fast/deps/suite_traits-1eb52380c4060d30",
+    "sha256": "c871e7ca45e353f676f9f8e6a427d190c536fc8bcf11a45111c5710ca2b1fdcf"
+  },
+  "compiler_layout_trace": {
+    "path": "obj/parallel/source-transport/indexing/gate4/descriptor-layout.json",
+    "sha256": "7491c1b6e29eb50f00b23a92745155855591d34157a191cceb057a4e7665b66e"
+  },
+  "actual_layouts": {
+    "sema::compiler_items::operator_contract::SourceOperator": [
+      "print-type-size type: `sema::compiler_items::operator_contract::SourceOperator`: 28 bytes, alignment: 4 bytes"
+    ],
+    "sema::bodies::safety::discharged::Record": [
+      "print-type-size type: `sema::bodies::safety::discharged::Record`: 8 bytes, alignment: 4 bytes"
+    ],
+    "sema::bodies::safety::discharged::PendingKind": [
+      "print-type-size type: `sema::bodies::safety::discharged::PendingKind`: 2 bytes, alignment: 1 bytes"
+    ],
+    "body::ir::Body": [
+      "print-type-size type: `body::ir::Body`: 456 bytes, alignment: 8 bytes"
+    ],
+    "sema::model::NodeFacts": [
+      "print-type-size type: `sema::model::NodeFacts`: 80 bytes, alignment: 16 bytes"
+    ],
+    "sema::model::Operation": [
+      "print-type-size type: `sema::model::Operation`: 16 bytes, alignment: 8 bytes"
+    ],
+    "sema::bodies::calls::CallTypes": [
+      "print-type-size type: `sema::bodies::calls::CallTypes`: 720 bytes, alignment: 8 bytes"
+    ]
+  },
+  "layout_build_environment": {
+    "RUSTFLAGS": "-Zprint-type-sizes",
+    "RUSTC_BOOTSTRAP": "1",
+    "purpose": "diagnostic layout trace on the actual dev-fast public candidate; no frontend algorithm or backend change"
+  },
+  "predictions": {
+    "path": "pa31/tests/spec/source-index-places/predictions.json",
+    "sha256": "aa2f987317bdf57a00d5326f372ec74dbdc15af3886833661b689b479f694da5"
+  },
+  "native_predictions": {
+    "path": "pa31/tests/spec/source-index-places/native-predictions.json",
+    "sha256": "a68f0fbeff2a583f67acea65fe44527960716ed3be591dd8c9491bb63543d5e2"
+  },
+  "independent": {
+    "path": "obj/parallel/source-transport/indexing/reference-v8/receipt.json",
+    "sha256": "7dfd0b6e4dfb9efdc035555a9132fefa32e2ec1c8a816c9abe5a84d0e5232da2",
+    "state": "passed",
+    "declared_rust_outcomes": 73,
+    "native_observers": 7
+  },
+  "candidate_inventory": {
+    "total": 73,
+    "semantic_parity_targets": 70,
+    "marked_raw_policy_cases": 3,
+    "rust_positive_policy_gaps": 2,
+    "profile_fences": [
+      "raw-implicit.rs",
+      "raw-policy-allow.rs",
+      "raw-cap-allow.rs"
+    ],
+    "requirement": "PA31/40 marked raw implicit receiver/dangerous_implicit_autorefs policy; neither named fence nor cap-lints=allow is semantic parity"
+  },
+  "native": {
+    "backend_commit": "b7c6b8e72",
+    "backend_lock": {
+      "path": "backend.lock.json",
+      "sha256": "f60c0760f39f1f554486f5a1eb990d2c0fef663fbd1bff944cd1eef8a014a581"
+    },
+    "backend_local": {
+      "path": "backend.local.json",
+      "sha256": "de97443110bcdb82b66d94235c0042d7944eb012905d7628fb402468dd4eab62"
+    },
+    "observers": {
+      "obj/parallel/source-transport/indexing/native-runtime-1152120": {
+        "stdout": "11 17 23 23 23 17 23 11 17\n",
+        "artifacts": {
+          "obj/parallel/source-transport/indexing/native-runtime-1152120/source.lowir": {
+            "bytes": 12741,
+            "sha256": "ac89af0bcd3db98245ca09ef35f8fac038e2182ba63bb11c84b9c1b384ac8b8a"
+          },
+          "obj/parallel/source-transport/indexing/native-runtime-1152120/source.o": {
+            "bytes": 5960,
+            "sha256": "b034b9fb501d467658dde3b2ad492385949fbe326c5b81a2cb961d44715268c0"
+          },
+          "obj/parallel/source-transport/indexing/native-runtime-1152120/backend.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-runtime-1152120/observer": {
+            "bytes": 16936,
+            "sha256": "7a527393bc2d663f3fbbc9963802c1270f053c1367b73e16098f67f3e03c1834"
+          },
+          "obj/parallel/source-transport/indexing/native-runtime-1152120/link.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-runtime-1152120/native.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-runtime-1152120/native.stdout": {
+            "bytes": 27,
+            "sha256": "f18b2392f384d6983b7350abc2c39b4c71e485363d8e1ed067f141d4e42353a4"
+          }
+        }
+      },
+      "obj/parallel/source-transport/indexing/native-unsized-output-1152120": {
+        "stdout": "2 23\n",
+        "artifacts": {
+          "obj/parallel/source-transport/indexing/native-unsized-output-1152120/source.lowir": {
+            "bytes": 7291,
+            "sha256": "3c03fdd78c1ee55b12048fa801ea4e06475c6baf67a64387214cf2d44b389ed7"
+          },
+          "obj/parallel/source-transport/indexing/native-unsized-output-1152120/source.o": {
+            "bytes": 3464,
+            "sha256": "73baabacd9904d87be4b67679e223ad4d05b99ff2e8c7b40e500ba5ee0a56ff3"
+          },
+          "obj/parallel/source-transport/indexing/native-unsized-output-1152120/backend.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-unsized-output-1152120/observer": {
+            "bytes": 16440,
+            "sha256": "713ec36c7d9cea75928baccb767d5d0a244cc57a53182cd42296037e83053078"
+          },
+          "obj/parallel/source-transport/indexing/native-unsized-output-1152120/link.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-unsized-output-1152120/native.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-unsized-output-1152120/native.stdout": {
+            "bytes": 5,
+            "sha256": "3e73110df38e8b7ddf6e9a9c3599a6fea441cb074754e97b5cbcddf9d6d70b87"
+          }
+        }
+      },
+      "obj/parallel/source-transport/indexing/native-const-valid-1152120": {
+        "stdout": "23\n",
+        "artifacts": {
+          "obj/parallel/source-transport/indexing/native-const-valid-1152120/source.lowir": {
+            "bytes": 5871,
+            "sha256": "339ded6ad5e3c982c4bffce93390a95dcab5429ab400a3322f784a6a0693d0cc"
+          },
+          "obj/parallel/source-transport/indexing/native-const-valid-1152120/source.o": {
+            "bytes": 3264,
+            "sha256": "b36eeb639e63f16cf4d5972b8bea2dba3095f6ecef8b6d19c8f2f733d613f026"
+          },
+          "obj/parallel/source-transport/indexing/native-const-valid-1152120/backend.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-const-valid-1152120/observer": {
+            "bytes": 16440,
+            "sha256": "e8a8a43cdeb32f7b9159e8b34e21b9abf8442ad08dcc64975d5001b340587f49"
+          },
+          "obj/parallel/source-transport/indexing/native-const-valid-1152120/link.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-const-valid-1152120/native.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-const-valid-1152120/native.stdout": {
+            "bytes": 3,
+            "sha256": "076320a2a08267b4c026d06573bba408ea68841e73cdc20e62cce59de165ece3"
+          }
+        }
+      },
+      "obj/parallel/source-transport/indexing/native-provided-1152120": {
+        "stdout": "17\n",
+        "artifacts": {
+          "obj/parallel/source-transport/indexing/native-provided-1152120/source.lowir": {
+            "bytes": 4707,
+            "sha256": "fd58e3073902a1295013a4f6ba37a5b6f0b83c8238a505276ab16d384d8739bf"
+          },
+          "obj/parallel/source-transport/indexing/native-provided-1152120/source.o": {
+            "bytes": 2904,
+            "sha256": "d8079a73b255936ad1920c89db6687607878d852e5d6ff0d752ce5a5bae54df6"
+          },
+          "obj/parallel/source-transport/indexing/native-provided-1152120/backend.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-provided-1152120/observer": {
+            "bytes": 16376,
+            "sha256": "22e97373abcd2e9518c4c29d9521b35aff06241c56046262666cf7bec89429b0"
+          },
+          "obj/parallel/source-transport/indexing/native-provided-1152120/link.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-provided-1152120/native.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-provided-1152120/native.stdout": {
+            "bytes": 3,
+            "sha256": "54183f4323f377b737433a1e98229ead0fdc686f93bab057ecb612daa94002b5"
+          }
+        }
+      },
+      "obj/parallel/source-transport/indexing/native-array-custom-runtime-1152120": {
+        "stdout": "11 23 11\n",
+        "artifacts": {
+          "obj/parallel/source-transport/indexing/native-array-custom-runtime-1152120/source.lowir": {
+            "bytes": 6509,
+            "sha256": "fb0cf1efda6827f415c2b0c7f9e3fc9b20e6cf38378359bcde214620a3b48387"
+          },
+          "obj/parallel/source-transport/indexing/native-array-custom-runtime-1152120/source.o": {
+            "bytes": 3472,
+            "sha256": "29137a42c7d404086b940a300d889e502834d10a7526747d3237f24038b05b3e"
+          },
+          "obj/parallel/source-transport/indexing/native-array-custom-runtime-1152120/backend.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-array-custom-runtime-1152120/observer": {
+            "bytes": 16520,
+            "sha256": "df6fc1634371ce1bc12c9523259842059be35d7e8586962a162517886acb5c9e"
+          },
+          "obj/parallel/source-transport/indexing/native-array-custom-runtime-1152120/link.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-array-custom-runtime-1152120/native.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-array-custom-runtime-1152120/native.stdout": {
+            "bytes": 9,
+            "sha256": "77ae1ef106e5b4b01c8f83b4542284c7e1ebf48da9e53ba356e84839a2ac1363"
+          }
+        }
+      },
+      "obj/parallel/source-transport/indexing/native-order-1152120": {
+        "stdout": "23 4\n",
+        "artifacts": {
+          "obj/parallel/source-transport/indexing/native-order-1152120/source.lowir": {
+            "bytes": 7186,
+            "sha256": "f90fcefd02182db2e644e133b2520422659249dfcdf64c23ceca9c0ea8372a32"
+          },
+          "obj/parallel/source-transport/indexing/native-order-1152120/source.o": {
+            "bytes": 4200,
+            "sha256": "5286c23372d72d008c83438feeb0fd28c7188a632e0b29c62f40bd6fbb488759"
+          },
+          "obj/parallel/source-transport/indexing/native-order-1152120/backend.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-order-1152120/observer": {
+            "bytes": 16544,
+            "sha256": "f800b7879f223174ab0073843db8ba348430b11ed5d56f66212e2ad6208a0738"
+          },
+          "obj/parallel/source-transport/indexing/native-order-1152120/link.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-order-1152120/native.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-order-1152120/native.stdout": {
+            "bytes": 5,
+            "sha256": "068cb8fee9556aec132b063952a80c7f694ce1b0a4fc127ac7794cafd824d4a8"
+          }
+        }
+      },
+      "obj/parallel/source-transport/indexing/native-primitive-changed-output-1152120": {
+        "stdout": "11\n",
+        "artifacts": {
+          "obj/parallel/source-transport/indexing/native-primitive-changed-output-1152120/source.lowir": {
+            "bytes": 3670,
+            "sha256": "be6045403aa6b8bdfc43f1c7ad26cdd58f9ac149253ea77e8c5fd93fcda55ecf"
+          },
+          "obj/parallel/source-transport/indexing/native-primitive-changed-output-1152120/source.o": {
+            "bytes": 2448,
+            "sha256": "c8820b8d8c1b4c170d62b2885fcdc6dd3b1b543057c1fc3cbe58c306986d64f4"
+          },
+          "obj/parallel/source-transport/indexing/native-primitive-changed-output-1152120/backend.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-primitive-changed-output-1152120/observer": {
+            "bytes": 16280,
+            "sha256": "988f1332768e4abea180c32eb890dd0d00f2d8e833526cc89412054534130c24"
+          },
+          "obj/parallel/source-transport/indexing/native-primitive-changed-output-1152120/link.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-primitive-changed-output-1152120/native.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/indexing/native-primitive-changed-output-1152120/native.stdout": {
+            "bytes": 3,
+            "sha256": "25d4f2a86deb5e2574bb3210b67bb24fcc4afb19f93a7b65a057daa874a9d18e"
+          }
+        }
+      }
+    }
+  },
+  "bounded_work": {
+    "base": 2199,
+    "uses": [
+      8,
+      32,
+      128
+    ],
+    "additional_steps": [
+      233,
+      929,
+      3713
+    ],
+    "per_additional_use": 29,
+    "initial_extra_step": 1,
+    "claim": "bounded typed-work scaling only; no wall-time speedup claim"
+  },
+  "integration": {
+    "compared_main": "f80061152f5230a1d5a6240d276daf165ad63d40",
+    "overlapping_committed_paths": [],
+    "preserve_root_ordinary_trait_policy_positive": "pa31/tests/spec/source-assign-ten/ordinary-retained-policy.rs unchanged by this commit"
+  },
+  "retained_failures": [
+    {
+      "path": "obj/parallel/source-transport/indexing/reference-v1/receipt.json",
+      "sha256": "40833c3f79b38c1cbabb11be3871a7c661367df9b60a2d9ea425fcceb05025bf",
+      "reason": "static impl return prediction corrected; genuine unsizing foundation and panic_bounds_check setup"
+    },
+    {
+      "path": "obj/parallel/source-transport/indexing/reference-v2/receipt.json",
+      "sha256": "c3b7062b5c6f9a7be8d11eb22d01a0ffb2cdec0640b22c0689f1588deaed0c2a",
+      "reason": "followup source generator truncated at earlier Location export; malformed setup preserved and repaired before candidate"
+    },
+    {
+      "path": "obj/parallel/source-transport/indexing/static1/receipt.json",
+      "sha256": "f353fb189b11877949db29a99601d01da5eb0aef12ef1e08b5cab09b354dae41",
+      "reason": "Array tuple-vs-struct pattern typo"
+    },
+    {
+      "path": "obj/parallel/source-transport/indexing/static2/receipt.json",
+      "sha256": "3d0e294952b61990cd4cd98450945e1285a55c1cf93eca66b347c58c02fd2232",
+      "reason": "strict idiomatic let-else and positive if condition"
+    },
+    {
+      "path": "obj/parallel/source-transport/indexing/static3/receipt.json",
+      "sha256": "cf9de9c26c73dee4f6e31f5c33233c9c0cd45dbed57284ea1fde125381b0acd7",
+      "reason": "separate context discharge from safety-site publication to keep normal function size"
+    },
+    {
+      "path": "obj/parallel/source-transport/indexing/gate1/receipt.json",
+      "sha256": "05de4d7ca9e8b5908afd52b8957f7342196f53d5a9c5daecf310391f45f4c0b4",
+      "reason": "real const Index reference-result versus source place result relation, plus exact not-a-member diagnostic assertion"
+    },
+    {
+      "path": "obj/parallel/source-transport/indexing/gate3/receipt.json",
+      "sha256": "ff1494ef08b07480cafc4627be9985e1ecab42801bedf89f28c97110f11a13a4",
+      "reason": "existing raw guard inference query used after publication; same-walker published type adapter repairs phase mismatch"
+    },
+    {
+      "path": "obj/parallel/source-transport/indexing/static8/receipt.json",
+      "sha256": "faa8aa80b639f641b62913ca5cdd7c5cd8795b29349f036f9c5573cf46f23d0d",
+      "reason": "published Pointer kind import corrected before final gate"
+    }
+  ],
+  "remaining": [
+    "three marked raw implicit receiver policy cases including two Rust-positive gaps",
+    "broader demanded receiver/signature/const-unsafe profiles",
+    "source metadata/body/policy transport",
+    "complete primitive panic_bounds_check native runtime closure",
+    "Root-owned unchanged core/std artifact observation and full private/release qualification"
+  ],
+  "resource_note": "One zero-wait admission refusal during Root exclusive finalization; retried after release without changing limits. Every batch retained existing guards; no cold private link/release sweep."
+}

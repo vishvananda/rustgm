@@ -1,0 +1,73 @@
+runtime.rs	0	positive	actual shared/mutable/default place, explicit call and generic/reference receiver
+shared-only.rs	0	positive	shared Index requires no IndexMut declaration
+missing-index-role.rs	1	role	same-spelling ordinary trait grants no shared index syntax
+missing-index-impl.rs	1	implementation	actual Index has no implementation for Word/Key
+missing-mut-role.rs	1	role	same-spelling mutable trait grants no mutable indexing
+missing-mut-impl.rs	1	implementation	mutable place requires actual IndexMut implementation
+missing-parent-impl.rs	1	implementation	IndexMut retains actual Index supertrait requirement
+wrong-idx.rs	1	implementation	wrong Idx does not select Key implementation
+wrong-output.rs	1	output	implementation reference result disagrees with actual associated Output
+wrong-shared-receiver.rs	1	signature	shared operation requires shared receiver signature
+wrong-mut-receiver.rs	1	signature	mutable operation requires mutable receiver signature
+wrong-mut-result.rs	1	signature	mutable operation must return mutable reference
+extra-mut-output.rs	1	output	IndexMut inherits actual Index Output rather than declaring another
+wrong-shared-lifetime.rs	1	lifetime	implementation result lifetime differs from receiver-bound result
+wrong-mut-lifetime.rs	1	lifetime	mutable result cannot change actual receiver lifetime
+unsafe-shared.rs	1	unsafe	unsafe index use outside unsafe context
+unsafe-shared-allowed.rs	0	positive	actual unsafe method permission comes from use context
+unsafe-mutable.rs	1	unsafe	unsafe mutable index use outside unsafe context
+unsafe-mutable-allowed.rs	0	positive	unsafe mutable syntax preserves actual method permission
+immutable-store.rs	1	mutable	mutable place cannot borrow immutable binding
+shared-base-store.rs	1	mutable	shared base reference does not grant mutable indexing
+shared-alias.rs	1	alias	shared returned place remains live across conflicting mutable index
+mutable-alias.rs	1	alias	unique returned place prevents opposing mutable index
+opposing-index-argument.rs	1	alias	index mutable receiver activates before opposing argument borrow
+escape.rs	1	escape	returned place cannot outlive local receiver
+move-idx.rs	1	move	noncopy Idx moves once
+lifetime.rs	0	positive	returned place preserves actual receiver lifetime
+field-projection.rs	0	positive	actual index returned nominal place supports field write
+mutable-method-refinement.rs	0	positive	late mutable method demand refines one existing Index selection to IndexMut
+move-output.rs	1	move	noncopy Output cannot move from indexed borrowed place
+unsized-idx-header.rs	0	positive	actual Idx and Output both permit unsized type arguments
+unsized-output.rs	0	positive	actual unsized Output returned reference retains metadata and mutable place
+const-nonconst.rs	1	const	const indexing requires actual const implementations
+const-valid.rs	0	positive	genuine const mutable and parent Index proof execute actual bodies
+const-parent-missing.rs	1	const	const IndexMut retains actual const Index parent
+primitive-no-role.rs	1	role	explicitly typed array builtin usize indexing still requires actual role and implementation (E0608)
+primitive-no-impl.rs	1	implementation	explicitly typed array builtin usize indexing still requires actual role and implementation (E0608)
+primitive-bool.rs	1	implementation	array bool index has no implementation
+primitive-u8.rs	1	implementation	array u8 index has no implementation
+primitive-custom-key.rs	0	positive	actual custom array/nominal Idx implementation executes
+primitive-custom-u8.rs	0	positive	non-usize numeric Idx can select actual array implementation
+primitive-body.rs	0	positive	exact builtin usize array syntax and actual explicit body; object emission needs genuine panic_bounds_check
+provided.rs	0	positive	actual provided method body and explicit premises execute via empty impl
+provided-unsafe.rs	1	unsafe	provided defining body must pay actual unsafe helper call
+bound-8.rs	0	positive	bounded repeated actual index demands
+bound-32.rs	0	positive	bounded repeated actual index demands
+bound-128.rs	0	positive	bounded repeated actual index demands
+static-shared-impl.rs	0	positive	stronger actual impl static return remains compatible with trait receiver lifetime
+static-mut-impl.rs	0	positive	stronger actual impl static return remains compatible with trait receiver lifetime
+primitive-unsafe-builtin.rs	0	positive	builtin exact primitive index does not execute unrelated actual unsafe method
+primitive-unsafe-explicit.rs	1	unsafe	explicit actual unsafe index method still requires unsafe context
+primitive-unsafe-explicit-allowed.rs	0	positive	explicit unsafe index method accepts paid unsafe context
+primitive-const-nonconst.rs	1	const	builtin primitive const index retains actual const implementation proof
+primitive-const-valid.rs	0	positive	builtin const indexing with genuine const impl
+primitive-changed-output.rs	0	positive	changed actual output preserves custom return semantics rather than element erasure
+primitive-unsuffixed-u8.rs	0	positive	unsuffixed numeric index with only genuine u8 impl
+primitive-unsuffixed-usize.rs	0	positive	unsuffixed index with genuine usize impl
+array-custom-runtime.rs	0	positive	actual custom nominal and numeric array indexing reads/writes returned place
+primitive-unsuffixed-both.rs	1	inference	multiple actual integer Idx impls retain ordinary unsuffixed inference
+order.rs	0	positive	RHS, actual receiver, Idx and selected index_mut body each execute once in source order
+packed-custom.rs	1	alignment	custom indexing forms actual unaligned mutable receiver reference
+packed-primitive.rs	0	positive	erased exact primitive indexing forms no physical reference to packed array
+unsafe-fn-deny.rs	1	unsafe	unsafe function context still obeys actual-site deny policy
+unsafe-fn-block.rs	0	positive	explicit block pays actual unsafe method use despite function deny
+unsafe-fn-expect.rs	0	positive	actual unsafe method use discharges exact expected lint once
+primitive-unsafe-fn-deny.rs	0	positive	proved erased builtin forms no unsafe method call even in denied unsafe function
+primitive-unsafe-expect-unfulfilled.rs	1	lint	erased builtin does not falsely discharge an unsafe-call lint expectation
+unsafe-after-block.rs	1	unsafe	paid first use cannot lend unsafe permission to a later actual site
+raw-implicit.rs	1	source_policy	marked raw pointer implicit index borrow obeys dangerous_implicit_autorefs policy
+raw-explicit.rs	0	positive	explicit reference pays physical borrow before actual index method
+raw-policy-allow.rs	1	source_policy	allowed marked raw implicit borrowing is genuine required policy work
+raw-cap-allow.rs	1	source_policy	cap-lints=allow cannot be substituted by a compiler semantic/profile fence
+primitive-raw.rs	0	positive	proved builtin indexing through an explicit raw dereference forms no implicit method borrow

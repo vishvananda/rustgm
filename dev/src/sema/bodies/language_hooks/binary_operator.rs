@@ -206,7 +206,7 @@ impl Checker<'_> {
         &self,
         node: NodeId,
     ) -> Result<bool, Error> {
-        if self.erased_source_assignment(node)? {
+        if self.erased_source_assignment(node)? || self.erased_source_index(node) {
             return Ok(true);
         }
         if self.erased_source_unary(node)? {

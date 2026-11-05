@@ -4,6 +4,7 @@ use super::{
 };
 use crate::{
     resolve::unit::NodeKey,
+    sema::bodies::safety::PendingKind,
     sema::model::Declarations,
     support::{crates::generics::source::CallSafety, retained},
     syntax::ast::NodeId,
@@ -73,6 +74,62 @@ impl SourceCallUse {
 }
 
 impl Checker<'_> {
+    fn discharge_index_contexts(
+        &mut self,
+        pending: &mut super::super::safety::Pending,
+    ) -> Result<(), Error> {
+        let count = pending.rows.len();
+        charge(&mut self.state.steps, count).map_err(|e| self.error(self.state.body.node, e))?;
+        let mut kept = 0;
+        for index in 0..count {
+            let mut row = pending.rows[index];
+            if let PendingKind::IndexContext(kind) = row.kind {
+                charge(&mut self.state.steps, 4).map_err(|e| self.error(row.node, e))?;
+                if !matches!(self.kind(row.node), crate::syntax::ast::Kind::Index { .. }) {
+                    return Err(
+                        self.error(row.node, "deferred index safety changed its actual site")
+                    );
+                }
+                if self.erased_source_index(row.node) {
+                    continue;
+                }
+                let selected = self
+                    .facts
+                    .methods
+                    .calls
+                    .get(&self.key(row.node))
+                    .ok_or_else(|| {
+                        self.error(
+                            row.node,
+                            "deferred index safety lost its actual selected method",
+                        )
+                    })?;
+                let Some(crate::types::Kind::FunctionItem { signature, .. }) =
+                    self.facts.types.kind(selected.callable)
+                else {
+                    return Err(
+                        self.error(row.node, "deferred index safety lost its callable identity")
+                    );
+                };
+                let Some(crate::types::Kind::Function { unsafe_, .. }) =
+                    self.facts.types.kind(signature)
+                else {
+                    return Err(
+                        self.error(row.node, "deferred index safety lost its actual signature")
+                    );
+                };
+                if !unsafe_ {
+                    continue;
+                }
+                self.discharge_index_unsafe_context(row.node, kind)?;
+                row.kind = PendingKind::Discharged(kind);
+            }
+            pending.rows[kept] = row;
+            kept += 1;
+        }
+        pending.rows.truncate(kept);
+        Ok(())
+    }
     pub(in crate::sema::bodies::effect_facts) fn prepare_safety_sites(
         &mut self,
         solved: &Solved,
@@ -81,6 +138,12 @@ impl Checker<'_> {
         let Some(mut pending) = self.state.call_types.safety.take() else {
             return Ok(Vec::new());
         };
+        self.discharge_index_contexts(&mut pending)?;
+        if pending.rows.is_empty() {
+            self.state.call_types.safety = Some(pending);
+            return Ok(Vec::new());
+        }
+
         let count = pending.rows.len();
         let logarithm = count.checked_ilog2().unwrap_or(0) as usize + 1;
         let work = count
@@ -138,7 +201,13 @@ impl Checker<'_> {
                 continue;
             };
             let row = pending.rows[index];
-            if row.kind == CallSafety::Safe {
+            let PendingKind::Discharged(kind) = row.kind else {
+                return Err(self.error(
+                    node,
+                    "index lexical context was not discharged for its actual call",
+                ));
+            };
+            if kind == CallSafety::Safe {
                 return Err(self.error(node, "unsafe call retained an absent lexical obligation"));
             }
             let signature = solved
@@ -153,7 +222,7 @@ impl Checker<'_> {
                 context,
                 node,
                 signature,
-                kind: row.kind,
+                kind,
             });
         }
         if sites.len() != pending.rows.len() {

@@ -105,3 +105,33 @@ pub(in crate::sema) fn source_assignment(
     }
     selected(report, facts, site, hook)
 }
+
+/// Actual indexing uses its own no-default Idx and borrowed Output contract.
+pub(in crate::sema) fn source_index(
+    report: &Report,
+    facts: &mut Declarations,
+    site: NodeKey,
+    mutable: bool,
+) -> Result<SourceBinary, Error> {
+    let operator = if mutable {
+        Operator::IndexMut
+    } else {
+        Operator::Index
+    };
+    let actual = operator_contract::query(report, facts, site, operator)?;
+    Ok(SourceBinary {
+        definition: actual.definition,
+        method: actual.method,
+        signature: actual.signature,
+        rhs: actual.rhs.ok_or_else(|| {
+            Declarations::error(report, site, "source indexing lost its actual Idx")
+        })?,
+    })
+}
+pub(in crate::sema) fn index_available(facts: &Declarations) -> bool {
+    facts.source_bindings.as_deref().is_some_and(|catalog| {
+        catalog
+            .language(crate::support::bindings::LangItem::Index)
+            .is_some()
+    })
+}

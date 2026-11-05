@@ -4,9 +4,9 @@ use crate::syntax::ast::BlockFlavor;
 use crate::{sema::safety::Level, support::diagnostics::WarningCode};
 #[path = "safety/discharged_calls.rs"]
 mod discharged;
-pub(super) use discharged::Pending;
 #[cfg(test)]
 pub(super) use discharged::Record;
+pub(super) use discharged::{Pending, PendingKind};
 
 /// Copy this context when parking a closure body; item bodies start a fresh one.
 #[derive(Clone, Copy, Default)]
@@ -212,9 +212,17 @@ impl Checker<'_> {
         node: NodeId,
         operation: &'static str,
     ) -> Result<(), Error> {
-        if self.state.safety.blocks != 0 {
+        self.require_unsafe_context(node, operation, self.state.safety)
+    }
+    fn require_unsafe_context(
+        &mut self,
+        node: NodeId,
+        operation: &'static str,
+        context: Context,
+    ) -> Result<(), Error> {
+        if context.blocks != 0 {
             Ok(())
-        } else if self.state.safety.function {
+        } else if context.function {
             match self.facts.safety_policies.operation(self.key(node)) {
                 Level::Allow => Ok(()),
                 Level::Warn | Level::Expect => self.safety_warning(

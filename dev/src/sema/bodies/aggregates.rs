@@ -636,6 +636,26 @@ impl Checker<'_> {
         index: NodeId,
     ) -> Result<TermId, Error> {
         let array = self.autoderef(node, self.term(value)?)?;
+        if self.facts.source_bindings.is_some() {
+            if matches!(
+                self.head(node, array)?,
+                Some(
+                    Constructor::Array(_)
+                        | Constructor::ArrayTerm(_)
+                        | Constructor::ArrayInfer(_)
+                        | Constructor::Slice
+                )
+            ) {
+                self.state.pending_indexes.insert(node, array);
+            }
+            return self.source_index_operator(
+                node,
+                value,
+                index,
+                array,
+                self.mutable_language_place(node),
+            );
+        }
         let operation = match self.head(node, array)? {
             Some(Constructor::Array(length)) => Some(Operation::Index { length }),
             Some(Constructor::ArrayTerm(_) | Constructor::ArrayInfer(_)) => {
@@ -673,21 +693,31 @@ impl Checker<'_> {
         solved: &crate::types::infer::Solved,
     ) -> Result<(), Error> {
         for (&node, &array) in &self.state.pending_indexes {
-            let length =
-                crate::types::length::Length::of(&self.facts.types, solved.types[array.0 as usize])
+            if self.facts.source_bindings.is_some()
+                && !self.source_primitive_index_solved(node, solved)?
+            {
+                continue;
+            }
+            let actual = solved.types[array.0 as usize];
+            let operation = if matches!(self.facts.types.kind(actual), Some(Type::Slice(_))) {
+                Operation::IndexSlice
+            } else {
+                let length = crate::types::length::Length::of(&self.facts.types, actual)
                     .map_err(|e| self.error(node, e))?;
+                match length {
+                    crate::types::length::Length::Known(length) => Operation::Index { length },
+                    crate::types::length::Length::Parameter(length) => {
+                        Operation::IndexParameter { length }
+                    }
+                }
+            };
             let key = self.key(node);
             self.facts
                 .node_mut(key)
                 .ok_or_else(|| {
                     super::Declarations::error(self.report, key, "missing index selection")
                 })?
-                .operation = Some(match length {
-                crate::types::length::Length::Known(length) => Operation::Index { length },
-                crate::types::length::Length::Parameter(length) => {
-                    Operation::IndexParameter { length }
-                }
-            });
+                .operation = Some(operation);
         }
         self.state.pending_indexes.clear();
         Ok(())

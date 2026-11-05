@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "frozen_before_candidate": true,
+  "cases": [
+    {
+      "source": "runtime.rs",
+      "source_sha256": "17040ff70c5e28e407616fb7d7d7d1f283f05fbbdb94a3026e47f0abe4d34a27",
+      "observer": "observer.c",
+      "observer_sha256": "e22abe202ad7295868d3b32aec7d13c7a7c5a78122dd4d677afb17850845ad1c",
+      "stdout": "11 17 23 23 23 17 23 11 17\n"
+    },
+    {
+      "source": "unsized-output.rs",
+      "source_sha256": "e89c3e3bf93077b6d7873d4b20f69aa68e03bf92a0c933bdf231e5ff43186e19",
+      "observer": "unsized-observer.c",
+      "observer_sha256": "18e4c62c0a2ff201a6c43240251575d86af110ae10ab0ee12a64c1416d19ad23",
+      "stdout": "2 23\n"
+    },
+    {
+      "source": "const-valid.rs",
+      "source_sha256": "3cd34a15057bd9f3f4ca33f5b1c9bb0c66f146104f28c9fcf3b400056e70e788",
+      "observer": "constant-observer.c",
+      "observer_sha256": "6500e8fd005a77f21853c084c40e6ba80576a9395280afe30d29cb00140ad02a",
+      "stdout": "23\n"
+    },
+    {
+      "source": "provided.rs",
+      "source_sha256": "38a8d3d2c7c8936b943dc5d87747ddd1058abc23c180f9a25c45ef768f836553",
+      "observer": "provided-observer.c",
+      "observer_sha256": "244609a65fbe9a181e902fda10578885ac9d6c4ea38875a457a18bb41051aca8",
+      "stdout": "17\n"
+    },
+    {
+      "source": "array-custom-runtime.rs",
+      "observer": "array-observer.c",
+      "stdout": "11 23 11\n",
+      "source_sha256": "01aaa8f4dbd9739c372bfd5819a995af97db91ebfb8946c2d1a99e76774f8574",
+      "observer_sha256": "37dd4dee4074cffdd761b1d8d0796c7b6f44bbfb48abe556b5e4b6fa841c09a5"
+    },
+    {
+      "source": "order.rs",
+      "observer": "order-observer.c",
+      "stdout": "23 4\n",
+      "source_sha256": "9a4262a56fa69b20f5a1d058cb8c130332799b3502acc7bc4f5094402f179aaf",
+      "observer_sha256": "bdaf440f00f45f06d36568ea5435322df21d82e52045f9dcea1d4e8e501c5695"
+    },
+    {
+      "source": "primitive-changed-output.rs",
+      "source_sha256": "8db6694ff8c5bbd5e2121d60b3c00d673f1036564d68c842df55d5393477b729",
+      "observer": "changed-observer.c",
+      "observer_sha256": "619d20b76b0d4dc4c358604c8945b30b40c0dd823e29a418fb6a659ba84b9c59",
+      "stdout": "11\n"
+    }
+  ]
+}

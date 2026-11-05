@@ -168,6 +168,9 @@ impl Checker<'_> {
         Ok(None)
     }
     fn erased_solved_call(&self, node: NodeId, solved: &Solved) -> Result<bool, Error> {
+        if self.source_primitive_index_solved(node, solved)? {
+            return Ok(true);
+        }
         match self.kind(node) {
             crate::syntax::ast::Kind::Unary { operand, .. } => {
                 let actual = solved.types[self.term(operand)?.0 as usize];

@@ -1,0 +1,1125 @@
+{
+  "schema": 1,
+  "frozen_before_candidate": true,
+  "declarations": [
+    {
+      "role": "Index",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/index.rs",
+      "source_sha256": "0f287e96b26d4c02d5e44f10da624c6900d26949118fd4e06694a857346ce240",
+      "slice_text_start": 1458,
+      "slice_text_end": 2300,
+      "slice_sha256": "d890b3856daad705826181dc7fc2d9af9484168b0fd252af5c5669bc4fbb794f"
+    },
+    {
+      "role": "IndexMut",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/index.rs",
+      "source_sha256": "0f287e96b26d4c02d5e44f10da624c6900d26949118fd4e06694a857346ce240",
+      "slice_text_start": 4344,
+      "slice_text_end": 5708,
+      "slice_sha256": "4bbcf27d0993bd425b9a35824f0a9b42da7693936d2d93371208e97c3306162e"
+    },
+    {
+      "role": "Unsize",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/marker.rs",
+      "source_sha256": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575",
+      "slice_text_start": 8718,
+      "slice_text_end": 8911,
+      "slice_sha256": "1c3ca7139584d3b397ecfa690cbef3bf66c20e4781760f3f692c1818514097b6"
+    },
+    {
+      "role": "CoerceUnsized and mutable reference impl",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/unsize.rs",
+      "source_sha256": "4f0f013efec7392300e9d4415748ffd5e74e990ebb096c1b556922540d9684d6",
+      "slice_text_start": 1782,
+      "slice_text_end": 2120,
+      "slice_sha256": "a7a7a58c5b31f1e9bc1335bb2dc3a6e04c20ebecb2cd15044e5669250fc1dbfe"
+    },
+    {
+      "role": "shared reference CoerceUnsized impl",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/unsize.rs",
+      "source_sha256": "4f0f013efec7392300e9d4415748ffd5e74e990ebb096c1b556922540d9684d6",
+      "slice_text_start": 2641,
+      "slice_text_end": 2807,
+      "slice_sha256": "d65958a604b407e37ab209834c3faa23ed7299188a38df7344c193cdec1ceb46"
+    }
+  ],
+  "foundation": {
+    "source": "pa31/tests/spec/source-location/selected-tracking.rs",
+    "source_sha256": "e743b28b7f25639d0f6d6624d87bcf18452f828335b4c872977dbb41cb558995",
+    "prefix_text_end": 12977,
+    "prefix_sha256": "a10abf38d26f7363a8059db17f4b4dd87778f3fa7590ab0a8b71004794c65a5a"
+  },
+  "cases": [
+    {
+      "file": "runtime.rs",
+      "sha256": "17040ff70c5e28e407616fb7d7d7d1f283f05fbbdb94a3026e47f0abe4d34a27",
+      "prediction": {
+        "accepted": true,
+        "cause": "actual shared/mutable/default place, explicit call and generic/reference receiver",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "actual shared/mutable/default place, explicit call and generic/reference receiver",
+        "emit": "obj"
+      }
+    },
+    {
+      "file": "shared-only.rs",
+      "sha256": "901d9ea3b3550fc8b27b5a45d4082482ac4fa0c728d6d3848da502674b05e854",
+      "prediction": {
+        "accepted": true,
+        "cause": "shared Index requires no IndexMut declaration",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "shared Index requires no IndexMut declaration",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "missing-index-role.rs",
+      "sha256": "ea8d3f417d07246a66f598eef2b17c83e4cff48acf4ee2c36f2c92304d3c2547",
+      "prediction": {
+        "accepted": false,
+        "cause": "same-spelling ordinary trait grants no shared index syntax",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "same-spelling ordinary trait grants no shared index syntax",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "missing-index-impl.rs",
+      "sha256": "94cbe8e2f51de498e4c684f2b28aeff30d1229ea027f607303af4ad55e681789",
+      "prediction": {
+        "accepted": false,
+        "cause": "actual Index has no implementation for Word/Key",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "actual Index has no implementation for Word/Key",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "missing-mut-role.rs",
+      "sha256": "3fbf584e1fc8faaeeb6debf293378e5987e816affb9e22e7f8f914fa43093550",
+      "prediction": {
+        "accepted": false,
+        "cause": "same-spelling mutable trait grants no mutable indexing",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "same-spelling mutable trait grants no mutable indexing",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "missing-mut-impl.rs",
+      "sha256": "5311ef63b6b247128ce6ae15413c6706f262b8a13e0c183466fd7f8402ab0ec1",
+      "prediction": {
+        "accepted": false,
+        "cause": "mutable place requires actual IndexMut implementation",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "mutable place requires actual IndexMut implementation",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "missing-parent-impl.rs",
+      "sha256": "38e893036702a628511bf510f9b696121c434143be347ad5c820f851fbe1d746",
+      "prediction": {
+        "accepted": false,
+        "cause": "IndexMut retains actual Index supertrait requirement",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "IndexMut retains actual Index supertrait requirement",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "wrong-idx.rs",
+      "sha256": "38ebcdca772da4704a73a7f57f9a5806748a011e2dae4239ec9a5666c1c3ea98",
+      "prediction": {
+        "accepted": false,
+        "cause": "wrong Idx does not select Key implementation",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "wrong Idx does not select Key implementation",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "wrong-output.rs",
+      "sha256": "5a884e035f0b4ffb0ae25de540de9f3e21c5311fea9d1f285ae61a7b1f229972",
+      "prediction": {
+        "accepted": false,
+        "cause": "implementation reference result disagrees with actual associated Output",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "implementation reference result disagrees with actual associated Output",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "wrong-shared-receiver.rs",
+      "sha256": "625675a531785260041e387587b51a49afa04b00edc0abf8b3231df395b3688c",
+      "prediction": {
+        "accepted": false,
+        "cause": "shared operation requires shared receiver signature",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "shared operation requires shared receiver signature",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "wrong-mut-receiver.rs",
+      "sha256": "49e6c7d856fc598cd702d99a43633005b349b7f2ab7ab1d87e656813c9074dfe",
+      "prediction": {
+        "accepted": false,
+        "cause": "mutable operation requires mutable receiver signature",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "mutable operation requires mutable receiver signature",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "wrong-mut-result.rs",
+      "sha256": "d41e307fe1f6491e9c7a42c9d1b65ec22d2e16179bc652a3b709433e7dd33e39",
+      "prediction": {
+        "accepted": false,
+        "cause": "mutable operation must return mutable reference",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "mutable operation must return mutable reference",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "extra-mut-output.rs",
+      "sha256": "b1eeaaa083ba444c286f0644f9080e0c19650c8726b297f4b9450b656e27a0a4",
+      "prediction": {
+        "accepted": false,
+        "cause": "IndexMut inherits actual Index Output rather than declaring another",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "IndexMut inherits actual Index Output rather than declaring another",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "wrong-shared-lifetime.rs",
+      "sha256": "622ade6eb878c3fc7b9fd7e0f4185ed60a9de498c14e4ddcb413dcddefa82ca6",
+      "prediction": {
+        "accepted": false,
+        "cause": "implementation result lifetime differs from receiver-bound result",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "implementation result lifetime differs from receiver-bound result",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "wrong-mut-lifetime.rs",
+      "sha256": "aad7d100db9396e71eeefb3eebf2d4418531ca4ef19e53ff2b75f3cf3a7901e5",
+      "prediction": {
+        "accepted": false,
+        "cause": "mutable result cannot change actual receiver lifetime",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "mutable result cannot change actual receiver lifetime",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "unsafe-shared.rs",
+      "sha256": "f5448a14510ec8fd2410a5671be12c313eb2bb65f4b73eed12e97156615e56bc",
+      "prediction": {
+        "accepted": false,
+        "cause": "unsafe index use outside unsafe context",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "unsafe index use outside unsafe context",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "unsafe-shared-allowed.rs",
+      "sha256": "83b7380e89d7e89389314d57325f1bb2871619c05f18368c369d043c41b4a82b",
+      "prediction": {
+        "accepted": true,
+        "cause": "actual unsafe method permission comes from use context",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "actual unsafe method permission comes from use context",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "unsafe-mutable.rs",
+      "sha256": "8044ab135bd78319d27d4ebd28976006cb3bd92ee225b931d5d89f0e80680b27",
+      "prediction": {
+        "accepted": false,
+        "cause": "unsafe mutable index use outside unsafe context",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "unsafe mutable index use outside unsafe context",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "unsafe-mutable-allowed.rs",
+      "sha256": "5b11772cfc51f84af653fa5410e2b446d6ca18562ce760bdde61f4af9c0bb387",
+      "prediction": {
+        "accepted": true,
+        "cause": "unsafe mutable syntax preserves actual method permission",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "unsafe mutable syntax preserves actual method permission",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "immutable-store.rs",
+      "sha256": "270d5abac3f4da483727f2d921a085103e981d7fc01d73ca7f73fa4893bb761f",
+      "prediction": {
+        "accepted": false,
+        "cause": "mutable place cannot borrow immutable binding",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "mutable place cannot borrow immutable binding",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "shared-base-store.rs",
+      "sha256": "6a01d0e7281453bedc0081135c38b40e7d0771da151587ff3ffdc8c22894e5b9",
+      "prediction": {
+        "accepted": false,
+        "cause": "shared base reference does not grant mutable indexing",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "shared base reference does not grant mutable indexing",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "shared-alias.rs",
+      "sha256": "455c294847346c21239b4a6d45f0173d5f8610a7d92f8e3f26a7e6a783594274",
+      "prediction": {
+        "accepted": false,
+        "cause": "shared returned place remains live across conflicting mutable index",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "shared returned place remains live across conflicting mutable index",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "mutable-alias.rs",
+      "sha256": "885d3a575a9621732d63be23202f4a2cb7791f10eb3dcf24cc171f4d288e7c7c",
+      "prediction": {
+        "accepted": false,
+        "cause": "unique returned place prevents opposing mutable index",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "unique returned place prevents opposing mutable index",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "opposing-index-argument.rs",
+      "sha256": "d707ab00b9178505de3b7c93d6d37cebea6127c36af92b9ed73f0badce640212",
+      "prediction": {
+        "accepted": false,
+        "cause": "index mutable receiver activates before opposing argument borrow",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "index mutable receiver activates before opposing argument borrow",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "escape.rs",
+      "sha256": "01bc776e2d1237488c1da66f81e94b09a93a276cc20a545f69cc77dd42bfa93f",
+      "prediction": {
+        "accepted": false,
+        "cause": "returned place cannot outlive local receiver",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "returned place cannot outlive local receiver",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "move-idx.rs",
+      "sha256": "852732155939f627f14662764a8a42a55fb5073a203c3b9010d77227d8fa69c3",
+      "prediction": {
+        "accepted": false,
+        "cause": "noncopy Idx moves once",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "noncopy Idx moves once",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "lifetime.rs",
+      "sha256": "2e2d222bc16723a187421b796e1f6057501ff7ddcb8d897d748538db78ebe074",
+      "prediction": {
+        "accepted": true,
+        "cause": "returned place preserves actual receiver lifetime",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "returned place preserves actual receiver lifetime",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "field-projection.rs",
+      "sha256": "5914eed003a79aa217c16834962ce58468206f25e1cef66377786619469b43c4",
+      "prediction": {
+        "accepted": true,
+        "cause": "actual index returned nominal place supports field write",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "actual index returned nominal place supports field write",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "mutable-method-refinement.rs",
+      "sha256": "22a4663f2e3220d0d851906585dabec28cde295de29de9dbe501dfbdf60552d2",
+      "prediction": {
+        "accepted": true,
+        "cause": "late mutable method demand refines one existing Index selection to IndexMut",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "late mutable method demand refines one existing Index selection to IndexMut",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "move-output.rs",
+      "sha256": "ccc36be60f6e9aa6cc0f4c6b12f2485e0e4b690702c0264aeaa81d580e194b33",
+      "prediction": {
+        "accepted": false,
+        "cause": "noncopy Output cannot move from indexed borrowed place",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "noncopy Output cannot move from indexed borrowed place",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "unsized-idx-header.rs",
+      "sha256": "1f349faf37e8bded4cc722e1b9244f8fa59ad8dd8b88a17b7778089771340e81",
+      "prediction": {
+        "accepted": true,
+        "cause": "actual Idx and Output both permit unsized type arguments",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "actual Idx and Output both permit unsized type arguments",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "unsized-output.rs",
+      "sha256": "e89c3e3bf93077b6d7873d4b20f69aa68e03bf92a0c933bdf231e5ff43186e19",
+      "prediction": {
+        "accepted": true,
+        "cause": "actual unsized Output returned reference retains metadata and mutable place",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "actual unsized Output returned reference retains metadata and mutable place",
+        "emit": "obj"
+      }
+    },
+    {
+      "file": "const-nonconst.rs",
+      "sha256": "498ff27dc33e65fb19884d5e3927fd303312fc033f2f7993fb60a9b30b0fba72",
+      "prediction": {
+        "accepted": false,
+        "cause": "const indexing requires actual const implementations",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "const indexing requires actual const implementations",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "const-valid.rs",
+      "sha256": "3cd34a15057bd9f3f4ca33f5b1c9bb0c66f146104f28c9fcf3b400056e70e788",
+      "prediction": {
+        "accepted": true,
+        "cause": "genuine const mutable and parent Index proof execute actual bodies",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "genuine const mutable and parent Index proof execute actual bodies",
+        "emit": "obj"
+      }
+    },
+    {
+      "file": "const-parent-missing.rs",
+      "sha256": "25238b226894bad6398ba7003a24615315372f4344b182522623f4ed1d3f83aa",
+      "prediction": {
+        "accepted": false,
+        "cause": "const IndexMut retains actual const Index parent",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "const IndexMut retains actual const Index parent",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "primitive-no-role.rs",
+      "sha256": "9f2cf371425e63997e4d8d4035da50b893159adf63d03ce2338520edb145c92c",
+      "prediction": {
+        "accepted": true,
+        "cause": "raw builtin array usize indexing without role",
+        "uncertain": true
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "explicitly typed array builtin usize indexing still requires actual role and implementation (E0608)",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "primitive-no-impl.rs",
+      "sha256": "29b94b050fb30fbb3e9a228d7187a19cd1cbac8aba85eedfe2c371dbac317cc6",
+      "prediction": {
+        "accepted": true,
+        "cause": "builtin array usize indexing with roles but no source impl",
+        "uncertain": true
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "explicitly typed array builtin usize indexing still requires actual role and implementation (E0608)",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "primitive-bool.rs",
+      "sha256": "a9a8b4a1f6d4eac1ebbed6a3b6b4656ac156345a5d701f1844453dee5e765013",
+      "prediction": {
+        "accepted": false,
+        "cause": "array bool index has no implementation",
+        "uncertain": true
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "array bool index has no implementation",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "primitive-u8.rs",
+      "sha256": "14ba24465069647b2bdc904302b95a6cc5f529cdb27627a3591a05af01f045df",
+      "prediction": {
+        "accepted": false,
+        "cause": "array u8 index has no implementation",
+        "uncertain": true
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "array u8 index has no implementation",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "primitive-custom-key.rs",
+      "sha256": "13630f580b518e73d80f6cbb7944ef56e386182a5eac93aab1c5f6663be08a9b",
+      "prediction": {
+        "accepted": true,
+        "cause": "actual custom array/nominal Idx implementation executes",
+        "uncertain": true
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "actual custom array/nominal Idx implementation executes",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "primitive-custom-u8.rs",
+      "sha256": "c215ee65ff137e65f722f7d8c821ed967d035e7e27c9625ef099216e14b9eff0",
+      "prediction": {
+        "accepted": true,
+        "cause": "non-usize numeric Idx can select actual array implementation",
+        "uncertain": true
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "non-usize numeric Idx can select actual array implementation",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "primitive-body.rs",
+      "sha256": "fe4ec88b78c619d6191a6ccf76c4fbad4e0b60469352e037c0166badfd664c61",
+      "prediction": {
+        "accepted": true,
+        "cause": "builtin usize array syntax differs from actual explicit custom method",
+        "uncertain": true
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "exact builtin usize array syntax and actual explicit body; object emission needs genuine panic_bounds_check",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "provided.rs",
+      "sha256": "38a8d3d2c7c8936b943dc5d87747ddd1058abc23c180f9a25c45ef768f836553",
+      "prediction": {
+        "accepted": true,
+        "cause": "actual provided method body and explicit premises execute via empty impl",
+        "uncertain": true
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "actual provided method body and explicit premises execute via empty impl",
+        "emit": "obj"
+      }
+    },
+    {
+      "file": "provided-unsafe.rs",
+      "sha256": "f2364816c9fb9560c42050bf04a016ae7ebe0e92883a88a9b6d3f4edd5b6d95a",
+      "prediction": {
+        "accepted": false,
+        "cause": "provided defining body must pay actual unsafe helper call",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "provided defining body must pay actual unsafe helper call",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "bound-8.rs",
+      "sha256": "df4d0d0bcd321c79dc4bb06c235d311ada0006dc168a5dea9c0508f2f8b969fe",
+      "prediction": {
+        "accepted": true,
+        "cause": "bounded repeated actual index demands",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "bounded repeated actual index demands",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "bound-32.rs",
+      "sha256": "d691906c5da82ea4f430cf13ed833827cc0dbee7c6fe6a021c9cf3cfb0ea3526",
+      "prediction": {
+        "accepted": true,
+        "cause": "bounded repeated actual index demands",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "bounded repeated actual index demands",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "bound-128.rs",
+      "sha256": "b15c51b077ec0c861c857d83edc9d565815e286263ee3ba33cce7dce6336cb9b",
+      "prediction": {
+        "accepted": true,
+        "cause": "bounded repeated actual index demands",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "bounded repeated actual index demands",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "static-shared-impl.rs",
+      "sha256": "5147364b6247501bdceeb156560d8b6a49951cfbd35d53c1865f6ce4dc3fc075",
+      "prediction": {
+        "accepted": true,
+        "cause": "stronger actual impl static return remains compatible with trait receiver lifetime",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "stronger actual impl static return remains compatible with trait receiver lifetime",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "static-mut-impl.rs",
+      "sha256": "5b055d21ed80b2f39f037d8a712f4c4cd057ed29168bf1e3a70d882ca6ecdfe2",
+      "prediction": {
+        "accepted": true,
+        "cause": "stronger actual impl static return remains compatible with trait receiver lifetime",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "stronger actual impl static return remains compatible with trait receiver lifetime",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "primitive-unsafe-builtin.rs",
+      "sha256": "6beea8d1f4dfb2f9a5b3247c49db9532b88a2e31fcf577cf1a5478f34069f3a5",
+      "prediction": {
+        "accepted": true,
+        "cause": "builtin exact primitive index does not execute unrelated actual unsafe method",
+        "uncertain": true
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "builtin exact primitive index does not execute unrelated actual unsafe method",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "primitive-unsafe-explicit.rs",
+      "sha256": "ce7d245d3473615316c008a6c0b1ec0844d89e58ef5b8090c1c9eb7051394b2b",
+      "prediction": {
+        "accepted": false,
+        "cause": "explicit actual unsafe index method still requires unsafe context",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "explicit actual unsafe index method still requires unsafe context",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "primitive-unsafe-explicit-allowed.rs",
+      "sha256": "da73014242ba36b61b06d185e07f255307cf990e66dbf595d9c78822d50e5610",
+      "prediction": {
+        "accepted": true,
+        "cause": "explicit unsafe index method accepts paid unsafe context",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "explicit unsafe index method accepts paid unsafe context",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "primitive-const-nonconst.rs",
+      "sha256": "11dd2791c77e43fb2d241b7d817c1bca44343157ec60893e041de004659bb382",
+      "prediction": {
+        "accepted": false,
+        "cause": "builtin primitive const index retains actual const implementation proof",
+        "uncertain": true
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "builtin primitive const index retains actual const implementation proof",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "primitive-const-valid.rs",
+      "sha256": "08db83ec7540dd00cacba0676369c441340d012440521dd922c8267842e907ad",
+      "prediction": {
+        "accepted": true,
+        "cause": "builtin const indexing with genuine const impl",
+        "uncertain": true
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "builtin const indexing with genuine const impl",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "primitive-changed-output.rs",
+      "sha256": "8db6694ff8c5bbd5e2121d60b3c00d673f1036564d68c842df55d5393477b729",
+      "prediction": {
+        "accepted": true,
+        "cause": "changed actual output preserves custom return semantics rather than element erasure",
+        "uncertain": true
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "changed actual output preserves custom return semantics rather than element erasure",
+        "emit": "obj"
+      }
+    },
+    {
+      "file": "primitive-unsuffixed-u8.rs",
+      "sha256": "bd25368d621921b06d6eb30157e1b846f11120fee38efcdae53227ebc5b18357",
+      "prediction": {
+        "accepted": true,
+        "cause": "unsuffixed numeric index with only genuine u8 impl",
+        "uncertain": true
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "unsuffixed numeric index with only genuine u8 impl",
+        "emit": "obj"
+      }
+    },
+    {
+      "file": "primitive-unsuffixed-usize.rs",
+      "sha256": "409d1080ed17610912ef3ebe1f0c07857b93d11c89ac7255bd634437c9fd2aeb",
+      "prediction": {
+        "accepted": true,
+        "cause": "unsuffixed index with genuine usize impl",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "unsuffixed index with genuine usize impl",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "array-custom-runtime.rs",
+      "sha256": "01aaa8f4dbd9739c372bfd5819a995af97db91ebfb8946c2d1a99e76774f8574",
+      "prediction": {
+        "accepted": true,
+        "cause": "actual custom nominal and numeric array indexing reads/writes returned place",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "actual custom nominal and numeric array indexing reads/writes returned place",
+        "emit": "obj"
+      }
+    },
+    {
+      "file": "primitive-unsuffixed-both.rs",
+      "sha256": "acfaf1f4e884888582fcc119214bcb36355c399adfd8f654e7a3bd9a8c6f1a90",
+      "prediction": {
+        "accepted": false,
+        "cause": "multiple actual integer Idx impls retain ordinary unsuffixed inference",
+        "uncertain": true
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "multiple actual integer Idx impls retain ordinary unsuffixed inference",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "order.rs",
+      "sha256": "9a4262a56fa69b20f5a1d058cb8c130332799b3502acc7bc4f5094402f179aaf",
+      "prediction": {
+        "accepted": true,
+        "cause": "RHS, actual receiver, Idx and selected index_mut body each execute once in source order",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "RHS, actual receiver, Idx and selected index_mut body each execute once in source order",
+        "emit": "obj"
+      }
+    },
+    {
+      "file": "packed-custom.rs",
+      "sha256": "6f728581e7064e6a16a1a9ee068d72d266ac86399644e8404e67ce95d69f01bd",
+      "prediction": {
+        "accepted": false,
+        "cause": "custom indexing forms actual unaligned mutable receiver reference",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "custom indexing forms actual unaligned mutable receiver reference",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "packed-primitive.rs",
+      "sha256": "0704554baf95a4b18c9ea25cc82841e8e0470aa292737ad8adecad5b7bc3e937",
+      "prediction": {
+        "accepted": true,
+        "cause": "erased exact primitive indexing forms no physical reference to packed array",
+        "uncertain": true
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "erased exact primitive indexing forms no physical reference to packed array",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "unsafe-fn-deny.rs",
+      "sha256": "c44a1a617d0b9ea70d18893134fc7e3fdc8d27a9b51921874fb9f9e6da1bea6e",
+      "prediction": {
+        "accepted": false,
+        "cause": "unsafe function context still obeys actual-site deny policy",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "unsafe function context still obeys actual-site deny policy",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "unsafe-fn-block.rs",
+      "sha256": "ad6ff7c5c97208ddc37ce0b121976e10da292ac7cf7d30bf2be080ccf637dd74",
+      "prediction": {
+        "accepted": true,
+        "cause": "explicit block pays actual unsafe method use despite function deny",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "explicit block pays actual unsafe method use despite function deny",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "unsafe-fn-expect.rs",
+      "sha256": "d8a31540b60a0eed0fedc5279d56e226eb8c5e73416dd9e0d094a611829cb061",
+      "prediction": {
+        "accepted": true,
+        "cause": "actual unsafe method use discharges exact expected lint once",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "actual unsafe method use discharges exact expected lint once",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "primitive-unsafe-fn-deny.rs",
+      "sha256": "beb3ab3fe79b8576ee3923b4f31e61cc0693a16c993e90fb6088a7e03db5bb1e",
+      "prediction": {
+        "accepted": true,
+        "cause": "proved erased builtin forms no unsafe method call even in denied unsafe function",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "proved erased builtin forms no unsafe method call even in denied unsafe function",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "primitive-unsafe-expect-unfulfilled.rs",
+      "sha256": "710783b8fac440d24ad8b7e110527e634312eac631893e3c791c09c95a9effd4",
+      "prediction": {
+        "accepted": false,
+        "cause": "erased builtin does not falsely discharge an unsafe-call lint expectation",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "erased builtin does not falsely discharge an unsafe-call lint expectation",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "unsafe-after-block.rs",
+      "sha256": "2ad8d140b8f8f1943b78a4c08f4027da73ad6ba930aa767667c24db992480716",
+      "prediction": {
+        "accepted": false,
+        "cause": "paid first use cannot lend unsafe permission to a later actual site",
+        "uncertain": false
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "paid first use cannot lend unsafe permission to a later actual site",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "raw-implicit.rs",
+      "sha256": "8fdb5d3486fd0d6d06cb208a8a5ed0625508ee76d9fbcf162f33691b108d86aa",
+      "prediction": {
+        "accepted": false,
+        "cause": "marked raw pointer implicit index borrow obeys dangerous_implicit_autorefs policy",
+        "uncertain": true
+      },
+      "reference": {
+        "accepted": false,
+        "cause": "marked raw pointer implicit index borrow obeys dangerous_implicit_autorefs policy",
+        "emit": "metadata"
+      },
+      "requirement": "PA31/40: marked raw-pointer implicit receiver and dangerous_implicit_autorefs policy; existing source guard is compilation/profile work, not semantic parity",
+      "candidate": {
+        "accepted": false,
+        "category": "source_policy",
+        "semantic_parity": false
+      }
+    },
+    {
+      "file": "raw-explicit.rs",
+      "sha256": "146a2f58e781539adbccc308ba036cbbde0f5c9769942360aaf2a9480a974e57",
+      "prediction": {
+        "accepted": true,
+        "cause": "explicit reference pays physical borrow before actual index method",
+        "uncertain": true
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "explicit reference pays physical borrow before actual index method",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "category": "positive",
+        "semantic_parity": true
+      }
+    },
+    {
+      "file": "raw-policy-allow.rs",
+      "sha256": "1fa24ce4a267dffb0f29919f1d490aba65aedfb7fffa55f73d8c8551731d14ea",
+      "prediction": {
+        "accepted": true,
+        "cause": "allowed marked raw implicit borrowing is genuine required policy work",
+        "uncertain": true
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "allowed marked raw implicit borrowing is genuine required policy work",
+        "emit": "metadata"
+      },
+      "requirement": "PA31/40: marked raw-pointer implicit receiver and dangerous_implicit_autorefs policy; existing source guard is compilation/profile work, not semantic parity",
+      "candidate": {
+        "accepted": false,
+        "category": "source_policy",
+        "semantic_parity": false
+      }
+    },
+    {
+      "file": "raw-cap-allow.rs",
+      "sha256": "8fdb5d3486fd0d6d06cb208a8a5ed0625508ee76d9fbcf162f33691b108d86aa",
+      "prediction": {
+        "accepted": true,
+        "cause": "cap-lints=allow cannot be substituted by a compiler semantic/profile fence",
+        "uncertain": true
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "cap-lints=allow cannot be substituted by a compiler semantic/profile fence",
+        "emit": "metadata",
+        "cap_lints": "allow"
+      },
+      "requirement": "PA31/40: marked raw-pointer implicit receiver and dangerous_implicit_autorefs policy; existing source guard is compilation/profile work, not semantic parity",
+      "candidate": {
+        "accepted": false,
+        "category": "source_policy",
+        "semantic_parity": false
+      }
+    },
+    {
+      "file": "primitive-raw.rs",
+      "sha256": "a78205f503f704828c26823fec7b875622dceee73fca20eb81431b1998a776e0",
+      "prediction": {
+        "accepted": true,
+        "cause": "proved builtin indexing through an explicit raw dereference forms no implicit method borrow",
+        "uncertain": true
+      },
+      "reference": {
+        "accepted": true,
+        "cause": "proved builtin indexing through an explicit raw dereference forms no implicit method borrow",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "category": "positive",
+        "semantic_parity": true
+      }
+    }
+  ],
+  "corrections": [
+    {
+      "reference": "reference-v1",
+      "reason": "Strong static impl results are valid positives; lifetime opponents now mutate actual trait result. Typed primitive missing-role/impl reject E0608. Initial ordinary unsized output needs genuine Unsize/CoerceUnsized foundation. Primitive usize object needs panic_bounds_check; retained metadata boundary while genuine custom arrays execute actual source methods."
+    },
+    {
+      "reference": "reference-v2",
+      "reason": "Primitive followup generator cut at an earlier Location export instead of its own export, omitting trailing genuine Location/Index declarations; preserve malformed setup and reconstruct complete authored source before candidate. Full genuine Unsize/CoerceUnsized foundation/native2 23 already passes."
+    },
+    {
+      "reference": "reference-v4",
+      "reason": "Make unsized Idx explicitly an unused header-only generic; lifetime positive adds concrete caller for real generic original/instance lowering. Expected Rust semantics unchanged; rerun exact sources before candidate."
+    }
+  ],
+  "inventory_counts": {
+    "total": 73,
+    "semantic_parity_targets": 70,
+    "marked_raw_policy_cases": 3,
+    "rust_positive_policy_gaps": 2
+  }
+}

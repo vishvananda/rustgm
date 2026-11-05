@@ -1,4 +1,5 @@
 //! One authenticated source operator walk supplies borrowed declaration facts.
+mod indexing;
 use super::{Declaration, DefId, Error, LangItem, Report, headers};
 use crate::{
     resolve::{model::DefKind, unit::NodeKey},
@@ -13,6 +14,7 @@ pub(in crate::sema) struct SourceOperator {
     pub method: DefId,
     pub signature: TypeId,
     pub rhs: Option<TypeId>,
+    pub output: Option<DefId>,
 }
 #[derive(Clone, Copy)]
 pub(super) enum Operator {
@@ -38,12 +40,16 @@ pub(super) enum Operator {
     BitOrAssign,
     ShlAssign,
     ShrAssign,
+    Index,
+    IndexMut,
 }
 impl Operator {
     const fn has_rhs(self) -> bool {
         matches!(
             self,
-            Self::Shl
+            Self::Index
+                | Self::IndexMut
+                | Self::Shl
                 | Self::BitOr
                 | Self::Add
                 | Self::Sub
@@ -80,8 +86,27 @@ impl Operator {
                 | Self::ShrAssign
         )
     }
+    const fn mode(self) -> Mode {
+        if self.assignment() {
+            Mode::Assignment
+        } else {
+            match self {
+                Self::Index => Mode::Index { mutable: false },
+                Self::IndexMut => Mode::Index { mutable: true },
+                _ => Mode::Value,
+            }
+        }
+    }
+    const fn indexing(self) -> bool {
+        matches!(self.mode(), Mode::Index { .. })
+    }
+    const fn own_output(self) -> bool {
+        matches!(self.mode(), Mode::Value | Mode::Index { mutable: false })
+    }
     const fn role(self) -> LangItem {
         match self {
+            Self::Index => LangItem::Index,
+            Self::IndexMut => LangItem::IndexMut,
             Self::Not => LangItem::Not,
             Self::Neg => LangItem::Neg,
             Self::Shl => LangItem::Shl,
@@ -108,6 +133,8 @@ impl Operator {
     }
     const fn method(self) -> &'static str {
         match self {
+            Self::Index => "index",
+            Self::IndexMut => "index_mut",
             Self::Not => "not",
             Self::Neg => "neg",
             Self::Shl => "shl",
@@ -132,6 +159,19 @@ impl Operator {
             Self::Div => "div",
         }
     }
+}
+#[derive(Clone, Copy)]
+enum Mode {
+    Value,
+    Assignment,
+    Index { mutable: bool },
+}
+struct Method {
+    definition: DefId,
+    output: Option<DefId>,
+    projection_owner: DefId,
+    rhs: Option<TypeId>,
+    mode: Mode,
 }
 enum Failure {
     Header(Error),
@@ -227,7 +267,9 @@ fn checked(
     let declaration = catalog.language(operator.role()).ok_or(match operator {
         Operator::Not => "source ! requires its actual Not language declaration",
         Operator::Neg => "source - requires its actual Neg language declaration",
-        Operator::Shl
+        Operator::Index
+        | Operator::IndexMut
+        | Operator::Shl
         | Operator::BitOr
         | Operator::Add
         | Operator::Sub
@@ -262,18 +304,33 @@ fn checked(
     work.charge(6 * usize::from(operator.has_rhs()))?;
     let rhs = rhs_parameter(facts, &header, operator)?;
     if header.written.parameters != usize::from(operator.has_rhs())
-        || header.written.supertraits != 0
-        || header.members.len() != if operator.assignment() { 1 } else { 2 }
+        || header.written.supertraits != usize::from(matches!(operator, Operator::IndexMut))
+        || header.members.len() != if operator.own_output() { 2 } else { 1 }
     {
         return Err("source unary requires its actual Output and operation members without extra parameters or supertraits".into());
     }
     let (output, method) = members(report, facts, declaration, &header, operator, work)?;
-    let signature = method_signature(report, facts, &header, output, method, rhs, work)?;
+    let inherited = if operator.indexing() {
+        indexing::parent(report, facts, &header, operator, rhs, work)?
+    } else {
+        None
+    };
+    let output = output.or(inherited.map(|(_, output)| output));
+    let contract = Method {
+        definition: method,
+        output,
+        projection_owner: inherited.map_or(header.definition, |(owner, _)| owner),
+        rhs,
+        mode: operator.mode(),
+    };
+    work.charge(4)?;
+    let signature = method_signature(report, facts, &header, &contract, work)?;
     Ok(SourceOperator {
         definition: declaration.definition,
         method,
         signature,
         rhs,
+        output,
     })
 }
 fn rhs_parameter(
@@ -281,6 +338,9 @@ fn rhs_parameter(
     header: &headers::Trait<'_>,
     operator: Operator,
 ) -> Result<Option<TypeId>, Failure> {
+    if operator.indexing() {
+        return indexing::parameter(facts, header).map(Some);
+    }
     if !operator.has_rhs() {
         return Ok(None);
     }
@@ -383,7 +443,7 @@ fn members(
         });
         count += 1;
     }
-    if count != if operator.assignment() { 1 } else { 2 } {
+    if count != if operator.own_output() { 2 } else { 1 } {
         return Err("source unary has an incomplete actual member list".into());
     }
     let mut output = None;
@@ -401,7 +461,7 @@ fn members(
             return Err("source unary member belongs to another current source owner".into());
         }
         match (definition.kind, report.package.names.get(definition.name)) {
-            (DefKind::TypeAlias, "Output") if !operator.assignment() && output.is_none() => {
+            (DefKind::TypeAlias, "Output") if operator.own_output() && output.is_none() => {
                 output_item(
                     report,
                     definition
@@ -421,10 +481,10 @@ fn members(
         }
     }
     Ok((
-        if operator.assignment() {
-            None
-        } else {
+        if operator.own_output() {
             Some(output.ok_or("source unary has no Output")?)
+        } else {
+            None
         },
         method.ok_or("source unary has no operation method")?,
     ))
@@ -446,22 +506,29 @@ fn method_signature(
     report: &Report,
     facts: &Declarations,
     header: &headers::Trait<'_>,
-    output: Option<DefId>,
-    method: DefId,
-    rhs: Option<TypeId>,
+    contract: &Method,
     work: &mut Work,
 ) -> Result<TypeId, Failure> {
-    work.charge(4)?;
+    let Method {
+        definition: method,
+        output,
+        rhs,
+        mode,
+        ..
+    } = *contract;
     let origin = report.resolution.definitions[method.0 as usize]
         .node
         .ok_or("source unary method has no source origin")?;
     current_header(report, facts, method, origin)?;
-    method_syntax(report, facts, method, origin, output.is_none())?;
+    let safety = method_syntax(report, facts, method, origin, mode)?;
+    if matches!(mode, Mode::Index { .. }) {
+        indexing::target_policy(report, facts, method, safety)?;
+    }
     let function = facts
         .declaration_header(method)?
         .ok_or("source unary has no completed method header")?;
     if function.declaration.source() != Some(origin)
-        || (output.is_some() && (function.body.is_some() || function.universals != 0))
+        || (matches!(mode, Mode::Value) && (function.body.is_some() || function.universals != 0))
         || facts
             .generics
             .parameters
@@ -476,7 +543,7 @@ fn method_signature(
         bound_regions,
         parameters,
         result,
-        unsafe_: false,
+        unsafe_,
         convention: Convention::RUST,
     }) = facts.types.kind(function.signature)
     else {
@@ -484,7 +551,20 @@ fn method_signature(
             "source unary method requires a safe Rust signature without late binders".into(),
         );
     };
-    if let Some(output) = output {
+    if unsafe_ != safety {
+        return Err("source operator signature differs from its actual source safety".into());
+    }
+    if matches!(mode, Mode::Index { .. }) {
+        indexing::signature(
+            facts,
+            header,
+            contract,
+            parameters,
+            result,
+            bound_regions,
+            work,
+        )?;
+    } else if let Some(output) = output {
         let inputs = [header.self_type, rhs.unwrap_or(header.self_type)];
         if bound_regions != 0
             || facts.types.list(parameters) != Some(&inputs[..=usize::from(rhs.is_some())])
@@ -553,8 +633,8 @@ fn method_syntax(
     facts: &Declarations,
     method: DefId,
     origin: NodeKey,
-    provided: bool,
-) -> Result<(), Failure> {
+    mode: Mode,
+) -> Result<bool, Failure> {
     let unit = report.package.unit(origin.file);
     let Syntax::Item(index) = unit.configured.ast.node(origin.node).kind else {
         return Err("source unary method lost its current function item".into());
@@ -580,8 +660,16 @@ fn method_syntax(
         .get(&method)
         .and_then(|&index| facts.functions.get(index))
         .ok_or("source unary method has no actual source function")?;
-    if (!provided && body.is_some())
-        || flags != crate::syntax::item::FunctionFlags::default()
+    let expected = crate::syntax::item::FunctionFlags {
+        safety: if matches!(mode, Mode::Index { .. }) {
+            flags.safety
+        } else {
+            crate::syntax::item::Safety::Default
+        },
+        ..Default::default()
+    };
+    if (matches!(mode, Mode::Value) && body.is_some())
+        || flags != expected
         || function.definition != method
         || function.node != origin
         || function.parameters != parameters
@@ -594,7 +682,7 @@ fn method_syntax(
     {
         return Err("source unary method changed its current safe synchronous header".into());
     }
-    Ok(())
+    Ok(flags.safety == crate::syntax::item::Safety::Unsafe)
 }
 
 fn assignment_signature(

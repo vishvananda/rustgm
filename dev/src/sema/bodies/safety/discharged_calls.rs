@@ -1,11 +1,16 @@
-//! Sparse call facts are captured only after the actual lexical check succeeds.
+//! Paid calls and deferred Index contexts stay distinct until actual use is known.
 use super::{Checker, Error, NodeId};
 use crate::support::{crates::generics::source::CallSafety, retained};
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(in crate::sema::bodies) enum PendingKind {
+    Discharged(CallSafety),
+    IndexContext(CallSafety),
+}
 #[derive(Clone, Copy)]
 pub(in crate::sema::bodies) struct Record {
     pub node: NodeId,
-    pub kind: CallSafety,
+    pub kind: PendingKind,
 }
 #[derive(Default)]
 pub(in crate::sema::bodies) struct Pending {
@@ -22,19 +27,52 @@ impl Checker<'_> {
         node: NodeId,
     ) -> Result<(), Error> {
         self.require_unsafe(node, "call to unsafe function requires an unsafe context")?;
+        let kind = self.lexical_call_context();
+        if kind == CallSafety::Safe {
+            return Err(self.error(node, "completed unsafe call lost its lexical context"));
+        }
+        self.retain_safety_record(node, PendingKind::Discharged(kind))
+    }
+    fn lexical_call_context(&self) -> CallSafety {
+        if self.state.safety.blocks != 0 {
+            CallSafety::ExplicitUnsafeBlock
+        } else if self.state.safety.function {
+            CallSafety::UnsafeFunction
+        } else {
+            CallSafety::Safe
+        }
+    }
+    pub(in crate::sema::bodies) fn retain_index_unsafe_context(
+        &mut self,
+        node: NodeId,
+    ) -> Result<(), Error> {
+        if !matches!(self.kind(node), crate::syntax::ast::Kind::Index { .. }) {
+            return Err(self.error(node, "deferred index safety changed its actual syntax"));
+        }
+        self.retain_safety_record(node, PendingKind::IndexContext(self.lexical_call_context()))
+    }
+    pub(in crate::sema::bodies) fn discharge_index_unsafe_context(
+        &mut self,
+        node: NodeId,
+        kind: CallSafety,
+    ) -> Result<(), Error> {
+        let context = super::Context {
+            blocks: u32::from(kind == CallSafety::ExplicitUnsafeBlock),
+            function: kind == CallSafety::UnsafeFunction,
+        };
+        self.require_unsafe_context(
+            node,
+            "call to unsafe function requires an unsafe context",
+            context,
+        )
+    }
+    fn retain_safety_record(&mut self, node: NodeId, kind: PendingKind) -> Result<(), Error> {
         let Some(catalog) = self.facts.source_bindings.as_deref() else {
             return Ok(());
         };
         catalog
             .require_provider_report(self.report)
             .map_err(|e| self.error(node, e))?;
-        let kind = if self.state.safety.blocks != 0 {
-            CallSafety::ExplicitUnsafeBlock
-        } else if self.state.safety.function {
-            CallSafety::UnsafeFunction
-        } else {
-            return Err(self.error(node, "completed unsafe call lost its lexical context"));
-        };
         let (length, capacity, old) = self
             .state
             .call_types

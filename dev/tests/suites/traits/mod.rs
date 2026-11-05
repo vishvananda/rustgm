@@ -94,3 +94,6 @@ mod mutops;
 pub(crate) mod observed_program;
 #[path = "../../opfamily.rs"]
 mod opfamily;
+
+#[path = "../../idxops.rs"]
+mod idxops;

@@ -169,11 +169,28 @@ impl Checker<'_> {
 
     /// This slice supports safe-reference source methods, not the still-required
     /// `dangerous_implicit_autorefs` lint on a synthesized raw-pointer borrow.
-    fn check_raw_implicit_receiver(
+    pub(in crate::sema::bodies) fn check_raw_implicit_receiver(
+        &mut self,
+        call: NodeId,
+        receiver: NodeId,
+        method: DefId,
+    ) -> Result<(), Error> {
+        self.raw_implicit_receiver(call, receiver, method, false)
+    }
+    pub(in crate::sema::bodies) fn check_published_raw_receiver(
+        &mut self,
+        call: NodeId,
+        receiver: NodeId,
+        method: DefId,
+    ) -> Result<(), Error> {
+        self.raw_implicit_receiver(call, receiver, method, true)
+    }
+    fn raw_implicit_receiver(
         &mut self,
         call: NodeId,
         mut receiver: NodeId,
         method: DefId,
+        published: bool,
     ) -> Result<(), Error> {
         use crate::syntax::ast::{Kind, Unary};
         loop {
@@ -190,8 +207,16 @@ impl Checker<'_> {
                     op: Unary::Dereference,
                     operand,
                 } => {
-                    let term = self.term(operand)?;
-                    if matches!(self.head(call, term)?, Some(Constructor::Pointer { .. })) {
+                    let pointer = if published {
+                        matches!(
+                            self.facts.types.kind(self.ty(operand)?),
+                            Some(crate::types::Kind::Pointer { .. })
+                        )
+                    } else {
+                        let term = self.term(operand)?;
+                        matches!(self.head(call, term)?, Some(Constructor::Pointer { .. }))
+                    };
+                    if pointer {
                         if !matches!(
                             self.facts.no_implicit_autorefs(self.report, method)?,
                             crate::sema::header_attributes::ContractKnowledge::KnownAbsent
@@ -368,7 +393,9 @@ impl Checker<'_> {
             let key = self.key(*node);
             let actual = solved.types[pending.actual.0 as usize];
             let expected = solved.types[pending.expected.0 as usize];
-            if self.source_scalar_assignment_solved(*node, solved)? {
+            if self.source_scalar_assignment_solved(*node, solved)?
+                || self.source_primitive_index_solved(*node, solved)?
+            {
                 continue;
             }
             if self.source_scalar_unary_type(*node, actual)

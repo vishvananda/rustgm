@@ -7,6 +7,11 @@ use crate::{
 
 pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Result<(), Error> {
     for role in LangItem::DECLARATIONS {
+        if matches!(role, LangItem::Index | LangItem::IndexMut) {
+            // Ordinary headers supply no operation permission: actual indexing
+            // still needs the checked method, parent/output and normal call proof.
+            continue;
+        }
         if matches!(role, LangItem::UnsafeCell | LangItem::UnsafePinned) {
             // The authenticated nominal producer installs interior storage with
             // the actual shape. Ordinary trait and body proofs remain required.
