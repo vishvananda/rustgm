@@ -1,0 +1,105 @@
+{
+  "schema": 1,
+  "qualified_source_commit": "5d21dc789",
+  "cli_sha256": "adb64d8ba36cc861b56e21f3f1a0198d8420c8af069f987a2ec457ab25960f9c",
+  "backend_lock_sha256": "f60c0760f39f1f554486f5a1eb990d2c0fef663fbd1bff944cd1eef8a014a581",
+  "receipts": {
+    "obj/qualification/fast/1793857551636098609/receipt.json": "6f9baf9bfef298e21edab7f1e060ab73b66bb44455f8cbf718488216adcf5141",
+    "obj/parallel/core-operators-cell-v1/qualification-v1/receipt.json": "4e526064ed8561c4fef33f17a2bf8e1220a8b4e478e43f1847e670f73b35d4f5",
+    "obj/parallel/core-operators-cell-v1/qualification-v1/core/result.json": "0007d0b7c1821e2da9f8d6db5dc1829c7e5daf74c3eea3d1dfd7c31f64dc6dc8",
+    "obj/parallel/core-operators-cell-v1/performance-v1/receipt.json": "70617a13402ebc4542da50f366391d2978be6c06ef633a9a95e8ae731db8a876"
+  },
+  "native_observers": 13,
+  "source_parity_cases": {
+    "assignment_operators": 137,
+    "unsafe_cell": 15
+  },
+  "retained_rust_positive_gaps": [
+    "pa31/tests/spec/source-assign-ten/ordinary-retained-policy.rs"
+  ],
+  "original_core": {
+    "infrastructure_failure": false,
+    "classification": "observed original-core blocker",
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "adb64d8ba36cc861b56e21f3f1a0198d8420c8af069f987a2ec457ab25960f9c",
+    "expected_cli_source": "explicit caller input",
+    "status": 1,
+    "first_error": "ERROR: file 92: 1801: source compiler language item semantic contract is not implemented",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 18.796011858968996,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "cca7c4a826ad470a10141a6ca20649738b57d34060c1a7b008b3d2251a82df44",
+      "whole-core.openat": "b17399b3a010914b16a6d28db7879144320e64e74664ccb563b8085a14ca38ad",
+      "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+    },
+    "receipt_sha256": "0007d0b7c1821e2da9f8d6db5dc1829c7e5daf74c3eea3d1dfd7c31f64dc6dc8",
+    "frontier": {
+      "source": {
+        "path": "library/core/src/ops/index.rs",
+        "bytes": 5709,
+        "sha256": "0f287e96b26d4c02d5e44f10da624c6900d26949118fd4e06694a857346ce240",
+        "first_open_order": 92
+      },
+      "file": 92,
+      "byte": 1801,
+      "line": 59,
+      "context": "ias = \"[\")]\n#[doc(alias = \"[]\")]\n#[rustc_const_unstable(feature = \"const_index\", issue = \"143775\")]\npub const trait Index<Idx: ?Sized> {\n    /// The returned type after indexing.\n    #[stable(feature = \"rust1\", since = \"1.0.0\")]\n    #[rustc_diagnostic_item = \"IndexOutput\"]\n    type Output: ?Sized;\n\n    /// Performs the indexing (`container[index]`) operation.\n    ///\n    /// # Panics\n    ///\n    /// May panic if the index is out of bounds.\n    #[stable(feature = \"rust1\", sinc"
+    }
+  },
+  "performance": {
+    "interpretation": "Exclusive frozen ordinary controls only; retain every A/A and ABBA observation. No whole-library throughput, async runtime, peak-memory or general speedup claim. Changed assignment work separately has19 charged steps per use.",
+    "scales": [
+      {
+        "width": 1024,
+        "source_sha256": "783d30852ce081f6699ac8404584e6dcf01e511e14716df7497cb67f5d1ace96",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.0116141786456911,
+            "ABBA_B_over_A": 0.9632493275741849
+          },
+          {
+            "AA_second_over_first": 1.0115115867729811,
+            "ABBA_B_over_A": 1.0034656327384879
+          },
+          {
+            "AA_second_over_first": 1.0327650408278046,
+            "ABBA_B_over_A": 0.903085851184098
+          }
+        ],
+        "paired_median_B_over_A": 0.9632493275741849
+      },
+      {
+        "width": 4096,
+        "source_sha256": "9f5ca894e474569a5033b27b8508936790ca745d34c1e370abe066fbf4086bba",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.0900243769837115,
+            "ABBA_B_over_A": 1.0212812881560103
+          },
+          {
+            "AA_second_over_first": 0.9955715447484003,
+            "ABBA_B_over_A": 1.0404362344694582
+          },
+          {
+            "AA_second_over_first": 1.0049028497398205,
+            "ABBA_B_over_A": 0.9968783232173352
+          }
+        ],
+        "paired_median_B_over_A": 1.0212812881560103
+      }
+    ]
+  },
+  "preceding_full_ci": {
+    "run": 41972795786,
+    "commit": "e18dd4d1b",
+    "state": "success",
+    "scope": "All preceding async/catalog repair gates; this joined checkpoint requires a separate successor."
+  }
+}

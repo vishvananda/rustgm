@@ -11,15 +11,28 @@ and the existing target/configuration/cap/finite limits preserved. LIB-155 is
 the independently demonstrated source Deref/Target prerequisite. Use the frozen
 Pin source and receiver packets, not source substitutions or empty futures.
 
-Current joined checkpoint: workers8623b6368 and1321a2862 plus Root's helper
-consumer pass67 exact public tests,1193 PA19 cases, strict selected Clippy and
-native operator/transport/ordinary-Drop observers. Immutable CLI a39bdeda
-advances unchanged722-input admission to LIB-158 AddAssign, ops/arith.rs768,
-file84 byte22308. Genuine async runtime and every original artifact remain due.
-Both workers' preceding implementations are integrated on mainc509736bb. Full
-successor41968654685 is running; predecessor8c29aeae3 passes every full gate.
-The same warm trees now resume the next scoped lanes below. Root's two new
-private target/registration controls remain successor-CI-pending.
+Current joined checkpoint: Root6d581dab6 and operator5d21dc789 pass12 exact
+public controls,1193 PA19 cases, strict selected Clippy/audits and13 current
+backend native observers. CLIadb64d8b advances unchanged722-input source admission
+to LIB-162 Index, ops/index.rs59, file92 byte1801,18.7960s/375opens. All ten
+assignment families and actual provided bodies have137 semantic parity targets,
+9 native observers and19 charged steps/use; one Rust-positive annotation-policy
+gap is retained separately. UnsafeCell has15 semantic targets and4 natives,
+including the unchanged original layout failure now repaired with typed source
+nullable shapes. See [joined evidence](source-operators-cell.md).
+
+Full41972795786 one18dd4d1b is terminal success with every gate for the preceding
+async/catalog-size repair. Its two new helper controls and all six exact layout
+repairs are qualified. The current operator/storage join needs its own full
+successor. Source admission does not complete async execution, whole semantic
+checking or original core/alloc/std artifacts.
+
+The same warm trees now run actual Index/IndexMut source-place contracts and
+compiler-operation/opaque/associated metadata recipes. Root integrates and owns
+the original build and remaining source policy/storage prerequisites. Ordinary
+frozen1024/4096 paired medians are B/A0.963/1.021, with A/A0.996–1.090; no broad
+speedup or regression conclusion follows. Resource and complete-goal scope stay
+unchanged.
 
 On2026-11-05, main05185a6e8 integrates the completed source nominal lane with
 actual Future/async signatures, Deref/receivers and current CPPGM backend.
@@ -36,7 +49,7 @@ sharing the existing operator kernel avoids serial one-spelling checkpoints.
 | --- | --- | --- | --- |
 | Integrator | `/mnt/vizier/rustgm-scratch/rustgm-pa26-work` | Shared type/body/protocol review, CI, original core and main publication | Preserve actual helpers/opaque/Pin/trait/ownership proof and integrate real consumers; follow unchanged core admission through checking/export and executable artifacts |
 | Future/state foundation, following source contracts | `/mnt/vizier/rustgm-scratch/rustgm-async-work` | Propose real constructor/poll/capture/drop data and authentic generic compiler-operation export recipe; PA31/42/43/29 | Concrete typed API/identity joins precede central edits. Deferred symbolic recipe publication and executable state/poll are distinct. Full await/cancellation/recursive cleanup and original artifacts remain requirements |
-| Assignment operators, following five binary families | `/mnt/vizier/rustgm-scratch/rustgm-pa29-work` | PA31 ten actual assignment families and ordinary mutable-place consumers | Real &mut Self/Rhs/unit method proof, actual const/default/effect and move/loan/evaluation-once semantics, current-backend operand-dependent native effects and bounded work; no synthetic Output or scalar bypass |
+| Index/IndexMut, following the ten assignment families | `/mnt/vizier/rustgm-scratch/rustgm-pa29-work` | PA31 actual shared/mutable indexing and returned-reference place consumers | Real Idx/Output/parent/lifetime and const/safety/body proof, ordinary Places/evaluation/loans, primitive eligibility and native effects; no synthetic Output or role-based unwrapping |
 
 Workers own their new modules, fixtures and lane checkpoint documents. Propose
 central type/body enum, declaration scheduler, source-role ledger, shared
