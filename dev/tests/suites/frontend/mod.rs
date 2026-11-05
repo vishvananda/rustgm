@@ -57,6 +57,8 @@ mod forced_dyn_contracts;
 mod fragments;
 #[path = "../../fundamental_contracts.rs"]
 mod fundamental_contracts;
+#[path = "../../fused_sources.rs"]
+mod fused_sources;
 #[path = "../../future_helpers.rs"]
 mod future_helpers;
 #[path = "../../future_source.rs"]

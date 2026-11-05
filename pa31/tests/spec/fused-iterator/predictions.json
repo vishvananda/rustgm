@@ -1,0 +1,111 @@
+{
+  "state": "frozen before independent or candidate observations",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "original": {
+    "path": "library/core/src/iter/traits/marker.rs",
+    "sha256": "855c9e3a90fe4f1b689c0458c7d2c02bef0c32c776fcc1888c437830c72e457e",
+    "destination": "original.rs"
+  },
+  "cases": [
+    {
+      "file": "whole.rs",
+      "sha256": "3af819eb5ff295959096e4f4a721a3f8b6bf54ceec33a226b44a72e6bad51485",
+      "expected_status": 0
+    },
+    {
+      "file": "native.rs",
+      "sha256": "d15c9540217047edd9d65f7ee7f4cf970174fa6f2004f7f869370a16747f652b",
+      "expected_status": 0
+    },
+    {
+      "file": "forward.rs",
+      "sha256": "99edc965c2abab3c435109c972b7a7f807e6905199df03d781d97239950a2505",
+      "expected_status": 0
+    },
+    {
+      "file": "supertrait.rs",
+      "sha256": "783856b1ab56e5c10ba0155b82840e25fc9253fdcb5a72c41f35a85592876d6d",
+      "expected_status": 0
+    },
+    {
+      "file": "unused.rs",
+      "sha256": "4c9251a19d91336c9c064af7764fb7837e5f3491bc539626167ca27702ee1d4d",
+      "expected_status": 0
+    },
+    {
+      "file": "unused-unsafe.rs",
+      "sha256": "1551a0cfacbdb604879507571d95342fea9054c87c60763f251bdfeff3e49151",
+      "expected_status": 0
+    },
+    {
+      "file": "unused-members.rs",
+      "sha256": "906021013bdedb4541b8a985f6d024b3c3c97f63d85b502c51be998fa43f38df",
+      "expected_status": 0
+    },
+    {
+      "file": "ordinary.rs",
+      "sha256": "fc341ad881c57a78e7bfd0049cdeeabdceed99c042f40c3474570430dd00fe13",
+      "expected_status": 0
+    },
+    {
+      "file": "renamed.rs",
+      "sha256": "c86d5cb433729116fccc3e78c023e609afc8374184d6b169fbe01ff1aa0787d7",
+      "expected_status": 0
+    },
+    {
+      "file": "duplicate.rs",
+      "sha256": "1ccb9e8b8b97ddf03ed56149673bfb97a320dcbe8ad60b040ec83ad93fc0931f",
+      "expected_status": 1
+    },
+    {
+      "file": "wrong-arity.rs",
+      "sha256": "d8d8773682466f05fb3b9afd26bbb036555c95ef4f21fc255545108cdbc57caa",
+      "expected_status": 1
+    },
+    {
+      "file": "wrong-target.rs",
+      "sha256": "cce8190dc99887ba40da6d59e521eaf05930691c0c8b5ccfac448e6a3c922e81",
+      "expected_status": 1
+    },
+    {
+      "file": "no-iterator.rs",
+      "sha256": "210e9f1b7d5c6f1057acbfa9ab983f761776e558c244daa5d749e54e17ad87d8",
+      "expected_status": 1
+    },
+    {
+      "file": "no-fused.rs",
+      "sha256": "9683c6667c9a432388499a271423b1f717e018e976036c4bc0d6a8f3b31bf14e",
+      "expected_status": 1
+    },
+    {
+      "file": "scalar.rs",
+      "sha256": "b1bd06c99852350476fb1c14905229cbc59eb23d6058ad31bb29f5afcb0f3de7",
+      "expected_status": 1
+    },
+    {
+      "file": "wrong-item.rs",
+      "sha256": "4353a520fba64351f2799755f37788e95e09125d627b54ae1104c972766fa719",
+      "expected_status": 1
+    },
+    {
+      "file": "bad-body.rs",
+      "sha256": "7a4b90a6d8cad9e81a8ba1dce4800b05b574e1cacccea767450c89c8842fd6f1",
+      "expected_status": 1
+    }
+  ],
+  "native": [
+    {
+      "file": "native.rs",
+      "observer": "observe.c",
+      "stdout": "23 0 0\n",
+      "status": 0
+    },
+    {
+      "file": "ordinary.rs",
+      "observer": "ordinary.c",
+      "stdout": "23\n",
+      "status": 0
+    }
+  ],
+  "fixture_repair": "Reference-v1 retained: whole original also contains TrustedLen:[const]Iterator. Foundation now declares the actual const Iterator and enables const_trait_impl; all predicted outcomes unchanged. No candidate observation preceded repair. Reference-v2 also retained: staged_api requires the actual Iterator const stability annotation, now present. Predictions remain unchanged. Reference-v3 metadata matches all17 predictions but native emission requires the genuine Freeze lang item; the no_core foundation now declares it. Outcomes and original bytes unchanged."
+}

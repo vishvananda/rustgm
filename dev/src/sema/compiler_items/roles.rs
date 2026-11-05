@@ -80,7 +80,7 @@ impl Catalog {
     }
 }
 
-const TRAIT_ROLES: [LangItem; 33] = [
+const TRAIT_ROLES: [LangItem; 34] = [
     LangItem::Clone,
     LangItem::Copy,
     LangItem::UseCloned,
@@ -114,6 +114,7 @@ const TRAIT_ROLES: [LangItem; 33] = [
     LangItem::AsyncFnMut,
     LangItem::AsyncFnOnce,
     LangItem::AsyncFnKindHelper,
+    LangItem::FusedIterator,
 ];
 
 pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
@@ -394,6 +395,7 @@ fn canonical_header_only(role: LangItem) -> bool {
             | LangItem::AsyncFnMut
             | LangItem::AsyncFnOnce
             | LangItem::AsyncFnKindHelper
+            | LangItem::FusedIterator
     )
 }
 

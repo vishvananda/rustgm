@@ -283,6 +283,15 @@
       "adaptation": "none; original bytes retained, whole.rs embeds them after the authored no_core provider foundation",
       "oracle": "check-pass",
       "owning_assignment": "pa31"
+    },
+    {
+      "repository": "rust",
+      "path": "library/core/src/iter/traits/marker.rs",
+      "destination": "pa31/tests/spec/fused-iterator/original.rs",
+      "sha256": "855c9e3a90fe4f1b689c0458c7d2c02bef0c32c776fcc1888c437830c72e457e",
+      "adaptation": "none; full original bytes retained and embedded after the authored no_core provider foundation",
+      "oracle": "check-pass",
+      "owning_assignment": "pa31"
     }
   ]
 }

@@ -1,0 +1,166 @@
+{
+  "scope": "actual original FusedIterator source and ordinary implementation/iterator consumers",
+  "state": "focused source/body/native checks passed; original-core source frontier advanced",
+  "cli_sha256": "8d4a4ff3239d13bfe4577b7924d0bf17add167dce9f7c132f269167bc5a0cc54",
+  "receipts": {
+    "gate": {
+      "path": "obj/parallel/fused-iterator-v1/gate-v2/receipt.json",
+      "sha256": "4dfe23140db9cb5d0540944b19660c179c7122fb31752a17b12cdaa8eb0582d2"
+    },
+    "reference": {
+      "path": "obj/parallel/fused-iterator-v1/reference-v4/receipt.json",
+      "sha256": "084d753b60c1cbc9f094fadd5133583b94dad6e039640eae514b8a4f531d9cce"
+    },
+    "qualification": {
+      "path": "obj/parallel/fused-iterator-v1/qualification-v1/receipt.json",
+      "sha256": "0b1d052d3eb6faec4c0ea1cae1772d8753449efc2f7b76b1bde957dbe211dfe9"
+    },
+    "performance": {
+      "path": "obj/parallel/fused-iterator-v1/performance-v1/receipt.json",
+      "sha256": "ba4aeb25b886ba0a6eb6644485305a98174f412dcfcbc33855b0fac29f67cc29"
+    }
+  },
+  "sources": {
+    "dev/src/sema/compiler_items/roles.rs": "5e3ea2b25f839356f33aec175e7bc8cf84119bf3554d5951c6883dce3f230e96",
+    "dev/src/sema/compiler_items/vocab_semantics.rs": "9cbe6176ba644b34d605d9b99be235684b3082b9ffda4e2ae2cc3ad10c9722fc",
+    "dev/tests/invariants/vocab_claims.rs": "7f3f6a3746ebef9a8201b13351eac6908ffeb76aa7aca48f70eff7b5472b38e5",
+    "dev/tests/suites/frontend/mod.rs": "87c081786b45c3ca02ecc5e2a9b507c3df9e186c1b260df411e275dd96fe6b19",
+    "pa31/README.md": "e7ce643eb49dc102b4a6bbd37ddda2e49553b8f293ddd2052be57b96f1fdee2c",
+    "pa42/README.md": "f1d00ca237800872f7a5cc362f28b7ad91fa5ec1be73880d88384e1f1b7ee437",
+    "third_party/sources.json": "3f4b3aba41892b5e69c535e85f8a9d588a5a58ad026a7680cdc3da90a93096f9",
+    "dev/tests/fused_sources.rs": "08e21652edfa779a82a54015522ab9b7486a471cc1e77d02d1d0c1fb276f423c",
+    "pa31/tests/spec/fused-iterator/README.md": "f5bbd29e18cdd9cd7557c09e2a8a13fa4a700b284d1f280817808bb46f0186b6",
+    "pa31/tests/spec/fused-iterator/bad-body.rs": "7a4b90a6d8cad9e81a8ba1dce4800b05b574e1cacccea767450c89c8842fd6f1",
+    "pa31/tests/spec/fused-iterator/cases.tsv": "db3bbdf30e1a578e54a7cfb2b5724f7ebb955b59778a556cb12b80cbe1a12b1a",
+    "pa31/tests/spec/fused-iterator/duplicate.rs": "1ccb9e8b8b97ddf03ed56149673bfb97a320dcbe8ad60b040ec83ad93fc0931f",
+    "pa31/tests/spec/fused-iterator/forward.rs": "99edc965c2abab3c435109c972b7a7f807e6905199df03d781d97239950a2505",
+    "pa31/tests/spec/fused-iterator/native.rs": "d15c9540217047edd9d65f7ee7f4cf970174fa6f2004f7f869370a16747f652b",
+    "pa31/tests/spec/fused-iterator/no-fused.rs": "9683c6667c9a432388499a271423b1f717e018e976036c4bc0d6a8f3b31bf14e",
+    "pa31/tests/spec/fused-iterator/no-iterator.rs": "210e9f1b7d5c6f1057acbfa9ab983f761776e558c244daa5d749e54e17ad87d8",
+    "pa31/tests/spec/fused-iterator/observe.c": "78ab3bce42f4080c31e911eb5b7fc5599354db24e9e3d08754bb8eec4d869bc6",
+    "pa31/tests/spec/fused-iterator/ordinary.c": "f152987ee3ef4b66da2865c80c10e0b0fb0c0ec0151e1931603a01acaa155c4c",
+    "pa31/tests/spec/fused-iterator/ordinary.rs": "fc341ad881c57a78e7bfd0049cdeeabdceed99c042f40c3474570430dd00fe13",
+    "pa31/tests/spec/fused-iterator/original.rs": "855c9e3a90fe4f1b689c0458c7d2c02bef0c32c776fcc1888c437830c72e457e",
+    "pa31/tests/spec/fused-iterator/predictions.json": "f142ae2765c062f560121c316194e2a4957b14e7436c716afe5f5d985c399b87",
+    "pa31/tests/spec/fused-iterator/renamed.rs": "c86d5cb433729116fccc3e78c023e609afc8374184d6b169fbe01ff1aa0787d7",
+    "pa31/tests/spec/fused-iterator/scalar.rs": "b1bd06c99852350476fb1c14905229cbc59eb23d6058ad31bb29f5afcb0f3de7",
+    "pa31/tests/spec/fused-iterator/supertrait.rs": "783856b1ab56e5c10ba0155b82840e25fc9253fdcb5a72c41f35a85592876d6d",
+    "pa31/tests/spec/fused-iterator/unused-members.rs": "906021013bdedb4541b8a985f6d024b3c3c97f63d85b502c51be998fa43f38df",
+    "pa31/tests/spec/fused-iterator/unused-unsafe.rs": "1551a0cfacbdb604879507571d95342fea9054c87c60763f251bdfeff3e49151",
+    "pa31/tests/spec/fused-iterator/unused.rs": "4c9251a19d91336c9c064af7764fb7837e5f3491bc539626167ca27702ee1d4d",
+    "pa31/tests/spec/fused-iterator/whole.rs": "3af819eb5ff295959096e4f4a721a3f8b6bf54ceec33a226b44a72e6bad51485",
+    "pa31/tests/spec/fused-iterator/wrong-arity.rs": "d8d8773682466f05fb3b9afd26bbb036555c95ef4f21fc255545108cdbc57caa",
+    "pa31/tests/spec/fused-iterator/wrong-item.rs": "4353a520fba64351f2799755f37788e95e09125d627b54ae1104c972766fa719",
+    "pa31/tests/spec/fused-iterator/wrong-target.rs": "cce8190dc99887ba40da6d59e521eaf05930691c0c8b5ccfac448e6a3c922e81"
+  },
+  "selected": {
+    "suite_frontend": [
+      "fused_sources::fused_source_roles_and_consumers_match_actual_language_outcomes",
+      "lending_calls::actual_async_call_headers_and_bodies_match_frozen_language_outcomes",
+      "lending_calls::automatic_async_calls_require_real_future_capture_abi_and_lifetime_proofs",
+      "future_source::actual_future_roles_preserve_unused_alternatives_and_projection_consumers"
+    ]
+  },
+  "new_source_body_outcomes": 17,
+  "total_selected_outcomes": 77,
+  "new_native_programs": 2,
+  "original_core": {
+    "infrastructure_failure": false,
+    "classification": "observed original-core blocker",
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "8d4a4ff3239d13bfe4577b7924d0bf17add167dce9f7c132f269167bc5a0cc54",
+    "expected_cli_source": "explicit caller input",
+    "status": 1,
+    "first_error": "ERROR: file 108: 636: source compiler language item semantic contract is not implemented",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 19.64636548201088,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "15b46f1fc63061c8fff4dcef98d5d48a90d931b6b9b0555455355fd9ede273e9",
+      "whole-core.openat": "d866da3b8d66b0f1d3ea3b211bb2318c2f255bc2324e6925a0a765c28db7c85a",
+      "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+    }
+  },
+  "performance": {
+    "observations": 54,
+    "scales": [
+      {
+        "family": "ordinary",
+        "width": 1024,
+        "source_sha256": "783d30852ce081f6699ac8404584e6dcf01e511e14716df7497cb67f5d1ace96",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.055334629992184,
+            "ABBA_B_over_A": 1.0019498554967528
+          },
+          {
+            "AA_second_over_first": 1.1350770209512464,
+            "ABBA_B_over_A": 0.841823793263963
+          },
+          {
+            "AA_second_over_first": 1.2042947412044926,
+            "ABBA_B_over_A": 0.9249767782718901
+          }
+        ],
+        "candidate_median_seconds": 0.24859087500954047,
+        "paired_median_B_over_A": 0.9249767782718901
+      },
+      {
+        "family": "ordinary",
+        "width": 4096,
+        "source_sha256": "9f5ca894e474569a5033b27b8508936790ca745d34c1e370abe066fbf4086bba",
+        "blocks": [
+          {
+            "AA_second_over_first": 0.7859778075010676,
+            "ABBA_B_over_A": 1.2288545079591882
+          },
+          {
+            "AA_second_over_first": 1.0535496922464718,
+            "ABBA_B_over_A": 1.2406551120791476
+          },
+          {
+            "AA_second_over_first": 0.9894834768702786,
+            "ABBA_B_over_A": 0.9516927407592043
+          }
+        ],
+        "candidate_median_seconds": 1.04591722949408,
+        "paired_median_B_over_A": 1.2288545079591882
+      },
+      {
+        "family": "source-deref",
+        "width": 1,
+        "source_sha256": "a8d1ba6308aec550d17a0bf8223d03d2b3f7e36a45f078b9f5e06aaf050b54fe",
+        "blocks": [
+          {
+            "AA_second_over_first": 0.9707078460361649,
+            "ABBA_B_over_A": 0.9312591910297336
+          },
+          {
+            "AA_second_over_first": 1.193116412330484,
+            "ABBA_B_over_A": 1.1935709972923412
+          },
+          {
+            "AA_second_over_first": 1.2115517746690334,
+            "ABBA_B_over_A": 1.066183759671014
+          }
+        ],
+        "candidate_median_seconds": 0.054631234001135454,
+        "paired_median_B_over_A": 1.066183759671014
+      }
+    ],
+    "output_equality": true,
+    "interpretation": "All wall observations retained, including4096 B/A1.229 and AA.786. Regression/noise unresolved; no speedup or regression-absence claim."
+  },
+  "pending": [
+    "private vocabulary fence update and successor full CI",
+    "genuine gen coroutine builtin/state/exhaustion/cancellation and complete transport",
+    "stable-host follow-up of noisy4096 wall-time ratio at next meaningful performance checkpoint",
+    "whole assignment releases and original core/alloc/std artifacts"
+  ]
+}

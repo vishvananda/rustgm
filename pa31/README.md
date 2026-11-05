@@ -45,6 +45,12 @@ ABI/safety and higher-ranked/scoped lifetime contracts. Broader demanded method
 profiles, const and metadata remain required. Original core now stops at the
 real AsyncDrop declaration; see PA42/43's source-signature/destruction boundary.
 
+The [FusedIterator source packet](tests/spec/fused-iterator/README.md) retains the
+actual pinned marker source and ordinary Iterator/Item implementation proof.
+Language-role completion grants no blanket implementation or generated body;
+genuine gen coroutine state/exhaustion and authenticated transport remain separate
+PA42/43/29 requirements. This finite source contract does not release this PA.
+
 The [Pin source packet](tests/spec/pin-source/README.md) qualifies an actual
 prerequisite: nominal identity and ordinary `new_unchecked` source bodies retain
 real unsafe/const, move/borrow and field-destruction checks. Pinned receivers,
