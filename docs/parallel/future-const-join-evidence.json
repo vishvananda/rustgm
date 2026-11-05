@@ -1,0 +1,457 @@
+{
+  "state": "qualified-development-integration",
+  "production_commit": "f69425402a9c333cae8e198d073edd4089a3d057",
+  "worker_commits": {
+    "future-applications": {
+      "worker": "f189332ef",
+      "joined": "a2301ba87"
+    },
+    "future-selection": {
+      "worker": "673828d13",
+      "joined": "e966faaf2"
+    },
+    "const-destruction": {
+      "worker": "1e5b5f485",
+      "joined": "d4c8081b3"
+    },
+    "native-const-instance": {
+      "worker": "12eef81a8",
+      "joined": "104eed897"
+    }
+  },
+  "source_sha256": {
+    "dev/src/body/copy_requirements/materialized.rs": "73f4b1f01c99bc1ad6f43db000451720bf7c5a706824751ed3562eca8ec0ef4e",
+    "dev/src/body/copy_requirements/materialized/target_scope.rs": "71d9b4b51e11f88db0b6754ccf3b79498857569a3d0885509974ffa2545e8f5a",
+    "dev/src/body/coroutines.rs": "b6a666b9c654f2a574eb16bc766197b5b320caa9142504d2301024e9791da2e5",
+    "dev/src/body/defining_cleanups/claims.rs": "7303ac038ebbb5842d6d0ef0d4a38e5fb22479f72785dcfa8f4e756651f9d9be",
+    "dev/src/body/defining_cleanups/mod.rs": "73ace58223c470f938954128941e700d1328273d979e6fe0cfe7bbcaeb64e93f",
+    "dev/src/body/defining_cleanups/proofs.rs": "07f4282b0fad1b7e29b48ffb123cf189270f52fe24189b1852196748730645e3",
+    "dev/src/body/dispatch.rs": "1b10208dbe5702de02fc65688a4e00b3ee31c61706a501273317cf8af32e18e4",
+    "dev/src/body/dispatch/non_type_enclosing.rs": "d56e98565b7371eda7f73146e224f8436347a3b861591ae343b9e02725ba3403",
+    "dev/src/body/instantiate.rs": "8fc3ddb047dca72254e9453441a6a44a98b6419828083b78193d4755db892c96",
+    "dev/src/body/instantiate/anonymous.rs": "ea912e1bb257cde7bebaf166e10df043df5a7b0226659277de2d15af4eddfc29",
+    "dev/src/body/instantiate/asyncbody.rs": "df52a95eca0c0edbc6feca656266f6cd069a7c8c135e805a098e6d8429f0c86e",
+    "dev/src/body/instantiate/inputs.rs": "4ca8ccaacbe9013db016f57ce6adf691a9f01984e819b3d2cbb5fbad6795979a",
+    "dev/src/borrow/check.rs": "a68bf56ee522dce3bfb14890c9234f6b15df40d3a745594ba1fb0e9e45faecc1",
+    "dev/src/borrow/check/cstage.rs": "0c20801f088535b2e07a368c7a62f37f3a2aa0243d2f2e9ba888bcaff3a6c998",
+    "dev/src/borrow/check/incremental.rs": "63419570cd5cb2eba801a22dab0254430ba940d5c7062d4485275e212afa07f2",
+    "dev/src/borrow/check/incremental/cstage.rs": "29b85eee54cda742a231ec0bfbc852df94af9183bfb8f0638c4ac88fe3c22d72",
+    "dev/src/borrow/destruction/schedule.rs": "546a11cf2e8b1e4b5300e9cb439eebc86b71bb12a7eb5877954ab90727fd66bf",
+    "dev/src/borrow/loans.rs": "bea38a98a9376eac687eb03de879504e7881fec7974f288ca9f026a86107b518",
+    "dev/src/borrow/loans/seal.rs": "08eeb6e68cf519356efc361a66c5a3ac1bb35e228ee46830ce2d9805399d93e7",
+    "dev/src/borrow/loans/templates.rs": "949b31bdb99bbe1c3a25a9829d6673f25f066dba295f10aa0a35ea1f209d9652",
+    "dev/src/borrow/loans/templates/staged.rs": "2dc5ce6eb719efb08856f31135f6db2fffda6ce9d73bc03550009a3c1a3d6f82",
+    "dev/src/borrow/templates.rs": "271fdf2a50b8257e9333912d11a629c34e65282abeda111aefd01202a089beb4",
+    "dev/src/borrow/templates/context.rs": "5522a8df294c94ce8bb6b6b9d50a261e2589144f48dcce655475100b50202cea",
+    "dev/src/borrow/templates/staged.rs": "ed96c5a291c5664317bfcd24a7df4b3e509d98832c62033b49a626d73aa3cc2c",
+    "dev/src/lower/context.rs": "83f35191eaf7685b17fa4fde3ebc6dd1dfde10cb0c1073316fa25c3a0928fe81",
+    "dev/src/lower/instances.rs": "fe24e4bcba0cfdb8d885b3c89f65531ef101f63c074ce0cddfd57a55198ce885",
+    "dev/src/lower/instances/demand.rs": "0f705a0318192b91b59de30c0ae2047eaa3853df57727d6d4c2221c984b6a357",
+    "dev/src/lower/instances/proof.rs": "8ae4246364834a1812923f6d577ccbc9db9d72bbedba614a9346ad0949798f11",
+    "dev/src/lower/intrinsics/atomic.rs": "4b1c44769d8ffe8fc8467925b4eb5cb7d77d09eb54ad3ba3bde26a5bb3cc0da7",
+    "dev/src/lower/intrinsics/atomic/comparison.rs": "e41056c2b4b68d20ccff5be713dce5de211b8b6fcb8859ccbf62027bad3c20c4",
+    "dev/src/pipeline/asyncbody.rs": "0460c5bdcb6fa81b1c443f69241cbcaa741480736fb8c85a8796bc0d95c4766f",
+    "dev/src/pipeline/cdrop.rs": "fadf851825b56e84dd583e320b10597fe74d4e99faca599b0f5895eb2b018edd",
+    "dev/src/pipeline/execution.rs": "0f9b7a8eefe893c4b0173ff5104e622982769d79062515d1890e9765a4aa0dfb",
+    "dev/src/pipeline/execution/anonymous.rs": "8f2d6ed3e92f01636176ab5d134a2bd0f060fa07ca0677f9d4508e13106a814c",
+    "dev/src/pipeline/execution/defining_heads.rs": "4a8af67299c3d9f25b612159196390f3b72173ef47296993ec4132165aa1b948",
+    "dev/src/pipeline/execution/parent_children.rs": "ce1f8b797f926b3dfa9064ab983d7e6f005366dd22c0451e9db2a0bf7a732206",
+    "dev/src/pipeline/mod.rs": "508fa4d10a9e157b8677332446aac1cf344cb827ef984537469f6d429d58e2b0",
+    "dev/src/pipeline/original_contexts.rs": "4a33668885e2d2745d0bd289dd8612049f08ff1db7f635bd535d7a53760d9c38",
+    "dev/src/sema/bodies/generics.rs": "2195b3d1f3f29d5e7eeae959db947cb748e0edb3d8836766f5fd0256e6f046c8",
+    "dev/src/sema/bodies/projections/selection.rs": "e9f96992c9a7d8a4866355b90f1d585dc602113d1aec521409dbe82c9cb09c4e",
+    "dev/src/sema/compiler_items.rs": "6ccadf89174609fc85f48aec8c784fab883916652f1d084b9587730bb110acae",
+    "dev/src/sema/compiler_items/calls.rs": "91fa645614df9018806d3cd8ae0c62939176f20ecb2540300f3dc92143ddc4fe",
+    "dev/src/sema/compiler_items/cdrop.rs": "0b19e0480129c3815ac6b75129844f6df873b2c5257d9040d94c48a8541e82a5",
+    "dev/src/sema/compiler_items/roles/destructibility.rs": "43285787eb3e48f046f50033f5cbd1234aaeb79f98423cebbaa124941d71a2d9",
+    "dev/src/sema/coroutine_methods.rs": "510696ce327263d4c826e5973db38e82a1bfe97b04d4d7943c08eea90d8002f1",
+    "dev/src/sema/coroutine_methods/schema.rs": "1ae279706ea4994c423f554bc777ba78d28ccfb5f1bf65802e9143ceb9785f13",
+    "dev/src/sema/declarations/destructors/coverage.rs": "d61e35f0b5cac21ad28e2c6057988f098325f520293d688500d6cb64e22491b2",
+    "dev/src/sema/mod.rs": "7dd05e53d3a761ff89dc23e21e2895fde7997fbdf197b3071d41fcbaebdfde21",
+    "dev/src/sema/nominals/traits/normal_form.rs": "b9aae13557c8d7c9e81717e6b85519e6ff1044bbec49dd296875bc5f6691347e",
+    "dev/src/sema/opaque.rs": "4ecff4d262799d175a7e60dd5078243b3c5bd62da35b4ab18bcb071abd9edf0e",
+    "dev/src/sema/opaque/futureform.rs": "498e49bf59ca85c82818fcd243d1961c3b089a07ed6adf3377ad8ea0cd231ee1",
+    "dev/src/sema/projections.rs": "dbcb54c0c1c41248e5c371782081f94d4d5455b606b4f46814396e936076d196",
+    "dev/src/sema/projections/selected.rs": "13b02c7cf030891dabf48c854933141b3ed47cbee8227905ae9be6ecac7342cd",
+    "dev/src/sema/traits/selection.rs": "b424eaea7ac0ce74bb0f69549332bf62db72798d7114325df88c8b0fceee16e9",
+    "dev/src/sema/traits/selection/search.rs": "7e190919669733bdfebb7a6e180ac9fe9b991f443caac8bf9fb93186fa353368",
+    "dev/src/sema/traits/selection/search/component_markers.rs": "767151e21c6d3c6b0c24ce828f05ad1e742e087823c8257d161dd7abc8e9d116",
+    "dev/src/sema/traits/selection/search/construction_conditions.rs": "db492700f06c3f3cc92e2b7d61fee842e4ac647f884dae790e20c11736ef14e6",
+    "dev/src/sema/traits/selection/search/coroutine_inputs.rs": "e01de205d72ebc784c7e6d66c74186fdb568b952638eddd3b43d95d648c5e478",
+    "dev/src/sema/traits/selection/search/cparts.rs": "f65b0c429564e674dda5448c09ede6be836f55b6f2f4a43854a74091d99ef9bf",
+    "dev/src/sema/traits/selection/search/destructibility.rs": "6dd8cd81fd0bfe2249f06d0220b7785bdcc30caa46ed428b17d29299c8378dc9",
+    "dev/src/sema/traits/selection/search/normalization.rs": "59d125fabddc58481d49f92951f8aaaca171825c9c0edfaa9e8d0a97baafb868",
+    "dev/src/sema/traits/selection/search/primitive_methods.rs": "63d16f5991ea4f9ba318e4c002c1a22911d11f06f8d5fd71fc865280fc796293",
+    "dev/src/types/aggregate.rs": "d93bd680fb4b084e4d89bd63290283ce24fcca968f22c3b1f0b827d2c43f3563",
+    "dev/src/types/substitute/parameters.rs": "ff3af9ea45eb986c07862ad090cb04b5cc502166dbc4f2bb304a6a19d4d63e60",
+    "dev/tests/ctdrop.rs": "990467aec74d9894dabdbd7fa065d28dcc46717c0d45f588a15441d165b03e62",
+    "dev/tests/ctnext.rs": "703ad40d5b5e730e7fab9602cc1f9021eb1e4f038eef430e1ab5ccabf0a1c840",
+    "dev/tests/harness/bitwise_loops.rs": "6f253f7a7c0604e842545c290afd8f00966044e106fe03a1994dae445a6d0d21",
+    "dev/tests/helpers/asynccheck.rs": "460c5da659c5ecdc15f75931f21a875a4b5739986c5d99a6b5338e3072f29012",
+    "dev/tests/invariants/clseal.rs": "94d1140e4a259eab4b1c6c1797faeb808ddb50e21727333be08230709d850301",
+    "dev/tests/invariants/coroutine_evidence.rs": "c4cd29a4e621acb6b4d483711830cc9b2aae377df0e23ac9435aaf002de813e8",
+    "dev/tests/invariants/family_arguments.rs": "7a9c47a7724dfa6fe02303c1ac7c28e498e26b4d6bdcd29979c9ee4760190e12",
+    "dev/tests/invariants/selection_headers/normalization.rs": "09b0a9f9d01eb78f124509de8441db8be0c10e71e280a5e11510d2db08b8bf4e",
+    "dev/tests/stateframe.rs": "1aaf5b7b6bc565c6e9f987926bd02b612114d4a3cd83b547bf70aded8f46e517",
+    "dev/tests/suites/traits/mod.rs": "c91f43a113a2372425ca949ac2a68ef9afe621580ed0a5c2b5cf3ad84fc71a3d",
+    "dev/tests/support/body_machine.rs": "63b910895e4c47bc9003d00d05acdc594dfb122e8722ae5685df0773837d3a1b",
+    "dev/tests/vactx.rs": "a6412b4dca49581778ca5b3aaad8512e73da22cb15faf7ff02101fb2c65e4cdc",
+    "docs/parallel/future-runtime-selected-checkpoint.md": "0511dba8d41530e4de81cc27380701f9de45e0651e59b2ae38004ed4e29a6229",
+    "docs/parallel/future-runtime-selected-evidence.json": "3a8768cc93c24a84b9ed86db7ab5ee72f8d37547bc80c19f66a6ed55273dfc6d",
+    "docs/parallel/future-runtime-selector-checkpoint.md": "f597a5d6f9bf55fa1527d7b2848bc96c3ba1f04aa7a8f47a33160dd37be9cff4",
+    "docs/parallel/future-runtime-selector-evidence.json": "04cd18736a8a42dbcf9116e63a0b0ded5ce5d17c1e0d35263bfb0ec67bec8cd4",
+    "docs/parallel/source-const-drop-evidence.json": "14df17372ca5ab08686ba110e09bd1bcca1c7fdcedbb314c89fdb40a7eda02e8",
+    "docs/parallel/source-const-drop.md": "75c1e73d6cd398638a28fef82718dc98a0fe426488d747814b7b5fd8cb487346",
+    "docs/parallel/source-const-runtime-evidence.json": "0e343fdd2fb21be9ca280596c6482a3cb7c9bca300038ae174e721f760da2120",
+    "pa31/tests/spec/source-const-cleanup/README.md": "8510dd93cfdd20fee4491c9e870bf5188915b3a7d0ce6c7aa27e4ef34af769de",
+    "pa31/tests/spec/source-const-cleanup/badown.rs": "db5183da36bd89b2a44c1fe17d4337dae1653240126da8f9b9f603716fd1ad6d",
+    "pa31/tests/spec/source-const-cleanup/ctbad.rs": "419ec8bc466522bf3d90cadb4058f41801f3b5954d95f6c28c119694db64d3c6",
+    "pa31/tests/spec/source-const-cleanup/ctgood.rs": "0c995e1d39c20bd34b8f9bf1ca78f4b8abb0f2d40234e75082c5aa5582a944b4",
+    "pa31/tests/spec/source-const-cleanup/predictions.json": "269e258fcb6002d7c6ee84dea793e04711206c3ab26a2704578291ee3c19202a",
+    "pa31/tests/spec/source-const-cleanup/runct.c": "aa9bd3874ab58e42b19d82f4af9aaddb8cb847a90ef2bd078d2f98404022b01d",
+    "pa31/tests/spec/source-const-cleanup/runct.rs": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+    "pa31/tests/spec/source-const-cleanup/tagarg.rs": "a32fd5b650e5b1980aad55e94482bcee3dc68485d1b7c50cf1fcf124ef356bb7",
+    "pa31/tests/spec/source-const-cleanup/tagbad.rs": "1c2042759b4ccac79104815d4b80f00229a8342ad047dc0fb8a2ab0afa32c16b",
+    "pa31/tests/spec/source-const-cleanup/tagbr.rs": "bbdabf7018bcdd9ad2a44d8aee9deccca7b4df0a9914213112844a1d5b058009",
+    "pa31/tests/spec/source-const-cleanup/tagfld.rs": "db8eadf3a2219fcb84be67ebc85f8c221f03b145fde4482fadae747a9d186042",
+    "pa31/tests/spec/source-const-cleanup/taggen.rs": "6bc6fe98e332fe8dac053acd2fd0108dc0e958aa3d9eaa544fd381ce508d9329",
+    "pa31/tests/spec/source-const-cleanup/taglif.rs": "15dfa01c3c4807d77cb5ac25f5c5325f8b3da23acffa90150d95b61a94e9c415",
+    "pa31/tests/spec/source-const-cleanup/tagmv.rs": "bc75c8047d59c97ad9b2ff56fcf9ac2a3fc37a364725bff7c5fa6ff3f31bf0a8",
+    "pa31/tests/spec/source-const-cleanup/tagnst.rs": "6c239e736d9a0117b61ec352cb40a51ebf60786e114aa50c3f3e3b4f97ebec43",
+    "pa31/tests/spec/source-const-cleanup/tagout.rs": "7a081145b9d99a6454305b41ff1ca00714afc8fa5924677cb8ecf942acd162aa",
+    "pa31/tests/spec/source-const-cleanup/tagpar.rs": "0d977fa532ee35de8568cac57d9d5b8f9f369631d79883a95f6cc2ac14ccdc65",
+    "pa31/tests/spec/source-const-cleanup/tagret.rs": "ac8e55fce9d4b10cc30161f69ca8db3383bedb94d148620e96ab4b2325253904",
+    "pa31/tests/spec/source-const-cleanup/tagset.rs": "af8e0607edf97db3b3b300c75b7e6bbebdc4eabdd5449c19a835782254c46495",
+    "pa31/tests/spec/source-const-drop/README.md": "85d7761945cf64c312562195f64e3ded8e91c59f050b464f9d297274a46c40ed",
+    "pa31/tests/spec/source-const-drop/active.json": "a83df839cbc787464fee4f652a1374ad392a86d23cbaf0c78aa0c040499de1be",
+    "pa31/tests/spec/source-const-drop/array0.rs": "92fc880a4d1300dcee820d39ba2e70cb43452346d693bc2825b6ac82074063f6",
+    "pa31/tests/spec/source-const-drop/arrayc.rs": "bdc7e35cf4fc01929271e9592a6631838a4ac01f6cd0619c681f5651af3e97fb",
+    "pa31/tests/spec/source-const-drop/arrayn.rs": "d4acd44e81484cbbd9f1a3f31153b5b499b40ed660c5d0e09b0ceeace349f96d",
+    "pa31/tests/spec/source-const-drop/borrow.rs": "cebc50db6ada9698632520c1f04ee286cf83d9bfe8958144aecd700eeef8c213",
+    "pa31/tests/spec/source-const-drop/clone.rs": "8100f012e41c68010336faebb68a7f4dadd659450e7eba113d1e759c3b43899b",
+    "pa31/tests/spec/source-const-drop/clone2.rs": "a80d327bf8a7488645c47ac9fec4c8026df1c4e9c06bed3cb1bc5cee8e04d539",
+    "pa31/tests/spec/source-const-drop/cond.rs": "cdd2ee3efea98d6a6ef2a107b5e9345b5c1daa610a8e8e75d7e8ab1fe091c9bd",
+    "pa31/tests/spec/source-const-drop/cond2.rs": "1bb547971adc0e80816cab2be8028edb1982f81314938b0d2d3b99f66c9a5c0f",
+    "pa31/tests/spec/source-const-drop/cond3.rs": "a895bce9d029a73532f7ac0e85927ac97e3ae456babebae413614d2587a24bc6",
+    "pa31/tests/spec/source-const-drop/count.c": "a5dcaadf2f1f4e282d369c7bbb378cb74a38b96a6a3096ed7ddea87a095ee03c",
+    "pa31/tests/spec/source-const-drop/count.rs": "bbc22af8eb42f0d7cc05af5c686fc31d3b6d26a129d6b655167afcda4ff1a892",
+    "pa31/tests/spec/source-const-drop/count2.rs": "a8f2ba8d677d2a1f49ca9e0633d4a242954a868739ec70750008b30b96420896",
+    "pa31/tests/spec/source-const-drop/cover.json": "7a1a3535205c695323ce3a691fbe8b0733ae49455d3435091f3a71a3b9d2f39e",
+    "pa31/tests/spec/source-const-drop/cover2.json": "06cfd4054fb7a8f4d69a1045ec8886b3439484cf1dcc312061f1ee4c698fe1c6",
+    "pa31/tests/spec/source-const-drop/cpbnd.rs": "9236e75edaebd1a5d9ddb17be8a73573167a87cbf2ac8924d9851f02c3ade024",
+    "pa31/tests/spec/source-const-drop/ctinst.rs": "e9167137707c46a04a7c35a4a5d7134a471236f01442176d40b74d0e35a5b848",
+    "pa31/tests/spec/source-const-drop/ebad.rs": "6ca898aa87faccf3de62c70c1bff035f7487c7ac0855402e266c5de4f61c3862",
+    "pa31/tests/spec/source-const-drop/egood.rs": "b483e3974d5046cb34c5dceae055df8cbf3c8f7c9c000d91b33182accd05219c",
+    "pa31/tests/spec/source-const-drop/empty.rs": "b3883c330b27bda461aae086c58e778efba23b82308cfbe20e249144d4ca537a",
+    "pa31/tests/spec/source-const-drop/evinit.rs": "30e7f56e366f561847df298ec226e1173281581dbff92d18b55a09cb5086776d",
+    "pa31/tests/spec/source-const-drop/fake.rs": "68c509e6b241b66674dc5523b27cef5bbb07d4a1e4225a6b2ceacab7f68e17a5",
+    "pa31/tests/spec/source-const-drop/field2.rs": "c2a2856dd20372780df58513303cffb18ea394b77f36d6640d3f729ea7527f4b",
+    "pa31/tests/spec/source-const-drop/fieldc.rs": "b8451a96cf897365f6e41a6d0aa779ab223000e60b56a6a3a5f9991070fd6f1a",
+    "pa31/tests/spec/source-const-drop/fieldn.rs": "41f7de8e24ee0dc3ef0f7d9ac341ceb7af8f6f6eab0adc51f27ed25255111a08",
+    "pa31/tests/spec/source-const-drop/flneg2.rs": "43cca00d7a01c5911ca57e7c838ec44ab7893bffa4552fbe0af6eab9834315ee",
+    "pa31/tests/spec/source-const-drop/followup.json": "c31b90c0f4e5a0cc51d0cd351b06a79bed3824cc58489cdbb778637cb24b7857",
+    "pa31/tests/spec/source-const-drop/foo.rs": "fc9b863a145a9b690e9de67e3de68fa1ea189ec045dc914dccb976f58c2c91d6",
+    "pa31/tests/spec/source-const-drop/foo2.rs": "3b8576d7dad1b3b3c43e70a9aee375496fac5184d7874c677e31f50c6cd8b22f",
+    "pa31/tests/spec/source-const-drop/fstrg2.rs": "d6f2ad841d51965aa916a60d2b8bda1e7fe24948a929575149c77c482793139a",
+    "pa31/tests/spec/source-const-drop/fstrng.rs": "b2ed37266d9f2c167cb48950613f536d05b3ec265b6b9f7ff54e51c760962211",
+    "pa31/tests/spec/source-const-drop/hold.rs": "2db4c70418a73a5cc0305eb4889baca32bd3dd92384a3375826b53e2a3d829b7",
+    "pa31/tests/spec/source-const-drop/inact.rs": "b8998b003dbec3e5beaec82f338bb26bb6b9d8e806757ecb5cb1011feac182e9",
+    "pa31/tests/spec/source-const-drop/initc.rs": "5b97614bafd71de4c5a6042931a7d2bd7b8c5e720ffad8fbf1d2c12b3329677c",
+    "pa31/tests/spec/source-const-drop/initn.rs": "89721e863cf1d4cd4222c635d327c835fd8ddbbb164cc555ccd3a3295478d8fb",
+    "pa31/tests/spec/source-const-drop/manual.rs": "6781d802d4990596276229d6200eb3505483c40c2d85dedf93ced1f2d712ef85",
+    "pa31/tests/spec/source-const-drop/more.json": "e61abb40efed98e0b00a6afffc8989d85cb52df9489372b25fc36a116dc3cc1e",
+    "pa31/tests/spec/source-const-drop/moved.rs": "1e9ce9d25a68cd67e7a6237f34b60b385c16aba9caa34cfa6ac77c042704bad9",
+    "pa31/tests/spec/source-const-drop/native.json": "3155a1e80414b902e28e164f433a10c2e168a756480cba985392dfe83f82bf3d",
+    "pa31/tests/spec/source-const-drop/native2.json": "a1ae00fd3d402267235e3c7f6ad537c937c2db4da4d9bfcb054abce16884cfb7",
+    "pa31/tests/spec/source-const-drop/noncal.rs": "f4c40a353601c79ea45874eaf5d1e6d9e8856cd6ab8e7a0ee53b55a80dd5fafc",
+    "pa31/tests/spec/source-const-drop/ord.rs": "f9ba939cdf7bae91c4ff932473984ec1c725e61858ab1a40e031bec486fe0c64",
+    "pa31/tests/spec/source-const-drop/original/drop.rs": "1d91c5e4e5868e8d2e6860da6fb5353f69172623a8ea7b9d7969e1ebd0fe7055",
+    "pa31/tests/spec/source-const-drop/original/sources.json": "fa50c33343347267d19a3cedca164166971427eec78c3e5aa93066e2a27b0644",
+    "pa31/tests/spec/source-const-drop/othr.rs": "3a0fb55c5cbb0aabdc851f8065dd298fa03427b644c061729f41dd3ae33c1f2e",
+    "pa31/tests/spec/source-const-drop/ownc.rs": "56ef2b073965c49756444643cd896615777a86e90954d6584688d47eab92e1f3",
+    "pa31/tests/spec/source-const-drop/ownc2.rs": "4b30a1a20c8f904e511aacfa4c9ebff2bcdf5ca1401450d4c5aced1e700162ba",
+    "pa31/tests/spec/source-const-drop/ownn.rs": "04ed299b97d7ed6372906bbae363ba31d6b866fa12ade847b27ab7b5e1b0b264",
+    "pa31/tests/spec/source-const-drop/ownn2.rs": "053d115f2e3965d828563034ecf50b09e7d2e934190d72aa5315ec3ed8259569",
+    "pa31/tests/spec/source-const-drop/part.rs": "d354b3d038fa1caa4e6d33ad9991db3ad9713715cd32300b602bb8ec197e743f",
+    "pa31/tests/spec/source-const-drop/plain.rs": "4eec9b1785c88b247bd60916017def1abb69f3bc99a7d56fbf9cb27fadd4ec67",
+    "pa31/tests/spec/source-const-drop/plain2.rs": "1211eb44d499d38ea04c583fb229c270de8ecc9f5ebe57ed757dcbdf0a3aa2d0",
+    "pa31/tests/spec/source-const-drop/predictions.json": "b7b20342037c030fbc6ff87d5d0980b75f8542085fe5515c092ff2a943a63178",
+    "pa31/tests/spec/source-const-drop/reach.rs": "ab179140d95dbe17f5ee0c47581b9b4f43574e53c41287aaaf48ed16f1660654",
+    "pa31/tests/spec/source-const-drop/rtcnt.c": "33d699070a5c6be36f6b2214f02bc2288eda4d809e42afa2dfc20608d1c55b65",
+    "pa31/tests/spec/source-const-drop/rtcnt.rs": "2cfe99057f74ac5bbcc0325f0ec442a53d51755e82b22839bde5ad8f04169899",
+    "pa31/tests/spec/source-const-drop/rtinst.rs": "1fb8339881390b0c6cdfef5c2d9eaa05a63a7f968d4366c92e14d297c4c776dc",
+    "pa31/tests/spec/source-const-drop/rtneg.rs": "4fc26102430d900865914dbb21719a4aca169f7b149218f6fbce950577f7d4d5",
+    "pa31/tests/spec/source-const-drop/rtonce.rs": "e943ea955d34e9adf3919b6131f3ae3cc81f83ca39bb436f64e923568aabbc60",
+    "pa31/tests/spec/source-const-drop/runtime.json": "99c78c55c8880e962f33b6f39c433d98e9d027918079a1035c729fc875e2a840",
+    "pa31/tests/spec/source-const-drop/setup1/borrow.rs": "7c935aba813d0d297b5343e3ee18dfc187fd5b1f26d1f3440f021b8b51dd3422",
+    "pa31/tests/spec/source-const-drop/setup1/cond.rs": "21e8e68bae2fcf13da172f456977c6fef6b7aa823273cd57719179e7987415eb",
+    "pa31/tests/spec/source-const-drop/setup1/empty.rs": "5fd774a05eb715c7dbef5be89a94f5a3dd5c3b9263ad4091ad7e81ec2a70299b",
+    "pa31/tests/spec/source-const-drop/setup1/evinit.rs": "a53b98d7c14d1b75759ccd5678b0c00d7085a596a325101db1907ece64fd3317",
+    "pa31/tests/spec/source-const-drop/setup1/fieldc.rs": "dfe37a626d7e90daccdb74fe00ea7ee84d9dea146daef7cc40008622449c5bd0",
+    "pa31/tests/spec/source-const-drop/setup1/fieldn.rs": "dec31dc11fb1a4871d1de6df26cb8e64eb9bc8768d4b33f3846b236329347534",
+    "pa31/tests/spec/source-const-drop/setup1/inact.rs": "64428748d976bc8ad0361c8dfee33b293959654505c38669aeefc930df125954",
+    "pa31/tests/spec/source-const-drop/setup1/initc.rs": "cd3a1645f4c6c855d8f45a602818affc8d8faf99f798dd186d692525182ab743",
+    "pa31/tests/spec/source-const-drop/setup1/initn.rs": "5b38b4a20b29b80f64e30a8817c9357577194194de1e05a9d534ddb1fc1a20eb",
+    "pa31/tests/spec/source-const-drop/setup1/moved.rs": "c93b6be9754e93080a15b59a00367496be2273bdeb31f97d9f09aa27a1b35401",
+    "pa31/tests/spec/source-const-drop/setup1/noncal.rs": "1bbe9b5cdcd2d43a3996ff341af61977000c35f3fbb8c1e20882613b32e31caa",
+    "pa31/tests/spec/source-const-drop/setup1/ownc.rs": "df91a3dfa9db820cd0d882c6e6504a912f4b093876f7078c7eca9fa6636f61c5",
+    "pa31/tests/spec/source-const-drop/setup1/ownn.rs": "5c0028f59b91e0aa2edbb925d89fbb697e0bcbe754a07c899d45eccf811620ed",
+    "pa31/tests/spec/source-const-drop/setup1/plain.rs": "8fcc30221bb703955fea637fc2a344ecc20a4491a74d2e5fe80235e91394947b",
+    "pa31/tests/spec/source-const-drop/setup1/predictions.json": "f7350f7de28de0f46da4493460c90b8598dc9b7de51ea2d8a5042cda27c68bb1",
+    "pa31/tests/spec/source-const-drop/setup1/reach.rs": "b7adcae2dfe5f75822846ca603c22d0f430130b01f92790bb622765f5ce85ad1",
+    "pa31/tests/spec/source-const-drop/strng2.rs": "1aa00902beb66a96cb8aba25e9078d6e02d1e1e40898ed850297e7382200b34a",
+    "pa31/tests/spec/source-const-drop/strong.rs": "0797b6c82a7ad9397082eadcd8b66e51e5661d758ac49c1e828cb74945e95e6a",
+    "pa31/tests/spec/source-const-drop/tuplec.rs": "dde2aa221c5a8c13174981d1c48bbdf4f930ea5fdbb4efebef995a0a9203bff1",
+    "pa31/tests/spec/source-const-drop/tuplen.rs": "c046f02706b9bead1fc458be54c21302d75b6adca1244262719631e46ad86e7d",
+    "pa31/tests/spec/source-const-drop/unco.rs": "2b8aa20112294c1179f7cb4ac73f5585b4f16c7d8ef1cd5d8cfddbff27923fa4",
+    "pa31/tests/spec/source-const-drop/unco2.rs": "75f73ca3cf93b0c15023338f24630b35f8420a329cb0c9646451b166453c847b",
+    "pa31/tests/spec/source-const-drop/union.rs": "053932c7e82e94fd57f9c102faa32390cf38b82da8121825078c329dc1de60f1",
+    "pa31/tests/spec/source-const-drop/work.json": "4abac70b9e8fa3a3b434c3991e7441307f3c897a7c21915f0bb0da3a19d839d3",
+    "pa31/tests/spec/source-const-drop/work0.rs": "25adbe4297c018dc90d543419225636fcc9beaaa32d04ef7300406482ddaa619",
+    "pa31/tests/spec/source-const-drop/work128.rs": "756cedf3b119f352238fefc6e44d06d076166eee4fc08a94da515c4c5063c0c4",
+    "pa31/tests/spec/source-const-drop/work32.rs": "cf4f67861b3ab81de4eb654991e2e03730d8435444427436528f2adb2bbfecb6",
+    "pa31/tests/spec/source-const-drop/work8.rs": "ac8986feb8d8498eb9983df9eb2a01eb42bc1d2eb8b48f38e27c765a66c95a8e",
+    "pa43/tests/spec/future-runtime-v1/formation-companion.rs": "49ed2ad0ed76dd8a5f3be52a886b3dce5e4594d1048c8247175892dc0caedf8d",
+    "pa43/tests/spec/future-runtime-v1/formation-predictions.json": "fb10a0bc0f2958beae2a3ebe2b85c6f0f7f8c5591402f6f29e8b76f6b8a975fb",
+    "pa43/tests/spec/future-runtime-v1/formation-source.rs": "f739ffc3b1483f5ee6d58f119f61c3a8708e0a3cf542561c92891cc0439555f5",
+    "pa43/tests/spec/future-runtime-v1/selection-companion.rs": "8e7014f52846a9d19c4b58a4f04a0bf84b347411646eacc85b8297bd7917a8b7",
+    "pa43/tests/spec/future-runtime-v1/selection-predictions.json": "b83b18bb3f9e7cac693363828e5a9a27e4f674c4048c836b7791b248689d2fc5",
+    "pa43/tests/spec/future-runtime-v1/selection-source.rs": "827681feb2aa4f59ace6445ac89a41abcb22b169a247174217f1e43423a190f3",
+    "pa43/tests/spec/future-runtime-v1/unsized-source.rs": "083cc212ba9a89e6e159e5e796ad7591d6a86e15f8733b44c974969cf60ef51e",
+    "spec.md": "9accb4706c02f73250d69e16269fe188d9eb22b62ad60338b10e1548771d35bd",
+    "third_party/sources.json": "19506a9cad903387acead1df9702cb27214dd99e4d096a105f95690266734901"
+  },
+  "gates": {
+    "regular": {
+      "path": "obj/qualification/fast/1793896742164496259/receipt.json",
+      "sha256": "d2f33fab07bc5cd7d76f7cb5a0f1586e93cd8f4727fb83f3aa2cb3a57dfdfe0b",
+      "seconds": 71.05,
+      "tests": 31,
+      "text": {
+        "pa19": 1193,
+        "pa21": 764
+      },
+      "source_binding": "Exact current compiler/fixture/script fingerprints"
+    },
+    "native": {
+      "path": "obj/parallel/future-const-join-v1/native-v1/receipt.json",
+      "sha256": "5064e698d4cae4b818cb4f2dc31bd671bd0c569cb067bc9e92f892b4f2fbb037",
+      "seconds": 23.875347868015524,
+      "selected": {
+        "suite_traits": [
+          "ctdrop::actual_const_drop_runtime_body_writes_the_runtime_operand",
+          "ctnext::genuine_unconditional_const_drop_native_body_consumes_runtime_data",
+          "vactx::actual_source_cursor_reads_clones_and_scope_cleanup_execute_natively"
+        ],
+        "suite_memory": [
+          "bitwise_atomics::bitwise_old_values_and_effects_execute",
+          "cas_intrinsics::compare_exchange_methods_execute",
+          "extremum_atomics::extrema_old_values_and_unsigned_edges_execute",
+          "extremum_atomics::interference::retried_observation_returns_old_value_and_stale_seed_fails",
+          "intrinsic_methods::atomic_methods_execute_with_runtime_order_validation",
+          "owned_transfers::owned_pointer_destructors_and_reified_transfers",
+          "rmw_intrinsics::rmw_methods_execute",
+          "subtract_intrinsics::subtraction_values_and_effects_execute"
+        ]
+      },
+      "scope": "11 exact tests, including all8 CI native regressions; separate original-source Rust/native checks and deliberately instrumented LowIR interference",
+      "source_binding": "Exact current compiler/fixture/script fingerprints"
+    },
+    "qualifier": {
+      "path": "obj/parallel/future-const-join-v1/qualification-v3/receipt.json",
+      "sha256": "e96bf62fcc9b9b545dd8f0669a69f4edede4f7e4a09645bfda5a4a17b7f5b683",
+      "seconds": 35.715959860011935,
+      "cli_sha256": "292c96f2af4ef19eb11e994fd4b29ec2dfa2b426cdda9e84fc77974ee1d018fa",
+      "metadata_v10": {
+        "bytes": 7118,
+        "sha256": "86b0e0a80de3160fbc18973e3ea9cf781513a6206547f55a35b78e2df636f03b"
+      },
+      "original_core": {
+        "infrastructure_failure": false,
+        "classification": "observed original-core blocker",
+        "lint_cap": "allow",
+        "source_contract_limits": {
+          "work": 14500624,
+          "attempted_bytes": 1073741824,
+          "retained_bytes": 67108864
+        },
+        "expected_cli_sha256": "292c96f2af4ef19eb11e994fd4b29ec2dfa2b426cdda9e84fc77974ee1d018fa",
+        "expected_cli_source": "explicit caller input",
+        "status": 1,
+        "first_error": "ERROR: file 85: 361: source compiler language item semantic contract is not implemented",
+        "inputs_unchanged": true,
+        "opened_source_count": 375,
+        "total_seconds": 19.03756418003468,
+        "raw_sha256": {
+          "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr": "691dbcc93706dd4613e16b674a5e58377c9f061b7dab5c657da110b43fc564e6",
+          "whole-core.openat": "0f067e053c6ce15ab9125ae3196d80c442eb73b7cddd34b1cf48ec72c4b598d4",
+          "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+        },
+        "receipt_sha256": "e2ee9888b24dc633e69e66fcd8ee887b2e32e60dcc7408c13366ffeb0374ae46"
+      },
+      "backend_lock_sha256": "f60c0760f39f1f554486f5a1eb990d2c0fef663fbd1bff944cd1eef8a014a581",
+      "source_binding": "Exact current compiler/fixture/script fingerprints"
+    },
+    "performance": {
+      "path": "obj/parallel/future-const-join-v1/performance-v1/receipt.json",
+      "sha256": "cd16a427ee40a267f95e5a1d26089bd185371f4a033594932782e0f2876be08b",
+      "seconds": 23.70373866398586,
+      "observations": 54,
+      "binaries": {
+        "A": {
+          "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/enum-deferred-join-v1/cli/70b47f57b9d04b5f751793f8742553d0bead85e6dd5222f906f5c99038296527/rustgm",
+          "sha256": "70b47f57b9d04b5f751793f8742553d0bead85e6dd5222f906f5c99038296527"
+        },
+        "B": {
+          "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/future-const-join-v1/cli/292c96f2af4ef19eb11e994fd4b29ec2dfa2b426cdda9e84fc77974ee1d018fa/rustgm",
+          "sha256": "292c96f2af4ef19eb11e994fd4b29ec2dfa2b426cdda9e84fc77974ee1d018fa"
+        }
+      },
+      "scales": [
+        {
+          "family": "ordinary",
+          "width": 1024,
+          "source_sha256": "783d30852ce081f6699ac8404584e6dcf01e511e14716df7497cb67f5d1ace96",
+          "blocks": [
+            {
+              "AA_second_over_first": 1.0056835075301784,
+              "ABBA_B_over_A": 1.042880719712467
+            },
+            {
+              "AA_second_over_first": 0.7801224428231752,
+              "ABBA_B_over_A": 1.0376382110292681
+            },
+            {
+              "AA_second_over_first": 1.040839764160632,
+              "ABBA_B_over_A": 1.0079517594096523
+            }
+          ],
+          "candidate_median_seconds": 0.2306720479973592,
+          "paired_median_B_over_A": 1.0376382110292681
+        },
+        {
+          "family": "ordinary",
+          "width": 4096,
+          "source_sha256": "9f5ca894e474569a5033b27b8508936790ca745d34c1e370abe066fbf4086bba",
+          "blocks": [
+            {
+              "AA_second_over_first": 0.9937245362888012,
+              "ABBA_B_over_A": 1.0347219669348844
+            },
+            {
+              "AA_second_over_first": 0.9086726009426292,
+              "ABBA_B_over_A": 1.0547102457235198
+            },
+            {
+              "AA_second_over_first": 1.031331761339975,
+              "ABBA_B_over_A": 0.9835764717775616
+            }
+          ],
+          "candidate_median_seconds": 0.8963027524878271,
+          "paired_median_B_over_A": 1.0347219669348844
+        },
+        {
+          "family": "source-deref",
+          "width": 1,
+          "source_sha256": "a8d1ba6308aec550d17a0bf8223d03d2b3f7e36a45f078b9f5e06aaf050b54fe",
+          "blocks": [
+            {
+              "AA_second_over_first": 1.0501106322543166,
+              "ABBA_B_over_A": 1.0303997835060315
+            },
+            {
+              "AA_second_over_first": 1.259281090595904,
+              "ABBA_B_over_A": 1.014136428435431
+            },
+            {
+              "AA_second_over_first": 0.9984627959179037,
+              "ABBA_B_over_A": 1.0212440247110064
+            }
+          ],
+          "candidate_median_seconds": 0.05114596552448347,
+          "paired_median_B_over_A": 1.0212440247110064
+        }
+      ],
+      "retired_pins": [
+        {
+          "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/receiver-va-future-join-v1/cli/b553a3bf34eb5e5c14aa7ff90684bb05de46447396e7dec7789985d131bffc2a",
+          "sha256": "b553a3bf34eb5e5c14aa7ff90684bb05de46447396e7dec7789985d131bffc2a",
+          "policy": "Keep new current and known qualified immediate predecessor70b only; failing candidate pins are unnecessary after replacement qualification. Preserve source/logs/receipts."
+        },
+        {
+          "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/future-const-join-v1/cli/57fc97aba35e6fecaa9b377b81e56a90f19e5fc41601a22fcd2ad2116f0b8084",
+          "sha256": "57fc97aba35e6fecaa9b377b81e56a90f19e5fc41601a22fcd2ad2116f0b8084",
+          "policy": "Keep new current and known qualified immediate predecessor70b only; failing candidate pins are unnecessary after replacement qualification. Preserve source/logs/receipts."
+        },
+        {
+          "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/future-const-join-v1/cli/c6b8f64587a6434c11d42fc2a94b0e5fe07e442aa67770e22fbf1c34fb5549bd",
+          "sha256": "c6b8f64587a6434c11d42fc2a94b0e5fe07e442aa67770e22fbf1c34fb5549bd",
+          "policy": "Keep new current and known qualified immediate predecessor70b only; failing candidate pins are unnecessary after replacement qualification. Preserve source/logs/receipts."
+        }
+      ],
+      "interpretation": "All54 exclusive immutable AA/ABBA observations and output equality retained. Paired medians show small apparent overhead on common controls; noise and positive5.47% block remain. No broad speedup/no-regression claim.",
+      "source_binding": "Immutable qualified CLI hashes and qualification receipt"
+    }
+  },
+  "remaining": [
+    "Original core/alloc/std checked, emitted and independently executed artifacts remain unbuilt; no whole PA after24 is released.",
+    "Actual AsyncFn source supertraits/GAT/callable consumers, implicit function/closure proof and transport remain required.",
+    "Ordinary GAT callable formation must retain its true scoped implied input bounds, without inferring projection inputs from output equality.",
+    "Actual future constructor/poll/drop/state/await/cancellation and authenticated body transport remain required.",
+    "Precise enum cleanup, initializer-owned const eligibility, actual CTFE scheduling/destructor execution, unit-result payment and full original VaList/module closure remain required.",
+    "Current new private forgery controls and full release/native/debug/independent successor remain CI work."
+  ],
+  "initial_join_gate": {
+    "path": "obj/qualification/fast/1793895164745210151/receipt.json",
+    "sha256": "429ae6aeef06da5b51a27f13004d0966e871b8904ff6793a8db15f34a8bc1e48",
+    "seconds": 246.42,
+    "tests": 40,
+    "difference_from_final": [
+      "dev/src/borrow/check/cstage.rs",
+      "dev/src/borrow/templates/staged.rs",
+      "dev/src/lower/instances.rs",
+      "dev/src/lower/intrinsics/atomic.rs",
+      "dev/src/lower/intrinsics/atomic/comparison.rs",
+      "dev/src/pipeline/cdrop.rs",
+      "dev/tests/harness/bitwise_loops.rs"
+    ]
+  },
+  "full_ci": {
+    "run": 42059682528,
+    "head": "c5f06fd56bfb5c29417ee3722b74634b2ef3bba5",
+    "state": "terminal-failure",
+    "passed_stages": [
+      "all-target lint/architecture/harness",
+      "independent host build graph",
+      "private/public release integration",
+      "all course text"
+    ],
+    "native_memory": {
+      "pass": 50,
+      "fail": 8,
+      "reason": "Canonical atomic bodies treated the new scalar byte Ordering parameter as an address. All8 now pass actual selected native execution."
+    },
+    "skipped": "Later full debug/independent/component qualification",
+    "failed_log_sha256": "3c328796a5ed8e43b9fff0f2f3f5198c8c938ed3bfedd4bd067b24fb4d4281f4"
+  },
+  "retained_failures": {
+    "qualification-v1": {
+      "path": "obj/parallel/future-const-join-v1/qualification-v1/receipt.json",
+      "sha256": "e28629b8412bced68902a6d36bc3b8afdc3004b7c33546afb2894f4755fe4eb3",
+      "state": "failed",
+      "cause": "25 PA19 locations lost through String error conversion; fixed structured template errors."
+    },
+    "qualification-v2": {
+      "path": "obj/parallel/future-const-join-v1/qualification-v2/receipt.json",
+      "sha256": "d3230d79b010df36222998733f53a197fb4673f58e402aeefda8b9a94355f1ca",
+      "state": "failed",
+      "cause": "One PA21 loan location replaced by body site; fixed exact ownership/destruction/loan error propagation."
+    },
+    "native-first": {
+      "path": "obj/qualification/fast/1793896378801464594/receipt.json",
+      "sha256": "ae07b2f6c4f0e0ad9f8d0a7f2cc7819900e8ff824cb39a329495b02e3600e5c7",
+      "cause": "All7 ordinary native suites and3 const/Va tests pass; interference stops at stale expected address-load shape. Updated checker requires direct tag comparisons and preserves all CAS/old-value/backedge invariants; final all11 pass."
+    }
+  }
+}

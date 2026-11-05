@@ -1,6 +1,17 @@
 # Parallel library bootstrap implementation
 
-The current [enum/deferred join](parallel/enum-deferred-join.md) qualifies
+The [future/const integration](parallel/future-const-join.md) now joins selected
+authored Future/Output proof, actual const destruction and native runtime-instance
+consumers. Current31 public/1957 PA19/21 cases,11 native tests, upstream/harness
+and original-core qualification pass. CLI292c96f2 keeps all original722 inputs,
+configuration and limits and still reaches LIB-169 AsyncFn in19.04s/375opens.
+Eight canonical atomic native regressions from full42059682528 are repaired by
+the actual enum parameter ABI; template/concrete diagnostic sites are preserved.
+Full successor and new private controls remain pending. No original library
+artifact or whole assignment after24 is complete. The current/predecessor pins
+are292c96f2/70b47; older pins and failed candidates are retired.
+
+The preceding [enum/deferred join](parallel/enum-deferred-join.md) qualifies
 actual fieldless enum ABI, authored deferred originals and canonical-inventory/
 fixture CI repairs. All41 joined tests/2707 text cases,17 native observers and
 the final runtime Index const opponent/elision regressions pass. CLI70b47 keeps
