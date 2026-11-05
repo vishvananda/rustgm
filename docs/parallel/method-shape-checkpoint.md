@@ -17,7 +17,7 @@ Qualification-v3 passes formatting, architecture, strict selected Clippy and two
 public conformance tests, including pinned Rust acceptance/rejection checks.
 The cached build includes the actual CLI, SHA
 `37a0ffcc75e149a5dceafca8df349b55c5ba527f7b0dfa56bd9e7c7c8706b86e`.
-Its focused steps total 241.49s; resource admission adds about 26s. The outer
+Its focused steps total 241.50s; resource admission adds about 26s. The outer
 combined batch later times out after successfully regenerating the one selected
 oracle. That failed combined attempt is retained, not counted as a full pass.
 
