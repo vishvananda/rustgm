@@ -1,5 +1,6 @@
 //! A generated descriptor cannot substitute another body, state place or source arena.
 use super::*;
+use crate::async_checks as checks;
 use crate::{
     body::ir::{
         Action, BlockId, Body, LocalId, Owner, Place, ProjectionKind, Rvalue, Terminator, ValueId,
@@ -7,7 +8,6 @@ use crate::{
     pipeline, sema, test_source,
     types::{self, Kind, TypeId},
 };
-use crate::async_checks as checks;
 type Result<T = ()> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 #[test]
