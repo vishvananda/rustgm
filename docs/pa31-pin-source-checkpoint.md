@@ -128,3 +128,12 @@ onf94868db5 is terminal success with every gate, including private source-role/
 shim controls, native, debug, independent Rust and const-machine qualification.
 It precedes the Pin changes; no private execution or full Pin successor result
 is inferred from local metadata compilation or an earlier green gate.
+
+Pin successor full41936708120 on63f9177dc is terminal failure at one private
+diagnostic assertion:2702 private checks and all integration suites pass. The
+source Pin fixture is fundamental, so export correctly rejects at the earlier
+fundamental nominal/trait transport guard rather than the later unencoded-role
+guard. The assertion now requires that exact existing first error. No compiler
+behavior, fixture, permission or assertion strength changes. The other two new
+private lifetime-domain controls execute successfully. Native/debug/independent
+successor gates remain pending because the failed release step skipped them.

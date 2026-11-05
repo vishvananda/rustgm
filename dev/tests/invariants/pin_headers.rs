@@ -42,7 +42,7 @@ fn source_pin_and_constructor_roles_require_their_actual_completed_producers() -
     .ok_or("unencoded Pin role exported")?;
     assert_eq!(
         error,
-        "source compiler language contract transport is not implemented"
+        "general fundamental policy requires authenticated trait/nominal metadata transport"
     );
     let index = *facts
         .function_indices
