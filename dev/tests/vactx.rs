@@ -89,7 +89,7 @@ fn compiled(name: &str) -> Result<(Program, usize)> {
 #[test]
 fn actual_source_cursor_and_void_header_reach_typed_lowir() -> Result {
     for name in [
-        "source", "srczero", "unused2", "cvloc2", "dc_ok", "dc_order", "fixarg", "fdcall",
+        "source", "srczero", "unused2", "cvoid", "cvloc2", "dc_ok", "dc_order", "fixarg", "fdcall",
     ] {
         let output = program(name).map_err(|e| format!("{name}: {e}"))?;
         let mut text = Vec::new();
@@ -125,6 +125,7 @@ fn actual_source_cursor_reads_clones_and_scope_cleanup_execute_natively() -> Res
         ("run", "native.c", "17 11 17.5 23 23 29 31\n"),
         ("rzro", "zero2.c", "37\n"),
         ("cvloc2", "cvloc.c", "1\n"),
+        ("cvoid", "cvoid.c", "1\n"),
         ("rorder", "drop.c", "41 41 77 47\n"),
         ("rfixed", "fixed.c", "31.5\n"),
         ("rfrom", "fdcall.c", "17\n"),
@@ -257,15 +258,11 @@ fn actual_cursor_demands_have_bounded_canonical_work() -> Result {
 }
 
 #[test]
-fn rust_positive_cursor_and_c_void_requirements_keep_their_current_gaps() -> Result {
+fn rust_positive_const_cursor_requirements_keep_their_current_gaps() -> Result {
     // These are retained Rust-positive requirements, not semantic parity negatives.
     for (name, gap) in [
         ("cldef", "constant evaluation cannot run destructors"),
         ("clcall", "constant evaluation cannot run destructors"),
-        (
-            "cvoid",
-            "C aggregate ABI profile requires a nonempty aligned repr(C) struct",
-        ),
     ] {
         let error = program(name)
             .err()

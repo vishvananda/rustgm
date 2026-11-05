@@ -1,0 +1,476 @@
+{
+  "schema": 1,
+  "base": "7118818f467931a4d8586ae2d2e095bec686688e",
+  "branch": "implement/source-cenum-20261105",
+  "scope": "explicit fieldless integer repr enum scalar storage and ordinary C transport",
+  "compiler_sources": {
+    "dev/src/abi/classification.rs": "12dd38809d77e71389c6f5ba7e60f3a329ce3592dc1cf4d6da92d3a0b0537984",
+    "dev/src/abi/classification/composites/shapes.rs": "5f08b6441b869c3ce6168d1bfca7e6a120744b20bb35a62457c59c00247c82e4",
+    "dev/src/abi/layout.rs": "24732cfa0b4ed237a7f3c4ab7e5b83a542a253ec10d2c8627f3bb7aee5d56979",
+    "dev/src/abi/layout/e_tags.rs": "b91bdba5db31ceca8dae82fb0b92e66b0d26096cf3c5c909205afb09b478ca92",
+    "dev/src/lower/context/niches.rs": "6dfd4e060cc5aff821721f2264fd60f86cbe90cc3dee7222691659a30957aece",
+    "dev/tests/cetags.rs": "ca47bfb830ecb377c725313476a9000adde2c7868c005d4424fcaf18c2c39d8e",
+    "dev/tests/suites/traits/mod.rs": "b3763e51cffaf235640220ce5b00ae6a270c4cacfc498562e2a610379cdefc33",
+    "dev/tests/vactx.rs": "ad6916eb6e813c4cbb41fb459911c43518bb35b9f0705aac8454a9aa93481370"
+  },
+  "fixtures": {
+    "pa31/tests/spec/source-c-enum/README.md": "54ce2342f9201fcd519860146220a7e30f0969edcd4b320d3a8aad45ec48ba69",
+    "pa31/tests/spec/source-c-enum/alias.rs": "7a2897de3f70c8c5adbdd7a29974c1b4e38ffc83ad1d110522f0a5fa8882730c",
+    "pa31/tests/spec/source-c-enum/aligned.rs": "7d8df054767d81d0e204271ffb6001e691b6a4fb6cefb8ab685cafe0bb7661e9",
+    "pa31/tests/spec/source-c-enum/c_void.md": "2d622454864a5ed26ec2245470fb19f7082fb813c461f55ca844bf5efb388293",
+    "pa31/tests/spec/source-c-enum/calls.c": "7e6250c2bfb8d61377d6bbc7e77e2273fd0d5648645f98102e8761c2bacdd961",
+    "pa31/tests/spec/source-c-enum/calls.rs": "bd60a5d066d54f0efba6bbb82758b4989e567aefc5cfb22ba375c0f6f5404933",
+    "pa31/tests/spec/source-c-enum/default.rs": "5f1b34ee9aa47a95b043af6f151585a42873ab5bbe1669078521ea5e621cb6ab",
+    "pa31/tests/spec/source-c-enum/drops.c": "9aa1f3165457f8eabdcf36eb1d5f5f748f71006fab761a969511f76621bf10ea",
+    "pa31/tests/spec/source-c-enum/drops.rs": "bb7fbe3ac12ff47267ea49d5013e19751ed0af73a95af0b83a6cce3b94860db6",
+    "pa31/tests/spec/source-c-enum/drops2.rs": "73bfd04b0121889d58d65d683bd30353a7761802638cf19e27fe787200d8cff3",
+    "pa31/tests/spec/source-c-enum/duplicate.rs": "0fccf8204a3a1708dd2e8a58fde00eb5fb1e0068d32e2b5af864a6957a86665a",
+    "pa31/tests/spec/source-c-enum/followup.json": "8c11246330c4d75bda3c361ebd321d4e255ef1d726a3e04527092e2fb1b5c9b8",
+    "pa31/tests/spec/source-c-enum/identity.rs": "9a15372126d042a5d043359ef4bd85fc20ae31bb1f1aa4ed2d32252af85ae452",
+    "pa31/tests/spec/source-c-enum/move.rs": "aba204f7b9557a2b3dd267dd7f3b657ac49b689d2c559334f40d1e981f7b57ef",
+    "pa31/tests/spec/source-c-enum/mutable.rs": "13b318c11fd8fdeb73ad7c0ee07974600d38d7d1f8b234f99e1a4dddbed7adeb",
+    "pa31/tests/spec/source-c-enum/packed.rs": "8a702942f696bf00959e6cfb0613c0645ec3c042878a769f0d89bc1674a4a6c0",
+    "pa31/tests/spec/source-c-enum/payload.rs": "bdd7a19816debea3068a73bd572eb31013aeb8ffba9764a10355b6c2ff7e4056",
+    "pa31/tests/spec/source-c-enum/predictions.json": "ce7111c54f3bdf5c52cf2f4900715bcfd17fe13eda6f50ec53813f48e216861a",
+    "pa31/tests/spec/source-c-enum/prefix.rs": "94c6314d3a5ce384d61638ca9384a9e0f515abcd7a345ebf730bdd66cff80e75",
+    "pa31/tests/spec/source-c-enum/range.rs": "c7e855341fb26a0320451f11f763ee235c7c8b61cea266738ee4f6ba93f90643",
+    "pa31/tests/spec/source-c-enum/trans.rs": "aa0a9ffe2db72869b6fddc3fe12b2e755e68e0bc79b6012785c970be7febe7e4",
+    "pa31/tests/spec/source-c-enum/widths.c": "8d6d8a4d4d99d9d7294614475406f290d63ea8cb10751e49e4912cf27f1e7bb5",
+    "pa31/tests/spec/source-c-enum/widths.rs": "382c31a5a78ac166b7bf1af255aeee8d57b52389efa6b0aaabf42657a6a41529",
+    "pa31/tests/spec/source-c-enum/work128.rs": "1f4b4d1f63521898c827105635ace531e616fcf13247878c46f5e43b95d91e9b",
+    "pa31/tests/spec/source-c-enum/work32.rs": "ef48da8cd46f74c0ab1fb04b2d6aa68963efac90433546c41798a1e32b2ef0f9",
+    "pa31/tests/spec/source-c-enum/work8.rs": "5d6e8c48d115c6227cd027576f9277190acd474710bde109b88829aa3d33bad6"
+  },
+  "original_c_void": {
+    "path": "pa31/tests/spec/source-va-runtime/cvoid.rs",
+    "sha256": "085a147d5bbb8f36b80cc2c980939f2c795d946b8d49eb616c5e63248260dbcc"
+  },
+  "gate": {
+    "path": "obj/parallel/source-transport/cenum/gate1/receipt.json",
+    "sha256": "4f4b70516c93d1c139e6a83d90882d62237e7a131833b7b881bf39bb25366387",
+    "results": [
+      {
+        "name": "public",
+        "command": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_traits",
+          "cetags::",
+          "--",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 95.47770110599231
+      },
+      {
+        "name": "native",
+        "command": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_traits",
+          "cetags::actual_enum_tags_callbacks_nested_fields_and_drop_execute_natively",
+          "--",
+          "--exact",
+          "--ignored",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 0.7026590310269967
+      },
+      {
+        "name": "old-runtime",
+        "command": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_traits",
+          "vactx::",
+          "--",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 3.4736995740095153
+      },
+      {
+        "name": "runtime-native",
+        "command": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_traits",
+          "vactx::actual_source_cursor_reads_clones_and_scope_cleanup_execute_natively",
+          "--",
+          "--exact",
+          "--ignored",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 2.544284283008892
+      },
+      {
+        "name": "old-va",
+        "command": [
+          "cargo",
+          "test",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_traits",
+          "vaops::",
+          "--",
+          "--nocapture"
+        ],
+        "code": 0,
+        "seconds": 0.565101650019642
+      },
+      {
+        "name": "registration",
+        "command": [
+          "python3",
+          "scripts/maintainer_suites.py",
+          "check"
+        ],
+        "code": 0,
+        "seconds": 0.07955267000943422
+      },
+      {
+        "name": "upstream",
+        "command": [
+          "python3",
+          "scripts/upstream.py",
+          "--verify"
+        ],
+        "code": 0,
+        "seconds": 0.12834558996837586
+      }
+    ]
+  },
+  "static": {
+    "path": "obj/parallel/source-transport/cenum/static2/receipt.json",
+    "sha256": "c76bb4356b18d22cc0416fd9ec042c196ddfbf93a1905fded77e2730f522940c",
+    "results": [
+      {
+        "name": "format",
+        "command": [
+          "cargo",
+          "fmt",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--all"
+        ],
+        "code": 0,
+        "seconds": 13.22790554095991
+      },
+      {
+        "name": "audit",
+        "command": [
+          "obj/audit-venv/bin/python",
+          "scripts/rust_audit.py",
+          "--root",
+          ".",
+          "--cache",
+          "obj/fast-audit.json"
+        ],
+        "code": 0,
+        "seconds": 2.136476212006528
+      },
+      {
+        "name": "clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--test",
+          "suite_traits",
+          "--bin",
+          "rustgm",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "code": 0,
+        "seconds": 58.142843927955255
+      }
+    ]
+  },
+  "source_map": {
+    "path": "obj/parallel/source-transport/cenum/gate1/sources.json",
+    "sha256": "09672ac6af821119b2526cb3cac6b42436535593e579a60cc48a8c6cedabdc3e"
+  },
+  "references": [
+    {
+      "path": "obj/parallel/source-transport/cenum/reference-v1/receipt.json",
+      "sha256": "931d57d6c42a253e7300406bc7239d5ee1eced0095dd4ee85cd20aa360e4a1e4",
+      "success": false
+    },
+    {
+      "path": "obj/parallel/source-transport/cenum/reference-v2/receipt.json",
+      "sha256": "744df78e09cb9294a58e54706ff616fd4d1158d2a83a30f82913a1a4978cda4f",
+      "success": true
+    }
+  ],
+  "first_static_failure": {
+    "path": "obj/parallel/source-transport/cenum/static1/receipt.json",
+    "sha256": "008e61075ca31530bf06a63a4107594c30faeb71ed7126fd37d91cc730d95f11"
+  },
+  "native": [
+    {
+      "case": "widths",
+      "path": "obj/parallel/source-transport/cenum/native-widths-3972660",
+      "stdout": "1 -3 65535 -3 4294967295 -3 18446744073709551615 -3 1 1 17 -3\n",
+      "artifacts": {
+        "backend.command": "96092fd41f1a60adfb348be9ef3dda538b87d1a89ef9ffe27dff8d235e9be51b",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "ebb16508e6edd328e52122503ef29b442deb68f8713493997b13b4547f46c528",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "2435afd2728de4233dc9a0ce397f07963fb81b394dd2830d25a275979a0e0225",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.stdout": "5210e7046b265fbd704dce1b13cd846fd0ac5878506fdb38f5288288abca02da",
+        "observer": "23bf37e399873ff5560f9567023609122f3c42ae0d23c1e1b4e6f059f846374a",
+        "source.lowir": "381658624a257073a39b5aad9a594402054e2f2b6df903e5e738aaa78f812788",
+        "source.o": "273daca9ece5c95f8b7b59e77733e68814f95d9b0ab271e3eed9e75e521cd340"
+      }
+    },
+    {
+      "case": "calls",
+      "path": "obj/parallel/source-transport/cenum/native-calls-3972660",
+      "stdout": "1 73 1 1 513\n",
+      "artifacts": {
+        "backend.command": "107128abe256e793c88e02160fafba5d8367290207077802afb29ca410f2e9f3",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "d5d68d4b43a57386e4c1f81bb867d86bf59d9b8aafab47219f3a97e1cb7d0dc8",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "b3d7c917dbb7b746d04e5469cf9095af5b4323f97980d1c3645222acb925f832",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.stdout": "823b028e520c58baad64f8cfd06d578abdb070032e9aab181611724feb58a6fa",
+        "observer": "7d02b0b061a3f17698cfbec94acd9c105c054b7a7e2928d0d01d297725f01070",
+        "source.lowir": "dd51383829aabf8926cea72e384ef228c59b5fbac05c2a689f060ad9f49ca503",
+        "source.o": "68321db1fb82306e824bcaca4c5b05d537119c5c250171a27213ea31b70d7282"
+      }
+    },
+    {
+      "case": "drops2",
+      "path": "obj/parallel/source-transport/cenum/native-drops2-3972660",
+      "stdout": "9\n",
+      "artifacts": {
+        "backend.command": "eccf2af9417bcd90f790a5e07307f006fe10468deb48305f9ef537941e7795fb",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "7df919bfe36c036e0cd4e5f6a9a8fb5af3973d5ac77c42a7cbfd88c93a7fd211",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "1d52e4a45dfc8a1f15e8f55dfb695739b5d4cdd91d9100e082ff50cdb3c75174",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.stdout": "2e6d31a5983a91251bfae5aefa1c0a19d8ba3cf601d0e8a706b4cfa9661a6b8a",
+        "observer": "0c6caac8a293d00b5833002c3328d583b6180aafea04d88b4aabfa174d9ca216",
+        "source.lowir": "4aa57d92f9cc0a38453742f4d89fc9624e2a52db8295e8604111ea0fcbf6f17f",
+        "source.o": "e437785ac32c18f29f11afe8ead33e640395cd7cebf54892f35715dc92924e4e"
+      }
+    },
+    {
+      "case": "run",
+      "path": "obj/parallel/source-transport/va-run/native-run-3973099",
+      "stdout": "17 11 17.5 23 23 29 31\n",
+      "artifacts": {
+        "backend.command": "737d9ad486f6fcac9fb09a385bf0b1b25e5d61bac13c43361ed7a554da9ce4d5",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "1197811a91eb313ad48ca42c3caeff0cc71a022b3d4d6539f17715f750240314",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "4ab75ed010d122e41c008070a7765cbd8d0d0ab6e5f1c71124e2c9d2e81e6fdd",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.stdout": "57a679ed9c1f9fd90029ab8653b7f528e99c565da635b07d1090c65eb2c6b00b",
+        "observer": "bfd531e60efe0431192d208777412cb5ecbe7e8bdfe2201736181f8c77407450",
+        "source.lowir": "e47e0f6f6ac055773302ba99eefeb1576bbffa741de44f84437512d6bf172588",
+        "source.o": "6330ec03f9a7d10c15610c6c3c45bb27a312604f9ce7dfd6df75e1592f70cdad"
+      }
+    },
+    {
+      "case": "rzro",
+      "path": "obj/parallel/source-transport/va-run/native-rzro-3973099",
+      "stdout": "37\n",
+      "artifacts": {
+        "backend.command": "35050800a96bff57a18fff39d0b29823bfc86a5e2db6ce67df6cdbb7b4a8f4b1",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "fdd92c6655541df7dd97715ff7d0de4f26feabd37473bcdb0ee60d482a28372d",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "97d2174e2950f666c57d9d4abb5d3b9b2e98ffb5dff9a2c51d33c3783246683a",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.stdout": "b58a3da5fde2680191877ec88a1aa7d06927cc3b30cdf0d0db8c39b488891576",
+        "observer": "4975f4b049c0508395fcd444f4b08038be80f13f28a28b57da11115c140ae594",
+        "source.lowir": "3f526b2eab85db3aae44f2a25a16ada8cb4f06bc2aa74a723b7bbe455c39d71f",
+        "source.o": "c97818299cdb0b5b5b368c141c3e9907bb0590c62fc9571b55d8b217c3e9f246"
+      }
+    },
+    {
+      "case": "cvloc2",
+      "path": "obj/parallel/source-transport/va-run/native-cvloc2-3973099",
+      "stdout": "1\n",
+      "artifacts": {
+        "backend.command": "cf98078df600123f6353214ab6ad8b27f55d64059e4fe7d0d129544662d7c3dd",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "398fe28e8bba63ae6d5a5cdf9f4a9fb68ad81766efe79a228a0756bca3401d8f",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "09944afc3bc3e4d298b65dadf44ec5f597f35dd80fd05d18fe210d39278a341a",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.stdout": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+        "observer": "abb35d1959b31f47a518e546c0206b61264b8cf3361745c22472e8cc4fe0074d",
+        "source.lowir": "bc8a2ff813eb9c7c065fe0d92f0bbf5772679fb0c956dca9ba1fc2c36bc43c03",
+        "source.o": "6ffca0c1d5d81b8e1e2e9cd22316d7ae9d61896bd8a08af91cf97e1902ab8d4b"
+      }
+    },
+    {
+      "case": "cvoid",
+      "path": "obj/parallel/source-transport/va-run/native-cvoid-3973099",
+      "stdout": "1\n",
+      "artifacts": {
+        "backend.command": "7d135d3c397714b96b9e5997fde8e08f744dd79d31926b90f11788844f4d033f",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "fe7028fd9383c30467e2c2611b074adf33c03b75f2ae9d3588847d07d6673c21",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "5b9a15f005798024c08f355a252644969e13383188c53d66963edb84b9ab1989",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.stdout": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+        "observer": "917fb54a1b8242c14634f7dc95b835579160bfe77c0df94f731a1194d17d6cea",
+        "source.lowir": "34fcea1e50af60a509960b78ca66fd426005b2b201a1dce637fd47dfe9dd3658",
+        "source.o": "bdace8e915c2b8b5ba52366b46f969f1fd850ce97cceca69379870a5cd1e1628"
+      }
+    },
+    {
+      "case": "rorder",
+      "path": "obj/parallel/source-transport/va-run/native-rorder-3973099",
+      "stdout": "41 41 77 47\n",
+      "artifacts": {
+        "backend.command": "a36d888955b8d55068353d1f459897863dc09e775c37e172de07d22b46a59a7f",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "cc447860b58173617b2c2fec10bd5da7b1c64705af1d61a40ccf28946d92eee9",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "5febb63578a3e5aa051c1f768ee6d3b07a2bb6ce9a6fc27e6fc3d812d4cfb6c5",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.stdout": "8eef2fbb31fbeae179127a77b6bf614a2fd1ead4a269f68497b6024dc2528378",
+        "observer": "6aadd1dd84606edac7a9d50676f5983adaa8910b5cb3271133df160eb9099c5c",
+        "source.lowir": "3e3d5cbf71cee8d2f151f5907d03bf37d5ec72378bc26cc36086b896dff2a44e",
+        "source.o": "d8d0ff90347f74d83001fb06cd92165967f532276e89181f9acc8886047abe04"
+      }
+    },
+    {
+      "case": "rfixed",
+      "path": "obj/parallel/source-transport/va-run/native-rfixed-3973099",
+      "stdout": "31.5\n",
+      "artifacts": {
+        "backend.command": "2530b1af2f3c8745a1ecc8f8e93f0b17757cbcff45c10b3cf01054f085b38237",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "499ced5d63f4c18abfd10cd4268fb9f32c6671d92cf13c1bddfc99b43c290f91",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "21522afecf9c785d21b41de9ded26f852c32e7f010534de23a2b3789036caea4",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.stdout": "5ae536897a9035576994fff74304c7e8ed57c0ecb524b0211a43b9703a580b28",
+        "observer": "0dd66d4089595e2087cf6835f961c82e56a44ef0911722f3edd519715b2dbf6b",
+        "source.lowir": "6d029a14e808dc8db2298525fc7d05550bb8a4cd8c561ab99721795eeb96802e",
+        "source.o": "2e1ebfef7e8cf840dae816bb5c997a419b285f37c7f268d156dbec7d6160083a"
+      }
+    },
+    {
+      "case": "rfrom",
+      "path": "obj/parallel/source-transport/va-run/native-rfrom-3973099",
+      "stdout": "17\n",
+      "artifacts": {
+        "backend.command": "d2216295b9a20b31886493f234eac55f59289defc1f840be7218ac7384887897",
+        "backend.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "link.command": "d0a8cf2e70b13538cc5bfef7110fd1fb4b6bf089492f72d0c1be99ba2fa2d56e",
+        "link.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.command": "05540773e515ae0b0a0273f5777df40d0f01eb9c255bf37240b0676c179ace4c",
+        "native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "native.stdout": "54183f4323f377b737433a1e98229ead0fdc686f93bab057ecb612daa94002b5",
+        "observer": "1bb33b25c98bb3d36c30dce2f40bf518bd8e1978b5adc9eaf471beded18a20d1",
+        "source.lowir": "9a5ecca4bc9c1c0d81ca0440a1cc79bfde697a00f22aaecb7e71e626b8eb91da",
+        "source.o": "c7785320ef622a73e080b527953fc838807c9bb77e5f6cc8c88523513cd3187f"
+      }
+    }
+  ],
+  "work": {
+    "widths": [
+      8,
+      32,
+      128
+    ],
+    "layout_steps": [
+      24,
+      72,
+      264
+    ],
+    "warm_repetitions": 32,
+    "warm_added_layout_steps": 0,
+    "no_general_performance_claim": true
+  },
+  "semantic_negatives": [
+    "non-Copy move",
+    "distinct nominal identity despite equal storage",
+    "immutable place",
+    "duplicate discriminant",
+    "integer literal range",
+    "packed enum placement"
+  ],
+  "required_rust_positive_profiles": [
+    "default repr",
+    "payload enum",
+    "custom alignment",
+    "transparent wrapper around enum"
+  ],
+  "remaining": [
+    "nominal const destruction and cursor CTFE unchanged",
+    "other enum C ABI profiles retained as required",
+    "full private/release CI"
+  ],
+  "integration_conflicts": [
+    "new cetags registration union with Root trait suite additions",
+    "vactx original c_void moves from named required gap to positive/native observer; keep Root additions",
+    "five ABI source files otherwise independent of Receiver/wrapping/AsyncFn joins"
+  ],
+  "backend_source": "b7c6b8e72595a524e1b3f147212d69c02b257dd8",
+  "backend_lock": {
+    "path": "backend.lock.json",
+    "sha256": "f60c0760f39f1f554486f5a1eb990d2c0fef663fbd1bff944cd1eef8a014a581"
+  },
+  "backend_tools": {
+    "lowir": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/backend/pins/32b1e67c44d242351bb20787e3bbd287a603a677fffbe0859a38002be776f11d/lowir",
+      "sha256": "32b1e67c44d242351bb20787e3bbd287a603a677fffbe0859a38002be776f11d"
+    },
+    "lowir2native": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/backend/pins/27b3138e442d53706a059cea0ea98ede2756f56076f00f26ffc28da078974815/lowir2native",
+      "sha256": "27b3138e442d53706a059cea0ea98ede2756f56076f00f26ffc28da078974815"
+    },
+    "cppgm++": {
+      "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/backend/pins/0d216449452b5a911d364ef7f4eb807d7b429a8cb96fb0afed8f99b60b5cfa5b/cppgm++",
+      "sha256": "0d216449452b5a911d364ef7f4eb807d7b429a8cb96fb0afed8f99b60b5cfa5b"
+    }
+  },
+  "resource_policy": "two global/one per tree;16GiB cap/150GiB reserve;guarded <=230s;exclusive hold honored"
+}

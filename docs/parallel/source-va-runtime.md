@@ -38,7 +38,7 @@ strict formatting, architecture and Clippy are in static11/receipt.json.
 Seven regular integration tests include eight positive LowIR consumers, thirteen
 intended-cause cursor/Drop outcomes, sixteen original positive feature requests,
 actual source discriminant regressions, fixed-signature checks and bounded work.
-The separately named required-gap test is not Rust semantic parity. Six native
+The separately named required-gap test is not Rust semantic parity. The initial six native
 programs match independently frozen Rust observers:
 
 | Input | Native stdout | Observation |
@@ -66,15 +66,16 @@ maintainer registration also pass. Full private/release qualification remains CI
 The evidence JSON binds compiler/fixture/native hashes, reference and local
 failure receipts, and immutable backend tools.
 
+The initial original cvoid.rs by-value C ABI gap is now closed by the
+[fieldless enum checkpoint](source-c-enum.md), with original source and observer
+unchanged. The initial gate9 evidence above remains a historical qualification.
+
 Required work remains:
 
 - cldef.rs and clcall.rs are Rust-positive. The shared nominal const destruction
   eligibility fence rejects the original concrete const definition. Proper
   nominal/field/actual const Drop proof must precede removing it; actual cursor
   CTFE state/init/read/copy/end/cleanup remains required separately.
-- Original cvoid.rs direct by-value C echo is Rust-positive/native 1 and meets
-  the existing repr(C)-struct-only boundary fence. The ordinary constructor
-  observer does not replace that ABI requirement.
 - Full unchanged standard module/macro closure, imported/source-serialized cursor
   locals and operations, generic variadic definition specialization, other target
   cursor ABIs, Miri semantics and unnamed-ellipsis lint policy remain required.

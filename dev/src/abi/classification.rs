@@ -187,11 +187,12 @@ impl Plans {
         if head == TypeId::UNIT
             || head == TypeId::NEVER
             || matches!(kind, Kind::FunctionItem { .. })
+            || matches!(layout.shape, Shape::Scalar) && scalar(kind)?
         {
             return Ok(Passing::Scalar(ty));
         }
-        if matches!(layout.shape, Shape::Scalar) && scalar(kind)? {
-            return Ok(Passing::Scalar(ty));
+        if let Some(tag) = layouts.fieldless_enum_scalar(types, definitions, head)? {
+            return Ok(Passing::Scalar(tag));
         }
         let Kind::Adt(item, _) = kind else {
             return Err("C aggregate ABI profile requires a repr(C) scalar-field struct");

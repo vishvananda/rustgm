@@ -1,0 +1,26 @@
+{
+  "stage": "independent source outcomes frozen before production edits",
+  "cases": [
+    {
+      "file": "drops2.rs",
+      "sha256": "73bfd04b0121889d58d65d683bd30353a7761802638cf19e27fe787200d8cff3",
+      "prediction": {
+        "accepted": true,
+        "cause": "corrected earlier qualified Drop declaration seed retains actual method stability; ordinary effect after enum scalar transport",
+        "emit": "obj"
+      }
+    }
+  ],
+  "native": [
+    {
+      "source": "drops2.rs",
+      "observer": "drops.c",
+      "stdout": "9\n"
+    }
+  ],
+  "seed": {
+    "source": "pa31/tests/spec/source-va-runtime/cvoid.rs",
+    "sha256": "085a147d5bbb8f36b80cc2c980939f2c795d946b8d49eb616c5e63248260dbcc",
+    "adaptation": "omit only previous authored cv_echo; keep original attributed declaration seed and actual c_void"
+  }
+}

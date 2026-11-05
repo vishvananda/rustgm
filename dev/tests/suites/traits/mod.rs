@@ -101,3 +101,6 @@ mod idxops;
 mod vactx;
 #[path = "../../vaops.rs"]
 mod vaops;
+
+#[path = "../../cetags.rs"]
+mod cetags;

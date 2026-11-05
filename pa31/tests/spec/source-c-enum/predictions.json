@@ -1,0 +1,180 @@
+{
+  "stage": "independent source outcomes frozen before production edits",
+  "cases": [
+    {
+      "file": "widths.rs",
+      "sha256": "382c31a5a78ac166b7bf1af255aeee8d57b52389efa6b0aaabf42657a6a41529",
+      "prediction": {
+        "accepted": true,
+        "cause": "actual signed/unsigned tag widths preserve direct C parameter/result bits",
+        "emit": "obj"
+      }
+    },
+    {
+      "file": "calls.rs",
+      "sha256": "bd60a5d066d54f0efba6bbb82758b4989e567aefc5cfb22ba375c0f6f5404933",
+      "prediction": {
+        "accepted": true,
+        "cause": "nested C field, actual indirect/imported call, closed const-generic nominal identity",
+        "emit": "obj"
+      }
+    },
+    {
+      "file": "drops.rs",
+      "sha256": "bb7fbe3ac12ff47267ea49d5013e19751ed0af73a95af0b83a6cce3b94860db6",
+      "prediction": {
+        "accepted": true,
+        "cause": "actual nominal Drop still executes after scalar C transport, without Copy permission",
+        "emit": "obj"
+      }
+    },
+    {
+      "file": "move.rs",
+      "sha256": "aba204f7b9557a2b3dd267dd7f3b657ac49b689d2c559334f40d1e981f7b57ef",
+      "prediction": {
+        "accepted": false,
+        "cause": "E0382: enum remains non-Copy",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "identity.rs",
+      "sha256": "9a15372126d042a5d043359ef4bd85fc20ae31bb1f1aa4ed2d32252af85ae452",
+      "prediction": {
+        "accepted": false,
+        "cause": "E0308: equal tag storage does not merge nominal types",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "mutable.rs",
+      "sha256": "13b318c11fd8fdeb73ad7c0ee07974600d38d7d1f8b234f99e1a4dddbed7adeb",
+      "prediction": {
+        "accepted": false,
+        "cause": "E0384: ordinary immutable place",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "duplicate.rs",
+      "sha256": "0fccf8204a3a1708dd2e8a58fde00eb5fb1e0068d32e2b5af864a6957a86665a",
+      "prediction": {
+        "accepted": false,
+        "cause": "E0081: repeated actual discriminant",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "range.rs",
+      "sha256": "c7e855341fb26a0320451f11f763ee235c7c8b61cea266738ee4f6ba93f90643",
+      "prediction": {
+        "accepted": false,
+        "cause": "E0370: actual discriminant does not fit tag",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "packed.rs",
+      "sha256": "8a702942f696bf00959e6cfb0613c0645ec3c042878a769f0d89bc1674a4a6c0",
+      "prediction": {
+        "accepted": false,
+        "cause": "E0517: enum packed placement invalid",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "alias.rs",
+      "sha256": "7a2897de3f70c8c5adbdd7a29974c1b4e38ffc83ad1d110522f0a5fa8882730c",
+      "prediction": {
+        "accepted": true,
+        "cause": "ordinary aliases preserve actual enum identity",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "default.rs",
+      "sha256": "5f1b34ee9aa47a95b043af6f151585a42873ab5bbe1669078521ea5e621cb6ab",
+      "prediction": {
+        "accepted": true,
+        "cause": "Rust-positive default representation remains outside finite C scalar profile",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "payload.rs",
+      "sha256": "bdd7a19816debea3068a73bd572eb31013aeb8ffba9764a10355b6c2ff7e4056",
+      "prediction": {
+        "accepted": true,
+        "cause": "Rust-positive payload enum remains outside finite scalar profile",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "aligned.rs",
+      "sha256": "7d8df054767d81d0e204271ffb6001e691b6a4fb6cefb8ab685cafe0bb7661e9",
+      "prediction": {
+        "accepted": true,
+        "cause": "Rust-positive custom alignment remains outside finite scalar profile",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "trans.rs",
+      "sha256": "aa0a9ffe2db72869b6fddc3fe12b2e755e68e0bc79b6012785c970be7febe7e4",
+      "prediction": {
+        "accepted": true,
+        "cause": "Rust-positive transparent wrapper remains separately required if generic carrier not supported",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "work8.rs",
+      "sha256": "5d6e8c48d115c6227cd027576f9277190acd474710bde109b88829aa3d33bad6",
+      "prediction": {
+        "accepted": true,
+        "cause": "8 real fieldless source variants; bounded charged scalar query",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "work32.rs",
+      "sha256": "ef48da8cd46f74c0ab1fb04b2d6aa68963efac90433546c41798a1e32b2ef0f9",
+      "prediction": {
+        "accepted": true,
+        "cause": "32 real fieldless source variants; bounded charged scalar query",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "work128.rs",
+      "sha256": "1f4b4d1f63521898c827105635ace531e616fcf13247878c46f5e43b95d91e9b",
+      "prediction": {
+        "accepted": true,
+        "cause": "128 real fieldless source variants; bounded charged scalar query",
+        "emit": "metadata"
+      }
+    }
+  ],
+  "native": [
+    {
+      "source": "widths.rs",
+      "observer": "widths.c",
+      "stdout": "1 -3 65535 -3 4294967295 -3 18446744073709551615 -3 1 1 17 -3\n"
+    },
+    {
+      "source": "calls.rs",
+      "observer": "calls.c",
+      "stdout": "1 73 1 1 513\n"
+    },
+    {
+      "source": "drops.rs",
+      "observer": "drops.c",
+      "stdout": "9\n"
+    }
+  ],
+  "seed": {
+    "source": "pa31/tests/spec/source-va-runtime/cvoid.rs",
+    "sha256": "085a147d5bbb8f36b80cc2c980939f2c795d946b8d49eb616c5e63248260dbcc",
+    "adaptation": "omit only previous authored cv_echo; keep original attributed declaration seed and actual c_void"
+  }
+}

@@ -21,11 +21,11 @@ remain. Reference objects explicitly disable overflow checks; rorder's separate
 qualified run also disables debug assertions. These valid-input cursor observers
 do not qualify checked arithmetic/alignment/null/panic behavior.
 
-The grouped vactx integration tests run these files in suite_traits. Three
-Rust-positive requirements remain explicitly named: const cursor definition,
-executed constant cursor call, and original c_void by-value C echo. They are
-not parity negatives. cvloc2 is a distinct ordinary constructor/move/cast observer
-and does not replace the original ABI input. PA31 remains planned without a
+The grouped vactx integration tests run these files in suite_traits. At the initial runtime checkpoint, three Rust-positive requirements remained:
+const cursor definition, executed constant cursor call, and the original c_void
+by-value C echo. The [enum C checkpoint](../../../../docs/parallel/source-c-enum.md)
+now closes that original echo unchanged; the two const requirements remain.
+These are not parity negatives. cvloc2 remains a distinct ordinary observer. PA31 remains planned without a
 grading manifest; these are maintainer contracts.
 
 See [the checkpoint](../../../../docs/parallel/source-va-runtime.md) and its

@@ -31,6 +31,12 @@ impl Context<'_> {
             }
             return self.carrier_type(encoding.carrier, layout.size);
         }
+        if let Some(tag) = self
+            .layouts
+            .fieldless_enum_scalar(self.types, self.aggregates, ty)?
+        {
+            return super::representation(self.types, tag).map(Some);
+        }
         let Some(Kind::Adt(item, _)) = self.types.kind(ty) else {
             return Ok(None);
         };

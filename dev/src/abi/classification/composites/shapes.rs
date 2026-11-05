@@ -101,6 +101,13 @@ impl Query<'_> {
         })
     }
     fn carrier_word(&mut self, ty: TypeId, layout: Layout) -> Result<bool, &'static str> {
+        if self
+            .layouts
+            .fieldless_enum_scalar(self.types, self.definitions, ty)?
+            .is_some()
+        {
+            return Ok(true);
+        }
         if let Some(niche) = self.layouts.niche(&layout)? {
             if niche.owner != ty {
                 return Err("nullable C field belongs to another type");

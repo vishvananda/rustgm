@@ -4,6 +4,7 @@ use crate::types::{
     aggregate::{self, Definitions, Repr, Representation},
 };
 
+mod e_tags;
 mod niches;
 mod physical_ready;
 mod simd;
