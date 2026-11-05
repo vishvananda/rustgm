@@ -1,0 +1,466 @@
+{
+  "state": "passed",
+  "candidate": {
+    "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/async-call-source-v1/family-checkpoint-v3/rustgm",
+    "sha256": "a7f6b568c5a378150a384d154e85687e9f42601c40b6e8b87a9264b52e562366"
+  },
+  "baseline": {
+    "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/future-const-join-v1/cli/292c96f2af4ef19eb11e994fd4b29ec2dfa2b426cdda9e84fc77974ee1d018fa/rustgm",
+    "sha256": "292c96f2af4ef19eb11e994fd4b29ec2dfa2b426cdda9e84fc77974ee1d018fa"
+  },
+  "focused_gate": {
+    "path": "obj/qualification/fast/1793905759435136967/receipt.json",
+    "sha256": "8db5d0d8a7776a6755e34fd38ef3c3148adc639524cc8e19b3c13418affad1ef",
+    "seconds": 110.24,
+    "exact_tests": 10
+  },
+  "qualification": {
+    "path": "obj/parallel/async-call-source-v1/family-checkpoint-v3/receipt.json",
+    "sha256": "1647b802bbf0deac70489d90ca9bc0c11de16e242bc08bcf4ac39bda981f0af9",
+    "seconds": 56.04102238098858,
+    "compiler_source_fingerprint_sha256": "d6f458481b699a9a6b9e7af8b0bffb48cb7d84b194c46f8e1df7318c1e00b7bf",
+    "commands": [
+      {
+        "label": "build-cli",
+        "command": [
+          "cargo",
+          "build",
+          "--manifest-path",
+          "dev/Cargo.toml",
+          "--locked",
+          "--profile",
+          "dev-fast",
+          "--bin",
+          "rustgm"
+        ],
+        "status": 0,
+        "seconds": 0.09753162798006088,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "a27c927d65a4c893e10c13f1edb0dff6d5ef68895f6b7681c48fd58db6c3dbee"
+      },
+      {
+        "label": "rustc-gat-8",
+        "command": [
+          "rustc",
+          "--edition=2024",
+          "--emit=metadata",
+          "--crate-name",
+          "gat_scale",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/async-call-source-v1/family-checkpoint-v3/gat-8.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/async-call-source-v1/family-checkpoint-v3/gat-8.rmeta"
+        ],
+        "status": 0,
+        "seconds": 0.08302218501921743,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "4ec34161d085dcba06422e8dc3f9ee38e62acee457cbdadb453801f5dc47879a"
+      },
+      {
+        "label": "rustc-gat-32",
+        "command": [
+          "rustc",
+          "--edition=2024",
+          "--emit=metadata",
+          "--crate-name",
+          "gat_scale",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/async-call-source-v1/family-checkpoint-v3/gat-32.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/async-call-source-v1/family-checkpoint-v3/gat-32.rmeta"
+        ],
+        "status": 0,
+        "seconds": 0.07925918302498758,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "d87251c4560ed96f2b764dace0ebe9234e0a4e86c666a103b44a90e6d89475ca"
+      },
+      {
+        "label": "rustc-gat-128",
+        "command": [
+          "rustc",
+          "--edition=2024",
+          "--emit=metadata",
+          "--crate-name",
+          "gat_scale",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/async-call-source-v1/family-checkpoint-v3/gat-128.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/async-call-source-v1/family-checkpoint-v3/gat-128.rmeta"
+        ],
+        "status": 0,
+        "seconds": 0.1386764709604904,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "76336520558ad55d50c1bca6f99111a168dc0b2868c8657d3b2eb2698afbda3b"
+      },
+      {
+        "label": "rustc-reviewed-0",
+        "command": [
+          "rustc",
+          "--edition=2024",
+          "--emit=metadata",
+          "--crate-name",
+          "gat_review",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa21/tests/spec/families/gat-values/cases/semantics/lending.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/async-call-source-v1/family-checkpoint-v3/reviewed-0.rmeta"
+        ],
+        "status": 0,
+        "seconds": 0.06909758999245241,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "label": "rustc-reviewed-1",
+        "command": [
+          "rustc",
+          "--edition=2024",
+          "--emit=metadata",
+          "--crate-name",
+          "gat_review",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa21/tests/spec/families/gat-values/cases/semantics/captured-lending.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/async-call-source-v1/family-checkpoint-v3/reviewed-1.rmeta"
+        ],
+        "status": 0,
+        "seconds": 0.07659496000269428,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "label": "rustc-reviewed-2",
+        "command": [
+          "rustc",
+          "--edition=2024",
+          "--emit=metadata",
+          "--crate-name",
+          "gat_review",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/pa21/tests/spec/integration/existential-methods/execution/semantics/gat-result.rs",
+          "-o",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/async-call-source-v1/family-checkpoint-v3/reviewed-2.rmeta"
+        ],
+        "status": 0,
+        "seconds": 0.08860278903739527,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "label": "new-references",
+        "command": [
+          "/usr/bin/python3",
+          "scripts/course.py",
+          "pa21",
+          "--app",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/async-call-source-v1/family-checkpoint-v3/rustgm",
+          "--jobs",
+          "2",
+          "--evidence-root",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/async-call-source-v1/family-checkpoint-v3/course",
+          "--bless",
+          "--case",
+          "tests/spec/families/forwarding/forward.rs",
+          "--case",
+          "tests/spec/families/forwarding/inherited.rs",
+          "--case",
+          "tests/spec/families/forwarding/mutable.rs",
+          "--case",
+          "tests/spec/families/forwarding/no-parent.rs",
+          "--case",
+          "tests/spec/families/forwarding/no-outlives.rs",
+          "--case",
+          "tests/spec/families/forwarding/lookalike.rs",
+          "--case",
+          "tests/spec/families/forwarding/method.rs",
+          "--case",
+          "tests/spec/families/forwarding/method-inherited.rs",
+          "--case",
+          "tests/spec/families/forwarding/method-mutability.rs",
+          "--case",
+          "tests/spec/families/forwarding/method-result.rs",
+          "--case",
+          "tests/spec/families/forwarding/method-static.rs",
+          "--case",
+          "tests/spec/families/forwarding/method-noninjective.rs",
+          "--case",
+          "tests/spec/families/forwarding/method-nested.rs",
+          "--case",
+          "tests/spec/families/forwarding/method-nested-capture.rs",
+          "--case",
+          "tests/spec/families/forwarding/method-distinct-universals.rs",
+          "--case",
+          "tests/spec/families/forwarding/method-distinct-preserved.rs",
+          "--case",
+          "tests/spec/families/callable-formation/unused-item.rs",
+          "--case",
+          "tests/spec/families/callable-formation/explicit-pointer.rs",
+          "--case",
+          "tests/spec/families/callable-formation/return-static.rs",
+          "--case",
+          "tests/spec/families/callable-formation/local-static.rs",
+          "--case",
+          "tests/spec/families/callable-formation/free-output.rs",
+          "--case",
+          "tests/spec/families/callable-formation/independent-static.rs",
+          "--case",
+          "tests/spec/families/callable-formation/independent-static-good.rs",
+          "--case",
+          "tests/spec/families/callable-formation/dependent-trait-pointer.rs",
+          "--case",
+          "tests/spec/families/callable-formation/dependent-trait-pointer-good.rs",
+          "--case",
+          "tests/spec/families/callable-formation/nested-input.rs",
+          "--case",
+          "tests/spec/families/callable-formation/outer-debt.rs",
+          "--case",
+          "tests/spec/families/callable-formation/outer-debt-good.rs",
+          "--case",
+          "tests/spec/families/forwarding/execute-shared.rs",
+          "--case",
+          "tests/spec/families/forwarding/execute-inherited.rs",
+          "--case",
+          "tests/spec/families/forwarding/execute-mutable.rs",
+          "--case",
+          "tests/spec/families/callable-formation/wrong-subject.rs",
+          "--case",
+          "tests/spec/families/callable-formation/repeated-slot.rs",
+          "--case",
+          "tests/spec/families/callable-formation/nested-local.rs",
+          "--case",
+          "tests/spec/families/callable-formation/wrong-const.rs",
+          "--case",
+          "tests/spec/families/callable-formation/independent-calls.rs",
+          "--case",
+          "tests/spec/families/callable-formation/static-input.rs",
+          "--case",
+          "tests/spec/families/gat-values/cases/semantics/lending.rs",
+          "--case",
+          "tests/spec/families/gat-values/cases/semantics/captured-lending.rs",
+          "--case",
+          "tests/spec/integration/existential-methods/execution/semantics/gat-result.rs"
+        ],
+        "status": 0,
+        "seconds": 1.1287605660036206,
+        "stdout_sha256": "11d6a47b716ed6b7f16ff591385835d65ffa8c80eb5553b4a9c11f5cbe910949",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "label": "pa21",
+        "command": [
+          "/usr/bin/python3",
+          "scripts/course.py",
+          "pa21",
+          "--app",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/async-call-source-v1/family-checkpoint-v3/rustgm",
+          "--jobs",
+          "2",
+          "--evidence-root",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/async-call-source-v1/family-checkpoint-v3/course"
+        ],
+        "status": 0,
+        "seconds": 5.94977653195383,
+        "stdout_sha256": "54480f41b087f4e465454799786b251d1ee6a106a0c43c200cd0d8e71e266c45",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "label": "harness-upstream",
+        "command": [
+          "make",
+          "test-harness",
+          "test-upstream"
+        ],
+        "status": 0,
+        "seconds": 13.104958921961952,
+        "stdout_sha256": "e441149ba4016ce66259fc7698d47b34ead180bcfad983feb9fab85824addfab",
+        "stderr_sha256": "0a8177c8fee5eb6396d5d64a56f976621b998ca6fddc69a029345664e3786052"
+      },
+      {
+        "label": "native-forwarding",
+        "command": [
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/rust/dev-fast/deps/suite_projections-475034c8395eb357",
+          "--ignored",
+          "--exact",
+          "gat_values::forwarded_family_bodies_execute_with_real_borrows"
+        ],
+        "status": 0,
+        "seconds": 1.0233151640277356,
+        "stdout_sha256": "7e150143b25f5ab00b5375b99171581cd91bd308d8f08e1d366a7ca46e62ab7c",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "label": "independent-native",
+        "command": [
+          "/usr/bin/python3",
+          "scripts/check_native.py",
+          "pa21",
+          "--app",
+          "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/async-call-source-v1/family-checkpoint-v3/rustgm",
+          "--jobs",
+          "2",
+          "--case",
+          "tests/spec/families/callable-formation/unused-item.rs",
+          "--case",
+          "tests/spec/families/callable-formation/explicit-pointer.rs",
+          "--case",
+          "tests/spec/families/callable-formation/return-static.rs",
+          "--case",
+          "tests/spec/families/callable-formation/local-static.rs",
+          "--case",
+          "tests/spec/families/callable-formation/free-output.rs",
+          "--case",
+          "tests/spec/families/callable-formation/independent-static.rs",
+          "--case",
+          "tests/spec/families/callable-formation/independent-static-good.rs",
+          "--case",
+          "tests/spec/families/callable-formation/dependent-trait-pointer.rs",
+          "--case",
+          "tests/spec/families/callable-formation/dependent-trait-pointer-good.rs",
+          "--case",
+          "tests/spec/families/callable-formation/nested-input.rs",
+          "--case",
+          "tests/spec/families/callable-formation/outer-debt.rs",
+          "--case",
+          "tests/spec/families/callable-formation/outer-debt-good.rs",
+          "--case",
+          "tests/spec/families/forwarding/execute-shared.rs",
+          "--case",
+          "tests/spec/families/forwarding/execute-inherited.rs",
+          "--case",
+          "tests/spec/families/forwarding/execute-mutable.rs",
+          "--case",
+          "tests/spec/families/callable-formation/wrong-subject.rs",
+          "--case",
+          "tests/spec/families/callable-formation/repeated-slot.rs",
+          "--case",
+          "tests/spec/families/callable-formation/nested-local.rs",
+          "--case",
+          "tests/spec/families/callable-formation/wrong-const.rs",
+          "--case",
+          "tests/spec/families/callable-formation/independent-calls.rs",
+          "--case",
+          "tests/spec/families/callable-formation/static-input.rs",
+          "--case",
+          "tests/spec/families/gat-values/cases/lowir/lending.rs",
+          "--case",
+          "tests/spec/families/gat-values/cases/lowir/captured-lending.rs",
+          "--case",
+          "tests/spec/integration/existential-methods/execution/lowir/gat-result.rs",
+          "--case",
+          "tests/spec/families/local-family-contracts/cases/lowir/nested-local-no-permission.rs"
+        ],
+        "status": 0,
+        "seconds": 2.6875509719830006,
+        "stdout_sha256": "0e02ffd3a8f3e402d638e0de7915fdeea95d9a47055626f4bb87bc9b2991ec96",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ]
+  },
+  "scales": [
+    {
+      "family": "gat-methods",
+      "width": 8,
+      "blocks": [
+        {
+          "AA_second_over_first": 1.014045789179993,
+          "ABBA_B_over_A": 1.0232643779468154
+        },
+        {
+          "AA_second_over_first": 1.3655308938562145,
+          "ABBA_B_over_A": 0.9261125295236949
+        },
+        {
+          "AA_second_over_first": 0.992667114620737,
+          "ABBA_B_over_A": 1.1366945447454258
+        }
+      ],
+      "source_sha256": "df640bf51e2ad69fd95c794ab5d020a12dd5f610cb8577f4ef1ef2635089bcec",
+      "candidate_median_seconds": 0.03974736199597828,
+      "paired_median_B_over_A": 1.0232643779468154
+    },
+    {
+      "family": "gat-methods",
+      "width": 32,
+      "blocks": [
+        {
+          "AA_second_over_first": 1.174302287523812,
+          "ABBA_B_over_A": 0.9874092368909374
+        },
+        {
+          "AA_second_over_first": 0.9774208916629575,
+          "ABBA_B_over_A": 0.8418693592103046
+        },
+        {
+          "AA_second_over_first": 0.8542937520496056,
+          "ABBA_B_over_A": 1.0332626339089284
+        }
+      ],
+      "source_sha256": "8835771fa56992ff0d05abd80f4d280603205bc3760caf39f00159fc0dc1fd92",
+      "candidate_median_seconds": 0.13118986698100343,
+      "paired_median_B_over_A": 0.9874092368909374
+    },
+    {
+      "family": "gat-methods",
+      "width": 128,
+      "blocks": [
+        {
+          "AA_second_over_first": 0.8988139091885569,
+          "ABBA_B_over_A": 1.0146046946291856
+        },
+        {
+          "AA_second_over_first": 1.0899980678032453,
+          "ABBA_B_over_A": 0.9934523216776164
+        },
+        {
+          "AA_second_over_first": 1.0175146300856306,
+          "ABBA_B_over_A": 1.0162917110882277
+        }
+      ],
+      "source_sha256": "89380210973a946ac14e1028f9d8f6c7fa2db60d5a3b3681f6a443d5b97e0252",
+      "candidate_median_seconds": 0.4782510790100787,
+      "paired_median_B_over_A": 1.0146046946291856
+    },
+    {
+      "family": "ordinary",
+      "width": 4096,
+      "blocks": [
+        {
+          "AA_second_over_first": 1.097520095569086,
+          "ABBA_B_over_A": 1.028746616038287
+        },
+        {
+          "AA_second_over_first": 1.0364632301744856,
+          "ABBA_B_over_A": 0.8734908727407703
+        },
+        {
+          "AA_second_over_first": 1.0199384749029188,
+          "ABBA_B_over_A": 0.9396695235026014
+        }
+      ],
+      "source_sha256": "9f5ca894e474569a5033b27b8508936790ca745d34c1e370abe066fbf4086bba",
+      "candidate_median_seconds": 0.8257855199917685,
+      "paired_median_B_over_A": 0.9396695235026014
+    }
+  ],
+  "observations": 72,
+  "reference_review": {
+    "path": "obj/parallel/async-call-source-v1/family-checkpoint-v3/reference-review.json",
+    "sha256": "d4bc06cc2c3a59038d327aaa1bcfe2bbed8817bdb8b4924e47c1f6099d45a9f0"
+  },
+  "retained_failures": [
+    {
+      "path": "obj/parallel/async-call-source-v1/family-checkpoint-v1/receipt.json",
+      "sha256": "f0dc20ab7176e60d2a7c513572a70f385486715d27aa4d9a36b88b65bbdc10a7"
+    },
+    {
+      "path": "obj/parallel/async-call-source-v1/family-checkpoint-v2/receipt.json",
+      "sha256": "46d1452761ff79bcb40687bbaa75dba9ad3b33097ac5e89c3fda4b544fe5ab79"
+    }
+  ],
+  "new_sources": 37,
+  "pa21_cases": 801,
+  "independent_native_cases": 25,
+  "executable_comparisons": 15,
+  "pending": [
+    "private scope-copy/graft execution and full successor CI",
+    "AsyncFn implicit callable evidence",
+    "authored future runtime families and cancellation",
+    "general body/policy transport",
+    "original core/alloc/std artifacts"
+  ],
+  "async_source_work_stash": "e55f559cc540a8f2f983959cdc5fa9de171c4031"
+}

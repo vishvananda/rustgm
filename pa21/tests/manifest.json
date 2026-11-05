@@ -12250,6 +12250,593 @@
       },
       "maintainer_origin": "dev/tests/rpit_calls.rs",
       "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/families/forwarding/forward.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:forwarded_families_keep_original_implementation_and_member_environments"
+    },
+    {
+      "path": "tests/spec/families/forwarding/inherited.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:forwarded_families_keep_original_implementation_and_member_environments"
+    },
+    {
+      "path": "tests/spec/families/forwarding/mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:forwarded_families_keep_original_implementation_and_member_environments"
+    },
+    {
+      "path": "tests/spec/families/forwarding/no-parent.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:forwarded_families_keep_original_implementation_and_member_environments"
+    },
+    {
+      "path": "tests/spec/families/forwarding/no-outlives.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:forwarded_families_keep_original_implementation_and_member_environments"
+    },
+    {
+      "path": "tests/spec/families/forwarding/lookalike.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:forwarded_families_keep_original_implementation_and_member_environments"
+    },
+    {
+      "path": "tests/spec/families/forwarding/method.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:forwarded_families_keep_original_implementation_and_member_environments"
+    },
+    {
+      "path": "tests/spec/families/forwarding/method-inherited.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:forwarded_families_keep_original_implementation_and_member_environments"
+    },
+    {
+      "path": "tests/spec/families/forwarding/method-mutability.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:forwarded_families_keep_original_implementation_and_member_environments"
+    },
+    {
+      "path": "tests/spec/families/forwarding/method-result.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:forwarded_families_keep_original_implementation_and_member_environments"
+    },
+    {
+      "path": "tests/spec/families/forwarding/method-static.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:forwarded_families_keep_original_implementation_and_member_environments"
+    },
+    {
+      "path": "tests/spec/families/forwarding/method-noninjective.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:forwarded_families_keep_original_implementation_and_member_environments"
+    },
+    {
+      "path": "tests/spec/families/forwarding/method-nested.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:forwarded_families_keep_original_implementation_and_member_environments"
+    },
+    {
+      "path": "tests/spec/families/forwarding/method-nested-capture.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:forwarded_families_keep_original_implementation_and_member_environments"
+    },
+    {
+      "path": "tests/spec/families/forwarding/method-distinct-universals.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:forwarded_families_keep_original_implementation_and_member_environments"
+    },
+    {
+      "path": "tests/spec/families/forwarding/method-distinct-preserved.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:forwarded_families_keep_original_implementation_and_member_environments"
+    },
+    {
+      "path": "tests/spec/families/callable-formation/unused-item.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:callable_family_conditions_defer_only_actual_local_inputs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/families/callable-formation/explicit-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:callable_family_conditions_defer_only_actual_local_inputs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/families/callable-formation/return-static.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:callable_family_conditions_defer_only_actual_local_inputs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/families/callable-formation/local-static.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:callable_family_conditions_defer_only_actual_local_inputs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/families/callable-formation/free-output.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:callable_family_conditions_defer_only_actual_local_inputs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/families/callable-formation/independent-static.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:callable_family_conditions_defer_only_actual_local_inputs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/families/callable-formation/independent-static-good.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:callable_family_conditions_defer_only_actual_local_inputs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/families/callable-formation/dependent-trait-pointer.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:callable_family_conditions_defer_only_actual_local_inputs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/families/callable-formation/dependent-trait-pointer-good.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:callable_family_conditions_defer_only_actual_local_inputs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/families/callable-formation/nested-input.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:callable_family_conditions_defer_only_actual_local_inputs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/families/callable-formation/outer-debt.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:callable_family_conditions_defer_only_actual_local_inputs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/families/callable-formation/outer-debt-good.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:callable_family_conditions_defer_only_actual_local_inputs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/families/forwarding/execute-shared.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:forwarded_family_bodies_execute_with_real_borrows"
+    },
+    {
+      "path": "tests/spec/families/forwarding/execute-inherited.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:forwarded_family_bodies_execute_with_real_borrows"
+    },
+    {
+      "path": "tests/spec/families/forwarding/execute-mutable.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:forwarded_family_bodies_execute_with_real_borrows"
+    },
+    {
+      "path": "tests/spec/families/callable-formation/wrong-subject.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:callable_family_conditions_defer_only_actual_local_inputs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/families/callable-formation/repeated-slot.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:callable_family_conditions_defer_only_actual_local_inputs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/families/callable-formation/nested-local.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:callable_family_conditions_defer_only_actual_local_inputs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/families/callable-formation/wrong-const.rs",
+      "exit_status": 1,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 1,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:callable_family_conditions_defer_only_actual_local_inputs",
+      "mode": "--emit-lowir"
+    },
+    {
+      "path": "tests/spec/families/callable-formation/independent-calls.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:callable_family_conditions_defer_only_actual_local_inputs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
+    },
+    {
+      "path": "tests/spec/families/callable-formation/static-input.rs",
+      "exit_status": 0,
+      "features": [
+        "pa21.families"
+      ],
+      "rustc": {
+        "kind": "program",
+        "status": 0,
+        "default_lints": true,
+        "emit": "obj"
+      },
+      "maintainer_origin": "dev/tests/gat_values.rs:callable_family_conditions_defer_only_actual_local_inputs",
+      "mode": "--emit-lowir",
+      "native": {
+        "kind": "execute",
+        "outcome": "pass"
+      }
     }
   ]
 }

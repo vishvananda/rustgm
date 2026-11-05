@@ -86,16 +86,7 @@ pub(in crate::sema) fn check_methods(
         definitions.signature(facts, &contract, &mut evidence, contract.actual, None)?;
     contract.declared = contract.expected;
     let outputs = outputs::instantiate(facts, &mut contract, &mut evidence)?;
-    let mut shape = crate::types::infer::Context::default();
-    let actual = shape
-        .known(&facts.types, contract.actual)
-        .map_err(|e| e.to_string())?;
-    let expected_term = shape
-        .known(&facts.types, contract.expected)
-        .map_err(|e| e.to_string())?;
-    shape
-        .equate_shape(&facts.types, actual, expected_term)
-        .map_err(|e| e.to_string())?;
+    projections::require_shape(facts, contract.actual, contract.expected)?;
     let mut proof = Proof::for_declaration(
         Some(Arc::clone(&contract.environment)),
         contract.universals,

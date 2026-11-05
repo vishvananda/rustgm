@@ -377,6 +377,26 @@ impl<'a> Constraints<'a> {
         unsize: bool,
         source: u32,
     ) -> Result<(), Error> {
+        self.coerce_inside::<false>(actual, expected, unsize, source)
+    }
+    /// A method override chooses existential implementation late lifetimes in
+    /// this private conformance graph. Projection input equality is sufficient
+    /// evidence, never a new caller assumption or type/const inference rule.
+    pub(crate) fn method_subtype(
+        &mut self,
+        actual: TypeId,
+        expected: TypeId,
+        source: u32,
+    ) -> Result<(), Error> {
+        self.coerce_inside::<true>(actual, expected, false, source)
+    }
+    fn coerce_inside<const METHOD: bool>(
+        &mut self,
+        actual: TypeId,
+        expected: TypeId,
+        unsize: bool,
+        source: u32,
+    ) -> Result<(), Error> {
         self.push(Relation {
             actual,
             expected,
@@ -385,7 +405,7 @@ impl<'a> Constraints<'a> {
             left: Scope(0),
             right: Scope(0),
         })?;
-        self.relations(source)
+        self.relations::<METHOD>(source)
     }
     /// Compare a selected built-in reference conversion, retaining mutable ancestry.
     /// Nested type relations remain ordinary subtyping, not recursive coercions.
@@ -443,9 +463,9 @@ impl<'a> Constraints<'a> {
             left: Scope(0),
             right: Scope(0),
         })?;
-        self.relations(source)
+        self.relations::<false>(source)
     }
-    fn relations(&mut self, source: u32) -> Result<(), Error> {
+    fn relations<const METHOD: bool>(&mut self, source: u32) -> Result<(), Error> {
         while let Some(relation) = self.work.pop() {
             self.steps += 1;
             if relation.actual == relation.expected
@@ -457,7 +477,7 @@ impl<'a> Constraints<'a> {
             if !self.seen.insert(relation) {
                 continue;
             }
-            self.relate(relation, source)?;
+            self.relate::<METHOD>(relation, source)?;
         }
         Ok(())
     }
@@ -465,7 +485,7 @@ impl<'a> Constraints<'a> {
         clippy::too_many_lines,
         reason = "one exhaustive typed relation dispatch keeps variance and shape checks together"
     )]
-    fn relate(&mut self, relation: Relation, source: u32) -> Result<(), Error> {
+    fn relate<const METHOD: bool>(&mut self, relation: Relation, source: u32) -> Result<(), Error> {
         let a = self.types.kind(relation.actual).ok_or(Error::Identity)?;
         let b = self.types.kind(relation.expected).ok_or(Error::Identity)?;
         let covariant = Variance::Covariant;
@@ -636,7 +656,7 @@ impl<'a> Constraints<'a> {
                 },
             ) if x == y => self.child(relation, a, b, covariant)?,
             (Kind::Projection(_), Kind::Projection(_)) => {
-                self.relate_projection(relation, source)?;
+                self.relate_projection::<METHOD>(relation, source)?;
             }
             _ => return Err(Error::Identity),
         }

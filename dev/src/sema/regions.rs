@@ -42,6 +42,7 @@ struct Binder {
     receiver: Option<RegionId>,
     candidates: HashSet<RegionId>,
     candidate_count: usize,
+    callable_depth: u16,
 }
 #[derive(Default)]
 pub(super) struct Regions {
@@ -62,11 +63,24 @@ impl Regions {
             receiver: None,
             candidates: HashSet::default(),
             candidate_count: 0,
+            callable_depth: 0,
         });
         id
     }
     pub fn associate(&mut self, binder: BinderId, owner: DefId) {
         self.binders[binder.0].owner = Some(owner);
+    }
+    pub fn mark_callable(&mut self, binder: BinderId) -> Result<(), &'static str> {
+        let parent = self.binders[binder.0].parent;
+        self.binders[binder.0].callable_depth = self
+            .callable_depth(parent)
+            .checked_add(1)
+            .filter(|&depth| depth < 0x8000)
+            .ok_or("callable source binder depth exhausted")?;
+        Ok(())
+    }
+    pub fn callable_depth(&self, binder: Option<BinderId>) -> u16 {
+        binder.map_or(0, |binder| self.binders[binder.0].callable_depth)
     }
     pub fn owner(&self, binder: BinderId) -> Option<DefId> {
         self.binders[binder.0].owner

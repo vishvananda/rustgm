@@ -269,7 +269,7 @@ fn examine_shim(
         vocabulary::Type,
     };
     let mut pairs = std::collections::BTreeSet::new();
-    let mut tags = 0;
+    let mut ordering_tests = [0; 2];
     let mut expected_reads = 0;
     for instruction in &body.instructions {
         match instruction.operation {
@@ -284,11 +284,19 @@ fn examine_shim(
                 assert!(matches!(address, Operand::Parameter(1)));
                 pairs.insert((ordering.success_encoding(), ordering.failure_encoding()));
             }
-            Operation::Load {
-                ty: Type::U8,
-                address: Operand::Parameter(4 | 5),
-                ..
-            } => tags += 1,
+            Operation::Compare {
+                predicate, left, ..
+            } => {
+                assert!(matches!(
+                    predicate,
+                    rustgm::lowir::vocabulary::Predicate::Eq
+                ));
+                assert_eq!(left.ty, Type::U8);
+                let Operand::Parameter(index @ (4 | 5)) = left.operand else {
+                    return Err("CAS ordering must use its actual scalar ABI parameters".into());
+                };
+                ordering_tests[index as usize - 4] += 1;
+            }
             Operation::Load {
                 ty: Type::U32,
                 address: Operand::Slot(_),
@@ -309,7 +317,8 @@ fn examine_shim(
             _ => {}
         }
     }
-    assert_eq!((pairs.len(), tags, expected_reads), (15, 2, 15));
+    assert_eq!((pairs.len(), expected_reads), (15, 15));
+    assert_eq!(ordering_tests, [15, 15]);
     for success in [0, 2, 3, 4, 5] {
         for failure in [0, 2, 5] {
             assert!(pairs.contains(&(success, failure)));

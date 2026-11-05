@@ -180,7 +180,7 @@ fn check_shim(body: &rustgm::lowir::program::Function) -> Result<(), Box<dyn std
         program::{Operand, Operation},
         vocabulary::{Binary, Type},
     };
-    let (mut atomic, mut negation, mut reconstruction, mut tags) = (0, 0, 0, 0);
+    let (mut atomic, mut negation, mut reconstruction, mut ordering_tests) = (0, 0, 0, 0);
     let mut orders = rustgm::support::hash::HashSet::default();
     for instruction in &body.instructions {
         match instruction.operation {
@@ -212,12 +212,19 @@ fn check_shim(body: &rustgm::lowir::program::Function) -> Result<(), Box<dyn std
                 assert!(matches!(right, Operand::Parameter(1)));
                 reconstruction += 1;
             }
-            Operation::Load { ty, address, .. } => {
-                assert_eq!(ty, Type::U8);
-                assert!(matches!(address, Operand::Parameter(2)));
-                tags += 1;
+            Operation::Compare {
+                predicate, left, ..
+            } => {
+                assert!(matches!(
+                    predicate,
+                    rustgm::lowir::vocabulary::Predicate::Eq
+                ));
+                assert_eq!(left.ty, Type::U8);
+                assert!(matches!(left.operand, Operand::Parameter(2)));
+                ordering_tests += 1;
             }
-            Operation::AtomicLoad { .. }
+            Operation::Load { .. }
+            | Operation::AtomicLoad { .. }
             | Operation::AtomicStore { .. }
             | Operation::AtomicExchange { .. }
             | Operation::AtomicCompareExchange { .. }
@@ -228,7 +235,10 @@ fn check_shim(body: &rustgm::lowir::program::Function) -> Result<(), Box<dyn std
             _ => {}
         }
     }
-    assert_eq!((atomic, negation, reconstruction, tags), (5, 5, 5, 1));
+    assert_eq!(
+        (atomic, negation, reconstruction, ordering_tests),
+        (5, 5, 5, 5)
+    );
     assert_eq!(
         orders,
         rustgm::support::hash::HashSet::from_iter([0, 2, 3, 4, 5])

@@ -8,6 +8,7 @@ use crate::{
 
 #[derive(Default)]
 pub(super) struct Headers {
+    finished: bool,
     order: Vec<DefId>,
     parents: HashMap<DefId, Vec<Seed>>,
     dependents: HashMap<DefId, Vec<DefId>>,
@@ -17,6 +18,11 @@ pub(super) struct Headers {
     steps: usize,
 }
 impl Headers {
+    pub(super) fn may_name(&self, owner: DefId, name: NameId) -> bool {
+        self.reachable
+            .get(&name)
+            .is_none_or(|reached| !self.parents.contains_key(&owner) || reached.contains(&owner))
+    }
     fn check_cycles(&mut self) -> Result<(), (DefId, &'static str)> {
         let mut states = HashMap::default();
         for index in 0..self.order.len() {
@@ -148,11 +154,19 @@ impl Checker<'_> {
     }
 
     pub(in crate::sema::declarations) fn header_names_active(&self) -> bool {
-        self.projections.lookup.headers.is_some()
+        self.projections
+            .lookup
+            .headers
+            .as_ref()
+            .is_some_and(|headers| !headers.finished)
     }
 
     pub(in crate::sema::declarations) fn end_header_names(&mut self) {
-        self.projections.lookup.headers = None;
+        // Keep immutable name reachability for subsequent local annotations.
+        // Completed semantic lookup still uses the actual trait contracts.
+        if let Some(headers) = &mut self.projections.lookup.headers {
+            headers.finished = true;
+        }
     }
 
     pub(in crate::sema::declarations::projections) fn schedule_header_projection(

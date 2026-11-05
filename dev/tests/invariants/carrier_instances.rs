@@ -57,15 +57,29 @@ fn rejected(
     contract: &Contract,
     environment: &Arc<Environment>,
 ) -> Result {
+    rejected_reason(
+        facts,
+        scope,
+        body,
+        contract,
+        environment,
+        "instance Copy scope belongs to another materialization or environment",
+    )
+}
+fn rejected_reason(
+    facts: &mut Declarations,
+    scope: &materialized::InstanceScope,
+    body: &Body,
+    contract: &Contract,
+    environment: &Arc<Environment>,
+    expected: &str,
+) -> Result {
     let before = facts.body_work.canonical_steps;
     let error = scope
         .check(facts, body, contract, Some(environment))
         .err()
         .ok_or("foreign scope accepted")?;
-    assert_eq!(
-        error,
-        "instance Copy scope belongs to another materialization or environment"
-    );
+    assert_eq!(error, expected);
     assert!(facts.body_work.canonical_steps > before);
     Ok(())
 }
@@ -101,7 +115,18 @@ fn opponents(
             2 => *execution = Some(TypeId(u32::MAX)),
             _ => *execution = None,
         }
-        rejected(facts, scope, &wrong, &concrete.contract, environment)?;
+        let expected = match change {
+            0 | 3 => "alias materialization changed its selected public signature",
+            _ => "instance Copy scope belongs to another materialization or environment",
+        };
+        rejected_reason(
+            facts,
+            scope,
+            &wrong,
+            &concrete.contract,
+            environment,
+            expected,
+        )?;
     }
     rejected(
         facts,
@@ -113,7 +138,14 @@ fn opponents(
     rejected(facts, scope, &concrete.body, &concrete.contract, original)?;
     let mut wrong = concrete.contract.clone();
     wrong.source = foreign_source;
-    rejected(facts, scope, &concrete.body, &wrong, environment)?;
+    rejected_reason(
+        facts,
+        scope,
+        &concrete.body,
+        &wrong,
+        environment,
+        "materialization changed its authenticated original identity",
+    )?;
     let mut wrong = concrete.contract.clone();
     wrong.universals = wrong
         .universals

@@ -6,6 +6,7 @@ use std::sync::Arc;
 #[path = "../../../../../tests/invariants/closed_callers.rs"]
 mod tests;
 
+#[cfg(test)]
 pub(super) fn prepare(
     facts: &mut Declarations,
     environment: Option<Arc<Environment>>,
@@ -13,6 +14,26 @@ pub(super) fn prepare(
     first: u32,
     retain_sized: bool,
     availability: Availability,
+) -> Result<(State, Predicate, GenericArgs), &'static str> {
+    prepare_with_conditions(
+        facts,
+        environment,
+        inputs,
+        first,
+        retain_sized,
+        availability,
+        &mut None,
+    )
+}
+
+pub(super) fn prepare_with_conditions(
+    facts: &mut Declarations,
+    environment: Option<Arc<Environment>>,
+    inputs: (Predicate, GenericArgs),
+    first: u32,
+    retain_sized: bool,
+    availability: Availability,
+    conditions: &mut Option<Box<crate::sema::projections::families::Requirements>>,
 ) -> Result<(State, Predicate, GenericArgs), &'static str> {
     let (requirement, arguments) = inputs;
     if environment
@@ -30,6 +51,9 @@ pub(super) fn prepare(
     let mut fold = Bound::open_regions(first)?;
     let requirement = fold.predicate(&mut facts.types, requirement)?;
     let arguments = fold.apply_arguments(&mut facts.types, arguments)?;
+    if let Some(conditions) = conditions {
+        conditions.substitute(&mut facts.types, &mut fold)?;
+    }
     let environment = environment
         .map(|env| {
             let shared = if env.requires_region_mapping() {

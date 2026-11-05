@@ -653,6 +653,7 @@ impl Context {
         if left.normalizable(store) || right.normalizable(store) {
             return match (self.opaque_projection(a), self.opaque_projection(b)) {
                 (Some(x), Some(y)) if x == y => Ok(()),
+                (Some(x), Some(y)) if !record_regions => self.opaque_shape(store, x, y),
                 (Some(_), Some(_)) => Err(Error::Mismatch),
                 _ => Err(Error::Normalization),
             };

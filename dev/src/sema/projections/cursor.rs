@@ -44,6 +44,7 @@ pub(in crate::sema) struct Cursor {
     environment: Option<Arc<Environment>>,
     ambient: ScopeId,
     depth: u16,
+    callable_depth: u16,
     availability: Availability,
     fold: Normalizer,
     scopes: Vec<ScopeId>,
@@ -65,6 +66,7 @@ impl Cursor {
             environment,
             ambient,
             depth: proof.scope_depth(ambient)?,
+            callable_depth: proof.scope_plan().callable_depth(ambient)?,
             availability,
             fold: Normalizer::default(),
             scopes: Vec::new(),
@@ -173,7 +175,7 @@ impl Cursor {
                 normal_form::begin_reusing(
                     facts,
                     environment,
-                    request,
+                    (request, self.callable_depth),
                     proof.regions.end,
                     false,
                     self.availability,
@@ -197,7 +199,7 @@ impl Cursor {
                 self.ambient,
                 request.scope,
                 |id| self.fold.binder(id).ok_or("missing normalization binder"),
-                |parent, count| proof.scope(parent, count),
+                |parent, count| proof.callable_scope(parent, count),
             )?;
             proof.append_streamed_at(projected.proof, scope)?;
             if let Some(resolution) = resolution {

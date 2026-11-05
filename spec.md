@@ -4977,6 +4977,25 @@ Register projections in
 instantiated generic signatures and nominal fields in their resulting scopes;
 an earlier query for the input argument does not cover a substituted occurrence.
 
+Retain actual callable scope kinds through partial annotations, normalization,
+proof copying and grafting. Callable-local family input conditions defer under
+RFC1214; explicit quantified goals and independent outer conditions remain
+requirements. Filter complete clauses before opening their coordinates. Deferred
+conditions grant no caller assumptions. Preserve explicit lifetime relations,
+including relations between independent callable locals; binders alone grant no
+ordering. Reuse immutable trait-name reachability
+after header completion to avoid opening irrelevant quantified naming bounds;
+actual member and implementation selection still consume semantic contracts.
+
+At a real call, a completely matching expected result may propose only that
+callee's fresh late lifetime arguments. Keep rigid Self, type, const and member
+identity, reject conflicting slots and nested-local escapes, and publish no
+partial proposal after a mismatch. This chooses a sufficient instantiation and
+does not infer an inverse law for a projection or equate caller inputs. Check
+every actual argument, formation, result and loan requirement afterward. Unknown
+expected results use ordinary freshening. Visit shared typed subgraphs once per
+binder depth and charge the work to the existing inference budget.
+
 Validate symbolic representation constraints without inventing concrete layouts
 for rigid parameters. Keep failed symbolic queries failed and permit unrelated
 queries afterward. The pinned packed-declaration restriction follows direct

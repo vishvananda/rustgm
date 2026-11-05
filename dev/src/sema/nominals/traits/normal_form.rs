@@ -36,13 +36,33 @@ pub(in crate::sema) struct Query {
     closed: bool,
     frontier: u32,
     template: bool,
+    conditions: Option<Box<crate::sema::projections::families::Requirements>>,
 }
 
 /// The enclosing normalizer retains the formation proof of every request input.
+#[cfg(test)]
 pub(in crate::sema) fn begin(
     facts: &mut Declarations,
     environment: Option<Arc<Environment>>,
     request: Request,
+    first: u32,
+    retain_sized: bool,
+    availability: Availability,
+) -> Result<Progress, &'static str> {
+    begin_with_scope(
+        facts,
+        environment,
+        (request, 0),
+        first,
+        retain_sized,
+        availability,
+    )
+}
+
+pub(in crate::sema) fn begin_with_scope(
+    facts: &mut Declarations,
+    environment: Option<Arc<Environment>>,
+    request: (Request, u16),
     first: u32,
     retain_sized: bool,
     availability: Availability,
@@ -61,12 +81,13 @@ pub(in crate::sema) fn begin(
 pub(in crate::sema) fn begin_reusing(
     facts: &mut Declarations,
     environment: Option<Arc<Environment>>,
-    request: Request,
+    request: (Request, u16),
     first: u32,
     retain_sized: bool,
     availability: Availability,
     reuse: Option<&mut selection::Reuse>,
 ) -> Result<Progress, &'static str> {
+    let (request, callable_depth) = request;
     if request.alias.associated().is_some_and(|application| {
         !facts
             .associated
@@ -98,13 +119,21 @@ pub(in crate::sema) fn begin_reusing(
     } else {
         None
     };
-    let (mut state, requirement, arguments) = opening::prepare(
+    let depth = request
+        .depth
+        .checked_add(callable_depth)
+        .ok_or("callable normalization depth exhausted")?;
+    let mut conditions =
+        crate::sema::projections::families::inside_callable(facts, request.alias, depth)?
+            .map(Box::new);
+    let (mut state, requirement, arguments) = opening::prepare_with_conditions(
         facts,
         environment,
         (requirement, request.alias.arguments()),
         first,
         retain_sized,
         availability,
+        &mut conditions,
     )?;
     let goal = state.projection_goal(facts, requirement)?;
     let frontier = state.obligations.regions.end;
@@ -121,6 +150,7 @@ pub(in crate::sema) fn begin_reusing(
         closed: false,
         frontier,
         template: false,
+        conditions,
     }
     .advance(facts, reuse)
 }
@@ -300,7 +330,7 @@ impl Query {
             selection::begin_projection(
                 facts,
                 &mut state.context,
-                (&self.goal, application),
+                (&self.goal, application, self.conditions.as_deref().cloned()),
                 caller,
                 state.availability,
             )

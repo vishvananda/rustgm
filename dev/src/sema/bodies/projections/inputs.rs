@@ -18,7 +18,7 @@ impl Pending {
         if let Some(&scope) = data.input_scopes.get(&(parent, term)) {
             return Ok(scope);
         }
-        let scope = data.scopes.scope(parent, count)?;
+        let scope = data.scopes.callable_scope(parent, count)?;
         data.input_scopes.insert((parent, term), scope);
         Ok(scope)
     }

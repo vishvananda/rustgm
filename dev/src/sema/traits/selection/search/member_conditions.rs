@@ -45,8 +45,12 @@ impl Frame {
         &mut self,
         facts: &mut Declarations,
         application: Application,
+        conditions: Option<families::Requirements>,
     ) -> Result<(), String> {
-        let Some(requirements) = families::requirements(facts, application)? else {
+        let Some(requirements) = (match conditions {
+            Some(conditions) => Some(conditions),
+            None => families::requirements(facts, application)?,
+        }) else {
             return Ok(());
         };
         let parent = crate::types::parameters::predicates::Predicate {

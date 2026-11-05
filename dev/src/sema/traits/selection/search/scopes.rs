@@ -170,6 +170,7 @@ impl Scopes {
         facts: &mut Declarations,
         scope: ScopeId,
         application: crate::types::substitute::Alias,
+        conditions: &mut Option<crate::sema::projections::families::Requirements>,
     ) -> Result<(crate::types::substitute::Alias, usize, ScopeId), &'static str> {
         use crate::types::{Kind, substitute::Alias};
         let universe = scope
@@ -180,6 +181,9 @@ impl Scopes {
         let before = universe.opening.steps;
         let ty = facts.types.intern(application.kind())?;
         let ty = universe.opening.apply(&mut facts.types, ty)?;
+        if let Some(conditions) = conditions {
+            conditions.substitute(&mut facts.types, &mut universe.opening)?;
+        }
         let application = match facts.types.kind(ty) {
             Some(Kind::Projection(application)) => Alias::Associated(application),
             Some(Kind::Opaque(id, arguments)) => Alias::TraitResult(id, arguments),

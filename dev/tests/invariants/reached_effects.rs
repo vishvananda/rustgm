@@ -53,6 +53,47 @@ fn definition(
         .map(|f| f.definition)
         .ok_or_else(|| format!("missing {name}").into())
 }
+fn execution_bodies(
+    report: &resolve::expansion::Report,
+    conditional: bool,
+) -> Result<(Declarations, Vec<body::ir::Body>)> {
+    if conditional {
+        let crate::pipeline::Analysis {
+            mut facts,
+            prepared,
+        } = crate::pipeline::analyze_source(report)?;
+        let bodies = crate::lower::instances::inspect_prepared(
+            report,
+            &mut facts,
+            prepared,
+            |_, checked| checked.program().bodies.clone(),
+        )?;
+        return Ok((facts, bodies));
+    }
+    // Observe the genuine Code-purpose bodies demanded by the source constant.
+    // Native instances intentionally carry runtime context and cannot substitute
+    // for these separately proved constant-execution bodies.
+    let targets = ["answer", "unused"].map(|name| {
+        report
+            .resolution
+            .definitions
+            .iter()
+            .position(|definition| {
+                definition.kind == resolve::model::DefKind::Function
+                    && report.package.names.get(definition.name) == name
+            })
+            .and_then(|index| u32::try_from(index).ok())
+            .map(DefId)
+            .ok_or("actual source const execution target")
+    });
+    let [answer, unused] = targets;
+    let (analysis, bodies) =
+        crate::pipeline::execution::materialized_bodies::during(&[answer?, unused?], || {
+            crate::pipeline::analyze_source(report)
+        })?;
+    assert!(bodies.iter().all(|body| body.const_context));
+    Ok((analysis.facts, bodies))
+}
 #[test]
 fn source_const_call_gate_rejects_cold_and_warm_invalid_execution_attempts() -> Result {
     // This is an adversarial CTFE attempt on an independently accepted *runtime*
@@ -63,44 +104,33 @@ fn source_const_call_gate_rejects_cold_and_warm_invalid_execution_attempts() -> 
         let source = if conditional {
             source.to_owned()
         } else {
-            source.replace("T:[const]Clone", "T:Clone").replace(
+            let ordinary = source.replace("T:[const]Clone", "T:Clone").replace(
                 "pub extern \"C\" fn answer",
                 "pub const extern \"C\" fn answer",
-            )
+            );
+            format!("{ordinary}\nconst OBSERVED:u8=answer();\n")
         };
         for warm in [false, true] {
             let report = report(&source)?;
-            let crate::pipeline::Analysis {
-                mut facts,
-                prepared,
-            } = crate::pipeline::analyze_source(&report)?;
+            let (mut facts, bodies) = execution_bodies(&report, conditional)?;
             let answer = definition(&report, &facts, "answer")?;
             let unused = definition(&report, &facts, "unused")?;
-            let catalog = crate::lower::instances::inspect_prepared(
-                &report,
-                &mut facts,
-                prepared,
-                |_, checked| {
-                    let mut catalog = const_eval::code::Catalog::default();
-                    for body in &checked.program().bodies {
-                        if matches!(body.owner,body::ir::Owner::Function{definition,..}if definition==unused)
-                            && !warm
-                        {
-                            continue;
-                        }
-                        let caller = matches!(body.owner,body::ir::Owner::Function{definition,..}if definition==answer);
-                        let mut snapshot = body.clone();
-                        if caller && conditional {
-                            snapshot.const_context = true;
-                        }
-                        let index = catalog.insert(&snapshot)?;
-                        if caller {
-                            catalog.definitions.insert(answer, index);
-                        }
-                    }
-                    Ok::<_, &'static str>(catalog)
-                },
-            )??;
+            let mut catalog = const_eval::code::Catalog::default();
+            for mut body in bodies {
+                if matches!(body.owner,body::ir::Owner::Function{definition,..}if definition==unused)
+                    && !warm
+                {
+                    continue;
+                }
+                let caller = matches!(body.owner,body::ir::Owner::Function{definition,..}if definition==answer);
+                if caller && conditional {
+                    body.const_context = true;
+                }
+                let index = catalog.insert(&body)?;
+                if caller {
+                    catalog.definitions.insert(answer, index);
+                }
+            }
             let evaluator = crate::sema::values::Evaluator::new(&report, &mut facts);
             let result =
                 const_eval::Machine::catalog(evaluator, &catalog, const_eval::Limits::default())

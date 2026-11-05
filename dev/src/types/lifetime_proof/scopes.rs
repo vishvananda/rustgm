@@ -40,9 +40,20 @@ impl ScopePlan {
         scope: ScopeId,
         destination: &mut Obligations,
     ) -> Result<ScopeId, &'static str> {
+        let mut source = scope;
+        let mut chain = Vec::with_capacity(usize::from(self.depth(scope)?));
+        while source != ScopeId::ROOT {
+            let (parent, count) = self.binder(source)?;
+            chain.push((count, self.callable_depth(source)? != 0));
+            source = parent;
+        }
         let mut root = ScopeId::ROOT;
-        for count in self.counts(scope)? {
-            root = destination.scope(root, count)?;
+        for (count, callable) in chain.into_iter().rev() {
+            root = if callable {
+                destination.callable_scope(root, count)?
+            } else {
+                destination.scope(root, count)?
+            };
         }
         Ok(root)
     }
@@ -77,6 +88,16 @@ impl ScopePlan {
             .map(|binder| binder.depth)
             .ok_or("invalid retained proof scope")
     }
+    pub fn callable_depth(&self, scope: ScopeId) -> Result<u16, &'static str> {
+        if scope == ScopeId::ROOT {
+            return Ok(0);
+        }
+        self.scopes
+            .as_ref()
+            .and_then(|scopes| scopes.get(scope.0 as usize - 1))
+            .map(|binder| binder.callable_depth)
+            .ok_or("invalid callable proof scope")
+    }
 }
 impl Obligations {
     pub(crate) fn scope_plan(&self) -> ScopePlan {
@@ -89,6 +110,32 @@ impl Obligations {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn callable_prefixes_survive_copy_and_graft_without_marking_quantifiers()
+    -> Result<(), &'static str> {
+        assert_eq!(size_of::<Binder>(), 12);
+        let mut source = Obligations::new(1);
+        let outer = source.callable_scope(ScopeId::ROOT, 0)?;
+        let quantified = source.scope(outer, 1)?;
+        let inner = source.callable_scope(quantified, 2)?;
+        let plan = source.scope_plan();
+        assert_eq!(plan.callable_depth(outer)?, 1);
+        assert_eq!(plan.callable_depth(quantified)?, 0);
+        assert_eq!(plan.callable_depth(inner)?, 1);
+        let mut copied = Obligations::new(1);
+        let last = plan.enter(inner, &mut copied)?;
+        assert_eq!(copied.scope_plan().callable_depth(last)?, 1);
+        assert_eq!(copied.scope_plan().counts(last)?, [0, 1, 2]);
+        let mut destination = Obligations::new(1);
+        let parent = destination.callable_scope(ScopeId::ROOT, 3)?;
+        let map = destination.graft(source, parent)?;
+        let plan = destination.scope_plan();
+        assert_eq!(plan.callable_depth(map[outer.0 as usize])?, 2);
+        assert_eq!(plan.callable_depth(map[quantified.0 as usize])?, 0);
+        assert_eq!(plan.callable_depth(map[inner.0 as usize])?, 1);
+        Ok(())
+    }
 
     #[test]
     fn fresh_queries_copy_only_their_actual_ancestors() -> Result<(), &'static str> {

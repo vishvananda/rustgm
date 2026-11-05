@@ -1,0 +1,97 @@
+{
+  "schema": 1,
+  "basis": "Frozen before RustGM candidate observation; independently reviewed Rust1.98 metadata outcomes, then complete programs checked again by the integration test. Original dependent-trait-pointer prediction1 and observed0 remain in obj/parallel/async-call-source-v1/callable-policy-reference-v1; corrected expected0 precedes this packet.",
+  "cases": [
+    {
+      "path": "unused-item.rs",
+      "exit": 0,
+      "sha256": "fdc00a8e4219b747fb5619f07a506d74d4d5d78f802cd5d4ef16fe059d084413"
+    },
+    {
+      "path": "explicit-pointer.rs",
+      "exit": 0,
+      "sha256": "1c628c2e0d4130b67436b1b1aab288cbd8527324c0dbdc6f52f3fad5be5e5a54"
+    },
+    {
+      "path": "return-static.rs",
+      "exit": 1,
+      "sha256": "49cba7edc9ec5b6572eabbe6ac95b1c1e62cf6b0e0b17abb870e618fb9670893"
+    },
+    {
+      "path": "local-static.rs",
+      "exit": 1,
+      "sha256": "7a8db5bded7b2a07410c9f2e2032ada51ac4725cfba04bf65bd23c8ddd1885e8"
+    },
+    {
+      "path": "free-output.rs",
+      "exit": 1,
+      "sha256": "2b6bac35ca8bad82d8e2d11de331a8bf97f992a3a3bf6ff625b8feb7a8ba63c3"
+    },
+    {
+      "path": "independent-static.rs",
+      "exit": 1,
+      "sha256": "efd3c5fd56ef9ade503e0b01348cc0ee9d5785f6f4d4288646064dc0535a5df6"
+    },
+    {
+      "path": "independent-static-good.rs",
+      "exit": 0,
+      "sha256": "60867c5c8061b085361af0ced1711e376e4e6fc68b3e5a9378a5ced7bfd65c67"
+    },
+    {
+      "path": "dependent-trait-pointer.rs",
+      "exit": 0,
+      "sha256": "08af26088c2e27a5f0cb1d45d3c0846539597723b7de1e79249bf3b8ec9daad9"
+    },
+    {
+      "path": "dependent-trait-pointer-good.rs",
+      "exit": 0,
+      "sha256": "16a86bbbb2c11d69446f03ff9248f91387ecf034225bc46f6ab2ce34d215da4f"
+    },
+    {
+      "path": "nested-input.rs",
+      "exit": 0,
+      "sha256": "2361216d95431a8d461ebfca216e008e2f05de4da60edc71a25f60e3bd9272ec"
+    },
+    {
+      "path": "outer-debt.rs",
+      "exit": 1,
+      "sha256": "3ca1d02c1eb0fcd809bd556248726d3ead13a886c30f453eeda935a45ed04907"
+    },
+    {
+      "path": "outer-debt-good.rs",
+      "exit": 0,
+      "sha256": "d3aa50225a8bcbc33e04ab744b3aa1e31c57c3d1209811a7268ff2e2fee45b7e"
+    },
+    {
+      "path": "wrong-subject.rs",
+      "exit": 1,
+      "sha256": "76524ba757d68a3f73594a27540081c125af6dcb8680e246f3901bb1c8525504"
+    },
+    {
+      "path": "repeated-slot.rs",
+      "exit": 1,
+      "sha256": "a2c3428ed5fff02a1642b2c3ff107b4bfc61b2acf94d3ecb17d697b5d1673c92"
+    },
+    {
+      "path": "nested-local.rs",
+      "exit": 1,
+      "sha256": "7214ddc24b14211b152119810d3e6827ac6e8922462580d5c0791ec26df1a1ec"
+    },
+    {
+      "path": "wrong-const.rs",
+      "exit": 1,
+      "sha256": "adeb64beccfda923c56f9edaa3aaac5b8b871101bba6d8bf6bf7a5dd952ef2c9"
+    },
+    {
+      "path": "independent-calls.rs",
+      "exit": 0,
+      "sha256": "23737a3bc6a87eda4b7470487884fbceca6640d99a60abc35c7ee933a5204e8d"
+    },
+    {
+      "path": "static-input.rs",
+      "exit": 0,
+      "sha256": "508a3a896ec2c04a33e9bcfd74012d1b4e57af3eb9d23d1ac0bc0829cf725889"
+    }
+  ],
+  "new_call_candidates": "Six additional outcomes declared before candidate/independent observation; the registered integration checks each complete source with pinned Rust before RustGM."
+}
