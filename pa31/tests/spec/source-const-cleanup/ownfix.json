@@ -1,0 +1,147 @@
+{
+  "receipt": "obj/parallel/source-transport/va-cleanup/reference-v5/receipt.json",
+  "sha256": "943251fe475215d79148416aa8fce292ae39b79df2f8cbcc0d586399d5e35e68",
+  "corrections": [
+    {
+      "file": "owncp.rs",
+      "expected_code": 0,
+      "prediction": "unused const Drop field T:Copy is dropless; prediction uncertain until independent compile",
+      "source_sha256": "357766cb360203ad6ccb8c39ef0e0eaaa7cb9c5c732f47dc48204b3ebec5d3c0",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--emit=metadata",
+        "--crate-name",
+        "owncp",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/owncp.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v5/owncp.rmeta",
+        "--error-format=json"
+      ],
+      "code": 1,
+      "seconds": 0.045185416005551815,
+      "matches": false,
+      "errors": [
+        [
+          "E0367",
+          "`T` does not implement `[const] Destruct`"
+        ],
+        [
+          "",
+          "aborting due to 1 previous error"
+        ]
+      ]
+    },
+    {
+      "file": "ownar0.rs",
+      "expected_code": 0,
+      "prediction": "unused zero-length nonconst-element field needs no cleanup; prediction uncertain",
+      "source_sha256": "87c63bfaeb08699f681b5f3989c32874b037077d78e3c73f217af1928b219ae6",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--emit=metadata",
+        "--crate-name",
+        "ownar0",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/ownar0.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v5/ownar0.rmeta",
+        "--error-format=json"
+      ],
+      "code": 1,
+      "seconds": 0.02678516600281,
+      "matches": false,
+      "errors": [
+        [
+          "E0367",
+          "`[N; 0]` does not implement `[const] Destruct`"
+        ],
+        [
+          "",
+          "aborting due to 1 previous error"
+        ]
+      ]
+    },
+    {
+      "file": "whoar0.rs",
+      "expected_code": 0,
+      "prediction": "whole Destruct on valid own-Drop zero-array owner; uncertain paired boundary",
+      "source_sha256": "d196f46f9dbde3cc36cafbdd17f58f4f477c8b559ca245c659ad2c1b36791ba1",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--emit=metadata",
+        "--crate-name",
+        "whoar0",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/whoar0.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v5/whoar0.rmeta",
+        "--error-format=json"
+      ],
+      "code": 1,
+      "seconds": 0.03721074102213606,
+      "matches": false,
+      "errors": [
+        [
+          "E0367",
+          "`[N; 0]` does not implement `[const] Destruct`"
+        ],
+        [
+          "E0277",
+          "the trait bound `N: const Destruct` is not satisfied"
+        ],
+        [
+          "",
+          "aborting due to 2 previous errors"
+        ]
+      ]
+    },
+    {
+      "file": "whocp.rs",
+      "expected_code": 0,
+      "prediction": "whole Destruct on Copy-field const Drop owner uses actual admitted owner; uncertain boundary",
+      "source_sha256": "6d25fef436ca24365b72d1fa6d9bf311386678df5ab33f35e3f096fc17d68762",
+      "argv": [
+        "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--edition=2024",
+        "--target=x86_64-unknown-linux-gnu",
+        "--crate-type=lib",
+        "-Cpanic=abort",
+        "--emit=metadata",
+        "--crate-name",
+        "whocp",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/pa31/tests/spec/source-const-cleanup/whocp.rs",
+        "-o",
+        "/mnt/vizier/rustgm-scratch/rustgm-pa29-work/obj/parallel/source-transport/va-cleanup/reference-v5/whocp.rmeta",
+        "--error-format=json"
+      ],
+      "code": 1,
+      "seconds": 0.0293007530272007,
+      "matches": false,
+      "errors": [
+        [
+          "E0367",
+          "`T` does not implement `[const] Destruct`"
+        ],
+        [
+          "E0277",
+          "the trait bound `T: [const] Destruct` is not satisfied"
+        ],
+        [
+          "",
+          "aborting due to 2 previous errors"
+        ]
+      ]
+    }
+  ],
+  "note": "Original uncertain predictions retained. Rust demands actual whole const Destruct on every const Drop declaration field, including Copy parameters and [N;0]."
+}

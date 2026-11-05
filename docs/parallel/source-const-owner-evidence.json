@@ -1,0 +1,179 @@
+{
+  "state": "qualified const Drop declaration prerequisite; selected variant/interpreter duties remain active",
+  "base": "bfef52bf68c6472deda0a201a0d7dd1d38ffb73b",
+  "branch": "implement/source-va-variant-20261105",
+  "source_files": {
+    "dev/src/sema/declarations/destructors.rs": "cb227a654e4edd3ca8aad48aaf52bfd9b075445d5bbf4b0345438b697912dafd",
+    "dev/src/sema/declarations/destructors/cfield.rs": "c875214ac300b36f47a9fab2ee0d42998c6b5618b7ef62a733886608d53d00d2",
+    "dev/src/sema/declarations/destructors/coverage.rs": "a822e59ec2be799bad396415a24e03a91a977532e16cd643390fa7cd1ea5c716",
+    "dev/src/sema/traits/selection/search/cparts.rs": "4e3879de8127b46ff95e884861404a682c79f872215a69efa32901448a178fba",
+    "dev/src/types/aggregate.rs": "594c55804276d0ff7990ce20bed30b7a4e10005181a985fa77653f6a175f18d3",
+    "dev/src/types/aggregate/fields.rs": "391138b8226f1abdc3dab471497759704ca9cca98222e294d672ce83efe9822b",
+    "dev/tests/ctown.rs": "5b37e411701aaa67426e14b7bd9ff8d653234822c9f11d402f6d8307af91b641",
+    "dev/tests/suites/traits/mod.rs": "51879487f96f71408255e2b1d23f85417da3b26815e5d3c0dd2bffe5d46fcd2b",
+    "pa31/tests/spec/source-const-cleanup/arrays.json": "ecebb5a23fa1bfc93fb43ca77ba90fbc4c6783b9bfb4767f0c319dd0ffa1ea33",
+    "pa31/tests/spec/source-const-cleanup/arybad.rs": "adcb9f5258eabb0a62febb22028c9ee44ebf5381a4f48125c3cad5b6c5882f45",
+    "pa31/tests/spec/source-const-cleanup/arybig.rs": "ad16ca61e84ab5b973fea5dd29a67c9f28941c7805e422c1c50734f4c4011c57",
+    "pa31/tests/spec/source-const-cleanup/arymov.rs": "e99b124aba79da8cf5fd65035bd59e0b1faa937be70891d99de3cb9a38d6b8dc",
+    "pa31/tests/spec/source-const-cleanup/aryone.rs": "176202d737600d501042686d9591ff838ee819893e6c681959d94af26194b243",
+    "pa31/tests/spec/source-const-cleanup/arysm.rs": "c0e28ed4a26b8326df1bee32e6f1c811c0e8b92ebbebe30d461d3cd34191ef09",
+    "pa31/tests/spec/source-const-cleanup/cpok.rs": "52e294005bde15bf845b21b64c3ebcdf76b5eafdbe2191d38708c1b7e77e4364",
+    "pa31/tests/spec/source-const-cleanup/own128.rs": "c4a5790a366210c0380446402dd08e9d0fed79f6212b9dedb9f82ba26deb628e",
+    "pa31/tests/spec/source-const-cleanup/ownar0.rs": "87c63bfaeb08699f681b5f3989c32874b037077d78e3c73f217af1928b219ae6",
+    "pa31/tests/spec/source-const-cleanup/ownar1.rs": "1e1fe0886cbcdd58b3a6d8ea763713da9b2f30d60bf38298e5d71e7a5135c018",
+    "pa31/tests/spec/source-const-cleanup/ownbad.rs": "bd2db5c371e404f12d967cc6c89fd6e9fb5fe4051a84fb2834b37e72f3e6128c",
+    "pa31/tests/spec/source-const-cleanup/owncnd.rs": "f1a61553d2e91ad279a7754fa43729c7316f60c6d1bebc77b1a14ad736be03cb",
+    "pa31/tests/spec/source-const-cleanup/owncp.rs": "357766cb360203ad6ccb8c39ef0e0eaaa7cb9c5c732f47dc48204b3ebec5d3c0",
+    "pa31/tests/spec/source-const-cleanup/ownfix.json": "6d034a9c9115f3327b5da665e1db537880d83e0acd3433c01b1764537a48e771",
+    "pa31/tests/spec/source-const-cleanup/owngud.rs": "615c6ba97159cc63ad4b067b2c598f1e53d93e53fabf255ae660c7116a424eab",
+    "pa31/tests/spec/source-const-cleanup/ownman.rs": "4f3c4c7d3b642433ab330be9febc06da20d1a231d88bbccc8f16d9e4c16d835c",
+    "pa31/tests/spec/source-const-cleanup/ownpol.json": "7c10aafdc21988f94782637d9814af392ea3368b30c5c87479a7e472a6556d8b",
+    "pa31/tests/spec/source-const-cleanup/ownref.rs": "12cacd0a35a6cbd56fb2a1a9987a257eea0eedc0030f42981d9d5ed689e1ee7d",
+    "pa31/tests/spec/source-const-cleanup/ownreq.json": "e37689984dfa0670da5c55837a9f798abc9f69310bd87ad522dfab4a56598c1c",
+    "pa31/tests/spec/source-const-cleanup/ownunc.rs": "7b474394867898bebbe7bf49fbefa186d23f4e01fac2d111d3ed9498626ced34",
+    "pa31/tests/spec/source-const-cleanup/ownw0.rs": "8007b38001da7ead326f41ea5cc12d9c9a741e1df0efaf12e3eb7d8547debbe6",
+    "pa31/tests/spec/source-const-cleanup/ownw32.rs": "240488ba3beec529dafde6bf645425691f40120ff5ceb98c35c1f6aa6f02e4ea",
+    "pa31/tests/spec/source-const-cleanup/ownw8.rs": "21fa9e0e9fe56354b937137d6f56b93d3855a3ef65206a1868f2fb6dfaecf93b",
+    "pa31/tests/spec/source-const-cleanup/ownwide.json": "207bb9c0f422a42af90b99073ae9facdd5a83555e4055b1e7c82521acaee8b1d",
+    "pa31/tests/spec/source-const-cleanup/tagfix.json": "b6a096c0a27c3a852b0b948fa74dbeb1908c79ab95271f16c5a01878560a1674",
+    "pa31/tests/spec/source-const-cleanup/tagmut.rs": "046f03b983f09df914f654531e557a33d7b76071ffa671fae6005dcbab3361a2",
+    "pa31/tests/spec/source-const-cleanup/tagonc.rs": "164a33b8ee8a8e3ef262b9e92b3c8d1b5f5a11b7c0dd33ffd654284efb0e1d5b",
+    "pa31/tests/spec/source-const-cleanup/tagow2.rs": "a4aa82cf81f136a7f9e642824fe131d5a03f520137d45f07accb4e194652dfe6",
+    "pa31/tests/spec/source-const-cleanup/tagown.rs": "77b118a78314ecbf72a12f4508256f65a0ec6843c5ff497fdefc920a63a8c56c",
+    "pa31/tests/spec/source-const-cleanup/tagraw.rs": "f3f6c4b36774e7d13c902e192c9a4d5f9a0a5385177983185a642845cbe8441f",
+    "pa31/tests/spec/source-const-cleanup/tagrep.rs": "ba51ccc933b33beae070cd83f6741ac7c30d6c71321339e77e5ebe0eb6451854",
+    "pa31/tests/spec/source-const-cleanup/tags2.json": "8b55fdc54bf24ae246173d15f96f9b2cf0fde6e710eb323577223e1a884d47f3",
+    "pa31/tests/spec/source-const-cleanup/tags3.json": "e34900879407b0a29509bd38946097c246fc7f69d6e07aec30e0b77968dd4fa6",
+    "pa31/tests/spec/source-const-cleanup/tagshr.rs": "de0108bf79458263bb388a8f7346c825e307eef9c0895deafe2a0b3d6f0e617c",
+    "pa31/tests/spec/source-const-cleanup/taguni.rs": "9e0eb945a0504c047d6dc4f8b67615428882235590d2835b9c68debd29759aa6",
+    "pa31/tests/spec/source-const-cleanup/uncond.rs": "fe300f7728f073bb9ae659f6c02288b8f5f844a9c74a6520a42b0e5b2a68b9d1",
+    "pa31/tests/spec/source-const-cleanup/uncopy.rs": "f8ba951adca877ae0e1d0dff445cf8a1969e7c77b18e885ca2b418b11be28bd9",
+    "pa31/tests/spec/source-const-cleanup/whoar0.rs": "d196f46f9dbde3cc36cafbdd17f58f4f477c8b559ca245c659ad2c1b36791ba1",
+    "pa31/tests/spec/source-const-cleanup/whocp.rs": "6d25fef436ca24365b72d1fa6d9bf311386678df5ab33f35e3f096fc17d68762",
+    "pa31/tests/spec/source-const-cleanup/whon0.rs": "41fde3324bc8b23ef041e86274a5b59783e1fa1c8f2e132a73343d465e76a8ba"
+  },
+  "handoff": {
+    "path": "docs/parallel/source-const-owner.md",
+    "sha256": "0268327d061694fa5610f3260c515412b05b0d34a5e03e410d53b432dd22f2fe"
+  },
+  "variant_design": {
+    "path": "docs/parallel/source-const-variant-design.md",
+    "sha256": "2cec8d81babeb15e5eabff5ca8908ece24cb9cce2b0f2ea4db4e304df076527f"
+  },
+  "validation": {
+    "static": {
+      "path": "obj/parallel/source-transport/va-cleanup/own-gate1/receipt.json",
+      "sha256": "cbe5c6e8766f2a2cc5d12e2ef3d23c9fb4ed5dea774022cafd4ed0ab677045c6"
+    },
+    "static_history": "format/audit/strict Clippy passed; unchanged230s timeout during public codegen, not a semantic rejection",
+    "public_native_continuation": {
+      "path": "obj/parallel/source-transport/va-cleanup/own-gate2/receipt.json",
+      "sha256": "36a78ea43c58aee892acc991e2bd7012ccc90cf576886614b1699735e1d7ac3f"
+    },
+    "source_map": {
+      "path": "obj/parallel/source-transport/va-cleanup/own-gate2/sources.json",
+      "sha256": "c76e6de6892f9900a785cc845ee9d82ee190ea1bbceee16c27296cbc0d6fe0af"
+    },
+    "native41_47_artifacts": {
+      "path": "obj/parallel/source-transport/va-cleanup/own-gate2/native-artifacts.json",
+      "sha256": "21260adf63c0c6caaed050f585ad9dd3be3a240d5db82faa1a3f46b6f582c814"
+    },
+    "native59_reference_qualification": {
+      "path": "obj/parallel/source-transport/va-cleanup/own-qualification-v1/receipt.json",
+      "sha256": "fa54764e9a1e721549fb4d13b3817fb88b79e327cce356906615b85b2ee175b5"
+    },
+    "full_private_release_and_original_core": "Root integration/CI pending"
+  },
+  "independent_references": {
+    "1": {
+      "path": "obj/parallel/source-transport/va-cleanup/reference-v1/receipt.json",
+      "sha256": "5f3a662a880bce2e16729a66d24a13021dc256b2f90b0bb80fa41353fa873833"
+    },
+    "2": {
+      "path": "obj/parallel/source-transport/va-cleanup/reference-v2/receipt.json",
+      "sha256": "d46b913b240ce56b860146289231e78d80fd017ac783789fb5b3d132f0e3aca0"
+    },
+    "3": {
+      "path": "obj/parallel/source-transport/va-cleanup/reference-v3/receipt.json",
+      "sha256": "5e42cf79e7131e6760a07ead5b1a7570ab92ee8218b69d07334e394c1b223da5"
+    },
+    "4": {
+      "path": "obj/parallel/source-transport/va-cleanup/reference-v4/receipt.json",
+      "sha256": "95716b3c27cbbebe42cd7a8a0acdc910dbbfff565f4d61023272172256c7c1ea"
+    },
+    "5": {
+      "path": "obj/parallel/source-transport/va-cleanup/reference-v5/receipt.json",
+      "sha256": "943251fe475215d79148416aa8fce292ae39b79df2f8cbcc0d586399d5e35e68"
+    },
+    "6": {
+      "path": "obj/parallel/source-transport/va-cleanup/reference-v6/receipt.json",
+      "sha256": "a3d4fd019ec5f375fd96624e0d5545e6006f3f59fe115ce197bad76648836aee"
+    },
+    "7": {
+      "path": "obj/parallel/source-transport/va-cleanup/reference-v7/receipt.json",
+      "sha256": "3bf848214bc2291aaf82f888d7c689fb36fde15fb1a76f905907e0c71ff44d7d"
+    }
+  },
+  "immutable_baseline": {
+    "path": "obj/parallel/source-transport/va-cleanup/decl-baseline-v1/receipt.json",
+    "sha256": "0d9918411f3fcdccd039d3308ab56381471be868e4f05182e9fa1da07d9969bc"
+  },
+  "reference_toolchain": {
+    "receipt_sha256": "5f3a662a880bce2e16729a66d24a13021dc256b2f90b0bb80fa41353fa873833",
+    "rustc": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "rustc_sha256": "3690cc576ede140504698405d5d8fa3826aaadbe71699c6c4ed0a565d6f493e2",
+    "source_sha256": "29d48f9e0fe567b042187f907ac19c811b078ce9dddcd5b1a98bad304bbc4cc2",
+    "sysroot": "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu",
+    "drivers": {
+      "/home/vishvananda/.rustup/toolchains/1.98.0-x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c"
+    }
+  },
+  "outcomes": {
+    "new_public_tests": 4,
+    "unused_valid_owners": 7,
+    "unused_invalid_owners": 7,
+    "whole_bound_companions": 3,
+    "shared_field_widths": [
+      0,
+      8,
+      32,
+      128
+    ],
+    "canonical_work_base": 407,
+    "canonical_work_growth": [
+      28,
+      124,
+      508
+    ],
+    "native_outputs": [
+      41,
+      47,
+      59
+    ],
+    "invalid_causes": "Rust E0367 field const Destruct; whole-bound E0277 separate; actual impl source site retained",
+    "predictions": "original uncertain predictions and setup bytes retained in ownreq/ownfix, tags2/tagfix; no parity claim for named unsupported positives"
+  },
+  "architecture": {
+    "SemanticFields_bytes": 256,
+    "Cost_bytes": 16,
+    "persistent_records_or_wire_growth": false,
+    "field_fold": "one paid full-argument joint fold, lazy for empty variants, memo reused",
+    "proof": "original impl environment; Conditional Destruct field goals; contiguous lifetime proof append at prior region frontier; existing check_bounds",
+    "coverage": "existing limited actual-const-Drop MaybeConst-to-Trait runtime comparison only; no effect/predicate mutation",
+    "scope": "only actual registered synchronous const Drop; union fields checked; actual ManuallyDrop/ref policies; no Copy/zero-array shortcut",
+    "limits": "one million semantic-field work,64MiB transient substitution/goal storage; resource guard limits unchanged"
+  },
+  "required_followons": [
+    "approved sparse constructor/move/branch initialization partition and selected semantic plan leaves",
+    "plan-owned Whole vs OwnDrop coordinates; no dangling Facts ids",
+    "precise partial/array/alias/scaling controls",
+    "initializer-owned const eligibility",
+    "actual interpreter cleanup/destructor and VaList const cursor execution",
+    "original unit conditional const payment",
+    "full unchanged standard module/macro/provided Drop+Pin closure",
+    "complete variadic transport profile"
+  ],
+  "parked_producer_stash": "37a1f97278019ed7563806089a8a9dc596e3d405",
+  "performance": "bounded canonical work only; no general wall-time claim",
+  "backend_source": "b7c6b8e72595a524e1b3f147212d69c02b257dd8"
+}

@@ -157,7 +157,19 @@ impl Checker<'_> {
             source: implementation.source,
             parameters: implementation.parameters,
         };
-        self.validate_destructor_traits(contract)
+        let target = implementation.target;
+        let mut proof = self.validate_destructor_traits(contract)?;
+        let first = proof.as_ref().map_or(1, |proof| proof.regions.end);
+        if let Some(fields) = self.validate_const_drop_fields(&contract, target, first)? {
+            if let Some(proof) = &mut proof {
+                proof
+                    .extend(fields)
+                    .map_err(|e| self.error(contract.source, e))?;
+            } else {
+                proof = Some(fields);
+            }
+        }
+        Ok(proof)
     }
 
     pub(super) fn validate_destructor_traits(
@@ -241,7 +253,12 @@ impl Checker<'_> {
 }
 
 impl Checker<'_> {
-    fn const_drop_coverage_owner(&self, owner: DefId, item: ItemId, scope: DefId) -> bool {
+    pub(super) fn const_drop_coverage_owner(
+        &self,
+        owner: DefId,
+        item: ItemId,
+        scope: DefId,
+    ) -> bool {
         self.facts
             .destructors
             .self_type(owner)

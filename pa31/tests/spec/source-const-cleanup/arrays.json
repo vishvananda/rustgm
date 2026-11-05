@@ -1,0 +1,34 @@
+{
+  "cases": [
+    {
+      "file": "aryone.rs",
+      "expected_code": 0,
+      "prediction": "single array literal contains only known const-eligible variant",
+      "source_sha256": "176202d737600d501042686d9591ff838ee819893e6c681959d94af26194b243"
+    },
+    {
+      "file": "arybad.rs",
+      "expected_code": 1,
+      "prediction": "single array literal owns actual nonconst Drop",
+      "source_sha256": "adcb9f5258eabb0a62febb22028c9ee44ebf5381a4f48125c3cad5b6c5882f45"
+    },
+    {
+      "file": "arymov.rs",
+      "expected_code": 1,
+      "prediction": "partial array-root cleanup distinction despite moved elements",
+      "source_sha256": "e99b124aba79da8cf5fd65035bd59e0b1faa937be70891d99de3cb9a38d6b8dc"
+    },
+    {
+      "file": "arybig.rs",
+      "expected_code": 0,
+      "prediction": "large array is moved whole; no element-length expansion",
+      "source_sha256": "ad16ca61e84ab5b973fea5dd29a67c9f28941c7805e422c1c50734f4c4011c57"
+    },
+    {
+      "file": "arysm.rs",
+      "expected_code": 0,
+      "prediction": "paired small full-move array structural control",
+      "source_sha256": "c0e28ed4a26b8326df1bee32e6f1c811c0e8b92ebbebe30d461d3cd34191ef09"
+    }
+  ]
+}

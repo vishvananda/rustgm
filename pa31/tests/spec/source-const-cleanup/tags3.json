@@ -1,0 +1,10 @@
+{
+  "cases": [
+    {
+      "file": "tagow2.rs",
+      "expected_code": 0,
+      "prediction": "genuine const own Drop with all actual fields const eligible; corrected E0367 setup retained separately",
+      "source_sha256": "a4aa82cf81f136a7f9e642824fe131d5a03f520137d45f07accb4e194652dfe6"
+    }
+  ]
+}

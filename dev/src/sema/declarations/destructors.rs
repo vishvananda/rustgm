@@ -1,5 +1,6 @@
 //! Elaborate destructor targets once and retain their lifetime environments.
 mod asynchronous;
+mod cfield;
 mod coverage;
 mod headers;
 mod receivers;

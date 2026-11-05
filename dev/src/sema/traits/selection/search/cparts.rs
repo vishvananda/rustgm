@@ -7,7 +7,6 @@ use crate::{
         GenericArgs, ItemId, Kind,
         aggregate::{FieldDestruction, Kind as AggregateKind},
         parameters::predicates::Bound,
-        substitute,
         traits::Application,
     },
 };
@@ -38,7 +37,7 @@ impl Search<'_> {
                 goal.bound,
             ),
             Some(Kind::Closure { .. }) => self.start_capture_markers(facts, frame, goal),
-            Some(Kind::Adt(item, arguments)) => {
+            Some(Kind::Adt(item, _)) => {
                 let definition = *facts
                     .aggregates
                     .get(item)
@@ -74,42 +73,19 @@ impl Search<'_> {
                     }
                     if policy == FieldDestruction::Fields && definition.kind != AggregateKind::Union
                     {
-                        let mut substitution =
-                            substitute::Bound::joint(&facts.types, item, arguments)?;
-                        for variant in facts.aggregates.variants(&definition) {
-                            let count = facts
-                                .types
-                                .list(variant.fields)
-                                .ok_or("const Destruct fields are missing")?
-                                .len();
-                            frame
-                                .inputs
-                                .context
-                                .account_work(count)
-                                .map_err(inference)?;
-                            predicates
-                                .try_reserve(count)
-                                .map_err(|_| "const Destruct fields allocation failed")?;
-                            for index in 0..count {
-                                let field = facts
-                                    .types
-                                    .list(variant.fields)
-                                    .and_then(|fields| fields.get(index))
-                                    .copied()
-                                    .ok_or("const Destruct field is missing")?;
-                                let before = substitution.steps;
-                                let ty = substitution.apply(&mut facts.types, field)?;
-                                frame
-                                    .inputs
-                                    .context
-                                    .account_work(substitution.steps.saturating_sub(before))
-                                    .map_err(inference)?;
-                                predicates.push(Predicate {
-                                    ty,
-                                    bound: goal.bound,
-                                });
-                            }
+                        let mut fields = facts.aggregates.semantic_fields(&facts.types, goal.ty)?;
+                        while let Some(ty) = fields.next(&mut facts.types)? {
+                            fields.reserve(&mut predicates, 1)?;
+                            predicates.push(Predicate {
+                                ty,
+                                bound: goal.bound,
+                            });
                         }
+                        frame
+                            .inputs
+                            .context
+                            .account_work(fields.work())
+                            .map_err(inference)?;
                     }
                 }
                 self.start_component_predicates(facts, frame, goal, &predicates)
