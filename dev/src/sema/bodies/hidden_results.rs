@@ -20,7 +20,32 @@ struct Hidden {
 }
 
 impl Checker<'_> {
-    pub(super) fn prepare_opaque_results(&mut self, node: NodeId) -> Result<(), Error> {
+    pub(super) fn prepare_function_result(
+        &mut self,
+        function: &crate::sema::model::Function,
+        result: super::TypeId,
+    ) -> Result<(), Error> {
+        let output = self.facts.async_body_output(self.report, function)?;
+        self.state.result = output.unwrap_or(result);
+        let future = if output.is_some() {
+            let Some(crate::types::Kind::Opaque(id, _)) = self.facts.types.kind(result) else {
+                return Err(self.error(
+                    self.state.body.node,
+                    "async body has no opaque future identity",
+                ));
+            };
+            Some(id)
+        } else {
+            None
+        };
+        self.prepare_opaque_results(self.state.body.node, future)
+    }
+
+    fn prepare_opaque_results(
+        &mut self,
+        node: NodeId,
+        future: Option<crate::types::opaque::OpaqueId>,
+    ) -> Result<(), Error> {
         self.state.opaque_terms.clear();
         self.state.opaque_callables = None;
         self.state.result_term = None;
@@ -31,6 +56,20 @@ impl Checker<'_> {
         let Some(ids) = ids else {
             return Ok(());
         };
+        let ids = if let Some(future) = future {
+            let Some((actual, declared)) = ids.split_last() else {
+                return Err(self.error(node, "missing async defining opaque identities"));
+            };
+            if *actual != future {
+                return Err(self.error(node, "async future is not its final declared result"));
+            }
+            declared
+        } else {
+            ids.as_slice()
+        };
+        if ids.is_empty() {
+            return Ok(());
+        }
         let mut substitution =
             Instantiation::opaque_results(&mut self.state.infer, &self.facts.types, ids)
                 .map_err(|e| self.error(node, e))?;

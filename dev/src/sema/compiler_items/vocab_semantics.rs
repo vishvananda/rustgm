@@ -16,6 +16,14 @@ pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Res
             // or implicit use/clone operation; those have separate typed consumers.
             continue;
         }
+        if matches!(
+            role,
+            LangItem::Future | LangItem::FutureOutput | LangItem::FuturePoll
+        ) {
+            // Genuine ordinary declarations are completed by the Future producer.
+            // Polling and future state machines remain separate demanded consumers.
+            continue;
+        }
         if matches!(role, LangItem::Pin | LangItem::PinNewUnchecked) {
             // Actual nominal/member completion is separate from pinned receivers,
             // implicit pin construction and async state-machine permission.

@@ -1332,7 +1332,6 @@ impl Checker<'_> {
         }
         let item = self.item(key)?;
         let ItemKind::Function {
-            flags,
             parameters,
             result,
             body,
@@ -1342,12 +1341,6 @@ impl Checker<'_> {
             return Err(self.error(key, "expected function signature"));
         };
         self.validate_default_function(key, owner, body)?;
-        if flags.asynchronous {
-            return Err(self.error(
-                key,
-                "async or bounded signatures require later semantic assignments",
-            ));
-        }
         let (unsafe_, convention) = self.foreign_signature(key, owner, item)?;
         let unsafe_ = unsafe_
             || self.target_feature_sources.contains_key(&key)
@@ -1582,6 +1575,20 @@ impl Checker<'_> {
                 } else {
                     Vec::new()
                 };
+                let async_result = if let Some(id) = owner
+                    && matches!(self.item(key)?.kind, ItemKind::Function { flags, .. } if flags.asynchronous)
+                {
+                    let output = signature.result.map_or(Ok(TypeId::UNIT), |node| {
+                        self.ty(NodeKey {
+                            file: key.file,
+                            node,
+                        })
+                    })?;
+                    // Form all captures before freezing the final signature binder count.
+                    Some(self.async_result(key, id, binder, output)?)
+                } else {
+                    None
+                };
                 let bound_regions = self.regions.count(binder);
                 self.complete_alias_scope(binder, bound_regions);
                 if owner.is_none() && bound_regions != input_count {
@@ -1611,6 +1618,7 @@ impl Checker<'_> {
                         node,
                     })
                 })?;
+                let result = async_result.unwrap_or(result);
                 let ty = self.intern(
                     key,
                     Type::Function {

@@ -1,0 +1,14 @@
+pa31/tests/spec/future-source/actual-output.rs	0
+pa31/tests/spec/future-source/renamed-output.rs	0
+pa31/tests/spec/future-source/unused-missing-output.rs	0
+pa31/tests/spec/future-source/unused-alternate-output.rs	0
+pa31/tests/spec/future-source/unused-alternate-poll.rs	0
+pa31/tests/spec/future-source/unused-poll-shape.rs	0
+pa31/tests/spec/future-source/extra-trait-parameter.rs	1
+pa31/tests/spec/future-source/extra-output-parameter.rs	1
+pa31/tests/spec/future-source/wrong-output-target.rs	1
+pa31/tests/spec/future-source/wrong-poll-target.rs	1
+pa31/tests/spec/future-source/duplicate-output.rs	1
+pa31/tests/spec/future-source/projection-consumer.rs	0
+pa31/tests/spec/future-source/required-rpit-consumer.rs	0
+pa31/tests/spec/future-source/required-rpit-by-value.rs	0

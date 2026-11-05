@@ -168,6 +168,12 @@ fn function_body(
     function: &crate::sema::model::Function,
     query: Option<&mut crate::types::destruction::NeedsDrop>,
 ) -> Result<Body, Error> {
+    if facts.async_body_output(report, function)?.is_some() {
+        return Err(report.body_error(
+            function.node,
+            "async state-machine construction is not implemented",
+        ));
+    }
     if let Some(mut body) = super::length_methods::build(facts, function)
         .map_err(|e| report.body_error(function.node, e))?
     {

@@ -1,5 +1,6 @@
 //! Defining contexts retain hidden types separately from published result identities.
 mod applications;
+mod async_output;
 pub(crate) use applications::StorageFailure;
 mod captures;
 mod closing;

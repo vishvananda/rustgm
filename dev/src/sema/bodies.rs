@@ -750,8 +750,7 @@ impl Checker<'_> {
             function.definition,
             unsafe_,
         )?;
-        self.state.result = result;
-        self.prepare_opaque_results(body.node)?;
+        self.prepare_function_result(&function, result)?;
         let unit = self.report.package.unit(self.state.file);
         for mut node in unit
             .configured

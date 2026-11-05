@@ -57,6 +57,10 @@ impl Checker<'_> {
             else {
                 return Err(self.error(function.node, "invalid function signature"));
             };
+            let result = self
+                .facts
+                .async_body_output(self.report, &function)?
+                .unwrap_or(result);
             let count = self
                 .facts
                 .types

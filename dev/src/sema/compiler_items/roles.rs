@@ -222,6 +222,12 @@ fn complete_dependent_roles(
         .source_bindings
         .as_deref()
         .ok_or_else(|| Error::unlocated("dependent source roles lost their actual catalog"))?;
+    for role in super::futures::complete(report, facts, catalog)?
+        .into_iter()
+        .flatten()
+    {
+        complete.roles.insert(role);
+    }
     if let Some(declaration) = catalog.language(LangItem::FnPtrAddr) {
         super::pointers::validate_member(report, facts, declaration)?;
         complete.roles.insert(LangItem::FnPtrAddr);

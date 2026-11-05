@@ -93,6 +93,7 @@ pub(crate) use comparison_contract::comparison_member;
 pub(in crate::sema) use comparison_contract::source_comparison;
 mod binary_contract;
 pub(in crate::sema) mod for_roles;
+pub(in crate::sema) mod futures;
 mod operator_contract;
 mod sizing;
 pub(in crate::sema) mod try_protocol;

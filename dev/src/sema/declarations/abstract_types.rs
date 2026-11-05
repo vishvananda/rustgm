@@ -1,4 +1,5 @@
 //! Defining signatures retain bound scopes through argument and equality scheduling.
+mod async_result;
 use super::generics::{
     bindings::Binding,
     bounds::{Written, lexical::Scope},

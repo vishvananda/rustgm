@@ -255,7 +255,6 @@ impl Checker<'_> {
         if item.visibility != Visibility::Private
             || flags.safety == Safety::Safe
             || flags.constant
-            || flags.asynchronous
             || function.body.is_none()
         {
             return Err(self.error(function.node,"trait implementation methods require inherited visibility, a body, and supported function qualifiers"));

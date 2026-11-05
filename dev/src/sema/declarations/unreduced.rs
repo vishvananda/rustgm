@@ -144,7 +144,15 @@ impl Checker<'_> {
         if !changed {
             return Ok(ty);
         }
-        let result = result.map_or(Ok(TypeId::UNIT), |node| self.unreduced_type(node))?;
+        let result = if matches!(self.item(key).map(|item| item.kind), Ok(crate::syntax::item::ItemKind::Function { flags, .. }) if flags.asynchronous)
+        {
+            let Some(Type::Function { result, .. }) = self.facts.types.kind(ty) else {
+                return Err(self.error(key, "missing async signature result"));
+            };
+            result
+        } else {
+            result.map_or(Ok(TypeId::UNIT), |node| self.unreduced_type(node))?
+        };
         let Some(Type::Function {
             bound_regions,
             unsafe_,

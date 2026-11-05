@@ -1,6 +1,8 @@
 //! Maintainer integration suites for frontend.
 #[path = "../../applicable_contracts.rs"]
 mod applicable_contracts;
+#[path = "../../async_signatures.rs"]
+mod async_signatures;
 #[path = "../../callback_addresses.rs"]
 mod callback_addresses;
 #[path = "../../callback_provider.rs"]
@@ -49,6 +51,8 @@ mod forced_dyn_contracts;
 mod fragments;
 #[path = "../../fundamental_contracts.rs"]
 mod fundamental_contracts;
+#[path = "../../future_source.rs"]
+mod future_source;
 #[path = "../../glob_provenance.rs"]
 mod glob_provenance;
 #[path = "../../glue_provider.rs"]
