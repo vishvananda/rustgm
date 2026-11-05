@@ -44,6 +44,12 @@ executable bridge keeps its existing parser/linker path.
 
 ## Verification
 
+The latest local recheck confirms that all three live tools at the current
+`cppgm-extended` HEAD still match their immutable pins byte for byte. Executable
+and object handshakes and all14 backend/installer Python tests pass. The retained
+`obj/parallel/backend-refresh-v1/reverification-v1/receipt.json` has SHA-256
+`fb8369e43aa279d307e48321909ec71daae74bc0f9638ee149ea2e2b8ceb2bc6`.
+
 The final fast gate passes3 selected public tests,1193 PA19 text cases, strict
 selected Clippy, formatting and architecture in45.84s. It includes the exact
 carrier/ordinary-cast opponent, all28 atomic extrema source contracts and
