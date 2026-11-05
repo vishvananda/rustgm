@@ -1,5 +1,9 @@
 //! Genuine authored futures borrow their defining clauses and actual source protocol.
+mod polling;
+mod protocol;
 mod schema;
+pub(crate) use polling::FutureMethod;
+pub(in crate::sema) use polling::{concrete_self, retain};
 #[cfg(test)]
 #[path = "../../tests/invariants/coroutine_evidence.rs"]
 mod tests;

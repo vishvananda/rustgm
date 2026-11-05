@@ -25,6 +25,15 @@ pub(in crate::sema) fn callable_substitution(
     Arguments::new(facts, instance.ty())?.substitution(facts)
 }
 
+/// The same complete callable reconstruction, with real clone/map growth prepaid.
+pub(in crate::sema) fn callable_substitution_paid(
+    facts: &Declarations,
+    instance: crate::types::instance::Instance,
+    pay: crate::support::retained::Payment<'_>,
+) -> Result<substitute::Bound, &'static str> {
+    Arguments::new_paid(facts, instance.ty(), pay)?.substitution_paid(facts, pay)
+}
+
 pub(super) struct Arguments {
     method: DefId,
     regions: Vec<RegionId>,

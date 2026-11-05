@@ -167,3 +167,105 @@ fn output_schema_requires_actual_bounds_and_completed_own_family_after_warm_sele
     );
     Ok(())
 }
+
+fn selected_poll() -> Result<(Declarations, FutureMethod)> {
+    use crate::{
+        body::ir::Rvalue,
+        types::{arguments::Argument, instance::Instance},
+    };
+    let text = test_source::fixture("pa43/tests/spec/future-runtime-v1/poll-consumer-source.rs")?;
+    let report = test_source::source_provider(&text, "poll_descriptor_provenance")?;
+    let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
+    let (templates, inputs) = checks::prepare(&report, &mut facts)?;
+    let checked = checks::verify(&facts, &templates, inputs)?;
+    let future = checks::future(&report, &mut facts, "value", &[])?;
+    let _ = pipeline::future_application(&mut facts, &checked, future)?;
+    let driven = checks::future(
+        &report,
+        &mut facts,
+        "driven",
+        &[
+            Argument::Lifetime(crate::types::RegionId::STATIC),
+            Argument::Lifetime(crate::types::RegionId::STATIC),
+            Argument::Type(TypeId::primitive(crate::types::Primitive::U8)),
+        ],
+    )?;
+    let application = pipeline::future_application(&mut facts, &checked, driven)?;
+    let declared = protocol::require(&mut facts)?;
+    let mut selected = None;
+    for value in &application.body().values {
+        let Rvalue::Call { callee, .. } = value.kind else {
+            continue;
+        };
+        let callee = &application.body().values[callee.0 as usize];
+        if !matches!(facts.types.kind(callee.ty),Some(Kind::FunctionItem {item,..}) if item.0 == declared.method.0)
+        {
+            continue;
+        }
+        let instance = Instance::new(&facts.types, callee.ty)?;
+        let actual = facts
+            .primitive_methods
+            .as_deref()
+            .and_then(|registry| registry.get_future(instance))
+            .ok_or("actual poll did not retain its typed descriptor")?;
+        assert!(selected.replace(actual).is_none());
+    }
+    Ok((facts, selected.ok_or("actual poll descriptor")?))
+}
+
+#[test]
+fn poll_descriptor_revalidates_actual_public_binders_variant_owner_and_warm_publication() -> Result
+{
+    let (mut facts, selected) = selected_poll()?;
+    for _ in 0..8 {
+        selected.validate(&mut facts)?;
+    }
+    let declared = selected.validate(&mut facts)?;
+    let scheme = facts
+        .lifetimes
+        .functions
+        .get_mut(&declared.method)
+        .ok_or("actual poll frame")?;
+    scheme.late.swap(0, 1);
+    assert!(selected.validate(&mut facts).is_err());
+    facts
+        .lifetimes
+        .functions
+        .get_mut(&declared.method)
+        .ok_or("actual frame")?
+        .late
+        .swap(0, 1);
+    selected.validate(&mut facts)?;
+    let ready = facts
+        .source_bindings
+        .as_deref()
+        .ok_or("catalog")?
+        .validated_language(LangItem::PollReady)?
+        .ok_or("actual Ready")?;
+    let variant = facts
+        .members
+        .at_node(ready.origin)
+        .ok_or("actual Ready member")?;
+    let owner = facts.members.variants[variant.0 as usize].owner;
+    facts.members.variants[variant.0 as usize].owner = ItemId(declared.method.0);
+    assert!(selected.validate(&mut facts).is_err());
+    facts.members.variants[variant.0 as usize].owner = owner;
+    let Some(Kind::Future { identity, .. }) = facts.types.kind(selected.key().future) else {
+        return Err("actual selected future".into());
+    };
+    let declaration = facts
+        .opaques
+        .declarations
+        .get_mut(&identity)
+        .ok_or("actual opaque")?;
+    let hidden = declaration.hidden.replace(TypeId::UNIT);
+    assert!(selected.validate(&mut facts).is_err());
+    facts
+        .opaques
+        .declarations
+        .get_mut(&identity)
+        .ok_or("actual opaque")?
+        .hidden = hidden;
+    selected.validate(&mut facts)?;
+    Ok(())
+}

@@ -1,0 +1,339 @@
+{
+  "scope": "Actual source poll protocol, complete-Future descriptor and ordinary selected Call route; generated executable state/ownership remains fenced",
+  "parent": "673828d13",
+  "sources": {
+    "dev/src/body/drops.rs": "f49a494246fd9fd11e43728b5e564712b27f04122ad75f1536606d273b2e7b2f",
+    "dev/src/lower/instances/demand.rs": "7cb3a3a9ea4b66baf16bb1576a4835a2283879c541fe808de7874507743039ef",
+    "dev/src/sema/coroutine_methods.rs": "bc3d225f4bebf7e54d087b40198261024b1cff0f8fff362a18726c87b074a320",
+    "dev/src/sema/coroutine_methods/polling.rs": "880af78385b2414f60a52b0772b56a43c21661bc1d3ea122c685995e8336b15a",
+    "dev/src/sema/coroutine_methods/protocol.rs": "016ba8be4180d735af3c98f6a8feffe684febde635fbc1f0801414b0a80801b9",
+    "dev/src/sema/dispatch.rs": "62e8d5fd303d0cac40ec580928d6a7c046b93b0319be574007f5ed318b825f11",
+    "dev/src/sema/dispatch/arguments.rs": "f5268b58cd85112dd49839ff49c4795aacbce77feb5f206ccb042ef318cc47a4",
+    "dev/src/sema/dispatch/objects.rs": "a10f6a5504ee339951070ac1dac13875f779f63366ce1e0dc330dfe748c6f57b",
+    "dev/src/sema/mod.rs": "68caa073fa8bead7eeeae1cd5afac4660895309caa31c06449576ad638a761ad",
+    "dev/src/sema/primitive_methods.rs": "919c19331363a9c341355c11e8bafef016fac5c41744df5d5827fb614e52a2a9",
+    "dev/tests/helpers/asynccheck.rs": "39629d44d0932847c44aff6c622b94628c3c9b80e1a4f05d5fcc8ea05a3478d6",
+    "dev/tests/invariants/coroutine_evidence.rs": "efe0643fef4a509118b540956525505afd7e1ebf501b33505e4592ca8b62343a",
+    "dev/tests/invariants/primitive_factories.rs": "aa368d11ef8f22140c888c85a8e4412053ea070f8430b45b7b6baaabbf2d0e9d",
+    "dev/tests/polling_source.rs": "42fdc0fd0c71fdb1b974790a80ff84d59ef6dbc6bd6a5d7e23b9692a3217f773",
+    "dev/tests/stateframe.rs": "f01ff5426d0cc94146c6ae8290696937697a3cb7d7b04c92112159760f0e0214",
+    "docs/parallel/future-runtime-poll-checkpoint.md": "9927829d3183216b5a19e316087dc3eef565678a0f3fddcd1cded72f9b13a875",
+    "pa31/tests/spec/polling-source/protocol-predictions.json": "6c659833a3153cf683860cfd3b2a6f8c430b68ecd793914c906c0b5bad3aec23",
+    "pa31/tests/spec/polling-source/protocol.rs": "c70ae5bf0e0a8bae6dfb6f71078d2fd258519a0cafee4ac317e447381286ead3",
+    "pa43/tests/spec/future-runtime-v1/poll-consumer-companion.rs": "b2ae0d489ecf567b8fc5df6fe6c9de78276fe88c02fffd5fd10163adab89705b",
+    "pa43/tests/spec/future-runtime-v1/poll-consumer-predictions.json": "acbc5a64533536f26589dad32cf6fe6ab4577fe2cf3be5b6d32408f1a1875c3a",
+    "pa43/tests/spec/future-runtime-v1/poll-consumer-source.rs": "07107b1228445502d82c1a65c686a4cb18f6f6299726ef94116eb1ff05f0365c"
+  },
+  "source_hashes": {
+    "path": "obj/parallel/future-runtime-v1/poll-descriptor/source-hashes.json",
+    "sha256": "d3ca6ee4c08d86739439f47cc063d1f5352b173023d94f32b64d3006d42683a3"
+  },
+  "gates": [
+    {
+      "receipt": "obj/qualification/fast/1793898408538105475/receipt.json",
+      "sha256": "4d0c1eaae6e18ab7a77a5e8595261962d5913803a12631605139fc46c34406d6",
+      "state": "passed",
+      "selected": {
+        "suite_traits": [
+          "language_operators::methods::selected_dot_methods",
+          "language_operators::primitives::primitive_contracts_match_independent_outcomes"
+        ],
+        "suite_frontend": [
+          "stateframe::actual_typed_future_shapes_preserve_capture_identity_and_do_not_capture_output",
+          "stateframe::authored_async_by_value_unsized_input_cannot_publish_sized_future_storage",
+          "stateframe::authored_async_originals_keep_their_real_output_through_region_and_loan_checks",
+          "stateframe::complete_generic_applications_reuse_one_identity_and_reject_argument_kind_forgery",
+          "stateframe::future_formation_proves_closed_bounds_and_retains_unpaid_lifetime_requirements",
+          "stateframe::generic_future_templates_defer_unknown_capture_layout_until_real_application",
+          "stateframe::selected_authored_poll_calls_keep_the_real_member_and_independent_public_signature",
+          "stateframe::selected_future_applications_revalidate_store_and_warm_publication",
+          "stateframe::selected_future_applications_use_actual_checked_bodies_and_complete_capture_frames",
+          "stateframe::selected_future_bounds_consume_genuine_future_and_actual_output_equality",
+          "polling_source::ordinary_polling_roles_preserve_unused_shapes_and_all_body_checks"
+        ]
+      },
+      "steps": [
+        {
+          "name": "assignment-metadata",
+          "status": 0,
+          "seconds": 1.9204483699868433
+        },
+        {
+          "name": "format",
+          "status": 0,
+          "seconds": 15.856569488998502
+        },
+        {
+          "name": "architecture",
+          "status": 0,
+          "seconds": 2.6208283869782463
+        },
+        {
+          "name": "clippy",
+          "status": 0,
+          "seconds": 28.987156159011647
+        },
+        {
+          "name": "build",
+          "status": 0,
+          "seconds": 51.31136102898745
+        },
+        {
+          "name": "suite_traits-inventory",
+          "status": 0,
+          "seconds": 0.008176230010576546
+        },
+        {
+          "name": "suite_traits-ignored",
+          "status": 0,
+          "seconds": 0.008012606005650014
+        },
+        {
+          "name": "suite_frontend-inventory",
+          "status": 0,
+          "seconds": 0.016495971998665482
+        },
+        {
+          "name": "suite_frontend-ignored",
+          "status": 0,
+          "seconds": 0.008074704033788294
+        },
+        {
+          "name": "suite_traits",
+          "status": 0,
+          "seconds": 5.429037293011788
+        },
+        {
+          "name": "suite_frontend",
+          "status": 0,
+          "seconds": 0.16530427703401074
+        }
+      ]
+    },
+    {
+      "receipt": "obj/qualification/fast/1793898692736735178/receipt.json",
+      "sha256": "cbdf793d9659792f828c3e5ef1d89bd43a4383782a13bf8094522bcbcb9998ab",
+      "state": "passed",
+      "selected": {
+        "suite_frontend": [
+          "stateframe::actual_typed_future_shapes_preserve_capture_identity_and_do_not_capture_output",
+          "stateframe::authored_async_by_value_unsized_input_cannot_publish_sized_future_storage",
+          "stateframe::authored_async_originals_keep_their_real_output_through_region_and_loan_checks",
+          "stateframe::complete_generic_applications_reuse_one_identity_and_reject_argument_kind_forgery",
+          "stateframe::future_formation_proves_closed_bounds_and_retains_unpaid_lifetime_requirements",
+          "stateframe::generic_future_templates_defer_unknown_capture_layout_until_real_application",
+          "stateframe::selected_authored_poll_calls_keep_the_real_member_and_independent_public_signature",
+          "stateframe::selected_future_applications_revalidate_store_and_warm_publication",
+          "stateframe::selected_future_applications_use_actual_checked_bodies_and_complete_capture_frames",
+          "stateframe::selected_future_bounds_consume_genuine_future_and_actual_output_equality",
+          "polling_source::ordinary_polling_roles_preserve_unused_shapes_and_all_body_checks"
+        ],
+        "suite_traits": [
+          "language_operators::methods::selected_dot_methods",
+          "language_operators::primitives::primitive_contracts_match_independent_outcomes"
+        ],
+        "suite_linking": [
+          "compiler_recipes::checked_authored_future_storage_cannot_be_exported_as_a_symbolic_marker",
+          "compiler_recipes::historical_source_and_provided_packets_keep_exact_bytes",
+          "compiler_recipes::operation_envelope_preserves_native_wrapper_and_rejects_legacy_dispatch",
+          "compiler_recipes::publication_checks_real_body_and_recipe_shape_before_symbolic_exclusion",
+          "compiler_recipes::serialized_operation_keeps_real_owner_and_fresh_output_proof",
+          "compiler_recipes::wire_operation_rejects_changed_body_owner_result_target_and_opcode"
+        ]
+      },
+      "steps": [
+        {
+          "name": "assignment-metadata",
+          "status": 0,
+          "seconds": 1.6701814850093797
+        },
+        {
+          "name": "format",
+          "status": 0,
+          "seconds": 14.707641914021224
+        },
+        {
+          "name": "architecture",
+          "status": 0,
+          "seconds": 2.6719796609831974
+        },
+        {
+          "name": "clippy",
+          "status": 0,
+          "seconds": 2.2710412529995665
+        },
+        {
+          "name": "build",
+          "status": 0,
+          "seconds": 7.636047389998566
+        },
+        {
+          "name": "suite_frontend-inventory",
+          "status": 0,
+          "seconds": 0.01633926504291594
+        },
+        {
+          "name": "suite_frontend-ignored",
+          "status": 0,
+          "seconds": 0.008386807981878519
+        },
+        {
+          "name": "suite_traits-inventory",
+          "status": 0,
+          "seconds": 0.016318731009960175
+        },
+        {
+          "name": "suite_traits-ignored",
+          "status": 0,
+          "seconds": 0.008457775984425098
+        },
+        {
+          "name": "suite_linking-inventory",
+          "status": 0,
+          "seconds": 0.008217565016821027
+        },
+        {
+          "name": "suite_linking-ignored",
+          "status": 0,
+          "seconds": 0.008354154997505248
+        },
+        {
+          "name": "suite_frontend",
+          "status": 0,
+          "seconds": 0.16495907900389284
+        },
+        {
+          "name": "suite_traits",
+          "status": 0,
+          "seconds": 4.927571065956727
+        },
+        {
+          "name": "suite_linking",
+          "status": 0,
+          "seconds": 0.0648937369696796
+        }
+      ]
+    }
+  ],
+  "independent": [
+    {
+      "receipt": "obj/parallel/future-runtime-v1/protocol/receipt.json",
+      "sha256": "05f86004e0ce6e4ec3f9b8806da1e53a3bbf091eb5f0df1e0bb0b8294b3ed3e7",
+      "rows": [
+        {
+          "path": "pa31/tests/spec/polling-source/protocol.rs",
+          "sha256": "c70ae5bf0e0a8bae6dfb6f71078d2fd258519a0cafee4ac317e447381286ead3",
+          "status": 0,
+          "cause": null,
+          "actual_status": 0,
+          "cause_seen": true,
+          "command": [
+            "rustc",
+            "+1.98.0",
+            "--edition=2024",
+            "--crate-type=lib",
+            "--emit=metadata",
+            "-Zthreads=2",
+            "-Ccodegen-units=2",
+            "pa31/tests/spec/polling-source/protocol.rs",
+            "-o",
+            "obj/parallel/future-runtime-v1/protocol/protocol.rmeta"
+          ]
+        }
+      ]
+    },
+    {
+      "receipt": "obj/parallel/future-runtime-v1/poll-consumer/receipt.json",
+      "sha256": "283be3583139fc1c131319a77f8b5b2ae633249687c4832b5a05151952e7b79c",
+      "rows": [
+        {
+          "path": "pa43/tests/spec/future-runtime-v1/poll-consumer-companion.rs",
+          "sha256": "b2ae0d489ecf567b8fc5df6fe6c9de78276fe88c02fffd5fd10163adab89705b",
+          "status": 0,
+          "cause": null,
+          "actual_status": 0,
+          "cause_seen": true,
+          "command": [
+            "rustc",
+            "+1.98.0",
+            "--edition=2024",
+            "--crate-type=lib",
+            "--emit=metadata",
+            "-Zthreads=2",
+            "-Ccodegen-units=2",
+            "pa43/tests/spec/future-runtime-v1/poll-consumer-companion.rs",
+            "-o",
+            "obj/parallel/future-runtime-v1/poll-consumer/poll-consumer-companion.rmeta"
+          ]
+        }
+      ]
+    }
+  ],
+  "private": {
+    "status": "authored; not locally compiled/linked/executed, integration CI required",
+    "exact": [
+      "sema::primitive_methods::tests::generated_registry_prepays_cold_growth_warm_hits_and_sticky_limits",
+      "sema::coroutine_methods::tests::poll_descriptor_revalidates_actual_public_binders_variant_owner_and_warm_publication"
+    ],
+    "adaptation": "primitive_factories::fixture_for reads scalar rows via existing typed Registry.get and rejects unexpected Future rows"
+  },
+  "layout": {
+    "Selected": 12,
+    "Entry": 16,
+    "Instance_Entry": 20,
+    "previous_Instance_Selected": 16,
+    "Registry": 48,
+    "Kind": 24,
+    "Owner": 20,
+    "Body": 456,
+    "opaque_Entry": 16,
+    "note": "Compiled exact size guards and existing public layout checks; only cold optional registry box/row grows"
+  },
+  "failures": [
+    {
+      "gate": "1793897370361086319",
+      "cause": "demand step111lines, Clippy limit100"
+    },
+    {
+      "gate": "1793897496354947481",
+      "cause": "partially factored demand step103lines; cohesive lookup/requirement helper completed"
+    },
+    {
+      "gate": "1793897613297541495",
+      "cause": "production Clippy passed; build160.25s exhausted remaining guarded budget; no test outcome"
+    },
+    {
+      "gate": "1793897901458252541",
+      "cause": "built, legacy scalar controls failed absent source-header payer; fixed real cold registry accounting plus mandatory source-provider charging"
+    },
+    {
+      "receipt": "obj/parallel/future-runtime-v1/poll-descriptor/first-receipt.json",
+      "sha256": "d21b9ab46f61cde7e35e76b5909e656130e9c7d35ba24f73237364beb13473cf",
+      "cause": "same built frontend10/11; new consumer found erroneous reservation enum-parent assumption, replaced by actual None+canonical Members ownership"
+    }
+  ],
+  "upstream": {
+    "status": 0,
+    "pinned_fixtures": 28,
+    "reference_files": 126,
+    "storage_record": "obj/cleanup/1793898793683627832.jsonl"
+  },
+  "harness": {
+    "status": "pending Root integration configuration; prior selector278/280 TMPDIR ancestor-controller scope failure retained, no bypass"
+  },
+  "required": [
+    "Checked family + actual formation/region/loan proof before future factory permit",
+    "constructor raw inputs exactly once; source parameter patterns/body only at poll",
+    "distinct generated poll/drop keys and authentic public/execution binder transport",
+    "explicit owned capture transfer with init/poison/cleanup/completion laws",
+    "actual Ready(Output), unpolled/completed Drop and all frozen native observers",
+    "await/saved locals/self-reference/panic/cancellation and recursive async destruction/helper runtime",
+    "authenticated authored-body export and integrated performance/full CI qualification"
+  ],
+  "claims": {
+    "candidate_future_native": false,
+    "runtime_complete": false,
+    "assignment_complete": false,
+    "full_core_complete": false
+  }
+}

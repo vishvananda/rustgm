@@ -5,7 +5,7 @@ pub mod associated;
 pub mod bodies;
 pub mod closures;
 mod constants;
-mod coroutine_methods;
+pub(crate) mod coroutine_methods;
 pub mod crates;
 pub mod numbered_regions;
 pub use constants::values;

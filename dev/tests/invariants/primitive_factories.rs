@@ -34,14 +34,16 @@ fn fixture_for(source: &str) -> Result<Factory> {
     } = crate::pipeline::analyze_source(&report)?;
     let entry = crate::sema::entry::select(&mut report, &facts)?;
     let program = crate::lower::instances::build_prepared(&report, &mut facts, entry, prepared)?;
-    let mut selected = facts
-        .primitive_methods
-        .as_ref()
-        .ok_or("registry")?
+    let registry = facts.primitive_methods.as_ref().ok_or("registry")?;
+    let mut selected = registry
         .selected
-        .values()
-        .copied()
-        .collect::<Vec<_>>();
+        .keys()
+        .map(|instance| {
+            registry
+                .get(*instance)
+                .ok_or("unexpected future in scalar fixture")
+        })
+        .collect::<std::result::Result<Vec<_>, _>>()?;
     selected.sort_by_key(|selected| selected.instance.ty().0);
     let bodies = program
         .symbols
@@ -724,3 +726,53 @@ mod collections;
 
 #[path = "operand_receipts.rs"]
 mod shared_values;
+
+#[test]
+fn generated_registry_prepays_cold_growth_warm_hits_and_sticky_limits() -> Result {
+    let Factory {
+        mut facts,
+        selected,
+        ..
+    } = fixture_for(
+        "fn main(){let mut a=1u8;a+=2;let mut b=3u16;b+=4;let mut c=5u32;c+=6;let mut d=7u64;d+=8;}",
+    )?;
+    assert_eq!(selected.len(), 4);
+    assert!(facts.source_bindings.is_none());
+    facts.primitive_methods = None;
+    let first = selected[0];
+    retain(&mut facts, first.instance(), first.descriptor())?;
+    let registry = facts.primitive_methods.as_deref().ok_or("cold registry")?;
+    assert_eq!(
+        registry.bytes,
+        size_of::<Registry>() + 4 * size_of::<(Instance, Entry)>()
+    );
+    let (work, bytes) = (registry.work, registry.bytes);
+    retain(&mut facts, first.instance(), first.descriptor())?;
+    let registry = facts.primitive_methods.as_deref().ok_or("warm registry")?;
+    assert_eq!(registry.work, work + 1);
+    assert_eq!(registry.bytes, bytes);
+    for candidate in &selected[1..3] {
+        retain(&mut facts, candidate.instance(), candidate.descriptor())?;
+    }
+    let registry = facts.primitive_methods.as_deref_mut().ok_or("actual map")?;
+    assert_eq!(registry.selected.len(), registry.selected.capacity());
+    registry.bytes = crate::support::crates::MAX_BYTES;
+    let last = selected[3];
+    assert!(retain(&mut facts, last.instance(), last.descriptor()).is_err());
+    let registry = facts
+        .primitive_methods
+        .as_deref()
+        .ok_or("failed registry")?;
+    assert_eq!(registry.selected.len(), 3);
+    assert!(registry.bytes > crate::support::crates::MAX_BYTES);
+    assert!(retain(&mut facts, first.instance(), first.descriptor()).is_err());
+    let registry = facts
+        .primitive_methods
+        .as_deref_mut()
+        .ok_or("work registry")?;
+    registry.bytes = 0;
+    registry.work = crate::support::crates::MAX_COMPONENTS;
+    assert!(retain(&mut facts, first.instance(), first.descriptor()).is_err());
+    assert!(retain(&mut facts, first.instance(), first.descriptor()).is_err());
+    Ok(())
+}

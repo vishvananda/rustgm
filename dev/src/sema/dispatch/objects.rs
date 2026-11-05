@@ -16,6 +16,10 @@ pub(super) enum Method {
     FunctionPointer {
         proof: Obligations,
     },
+    Future {
+        future: TypeId,
+        proof: Obligations,
+    },
     Language {
         descriptor: crate::sema::primitive_methods::Descriptor,
         proof: Obligations,
@@ -68,8 +72,15 @@ impl Dispatcher {
             }
             _ => false,
         };
+        let future_role = crate::sema::coroutine_methods::future_role(facts)?;
+        let future = predicate
+            .bound
+            .trait_parts()
+            .and_then(|(id, _)| facts.types.trait_application(id))
+            .is_some_and(|application| future_role == Some(DefId(application.item.0)));
         let fn_pointer = crate::sema::compiler_items::pointers::application(facts, predicate)?;
         if !language
+            && !future
             && !fn_pointer
             && !matches!(facts.types.kind(predicate.ty), Some(Kind::Dynamic { .. }))
         {
@@ -121,6 +132,10 @@ impl Dispatcher {
                     proof: evidence.proof,
                 })
             }
+            selection::Source::Future { future } => Ok(Method::Future {
+                future,
+                proof: evidence.proof,
+            }),
             selection::Source::LanguageOperation { descriptor } => Ok(Method::Language {
                 descriptor,
                 proof: evidence.proof,

@@ -1,0 +1,15 @@
+{
+  "scope": "Real authored async body makes ordinary Pin constructor and required Future::poll Call; state execution is still not granted by descriptor",
+  "source_sha256": "07107b1228445502d82c1a65c686a4cb18f6f6299726ef94116eb1ff05f0365c",
+  "authored_sha256": "3b0c125cd451fe7fd3242c801eaf6eab8446c209ab279415f7248ff8d4c5728f",
+  "cases": [
+    {
+      "path": "pa43/tests/spec/future-runtime-v1/poll-consumer-companion.rs",
+      "sha256": "b2ae0d489ecf567b8fc5df6fe6c9de78276fe88c02fffd5fd10163adab89705b",
+      "status": 0,
+      "cause": null
+    }
+  ],
+  "prior_plain_caller_receipt_sha256": "ad78e24800dc4250964a77c33b39f209fe8b10ed6c6606744ef956f32f89b6c9",
+  "caller_control": "Real defining T:Copy environment specialized to actual u8; no invented assumed condition"
+}

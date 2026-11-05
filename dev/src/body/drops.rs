@@ -285,7 +285,10 @@ pub enum MemberPosition {
     Variant(u32),
 }
 
-pub(crate) fn nominal_position(
+/// Read an actual nominal member coordinate without granting cleanup or body permission.
+/// # Errors
+/// Rejects non-nominal types, foreign/missing members and variants without their enum owner.
+pub fn nominal_position(
     facts: &Declarations,
     ty: TypeId,
     query: MemberQuery,

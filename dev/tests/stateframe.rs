@@ -572,3 +572,84 @@ fn authored_async_by_value_unsized_input_cannot_publish_sized_future_storage() -
     );
     Ok(())
 }
+
+#[test]
+fn selected_authored_poll_calls_keep_the_real_member_and_independent_public_signature() -> Result {
+    use rustgm::{
+        body::ir::Rvalue,
+        types::{arguments::Argument, instance::Instance},
+    };
+    let text = source::fixture("pa43/tests/spec/future-runtime-v1/poll-consumer-source.rs")?;
+    let companion =
+        source::fixture("pa43/tests/spec/future-runtime-v1/poll-consumer-companion.rs")?;
+    let authored = companion.split_once('\n').ok_or("companion foundation")?.1;
+    assert!(text.ends_with(authored));
+    let report = source::source_provider(&text, "actual_poll_consumer")?;
+    let mut facts = sema::bodies::analyze(&report, sema::declarations::analyze(&report)?)?;
+    let (templates, inputs) = checks::prepare(&report, &mut facts)?;
+    let checked = checks::verify(&facts, &templates, inputs)?;
+    let value = checks::future(&report, &mut facts, "value", &[])?;
+    let _ = rustgm::pipeline::future_application(&mut facts, &checked, value)?;
+    let future = checks::future(
+        &report,
+        &mut facts,
+        "driven",
+        &[
+            Argument::Lifetime(types::RegionId::STATIC),
+            Argument::Lifetime(types::RegionId::STATIC),
+            Argument::Type(TypeId::primitive(types::Primitive::U8)),
+        ],
+    )?;
+    let poll = facts
+        .functions
+        .iter()
+        .find(|function| {
+            report
+                .package
+                .names
+                .get(report.resolution.definitions[function.definition.0 as usize].name)
+                == "poll"
+        })
+        .ok_or("actual required poll declaration")?
+        .definition;
+    let application = rustgm::pipeline::future_application(&mut facts, &checked, future)?;
+    let mut calls = 0;
+    for expression in &application.body().values {
+        let Rvalue::Call { callee, .. } = expression.kind else {
+            continue;
+        };
+        let callee = application
+            .body()
+            .values
+            .get(callee.0 as usize)
+            .ok_or("actual call operand")?;
+        let Some(Kind::FunctionItem {
+            item, signature, ..
+        }) = facts.types.kind(callee.ty)
+        else {
+            continue;
+        };
+        if item.0 != poll.0 {
+            continue;
+        }
+        let instance = Instance::new(&facts.types, callee.ty)?;
+        assert_eq!(application.body().callable_target(instance), instance);
+        assert!(matches!(
+            facts.types.kind(signature),
+            Some(Kind::Function {
+                bound_regions: 3,
+                ..
+            })
+        ));
+        calls += 1;
+    }
+    assert_eq!(calls, 1);
+    assert_eq!(application.contract().universals, 2);
+    assert_eq!(
+        application.body().result,
+        TypeId::primitive(types::Primitive::U8)
+    );
+    let repeated = rustgm::pipeline::future_application(&mut facts, &checked, future)?;
+    assert_eq!(application.body().source, repeated.body().source);
+    Ok(())
+}
