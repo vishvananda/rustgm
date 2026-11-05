@@ -15,6 +15,19 @@ impl Declarations {
         function: &Function,
     ) -> Result<Option<TypeId>, Error> {
         let error = |message| Self::error(report, function.node, message);
+        let definition = report
+            .resolution
+            .definitions
+            .get(function.definition.0 as usize)
+            .ok_or_else(|| error("function output lost its declaration identity"))?;
+        // Canonical library callables retain a diagnostic site, not an authored
+        // function node. Only the actual declaration can authorize async syntax.
+        let Some(source) = definition.node else {
+            return Ok(None);
+        };
+        if source != function.node {
+            return Err(error("function output changed its source declaration"));
+        }
         let ast = &report.package.unit(function.node.file).configured.ast;
         let Syntax::Item(index) = ast.node(function.node.node).kind else {
             return Err(error("function output lost its source declaration"));

@@ -155,12 +155,16 @@ impl Declarations {
         // Selected impl arguments prefix every lifetime capture, including
         // anonymous slots absent from the named parameter indices. Only an
         // uncaptured owner can use the positional substitution shortcut.
-        if captures == 0 && own == GenericArgs::EMPTY && parameters.is_empty() {
+        let plain = own == GenericArgs::EMPTY && parameters.is_empty();
+        if captures == 0 && plain {
             return self
                 .generics
                 .substitute(&mut self.types, owner, parent, template);
         }
-        if self.associated.type_definition(owner, member) != Some(member) {
+        // Plain definitions were authenticated by selection, including the
+        // canonical library registry. Only family inputs require a source
+        // associated-member schema; builtin definitions do not have that row.
+        if !plain && self.associated.type_definition(owner, member) != Some(member) {
             return Err("associated definition does not belong to the selected owner");
         }
         let application = Application {

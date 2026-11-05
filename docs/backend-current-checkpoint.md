@@ -81,6 +81,24 @@ Final evidence under warm btrfs scratch:
 - `obj/parallel/backend-refresh-v1/measurement-v2/receipt.json`:
   edde4eb594a409f5f09e89764459eda3a7db7c5d2011ecfba3fca8b565d5dd2a.
 
-Earlier full Pin CI41939550904 is terminal success. A full combined successor
-remains pending. No whole assignment or original core/alloc/std artifact follows
-from this backend checkpoint.
+Earlier full Pin CI41939550904 is terminal success. Backend successor
+[41948482651](https://github.com/vishvananda/rustgm/actions/runs/41948482651)
+failed before backend installation:2687 private tests passed,16 private iterator
+tests and five public iterator tests rejected compiler-provided associated types.
+The earlier captured-lifetime substitution repair had required the source member
+registry even for already selected plain library definitions. Plain definitions
+now retain identity-mapped capture substitution without that inapplicable source
+family check; generic associated families retain the ownership guard.
+
+The same iterator controls on the later joined async frontend exposed a second
+regression: canonical functions use diagnostic sites rather than authored
+function syntax. Async output authentication now consults the actual resolver
+declaration before reading syntax, retaining exact source-owner/future checks for
+authored functions. No iterator body or expected result is replaced.
+
+The repair gate `obj/qualification/fast/1793844289914774318/receipt.json` passes
+all five public iterator regressions, three genuine Pin/async receiver controls,
+1193 PA19 cases, formatting, architecture and strict selected Clippy in116.78s.
+The failed full log is retained locally. Complete private/native/debug successor
+qualification remains pending CI. No whole assignment or original core/alloc/std
+artifact follows from this backend checkpoint.
