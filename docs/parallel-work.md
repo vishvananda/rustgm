@@ -1,5 +1,16 @@
 # Parallel library bootstrap implementation
 
+The current [Receiver/Va/future join](parallel/receiver-va-future-join.md) qualifies
+actual type-only receivers, genuine source cursor execution and future capture/
+storage prerequisites. Root's32 public/2582 text controls and13 native observers
+pass; unchanged original core reaches actual AsyncFn at ops/async_function.rs11,
+file85 byte361 under immutable CLIb553. Root owns that source/consumer family,
+the source worker owns explicit-integer enum C ABI/const cursor prerequisites,
+and the future worker owns real deferred-body/runtime families. Warm trees,
+two heavy jobs,16GiB caps,150GiB reserve and five-minute local batches persist.
+No whole assignment after24 or original library artifact is complete. The older
+chronological notes below are history, not the latest frontier or lane ownership.
+
 Current scheduling is the user-authorized
 [three-agent core plan](parallel/core-critical-path.md): integrator owns
 the build and joins; two6.1-sol/high workers own actual Index/IndexMut places and

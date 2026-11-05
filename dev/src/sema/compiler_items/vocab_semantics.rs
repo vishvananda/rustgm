@@ -15,7 +15,10 @@ pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Res
             // The demanded polling protocol has separate signature/ownership checks.
             continue;
         }
-        if matches!(role, LangItem::VaArgSafe | LangItem::VaList | LangItem::CVoid) {
+        if matches!(
+            role,
+            LangItem::VaArgSafe | LangItem::VaList | LangItem::CVoid
+        ) {
             // Actual ordinary trait/nominal producers retain their headers and
             // policies. Variadic initialization and reads need their own proof.
             continue;

@@ -1,44 +1,47 @@
 # Library build blocker tracker
 
-Current original-core raw source-role admission frontier is **LIB-167,
-Receiver**, at ops/deref.rs370, file89 byte14318. The
-[joined operation/Va checkpoint](parallel/operations-va-join.md) advances past
-VaArgSafe with all722 original hashes,6 pins,15 configuration values, options,
-cap and finite limits preserved. Immutable CLI567ed867 observes it in16.7448s/
-375 opens. This is source admission, not a checked/emitted library artifact.
+Current original-core raw source-role frontier is **LIB-169, AsyncFn**, at
+ops/async_function.rs11, file85 byte361, SHAfcda67887e19c20fd7b26db4a94ec7d5e42a38fcccac04cf16fad564e0b2ece1.
+The [joined Receiver/Va/future checkpoint](parallel/receiver-va-future-join.md)
+clears the Receiver admission frontier with all722 original hashes, six pins,
+15 values, options/capAllow and finite limits unchanged. Immutable CLIb553a3bf
+observes it in16.4656s/375opens. This is source admission; no checked/emitted
+original core/alloc/std artifact or whole assignment after PA24 is complete.
 
-Seventy-five public controls, all1193 PA19 text cases and strict selected Clippy/
-audits pass in118.24s;27 actual native observers pass in37.00s. The genuine v11
-provider→bytes→fresh-store consumer proves Future<Output=()> with actual owner/
-application/schema/bound authority. The symbolic helper owns no executable CFG.
-Both actual v10 packets remain byte-equal7118 bytes. Va source declaration proof
-preserves real headers/traits/fields/domains/ABI; original valid c_variadic
-requests and complete standard/runtime source remain named requirements.
+The joined32-public-test/2582-PA19/20 gate passes strict selected Clippy,
+formatting and architecture in118.28s;13 actual native observers pass in35.73s.
+It includes actual Receiver type-only reachability, genuine wrapping arithmetic,
+real source cursor start/read/copy/end/cleanup and actual future capture/storage
+prerequisites. Future data supplies no executable constructor/poll/drop permission.
+The original source helpers, nominal identities and fallback bodies remain real.
+Ordinary outputs, all15 configuration values and actual v10 metadata stay exact
+(the packet remains7118 bytes/SHA86b0e0a80de3160fbc18973e3ea9cf781513a6206547f55a35b78e2df636f03b).
+Upstream and all280 harness checks pass. Receiver work grows187/consumer at
+8/32/128; actual candidate-only full-LowIR medians are0.0639/0.1369/0.4264s.
 
-Exclusive108-observation common controls retain exact output/metadata equality,
-ordinary4096's+29.8% block/+3.15% median and source128's+4.04% median overhead.
-There is no broad speedup/regression-absence claim. New v11 private cold/warm/
-forgery/Original-demand tests await full CI. Full41986761978 onf800 is terminal
-success with every gate; the joined full successor is separate.
+Exclusive common-control AA/ABBA retains54 observations and byte equality.
+Ordinary1024/4096 paired B/A medians are0.979/0.970, source-Deref0.995.
+Keep the1024 positive15.24% block and all raw noise/overhead observations;
+no broad speedup/regression-absence claim follows. A generic loan-view setup
+failure is retained; the corrected benchmark preserves the full source and
+appends a declared entry for real LowIR compilation. Only currentb553 and
+immediate predecessor567 remain pinned; olderd1dc was scoped-pruned.
 
-Full successor42001319657 on55beb24aa failed at the initial lint compilation:
-one older private replay mutation needs PendingKind::Discharged after the Index
-representation change. The corrected test preserves its exact conflicting
-published-context intent; no compiler/fixture/output changes. Focused2 plus
-strict selected Clippy/format/audit pass in38.08s; full private/runtime successor
-remains required, including all3 recipe opponents.
+Full CI42008769160 on775a9cfa7 is terminal failure:2704 private pass,7 fail,
+3 ignored, all regular integrations pass. The three v11 private forgery/cold/
+warm controls now execute successfully. Four exact stale cold layout assertions
+and three missing real Index fixture contexts are repaired with unchanged
+production operator gates and source bodies. Private repaired cases and later
+native/debug/independent stages await successor full CI. See the
+[fixture repair](parallel/ci-fixture-foundations.md); no full release is inferred.
 
-Successor42003114135 then stopped on9 private opclaims statement-terminator
-Clippy findings. Those are corrected without production/input/assertion changes;
-public recipe5 and strict selected checks pass in30.56s. Full private execution
-and subsequent gates are still pending the next CI run.
-
-No whole PA after24 or original core/alloc/std artifact is complete. Real future
-constructor/state/poll/await/Pin/cancellation/destruction, varargs feature/init/
-read/copy/end/cleanup/CTFE, remaining source/runtime roles, wider layouts and full
-body/policy/associated-family metadata remain required. Index's3 marked-raw
-profile cases include2 Rust-positive compilation gaps. Root owns Receiver;
-existing workers own real Va/cursor and authored-future runtime respectively.
+Root owns actual AsyncFn/Mut/Once, their Future/Output/GAT contracts and source
+consumers under PA31/19/20/24/26/42/43/29. Existing workers retain real authored
+future constructor/poll/drop/state/await/cancellation and explicit-integer enum
+C ABI/varargs const prerequisites. Keep the two-job/16GiB/150GiB limits and warm
+btrfs scratch. Full const cursor/nominal cleanup, original standard module/macro
+closure, wider layouts and full policy/body/associated metadata remain required.
+Index's three marked-raw cases still include two Rust-positive compilation gaps.
 
 The preceding
 [function-pointer checkpoint](pa31-function-pointer-checkpoint.md) passes38
@@ -786,8 +789,9 @@ actual native hints and the future authenticated MIR-import obligation.
 | LIB-158 | Ten local assignment families, provided bodies, native/linear work qualified; wider consumers/transport required | Actual AddAssign through ShrAssign mutable receiver/Rhs/unit contracts | PA31 source authority +PA19/20 selected/default methods +PA25 const effects +PA14/16 mutation/loans +PA29 transport / source-assign-ten | Operator worker, integrated Root | [Checkpoint](parallel/source-assign-ten.md):138 semantic parity targets after the LIB-163 owner repair (the preceding137-target/one-gap checkpoint is retained),9 native observers and19 charged steps/use at8/32/128. Actual source methods/defaults, mutable places/effects/safety/const proofs and packed primitive erasure remain authoritative. Joined12 controls,1193 PA19 cases and all13 operator/storage natives pass. Original core clears the ten declaration fences and reaches LIB-162; primitive panic closure, wider profiles, metadata and whole source checking/artifacts remain required. |
 | LIB-159 | Five local source operator families/native/linear-work qualified; broader profiles required | Mul/Rem/BitXor/BitAnd/Shr actual source contracts and typed consumers | PA31 source authority +PA19/20 actual calls/proof +PA25 const effects +PA29 transport / source-binary-five | Operator worker, integrated Root | [Checkpoint](parallel/source-binary-five.md):49 frozen outcomes, genuine custom/default native results and volatile runtime-input23 match pinned Rust; canonical work grows25 steps/use at8/32/128. Shared header/default/scalar/operator machinery preserves actual method/Output/Rhs/unsafe/body identities. Joined67 exact public tests and1193 PA19 pass. Raw no_core primitive multiplication without Mul independently rejects E0369; no scalar bypass is introduced. Primitive panic codegen, wider effects/transport and complete source closure remain required. |
 | LIB-160 | Finite v10 source nominal transport qualified; complete nominal/policy transport required | Actual source struct/member/constructor transport | PA29 source/typed original-body export, owner-ordered fields and ordinary consumer proof / source-nominals | Transport worker, integrated Root | [Checkpoint](parallel/source-nominals-v10.md):44 source/legacy controls, fresh serialized generic native7, actual move/privacy/type/owner/lifetime opponents and finite scaling pass. All five new private transaction/forgery/legacy cases execute successfully in failed full41960117386; its13 old expectations are repaired in8c29aeae3. Current joined native consumer passes on CPPGMb7. Enum/union/tuple, broader representation/generics, Drop/Pin/fundamental policy and original library artifact transport remain required. |
-| LIB-168 | Direct VaList source prerequisite under independent investigation | Actual c_void nominal and real field type | PA31 source identity +PA12 enum layout +PA30 FFI +PA29 transport | Source worker | Approved ordinary actual enum producer/nominal ledger, preserving full original repr/lang/variant/trait/ABI semantics without unit alias or builtin layout. Ten independent unused/actual controls and native1 pass; candidate producer/full module closure remain required. This is a VaList prerequisite rather than the current raw frontier. |
-| LIB-167 | Current original-core raw role blocker | Actual Receiver and Target with source receiver consumers | PA31 role ownership +PA19/20 trait/projection proof +PA26 receivers +PA16/27 borrow/safety +PA29 transport | Integrator | Unchanged CLI567ed867 reaches actual Receiver:PointeeSized at ops/deref.rs370/file89:14318, SHA55d940bd62685513afbc552b96ea42974a45fc16f6db1d4971d56c332074eca5,16.7448s/375opens. Preserve actual Target:?Sized owner/blanket Deref relation, feature, arbitrary self semantics and metadata. Do not alias Receiver to Deref or LegacyReceiver or grant physical access from type-only receiver evidence. |
+| LIB-169 | Current original-core raw role blocker | Actual AsyncFn/AsyncFnMut/AsyncFnOnce and associated future/output/GAT source consumers | PA31 actual roles +PA19/20 trait/GAT proof +PA24/26 callable hooks +PA42/43 future/borrowing +PA29 transport | Integrator | Unchanged CLIb553 reaches actual AsyncFn at ops/async_function.rs11/file85:361 in16.4656s/375opens. Preserve real Args:Tuple, supertrait chain, rust-call methods, CallRefFuture lifetime/Self outlives, CallOnceFuture/Output equality and source reference impl bodies; closure helpers and runtime/metadata remain required. No alias to Fn or role-only permission. |
+| LIB-168 | Ordinary source producer/move/Rust-call/cast/native qualified; by-value C enum ABI required | Actual c_void nominal and real field type | PA31 source identity +PA12 enum layout +PA30 FFI +PA29 transport | Source worker, Root integrated | [Runtime checkpoint](parallel/source-va-runtime.md): real completed enum/variants/repr/trait/ledger and native1 pass. Original by-value C echo remains a Rust-positive gap; shared fieldless explicit-integer enum scalar storage is independently frozen and under implementation. No unit alias/builtin layout; full standard module and metadata remain required. |
+| LIB-167 | Demonstrated source/receiver/native packet qualified; wider profiles and transport required | Actual Receiver and Target with source receiver consumers | PA31 role ownership +PA19/20 trait/projection proof +PA26 receivers +PA16/27 borrow/safety +PA29 transport | Integrator | [Joined checkpoint](parallel/receiver-va-future-join.md):44 independent outcomes/three native observers, actual feature/unsafe/full-Self proof, no fabricated dereference/field access. Shared orphan-root/nested compatible-world absence law has seven ordinary coherence controls; work is187/consumer. CLIb553 advances unchanged core to LIB-169. Broader shadowing/trait discovery/const/full lifetime and authenticated metadata remain required. |
 | LIB-166 | Local symbolic source-to-fresh-consumer transport qualified; runtime/wider profiles required | Actual compiler AsyncDropInPlace operation, opaque and associated contract metadata | PA29 metadata +PA31 source authority +PA42/43 future/cleanup | Async worker, Root integrated | [Checkpoint](parallel/deferred-operations-v11.md) and [joined evidence](parallel/operations-va-join.md): actual provider→envelope13/version11 bytes→fresh store proves Future<Output=()> for complete applications of one real opaque identity. Source10/Provided11/native12 and actual v10 bytes preserved. One paid sparse body index, real associated/input/proof-site ledger, actual current store/catalog/schema authentication; no placeholder Original/CFG or execution grant. All75 focused controls/27 natives pass, but3 private cold/warm/forgery/Original-demand cases await fullCI. Constructor/poll/drop/state/await/cancel, full core members, wider own families and full CLI/core publication remain required. |
 | LIB-165 | Source declarations/ordinary consumers qualified; full standard/runtime/transport required | Actual source VaArgSafe and VaList | PA31 source ownership +PA30 varargs/ABI +PA28 operations +PA16/17 loans/cleanup +PA25 const +PA29 transport | Source worker, Root integrated | [Checkpoint](parallel/source-va-declarations.md):33 semantic controls,4 lowered work widths and2 ordinary role/ABI native observers pass; actual unused alternate role headers preserve Rust legality. Original positive c_variadic requests and full actual standard marker/variance/module source remain preserved required inputs. Actual standard reference39 24 is not candidate closure. Current joined75/1193PA19/27native passes; core advances to LIB-167. Real cursor init/read/copy/end/cleanup, CTFE and authenticated transport remain required. |
 | LIB-164 | Local source/storage/native contract integrated; wider contracts required | Actual UnsafePinned identity and direct niche/interior policy | PA31 identity +PA12 layout +PA16 loans +PA17 cleanup +PA19/20 traits +PA25/27 const/raw storage +PA29 transport | Integrator | [Checkpoint](pa31-unsafe-pinned-checkpoint.md):22 independent source outcomes/4 new actual natives. Joined9 public/1193 PA19/24 native observers pass; direct and nested niche suppression, aliasing, actual source Unpin/UnsafeUnpin/Freeze/Sync/Copy and ordinary loans/cleanup retain authority. Same paid wrapper/shape transaction/interior set; no new dense record or walk. Original core now reaches LIB-165. Complete Pin/async, CTFE/layout, optimizer promises and metadata remain required. |

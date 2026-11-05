@@ -72,7 +72,7 @@ fn source_call(
         return Ok(None);
     };
     match catalog.intrinsic_kind(crate::resolve::model::DefId(item.0))? {
-        Some(kind @ SourceIntrinsic::Declaration(_)) => {
+        Some(kind @ SourceIntrinsic::Declaration(identity)) if identity.name() == "va_arg" => {
             let Some(read) =
                 crate::body::vararg::read_call(Reader::new(facts), &facts.types, body, value, ty)?
             else {

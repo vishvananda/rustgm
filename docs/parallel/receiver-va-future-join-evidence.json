@@ -1,0 +1,179 @@
+{
+  "scope": "joined Receiver/arithmetic, real variadic runtime, future storage data; full async/runtime/metadata and original artifacts remain required",
+  "cli": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/receiver-va-future-join-v1/cli/b553a3bf34eb5e5c14aa7ff90684bb05de46447396e7dec7789985d131bffc2a/rustgm",
+  "cli_sha256": "b553a3bf34eb5e5c14aa7ff90684bb05de46447396e7dec7789985d131bffc2a",
+  "baseline": {
+    "path": "/mnt/vizier/rustgm-scratch/rustgm-pa26-work/obj/parallel/operations-va-join-v1/cli/567ed867cb81f3164d8a17c326af223cd685d3a18ba39d434d5da8ee5c7c5b00/rustgm",
+    "sha256": "567ed867cb81f3164d8a17c326af223cd685d3a18ba39d434d5da8ee5c7c5b00"
+  },
+  "backend_lock_sha256": "f60c0760f39f1f554486f5a1eb990d2c0fef663fbd1bff944cd1eef8a014a581",
+  "source_fingerprint_sha256": "b43968a52fbf235987d3e5a40cd22afd1a527fc2cb35d5003b62067d23a33a5a",
+  "receipts": [
+    {
+      "path": "obj/parallel/receiver-va-future-join-v1/qualification-v1/receipt.json",
+      "sha256": "11093d5c8b8795d96202e22c159c5db7e6e1c8de11d68f242df7a2ff3e6c6c13"
+    },
+    {
+      "path": "obj/parallel/receiver-va-future-join-v1/performance-v1/receipt.json",
+      "sha256": "575cf998f1243a1eaf425e497ecd8f6af7e0db9aeac08a01b1109683afa36c5b"
+    },
+    {
+      "path": "obj/parallel/receiver-va-future-join-v1/performance-v2/receipt.json",
+      "sha256": "ad1e4860b93d5e998b6978e6d7542008390d0f508c3423b1d0ba1a8fbf90e8a9"
+    },
+    {
+      "path": "obj/parallel/receiver-va-future-join-v1/retired-pin.json",
+      "sha256": "3eab2d1fa4943102f8ddbcfc20896a006085fe2501727f8a05065ef92fb4a344"
+    },
+    {
+      "path": "obj/parallel/receiver-va-future-join-v1/const-drop-reference/receipt.json",
+      "sha256": "af3c408739651cb0d1265f7e3f746f3f0a3017153b71b9dbc189db6c2696b5ee"
+    },
+    {
+      "path": "obj/qualification/fast/1793880522987889812/receipt.json",
+      "sha256": "59ec54759fef658ae7675bcac559669bc6acf2cd1fbfb820cea6c85c5e74acd7"
+    },
+    {
+      "path": "obj/qualification/fast/1793880659900856500/receipt.json",
+      "sha256": "333fad8820565038542b1a338dedf64d07b16f275c7a51432badfec449f2cd1e"
+    },
+    {
+      "path": "obj/qualification/fast/1793880187572215303/receipt.json",
+      "sha256": "1b327f7e48809dc6d638d15c290afff23c184de0ecb56fcd9c532d73f3694887"
+    },
+    {
+      "path": "obj/qualification/fast/1793881082677605098/receipt.json",
+      "sha256": "6390b79aeaa8065a0c3c5c8b8fcab99dcf5a7093f7bb4e7fee252d1cda52e8ec"
+    }
+  ],
+  "original_core": {
+    "infrastructure_failure": false,
+    "classification": "observed original-core blocker",
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "b553a3bf34eb5e5c14aa7ff90684bb05de46447396e7dec7789985d131bffc2a",
+    "expected_cli_source": "explicit caller input",
+    "status": 1,
+    "first_error": "ERROR: file 85: 361: source compiler language item semantic contract is not implemented",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 16.465616251982283,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "691dbcc93706dd4613e16b674a5e58377c9f061b7dab5c657da110b43fc564e6",
+      "whole-core.openat": "b9d3db3f35748562e14d561cbf9218ad06c91cde98f4f57401cb91446b52e55b",
+      "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+    },
+    "receipt_sha256": "fa7cff7c43c6a9136f7aac565f02f822d9b1d219061374b64a56555266a5bd7e"
+  },
+  "new_frontier": {
+    "id": "LIB-169",
+    "path": "library/core/src/ops/async_function.rs",
+    "line": 11,
+    "file": 85,
+    "byte": 361,
+    "sha256": "fcda67887e19c20fd7b26db4a94ec7d5e42a38fcccac04cf16fad564e0b2ece1"
+  },
+  "receiver_work": {
+    "baseline": 187,
+    "widths": [
+      8,
+      32,
+      128
+    ],
+    "growth": [
+      1496,
+      5984,
+      23936
+    ],
+    "steps_per_consumer": 187
+  },
+  "performance": {
+    "common": [
+      {
+        "family": "ordinary",
+        "width": 1024,
+        "source_sha256": "783d30852ce081f6699ac8404584e6dcf01e511e14716df7497cb67f5d1ace96",
+        "blocks": [
+          {
+            "AA_second_over_first": 0.9391598286362082,
+            "ABBA_B_over_A": 0.9786397896438838
+          },
+          {
+            "AA_second_over_first": 0.9774092633997901,
+            "ABBA_B_over_A": 0.966480216320335
+          },
+          {
+            "AA_second_over_first": 0.9925833052069701,
+            "ABBA_B_over_A": 1.152369085128729
+          }
+        ],
+        "candidate_median_seconds": 0.2288281744986307,
+        "paired_median_B_over_A": 0.9786397896438838
+      },
+      {
+        "family": "ordinary",
+        "width": 4096,
+        "source_sha256": "9f5ca894e474569a5033b27b8508936790ca745d34c1e370abe066fbf4086bba",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.0009642346139827,
+            "ABBA_B_over_A": 0.96069710521461
+          },
+          {
+            "AA_second_over_first": 1.0636593997225483,
+            "ABBA_B_over_A": 0.9699135261170543
+          },
+          {
+            "AA_second_over_first": 1.0474737370373464,
+            "ABBA_B_over_A": 0.9896387087219198
+          }
+        ],
+        "candidate_median_seconds": 0.812425019510556,
+        "paired_median_B_over_A": 0.9699135261170543
+      },
+      {
+        "family": "source-deref",
+        "width": 1,
+        "source_sha256": "a8d1ba6308aec550d17a0bf8223d03d2b3f7e36a45f078b9f5e06aaf050b54fe",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.0069115656384977,
+            "ABBA_B_over_A": 0.9945928216271301
+          },
+          {
+            "AA_second_over_first": 0.9844358525035509,
+            "ABBA_B_over_A": 0.9148707720331151
+          },
+          {
+            "AA_second_over_first": 0.996519611179368,
+            "ABBA_B_over_A": 1.0363414386735985
+          }
+        ],
+        "candidate_median_seconds": 0.04612633798387833,
+        "paired_median_B_over_A": 0.9945928216271301
+      }
+    ],
+    "candidate_receiver_median_seconds": {
+      "8": 0.06390654598362744,
+      "32": 0.13686493603745475,
+      "128": 0.42637641698820516
+    },
+    "observations": 54,
+    "candidate_only_observations": 9,
+    "interpretation": "Exclusive immutable AA-calibrated common-control ABBA with every observation/output retained. Actual Receiver8/32/128 full typed LowIR observations are candidate-only because predecessor does not implement them; charged-work invariants are qualified separately. No broad speedup or library throughput claim."
+  },
+  "ci": {
+    "last_full": 42008769160,
+    "result": "terminal failure:2704 private pass,7 fail,3 ignored; all regular integrations pass; new operation3 controls pass. Repairs need full successor."
+  },
+  "additional_recipe_checks": {
+    "tests": 5,
+    "seconds": 39.17,
+    "meaning": "actual v11 publication/opponents and exact legacy packets; no deferred-body runtime layer included"
+  }
+}

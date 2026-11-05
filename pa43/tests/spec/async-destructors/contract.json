@@ -336,7 +336,7 @@
       "oracle_path": "pa31/tests/spec/async-drop-source/ordinary-drop-const-impl.rs",
       "oracle_sha256": "54988f6f1325ce6186d1951d9b88284965c95e0e0ec7c2b6bbd4de1f3dd20829",
       "rustc_cause": "not `const`",
-      "candidate_cause": "Drop requires a positive safe impl without trait arguments"
+      "candidate_cause": "const qualification requires a const trait"
     },
     {
       "name": "ordinary-drop-runtime",

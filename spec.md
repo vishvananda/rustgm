@@ -514,6 +514,20 @@ state construction before publication; it never executes the body eagerly or
 substitutes a unit/empty future. Actual Pin receiver proof composes with those
 same signatures. See the [joined checkpoint](docs/pa42-async-signatures-checkpoint.md).
 
+Authored future storage uses Kind::Future with the existing opaque identity and
+complete mixed captures. Reuse the existing opaque row for its optional prepaid
+shape and derived application memo, and the shared bounded capture folder for
+all inputs and declared Output. The checked body's internal return stays
+separate, including nested opaque outputs. Layout is an anonymous state/input
+sequence, without invented tuple, closure or declaration identity. Poll, Ready,
+Pending and Context complete through ordinary source producers; exact demanded
+polling schemas remain separate. Raw captures determine Send/Sync, liveness and
+destruction; neither Context nor Output becomes an owned capture. Keep
+!Unpin/!Copy/!Clone and authenticate warm applications. Storage data grants no
+Future method, checked Original, generated body or execution permission. The
+[storage prerequisite](docs/parallel/future-runtime-data-checkpoint.md) retains
+constructor/poll/drop/await/cancellation and transport as required work.
+
 The SourceCore expansion view is `--emit-expanded-crate` (or its count form),
 which runs actual configured expansion and binding completion. The PA7
 `--emit-expanded` session has no source context and must reject source options.
@@ -1228,6 +1242,23 @@ those consumers require actual source/target/lifetime and operation proof.
 Keep original Rust-positive c_variadic requests and actual full standard source
 closure as required work. See the
 [source checkpoint](docs/parallel/source-va-declarations.md).
+
+The actual ellipsis parameter stays in the original syntax parameter list while
+public callable types contain only fixed ABI inputs. One real internal region
+and owned VaList local join source/header/parameter/type/binding identity to its
+unique entry StorageLive. A borrowed body-owned Start plan authenticates that
+publication before initialization and typed va_start emission. Semantics expose
+typed source data without importing body CFGs. Authenticate actual marker and
+PhantomData templates separately from region-only physical field views, using
+the completed real nominal fields, variance and existing layout cache. Direct
+va_arg requires its actual declaration, complete application, independently
+opened reference binders and normal reached-call/report/effect proof; va_copy
+and va_end execute their actual source fallback bodies. The direct-operation
+classifier must not intercept unrelated declaration families. Const Drop
+declarations follow ordinary actual const-trait/impl conformance, without
+granting CTFE eligibility. Cursor CTFE, nominal const cleanup, broader ABI and
+authenticated body/local transport remain explicit requirements in the
+[runtime checkpoint](docs/parallel/source-va-runtime.md).
 
 Private callable preparation consumes the actual reserved declared/callable
 signature pair and complete outer-to-inner formal scope, including unused

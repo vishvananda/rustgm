@@ -1,5 +1,15 @@
 # Core critical-path lanes, 2026-11-05
 
+Current [joined checkpoint](receiver-va-future-join.md) passes32 public controls,
+2582 PA19/20 cases and13 native observers; CLIb553 advances unchanged original
+core to LIB-169 AsyncFn, ops/async_function.rs11/file85:361,16.4656s/375opens.
+Receiver/type-only methods, real cursor runtime and future storage prerequisites
+are integrated. Root owns actual AsyncFn/Mut/Once/source consumers; the source
+worker owns explicit-integer enum C ABI and genuine const cursor prerequisites;
+the future worker owns real deferred body/constructor/poll/drop/await/cancel.
+Only b553 and immediate predecessor567 remain pinned. No whole PA or original
+artifact is complete; all resource and semantic requirements below persist.
+
 The user authorized three agents: the integrator and two `gpt-6.1-sol` workers
 at high reasoning. This supersedes older stopped-worker and root-only scheduling
 notes, not semantic, release or resource requirements. Keep original core/alloc/

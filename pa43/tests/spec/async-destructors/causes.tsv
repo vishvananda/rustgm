@@ -11,4 +11,4 @@ pa31/tests/spec/async-drop-source/negative-impl.rs	negative `Drop` impls are not
 pa31/tests/spec/async-drop-source/no-feature-specialized.rs	E0366	without specialization
 pa31/tests/spec/async-drop-source/no-feature-blanket.rs	E0120	AsyncDrop requires a local struct or enum target
 pa31/tests/spec/async-drop-source/no-feature-strengthened.rs	E0367	Drop impl adds type requirements
-pa31/tests/spec/async-drop-source/ordinary-drop-const-impl.rs	not `const`	Drop requires a positive safe impl without trait arguments
+pa31/tests/spec/async-drop-source/ordinary-drop-const-impl.rs	not `const`	const qualification requires a const trait
