@@ -218,7 +218,7 @@ fn argument_observation_before_publication_cannot_create_a_caller()
         .and_then(|f| f.body)
         .ok_or("main body")?;
     let enclosing = callable(&mut facts, 8, RegionId(7))?;
-    let Context::Callable(instance) = context(&facts, enclosing)? else {
+    let ArgumentOwner::Callable(instance) = context(&facts, enclosing)? else {
         return Err("callable observation key".into());
     };
     let Some(Kind::FunctionItem { arguments, .. }) = facts.types.kind(instance.ty()) else {

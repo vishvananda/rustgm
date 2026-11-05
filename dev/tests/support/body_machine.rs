@@ -36,7 +36,10 @@ fn declaration(owner: Owner) -> Option<DefId> {
         | Owner::AnonymousInstance(_)
         | Owner::InitializerInstance { .. }
         | Owner::Closure { .. }
-        | Owner::ClosureAdapter { .. } => None,
+        | Owner::ClosureAdapter { .. }
+        | Owner::AsyncBody { .. }
+        | Owner::AsyncApplication { .. }
+        | Owner::FutureEntry { .. } => None,
     }
 }
 impl Machine<'_> {

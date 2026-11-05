@@ -74,3 +74,14 @@ Warm btrfs trees, two heavy jobs,16GiB caps,150GiB reserve and five-minute local
 validation batches remain. [Evidence](enum-deferred-join-evidence.json) binds
 sources, exact gate differences, binary/backend hashes, original core and all
 performance observations. Full successor CI remains separate qualification.
+
+Successor full42039423759 onb52b2aaeb is terminal failure at all-target lint;
+its fast job passes. Two test helpers still used pre-deferred interfaces: the
+canonical observation assertion destructured Context instead of ArgumentOwner,
+and the integer CFG test executor omitted the three new async owners. The
+assertion now reads the actual canonical key, and the executor explicitly has
+no ordinary function declaration for those owners. No production behavior or
+expected semantic result changes. The retained failed log is
+`obj/parallel/enum-deferred-join-v1/ci42039423759-failed.log`. No private, release,
+native or independent execution follows from this failed compile; complete
+successor qualification remains required.
