@@ -7,6 +7,11 @@ use crate::{
 
 pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Result<(), Error> {
     for role in LangItem::DECLARATIONS {
+        if role == LangItem::UnsafeCell {
+            // The authenticated nominal producer installs interior storage with
+            // the actual shape. Ordinary trait and body proofs remain required.
+            continue;
+        }
         if role == LangItem::AsyncDropInPlace {
             // Authenticate its ordinary source declaration; generated future
             // storage and cleanup execution have a separate demanded boundary.

@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "independent_receipt": {
+    "path": "obj/parallel/unsafe-cell-v1/reference-v6/receipt.json",
+    "sha256": "8827adc5ca128b84e5afa4f814b5afececf18ceff4da14ebb627db18ed11a572"
+  },
+  "gates": {
+    "source": {
+      "receipt": "obj/qualification/fast/1793857191754620429/receipt.json",
+      "sha256": "4c03dab3d0497c3f951b964211b963898e43a66270b59e909e7c41c9b6211268",
+      "seconds": 105.0808048750041,
+      "selected": {
+        "suite_frontend": [
+          "cell_sources::actual_cell_outcomes_preserve_source_traits_and_ordinary_borrows",
+          "cell_sources::cell_policy_uses_the_actual_nominal_and_preserves_field_destruction",
+          "cell_sources::shared_cell_globals_are_writable_and_plain_globals_remain_readonly",
+          "wrapper_sources::source_maybe_uninit_const_outcomes_keep_bytes_validity_and_ownership_separate",
+          "wrapper_sources::source_no_drop_requires_actual_component_proofs_and_keeps_ownership_checks",
+          "wrapper_sources::source_wrapper_outcomes_preserve_real_fields_const_validity_and_full_borrow_proofs",
+          "provider_traits::freezing::source_freeze_original_cases_retain_header_selection_and_body_proofs"
+        ]
+      }
+    },
+    "native": {
+      "receipt": "obj/qualification/fast/1793857386909606956/receipt.json",
+      "sha256": "f2cdc508637be462dda6e6cc45e104cc127de084623d82dba032e42690b39cfa",
+      "seconds": 21.32691814098507,
+      "selected": {
+        "suite_frontend": [
+          "cell_sources::actual_cell_native_preserves_aliasing_niches_and_ordinary_cleanup"
+        ]
+      }
+    }
+  },
+  "sources": {
+    "pa31/tests/spec/unsafe-cell-source/README.md": "cd1a53f488e242e7458696fdb38a25526c3a43a67ad3aa75ba2b8e2e8e09c0d6",
+    "pa31/tests/spec/unsafe-cell-source/cases.tsv": "bc7d9c78fb850ae87659b906ad3e66a3afb10fa60129878c495bdbd67d534e98",
+    "pa31/tests/spec/unsafe-cell-source/copy-explicit.rs": "6413b61d7faae872eac5fd537a9765f258d842fd871c50392194b9082d0ed8b0",
+    "pa31/tests/spec/unsafe-cell-source/drop-observer.c": "d38c130e35ebac1a8fbbd1c32c32bdb9aee4abb9cf8ceb32a7c9dfff4f74ccfd",
+    "pa31/tests/spec/unsafe-cell-source/field-drop.rs": "d3195e8db82181dd8dfa5fca881c50f707cc8bc771b715c31882d02605840956",
+    "pa31/tests/spec/unsafe-cell-source/freeze-negative.rs": "bb8778b0a75160f621a9854067754abcfc6ac80d3840361c60b4f6023defa7cc",
+    "pa31/tests/spec/unsafe-cell-source/freeze-without-impl.rs": "a6c2cdbac44f0347073bf7dad0b82f1614d350dc1162cc6476e4c3671b56d4da",
+    "pa31/tests/spec/unsafe-cell-source/generic-get.rs": "a8a94ad23276ef4cccfb8b9e88c8f2cef6a8114fbbb1823925326674158fc1d5",
+    "pa31/tests/spec/unsafe-cell-source/layout-observer.c": "b8f2d0f52275fb3f8a73485881dc69b727bad2ffc6acc4be85ec6c3398848a25",
+    "pa31/tests/spec/unsafe-cell-source/layout.rs": "c56b0f26b1fea6b9d5a313919da7a0ed1f2366ef45b2b15c76d4cb881e6ef2de",
+    "pa31/tests/spec/unsafe-cell-source/nested-freeze-negative.rs": "8c959fbe49deae60384301e096b8bd2631aa64fe8c6dc712907292a7455d62bd",
+    "pa31/tests/spec/unsafe-cell-source/nominal.rs": "be1b93d0a8f1648e500422d4cfdcddae4ced20749c77cf4da349f85db84e1b32",
+    "pa31/tests/spec/unsafe-cell-source/nullable-observer.c": "6962c312375f79988d2b03871d59eb796ef424b230cc51da5aac66b5ae57ee4b",
+    "pa31/tests/spec/unsafe-cell-source/nullable-shapes.rs": "fcfc69824673b39af13aed0b62951c7d32780898c9710d59a31e607ced90311b",
+    "pa31/tests/spec/unsafe-cell-source/predictions.json": "38fe4b60d1949062c58ad10dcf0db855522146bfa18955c6dcde6ad803b046fc",
+    "pa31/tests/spec/unsafe-cell-source/runtime-observer.c": "86c836bcef81eeef1dfb2cf759b8dc16aec4a0e0f7af8e92805fb1adf34cd7d3",
+    "pa31/tests/spec/unsafe-cell-source/runtime.rs": "b96113cdaca0027f642cd050fef18aac199d4670e9ea7acd06af0c10328f3e61",
+    "pa31/tests/spec/unsafe-cell-source/same-name.rs": "57d764a1e8340a62b829a40894351ef7d5784dee179a8d3bce0a4041cc251b2a",
+    "pa31/tests/spec/unsafe-cell-source/shared-is-not-unique.rs": "27471da524fc0e81c791b990ecf992469a71b7fcc27c826800664d9e1c2c04ab",
+    "pa31/tests/spec/unsafe-cell-source/shared-ordinary-immutable.rs": "3776f83ab66631c725bad51ba1c0e9e523ffc8dfe2b9049bf85bb4e6c828dcaa",
+    "pa31/tests/spec/unsafe-cell-source/sync-negative.rs": "013c0ada648bb3b11690aa2e5618cc17867a680da2fd224af6791a17382c1c4a",
+    "pa31/tests/spec/unsafe-cell-source/unused-empty.rs": "01200208a5544bf471a12cdb0eea0527e07a3c40645ce66aa2e3c8b32009e05f",
+    "pa31/tests/spec/unsafe-cell-source/unused-two-fields.rs": "825420a13e8e79b8a2d2a092a7ccd7df424a2713ede66ed2d03fd6740f27b3c4"
+  },
+  "semantic_parity_cases": 15,
+  "native_observers": 4,
+  "unqualified_upstream_ice": [
+    "unused-empty.rs"
+  ],
+  "backend_lock_sha256": "f60c0760f39f1f554486f5a1eb990d2c0fef663fbd1bff944cd1eef8a014a581",
+  "remaining": [
+    "shared-derived constant writes",
+    "complete unsized API behavior",
+    "general scalar/multifield niche selection",
+    "authenticated nominal/interior policy transport",
+    "original core/alloc/std artifacts"
+  ]
+}

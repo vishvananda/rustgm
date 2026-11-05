@@ -178,6 +178,13 @@ impl Definitions {
     pub fn has_shared_mutation(&self) -> bool {
         !self.interior_storage.is_empty()
     }
+    pub(crate) fn shared_mutation_growth(&self, item: ItemId) -> crate::support::retained::Growth {
+        crate::support::retained::Growth::map::<ItemId, ()>(
+            self.interior_storage.len(),
+            self.interior_storage.capacity(),
+            usize::from(!self.interior_storage.contains(&item)),
+        )
+    }
     /// Declaration policy suppresses implicit field cleanup, preserving an explicit destructor.
     #[must_use]
     pub fn destruction(&self, item: ItemId) -> Option<FieldDestruction> {

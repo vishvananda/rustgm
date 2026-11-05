@@ -6,14 +6,15 @@ use crate::{
     syntax::{ast::Kind as Syntax, item::ItemKind},
     types::{
         ItemId, Kind,
-        aggregate::{self, FieldDestruction},
+        aggregate::{self, FieldDestruction, SharedMutation},
     },
 };
-const ROLES: [LangItem; 4] = [
+const ROLES: [LangItem; 5] = [
     LangItem::ManuallyDrop,
     LangItem::MaybeDangling,
     LangItem::MaybeUninit,
     LangItem::Pin,
+    LangItem::UnsafeCell,
 ];
 fn nominal_kind(role: LangItem) -> aggregate::Kind {
     if role == LangItem::MaybeUninit {
@@ -49,7 +50,7 @@ fn claim(
     let written = ast.items[index as usize];
     let shape = if role == LangItem::MaybeUninit {
         actual.kind == DefKind::Struct && matches!(written.kind, ItemKind::Union { .. })
-    } else if role == LangItem::Pin {
+    } else if matches!(role, LangItem::Pin | LangItem::UnsafeCell) {
         // The pinned declaration profile imposes no additional generic arity,
         // field or representation rule. Actual consumers validate their inputs.
         actual.kind == DefKind::Struct && matches!(written.kind, ItemKind::Struct { .. })
@@ -64,6 +65,20 @@ fn claim(
         ));
     }
     Ok(Some(declaration))
+}
+/// Authenticate and pay for interior storage before the real shape is published.
+/// Trait implementations, unique borrows and field destruction remain ordinary.
+pub(in crate::sema) fn shared_mutation(
+    report: &Report,
+    facts: &mut Declarations,
+    item: ItemId,
+) -> Result<SharedMutation, Error> {
+    if claim(report, facts, item, LangItem::UnsafeCell)?.is_none() {
+        return Ok(SharedMutation::Ordinary);
+    }
+    let growth = facts.aggregates.shared_mutation_growth(item);
+    crate::sema::header_attributes::reserve_source_contracts(facts, 1 + growth.work, growth.bytes)?;
+    Ok(SharedMutation::Interior)
 }
 /// Called after the real field templates are installed, before drop/union queries.
 pub(in crate::sema) fn register(
@@ -85,7 +100,10 @@ pub(in crate::sema) fn register(
                 "source wrapper requires its completed structure fields",
             ));
         }
-        if matches!(role, LangItem::MaybeUninit | LangItem::Pin) {
+        if matches!(
+            role,
+            LangItem::MaybeUninit | LangItem::Pin | LangItem::UnsafeCell
+        ) {
             // Union storage already suppresses unselected fields. Pin retains
             // ordinary field destruction; identity grants no API/Copy permission.
             continue;
@@ -136,6 +154,9 @@ pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Re
                     facts.aggregates.permits_dangling_pointers(item) != Some(true)
                 }
                 LangItem::MaybeUninit | LangItem::Pin => false,
+                LangItem::UnsafeCell => {
+                    facts.aggregates.shared_mutation(item) != Some(SharedMutation::Interior)
+                }
                 _ => true,
             }
         {

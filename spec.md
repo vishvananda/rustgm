@@ -1315,6 +1315,19 @@ queries and byte-identical predecessor/candidate configuration constants. A
 configuration-source edit still requires a new explicitly requalified manifest;
 retain old source/configuration bindings and the source macro metadata fence.
 
+Actual source UnsafeCell publishes its paid interior-storage identity in the
+same one-time transaction as its real field shape. Reuse the existing owned
+storage query, writable-global, promotion and niche consumers; do not infer
+Copy, Sync, Freeze or destruction policy from the role. Ordinary shared and
+mutable reference loans retain their proofs. Source-mode empty/single-field
+Rust enums publish physical nullable eligibility from their actual field groups,
+independently of Option identity, before stable layout queries. Reuse the
+canonical carrier cache, block carriers through interior storage and preserve
+explicit representations and the separately selected historical course profile.
+General scalar/multifield niches and authenticated interior policy transport
+remain required. The [source packet](pa31/tests/spec/unsafe-cell-source/README.md)
+retains the original native layout failure and independent opponents.
+
 Source auto-trait selection preserves explicit positive and negative identities.
 A refutation is not positive evidence, and an applicable explicit implementation
 family replaces its structural default even when its conditions are unpaid.

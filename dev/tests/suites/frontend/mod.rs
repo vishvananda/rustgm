@@ -11,6 +11,8 @@ mod callback_addresses;
 mod callback_provider;
 #[path = "../../capped_cli.rs"]
 mod capped_cli;
+#[path = "../../cell_sources.rs"]
+mod cell_sources;
 #[path = "../../coercion_provider.rs"]
 mod coercion_provider;
 #[path = "../../crate_expansion.rs"]

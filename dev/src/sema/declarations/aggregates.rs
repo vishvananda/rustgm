@@ -165,11 +165,7 @@ impl Checker<'_> {
         {
             self.facts.enum_casts.insert(item);
         }
-        self.facts
-            .aggregates
-            .insert(item, kind, repr, &variants)
-            .map_err(|e| self.error(key, e))?;
-        self.register_value_rules(item, key, kind)?;
+        self.publish_shape(item, key, kind, repr, &variants)?;
         self.source_nullable_members(item)?;
         self.nominals.entries[index].state = State::Complete;
         if let Some(pending) = &mut self.facts.generics.size_rules {
@@ -177,12 +173,24 @@ impl Checker<'_> {
         }
         self.publish_constructors(item)
     }
-    fn register_value_rules(
+    /// Publish the completed storage shape and its actual declaration policies together.
+    fn publish_shape(
         &mut self,
         item: ItemId,
         key: NodeKey,
         kind: aggregate::Kind,
+        repr: Repr,
+        variants: &[aggregate::Variant],
     ) -> Result<(), Error> {
+        let mutation = crate::sema::compiler_items::wrappers::shared_mutation(
+            self.report,
+            &mut self.facts,
+            item,
+        )?;
+        self.facts
+            .aggregates
+            .insert_with_mutation(item, kind, repr, variants, mutation)
+            .map_err(|e| self.error(key, e))?;
         crate::sema::compiler_items::wrappers::register(self.report, &mut self.facts, item)?;
         self.publish_simd_limit(item, key)?;
         match kind {

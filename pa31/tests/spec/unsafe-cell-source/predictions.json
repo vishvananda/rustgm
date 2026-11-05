@@ -1,0 +1,123 @@
+{
+  "schema": 1,
+  "toolchain": "1.98.0",
+  "edition": "2024",
+  "target": "x86_64-unknown-linux-gnu",
+  "frozen_before_candidate_execution": true,
+  "cases": [
+    {
+      "file": "nominal.rs",
+      "sha256": "be1b93d0a8f1648e500422d4cfdcddae4ced20749c77cf4da349f85db84e1b32",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": null
+    },
+    {
+      "file": "unused-empty.rs",
+      "sha256": "01200208a5544bf471a12cdb0eea0527e07a3c40645ce66aa2e3c8b32009e05f",
+      "expected_status": 101,
+      "semantic_cause": "",
+      "native": null,
+      "qualification": "upstream-ice-unqualified"
+    },
+    {
+      "file": "unused-two-fields.rs",
+      "sha256": "825420a13e8e79b8a2d2a092a7ccd7df424a2713ede66ed2d03fd6740f27b3c4",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": null
+    },
+    {
+      "file": "same-name.rs",
+      "sha256": "57d764a1e8340a62b829a40894351ef7d5784dee179a8d3bce0a4041cc251b2a",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": null
+    },
+    {
+      "file": "freeze-negative.rs",
+      "sha256": "bb8778b0a75160f621a9854067754abcfc6ac80d3840361c60b4f6023defa7cc",
+      "expected_status": 1,
+      "semantic_cause": "Freeze",
+      "native": null
+    },
+    {
+      "file": "nested-freeze-negative.rs",
+      "sha256": "8c959fbe49deae60384301e096b8bd2631aa64fe8c6dc712907292a7455d62bd",
+      "expected_status": 1,
+      "semantic_cause": "Freeze",
+      "native": null
+    },
+    {
+      "file": "shared-is-not-unique.rs",
+      "sha256": "27471da524fc0e81c791b990ecf992469a71b7fcc27c826800664d9e1c2c04ab",
+      "expected_status": 1,
+      "semantic_cause": "mutable",
+      "native": null
+    },
+    {
+      "file": "shared-ordinary-immutable.rs",
+      "sha256": "3776f83ab66631c725bad51ba1c0e9e523ffc8dfe2b9049bf85bb4e6c828dcaa",
+      "expected_status": 1,
+      "semantic_cause": "mutable",
+      "native": null
+    },
+    {
+      "file": "sync-negative.rs",
+      "sha256": "013c0ada648bb3b11690aa2e5618cc17867a680da2fd224af6791a17382c1c4a",
+      "expected_status": 1,
+      "semantic_cause": "Sync",
+      "native": null
+    },
+    {
+      "file": "copy-explicit.rs",
+      "sha256": "6413b61d7faae872eac5fd537a9765f258d842fd871c50392194b9082d0ed8b0",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": null
+    },
+    {
+      "file": "generic-get.rs",
+      "sha256": "a8a94ad23276ef4cccfb8b9e88c8f2cef6a8114fbbb1823925326674158fc1d5",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": null
+    },
+    {
+      "file": "layout.rs",
+      "sha256": "c56b0f26b1fea6b9d5a313919da7a0ed1f2366ef45b2b15c76d4cb881e6ef2de",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": "layout"
+    },
+    {
+      "file": "runtime.rs",
+      "sha256": "b96113cdaca0027f642cd050fef18aac199d4670e9ea7acd06af0c10328f3e61",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": "runtime"
+    },
+    {
+      "file": "field-drop.rs",
+      "sha256": "d3195e8db82181dd8dfa5fca881c50f707cc8bc771b715c31882d02605840956",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": "field-drop"
+    },
+    {
+      "file": "freeze-without-impl.rs",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": null,
+      "sha256": "a6c2cdbac44f0347073bf7dad0b82f1614d350dc1162cc6476e4c3671b56d4da"
+    },
+    {
+      "file": "nullable-shapes.rs",
+      "sha256": "fcfc69824673b39af13aed0b62951c7d32780898c9710d59a31e607ced90311b",
+      "expected_status": 0,
+      "semantic_cause": "",
+      "native": "nullable-shapes"
+    }
+  ],
+  "attempt_note": "Setup repaired before any candidate observation. Initial source predictions/diagnostics archived under obj/parallel/unsafe-cell-v1/reference-v1. Empty declaration is an upstream compiler failure, excluded from semantic/native qualification. v2 native setup required actual u32 Clone/Copy and genuine const calls for size_of; all initial source bytes/diagnostics retained. No candidate observed. v3 runtime object requires actual source drop_glue, now shared consistently; prior source retained. No candidate observed. v5 adds an ordinary readonly global opponent and independently probes Freeze selection without its actual negative source implementation. Producer edits exist but no candidate has been run. The original layout observer exposed absent ordinary source enum niche selection. It is retained unchanged; nullable-shapes adds both variant orders, real constructors/matches and explicit representation opposition before candidate observation of the new input."
+}

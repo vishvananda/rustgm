@@ -1,0 +1,15 @@
+nominal.rs	0
+unused-two-fields.rs	0
+same-name.rs	0
+freeze-negative.rs	1
+nested-freeze-negative.rs	1
+shared-is-not-unique.rs	1
+shared-ordinary-immutable.rs	1
+sync-negative.rs	1
+copy-explicit.rs	0
+generic-get.rs	0
+layout.rs	0
+runtime.rs	0
+field-drop.rs	0
+freeze-without-impl.rs	0
+nullable-shapes.rs	0

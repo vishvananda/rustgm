@@ -1,0 +1,18 @@
+#![feature(no_core,lang_items,auto_traits,negative_impls,intrinsics,rustc_attrs,freeze_impls,const_trait_impl,const_destruct)]
+#![no_core]
+#![allow(internal_features,dead_code,unused_variables)]
+#[lang="pointee_sized"] pub trait PointeeSized {}
+#[lang="meta_sized"] pub trait MetaSized:PointeeSized {}
+#[lang="sized"] pub trait Sized:MetaSized {}
+#[lang="legacy_receiver"] pub trait LegacyReceiver:PointeeSized {}
+impl<T:PointeeSized> LegacyReceiver for &T {}
+impl<T:PointeeSized> LegacyReceiver for &mut T {}
+#[lang="clone"] pub trait Clone:Sized { #[lang="clone_fn"] fn clone(&self)->Self; }
+#[lang="copy"] pub trait Copy:Clone {}
+impl Clone for u32{fn clone(&self)->Self{*self}}impl Copy for u32{}
+#[lang="freeze"] pub unsafe auto trait Freeze {}
+#[lang="sync"] pub unsafe auto trait Sync {}
+#[lang="destruct"]#[rustc_deny_explicit_impl]#[rustc_dyn_incompatible_trait]pub const trait Destruct:PointeeSized{}
+#[lang="drop_glue"]pub const unsafe fn drop_glue<T:PointeeSized>(_:&mut T)where T:[const]Destruct{}
+pub struct UnsafeCell{value:u32}
+fn freeze<T:Freeze>(_:T){} fn check(x:UnsafeCell){freeze(x)}
