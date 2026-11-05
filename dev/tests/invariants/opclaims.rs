@@ -97,7 +97,7 @@ fn serialized_recipes_reject_ordinal_capture_schema_projection_and_body_forgery(
     );
     let mutations: [(&str, Mutation); 14] = [
         ("duplicate ordinary owner", |rows| {
-            rows.originals.push(rows.originals[0].clone())
+            rows.originals.push(rows.originals[0].clone());
         }),
         ("missing ordinary owner", |rows| {
             rows.originals.pop();
@@ -109,16 +109,16 @@ fn serialized_recipes_reject_ordinal_capture_schema_projection_and_body_forgery(
             rows.originals.push(original);
         }),
         ("opaque ordinal gap", |rows| {
-            rows.opaque_futures[0].ordinal = 1
+            rows.opaque_futures[0].ordinal = 1;
         }),
         ("foreign opaque owner", |rows| {
-            rows.opaque_futures[0].declaration.0 = u32::MAX
+            rows.opaque_futures[0].declaration.0 = u32::MAX;
         }),
         ("capture omission", |rows| {
-            rows.opaque_futures[0].captures.end -= 1
+            rows.opaque_futures[0].captures.end -= 1;
         }),
         ("capture expansion", |rows| {
-            rows.opaque_futures[0].captures.end += 1
+            rows.opaque_futures[0].captures.end += 1;
         }),
         ("foreign callable capture frame", |rows| {
             if let s::Argument::Region(region) =
@@ -140,16 +140,16 @@ fn serialized_recipes_reject_ordinal_capture_schema_projection_and_body_forgery(
             rows.functions[0].regions.early = rows.functions[0].regions.late;
         }),
         ("forged schema promise", |rows| {
-            rows.associated_types[0].sized = !rows.associated_types[0].sized
+            rows.associated_types[0].sized = !rows.associated_types[0].sized;
         }),
         ("foreign Output parent", |rows| {
-            rows.associated_types[0].parent = rows.compiler_operations[0].declaration
+            rows.associated_types[0].parent = rows.compiler_operations[0].declaration;
         }),
         ("foreign projection Self", |rows| {
-            rows.projections[0].subject = rows.compiler_operations[0].output
+            rows.projections[0].subject = rows.compiler_operations[0].output;
         }),
         ("unpaid family args", |rows| {
-            rows.projections[0].arguments = rows.opaque_futures[0].captures
+            rows.projections[0].arguments = rows.opaque_futures[0].captures;
         }),
     ];
     for (name, change) in mutations {

@@ -76,3 +76,11 @@ production code, fixtures, expected results and generated CLI bytes are unchange
 Focused idxops2, formatting, architecture and strict selected Clippy pass in
 38.08s (1793870663630771044). Actual private replay/recipe execution and full
 release/debug/native/independent successor remain required.
+
+Next full42003114135 passes the corrected type check but stops on9 strict
+semicolon-if-nothing-returned findings in the previously uncompiled private
+opclaims mutation closures. Added statement terminators preserve every forgery
+input and assertion. The5 public compiler_recipes cases and full format/audit/
+selected Clippy pass in30.56s (1793872226958835943). No compiler production code,
+fixture or expected output changed. Full private execution remains pending the
+next CI run; neither failed run is release qualification.

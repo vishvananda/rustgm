@@ -28,6 +28,11 @@ published-context intent; no compiler/fixture/output changes. Focused2 plus
 strict selected Clippy/format/audit pass in38.08s; full private/runtime successor
 remains required, including all3 recipe opponents.
 
+Successor42003114135 then stopped on9 private opclaims statement-terminator
+Clippy findings. Those are corrected without production/input/assertion changes;
+public recipe5 and strict selected checks pass in30.56s. Full private execution
+and subsequent gates are still pending the next CI run.
+
 No whole PA after24 or original core/alloc/std artifact is complete. Real future
 constructor/state/poll/await/Pin/cancellation/destruction, varargs feature/init/
 read/copy/end/cleanup/CTFE, remaining source/runtime roles, wider layouts and full

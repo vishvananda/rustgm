@@ -248,5 +248,21 @@
       "sha256": "3a7de80ed62da96edf56264b7e2c9cc0865b3484f5cfcca90ae8352245541e0a"
     },
     "private_execution": "pending successor CI"
+  },
+  "private_style_repair": {
+    "failed_run": 42003114135,
+    "failed_head": "8a87015651c130a667c29ff40249111c5b1518fb",
+    "failure": "9 semicolon_if_nothing_returned findings in private mutation closures",
+    "repair": "Add semicolons only; same rows/opponents/assertions; no production changes",
+    "path": "dev/tests/invariants/opclaims.rs",
+    "sha256": "881951d7ff99859070e7adf986842706f464aa44c605bdb3a535ee99be800f97",
+    "public_gate": {
+      "path": "obj/qualification/fast/1793872226958835943/receipt.json",
+      "sha256": "b8d8f4ce0f547868ae16698aa02574ea898a12776dce3b4ca2bab1feee894adb",
+      "tests": 5,
+      "seconds": 30.56
+    },
+    "failed_log_sha256": "b6b7db78c9ebd9e09e856bffee0c1aa6497790ec214632e25f657a1832c7046a",
+    "private_execution": "pending successor CI"
   }
 }
