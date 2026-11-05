@@ -1,0 +1,190 @@
+{
+  "stage": "independent before candidate",
+  "cases": [
+    {
+      "file": "trait.rs",
+      "sha256": "0814e3be035847ff00100b706275beda0fe6e08b675ed0029b9f83b9e1a57dfe",
+      "reference": {
+        "accepted": true,
+        "cause": "actual sealed unsafe Copy header and ordinary generic consumer",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "noimpl.rs",
+      "sha256": "c1ae1b28431dfa89d30fa47273174e810820e62cfc4534e2fd2677775dad0e6a",
+      "reference": {
+        "accepted": false,
+        "cause": "missing actual trait implementation",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "bool.rs",
+      "sha256": "fcb534e35a88438643834ee33e008816deaf12dad0aba8212b4b1c1007e2fb32",
+      "reference": {
+        "accepted": false,
+        "cause": "Copy alone is not VaArgSafe",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "outer.rs",
+      "sha256": "355f2477a142308f57f2b5ade40099533201b5239e52a9b5f38b9d5aa38369c9",
+      "reference": {
+        "accepted": false,
+        "cause": "actual impl(self) module domain",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "child.rs",
+      "sha256": "767fa391014d12ec4ed01bc3bbbfac38243335ce9f7d7d27798bf6dce61ea254",
+      "reference": {
+        "accepted": true,
+        "cause": "child module is within actual domain",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "safe.rs",
+      "sha256": "e6fe2e18b41568fd2bbb02604d381850b3a1a2a2272e06d6883491ea48bc5faa",
+      "reference": {
+        "accepted": false,
+        "cause": "unsafe trait impl requires unsafe",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "nocopy.rs",
+      "sha256": "2c907fa002460a2d7c68deb0af9a75f26fe457a3a71dc474d89d2df88d3d19c7",
+      "reference": {
+        "accepted": false,
+        "cause": "actual Copy supertrait remains required",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "same.rs",
+      "sha256": "4369f0d5ef0918c4d11bb7acd2ebfc9a49b547721b61c86ea00bd8fd236ef077",
+      "reference": {
+        "accepted": true,
+        "cause": "ordinary same-spelling trait has no language authority",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "h_safe.rs",
+      "sha256": "68388ca5c38dc36a812545a00da97e8a9b848f1fb58906764fe258315c35e927",
+      "reference": {
+        "accepted": true,
+        "cause": "unused altered role header: prediction before oracle",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "h_copy.rs",
+      "sha256": "578223f26df600ded4ab68ffa6dbbf4ba619f7da85e0a51d5dbab145c1f2ed9b",
+      "reference": {
+        "accepted": true,
+        "cause": "unused altered role header: prediction before oracle",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "h_gen.rs",
+      "sha256": "d612c66fefc358aecf9deee4a37fe8687c9cb9e42affb9730743b179190b5688",
+      "reference": {
+        "accepted": true,
+        "cause": "unused altered role header: prediction before oracle",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "h_life.rs",
+      "sha256": "76159542cfff8a18505ea0fff03e696f30b5504272933736fa8333b5b7f84f07",
+      "reference": {
+        "accepted": true,
+        "cause": "unused altered role header: prediction before oracle",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "h_meth.rs",
+      "sha256": "125858f706ab1b37257248a9f629416f390669b005f1780acdee604f777d0310",
+      "reference": {
+        "accepted": true,
+        "cause": "unused altered role header: prediction before oracle",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "h_open.rs",
+      "sha256": "b81059547d3b6edfa42deaf2c64e410f117cb6da597c724a5106d232d304a663",
+      "reference": {
+        "accepted": true,
+        "cause": "unused altered role header: prediction before oracle",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "target.rs",
+      "sha256": "9b3f1e4e2a35115dcde6acb4dce8a2a30244a9587c4a69bc89775d3be69caf1a",
+      "reference": {
+        "accepted": false,
+        "cause": "lang role requires trait target",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_empty.rs",
+      "sha256": "7970a66115060633420d0fd20a29bce2549dae01df952db2eb8022e579ab05d7",
+      "reference": {
+        "accepted": true,
+        "cause": "unused role target/generic legality, no layout authority",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_life.rs",
+      "sha256": "ef982dbdd0dab61cb5d7a171c0c1bf368de1aed0d75e8010afa70ca11a5f358b",
+      "reference": {
+        "accepted": true,
+        "cause": "unused role target/generic legality, no layout authority",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_gen.rs",
+      "sha256": "faa103dfd4b508acff8ff1f43a9b8342b6f2e6fd4f63a13e7eb35428ce2ada6f",
+      "reference": {
+        "accepted": true,
+        "cause": "unused role target/generic legality, no layout authority",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_enum.rs",
+      "sha256": "f56dd9847c3c8a852e5c1a5d724040d0df4594e2946f7e26c838e8f5d2ec8813",
+      "reference": {
+        "accepted": false,
+        "cause": "unused role target/generic legality, no layout authority",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "native.rs",
+      "sha256": "b2f83efd79a6ef02ac60f7c48645f9ed8e7ab8b682682ae18424c8325c21d0ad",
+      "reference": {
+        "accepted": true,
+        "cause": "actual std VaList initialization/read/clone/end/drop and forced indirect ABI",
+        "emit": "obj"
+      }
+    }
+  ],
+  "native": {
+    "source": "native.rs",
+    "observer": "native.c",
+    "stdout": "39 24\n"
+  }
+}

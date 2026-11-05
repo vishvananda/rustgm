@@ -1,0 +1,43 @@
+{
+  "revision": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "upstream": "rust-lang/rust",
+  "license": "MIT OR Apache-2.0",
+  "files": [
+    {
+      "path": "library/core/src/ffi/va_list.rs",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ffi/va_list.rs",
+      "sha256": "0eafd01f996b0e06644887453fb5229a0c4f359345888ce7fc554b157dbdb974",
+      "bytes": 16788
+    },
+    {
+      "path": "library/core/src/marker/variance.rs",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/marker/variance.rs",
+      "sha256": "3911ebaca93e5ebe8e5929f2d5d5348d77528b8d6f4b5c1cc598bbbb0d78adf4",
+      "bytes": 8748
+    },
+    {
+      "path": "library/core/src/intrinsics/mod.rs",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/intrinsics/mod.rs",
+      "sha256": "aab5c05ff3933d28cbab7914d71054f830311a888234da6201bf2f1a2959ebc3",
+      "bytes": 142635
+    },
+    {
+      "path": "library/core/src/clone.rs",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/clone.rs",
+      "sha256": "fd3467602106e2a2ec416485d8d058b6d2b434ceac7689b4e2f4c792079e500f",
+      "bytes": 30482
+    },
+    {
+      "path": "library/core/src/marker.rs",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/marker.rs",
+      "sha256": "5b388584b55f419a199045740f598a464fdcc0d3d717969df6dbe70957a97575",
+      "bytes": 52174
+    }
+  ],
+  "source_extracts": {
+    "trait.rs": "exact actual VaArgSafe declaration retained within authored reduced no_core foundation; ordinary i32 impl body is actual source",
+    "initial": "first frozen setup source bytes; no silent rewriting of old evidence",
+    "native.rs": "independent real core::ffi::VaList runtime/ABI consumer; not candidate source closure",
+    "indir.rs": "authored alternate role declaration proves ordinary transparent indirect ABI composition; not actual VaList target layout"
+  }
+}

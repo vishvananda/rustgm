@@ -1,0 +1,33 @@
+trait	0	actual ordinary source consumer
+noimpl	1	implementation|trait|bound
+bool	1	implementation|trait|bound
+outer	1	restricted|module
+child	0	actual ordinary source consumer
+safe	1	unsafe|safety
+nocopy	1	Copy|copy|trait
+same	0	actual ordinary source consumer
+h_safe	0	actual ordinary source consumer
+h_copy	0	actual ordinary source consumer
+h_gen	0	actual ordinary source consumer
+h_life	0	actual ordinary source consumer
+h_meth	0	actual ordinary source consumer
+h_open	0	actual ordinary source consumer
+target	1	trait|target
+v_empty	0	actual ordinary source consumer
+v_life	0	actual ordinary source consumer
+v_gen	0	actual ordinary source consumer
+v_enum	1	struct|target
+vnative	0	actual ordinary source consumer
+v_move	1	move|initialized
+v_copy	1	Copy|copy|move
+v_alias	1	borrow|loan|conflict|non-Copy|move
+v_esc	1	lifetime|outlive|borrow
+v_cov	0	actual ordinary source consumer
+v_priv	1	private|visible
+v_dup	1	duplicate|already
+h_body	0	actual ordinary source consumer
+h_miss	1	member|item|missing
+h_def	0	actual ordinary source consumer
+h_unsf	1	unsafe
+v_cop4	0	actual ordinary source consumer
+alias2	1	borrow|loan|conflict

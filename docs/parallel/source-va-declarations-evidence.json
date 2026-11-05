@@ -1,0 +1,169 @@
+{
+  "schema": 1,
+  "scope": "ordinary source declarations and consumers; full standard/runtime family remains required",
+  "baseline": "114c938d05f226aca422c224812dfa9b52b0d3c2",
+  "branch": "implement/source-va-20261105",
+  "roles": [
+    "VaArgSafe",
+    "VaList"
+  ],
+  "static_receipt": {
+    "path": "obj/parallel/source-transport/valist/static3/receipt.json",
+    "sha256": "5acc383d97ab92515e7bf280d7177c922352427e71e91fbbe7fa32f5f13e13b4",
+    "state": "passed"
+  },
+  "qualifier_receipt": {
+    "path": "obj/parallel/source-transport/valist/gate3/receipt.json",
+    "sha256": "2e5781118404b0b50b631a88b200853593f92c3dcf6088c81cb62f1e9b36d4f6",
+    "state": "passed"
+  },
+  "source_map": {
+    "path": "obj/parallel/source-transport/valist/gate3/sources.json",
+    "sha256": "a9da1215293cfcd6d12c8dc157f3df5e126deae0f9cbaf08299c2daa5c8cacc0"
+  },
+  "fixtures": {
+    "path": "obj/parallel/source-transport/valist/fixtures.json",
+    "sha256": "9acb9e15f5e0a460d659ff2429909c1193b3532b30690223be1fdbf837032e38"
+  },
+  "artifacts": {
+    "path": "obj/parallel/source-transport/valist/artifacts.json",
+    "sha256": "2c1ea78ad6bf73947e6029ee60688af030b2f3de967c97cc2e88310b7fa98758"
+  },
+  "public_harness": {
+    "path": "obj/rust/dev-fast/deps/suite_traits-1eb52380c4060d30",
+    "sha256": "54ec541a9d44bcf4ba1b924919edab27ebff01408bffac5dc710f9a07494c676"
+  },
+  "backend": [
+    {
+      "path": "backend.lock.json",
+      "sha256": "f60c0760f39f1f554486f5a1eb990d2c0fef663fbd1bff944cd1eef8a014a581"
+    },
+    {
+      "path": "backend.local.json",
+      "sha256": "de97443110bcdb82b66d94235c0042d7944eb012905d7628fb402468dd4eab62"
+    }
+  ],
+  "independent": [
+    {
+      "path": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "sha256": "fc5f3f7c4e543a9c13058a1878a764717bc02813c1f208367cf98a9ef928ea53",
+      "state": "passed"
+    },
+    {
+      "path": "obj/parallel/source-transport/valist/reference-v2/receipt.json",
+      "sha256": "a8ac7e8843af7911436cf81298b6e87f82e0b5045ed60f3900fade368cdd6e18",
+      "state": "retained prediction/setup failure"
+    },
+    {
+      "path": "obj/parallel/source-transport/valist/reference-v3/receipt.json",
+      "sha256": "b3300753844f3f669c6443762adffcd30dc74f10f046ba21aa0e12727aa870f3",
+      "state": "retained prediction/setup failure"
+    },
+    {
+      "path": "obj/parallel/source-transport/valist/reference-v4/receipt.json",
+      "sha256": "acfd2dd9a713e3f4f1fd4e19352866e24f75691db95073d44642da5253c6bdd6",
+      "state": "retained prediction/setup failure"
+    },
+    {
+      "path": "obj/parallel/source-transport/valist/reference-v5/receipt.json",
+      "sha256": "48aec353c88f007522e8d9388e4ab7a0f69270c0389bd2c0fef947a9378f36ab",
+      "state": "passed"
+    },
+    {
+      "path": "obj/parallel/source-transport/valist/reference-v6/receipt.json",
+      "sha256": "aee161067a17524e6a8c0f861826bdb1323e4f069f6e881b085e58155819c52a",
+      "state": "passed"
+    },
+    {
+      "path": "obj/parallel/source-transport/valist/reference-v7/receipt.json",
+      "sha256": "525b0bbb986499d0c6d502dae188dea25d6e0027bef248695349ccf0efe0700a",
+      "state": "passed"
+    },
+    {
+      "path": "obj/parallel/source-transport/valist/reference-v8/receipt.json",
+      "sha256": "91fb016f79b87d2394ce0ea439712151ccd26ed03ce5ec04382fb99d7a343b99",
+      "state": "passed"
+    }
+  ],
+  "old_index_recheck": {
+    "path": "obj/parallel/source-transport/valist/old-index-recheck/receipt.json",
+    "sha256": "b4b2237782c1a6a7fead7e040d561b2861bcceaf4bfb02024ab81d1235d9b6cd",
+    "state": "passed exact original commands and source hashes"
+  },
+  "toolchain": {
+    "version": {
+      "path": "obj/parallel/source-transport/valist/old-index-recheck/version.stdout",
+      "sha256": "3975d062e234a9f3921955bf6ae5b90f5819df94fa825d057f76b34a35ed0f4d"
+    },
+    "manifest": {
+      "path": "obj/parallel/source-transport/valist/old-index-recheck/toolchain-files.json",
+      "sha256": "c6a72dec0ac2a2cbc76a877206eb4fe8354ea59196b0614f6d86809d004fc3c5"
+    },
+    "driver_sha256": "56047570f302ba09b1abf3b2996bd1d76560c06f3c95c0fcfa7dc3decd2faa2c",
+    "old_receipt_recorded_driver_or_sysroot": false
+  },
+  "counts": {
+    "declaration_and_ordinary_consumer_parity": 33,
+    "additional_scaling_inputs": 4,
+    "additional_indirect_abi_input": 1,
+    "native_candidate_observers": 2,
+    "full_standard_runtime_observers_independent_only": 1
+  },
+  "work": {
+    "stage": "after actual lower/materialization; analysis-only unchanged534 does not measure consumer",
+    "base": 962,
+    "widths": [
+      8,
+      32,
+      128
+    ],
+    "growth": [
+      99,
+      243,
+      819
+    ],
+    "relation": "51 initial +6 per use; no broad performance claim"
+  },
+  "native": {
+    "ordinary": "23 17\n",
+    "transparent_indirect": "17 11\n",
+    "actual_standard_required_independent_only": "39 24\n"
+  },
+  "failures": [
+    {
+      "receipt": {
+        "path": "obj/parallel/source-transport/valist/gate1/receipt.json",
+        "sha256": "162cf61deba8ab39c7fba2762382f490ed93fa71832eeec6837e60317a27129a"
+      },
+      "causes": [
+        "VaList omitted from both existing nominal completion readiness guards; fixed",
+        "original positive c_variadic requests unsupported; retained required feature-admission work"
+      ]
+    },
+    {
+      "receipt": {
+        "path": "obj/parallel/source-transport/valist/gate2/receipt.json",
+        "sha256": "e1386b2f48e9a0d385ff04de82cbcb2237fcb5a83ad7315f4f175dc66c74144a"
+      },
+      "causes": [
+        "test matcher needed safety spelling",
+        "mixed original alias opponent independently E0499+E0507; candidate selected non-Copy move; added independently frozen alias-only E0499 control",
+        "analysis-only canonical work constant534; moved test observation to real lower/materialization"
+      ]
+    }
+  ],
+  "required_inventory": {
+    "path": "pa31/tests/spec/source-va-list/required.json",
+    "sha256": "6ae8669fec4560fa4b4053267c636329ebbcac19b655e89f23b6cc0b19b09e49"
+  },
+  "remaining": [
+    "actual original VaList/PhantomCovariantLifetime source macro and helper closure",
+    "original c_variadic feature-request admission",
+    "actual variadic binding/init/read/copy/end/cleanup/const runtime work",
+    "full private/release and Root unchanged-core integration"
+  ],
+  "integration_conflicts": [
+    "exact two-role additions to vocab_semantics and private vocab_claims may need union with other new roles",
+    "roles/wrappers joins are confined to existing producers/nominal completion; no backend/schema/dense changes"
+  ]
+}

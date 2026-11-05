@@ -1,0 +1,334 @@
+{
+  "stage": "corrected stage1 inputs frozen before candidate2; first bytes retained in initial",
+  "cases": [
+    {
+      "file": "trait.rs",
+      "sha256": "e265050329023be292e4fa983de57329b29aa71b52f12dff8b19d25577c15c30",
+      "reference": {
+        "accepted": true,
+        "cause": "actual sealed unsafe Copy header and ordinary generic consumer",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "noimpl.rs",
+      "sha256": "cae887ad310da466771f43f626b93788bc2acf5656ef8a0012ebac6f396a79cf",
+      "reference": {
+        "accepted": false,
+        "cause": "missing actual trait implementation",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "bool.rs",
+      "sha256": "0ec9e1ad7fa092368bb56d442b4695ac129350d16e06d7299a2ee1d1ad9b24f2",
+      "reference": {
+        "accepted": false,
+        "cause": "Copy alone is not VaArgSafe",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "outer.rs",
+      "sha256": "4926dc9f7601efb3184bd3eba781b5926c24d404b3f152d126fcbc4ff1456bbf",
+      "reference": {
+        "accepted": false,
+        "cause": "actual impl(self) module domain",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "child.rs",
+      "sha256": "12e2184feb0d9c9c7074a99478e87886dbb1863767d04c22e5fb312a0723a1df",
+      "reference": {
+        "accepted": true,
+        "cause": "child module is within actual domain",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "safe.rs",
+      "sha256": "fc198eccbe5a55d2a202b5ece0403d9f52a0dcd0acca97e5444abf707e404b94",
+      "reference": {
+        "accepted": false,
+        "cause": "unsafe trait impl requires unsafe",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "nocopy.rs",
+      "sha256": "57da792247ecb315c89f32a763a4e20abd9bcce13e305e4f41dcb9e8bfbff217",
+      "reference": {
+        "accepted": false,
+        "cause": "actual Copy supertrait remains required",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "same.rs",
+      "sha256": "ee414c4f332267cf5b4e7082db1e67b3152bc7ec20a956e0d9b96ca8558e2b9a",
+      "reference": {
+        "accepted": true,
+        "cause": "ordinary same-spelling trait has no language authority",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "h_safe.rs",
+      "sha256": "070981b3e86285d202a72637f8f155a8e3e2ba3b3406521fd9dd5bd9f1d47f9f",
+      "reference": {
+        "accepted": true,
+        "cause": "unused altered role header: prediction before oracle",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "h_copy.rs",
+      "sha256": "9bb563a55611af0a85be41bf3799c39ee7b6ffb95a66ce0301a81a63ad667f67",
+      "reference": {
+        "accepted": true,
+        "cause": "unused altered role header: prediction before oracle",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "h_gen.rs",
+      "sha256": "53be0136169649526a6ae1394dd18ca43ce967b2e5885af844ed016aa3cd818f",
+      "reference": {
+        "accepted": true,
+        "cause": "unused altered role header: prediction before oracle",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "h_life.rs",
+      "sha256": "054ed6de1123a3aca6cee6fd262334ac3f2e52291e03e022ae9901c291f9f92c",
+      "reference": {
+        "accepted": true,
+        "cause": "unused altered role header: prediction before oracle",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "h_meth.rs",
+      "sha256": "9b9ec5f97223020b2a42ae27cfdf9f779ff236c46fdebb6b1854466c65dd3c0a",
+      "reference": {
+        "accepted": true,
+        "cause": "unused altered role header: prediction before oracle",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "h_open.rs",
+      "sha256": "6645ecae3cec7b1222f1d55058662d13c88ebba091bd5461c30ff0e89b241e5d",
+      "reference": {
+        "accepted": true,
+        "cause": "unused altered role header: prediction before oracle",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "target.rs",
+      "sha256": "40248e13597aab1f62aa81585c31603b22688f1ab1545f0286fc96a4954ac45a",
+      "reference": {
+        "accepted": false,
+        "cause": "lang role requires trait target",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_empty.rs",
+      "sha256": "4642f2eaea1029d0d08dd03577bf17031935ec68dc0ada7601317daf6594fc81",
+      "reference": {
+        "accepted": true,
+        "cause": "unused role target/generic legality, no layout authority",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_life.rs",
+      "sha256": "9e3abd581e835dba342ebf7c91fc23bb31df750b3764f819906dcc8be5af189f",
+      "reference": {
+        "accepted": true,
+        "cause": "unused role target/generic legality, no layout authority",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_gen.rs",
+      "sha256": "21b1bd203fdddfd9b3adc73b6c960d43c8ea5c25eb82c2594d565a37b29ca2c5",
+      "reference": {
+        "accepted": true,
+        "cause": "unused role target/generic legality, no layout authority",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_enum.rs",
+      "sha256": "2941059d58fa50580518a93ec0f42c4db3691a33a227f7df55a64bd6f26330ab",
+      "reference": {
+        "accepted": false,
+        "cause": "unused role target/generic legality, no layout authority",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "vnative.rs",
+      "sha256": "1ce1d19b2acbbf5ddfd560dbeb2b564e9f7705e352967053fa5241c36d7a75d1",
+      "reference": {
+        "accepted": true,
+        "cause": "ordinary role generic and mutable-field consumer (alternate VaList declaration, not standard layout)",
+        "emit": "obj"
+      }
+    },
+    {
+      "file": "v_move.rs",
+      "sha256": "2ccbd5faccd4ff8bb2b62f274b4785044113cd6040badd0dbed726abfc43dfb9",
+      "reference": {
+        "accepted": false,
+        "cause": "nominal role does not grant Copy",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_copy.rs",
+      "sha256": "4d8de74114dec18d50670fb52499e50d0d76e30b5ff2bd6d9d2b0020311cbef0",
+      "reference": {
+        "accepted": false,
+        "cause": "original setup lacks shared-reference Copy/Clone; positive corrected separately",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_alias.rs",
+      "sha256": "4e359da0bee96d2f0b5b636f1530f9ef69276b1ce89d112535c7d7287ca0b3c1",
+      "reference": {
+        "accepted": false,
+        "cause": "opposing mutable loans on actual nominal place",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_esc.rs",
+      "sha256": "0263842009d681567c0e939ab2777d5c299b50428b812846ba95d9d54d2142a7",
+      "reference": {
+        "accepted": false,
+        "cause": "retained field lifetime cannot escape",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_cov.rs",
+      "sha256": "cd64723aa50c93b16d4502e664b3e0c023ad08a7489d7ed6dd279e57bd790154",
+      "reference": {
+        "accepted": true,
+        "cause": "ordinary retained reference covariance",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_priv.rs",
+      "sha256": "1feab8e18760115ad50fd42bb58b14b809abb7284fff238834c9832f83be2ffc",
+      "reference": {
+        "accepted": false,
+        "cause": "actual source field visibility",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_dup.rs",
+      "sha256": "a59cc886af9d99d7b8ad61888567d49ff50cb189e61f0bde321868d97425a56f",
+      "reference": {
+        "accepted": false,
+        "cause": "duplicate actual role identity",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "h_body.rs",
+      "sha256": "5d3d9ac68ebcfc0635c67833bc94b2e211ad7647ad85c1f7a70134bdaa05cafd",
+      "reference": {
+        "accepted": true,
+        "cause": "ordinary changed member body retains real execution authority",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "h_miss.rs",
+      "sha256": "643ebeedf44263a81cdf419954ef750534fd03a036ed53c5c836e830276a7132",
+      "reference": {
+        "accepted": false,
+        "cause": "ordinary required trait member remains required",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "h_def.rs",
+      "sha256": "8b78124249f8761ded55c01c2c0a992dc083daed14bc9cb0b53318277177638f",
+      "reference": {
+        "accepted": true,
+        "cause": "ordinary provided method remains actual body",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "h_unsf.rs",
+      "sha256": "a64ad7284f931ee74ae27c7691539731bc538ae1345982d1c6a48a3094ae71e0",
+      "reference": {
+        "accepted": false,
+        "cause": "actual custom unsafe member call still requires unsafe context",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_cop4.rs",
+      "sha256": "7914cf834a3febbd6557994f75f49c3891039fba79622b2bec3eab8b89e864cb",
+      "reference": {
+        "accepted": true,
+        "cause": "actual shared-reference Clone/Copy and original annotated const traits",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "bound0.rs",
+      "sha256": "f3a558300e0b9db0bfab87f08b45f2397c32a2b48968e65f3182704e40468ee2",
+      "reference": {
+        "accepted": true,
+        "cause": "bounded ordinary generic trait use",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "bound8.rs",
+      "sha256": "b7b94d5685d28ecef1e2cbfa316a4ea3f8f7b20117b2ceccaadf84a04725f2f5",
+      "reference": {
+        "accepted": true,
+        "cause": "bounded ordinary generic trait use",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "bound32.rs",
+      "sha256": "fc732339985b736e09d17963f1160fe7693d45286da2547539ee30d4bd07052c",
+      "reference": {
+        "accepted": true,
+        "cause": "bounded ordinary generic trait use",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "bound128.rs",
+      "sha256": "e65137f9954c222fdcba1a87b3246d5456df9f1d48781d15aad096fb96522606",
+      "reference": {
+        "accepted": true,
+        "cause": "bounded ordinary generic trait use",
+        "emit": "metadata"
+      }
+    }
+  ],
+  "native": {
+    "source": "vnative.rs",
+    "observer": "vnative.c",
+    "stdout": "23 17\n"
+  }
+}

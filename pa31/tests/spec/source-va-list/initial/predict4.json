@@ -1,0 +1,14 @@
+{
+  "stage": "actual staged Clone/Destruct foundation correction; prior originals retained",
+  "cases": [
+    {
+      "file": "v_cop3.rs",
+      "sha256": "69d326c7e0f8cc8818bf0ba5b2c5e7099ad8ce2aecf05da20e44d295edfad7b4",
+      "reference": {
+        "accepted": true,
+        "cause": "actual shared-reference Clone/Copy and original annotated const traits",
+        "emit": "metadata"
+      }
+    }
+  ]
+}

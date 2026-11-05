@@ -155,6 +155,8 @@ fn unimplemented_builtin_claims_stop_before_granting_layout_drop_or_auto_trait_s
                 | LangItem::Shr
                 | LangItem::Index
                 | LangItem::IndexMut
+                | LangItem::VaArgSafe
+                | LangItem::VaList
                 | LangItem::AddAssign
                 | LangItem::SubAssign
                 | LangItem::MulAssign

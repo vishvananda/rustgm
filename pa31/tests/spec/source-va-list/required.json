@@ -1,0 +1,334 @@
+{
+  "scope": "source prerequisite only",
+  "initial_inputs": [
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/trait.rs",
+      "sha256": "0814e3be035847ff00100b706275beda0fe6e08b675ed0029b9f83b9e1a57dfe",
+      "rust_code": 0,
+      "rust_errors": [],
+      "observation": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "state": "required original source feature admission",
+      "candidate": "gate1 unknown c_variadic request; no semantic parity claim"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/noimpl.rs",
+      "sha256": "c1ae1b28431dfa89d30fa47273174e810820e62cfc4534e2fd2677775dad0e6a",
+      "rust_code": 1,
+      "rust_errors": [
+        "E0277"
+      ],
+      "observation": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "state": "original valid-syntax semantic opponent",
+      "candidate": "gate1 earlier feature fence; later reduced opponent is distinct"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/bool.rs",
+      "sha256": "fcb534e35a88438643834ee33e008816deaf12dad0aba8212b4b1c1007e2fb32",
+      "rust_code": 1,
+      "rust_errors": [
+        "E0277"
+      ],
+      "observation": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "state": "original valid-syntax semantic opponent",
+      "candidate": "gate1 earlier feature fence; later reduced opponent is distinct"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/outer.rs",
+      "sha256": "355f2477a142308f57f2b5ade40099533201b5239e52a9b5f38b9d5aa38369c9",
+      "rust_code": 1,
+      "rust_errors": [],
+      "observation": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "state": "original valid-syntax semantic opponent",
+      "candidate": "gate1 earlier feature fence; later reduced opponent is distinct"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/child.rs",
+      "sha256": "767fa391014d12ec4ed01bc3bbbfac38243335ce9f7d7d27798bf6dce61ea254",
+      "rust_code": 0,
+      "rust_errors": [],
+      "observation": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "state": "required original source feature admission",
+      "candidate": "gate1 unknown c_variadic request; no semantic parity claim"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/safe.rs",
+      "sha256": "e6fe2e18b41568fd2bbb02604d381850b3a1a2a2272e06d6883491ea48bc5faa",
+      "rust_code": 1,
+      "rust_errors": [
+        "E0200"
+      ],
+      "observation": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "state": "original valid-syntax semantic opponent",
+      "candidate": "gate1 earlier feature fence; later reduced opponent is distinct"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/nocopy.rs",
+      "sha256": "2c907fa002460a2d7c68deb0af9a75f26fe457a3a71dc474d89d2df88d3d19c7",
+      "rust_code": 1,
+      "rust_errors": [
+        "E0277"
+      ],
+      "observation": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "state": "original valid-syntax semantic opponent",
+      "candidate": "gate1 earlier feature fence; later reduced opponent is distinct"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/same.rs",
+      "sha256": "4369f0d5ef0918c4d11bb7acd2ebfc9a49b547721b61c86ea00bd8fd236ef077",
+      "rust_code": 0,
+      "rust_errors": [],
+      "observation": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "state": "required original source feature admission",
+      "candidate": "gate1 unknown c_variadic request; no semantic parity claim"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/h_safe.rs",
+      "sha256": "68388ca5c38dc36a812545a00da97e8a9b848f1fb58906764fe258315c35e927",
+      "rust_code": 0,
+      "rust_errors": [],
+      "observation": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "state": "required original source feature admission",
+      "candidate": "gate1 unknown c_variadic request; no semantic parity claim"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/h_copy.rs",
+      "sha256": "578223f26df600ded4ab68ffa6dbbf4ba619f7da85e0a51d5dbab145c1f2ed9b",
+      "rust_code": 0,
+      "rust_errors": [],
+      "observation": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "state": "required original source feature admission",
+      "candidate": "gate1 unknown c_variadic request; no semantic parity claim"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/h_gen.rs",
+      "sha256": "d612c66fefc358aecf9deee4a37fe8687c9cb9e42affb9730743b179190b5688",
+      "rust_code": 0,
+      "rust_errors": [],
+      "observation": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "state": "required original source feature admission",
+      "candidate": "gate1 unknown c_variadic request; no semantic parity claim"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/h_life.rs",
+      "sha256": "76159542cfff8a18505ea0fff03e696f30b5504272933736fa8333b5b7f84f07",
+      "rust_code": 0,
+      "rust_errors": [],
+      "observation": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "state": "required original source feature admission",
+      "candidate": "gate1 unknown c_variadic request; no semantic parity claim"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/h_meth.rs",
+      "sha256": "125858f706ab1b37257248a9f629416f390669b005f1780acdee604f777d0310",
+      "rust_code": 0,
+      "rust_errors": [],
+      "observation": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "state": "required original source feature admission",
+      "candidate": "gate1 unknown c_variadic request; no semantic parity claim"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/h_open.rs",
+      "sha256": "b81059547d3b6edfa42deaf2c64e410f117cb6da597c724a5106d232d304a663",
+      "rust_code": 0,
+      "rust_errors": [],
+      "observation": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "state": "required original source feature admission",
+      "candidate": "gate1 unknown c_variadic request; no semantic parity claim"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/target.rs",
+      "sha256": "9b3f1e4e2a35115dcde6acb4dce8a2a30244a9587c4a69bc89775d3be69caf1a",
+      "rust_code": 1,
+      "rust_errors": [],
+      "observation": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "state": "original valid-syntax semantic opponent",
+      "candidate": "gate1 earlier feature fence; later reduced opponent is distinct"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/v_empty.rs",
+      "sha256": "7970a66115060633420d0fd20a29bce2549dae01df952db2eb8022e579ab05d7",
+      "rust_code": 0,
+      "rust_errors": [],
+      "observation": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "state": "required original source feature admission",
+      "candidate": "gate1 unknown c_variadic request; no semantic parity claim"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/v_life.rs",
+      "sha256": "ef982dbdd0dab61cb5d7a171c0c1bf368de1aed0d75e8010afa70ca11a5f358b",
+      "rust_code": 0,
+      "rust_errors": [],
+      "observation": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "state": "required original source feature admission",
+      "candidate": "gate1 unknown c_variadic request; no semantic parity claim"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/v_gen.rs",
+      "sha256": "faa103dfd4b508acff8ff1f43a9b8342b6f2e6fd4f63a13e7eb35428ce2ada6f",
+      "rust_code": 0,
+      "rust_errors": [],
+      "observation": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "state": "required original source feature admission",
+      "candidate": "gate1 unknown c_variadic request; no semantic parity claim"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/v_enum.rs",
+      "sha256": "f56dd9847c3c8a852e5c1a5d724040d0df4594e2946f7e26c838e8f5d2ec8813",
+      "rust_code": 1,
+      "rust_errors": [],
+      "observation": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "state": "original valid-syntax semantic opponent",
+      "candidate": "gate1 earlier feature fence; later reduced opponent is distinct"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/native.rs",
+      "sha256": "b2f83efd79a6ef02ac60f7c48645f9ed8e7ab8b682682ae18424c8325c21d0ad",
+      "rust_code": 0,
+      "rust_errors": [],
+      "observation": "obj/parallel/source-transport/valist/reference-v1/receipt.json",
+      "state": "required standard runtime/ABI consumer; real core source prerequisite remains",
+      "candidate": "not qualified"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/vnative.rs",
+      "sha256": "05d1b99d58b9090a48824d5c38eb4c0df1cb2146e765e5727882fff2788a569c",
+      "rust_code": 0,
+      "rust_errors": [],
+      "observation": "obj/parallel/source-transport/valist/reference-v2/receipt.json",
+      "state": "required original source feature admission",
+      "candidate": "gate1 unknown c_variadic request; no semantic parity claim"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/v_move.rs",
+      "sha256": "49a913e569de37487c9a1f4f03f8763de094e597a981de8326dbd30a077ed094",
+      "rust_code": 1,
+      "rust_errors": [
+        "E0382"
+      ],
+      "observation": "obj/parallel/source-transport/valist/reference-v2/receipt.json",
+      "state": "original valid-syntax semantic opponent",
+      "candidate": "gate1 earlier feature fence; later reduced opponent is distinct"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/v_copy.rs",
+      "sha256": "b143d89132cf2686f7c26fc8b58d22e435a6bba9d0e74971ba9055a40511aa06",
+      "rust_code": 1,
+      "rust_errors": [
+        "E0204",
+        "E0507"
+      ],
+      "observation": "obj/parallel/source-transport/valist/reference-v2/receipt.json",
+      "state": "original valid-syntax semantic opponent",
+      "candidate": "gate1 earlier feature fence; later reduced opponent is distinct"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/v_alias.rs",
+      "sha256": "c26190d22b9a060d55cc6d17e23b28d9722b4ff59bb1e85a5795a9f9d2a60e99",
+      "rust_code": 1,
+      "rust_errors": [
+        "E0499",
+        "E0507"
+      ],
+      "observation": "obj/parallel/source-transport/valist/reference-v2/receipt.json",
+      "state": "original valid-syntax semantic opponent",
+      "candidate": "gate1 earlier feature fence; later reduced opponent is distinct"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/v_esc.rs",
+      "sha256": "5431da3910c0915c7321bce0fcc4540f6243d6789b9552a1fdb1e7db45f7da23",
+      "rust_code": 1,
+      "rust_errors": [
+        "E0515"
+      ],
+      "observation": "obj/parallel/source-transport/valist/reference-v2/receipt.json",
+      "state": "original valid-syntax semantic opponent",
+      "candidate": "gate1 earlier feature fence; later reduced opponent is distinct"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/v_cov.rs",
+      "sha256": "ac3dc5fa44afb8b70d5ed908a5226bfd47428a9876f72834ae2b26e61e299fa4",
+      "rust_code": 0,
+      "rust_errors": [],
+      "observation": "obj/parallel/source-transport/valist/reference-v2/receipt.json",
+      "state": "required original source feature admission",
+      "candidate": "gate1 unknown c_variadic request; no semantic parity claim"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/v_priv.rs",
+      "sha256": "dd66e998c5617bbf29bac0f7900cf90bc21ef9023702f75698a29b4d661ce1b4",
+      "rust_code": 1,
+      "rust_errors": [
+        "E0451"
+      ],
+      "observation": "obj/parallel/source-transport/valist/reference-v2/receipt.json",
+      "state": "original valid-syntax semantic opponent",
+      "candidate": "gate1 earlier feature fence; later reduced opponent is distinct"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/v_dup.rs",
+      "sha256": "2e4f874dd9de3377c2d74e8ae885de983b047418d18b7b086f95226010cb8305",
+      "rust_code": 1,
+      "rust_errors": [
+        "E0152"
+      ],
+      "observation": "obj/parallel/source-transport/valist/reference-v2/receipt.json",
+      "state": "original valid-syntax semantic opponent",
+      "candidate": "gate1 earlier feature fence; later reduced opponent is distinct"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/h_body.rs",
+      "sha256": "b75b9111c85d6ae112d75c317a60830f584504aef462c1754228f2c5f60f64ae",
+      "rust_code": 0,
+      "rust_errors": [],
+      "observation": "obj/parallel/source-transport/valist/reference-v2/receipt.json",
+      "state": "required original source feature admission",
+      "candidate": "gate1 unknown c_variadic request; no semantic parity claim"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/h_miss.rs",
+      "sha256": "892691d9c07c4a36431e80c7f109ed635ae669ed4c173d65df7524a207cb53ca",
+      "rust_code": 1,
+      "rust_errors": [
+        "E0046"
+      ],
+      "observation": "obj/parallel/source-transport/valist/reference-v2/receipt.json",
+      "state": "original valid-syntax semantic opponent",
+      "candidate": "gate1 earlier feature fence; later reduced opponent is distinct"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/h_def.rs",
+      "sha256": "b0ca2b698c52cf6321e1793d1aaad1c4ca34bba1bf5d80455ffb8d88b956ea1c",
+      "rust_code": 0,
+      "rust_errors": [],
+      "observation": "obj/parallel/source-transport/valist/reference-v2/receipt.json",
+      "state": "required original source feature admission",
+      "candidate": "gate1 unknown c_variadic request; no semantic parity claim"
+    },
+    {
+      "source": "pa31/tests/spec/source-va-list/initial/h_unsf.rs",
+      "sha256": "42295516942eb12122ecf429e1182bd3c32bc4236c52f723cf515eb4397e59f4",
+      "rust_code": 1,
+      "rust_errors": [
+        "E0133"
+      ],
+      "observation": "obj/parallel/source-transport/valist/reference-v2/receipt.json",
+      "state": "original valid-syntax semantic opponent",
+      "candidate": "gate1 earlier feature fence; later reduced opponent is distinct"
+    }
+  ],
+  "required_standard_source": [
+    "full actual VaList nominal and active x86_64 VaListInner fields/representation",
+    "original PhantomCovariantLifetime and PhantomCovariant macro-produced identities, variance and impl closure",
+    "actual const Clone/Drop/duplicate/next_arg source bodies and metadata",
+    "actual c_variadic module/API and local definition feature authority"
+  ],
+  "required_runtime": [
+    "variadic local binding, actual body-local lifetime and exactly once initialization",
+    "va_arg actual scalar ABI reads with unsafe/type/promotion proof",
+    "va_copy and va_end actual fallback body execution",
+    "normal destruction/early exits and no use/escape after invalid lifetime",
+    "const cursor semantics and UB/liveness tracking",
+    "zero/fixed/float/pointer/register-exhaustion native ABI controls"
+  ],
+  "oracle_correction": "Old Index controls recheck passed exact source hashes/argv; NEW reduced library-feature-owner omissions caused feature errors. Old receipt lacks driver/sysroot bindings; current full toolchain manifest retained separately."
+}

@@ -80,7 +80,7 @@ impl Catalog {
     }
 }
 
-const TRAIT_ROLES: [LangItem; 27] = [
+const TRAIT_ROLES: [LangItem; 28] = [
     LangItem::Clone,
     LangItem::Copy,
     LangItem::UseCloned,
@@ -108,6 +108,7 @@ const TRAIT_ROLES: [LangItem; 27] = [
     LangItem::From,
     LangItem::BikeshedGuaranteedNoDrop,
     LangItem::TransmuteTrait,
+    LangItem::VaArgSafe,
 ];
 
 pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Result<(), Error> {
@@ -150,7 +151,8 @@ pub(in crate::sema) fn validate(report: &Report, facts: &mut Declarations) -> Re
             | LangItem::FnPtrTrait
             | LangItem::Deref
             | LangItem::DerefMut
-            | LangItem::DerefPure => {}
+            | LangItem::DerefPure
+            | LangItem::VaArgSafe => {}
             LangItem::TransmuteTrait => {
                 super::transmutability::validate_trait(
                     report,
@@ -385,6 +387,7 @@ fn header<'a>(
             | LangItem::Deref
             | LangItem::DerefMut
             | LangItem::DerefPure
+            | LangItem::VaArgSafe
     ) {
         // Reservation already checked each role's target and generic arity.
         // Authenticate its canonical Self and source-owned inputs without inventing
@@ -547,6 +550,7 @@ pub(super) fn nominal_completed(
             | LangItem::Pin
             | LangItem::UnsafeCell
             | LangItem::UnsafePinned
+            | LangItem::VaList
     ) {
         return Err(Error::unlocated("invalid completed nominal readiness role"));
     }
@@ -589,6 +593,7 @@ pub(super) fn complete_nominal(
             | LangItem::Pin
             | LangItem::UnsafeCell
             | LangItem::UnsafePinned
+            | LangItem::VaList
     ) {
         return Err(Error::unlocated("invalid completed nominal role"));
     }

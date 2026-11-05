@@ -97,3 +97,5 @@ mod opfamily;
 
 #[path = "../../idxops.rs"]
 mod idxops;
+#[path = "../../vaops.rs"]
+mod vaops;

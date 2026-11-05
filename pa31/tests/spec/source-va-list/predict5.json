@@ -1,0 +1,14 @@
+{
+  "stage": "correct irrelevant copied feature/setup omissions; original bytes retained",
+  "cases": [
+    {
+      "file": "v_cop4.rs",
+      "sha256": "7914cf834a3febbd6557994f75f49c3891039fba79622b2bec3eab8b89e864cb",
+      "reference": {
+        "accepted": true,
+        "cause": "actual shared-reference Clone/Copy and original annotated const traits",
+        "emit": "metadata"
+      }
+    }
+  ]
+}

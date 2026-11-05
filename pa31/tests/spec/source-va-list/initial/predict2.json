@@ -1,0 +1,118 @@
+{
+  "stage": "second independent before candidate",
+  "cases": [
+    {
+      "file": "vnative.rs",
+      "sha256": "05d1b99d58b9090a48824d5c38eb4c0df1cb2146e765e5727882fff2788a569c",
+      "reference": {
+        "accepted": true,
+        "cause": "ordinary role generic and mutable-field consumer (alternate VaList declaration, not standard layout)",
+        "emit": "obj"
+      }
+    },
+    {
+      "file": "v_move.rs",
+      "sha256": "49a913e569de37487c9a1f4f03f8763de094e597a981de8326dbd30a077ed094",
+      "reference": {
+        "accepted": false,
+        "cause": "nominal role does not grant Copy",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_copy.rs",
+      "sha256": "b143d89132cf2686f7c26fc8b58d22e435a6bba9d0e74971ba9055a40511aa06",
+      "reference": {
+        "accepted": true,
+        "cause": "ordinary explicitly proved Clone/Copy, not role permission",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_alias.rs",
+      "sha256": "c26190d22b9a060d55cc6d17e23b28d9722b4ff59bb1e85a5795a9f9d2a60e99",
+      "reference": {
+        "accepted": false,
+        "cause": "opposing mutable loans on actual nominal place",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_esc.rs",
+      "sha256": "5431da3910c0915c7321bce0fcc4540f6243d6789b9552a1fdb1e7db45f7da23",
+      "reference": {
+        "accepted": false,
+        "cause": "retained field lifetime cannot escape",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_cov.rs",
+      "sha256": "ac3dc5fa44afb8b70d5ed908a5226bfd47428a9876f72834ae2b26e61e299fa4",
+      "reference": {
+        "accepted": true,
+        "cause": "ordinary retained reference covariance",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_priv.rs",
+      "sha256": "dd66e998c5617bbf29bac0f7900cf90bc21ef9023702f75698a29b4d661ce1b4",
+      "reference": {
+        "accepted": false,
+        "cause": "actual source field visibility",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "v_dup.rs",
+      "sha256": "2e4f874dd9de3377c2d74e8ae885de983b047418d18b7b086f95226010cb8305",
+      "reference": {
+        "accepted": false,
+        "cause": "duplicate actual role identity",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "h_body.rs",
+      "sha256": "b75b9111c85d6ae112d75c317a60830f584504aef462c1754228f2c5f60f64ae",
+      "reference": {
+        "accepted": true,
+        "cause": "ordinary changed member body retains real execution authority",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "h_miss.rs",
+      "sha256": "892691d9c07c4a36431e80c7f109ed635ae669ed4c173d65df7524a207cb53ca",
+      "reference": {
+        "accepted": false,
+        "cause": "ordinary required trait member remains required",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "h_def.rs",
+      "sha256": "b0ca2b698c52cf6321e1793d1aaad1c4ca34bba1bf5d80455ffb8d88b956ea1c",
+      "reference": {
+        "accepted": true,
+        "cause": "ordinary provided method remains actual body",
+        "emit": "metadata"
+      }
+    },
+    {
+      "file": "h_unsf.rs",
+      "sha256": "42295516942eb12122ecf429e1182bd3c32bc4236c52f723cf515eb4397e59f4",
+      "reference": {
+        "accepted": false,
+        "cause": "actual custom unsafe member call still requires unsafe context",
+        "emit": "metadata"
+      }
+    }
+  ],
+  "native": {
+    "source": "vnative.rs",
+    "observer": "vnative.c",
+    "stdout": "23 17\n"
+  }
+}

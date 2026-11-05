@@ -1,0 +1,14 @@
+{
+  "stage": "separate alias-only opponent, retain mixed E0499/E0507 original",
+  "cases": [
+    {
+      "file": "alias2.rs",
+      "sha256": "122cff3a2eacc4e43409057d228b4162d94fd9159296658eecee9f8e9a80fd9e",
+      "reference": {
+        "accepted": false,
+        "cause": "only opposing mutable loans; shared field reborrow avoids non-Copy move",
+        "emit": "metadata"
+      }
+    }
+  ]
+}

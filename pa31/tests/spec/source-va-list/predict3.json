@@ -1,0 +1,19 @@
+{
+  "stage": "corrected reference Copy prerequisite, original retained",
+  "cases": [
+    {
+      "file": "v_cop2.rs",
+      "sha256": "b919f5f1ac72607983471222f40003f218b30cdc5e05f3fe64627e0cff6eabcc",
+      "reference": {
+        "accepted": true,
+        "cause": "actual shared-reference Clone/Copy prerequisites supplied",
+        "emit": "metadata"
+      }
+    }
+  ],
+  "native": {
+    "source": "vnative.rs",
+    "observer": "vnative.c",
+    "stdout": "23 17\n"
+  }
+}

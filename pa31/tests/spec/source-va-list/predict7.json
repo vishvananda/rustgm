@@ -1,0 +1,19 @@
+{
+  "stage": "ordinary transparent indirect ABI role composition before candidate",
+  "cases": [
+    {
+      "file": "indir.rs",
+      "sha256": "8a93f82e3e6e9913a162e8a5d615605d71ee9b0e57bfb3ce735969aabc39cc07",
+      "reference": {
+        "accepted": true,
+        "cause": "ordinary actual source representation marker propagates through role nominal",
+        "emit": "obj"
+      }
+    }
+  ],
+  "native": {
+    "source": "indir.rs",
+    "observer": "indir.c",
+    "stdout": "17 11\n"
+  }
+}

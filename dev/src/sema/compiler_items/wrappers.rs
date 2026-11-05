@@ -9,13 +9,14 @@ use crate::{
         aggregate::{self, FieldDestruction, SharedMutation},
     },
 };
-const ROLES: [LangItem; 6] = [
+const ROLES: [LangItem; 7] = [
     LangItem::ManuallyDrop,
     LangItem::MaybeDangling,
     LangItem::MaybeUninit,
     LangItem::Pin,
     LangItem::UnsafeCell,
     LangItem::UnsafePinned,
+    LangItem::VaList,
 ];
 fn nominal_kind(role: LangItem) -> aggregate::Kind {
     if role == LangItem::MaybeUninit {
@@ -53,7 +54,7 @@ fn claim(
         actual.kind == DefKind::Struct && matches!(written.kind, ItemKind::Union { .. })
     } else if matches!(
         role,
-        LangItem::Pin | LangItem::UnsafeCell | LangItem::UnsafePinned
+        LangItem::Pin | LangItem::UnsafeCell | LangItem::UnsafePinned | LangItem::VaList
     ) {
         // The pinned declaration profile imposes no additional generic arity,
         // field or representation rule. Actual consumers validate their inputs.
@@ -108,7 +109,11 @@ pub(in crate::sema) fn register(
         }
         if matches!(
             role,
-            LangItem::MaybeUninit | LangItem::Pin | LangItem::UnsafeCell | LangItem::UnsafePinned
+            LangItem::MaybeUninit
+                | LangItem::Pin
+                | LangItem::UnsafeCell
+                | LangItem::UnsafePinned
+                | LangItem::VaList
         ) {
             // Union storage already suppresses unselected fields. Pin retains
             // ordinary field destruction; identity grants no API/Copy permission.
@@ -159,7 +164,7 @@ pub(in crate::sema) fn complete(report: &Report, facts: &mut Declarations) -> Re
                 LangItem::MaybeDangling => {
                     facts.aggregates.permits_dangling_pointers(item) != Some(true)
                 }
-                LangItem::MaybeUninit | LangItem::Pin => false,
+                LangItem::MaybeUninit | LangItem::Pin | LangItem::VaList => false,
                 LangItem::UnsafeCell | LangItem::UnsafePinned => {
                     facts.aggregates.shared_mutation(item) != Some(SharedMutation::Interior)
                 }
