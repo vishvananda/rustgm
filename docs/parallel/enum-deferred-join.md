@@ -103,3 +103,16 @@ adjacent `asm-qualification-binding.json` distinguish the probe from a full
 private run and bind the library/source differences. Initial probe import and
 private-method setup failures remain retained. Full successor execution of the
 corrected private assertion and later native/debug/independent gates is pending.
+
+Full42050526900 ona094957fb is terminal failure after all2711 private checks,
+all-target lint/architecture/harness and every public integration pass. The
+course stage finds only PA13's large-tags and signed-tags stale text oracles:
+the genuine scalar enum ABI replaces pointer arguments/copies with scalar
+loads and parameters. Both complete unchanged sources first execute with clean
+exit0 and empty output under pinned Rust and candidate70b47. Only then does the
+scoped generator replace those two references and record their source/contract/
+compiler provenance. All805 PA13 text cases pass in the same7.34s batch.
+`obj/parallel/enum-deferred-join-v1/pa13-reference-repair-v1/receipt.json` binds
+the unchanged production source to the immutable CLI; only three test helpers
+differ from its original producer. The initial CI failure log remains retained.
+Later full native/debug/independent steps were skipped and remain required.

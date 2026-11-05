@@ -212,5 +212,44 @@
     "Selected authored future applications, constructor/poll/drop/state/await/cancellation and future body transport remain.",
     "Actual const destruction selected leaves, definition/runtime effects, CTFE cleanup/unit results and original helper/metadata closure remain.",
     "Full canonical/source/imported trait compatible-world knowability and broader enum ABIs remain required."
-  ]
+  ],
+  "latest_full_ci": {
+    "run": 42050526900,
+    "head": "a094957fb5ca8c2c3425edf57a7bcc682e9f577c",
+    "state": "terminal-failure",
+    "private": {
+      "pass": 2711,
+      "fail": 0,
+      "ignored": 3
+    },
+    "public_integration": "all passed",
+    "course_failures": [
+      "pa13/tests/spec/constructors/large-tags.rs",
+      "pa13/tests/spec/constructors/signed-tags.rs"
+    ],
+    "failed_log_sha256": "e9508c6c5009792ba8a67d2779d67f5d7466113a5e3dd955186a2c9c601ea4fe",
+    "skipped": "later full native/debug/independent"
+  },
+  "pa13_reference_repair": {
+    "path": "obj/parallel/enum-deferred-join-v1/pa13-reference-repair-v1/receipt.json",
+    "sha256": "8ba705a771470ccbf8d9b04b68b9311d6985a9fd1f3e3808579062c6695bdcb8",
+    "seconds": 7.3431691019795835,
+    "scope": "Two independent complete source native comparisons, then exactly two generated references and complete PA13 text805/805. No production/source/contract change.",
+    "cli_sha256": "70b47f57b9d04b5f751793f8742553d0bead85e6dd5222f906f5c99038296527",
+    "producer_receipt_sha256": "acc469e59e13ad1c843a1b47b0f120e7a9cdb32d76698cd087392a2fc146298c",
+    "test_only_producer_differences": {
+      "dev/tests/invariants/asm_effect_contracts.rs": {
+        "producer": "a34f57ae107e87f4163c4c49da35c0587991636e105acfb2813664c6617a0b53",
+        "current": "1abe21c55264b717955c9c223c13bb637b3c8643cbea1d93c0fe233fd48141a9"
+      },
+      "dev/tests/invariants/observed_arguments.rs": {
+        "producer": "bf2c58c8adb6047fe7a8df734f50ec030353a05c43e015ef7006d8fa0b3a3876",
+        "current": "d08d753bc02337191ff28c5de245590b80abfa7c3befbfcd5dba77b56465ea66"
+      },
+      "dev/tests/support/body_machine.rs": {
+        "producer": "fc16bfd16dfb54fb1309ebde0571304ea5569a96b9d8a827e0062533eb3f9f3e",
+        "current": "7fb9fbfb6170e4619c27557adca148a45302d5fa4cc91c384b47749799569fec"
+      }
+    }
+  }
 }

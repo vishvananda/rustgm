@@ -27,8 +27,11 @@ Full CI42026473570 onab270 is terminal failure:2686 private pass,25 fail,
 restores actual source-free canonical-inventory closure without waiving orphan
 rules for source/imported traits. Unstaged runtime Index fixtures retain real
 bodies/ordinary impls; a non-indexing pointer fixture keeps its original provider.
-All six failed public tests now pass focused execution. The25 private repaired
-cases and later native/debug/independent steps await full successor qualification.
+All six failed public tests and all2711 private checks now pass full42050526900
+ona094, including the25 repaired private cases. Its course stage finds only two
+stale PA13 scalar-enum ABI oracles. Both unchanged sources pass independent native
+comparison; scoped regeneration passes805/805 PA13 text cases in a7.34s batch.
+Later full native/debug/independent steps await successor qualification.
 
 Root owns actual AsyncFn/Mut/Once, Future/Output/GAT contracts, source consumers
 and implicit callable proof under PA31/19/20/24/26/42/43/29. Existing workers own

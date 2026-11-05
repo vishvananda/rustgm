@@ -5,8 +5,11 @@ actual fieldless enum ABI, authored deferred originals and canonical-inventory/
 fixture CI repairs. All41 joined tests/2707 text cases,17 native observers and
 the final runtime Index const opponent/elision regressions pass. CLI70b47 keeps
 original core at LIB-169 AsyncFn, ops/async_function.rs11/file85:361, with all722
-inputs/configuration/caps/limits unchanged. Full42026473570 onab270 is terminal
-failure; private repaired cases and complete successor qualification remain pending.
+inputs/configuration/caps/limits unchanged. Full42050526900 ona094 is terminal:
+all2711 private checks and every public integration pass; course qualification
+finds two stale PA13 scalar-enum ABI oracles. Both unchanged sources now match
+pinned Rust natively, and scoped regeneration passes all805 PA13 text cases.
+Later full native/debug/independent qualification remains pending.
 No original library artifact or whole assignment after24 is complete.
 
 Root owns actual AsyncFn roles, future/output/GAT consumers and ordinary implicit
