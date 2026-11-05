@@ -17,6 +17,13 @@ loans and destruction order. The upstream helper's written placeholder body is
 not its real implementation. Declaration-only acceptance does not qualify any
 of these consumers; see the [original probe](../docs/pa31-function-pointer-checkpoint.md).
 
+The [symbolic-operation checkpoint](../docs/parallel/deferred-operations-v11.md)
+authenticates the genuine helper and carries its operation/opaque/associated
+contract through serialized bytes to a fresh consumer. Normal ordinary originals
+retain their actual body proof; the helper's placeholder supplies no executable
+body. Real constructor, state, poll/drop, Pin/Output, await, cancellation and
+recursive cleanup remain required, including full-core publication and callers.
+
 The [Pin source packet](../pa31/tests/spec/pin-source/README.md) implements the
 nominal/ordinary constructor producer with actual body, borrow/const and field
 drop controls. It grants no Copy or destructor suppression. This assignment

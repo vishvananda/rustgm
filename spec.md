@@ -1188,6 +1188,34 @@ not specialization finality. The [encoded execution checkpoint](docs/encoded-pro
 records actual carry/borrow native execution and the still-unsupported richer
 modifier, const/default-body and regional contracts.
 
+The explicit compiler-operation profile uses envelope13/version11, preserving
+source10, Provided11 and native-link wrapper12. Only this new profile prefixes
+its optional const-body trailer with presence. Authenticate actual source helper,
+signature, opaque owner/ordinal/full captures, Future/Output/member schemas and
+registration before classifying a body as CompilerOperation. Original and
+operation coverage is exclusive; a single paid shared sparse BodyRef index joins
+real ordinary rows while legacy dense profiles retain no index. A symbolic
+operation owns no placeholder Original, locals, CFG or executable permission.
+Reserve one actual imported opaque identity per defining declaration/ordinal and
+authenticate current store/catalog/schema/complete bounds before both cold and
+cached result reads. Share the existing declaration-input and substitution
+kernels; imported proof sites must never masquerade as AST coordinates. The
+first profile has validated two-capture/zero-own-projection-argument bounds;
+wider argument families require indexed dependency enumeration before admission.
+Actual constructor/poll/drop/await/cancellation and full source/body/policy
+transport remain required. The [checkpoint](docs/parallel/deferred-operations-v11.md)
+and its evidence distinguish fresh type proof from executable future authority.
+
+Actual VaArgSafe and VaList source declarations complete through the ordinary
+trait-header and nominal producers, without fabricated unsafe/Copy/arity or
+layout rules. Real implementation domains, trait selection, fields, borrows,
+destruction and forced-indirect ABI policy remain authoritative. Declaration
+completion does not permit variadic initialization or reading arbitrary storage;
+those consumers require actual source/target/lifetime and operation proof.
+Keep original Rust-positive c_variadic requests and actual full standard source
+closure as required work. See the
+[source checkpoint](docs/parallel/source-va-declarations.md).
+
 Private callable preparation consumes the actual reserved declared/callable
 signature pair and complete outer-to-inner formal scope, including unused
 parameters and inherited Self. Share the ordinary callable registration kernel;

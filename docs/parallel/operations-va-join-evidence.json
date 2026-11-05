@@ -1,0 +1,233 @@
+{
+  "schema": 1,
+  "state": "joined-source-native-core-frontier-qualified",
+  "commits": {
+    "operation_worker": "f6876fbb05c9ff0730d61f0c6a43157797c1998e",
+    "operation_integrated": "d4b17cd5c6633640aeb6f1e14807bd89ffe97e4d",
+    "va_worker": "1ef2057444b96e6f6c9f87df3ea6c0a35bd2366b",
+    "va_integrated": "4cd080c84"
+  },
+  "qualification": {
+    "path": "obj/parallel/operations-va-join-v1/qualification-v1/receipt.json",
+    "sha256": "7d6c919323717c6c2554264cae2f2d5cd86e818f6088f2cdeb3231632be34d44",
+    "regular": {
+      "path": "obj/qualification/fast/1793867674606318207/receipt.json",
+      "sha256": "1daa9ed19de30c4ab105905c8fef3245d1b2a215acad40fb291f41aed6012c3b"
+    },
+    "native": {
+      "path": "obj/qualification/fast/1793868231315167648/receipt.json",
+      "sha256": "e57920487bd99a94d08381a29c4b39d5cbca16cf27060350eeca32889699e7f6"
+    },
+    "regular_tests": 75,
+    "pa19_cases": 1193,
+    "native_tests": 6,
+    "native_observers": 27,
+    "seconds": 30.51719150302233
+  },
+  "cli": {
+    "path": "obj/parallel/operations-va-join-v1/cli/567ed867cb81f3164d8a17c326af223cd685d3a18ba39d434d5da8ee5c7c5b00/rustgm",
+    "sha256": "567ed867cb81f3164d8a17c326af223cd685d3a18ba39d434d5da8ee5c7c5b00"
+  },
+  "backend_lock_sha256": "f60c0760f39f1f554486f5a1eb990d2c0fef663fbd1bff944cd1eef8a014a581",
+  "v10_packets": [
+    {
+      "path": "obj/parallel/source-transport/frontend-3035642/base.rgcrate",
+      "bytes": 7118,
+      "sha256": "86b0e0a80de3160fbc18973e3ea9cf781513a6206547f55a35b78e2df636f03b"
+    },
+    {
+      "path": "obj/parallel/source-transport/native-3483654/base.rgcrate",
+      "bytes": 7118,
+      "sha256": "86b0e0a80de3160fbc18973e3ea9cf781513a6206547f55a35b78e2df636f03b"
+    }
+  ],
+  "original_core": {
+    "infrastructure_failure": false,
+    "classification": "observed original-core blocker",
+    "lint_cap": "allow",
+    "source_contract_limits": {
+      "work": 14500624,
+      "attempted_bytes": 1073741824,
+      "retained_bytes": 67108864
+    },
+    "expected_cli_sha256": "567ed867cb81f3164d8a17c326af223cd685d3a18ba39d434d5da8ee5c7c5b00",
+    "expected_cli_source": "explicit caller input",
+    "status": 1,
+    "first_error": "ERROR: file 89: 14318: source compiler language item semantic contract is not implemented",
+    "inputs_unchanged": true,
+    "opened_source_count": 375,
+    "total_seconds": 16.74482917098794,
+    "raw_sha256": {
+      "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr": "77782cafc8d775a5931617ae3feb54f4b74377f56f1d27d1ca8695681fbb141e",
+      "whole-core.openat": "a42b55f5d5a8264b57aec62e3f2f783a865ae9ace8d3bced665ec2906bbb6dd7",
+      "opened-sources.json": "5891464a98db3ffe5b2ea4e3d2ea21874d083890b52d4200902444c4bf2925d6"
+    },
+    "receipt_sha256": "f88793677dc9f63ff745c1ec0d118100ba8d53a107a569a7ceefdc1011c490a6",
+    "frontier": "LIB-167",
+    "path": "library/core/src/ops/deref.rs",
+    "source_sha256": "55d940bd62685513afbc552b96ea42974a45fc16f6db1d4971d56c332074eca5",
+    "line": 370,
+    "file": 89,
+    "byte": 14318,
+    "actual_contract": "#[lang=\"receiver\"] pub trait Receiver: PointeeSized { #[lang=\"receiver_target\"] type Target:?Sized; }",
+    "input_count": 722,
+    "pins": 6,
+    "configuration_values": 15
+  },
+  "performance": {
+    "path": "obj/parallel/operations-va-join-v1/performance-v1/receipt.json",
+    "sha256": "c6385675a87fb99bb1e53f1ab57b60ff5e136cec1507942e9134212d7b0e6778",
+    "seconds": 29.965224384970497,
+    "observations": 108,
+    "scales": [
+      {
+        "family": "ordinary",
+        "width": 1024,
+        "source_sha256": "783d30852ce081f6699ac8404584e6dcf01e511e14716df7497cb67f5d1ace96",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.029801928852743,
+            "ABBA_B_over_A": 0.9329750683206244
+          },
+          {
+            "AA_second_over_first": 0.9831002092340858,
+            "ABBA_B_over_A": 0.9255587802040184
+          },
+          {
+            "AA_second_over_first": 0.8951149740278909,
+            "ABBA_B_over_A": 1.0341503626337512
+          }
+        ],
+        "paired_median_B_over_A": 0.9329750683206244,
+        "candidate_median_seconds": 0.20246716649853624
+      },
+      {
+        "family": "ordinary",
+        "width": 4096,
+        "source_sha256": "9f5ca894e474569a5033b27b8508936790ca745d34c1e370abe066fbf4086bba",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.0322727955062176,
+            "ABBA_B_over_A": 1.2977481753663778
+          },
+          {
+            "AA_second_over_first": 1.0452362041554701,
+            "ABBA_B_over_A": 1.0315130501999323
+          },
+          {
+            "AA_second_over_first": 1.0266713399127092,
+            "ABBA_B_over_A": 1.0113667573381415
+          }
+        ],
+        "paired_median_B_over_A": 1.0315130501999323,
+        "candidate_median_seconds": 0.8884156065178104
+      },
+      {
+        "family": "source-cell",
+        "width": 8,
+        "source_sha256": "42b4a44e00b50becab0ebf1f469963e62116dfa10f6e788d50c8e6f17582486a",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.0804783477074962,
+            "ABBA_B_over_A": 0.9795751480999075
+          },
+          {
+            "AA_second_over_first": 0.9447544309420245,
+            "ABBA_B_over_A": 1.068337688745866
+          },
+          {
+            "AA_second_over_first": 1.2343654780634457,
+            "ABBA_B_over_A": 1.0042747143200788
+          }
+        ],
+        "paired_median_B_over_A": 1.0042747143200788,
+        "candidate_median_seconds": 0.047864229971310124
+      },
+      {
+        "family": "source-cell",
+        "width": 32,
+        "source_sha256": "3f6ed190052bfcecb990bc9978fa92ea7a56b4a733295420b355203c51797e8b",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.0194844785187303,
+            "ABBA_B_over_A": 1.0686500229528124
+          },
+          {
+            "AA_second_over_first": 1.0145557230157618,
+            "ABBA_B_over_A": 0.9877229956422938
+          },
+          {
+            "AA_second_over_first": 1.0026618272949535,
+            "ABBA_B_over_A": 1.033264397985974
+          }
+        ],
+        "paired_median_B_over_A": 1.033264397985974,
+        "candidate_median_seconds": 0.10290520251146518
+      },
+      {
+        "family": "source-cell",
+        "width": 128,
+        "source_sha256": "71a5af29c9e0a79a0b259108b07c2539fdb875f1294b2ccc0d525e593f043fc4",
+        "blocks": [
+          {
+            "AA_second_over_first": 0.9961032790959692,
+            "ABBA_B_over_A": 1.0403572991163696
+          },
+          {
+            "AA_second_over_first": 1.0388687235154177,
+            "ABBA_B_over_A": 1.0404460230614785
+          },
+          {
+            "AA_second_over_first": 1.0200632077858118,
+            "ABBA_B_over_A": 1.0177916432126761
+          }
+        ],
+        "paired_median_B_over_A": 1.0403572991163696,
+        "candidate_median_seconds": 0.3231111715140287
+      },
+      {
+        "family": "metadata-v10",
+        "width": 1,
+        "source_sha256": "91ea73f6be4a07ed7c4138ecc3287ad67465d4f16730385252c7d350fe6982a0",
+        "blocks": [
+          {
+            "AA_second_over_first": 1.4208377345411758,
+            "ABBA_B_over_A": 0.866258337727909
+          },
+          {
+            "AA_second_over_first": 0.9229661827875917,
+            "ABBA_B_over_A": 1.0133408556798205
+          },
+          {
+            "AA_second_over_first": 0.7185009333896445,
+            "ABBA_B_over_A": 1.186793052402908
+          }
+        ],
+        "paired_median_B_over_A": 1.0133408556798205,
+        "candidate_median_seconds": 0.021265326504362747
+      }
+    ],
+    "interpretation": "Exclusive immutable A/B, A/A and paired ABBA, all exact output and v10 metadata equality. Retain4096 +29.8% block/3.15% median and source128 +4.04% median/all positive blocks; no broad speedup or regression-absence claim. Separate new v11 paths have no accepted predecessor."
+  },
+  "private_recipe_tests": {
+    "state": "execution_pending_for_full_CI",
+    "cases": [
+      "sema::opaque::symbolic_tests::serialized_recipes_reject_ordinal_capture_schema_projection_and_body_forgery",
+      "sema::opaque::symbolic_tests::cold_and_warm_result_queries_reject_changed_actual_owner_and_promises",
+      "sema::opaque::symbolic_tests::actual_symbolic_body_cannot_supply_an_executable_original"
+    ]
+  },
+  "preceding_full_ci": {
+    "head": "f80061152f5230a1d5a6240d276daf165ad63d40",
+    "run": 41986761978,
+    "status": "terminal-success-all-gates"
+  },
+  "remaining": [
+    "LIB-167 actual Receiver/Target and source receiver consumers",
+    "Original positive c_variadic requests and full standard VaList/marker/CVoid source plus real init/read/copy/end/cleanup/CTFE",
+    "True authored future constructor/poll/drop/state/await/cancellation and compiler async destruction",
+    "Broader source nominal/body/policy/associated-family metadata and full core publication/CLI routing",
+    "All original core/alloc/std artifacts, real consumers and complete assignment/release requirements"
+  ]
+}

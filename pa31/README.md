@@ -16,6 +16,12 @@ old cycle; both units and the complete contract below remain required.
 
 ## Required implementation
 
+The [VaArgSafe/VaList declaration checkpoint](../docs/parallel/source-va-declarations.md)
+retains ordinary actual headers, fields, implementation domains and ownership.
+It supplies no invented Copy, target layout or variadic runtime permission.
+All original valid c_variadic feature requests, full standard marker/module
+closure, actual cursor init/read/copy/end/cleanup and metadata remain required.
+
 The [UnsafePinned source packet](tests/spec/unsafe-pinned-source/README.md)
 qualifies actual nominal identity, interior storage and niche suppression,
 including a direct-field owner. Its22 independent source outcomes and4 native

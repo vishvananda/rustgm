@@ -8,6 +8,15 @@ Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The
 
 C ABI, repr attributes, linkage and imported/exported declarations.
 
+The [VaArgSafe/VaList source checkpoint](../docs/parallel/source-va-declarations.md)
+completes actual ordinary declaration owners and preserves their real trait,
+field, ownership and argument-ABI rules. Its two native observers exercise
+ordinary role-bearing declarations; the genuine standard cursor observer and
+complete marker/module source remain separate required contracts. Actual
+c_variadic feature admission, variadic definition/init/read/copy/end/cleanup,
+source unsafe/const proof and metadata must be implemented before claiming the
+full standard VaList runtime.
+
 The local implementation now supports
 `rustc_pass_indirectly_in_non_rustic_abis` on the local repr(C) struct in
 ffi/va_list.rs416 (LIB-111). This is a semantic argument ABI contract, not an

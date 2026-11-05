@@ -11,6 +11,17 @@ and the existing target/configuration/cap/finite limits preserved. LIB-155 is
 the independently demonstrated source Deref/Target prerequisite. Use the frozen
 Pin source and receiver packets, not source substitutions or empty futures.
 
+The [operation/Va successor](operations-va-join.md) now joins real v11 symbolic
+operation/opaque/associated transport with ordinary Va source owners. All75
+public controls/1193 PA19 cases and27 native observers pass. CLI567ed867 advances
+unchanged original core to LIB-167 Receiver at ops/deref.rs370/file89:14318,
+16.7448s/375opens. Actual v10 metadata stays byte-equal7118 bytes. Private recipe
+controls await fullCI; no executable future or original library artifact exists.
+Root owns Receiver/Target; the source worker owns actual vararg feature/cursor/
+CVoid prerequisites, and the future worker now owns real authored constructor/
+poll/drop with distinct owners and one checked-template provenance. All full
+runtime/metadata/assignment requirements and resource limits remain unchanged.
+
 The [Index/UnsafePinned successor](source-index-pinned.md) is published on
 main114c938d0. Nine public controls/1193 PA19 cases and24 native observers pass;
 original core advances unchanged to LIB-165 VaArgSafe at ffi/va_list.rs316,
