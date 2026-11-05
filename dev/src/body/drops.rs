@@ -65,9 +65,10 @@ pub const PENDING_MESSAGE: &str = "Drop implementations require destructor elabo
 pub(crate) fn collect(
     facts: &Declarations,
     program: &Program,
+    origin: Option<NodeKey>,
     query: Option<&mut NeedsDrop>,
 ) -> Result<Option<Pending>, (crate::body::ir::ProofSite, &'static str)> {
-    let Some(first) = facts.destructors.implementations().first() else {
+    let Some(origin) = origin else {
         return Ok(None);
     };
     let mut methods = Vec::new();
@@ -90,7 +91,7 @@ pub(crate) fn collect(
             source: implementation.source,
         });
     }
-    let query = query.ok_or((first.source.into(), "missing destruction query"))?;
+    let query = query.ok_or((origin.into(), "missing destruction query"))?;
     let bodies = program
         .bodies
         .iter()
@@ -99,7 +100,7 @@ pub(crate) fn collect(
         })
         .collect::<Result<Vec<_>, _>>()?;
     Ok(Some(Pending {
-        source: first.source,
+        source: origin,
         methods,
         bodies,
         query_steps: query.steps,

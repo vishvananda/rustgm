@@ -1,5 +1,25 @@
 # Parallel library bootstrap implementation
 
+The [unpolled construction/Drop checkpoint](parallel/state-drop-checkpoint.md)
+integrates worker334b56646 and09da7ef4b, including their checked-store guard.
+The entire production tree matches the worker's qualified snapshot:24 exact
+public controls pass in115.28s and two actual locked-backend native programs pass
+in2.38s. Construction leaves the real deferred body dormant; genuine stateful
+Drop handles the empty-capture unpolled profile. Poll, capture transfer, await,
+cancellation, wider cleanup and authored-body transport remain required.
+Private cfg(test) compilation/execution and successor full CI remain pending.
+The current qualified original-core observation remains CLI292c96f2/LIB-169;
+this runtime checkpoint does not itself establish a new original-core result.
+
+Full42109811024 onf88 passes all public/private tests. Its course stage finds
+one PA20 diagnostic mismatch: an actual method type mismatch is reported as
+an invalid lifetime identity. The isolated diagnostic/cache repair is preserved
+for qualification; its final algorithm has not passed a gate yet. Root's AsyncFn
+callable execution wrapper and the source worker's precise selected cleanup
+consumer are also uncompiled work in their existing isolated trees. At integration,
+scratch has112GiB free, below the unchanged150GiB reserve; all local heavy work
+is held. No whole assignment after24 or original core/alloc/std artifact is complete.
+
 The [future/const integration](parallel/future-const-join.md) now joins selected
 authored Future/Output proof, actual const destruction and native runtime-instance
 consumers. Current31 public/1957 PA19/21 cases,11 native tests, upstream/harness

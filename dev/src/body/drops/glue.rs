@@ -35,6 +35,8 @@ pub enum Method {
     Definition(DefId),
     Unresolved(DefId),
     Instance(Instance),
+    /// The exact full application owns its state-dependent capture cleanup.
+    Future(TypeId),
 }
 #[derive(Clone, Copy)]
 pub struct Recipe {
@@ -44,6 +46,8 @@ pub struct Recipe {
     pub method: Option<Method>,
     pub kind: Shape,
 }
+const _: [(); 8] = [(); size_of::<Method>()];
+const _: [(); 32] = [(); size_of::<Recipe>()];
 #[derive(Clone, Copy)]
 pub struct Field {
     pub selection: Selection,
@@ -231,6 +235,13 @@ impl<'a> Catalog<'a> {
             {
                 Kind::Array { element, .. } | Kind::Slice(element) => self.schedule(element)?,
                 Kind::Dynamic { .. } => {}
+                Kind::Future {
+                    identity,
+                    arguments,
+                } => {
+                    self.types.future_application(identity, arguments)?;
+                    // The generated entry owns captures; do not also recurse over them.
+                }
                 Kind::Tuple(list) => self.schedule_fields(list)?,
                 Kind::Closure { environment, .. } => {
                     let Some(Kind::Tuple(list)) = self.types.kind(environment) else {
@@ -298,6 +309,15 @@ impl<'a> Catalog<'a> {
                     .ok_or("missing slice element destruction")?,
             },
             Kind::Dynamic { .. } => Shape::Dynamic,
+            Kind::Future {
+                identity,
+                arguments,
+            } => {
+                self.types.future_application(identity, arguments)?;
+                method = Some(Method::Future(ty));
+                let end = compact(self.cache.storage.fields.len())?;
+                Shape::Fields(Range { start: end, end })
+            }
             Kind::Tuple(list) => self.tuple_fields(list)?,
             Kind::Closure { environment, .. } => {
                 let Some(Kind::Tuple(list)) = self.types.kind(environment) else {

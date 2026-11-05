@@ -3,14 +3,22 @@ use crate::types::instance::Instance;
 pub(crate) enum Permit {
     Primitive(super::primitive_methods::Permit),
     FunctionPointer(super::pointers::Permit),
+    Future(Box<super::coroutines::Permit>),
 }
 impl Permit {
-    pub(crate) const fn instance(&self) -> Instance {
+    pub(crate) const fn instance(&self) -> Option<Instance> {
         match self {
-            Self::Primitive(permit) => permit.instance(),
-            Self::FunctionPointer(permit) => permit.instance(),
+            Self::Primitive(permit) => Some(permit.instance()),
+            Self::FunctionPointer(permit) => Some(permit.instance()),
+            Self::Future(permit) => permit.instance(),
+        }
+    }
+    pub(crate) fn future(&self) -> Option<&super::coroutines::Permit> {
+        match self {
+            Self::Future(permit) => Some(permit),
+            _ => None,
         }
     }
 }
 
-const _: [(); 8] = [(); size_of::<Permit>()];
+const _: [(); 16] = [(); size_of::<Permit>()];

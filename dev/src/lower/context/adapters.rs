@@ -12,7 +12,7 @@ impl Context<'_> {
         }
         let &index = self
             .adapter_indices
-            .get(&adapter)
+            .get(&super::Generated::Adapter(adapter))
             .ok_or("missing checked receiver adapter body")?;
         let Owner::ClosureAdapter {
             adapter: selected,

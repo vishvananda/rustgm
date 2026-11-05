@@ -1,0 +1,60 @@
+{
+  "scope": "constructor prerequisite; actual future cleanup required before native publication; no runtime parity claim",
+  "parent": "299e0f57c603c2ac6732004f43e9ac379422bc30",
+  "sources": {
+    "dev/src/body/build.rs": "8b66eb93cb6b62cfde0ea61acbaae4d0512d0e50d2341cb70827339aa1a40623",
+    "dev/src/body/build/drops.rs": "438a422e5b93c7bbe44aef624ff51517b44003140854689e70c2be5de380cfc3",
+    "dev/src/body/coroutines.rs": "8067092d0e38be100a79432741fad1b649b7d931b6fd809308e56ffc213d6b81",
+    "dev/src/body/coroutines/creation.rs": "d3f68ba70d132fef937fca0c6b8ed467626bcbeb1e29df845f99b6f236a80134",
+    "dev/src/body/coroutines/permit.rs": "6df5ecd1f3c78fa85dfc5485462be344de6022ab5833021d84173c3a96624e74",
+    "dev/src/body/drops.rs": "7f9ccd116d3412d1ca9bfef3687772acee46c93f0e6b74130b625fe42a5bdeb4",
+    "dev/src/body/drops/glue.rs": "d6ec268faaa01c957b9bafe79d61cd10f5ea364c20bf6d6b785dc8fd7a375486",
+    "dev/src/body/factories.rs": "3fdbe1612e12c4c05bc61089ab727bad20b1d9452913740f1095eb761ca1e6c0",
+    "dev/src/borrow/check/incremental.rs": "8ccf2599428d6c2f2384a0d106a2da6d468d1681760b1955f12b1e7ddf28150c",
+    "dev/src/borrow/check/incremental/bridges.rs": "65312fd4daa1cb6cfaa8f704ef8d8a7e7be52b3d4a13f9fe7efeeff89acb48cc",
+    "dev/src/lower/cleanup/emit.rs": "7afcefee7804b73439ee1aec10b2d64f7844b4f0f81ad3784852adfbad304607",
+    "dev/src/lower/context.rs": "69d4279cde1a7d9b8aa4b7cd6ac9bf8df7a890c5fd0865194c3f62da43a56a84",
+    "dev/src/lower/instances/demand.rs": "280445fb295dce2deb3ff2d217fb8efe58db9e24012b8400f9da47d0b7e73aa0",
+    "dev/src/lower/instances/proof.rs": "ce1301c1f5172e6a682b0a6144401b4e1c8c97992161633a36a07d423d46177d",
+    "dev/src/pipeline/asyncbody.rs": "13e30a4c1b0462ba445f40e08fdc25b3392ddcffea9353a517dcf45c082b9031",
+    "dev/src/pipeline/mod.rs": "fd3aecc68fc94e59b22facfc2238cc7024dd3fcab8d33ce0b8403a7539f390eb",
+    "dev/tests/stateframe.rs": "92aa4b678c050bbe66808d04a83411d10158d0246d34bb9424698f16bcef040b",
+    "pa43/tests/spec/future-runtime-v1/README.md": "7e36f466dde7cebd0c20db711731816cfb436d88498f3cd30bba21f2ad7c38fb",
+    "pa43/tests/spec/future-runtime-v1/construction-companion.rs": "8eb5ba1126e550d9615b5ae39ed958ae5d1bacdcebca91d9da7c0722862326ce",
+    "pa43/tests/spec/future-runtime-v1/construction-predictions.json": "bccf9d067763aaaacb09a50ab93bce027631d7172257280e7654c885edbbdc1c",
+    "pa43/tests/spec/future-runtime-v1/construction-source.rs": "8fe9d4fbb0ec6e8aa28749c6ba100f8eca6a8ba75650cf5aafbf725439f4ed14",
+    "pa43/tests/spec/future-runtime-v1/construction-wrong-companion.rs": "12b04f17e8ecb67ac8f8bc1d08106d6a6ab8222569affc293ee46571d2739ef9",
+    "pa43/tests/spec/future-runtime-v1/construction-wrong-source.rs": "d27a6135b6308d9db9985f742b72bfe681000ff7081780409bb73c7ed393601d"
+  },
+  "receipts": {
+    "obj/qualification/fast/1793909894001059457/receipt.json": "eef3e66a0445992a30e22b275f64bb79ec3cf235ec2d1a5a4fe26b00f97220a0",
+    "obj/qualification/fast/1793910094371881903/receipt.json": "5a6e281b4176a97cc2be0f2b5c7f2e6fecd64a3812bb95b6a8e4a724515e6257",
+    "obj/qualification/fast/1793910638041086958/receipt.json": "9f0797546567b5f42bdf74b5c16a861b35d0141a65c8e8272b7cb6d5defebfa6",
+    "obj/qualification/fast/1793909200102491231/receipt.json": "bf8d91e32a9a47f64ae9ef08e024abef62a992084e24ad4b91780384ae7619cd",
+    "obj/qualification/fast/1793909412926605808/receipt.json": "614a4a6d68625636a3dbcd4744d4943615d9c5dbd308d722142f695eb185bde3",
+    "obj/qualification/fast/1793909558930431779/receipt.json": "a85c21d1f1eda2bf623ed0d109fe9dc882f22ecb735a4cbd7d6da604dc3cf24c",
+    "obj/parallel/future-runtime-v1/construction/oracle-receipt.json": "286a35b29ecc5f7b477cea982fa5e5dc9b63bdfd7a91ea743ce18f68ce327877",
+    "obj/parallel/future-runtime-v1/construction/native-receipt.json": "94e1ac60b7a0e88c36c2900cf5aefc87b0147e02bac1ba62d8241f2174c5c7d4"
+  },
+  "qualified_gate": "obj/qualification/fast/1793910638041086958",
+  "qualified_tests": 23,
+  "gate_seconds": 125.91,
+  "upstream": {
+    "fixtures": 29,
+    "reference_files": 126,
+    "status": 0
+  },
+  "pre_cleanup_native_observation": {
+    "path": "obj/parallel/future-runtime-v1/construction/native-receipt.json",
+    "status": 0,
+    "qualified_runtime": false,
+    "cause": "missing ordinary cleanup activation without synchronous Drop impl; repaired executable path now fences"
+  },
+  "pending": [
+    "genuine generated Drop/poll entries and native capture/drop/state proof",
+    "full await/cancellation/unwind/recursive async cleanup/helper execution",
+    "authored async body metadata",
+    "private execution/full CI",
+    "performance checkpoint"
+  ]
+}

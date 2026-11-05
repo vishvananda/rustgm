@@ -67,7 +67,13 @@ impl Original<'_> {
             node: Some(body.source.into()),
             message: message.into(),
         };
-        crate::body::coroutines::require_ordinary_body(body).map_err(error)?;
+        if let Self::Factory(factory) = self
+            && let Some(future) = factory.future()
+        {
+            future.require_current(types, body).map_err(error)?;
+        } else {
+            crate::body::coroutines::require_ordinary_body(body).map_err(error)?;
+        }
         let adapter_source = match self {
             Original::Ordinary | Original::Factory(_) => None,
             Original::Adapter(source, template) => Some((source, template)),
@@ -102,8 +108,23 @@ impl Original<'_> {
             node: Some(body.source.into()),
             message: message.into(),
         };
-        if matches!(self, Self::Factory(_)) && body.instance.is_none() {
-            return Err(error("factory proof requires its exact selected instance"));
+        if let Self::Factory(factory) = self {
+            if factory.instance() != body.instance {
+                return Err(error("factory proof requires its exact selected identity"));
+            }
+            if let Some(future) = factory.future() {
+                future_family(types, templates, body, future).map_err(error)?;
+                if body.instance.is_none() {
+                    if future.entry().is_none() {
+                        return Err(error(
+                            "factory without Instance requires its genuine generated entry",
+                        ));
+                    }
+                    return Ok(());
+                }
+            } else if body.instance.is_none() {
+                return Err(error("factory proof requires its exact selected instance"));
+            }
         }
         if let Some(instance) = body.instance {
             let selected = match (body.owner, types.kind(instance.ty())) {
@@ -142,7 +163,7 @@ impl Original<'_> {
                 ));
             }
             if let Self::Factory(factory) = self {
-                if factory.instance() != instance {
+                if factory.instance() != Some(instance) {
                     return Err(error(
                         "factory proof belongs to a different selected instance",
                     ));
@@ -153,6 +174,29 @@ impl Original<'_> {
         }
         Ok(())
     }
+}
+
+fn future_family(
+    types: &crate::types::Store,
+    templates: &templates::Checked<'_>,
+    body: &Body,
+    future: &crate::body::coroutines::Permit,
+) -> Result<(), &'static str> {
+    future.require_current(types, body)?;
+    let identity = future.family(types)?;
+    templates.future_store(types)?;
+    let (template, input, regions) = templates
+        .async_body(identity)
+        .ok_or("future operation lacks its actual checked deferred family")?;
+    if template.body.source != future.source().into()
+        || input.key != template.body.key()
+        || regions.key != input.key
+        || regions.source != template.body.source
+        || !matches!(template.body.owner, Owner::AsyncBody { identity:actual, future:selected, .. } if actual==identity && selected==future.future())
+    {
+        return Err("future permit changed its actual checked source family");
+    }
+    Ok(())
 }
 impl Verifier {
     pub(crate) fn new(methods: Option<&[drops::Method]>) -> Result<Self, &'static str> {
@@ -238,23 +282,27 @@ impl Verifier {
             super::structure::Found::Keep => super::structure::Use::Keep(&mut proved),
             super::structure::Found::First => super::structure::Use::Own,
         };
+        let future = match original {
+            Original::Factory(permit) => permit.future(),
+            _ => None,
+        };
         let plan = match (&mut self.drops, catalog) {
-            (Some(drops), Some(catalog)) => super::prove_cleanup(
+            (Some(drops), Some(catalog)) => super::prove_cleanup_using(
                 environment,
                 &mut self.reused,
                 drops,
                 &body,
                 contract,
                 catalog,
-                structure,
+                (structure, future),
             )?,
             (None, None) => {
-                super::prove_body::<false, _>(
+                super::prove_body_using::<false, _>(
                     environment,
                     &mut self.reused,
                     &body,
                     contract,
-                    structure,
+                    (structure, future),
                 )?;
                 None
             }

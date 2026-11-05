@@ -2,7 +2,10 @@
 mod asyncbody;
 pub(crate) mod cdrop;
 pub(crate) mod execution;
+pub(crate) use asyncbody::checked_future_storage;
 pub use asyncbody::future_application;
+pub(crate) use asyncbody::future_constructor;
+pub(crate) use asyncbody::future_drop;
 mod marked_definitions;
 mod original_contexts;
 use crate::support::hash::HashMap;

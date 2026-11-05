@@ -2,6 +2,7 @@
 mod adapters;
 mod c_boundary;
 mod callsite_owners;
+mod disposal;
 mod niches;
 use super::{Error, data, function, remainder};
 use crate::support::hash::HashMap;
@@ -46,7 +47,7 @@ pub(super) struct Context<'a> {
     pub storage_mutation: Option<crate::types::interior_mutability::Query<'a>>,
     body_indices: Vec<Option<usize>>,
     closure_indices: HashMap<crate::types::closure::ClosureId, usize>,
-    adapter_indices: HashMap<crate::types::closure::Adapter, usize>,
+    adapter_indices: HashMap<Generated, usize>,
     instance_indices: HashMap<Instance, usize>,
     symbols: Vec<Option<SymbolId>>,
     signatures: HashMap<(TypeId, bool), SignatureId>,
@@ -63,6 +64,14 @@ pub(super) struct Context<'a> {
     abort: Option<SymbolId>,
     remainders: [Option<SymbolId>; 2],
 }
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+enum Generated {
+    Adapter(crate::types::closure::Adapter),
+    Future(crate::types::future::EntryKey),
+}
+const _: [(); 12] = [(); size_of::<Generated>()];
+const _: [(); 24] = [(); size_of::<(Generated, usize)>()];
+const _: [(); 32] = [(); size_of::<HashMap<Generated, usize>>()];
 /// Owned per-body cleanup plans, indexed like the checked bodies.
 type Plans = Vec<Option<Box<crate::borrow::destruction::Plan>>>;
 /// Checked bodies in final proof order. Lowering consumes an owned body once and
@@ -166,7 +175,12 @@ fn run(
         }
     }
     let mut layouts = std::mem::take(&mut facts.layouts);
-    let result = Context::build(facts, &mut layouts, (bodies, destruction, plans), roots);
+    let result = Context::build(
+        facts,
+        &mut layouts,
+        (bodies, destruction, plans, forwarding),
+        roots,
+    );
     facts.layouts = layouts;
     result
 }
@@ -213,17 +227,79 @@ impl Representation {
         }
     }
 }
-fn require_runtime_entries(bodies: &[crate::body::ir::Body]) -> Result<(), Error> {
-    if let Some(body) = bodies.iter().find(|body| {
-        matches!(
+fn require_runtime_entries(
+    facts: &Declarations,
+    bodies: &[crate::body::ir::Body],
+    forwarding: Option<&crate::borrow::incremental::Forwarding>,
+) -> Result<(), Error> {
+    for (index, body) in bodies.iter().enumerate() {
+        let error = |message| Error {
+            node: Some(body.source.root_site()),
+            message,
+        };
+        if let Owner::FutureEntry { key, .. } = body.owner {
+            let Some(crate::borrow::incremental::Bridge::Factory(permit)) =
+                forwarding.and_then(|origins| origins.get(&index))
+            else {
+                return Err(error(
+                    "future entry requires its actual retained generated-family permit",
+                ));
+            };
+            let future = permit
+                .future()
+                .ok_or_else(|| error("future entry has an unrelated ordinary factory permit"))?;
+            future.require_current(&facts.types, body).map_err(error)?;
+            if future.entry() != Some(key) {
+                return Err(error("future entry changed its actual generated operation"));
+            }
+            facts.checked_future_definition(key.future).map_err(error)?;
+            continue;
+        }
+        if matches!(
             body.owner,
             Owner::AsyncBody { .. } | Owner::AsyncApplication { .. } | Owner::FutureEntry { .. }
-        )
-    }) {
-        return Err(Error {
-            node: Some(body.source.root_site()),
-            message: "future body requires its checked generated runtime entry before native lowering",
-        });
+        ) {
+            return Err(error(
+                "future body requires its checked generated runtime entry before native lowering",
+            ));
+        }
+        let Owner::Function { definition, .. } = body.owner else {
+            continue;
+        };
+        let Some(function) = facts
+            .function_indices
+            .get(&definition)
+            .and_then(|&index| facts.functions.get(index))
+        else {
+            continue;
+        };
+        if facts
+            .authored_async_body(function)
+            .map_err(error)?
+            .is_none()
+        {
+            continue;
+        }
+        let Some(crate::borrow::incremental::Bridge::Factory(permit)) =
+            forwarding.and_then(|origins| origins.get(&index))
+        else {
+            return Err(error(
+                "async constructor requires its actual retained generated-family permit",
+            ));
+        };
+        let future = permit
+            .future()
+            .ok_or_else(|| error("async constructor has an unrelated ordinary factory permit"))?;
+        future.require_current(&facts.types, body).map_err(error)?;
+        if facts
+            .checked_future_definition(future.future())
+            .map_err(error)?
+            != definition
+        {
+            return Err(error(
+                "async constructor permit belongs to another actual source function",
+            ));
+        }
     }
     Ok(())
 }
@@ -231,14 +307,15 @@ impl<'a> Context<'a> {
     fn build(
         facts: &'a Declarations,
         layouts: &'a mut Layouts,
-        (bodies, destruction, plans): (
+        (bodies, destruction, plans, forwarding): (
             Bodies<'a>,
             Option<&'a crate::borrow::destruction::Proof>,
             Option<Plans>,
+            Option<&crate::borrow::incremental::Forwarding>,
         ),
         roots: super::roots::Selected<'_>,
     ) -> Result<Program, Error> {
-        require_runtime_entries(bodies.as_slice())?;
+        require_runtime_entries(facts, bodies.as_slice(), forwarding)?;
         let source = bodies
             .as_slice()
             .first()
@@ -300,7 +377,7 @@ impl<'a> Context<'a> {
             abort: None,
             remainders: [None; 2],
         };
-        context.index_bodies().map_err(|message| Error {
+        context.index_bodies(facts).map_err(|message| Error {
             node: source,
             message,
         })?;
@@ -448,11 +525,35 @@ impl<'a> Context<'a> {
         }
         super::runtime_cleanup::retained_header(retained, body)
     }
-    fn index_bodies(&mut self) -> Result<(), &'static str> {
+    fn index_bodies(&mut self, facts: &Declarations) -> Result<(), &'static str> {
         for (index, body) in self.bodies.as_slice().iter().enumerate() {
+            if let Owner::FutureEntry { key, .. } = body.owner {
+                let growth = crate::support::retained::Growth::map::<Generated, usize>(
+                    self.adapter_indices.len(),
+                    self.adapter_indices.capacity(),
+                    1,
+                );
+                facts.charge_caller_inputs(
+                    growth.work.saturating_add(1),
+                    growth.bytes.saturating_add(size_of::<Self>()),
+                )?;
+                if body.instance.is_some()
+                    || key.operation != crate::types::future::Operation::Drop
+                    || self
+                        .adapter_indices
+                        .insert(Generated::Future(key), index)
+                        .is_some()
+                {
+                    return Err("duplicate or inconsistent checked future Drop entry");
+                }
+                continue;
+            }
             if let Owner::ClosureAdapter { adapter, .. } = body.owner {
                 if body.instance != Some(adapter.instance())
-                    || self.adapter_indices.insert(adapter, index).is_some()
+                    || self
+                        .adapter_indices
+                        .insert(Generated::Adapter(adapter), index)
+                        .is_some()
                 {
                     return Err("duplicate or inconsistent checked receiver adapter");
                 }
@@ -619,7 +720,13 @@ impl<'a> Context<'a> {
         }
         if matches!(
             self.types.kind(ty),
-            Some(Kind::Tuple(_) | Kind::Array { .. } | Kind::Adt(..) | Kind::Closure { .. })
+            Some(
+                Kind::Tuple(_)
+                    | Kind::Array { .. }
+                    | Kind::Adt(..)
+                    | Kind::Closure { .. }
+                    | Kind::Future { .. }
+            )
         ) && ty != TypeId::UNIT
         {
             let layout = self.layout(ty)?;
