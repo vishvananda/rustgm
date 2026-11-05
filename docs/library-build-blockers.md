@@ -6,7 +6,8 @@ clears FusedIterator in19.6464s/375opens while preserving all722 hashes, six pin
 fifteen values, options/capAllow and finite limits. The
 [FusedIterator checkpoint](parallel/fused-iterator-checkpoint.md) passes17 new
 source/body outcomes and2 actual native observers. All54 paired timings and exact
-outputs remain retained, including unresolved4096 wall-time overhead/noise.
+outputs remain retained, including the noisy initial4096 wall ratio;24 CPU/wall follow-up observations
+do not reproduce it (.9805/.9805).
 Source admission still exits1; no original core/alloc/std artifact or whole PA
 after24 is complete. Current/predecessor pins are8d4a4ff3/5fc8c666;292c is retired.
 Private vocabulary update and full successor CI remain pending.

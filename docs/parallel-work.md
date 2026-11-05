@@ -5,8 +5,9 @@ source/body outcomes,4 exact public tests and2 actual native observers.
 Immutable CLI8d4a4ff3 advances unchanged original core to **LIB-171, AsyncIterator**,
 async_iter/async_iter.rs17/file108:636, in19.6464s/375opens. Current/predecessor pins
 are8d4a4ff3/5fc8c666;292c96f2 is retired/pruned. All54 timing/output observations
-remain retained, including unresolved4096 B/A1.229 with noisy AA.786; no speedup
-or regression-absence claim. Full42131050558 is running on the preceding AsyncFn
+remain retained, including the initial4096 B/A1.229 with noisy AA.786. A further24
+CPU/wall observations give.9805/.9805; the first ratio does not reproduce. No broad
+speedup or regression-absence claim. Full42131050558 is running on the preceding AsyncFn
 checkpoint, with the later private vocabulary adjustment pending successor CI.
 All722 hashes, configuration/options/cap/limits remain; core still exits1 and
 no original artifact or whole PA after24 is complete.

@@ -36,10 +36,13 @@ This is source admission, without a checked/emitted original library artifact.
 Exclusive immutable A/A+ABBA preserves54 observations and byte-exact output
 identity. Candidate medians are0.249s/1.046s for ordinary1024/4096 and0.0546s for
 source Deref; paired B/A ratios are.925/1.229/1.066. Calibration is noisy
-(4096 AA.786,1024 AA up to1.204). The23%4096 ratio remains an unresolved
-regression/noise observation, not an absence-of-regressions or speedup claim.
-No measurements are discarded. A stable-host follow-up remains part of the next
-meaningful performance checkpoint. Current/predecessor pins are8d4a4ff3/5fc8c666;
+(4096 AA.786,1024 AA up to1.204). A targeted four-block A/A+ABBA follow-up adds24
+raw observations and process CPU times:4096 paired wall/CPU B/A.9805/.9805, with
+candidate medians0.8993s/0.8988s and identical outputs. The initial23%wall ratio
+does not reproduce. The changed source-role admission functions also do not run
+on this source-free ordinary path. This supports timing variability as an
+explanation, without a general speedup or absence-of-regressions claim. Every
+initial and follow-up observation remains retained. Current/predecessor pins are8d4a4ff3/5fc8c666;
 292c96f2 is explicitly retired/pruned after preserving its earlier receipts.
 
 The old private unimplemented-vocabulary test now excludes the independently
