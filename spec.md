@@ -1260,6 +1260,17 @@ granting CTFE eligibility. Cursor CTFE, nominal const cleanup, broader ABI and
 authenticated body/local transport remain explicit requirements in the
 [runtime checkpoint](docs/parallel/source-va-runtime.md).
 
+Explicit integer-repr fieldless enums reuse the existing scalar-object ABI
+adapters. A single paid layout query authenticates the actual nominal enum,
+representation, source/physical variants, discriminants, zero fields, tag offset,
+size and alignment. Its primitive result is storage only: preserve source enum
+identity, validity, Copy/Drop and call permissions. Never reuse a zero-excluded
+validity Carrier for this fact. Reuse existing per-type Context representation,
+C Plans and composite-node caches so repeated values/signatures do not repeat
+the variant walk. Construction still writes the real selected variant tag.
+Payload/default-repr/custom-alignment/wider transparent profiles remain named
+requirements. See the [enum checkpoint](docs/parallel/source-c-enum.md).
+
 Private callable preparation consumes the actual reserved declared/callable
 signature pair and complete outer-to-inner formal scope, including unused
 parameters and inherited Self. Share the ordinary callable registration kernel;

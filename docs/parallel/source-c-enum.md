@@ -54,3 +54,14 @@ payload enums, custom alignment and transparent wrappers around enums are
 independently Rust-positive and retain explicit finite-profile C ABI requirements;
 they are not semantic parity negatives. Full private/release checks remain CI.
 No source standard declaration, body or attribute was changed to gain permission.
+
+Root integrated this checkpoint as24017802a. Gate1793882531853175386 passes15
+exact joined enum/cursor/future/receiver/arithmetic tests, strict selected Clippy,
+architecture/formatting and all125 PA12 text cases in40.05s. Native successor
+1793882285131786426 passes the three enum and seven source cursor observers,
+plus all125 text cases, in34.56s. The first joined gate was123/125 solely because
+tag-fieldless/tag-i8 LowIR now returns/passes real scalar tags instead of hidden
+object pointers. Both unchanged sources independently pass Rust and current
+CPP native execution before the scoped generator refresh. Only those two
+sidecars and their tracked provenance batch changed; the complete generated
+diff retains the real tag stores, owned slots and signed conversions.

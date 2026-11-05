@@ -1,0 +1,28 @@
+{
+  "state": "focused regular/native/text qualification; full successor pending",
+  "compiler_commit": "24017802a",
+  "gate_production_sources_unchanged": true,
+  "receipts": [
+    {
+      "path": "obj/qualification/fast/1793882531853175386/receipt.json",
+      "sha256": "4db2ea3d877ce5f00c6f2599f96adc30d13df480f5d525a8af1d8e51faef39a3"
+    },
+    {
+      "path": "obj/qualification/fast/1793882285131786426/receipt.json",
+      "sha256": "a3be37dc092f15baf9dd27ad6df8a5a16ded8715c0ba9855334279bfab5d7db6"
+    },
+    {
+      "path": "obj/qualification/fast/1793881876785573352/receipt.json",
+      "sha256": "215f4507b28e66059d0bee83329952ca080b5d92b5f59e4d8888977b8dba7c9f"
+    },
+    {
+      "path": "obj/parallel/c-enum-join-v1/reference-repair-v1/receipt.json",
+      "sha256": "d37b99c142d0f66314a14be3ed44207520f7f219fa2190cf35dac826b45b9992"
+    },
+    {
+      "path": "pa12/reference-batches/1793882225980400115-e19ca21e7508.json",
+      "sha256": "e19ca21e7508d277d7f8a45b3d801c698d050433831b3e67e031b2b8e5e33cb1"
+    }
+  ],
+  "interpretation": "First gate has all selected semantic checks passing and2 legitimate scalar ABI text changes. Independent native2 precedes scoped generation; successor full125 and native10 pass. Original-source core, general performance and full private checks remain distinct."
+}
