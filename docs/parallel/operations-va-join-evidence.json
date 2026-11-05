@@ -229,5 +229,24 @@
     "True authored future constructor/poll/drop/state/await/cancellation and compiler async destruction",
     "Broader source nominal/body/policy/associated-family metadata and full core publication/CLI routing",
     "All original core/alloc/std artifacts, real consumers and complete assignment/release requirements"
-  ]
+  ],
+  "ci_replay_repair": {
+    "failed_run": 42001319657,
+    "failed_head": "55beb24aa6d5b33842bb196989a16c8020e05e28",
+    "failure": "E0308 discharged_replay.rs117 old CallSafety mutation vs PendingKind",
+    "repair": "Discharged(UnsafeFunction), same published-context forgery; no production changes",
+    "file": "dev/tests/invariants/discharged_replay.rs",
+    "sha256": "4f2e84f80b3a128eabd10590a112fe6bc0bf3fe30c98f4059d938d9ef6107c70",
+    "public_gate": {
+      "path": "obj/qualification/fast/1793870663630771044/receipt.json",
+      "sha256": "ab97c19d6c4b799a4e58475fc392a242934919f01ed6448c66400c3bb6e84320",
+      "tests": 2,
+      "seconds": 38.08
+    },
+    "failed_log": {
+      "path": "obj/parallel/operations-va-join-v1/ci42001319657/failed.log",
+      "sha256": "3a7de80ed62da96edf56264b7e2c9cc0865b3484f5cfcca90ae8352245541e0a"
+    },
+    "private_execution": "pending successor CI"
+  }
 }

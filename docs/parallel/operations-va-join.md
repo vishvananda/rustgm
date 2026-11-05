@@ -66,3 +66,13 @@ actual c_variadic/VaList/CVoid prerequisites and real cursor operations; the oth
 worker implements real authored future constructor/poll/drop with distinct owner
 and checked-template provenance. Both retain full body/const/borrow/ABI/runtime,
 await/cancellation/recursive cleanup and authenticated metadata requirements.
+
+Full successor42001319657 on55beb24aa failed before runtime qualification: an
+older private safety replay test still assigned CallSafety directly after the
+Index context representation became PendingKind. The corrected opponent uses
+Discharged(UnsafeFunction), preserving the intended conflicting published
+context rather than creating an unrelated unpaid Index obligation. Compiler
+production code, fixtures, expected results and generated CLI bytes are unchanged.
+Focused idxops2, formatting, architecture and strict selected Clippy pass in
+38.08s (1793870663630771044). Actual private replay/recipe execution and full
+release/debug/native/independent successor remain required.

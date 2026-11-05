@@ -114,7 +114,8 @@ fn discharged_replay_and_failed_work_cannot_change_published_safety() -> Result 
         .ok_or("actual pending calls")?;
     assert_eq!(saved.rows.len(), 1);
     let mut changed = saved;
-    changed.rows[0].kind = CallSafety::UnsafeFunction;
+    changed.rows[0].kind =
+        super::super::super::safety::PendingKind::Discharged(CallSafety::UnsafeFunction);
     checker.state.call_types.safety = Some(changed);
     assert!(checker.publish_calls(&solved).is_err());
     pending(&mut checker, &solved, handle)?;

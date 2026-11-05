@@ -21,6 +21,13 @@ There is no broad speedup/regression-absence claim. New v11 private cold/warm/
 forgery/Original-demand tests await full CI. Full41986761978 onf800 is terminal
 success with every gate; the joined full successor is separate.
 
+Full successor42001319657 on55beb24aa failed at the initial lint compilation:
+one older private replay mutation needs PendingKind::Discharged after the Index
+representation change. The corrected test preserves its exact conflicting
+published-context intent; no compiler/fixture/output changes. Focused2 plus
+strict selected Clippy/format/audit pass in38.08s; full private/runtime successor
+remains required, including all3 recipe opponents.
+
 No whole PA after24 or original core/alloc/std artifact is complete. Real future
 constructor/state/poll/await/Pin/cancellation/destruction, varargs feature/init/
 read/copy/end/cleanup/CTFE, remaining source/runtime roles, wider layouts and full
