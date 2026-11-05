@@ -115,6 +115,10 @@ the 0/1 comparison carrier for atomic min/max. Ordinary casts and wrapping masks
 retain their semantics. Available vector/debug/equivalent-entry vocabulary
 requires actual typed producer, feature, ABI and identity proofs before use.
 Do not import C++ aliasing or overflow assumptions from source type names.
+Reified intrinsic bodies consume the same typed parameter representation as
+their callers. A canonical Ordering with a scalar byte ABI is already a value;
+only an actual object parameter supplies a tag address. Preserve hidden result
+offsets and all dynamic order validation in compare-exchange and retry adapters.
 No Rust frontend phase may communicate by printing and reparsing token, syntax,
 type or diagnostic text. After an in-process backend becomes available, pass
 typed LowIR directly. All backend-visible facts must have a LowIR spelling.
@@ -527,6 +531,18 @@ destruction; neither Context nor Output becomes an owned capture. Keep
 Future method, checked Original, generated body or execution permission. The
 [storage prerequisite](docs/parallel/future-runtime-data-checkpoint.md) retains
 constructor/poll/drop/await/cancellation and transport as required work.
+
+Selected future applications consume the real checked deferred original through
+the pipeline coordinator. Authenticate its current store, source body, full
+capture frame and output before materialization. Keep actual defining clauses
+as formation debts; never add the callee's requirements to caller assumptions.
+One application owns its materialized body and optional nonempty debt payload.
+Actual source Future selection uses the existing nominal formation frontier and
+full Self type; Output selection authenticates the complete projection, parent,
+member schema and family arguments. Storage identity and Future evidence remain
+separate from constructor, poll, drop and cancellation execution authority. See
+the [selected application](docs/parallel/future-runtime-selected-checkpoint.md)
+and [selector](docs/parallel/future-runtime-selector-checkpoint.md) checkpoints.
 
 The SourceCore expansion view is `--emit-expanded-crate` (or its count form),
 which runs actual configured expansion and binding completion. The PA7
@@ -1758,6 +1774,26 @@ as success; preserve the allocation-free ordinary path. The
 [defining cleanup checkpoint](docs/pa31-defining-cleanup-preparation.md) records
 the focused profile and its remaining projected, composite, quantified and
 imported-owner obligations.
+
+Actual source const destruction shares the existing heterogeneous trait-goal
+frontier for genuine const Drop and substituted semantic fields. Preserve the
+one initialization result and cleanup plan through preparation and loan proof;
+do not replay initialization or clone the CFG to recover cleanup activity.
+Eligibility and physical cleanup activity are distinct: a partially moved Struct
+still needs its whole-type eligibility proof. Bind transient completion to the
+current arenas, immutable body, verifier, Copy evidence and environment. Recheck
+only contracts with newly selected lifetime debts before normal loan completion.
+Publish a checked future arena witness only after every staged loan proof passes.
+
+Native instance demand may mark an authenticated Function materialization as
+runtime after the real checked-caller join. Its original and separate CTFE
+materializations retain their const context; exported instantiation does not
+inherit that native-only choice. Active interpreter cleanup stays fenced before
+Code publication until actual destructor scheduling and execution exist. Selected
+enum leaves, initializer-owned eligibility and complete VaList cleanup remain
+required. The [source destruction](docs/parallel/source-const-drop.md) and
+[runtime evidence](docs/parallel/source-const-runtime-evidence.json) distinguish
+these completed proof joins from the remaining execution work.
 
 The [combined producer/defining checkpoint](docs/source-defining-producer-checkpoint.md)
 qualifies this boundary alongside raw source-provider collection, including the

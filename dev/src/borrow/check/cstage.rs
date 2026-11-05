@@ -84,9 +84,17 @@ pub(super) fn prepare<'body, 'slot, S: std::hash::BuildHasher>(
             order.as_ref(),
         )
     }
-    .map_err(|e| error(e.message))?;
-    let plan = destruction::select_reusing(catalog, &init, &mut reused.transitions)
-        .map_err(|e| error(e.message))?;
+    .map_err(|e| Error {
+        node: Some(e.node),
+        message: e.message.into(),
+    })?;
+    let plan =
+        destruction::select_reusing(catalog, &init, &mut reused.transitions).map_err(|e| {
+            Error {
+                node: Some(e.node),
+                message: e.message.into(),
+            }
+        })?;
     Ok(Prepared {
         facts: init,
         plan,
@@ -132,7 +140,10 @@ pub(super) fn finish<S: std::hash::BuildHasher>(
         contract,
         &prepared.plan,
     )
-    .map_err(|e| error(e.message))?;
+    .map_err(|e| Error {
+        node: Some(e.node),
+        message: e.message.into(),
+    })?;
     if let Some(slot) = prepared.slot
         && let std::borrow::Cow::Owned(storage) = prepared.facts.storage
     {

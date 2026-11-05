@@ -82,7 +82,7 @@ pub(crate) fn templates<'a>(
     templates: &'a Templates,
     contexts: &'a borrow::templates::Contexts,
     custom: &[ItemId],
-) -> Result<(borrow::templates::Checked<'a>, Vec<Contract>)> {
+) -> std::result::Result<(borrow::templates::Checked<'a>, Vec<Contract>), borrow::Error> {
     let required = facts.source_bindings.is_some()
         && templates
             .iter()
@@ -108,8 +108,7 @@ pub(crate) fn templates<'a>(
                 custom,
                 |ty, field| body::drops::nominal_position(facts, ty, field),
             )
-        })
-        .map_err(|e| e.message)?;
+        })?;
         return Ok((checked, contracts.bodies));
     }
     facts.types.arena_identity();
@@ -129,8 +128,7 @@ pub(crate) fn templates<'a>(
                 contexts,
                 custom,
             )
-        })
-        .map_err(|e| e.message)?;
+        })?;
         (batch, contracts.bodies)
     };
     loop {
@@ -138,31 +136,31 @@ pub(crate) fn templates<'a>(
             batch.next(environment, &|ty, field| {
                 body::drops::nominal_position(facts, ty, field)
             })
-        })
-        .map_err(|e| e.message)?;
+        })?;
         let Some(mut row) = row else {
             break;
         };
         if row.active()? {
             let (plan, contract) = row.input();
-            body::defining_cleanups::select(facts, plan.body(), contract, plan.eligibility())?;
+            let error = |message| borrow::Error {
+                node: Some(plan.body().source.into()),
+                message,
+            };
+            body::defining_cleanups::select(facts, plan.body(), contract, plan.eligibility())
+                .map_err(error)?;
             contract
-                .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)?;
+                .prepare_outlives(&mut facts.types, &mut facts.lifetimes.nominal_requirements)
+                .map_err(|e| error(e.into()))?;
             let mut queries = crate::types::outlives::Queries::new(
                 &facts.types,
                 &facts.lifetimes.nominal_requirements,
                 &facts.lifetimes.callables,
             );
-            row.refresh(&facts.types, &facts.lifetimes.variances, &mut queries)
-                .map_err(|e| e.message)?;
+            row.refresh(&facts.types, &facts.lifetimes.variances, &mut queries)?;
         }
-        with_environment(facts, &mut copies, |environment| row.finish(environment))
-            .map_err(|e| e.message)?;
+        with_environment(facts, &mut copies, |environment| row.finish(environment))?;
     }
-    batch
-        .finish(&facts.types)
-        .map(|checked| (checked, inputs))
-        .map_err(|e| e.message)
+    batch.finish(&facts.types).map(|checked| (checked, inputs))
 }
 pub(super) fn recheck(
     facts: &mut Declarations,

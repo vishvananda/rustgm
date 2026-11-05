@@ -4,7 +4,7 @@ mod comparison;
 mod extremum;
 mod retry;
 use crate::{
-    lower::context::Context,
+    lower::context::{Context, Representation},
     lowir::{
         atomic::{LoadOrder, RmwOrder, StoreOrder},
         builder::Builder,
@@ -95,14 +95,12 @@ impl Context<'_> {
         } else {
             None
         };
-        let tag = builder.load(
-            Type::U8,
-            Operand::Parameter(if intrinsic == Intrinsic::AtomicLoad {
-                1
-            } else {
-                2
-            }),
-        )?;
+        let index = if intrinsic == Intrinsic::AtomicLoad {
+            1
+        } else {
+            2
+        };
+        let tag = self.atomic_order_parameter(&mut builder, instance, index, index)?;
         for order in Ordering::ALL {
             if !intrinsic.atomic_order_valid(order) {
                 continue;
@@ -128,6 +126,42 @@ impl Context<'_> {
         builder.call(signature, Type::Void, Operand::Symbol(abort), &[])?;
         builder.terminate(Terminator::Unreachable)?;
         builder.finish()
+    }
+    /// The canonical Ordering follows the same scalar/object ABI as its callers.
+    fn atomic_order_parameter(
+        &mut self,
+        builder: &mut Builder,
+        instance: crate::types::instance::Instance,
+        logical: u32,
+        physical: u32,
+    ) -> Result<Value, &'static str> {
+        let Some(Kind::FunctionItem { signature, .. }) = self.types.kind(instance.ty()) else {
+            return Err("atomic ordering requires its actual callable item");
+        };
+        let Some(Kind::Function { parameters, .. }) = self.types.kind(signature) else {
+            return Err("atomic ordering requires its actual callable signature");
+        };
+        let ty = self
+            .types
+            .list(parameters)
+            .and_then(|parameters| parameters.get(logical as usize))
+            .copied()
+            .ok_or("atomic ordering parameter is absent")?;
+        let operand = Operand::Parameter(physical);
+        match self.representation(ty)? {
+            Representation::ScalarObject(storage)
+                if storage.ty == Type::U8 && storage.bytes == 1 && storage.align == 1 =>
+            {
+                Ok(Value {
+                    ty: Type::U8,
+                    operand,
+                })
+            }
+            Representation::Object(storage) if storage.bytes == 1 && storage.align == 1 => {
+                builder.load(Type::U8, operand)
+            }
+            _ => Err("canonical atomic ordering has an invalid byte-tag ABI"),
+        }
     }
 }
 fn atomic_operation(

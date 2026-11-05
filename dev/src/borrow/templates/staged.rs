@@ -114,14 +114,12 @@ impl<'a> Batch<'a> {
         }
         Ok(())
     }
-    pub(crate) fn finish(
-        mut self,
-        types: &crate::types::Store,
-    ) -> Result<Checked<'a>, Error> {
+    pub(crate) fn finish(mut self, types: &crate::types::Store) -> Result<Checked<'a>, Error> {
         if self.cursor != self.state.regions.bodies.len() || self.state.loans.len() != self.cursor {
             return Err(error("staged cleanup proofs have incomplete body coverage"));
         }
-        self.state.future_arena = super::future_arena(types, self.templates, &self.state.anonymous)?;
+        self.state.future_arena =
+            super::future_arena(types, self.templates, &self.state.anonymous)?;
         self.state.regions.bodies.truncate(self.templates.len());
         self.state.loans.truncate(self.templates.len());
         if let Some(proof) = self.proof_contracts {
@@ -154,8 +152,11 @@ impl Row<'_, '_> {
             self.updated.get_or_insert_with(|| self.original.clone()),
         )
     }
-    pub(crate) fn active(&self) -> Result<bool, &'static str> {
-        self.plan.active_const()
+    pub(crate) fn active(&self) -> Result<bool, Error> {
+        self.plan.active_const().map_err(|message| Error {
+            node: Some(self.plan.body().source.into()),
+            message: message.into(),
+        })
     }
     pub(crate) fn refresh(
         &mut self,

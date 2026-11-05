@@ -11,6 +11,7 @@ pub fn check(body: &Function, maximum: Option<bool>) -> Result<(), Error> {
     assert!(matches!(body.slots[0], Storage::Scalar(Type::U32)));
     let (mut seeds, mut exchanges, mut scratch, mut tags, mut stores) = (0, 0, 0, 0, 0);
     let mut orders = rustgm::support::hash::HashSet::default();
+    let mut tag_values = rustgm::support::hash::HashSet::default();
     for instruction in &body.instructions {
         match instruction.operation {
             Operation::AtomicLoad {
@@ -39,12 +40,15 @@ pub fn check(body: &Function, maximum: Option<bool>) -> Result<(), Error> {
                 assert!(matches!(address, Operand::Slot(id) if id.0 == 0));
                 scratch += 1;
             }
-            Operation::Load {
-                ty: Type::U8,
-                address,
-                ..
-            } => {
-                assert!(matches!(address, Operand::Parameter(2)));
+            Operation::Compare {
+                predicate: Predicate::Eq,
+                left,
+                right: Operand::Literal(tag),
+            } if left.ty == Type::U8 && matches!(left.operand, Operand::Parameter(2)) => {
+                let Literal::Integer(tag) = body.literals[tag.0 as usize] else {
+                    return Err("ordering comparison requires an integer tag".into());
+                };
+                tag_values.insert(tag);
                 tags += 1;
             }
             Operation::Store { value, address, .. } => {
@@ -62,7 +66,8 @@ pub fn check(body: &Function, maximum: Option<bool>) -> Result<(), Error> {
             _ => {}
         }
     }
-    assert_eq!((seeds, exchanges, scratch, tags, stores), (5, 5, 5, 1, 5));
+    assert_eq!((seeds, exchanges, scratch, tags, stores), (5, 5, 5, 5, 5));
+    assert_eq!(tag_values, rustgm::support::hash::HashSet::from_iter(0..5));
     assert_eq!(
         orders,
         rustgm::support::hash::HashSet::from_iter([0, 2, 3, 4, 5])

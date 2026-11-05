@@ -53,8 +53,8 @@ impl Context<'_> {
             Operand::Slot(expected),
         )?;
         let pointer = builder.address(Operand::Slot(expected))?;
-        let success = builder.load(Type::U8, Operand::Parameter(4))?;
-        let failure = builder.load(Type::U8, Operand::Parameter(5))?;
+        let success = self.atomic_order_parameter(&mut builder, instance, 3, 4)?;
+        let failure = self.atomic_order_parameter(&mut builder, instance, 4, 5)?;
         for success_order in Ordering::ALL {
             for failure_order in Ordering::ALL {
                 let Some(ordering) = orders(success_order, failure_order) else {
