@@ -85,3 +85,21 @@ expected semantic result changes. The retained failed log is
 `obj/parallel/enum-deferred-join-v1/ci42039423759-failed.log`. No private, release,
 native or independent execution follows from this failed compile; complete
 successor qualification remains required.
+
+Full42041030327 on0f1b242fa passes all-target lint/architecture/harness and every
+public integration suite. Private results are2710 pass,1 fail,3 ignored: all25
+previously failed private cases now execute successfully except the assembly
+test's staged-fixture const-trait inventory assertion. Its actual provider has
+Destruct and Clone plus the new Index and IndexMut, so the assertion now requires
+four declarations before applying each one's library policy. Parser/cache-hit,
+source bodies, layout counts and negative outcomes are unchanged. No production
+change is needed for this remaining failure.
+
+The exact changed fixture continuation, layout and negative controls pass a
+2.51s guarded probe against the existing compiled library; its unchanged private
+cache-hit prefix is outside that probe and passed before the assertion in CI.
+`obj/parallel/enum-deferred-join-v1/asm-qualification-v3/receipt.json` and the
+adjacent `asm-qualification-binding.json` distinguish the probe from a full
+private run and bind the library/source differences. Initial probe import and
+private-method setup failures remain retained. Full successor execution of the
+corrected private assertion and later native/debug/independent gates is pending.

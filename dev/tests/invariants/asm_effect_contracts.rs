@@ -60,8 +60,9 @@ fn actual_templates_keep_one_parser_and_source_role_without_hot_node_growth() ->
     // Crate attributes remain at the actual crate root, before source declarations.
     actual = actual.replacen("#![feature(", "#![feature(decl_macro,staged_api,", 1);
     actual.insert_str(0, "#![unstable(feature=\"asm_fixture\",issue=\"none\")]\n");
-    // The independently authored foundation's const traits need their own policy.
-    assert_eq!(actual.matches("pub const trait").count(), 2);
+    // Actual Destruct/Clone and the Index/IndexMut foundation each retain their
+    // own declaration; all four const traits need staged library policy.
+    assert_eq!(actual.matches("pub const trait").count(), 4);
     actual = actual.replace(
         "pub const trait",
         "#[rustc_const_unstable(feature=\"asm_fixture\",issue=\"none\")]pub const trait",
