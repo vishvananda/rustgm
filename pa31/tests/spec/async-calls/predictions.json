@@ -1,0 +1,177 @@
+{
+  "status": "frozen before independent/candidate observation",
+  "pin": "88d9e12ae178fab0fb5cc050a94da85685d449ea",
+  "original": {
+    "path": "library/core/src/ops/async_function.rs",
+    "sha256": "fcda67887e19c20fd7b26db4a94ec7d5e42a38fcccac04cf16fad564e0b2ece1",
+    "destination": "original.rs"
+  },
+  "cases": [
+    {
+      "file": "whole.rs",
+      "sha256": "4b232e0fbcb084a6acbcb8d79b9408a6a96ddfb34ce6e444e8a875b108b1e1bd",
+      "expected_status": 0
+    },
+    {
+      "file": "unused-async_fn.rs",
+      "sha256": "6ced5f63f6d25b91724f23aa7e3dc97d45df6e75f06819ea7b54c90617a4048b",
+      "expected_status": 0
+    },
+    {
+      "file": "unused-async_fn_mut.rs",
+      "sha256": "313bf0a2c4c2228d9e0141656d4b0d1316376fb7c7f1295879a93627806ecbc6",
+      "expected_status": 0
+    },
+    {
+      "file": "unused-async_fn_once.rs",
+      "sha256": "14ac37eb6e4ce2b4bf20d8da5c4d22cb41a776216f6110388c610959719da5e2",
+      "expected_status": 0
+    },
+    {
+      "file": "unused-async_fn_kind_helper.rs",
+      "sha256": "c41dbc1f000cde90ff3885f4cd5b220ab92e2adfa08d126695252973c8ac9409",
+      "expected_status": 0
+    },
+    {
+      "file": "unused-async_fn_once_output.rs",
+      "sha256": "b2b356488bc897463b92407c23d2b222f75fc3838b03b4a3820c4f9fb8b260ac",
+      "expected_status": 0
+    },
+    {
+      "file": "unused-call_once_future.rs",
+      "sha256": "f13e22b51e015eb2feddbb09a33ce7811bb4a9a390ced91aa2effe7b218875aa",
+      "expected_status": 0
+    },
+    {
+      "file": "unused-call_ref_future.rs",
+      "sha256": "6471f92829fc61a02013f54f235f2d7b6cdd29dde01bb30be36cc1208dbdbfe3",
+      "expected_status": 0
+    },
+    {
+      "file": "unused-async_fn_kind_upvars.rs",
+      "sha256": "97d7b4122560ea16ad210a890204526fa46771ccca5b2ac03441f240cb979057",
+      "expected_status": 0
+    },
+    {
+      "file": "wrong-arity.rs",
+      "sha256": "63236348f47f4c309c238fc96d6c81b905183e07dfaa9936a8be5ebfcb9a90a3",
+      "expected_status": 1
+    },
+    {
+      "file": "wrong-target.rs",
+      "sha256": "6ab0a1a10a8d7b71735a5f65a06281ede9d08f03d97388c7594aaebe16a750a6",
+      "expected_status": 1
+    },
+    {
+      "file": "duplicate.rs",
+      "sha256": "f6e331c80d5fdcc13ab7257e1f0dc7043aeeb4f113f14713179120786bde546d",
+      "expected_status": 1
+    },
+    {
+      "file": "bad-body.rs",
+      "sha256": "36c0a76ca55d59b0a689a1998a535477410a88bb80379d832a76992fb80151aa",
+      "expected_status": 1
+    },
+    {
+      "file": "manual.rs",
+      "sha256": "0673bd6e293d3f96a42b46f9107fffab2cdb28cea3e13bb34972025fee9cfa13",
+      "expected_status": 0,
+      "native": "manual"
+    },
+    {
+      "file": "renamed.rs",
+      "sha256": "734eb52115f69d4bbf747b913578b8badbb0d6947cf3066438ead59206bfdb64",
+      "expected_status": 0
+    },
+    {
+      "file": "generic.rs",
+      "sha256": "b2aaab147152bc86656abed0c7aaa6cbb6deed4d94edb633f6afcc60703320e7",
+      "expected_status": 0,
+      "native": "generic"
+    },
+    {
+      "file": "wrong-output.rs",
+      "sha256": "2242a8db57e2cdc40c1426dc9612a8b01c4bab0c1c7206a772d653a9d2f3b4df",
+      "expected_status": 1
+    },
+    {
+      "file": "wrong-arguments.rs",
+      "sha256": "abbfb581609258ace1a915687ad01104c1f64cb1b8c181da774be8cd09e44c19",
+      "expected_status": 1
+    },
+    {
+      "file": "missing-parent.rs",
+      "sha256": "102eea487a45530bd36c9e2a6f9ffdf63efe421c9f2def217c8233ddd1a59805",
+      "expected_status": 1
+    },
+    {
+      "file": "unsafe-method.rs",
+      "sha256": "b8aa1da7b47a298d670dcdae09cc9182610958b1244c902546864de3f3627b52",
+      "expected_status": 1
+    },
+    {
+      "file": "ordinary.rs",
+      "sha256": "2844b66c4b12ff718bb7be7b22e1292d4bf6aba9cbf2e9d649caedb3f917f03e",
+      "expected_status": 0,
+      "native": "ordinary"
+    },
+    {
+      "file": "loan.rs",
+      "sha256": "f73005d1c31d213dc3d86645c5dca76a7b64fc96ff342df5f1061b93cb62f662",
+      "expected_status": 0,
+      "native": "loan"
+    },
+    {
+      "file": "escape.rs",
+      "sha256": "428cb199952c8511de8cc6e58ee1ca824e11b2dead385a8064fe9dcb5deed376",
+      "expected_status": 1
+    },
+    {
+      "file": "implicit-function.rs",
+      "sha256": "61360aa8e5583833abfcfb32b21fc681068aaf08b1579535e3f1b07f4cc18c4d",
+      "expected_status": 0,
+      "qualification": "required implicit callable implementation"
+    },
+    {
+      "file": "implicit-closure.rs",
+      "sha256": "3f9a58db4b72f202a2b9d73ae3b8b413f4e0a8f5e13d39c6286ac17bf9928d72",
+      "expected_status": 0,
+      "qualification": "required implicit closure implementation"
+    }
+  ],
+  "observers": {
+    "manual": {
+      "file": "manual.c",
+      "sha256": "1c733d477d5f7cca1b9bf23280eaca00ef0b4e43008d53d115a091e9458e66ee",
+      "expected_stdout": "23 17 11 29 31\n"
+    },
+    "generic": {
+      "file": "generic.c",
+      "sha256": "3245381bff0aa1c6f541935d96db328eb01439f919456b0a84325f4ede8e9043",
+      "expected_stdout": "23 17 11\n"
+    },
+    "ordinary": {
+      "file": "ordinary.c",
+      "sha256": "dfc41708afffba442c784d26efea7974fab5d2513897fb272cf5c824d2f69825",
+      "expected_stdout": "23\n"
+    },
+    "loan": {
+      "file": "loan.c",
+      "sha256": "3cebd33382c99bfeadf8e60906d85405bdd6356ae89d0ba7446dbc84aaa424d5",
+      "expected_stdout": "23\n"
+    }
+  },
+  "foundation_correction": {
+    "prior": "reference-v1",
+    "reason": "Original core has an implicit prelude; supply a real source prelude selector with Sized for unchanged nested reference impls. Library-only async_fn_traits cannot be requested when the defining source feature is absent; unused minimal/ordinary controls omit that request. No authored body or predicted acceptance changed."
+  },
+  "const_foundation_correction": {
+    "prior": "reference-v2",
+    "reason": "Add exact pinned function.rs const-trait stability attributes on ordinary Fn/Mut/Once setup. All authored async/input bodies and predicted statuses unchanged."
+  },
+  "reference": {
+    "packet": "obj/parallel/async-call-source-v1/reference-v3/receipt.json",
+    "sha256": "9d1e78e65d44672c6e955a7541c10dd330debf6afa6b02799b078ada201b9dd8",
+    "outcomes": "All25 metadata predictions and four native observers pass pinned independent Rust1.98; earlier foundation failures retained."
+  }
+}

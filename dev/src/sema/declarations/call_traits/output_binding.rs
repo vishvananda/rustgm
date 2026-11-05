@@ -88,29 +88,7 @@ impl Checker<'_> {
             );
         }
         let (definition, member) =
-            if let Some(reserved) = self.report.resolution.source_bindings.as_deref() {
-                let definition = reserved
-                    .language(crate::support::bindings::LangItem::FnOnce)
-                    .ok_or_else(|| self.error(source, "missing source FnOnce declaration"))?;
-                let member = reserved
-                    .language(crate::support::bindings::LangItem::FnOnceOutput)
-                    .filter(|m| m.parent == Some(definition.definition))
-                    .ok_or_else(|| self.error(source, "missing source FnOnce Output"))?;
-                (definition.definition, member.definition)
-            } else {
-                let declaration = self
-                    .report
-                    .resolution
-                    .builtin_traits
-                    .callable(CallTrait::FnOnce)
-                    .ok_or_else(|| self.error(source, "missing FnOnce declaration"))?;
-                (
-                    declaration.definition,
-                    declaration
-                        .output
-                        .ok_or_else(|| self.error(source, "missing FnOnce Output"))?,
-                )
-            };
+            self.call_output_identity(source, crate::resolve::model::DefId(parent.item.0))?;
         let trait_application = self
             .facts
             .types
@@ -127,6 +105,44 @@ impl Checker<'_> {
                 trait_application,
                 arguments: GenericArgs::EMPTY,
             }),
+        )
+    }
+
+    fn call_output_identity(
+        &self,
+        source: NodeKey,
+        parent: crate::resolve::model::DefId,
+    ) -> Result<(crate::resolve::model::DefId, crate::resolve::model::DefId), Error> {
+        Ok(
+            if let Some(reserved) = self.report.resolution.source_bindings.as_deref() {
+                use crate::support::bindings::LangItem;
+                let (owner, output) = if self.declared_async_callable(parent) {
+                    (LangItem::AsyncFnOnce, LangItem::AsyncFnOnceOutput)
+                } else {
+                    (LangItem::FnOnce, LangItem::FnOnceOutput)
+                };
+                let definition = reserved.language(owner).ok_or_else(|| {
+                    self.error(source, "missing source callable once declaration")
+                })?;
+                let member = reserved
+                    .language(output)
+                    .filter(|m| m.parent == Some(definition.definition))
+                    .ok_or_else(|| self.error(source, "missing source callable Output"))?;
+                (definition.definition, member.definition)
+            } else {
+                let declaration = self
+                    .report
+                    .resolution
+                    .builtin_traits
+                    .callable(CallTrait::FnOnce)
+                    .ok_or_else(|| self.error(source, "missing FnOnce declaration"))?;
+                (
+                    declaration.definition,
+                    declaration
+                        .output
+                        .ok_or_else(|| self.error(source, "missing FnOnce Output"))?,
+                )
+            },
         )
     }
 }

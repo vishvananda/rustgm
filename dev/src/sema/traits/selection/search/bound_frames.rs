@@ -19,6 +19,19 @@ impl Search<'_> {
         universes: &mut HashMap<u32, ScopeId>,
         charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
     ) -> Result<Frame, String> {
+        self.clause_frame_types::<CHARGED>(&mut facts.types, context, request, universes, charge)
+    }
+
+    /// The same scoped clause engine can borrow the original source payer
+    /// independently of the type arena; neither borrow supplies proof.
+    pub(super) fn clause_frame_types<const CHARGED: bool>(
+        &mut self,
+        types: &mut crate::types::Store,
+        context: &mut Context,
+        request: ClauseRequest,
+        universes: &mut HashMap<u32, ScopeId>,
+        charge: &impl Fn(usize, usize) -> Result<(), &'static str>,
+    ) -> Result<Frame, String> {
         let mut first = self.query.allocations.reserve_scoped();
         let (predicate, scope) = match request.clause {
             Clause::UnstableFeature(_) => {
@@ -33,8 +46,7 @@ impl Search<'_> {
                         "quantified family conditions require scoped sized requirements".into(),
                     );
                 }
-                let value = facts
-                    .types
+                let value = types
                     .quantified(id)
                     .ok_or("missing family condition binder")?;
                 if CHARGED && self.query.scopes.is_none() {
@@ -66,9 +78,9 @@ impl Search<'_> {
                     scope
                 };
                 let (predicate, next, work) = if CHARGED {
-                    scopes.open_counted(facts, scope, value.predicate, first, charge)?
+                    scopes.open_counted(types, scope, value.predicate, first, charge)?
                 } else {
-                    scopes.open(facts, scope, value.predicate, first)?
+                    scopes.open_types(types, scope, value.predicate, first)?
                 };
                 context.account_work(work).map_err(inference)?;
                 first = next;
@@ -82,11 +94,11 @@ impl Search<'_> {
         }
         let child = (|| {
             let mut substitution =
-                Instantiation::new(&mut child_context, &facts.types, &[]).map_err(inference)?;
+                Instantiation::new(&mut child_context, types, &[]).map_err(inference)?;
             let goal = child_context
-                .instantiate_predicate(&mut facts.types, predicate, &mut substitution)
+                .instantiate_predicate(types, predicate, &mut substitution)
                 .map_err(inference)?;
-            Frame::new(facts, &mut child_context, &goal, first)
+            Frame::with_types(types, &mut child_context, &goal, first)
         })();
         if CHARGED {
             charge(child_context.steps, 0)?;

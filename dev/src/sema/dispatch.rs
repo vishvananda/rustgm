@@ -335,6 +335,15 @@ impl Dispatcher {
                     self.selected.insert(ty, ty);
                     return Ok(ty);
                 }
+                objects::Method::AsyncCallable { selected, proof } => {
+                    let selected = selected.retain_method(
+                        facts,
+                        crate::types::instance::Instance::new(&facts.types, ty)?,
+                    )?;
+                    self.extend_evidence(proof)?;
+                    self.selected.insert(ty, selected.ty());
+                    return Ok(selected.ty());
+                }
                 objects::Method::Language { descriptor, proof } => {
                     objects::retain_language(facts, method, ty, descriptor)?;
                     self.extend_evidence(proof)?;

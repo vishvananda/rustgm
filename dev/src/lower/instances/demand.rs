@@ -359,6 +359,23 @@ impl Budget {
             .map_err(|e| diagnostic(report, e.node, e.message))?;
         Ok((index, family))
     }
+    fn lending_factory(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        templates: &Checked<'_>,
+        program: &mut proof::Builder,
+        selected: crate::sema::lending_methods::Method,
+    ) -> Result<(usize, BodyKey), Error> {
+        let (body, input) = body::lending::build(report, facts, selected)?;
+        let family = body.key();
+        self.enter(family, &body, &input)
+            .map_err(|e| diagnostic(report, Some(body.source.into()), e.into()))?;
+        let index = program
+            .push_lending_factory(facts, templates, selected, body, input, &mut self.bytes)
+            .map_err(|e| diagnostic(report, e.node, e.message))?;
+        Ok((index, family))
+    }
     fn enter(&mut self, item: BodyKey, body: &Body, input: &Contract) -> Result<(), &'static str> {
         let active = self.active.entry(item).or_default();
         if *active >= 128 {
@@ -595,7 +612,7 @@ impl Traversal<'_> {
         templates: &Checked<'_>,
         request: (Instance, body::ir::ProofSite, Caller),
     ) -> Result<(), Error> {
-        let (instance, source, caller) = request;
+        let (instance, source, _) = request;
         let error = |e: &str| diagnostic(report, Some(source), e.into());
         require_future_runtime(facts, instance).map_err(error)?;
         let fn_pointer =
@@ -632,47 +649,31 @@ impl Traversal<'_> {
                 .push_work(facts, &mut self.work, Work::Leave(family))
                 .map_err(error)?;
             index
+        } else if let Some(selected) = facts
+            .primitive_methods
+            .as_deref()
+            .and_then(|registry| registry.get_lending(instance))
+        {
+            if self.instances.contains_key(&instance) {
+                return Ok(());
+            }
+            let (index, family) = self.budget.lending_factory(
+                report,
+                facts,
+                templates,
+                &mut self.program,
+                selected,
+            )?;
+            self.instances.insert(instance, index);
+            self.budget
+                .push_work(facts, &mut self.work, Work::Leave(family))
+                .map_err(error)?;
+            index
         } else {
-            let Some(selected) = self
-                .ordinary
-                .select(facts, templates, instance)
-                .map_err(error)?
-            else {
+            let Some(index) = self.ordinary_instance(report, facts, templates, request)? else {
                 return Ok(());
             };
-            if let Some((template, input)) = selected.template {
-                if self.instances.contains_key(&instance) {
-                    return Ok(());
-                }
-                self.budget
-                    .enter(selected.family, &template.body, input)
-                    .map_err(error)?;
-                let request = Specialization {
-                    template,
-                    input,
-                    instance,
-                    source,
-                    caller,
-                };
-                let index = specialize(
-                    report,
-                    facts,
-                    templates,
-                    &mut self.program,
-                    &mut self.cleanup,
-                    request,
-                )?;
-                self.instances.insert(instance, index);
-                self.budget
-                    .push_work(facts, &mut self.work, Work::Leave(selected.family))
-                    .map_err(error)?;
-                index
-            } else {
-                let Some(index) = selected.concrete(&mut self.visited).map_err(error)? else {
-                    return Ok(());
-                };
-                index
-            }
+            index
         };
         self.dependencies.schedule(
             report,
@@ -683,6 +684,54 @@ impl Traversal<'_> {
             &mut self.budget,
         )?;
         Ok(())
+    }
+    /// Ordinary source demand keeps its checked template and lexical caller;
+    /// compiler factories use their separate validated body/permit path above.
+    fn ordinary_instance(
+        &mut self,
+        report: &Report,
+        facts: &mut Declarations,
+        templates: &Checked<'_>,
+        request: (Instance, body::ir::ProofSite, Caller),
+    ) -> Result<Option<usize>, Error> {
+        let (instance, source, caller) = request;
+        let error = |message: &str| diagnostic(report, Some(source), message.into());
+        let Some(selected) = self
+            .ordinary
+            .select(facts, templates, instance)
+            .map_err(error)?
+        else {
+            return Ok(None);
+        };
+        let Some((template, input)) = selected.template else {
+            return selected.concrete(&mut self.visited).map_err(error);
+        };
+        if self.instances.contains_key(&instance) {
+            return Ok(None);
+        }
+        self.budget
+            .enter(selected.family, &template.body, input)
+            .map_err(error)?;
+        let request = Specialization {
+            template,
+            input,
+            instance,
+            source,
+            caller,
+        };
+        let index = specialize(
+            report,
+            facts,
+            templates,
+            &mut self.program,
+            &mut self.cleanup,
+            request,
+        )?;
+        self.instances.insert(instance, index);
+        self.budget
+            .push_work(facts, &mut self.work, Work::Leave(selected.family))
+            .map_err(error)?;
+        Ok(Some(index))
     }
 }
 

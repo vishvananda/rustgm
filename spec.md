@@ -544,6 +544,17 @@ separate from constructor, poll, drop and cancellation execution authority. See
 the [selected application](docs/parallel/future-runtime-selected-checkpoint.md)
 and [selector](docs/parallel/future-runtime-selector-checkpoint.md) checkpoints.
 
+Actual AsyncFn/AsyncFnMut/AsyncFnOnce evidence retains its own source hierarchy,
+complete tuple arguments, real returned Future and Output/family proof. Reuse the
+ordinary callable matcher, scoped substitution and shared solver frontier; do not
+alias these roles to Fn. A selected method descriptor is data correspondence in
+the existing paid registry, not body authority. Invocation wrappers must consume
+the authenticated full rust-call method, map all inputs/results through one paid
+lifetime fold, unpack the real tuple and invoke the actual receiver. The ordinary
+body/region/loan/cleanup/lowering pipeline proves execution. Keep authored async
+lending, state/poll/drop and imported body authority separate. See the
+[finite callable checkpoint](docs/parallel/lending-callable-checkpoint.md).
+
 The SourceCore expansion view is `--emit-expanded-crate` (or its count form),
 which runs actual configured expansion and binding completion. The PA7
 `--emit-expanded` session has no source context and must reject source options.

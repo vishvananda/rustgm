@@ -73,6 +73,8 @@ mod interpolation;
 mod inventory_ordering;
 #[path = "../../keyed_parameters.rs"]
 mod keyed_parameters;
+#[path = "../../lending_calls.rs"]
+mod lending_calls;
 #[path = "../../lexer.rs"]
 mod lexer;
 #[path = "../../literal_values.rs"]
