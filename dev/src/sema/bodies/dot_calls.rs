@@ -368,6 +368,9 @@ impl Checker<'_> {
             let key = self.key(*node);
             let actual = solved.types[pending.actual.0 as usize];
             let expected = solved.types[pending.expected.0 as usize];
+            if self.source_scalar_assignment_solved(*node, solved)? {
+                continue;
+            }
             if self.source_scalar_unary_type(*node, actual)
                 || self.source_scalar_binary_solved(*node, actual, solved)?
                 || self.source_scalar_comparison_solved(*node, solved)?

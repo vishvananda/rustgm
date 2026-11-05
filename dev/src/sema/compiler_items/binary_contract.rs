@@ -18,6 +18,21 @@ pub(in crate::sema) fn source_binary(
     site: NodeKey,
     hook: Hook,
 ) -> Result<SourceBinary, Error> {
+    if hook.assignment() {
+        return Err(Declarations::error(
+            report,
+            site,
+            "value binary descriptor does not accept assignment hooks",
+        ));
+    }
+    selected(report, facts, site, hook)
+}
+fn selected(
+    report: &Report,
+    facts: &mut Declarations,
+    site: NodeKey,
+    hook: Hook,
+) -> Result<SourceBinary, Error> {
     let operator = requested_operator(report, site, hook)?;
     let actual = operator_contract::query(report, facts, site, operator)?;
     Ok(SourceBinary {
@@ -49,6 +64,16 @@ fn requested_operator(report: &Report, site: NodeKey, hook: Hook) -> Result<Oper
         Hook::BitXor => Operator::BitXor,
         Hook::BitAnd => Operator::BitAnd,
         Hook::Shr => Operator::Shr,
+        Hook::AddAssign => Operator::AddAssign,
+        Hook::SubAssign => Operator::SubAssign,
+        Hook::MulAssign => Operator::MulAssign,
+        Hook::DivAssign => Operator::DivAssign,
+        Hook::RemAssign => Operator::RemAssign,
+        Hook::BitXorAssign => Operator::BitXorAssign,
+        Hook::BitAndAssign => Operator::BitAndAssign,
+        Hook::BitOrAssign => Operator::BitOrAssign,
+        Hook::ShlAssign => Operator::ShlAssign,
+        Hook::ShrAssign => Operator::ShrAssign,
         Hook::Div => Operator::Div,
         _ => {
             return Err(Declarations::error(
@@ -64,3 +89,19 @@ fn requested_operator(report: &Report, site: NodeKey, hook: Hook) -> Result<Oper
 #[cfg(test)]
 #[path = "../../../tests/invariants/binary_authority.rs"]
 mod tests;
+
+pub(in crate::sema) fn source_assignment(
+    report: &Report,
+    facts: &mut Declarations,
+    site: NodeKey,
+    hook: Hook,
+) -> Result<SourceBinary, Error> {
+    if !hook.assignment() {
+        return Err(Declarations::error(
+            report,
+            site,
+            "assignment descriptor requires an actual compound hook",
+        ));
+    }
+    selected(report, facts, site, hook)
+}

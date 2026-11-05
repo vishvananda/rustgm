@@ -1,0 +1,2071 @@
+{
+  "schema": 1,
+  "frozen_before_candidate": true,
+  "declarations": [
+    {
+      "role": "AddAssign",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/arith.rs",
+      "source_sha256": "a495c8c9838be09ce2c239462153a6221b6f471aa2efe43ce437e83581636c91",
+      "slice_text_start": 21978,
+      "slice_text_end": 22618,
+      "slice_sha256": "2261495ae63bd5fa5052ba5009419241bd9f2fd25bc9cf62717354c208a2a4dd"
+    },
+    {
+      "role": "SubAssign",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/arith.rs",
+      "source_sha256": "a495c8c9838be09ce2c239462153a6221b6f471aa2efe43ce437e83581636c91",
+      "slice_text_start": 24052,
+      "slice_text_end": 24699,
+      "slice_sha256": "f00a14f7cd5a53973a3e0822cf2aff50afdb80f056792f20f4300c5ab4590a0a"
+    },
+    {
+      "role": "MulAssign",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/arith.rs",
+      "source_sha256": "a495c8c9838be09ce2c239462153a6221b6f471aa2efe43ce437e83581636c91",
+      "slice_text_start": 25884,
+      "slice_text_end": 26529,
+      "slice_sha256": "c87fe2d89ad1ed093116837a8bc1e1bc4339fa3d7c05e1c35ad6fcbac1161693"
+    },
+    {
+      "role": "DivAssign",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/arith.rs",
+      "source_sha256": "a495c8c9838be09ce2c239462153a6221b6f471aa2efe43ce437e83581636c91",
+      "slice_text_start": 27708,
+      "slice_text_end": 28350,
+      "slice_sha256": "a0e0c610947d507b6b3ce37a34c4d274fb5cc2c90cea5bfa685f6c883fc6937d"
+    },
+    {
+      "role": "RemAssign",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/arith.rs",
+      "source_sha256": "a495c8c9838be09ce2c239462153a6221b6f471aa2efe43ce437e83581636c91",
+      "slice_text_start": 29575,
+      "slice_text_end": 30250,
+      "slice_sha256": "0c7290d7cba875b73fe99f675882b524d4a591dec264e52723305c5c5cf93e15"
+    },
+    {
+      "role": "BitXorAssign",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/bit.rs",
+      "source_sha256": "4f0dab1c9c85c900d231e29d3f0c5e55c7b1fe87a762e48c4988d64bd1955d57",
+      "slice_text_start": 24548,
+      "slice_text_end": 25420,
+      "slice_sha256": "c51ef3a1c61e709c0d76cc2cc0d46f68bdb3f11fcb00b2972b532b9d8a37c451"
+    },
+    {
+      "role": "BitAndAssign",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/bit.rs",
+      "source_sha256": "4f0dab1c9c85c900d231e29d3f0c5e55c7b1fe87a762e48c4988d64bd1955d57",
+      "slice_text_start": 20110,
+      "slice_text_end": 20982,
+      "slice_sha256": "b9a0b2fd221a849d30ebe4f9f66ec7a4c0fe32127d9c7f99277fa8f6c756078c"
+    },
+    {
+      "role": "BitOrAssign",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/bit.rs",
+      "source_sha256": "4f0dab1c9c85c900d231e29d3f0c5e55c7b1fe87a762e48c4988d64bd1955d57",
+      "slice_text_start": 22336,
+      "slice_text_end": 23207,
+      "slice_sha256": "6279f01c9cf6fb2eac3576a3a948731ada9a01943de6b159d7bf3603230cdeac"
+    },
+    {
+      "role": "ShlAssign",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/bit.rs",
+      "source_sha256": "4f0dab1c9c85c900d231e29d3f0c5e55c7b1fe87a762e48c4988d64bd1955d57",
+      "slice_text_start": 26552,
+      "slice_text_end": 27256,
+      "slice_sha256": "54633463e2bd0d37e4418e3f86b966f7118ebc2998ea8e4707b10bb04451eb90"
+    },
+    {
+      "role": "ShrAssign",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ops/bit.rs",
+      "source_sha256": "4f0dab1c9c85c900d231e29d3f0c5e55c7b1fe87a762e48c4988d64bd1955d57",
+      "slice_text_start": 28994,
+      "slice_text_end": 29697,
+      "slice_sha256": "8c9aacb2795d51f0d38e1ddf3ba67d2cde06d40beea83771d32f8c50d4bc2408"
+    },
+    {
+      "role": "DropGlue foundation",
+      "source": "/home/vishvananda/rustgm-sources/rust-1.98.0-88d9e12ae178fab0fb5cc050a94da85685d449ea/library/core/src/ptr/mod.rs",
+      "source_sha256": "f7b3e71d9e9246762c38641c6c1a49079265782aab6deaa537b43665b418f029",
+      "slice_text_start": 40347,
+      "slice_text_end": 40566,
+      "slice_sha256": "acc7c597a8a17b6f3fe40d13fc63769d0cff54815ea25c174d4d9f119821fd38"
+    }
+  ],
+  "foundation_sha256": "ae55aa8e78c6b93ab024fd6b35e056bf3f5218c2a389e622ffe8b1ef07af34c9",
+  "cases": [
+    {
+      "file": "runtime.rs",
+      "sha256": "7908550325c40edc9c3740c4652a7429b104c982a5e50972c8eb204f9dcb5455",
+      "reference": {
+        "accepted": true,
+        "cause": "custom/default mutable receiver executes actual RHS field write",
+        "emit": "obj"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "custom/default mutable receiver executes actual RHS field write",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "add_assign-single.rs",
+      "sha256": "f3812843866d2d1400a68fa6b758642e617701358da5aaf8e74eacb32fb27407",
+      "reference": {
+        "accepted": true,
+        "cause": "isolated actual role and implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "isolated actual role and implementation",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "add_assign-wrong-rhs.rs",
+      "sha256": "3a993051b8a2991c2ff34037a870fecdc1fc6cb6a0c7c11374d178cc0f90e1ca",
+      "reference": {
+        "accepted": false,
+        "cause": "wrong Rhs type or unsatisfied implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "wrong Rhs type or unsatisfied implementation",
+        "category": "rhs"
+      }
+    },
+    {
+      "file": "add_assign-wrong-output.rs",
+      "sha256": "93b8efc5eb5e9e338b98311a18322d607308d235571e7be452363c4b6ae6b5c3",
+      "reference": {
+        "accepted": false,
+        "cause": "implementation result disagrees with required unit",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "implementation result disagrees with required unit",
+        "category": "output"
+      }
+    },
+    {
+      "file": "add_assign-wrong-receiver.rs",
+      "sha256": "9a150aeeb6df2be670f09a3debd0c6c0a4b3edd912e40b30244dd0a0a2f91739",
+      "reference": {
+        "accepted": false,
+        "cause": "implementation receiver disagrees with mutable trait receiver",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "implementation receiver disagrees with mutable trait receiver",
+        "category": "receiver"
+      }
+    },
+    {
+      "file": "add_assign-missing-impl.rs",
+      "sha256": "8ef52b305e03e4f3691bcafffa61278b95bb6cbeba400b9aa04b4656cfc5c00c",
+      "reference": {
+        "accepted": false,
+        "cause": "no implementation for actual operands",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "no implementation for actual operands",
+        "category": "implementation"
+      }
+    },
+    {
+      "file": "add_assign-missing-role.rs",
+      "sha256": "8887313ac0df194268405a6f431f9a4df23e8c533cef4120f7a006884cbc5cbe",
+      "reference": {
+        "accepted": false,
+        "cause": "same spelling has no canonical assignment role",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "same spelling has no canonical assignment role",
+        "category": "role"
+      }
+    },
+    {
+      "file": "add_assign-unsafe.rs",
+      "sha256": "dc57d01a1bd9ae106aeb59f9da5d4c42c8e656fbebcc51927430bb44eda93075",
+      "reference": {
+        "accepted": false,
+        "cause": "unsafe operation outside unsafe context",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "unsafe operation outside unsafe context",
+        "category": "unsafe"
+      }
+    },
+    {
+      "file": "add_assign-immutable.rs",
+      "sha256": "71bd1aa9c3ccc0b3e49bcee528bd0c2820d3ab218d00c3ee690cf917040435fd",
+      "reference": {
+        "accepted": false,
+        "cause": "mutable receiver cannot borrow immutable place",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "mutable receiver cannot borrow immutable place",
+        "category": "mutable"
+      }
+    },
+    {
+      "file": "add_assign-unused-default.rs",
+      "sha256": "823fadc2bd1d345e327dab697cbb4e68c3129850076dab0dfb8ccf3e89db2fc2",
+      "reference": {
+        "accepted": true,
+        "cause": "valid unused alternate Rhs default",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "valid unused alternate Rhs default",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "add_assign-unused-provided.rs",
+      "sha256": "a45bb7ff1504672078b78020e92a846c52826f1dd1f937c012ad5beaf947bd57",
+      "reference": {
+        "accepted": true,
+        "cause": "valid unused provided method remains ordinary source",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "valid unused provided method remains ordinary source",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "provided-demand.rs",
+      "sha256": "66170fb86689562a3e5ba9156cc29ca57a7181f9af0ddf46f38eea37d0011696",
+      "reference": {
+        "accepted": true,
+        "cause": "actual provided loop body selected by empty implementation; metadata only",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "positive",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "sub_assign-single.rs",
+      "sha256": "d90c0e0ae1c95f9b0cc05bfbe55be00a5fb1bcd40eb0912e145c34e22d2a8faf",
+      "reference": {
+        "accepted": true,
+        "cause": "isolated actual role and implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "isolated actual role and implementation",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "sub_assign-wrong-rhs.rs",
+      "sha256": "7b0684fd7a8fba482030c41454fb9a1c896a79ee9663d95c533bf3757ce39c4f",
+      "reference": {
+        "accepted": false,
+        "cause": "wrong Rhs type or unsatisfied implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "wrong Rhs type or unsatisfied implementation",
+        "category": "rhs"
+      }
+    },
+    {
+      "file": "sub_assign-wrong-output.rs",
+      "sha256": "398e641d6ca32e9f35e1c499e6e408b5ddc1d739a309d290f91b55e5783124b3",
+      "reference": {
+        "accepted": false,
+        "cause": "implementation result disagrees with required unit",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "implementation result disagrees with required unit",
+        "category": "output"
+      }
+    },
+    {
+      "file": "sub_assign-wrong-receiver.rs",
+      "sha256": "66de4aa7f00865b69582f8c94bdaf278bdef508422bda9f5976ce904b13dba68",
+      "reference": {
+        "accepted": false,
+        "cause": "implementation receiver disagrees with mutable trait receiver",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "implementation receiver disagrees with mutable trait receiver",
+        "category": "receiver"
+      }
+    },
+    {
+      "file": "sub_assign-missing-impl.rs",
+      "sha256": "164eee39ddb4d72faed66a1d32212019fcc20b0b34bd65629fe5ca80bb19d8ef",
+      "reference": {
+        "accepted": false,
+        "cause": "no implementation for actual operands",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "no implementation for actual operands",
+        "category": "implementation"
+      }
+    },
+    {
+      "file": "sub_assign-missing-role.rs",
+      "sha256": "c566696a2f61d7c26fe745f5cfd663b15af368ce5b20feb16e2e7bd675ffa7c2",
+      "reference": {
+        "accepted": false,
+        "cause": "same spelling has no canonical assignment role",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "same spelling has no canonical assignment role",
+        "category": "role"
+      }
+    },
+    {
+      "file": "sub_assign-unsafe.rs",
+      "sha256": "671502d94faeb91bff8c15fa5605e1a94292e5590d64bbe69bc576cded70051b",
+      "reference": {
+        "accepted": false,
+        "cause": "unsafe operation outside unsafe context",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "unsafe operation outside unsafe context",
+        "category": "unsafe"
+      }
+    },
+    {
+      "file": "sub_assign-immutable.rs",
+      "sha256": "9cd02414308f3fbfed1d2ef22764d170d411ffdf725a6f2b4c7be274d00373db",
+      "reference": {
+        "accepted": false,
+        "cause": "mutable receiver cannot borrow immutable place",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "mutable receiver cannot borrow immutable place",
+        "category": "mutable"
+      }
+    },
+    {
+      "file": "sub_assign-unused-default.rs",
+      "sha256": "4e41485e7505e5df03cb1ef3168c87428fceb90ce74526a7cb47e6d991464b51",
+      "reference": {
+        "accepted": true,
+        "cause": "valid unused alternate Rhs default",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "valid unused alternate Rhs default",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "sub_assign-unused-provided.rs",
+      "sha256": "259495b36d79a502dffb84bc6e4b4e5a38762b098303d9d0324f522ed97d1987",
+      "reference": {
+        "accepted": true,
+        "cause": "valid unused provided method remains ordinary source",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "valid unused provided method remains ordinary source",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "mul_assign-single.rs",
+      "sha256": "d4a49fff0d63e347765b6e38516be77ca15efc0fa67d1fbb3862dce9b14362d8",
+      "reference": {
+        "accepted": true,
+        "cause": "isolated actual role and implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "isolated actual role and implementation",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "mul_assign-wrong-rhs.rs",
+      "sha256": "eb7c82cc82eb5d359c04eb9c2bccc19f547321c04b466e3a545a92345991c0b2",
+      "reference": {
+        "accepted": false,
+        "cause": "wrong Rhs type or unsatisfied implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "wrong Rhs type or unsatisfied implementation",
+        "category": "rhs"
+      }
+    },
+    {
+      "file": "mul_assign-wrong-output.rs",
+      "sha256": "cde1c688bd4df57b55005138780ebd80913a83f1ed95abf7fe90037048e4bf67",
+      "reference": {
+        "accepted": false,
+        "cause": "implementation result disagrees with required unit",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "implementation result disagrees with required unit",
+        "category": "output"
+      }
+    },
+    {
+      "file": "mul_assign-wrong-receiver.rs",
+      "sha256": "edf2efc330881ee6301e6fdfd4bec1ae64b668bcaaf18095a148dea02e14785f",
+      "reference": {
+        "accepted": false,
+        "cause": "implementation receiver disagrees with mutable trait receiver",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "implementation receiver disagrees with mutable trait receiver",
+        "category": "receiver"
+      }
+    },
+    {
+      "file": "mul_assign-missing-impl.rs",
+      "sha256": "84c9ca1fd40458d74eebccecaa2eb57d2d25d39b5f74739952e8135afc138958",
+      "reference": {
+        "accepted": false,
+        "cause": "no implementation for actual operands",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "no implementation for actual operands",
+        "category": "implementation"
+      }
+    },
+    {
+      "file": "mul_assign-missing-role.rs",
+      "sha256": "8da4c644774d36f4a68373346ddd178170be25352cc627fd31ce0a8e59d898d9",
+      "reference": {
+        "accepted": false,
+        "cause": "same spelling has no canonical assignment role",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "same spelling has no canonical assignment role",
+        "category": "role"
+      }
+    },
+    {
+      "file": "mul_assign-unsafe.rs",
+      "sha256": "32768363bb84e44ed6b6fcbdd756a23224b8b44b820f99c6adf43e325a1ffb0d",
+      "reference": {
+        "accepted": false,
+        "cause": "unsafe operation outside unsafe context",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "unsafe operation outside unsafe context",
+        "category": "unsafe"
+      }
+    },
+    {
+      "file": "mul_assign-immutable.rs",
+      "sha256": "7dba34e25a95b191761a13be12020c44095e689041dfc927bf0f81e6ee9fca9d",
+      "reference": {
+        "accepted": false,
+        "cause": "mutable receiver cannot borrow immutable place",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "mutable receiver cannot borrow immutable place",
+        "category": "mutable"
+      }
+    },
+    {
+      "file": "mul_assign-unused-default.rs",
+      "sha256": "db4f12df29709d81ff28832c7087529fb74412f99f8cab99c35ac76849b3428a",
+      "reference": {
+        "accepted": true,
+        "cause": "valid unused alternate Rhs default",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "valid unused alternate Rhs default",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "mul_assign-unused-provided.rs",
+      "sha256": "7bcc8179758b1fc0878f9a3ce67e2dd90f020161adbf5741f2bccf359747d9f4",
+      "reference": {
+        "accepted": true,
+        "cause": "valid unused provided method remains ordinary source",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "valid unused provided method remains ordinary source",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "div_assign-single.rs",
+      "sha256": "3c5e4f657b02c1bab83c5cc4d116e7d460fa0dfda2278364b914ccac13077070",
+      "reference": {
+        "accepted": true,
+        "cause": "isolated actual role and implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "isolated actual role and implementation",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "div_assign-wrong-rhs.rs",
+      "sha256": "4c847273f82643fb037a206a0c9edbf221bdf103cc059dac921adc2b67a1fef9",
+      "reference": {
+        "accepted": false,
+        "cause": "wrong Rhs type or unsatisfied implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "wrong Rhs type or unsatisfied implementation",
+        "category": "rhs"
+      }
+    },
+    {
+      "file": "div_assign-wrong-output.rs",
+      "sha256": "aad3bd01de23e0a7f9b5c2a5f5d4ebe7303b1dcaa646c135317a8cffda832ba3",
+      "reference": {
+        "accepted": false,
+        "cause": "implementation result disagrees with required unit",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "implementation result disagrees with required unit",
+        "category": "output"
+      }
+    },
+    {
+      "file": "div_assign-wrong-receiver.rs",
+      "sha256": "ee67ea6daca1edb03746f62f37da930379daf8f6e7fd399a52ce468b89e7d966",
+      "reference": {
+        "accepted": false,
+        "cause": "implementation receiver disagrees with mutable trait receiver",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "implementation receiver disagrees with mutable trait receiver",
+        "category": "receiver"
+      }
+    },
+    {
+      "file": "div_assign-missing-impl.rs",
+      "sha256": "6651ee724e33d7219a0d3d8ee2a46ee231b049612a020bd16d6de47fa2f1a683",
+      "reference": {
+        "accepted": false,
+        "cause": "no implementation for actual operands",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "no implementation for actual operands",
+        "category": "implementation"
+      }
+    },
+    {
+      "file": "div_assign-missing-role.rs",
+      "sha256": "8145cf7c8c789ce409113971ea0f5e6dac31fb552f3f071bbc486b27e9e2ef40",
+      "reference": {
+        "accepted": false,
+        "cause": "same spelling has no canonical assignment role",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "same spelling has no canonical assignment role",
+        "category": "role"
+      }
+    },
+    {
+      "file": "div_assign-unsafe.rs",
+      "sha256": "c8c93277afc6866f12830815a675246b2e04888f4cb61f534d88e1aa4401ac18",
+      "reference": {
+        "accepted": false,
+        "cause": "unsafe operation outside unsafe context",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "unsafe operation outside unsafe context",
+        "category": "unsafe"
+      }
+    },
+    {
+      "file": "div_assign-immutable.rs",
+      "sha256": "635fe0a9ac3ac043fa225f6dd04340335a959a96ebf686b817a900949bfcf849",
+      "reference": {
+        "accepted": false,
+        "cause": "mutable receiver cannot borrow immutable place",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "mutable receiver cannot borrow immutable place",
+        "category": "mutable"
+      }
+    },
+    {
+      "file": "div_assign-unused-default.rs",
+      "sha256": "cb7a5cce086389abccdc167815bc420a236494e54cbaa6dc2825815855b705e0",
+      "reference": {
+        "accepted": true,
+        "cause": "valid unused alternate Rhs default",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "valid unused alternate Rhs default",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "div_assign-unused-provided.rs",
+      "sha256": "cda96aa0a85131de6342ca18a13e364027593016e7f4953b6e65c99b3310ee23",
+      "reference": {
+        "accepted": true,
+        "cause": "valid unused provided method remains ordinary source",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "valid unused provided method remains ordinary source",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "rem_assign-single.rs",
+      "sha256": "12f954cd93b593c2d7bfde6f61806825ab0e1447d8e32ae8f5433842957aab94",
+      "reference": {
+        "accepted": true,
+        "cause": "isolated actual role and implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "isolated actual role and implementation",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "rem_assign-wrong-rhs.rs",
+      "sha256": "6913a9efe8f0789b1383673c5aae94c27c1989520fb0319232ed7a4f4f38dd96",
+      "reference": {
+        "accepted": false,
+        "cause": "wrong Rhs type or unsatisfied implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "wrong Rhs type or unsatisfied implementation",
+        "category": "rhs"
+      }
+    },
+    {
+      "file": "rem_assign-wrong-output.rs",
+      "sha256": "7fcf2d8a096a0375b12cdbcf7756863620b4203e422aa331beff2424561fe129",
+      "reference": {
+        "accepted": false,
+        "cause": "implementation result disagrees with required unit",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "implementation result disagrees with required unit",
+        "category": "output"
+      }
+    },
+    {
+      "file": "rem_assign-wrong-receiver.rs",
+      "sha256": "33cfdbffc713acd7d1ae0772a549cf5f76f90f1fa37bb192d1fc02721e32448e",
+      "reference": {
+        "accepted": false,
+        "cause": "implementation receiver disagrees with mutable trait receiver",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "implementation receiver disagrees with mutable trait receiver",
+        "category": "receiver"
+      }
+    },
+    {
+      "file": "rem_assign-missing-impl.rs",
+      "sha256": "67f7e9b34cd4b006d324143d8fb0314f66262fbc28a4b0234a3d18dcb0fcdbb6",
+      "reference": {
+        "accepted": false,
+        "cause": "no implementation for actual operands",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "no implementation for actual operands",
+        "category": "implementation"
+      }
+    },
+    {
+      "file": "rem_assign-missing-role.rs",
+      "sha256": "2e72ff199f02f84d3f290dfadff767656e461cee4b7651a92a72e9aab67f59a7",
+      "reference": {
+        "accepted": false,
+        "cause": "same spelling has no canonical assignment role",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "same spelling has no canonical assignment role",
+        "category": "role"
+      }
+    },
+    {
+      "file": "rem_assign-unsafe.rs",
+      "sha256": "552cfcc2b774861adb1aac501f2feaa0df500d7b284bf2f64a3606cc3daefb24",
+      "reference": {
+        "accepted": false,
+        "cause": "unsafe operation outside unsafe context",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "unsafe operation outside unsafe context",
+        "category": "unsafe"
+      }
+    },
+    {
+      "file": "rem_assign-immutable.rs",
+      "sha256": "8f91b93b90611c721c01185adc9a47529502eb8dc93a95386e6314f9ce5040ce",
+      "reference": {
+        "accepted": false,
+        "cause": "mutable receiver cannot borrow immutable place",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "mutable receiver cannot borrow immutable place",
+        "category": "mutable"
+      }
+    },
+    {
+      "file": "rem_assign-unused-default.rs",
+      "sha256": "032f9c577b3ad9c8ce094b50c4b15c6f60557609f7ac6213b6e44ae6db19d77b",
+      "reference": {
+        "accepted": true,
+        "cause": "valid unused alternate Rhs default",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "valid unused alternate Rhs default",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "rem_assign-unused-provided.rs",
+      "sha256": "a37a9e61a3cbae524dfa9249087bf33e0d3f5fc7492a0cbd836ed09cfe6a402f",
+      "reference": {
+        "accepted": true,
+        "cause": "valid unused provided method remains ordinary source",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "valid unused provided method remains ordinary source",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "bitxor_assign-single.rs",
+      "sha256": "4c120e7234d5a92304bd1fd393ae6d9cb5a648f38af473317dc407d1c84342b9",
+      "reference": {
+        "accepted": true,
+        "cause": "isolated actual role and implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "isolated actual role and implementation",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "bitxor_assign-wrong-rhs.rs",
+      "sha256": "d3c28264e8b76eea99e306d904127b79f698bd1633674eeab5592f25120484e8",
+      "reference": {
+        "accepted": false,
+        "cause": "wrong Rhs type or unsatisfied implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "wrong Rhs type or unsatisfied implementation",
+        "category": "rhs"
+      }
+    },
+    {
+      "file": "bitxor_assign-wrong-output.rs",
+      "sha256": "d53ab062b716e9aed82fb18baec3b6d99cfd7a18eab4caf39d6d9cef889515f7",
+      "reference": {
+        "accepted": false,
+        "cause": "implementation result disagrees with required unit",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "implementation result disagrees with required unit",
+        "category": "output"
+      }
+    },
+    {
+      "file": "bitxor_assign-wrong-receiver.rs",
+      "sha256": "bbc5ed50826c778f1861a81ab0fc9efe5be4160aa631340d41a23bf74040d26e",
+      "reference": {
+        "accepted": false,
+        "cause": "implementation receiver disagrees with mutable trait receiver",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "implementation receiver disagrees with mutable trait receiver",
+        "category": "receiver"
+      }
+    },
+    {
+      "file": "bitxor_assign-missing-impl.rs",
+      "sha256": "db266f0ec8386393aaa69bf22fc4d18093e445c75ac611f9a1fa664274e0f5d7",
+      "reference": {
+        "accepted": false,
+        "cause": "no implementation for actual operands",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "no implementation for actual operands",
+        "category": "implementation"
+      }
+    },
+    {
+      "file": "bitxor_assign-missing-role.rs",
+      "sha256": "8f4e4097d7d662fc8c1e173a325f187c8c7639621831f764aa9dc25e09331847",
+      "reference": {
+        "accepted": false,
+        "cause": "same spelling has no canonical assignment role",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "same spelling has no canonical assignment role",
+        "category": "role"
+      }
+    },
+    {
+      "file": "bitxor_assign-unsafe.rs",
+      "sha256": "6f5d8de8561298583f2b6b64e4a3a0b4e62b1b38120f52603eeaf207c90827ee",
+      "reference": {
+        "accepted": false,
+        "cause": "unsafe operation outside unsafe context",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "unsafe operation outside unsafe context",
+        "category": "unsafe"
+      }
+    },
+    {
+      "file": "bitxor_assign-immutable.rs",
+      "sha256": "621ad1f5979a6e7e6fe97bee480cffb6657df4bfa5747b2654673f18da2c779a",
+      "reference": {
+        "accepted": false,
+        "cause": "mutable receiver cannot borrow immutable place",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "mutable receiver cannot borrow immutable place",
+        "category": "mutable"
+      }
+    },
+    {
+      "file": "bitxor_assign-unused-default.rs",
+      "sha256": "320a803325d6327a53bca8105e6b9f32f99c72756f25a4179ea4b17d73063433",
+      "reference": {
+        "accepted": true,
+        "cause": "valid unused alternate Rhs default",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "valid unused alternate Rhs default",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "bitxor_assign-unused-provided.rs",
+      "sha256": "7d0dd6bc61c60003ce805a9a432b5440127515e6d9be3efacd76387fb481c19f",
+      "reference": {
+        "accepted": true,
+        "cause": "valid unused provided method remains ordinary source",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "valid unused provided method remains ordinary source",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "bitand_assign-single.rs",
+      "sha256": "21e905d9220ad6317af5ee01542a57fbad004dd76edefb07a9818d11752a6865",
+      "reference": {
+        "accepted": true,
+        "cause": "isolated actual role and implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "isolated actual role and implementation",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "bitand_assign-wrong-rhs.rs",
+      "sha256": "9d6a63baf0cf4a79cc4c467f9e30900753e13bd578e3b00cfa9cf7fa7dc6c2ef",
+      "reference": {
+        "accepted": false,
+        "cause": "wrong Rhs type or unsatisfied implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "wrong Rhs type or unsatisfied implementation",
+        "category": "rhs"
+      }
+    },
+    {
+      "file": "bitand_assign-wrong-output.rs",
+      "sha256": "e6a2e0508208896da6df1905b5a7238c81117f06189ad7253720827049451f1f",
+      "reference": {
+        "accepted": false,
+        "cause": "implementation result disagrees with required unit",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "implementation result disagrees with required unit",
+        "category": "output"
+      }
+    },
+    {
+      "file": "bitand_assign-wrong-receiver.rs",
+      "sha256": "649b1d59241492cc9fbe769e30fb7523c3253e361c525fa4a809777044825833",
+      "reference": {
+        "accepted": false,
+        "cause": "implementation receiver disagrees with mutable trait receiver",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "implementation receiver disagrees with mutable trait receiver",
+        "category": "receiver"
+      }
+    },
+    {
+      "file": "bitand_assign-missing-impl.rs",
+      "sha256": "46a1a8184745513d240e85560731452d2089fbcc486a92f0986de4065d176bae",
+      "reference": {
+        "accepted": false,
+        "cause": "no implementation for actual operands",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "no implementation for actual operands",
+        "category": "implementation"
+      }
+    },
+    {
+      "file": "bitand_assign-missing-role.rs",
+      "sha256": "be0f16fc4304898d79555e1086c937b6909194876025a7d31ffee3fe22bfd848",
+      "reference": {
+        "accepted": false,
+        "cause": "same spelling has no canonical assignment role",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "same spelling has no canonical assignment role",
+        "category": "role"
+      }
+    },
+    {
+      "file": "bitand_assign-unsafe.rs",
+      "sha256": "82f97560386cd5c23d76099ba884c32fec5f7b249f54a287a48940b5edcc2066",
+      "reference": {
+        "accepted": false,
+        "cause": "unsafe operation outside unsafe context",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "unsafe operation outside unsafe context",
+        "category": "unsafe"
+      }
+    },
+    {
+      "file": "bitand_assign-immutable.rs",
+      "sha256": "586f48c4dbb828acea125d7af9db179f48b228d59970cdd8176ce51618493422",
+      "reference": {
+        "accepted": false,
+        "cause": "mutable receiver cannot borrow immutable place",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "mutable receiver cannot borrow immutable place",
+        "category": "mutable"
+      }
+    },
+    {
+      "file": "bitand_assign-unused-default.rs",
+      "sha256": "c2b23136fc6704e1b6c23ab882fbeb9113c0cf417f7524910d301398f3b3c9ff",
+      "reference": {
+        "accepted": true,
+        "cause": "valid unused alternate Rhs default",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "valid unused alternate Rhs default",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "bitand_assign-unused-provided.rs",
+      "sha256": "4c06e1fa38f8c3f1accd83c502d6cf6c0cf5d37063d3d874eaba353401df7d90",
+      "reference": {
+        "accepted": true,
+        "cause": "valid unused provided method remains ordinary source",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "valid unused provided method remains ordinary source",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "bitor_assign-single.rs",
+      "sha256": "f17d91118e28e28c3787b768db99a1b4cd13922fc566d23eb6e12d59af0d4264",
+      "reference": {
+        "accepted": true,
+        "cause": "isolated actual role and implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "isolated actual role and implementation",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "bitor_assign-wrong-rhs.rs",
+      "sha256": "8b3f26867b0063344ab047dc4ec909ea79e6f72797eb2bce8d18726413b00f0c",
+      "reference": {
+        "accepted": false,
+        "cause": "wrong Rhs type or unsatisfied implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "wrong Rhs type or unsatisfied implementation",
+        "category": "rhs"
+      }
+    },
+    {
+      "file": "bitor_assign-wrong-output.rs",
+      "sha256": "d72d0b5aa60dd73d165c27052312b1c4bf0b520d4478d4ea4722571181f519f5",
+      "reference": {
+        "accepted": false,
+        "cause": "implementation result disagrees with required unit",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "implementation result disagrees with required unit",
+        "category": "output"
+      }
+    },
+    {
+      "file": "bitor_assign-wrong-receiver.rs",
+      "sha256": "e7deaba863323b81b69ac76b70fc86b29898accf64d6850a2886855b0e358391",
+      "reference": {
+        "accepted": false,
+        "cause": "implementation receiver disagrees with mutable trait receiver",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "implementation receiver disagrees with mutable trait receiver",
+        "category": "receiver"
+      }
+    },
+    {
+      "file": "bitor_assign-missing-impl.rs",
+      "sha256": "399d21e6536984294747325152e4ba50d66db1308bc31c120da453d988dd2b12",
+      "reference": {
+        "accepted": false,
+        "cause": "no implementation for actual operands",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "no implementation for actual operands",
+        "category": "implementation"
+      }
+    },
+    {
+      "file": "bitor_assign-missing-role.rs",
+      "sha256": "7ee832091be824613c0c531a5ec1b5d7997464e722fbf4d0d5b7efa327626e7e",
+      "reference": {
+        "accepted": false,
+        "cause": "same spelling has no canonical assignment role",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "same spelling has no canonical assignment role",
+        "category": "role"
+      }
+    },
+    {
+      "file": "bitor_assign-unsafe.rs",
+      "sha256": "1deda52410d9bbb2a0d15b87bdf4c654721a693b8442546e36edad147c077da3",
+      "reference": {
+        "accepted": false,
+        "cause": "unsafe operation outside unsafe context",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "unsafe operation outside unsafe context",
+        "category": "unsafe"
+      }
+    },
+    {
+      "file": "bitor_assign-immutable.rs",
+      "sha256": "760c6b74bac89d4971159550bf45993d5c64bca741cc8307e45ed2a3e9f00e39",
+      "reference": {
+        "accepted": false,
+        "cause": "mutable receiver cannot borrow immutable place",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "mutable receiver cannot borrow immutable place",
+        "category": "mutable"
+      }
+    },
+    {
+      "file": "bitor_assign-unused-default.rs",
+      "sha256": "e9df553385e1efb0125bc4119f25a63d8b160ba99a2c378ead603137ed7bcbf6",
+      "reference": {
+        "accepted": true,
+        "cause": "valid unused alternate Rhs default",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "valid unused alternate Rhs default",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "bitor_assign-unused-provided.rs",
+      "sha256": "3bd19d1936c253e5d551940b9f07a235caea723897c8818cab2bef2ef59269f7",
+      "reference": {
+        "accepted": true,
+        "cause": "valid unused provided method remains ordinary source",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "valid unused provided method remains ordinary source",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "shl_assign-single.rs",
+      "sha256": "f85c9599c24ed0dae7ab3d7b20fef6aa97dc6c6ddac3349b5178d253927dee0e",
+      "reference": {
+        "accepted": true,
+        "cause": "isolated actual role and implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "isolated actual role and implementation",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "shl_assign-wrong-rhs.rs",
+      "sha256": "28d5a8f84486750aae519c7e9dbd573a63f00d17672508070dbb9f425338013f",
+      "reference": {
+        "accepted": false,
+        "cause": "wrong Rhs type or unsatisfied implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "wrong Rhs type or unsatisfied implementation",
+        "category": "rhs"
+      }
+    },
+    {
+      "file": "shl_assign-wrong-output.rs",
+      "sha256": "05f104a64aea25042bcd236d540e99ee4f5fd2bce479fb98695ad0e32b71bce0",
+      "reference": {
+        "accepted": false,
+        "cause": "implementation result disagrees with required unit",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "implementation result disagrees with required unit",
+        "category": "output"
+      }
+    },
+    {
+      "file": "shl_assign-wrong-receiver.rs",
+      "sha256": "1964999072e8ff667af0edacd415ebaa64825a4768553e71ae153b8618c43c22",
+      "reference": {
+        "accepted": false,
+        "cause": "implementation receiver disagrees with mutable trait receiver",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "implementation receiver disagrees with mutable trait receiver",
+        "category": "receiver"
+      }
+    },
+    {
+      "file": "shl_assign-missing-impl.rs",
+      "sha256": "a85e96514520f975c2f50bebb320b2990c3cefcf88e5db7ec7314766a37dba78",
+      "reference": {
+        "accepted": false,
+        "cause": "no implementation for actual operands",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "no implementation for actual operands",
+        "category": "implementation"
+      }
+    },
+    {
+      "file": "shl_assign-missing-role.rs",
+      "sha256": "ecca07b5b7ceaceb187c5a9de5d257c6eddaee0a7456104ee88cf7ff3df88146",
+      "reference": {
+        "accepted": false,
+        "cause": "same spelling has no canonical assignment role",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "same spelling has no canonical assignment role",
+        "category": "role"
+      }
+    },
+    {
+      "file": "shl_assign-unsafe.rs",
+      "sha256": "4024215ad43ba673c5c6ee813cecd2e93f9313a2258c386c6ec30574f5e4c2c6",
+      "reference": {
+        "accepted": false,
+        "cause": "unsafe operation outside unsafe context",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "unsafe operation outside unsafe context",
+        "category": "unsafe"
+      }
+    },
+    {
+      "file": "shl_assign-immutable.rs",
+      "sha256": "2136b1dfefe38667209706e2f4d5333bdebc8feb297d23c786534cee5a2178b7",
+      "reference": {
+        "accepted": false,
+        "cause": "mutable receiver cannot borrow immutable place",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "mutable receiver cannot borrow immutable place",
+        "category": "mutable"
+      }
+    },
+    {
+      "file": "shl_assign-unused-default.rs",
+      "sha256": "3edc488c07c0185dcb538e5f727d748aa5ae39b56232e83acff841ba5e53c485",
+      "reference": {
+        "accepted": true,
+        "cause": "valid unused alternate Rhs default",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "valid unused alternate Rhs default",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "shl_assign-unused-provided.rs",
+      "sha256": "cdaf985015fafaf29cb4c0a8947f78a526313882f8c0c603fa7e0fb3fd23acf6",
+      "reference": {
+        "accepted": true,
+        "cause": "valid unused provided method remains ordinary source",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "valid unused provided method remains ordinary source",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "shr_assign-single.rs",
+      "sha256": "f2a6eefc83e9445d064a778858b8ed08eeb3d341a74fbf90dd257a920afbb4a9",
+      "reference": {
+        "accepted": true,
+        "cause": "isolated actual role and implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "isolated actual role and implementation",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "shr_assign-wrong-rhs.rs",
+      "sha256": "8a7009ea58140019fb87f3c872ee968230a609ab3e18a79196d13c47b82edbed",
+      "reference": {
+        "accepted": false,
+        "cause": "wrong Rhs type or unsatisfied implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "wrong Rhs type or unsatisfied implementation",
+        "category": "rhs"
+      }
+    },
+    {
+      "file": "shr_assign-wrong-output.rs",
+      "sha256": "09eead2934ee36dd6889f23129ca6954504e17a19f2479dfa07bba4d46444e8f",
+      "reference": {
+        "accepted": false,
+        "cause": "implementation result disagrees with required unit",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "implementation result disagrees with required unit",
+        "category": "output"
+      }
+    },
+    {
+      "file": "shr_assign-wrong-receiver.rs",
+      "sha256": "9a1ace4e08fe15d91fcdbc9b0501baf35a3f386620e7e0fe8a78f0f5f8d87f02",
+      "reference": {
+        "accepted": false,
+        "cause": "implementation receiver disagrees with mutable trait receiver",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "implementation receiver disagrees with mutable trait receiver",
+        "category": "receiver"
+      }
+    },
+    {
+      "file": "shr_assign-missing-impl.rs",
+      "sha256": "ce827aa4a7f6d5517ed39cad1766f8bf58befa2d756038d72f3590f18b3b5ba4",
+      "reference": {
+        "accepted": false,
+        "cause": "no implementation for actual operands",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "no implementation for actual operands",
+        "category": "implementation"
+      }
+    },
+    {
+      "file": "shr_assign-missing-role.rs",
+      "sha256": "bfc231d51d85d1205ef953262a8b171e8024690fc2ad255d52e7086c2e349959",
+      "reference": {
+        "accepted": false,
+        "cause": "same spelling has no canonical assignment role",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "same spelling has no canonical assignment role",
+        "category": "role"
+      }
+    },
+    {
+      "file": "shr_assign-unsafe.rs",
+      "sha256": "936516b4922157eb28d4c4554b7416f3dc0b05bed022214e9317a9e3ad0913b9",
+      "reference": {
+        "accepted": false,
+        "cause": "unsafe operation outside unsafe context",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "unsafe operation outside unsafe context",
+        "category": "unsafe"
+      }
+    },
+    {
+      "file": "shr_assign-immutable.rs",
+      "sha256": "fedb0f687a2cedd5ffc52bd813b9b527d3fc197e75de71b03e2aa2269db6a7a1",
+      "reference": {
+        "accepted": false,
+        "cause": "mutable receiver cannot borrow immutable place",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "mutable receiver cannot borrow immutable place",
+        "category": "mutable"
+      }
+    },
+    {
+      "file": "shr_assign-unused-default.rs",
+      "sha256": "8c6daf0d6a5684c20600808b0fef0f5956ae7eade7a442f2f5c752e08040f677",
+      "reference": {
+        "accepted": true,
+        "cause": "valid unused alternate Rhs default",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "valid unused alternate Rhs default",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "shr_assign-unused-provided.rs",
+      "sha256": "eb5a70820cdb4c12a84e254d896494764e8167759bfad393acd8c0c25e86d986",
+      "reference": {
+        "accepted": true,
+        "cause": "valid unused provided method remains ordinary source",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "valid unused provided method remains ordinary source",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "shared-alias.rs",
+      "sha256": "7872af3ae4505c3d874f8e19c061f75b2e12f55f157ef7a3a3b4f31c1f8cbfd0",
+      "reference": {
+        "accepted": false,
+        "cause": "shared opposing alias remains live across mutable call",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "shared opposing alias remains live across mutable call",
+        "category": "alias"
+      }
+    },
+    {
+      "file": "mutable-alias.rs",
+      "sha256": "be3d2a5dbd97249c4072724b65a3a29f9c641d3e618c86bd3f77e2533c653de9",
+      "reference": {
+        "accepted": false,
+        "cause": "opposing unique alias remains live",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "opposing unique alias remains live",
+        "category": "alias"
+      }
+    },
+    {
+      "file": "two-phase-read.rs",
+      "sha256": "383b9d05a58a22392dd7ffee2ba992531d183e5666bb5b2bd2929cba5e26be73",
+      "reference": {
+        "accepted": true,
+        "cause": "receiver reservation permits RHS read before activation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "receiver reservation permits RHS read before activation",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "disjoint-fields.rs",
+      "sha256": "92c63847e8e70a939bd73aa08683e2e2a43e8eff7f8f62e8844dca543dcda5b2",
+      "reference": {
+        "accepted": true,
+        "cause": "disjoint field alias does not overlap receiver",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "disjoint field alias does not overlap receiver",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "rvalue-target.rs",
+      "sha256": "5950b4fabb7c0aa5178266dc509eaa30d030cd4c19eeff1a1f6bad70917389e0",
+      "reference": {
+        "accepted": false,
+        "cause": "assignment requires a place",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "assignment requires a place",
+        "category": "place"
+      }
+    },
+    {
+      "file": "rhs-opposing-alias.rs",
+      "sha256": "e9dbdaa76410b09fa18958c9f70bec311ec00e0264b48205621ccca78c48b3e2",
+      "reference": {
+        "accepted": false,
+        "cause": "RHS shared alias conflicts when reserved mutable receiver activates",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "RHS shared alias conflicts when reserved mutable receiver activates",
+        "category": "alias"
+      }
+    },
+    {
+      "file": "primitive-body.rs",
+      "sha256": "07934038b35a00a11086cb876a39ad73c04d7ced59e1fc5bec2dcb4ddb80c015",
+      "reference": {
+        "accepted": true,
+        "cause": "builtin primitive semantics differ from actual explicit nonconst body",
+        "emit": "obj"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "builtin primitive semantics differ from actual explicit nonconst body",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "const-primitive.rs",
+      "sha256": "cc8433242c21b7319c3ae46646b385358559654e323c6d8052c64842b8bf1ee1",
+      "reference": {
+        "accepted": false,
+        "cause": "primitive compound const context still requires a const implementation (E0277)",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "primitive compound const context still requires a const implementation (E0277)",
+        "category": "const"
+      }
+    },
+    {
+      "file": "const-explicit-nonconst.rs",
+      "sha256": "79e4114a9db0ca1d88677984b9b1c115d277bc130d9d5712d9a89d274815f231",
+      "reference": {
+        "accepted": false,
+        "cause": "explicit call requires a const implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "explicit call requires a const implementation",
+        "category": "const"
+      }
+    },
+    {
+      "file": "const-custom.rs",
+      "sha256": "c7648205e0f5cc9f01e2d45ccbe64cae2b72aa40b20c8484e6b539853b150f85",
+      "reference": {
+        "accepted": true,
+        "cause": "actual const custom assignment body executes mutable receiver",
+        "emit": "obj"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "actual const custom assignment body executes mutable receiver",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "const-custom-nonconst.rs",
+      "sha256": "1460efe7fe4e18953d2c7cad5c5ca5c42931afc606ad5c65ca5c438586a9b64f",
+      "reference": {
+        "accepted": false,
+        "cause": "custom const assignment requires const implementation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "custom const assignment requires const implementation",
+        "category": "const"
+      }
+    },
+    {
+      "file": "packed-primitive.rs",
+      "sha256": "0fd3e7726841291abaefb767ee000ca90753fbb540eeaa0e410eca2e343ac7b6",
+      "reference": {
+        "accepted": true,
+        "cause": "erased primitive packed operation forms no physical reference",
+        "emit": "obj"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "erased primitive packed operation forms no physical reference",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "packed-custom.rs",
+      "sha256": "575b6d7878e9374f8602622897ba9fa518c5455c12087bcd1f2d0f23234cf420",
+      "reference": {
+        "accepted": false,
+        "cause": "custom packed projection requires unaligned mutable reference",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "custom packed projection requires unaligned mutable reference",
+        "category": "alignment"
+      }
+    },
+    {
+      "file": "order-custom.rs",
+      "sha256": "3a7ba7853dbddd3941ddc0880802ced4234b4b4ac73f28ae229725f781f3e15d",
+      "reference": {
+        "accepted": true,
+        "cause": "overloaded assignment evaluates LHS once then RHS once before mutable activation",
+        "emit": "obj"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "overloaded assignment evaluates LHS once then RHS once before mutable activation",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "bound-8.rs",
+      "sha256": "4ced5efa99997c329f8f854251a8920fb629bcb43356b3bfabae0fbf80cd014c",
+      "reference": {
+        "accepted": true,
+        "cause": "linear number of demanded actual assignment calls",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "linear number of demanded actual assignment calls",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "bound-32.rs",
+      "sha256": "2084d5ac300220dbc685b799524d077f293179e68732823c00ec6c8e7fff52fc",
+      "reference": {
+        "accepted": true,
+        "cause": "linear number of demanded actual assignment calls",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "linear number of demanded actual assignment calls",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "bound-128.rs",
+      "sha256": "6ec125b9afcdc76e0a924591c59c0c95122a791dc7c4065eb18d18f101a60f05",
+      "reference": {
+        "accepted": true,
+        "cause": "linear number of demanded actual assignment calls",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "linear number of demanded actual assignment calls",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "raw-add_assign.rs",
+      "sha256": "47c0ef25c21867c2dfb336136f6c4fe4821c699bae3aace9e34d7c2f4f3ea2b3",
+      "reference": {
+        "accepted": false,
+        "cause": "missing assignment role gives primitive E0368",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "missing assignment role gives primitive E0368",
+        "category": "role"
+      }
+    },
+    {
+      "file": "raw-sub_assign.rs",
+      "sha256": "bff333fde06dcc507297a9bea1a6a547671328cb4db8ce4512948b2758b88a51",
+      "reference": {
+        "accepted": false,
+        "cause": "missing assignment role gives primitive E0368",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "missing assignment role gives primitive E0368",
+        "category": "role"
+      }
+    },
+    {
+      "file": "raw-mul_assign.rs",
+      "sha256": "9a00901fb89bc31ab18780a827d29d73c6c5654c0ed553cc8d29003426c8a8a9",
+      "reference": {
+        "accepted": false,
+        "cause": "missing assignment role gives primitive E0368",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "missing assignment role gives primitive E0368",
+        "category": "role"
+      }
+    },
+    {
+      "file": "raw-div_assign.rs",
+      "sha256": "0fd8fd6b107a24922fa17a4ef4e58cc6b972a0b2458afd9bdc95ab58d1f69775",
+      "reference": {
+        "accepted": false,
+        "cause": "missing assignment role gives primitive E0368",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "missing assignment role gives primitive E0368",
+        "category": "role"
+      }
+    },
+    {
+      "file": "raw-rem_assign.rs",
+      "sha256": "020e3c20ac9d2e6af36b6cedae61e3b6c508c9af07c37544f2d30cca713ec914",
+      "reference": {
+        "accepted": false,
+        "cause": "missing assignment role gives primitive E0368",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "missing assignment role gives primitive E0368",
+        "category": "role"
+      }
+    },
+    {
+      "file": "raw-bitxor_assign.rs",
+      "sha256": "f350200078c61fa76c81048185baa7d37b2087907128a5fd527821971d8a8ead",
+      "reference": {
+        "accepted": false,
+        "cause": "missing assignment role gives primitive E0368",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "missing assignment role gives primitive E0368",
+        "category": "role"
+      }
+    },
+    {
+      "file": "raw-bitand_assign.rs",
+      "sha256": "e08de3b39fc19f6ae43e49f18a87df9794a053adf73b7066046781fb482487bd",
+      "reference": {
+        "accepted": false,
+        "cause": "missing assignment role gives primitive E0368",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "missing assignment role gives primitive E0368",
+        "category": "role"
+      }
+    },
+    {
+      "file": "raw-bitor_assign.rs",
+      "sha256": "50f229ded58c117f86048831ac255bbcb8f468a63a177f0106bffbecd0c74db9",
+      "reference": {
+        "accepted": false,
+        "cause": "missing assignment role gives primitive E0368",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "missing assignment role gives primitive E0368",
+        "category": "role"
+      }
+    },
+    {
+      "file": "raw-shl_assign.rs",
+      "sha256": "664df626d84d55ef15072158bba82af119a8b55fbcd0f02af0c5ac617fed7607",
+      "reference": {
+        "accepted": false,
+        "cause": "missing assignment role gives primitive E0368",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "missing assignment role gives primitive E0368",
+        "category": "role"
+      }
+    },
+    {
+      "file": "raw-shr_assign.rs",
+      "sha256": "446a813700e8759ae0b69f66d26a82795e2384f7f90c68d0d194d6788ce422ec",
+      "reference": {
+        "accepted": false,
+        "cause": "missing assignment role gives primitive E0368",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "missing assignment role gives primitive E0368",
+        "category": "role"
+      }
+    },
+    {
+      "file": "const-primitive-valid.rs",
+      "sha256": "32218e3e05f0374897e4615027885dbc3364c31a18334b4e82fefce3a40e6a9a",
+      "reference": {
+        "accepted": true,
+        "cause": "const implementation authorizes builtin const operation but its unrelated body effects remain erased",
+        "emit": "obj"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "const implementation authorizes builtin const operation but its unrelated body effects remain erased",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "const-explicit-valid.rs",
+      "sha256": "2757ae4ad94adcae5ae74692568b5f55087f7ca3e28c229c0c16c6f4d350498c",
+      "reference": {
+        "accepted": true,
+        "cause": "explicit const method call executes actual body",
+        "emit": "obj"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "explicit const method call executes actual body",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "cross-primitive-impl.rs",
+      "sha256": "8f5c309317ee057e69b4748adae73457aa575c399d519aeaccf9def90bfdc538",
+      "reference": {
+        "accepted": false,
+        "cause": "mismatched numeric primitive Rhs remains E0308 despite actual implementation",
+        "emit": "obj"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "mismatched numeric primitive Rhs remains E0308 despite actual implementation",
+        "category": "scalar"
+      }
+    },
+    {
+      "file": "primitive-ten.rs",
+      "sha256": "2d5944754bda587ffbfdb7c52433968c5fb803054a511daaac5aa3f65e3217d0",
+      "reference": {
+        "accepted": true,
+        "cause": "all ten standard primitive profiles; Boolean bitwise and mixed-width shift remain distinct",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "all ten typed primitive assignment profiles",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "provided-effect.rs",
+      "sha256": "f694cf025579dc84406cb3c24a5ce83ab22e912f3320ea0cfec22a3d43346122",
+      "reference": {
+        "accepted": true,
+        "cause": "actual provided ordinary method body mutates source static through empty implementation",
+        "emit": "obj"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "positive",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "provided-unsafe.rs",
+      "sha256": "258fada4034d37aa66e535377f591b38e3b31f52750b16d6bdb55bc142685132",
+      "reference": {
+        "accepted": false,
+        "cause": "unsafe source static access in actual provided defining body",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "unsafe",
+        "category": "unsafe"
+      }
+    },
+    {
+      "file": "provided-const.rs",
+      "sha256": "4a9d1e249ddbde2409bc6c3325c8216e344ef839988e67065b4d57b02ee4c9de",
+      "reference": {
+        "accepted": false,
+        "cause": "ordinary provided implementation has no const execution permission",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "const",
+        "category": "const"
+      }
+    },
+    {
+      "file": "provided-copy.rs",
+      "sha256": "5b4ce21947c70db47fa7f27e06af0516e1c8082e1d8bdd0d67575ef72d0fa0a6",
+      "reference": {
+        "accepted": true,
+        "cause": "provided Copy-bound method remains ordinary selected body",
+        "emit": "obj"
+      },
+      "candidate": {
+        "accepted": true,
+        "cause": "positive",
+        "category": "positive"
+      }
+    },
+    {
+      "file": "ordinary-retained-policy.rs",
+      "sha256": "01ce4af1f2b62089b1897931d4e4756497eaedeb787913d39639ab52e1f0803b",
+      "reference": {
+        "accepted": true,
+        "cause": "Rust permits ordinary trait retaining const-stability annotation",
+        "emit": "metadata"
+      },
+      "candidate": {
+        "accepted": false,
+        "cause": "source_policy",
+        "category": "source_policy"
+      },
+      "requirement": "PA31/40: actual ordinary declaration const-stability policy admission; current placement fence is a Rust-positive gap, not semantic parity"
+    }
+  ],
+  "pre_candidate_corrections": [
+    "v1 retained obsolete authored impl const syntax; pinned syntax is const impl",
+    "v1 const primitive nonconst impl E0277 is a negative, not an intrinsic const shortcut",
+    "v1 raw missing-role feature const_ops was irrelevant E0635; remove only that request before identifying E0368",
+    "v2 actual const impl/calc need rustc_const_unstable annotations consistent with retained trait const stability; add those authored annotations before candidate; no standard declaration changes",
+    {
+      "reference": "reference-v5",
+      "case": "provided-effect.rs",
+      "failure": "Rust object emission requires actual drop_glue for unconstrained generic Rhs default body. Preserve v5; independently qualify a Copy-bound provided-body variant without adding a fake drop body."
+    },
+    {
+      "reference": "reference-v6",
+      "case": "provided-effect.rs",
+      "failure": "Copy-bound alone also needs actual generic drop_glue setup. Reuse the existing implemented genuine pinned synchronous drop_glue foundation, with no compiler changes or invented method."
+    },
+    {
+      "reference": "reference-v7",
+      "candidate": "gate2",
+      "failure": "Authored ordinary provided mutation retained const-stability annotation. Rust accepts; candidate placement rejects. Preserve original exact source as required ordinary-retained-policy.rs gap, use clean ordinary policy for actual provided runtime observer. TSV prose/category regeneration bug corrected without altering expected semantics."
+    },
+    {
+      "reference": "reference-v8",
+      "failure": "Clean ordinary provided variant no longer declares API feature const_ops; remove only its now-irrelevant crate feature request (E0635), preserving real const-operator sources and retained-policy gap verbatim."
+    }
+  ],
+  "unqualified_probes": [
+    {
+      "file": "bool-custom-impl.rs",
+      "sha256": "8f6742a268909d8f49021eff27739f9983d84fc25381cca08ac1baa5ad9e3ed0",
+      "reference": {
+        "accepted": null,
+        "cause": "pinned rustc ICE in authored nonstandard bool AddAssign primitive profile; no semantic comparison",
+        "emit": "obj",
+        "status": "infrastructure_failure_101"
+      },
+      "candidate": {
+        "accepted": null,
+        "cause": "uncertain builtin-vs-real custom primitive eligibility"
+      }
+    }
+  ]
+}

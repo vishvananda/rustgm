@@ -88,6 +88,8 @@ mod self_constructors;
 #[path = "../../negative_coherence.rs"]
 mod negative_coherence;
 
+#[path = "../../mutops.rs"]
+mod mutops;
 #[path = "../../harness/observed_program.rs"]
 pub(crate) mod observed_program;
 #[path = "../../opfamily.rs"]

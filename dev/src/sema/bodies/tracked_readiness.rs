@@ -53,6 +53,7 @@ impl Checker<'_> {
             self.caller_readiness_step(node)?;
             if !self.source_scalar_unary_type(node, actual)
                 && !self.source_scalar_binary_solved(node, actual, solved)?
+                && !self.source_scalar_assignment_solved(node, solved)?
                 && !self.source_scalar_comparison_solved(node, solved)?
                 && self.requires_caller_site(node, callable)?
             {

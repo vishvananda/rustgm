@@ -104,7 +104,7 @@ mod operator_contract;
 mod sizing;
 pub(in crate::sema) mod try_protocol;
 pub(in crate::sema) use binary_contract::pending_default as binary_pending_default;
-pub(in crate::sema) use binary_contract::source_binary;
+pub(in crate::sema) use binary_contract::{source_assignment, source_binary};
 mod unary_contract;
 use crate::{
     resolve::{

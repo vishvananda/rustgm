@@ -1,0 +1,425 @@
+{
+  "schema": 1,
+  "baseline": "c509736bb23b7e7918c6c2e04f588c1c7bd130af",
+  "branch": "implement/source-assign-20261105",
+  "roles": [
+    "AddAssign",
+    "SubAssign",
+    "MulAssign",
+    "DivAssign",
+    "RemAssign",
+    "BitXorAssign",
+    "BitAndAssign",
+    "BitOrAssign",
+    "ShlAssign",
+    "ShrAssign"
+  ],
+  "qualifier_receipt": {
+    "path": "obj/parallel/source-transport/assignments/gate4/receipt.json",
+    "sha256": "fb44bd19b102b1a0c321452ebdd95a4bd884b7659902d96a9f7ae65fe0156e17",
+    "state": "passed"
+  },
+  "sources": {
+    "path": "obj/parallel/source-transport/assignments/gate4/sources.json",
+    "sha256": "434c2c2f046989f4b6ca6d6d5de027448859339ebd6aefbccaa1ae34831f8ed5"
+  },
+  "artifacts": {
+    "path": "obj/parallel/source-transport/assignments/gate4/fingerprints.json",
+    "sha256": "0fc96a8418d80226820f90b7d6d16dbbf156c02db428ac6ac632aa823b852cb1"
+  },
+  "public_harness": {
+    "path": "obj/rust/dev-fast/deps/suite_traits-a9ad509b3892c18c",
+    "sha256": "94cde0bf9ff4243f2998d9aca33644ee41e9a1d184032d697771626e79ca4432"
+  },
+  "predictions": {
+    "path": "pa31/tests/spec/source-assign-ten/predictions.json",
+    "sha256": "ee333d2a327512e3bcfa05b4fc441a95e6d4da38d2edfef782bd9add8cba11cb"
+  },
+  "native_predictions": {
+    "path": "pa31/tests/spec/source-assign-ten/native-predictions.json",
+    "sha256": "c45e3ecb150af0f4fc60af2016a9d564b788fb0b55beafcde043d313de783344"
+  },
+  "independent": {
+    "path": "obj/parallel/source-transport/assignments/reference-v9/receipt.json",
+    "sha256": "63641ab79e82afd1ed36cf03bc31ec1aba7d7e869bd29c63af6baafb1e5eb8a5",
+    "state": "passed",
+    "declared_rust_outcomes": 138,
+    "native_observers": 9
+  },
+  "candidate_inventory": {
+    "total": 138,
+    "semantic_parity_targets": 137,
+    "rust_positive_source_policy_gaps": 1,
+    "gap_case": "ordinary-retained-policy.rs",
+    "requirement": "PA31/40: const-stability policy on ordinary declaration; original source and Rust-positive outcome retained, placement fence not parity"
+  },
+  "native": {
+    "backend_commit": "b7c6b8e72",
+    "backend_lock": {
+      "path": "backend.lock.json",
+      "sha256": "f60c0760f39f1f554486f5a1eb990d2c0fef663fbd1bff944cd1eef8a014a581"
+    },
+    "backend_local": {
+      "path": "backend.local.json",
+      "sha256": "de97443110bcdb82b66d94235c0042d7944eb012905d7628fb402468dd4eab62"
+    },
+    "observers": {
+      "obj/parallel/source-transport/assignments/native-runtime-2533377": {
+        "stdout": "23 23 23 23 23 23 23 23 23 23 23 23 23 23 23 23 23 23 23 23\n",
+        "artifacts": {
+          "obj/parallel/source-transport/assignments/native-runtime-2533377/source.lowir": {
+            "bytes": 20538,
+            "sha256": "9c51bb3678c8d332ec66643c75096ba51b0b9a7e192145cf2cba6a3e9ff3dd99"
+          },
+          "obj/parallel/source-transport/assignments/native-runtime-2533377/source.o": {
+            "bytes": 10224,
+            "sha256": "a729db2900a8264bbba072d307a89daf7dc114d55c85b8ba8fda03895f8ba2b4"
+          },
+          "obj/parallel/source-transport/assignments/native-runtime-2533377/backend.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-runtime-2533377/observer": {
+            "bytes": 17768,
+            "sha256": "3b93e260933fcbf829220934fd6ccd4285f652f48326fa7a799400c9599de16c"
+          },
+          "obj/parallel/source-transport/assignments/native-runtime-2533377/link.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-runtime-2533377/native.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-runtime-2533377/native.stdout": {
+            "bytes": 60,
+            "sha256": "ec7990d54d9eab338cb06c4a6d58452a0cbcaf550ae3237bfa242809165c7407"
+          }
+        }
+      },
+      "obj/parallel/source-transport/assignments/native-primitive-body-2533377": {
+        "stdout": "11 3\n",
+        "artifacts": {
+          "obj/parallel/source-transport/assignments/native-primitive-body-2533377/source.lowir": {
+            "bytes": 965,
+            "sha256": "286e37368e30057eeee28bb5bc47973f57154b6cd81fe6347efa9014e5c1b064"
+          },
+          "obj/parallel/source-transport/assignments/native-primitive-body-2533377/source.o": {
+            "bytes": 1176,
+            "sha256": "4c56c2e4a961d7bac31f3a4dc1bc7a8e698f933221194bf28b49e75e64d3c59d"
+          },
+          "obj/parallel/source-transport/assignments/native-primitive-body-2533377/backend.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-primitive-body-2533377/observer": {
+            "bytes": 15992,
+            "sha256": "178077dbcdec44906de14705f1582d070bf06e9232c8d26b13361072d55a02f9"
+          },
+          "obj/parallel/source-transport/assignments/native-primitive-body-2533377/link.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-primitive-body-2533377/native.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-primitive-body-2533377/native.stdout": {
+            "bytes": 5,
+            "sha256": "46e2551b96d807ccf7027a34602aaf007e3dc9d71efcd3b26768dbbcae7428e6"
+          }
+        }
+      },
+      "obj/parallel/source-transport/assignments/native-const-primitive-valid-2533377": {
+        "stdout": "6\n",
+        "artifacts": {
+          "obj/parallel/source-transport/assignments/native-const-primitive-valid-2533377/source.lowir": {
+            "bytes": 1226,
+            "sha256": "195a93672d46fd93d74b1d1ef062c186b18a7df4940db6c7c3f3fadff5a7cd0c"
+          },
+          "obj/parallel/source-transport/assignments/native-const-primitive-valid-2533377/source.o": {
+            "bytes": 1416,
+            "sha256": "4f2e5120978740c363922921d5a56453cc862d2098191fdb5ef825af21378ab0"
+          },
+          "obj/parallel/source-transport/assignments/native-const-primitive-valid-2533377/backend.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-const-primitive-valid-2533377/observer": {
+            "bytes": 16048,
+            "sha256": "f39f1d0232154d824239fdefa191964fe529d048bfc89691336bdfcab0e24098"
+          },
+          "obj/parallel/source-transport/assignments/native-const-primitive-valid-2533377/link.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-const-primitive-valid-2533377/native.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-const-primitive-valid-2533377/native.stdout": {
+            "bytes": 2,
+            "sha256": "06e9d52c1720fca412803e3b07c4b228ff113e303f4c7ab94665319d832bbfb7"
+          }
+        }
+      },
+      "obj/parallel/source-transport/assignments/native-const-explicit-valid-2533377": {
+        "stdout": "4\n",
+        "artifacts": {
+          "obj/parallel/source-transport/assignments/native-const-explicit-valid-2533377/source.lowir": {
+            "bytes": 1260,
+            "sha256": "e554f07abda4011556f237e872a89347fc5ca4b4d48aa20c9b09cf467eb4648d"
+          },
+          "obj/parallel/source-transport/assignments/native-const-explicit-valid-2533377/source.o": {
+            "bytes": 1440,
+            "sha256": "18145842282f647f3fb442a83345072671fddccefb141562cb1e1e2990428ff8"
+          },
+          "obj/parallel/source-transport/assignments/native-const-explicit-valid-2533377/backend.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-const-explicit-valid-2533377/observer": {
+            "bytes": 16048,
+            "sha256": "cef4b537d7377b91cffd3cc572eb174d787a9354cf0a9142613cbe92b79d67ab"
+          },
+          "obj/parallel/source-transport/assignments/native-const-explicit-valid-2533377/link.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-const-explicit-valid-2533377/native.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-const-explicit-valid-2533377/native.stdout": {
+            "bytes": 2,
+            "sha256": "7de1555df0c2700329e815b93b32c571c3ea54dc967b89e81ab73b9972b72d1d"
+          }
+        }
+      },
+      "obj/parallel/source-transport/assignments/native-const-custom-2533377": {
+        "stdout": "11\n",
+        "artifacts": {
+          "obj/parallel/source-transport/assignments/native-const-custom-2533377/source.lowir": {
+            "bytes": 1158,
+            "sha256": "c9e81147bb01e43557ab736fb3c6910f28a331438d49977e2427e875ceaf82de"
+          },
+          "obj/parallel/source-transport/assignments/native-const-custom-2533377/source.o": {
+            "bytes": 1512,
+            "sha256": "9e7faac929f75f87d05d217997088abb8066b2ce6152b90fa8b58cdcceec2570"
+          },
+          "obj/parallel/source-transport/assignments/native-const-custom-2533377/backend.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-const-custom-2533377/observer": {
+            "bytes": 16048,
+            "sha256": "559819252406e454e9aa67ddadd259b5d205c2f47a85068526a5400a2132f2d4"
+          },
+          "obj/parallel/source-transport/assignments/native-const-custom-2533377/link.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-const-custom-2533377/native.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-const-custom-2533377/native.stdout": {
+            "bytes": 3,
+            "sha256": "25d4f2a86deb5e2574bb3210b67bb24fcc4afb19f93a7b65a057daa874a9d18e"
+          }
+        }
+      },
+      "obj/parallel/source-transport/assignments/native-packed-primitive-2533377": {
+        "stdout": "11\n",
+        "artifacts": {
+          "obj/parallel/source-transport/assignments/native-packed-primitive-2533377/source.lowir": {
+            "bytes": 1663,
+            "sha256": "e0cb6644388b6394f5ba956cd4fdb748a109daf3f7e0834b840323589f5cf030"
+          },
+          "obj/parallel/source-transport/assignments/native-packed-primitive-2533377/source.o": {
+            "bytes": 1480,
+            "sha256": "c64c90b2659f05d0a6c1dc12fc4f0445661ecdc53eb873d1d8a734c6b936b109"
+          },
+          "obj/parallel/source-transport/assignments/native-packed-primitive-2533377/backend.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-packed-primitive-2533377/observer": {
+            "bytes": 16048,
+            "sha256": "53adff226d23e18fc8955c1a4095b00b4e3a8a694bd9c3da18653deb24f7b262"
+          },
+          "obj/parallel/source-transport/assignments/native-packed-primitive-2533377/link.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-packed-primitive-2533377/native.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-packed-primitive-2533377/native.stdout": {
+            "bytes": 3,
+            "sha256": "25d4f2a86deb5e2574bb3210b67bb24fcc4afb19f93a7b65a057daa874a9d18e"
+          }
+        }
+      },
+      "obj/parallel/source-transport/assignments/native-order-custom-2533377": {
+        "stdout": "1 2\n",
+        "artifacts": {
+          "obj/parallel/source-transport/assignments/native-order-custom-2533377/source.lowir": {
+            "bytes": 3680,
+            "sha256": "b794d17bf37781fc1e12aaf93f2b51113b94046a8ceec94dce63bbe464623adf"
+          },
+          "obj/parallel/source-transport/assignments/native-order-custom-2533377/source.o": {
+            "bytes": 2104,
+            "sha256": "7bf03cee48465fc1351de248fd12cf76a17f1e5ceaab4631f2760c8ada813f50"
+          },
+          "obj/parallel/source-transport/assignments/native-order-custom-2533377/backend.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-order-custom-2533377/observer": {
+            "bytes": 16112,
+            "sha256": "47ae3aba75e77ed4f8d1182368a50e44cfc5c4902086df2d34185938cd2fa68b"
+          },
+          "obj/parallel/source-transport/assignments/native-order-custom-2533377/link.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-order-custom-2533377/native.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-order-custom-2533377/native.stdout": {
+            "bytes": 4,
+            "sha256": "f251ddc12234e0da8d3b778bd0f7463fb477f16f47757f5617dc8b4ff4d4f14a"
+          }
+        }
+      },
+      "obj/parallel/source-transport/assignments/native-provided-effect-2533377": {
+        "stdout": "23\n",
+        "artifacts": {
+          "obj/parallel/source-transport/assignments/native-provided-effect-2533377/source.lowir": {
+            "bytes": 1114,
+            "sha256": "304c92d4d692d03e0f52f235829b37be06d202a90fb4ea4fd8b4f9808a6a77bc"
+          },
+          "obj/parallel/source-transport/assignments/native-provided-effect-2533377/source.o": {
+            "bytes": 1576,
+            "sha256": "636430c65abd260cca383e46accc7f6d5cec3e149af3d4c5914e64ce22ccb0e8"
+          },
+          "obj/parallel/source-transport/assignments/native-provided-effect-2533377/backend.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-provided-effect-2533377/observer": {
+            "bytes": 16056,
+            "sha256": "102a06b1f57640615b320f73e52d545cd50183f40347c1760f8854e995a5ceae"
+          },
+          "obj/parallel/source-transport/assignments/native-provided-effect-2533377/link.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-provided-effect-2533377/native.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-provided-effect-2533377/native.stdout": {
+            "bytes": 3,
+            "sha256": "076320a2a08267b4c026d06573bba408ea68841e73cdc20e62cce59de165ece3"
+          }
+        }
+      },
+      "obj/parallel/source-transport/assignments/native-provided-copy-2533377": {
+        "stdout": "23\n",
+        "artifacts": {
+          "obj/parallel/source-transport/assignments/native-provided-copy-2533377/source.lowir": {
+            "bytes": 1116,
+            "sha256": "9c4c80bf06a35be71c823d0336b61fd50bc63d56902036f9400445e94c2e3f98"
+          },
+          "obj/parallel/source-transport/assignments/native-provided-copy-2533377/source.o": {
+            "bytes": 1584,
+            "sha256": "abf543f7c8e53ce63db9631aeba9d82b58bc3fd22322b067e372f1ab6c3f377b"
+          },
+          "obj/parallel/source-transport/assignments/native-provided-copy-2533377/backend.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-provided-copy-2533377/observer": {
+            "bytes": 16056,
+            "sha256": "537712ce6807a9bf9fc36dea23aee4fc507559005bc95132f32a5dd8d8671b0a"
+          },
+          "obj/parallel/source-transport/assignments/native-provided-copy-2533377/link.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-provided-copy-2533377/native.stderr": {
+            "bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "obj/parallel/source-transport/assignments/native-provided-copy-2533377/native.stdout": {
+            "bytes": 3,
+            "sha256": "076320a2a08267b4c026d06573bba408ea68841e73cdc20e62cce59de165ece3"
+          }
+        }
+      }
+    }
+  },
+  "bounded_work": {
+    "base": 1303,
+    "uses": [
+      8,
+      32,
+      128
+    ],
+    "additional_steps": [
+      152,
+      608,
+      2432
+    ],
+    "per_use": 19,
+    "claim": "bounded typed-work scaling; no wall-time speedup claim"
+  },
+  "retained_failures": [
+    {
+      "path": "obj/parallel/source-transport/assignments/reference-v1/receipt.json",
+      "sha256": "69ab6d5976fdce5bf7babbfea7715c809de254b74e4742b41de06964cfc60a24",
+      "reason": "obsolete authored const syntax, first const effects and feature setup"
+    },
+    {
+      "path": "obj/parallel/source-transport/assignments/reference-v2/receipt.json",
+      "sha256": "208aa29461b005afe3052719eb1ba9aa6da0e7d3d0dc267b2c0946e99defe417",
+      "reason": "actual const stability setup; pinned Rust bool-arithmetic MIR ICE explicitly unqualified"
+    },
+    {
+      "path": "obj/parallel/source-transport/assignments/reference-v5/receipt.json",
+      "sha256": "c8d2c1a15bfad8b0d322351deb0c6289240cbf2afc7fad81881c5c1717ef3462",
+      "reason": "unrestricted provided object observer needs genuine drop_glue foundation"
+    },
+    {
+      "path": "obj/parallel/source-transport/assignments/reference-v6/receipt.json",
+      "sha256": "d28d66606a5de8e2712a9fc4b382d9856a1f820c4a8abe4fed23de5068e504ae",
+      "reason": "Copy-bound alone also needs genuine drop_glue foundation"
+    },
+    {
+      "path": "obj/parallel/source-transport/assignments/reference-v8/receipt.json",
+      "sha256": "95fc7cba26218d2d24e0182dbf540bfd6d5c3acb16ab6cd6276182ff8e4894c4",
+      "reason": "clean ordinary variant no longer provides const_ops API feature authority; irrelevant feature request removed only there"
+    },
+    {
+      "path": "obj/parallel/source-transport/assignments/gate1/receipt.json",
+      "sha256": "c4a376bbe4b7f36a64db57fa08b88f8aeb4705bcaa87410e10198aa2787c6c7a",
+      "reason": "all133 statuses match, four diagnostic-cause assertions fail; actual provided join subsequently implemented"
+    },
+    {
+      "path": "obj/parallel/source-transport/assignments/gate2/receipt.json",
+      "sha256": "c2582bbbbb9a859cd86c947bd4cc6249bca38b493c8c44b02ec9d6d1356d2923",
+      "reason": "TSV category/prose generation defect; ordinary retained const-stability source-policy gap kept explicitly"
+    }
+  ],
+  "remaining": [
+    "retained Rust-positive ordinary declaration const-stability policy gap PA31/40",
+    "source metadata and broader demanded profiles/Index",
+    "complete primitive arithmetic panic-runtime closure",
+    "Root-owned original-core/std and full private/release qualification"
+  ],
+  "private_release": "Root/CI-owned; no cold private harness or release sweep attempted"
+}

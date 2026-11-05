@@ -176,6 +176,7 @@ impl Checker<'_> {
             crate::syntax::ast::Kind::Binary { left, .. } => {
                 let actual = solved.types[self.term(left)?.0 as usize];
                 Ok(self.source_scalar_binary_solved(node, actual, solved)?
+                    || self.source_scalar_assignment_solved(node, solved)?
                     || self.source_scalar_comparison_solved(node, solved)?)
             }
             _ => Ok(false),

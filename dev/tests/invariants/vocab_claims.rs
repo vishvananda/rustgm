@@ -152,6 +152,16 @@ fn unimplemented_builtin_claims_stop_before_granting_layout_drop_or_auto_trait_s
                 | LangItem::BitXor
                 | LangItem::BitAnd
                 | LangItem::Shr
+                | LangItem::AddAssign
+                | LangItem::SubAssign
+                | LangItem::MulAssign
+                | LangItem::DivAssign
+                | LangItem::RemAssign
+                | LangItem::BitXorAssign
+                | LangItem::BitAndAssign
+                | LangItem::BitOrAssign
+                | LangItem::ShlAssign
+                | LangItem::ShrAssign
         ) {
             continue;
         }

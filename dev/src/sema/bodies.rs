@@ -2527,6 +2527,14 @@ impl Checker<'_> {
             left = inner;
         }
         let target = self.assignment_target(node, left)?;
+        if self.facts.source_bindings.is_some()
+            && let Some(kind) = language_hooks::assignment_hook(op)
+        {
+            self.state
+                .assignments
+                .push((node, target, scalar::compound_operator(op)));
+            return self.source_assignment_operator(node, kind, left, right);
+        }
         if let Some(kind) = language_hooks::assignment_hook(op)
             && self.uses_language_assignment(node, kind, left, right)?
         {
@@ -2550,6 +2558,12 @@ impl Checker<'_> {
             let Kind::Binary { left, right, .. } = self.kind(*node) else {
                 return Err(self.error(*node, "invalid assignment syntax"));
             };
+            if self.facts.source_bindings.is_some()
+                && operator.is_some()
+                && !self.erased_source_assignment(*node)?
+            {
+                continue;
+            }
             if let Some(operator) = operator
                 && !scalar::binary(*operator, self.primitive(left)?, self.primitive(right)?)
             {

@@ -1,4 +1,5 @@
 //! Operators select explicit library identities through ordinary trait obligations.
+mod assigning;
 mod dereferencing;
 mod mutation;
 #[path = "language_hooks/binary_operator.rs"]
@@ -22,6 +23,9 @@ impl Checker<'_> {
         let crate::syntax::ast::Kind::Binary { op, left, right } = self.kind(node) else {
             return Ok(None);
         };
+        if self.facts.source_bindings.is_some() {
+            return self.source_assignment_default_readiness(node);
+        }
         let Some(kind) = assignment_hook(op) else {
             return Ok(None);
         };

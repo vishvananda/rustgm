@@ -12,6 +12,23 @@ pub(super) fn require_supported(report: &Report, reserved: &Reservations) -> Res
             // the actual shape. Ordinary trait and body proofs remain required.
             continue;
         }
+        if matches!(
+            role,
+            LangItem::AddAssign
+                | LangItem::SubAssign
+                | LangItem::MulAssign
+                | LangItem::DivAssign
+                | LangItem::RemAssign
+                | LangItem::BitXorAssign
+                | LangItem::BitAndAssign
+                | LangItem::BitOrAssign
+                | LangItem::ShlAssign
+                | LangItem::ShrAssign
+        ) {
+            // Complete ordinary declarations; demanded mutation still requires
+            // its exact source header and the existing mutable-call proof.
+            continue;
+        }
         if role == LangItem::AsyncDropInPlace {
             // Authenticate its ordinary source declaration; generated future
             // storage and cleanup execution have a separate demanded boundary.

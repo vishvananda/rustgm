@@ -1,0 +1,138 @@
+runtime.rs	0	positive	custom/default mutable receiver executes actual RHS field write
+add_assign-single.rs	0	positive	isolated actual role and implementation
+add_assign-wrong-rhs.rs	1	rhs	wrong Rhs type or unsatisfied implementation
+add_assign-wrong-output.rs	1	output	implementation result disagrees with required unit
+add_assign-wrong-receiver.rs	1	receiver	implementation receiver disagrees with mutable trait receiver
+add_assign-missing-impl.rs	1	implementation	no implementation for actual operands
+add_assign-missing-role.rs	1	role	same spelling has no canonical assignment role
+add_assign-unsafe.rs	1	unsafe	unsafe operation outside unsafe context
+add_assign-immutable.rs	1	mutable	mutable receiver cannot borrow immutable place
+add_assign-unused-default.rs	0	positive	valid unused alternate Rhs default
+add_assign-unused-provided.rs	0	positive	valid unused provided method remains ordinary source
+provided-demand.rs	0	positive	actual provided loop body selected by empty implementation; metadata only
+sub_assign-single.rs	0	positive	isolated actual role and implementation
+sub_assign-wrong-rhs.rs	1	rhs	wrong Rhs type or unsatisfied implementation
+sub_assign-wrong-output.rs	1	output	implementation result disagrees with required unit
+sub_assign-wrong-receiver.rs	1	receiver	implementation receiver disagrees with mutable trait receiver
+sub_assign-missing-impl.rs	1	implementation	no implementation for actual operands
+sub_assign-missing-role.rs	1	role	same spelling has no canonical assignment role
+sub_assign-unsafe.rs	1	unsafe	unsafe operation outside unsafe context
+sub_assign-immutable.rs	1	mutable	mutable receiver cannot borrow immutable place
+sub_assign-unused-default.rs	0	positive	valid unused alternate Rhs default
+sub_assign-unused-provided.rs	0	positive	valid unused provided method remains ordinary source
+mul_assign-single.rs	0	positive	isolated actual role and implementation
+mul_assign-wrong-rhs.rs	1	rhs	wrong Rhs type or unsatisfied implementation
+mul_assign-wrong-output.rs	1	output	implementation result disagrees with required unit
+mul_assign-wrong-receiver.rs	1	receiver	implementation receiver disagrees with mutable trait receiver
+mul_assign-missing-impl.rs	1	implementation	no implementation for actual operands
+mul_assign-missing-role.rs	1	role	same spelling has no canonical assignment role
+mul_assign-unsafe.rs	1	unsafe	unsafe operation outside unsafe context
+mul_assign-immutable.rs	1	mutable	mutable receiver cannot borrow immutable place
+mul_assign-unused-default.rs	0	positive	valid unused alternate Rhs default
+mul_assign-unused-provided.rs	0	positive	valid unused provided method remains ordinary source
+div_assign-single.rs	0	positive	isolated actual role and implementation
+div_assign-wrong-rhs.rs	1	rhs	wrong Rhs type or unsatisfied implementation
+div_assign-wrong-output.rs	1	output	implementation result disagrees with required unit
+div_assign-wrong-receiver.rs	1	receiver	implementation receiver disagrees with mutable trait receiver
+div_assign-missing-impl.rs	1	implementation	no implementation for actual operands
+div_assign-missing-role.rs	1	role	same spelling has no canonical assignment role
+div_assign-unsafe.rs	1	unsafe	unsafe operation outside unsafe context
+div_assign-immutable.rs	1	mutable	mutable receiver cannot borrow immutable place
+div_assign-unused-default.rs	0	positive	valid unused alternate Rhs default
+div_assign-unused-provided.rs	0	positive	valid unused provided method remains ordinary source
+rem_assign-single.rs	0	positive	isolated actual role and implementation
+rem_assign-wrong-rhs.rs	1	rhs	wrong Rhs type or unsatisfied implementation
+rem_assign-wrong-output.rs	1	output	implementation result disagrees with required unit
+rem_assign-wrong-receiver.rs	1	receiver	implementation receiver disagrees with mutable trait receiver
+rem_assign-missing-impl.rs	1	implementation	no implementation for actual operands
+rem_assign-missing-role.rs	1	role	same spelling has no canonical assignment role
+rem_assign-unsafe.rs	1	unsafe	unsafe operation outside unsafe context
+rem_assign-immutable.rs	1	mutable	mutable receiver cannot borrow immutable place
+rem_assign-unused-default.rs	0	positive	valid unused alternate Rhs default
+rem_assign-unused-provided.rs	0	positive	valid unused provided method remains ordinary source
+bitxor_assign-single.rs	0	positive	isolated actual role and implementation
+bitxor_assign-wrong-rhs.rs	1	rhs	wrong Rhs type or unsatisfied implementation
+bitxor_assign-wrong-output.rs	1	output	implementation result disagrees with required unit
+bitxor_assign-wrong-receiver.rs	1	receiver	implementation receiver disagrees with mutable trait receiver
+bitxor_assign-missing-impl.rs	1	implementation	no implementation for actual operands
+bitxor_assign-missing-role.rs	1	role	same spelling has no canonical assignment role
+bitxor_assign-unsafe.rs	1	unsafe	unsafe operation outside unsafe context
+bitxor_assign-immutable.rs	1	mutable	mutable receiver cannot borrow immutable place
+bitxor_assign-unused-default.rs	0	positive	valid unused alternate Rhs default
+bitxor_assign-unused-provided.rs	0	positive	valid unused provided method remains ordinary source
+bitand_assign-single.rs	0	positive	isolated actual role and implementation
+bitand_assign-wrong-rhs.rs	1	rhs	wrong Rhs type or unsatisfied implementation
+bitand_assign-wrong-output.rs	1	output	implementation result disagrees with required unit
+bitand_assign-wrong-receiver.rs	1	receiver	implementation receiver disagrees with mutable trait receiver
+bitand_assign-missing-impl.rs	1	implementation	no implementation for actual operands
+bitand_assign-missing-role.rs	1	role	same spelling has no canonical assignment role
+bitand_assign-unsafe.rs	1	unsafe	unsafe operation outside unsafe context
+bitand_assign-immutable.rs	1	mutable	mutable receiver cannot borrow immutable place
+bitand_assign-unused-default.rs	0	positive	valid unused alternate Rhs default
+bitand_assign-unused-provided.rs	0	positive	valid unused provided method remains ordinary source
+bitor_assign-single.rs	0	positive	isolated actual role and implementation
+bitor_assign-wrong-rhs.rs	1	rhs	wrong Rhs type or unsatisfied implementation
+bitor_assign-wrong-output.rs	1	output	implementation result disagrees with required unit
+bitor_assign-wrong-receiver.rs	1	receiver	implementation receiver disagrees with mutable trait receiver
+bitor_assign-missing-impl.rs	1	implementation	no implementation for actual operands
+bitor_assign-missing-role.rs	1	role	same spelling has no canonical assignment role
+bitor_assign-unsafe.rs	1	unsafe	unsafe operation outside unsafe context
+bitor_assign-immutable.rs	1	mutable	mutable receiver cannot borrow immutable place
+bitor_assign-unused-default.rs	0	positive	valid unused alternate Rhs default
+bitor_assign-unused-provided.rs	0	positive	valid unused provided method remains ordinary source
+shl_assign-single.rs	0	positive	isolated actual role and implementation
+shl_assign-wrong-rhs.rs	1	rhs	wrong Rhs type or unsatisfied implementation
+shl_assign-wrong-output.rs	1	output	implementation result disagrees with required unit
+shl_assign-wrong-receiver.rs	1	receiver	implementation receiver disagrees with mutable trait receiver
+shl_assign-missing-impl.rs	1	implementation	no implementation for actual operands
+shl_assign-missing-role.rs	1	role	same spelling has no canonical assignment role
+shl_assign-unsafe.rs	1	unsafe	unsafe operation outside unsafe context
+shl_assign-immutable.rs	1	mutable	mutable receiver cannot borrow immutable place
+shl_assign-unused-default.rs	0	positive	valid unused alternate Rhs default
+shl_assign-unused-provided.rs	0	positive	valid unused provided method remains ordinary source
+shr_assign-single.rs	0	positive	isolated actual role and implementation
+shr_assign-wrong-rhs.rs	1	rhs	wrong Rhs type or unsatisfied implementation
+shr_assign-wrong-output.rs	1	output	implementation result disagrees with required unit
+shr_assign-wrong-receiver.rs	1	receiver	implementation receiver disagrees with mutable trait receiver
+shr_assign-missing-impl.rs	1	implementation	no implementation for actual operands
+shr_assign-missing-role.rs	1	role	same spelling has no canonical assignment role
+shr_assign-unsafe.rs	1	unsafe	unsafe operation outside unsafe context
+shr_assign-immutable.rs	1	mutable	mutable receiver cannot borrow immutable place
+shr_assign-unused-default.rs	0	positive	valid unused alternate Rhs default
+shr_assign-unused-provided.rs	0	positive	valid unused provided method remains ordinary source
+shared-alias.rs	1	alias	shared opposing alias remains live across mutable call
+mutable-alias.rs	1	alias	opposing unique alias remains live
+two-phase-read.rs	0	positive	receiver reservation permits RHS read before activation
+disjoint-fields.rs	0	positive	disjoint field alias does not overlap receiver
+rvalue-target.rs	1	place	assignment requires a place
+rhs-opposing-alias.rs	1	alias	RHS shared alias conflicts when reserved mutable receiver activates
+primitive-body.rs	0	positive	builtin primitive semantics differ from actual explicit nonconst body
+const-primitive.rs	1	const	primitive compound const context still requires a const implementation (E0277)
+const-explicit-nonconst.rs	1	const	explicit call requires a const implementation
+const-custom.rs	0	positive	actual const custom assignment body executes mutable receiver
+const-custom-nonconst.rs	1	const	custom const assignment requires const implementation
+packed-primitive.rs	0	positive	erased primitive packed operation forms no physical reference
+packed-custom.rs	1	alignment	custom packed projection requires unaligned mutable reference
+order-custom.rs	0	positive	overloaded assignment evaluates LHS once then RHS once before mutable activation
+bound-8.rs	0	positive	linear number of demanded actual assignment calls
+bound-32.rs	0	positive	linear number of demanded actual assignment calls
+bound-128.rs	0	positive	linear number of demanded actual assignment calls
+raw-add_assign.rs	1	role	missing assignment role gives primitive E0368
+raw-sub_assign.rs	1	role	missing assignment role gives primitive E0368
+raw-mul_assign.rs	1	role	missing assignment role gives primitive E0368
+raw-div_assign.rs	1	role	missing assignment role gives primitive E0368
+raw-rem_assign.rs	1	role	missing assignment role gives primitive E0368
+raw-bitxor_assign.rs	1	role	missing assignment role gives primitive E0368
+raw-bitand_assign.rs	1	role	missing assignment role gives primitive E0368
+raw-bitor_assign.rs	1	role	missing assignment role gives primitive E0368
+raw-shl_assign.rs	1	role	missing assignment role gives primitive E0368
+raw-shr_assign.rs	1	role	missing assignment role gives primitive E0368
+const-primitive-valid.rs	0	positive	const implementation authorizes builtin const operation but its unrelated body effects remain erased
+const-explicit-valid.rs	0	positive	explicit const method call executes actual body
+cross-primitive-impl.rs	1	scalar	mismatched numeric primitive Rhs remains E0308 despite actual implementation
+primitive-ten.rs	0	positive	all ten standard primitive profiles; Boolean bitwise and mixed-width shift remain distinct
+provided-effect.rs	0	positive	actual provided ordinary method body mutates source static through empty implementation
+provided-unsafe.rs	1	unsafe	unsafe source static access in actual provided defining body
+provided-const.rs	1	const	ordinary provided implementation has no const execution permission
+provided-copy.rs	0	positive	provided Copy-bound method remains ordinary selected body
+ordinary-retained-policy.rs	1	source_policy	Rust permits ordinary trait retaining const-stability annotation

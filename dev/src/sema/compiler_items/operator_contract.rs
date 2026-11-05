@@ -28,9 +28,19 @@ pub(super) enum Operator {
     BitXor,
     BitAnd,
     Shr,
+    AddAssign,
+    SubAssign,
+    MulAssign,
+    DivAssign,
+    RemAssign,
+    BitXorAssign,
+    BitAndAssign,
+    BitOrAssign,
+    ShlAssign,
+    ShrAssign,
 }
 impl Operator {
-    const fn binary(self) -> bool {
+    const fn has_rhs(self) -> bool {
         matches!(
             self,
             Self::Shl
@@ -43,6 +53,31 @@ impl Operator {
                 | Self::BitXor
                 | Self::BitAnd
                 | Self::Shr
+                | Self::AddAssign
+                | Self::SubAssign
+                | Self::MulAssign
+                | Self::DivAssign
+                | Self::RemAssign
+                | Self::BitXorAssign
+                | Self::BitAndAssign
+                | Self::BitOrAssign
+                | Self::ShlAssign
+                | Self::ShrAssign
+        )
+    }
+    const fn assignment(self) -> bool {
+        matches!(
+            self,
+            Self::AddAssign
+                | Self::SubAssign
+                | Self::MulAssign
+                | Self::DivAssign
+                | Self::RemAssign
+                | Self::BitXorAssign
+                | Self::BitAndAssign
+                | Self::BitOrAssign
+                | Self::ShlAssign
+                | Self::ShrAssign
         )
     }
     const fn role(self) -> LangItem {
@@ -58,6 +93,16 @@ impl Operator {
             Self::BitXor => LangItem::BitXor,
             Self::BitAnd => LangItem::BitAnd,
             Self::Shr => LangItem::Shr,
+            Self::AddAssign => LangItem::AddAssign,
+            Self::SubAssign => LangItem::SubAssign,
+            Self::MulAssign => LangItem::MulAssign,
+            Self::DivAssign => LangItem::DivAssign,
+            Self::RemAssign => LangItem::RemAssign,
+            Self::BitXorAssign => LangItem::BitXorAssign,
+            Self::BitAndAssign => LangItem::BitAndAssign,
+            Self::BitOrAssign => LangItem::BitOrAssign,
+            Self::ShlAssign => LangItem::ShlAssign,
+            Self::ShrAssign => LangItem::ShrAssign,
             Self::Div => LangItem::Div,
         }
     }
@@ -74,6 +119,16 @@ impl Operator {
             Self::BitXor => "bitxor",
             Self::BitAnd => "bitand",
             Self::Shr => "shr",
+            Self::AddAssign => "add_assign",
+            Self::SubAssign => "sub_assign",
+            Self::MulAssign => "mul_assign",
+            Self::DivAssign => "div_assign",
+            Self::RemAssign => "rem_assign",
+            Self::BitXorAssign => "bitxor_assign",
+            Self::BitAndAssign => "bitand_assign",
+            Self::BitOrAssign => "bitor_assign",
+            Self::ShlAssign => "shl_assign",
+            Self::ShrAssign => "shr_assign",
             Self::Div => "div",
         }
     }
@@ -181,7 +236,17 @@ fn checked(
         | Operator::Rem
         | Operator::BitXor
         | Operator::BitAnd
-        | Operator::Shr => "source binary operator requires its actual language declaration",
+        | Operator::Shr
+        | Operator::AddAssign
+        | Operator::SubAssign
+        | Operator::MulAssign
+        | Operator::DivAssign
+        | Operator::RemAssign
+        | Operator::BitXorAssign
+        | Operator::BitAndAssign
+        | Operator::BitOrAssign
+        | Operator::ShlAssign
+        | Operator::ShrAssign => "source binary operator requires its actual language declaration",
     })?;
     current_header(report, facts, declaration.definition, declaration.origin)?;
     let header = headers::Trait::source(report, facts, declaration)?;
@@ -192,13 +257,13 @@ fn checked(
             auto_: false,
             constant: header.flags.constant,
         },
-        usize::from(operator.binary()),
+        usize::from(operator.has_rhs()),
     )?;
-    work.charge(6 * usize::from(operator.binary()))?;
+    work.charge(6 * usize::from(operator.has_rhs()))?;
     let rhs = rhs_parameter(facts, &header, operator)?;
-    if header.written.parameters != usize::from(operator.binary())
+    if header.written.parameters != usize::from(operator.has_rhs())
         || header.written.supertraits != 0
-        || header.members.len() != 2
+        || header.members.len() != if operator.assignment() { 1 } else { 2 }
     {
         return Err("source unary requires its actual Output and operation members without extra parameters or supertraits".into());
     }
@@ -216,7 +281,7 @@ fn rhs_parameter(
     header: &headers::Trait<'_>,
     operator: Operator,
 ) -> Result<Option<TypeId>, Failure> {
-    if !operator.binary() {
+    if !operator.has_rhs() {
         return Ok(None);
     }
     let [parameter] = header.parameters else {
@@ -267,7 +332,7 @@ fn members(
     header: &headers::Trait<'_>,
     operator: Operator,
     work: &mut Work,
-) -> Result<(DefId, DefId), Failure> {
+) -> Result<(Option<DefId>, DefId), Failure> {
     let unit = report.package.unit(declaration.origin.file);
     let Syntax::Item(index) = unit.configured.ast.node(declaration.origin.node).kind else {
         return Err("source unary lost its actual trait item".into());
@@ -318,7 +383,7 @@ fn members(
         });
         count += 1;
     }
-    if count != 2 {
+    if count != if operator.assignment() { 1 } else { 2 } {
         return Err("source unary has an incomplete actual member list".into());
     }
     let mut output = None;
@@ -336,7 +401,7 @@ fn members(
             return Err("source unary member belongs to another current source owner".into());
         }
         match (definition.kind, report.package.names.get(definition.name)) {
-            (DefKind::TypeAlias, "Output") if output.is_none() => {
+            (DefKind::TypeAlias, "Output") if !operator.assignment() && output.is_none() => {
                 output_item(
                     report,
                     definition
@@ -356,7 +421,11 @@ fn members(
         }
     }
     Ok((
-        output.ok_or("source unary has no Output")?,
+        if operator.assignment() {
+            None
+        } else {
+            Some(output.ok_or("source unary has no Output")?)
+        },
         method.ok_or("source unary has no operation method")?,
     ))
 }
@@ -377,7 +446,7 @@ fn method_signature(
     report: &Report,
     facts: &Declarations,
     header: &headers::Trait<'_>,
-    output: DefId,
+    output: Option<DefId>,
     method: DefId,
     rhs: Option<TypeId>,
     work: &mut Work,
@@ -387,13 +456,12 @@ fn method_signature(
         .node
         .ok_or("source unary method has no source origin")?;
     current_header(report, facts, method, origin)?;
-    method_syntax(report, facts, method, origin)?;
+    method_syntax(report, facts, method, origin, output.is_none())?;
     let function = facts
         .declaration_header(method)?
         .ok_or("source unary has no completed method header")?;
     if function.declaration.source() != Some(origin)
-        || function.body.is_some()
-        || function.universals != 0
+        || (output.is_some() && (function.body.is_some() || function.universals != 0))
         || facts
             .generics
             .parameters
@@ -401,11 +469,11 @@ fn method_signature(
             .is_some_and(|p| !p.is_empty())
     {
         return Err(
-            "source unary requires its actual required method without extra binders".into(),
+            "source operator required-method profile excludes provided/default bodies and extra binders".into(),
         );
     }
     let Some(Kind::Function {
-        bound_regions: 0,
+        bound_regions,
         parameters,
         result,
         unsafe_: false,
@@ -416,11 +484,17 @@ fn method_signature(
             "source unary method requires a safe Rust signature without late binders".into(),
         );
     };
-    let inputs = [header.self_type, rhs.unwrap_or(header.self_type)];
-    if facts.types.list(parameters) != Some(&inputs[..=usize::from(rhs.is_some())]) {
-        return Err("source unary method requires its exact by-value Self receiver".into());
+    if let Some(output) = output {
+        let inputs = [header.self_type, rhs.unwrap_or(header.self_type)];
+        if bound_regions != 0
+            || facts.types.list(parameters) != Some(&inputs[..=usize::from(rhs.is_some())])
+        {
+            return Err("source unary method requires its exact by-value Self receiver".into());
+        }
+        output_projection(facts, header, output, rhs, result)?;
+    } else {
+        assignment_signature(facts, header, rhs, parameters, result, bound_regions)?;
     }
-    output_projection(facts, header, output, rhs, result)?;
     let ty =
         facts.definitions[method.0 as usize].ok_or("source unary method lost its callable item")?;
     if !matches!(facts.types.kind(ty), Some(Kind::FunctionItem {item, signature, ..}) if item.0 == method.0 && signature == function.signature)
@@ -479,6 +553,7 @@ fn method_syntax(
     facts: &Declarations,
     method: DefId,
     origin: NodeKey,
+    provided: bool,
 ) -> Result<(), Failure> {
     let unit = report.package.unit(origin.file);
     let Syntax::Item(index) = unit.configured.ast.node(origin.node).kind else {
@@ -494,7 +569,7 @@ fn method_syntax(
         flags,
         abi: crate::syntax::item::Abi::Rust,
         parameters,
-        body: None,
+        body,
         ..
     } = item.kind
     else {
@@ -505,13 +580,40 @@ fn method_syntax(
         .get(&method)
         .and_then(|&index| facts.functions.get(index))
         .ok_or("source unary method has no actual source function")?;
-    if flags != crate::syntax::item::FunctionFlags::default()
+    if (!provided && body.is_some())
+        || flags != crate::syntax::item::FunctionFlags::default()
         || function.definition != method
         || function.node != origin
         || function.parameters != parameters
+        || function.body
+            != body.map(|node| NodeKey {
+                file: origin.file,
+                node,
+            })
         || !unit.configured.ast.list(item.generics).is_empty()
     {
         return Err("source unary method changed its current safe synchronous header".into());
+    }
+    Ok(())
+}
+
+fn assignment_signature(
+    facts: &Declarations,
+    header: &headers::Trait<'_>,
+    rhs: Option<TypeId>,
+    parameters: crate::types::ListId,
+    result: TypeId,
+    bound_regions: u32,
+) -> Result<(), Failure> {
+    let Some([receiver, argument]) = facts.types.list(parameters) else {
+        return Err("source assignment requires its actual receiver and Rhs".into());
+    };
+    if result != TypeId::UNIT
+        || bound_regions != 1
+        || Some(*argument) != rhs
+        || !matches!(facts.types.kind(*receiver), Some(Kind::Reference {mutable:true,referent,region}) if referent==header.self_type && region.bound_parts()==Some((0,0)))
+    {
+        return Err("source assignment requires exact &mut Self, Rhs and unit result".into());
     }
     Ok(())
 }
