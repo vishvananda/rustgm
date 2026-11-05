@@ -1,5 +1,16 @@
 # Parallel library bootstrap implementation
 
+The [method-shape repair](parallel/method-shape-checkpoint.md) now qualifies the
+PA20 diagnostic and completed-pair cache. Strict selected checks and two public
+controls pass; a separate guarded follow-up passes all1389 PA20 cases plus
+harness/upstream checks. The combined first attempt timed out after its focused
+tests and scoped oracle generation; that failure remains retained. Two private
+cache invariants and successor full CI remain pending. Disk capacity has been
+recovered; Root and the source worker have resumed their two guarded local jobs.
+AsyncFn's generated invocation wrapper and precise selected cleanup remain
+separate uncompiled/in-qualification work, with no original library artifact or
+whole assignment after24 complete.
+
 The [unpolled construction/Drop checkpoint](parallel/state-drop-checkpoint.md)
 integrates worker334b56646 and09da7ef4b, including their checked-store guard.
 The entire production tree matches the worker's qualified snapshot:24 exact
@@ -18,12 +29,11 @@ this runtime checkpoint does not itself establish a new original-core result.
 
 Full42109811024 onf88 passes all public/private tests. Its course stage finds
 one PA20 diagnostic mismatch: an actual method type mismatch is reported as
-an invalid lifetime identity. The isolated diagnostic/cache repair is preserved
-for qualification; its final algorithm has not passed a gate yet. Root's AsyncFn
+an invalid lifetime identity. The repair above now qualifies that boundary. Root's AsyncFn
 callable execution wrapper and the source worker's precise selected cleanup
 consumer are also uncompiled work in their existing isolated trees. At integration,
-scratch has112GiB free, below the unchanged150GiB reserve; all local heavy work
-is held. No whole assignment after24 or original core/alloc/std artifact is complete.
+scratch initially had112GiB free, below the unchanged150GiB reserve; that hold
+ended after recovery. No whole assignment after24 or original core/alloc/std artifact is complete.
 
 The [future/const integration](parallel/future-const-join.md) now joins selected
 authored Future/Output proof, actual const destruction and native runtime-instance
