@@ -8,6 +8,14 @@ Work prerequisites: [ordered dependency units](../docs/assignment-order.md). The
 
 Separate compilation, crate identities, metadata and generic body exports.
 
+The explicit `module-nominals-v10` profile now transports actual named structs,
+their generic inputs, owner-ordered fields and visibility, plus typed constructor
+and field operations. A serialized provider and fresh generic client execute
+through the ordinary ownership/proof/lowering path. The
+[checkpoint](../docs/parallel/source-nominals-v10.md) retains independent
+opponents, legacy wire compatibility and remaining shape/policy requirements.
+This finite profile does not complete PA29 or original core transport.
+
 Current source conversion work uses the explicit `module-conversions-v9`
 capability, retaining actual From ownership, generic originals and body-local
 lifetime numbering. The [implementation and qualification plan](../docs/pa31-source-from-plan.md)

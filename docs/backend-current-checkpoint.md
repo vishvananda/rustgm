@@ -100,5 +100,7 @@ The repair gate `obj/qualification/fast/1793844289914774318/receipt.json` passes
 all five public iterator regressions, three genuine Pin/async receiver controls,
 1193 PA19 cases, formatting, architecture and strict selected Clippy in116.78s.
 The failed full log is retained locally. Complete private/native/debug successor
-qualification remains pending CI. No whole assignment or original core/alloc/std
+[41953070184](https://github.com/vishvananda/rustgm/actions/runs/41953070184)
+on99c365903 is terminal success with every gate, including independent Rust and
+the const-machine contract. No whole assignment or original core/alloc/std
 artifact follows from this backend checkpoint.

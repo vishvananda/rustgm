@@ -145,3 +145,27 @@ lease; no broader performance claim is made.
 The adjacent evidence JSON binds source-map, fixture, binary, lock, receipt and
 raw-observation hashes. Generated sources, diagnostics and receipts remain local
 under the recorded obj paths; generated executables are retired after use.
+
+## Joined frontend and current backend
+
+Integrator cherry-pick8cede1e9c joins the source profile with actual Deref,
+Pin/async signatures, required RPIT repair and canonical iterator fixes. The
+backend lock is now f60c0760f39f1f554486f5a1eb990d2c0fef663fbd1bff944cd1eef8a014a581,
+with all three tools at cppgm-extended b7c6b8e72. The first four-target gate
+1793847682371673811 passed format/architecture/strict Clippy, then exhausted its
+normal development budget rebuilding test binaries. It is retained as a failure;
+the limit was not extended. The focused linking gate1793847975980595130 passes
+all44 exact source/legacy-codec tests in52.23s with the same checks.
+
+Guarded `obj/parallel/source-integration-v1/qualification-v1/receipt.json`
+passes in35.06s, SHA-256
+4ab990f6f23c577f41dbc298a441a12b03212db9ddeafe9330002e52d21c5187.
+It executes the imported-original native observer on the current backend,
+upstream and full harness checks. Ordinary scalar/value LowIR and the complete
+15-value configuration snapshot remain byte-identical to the joined async
+baseline. The reviewed configuration-source diff only adds the explicit v10 CLI
+profile and help spelling; original-core invocation/options/limits are unchanged.
+All722 original input hashes and six pins remain intact. Core still stops at
+the actual AsyncDrop declaration, file246 byte1138,375 opens,19.4295s; this is a
+concurrent bounded observation, not an isolated speed measurement. The five
+private transaction/forgery/legacy-role checks await the full CI successor.

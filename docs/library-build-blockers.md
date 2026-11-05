@@ -37,6 +37,15 @@ receiver composition and the full PA21 lifetime opponent. Native Future/Output
 again matches Rust on current CPPGM b7c6b8e72. Original722-input core remains at
 LIB-154; no async state/destruction helper or library artifact is claimed.
 
+The [source nominal checkpoint](parallel/source-nominals-v10.md) is now integrated
+with the current backend and joined frontend:44 source/legacy-codec tests and a
+fresh serialized generic native consumer pass. Ordinary/configuration outputs
+stay byte-identical, and CLI f3422399 preserves the same722-input AsyncDrop core
+frontier in19.4295s. Wider nominal, destructor/Pin policy and original artifacts
+remain required. Full CI41953070184 on99c365903 is terminal success with every
+gate for the preceding backend/Future/iterator checkpoint; transport's private
+transaction controls await its successor.
+
 [Full CI41906009661](https://github.com/vishvananda/rustgm/actions/runs/41906009661)
 oncc864ba92 is terminal success with every gate, including release/course,
 native, debug, independent Rust, const-machine and private request-payer checks.

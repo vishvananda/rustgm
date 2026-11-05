@@ -119,6 +119,17 @@ No Rust frontend phase may communicate by printing and reparsing token, syntax,
 type or diagnostic text. After an in-process backend becomes available, pass
 typed LowIR directly. All backend-visible facts must have a LowIR spelling.
 
+The explicit PA29 `module-nominals-v10` source profile preserves actual named
+struct declaration addresses, generic arguments, complete owner-ordered fields,
+module visibility and typed constructor/projection operations. Imported records
+reuse ordinary Members, aggregate formation and original-body proof. Prepare and
+pay destination batches before an exclusive validated publication; foreign/stale
+owners and incomplete fields cannot become usable storage. Canonical structural
+argument spines use one lazy, budgeted index per actual spine, rather than a full
+rescan for every field. Versions0–9 and Provided retain their separate bytes and
+authority. Pin/fundamental/destructor policy and broader nominal shapes remain
+explicit transport requirements; matching layouts grant no type identity.
+
 ### Upstream library boundary
 
 Source language-item vocabulary is append-only and driven by one declarative
